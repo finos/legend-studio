@@ -55,7 +55,14 @@ export const V1_buildRelationalClassMapping = (
   // TODO localMappingProperties
 
   immediateParent.primaryKey = relationalClassMapping.primaryKey.map((key) =>
-    V1_buildRelationalOperationElement(key, context, tableAliasIndex, []),
+    V1_buildRelationalOperationElement(
+      key,
+      context,
+      tableAliasIndex,
+      [],
+      undefined,
+      true,
+    ),
   );
 
   immediateParent.propertyMappings =

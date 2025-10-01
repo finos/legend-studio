@@ -369,6 +369,7 @@ import {
   V1_LineageInput,
   type V1_RawLineageModel,
 } from './model/lineage/V1_Lineage.js';
+import { V1_IngestDefinition } from './model/packageableElements/ingest/V1_IngestDefinition.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -4587,6 +4588,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       protocol instanceof V1_INTERNAL__UnknownFunctionActivator ||
       protocol instanceof V1_INTERNAL__UnknownStore
     ) {
+      if (protocol instanceof V1_IngestDefinition) {
+        return CORE_PURE_PATH.INGEST_DEFINITION;
+      }
       const _type = protocol.content._type;
       const classifierPath = isString(_type)
         ? this.elementClassifierPathMap.get(_type)

@@ -23,6 +23,7 @@ import type { V1_Join } from './V1_Join.js';
 import type { V1_Filter } from './V1_Filter.js';
 import type { V1_StereotypePtr } from '../../../domain/V1_StereotypePtr.js';
 import type { V1_TaggedValue } from '../../../domain/V1_TaggedValue.js';
+import type { V1_IncludeStore } from './V1_IncludeStore.js';
 
 export class V1_Database extends V1_Store implements Hashable {
   schemas: V1_Schema[] = [];
@@ -30,6 +31,7 @@ export class V1_Database extends V1_Store implements Hashable {
   filters: V1_Filter[] = [];
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
+  includedStoreSpecifications: V1_IncludeStore[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -41,6 +43,7 @@ export class V1_Database extends V1_Store implements Hashable {
       hashArray(this.filters),
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
+      hashArray(this.includedStoreSpecifications),
     ]);
   }
 

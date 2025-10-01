@@ -69,6 +69,7 @@ import type { PropertyOwner } from './metamodel/pure/packageableElements/domain/
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { IngestDefinition } from './metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import type { DataProduct } from './metamodel/pure/dataProduct/DataProduct.js';
 
 export interface GraphTextInputOption {
   graphGrammar: string | undefined;
@@ -509,6 +510,24 @@ export class PureModel extends BasicModel {
         this.systemModel.getOwnNullableStore(path) ??
         this.coreModel.getOwnNullableStore(path),
       `Can't find store '${path}'`,
+    );
+  getDataProduct = (path: string): DataProduct =>
+    guaranteeNonNullable(
+      this.getOwnNullableDataProduct(path) ??
+        this.generationModel.getOwnNullableDataProduct(path) ??
+        this.dependencyManager.getOwnNullableDataProduct(path) ??
+        this.systemModel.getOwnNullableDataProduct(path) ??
+        this.coreModel.getOwnNullableDataProduct(path),
+      `Can't find data product '${path}'`,
+    );
+  getIngestDefinition = (path: string): IngestDefinition =>
+    guaranteeNonNullable(
+      this.getOwnNullableIngestDefinition(path) ??
+        this.generationModel.getOwnNullableIngestDefinition(path) ??
+        this.dependencyManager.getOwnNullableIngestDefinition(path) ??
+        this.systemModel.getOwnNullableIngestDefinition(path) ??
+        this.coreModel.getOwnNullableIngestDefinition(path),
+      `Can't find ingest definition '${path}'`,
     );
   getFlatDataStore = (path: string): FlatData =>
     guaranteeType(

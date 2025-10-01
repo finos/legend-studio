@@ -24,6 +24,7 @@ import {
   LogEvent,
   guaranteeType,
   guaranteeNonNullable,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import { Stereotype } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Stereotype.js';
 import { Tag } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Tag.js';
@@ -63,7 +64,10 @@ import {
   V1_buildMappingInclude,
 } from './helpers/V1_MappingBuilderHelper.js';
 import { V1_buildFlatDataSection } from './helpers/V1_FlatDataStoreBuilderHelper.js';
-import { V1_buildSchema } from './helpers/V1_DatabaseBuilderHelper.js';
+import {
+  V1_buildSchema,
+  V1_initInternalLakehouseGeneratedDatabase,
+} from './helpers/V1_DatabaseBuilderHelper.js';
 import {
   V1_buildConfigurationProperty,
   V1_buildScopeElement,
@@ -94,7 +98,10 @@ import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageable
 import { V1_buildExecutionParameters } from './V1_ExecutionEnvironmentBuilderHelper.js';
 import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
-import { PackageableElementExplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import {
+  PackageableElementExplicitReference,
+  PackageableElementImplicitReference,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import {
@@ -136,6 +143,7 @@ import {
   V1_buildDataProductLink,
 } from './helpers/V1_DataProductBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import { IncludeStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -507,6 +515,25 @@ export class V1_ElementSecondPassBuilder
     database.includes = element.includedStores.map((includedStore) =>
       this.context.resolveDatabase(includedStore.path),
     );
+    database.includedStoreSpecifications =
+      element.includedStoreSpecifications.map((v1IncludeStore) => {
+        const storePath = v1IncludeStore.packageableElementPointer.path;
+        const storeElement = guaranteeNonNullable(
+          returnUndefOnError(() =>
+            this.context.graph.getIngestDefinition(storePath),
+          ) ??
+            returnUndefOnError(() =>
+              this.context.graph.getDataProduct(storePath),
+            ),
+          `Ingest/Data Product ${storePath} not found`,
+        );
+        const includedStore = new IncludeStore(
+          PackageableElementImplicitReference.create(storeElement, storePath),
+          v1IncludeStore.storeType,
+        );
+        V1_initInternalLakehouseGeneratedDatabase(includedStore, database);
+        return includedStore;
+      });
     database.schemas = element.schemas.map((schema) =>
       V1_buildSchema(schema, database, this.context),
     );

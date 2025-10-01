@@ -695,6 +695,8 @@ export class V1_PropertyMappingBuilder
               this.context,
               this.tableAliasIndex,
               [],
+              undefined,
+              true,
             ),
             new V1_GraphTransformerContextBuilder(
               this.context.extensions.plugins,
@@ -928,6 +930,8 @@ export class V1_PropertyMappingBuilder
         this.context,
         this.tableAliasIndex,
         [],
+        undefined,
+        true,
       ),
     );
     embedded.propertyMappings = protocol.classMapping.propertyMappings.map(
@@ -992,6 +996,8 @@ export class V1_PropertyMappingBuilder
         this.context,
         this.tableAliasIndex,
         [],
+        undefined,
+        true,
       ),
     );
     otherwiseEmbedded.propertyMappings =

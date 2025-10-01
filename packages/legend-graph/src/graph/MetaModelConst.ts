@@ -158,6 +158,7 @@ export enum CORE_PURE_PATH {
   MEM_SQL_FUNCTION = 'meta::external::function::activator::memSqlFunction::MemSqlFunction',
   TABULAR_RESULT = 'meta::pure::mapping::Result',
   DATA_PRODUCT = 'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  INGEST_DEFINITION = 'meta::external::ingest::specification::metamodel::IngestDefinition',
 }
 
 export const PURE_DOC_TAG = 'doc';

@@ -247,7 +247,11 @@ export class V1_ClassMappingSecondPassBuilder
     }
     let mainTableAlias: TableAlias | undefined;
     if (classMapping.mainTable) {
-      const relation = this.context.resolveRelation(classMapping.mainTable);
+      const relation = this.context.resolveRelation(
+        classMapping.mainTable,
+        undefined,
+        true,
+      );
       mainTableAlias = new TableAlias();
       mainTableAlias.relation = relation;
       mainTableAlias.name = relation.value.name;

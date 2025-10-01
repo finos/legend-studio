@@ -77,6 +77,7 @@ import {
   TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS,
   TEST_DATA__DATAPRODUCT_DELIVERY,
   TEST_DATA__DATAPRODUCT_GROUPS,
+  TEST_DATA__DATAPRODUCT__INCLUDE,
 } from './roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
 import { TEST_DATA__Function_genericType } from './roundtripTestData/TEST_DATA__Function-generictype.js';
 
@@ -264,6 +265,7 @@ describe(unitTest('DSL Data product'), () => {
       'DSL Data Model Access Groups',
       TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS,
     ],
+    ['DSL Include Data Product', TEST_DATA__DATAPRODUCT__INCLUDE],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
   });
