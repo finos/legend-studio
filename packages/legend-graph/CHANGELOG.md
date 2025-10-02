@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.3.3
+
+### Patch Changes
+
+- [#4508](https://github.com/finos/legend-studio/pull/4508) [`5f8511f`](https://github.com/finos/legend-studio/commit/5f8511f9d9ebbaa905c62142e3d91fdf8cac2a81) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle included store specifications in database for included `DataProduct` and `IngestDefinition`
+
+- [#4498](https://github.com/finos/legend-studio/pull/4498) [`ae725b1`](https://github.com/finos/legend-studio/commit/ae725b157e1cc0271837e2c9fff4485bf22abb3b) ([@yash0024](https://github.com/yash0024)) - Bring RelationElementsData to the graph and rename occurences of FunctionStoreTestData to FunctionTestData as in engine
+
 ## 32.3.2
 
 ### Patch Changes

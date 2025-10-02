@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.47
+
+### Patch Changes
+
+- [#4488](https://github.com/finos/legend-studio/pull/4488) [`bc14406`](https://github.com/finos/legend-studio/commit/bc144069d63896b9ca6a5fabecaad31df8545e3c) ([@travisstebbins](https://github.com/travisstebbins)) - Add Data Product preview to DataProductEditor
+
+- [#4498](https://github.com/finos/legend-studio/pull/4498) [`ae725b1`](https://github.com/finos/legend-studio/commit/ae725b157e1cc0271837e2c9fff4485bf22abb3b) ([@yash0024](https://github.com/yash0024)) - Rename occurences of FunctionStoreTestData to FunctionTestData as in engine
+
 ## 28.19.46
 
 ## 28.19.45
