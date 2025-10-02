@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.7
+
+### Patch Changes
+
+- [#4488](https://github.com/finos/legend-studio/pull/4488) [`bc14406`](https://github.com/finos/legend-studio/commit/bc144069d63896b9ca6a5fabecaad31df8545e3c) ([@travisstebbins](https://github.com/travisstebbins)) - Add Data Product preview to DataProductEditor
+
 ## 0.0.6
 
 ## 0.0.5
