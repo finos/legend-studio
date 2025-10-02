@@ -21,7 +21,10 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { Column } from '../metamodel/pure/packageableElements/store/relational/model/Column.js';
-import { Database } from '../metamodel/pure/packageableElements/store/relational/model/Database.js';
+import {
+  Database,
+  type INTERNAL__LakehouseGeneratedDatabase,
+} from '../metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { Filter } from '../metamodel/pure/packageableElements/store/relational/model/Filter.js';
 import type { Join } from '../metamodel/pure/packageableElements/store/relational/model/Join.js';
 import {
@@ -57,6 +60,10 @@ import {
 } from '../../STO_Relational_Exports.js';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
 import { PackageableConnection } from '../metamodel/pure/packageableElements/connection/PackageableConnection.js';
+import {
+  getOrCreateColumnFromGeneratedTable,
+  isGeneratedRelation,
+} from './STO_Internal_Relational_Helper.js';
 
 const collectIncludedDatabases = (
   results: Set<Database>,
@@ -88,6 +95,16 @@ export const getAllIncludedDatabases = (db: Database): Set<Database> => {
     ),
   );
   return results;
+};
+
+export const getAllIncludedGeneratedDatabases = (
+  db: Database,
+): Set<INTERNAL__LakehouseGeneratedDatabase> => {
+  return new Set(
+    db.includedStoreSpecifications.map(
+      (includedStore) => includedStore.generatedDatabase,
+    ),
+  );
 };
 
 export const getJoinType = (type: string): JoinType => {
@@ -167,7 +184,7 @@ export const getFilter = (database: Database, name: string): Filter =>
 export const getNullableTable = (
   schema: Schema,
   name: string,
-): Table | undefined => schema.tables.find((table) => table.name === name);
+): Table | undefined => schema.tables.find((_table) => _table.name === name);
 
 export const getTable = (schema: Schema, name: string): Table =>
   guaranteeNonNullable(
@@ -189,13 +206,17 @@ export const getRelation = (schema: Schema, name: string): Relation => {
   );
 };
 
-export const getColumn = (relation: Table | View, name: string): Column =>
-  guaranteeNonNullable(
-    relation.columns
-      .filter(filterByType(Column))
-      .find((column) => column.name === name),
-    `Can't find column '${name}' in table '${relation.name}'`,
-  );
+export function getColumn(relation: Table | View, name: string): Column {
+  if (!isGeneratedRelation(relation)) {
+    guaranteeNonNullable(
+      relation.columns
+        .filter(filterByType(Column))
+        .find((column) => column.name === name),
+      `Can't find column '${name}' in table '${relation.name}'`,
+    );
+  }
+  return getOrCreateColumnFromGeneratedTable(name, relation);
+}
 
 export const stringifyDataType = (type: RelationalDataType): string => {
   if (type instanceof VarChar) {

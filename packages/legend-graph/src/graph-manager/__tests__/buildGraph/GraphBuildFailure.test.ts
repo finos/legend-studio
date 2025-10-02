@@ -39,6 +39,8 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '../../__test-utils__/GraphManagerTestUtils.js';
+import { TEST_DATA__DATAPRODUCT__INCLUDE } from '../roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 let graphManagerState: GraphManagerState;
 
@@ -240,3 +242,18 @@ test(
     );
   },
 );
+
+test(unitTest('Duplicated elementxx'), async () => {
+  guaranteeNonNullable(
+    TEST_DATA__DATAPRODUCT__INCLUDE[2],
+  ).content.includedStoreSpecifications = [];
+  await expect(() =>
+    TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__DATAPRODUCT__INCLUDE as Entity[],
+      {
+        strict: true,
+      },
+    ),
+  ).rejects.toThrowError(`Can't find database my::lakehouse::FirmIngest`);
+});

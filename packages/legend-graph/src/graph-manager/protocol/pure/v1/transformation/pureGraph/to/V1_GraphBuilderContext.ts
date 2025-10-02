@@ -25,6 +25,8 @@ import {
   guaranteeNonNullable,
   assertNonEmptyString,
   guaranteeType,
+  returnUndefOnError,
+  AssertionError,
 } from '@finos/legend-shared';
 import { GenericType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
 import type { PackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
@@ -49,7 +51,10 @@ import type { ConcreteFunctionDefinition } from '../../../../../../../graph/meta
 import type { Store } from '../../../../../../../graph/metamodel/pure/packageableElements/store/Store.js';
 import type { Service } from '../../../../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import type { FlatData } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
-import type { Database } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
+import type {
+  Database,
+  INTERNAL__LakehouseGeneratedDatabase,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { PackageableConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/connection/PackageableConnection.js';
 import type { PackageableRuntime } from '../../../../../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import type { FileGenerationSpecification } from '../../../../../../../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
@@ -430,6 +435,10 @@ export class V1_GraphBuilderContext {
 
   resolveRelation = (
     tablePtr: V1_TablePtr,
+    contextDatabse?:
+      | Map<string, INTERNAL__LakehouseGeneratedDatabase>
+      | undefined,
+    allowImplicitToGeneratedDatabse?: boolean | undefined,
   ): ViewImplicitReference | TableImplicitReference => {
     assertNonEmptyString(
       tablePtr.database,
@@ -443,13 +452,47 @@ export class V1_GraphBuilderContext {
       tablePtr.table,
       `Table pointer 'table' field is missing or empty`,
     );
-    const ownerReference = this.resolveDatabase(tablePtr.database);
-    const value = V1_getRelation(
-      ownerReference.value,
-      tablePtr.schema,
-      tablePtr.table,
+    const ownerReference = this.resolveDatabase(
+      tablePtr.database,
+      contextDatabse,
     );
-    return createImplicitRelationReference(ownerReference, value);
+
+    try {
+      const value = V1_getRelation(
+        ownerReference.value,
+        tablePtr.schema,
+        tablePtr.table,
+      );
+      return createImplicitRelationReference(ownerReference, value);
+    } catch (error) {
+      if (
+        allowImplicitToGeneratedDatabse &&
+        ownerReference.value.includedStoreSpecifications.length > 0
+      ) {
+        const generatedDatabase =
+          ownerReference.value.includedStoreSpecifications.find((_s) =>
+            _s.generatedDatabase.schemas.find(
+              (_schema) => _schema.name === tablePtr.schema,
+            ),
+          )?.generatedDatabase ??
+          guaranteeNonNullable(
+            ownerReference.value.includedStoreSpecifications[0]
+              ?.generatedDatabase,
+          );
+        const value = V1_getRelation(
+          generatedDatabase,
+          tablePtr.schema,
+          tablePtr.table,
+        );
+        // we want the reference to be of the table pointer database
+        const ref = PackageableElementImplicitReference.create(
+          generatedDatabase,
+          tablePtr.database,
+        );
+        return createImplicitRelationReference(ref, value);
+      }
+      throw error;
+    }
   };
 
   resolveJoin = (joinPtr: V1_JoinPointer): JoinImplicitReference => {
@@ -559,11 +602,28 @@ export class V1_GraphBuilderContext {
     );
   resolveDatabase = (
     path: string,
-  ): PackageableElementImplicitReference<Database> =>
-    this.createImplicitPackageableElementReference(
-      path,
-      this.graph.getDatabase,
+    generatedDatabasesInScope?:
+      | Map<string, INTERNAL__LakehouseGeneratedDatabase>
+      | undefined,
+  ): PackageableElementImplicitReference<Database> => {
+    const element = returnUndefOnError(() =>
+      this.createImplicitPackageableElementReference(
+        path,
+        this.graph.getDatabase,
+      ),
     );
+    if (element) {
+      return element;
+    }
+    if (generatedDatabasesInScope?.has(path)) {
+      const generatedDb = generatedDatabasesInScope.get(path);
+      if (generatedDb) {
+        return PackageableElementImplicitReference.create(generatedDb, path);
+      }
+    }
+    throw new AssertionError(`Can't find database ${path}`);
+  };
+
   resolveMapping = (
     path: string,
   ): PackageableElementImplicitReference<Mapping> =>

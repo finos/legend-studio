@@ -15,7 +15,10 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { Database } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
+import {
+  INTERNAL__LakehouseGeneratedDatabase,
+  type Database,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import {
   type RelationalDataType,
   Real,
@@ -61,6 +64,7 @@ import {
 import type { ColumnMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/ColumnMapping.js';
 import type { View } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/View.js';
 import type { Schema } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Schema.js';
+import { type IncludeStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';
 import {
   type V1_RelationalDataType,
   V1_VarChar,
@@ -114,6 +118,7 @@ import {
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { TabularFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TabularFunction.js';
 import { V1_TabularFunction } from '../../../model/packageableElements/store/relational/model/V1_TabularFunction.js';
+import { V1_IncludeStore } from '../../../model/packageableElements/store/relational/model/V1_IncludeStore.js';
 
 const transformRelationalDataType = (
   type: RelationalDataType,
@@ -194,9 +199,17 @@ export const V1_transformTableAliasToTablePointer = (
   },
 ): V1_TablePtr => {
   const tablePtr = new V1_TablePtr();
+  const ownerRef = tableAlias.relation.ownerReference;
   tablePtr.database = options?.TEMPORARY__resolveToFullPath
-    ? tableAlias.relation.ownerReference.value.path
-    : (tableAlias.relation.ownerReference.valueForSerialization ?? '');
+    ? ownerRef.value.path
+    : (ownerRef.valueForSerialization ?? '');
+  // make sure reference is to the owner not the generated database
+  if (
+    ownerRef.value instanceof INTERNAL__LakehouseGeneratedDatabase &&
+    ownerRef.valueForSerialization === ownerRef.value.OWNER.path
+  ) {
+    tablePtr.database = ownerRef.valueForSerialization;
+  }
   // NOTE: Sometimes, we interpret this, so to maintain roundtrip stability, we need to handle this differrently
   // See https://github.com/finos/legend-studio/issues/295
   tablePtr.mainTableDb = tablePtr.database;
@@ -458,6 +471,16 @@ const transformSchema = (
   return schema;
 };
 
+const transformIncludeStore = (element: IncludeStore): V1_IncludeStore => {
+  const v1IncludeStore = new V1_IncludeStore();
+  v1IncludeStore.packageableElementPointer = new V1_PackageableElementPointer(
+    undefined,
+    element.packageableElementPointer.valueForSerialization ?? '',
+  );
+  v1IncludeStore.storeType = element.storeType;
+  return v1IncludeStore;
+};
+
 export const V1_transformDatabase = (
   element: Database,
   context: V1_GraphTransformerContext,
@@ -484,5 +507,9 @@ export const V1_transformDatabase = (
         store.valueForSerialization ?? '',
       ),
   );
+  database.includedStoreSpecifications =
+    element.includedStoreSpecifications.map((includeStore) =>
+      transformIncludeStore(includeStore),
+    );
   return database;
 };

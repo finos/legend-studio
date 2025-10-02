@@ -110,6 +110,7 @@ import {
   V1_serializeQueryGenerationConfig,
   V1_deserializeQueryGenerationConfig,
 } from './V1_QueryGenerationConfigSerializationHelper.js';
+import { V1_IncludeStore } from '../../../model/packageableElements/store/relational/model/V1_IncludeStore.js';
 
 export const V1_DATABASE_ELEMENT_PROTOCOL_TYPE = 'relational';
 
@@ -549,6 +550,25 @@ const V1_setupTableSerialization = (
   });
 };
 
+const V1_includeStoreModelSchema = createModelSchema(V1_IncludeStore, {
+  packageableElementPointer: usingModelSchema(
+    V1_packageableElementPointerModelSchema,
+  ),
+  storeType: primitive(),
+});
+
+const V1_serializeIncludeStore = (
+  protocol: V1_IncludeStore,
+): PlainObject<V1_IncludeStore> => {
+  return serialize(V1_includeStoreModelSchema, protocol);
+};
+
+const V1_deserializeIncludeStore = (
+  json: PlainObject<V1_IncludeStore>,
+): V1_IncludeStore => {
+  return deserialize(V1_includeStoreModelSchema, json);
+};
+
 const V1_setupTabularFunctionSerialization = (
   plugins: PureProtocolProcessorPlugin[],
 ): void => {
@@ -616,6 +636,11 @@ export const V1_databaseModelSchema = createModelSchema(V1_Database, {
         PackageableElementPointerType.STORE,
       ),
     { INTERNAL__forceReturnEmptyInTest: true },
+  ),
+  includedStoreSpecifications: customList(
+    (val: V1_IncludeStore) => V1_serializeIncludeStore(val),
+    (val) => V1_deserializeIncludeStore(val),
+    { INTERNAL__forceReturnEmptyInTest: false },
   ),
   joins: list(usingModelSchema(V1_joinModelSchema)),
   name: primitive(),

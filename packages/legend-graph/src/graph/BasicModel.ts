@@ -377,8 +377,12 @@ export abstract class BasicModel {
     path: string,
   ): ExecutionEnvironmentInstance | undefined =>
     this.executionEnvironmentsIndex.get(path);
-  getOwnNullableProduct = (path: string): DataProduct | undefined =>
+  getOwnNullableDataProduct = (path: string): DataProduct | undefined =>
     this.productsIndex.get(path);
+  getOwnNullableIngestDefinition = (
+    path: string,
+  ): IngestDefinition | undefined =>
+    this.ownIngests.find((ingest) => ingest.path === path);
   getOwnSectionIndex = (path: string): SectionIndex =>
     guaranteeNonNullable(
       this.getOwnNullableSectionIndex(path),
@@ -483,7 +487,7 @@ export abstract class BasicModel {
     );
   getOwnDataProduct = (path: string): DataProduct =>
     guaranteeNonNullable(
-      this.getOwnNullableProduct(path),
+      this.getOwnNullableDataProduct(path),
       `Can't find data product element '${path}'`,
     );
 

@@ -23,8 +23,12 @@ import {
   guaranteeType,
   assertTrue,
   isNonNullable,
+  AssertionError,
 } from '@finos/legend-shared';
-import { Database } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
+import {
+  Database,
+  INTERNAL__LakehouseGeneratedDatabase,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import {
   getAllIncludedDatabases,
   getColumn,
@@ -135,6 +139,12 @@ import { TablePtr } from '../../../../../../../../graph/metamodel/pure/packageab
 import type { TabularFunction } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TabularFunction.js';
 import type { V1_TabularFunction } from '../../../../model/packageableElements/store/relational/model/V1_TabularFunction.js';
 import { V1_buildTaggedValue } from './V1_DomainBuilderHelper.js';
+import type { IncludeStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';
+import {
+  buildGeneratedIndex,
+  getOrCreateSchemaFromGeneratedDatabase,
+  getOrCreateTableFromGeneratedSchema,
+} from '../../../../../../../../graph/helpers/STO_Internal_Relational_Helper.js';
 
 const _schemaExists = (
   db: Database,
@@ -169,32 +179,80 @@ const schemaExists = (database: Database, _schema: string): boolean =>
   DEFAULT_DATABASE_SCHEMA_NAME === _schema ||
   _schemaExists(database, _schema, new Set<Database>());
 
-export const V1_findSchema = (database: Database, _schema: string): void =>
-  assertTrue(
-    schemaExists(database, _schema),
+const V1_findSchemaInGeneratedDatabase = (
+  schemaName: string,
+  db: INTERNAL__LakehouseGeneratedDatabase,
+): Schema | undefined => {
+  let schema = db.schemas.find((s) => s.name === schemaName);
+  if (!schema) {
+    schema = new Schema(schemaName, db);
+    db.schemas.push(schema);
+  }
+  db.schemas.push(schema);
+  return schema;
+};
+
+export const V1_findSchema = (database: Database, _schema: string): void => {
+  if (schemaExists(database, _schema)) {
+    return;
+  } else if (database instanceof INTERNAL__LakehouseGeneratedDatabase) {
+    V1_findSchemaInGeneratedDatabase(_schema, database);
+    return;
+  }
+  throw new AssertionError(
     `Can't find schema '${_schema}' in database '${database}'`,
   );
+};
+
+function findRelationInSchema(
+  schema: Schema,
+  tableName: string,
+): Relation | undefined {
+  let relation: Relation | undefined = schema.tables.find(
+    (table) => table.name === tableName,
+  );
+  if (!relation) {
+    relation = schema.views.find((view) => view.name === tableName);
+  }
+  if (!relation) {
+    relation = schema.tabularFunctions.find(
+      (tabularFunction) => tabularFunction.name === tableName,
+    );
+  }
+  return relation;
+}
+
+export const V1_initInternalLakehouseGeneratedDatabase = (
+  includedStore: IncludeStore,
+  owner: Database,
+): INTERNAL__LakehouseGeneratedDatabase => {
+  const generatedDatabase = new INTERNAL__LakehouseGeneratedDatabase(
+    includedStore.packageableElementPointer.value,
+    owner,
+  );
+  const defaultSchema = new Schema(
+    DEFAULT_DATABASE_SCHEMA_NAME,
+    generatedDatabase,
+  );
+  generatedDatabase.schemas.push(defaultSchema);
+  includedStore.generatedDatabase = generatedDatabase;
+  return generatedDatabase;
+};
 
 export const V1_findRelation = (
   database: Database,
   schemaName: string,
   tableName: string,
 ): Relation | undefined => {
+  if (database instanceof INTERNAL__LakehouseGeneratedDatabase) {
+    const schema = getOrCreateSchemaFromGeneratedDatabase(schemaName, database);
+    return getOrCreateTableFromGeneratedSchema(tableName, schema);
+  }
   const relations: Relation[] = [];
   getAllIncludedDatabases(database).forEach((db) => {
     const schema = db.schemas.find((_schema) => _schema.name === schemaName);
     if (schema) {
-      let relation: Relation | undefined = schema.tables.find(
-        (table) => table.name === tableName,
-      );
-      if (!relation) {
-        relation = schema.views.find((view) => view.name === tableName);
-      }
-      if (!relation) {
-        relation = schema.tabularFunctions.find(
-          (tabularFunction) => tabularFunction.name === tableName,
-        );
-      }
+      const relation = findRelationInSchema(schema, tableName);
       if (relation) {
         relations.push(relation);
       }
@@ -257,6 +315,8 @@ export const V1_buildRelationalOperationElement = (
   context: V1_GraphBuilderContext,
   tableAliasIndex: Map<string, TableAlias>,
   selfJoinTargets: TableAliasColumn[],
+  generatedDbs?: Map<string, INTERNAL__LakehouseGeneratedDatabase> | undefined,
+  allowImplicitToGeneratedDatabase?: boolean | undefined,
 ): RelationalOperationElement => {
   if (operationalElement instanceof V1_TableAliasColumn) {
     if (operationalElement.table.table === SELF_JOIN_TABLE_NAME) {
@@ -265,7 +325,11 @@ export const V1_buildRelationalOperationElement = (
       selfJoinTargets.push(selfJoin);
       return selfJoin;
     }
-    const relation = context.resolveRelation(operationalElement.table);
+    const relation = context.resolveRelation(
+      operationalElement.table,
+      generatedDbs,
+      allowImplicitToGeneratedDatabase,
+    );
     const aliasName = `${operationalElement.table.schema}.${operationalElement.tableAlias}`;
     if (!tableAliasIndex.has(aliasName)) {
       const tAlias = new TableAlias();
@@ -274,7 +338,7 @@ export const V1_buildRelationalOperationElement = (
       tableAliasIndex.set(aliasName, tAlias);
     }
     const columnReference = ColumnImplicitReference.create(
-      context.resolveDatabase(operationalElement.table.database),
+      context.resolveDatabase(operationalElement.table.database, generatedDbs),
       getColumn(relation.value, operationalElement.column),
     );
     const tableAliasColumn = new TableAliasColumn();
@@ -297,6 +361,7 @@ export const V1_buildRelationalOperationElement = (
           context,
           new Map<string, TableAlias>(),
           selfJoinTargets,
+          generatedDbs,
         );
     }
     return elementWithJoins;
@@ -308,6 +373,7 @@ export const V1_buildRelationalOperationElement = (
         context,
         tableAliasIndex,
         selfJoinTargets,
+        generatedDbs,
       ),
     );
     return dynFunc;
@@ -320,6 +386,7 @@ export const V1_buildRelationalOperationElement = (
           context,
           tableAliasIndex,
           selfJoinTargets,
+          generatedDbs,
         ),
       );
     }
@@ -334,6 +401,7 @@ export const V1_buildRelationalOperationElement = (
             context,
             tableAliasIndex,
             selfJoinTargets,
+            generatedDbs,
           ),
         );
       }
@@ -649,6 +717,7 @@ export const V1_buildDatabaseJoin = (
       context,
       tableAliasIndex,
       selfJoinTargets,
+      buildGeneratedIndex(database),
     ),
   );
   const aliases = Array.from(tableAliasIndex.values());
@@ -687,6 +756,9 @@ export const V1_buildDatabaseJoin = (
         col = existingRelationalElement.value.columns.find(
           (c) => c instanceof Column && c.name === columnName,
         ) as Column | undefined;
+      } else if (database instanceof INTERNAL__LakehouseGeneratedDatabase) {
+        col = new Column();
+        col.name = columnName as string;
       }
       assertNonNullable(col, `Can't find column '${columnName}' in the table`);
       // NOTE: this should be `implicit` because we do some inferencing
