@@ -28,6 +28,7 @@ import {
   mockReleaseSDLCDataProduct,
   mockSnapshotSDLCDataProduct,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
+import type { LegendMarketplaceApplicationConfigurationData } from '../../application/LegendMarketplaceApplicationConfig.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -47,8 +48,13 @@ jest.mock('swiper/modules', () => ({
   Autoplay: ({}) => <div></div>,
 }));
 
-const setupTestComponent = async (query?: string) => {
-  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+const setupTestComponent = async (
+  query?: string,
+  extraConfigData?: Partial<LegendMarketplaceApplicationConfigurationData>,
+) => {
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
+    extraConfigData,
+  });
   jest
     .spyOn(
       MOCK__baseStore.applicationStore.navigationService.navigator,
@@ -102,6 +108,11 @@ const setupTestComponent = async (query?: string) => {
       );
     },
   );
+  createSpy(
+    MOCK__baseStore.depotServerClient,
+    'getEntitiesSummaryByClassifier',
+  ).mockResolvedValue([]);
+
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     MOCK__baseStore,
     `/dataProduct/results?query=${query ?? 'data'}`,
@@ -122,10 +133,6 @@ test('renders search box pre-filled based on URL query param', async () => {
 
 test('displays cards for SDLC data products', async () => {
   await setupTestComponent();
-
-  // Turn on prod-parallel filters
-  const prodParallelFilterButton = screen.getByText('Prod-Parallel');
-  fireEvent.click(prodParallelFilterButton);
 
   // Check for SLDC data products
   await screen.findAllByText('SDLC Release Data Product');
@@ -193,7 +200,7 @@ test('filters data products by name based on query param', async () => {
   expect(screen.queryByText('SDLC_SNAPSHOT_DATAPRODUCT')).toBeNull();
 });
 
-test('Sort/Filter Panel correctly sorts and filters data products', async () => {
+test('Sort dropdown correctly sorts and filters data products', async () => {
   await setupTestComponent();
 
   // Check sort option displays
@@ -201,29 +208,35 @@ test('Sort/Filter Panel correctly sorts and filters data products', async () => 
   fireEvent.mouseDown(sortDropdown);
   screen.getByText('Name A-Z');
   screen.getByText('Name Z-A');
+});
 
-  // Check filtering type
-  screen.getByText('Filters');
-  screen.getByText('Deploy Type');
-  const sdlcFilterButton = screen.getByText('SDLC Deployed');
-  screen.getByText('Sandbox Deployed');
-  screen.getAllByText('SDLC Release Data Product');
-  fireEvent.click(sdlcFilterButton);
+test('Production environment only displays production data products', async () => {
+  await setupTestComponent(undefined, { env: 'prod' });
+
+  expect(await screen.findAllByText('SDLC Release Data Product')).toHaveLength(
+    2,
+  );
+  expect(screen.queryByText('SDLC_SNAPSHOT_DATAPRODUCT')).toBeNull();
+});
+
+test('Production-parallel environment only displays production-parallel data products', async () => {
+  await setupTestComponent(undefined, { env: 'prod-par' });
+
+  expect(await screen.findAllByText('SDLC_SNAPSHOT_DATAPRODUCT')).toHaveLength(
+    2,
+  );
   expect(screen.queryByText('SDLC Release Data Product')).toBeNull();
-  fireEvent.click(sdlcFilterButton);
+});
 
-  // Check filtering by deploy environment
-  screen.getByText('Deploy Environment');
-  screen.getByText('Dev');
-  const prodParallelFilterButton = screen.getByText('Prod-Parallel');
-  const prodFilterButton = screen.getByText('Prod');
+test('Lower environments display all data products', async () => {
+  await setupTestComponent();
 
-  fireEvent.click(prodFilterButton);
-  expect(screen.queryByText('SDLC Release Data Product')).toBeNull();
-
-  fireEvent.click(prodParallelFilterButton);
-  expect(screen.queryByText('SDLC Release Data Product')).toBeNull();
-  expect(screen.queryByText('SDLC Snapshot Data Product')).toBeNull();
+  expect(await screen.findAllByText('SDLC Release Data Product')).toHaveLength(
+    2,
+  );
+  expect(await screen.findAllByText('SDLC_SNAPSHOT_DATAPRODUCT')).toHaveLength(
+    2,
+  );
 });
 
 test('Clicking on SDLC data product card navigates to data product viewer page', async () => {
