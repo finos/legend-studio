@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
+import { makeObservable, observable } from 'mobx';
+import type {
+  LegendMarketplaceApplicationStore,
+  LegendMarketplaceBaseStore,
+} from '../../LegendMarketplaceBaseStore.js';
 import { ActionState } from '@finos/legend-shared';
 import { EntitlementsDashboardState } from './EntitlementsDashboardState.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
@@ -23,21 +27,34 @@ export const TEST_USER = undefined;
 export const TEST_USER2 = undefined;
 
 export class LakehouseEntitlementsStore {
+  readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly applicationStore: LegendMarketplaceApplicationStore;
-  readonly lakehouseServerClient: LakehouseContractServerClient;
+  readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly directoryUrl: string | undefined;
   readonly applicationIdUrl: string | undefined;
   readonly directoryCallBack: ((user: string) => void) | undefined;
   readonly applicationCallBack: ((applicationId: string) => void) | undefined;
+  readonly contractIdToTargetUsersMap: Map<string, string[]> = new Map<
+    string,
+    string[]
+  >();
+  readonly contractIdToAssigneesMap: Map<string, string[]> = new Map<
+    string,
+    string[]
+  >();
   currentViewerFetchStatus = ActionState.create();
   dashboardViewer: EntitlementsDashboardState;
 
-  constructor(
-    applicationStore: LegendMarketplaceApplicationStore,
-    lakehouseServerClient: LakehouseContractServerClient,
-  ) {
-    this.applicationStore = applicationStore;
-    this.lakehouseServerClient = lakehouseServerClient;
+  constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
+    makeObservable(this, {
+      contractIdToTargetUsersMap: observable,
+      contractIdToAssigneesMap: observable,
+    });
+
+    this.marketplaceBaseStore = marketplaceBaseStore;
+    this.applicationStore = marketplaceBaseStore.applicationStore;
+    this.lakehouseContractServerClient =
+      marketplaceBaseStore.lakehouseContractServerClient;
     this.directoryUrl =
       this.applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl;
     this.applicationIdUrl =

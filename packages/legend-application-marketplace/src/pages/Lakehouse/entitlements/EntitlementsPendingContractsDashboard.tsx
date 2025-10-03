@@ -41,7 +41,6 @@ import { useEffect, useMemo, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { assertErrorThrown, startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { InfoCircleIcon } from '@finos/legend-art';
@@ -58,16 +57,26 @@ import {
   generateLakehouseTaskPath,
   generateLakehouseDataProductPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
+import type { LakehouseEntitlementsStore } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
 
 const AssigneesCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
   pendingContractRecords: V1_UserPendingContractsRecord[] | undefined;
-  marketplaceBaseStore: LegendMarketplaceBaseStore;
+  entitlementsStore: LakehouseEntitlementsStore;
   token: string | undefined;
 }): React.ReactNode => {
-  const { dataContract, pendingContractRecords, marketplaceBaseStore, token } =
+  const { dataContract, pendingContractRecords, entitlementsStore, token } =
     props;
-  const [assignees, setAssignees] = useState<string[]>([]);
+  const pendingContractRecord = pendingContractRecords?.find(
+    (record) => record.contractId === dataContract?.guid,
+  );
+  const [assignees, setAssignees] = useState<string[]>(
+    pendingContractRecord?.pendingTaskWithAssignees.assignees ??
+      entitlementsStore.contractIdToAssigneesMap.get(
+        dataContract?.guid ?? '',
+      ) ??
+      [],
+  );
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -76,7 +85,7 @@ const AssigneesCellRenderer = (props: {
         setLoading(true);
         try {
           const rawTasks =
-            await marketplaceBaseStore.lakehouseContractServerClient.getContractTasks(
+            await entitlementsStore.lakehouseContractServerClient.getContractTasks(
               dataContract.guid,
               token,
             );
@@ -88,9 +97,13 @@ const AssigneesCellRenderer = (props: {
             new Set<string>(pendingTasks.map((task) => task.assignees).flat()),
           );
           setAssignees(pendingAssignees);
+          entitlementsStore.contractIdToAssigneesMap.set(
+            dataContract.guid,
+            pendingAssignees,
+          );
         } catch (error) {
           assertErrorThrown(error);
-          marketplaceBaseStore.applicationStore.notificationService.notifyError(
+          entitlementsStore.applicationStore.notificationService.notifyError(
             `Error fetching contact assignees: ${error.message}`,
           );
         } finally {
@@ -99,22 +112,17 @@ const AssigneesCellRenderer = (props: {
       }
     };
 
-    const pendingContractRecord = pendingContractRecords?.find(
-      (record) => record.contractId === dataContract?.guid,
-    );
-
-    if (pendingContractRecord) {
-      setAssignees(pendingContractRecord.pendingTaskWithAssignees.assignees);
-    } else {
+    if (assignees.length === 0) {
       // eslint-disable-next-line no-void
       void fetchAssignees();
     }
   }, [
+    assignees.length,
     dataContract,
-    marketplaceBaseStore.lakehouseContractServerClient,
-    marketplaceBaseStore.applicationStore.notificationService,
+    entitlementsStore.applicationStore.notificationService,
+    entitlementsStore.contractIdToAssigneesMap,
+    entitlementsStore.lakehouseContractServerClient,
     token,
-    pendingContractRecords,
   ]);
 
   return loading ? (
@@ -122,79 +130,90 @@ const AssigneesCellRenderer = (props: {
   ) : assignees.length > 0 ? (
     <MultiUserRenderer
       userIds={assignees}
-      applicationStore={marketplaceBaseStore.applicationStore}
-      userSearchService={marketplaceBaseStore.userSearchService}
-      singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
-    />
-  ) : (
-    <>Unknown</>
-  );
-};
-
-const TargetUserCellRenderer = (props: {
-  dataContract: V1_LiteDataContract | undefined;
-  marketplaceBaseStore: LegendMarketplaceBaseStore;
-  token: string | undefined;
-}): React.ReactNode => {
-  const { dataContract, marketplaceBaseStore, token } = props;
-  const [targetUsers, setTargetUsers] = useState<string[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    const fetchTargetUsers = async () => {
-      if (dataContract) {
-        setLoading(true);
-        try {
-          // We try to get the target users from the associated tasks first, since the
-          // tasks are what drive the timeline view. If there are no associated tasks,
-          // then we use the contract consumer.
-          const rawTasks =
-            await marketplaceBaseStore.lakehouseContractServerClient.getContractTasks(
-              dataContract.guid,
-              token,
-            );
-          const tasks = V1_deserializeTaskResponse(rawTasks);
-          const taskTargetUsers = Array.from(
-            new Set<string>(tasks.map((task) => task.rec.consumer)),
-          );
-          const _targetUsers = taskTargetUsers.length
-            ? taskTargetUsers
-            : dataContract.consumer instanceof V1_AdhocTeam
-              ? dataContract.consumer.users.map((user) => user.name)
-              : [];
-          setTargetUsers(_targetUsers);
-        } catch (error) {
-          assertErrorThrown(error);
-          marketplaceBaseStore.applicationStore.notificationService.notifyError(
-            `Error fetching contact target users: ${error.message}`,
-          );
-        } finally {
-          setLoading(false);
-        }
+      applicationStore={entitlementsStore.applicationStore}
+      userSearchService={
+        entitlementsStore.marketplaceBaseStore.userSearchService
       }
-    };
-    // eslint-disable-next-line no-void
-    void fetchTargetUsers();
-  }, [
-    dataContract,
-    marketplaceBaseStore.lakehouseContractServerClient,
-    marketplaceBaseStore.applicationStore.notificationService,
-    token,
-  ]);
-
-  return loading ? (
-    <CircularProgress size={20} />
-  ) : targetUsers.length > 0 ? (
-    <MultiUserRenderer
-      userIds={targetUsers}
-      applicationStore={marketplaceBaseStore.applicationStore}
-      userSearchService={marketplaceBaseStore.userSearchService}
       singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
   ) : (
     <>Unknown</>
   );
 };
+
+const TargetUserCellRenderer = observer(
+  (props: {
+    dataContract: V1_LiteDataContract | undefined;
+    entitlementsStore: LakehouseEntitlementsStore;
+    token: string | undefined;
+  }): React.ReactNode => {
+    const { dataContract, entitlementsStore, token } = props;
+    const [targetUsers, setTargetUsers] = useState<string[]>(
+      entitlementsStore.contractIdToTargetUsersMap.get(
+        dataContract?.guid ?? '',
+      ) ?? [],
+    );
+    const [loading, setLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+      const fetchTargetUsers = async () => {
+        if (dataContract) {
+          setLoading(true);
+          try {
+            // We try to get the target users from the associated tasks first, since the
+            // tasks are what drive the timeline view. If there are no associated tasks,
+            // then we use the contract consumer.
+            const rawTasks =
+              await entitlementsStore.lakehouseContractServerClient.getContractTasks(
+                dataContract.guid,
+                token,
+              );
+            const tasks = V1_deserializeTaskResponse(rawTasks);
+            const taskTargetUsers = Array.from(
+              new Set<string>(tasks.map((task) => task.rec.consumer)),
+            );
+            const _targetUsers = taskTargetUsers.length
+              ? taskTargetUsers
+              : dataContract.consumer instanceof V1_AdhocTeam
+                ? dataContract.consumer.users.map((user) => user.name)
+                : [];
+            setTargetUsers(_targetUsers);
+            entitlementsStore.contractIdToTargetUsersMap.set(
+              dataContract.guid,
+              _targetUsers,
+            );
+          } catch (error) {
+            assertErrorThrown(error);
+            entitlementsStore.applicationStore.notificationService.notifyError(
+              `Error fetching contact target users: ${error.message}`,
+            );
+          } finally {
+            setLoading(false);
+          }
+        }
+      };
+      if (targetUsers.length === 0) {
+        // eslint-disable-next-line no-void
+        void fetchTargetUsers();
+      }
+    }, [dataContract, entitlementsStore, targetUsers.length, token]);
+
+    return loading ? (
+      <CircularProgress size={20} />
+    ) : targetUsers.length > 0 ? (
+      <MultiUserRenderer
+        userIds={targetUsers}
+        applicationStore={entitlementsStore.applicationStore}
+        userSearchService={
+          entitlementsStore.marketplaceBaseStore.userSearchService
+        }
+        singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
+      />
+    ) : (
+      <>Unknown</>
+    );
+  },
+);
 
 export const EntitlementsPendingContractsDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
@@ -304,7 +323,7 @@ export const EntitlementsPendingContractsDashboard = observer(
           ) => (
             <TargetUserCellRenderer
               dataContract={params.data}
-              marketplaceBaseStore={marketplaceBaseStore}
+              entitlementsStore={dashboardState.lakehouseEntitlementsStore}
               token={auth.user?.access_token}
             />
           ),
@@ -371,7 +390,7 @@ export const EntitlementsPendingContractsDashboard = observer(
             <AssigneesCellRenderer
               dataContract={params.data}
               pendingContractRecords={pendingContracts}
-              marketplaceBaseStore={marketplaceBaseStore}
+              entitlementsStore={dashboardState.lakehouseEntitlementsStore}
               token={auth.user?.access_token}
             />
           ),
@@ -384,9 +403,9 @@ export const EntitlementsPendingContractsDashboard = observer(
       ],
       [
         auth.user?.access_token,
-        dashboardState.lakehouseEntitlementsStore.applicationStore
-          .pluginManager,
-        marketplaceBaseStore,
+        dashboardState.lakehouseEntitlementsStore,
+        marketplaceBaseStore.applicationStore,
+        marketplaceBaseStore.userSearchService,
         pendingContracts,
       ],
     );

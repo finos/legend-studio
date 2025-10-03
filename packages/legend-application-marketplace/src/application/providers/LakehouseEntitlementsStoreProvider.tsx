@@ -18,10 +18,7 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LakehouseEntitlementsStore } from '../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
-import {
-  useLegendMarketplaceApplicationStore,
-  useLegendMarketplaceBaseStore,
-} from './LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from './LegendMarketplaceFrameworkProvider.js';
 
 const LakehouseEntitlementsStoreContext = createContext<
   LakehouseEntitlementsStore | undefined
@@ -30,15 +27,9 @@ const LakehouseEntitlementsStoreContext = createContext<
 export const LakehouseEntitlementsStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useLegendMarketplaceApplicationStore();
   const baseStore = useLegendMarketplaceBaseStore();
-  const lakehouseServerClient = guaranteeNonNullable(
-    baseStore.lakehouseContractServerClient,
-    'lakehouse server client required to render',
-  );
   const store = useLocalObservable(
-    () =>
-      new LakehouseEntitlementsStore(applicationStore, lakehouseServerClient),
+    () => new LakehouseEntitlementsStore(baseStore),
   );
   return (
     <LakehouseEntitlementsStoreContext.Provider value={store}>

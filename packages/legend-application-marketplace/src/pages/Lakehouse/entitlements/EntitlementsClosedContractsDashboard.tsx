@@ -109,7 +109,7 @@ export const EntitlementsClosedContractsDashboard = observer(
         ][] = await Promise.all(
           closedContracts.map(async (contract) => {
             const rawUserStatus =
-              await dashboardState.lakehouseEntitlementsStore.lakehouseServerClient.getContractUserStatus(
+              await dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient.getContractUserStatus(
                 contract.guid,
                 dashboardState.lakehouseEntitlementsStore.applicationStore
                   .identityService.currentUser,
