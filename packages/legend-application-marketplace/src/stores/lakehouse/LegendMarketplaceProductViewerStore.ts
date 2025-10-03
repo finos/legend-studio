@@ -333,6 +333,8 @@ export class LegendMarketplaceProductViewerStore {
           dataProductId: dataProductId,
           deploymentId: deploymentId,
           name: entitlementsDataProductDetails.dataProduct.name,
+          environmentClassification:
+            entitlementsDataProductDetails.lakehouseEnvironment?.type,
         },
         undefined,
       );

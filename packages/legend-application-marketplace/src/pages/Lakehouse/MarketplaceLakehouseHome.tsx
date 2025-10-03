@@ -51,6 +51,7 @@ import {
   LegendMarketplaceTelemetryHelper,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { V1_SdlcDeploymentDataProductOrigin } from '@finos/legend-graph';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -136,6 +137,7 @@ export const MarketplaceLakehouseHome = observer(() => {
           dataProductId: details.id,
           deploymentId: details.deploymentId,
           name: details.dataProduct.name,
+          environmentClassification: productCardState.environmentClassification,
         },
         LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
       );
@@ -164,6 +166,10 @@ export const MarketplaceLakehouseHome = observer(() => {
   const newsletterNavigation = (): void => {
     applicationStore.navigationService.navigator.visitAddress(
       applicationStore.config.options.newsletterUrl,
+    );
+    applicationStore.telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_SUBSCRIBE_TO_NEWSLETTER,
+      {},
     );
   };
 
