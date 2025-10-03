@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.20
+
+### Patch Changes
+
+- [#4512](https://github.com/finos/legend-studio/pull/4512) [`09a3380`](https://github.com/finos/legend-studio/commit/09a33808a1f1282635b5a87d9a9ed504c3b5d754) ([@yash0024](https://github.com/yash0024)) - Add marketplace analytics for clicking header tabs and home page buttons
+
 ## 0.1.19
 
 ### Patch Changes
