@@ -37,7 +37,7 @@ import {
   Switch,
   Tooltip,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
@@ -199,33 +199,43 @@ const TargetUserCellRenderer = (props: {
 export const EntitlementsPendingContractsDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
-    const { pendingContracts: pendingContractRecords, allContracts } =
-      dashboardState;
-
-    const pendingContracts =
-      allContracts?.filter((contract) =>
-        pendingContractRecords?.some(
-          (pendingContract) => pendingContract.contractId === contract.guid,
-        ),
-      ) ?? [];
-    const pendingContractsForOthers =
-      allContracts?.filter(
-        (contract) =>
-          contract.createdBy ===
-            dashboardState.lakehouseEntitlementsStore.applicationStore
-              .identityService.currentUser &&
-          !isContractInTerminalState(contract) &&
-          !pendingContracts.includes(contract),
-      ) ?? [];
-
+    const { pendingContracts, allContracts } = dashboardState;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
+    const auth = useAuth();
+
+    const myPendingContracts = useMemo(
+      () =>
+        allContracts?.filter((contract) =>
+          pendingContracts?.some(
+            (pendingContract) => pendingContract.contractId === contract.guid,
+          ),
+        ) ?? [],
+      [allContracts, pendingContracts],
+    );
+    const pendingContractsForOthers = useMemo(
+      () =>
+        allContracts?.filter(
+          (contract) =>
+            contract.createdBy ===
+              dashboardState.lakehouseEntitlementsStore.applicationStore
+                .identityService.currentUser &&
+            !isContractInTerminalState(contract) &&
+            !myPendingContracts.includes(contract),
+        ) ?? [],
+      [
+        allContracts,
+        dashboardState.lakehouseEntitlementsStore.applicationStore
+          .identityService.currentUser,
+        myPendingContracts,
+      ],
+    );
+
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
     >();
     const [showForOthers, setShowForOthers] = useState<boolean>(
-      pendingContracts.length === 0 && pendingContractsForOthers.length > 0,
+      myPendingContracts.length === 0 && pendingContractsForOthers.length > 0,
     );
-    const auth = useAuth();
 
     const handleCellClicked = (
       event: DataGridCellClickedEvent<V1_LiteDataContract>,
@@ -355,7 +365,7 @@ export const EntitlementsPendingContractsDashboard = observer(
         ) => (
           <AssigneesCellRenderer
             dataContract={params.data}
-            pendingContractRecords={pendingContractRecords}
+            pendingContractRecords={pendingContracts}
             marketplaceBaseStore={marketplaceBaseStore}
             token={auth.user?.access_token}
           />
@@ -367,6 +377,14 @@ export const EntitlementsPendingContractsDashboard = observer(
         valueGetter: (p) => p.data?.guid,
       },
     ];
+
+    const gridRowData = useMemo(
+      () =>
+        showForOthers
+          ? [...myPendingContracts, ...pendingContractsForOthers]
+          : myPendingContracts,
+      [showForOthers, myPendingContracts, pendingContractsForOthers],
+    );
 
     return (
       <Box className="marketplace-lakehouse-entitlements__pending-contracts">
@@ -383,11 +401,7 @@ export const EntitlementsPendingContractsDashboard = observer(
         </Box>
         <Box className="marketplace-lakehouse-entitlements__pending-contracts__grid ag-theme-balham">
           <DataGrid
-            rowData={
-              showForOthers
-                ? [...pendingContracts, ...pendingContractsForOthers]
-                : pendingContracts
-            }
+            rowData={gridRowData}
             onRowDataUpdated={(params) => {
               params.api.refreshCells({ force: true });
             }}
