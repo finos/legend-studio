@@ -22,6 +22,7 @@ import type {
 import { ActionState } from '@finos/legend-shared';
 import { EntitlementsDashboardState } from './EntitlementsDashboardState.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import type { V1_EnrichedUserApprovalStatus } from '@finos/legend-graph';
 
 export const TEST_USER = undefined;
 export const TEST_USER2 = undefined;
@@ -42,6 +43,10 @@ export class LakehouseEntitlementsStore {
     string,
     string[]
   >();
+  readonly contractIdToUserStatusMap: Map<
+    string,
+    V1_EnrichedUserApprovalStatus
+  > = new Map<string, V1_EnrichedUserApprovalStatus>();
   currentViewerFetchStatus = ActionState.create();
   dashboardViewer: EntitlementsDashboardState;
 
@@ -49,6 +54,7 @@ export class LakehouseEntitlementsStore {
     makeObservable(this, {
       contractIdToTargetUsersMap: observable,
       contractIdToAssigneesMap: observable,
+      contractIdToUserStatusMap: observable,
     });
 
     this.marketplaceBaseStore = marketplaceBaseStore;
