@@ -298,7 +298,7 @@ export const EntitlementsClosedContractsDashboard = observer(
             <UserAccessStatusCellRenderer
               dataContract={params.data}
               entitlementsStore={dashboardState.lakehouseEntitlementsStore}
-              token={auth?.user?.access_token}
+              token={auth.user?.access_token}
             />
           ),
         },
@@ -313,7 +313,7 @@ export const EntitlementsClosedContractsDashboard = observer(
         },
       ],
       [
-        auth?.user?.access_token,
+        auth.user?.access_token,
         dashboardState.lakehouseEntitlementsStore,
         marketplaceBaseStore.applicationStore,
         marketplaceBaseStore.userSearchService,
