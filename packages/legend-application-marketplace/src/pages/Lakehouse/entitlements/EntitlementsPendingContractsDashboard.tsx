@@ -249,134 +249,147 @@ export const EntitlementsPendingContractsDashboard = observer(
       }
     };
 
-    const defaultColDef: DataGridColumnDefinition<V1_LiteDataContract> = {
-      minWidth: 50,
-      sortable: true,
-      resizable: true,
-      flex: 1,
-    };
+    const defaultColDef: DataGridColumnDefinition<V1_LiteDataContract> =
+      useMemo(
+        () => ({
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          flex: 1,
+        }),
+        [],
+      );
 
-    const colDefs: DataGridColumnDefinition<V1_LiteDataContract>[] = [
-      {
-        colId: 'consumerType',
-        headerName: 'Consumer Type',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-        ) => {
-          const consumer = params.data?.consumer;
-          const typeName = consumer
-            ? getOrganizationalScopeTypeName(
-                consumer,
-                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
-              )
-            : undefined;
-          const typeDetails = consumer
-            ? getOrganizationalScopeTypeDetails(
-                consumer,
-                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
-              )
-            : undefined;
-          return (
-            <>
-              {typeName ?? 'Unknown'}
-              {typeDetails !== undefined && (
-                <Tooltip
-                  className="marketplace-lakehouse-entitlements__grid__consumer-type__tooltip__icon"
-                  title={typeDetails}
-                >
-                  <InfoCircleIcon />
-                </Tooltip>
-              )}
-            </>
-          );
+    const colDefs: DataGridColumnDefinition<V1_LiteDataContract>[] = useMemo(
+      () => [
+        {
+          colId: 'consumerType',
+          headerName: 'Consumer Type',
+          cellRenderer: (
+            params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+          ) => {
+            const consumer = params.data?.consumer;
+            const typeName = consumer
+              ? getOrganizationalScopeTypeName(
+                  consumer,
+                  dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+                )
+              : undefined;
+            const typeDetails = consumer
+              ? getOrganizationalScopeTypeDetails(
+                  consumer,
+                  dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+                )
+              : undefined;
+            return (
+              <>
+                {typeName ?? 'Unknown'}
+                {typeDetails !== undefined && (
+                  <Tooltip
+                    className="marketplace-lakehouse-entitlements__grid__consumer-type__tooltip__icon"
+                    title={typeDetails}
+                  >
+                    <InfoCircleIcon />
+                  </Tooltip>
+                )}
+              </>
+            );
+          },
         },
-      },
-      {
-        headerName: 'Target User(s)',
-        colId: 'targetUser',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_LiteDataContract>,
-        ) => (
-          <TargetUserCellRenderer
-            dataContract={params.data}
-            marketplaceBaseStore={marketplaceBaseStore}
-            token={auth.user?.access_token}
-          />
-        ),
-      },
-      {
-        headerName: 'Requester',
-        colId: 'requester',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_LiteDataContract>,
-        ) => {
-          const requester = params.data?.createdBy;
-          return requester ? (
-            <UserRenderer
-              userId={requester}
-              applicationStore={marketplaceBaseStore.applicationStore}
-              userSearchService={marketplaceBaseStore.userSearchService}
-              className="marketplace-lakehouse-entitlements__grid__user-display"
+        {
+          headerName: 'Target User(s)',
+          colId: 'targetUser',
+          cellRenderer: (
+            params: DataGridCellRendererParams<V1_LiteDataContract>,
+          ) => (
+            <TargetUserCellRenderer
+              dataContract={params.data}
+              marketplaceBaseStore={marketplaceBaseStore}
+              token={auth.user?.access_token}
             />
-          ) : (
-            <>Unknown</>
-          );
+          ),
         },
-      },
-      {
-        headerName: 'Target Data Product',
-        valueGetter: (params) => {
-          return params.data?.resourceId ?? 'Unknown';
+        {
+          headerName: 'Requester',
+          colId: 'requester',
+          cellRenderer: (
+            params: DataGridCellRendererParams<V1_LiteDataContract>,
+          ) => {
+            const requester = params.data?.createdBy;
+            return requester ? (
+              <UserRenderer
+                userId={requester}
+                applicationStore={marketplaceBaseStore.applicationStore}
+                userSearchService={marketplaceBaseStore.userSearchService}
+                className="marketplace-lakehouse-entitlements__grid__user-display"
+              />
+            ) : (
+              <>Unknown</>
+            );
+          },
         },
-      },
-      {
-        headerName: 'Target Access Point Group',
-        valueGetter: (params) => {
-          const accessPointGroup =
-            params.data?.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
-              ? params.data.accessPointGroup
-              : `${params.data?.accessPointGroup ?? 'Unknown'} (${params.data?.resourceType ?? 'Unknown Type'})`;
-          return accessPointGroup ?? 'Unknown';
+        {
+          headerName: 'Target Data Product',
+          valueGetter: (params) => {
+            return params.data?.resourceId ?? 'Unknown';
+          },
         },
-      },
-      {
-        headerName: 'State',
-        valueGetter: (params) => {
-          const state = params.data?.state;
-          switch (state) {
-            case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
-              return 'Data Owner Approval';
-            case V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL:
-              return 'Privilege Manager Approval';
-            default:
-              return state ? startCase(state) : 'Unknown';
-          }
+        {
+          headerName: 'Target Access Point Group',
+          valueGetter: (params) => {
+            const accessPointGroup =
+              params.data?.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
+                ? params.data.accessPointGroup
+                : `${params.data?.accessPointGroup ?? 'Unknown'} (${params.data?.resourceType ?? 'Unknown Type'})`;
+            return accessPointGroup ?? 'Unknown';
+          },
         },
-      },
-      {
-        headerName: 'Business Justification',
-        valueGetter: (p) => p.data?.description,
-      },
-      {
-        headerName: 'Assignees',
-        colId: 'assignees',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_LiteDataContract>,
-        ) => (
-          <AssigneesCellRenderer
-            dataContract={params.data}
-            pendingContractRecords={pendingContracts}
-            marketplaceBaseStore={marketplaceBaseStore}
-            token={auth.user?.access_token}
-          />
-        ),
-      },
-      {
-        hide: true,
-        headerName: 'Contract ID',
-        valueGetter: (p) => p.data?.guid,
-      },
-    ];
+        {
+          headerName: 'State',
+          valueGetter: (params) => {
+            const state = params.data?.state;
+            switch (state) {
+              case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
+                return 'Data Owner Approval';
+              case V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL:
+                return 'Privilege Manager Approval';
+              default:
+                return state ? startCase(state) : 'Unknown';
+            }
+          },
+        },
+        {
+          headerName: 'Business Justification',
+          valueGetter: (p) => p.data?.description,
+        },
+        {
+          headerName: 'Assignees',
+          colId: 'assignees',
+          cellRenderer: (
+            params: DataGridCellRendererParams<V1_LiteDataContract>,
+          ) => (
+            <AssigneesCellRenderer
+              dataContract={params.data}
+              pendingContractRecords={pendingContracts}
+              marketplaceBaseStore={marketplaceBaseStore}
+              token={auth.user?.access_token}
+            />
+          ),
+        },
+        {
+          hide: true,
+          headerName: 'Contract ID',
+          valueGetter: (p) => p.data?.guid,
+        },
+      ],
+      [
+        auth.user?.access_token,
+        dashboardState.lakehouseEntitlementsStore.applicationStore
+          .pluginManager,
+        marketplaceBaseStore,
+        pendingContracts,
+      ],
+    );
 
     const gridRowData = useMemo(
       () =>
