@@ -74,11 +74,11 @@ import {
   V1_EntitlementsDataProduct,
   V1_EntitlementsDataProductDetails,
   V1_EntitlementsDataProductDetailsResponse,
+  V1_EntitlementsDataProductLite,
   V1_EntitlementsDataProductLiteResponse,
   V1_EntitlementsLakehouseEnvironment,
   V1_SdlcDeploymentDataProductOrigin,
   V1_UnknownDataProductOriginType,
-  type V1_EntitlementsDataProductLite,
 } from '../../../lakehouse/entitlements/V1_EntitlementsDataProduct.js';
 import { V1_stereotypePtrModelSchema } from './V1_CoreSerializationHelper.js';
 
@@ -521,7 +521,7 @@ export const V1_EntitlementsDataProductDetailsModelSchema = createModelSchema(
 );
 
 export const V1_EntitlementsDataProductLiteModelSchema = createModelSchema(
-  V1_EntitlementsDataProductDetails,
+  V1_EntitlementsDataProductLite,
   {
     id: primitive(),
     deploymentId: primitive(),
