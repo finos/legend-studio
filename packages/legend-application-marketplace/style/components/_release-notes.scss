@@ -1,0 +1,88 @@
+/**
+ * Copyright (c) 2025-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.theme__hc-light {
+  .modal {
+    .modal__header {
+      background-color: var(--legend-marketplace-light-blue);
+      color: black;
+      height: 6rem;
+      justify-content: center;
+      flex: auto;
+      display: flex;
+      font-family: 'GS Sans Condensed medium', Arial, sans-serif;
+    }
+
+    .modal__footer {
+      background-color: transparent;
+      flex: auto;
+      display: flex;
+      height: 6rem;
+      padding: 1rem 1.5rem;
+
+      &__close-btn {
+        color: black;
+      }
+
+      &__btn {
+        background: var(--legend-marketplace-light-blue);
+        border-radius: 0.5rem;
+
+        &:hover {
+          background: #ccdaea;
+        }
+      }
+    }
+  }
+
+  .modal__title__label {
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  .app__info {
+    .modal__header {
+      justify-content: space-between;
+    }
+
+    &__entry__value {
+      color: var(--color-legacylight-dark-grey-200);
+    }
+  }
+}
+
+.MuiDialog-container .release-notes__dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &__content__title {
+    font-weight: 500;
+  }
+}
+
+.release-viewer {
+  border-radius: 1rem;
+  padding: 0.5rem;
+
+  &__update__item {
+    align-items: center;
+  }
+}
+
+.MuiDialog-paper {
+  border-radius: 2rem;
+}

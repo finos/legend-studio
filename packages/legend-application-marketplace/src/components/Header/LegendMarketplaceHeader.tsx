@@ -18,7 +18,11 @@ import { clsx } from '@finos/legend-art';
 import { AppBar, Box, Container, Toolbar } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  ReleaseLogManager,
+  ReleaseNotesManager,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js';
 import { matchPath } from '@finos/legend-application/browser';
@@ -108,6 +112,10 @@ const LegendMarketplaceBaseHeader = observer(
       };
     }, []);
 
+    useEffect(() => {
+      applicationStore.releaseNotesService.updateViewedVersion();
+    }, [applicationStore]);
+
     const navigateToHome = (): void => {
       applicationStore.navigationService.navigator.goToLocation(homeUrl);
     };
@@ -146,6 +154,8 @@ const LegendMarketplaceBaseHeader = observer(
             {showIcons && <LegendMarketplaceIconToolbar />}
           </Toolbar>
         </Container>
+        <ReleaseLogManager />
+        <ReleaseNotesManager />
       </AppBar>
     );
   },
