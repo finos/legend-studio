@@ -73,6 +73,19 @@ export class V1_EntitlementsDataProductDetails {
   dataProduct!: V1_EntitlementsDataProduct;
 }
 
+export class V1_EntitlementsDataProductLite {
+  id!: string;
+  deploymentId!: number;
+  title?: string;
+  description?: string;
+  origin?: V1_EntitlementsDataProductOrigin | null;
+  fullPath?: string;
+}
+
 export class V1_EntitlementsDataProductDetailsResponse {
   dataProducts?: V1_EntitlementsDataProductDetails[];
+}
+
+export class V1_EntitlementsDataProductLiteResponse {
+  dataProducts?: V1_EntitlementsDataProductLite[];
 }

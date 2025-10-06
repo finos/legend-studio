@@ -34,17 +34,14 @@ import {
   type LakehouseContractServerClient,
   type IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
+import { VersionedProjectData } from '@finos/legend-server-depot';
 import {
-  DepotScope,
-  VersionedProjectData,
-  type DepotServerClient,
-  type StoredSummaryEntity,
-} from '@finos/legend-server-depot';
-import {
-  CORE_PURE_PATH,
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_EntitlementsDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
+  V1_SdlcDeploymentDataProductOrigin,
+  type V1_EntitlementsDataProductLite,
+  type V1_EntitlementsDataProductLiteResponse,
 } from '@finos/legend-graph';
 import { RawLakehouseConsumerDataCubeSource } from '../../model/LakehouseConsumerDataCubeSource.js';
 
@@ -55,14 +52,13 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   paths: string[] = [];
   environments: string[] = [];
   selectedEnvironment: string | undefined;
-  dataProducts: StoredSummaryEntity[] = [];
+  dataProducts: V1_EntitlementsDataProductLite[] = [];
   dataProductDetails: V1_EntitlementsDataProductDetails | undefined;
   accessPoints: string[] = [];
   dpCoordinates: VersionedProjectData | undefined;
 
   DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 
-  private readonly _depotServerClient: DepotServerClient;
   private readonly _platformServerClient: LakehousePlatformServerClient;
   private readonly _contractServerClient: LakehouseContractServerClient;
   readonly dataProductLoadingState = ActionState.create();
@@ -71,14 +67,12 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   constructor(
     application: LegendDataCubeApplicationStore,
     engine: LegendDataCubeDataCubeEngine,
-    depotServerClient: DepotServerClient,
     platformServerClient: LakehousePlatformServerClient,
     contractServerClient: LakehouseContractServerClient,
     alertService: DataCubeAlertService,
   ) {
     super(application, engine, alertService);
     this._platformServerClient = platformServerClient;
-    this._depotServerClient = depotServerClient;
     this._contractServerClient = contractServerClient;
 
     makeObservable(this, {
@@ -106,7 +100,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.warehouse = warehouse;
   }
 
-  setDataProducts(dataProducts: StoredSummaryEntity[]) {
+  setDataProducts(dataProducts: V1_EntitlementsDataProductLite[]) {
     this.dataProducts = dataProducts;
   }
 
@@ -130,19 +124,14 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.selectedEnvironment = environment;
   }
 
-  *loadDataProducts(): GeneratorFn<void> {
+  *loadDataProducts(access_token?: string): GeneratorFn<void> {
     try {
       this.dataProductLoadingState.inProgress();
-      this.setDataProducts(
-        (yield this._depotServerClient.getEntitiesSummaryByClassifier(
-          CORE_PURE_PATH.DATA_PRODUCT,
-          {
-            scope: DepotScope.RELEASES,
-            latest: true,
-            summary: true,
-          },
-        )) as StoredSummaryEntity[],
-      );
+      const dataProducts =
+        (yield this._contractServerClient.getDataProductsLite(
+          access_token,
+        )) as V1_EntitlementsDataProductLiteResponse;
+      this.setDataProducts(dataProducts.dataProducts ?? []);
       this.dataProductLoadingState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -161,24 +150,22 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
         access_token,
       )) as V1_EntitlementsDataProductDetailsResponse;
     if (dataProductResponse.dataProducts) {
-      const dataProduct = dataProductResponse.dataProducts
-        .filter(
-          (dp) =>
-            Boolean(dp.lakehouseEnvironment) &&
-            dp.lakehouseEnvironment?.type ===
-              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-        )
-        .at(0);
-      if (
-        dataProduct?.origin &&
-        'group' in dataProduct.origin &&
-        'artifact' in dataProduct.origin &&
-        'version' in dataProduct.origin
-      ) {
+      const dataProduct =
+        dataProductResponse.dataProducts.length === 1
+          ? dataProductResponse.dataProducts.at(0)
+          : (dataProductResponse.dataProducts
+              .filter(
+                (dp) =>
+                  Boolean(dp.lakehouseEnvironment) &&
+                  dp.lakehouseEnvironment?.type ===
+                    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+              )
+              .at(0) as V1_EntitlementsDataProductDetails);
+      if (dataProduct?.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
         const versionedData = new VersionedProjectData();
-        versionedData.groupId = dataProduct.origin.group as string;
-        versionedData.artifactId = dataProduct.origin.artifact as string;
-        versionedData.versionId = dataProduct.origin.version as string;
+        versionedData.groupId = dataProduct.origin.group;
+        versionedData.artifactId = dataProduct.origin.artifact;
+        versionedData.versionId = dataProduct.origin.version;
         this.dpCoordinates = versionedData;
       }
       this.setAccessPoints(
