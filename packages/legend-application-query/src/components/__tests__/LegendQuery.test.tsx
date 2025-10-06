@@ -128,7 +128,7 @@ test(
     ).toBeNull();
     const releaseDialog = await waitFor(() => renderResult.getByRole('dialog'));
     expect(
-      getByText(releaseDialog, 'Legend Query Has Been Upgraded !'),
+      getByText(releaseDialog, 'Legend Query Has Been Upgraded!'),
     ).not.toBeNull();
     expect(
       getByText(
@@ -187,7 +187,7 @@ test(
     ).toBeNull();
     const releaseDialog = await waitFor(() => renderResult.getByRole('dialog'));
     expect(
-      getByText(releaseDialog, 'Legend Query Has Been Upgraded !'),
+      getByText(releaseDialog, 'Legend Query Has Been Upgraded!'),
     ).not.toBeNull();
     expect(
       getByText(
