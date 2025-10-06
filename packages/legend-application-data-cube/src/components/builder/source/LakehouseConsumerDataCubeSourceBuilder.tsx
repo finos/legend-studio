@@ -30,7 +30,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
 
   useEffect(() => {
     state.reset();
-    state.loadDataProducts();
+    state.loadDataProducts(auth.user?.access_token);
     state.fetchEnvironment(auth.user?.access_token);
   }, [state, auth]);
 

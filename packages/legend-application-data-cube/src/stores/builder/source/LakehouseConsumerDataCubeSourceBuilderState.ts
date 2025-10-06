@@ -36,12 +36,11 @@ import {
 } from '@finos/legend-server-lakehouse';
 import { VersionedProjectData } from '@finos/legend-server-depot';
 import {
-  type V1_EntitlementsDataProductDetailsResponse,
-  type V1_EntitlementsDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
   V1_SdlcDeploymentDataProductOrigin,
   type V1_EntitlementsDataProductLite,
   type V1_EntitlementsDataProductLiteResponse,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
 } from '@finos/legend-graph';
 import { RawLakehouseConsumerDataCubeSource } from '../../model/LakehouseConsumerDataCubeSource.js';
 
@@ -53,7 +52,6 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   environments: string[] = [];
   selectedEnvironment: string | undefined;
   dataProducts: V1_EntitlementsDataProductLite[] = [];
-  dataProductDetails: V1_EntitlementsDataProductDetails | undefined;
   accessPoints: string[] = [];
   dpCoordinates: VersionedProjectData | undefined;
 
@@ -144,23 +142,25 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.resetEnvironment();
 
     const selectedDp = guaranteeNonNullable(this.selectedDataProduct);
-    const dataProductResponse =
-      (await this._contractServerClient.getDataProduct(
-        selectedDp.split('::').pop() ?? '',
-        access_token,
-      )) as V1_EntitlementsDataProductDetailsResponse;
-    if (dataProductResponse.dataProducts) {
+    const dataProducts =
+      V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+        await this._contractServerClient.getDataProduct(
+          selectedDp.split('::').pop() ?? '',
+          access_token,
+        ),
+      );
+    if (dataProducts.length > 0) {
       const dataProduct =
-        dataProductResponse.dataProducts.length === 1
-          ? dataProductResponse.dataProducts.at(0)
-          : (dataProductResponse.dataProducts
+        dataProducts.length === 1
+          ? dataProducts.at(0)
+          : dataProducts
               .filter(
                 (dp) =>
                   Boolean(dp.lakehouseEnvironment) &&
                   dp.lakehouseEnvironment?.type ===
                     V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
               )
-              .at(0) as V1_EntitlementsDataProductDetails);
+              .at(0);
       if (dataProduct?.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
         const versionedData = new VersionedProjectData();
         versionedData.groupId = dataProduct.origin.group;
