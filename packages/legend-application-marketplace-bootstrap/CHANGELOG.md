@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.140.0
+
+### Patch Changes
+
+- [#4516](https://github.com/finos/legend-studio/pull/4516) [`0e55924`](https://github.com/finos/legend-studio/commit/0e55924e39e2586b7e0952d341b137c932ab0dda) ([@kelly-thai](https://github.com/kelly-thai)) - Add Release Notes Modal to Legend Marketplace
+
 ## 13.139.0
 
 ## 13.138.0

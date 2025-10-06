@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.4
+
+### Patch Changes
+
+- [#4515](https://github.com/finos/legend-studio/pull/4515) [`26d6a5d`](https://github.com/finos/legend-studio/commit/26d6a5d44d3d61efca85d107c34f6c2bdb97e6f1) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: retreive data products from lakehouse
+
 ## 0.7.3
 
 ## 0.7.2

@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.73
+
+### Patch Changes
+
+- [#4516](https://github.com/finos/legend-studio/pull/4516) [`0e55924`](https://github.com/finos/legend-studio/commit/0e55924e39e2586b7e0952d341b137c932ab0dda) ([@kelly-thai](https://github.com/kelly-thai)) - Update title of release notes manager modal
+
 ## 16.0.72
 
 ### Patch Changes

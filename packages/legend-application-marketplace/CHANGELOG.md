@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace
 
+## 0.1.20
+
+### Patch Changes
+
+- [#4513](https://github.com/finos/legend-studio/pull/4513) [`a1df59a`](https://github.com/finos/legend-studio/commit/a1df59a250bada5defa8d074bffd5cf8c5427787) ([@travisstebbins](https://github.com/travisstebbins)) - Fix unnecessary re-renders on Entitlements dashboard pages
+
+- [#4512](https://github.com/finos/legend-studio/pull/4512) [`09a3380`](https://github.com/finos/legend-studio/commit/09a33808a1f1282635b5a87d9a9ed504c3b5d754) ([@yash0024](https://github.com/yash0024)) - Add marketplace analytics for clicking header tabs and home page buttons
+
+- [#4516](https://github.com/finos/legend-studio/pull/4516) [`0e55924`](https://github.com/finos/legend-studio/commit/0e55924e39e2586b7e0952d341b137c932ab0dda) ([@kelly-thai](https://github.com/kelly-thai)) - Add Release Notes Modal to Legend Marketplace
+
 ## 0.1.19
 
 ### Patch Changes
