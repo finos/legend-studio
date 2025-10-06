@@ -93,7 +93,7 @@ export class EntitlementsDashboardState {
     try {
       this.setPendingContracts(undefined);
       const pendingContracts =
-        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getPendingContracts(
+        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getPendingContracts(
           TEST_USER2,
           token,
         )) as V1_UserPendingContractsResponse;
@@ -110,7 +110,7 @@ export class EntitlementsDashboardState {
     try {
       this.setPendingTasks(undefined);
       const rawTasks =
-        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getPendingTasks(
+        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getPendingTasks(
           TEST_USER,
           token,
         )) as PlainObject<V1_PendingTasksResponse>;
@@ -128,7 +128,7 @@ export class EntitlementsDashboardState {
     try {
       this.setAllContracts(undefined);
       const rawContracts =
-        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getLiteDataContracts(
+        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getLiteDataContracts(
           token,
         )) as PlainObject<V1_LiteDataContractsResponse>;
       const contracts = V1_liteDataContractsResponseModelSchemaToContracts(
@@ -164,7 +164,7 @@ export class EntitlementsDashboardState {
       this.changingState.inProgress();
       this.changingState.setMessage('Approving Task');
       const response =
-        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.approveTask(
+        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.approveTask(
           task.taskId,
           token,
         )) as PlainObject<V1_TaskStatusChangeResponse>;
@@ -202,7 +202,7 @@ export class EntitlementsDashboardState {
         },
       );
       const response =
-        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.denyTask(
+        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.denyTask(
           task.taskId,
           token,
         )) as PlainObject<V1_TaskStatus>;
