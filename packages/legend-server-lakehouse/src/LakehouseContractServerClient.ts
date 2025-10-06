@@ -224,6 +224,11 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
     this.get(this._dataProducts(), {}, this._token(token));
 
+  getDataProductsLite = (
+    token: string | undefined,
+  ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
+    this.get(`${this._dataProducts()}/lite`, {}, this._token(token));
+
   getDataProduct = (
     dataProductId: string,
     token: string | undefined,

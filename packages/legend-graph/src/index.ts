@@ -325,6 +325,8 @@ export {
   V1_EntitlementsDataProduct,
   V1_EntitlementsDataProductDetails,
   V1_EntitlementsDataProductDetailsResponse,
+  V1_EntitlementsDataProductLite,
+  V1_EntitlementsDataProductLiteResponse,
   V1_EntitlementsDataProductOrigin,
   V1_EntitlementsLakehouseEnvironment,
   V1_EntitlementsLakehouseEnvironmentType,

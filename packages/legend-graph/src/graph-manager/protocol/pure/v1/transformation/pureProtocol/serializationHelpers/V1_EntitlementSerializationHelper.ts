@@ -74,6 +74,8 @@ import {
   V1_EntitlementsDataProduct,
   V1_EntitlementsDataProductDetails,
   V1_EntitlementsDataProductDetailsResponse,
+  V1_EntitlementsDataProductLite,
+  V1_EntitlementsDataProductLiteResponse,
   V1_EntitlementsLakehouseEnvironment,
   V1_SdlcDeploymentDataProductOrigin,
   V1_UnknownDataProductOriginType,
@@ -518,10 +520,32 @@ export const V1_EntitlementsDataProductDetailsModelSchema = createModelSchema(
   },
 );
 
+export const V1_EntitlementsDataProductLiteModelSchema = createModelSchema(
+  V1_EntitlementsDataProductLite,
+  {
+    id: primitive(),
+    deploymentId: primitive(),
+    title: optional(primitive()),
+    description: optional(primitive()),
+    origin: custom(
+      V1_serializeDataProductOrigin,
+      V1_deserializeDataProductOrigin,
+    ),
+    fullPath: optional(primitive()),
+  },
+);
+
 export const V1_EntitlementsDataProductDetailsResponseModelSchema =
   createModelSchema(V1_EntitlementsDataProductDetailsResponse, {
     dataProducts: customListWithSchema(
       V1_EntitlementsDataProductDetailsModelSchema,
+    ),
+  });
+
+export const V1_EntitlementsDataProductLiteResponseModelSchema =
+  createModelSchema(V1_EntitlementsDataProductLiteResponse, {
+    dataProducts: customListWithSchema(
+      V1_EntitlementsDataProductLiteModelSchema,
     ),
   });
 
@@ -530,6 +554,16 @@ export const V1_entitlementsDataProductDetailsResponseToDataProductDetails = (
 ): V1_EntitlementsDataProductDetails[] => {
   const response = deserialize(
     V1_EntitlementsDataProductDetailsResponseModelSchema,
+    json,
+  );
+  return response.dataProducts ?? [];
+};
+
+export const V1_entitlementsDataProductLiteResponseToDataProductLite = (
+  json: PlainObject<V1_EntitlementsDataProductLiteResponse>,
+): V1_EntitlementsDataProductLite[] => {
+  const response = deserialize(
+    V1_EntitlementsDataProductLiteResponseModelSchema,
     json,
   );
   return response.dataProducts ?? [];

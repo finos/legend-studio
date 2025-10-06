@@ -17,7 +17,7 @@ import { observer } from 'mobx-react-lite';
 import { FormTextInput } from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useEffect } from 'react';
 import type { LakehouseConsumerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseConsumerDataCubeSourceBuilderState.js';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
@@ -30,9 +30,14 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
 
   useEffect(() => {
     state.reset();
-    state.loadDataProducts();
-    state.fetchEnvironment(auth.user?.access_token);
-  }, [state, auth]);
+    try {
+      state.loadDataProducts(auth.user?.access_token);
+      state.fetchEnvironment(auth.user?.access_token);
+    } catch (error) {
+      assertErrorThrown(error);
+      store.alertService.alertUnhandledError(error);
+    }
+  }, [state, auth, store]);
 
   return (
     <div className="flex h-full w-full">
@@ -42,8 +47,8 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
           <CustomSelectorInput
             className="query-setup__wizard__selector text-nowrap"
             options={state.dataProducts.map((dataProduct) => ({
-              label: guaranteeNonNullable(dataProduct.path),
-              value: guaranteeNonNullable(dataProduct.path),
+              label: guaranteeNonNullable(dataProduct.fullPath),
+              value: guaranteeNonNullable(dataProduct.fullPath),
             }))}
             disabled={
               state.dataProductLoadingState.isInProgress ||
