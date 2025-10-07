@@ -127,7 +127,7 @@ export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSo
 
       if (
         dataProduct?.origin &&
-        dataProduct.origin === V1_DataProductOriginType.AD_HOC_DEPLOYMENT
+        dataProduct.origin instanceof V1_AdHocDeploymentDataProductOrigin
       ) {
         this.adhocDPDefinition = guaranteeType(
           dataProduct.origin,
