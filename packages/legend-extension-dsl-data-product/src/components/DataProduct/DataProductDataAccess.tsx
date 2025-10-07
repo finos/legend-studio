@@ -23,6 +23,7 @@ import {
   InfoCircleOutlineIcon,
   MarkdownTextViewer,
   QuestionCircleIcon,
+  CustomSelectorInput,
   DataCubeIcon,
   PythonIcon,
   SQLIcon,
@@ -105,6 +106,8 @@ import {
   AccessPointGroupAccess,
 } from '../../stores/DataProduct/DataProductAPGState.js';
 
+const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
+const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -122,10 +125,99 @@ export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   />
 );
 export const WorkInProgressNotice: React.FC = () => (
-  <Box className="data-product__viewer__work-in-progress">
+  <Box className="data-product__viewer__tab_screen">
     <span>Work in progress</span>
   </Box>
 );
+
+export const DataCubeScreen = observer(
+  (props: {
+    dataAccessState: DataProductDataAccessState | undefined;
+    apgState: DataProductAPGState;
+    params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
+  }) => {
+    const { dataAccessState, apgState, params } = props;
+    if (
+      !(
+        dataAccessState?.entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
+      ) ||
+      !apgState.dataProductViewerState.openDataCube
+    ) {
+      return <WorkInProgressNotice />;
+    }
+    const accessPointdata = params.data;
+    const auth = useAuth();
+    const [selectedEnvironment, setSelectedEnvironment] = useState<string>('');
+    useEffect(() => {
+      const fetchEnvironments = async (): Promise<void> => {
+        await dataAccessState.fetchIngestEnvironmentDetails(
+          auth.user?.access_token,
+        );
+      };
+      // eslint-disable-next-line no-void
+      void fetchEnvironments();
+    }, [auth.user?.access_token, dataAccessState]);
+    const loadDataCube = (): void => {
+      //dpCoordinates
+      const dpCoordinates =
+        dataAccessState.entitlementsDataProductDetails.origin;
+      //paths
+      const path = apgState.dataProductViewerState.getPath();
+      const accessPointName = accessPointdata?.id;
+      const accessPointPath = [
+        guaranteeNonNullable(path),
+        guaranteeNonNullable(accessPointName),
+      ];
+      const sourceData = {
+        _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
+        dpCoordinates: dpCoordinates,
+        warehouse: DEFAULT_CONSUMER_WAREHOUSE,
+        environment: selectedEnvironment,
+        paths: accessPointPath,
+      };
+      if (apgState.dataProductViewerState.openDataCube) {
+        apgState.dataProductViewerState.openDataCube(sourceData);
+      }
+    };
+    return (
+      <div className="data-product__viewer__tab_screen">
+        <CustomSelectorInput
+          className="data-product__viewer__tab_screen__dropdown"
+          options={dataAccessState.environmentDropDownValues.map((env) => ({
+            label: env,
+            value: env,
+          }))}
+          isLoading={dataAccessState.ingestEnvironmentFetchState.isInProgress}
+          onChange={(newValue: { label: string; value: string } | null) => {
+            setSelectedEnvironment(newValue?.value ?? '');
+          }}
+          value={
+            selectedEnvironment
+              ? {
+                  label: selectedEnvironment,
+                  value: selectedEnvironment,
+                }
+              : null
+          }
+          placeholder={`Choose an Environment`}
+          isClearable={false}
+          escapeClearsValue={true}
+        />
+        <button
+          onClick={loadDataCube}
+          tabIndex={-1}
+          disabled={!selectedEnvironment}
+          className="data-product__viewer__tab_screen__btn"
+          title="Open in Datacube"
+        >
+          Open in Datacube
+        </button>
+      </div>
+    );
+  },
+);
+
 const TDSColumnCellRenderer = (props: {
   params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
   apgState: DataProductAPGState;
@@ -468,7 +560,11 @@ const TDSColumnCellRenderer = (props: {
               </Box>
             )}
             {selectedTab === DataProductTabs.DATACUBE && (
-              <WorkInProgressNotice />
+              <DataCubeScreen
+                dataAccessState={dataAccessState}
+                apgState={apgState}
+                params={params}
+              />
             )}
             {selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE && (
               <WorkInProgressNotice />

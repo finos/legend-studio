@@ -66,6 +66,9 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   query: {
     url: 'https://testQueryUrl',
   },
+  datacube: {
+    url: 'https://testDatacubeUrl',
+  },
   extensions: {
     core: {
       dataProductConfig: {

@@ -107,6 +107,9 @@ export interface LegendMarketplaceApplicationConfigurationData
   query: {
     url: string;
   };
+  datacube: {
+    url: string;
+  };
 }
 
 export class LegendLakehouseEntitlementsConfig {
@@ -127,6 +130,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceUserProfileImageUrl?: string | undefined;
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
+  readonly datacubeApplicationUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl: string;
@@ -280,6 +284,17 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       guaranteeNonEmptyString(
         input.configData.query.url,
         `Can't configure application: 'query.url' field is missing or empty`,
+      ),
+    );
+    // datacube
+    assertNonNullable(
+      input.configData.datacube,
+      `Can't configure application: 'datacube' field is missing`,
+    );
+    this.datacubeApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.datacube.url,
+        `Can't configure application: 'datacube.url' field is missing or empty`,
       ),
     );
 

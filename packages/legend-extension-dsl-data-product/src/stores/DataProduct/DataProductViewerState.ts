@@ -45,6 +45,7 @@ export class DataProductViewerState extends BaseViewerState<
 
   // actions
   readonly viewDataProductSource?: (() => void) | undefined;
+  readonly openDataCube?: ((sourceData: object) => void) | undefined;
 
   constructor(
     product: V1_DataProduct,
@@ -57,6 +58,7 @@ export class DataProductViewerState extends BaseViewerState<
     actions: {
       viewDataProductSource?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
+      openDataCube?: (sourceData: object) => void;
     },
   ) {
     super(product, applicationStore, new DataProductLayoutState(), actions);
@@ -74,6 +76,7 @@ export class DataProductViewerState extends BaseViewerState<
 
     // actions
     this.viewDataProductSource = actions.viewDataProductSource;
+    this.openDataCube = actions.openDataCube;
   }
 
   public override getTitle(): string | undefined {
