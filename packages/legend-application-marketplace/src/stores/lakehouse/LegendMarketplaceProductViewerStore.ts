@@ -44,13 +44,13 @@ import {
   type TDSRowDataType,
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_Terminal,
-  DataProductArtifactGeneration,
   getRowDataFromExecutionResult,
   GraphDataWithOrigin,
   GraphManagerState,
   LegendSDLC,
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
+  V1_DataProductArtifact,
   V1_dataProductModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_PureGraphManager,
@@ -435,8 +435,7 @@ export class LegendMarketplaceProductViewerStore {
           ?.file.content;
         if (fileGen) {
           const content: PlainObject = JSON.parse(fileGen) as PlainObject;
-          const gen =
-            DataProductArtifactGeneration.serialization.fromJson(content);
+          const gen = V1_DataProductArtifact.serialization.fromJson(content);
           const dataProductId = v1DataProduct.name.toUpperCase();
           const deploymentId = Number(gen.dataProduct.deploymentId);
           this.marketplaceBaseStore.applicationStore.navigationService.navigator.goToLocation(

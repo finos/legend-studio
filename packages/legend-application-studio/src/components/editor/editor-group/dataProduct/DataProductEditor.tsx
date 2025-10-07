@@ -94,28 +94,28 @@ import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type DataProduct,
+  type DataProductElement,
+  type DataProductElementScope,
+  type DataProductRuntimeInfo,
+  type Expertise,
   type GraphManagerState,
   type LakehouseAccessPoint,
-  type V1_DataProductArtifactAccessPointGroup,
-  type V1_DataProductArtifactAccessPointImplementation,
-  type V1_DataProductArtifactGeneration,
   type Mapping,
-  type PackageableRuntime,
-  type DataProductRuntimeInfo,
   type PackageableElement,
-  type DataProductElementScope,
-  type DataProductElement,
-  type Expertise,
+  type PackageableRuntime,
+  type V1_AccessPointGroupInfo,
+  type V1_AccessPointImplementation,
+  type V1_DataProductArtifact,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
   LakehouseTargetEnv,
   StereotypeExplicitReference,
+  V1_DataProduct,
   V1_DataProductIconLibraryId,
-  validate_PureExecutionMapping,
   V1_PureGraphManager,
   V1_RemoteEngine,
-  V1_DataProduct,
+  validate_PureExecutionMapping,
 } from '@finos/legend-graph';
 import {
   accessPoint_setClassification,
@@ -494,16 +494,15 @@ export const LakehouseDataProductAccessPointEditor = observer(
         if (dataProductContent) {
           const contentJson = JSON.parse(
             dataProductContent,
-          ) as V1_DataProductArtifactGeneration;
+          ) as V1_DataProductArtifact;
           const apPlanGeneration = contentJson.accessPointGroups
             .find(
-              (group: V1_DataProductArtifactAccessPointGroup) =>
+              (group: V1_AccessPointGroupInfo) =>
                 group.id === groupState.value.id,
             )
             ?.accessPointImplementations.find(
-              (
-                apImplementation: V1_DataProductArtifactAccessPointImplementation,
-              ) => apImplementation.id === accessPoint.id,
+              (apImplementation: V1_AccessPointImplementation) =>
+                apImplementation.id === accessPoint.id,
             );
 
           setDebugOutput(JSON.stringify(apPlanGeneration, null, 2));

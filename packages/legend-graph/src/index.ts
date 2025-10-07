@@ -370,15 +370,7 @@ export {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
-export {
-  V1_DataProductArtifactAccessPointGroup,
-  V1_DataProductArtifactAccessPointImplementation,
-  V1_DataProductArtifactDataProduct,
-  V1_DataProductArtifactGeneration,
-  V1_DataProductArtifactResourceBuilder,
-  V1_DataProductDefinitionAndArtifact,
-  V1_SandboxDataProductDeploymentResponse,
-} from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
+export * from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
 export {
   V1_IngestEnvironmentType,
   V1_IngestEnvironmentClassification,
@@ -527,7 +519,6 @@ export {
 export { ExecutionError } from './graph-manager/action/ExecutionError.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';
 export * from './graph-manager/action/generation/ArtifactGenerationExtensionResult.js';
-export * from './graph-manager/action/generation/dataProduct/DataProductArtifactGeneration.js';
 
 export * from './graph-manager/action/execution/ExecutionResultHelper.js';
 export * from './graph-manager/PureGraphManagerPlugin.js';
