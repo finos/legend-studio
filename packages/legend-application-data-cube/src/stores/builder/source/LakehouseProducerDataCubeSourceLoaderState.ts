@@ -15,7 +15,6 @@
  */
 
 import {
-  ActionState,
   guaranteeNonNullable,
   guaranteeType,
   type PlainObject,
@@ -38,8 +37,6 @@ import type { UserManagerSettings } from 'oidc-client-ts';
 import { SecondaryOAuthClient } from '../../model/SecondaryOauthClient.js';
 
 export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
-  readonly processState = ActionState.create();
-
   ingestDefinition: PlainObject | undefined;
   ingestDefinitionUrn: string;
   ingestServerUrl: string;

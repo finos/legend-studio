@@ -92,6 +92,7 @@ import {
   V1_DataProductAccessor,
   PRECISE_PRIMITIVE_TYPE,
   CORE_PURE_PATH,
+  V1_DataProductOriginType,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -172,6 +173,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
   private _ingestDefinition: PlainObject | undefined;
+  private _adhocDataProductDefinition: string | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -746,7 +748,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         source.environment = rawSource.environment;
         source.paths = rawSource.paths;
         source.warehouse = rawSource.warehouse;
-        source.dpCoordinates = rawSource.dpCoordinates;
+        if (rawSource.dpCoordinates) {
+          source.dpCoordinates = rawSource.dpCoordinates;
+        }
 
         //TODO: add support for parameters
         try {
@@ -1265,6 +1269,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   registerIngestDefinition(ingestDefinition: PlainObject | undefined) {
     this._ingestDefinition = ingestDefinition;
+  }
+
+  registerAdhocDataProduct(adhocDPDefinition: string | undefined) {
+    this._adhocDataProductDefinition = adhocDPDefinition;
   }
 
   // ---------------------------------- CACHING --------------------------------------
@@ -1800,12 +1808,24 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     rawSource: RawLakehouseConsumerDataCubeSource,
     source: LakehouseConsumerDataCubeSource,
   ) {
-    const pmcd = await this._depotServerClient.getPureModelContextData(
-      rawSource.dpCoordinates.groupId,
-      rawSource.dpCoordinates.artifactId,
-      rawSource.dpCoordinates.versionId,
-      true,
-    );
+    let pmcd: PlainObject<V1_PureModelContextData> | undefined;
+    if (
+      !rawSource.origin ||
+      rawSource.origin === V1_DataProductOriginType.SDLC_DEPLOYMENT
+    ) {
+      const coordinates = guaranteeNonNullable(rawSource.dpCoordinates);
+      pmcd = await this._depotServerClient.getPureModelContextData(
+        coordinates.groupId,
+        coordinates.artifactId,
+        coordinates.versionId,
+        true,
+      );
+    } else {
+      pmcd = await this.parseCompatibleModel(
+        guaranteeNonNullable(this._adhocDataProductDefinition),
+      );
+    }
+
     const deserializedPMCD = guaranteeType(
       V1_deserializePureModelContext(pmcd),
       V1_PureModelContextData,

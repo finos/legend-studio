@@ -469,17 +469,18 @@ const LakehouseConsumerSourceViewer = observer(
     const dataSpacePath = guaranteeNonNullable(source.paths[0]);
     const accessPoint = guaranteeNonNullable(source.paths[1]);
     const accessPointPath = `${dataSpacePath}.${accessPoint}`;
-    const link = application.config.legendLakehouseUrl
-      ? EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl(
-          application.config.legendLakehouseUrl,
-          generateGAVCoordinates(
-            source.dpCoordinates.groupId,
-            source.dpCoordinates.artifactId,
-            source.dpCoordinates.versionId,
-          ),
-          dataSpacePath,
-        )
-      : undefined;
+    const link =
+      application.config.legendLakehouseUrl && source.dpCoordinates
+        ? EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl(
+            application.config.legendLakehouseUrl,
+            generateGAVCoordinates(
+              source.dpCoordinates.groupId,
+              source.dpCoordinates.artifactId,
+              source.dpCoordinates.versionId,
+            ),
+            dataSpacePath,
+          )
+        : undefined;
     return (
       <div className="h-full w-full px-2 pt-2">
         <div

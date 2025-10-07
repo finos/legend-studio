@@ -41,6 +41,8 @@ import {
   type V1_EntitlementsDataProductLite,
   type V1_EntitlementsDataProductLiteResponse,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_DataProductOriginType,
+  V1_AdHocDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import { RawLakehouseConsumerDataCubeSource } from '../../model/LakehouseConsumerDataCubeSource.js';
 
@@ -54,6 +56,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   dataProducts: V1_EntitlementsDataProductLite[] = [];
   accessPoints: string[] = [];
   dpCoordinates: VersionedProjectData | undefined;
+  origin: string | undefined;
 
   DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 
@@ -167,6 +170,12 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
         versionedData.artifactId = dataProduct.origin.artifact;
         versionedData.versionId = dataProduct.origin.version;
         this.dpCoordinates = versionedData;
+        this.origin = V1_DataProductOriginType.SDLC_DEPLOYMENT;
+      } else if (
+        dataProduct?.origin instanceof V1_AdHocDeploymentDataProductOrigin
+      ) {
+        this.dpCoordinates = undefined;
+        this.origin = V1_DataProductOriginType.AD_HOC_DEPLOYMENT;
       }
       this.setAccessPoints(
         dataProduct?.dataProduct.accessPoints.map(
@@ -222,7 +231,6 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       Boolean(this.warehouse) &&
       Boolean(this.selectedAccessPoint) &&
       Boolean(this.selectedDataProduct) &&
-      Boolean(this.dpCoordinates) &&
       Boolean(this.selectedEnvironment)
     );
   }
@@ -239,9 +247,12 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
 
     const rawSource = new RawLakehouseConsumerDataCubeSource();
     rawSource.environment = guaranteeNonNullable(this.selectedEnvironment);
-    rawSource.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
+    if (this.origin === V1_DataProductOriginType.SDLC_DEPLOYMENT) {
+      rawSource.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
+    }
     rawSource.paths = this.paths;
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);
+    rawSource.origin = guaranteeNonNullable(this.origin);
 
     return Promise.resolve(
       RawLakehouseConsumerDataCubeSource.serialization.toJson(rawSource),
