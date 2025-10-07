@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import {
   type EditorStore,
+  DataProductEditorState,
   ElementEditorState,
 } from '@finos/legend-application-studio';
 import {
+  type DataProduct,
   type PackageableElement,
   Package,
   Class,
@@ -27,6 +36,7 @@ import {
   Association,
   Service,
   ConcreteFunctionDefinition,
+  observe_DataProduct,
 } from '@finos/legend-graph';
 import { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import {
@@ -34,8 +44,61 @@ import {
   DataSpacePackageableElementExecutable,
   type DataSpaceElement,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { guaranteeType } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeType,
+  type GeneratorFn,
+} from '@finos/legend-shared';
 import { DataSpaceExecutionContextState } from './DataSpaceExecutionContextState.js';
+import { convertDataSpaceToDataProduct } from '../stores/DataSpaceToDataProductConverter.js';
+
+export const onConvertDataSpaceToDataProduct = flow(function* (
+  dataSpace: DataSpace,
+  editorStore: EditorStore,
+  dataSpaceEditorState: DataSpaceEditorState,
+): GeneratorFn<void> {
+  try {
+    const dataProduct = convertDataSpaceToDataProduct(
+      dataSpace,
+      editorStore.graphManagerState,
+    );
+
+    editorStore.graphManagerState.graph.addElement(
+      dataProduct,
+      dataSpace.package?.path.replace(/dataspace/, 'dataproduct'),
+    );
+
+    const addedElement = editorStore.graphManagerState.graph.getNullableElement(
+      dataProduct.path,
+    );
+    if (addedElement) {
+      observe_DataProduct(addedElement as DataProduct);
+    }
+    const dataProductEditorState = new DataProductEditorState(
+      editorStore,
+      addedElement as DataProduct,
+    );
+
+    editorStore.graphManagerState.graph.deleteElement(dataSpace);
+
+    const dataSpacePackage = dataSpace.package;
+    if (dataSpacePackage && dataSpacePackage.children.length === 0) {
+      editorStore.graphManagerState.graph.deleteElement(dataSpacePackage);
+    }
+    editorStore.tabManagerState.closeTab(dataSpaceEditorState);
+    editorStore.tabManagerState.openTab(dataProductEditorState);
+    yield flowResult(editorStore.explorerTreeState.build());
+
+    editorStore.applicationStore.notificationService.notifySuccess(
+      `Successfully converted DataSpace ${dataSpace.name} to Data Product`,
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    editorStore.applicationStore.notificationService.notifyError(
+      `Failed to convert DataSpace to Data Product: ${error.message}`,
+    );
+  }
+});
 
 export class DataSpaceEditorState extends ElementEditorState {
   executionContextState: DataSpaceExecutionContextState;

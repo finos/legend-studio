@@ -64,6 +64,7 @@ export * from './stores/graph-modifier/RawValueSpecificationGraphModifierHelper.
 export * from './stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+export { DataProductEditorState } from './stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 
 // components
 export { queryClass } from './components/editor/editor-group/uml-editor/ClassQueryBuilder.js';

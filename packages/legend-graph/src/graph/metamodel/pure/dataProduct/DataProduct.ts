@@ -54,6 +54,19 @@ export abstract class AccessPoint implements Hashable {
   }
 }
 
+export class FunctionAccessPoint extends AccessPoint {
+  func: RawLambda;
+
+  constructor(id: string, func: RawLambda) {
+    super(id);
+    this.func = func;
+  }
+
+  override get hashCode(): string {
+    return hashArray([super.hashCode, this.func]);
+  }
+}
+
 export enum LakehouseTargetEnv {
   Snowflake = 'Snowflake',
   Databricks = 'Databricks',
