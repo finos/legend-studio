@@ -18,6 +18,7 @@ import {
   type NavigationZone,
   DEFAULT_TAB_SIZE,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl,
 } from '@finos/legend-application';
 import {
   resolveVersion,
@@ -289,6 +290,15 @@ export class LegendMarketplaceProductViewerStore {
                 ),
               );
             }
+          },
+          openDataCube: (sourceData) => {
+            this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+              EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
+                this.marketplaceBaseStore.applicationStore.config
+                  .datacubeApplicationUrl,
+                sourceData,
+              ),
+            );
           },
         },
       );

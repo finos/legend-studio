@@ -35,3 +35,14 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
     artifactId,
     versionId,
   )}${entityPath ? `/entity/${entityPath}` : ''}`;
+
+/**
+ * @external_application_navigation This depends on Legend DataCube routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl = (
+  dataCubeApplicationUrl: string,
+  sourceData: object,
+): string =>
+  `${dataCubeApplicationUrl}?sourceData=${encodeURIComponent(
+    btoa(JSON.stringify(sourceData)),
+  )}`;
