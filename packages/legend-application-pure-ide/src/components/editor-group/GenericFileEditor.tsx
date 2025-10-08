@@ -132,8 +132,8 @@ export const GoToLinePrompt = observer(
 );
 
 export const GenericFileEditor = observer(
-  (props: { editorState: FileEditorState }) => {
-    const { editorState } = props;
+  (props: { editorState: FileEditorState; leafId?: string }) => {
+    const { editorState, leafId } = props;
     const ideStore = usePureIDEStore();
     const applicationStore = useApplicationStore();
     const textInputRef = useRef<HTMLDivElement>(null);
@@ -168,8 +168,11 @@ export const GenericFileEditor = observer(
         });
         // Restore the editor model and view state
         newEditor.setModel(editorState.textEditorState.model);
-        if (editorState.textEditorState.viewState) {
-          newEditor.restoreViewState(editorState.textEditorState.viewState);
+        const viewStateToRestore = leafId
+          ? editorState.textEditorState.getViewStateForLeaf(leafId)
+          : editorState.textEditorState.viewState;
+        if (viewStateToRestore) {
+          newEditor.restoreViewState(viewStateToRestore);
         }
         newEditor.focus(); // focus on the editor initially
         editorState.textEditorState.setEditor(newEditor);
@@ -177,7 +180,8 @@ export const GenericFileEditor = observer(
       }
     }, [ideStore, applicationStore, editorState, editor]);
 
-    useCommands(editorState);
+    const isActiveEditor = ideStore.editorSplitState.currentTab === editorState;
+    useCommands(editorState, isActiveEditor);
 
     useEffect(() => {
       if (editor) {
@@ -196,14 +200,17 @@ export const GenericFileEditor = observer(
       () => (): void => {
         if (editor) {
           // persist editor view state (cursor, scroll, etc.) to restore on re-open
-          editorState.textEditorState.setViewState(
-            editor.saveViewState() ?? undefined,
-          );
+          const saved = editor.saveViewState() ?? undefined;
+          if (leafId) {
+            editorState.textEditorState.setViewStateForLeaf(leafId, saved);
+          } else {
+            editorState.textEditorState.setViewState(saved);
+          }
           // NOTE: dispose the editor to prevent potential memory-leak
           editor.dispose();
         }
       },
-      [editorState, editor],
+      [editorState, editor, leafId],
     );
 
     return (

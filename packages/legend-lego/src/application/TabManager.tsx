@@ -62,8 +62,17 @@ const horizontalToVerticalScroll: React.WheelEventHandler = (event) => {
 };
 
 const TabContextMenu = observer(
-  (props: { tabState: TabState; managerTabState: TabManagerState }) => {
-    const { tabState, managerTabState } = props;
+  (props: {
+    tabState: TabState;
+    managerTabState: TabManagerState;
+    renderExtraMenuItems?:
+      | ((
+          tabState: TabState,
+          managerTabState: TabManagerState,
+        ) => React.ReactNode)
+      | undefined;
+  }) => {
+    const { tabState, managerTabState, renderExtraMenuItems } = props;
     const close = (): void => managerTabState.closeTab(tabState);
     const closeOthers = (): void => managerTabState.closeAllOtherTabs(tabState);
     const closeAll = (): void => managerTabState.closeAllTabs();
@@ -74,6 +83,8 @@ const TabContextMenu = observer(
         managerTabState.pinTab(tabState);
       }
     };
+
+    const extra = renderExtraMenuItems?.(tabState, managerTabState);
 
     return (
       <MenuContent>
@@ -89,6 +100,12 @@ const TabContextMenu = observer(
         <MenuContentItem onClick={togglePin}>
           {tabState.isPinned ? 'Unpin' : 'Pin'}
         </MenuContentItem>
+        {extra ? (
+          <>
+            <MenuContentDivider />
+            {extra}
+          </>
+        ) : null}
       </MenuContent>
     );
   },
@@ -99,9 +116,24 @@ const Tab = observer(
     tabState: TabState;
     tabManagerState: TabManagerState;
     tabRenderer?: ((editorState: TabState) => React.ReactNode) | undefined;
+    renderExtraTabMenuItems?:
+      | ((
+          tabState: TabState,
+          managerTabState: TabManagerState,
+        ) => React.ReactNode)
+      | undefined;
+    onExternalTabDrop?: ((tab: TabState, index?: number) => void) | undefined;
+    canAcceptExternalTab?: ((tab: TabState) => boolean) | undefined;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const { tabManagerState, tabState, tabRenderer } = props;
+    const {
+      tabManagerState,
+      tabState,
+      tabRenderer,
+      renderExtraTabMenuItems,
+      onExternalTabDrop,
+      canAcceptExternalTab,
+    } = props;
 
     // Drag and Drop
     const handleHover = useCallback(
@@ -151,6 +183,29 @@ const Tab = observer(
       () => ({
         accept: [tabManagerState.dndType],
         hover: (item, monitor) => handleHover(item, monitor),
+        drop: (item, monitor) => {
+          const draggingTab = item.tab;
+          const isInternal = tabManagerState.tabs.includes(draggingTab);
+          if (isInternal) {
+            // Intra-strip drops are handled by reordering on hover; no action.
+            return;
+          }
+          if (canAcceptExternalTab && !canAcceptExternalTab(draggingTab)) {
+            return;
+          }
+
+          const hoverIndex = tabManagerState.tabs.findIndex(
+            (e) => e === tabState,
+          );
+          const hoverBoundingReact = ref.current?.getBoundingClientRect();
+          const midpoint =
+            ((hoverBoundingReact?.left ?? 0) +
+              (hoverBoundingReact?.right ?? 0)) /
+            2;
+          const clientX = monitor.getClientOffset()?.x ?? 0;
+          const insertIndex = clientX < midpoint ? hoverIndex : hoverIndex + 1;
+          onExternalTabDrop?.(draggingTab, insertIndex);
+        },
         collect: (
           monitor,
         ): {
@@ -160,7 +215,13 @@ const Tab = observer(
             ?.tab,
         }),
       }),
-      [handleHover],
+      [
+        handleHover,
+        tabManagerState,
+        tabState,
+        onExternalTabDrop,
+        canAcceptExternalTab,
+      ],
     );
     const isBeingDragged = tabState === isBeingDraggedEditorPanel;
 
@@ -195,6 +256,7 @@ const Tab = observer(
               <TabContextMenu
                 tabState={tabState}
                 managerTabState={tabManagerState}
+                renderExtraMenuItems={renderExtraTabMenuItems}
               />
             }
             className="tab-manager__tab__content"
@@ -284,14 +346,51 @@ export const TabManager = observer(
   (props: {
     tabManagerState: TabManagerState;
     tabRenderer?: ((editorState: TabState) => React.ReactNode) | undefined;
+    renderExtraTabMenuItems?:
+      | ((
+          tabState: TabState,
+          managerTabState: TabManagerState,
+        ) => React.ReactNode)
+      | undefined;
+    onExternalTabDrop?: ((tab: TabState, index?: number) => void) | undefined;
+    canAcceptExternalTab?: ((tab: TabState) => boolean) | undefined;
   }) => {
-    const { tabManagerState, tabRenderer } = props;
+    const {
+      tabManagerState,
+      tabRenderer,
+      renderExtraTabMenuItems,
+      onExternalTabDrop,
+      canAcceptExternalTab,
+    } = props;
+
+    // Make the strip itself a drop target for appending external tabs
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [, contentDropConnector] = useDrop<TabDragSource, void, unknown>(
+      () => ({
+        accept: [tabManagerState.dndType],
+        drop: (item) => {
+          const isInternal = tabManagerState.tabs.includes(item.tab);
+          if (isInternal) {
+            return;
+          }
+          if (canAcceptExternalTab && !canAcceptExternalTab(item.tab)) {
+            return;
+          }
+          onExternalTabDrop?.(item.tab, tabManagerState.tabs.length);
+        },
+      }),
+      [tabManagerState, onExternalTabDrop, canAcceptExternalTab],
+    );
 
     return (
       <div className="tab-manager">
         <div
           className="tab-manager__content"
           onWheel={horizontalToVerticalScroll}
+          ref={(el) => {
+            contentRef.current = el;
+            contentDropConnector(el);
+          }}
         >
           {tabManagerState.tabs.map((tab) => (
             <Tab
@@ -299,6 +398,12 @@ export const TabManager = observer(
               tabState={tab}
               tabManagerState={tabManagerState}
               tabRenderer={tabRenderer}
+              renderExtraTabMenuItems={renderExtraTabMenuItems}
+              // enable external drop on a particular tab position
+              // handled inside Tab via drop callback
+              // eslint-disable-next-line react/jsx-no-undef
+              onExternalTabDrop={onExternalTabDrop}
+              canAcceptExternalTab={canAcceptExternalTab}
             />
           ))}
           <DragPreviewLayer

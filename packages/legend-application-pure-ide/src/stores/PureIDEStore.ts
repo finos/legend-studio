@@ -92,7 +92,14 @@ import { DiagramEditorState } from './DiagramEditorState.js';
 import { DiagramInfo, serializeDiagram } from '../server/models/DiagramInfo.js';
 import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js';
 import { FileSearchCommandState } from './FileSearchCommandState.js';
-import { PureIDETabManagerState } from './PureIDETabManagerState.js';
+import {
+  PureIDETabManagerState,
+  PureIDETabState,
+} from './PureIDETabManagerState.js';
+import {
+  EditorSplitRootState,
+  EditorSplitOrientation,
+} from './EditorSplitGroupState.js';
 import {
   LEGEND_PURE_IDE_COMMAND_KEY,
   LEGEND_PURE_IDE_TERMINAL_COMMAND,
@@ -133,7 +140,7 @@ export class PureIDEStore implements CommandRegistrar {
     default: 300,
     snap: 150,
   });
-  readonly tabManagerState = new PureIDETabManagerState(this);
+  readonly editorSplitState = new EditorSplitRootState(this);
 
   readonly executionState = ActionState.create();
   navigationStack: FileCoordinate[] = []; // TODO?: we might want to limit the number of items in this stack
@@ -160,6 +167,8 @@ export class PureIDEStore implements CommandRegistrar {
   PCTAdapters: PCTAdapter[] = [];
   selectedPCTAdapter?: PCTAdapter | undefined;
   PCTRunPath?: string | undefined;
+  // Guard against duplicate command registration when the root view remounts
+  private _commandsRefCount = 0;
 
   constructor(applicationStore: LegendPureIDEApplicationStore) {
     makeObservable(this, {
@@ -321,13 +330,20 @@ export class PureIDEStore implements CommandRegistrar {
       const openWelcomeFilePromise = flowResult(
         this.loadFile(WELCOME_FILE_PATH),
       ).then(() => {
-        const welcomeFileTab = this.tabManagerState.tabs.find(
-          (tab) =>
-            tab instanceof FileEditorState &&
-            tab.filePath === WELCOME_FILE_PATH,
-        );
+        const welcomeFileTab = this.editorSplitState.leaves
+          .flatMap((leaf) => leaf.tabManagerState.tabs)
+          .find(
+            (tab) =>
+              tab instanceof FileEditorState &&
+              tab.filePath === WELCOME_FILE_PATH,
+          );
         if (welcomeFileTab) {
-          this.tabManagerState.pinTab(welcomeFileTab);
+          const leaf = this.editorSplitState.leaves.find((l) =>
+            l.tabManagerState.tabs.includes(welcomeFileTab),
+          );
+          if (leaf) {
+            leaf.tabManagerState.pinTab(welcomeFileTab);
+          }
         }
       });
       const directoryTreeInitPromise = this.directoryTreeState.initialize();
@@ -454,6 +470,10 @@ export class PureIDEStore implements CommandRegistrar {
   }
 
   registerCommands(): void {
+    this._commandsRefCount += 1;
+    if (this._commandsRefCount > 1) {
+      return;
+    }
     this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE,
       action: () => this.setOpenFileSearchCommand(true),
@@ -470,9 +490,9 @@ export class PureIDEStore implements CommandRegistrar {
     this.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_COMMAND_KEY.GO_TO_FILE,
       action: () => {
-        if (this.tabManagerState.currentTab instanceof FileEditorState) {
+        if (this.editorSplitState.currentTab instanceof FileEditorState) {
           this.directoryTreeState.revealPath(
-            this.tabManagerState.currentTab.filePath,
+            this.editorSplitState.currentTab.filePath,
             {
               forceOpenExplorerPanel: true,
             },
@@ -543,9 +563,35 @@ export class PureIDEStore implements CommandRegistrar {
         );
       },
     });
+    this.applicationStore.commandService.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.SPLIT_EDITOR_RIGHT,
+      action: () => {
+        if (this.editorSplitState.activeLeaf) {
+          this.editorSplitState.splitActiveLeaf(
+            EditorSplitOrientation.VERTICAL,
+          );
+        }
+      },
+    });
+    this.applicationStore.commandService.registerCommand({
+      key: LEGEND_PURE_IDE_COMMAND_KEY.SPLIT_EDITOR_DOWN,
+      action: () => {
+        if (this.editorSplitState.activeLeaf) {
+          this.editorSplitState.splitActiveLeaf(
+            EditorSplitOrientation.HORIZONTAL,
+          );
+        }
+      },
+    });
   }
 
   deregisterCommands(): void {
+    if (this._commandsRefCount > 0) {
+      this._commandsRefCount -= 1;
+    }
+    if (this._commandsRefCount > 0) {
+      return;
+    }
     [
       LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_FILE,
       LEGEND_PURE_IDE_COMMAND_KEY.SEARCH_TEXT,
@@ -556,6 +602,8 @@ export class PureIDEStore implements CommandRegistrar {
       LEGEND_PURE_IDE_COMMAND_KEY.FULL_RECOMPILE_WITH_FULL_INIT,
       LEGEND_PURE_IDE_COMMAND_KEY.RUN_ALL_TESTS,
       LEGEND_PURE_IDE_COMMAND_KEY.RUN_RELAVANT_TESTS,
+      LEGEND_PURE_IDE_COMMAND_KEY.SPLIT_EDITOR_RIGHT,
+      LEGEND_PURE_IDE_COMMAND_KEY.SPLIT_EDITOR_DOWN,
     ].forEach((key) =>
       this.applicationStore.commandService.deregisterCommand(key),
     );
@@ -582,10 +630,12 @@ export class PureIDEStore implements CommandRegistrar {
     line: number,
     column: number,
   ): GeneratorFn<void> {
-    let editorState = this.tabManagerState.tabs.find(
-      (tab): tab is DiagramEditorState =>
-        tab instanceof DiagramEditorState && tab.diagramPath === diagramPath,
-    );
+    let editorState = this.editorSplitState.leaves
+      .flatMap((leaf) => leaf.tabManagerState.tabs)
+      .find(
+        (tab): tab is DiagramEditorState =>
+          tab instanceof DiagramEditorState && tab.diagramPath === diagramPath,
+      );
     if (!editorState) {
       yield flowResult(this.checkIfSessionWakingUp());
       editorState = new DiagramEditorState(
@@ -597,15 +647,17 @@ export class PureIDEStore implements CommandRegistrar {
         column,
       );
     }
-    this.tabManagerState.openTab(editorState);
+    this.editorSplitState.openTab(editorState);
   }
 
   *loadFile(filePath: string, coordinate?: FileCoordinate): GeneratorFn<void> {
     try {
-      let editorState = this.tabManagerState.tabs.find(
-        (tab): tab is FileEditorState =>
-          tab instanceof FileEditorState && tab.filePath === filePath,
-      );
+      let editorState = this.editorSplitState.leaves
+        .flatMap((leaf) => leaf.tabManagerState.tabs)
+        .find(
+          (tab): tab is FileEditorState =>
+            tab instanceof FileEditorState && tab.filePath === filePath,
+        );
       if (!editorState) {
         yield flowResult(this.checkIfSessionWakingUp());
         editorState = new FileEditorState(
@@ -614,7 +666,7 @@ export class PureIDEStore implements CommandRegistrar {
           filePath,
         );
       }
-      this.tabManagerState.openTab(editorState);
+      this.editorSplitState.openTab(editorState);
       if (coordinate) {
         editorState.textEditorState.setForcedCursorPosition({
           lineNumber: coordinate.line,
@@ -633,9 +685,9 @@ export class PureIDEStore implements CommandRegistrar {
   }
 
   async reloadFile(filePath: string): Promise<void> {
-    const tabsToClose: TabState[] = [];
+    const tabsToClose: PureIDETabState[] = [];
     await Promise.all(
-      this.tabManagerState.tabs.map(async (tab) => {
+      this.editorSplitState.allTabs.map(async (tab) => {
         if (tab instanceof FileEditorState && tab.filePath === filePath) {
           tab.setFile(deserialize(File, await this.client.getFile(filePath)));
         } else if (
@@ -657,7 +709,7 @@ export class PureIDEStore implements CommandRegistrar {
         }
       }),
     );
-    tabsToClose.forEach((tab) => this.tabManagerState.closeTab(tab));
+    tabsToClose.forEach((tab) => this.editorSplitState.closeTab(tab));
   }
 
   *execute(
@@ -693,11 +745,11 @@ export class PureIDEStore implements CommandRegistrar {
     // reset suggestions before execution
     this.setCodeFixSuggestion(undefined);
     this.executionState.inProgress();
-    const potentiallyAffectedFiles = this.tabManagerState.tabs
+    const potentiallyAffectedFiles = this.editorSplitState.allTabs
       .filter(filterByType(FileEditorState))
       .map((tab) => tab.filePath);
     try {
-      const openedFiles = this.tabManagerState.tabs
+      const openedFiles = this.editorSplitState.allTabs
         .map((tab) => {
           if (tab instanceof FileEditorState) {
             return {
@@ -908,7 +960,7 @@ export class PureIDEStore implements CommandRegistrar {
     const refreshTreesPromise = this.refreshTrees();
 
     // reset errors on all tabs before potentially show the latest error
-    this.tabManagerState.tabs
+    this.editorSplitState.allTabs
       .filter(filterByType(FileEditorState))
       .filter((tab) => potentiallyAffectedFiles.includes(tab.filePath))
       .forEach((tab) => tab.clearError());
@@ -1135,7 +1187,7 @@ export class PureIDEStore implements CommandRegistrar {
   }
 
   resetChangeDetection(files: string[]): void {
-    this.tabManagerState.tabs
+    this.editorSplitState.allTabs
       .filter(filterByType(FileEditorState))
       .filter((tab) => files.includes(tab.filePath))
       .forEach((tab) => tab.resetChangeDetection());
@@ -1524,11 +1576,11 @@ export class PureIDEStore implements CommandRegistrar {
         ),
       );
       yield flowResult(this.directoryTreeState.refreshTreeData());
-      const openTab = this.tabManagerState.tabs.find(
+      const openTab = this.editorSplitState.allTabs.find(
         (tab) => tab instanceof FileEditorState && tab.filePath === oldPath,
       );
       if (openTab) {
-        this.tabManagerState.closeTab(openTab);
+        this.editorSplitState.closeTab(openTab);
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -1548,14 +1600,14 @@ export class PureIDEStore implements CommandRegistrar {
           LEGEND_PURE_IDE_TERMINAL_COMMAND.REMOVE,
         ),
       );
-      const editorStatesToClose = this.tabManagerState.tabs.filter(
+      const editorStatesToClose = this.editorSplitState.allTabs.filter(
         (tab) =>
           tab instanceof FileEditorState &&
           (isDirectory === undefined || isDirectory
             ? tab.filePath.startsWith(`${path}/`)
             : tab.filePath === path),
       );
-      editorStatesToClose.forEach((tab) => this.tabManagerState.closeTab(tab));
+      editorStatesToClose.forEach((tab) => this.editorSplitState.closeTab(tab));
       await flowResult(this.directoryTreeState.refreshTreeData());
     };
     if (isDirectory === undefined || hasChildContent === undefined) {

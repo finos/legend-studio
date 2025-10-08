@@ -17,9 +17,15 @@
 import { useEffect } from 'react';
 import type { CommandRegistrar } from '../stores/CommandService.js';
 
-export const useCommands = (registrar: CommandRegistrar): void => {
+export const useCommands = (
+  registrar: CommandRegistrar,
+  enabled = true,
+): void => {
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     registrar.registerCommands();
     return () => registrar.deregisterCommands();
-  }, [registrar]);
+  }, [registrar, enabled]);
 };
