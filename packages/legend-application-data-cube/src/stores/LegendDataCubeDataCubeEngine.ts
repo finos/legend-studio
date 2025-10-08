@@ -92,7 +92,6 @@ import {
   V1_DataProductAccessor,
   PRECISE_PRIMITIVE_TYPE,
   CORE_PURE_PATH,
-  V1_DataProductOriginType,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -143,7 +142,7 @@ import {
   LegendQueryDataCubeSource,
   RawLegendQueryDataCubeSource,
 } from './model/LegendQueryDataCubeSource.js';
-import { deserialize, raw, serialize } from 'serializr';
+import { deserialize, serialize } from 'serializr';
 import {
   resolveVersion,
   type DepotServerClient,

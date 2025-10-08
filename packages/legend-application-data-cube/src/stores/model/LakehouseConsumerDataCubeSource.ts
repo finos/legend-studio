@@ -31,10 +31,8 @@ import {
 } from '@finos/legend-shared';
 import {
   createModelSchema,
-  custom,
   deserialize,
   list,
-  optional,
   primitive,
   serialize,
 } from 'serializr';
