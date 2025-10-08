@@ -16,13 +16,29 @@
 
 import type { V1_Terminal } from '@finos/legend-graph';
 import { BaseViewerState } from '../BaseViewerState.js';
-import type { TerminalProductLayoutState } from '../BaseLayoutState.js';
+import { TerminalProductLayoutState } from '../BaseLayoutState.js';
 import { TERMINAL_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
+import { type UserSearchService } from '@finos/legend-shared';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
 
 export class TerminalProductViewerState extends BaseViewerState<
   V1_Terminal,
   TerminalProductLayoutState
 > {
+  readonly terminal: V1_Terminal;
+  readonly userSearchService: UserSearchService | undefined;
+
+  constructor(
+    applicationStore: GenericLegendApplicationStore,
+    product: V1_Terminal,
+    userSearchService: UserSearchService | undefined,
+  ) {
+    super(product, applicationStore, new TerminalProductLayoutState());
+
+    this.terminal = product;
+    this.userSearchService = userSearchService;
+  }
+
   public override getTitle(): string | undefined {
     return this.product.productName;
   }
