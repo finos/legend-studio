@@ -42,6 +42,7 @@ import {
   type Class,
   type TDSExecutionResult,
   type TDSRowDataType,
+  type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_Terminal,
   getRowDataFromExecutionResult,
@@ -60,9 +61,9 @@ import {
 import type { AuthContextProps } from 'react-oidc-context';
 import { getDataProductFromDetails } from './LakehouseUtils.js';
 import {
-  parseGAVCoordinates,
-  type StoredFileGeneration,
   type Entity,
+  parseGAVCoordinates,
+  StoredFileGeneration,
   parseProjectIdentifier,
 } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
@@ -192,8 +193,105 @@ export class LegendMarketplaceProductViewerStore {
     deploymentId: number,
     auth: AuthContextProps,
   ): GeneratorFn<void> {
+    const loadV1DataProduct = async (
+      entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
+    ): Promise<{
+      v1DataProduct: V1_DataProduct;
+      graphManagerState: GraphManagerState;
+    }> => {
+      // Create graph manager state
+      const graphManagerState = new GraphManagerState(
+        this.marketplaceBaseStore.applicationStore.pluginManager,
+        this.marketplaceBaseStore.applicationStore.logService,
+      );
+      const graphManager = guaranteeType(
+        graphManagerState.graphManager,
+        V1_PureGraphManager,
+        'GraphManager must be a V1_PureGraphManager',
+      );
+      await graphManager.initialize(
+        {
+          env: this.marketplaceBaseStore.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl:
+              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: this.marketplaceBaseStore.remoteEngine },
+      );
+      await graphManagerState.initializeSystem();
+
+      // For AdHoc DataProducts, we need to build the graph so that we have the
+      // PCMD to use for fetching access point relation types.
+      if (
+        entitlementsDataProductDetails.origin instanceof
+        V1_AdHocDeploymentDataProductOrigin
+      ) {
+        const entities: Entity[] = (await graphManager.pureCodeToEntities(
+          entitlementsDataProductDetails.origin.definition,
+        )) as Entity[];
+        await graphManager.buildGraph(
+          graphManagerState.graph,
+          entities,
+          ActionState.create(),
+        );
+      }
+
+      const v1DataProduct = guaranteeType(
+        await getDataProductFromDetails(
+          entitlementsDataProductDetails,
+          graphManager,
+          this.marketplaceBaseStore,
+        ),
+        V1_DataProduct,
+        `Unable to get V1_DataProduct from details for id: ${entitlementsDataProductDetails.id}`,
+      );
+
+      return {
+        v1DataProduct,
+        graphManagerState,
+      };
+    };
+
+    const loadDataProductArtifact = async (
+      entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
+      v1DataProduct: V1_DataProduct,
+    ): Promise<V1_DataProductArtifact | undefined> => {
+      if (
+        !(
+          entitlementsDataProductDetails.origin instanceof
+          V1_SdlcDeploymentDataProductOrigin
+        )
+      ) {
+        return undefined;
+      }
+      const storeProject = new StoreProjectData();
+      storeProject.groupId = entitlementsDataProductDetails.origin.group;
+      storeProject.artifactId = entitlementsDataProductDetails.origin.artifact;
+      const files = (
+        await this.marketplaceBaseStore.depotServerClient.getGenerationFilesByType(
+          storeProject,
+          resolveVersion(entitlementsDataProductDetails.origin.version),
+          ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
+        )
+      ).map(StoredFileGeneration.serialization.fromJson);
+      const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
+        ?.file.content;
+      if (fileGen) {
+        const content: PlainObject = JSON.parse(fileGen) as PlainObject;
+        const artifact = V1_DataProductArtifact.serialization.fromJson(content);
+        return artifact;
+      } else {
+        throw new Error(
+          `Artifact generation not found for data product: ${storeProject.groupId}:${storeProject.artifactId}:${entitlementsDataProductDetails.origin.version}/${v1DataProduct.path}`,
+        );
+      }
+    };
+
     try {
       this.loadingProductState.inProgress();
+
       const rawResponse =
         (yield this.marketplaceBaseStore.lakehouseContractServerClient.getDataProductByIdAndDID(
           dataProductId,
@@ -218,53 +316,17 @@ export class LegendMarketplaceProductViewerStore {
         fetchedDataProductDetails[0],
       );
 
-      // Create graph manager state
-      const graphManagerState = new GraphManagerState(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-      );
-      const graphManager = guaranteeType(
-        graphManagerState.graphManager,
-        V1_PureGraphManager,
-        'GraphManager must be a V1_PureGraphManager',
-      );
-      yield graphManager.initialize(
-        {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl:
-              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
-      );
-      yield graphManagerState.initializeSystem();
-
-      // For AdHoc DataProducts, we need to build the graph so that we have the
-      // PCMD to use for fetching access point relation types.
-      if (
-        entitlementsDataProductDetails.origin instanceof
-        V1_AdHocDeploymentDataProductOrigin
-      ) {
-        const entities: Entity[] = (yield graphManager.pureCodeToEntities(
-          entitlementsDataProductDetails.origin.definition,
-        )) as Entity[];
-        yield graphManager.buildGraph(
-          graphManagerState.graph,
-          entities,
-          ActionState.create(),
-        );
-      }
-
-      const v1DataProduct = guaranteeType(
-        yield getDataProductFromDetails(
-          entitlementsDataProductDetails,
-          graphManager,
-          this.marketplaceBaseStore,
-        ),
-        V1_DataProduct,
-        `Unable to get V1_DataProduct from details for id: ${entitlementsDataProductDetails.id}`,
+      // TODO: run the below in parallel once V1_EntitlementsDataProductDetails is updated
+      // to include fullPath.
+      const { v1DataProduct, graphManagerState } = (yield loadV1DataProduct(
+        entitlementsDataProductDetails,
+      )) as {
+        v1DataProduct: V1_DataProduct;
+        graphManagerState: GraphManagerState;
+      };
+      const dataProductArtifact = yield loadDataProductArtifact(
+        entitlementsDataProductDetails,
+        v1DataProduct,
       );
 
       const dataProductViewerState = new DataProductViewerState(
@@ -275,6 +337,7 @@ export class LegendMarketplaceProductViewerStore {
         this.marketplaceBaseStore.applicationStore.config.options.dataProductConfig,
         this.marketplaceBaseStore.userSearchService,
         undefined,
+        dataProductArtifact,
         {
           viewDataProductSource: () => {
             if (

@@ -21,6 +21,7 @@ import type {
 import {
   type GraphManagerState,
   type V1_DataProduct,
+  type V1_DataProductArtifact,
   type V1_EngineServerClient,
 } from '@finos/legend-graph';
 import { makeObservable } from 'mobx';
@@ -42,6 +43,7 @@ export class DataProductViewerState extends BaseViewerState<
   readonly userSearchService: UserSearchService | undefined;
   readonly dataProductConfig: DataProductConfig | undefined;
   readonly projectGAV: ProjectGAVCoordinates | undefined;
+  readonly artifactGeneration: V1_DataProductArtifact | undefined;
 
   // actions
   readonly viewDataProductSource?: (() => void) | undefined;
@@ -56,6 +58,7 @@ export class DataProductViewerState extends BaseViewerState<
     dataProductConfig: DataProductConfig | undefined,
     userSearchService: UserSearchService | undefined,
     projectGAV: ProjectGAVCoordinates | undefined,
+    artifactGeneration: V1_DataProductArtifact | undefined,
     actions: {
       viewDataProductSource?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
@@ -75,6 +78,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.userSearchService = userSearchService;
     this.dataProductConfig = dataProductConfig;
     this.projectGAV = projectGAV;
+    this.artifactGeneration = artifactGeneration;
 
     // actions
     this.viewDataProductSource = actions.viewDataProductSource;

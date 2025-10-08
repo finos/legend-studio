@@ -2363,6 +2363,7 @@ const getDataProductViewerState = (
     applicationStore.config.options.dataProductConfig,
     undefined,
     undefined,
+    undefined,
     {},
   );
 };

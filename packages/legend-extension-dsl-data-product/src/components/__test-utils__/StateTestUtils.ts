@@ -138,6 +138,7 @@ export const TEST__getDataProductViewerState = (
     }),
     undefined,
     projectGAVCoordinates,
+    undefined,
     {
       viewDataProductSource: jest.fn(),
     },
