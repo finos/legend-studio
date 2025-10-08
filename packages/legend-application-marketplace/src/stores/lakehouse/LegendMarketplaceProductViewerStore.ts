@@ -275,7 +275,7 @@ export class LegendMarketplaceProductViewerStore {
           resolveVersion(entitlementsDataProductDetails.origin.version),
           ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
         )
-      ).map(StoredFileGeneration.serialization.fromJson);
+      ).map((rawFile) => StoredFileGeneration.serialization.fromJson(rawFile));
       const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
         ?.file.content;
       if (fileGen) {
