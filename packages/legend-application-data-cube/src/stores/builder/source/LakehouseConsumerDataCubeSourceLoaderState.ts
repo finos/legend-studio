@@ -33,7 +33,10 @@ import {
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { action, makeObservable, observable } from 'mobx';
 import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
-import { RawLakehouseConsumerDataCubeSource } from '../../model/LakehouseConsumerDataCubeSource.js';
+import {
+  RawLakehouseConsumerDataCubeSource,
+  RawLakehouseSdlcOrigin,
+} from '../../model/LakehouseConsumerDataCubeSource.js';
 
 export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
   adhocDPDefinition: string | undefined;
@@ -91,7 +94,7 @@ export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSo
     );
     if (
       !rawSource.origin ||
-      rawSource.origin === V1_DataProductOriginType.SDLC_DEPLOYMENT
+      rawSource.origin instanceof RawLakehouseSdlcOrigin
     ) {
       this.setDpLoaded(true);
     } else {

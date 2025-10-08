@@ -15,15 +15,28 @@
  */
 
 import { DataCubeSource } from '@finos/legend-data-cube';
-import type { V1_PureModelContextData } from '@finos/legend-graph';
+import {
+  V1_DataProductOriginType,
+  type V1_PureModelContextData,
+} from '@finos/legend-graph';
 import { VersionedProjectData } from '@finos/legend-server-depot';
 import {
   optionalCustomUsingModelSchema,
   SerializationFactory,
+  UnsupportedOperationError,
   usingConstantValueSchema,
+  usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, list, optional, primitive } from 'serializr';
+import {
+  createModelSchema,
+  custom,
+  deserialize,
+  list,
+  optional,
+  primitive,
+  serialize,
+} from 'serializr';
 
 export const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 
@@ -36,12 +49,37 @@ export class LakehouseConsumerDataCubeSource extends DataCubeSource {
   paths!: string[];
 }
 
+export abstract class RawLakehouseOrigin {}
+
+export class RawLakehouseAdhocOrigin extends RawLakehouseOrigin {
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(RawLakehouseAdhocOrigin, {
+      _type: usingConstantValueSchema(
+        V1_DataProductOriginType.AD_HOC_DEPLOYMENT,
+      ),
+    }),
+  );
+}
+
+export class RawLakehouseSdlcOrigin extends RawLakehouseOrigin {
+  dpCoordinates!: VersionedProjectData;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(RawLakehouseSdlcOrigin, {
+      _type: usingConstantValueSchema(V1_DataProductOriginType.SDLC_DEPLOYMENT),
+      dpCoordinates: usingModelSchema(
+        VersionedProjectData.serialization.schema,
+      ),
+    }),
+  );
+}
+
 export class RawLakehouseConsumerDataCubeSource {
   dpCoordinates?: VersionedProjectData;
   warehouse!: string;
   environment!: string;
   paths!: string[];
-  origin?: string;
+  origin?: RawLakehouseOrigin;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLakehouseConsumerDataCubeSource, {
@@ -52,7 +90,45 @@ export class RawLakehouseConsumerDataCubeSource {
       warehouse: primitive(),
       environment: primitive(),
       paths: list(primitive()),
-      origin: optional(primitive()),
+      origin: optional(
+        custom(
+          (value) => {
+            if (value instanceof RawLakehouseAdhocOrigin) {
+              return serialize(
+                RawLakehouseAdhocOrigin.serialization.schema,
+                value,
+              );
+            } else if (value instanceof RawLakehouseSdlcOrigin) {
+              return serialize(
+                RawLakehouseSdlcOrigin.serialization.schema,
+                value,
+              );
+            } else {
+              throw new Error(
+                `Can't serialize RawLakehouseOrigin: no compatible serialization schema available from the provided value`,
+              );
+            }
+          },
+          (jsonValue) => {
+            switch (jsonValue._type) {
+              case V1_DataProductOriginType.AD_HOC_DEPLOYMENT:
+                return deserialize(
+                  RawLakehouseAdhocOrigin.serialization.schema,
+                  jsonValue,
+                );
+              case V1_DataProductOriginType.SDLC_DEPLOYMENT:
+                return deserialize(
+                  RawLakehouseSdlcOrigin.serialization.schema,
+                  jsonValue,
+                );
+              default:
+                throw new UnsupportedOperationError(
+                  `Can't deserialize RawLakehouseOrigin: no compatible deserialization schema for type '${jsonValue._type}'`,
+                );
+            }
+          },
+        ),
+      ),
     }),
   );
 }

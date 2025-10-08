@@ -44,7 +44,11 @@ import {
   V1_DataProductOriginType,
   V1_AdHocDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
-import { RawLakehouseConsumerDataCubeSource } from '../../model/LakehouseConsumerDataCubeSource.js';
+import {
+  RawLakehouseAdhocOrigin,
+  RawLakehouseConsumerDataCubeSource,
+  RawLakehouseSdlcOrigin,
+} from '../../model/LakehouseConsumerDataCubeSource.js';
 
 export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   warehouse: string | undefined;
@@ -250,13 +254,15 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     const rawSource = new RawLakehouseConsumerDataCubeSource();
     rawSource.environment = guaranteeNonNullable(this.selectedEnvironment);
     if (this.origin === V1_DataProductOriginType.SDLC_DEPLOYMENT) {
-      rawSource.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
+      const lakehouseOrigin = new RawLakehouseSdlcOrigin();
+      lakehouseOrigin.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
+      rawSource.origin = lakehouseOrigin;
     } else {
       this._engine.registerAdhocDataProduct(this.adhocDpDefinition);
+      rawSource.origin = new RawLakehouseAdhocOrigin();
     }
     rawSource.paths = this.paths;
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);
-    rawSource.origin = guaranteeNonNullable(this.origin);
 
     return Promise.resolve(
       RawLakehouseConsumerDataCubeSource.serialization.toJson(rawSource),
