@@ -16,12 +16,22 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
-import { EyeIcon, Panel, PanelContent, PanelHeader } from '@finos/legend-art';
-import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import {
+  EyeIcon,
+  EnvelopeIcon,
+  Panel,
+  PanelContent,
+  PanelHeader,
+} from '@finos/legend-art';
+import {
+  DataSpaceEditorState,
+  onConvertDataSpaceToDataProduct,
+} from '../stores/DataSpaceEditorState.js';
 import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor/DataSpaceGeneralEditor.js';
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
 import { flowResult } from 'mobx';
 import { isStubbed_PackageableElement } from '@finos/legend-graph';
+import { dataSpaceContainsOneMapping } from '../stores/DataSpaceToDataProductConverter.js';
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -55,6 +65,16 @@ export const DataSpaceEditor = observer(() => {
     ).catch(editorStore.applicationStore.alertUnhandledError);
   };
 
+  const convertDataSpace = (): void => {
+    flowResult(
+      onConvertDataSpaceToDataProduct(dataSpace, editorStore, dataSpaceState),
+    ).catch(editorStore.applicationStore.alertUnhandledError);
+  };
+
+  const canConvertDataSpace = (): boolean => {
+    return dataSpaceContainsOneMapping(dataSpace);
+  };
+
   return (
     <Panel className="dataSpace-editor">
       <PanelHeader
@@ -65,6 +85,18 @@ export const DataSpaceEditor = observer(() => {
       />
       <PanelHeader title="General" darkMode={true}>
         <div className="panel__header__actions">
+          <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+            <button
+              className="btn__dropdown-combo__label"
+              onClick={convertDataSpace}
+              title="Convert Data Product"
+              tabIndex={-1}
+              disabled={!canConvertDataSpace}
+            >
+              <EnvelopeIcon className="btn__dropdown-combo__label__icon" />
+              <div className="btn__dropdown-combo__label__title">Convert</div>
+            </button>
+          </div>
           <div className="btn__dropdown-combo btn__dropdown-combo--primary">
             <button
               className="btn__dropdown-combo__label"
