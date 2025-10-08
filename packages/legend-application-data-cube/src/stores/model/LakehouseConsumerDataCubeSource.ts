@@ -21,6 +21,7 @@ import {
 } from '@finos/legend-graph';
 import { VersionedProjectData } from '@finos/legend-server-depot';
 import {
+  optionalCustom,
   optionalCustomUsingModelSchema,
   SerializationFactory,
   UnsupportedOperationError,
@@ -90,44 +91,42 @@ export class RawLakehouseConsumerDataCubeSource {
       warehouse: primitive(),
       environment: primitive(),
       paths: list(primitive()),
-      origin: optional(
-        custom(
-          (value) => {
-            if (value instanceof RawLakehouseAdhocOrigin) {
-              return serialize(
+      origin: optionalCustom(
+        (value) => {
+          if (value instanceof RawLakehouseAdhocOrigin) {
+            return serialize(
+              RawLakehouseAdhocOrigin.serialization.schema,
+              value,
+            );
+          } else if (value instanceof RawLakehouseSdlcOrigin) {
+            return serialize(
+              RawLakehouseSdlcOrigin.serialization.schema,
+              value,
+            );
+          } else {
+            throw new Error(
+              `Can't serialize RawLakehouseOrigin: no compatible serialization schema available from the provided value`,
+            );
+          }
+        },
+        (jsonValue) => {
+          switch (jsonValue._type) {
+            case V1_DataProductOriginType.AD_HOC_DEPLOYMENT:
+              return deserialize(
                 RawLakehouseAdhocOrigin.serialization.schema,
-                value,
+                jsonValue,
               );
-            } else if (value instanceof RawLakehouseSdlcOrigin) {
-              return serialize(
+            case V1_DataProductOriginType.SDLC_DEPLOYMENT:
+              return deserialize(
                 RawLakehouseSdlcOrigin.serialization.schema,
-                value,
+                jsonValue,
               );
-            } else {
-              throw new Error(
-                `Can't serialize RawLakehouseOrigin: no compatible serialization schema available from the provided value`,
+            default:
+              throw new UnsupportedOperationError(
+                `Can't deserialize RawLakehouseOrigin: no compatible deserialization schema for type '${jsonValue._type}'`,
               );
-            }
-          },
-          (jsonValue) => {
-            switch (jsonValue._type) {
-              case V1_DataProductOriginType.AD_HOC_DEPLOYMENT:
-                return deserialize(
-                  RawLakehouseAdhocOrigin.serialization.schema,
-                  jsonValue,
-                );
-              case V1_DataProductOriginType.SDLC_DEPLOYMENT:
-                return deserialize(
-                  RawLakehouseSdlcOrigin.serialization.schema,
-                  jsonValue,
-                );
-              default:
-                throw new UnsupportedOperationError(
-                  `Can't deserialize RawLakehouseOrigin: no compatible deserialization schema for type '${jsonValue._type}'`,
-                );
-            }
-          },
-        ),
+          }
+        },
       ),
     }),
   );
