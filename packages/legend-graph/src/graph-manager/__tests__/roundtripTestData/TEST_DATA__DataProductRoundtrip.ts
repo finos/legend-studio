@@ -407,6 +407,130 @@ export const TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS = [
   },
 ];
 
+export const TEST_DATA__DATAPRODUCT__FUNCTION_ACCESS_POINT = [
+  {
+    path: 'x::A',
+    content: {
+      _type: 'dataProduct',
+      accessPointGroups: [
+        {
+          _type: 'modelAccessPointGroup',
+          accessPoints: [
+            {
+              _type: 'functionAccessPoint',
+              id: 'myId',
+              query: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 1,
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          compatibleRuntimes: [
+            {
+              description: 'desc',
+              id: 'runtimeId',
+              runtime: {
+                path: 'model::dummyRuntime',
+              },
+            },
+          ],
+          featuredElements: [
+            {
+              element: {
+                path: 'model',
+              },
+              exclude: false,
+            },
+            {
+              element: {
+                path: 'model',
+              },
+              exclude: true,
+            },
+            {
+              element: {
+                path: 'model',
+              },
+            },
+          ],
+          defaultRuntime: 'runtimeId',
+          description: 'des',
+          id: 'grp',
+          mapping: {
+            path: 'model::dummyMapping',
+          },
+        },
+      ],
+      name: 'A',
+      package: 'x',
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+  {
+    path: 'model::dummyMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'dummyMapping',
+      package: 'model',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'model::dummyRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'dummyRuntime',
+      package: 'model',
+      runtimeValue: {
+        _type: 'engineRuntime',
+        connectionStores: [],
+        connections: [],
+        mappings: [
+          {
+            path: 'model::dummyMapping',
+            type: 'MAPPING',
+          },
+        ],
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          elements: [],
+          imports: [],
+          parserName: 'Pure',
+        },
+        {
+          _type: 'importAware',
+          elements: ['x::A'],
+          imports: [],
+          parserName: 'DataProduct',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];
+
 export const TEST_DATA__DATAPRODUCT__INCLUDE = [
   {
     path: 'model::lakehouse::Firm',

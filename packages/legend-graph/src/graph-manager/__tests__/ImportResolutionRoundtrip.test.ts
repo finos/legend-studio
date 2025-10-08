@@ -79,6 +79,7 @@ import {
   TEST_DATA__DATAPRODUCT_GROUPS,
   TEST_DATA__DATAPRODUCT__INCLUDE,
   TEST_DATA__DATAPRODUCT__MAPPING__INCLUDE,
+  TEST_DATA__DATAPRODUCT__FUNCTION_ACCESS_POINT,
 } from './roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
 import { TEST_DATA__Function_genericType } from './roundtripTestData/TEST_DATA__Function-generictype.js';
 
@@ -271,6 +272,14 @@ describe(unitTest('DSL Data product'), () => {
       'DSL Data Product Mapping Include',
       TEST_DATA__DATAPRODUCT__MAPPING__INCLUDE,
     ],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
+});
+
+describe(unitTest('DSL Function Access Point'), () => {
+  test.each([
+    ['Function Access Point', TEST_DATA__DATAPRODUCT__FUNCTION_ACCESS_POINT],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
   });
