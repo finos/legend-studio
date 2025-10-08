@@ -323,9 +323,8 @@ const TDSColumnCellRenderer = (props: {
       const lambdaRelationType = artifactGeneration?.accessPointGroups
         .find((apg) => apg.id === apgState.apg.id)
         ?.accessPointImplementations.find((ap) => ap.id === data.id)
-        ?.lambdaGenericType?.typeArguments?.find(
-          (typeArg) => typeArg instanceof V1_RelationType,
-        ) as V1_RelationType | undefined;
+        ?.lambdaGenericType?.typeArguments?.map((typeArg) => typeArg.rawType)
+        ?.filter((rawType) => rawType instanceof V1_RelationType)[0];
       if (lambdaRelationType) {
         setAccessPointRelationType(lambdaRelationType);
       } else {
