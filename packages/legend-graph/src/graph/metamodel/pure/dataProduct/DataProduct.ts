@@ -55,15 +55,19 @@ export abstract class AccessPoint implements Hashable {
 }
 
 export class FunctionAccessPoint extends AccessPoint {
-  func: RawLambda;
+  query: RawLambda;
 
-  constructor(id: string, func: RawLambda) {
+  constructor(id: string, query: RawLambda) {
     super(id);
-    this.func = func;
+    this.query = query;
   }
 
   override get hashCode(): string {
-    return hashArray([super.hashCode, this.func]);
+    return hashArray([
+      super.hashCode,
+      CORE_HASH_STRUCTURE.FUNCTION_ACCESS_POINT,
+      this.query,
+    ]);
   }
 }
 

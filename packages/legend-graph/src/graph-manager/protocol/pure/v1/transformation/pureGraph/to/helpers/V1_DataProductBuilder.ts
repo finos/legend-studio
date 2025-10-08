@@ -29,6 +29,7 @@ import {
   DataProductLibraryIcon,
   DataProductLink,
   DataProductRuntimeInfo,
+  FunctionAccessPoint,
   LakehouseAccessPoint,
   ModelAccessPointGroup,
   UnknownAccessPoint,
@@ -41,6 +42,7 @@ import {
   type V1_DataProductLink,
   V1_DataProductEmbeddedImageIcon,
   V1_DataProductLibraryIcon,
+  V1_FunctionAccessPoint,
   V1_LakehouseAccessPoint,
   V1_ModelAccessPointGroup,
   V1_UnknownAccessPoint,
@@ -81,6 +83,17 @@ export const V1_buildAccessPoint = (
     lakeAccessPoint.classification = ap.classification;
     lakeAccessPoint.description = ap.description;
     return lakeAccessPoint;
+  } else if (ap instanceof V1_FunctionAccessPoint) {
+    const functionAccessPoint = new FunctionAccessPoint(
+      ap.id,
+      V1_buildRawLambdaWithResolvedPaths(
+        ap.query.parameters,
+        ap.query.body,
+        context,
+      ),
+    );
+    functionAccessPoint.description = ap.description;
+    return functionAccessPoint;
   } else if (ap instanceof V1_UnknownAccessPoint) {
     const unkown = new UnknownAccessPoint(ap.id);
     unkown.content = ap.content;

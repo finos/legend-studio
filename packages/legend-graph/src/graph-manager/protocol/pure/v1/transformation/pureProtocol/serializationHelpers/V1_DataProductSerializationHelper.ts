@@ -43,6 +43,7 @@ import {
   V1_InternalDataProductType,
   V1_ExternalDataProductType,
   V1_DataProductTypeValue,
+  V1_FunctionAccessPoint,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   UnsupportedOperationError,
@@ -65,6 +66,7 @@ import { V1_MappingIncludeDataProduct } from '../../../model/packageableElements
 
 export enum V1_AccessPointType {
   LAKEHOUSE = 'lakehouseAccessPoint',
+  FUNCTION = 'functionAccessPoint',
   EQUAL_TO_JSON = 'equalToJson',
   EQUAL_TO_TDS = 'equalToTDS',
 }
@@ -96,6 +98,16 @@ export const V1_lakehouseAccessPointModelSchema = createModelSchema(
   },
 );
 
+export const V1_functionAccessPointModelSchema = createModelSchema(
+  V1_FunctionAccessPoint,
+  {
+    _type: usingConstantValueSchema(V1_AccessPointType.FUNCTION),
+    description: optional(primitive()),
+    id: primitive(),
+    query: usingModelSchema(V1_rawLambdaModelSchema),
+  },
+);
+
 const V1_serializeAccessPoint = (
   protocol: V1_AccessPoint,
 ): PlainObject<V1_AccessPoint> => {
@@ -103,6 +115,8 @@ const V1_serializeAccessPoint = (
     return serialize(V1_lakehouseAccessPointModelSchema, protocol);
   } else if (protocol instanceof V1_UnknownAccessPoint) {
     return protocol.content;
+  } else if (protocol instanceof V1_FunctionAccessPoint) {
+    return serialize(V1_functionAccessPointModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize access point type`,
@@ -116,6 +130,8 @@ const V1_deserializeAccessPoint = (
   switch (json._type) {
     case V1_AccessPointType.LAKEHOUSE:
       return deserialize(V1_lakehouseAccessPointModelSchema, json);
+    case V1_AccessPointType.FUNCTION:
+      return deserialize(V1_functionAccessPointModelSchema, json);
     default: {
       const unknown = new V1_UnknownAccessPoint();
       unknown.content = json;
