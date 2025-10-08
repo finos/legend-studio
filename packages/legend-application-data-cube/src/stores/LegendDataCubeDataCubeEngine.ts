@@ -174,7 +174,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
   private _ingestDefinition: PlainObject | undefined;
-  private _adhocDataProductDefinition: string | undefined;
+  private _adhocDataProductGraphGrammar: string | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -1274,8 +1274,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._ingestDefinition = ingestDefinition;
   }
 
-  registerAdhocDataProduct(adhocDPDefinition: string | undefined) {
-    this._adhocDataProductDefinition = adhocDPDefinition;
+  registerAdhocDataProductGraphGrammar(fullGraphGrammar: string | undefined) {
+    this._adhocDataProductGraphGrammar = fullGraphGrammar;
   }
 
   // ---------------------------------- CACHING --------------------------------------
@@ -1830,7 +1830,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       );
     } else {
       pmcd = await this.parseCompatibleModel(
-        guaranteeNonNullable(this._adhocDataProductDefinition),
+        guaranteeNonNullable(this._adhocDataProductGraphGrammar),
       );
     }
 

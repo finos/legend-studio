@@ -61,7 +61,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   accessPoints: string[] = [];
   dpCoordinates: VersionedProjectData | undefined;
   origin: string | undefined;
-  adhocDpDefinition: string | undefined;
+  fullGraphGrammar: string | undefined;
 
   DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 
@@ -181,7 +181,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       ) {
         this.dpCoordinates = undefined;
         this.origin = V1_DataProductOriginType.AD_HOC_DEPLOYMENT;
-        this.adhocDpDefinition = dataProduct.origin.definition;
+        this.fullGraphGrammar = dataProduct.origin.definition;
       }
       this.setAccessPoints(
         dataProduct?.dataProduct.accessPoints.map(
@@ -258,7 +258,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       lakehouseOrigin.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
       rawSource.origin = lakehouseOrigin;
     } else {
-      this._engine.registerAdhocDataProduct(this.adhocDpDefinition);
+      this._engine.registerAdhocDataProductGraphGrammar(this.fullGraphGrammar);
       rawSource.origin = new RawLakehouseAdhocOrigin();
     }
     rawSource.paths = this.paths;

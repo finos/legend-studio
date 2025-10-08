@@ -25,7 +25,6 @@ import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderSta
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import {
   V1_AdHocDeploymentDataProductOrigin,
-  V1_DataProductOriginType,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
   type PersistentDataCube,
@@ -39,7 +38,7 @@ import {
 } from '../../model/LakehouseConsumerDataCubeSource.js';
 
 export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
-  adhocDPDefinition: string | undefined;
+  fullGraphGrammar: string | undefined;
   dataProductId: string | undefined;
   dpLoaded: boolean;
 
@@ -101,7 +100,7 @@ export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSo
       this.setDpLoaded(false);
     }
     this.setDataProductId(rawSource.paths[0]);
-    this.adhocDPDefinition = undefined;
+    this.fullGraphGrammar = undefined;
   }
 
   async loadAdhocDataProduct(
@@ -132,7 +131,7 @@ export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSo
         dataProduct?.origin &&
         dataProduct.origin instanceof V1_AdHocDeploymentDataProductOrigin
       ) {
-        this.adhocDPDefinition = guaranteeType(
+        this.fullGraphGrammar = guaranteeType(
           dataProduct.origin,
           V1_AdHocDeploymentDataProductOrigin,
         ).definition;
@@ -147,8 +146,8 @@ export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSo
         guaranteeNonNullable(source),
       );
 
-    if (this.adhocDPDefinition) {
-      this._engine.registerAdhocDataProduct(this.adhocDPDefinition);
+    if (this.fullGraphGrammar) {
+      this._engine.registerAdhocDataProductGraphGrammar(this.fullGraphGrammar);
     }
 
     return RawLakehouseConsumerDataCubeSource.serialization.toJson(
