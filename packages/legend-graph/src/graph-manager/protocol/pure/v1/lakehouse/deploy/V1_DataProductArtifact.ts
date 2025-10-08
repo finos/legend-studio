@@ -192,19 +192,6 @@ export class V1_AccessPointImplementation {
       lambdaGenericType: custom(
         (val) => serialize(V1_genericTypeModelSchema, val),
         (val) => V1_deserializeGenericType(val),
-        {
-          beforeDeserialize: function (callback, _, jsonParentValue) {
-            /** @backwardCompatibility */
-            if (
-              jsonParentValue.type !== undefined &&
-              jsonParentValue.genericType === undefined
-            ) {
-              callback(null, jsonParentValue.type);
-            } else {
-              callback(null, jsonParentValue.genericType);
-            }
-          },
-        },
       ),
     }),
   );
