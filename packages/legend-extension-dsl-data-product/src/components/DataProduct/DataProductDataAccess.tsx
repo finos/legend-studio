@@ -27,7 +27,7 @@ import {
   DataCubeIcon,
   PythonIcon,
   SQLIcon,
-  TableIcon,
+  PowerBiIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -106,6 +106,7 @@ import {
   AccessPointGroupAccess,
 } from '../../stores/DataProduct/DataProductAPGState.js';
 
+const WORK_IN_PROGRESS = 'Work in progress';
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
@@ -124,12 +125,49 @@ export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
     }}
   />
 );
-export const WorkInProgressNotice: React.FC = () => (
-  <Box className="data-product__viewer__tab_screen">
-    <span>Work in progress</span>
-  </Box>
-);
 
+export const TabMessageScreen = observer((props: { message: string }) => {
+  const { message } = props;
+  return (
+    <Box className="data-product__viewer__tab-screen">
+      <span>{message}</span>
+    </Box>
+  );
+});
+
+export const PowerBiScreen = observer(
+  (props: { dataAccessState: DataProductDataAccessState | undefined }) => {
+    const { dataAccessState } = props;
+    if (
+      !(
+        dataAccessState?.entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
+      ) ||
+      !dataAccessState.dataProductViewerState.openPowerBi
+    ) {
+      return (
+        <TabMessageScreen message="Adhoc data products not supported in Power BI" />
+      );
+    }
+    const loadPowerBi = (): void => {
+      if (dataAccessState.dataProductViewerState.openPowerBi) {
+        dataAccessState.dataProductViewerState.openPowerBi();
+      }
+    };
+    return (
+      <div className="data-product__viewer__tab-screen">
+        <button
+          onClick={loadPowerBi}
+          tabIndex={-1}
+          className="data-product__viewer__tab-screen__btn"
+          title="Open in Power BI"
+        >
+          Open in Power BI
+        </button>
+      </div>
+    );
+  },
+);
 export const DataCubeScreen = observer(
   (props: {
     dataAccessState: DataProductDataAccessState | undefined;
@@ -144,7 +182,7 @@ export const DataCubeScreen = observer(
       ) ||
       !apgState.dataProductViewerState.openDataCube
     ) {
-      return <WorkInProgressNotice />;
+      return <TabMessageScreen message={WORK_IN_PROGRESS} />;
     }
     const accessPointdata = params.data;
     const auth = useAuth();
@@ -181,9 +219,9 @@ export const DataCubeScreen = observer(
       }
     };
     return (
-      <div className="data-product__viewer__tab_screen">
+      <div className="data-product__viewer__tab-screen">
         <CustomSelectorInput
-          className="data-product__viewer__tab_screen__dropdown"
+          className="data-product__viewer__tab-screen__dropdown"
           options={dataAccessState.environmentDropDownValues.map((env) => ({
             label: env,
             value: env,
@@ -208,7 +246,7 @@ export const DataCubeScreen = observer(
           onClick={loadDataCube}
           tabIndex={-1}
           disabled={!selectedEnvironment}
-          className="data-product__viewer__tab_screen__btn"
+          className="data-product__viewer__tab-screen__btn"
           title="Open in Datacube"
         >
           Open in Datacube
@@ -230,7 +268,7 @@ const TDSColumnCellRenderer = (props: {
     COLUMNS = 'Columns',
     GRAMMAR = 'Grammar',
     DATACUBE = 'Datacube',
-    BUSINESS_INTELLIGENCE = 'Business Intelligence',
+    POWER_BI = 'Power BI',
     PYTHON = 'Python',
     SQL = 'SQL',
   }
@@ -449,20 +487,20 @@ const TDSColumnCellRenderer = (props: {
           <Tab
             className={clsx('data-product__viewer__tab', {
               'data-product__viewer__tab--selected':
-                selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE,
+                selectedTab === DataProductTabs.POWER_BI,
             })}
             label={
               <span className="label-container">
-                <TableIcon
+                <PowerBiIcon
                   className={clsx('data-product__viewer__tab-icon', {
                     'data-product__viewer__tab-icon--selected':
-                      selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE,
+                      selectedTab === DataProductTabs.POWER_BI,
                   })}
                 />
-                <span>Business Intelligence</span>
+                <span>Power BI</span>
               </span>
             }
-            value={DataProductTabs.BUSINESS_INTELLIGENCE}
+            value={DataProductTabs.POWER_BI}
           />
           <Tab
             className={clsx('data-product__viewer__tab', {
@@ -566,11 +604,15 @@ const TDSColumnCellRenderer = (props: {
                 params={params}
               />
             )}
-            {selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE && (
-              <WorkInProgressNotice />
+            {selectedTab === DataProductTabs.POWER_BI && (
+              <PowerBiScreen dataAccessState={dataAccessState} />
             )}
-            {selectedTab === DataProductTabs.PYTHON && <WorkInProgressNotice />}
-            {selectedTab === DataProductTabs.SQL && <WorkInProgressNotice />}
+            {selectedTab === DataProductTabs.PYTHON && (
+              <TabMessageScreen message={WORK_IN_PROGRESS} />
+            )}
+            {selectedTab === DataProductTabs.SQL && (
+              <TabMessageScreen message={WORK_IN_PROGRESS} />
+            )}
           </>
         )}
       </Box>

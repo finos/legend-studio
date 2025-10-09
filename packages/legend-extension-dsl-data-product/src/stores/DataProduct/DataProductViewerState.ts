@@ -45,6 +45,7 @@ export class DataProductViewerState extends BaseViewerState<
 
   // actions
   readonly viewDataProductSource?: (() => void) | undefined;
+  readonly openPowerBi?: (() => void) | undefined;
   readonly openDataCube?: ((sourceData: object) => void) | undefined;
 
   constructor(
@@ -58,6 +59,7 @@ export class DataProductViewerState extends BaseViewerState<
     actions: {
       viewDataProductSource?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
+      openPowerBi?: (() => void) | undefined;
       openDataCube?: (sourceData: object) => void;
     },
   ) {
@@ -76,6 +78,7 @@ export class DataProductViewerState extends BaseViewerState<
 
     // actions
     this.viewDataProductSource = actions.viewDataProductSource;
+    this.openPowerBi = actions.openPowerBi;
     this.openDataCube = actions.openDataCube;
   }
 
