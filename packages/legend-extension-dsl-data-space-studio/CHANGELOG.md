@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.239
+
+### Patch Changes
+
+- [#4522](https://github.com/finos/legend-studio/pull/4522) [`86edd91`](https://github.com/finos/legend-studio/commit/86edd91723b2fa6fe8d1856b68facdb57a0f7830) ([@jackp5150](https://github.com/jackp5150)) - Converter for DataSpace to DataProduct Transformation
+
 ## 0.1.238
 
 ## 0.1.237

@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.125
+
+### Patch Changes
+
+- [#4525](https://github.com/finos/legend-studio/pull/4525) [`2c5d267`](https://github.com/finos/legend-studio/commit/2c5d267f7bd9ca9d21278c6f51872900f7301f6e) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Bar chart logo for Power BI
+
 ## 7.1.124
 
 ### Patch Changes
