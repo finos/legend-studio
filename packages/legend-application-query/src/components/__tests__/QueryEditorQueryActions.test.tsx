@@ -92,6 +92,17 @@ test(
       createNewQueryModal,
       /details about what this query retrieves/i,
     );
+
+    expect(
+      getByText(createNewQueryModal, 'Create Query').hasAttribute('disabled'),
+    ).toBe(false);
+
+    fireEvent.change(descriptionInput, {
+      target: { value: '  ' },
+    });
+    expect(
+      getByText(createNewQueryModal, 'Create Query').hasAttribute('disabled'),
+    ).toBe(true);
     fireEvent.change(descriptionInput, {
       target: { value: 'This is a test description 123' },
     });
