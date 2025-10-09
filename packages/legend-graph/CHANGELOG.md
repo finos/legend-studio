@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.5
+
+### Patch Changes
+
+- [#4522](https://github.com/finos/legend-studio/pull/4522) [`86edd91`](https://github.com/finos/legend-studio/commit/86edd91723b2fa6fe8d1856b68facdb57a0f7830) ([@jackp5150](https://github.com/jackp5150)) - Add FunctionAccessPoint to DataProduct Metamodel
+
 ## 32.3.4
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.74
+
+### Patch Changes
+
+- [#4520](https://github.com/finos/legend-studio/pull/4520) [`23ffa90`](https://github.com/finos/legend-studio/commit/23ffa90163194793f5c8e8ce422ac4b07fde7951) ([@TharunRajeev](https://github.com/TharunRajeev)) - Open Data Product Access Point in Data Cube
+
 ## 16.0.73
 
 ### Patch Changes
