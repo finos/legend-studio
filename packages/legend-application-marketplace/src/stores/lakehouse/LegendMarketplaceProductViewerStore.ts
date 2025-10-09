@@ -35,6 +35,8 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  stringifyQueryParams,
+  addQueryParametersToUrl,
 } from '@finos/legend-shared';
 import {
   type Class,
@@ -287,6 +289,33 @@ export class LegendMarketplaceProductViewerStore {
                   entitlementsDataProductDetails.origin.artifact,
                   entitlementsDataProductDetails.origin.version,
                   v1DataProduct.path,
+                ),
+              );
+            }
+          },
+          openPowerBi: () => {
+            if (
+              entitlementsDataProductDetails.origin instanceof
+              V1_SdlcDeploymentDataProductOrigin
+            ) {
+              const {
+                group: groupId,
+                artifact: artifactId,
+                version,
+              } = entitlementsDataProductDetails.origin;
+              const { path, name: apg } = v1DataProduct;
+              const powerBiUrl =
+                this.marketplaceBaseStore.applicationStore.config.powerBiUrl;
+              this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                addQueryParametersToUrl(
+                  powerBiUrl,
+                  stringifyQueryParams({
+                    groupId,
+                    artifactId,
+                    version,
+                    path,
+                    apg,
+                  }),
                 ),
               );
             }
