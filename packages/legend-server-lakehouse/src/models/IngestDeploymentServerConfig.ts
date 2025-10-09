@@ -20,12 +20,14 @@ import { createModelSchema, primitive } from 'serializr';
 
 export class IngestDeploymentServerConfig {
   ingestEnvironmentUrn!: string;
+  environmentName!: string;
   environmentClassification!: V1_IngestEnvironmentClassification;
   ingestServerUrl!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(IngestDeploymentServerConfig, {
       ingestEnvironmentUrn: primitive(),
+      environmentName: primitive(),
       environmentClassification: primitive(),
       ingestServerUrl: primitive(),
     }),

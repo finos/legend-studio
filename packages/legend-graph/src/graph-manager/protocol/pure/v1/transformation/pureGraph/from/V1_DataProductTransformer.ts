@@ -27,6 +27,7 @@ import {
   InternalDataProductType,
   UnknownAccessPoint,
   UnknownDataProductIcon,
+  FunctionAccessPoint,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   type V1_AccessPoint,
@@ -48,6 +49,7 @@ import {
   V1_UnknownDataProductIcon,
   V1_InternalDataProductType,
   V1_ExternalDataProductType,
+  V1_FunctionAccessPoint,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
@@ -71,6 +73,12 @@ const transformAccessPoint = (
     lake.reproducible = ap.reproducible;
     lake.description = ap.description;
     return lake;
+  } else if (ap instanceof FunctionAccessPoint) {
+    const func = new V1_FunctionAccessPoint();
+    func.id = ap.id;
+    func.description = ap.description;
+    func.query = V1_transformRawLambda(ap.func, context);
+    return func;
   } else if (ap instanceof UnknownAccessPoint) {
     const un = new V1_UnknownAccessPoint();
     un.content = ap.content;

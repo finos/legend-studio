@@ -46,6 +46,7 @@ export class DataProductViewerState extends BaseViewerState<
   // actions
   readonly viewDataProductSource?: (() => void) | undefined;
   readonly openPowerBi?: (() => void) | undefined;
+  readonly openDataCube?: ((sourceData: object) => void) | undefined;
 
   constructor(
     product: V1_DataProduct,
@@ -59,6 +60,7 @@ export class DataProductViewerState extends BaseViewerState<
       viewDataProductSource?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
       openPowerBi?: (() => void) | undefined;
+      openDataCube?: (sourceData: object) => void;
     },
   ) {
     super(product, applicationStore, new DataProductLayoutState(), actions);
@@ -77,6 +79,7 @@ export class DataProductViewerState extends BaseViewerState<
     // actions
     this.viewDataProductSource = actions.viewDataProductSource;
     this.openPowerBi = actions.openPowerBi;
+    this.openDataCube = actions.openDataCube;
   }
 
   public override getTitle(): string | undefined {

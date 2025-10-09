@@ -1821,13 +1821,17 @@
 
 .data-product__viewer__tab-screen {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  height: 28rem;
+  height: 30rem;
 
   span {
     color: var(--color-light-grey-400);
+  }
+
+  &__dropdown {
+    width: 20%;
   }
 
   &__btn {

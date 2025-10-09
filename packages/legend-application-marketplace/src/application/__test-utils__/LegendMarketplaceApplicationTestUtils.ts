@@ -69,6 +69,9 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   powerBi: {
     url: 'https://testPowerBiUrl',
   },
+  datacube: {
+    url: 'https://testDatacubeUrl',
+  },
   extensions: {
     core: {
       dataProductConfig: {

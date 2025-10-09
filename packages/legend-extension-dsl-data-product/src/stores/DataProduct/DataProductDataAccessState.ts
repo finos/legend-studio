@@ -43,7 +43,7 @@ import {
   isNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from '../../utils/DataContractUtils.js';
 import {
@@ -128,6 +128,7 @@ export class DataProductDataAccessState {
       lakehouseIngestEnvironmentDetails: observable,
       setDataContract: action,
       setAssociatedContracts: action,
+      environmentDropDownValues: computed,
       setDataContractAccessPointGroup: action,
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
@@ -154,6 +155,17 @@ export class DataProductDataAccessState {
 
   get product(): V1_DataProduct {
     return this.dataProductViewerState.product;
+  }
+
+  get environmentDropDownValues(): string[] {
+    return this.lakehouseIngestEnvironmentSummaries
+      .map((config) => {
+        const baseUrl = new URL(config.ingestServerUrl).hostname;
+        const subdomain = baseUrl.split('.')[0];
+        const parts = subdomain?.split('-');
+        return parts?.slice(0, -1).join('-');
+      })
+      .filter(isNonNullable);
   }
 
   setAssociatedContracts(val: V1_DataContract[] | undefined): void {

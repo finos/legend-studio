@@ -85,6 +85,17 @@ export class V1_UnknownAccessPoint extends V1_AccessPoint implements Hashable {
   }
 }
 
+export class V1_FunctionAccessPoint extends V1_AccessPoint implements Hashable {
+  query!: V1_RawLambda;
+  override get hashCode(): string {
+    return hashArray([
+      super.hashCode,
+      CORE_HASH_STRUCTURE.FUNCTION_ACCESS_POINT,
+      this.query,
+    ]);
+  }
+}
+
 export class V1_AccessPointGroup implements Hashable {
   id!: string;
   description: string | undefined;

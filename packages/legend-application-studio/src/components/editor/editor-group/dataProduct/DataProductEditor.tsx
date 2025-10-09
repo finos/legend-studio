@@ -1413,11 +1413,9 @@ const AccessPointGroupEditor = observer(
         <PanelHeader className="panel__header--access-point">
           <div className="panel__header__title">Access Points</div>
           <PanelHeaderActions>
-            {/* TODO: remove disabling this button for MAPG when Function Access Points are ready */}
             <PanelHeaderActionItem
               className="panel__header__action"
               onClick={handleAddAccessPoint}
-              disabled={isReadOnly || productEditorState.modelledDataProduct}
               title="Create new access point"
             >
               <PlusIcon />

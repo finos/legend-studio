@@ -732,6 +732,7 @@ export {
   DataProductLibraryIcon,
   DataProductLink,
   Email,
+  FunctionAccessPoint,
   LakehouseAccessPoint,
   LakehouseTargetEnv,
   SupportInfo,
@@ -740,6 +741,7 @@ export {
   UnknownDataProductIcon,
   DataProductElementScope,
   DataProductDiagram,
+  InternalDataProductType,
   type DataProductElement,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
