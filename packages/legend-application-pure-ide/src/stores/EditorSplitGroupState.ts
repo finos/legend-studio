@@ -18,7 +18,7 @@ import { makeObservable, observable, action, computed } from 'mobx';
 import { uuid } from '@finos/legend-shared';
 import {
   PureIDETabManagerState,
-  PureIDETabState,
+  type PureIDETabState,
 } from './PureIDETabManagerState.js';
 import type { PureIDEStore } from './PureIDEStore.js';
 
@@ -29,12 +29,12 @@ export enum EditorSplitOrientation {
 
 export interface EditorSplitNode {
   readonly id: string;
-  readonly parent?: EditorSplitGroupState | undefined;
+  parent?: EditorSplitGroupState | undefined;
 }
 
 export class EditorSplitLeaf implements EditorSplitNode {
   readonly id: string;
-  readonly parent?: EditorSplitGroupState | undefined;
+  parent?: EditorSplitGroupState | undefined;
   readonly tabManagerState: PureIDETabManagerState;
 
   constructor(ideStore: PureIDEStore, parent?: EditorSplitGroupState) {
@@ -81,7 +81,7 @@ export class EditorSplitLeaf implements EditorSplitNode {
 
 export class EditorSplitGroupState implements EditorSplitNode {
   readonly id: string;
-  readonly parent?: EditorSplitGroupState | undefined;
+  parent?: EditorSplitGroupState | undefined;
   orientation: EditorSplitOrientation;
   first: EditorSplitNode;
   second: EditorSplitNode;
@@ -118,13 +118,13 @@ export class EditorSplitGroupState implements EditorSplitNode {
       first instanceof EditorSplitLeaf ||
       first instanceof EditorSplitGroupState
     ) {
-      (first as any).parent = this;
+      first.parent = this;
     }
     if (
       second instanceof EditorSplitLeaf ||
       second instanceof EditorSplitGroupState
     ) {
-      (second as any).parent = this;
+      second.parent = this;
     }
   }
 
@@ -155,7 +155,7 @@ export class EditorSplitGroupState implements EditorSplitNode {
       node instanceof EditorSplitLeaf ||
       node instanceof EditorSplitGroupState
     ) {
-      (node as any).parent = this;
+      node.parent = this;
     }
   }
 
@@ -165,7 +165,7 @@ export class EditorSplitGroupState implements EditorSplitNode {
       node instanceof EditorSplitLeaf ||
       node instanceof EditorSplitGroupState
     ) {
-      (node as any).parent = this;
+      node.parent = this;
     }
   }
 
@@ -465,18 +465,18 @@ export class EditorSplitRootState {
         }
         // Update sibling's parent reference
         if (sibling instanceof EditorSplitLeaf) {
-          (sibling as any).parent = parent.parent;
+          sibling.parent = parent.parent;
         } else if (sibling instanceof EditorSplitGroupState) {
-          (sibling as any).parent = parent.parent;
+          sibling.parent = parent.parent;
         }
       } else {
         // Parent is root, replace root with sibling
         this.setRoot(sibling);
         // Update sibling's parent reference
         if (sibling instanceof EditorSplitLeaf) {
-          (sibling as any).parent = undefined;
+          sibling.parent = undefined;
         } else if (sibling instanceof EditorSplitGroupState) {
-          (sibling as any).parent = undefined;
+          sibling.parent = undefined;
         }
       }
     }

@@ -23,7 +23,7 @@ export const useCommands = (
 ): void => {
   useEffect(() => {
     if (!enabled) {
-      return;
+      return () => undefined;
     }
     registrar.registerCommands();
     return () => registrar.deregisterCommands();

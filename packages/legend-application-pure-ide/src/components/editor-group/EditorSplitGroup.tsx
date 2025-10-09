@@ -20,7 +20,7 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  clsx,
+  type ResizablePanelHandlerProps,
 } from '@finos/legend-art';
 import {
   EditorSplitGroupState,
@@ -39,7 +39,7 @@ export const EditorSplitGroup = observer((props: EditorSplitGroupProps) => {
   const { node } = props;
   const ideStore = usePureIDEStore();
 
-  const handleSplitResize = (handleProps: any): void => {
+  const handleSplitResize = (handleProps: ResizablePanelHandlerProps): void => {
     if (node instanceof EditorSplitGroupState) {
       const size = (
         handleProps.domElement as HTMLDivElement

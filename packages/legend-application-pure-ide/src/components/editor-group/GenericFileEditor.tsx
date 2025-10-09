@@ -178,7 +178,7 @@ export const GenericFileEditor = observer(
         editorState.textEditorState.setEditor(newEditor);
         setEditor(newEditor);
       }
-    }, [ideStore, applicationStore, editorState, editor]);
+    }, [ideStore, applicationStore, editorState, editor, leafId]);
 
     const isActiveEditor = ideStore.editorSplitState.currentTab === editorState;
     useCommands(editorState, isActiveEditor);

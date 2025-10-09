@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FileEditorState } from '../../stores/FileEditorState.js';
 import { GenericFileEditor } from './GenericFileEditor.js';
@@ -38,11 +38,11 @@ import { DiagramEditor } from './DiagramEditor.js';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import { PURE_DiagramIcon } from '../shared/ConceptIconUtils.js';
 import { TabManager, type TabState } from '@finos/legend-lego/application';
-import { useDrop, type DropTargetMonitor } from 'react-dnd';
+import { useDrop } from 'react-dnd';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import {
-  EditorSplitLeaf,
   EditorSplitOrientation,
+  type EditorSplitLeaf,
 } from '../../stores/EditorSplitGroupState.js';
 import type { PureIDETabState } from '../../stores/PureIDETabManagerState.js';
 
@@ -221,7 +221,7 @@ export const EditorGroupLeaf = observer((props: EditorGroupLeafProps) => {
     return (
       <div
         ref={(el) => {
-          dropConnector(el as any);
+          dropConnector(el as unknown as Element | null);
         }}
         className={clsx('panel editor-group', {
           'editor-group--active': isActive,

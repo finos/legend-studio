@@ -92,10 +92,7 @@ import { DiagramEditorState } from './DiagramEditorState.js';
 import { DiagramInfo, serializeDiagram } from '../server/models/DiagramInfo.js';
 import type { LegendPureIDEApplicationStore } from './LegendPureIDEBaseStore.js';
 import { FileSearchCommandState } from './FileSearchCommandState.js';
-import {
-  PureIDETabManagerState,
-  PureIDETabState,
-} from './PureIDETabManagerState.js';
+import type { PureIDETabState } from './PureIDETabManagerState.js';
 import {
   EditorSplitRootState,
   EditorSplitOrientation,
@@ -116,7 +113,7 @@ import {
 } from './CodeFixSuggestion.js';
 import { ReferenceUsageResult } from './ReferenceUsageResult.js';
 import { TextSearchState } from './TextSearchState.js';
-import type { TabState } from '@finos/legend-lego/application';
+// import type { TabState } from '@finos/legend-lego/application';
 import { PCTAdapter } from '../server/models/Test.js';
 
 export class PureIDEStore implements CommandRegistrar {

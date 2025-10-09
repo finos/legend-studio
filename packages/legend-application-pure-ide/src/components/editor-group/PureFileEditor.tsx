@@ -331,7 +331,7 @@ export const PureFileEditor = observer(
         editorState.textEditorState.setEditor(newEditor);
         setEditor(newEditor);
       }
-    }, [ideStore, applicationStore, editorState, editor]);
+    }, [ideStore, applicationStore, editorState, editor, leafId]);
 
     if (editor) {
       definitionProviderDisposer.current?.dispose();
