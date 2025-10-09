@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.154
+
+### Patch Changes
+
+- [#4527](https://github.com/finos/legend-studio/pull/4527) [`3d739d6`](https://github.com/finos/legend-studio/commit/3d739d6bc8090f46a2c29c323fc22d91bd76d2ac) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Make query description optional when creating new query
+
 ## 13.7.153
 
 ## 13.7.152
