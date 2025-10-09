@@ -109,9 +109,10 @@ const CreateQueryDialog = observer(() => {
     );
   };
   const isExistingQueryName = createQueryState.editorStore.existingQueryName;
+  const description = createQueryState.queryDescription;
   const isEmptyName = !createQueryState.queryName;
-  const isDescriptionValid = (desc: string | undefined): boolean =>
-    !!desc && /[a-zA-Z0-9]/.test(desc);
+  const isDescriptionEmptyOrValid =
+    !description || /[a-zA-Z0-9]/.test(description);
   const descriptionInputRef = useRef<HTMLInputElement>(null);
   const changeDescription: React.ChangeEventHandler<HTMLInputElement> = (
     event,
@@ -218,7 +219,7 @@ const CreateQueryDialog = observer(() => {
               createQueryState.editorStore.isPerformingBlockingAction ||
               Boolean(isExistingQueryName) ||
               isEmptyName ||
-              !isDescriptionValid(createQueryState.queryDescription)
+              !isDescriptionEmptyOrValid
             }
             onClick={create}
           />
