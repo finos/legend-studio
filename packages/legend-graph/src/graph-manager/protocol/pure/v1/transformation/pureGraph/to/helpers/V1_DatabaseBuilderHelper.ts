@@ -796,6 +796,7 @@ export const V1_buildDatabaseFilter = (
     context,
     tableAliasIndex,
     [],
+    buildGeneratedIndex(database),
   );
   // TODO handle multi-grain filters?
   const filter = new Filter(srcFilter.name, op);
