@@ -622,6 +622,12 @@ export const WindowMaximizeIcon = FaRegWindowMaximize; // to be reviewed/combine
 export const WizardHatIcon = FaHatWizard;
 export const WrenchIcon = FaWrench;
 export const PythonIcon = FaPython;
+
+//======================================================= fa6 ======================================================
+
+import { FaChartColumn } from 'react-icons/fa6';
+
+export const PowerBiIcon = FaChartColumn;
 //======================================================= GI =======================================================
 import {
   GiWaterDrop,

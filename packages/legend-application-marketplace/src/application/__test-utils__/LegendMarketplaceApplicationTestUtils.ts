@@ -66,6 +66,9 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   query: {
     url: 'https://testQueryUrl',
   },
+  powerBi: {
+    url: 'https://testPowerBiUrl',
+  },
   extensions: {
     core: {
       dataProductConfig: {

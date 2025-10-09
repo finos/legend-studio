@@ -1819,7 +1819,7 @@
   }
 }
 
-.data-product__viewer__work-in-progress {
+.data-product__viewer__tab-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1828,6 +1828,17 @@
 
   span {
     color: var(--color-light-grey-400);
+  }
+
+  &__btn {
+    background-color: var(--color-blue-100);
+    height: 28px;
+    color: var(--color-white);
+    padding: 4px 10px;
+    border: 2px;
+    margin-left: 10px;
+    border-radius: 5px;
+    font-size: 12px;
   }
 }
 

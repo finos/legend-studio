@@ -107,6 +107,9 @@ export interface LegendMarketplaceApplicationConfigurationData
   query: {
     url: string;
   };
+  powerBi: {
+    url: string;
+  };
 }
 
 export class LegendLakehouseEntitlementsConfig {
@@ -138,6 +141,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
   readonly queryApplicationUrl: string;
+  readonly powerBiUrl: string;
   readonly assetsBaseUrl: string;
   readonly assetsProductImageMap: Record<string, string>;
 
@@ -280,6 +284,18 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       guaranteeNonEmptyString(
         input.configData.query.url,
         `Can't configure application: 'query.url' field is missing or empty`,
+      ),
+    );
+
+    // Power BI
+    assertNonNullable(
+      input.configData.powerBi,
+      `Can't configure application: 'powerBi' field is missing`,
+    );
+    this.powerBiUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.powerBi.url,
+        `Can't configure application: 'powerBi.url' field is missing or empty`,
       ),
     );
 

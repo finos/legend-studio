@@ -26,7 +26,7 @@ import {
   DataCubeIcon,
   PythonIcon,
   SQLIcon,
-  TableIcon,
+  PowerBiIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -105,6 +105,7 @@ import {
   AccessPointGroupAccess,
 } from '../../stores/DataProduct/DataProductAPGState.js';
 
+const WORK_IN_PROGRESS = 'Work in progress';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -121,11 +122,50 @@ export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
     }}
   />
 );
-export const WorkInProgressNotice: React.FC = () => (
-  <Box className="data-product__viewer__work-in-progress">
-    <span>Work in progress</span>
-  </Box>
+
+export const TabMessageScreen = observer((props: { message: string }) => {
+  const { message } = props;
+  return (
+    <Box className="data-product__viewer__tab-screen">
+      <span>{message}</span>
+    </Box>
+  );
+});
+
+export const PowerBiScreen = observer(
+  (props: { dataAccessState: DataProductDataAccessState | undefined }) => {
+    const { dataAccessState } = props;
+    if (
+      !(
+        dataAccessState?.entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
+      ) ||
+      !dataAccessState.dataProductViewerState.openPowerBi
+    ) {
+      return (
+        <TabMessageScreen message="Adhoc data products not supported in Power BI" />
+      );
+    }
+    const loadPowerBi = (): void => {
+      if (dataAccessState.dataProductViewerState.openPowerBi) {
+        dataAccessState.dataProductViewerState.openPowerBi();
+      }
+    };
+    return (
+      <div className="data-product__viewer__tab-screen">
+        <button
+          onClick={loadPowerBi}
+          tabIndex={-1}
+          className="data-product__viewer__tab-screen__btn"
+          title="Open in Power BI"
+        >
+          Open in Power BI
+        </button>
+      </div>
+    );
+  },
 );
+
 const TDSColumnCellRenderer = (props: {
   params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
   apgState: DataProductAPGState;
@@ -138,7 +178,7 @@ const TDSColumnCellRenderer = (props: {
     COLUMNS = 'Columns',
     GRAMMAR = 'Grammar',
     DATACUBE = 'Datacube',
-    BUSINESS_INTELLIGENCE = 'Business Intelligence',
+    POWER_BI = 'Power BI',
     PYTHON = 'Python',
     SQL = 'SQL',
   }
@@ -357,20 +397,20 @@ const TDSColumnCellRenderer = (props: {
           <Tab
             className={clsx('data-product__viewer__tab', {
               'data-product__viewer__tab--selected':
-                selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE,
+                selectedTab === DataProductTabs.POWER_BI,
             })}
             label={
               <span className="label-container">
-                <TableIcon
+                <PowerBiIcon
                   className={clsx('data-product__viewer__tab-icon', {
                     'data-product__viewer__tab-icon--selected':
-                      selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE,
+                      selectedTab === DataProductTabs.POWER_BI,
                   })}
                 />
-                <span>Business Intelligence</span>
+                <span>Power BI</span>
               </span>
             }
-            value={DataProductTabs.BUSINESS_INTELLIGENCE}
+            value={DataProductTabs.POWER_BI}
           />
           <Tab
             className={clsx('data-product__viewer__tab', {
@@ -468,13 +508,17 @@ const TDSColumnCellRenderer = (props: {
               </Box>
             )}
             {selectedTab === DataProductTabs.DATACUBE && (
-              <WorkInProgressNotice />
+              <TabMessageScreen message={WORK_IN_PROGRESS} />
             )}
-            {selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE && (
-              <WorkInProgressNotice />
+            {selectedTab === DataProductTabs.POWER_BI && (
+              <PowerBiScreen dataAccessState={dataAccessState} />
             )}
-            {selectedTab === DataProductTabs.PYTHON && <WorkInProgressNotice />}
-            {selectedTab === DataProductTabs.SQL && <WorkInProgressNotice />}
+            {selectedTab === DataProductTabs.PYTHON && (
+              <TabMessageScreen message={WORK_IN_PROGRESS} />
+            )}
+            {selectedTab === DataProductTabs.SQL && (
+              <TabMessageScreen message={WORK_IN_PROGRESS} />
+            )}
           </>
         )}
       </Box>
