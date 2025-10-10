@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.6
+
+### Patch Changes
+
+- [#4517](https://github.com/finos/legend-studio/pull/4517) [`7a2908f`](https://github.com/finos/legend-studio/commit/7a2908f758dd7464cf732943ed7150673aa9741c) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: support querying adhoc data product deployments
+
 ## 0.7.5
 
 ## 0.7.4

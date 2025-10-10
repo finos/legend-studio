@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.51
+
+### Patch Changes
+
+- [#4539](https://github.com/finos/legend-studio/pull/4539) [`1b098b7`](https://github.com/finos/legend-studio/commit/1b098b7e9d843aab8e067d366dbd9367210e07d2) ([@yash0024](https://github.com/yash0024)) - Support RelationElementsData in form mode
+
 ## 28.19.50
 
 ## 28.19.49

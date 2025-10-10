@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.23
+
+### Patch Changes
+
+- [#4541](https://github.com/finos/legend-studio/pull/4541) [`0999186`](https://github.com/finos/legend-studio/commit/099918695166c66d23396276079737cd359675fa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Complete Terminals and Addons UI and workflow migration
+
 ## 0.1.22
 
 ## 0.1.21
