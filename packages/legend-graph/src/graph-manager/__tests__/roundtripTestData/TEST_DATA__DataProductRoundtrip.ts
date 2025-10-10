@@ -498,14 +498,47 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
   {
-    path: 'my::relational::db',
+    path: 'my::relational::db1',
     content: {
       _type: 'relational',
-      filters: [],
+      filters: [
+        {
+          _type: 'filter',
+          name: 'Ingest_Filter',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'id',
+                table: {
+                  _type: 'Table',
+                  database: 'my::lakehouse::PersonIngest',
+                  mainTableDb: 'my::lakehouse::PersonIngest',
+                  schema: 'ALLOY_PERSON_GROUP',
+                  table: 'Person',
+                },
+                tableAlias: 'Person',
+              },
+              {
+                _type: 'literal',
+                value: 123,
+              },
+            ],
+          },
+        },
+      ],
       includedStoreSpecifications: [
         {
           packageableElementPointer: {
             path: 'my::lakehouse::FirmIngest',
+          },
+          storeType: 'Ingest',
+        },
+        {
+          packageableElementPointer: {
+            path: 'my::lakehouse::PersonIngest',
           },
           storeType: 'Ingest',
         },
@@ -546,6 +579,124 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                   table: 'ap1_PersonLatest',
                 },
                 tableAlias: 'ap1_PersonLatest',
+              },
+            ],
+          },
+        },
+        {
+          name: 'SelfPerson',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'id',
+                table: {
+                  _type: 'Table',
+                  database: 'my::lakehouse::PersonIngest',
+                  mainTableDb: 'my::lakehouse::PersonIngest',
+                  schema: 'ALLOY_PERSON_GROUP',
+                  table: 'Person',
+                },
+                tableAlias: 'Person',
+              },
+              {
+                _type: 'column',
+                column: 'firm_id',
+                table: {
+                  _type: 'Table',
+                  database: 'my::lakehouse::PersonIngest',
+                  mainTableDb: 'my::lakehouse::PersonIngest',
+                  schema: 'default',
+                  table: '{target}',
+                },
+                tableAlias: '{target}',
+              },
+            ],
+          },
+        },
+      ],
+      name: 'db1',
+      package: 'my::relational',
+      schemas: [
+        {
+          name: 'ALLOY_FIRM_GROUP',
+          tables: [],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
+    path: 'my::relational::db',
+    content: {
+      _type: 'relational',
+      filters: [
+        {
+          _type: 'filter',
+          name: 'AccessPoint_Filter',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'firm_id',
+                table: {
+                  _type: 'Table',
+                  database: 'my::relational::db1',
+                  mainTableDb: 'my::relational::db1',
+                  schema: 'PersonDataProduct',
+                  table: 'ap1_PersonLatest',
+                },
+                tableAlias: 'ap1_PersonLatest',
+              },
+              {
+                _type: 'literal',
+                value: 234,
+              },
+            ],
+          },
+        },
+      ],
+      includedStores: [
+        {
+          path: 'my::relational::db1',
+          type: 'STORE',
+        },
+      ],
+      joins: [
+        {
+          name: 'FirmPersonLakehouse2',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'id',
+                table: {
+                  _type: 'Table',
+                  database: 'my::relational::db1',
+                  mainTableDb: 'my::relational::db1',
+                  schema: 'ALLOY_FIRM_GROUP',
+                  table: 'Firm',
+                },
+                tableAlias: 'Firm',
+              },
+              {
+                _type: 'column',
+                column: 'id',
+                table: {
+                  _type: 'Table',
+                  database: 'my::relational::db1',
+                  mainTableDb: 'my::relational::db1',
+                  schema: 'ALLOY_FIRM_GROUP',
+                  table: 'Firm_V1',
+                },
+                tableAlias: 'Firm_V1',
               },
             ],
           },
@@ -636,96 +787,6 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
       'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
   },
   {
-    path: 'my::lakehouse::FirmIngest',
-    content: {
-      _type: 'ingestDefinition',
-      datasetGroup: 'ALLOY_FIRM_GROUP',
-      datasets: [
-        {
-          ingestPartitionColumns: [],
-          name: 'Firm',
-          preprocessors: [],
-          primaryKey: [],
-          privacyClassification: {
-            sensitivity: 'DP10',
-          },
-          source: {
-            _type: 'serializedSource',
-            schema: {
-              _type: 'relationType',
-              columns: [
-                {
-                  genericType: {
-                    multiplicityArguments: [],
-                    rawType: {
-                      _type: 'packageableType',
-                      fullPath: 'Int',
-                    },
-                    typeArguments: [],
-                    typeVariableValues: [],
-                  },
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  name: 'id',
-                },
-                {
-                  genericType: {
-                    multiplicityArguments: [],
-                    rawType: {
-                      _type: 'packageableType',
-                      fullPath: 'Varchar',
-                    },
-                    typeArguments: [],
-                    typeVariableValues: [
-                      {
-                        _type: 'integer',
-                        value: 200,
-                      },
-                    ],
-                  },
-                  multiplicity: {
-                    lowerBound: 0,
-                    upperBound: 1,
-                  },
-                  name: 'legal_name',
-                },
-              ],
-            },
-          },
-          storageLayoutClusterColumns: [],
-          storageLayoutPartitionColumns: [],
-        },
-      ],
-      name: 'FirmIngest',
-      owner: {
-        _type: 'appDir',
-        prodParallel: {
-          appDirId: 1,
-          level: 'DEPLOYMENT',
-        },
-      },
-      package: 'my::lakehouse',
-      readMode: {
-        _type: 'Undefined',
-        format: {
-          _type: 'CSV',
-          fieldDelimiter: ',',
-          headerRowsToSkipCount: 0,
-          recordDelimiter: '\n',
-        },
-      },
-      stereotypes: [],
-      taggedValues: [],
-      writeMode: {
-        _type: 'append_only',
-      },
-    },
-    classifierPath:
-      'meta::external::ingest::specification::metamodel::IngestDefinition',
-  },
-  {
     path: 'my::lakehouse::PersonIngest',
     content: {
       _type: 'ingestDefinition',
@@ -750,6 +811,13 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                     rawType: {
                       _type: 'packageableType',
                       fullPath: 'Int',
+                      sourceInformation: {
+                        endColumn: 13,
+                        endLine: 32,
+                        sourceId: '',
+                        startColumn: 11,
+                        startLine: 32,
+                      },
                     },
                     typeArguments: [],
                     typeVariableValues: [],
@@ -759,6 +827,13 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                     upperBound: 1,
                   },
                   name: 'id',
+                  sourceInformation: {
+                    endColumn: 16,
+                    endLine: 32,
+                    sourceId: '',
+                    startColumn: 7,
+                    startLine: 32,
+                  },
                 },
                 {
                   genericType: {
@@ -766,11 +841,25 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                     rawType: {
                       _type: 'packageableType',
                       fullPath: 'Varchar',
+                      sourceInformation: {
+                        endColumn: 29,
+                        endLine: 33,
+                        sourceId: '',
+                        startColumn: 18,
+                        startLine: 33,
+                      },
                     },
                     typeArguments: [],
                     typeVariableValues: [
                       {
                         _type: 'integer',
+                        sourceInformation: {
+                          endColumn: 28,
+                          endLine: 33,
+                          sourceId: '',
+                          startColumn: 26,
+                          startLine: 33,
+                        },
                         value: 200,
                       },
                     ],
@@ -780,6 +869,13 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                     upperBound: 1,
                   },
                   name: 'last_name',
+                  sourceInformation: {
+                    endColumn: 32,
+                    endLine: 33,
+                    sourceId: '',
+                    startColumn: 7,
+                    startLine: 33,
+                  },
                 },
                 {
                   genericType: {
@@ -787,6 +883,13 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                     rawType: {
                       _type: 'packageableType',
                       fullPath: 'Int',
+                      sourceInformation: {
+                        endColumn: 18,
+                        endLine: 34,
+                        sourceId: '',
+                        startColumn: 16,
+                        startLine: 34,
+                      },
                     },
                     typeArguments: [],
                     typeVariableValues: [],
@@ -796,6 +899,13 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                     upperBound: 1,
                   },
                   name: 'firm_id',
+                  sourceInformation: {
+                    endColumn: 21,
+                    endLine: 34,
+                    sourceId: '',
+                    startColumn: 7,
+                    startLine: 34,
+                  },
                 },
               ],
             },
@@ -822,10 +932,240 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
           recordDelimiter: '\n',
         },
       },
+      sourceInformation: {
+        endColumn: 1,
+        endLine: 38,
+        sourceId: '',
+        startColumn: 1,
+        startLine: 29,
+      },
       stereotypes: [],
       taggedValues: [],
       writeMode: {
         _type: 'batch_milestoned',
+      },
+    },
+    classifierPath:
+      'meta::external::ingest::specification::metamodel::IngestDefinition',
+  },
+  {
+    path: 'my::lakehouse::FirmIngest',
+    content: {
+      _type: 'ingestDefinition',
+      datasetGroup: 'ALLOY_FIRM_GROUP',
+      datasets: [
+        {
+          ingestPartitionColumns: [],
+          name: 'Firm',
+          preprocessors: [],
+          primaryKey: [],
+          privacyClassification: {
+            sensitivity: 'DP10',
+          },
+          source: {
+            _type: 'serializedSource',
+            schema: {
+              _type: 'relationType',
+              columns: [
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Int',
+                      sourceInformation: {
+                        endColumn: 13,
+                        endLine: 44,
+                        sourceId: '',
+                        startColumn: 11,
+                        startLine: 44,
+                      },
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [],
+                  },
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  name: 'id',
+                  sourceInformation: {
+                    endColumn: 16,
+                    endLine: 44,
+                    sourceId: '',
+                    startColumn: 7,
+                    startLine: 44,
+                  },
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                      sourceInformation: {
+                        endColumn: 30,
+                        endLine: 45,
+                        sourceId: '',
+                        startColumn: 19,
+                        startLine: 45,
+                      },
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        sourceInformation: {
+                          endColumn: 29,
+                          endLine: 45,
+                          sourceId: '',
+                          startColumn: 27,
+                          startLine: 45,
+                        },
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'legal_name',
+                  sourceInformation: {
+                    endColumn: 30,
+                    endLine: 45,
+                    sourceId: '',
+                    startColumn: 7,
+                    startLine: 45,
+                  },
+                },
+              ],
+            },
+          },
+          storageLayoutClusterColumns: [],
+          storageLayoutPartitionColumns: [],
+        },
+        {
+          ingestPartitionColumns: [],
+          name: 'Firm_V1',
+          preprocessors: [],
+          primaryKey: [],
+          privacyClassification: {
+            sensitivity: 'DP10',
+          },
+          source: {
+            _type: 'serializedSource',
+            schema: {
+              _type: 'relationType',
+              columns: [
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Int',
+                      sourceInformation: {
+                        endColumn: 13,
+                        endLine: 50,
+                        sourceId: '',
+                        startColumn: 11,
+                        startLine: 50,
+                      },
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [],
+                  },
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  name: 'id',
+                  sourceInformation: {
+                    endColumn: 16,
+                    endLine: 50,
+                    sourceId: '',
+                    startColumn: 7,
+                    startLine: 50,
+                  },
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                      sourceInformation: {
+                        endColumn: 30,
+                        endLine: 51,
+                        sourceId: '',
+                        startColumn: 19,
+                        startLine: 51,
+                      },
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        sourceInformation: {
+                          endColumn: 29,
+                          endLine: 51,
+                          sourceId: '',
+                          startColumn: 27,
+                          startLine: 51,
+                        },
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'legal_name',
+                  sourceInformation: {
+                    endColumn: 30,
+                    endLine: 51,
+                    sourceId: '',
+                    startColumn: 7,
+                    startLine: 51,
+                  },
+                },
+              ],
+            },
+          },
+          storageLayoutClusterColumns: [],
+          storageLayoutPartitionColumns: [],
+        },
+      ],
+      name: 'FirmIngest',
+      owner: {
+        _type: 'appDir',
+        prodParallel: {
+          appDirId: 1,
+          level: 'DEPLOYMENT',
+        },
+      },
+      package: 'my::lakehouse',
+      readMode: {
+        _type: 'Undefined',
+        format: {
+          _type: 'CSV',
+          fieldDelimiter: ',',
+          headerRowsToSkipCount: 0,
+          recordDelimiter: '\n',
+        },
+      },
+      sourceInformation: {
+        endColumn: 1,
+        endLine: 54,
+        sourceId: '',
+        startColumn: 1,
+        startLine: 41,
+      },
+      stereotypes: [],
+      taggedValues: [],
+      writeMode: {
+        _type: 'append_only',
       },
     },
     classifierPath:
