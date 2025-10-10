@@ -74,7 +74,6 @@ export class RawLakehouseSdlcOrigin extends RawLakehouseOrigin {
 }
 
 export class RawLakehouseConsumerDataCubeSource {
-  dpCoordinates?: VersionedProjectData;
   warehouse!: string;
   environment!: string;
   paths!: string[];
@@ -83,9 +82,6 @@ export class RawLakehouseConsumerDataCubeSource {
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLakehouseConsumerDataCubeSource, {
       _type: usingConstantValueSchema(LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE),
-      dpCoordinates: optionalCustomUsingModelSchema(
-        VersionedProjectData.serialization.schema,
-      ),
       warehouse: primitive(),
       environment: primitive(),
       paths: list(primitive()),
