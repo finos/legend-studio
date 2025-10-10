@@ -15,33 +15,36 @@
  */
 
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
-import type { LightProvider, ProviderResult } from './models/Provider.js';
+import type { LightProvider, TerminalResult } from './models/Provider.js';
 import type {
   DataProduct,
   DataProductSearchResult,
 } from './models/DataProduct.js';
 import type { Subscription } from './models/Subscription.js';
+import type {
+  CartItem,
+  CartItemRequest,
+  CartItemResponse,
+  CartSummary,
+} from './models/Cart.js';
+import type { OrderDetails } from './models/Order.js';
 
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
   subscriptionUrl: string;
 }
 
-interface ServerResult<T> {
-  data: T;
-  total_items: number;
+interface TerminalAddOnServerResponse<T> {
+  hrid: string;
+  desktops?: T;
+  addons?: T;
+  landing_addons?: T;
 }
 
 interface MarketplaceServerResponse<T> {
   response_code: string;
   status: string;
   results: T;
-}
-
-interface MarketplaceServerVendorsResponse<T> {
-  response_code: string;
-  status: string;
-  results: ServerResult<T>;
 }
 
 export class MarketplaceServerClient extends AbstractServerClient {
@@ -68,17 +71,30 @@ export class MarketplaceServerClient extends AbstractServerClient {
     this.get(this._vendors());
 
   getVendorsByCategory = async (
+    user: string,
     category: string,
+    viewType: string,
     filters: string,
     limit: number,
-  ): Promise<PlainObject<ProviderResult>[]> =>
-    (
-      await this.get<
-        MarketplaceServerVendorsResponse<PlainObject<ProviderResult>[]>
-      >(
-        `${this.baseUrl}/v1/vendor/category?category=${category}&page_size=${limit}${filters}`,
-      )
-    ).results.data;
+  ): Promise<PlainObject<TerminalResult>[]> => {
+    const response = await this.get<
+      TerminalAddOnServerResponse<PlainObject<TerminalResult>[]>
+    >(`${this.baseUrl}/v1/service/${viewType}/${category}?kerberos=${user}`);
+    let result = [];
+    if (viewType === 'landing') {
+      result =
+        category === 'desktop'
+          ? (response.desktops ?? [])
+          : (response.landing_addons ?? []);
+    } else {
+      result =
+        category === 'desktop'
+          ? (response.desktops ?? [])
+          : (response.addons ?? []);
+    }
+
+    return result;
+  };
 
   // ------------------------------------------- Search- -------------------------------------------
 
@@ -120,4 +136,32 @@ export class MarketplaceServerClient extends AbstractServerClient {
         `${this._dataProducts()}/?page_size=${page_size}`,
       )
     ).results;
+
+  // ------------------------------------------- Cart -------------------------------------------
+
+  private _cart = (user: string): string => `${this.baseUrl}/v1/cart/${user}`;
+
+  getCart = async (user: string): Promise<PlainObject<CartItem>[]> =>
+    this.get<PlainObject<CartItem>[]>(this._cart(user));
+
+  getCartSummary = async (user: string): Promise<PlainObject<CartSummary>> =>
+    this.get<PlainObject<CartSummary>>(`${this._cart(user)}/summary`);
+
+  clearCart = async (user: string): Promise<void> =>
+    this.delete(this._cart(user));
+
+  deleteCartItem = async (user: string, cartId: number): Promise<void> =>
+    this.delete(`${this._cart(user)}/item/${cartId}`);
+
+  addToCart = async (
+    user: string,
+    cartItemData: CartItemRequest,
+  ): Promise<PlainObject<CartItemResponse>> =>
+    this.post(this._cart(user), cartItemData);
+
+  submitOrder = async (
+    user: string,
+    orderData: OrderDetails,
+  ): Promise<PlainObject<unknown>> =>
+    this.post(`${this.baseUrl}/v1/workflow/create/order`, orderData);
 }

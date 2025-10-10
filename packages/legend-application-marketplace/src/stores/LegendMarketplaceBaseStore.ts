@@ -49,11 +49,12 @@ import {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
-import { DataProductCardState } from './lakehouse/dataProducts/DataProductCardState.js';
+import { CartStore } from './cart/CartStore.js';
 import type { BaseProductCardState } from './lakehouse/dataProducts/BaseProductCardState.js';
 import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
 import { V1_deserializeDataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import { LegacyDataProductCardState } from './lakehouse/dataProducts/LegacyDataProductCardState.js';
+import { DataProductCardState } from './lakehouse/dataProducts/DataProductCardState.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -71,6 +72,7 @@ export class LegendMarketplaceBaseStore {
   readonly pluginManager: LegendMarketplacePluginManager;
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
+  readonly cartStore: CartStore;
 
   readonly initState = ActionState.create();
   showDemoModal = false;
@@ -153,6 +155,9 @@ export class LegendMarketplaceBaseStore {
         this.pluginManager.getUserPlugins(),
       );
     }
+
+    // Initialize cart store
+    this.cartStore = new CartStore(this);
   }
 
   async initHighlightedDataProducts(
@@ -311,6 +316,19 @@ export class LegendMarketplaceBaseStore {
     LegendMarketplaceEventHelper.notify_ApplicationLoadSucceeded(
       this.applicationStore.eventService,
     );
+
+    // Initialize cart store to load existing items
+    try {
+      yield* this.cartStore.initialize();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create(APPLICATION_EVENT.IDENTITY_AUTO_FETCH__FAILURE),
+        'Failed to initialize cart store',
+        error,
+      );
+      // Don't show notification as cart initialization failure shouldn't block app startup
+    }
 
     this.initState.complete();
   }

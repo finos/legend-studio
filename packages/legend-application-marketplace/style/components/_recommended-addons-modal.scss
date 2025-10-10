@@ -1,0 +1,506 @@
+/**
+ * Copyright (c) 2025-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.recommended-addons-modal {
+  .MuiDialog-paper {
+    border-radius: 24px;
+    min-height: 60vh;
+    max-height: 92vh;
+    box-shadow:
+      0 32px 64px -12px rgb(0 0 0 / 25%),
+      0 0 0 1px rgb(255 255 255 / 5%);
+    backdrop-filter: blur(16px);
+    background: linear-gradient(
+      145deg,
+      rgb(255 255 255 / 95%) 0%,
+      rgb(248 250 252 / 98%) 100%
+    );
+    border: 1px solid rgb(255 255 255 / 20%);
+    overflow: hidden;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2.5rem 3rem 2rem;
+    background: linear-gradient(
+      135deg,
+      rgb(34 197 94 / 8%) 0%,
+      rgb(59 130 246 / 8%) 50%,
+      rgb(168 85 247 / 8%) 100%
+    );
+    border-bottom: 1px solid rgb(226 232 240 / 80%);
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+  }
+
+  &__success-icon {
+    color: var(--color-success);
+    font-size: 2.4rem;
+    background: rgb(34 197 94 / 10%);
+    padding: 1rem;
+    border-radius: 50%;
+    border: 2px solid rgb(34 197 94 / 20%);
+  }
+
+  &__header-content {
+    flex: 1;
+  }
+
+  &__title {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(
+      135deg,
+      var(--color-modal-text-primary) 0%,
+      var(--color-modal-text-muted) 100%
+    );
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 0.5rem;
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    font-size: 1.4rem;
+    color: var(--color-modal-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  &__close-btn {
+    color: var(--color-modal-text-secondary);
+    background: rgb(148 163 184 / 10%);
+    border-radius: 12px;
+    padding: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      color: var(--color-modal-text-primary);
+      background: rgb(148 163 184 / 20%);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__content {
+    padding: 2rem 3rem;
+    background: transparent;
+  }
+
+  &__content-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    text-align: center;
+  }
+
+  &__section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-modal-text-primary);
+    position: relative;
+  }
+
+  &__section-description {
+    font-size: 1.4rem;
+    color: var(--color-modal-text-secondary);
+    font-weight: 400;
+  }
+
+  &__empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4rem 2rem;
+    text-align: center;
+
+    .MuiTypography-root {
+      color: var(--color-modal-text-secondary);
+      font-size: 1.4rem;
+      font-weight: 500;
+    }
+
+    &::before {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.6;
+    }
+  }
+
+  &__addon-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: rgb(255 255 255 / 70%);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgb(226 232 240 / 80%);
+    overflow: hidden;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--color-modal-blue-focus) 50%,
+        transparent 100%
+      );
+    }
+
+    &:hover {
+      border-color: var(--color-modal-blue-light);
+      box-shadow: 0 4px 8px rgb(147 197 253 / 15%);
+    }
+  }
+
+  &__card-content {
+    flex: 1;
+    padding: 2rem;
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__product-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    flex: 1;
+    line-height: 1.3;
+    color: var(--color-modal-text-primary);
+    margin: 0;
+  }
+
+  &__provider-chip {
+    background: linear-gradient(
+      135deg,
+      var(--color-modal-background-medium),
+      var(--color-modal-border-light)
+    );
+    color: var(--color-modal-text-muted);
+    font-size: 1.1rem;
+    font-weight: 600;
+    height: auto;
+    padding: 0.4rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgb(148 163 184 / 20%);
+  }
+
+  &__description {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    color: var(--color-modal-text-secondary);
+    font-size: 1.3rem;
+    font-weight: 400;
+  }
+
+  &__card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+  }
+
+  &__category-chip {
+    background: linear-gradient(
+      135deg,
+      rgb(99 102 241 / 10%),
+      rgb(168 85 247 / 10%)
+    );
+    color: var(--color-modal-purple-secondary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    height: auto;
+    padding: 0.5rem 1.2rem;
+    border-radius: 16px;
+    border: 1px solid rgb(99 102 241 / 20%);
+  }
+
+  &__price {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(
+      135deg,
+      var(--color-modal-blue-focus),
+      var(--color-modal-purple-primary)
+    );
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    &--free {
+      background: linear-gradient(
+        135deg,
+        var(--color-modal-success-primary),
+        var(--color-modal-success-secondary)
+      );
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  &__card-actions {
+    padding: 0 2rem 2rem;
+  }
+
+  &__add-btn {
+    background: linear-gradient(
+      135deg,
+      var(--color-modal-blue-primary),
+      var(--color-modal-blue-secondary)
+    );
+    color: var(--color-white);
+    text-transform: none;
+    font-weight: 600;
+    font-size: 1.3rem;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgb(255 255 255 / 20%) 50%,
+        transparent 100%
+      );
+      transition: left 0.6s ease;
+    }
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -6px rgb(59 130 246 / 40%);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &--added {
+      background: linear-gradient(
+        135deg,
+        rgb(34 197 94 / 10%),
+        rgb(22 163 74 / 10%)
+      );
+      border: 2px solid var(--color-modal-success-primary);
+      color: var(--color-modal-success-secondary);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(
+          135deg,
+          rgb(34 197 94 / 15%),
+          rgb(22 163 74 / 15%)
+        );
+        transform: none;
+        box-shadow: none;
+      }
+
+      &:disabled {
+        border-color: var(--color-modal-success-primary);
+        color: var(--color-modal-success-secondary);
+        opacity: 0.8;
+      }
+    }
+  }
+
+  &__footer {
+    padding: 2.5rem 3rem;
+    border-top: 1px solid rgb(226 232 240 / 80%);
+    background: linear-gradient(
+      135deg,
+      rgb(248 250 252 / 80%) 0%,
+      rgb(241 245 249 / 90%) 100%
+    );
+    gap: 1.5rem;
+    backdrop-filter: blur(8px);
+  }
+
+  &__close-button {
+    font-size: 1.4rem;
+    font-weight: 600;
+    min-width: 120px;
+    padding: 1rem 2rem;
+    border: 2px solid var(--color-modal-border-light);
+    color: var(--color-modal-text-secondary);
+    text-transform: none;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 50%);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      border-color: var(--color-modal-border-medium);
+      color: var(--color-modal-text-muted);
+      background: rgb(255 255 255 / 80%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px -2px rgb(148 163 184 / 20%);
+    }
+  }
+
+  &__view-cart-button {
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(
+      135deg,
+      var(--color-modal-blue-primary),
+      var(--color-modal-blue-secondary)
+    );
+    text-transform: none;
+    border-radius: 16px;
+    border: none;
+    color: var(--color-white);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgb(255 255 255 / 20%) 50%,
+        transparent 100%
+      );
+      transition: left 0.6s ease;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -6px rgb(59 130 246 / 40%);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // Enhanced responsive design for mobile
+  @media (width <= 768px) {
+    .MuiDialog-paper {
+      border-radius: 20px 20px 0 0;
+      margin: 0;
+      max-height: 95vh;
+      width: 100vw;
+      position: fixed;
+      bottom: 0;
+    }
+
+    &__header {
+      padding: 2rem 2rem 1.5rem;
+
+      &::before {
+        height: 4px;
+      }
+    }
+
+    &__success-icon {
+      font-size: 2rem;
+      padding: 0.8rem;
+    }
+
+    &__title {
+      font-size: 2rem;
+    }
+
+    &__subtitle {
+      font-size: 1.2rem;
+    }
+
+    &__content {
+      padding: 1.5rem 2rem;
+    }
+
+    &__section-title {
+      font-size: 1.8rem;
+    }
+
+    &__section-description {
+      font-size: 1.2rem;
+      max-width: none;
+    }
+
+    &__footer {
+      padding: 2rem;
+      gap: 1.2rem;
+      flex-direction: column;
+
+      .MuiButton-root {
+        width: 100%;
+        order: 2;
+      }
+
+      &__view-cart-button {
+        order: 1;
+      }
+    }
+
+    &__card-content {
+      padding: 1.5rem;
+    }
+
+    &__card-actions {
+      padding: 0 1.5rem 1.5rem;
+    }
+
+    &__product-name {
+      font-size: 1.4rem;
+    }
+
+    &__description {
+      font-size: 1.2rem;
+    }
+
+    &__price {
+      font-size: 1.6rem;
+    }
+  }
+}

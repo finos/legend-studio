@@ -15,7 +15,7 @@
  */
 
 import { SerializationFactory } from '@finos/legend-shared';
-import { createModelSchema, optional, primitive } from 'serializr';
+import { createModelSchema, primitive } from 'serializr';
 
 export interface LightProvider {
   description: string;
@@ -23,26 +23,26 @@ export interface LightProvider {
   type: string;
 }
 
-export class ProviderResult {
+export class TerminalResult {
   id!: number;
   category!: string;
   providerName!: string;
   productName!: string;
   description!: string;
   price!: number;
+  phystr!: string;
   isOwned?: boolean;
-  profileId?: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ProviderResult, {
+    createModelSchema(TerminalResult, {
       id: primitive(),
       category: primitive(),
       providerName: primitive(),
       productName: primitive(),
       description: primitive(),
       price: primitive(),
-      isOwned: optional(primitive()),
-      profileId: optional(primitive()),
+      phystr: primitive(),
+      isOwned: primitive(),
     }),
   );
 }

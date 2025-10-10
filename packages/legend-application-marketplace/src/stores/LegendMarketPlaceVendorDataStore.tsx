@@ -16,7 +16,7 @@
 
 import {
   DataProduct,
-  ProviderResult,
+  TerminalResult,
   type Filter,
   type LightDataProduct,
   type MarketplaceServerClient,
@@ -27,10 +27,10 @@ import type {
   LegendMarketplaceBaseStore,
 } from './LegendMarketplaceBaseStore.js';
 import type { GeneratorFn } from '@finos/legend-shared';
+import { toastManager } from '../components/Toast/CartToast.js';
 
 export enum VendorDataProviderType {
   ALL = 'All',
-  DATAFEEDS = 'Datafeeds',
   TERMINAL_LICENSE = 'Terminal License',
   ADD_ONS = 'Add-Ons',
 }
@@ -42,12 +42,20 @@ export class LegendMarketPlaceVendorDataStore {
 
   responseLimit = 6;
 
-  dataFeedProviders: ProviderResult[] = [];
-  terminalProviders: ProviderResult[] = [];
+  currentUser = '';
+
+  //Vendor Data Page
+  terminalProviders: TerminalResult[] = [];
   terminalProvidersAsDataProducts: LightDataProduct[] = [];
-  addOnProviders: ProviderResult[] = [];
+  addOnProviders: TerminalResult[] = [];
+  providers: TerminalResult[] = [];
+
+  // Data Products Page
   dataProducts: DataProduct[] = [];
+
+  //Home Page
   homeDataProducts: LightDataProduct[] = [];
+
   providersFilters: Filter[] = [];
 
   providerDisplayState: VendorDataProviderType = VendorDataProviderType.ALL;
@@ -57,13 +65,14 @@ export class LegendMarketPlaceVendorDataStore {
     store: LegendMarketplaceBaseStore,
   ) {
     makeObservable(this, {
-      dataFeedProviders: observable,
       terminalProviders: observable,
       addOnProviders: observable,
       populateProviders: action,
       providerDisplayState: observable,
       setProviderDisplayState: action,
       terminalProvidersAsDataProducts: observable,
+      providers: observable,
+      setProviders: action,
       init: flow,
       dataProducts: observable,
       homeDataProducts: observable,
@@ -78,6 +87,14 @@ export class LegendMarketPlaceVendorDataStore {
   }
 
   *init(): GeneratorFn<void> {
+    try {
+      this.currentUser = this.applicationStore.identityService.currentUser;
+    } catch (error) {
+      this.applicationStore.notificationService.notifyError(
+        `Failed to get current user: ${error}`,
+      );
+    }
+
     try {
       yield this.populateProviders();
       this.terminalProvidersAsDataProducts = this.terminalProviders.map(
@@ -141,34 +158,57 @@ export class LegendMarketPlaceVendorDataStore {
       const filters: string = this.providersFilters
         .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
         .join('');
-      this.dataFeedProviders = (
-        await this.marketplaceServerClient.getVendorsByCategory(
-          encodeURIComponent('Periodic Datafeed'),
-          filters,
-          this.responseLimit,
-        )
-      ).map((json) => ProviderResult.serialization.fromJson(json));
 
       this.terminalProviders = (
         await this.marketplaceServerClient.getVendorsByCategory(
-          encodeURIComponent('Desktop'),
+          this.currentUser,
+          encodeURIComponent('desktop'),
+          'landing',
           filters,
           this.responseLimit,
         )
-      ).map((json) => ProviderResult.serialization.fromJson(json));
+      ).map((json) => {
+        return TerminalResult.serialization.fromJson(json);
+      });
 
       this.addOnProviders = (
         await this.marketplaceServerClient.getVendorsByCategory(
-          encodeURIComponent('Add-on'),
+          this.currentUser,
+          encodeURIComponent('addon'),
+          'landing',
           filters,
           this.responseLimit,
         )
-      ).map((json) => ProviderResult.serialization.fromJson(json));
+      ).map((json) => TerminalResult.serialization.fromJson(json));
     } catch (error) {
       this.applicationStore.notificationService.notifyError(
         `Failed to fetch vendors: ${error}`,
       );
     }
+  }
+
+  setProviders(category: string): void {
+    this.providers = [];
+    const filters: string = this.providersFilters
+      .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
+      .join('');
+
+    this.marketplaceServerClient
+      .getVendorsByCategory(
+        this.currentUser,
+        encodeURIComponent(category),
+        'list',
+        filters,
+        this.responseLimit,
+      )
+      .then((response) => {
+        this.providers = response.map((json) => {
+          return TerminalResult.serialization.fromJson(json);
+        });
+      })
+      .catch((error) => {
+        toastManager.error(`Failed to fetch vendors: ${error.message}`);
+      });
   }
 
   async populateDataProducts(): Promise<void> {

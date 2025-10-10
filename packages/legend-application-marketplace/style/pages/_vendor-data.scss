@@ -23,17 +23,20 @@
 
   &__content {
     flex-direction: column;
-    height: calc(100% - var(--legend-marketplace-header-height));
+    height: 100%;
     width: 100%;
     padding: 2rem;
   }
 
   .legend-marketplace-banner {
-    background: var(--color-dark-grey-100);
+    background: #7297c5;
     width: 100%;
     height: 195px;
     padding: 20px;
     color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     &__title {
       font-size: 32px;
@@ -46,39 +49,10 @@
       margin-top: 2rem;
       margin-bottom: 4rem;
     }
-  }
 
-  .legend-marketplace-new-datasets {
-    align-items: flex-start;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    margin: auto;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: bold;
-
-    &__buttons {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      flex-wrap: wrap;
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    &__providers {
-      display: flex;
-      padding: 10px 15px;
-      flex: 1 1 0;
-      background-color: #dce3e8;
-      color: #1b3344;
-      align-items: center;
-      text-align: center;
-      justify-content: center;
-      width: 100%;
-      position: unset;
+    &__search-bar {
+      margin-top: 1rem;
+      width: clamp(32rem, 50vw, 64rem);
     }
   }
 
@@ -87,11 +61,14 @@
       display: flex;
       flex-direction: column;
       width: 100%;
+      height: 100%;
       gap: 20px;
-      justify-content: center;
-      align-items: center;
-      background-color: #f0f0f0;
       padding: 2rem;
+    }
+
+    &__tab {
+      font-size: 2rem;
+      align-self: center;
     }
   }
 }
@@ -158,7 +135,15 @@
         text-decoration: none;
         color: #186ade;
         align-items: center;
+        margin-top: 1.1rem;
       }
+    }
+
+    &__card-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
     }
   }
 }
