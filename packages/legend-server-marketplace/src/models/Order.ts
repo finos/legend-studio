@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2025-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-export * from './models/DataProduct.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
-export * from './models/Cart.js';
-export * from './models/Order.js';
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
+export interface OrderDetails {
+  ordered_by: string;
+  kerberos: string;
+  order_items: Record<string, unknown>;
+  business_justification: string;
+}

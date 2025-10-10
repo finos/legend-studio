@@ -189,7 +189,7 @@ export const MarketplaceLakehouseHeader = observer(() => {
         },
         {
           title: 'Terminals and Addons',
-          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS,
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_ADD_ONS,
         },
         {
           title: 'GS Inventory',

@@ -85,9 +85,11 @@
   --color-yellow-400: #dc9d2a;
   --color-yellow-500: #c58105;
   --color-dark-yellow-500: #342a18;
+  --color-green-20: #c9e9ca;
   --color-green-80: #65d081;
   --color-green-100: #34a853;
-  --color-green-200: #1e8a53;
+  --color-success: #22c55e;
+  --color-green-200: #014321;
   --color-lime-50: #a5ea81;
   --color-lime-75: #aad468;
   --color-lime-150: #6a9955; // vscode
@@ -114,6 +116,7 @@
   --color-blue-200: #08629e;
   --color-blue-300: #014a7b;
   --color-blue-500: #002f4f;
+  --color-blue-400: #0f4f9d;
   --color-light-shade-50: #ffffff12;
   --color-light-shade-100: #ffffff2e;
   --color-light-shade-150: #fff3;
@@ -162,6 +165,60 @@
   --color-merge--base: var(--color-dark-grey-350);
   --color-merge--incoming: var(--color-blue-40);
   --color-warning: var(--color-yellow-100);
+
+  // Cart specific colors
+  --color-cart-blue-primary: #2b77d3;
+  --color-cart-blue-secondary: #6b9ce2;
+  --color-cart-blue-focus: #667eea;
+  --color-cart-border-light: #e8eaed;
+  --color-cart-border-medium: #e9ecef;
+  --color-cart-background-light: #f8f9fa;
+  --color-cart-background-lighter: #fafbfc;
+  --color-cart-background-section: #f1f3f4;
+  --color-cart-text-primary: #495057;
+  --color-cart-text-secondary: #6c757d;
+  --color-cart-text-dark: #1a202c;
+  --color-cart-text-muted: #6b7280;
+  --color-cart-text-category: #374151;
+  --color-cart-scrollbar: #cbd5e1;
+  --color-cart-scrollbar-hover: #94a3b8;
+  --color-cart-card-header-start: #f8f9ff;
+  --color-cart-card-header-end: #f0f4ff;
+  --color-cart-provider-start: #667eea;
+  --color-cart-provider-end: #764ba2;
+  --color-cart-remove-bg: #ef4444;
+  --color-cart-price-green: #059669;
+  --color-cart-price-green-end: #10b981;
+  --color-cart-category-bg-start: #f3f4f6;
+  --color-cart-category-bg-end: #e5e7eb;
+  --color-cart-clear-bg-start: #f8fafc;
+  --color-cart-clear-bg-end: #e2e8f0;
+  --color-cart-clear-border: #cbd5e1;
+  --color-cart-clear-border-hover: #94a3b8;
+  --color-cart-clear-text: #475569;
+
+  // Recommended Add-ons Modal colors
+  --color-modal-text-primary: #1e293b;
+  --color-modal-text-secondary: #64748b;
+  --color-modal-text-muted: #475569;
+  --color-modal-border-light: #e2e8f0;
+  --color-modal-border-medium: #cbd5e1;
+  --color-modal-border-focus: #93c5fd;
+  --color-modal-background-light: #f8fafc;
+  --color-modal-background-medium: #f1f5f9;
+  --color-modal-background-card: #e2e8f0;
+  --color-modal-blue-primary: #2b77d3;
+  --color-modal-blue-secondary: #6b9ce2;
+  --color-modal-blue-focus: #3b82f6;
+  --color-modal-blue-light: #93c5fd;
+  --color-modal-success-primary: #22c55e;
+  --color-modal-success-secondary: #16a34a;
+  --color-modal-purple-primary: #8b5cf6;
+  --color-modal-purple-secondary: #6366f1;
+  --color-modal-purple-light: #a855f7;
+  --color-modal-category-bg: #99f6e4;
+  --color-modal-category-text: #0d9488;
+
   // font
   --font-entity-label: 'Roboto Condensed';
 }

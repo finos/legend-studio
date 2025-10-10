@@ -28,6 +28,8 @@ import { assertErrorThrown, LegendUser } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import { CartDrawer } from '../AddToCart/CartDrawer.js';
+import { CartBadge } from './CartBadge.js';
 
 export const LegendMarketplaceIconToolbar = observer(() => {
   const applicationStore = useApplicationStore();
@@ -120,10 +122,20 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   };
 
   const CartIconRenderer = () => {
+    const cartStore = marketplaceStore.cartStore;
     return (
       <>
-        <IconButton className="legend-marketplace-header__menu__icon">
-          <ShoppingCartOutlineIcon />
+        <IconButton
+          className="legend-marketplace-header__menu__icon"
+          onClick={() => {
+            // eslint-disable-next-line no-void
+            void cartStore.initialize();
+            cartStore.setOpen(true);
+          }}
+        >
+          <CartBadge cartStore={cartStore}>
+            <ShoppingCartOutlineIcon />
+          </CartBadge>
         </IconButton>
       </>
     );
@@ -189,12 +201,15 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   ].filter((item) => !item.disable);
 
   return (
-    <Box className="legend-marketplace-header__icons">
-      {toolbarIcons.map((item) => (
-        <div key={item.title} className="legend-marketplace-header__icon">
-          {item.renderer()}
-        </div>
-      ))}
-    </Box>
+    <>
+      <Box className="legend-marketplace-header__icons">
+        {toolbarIcons.map((item) => (
+          <div key={item.title} className="legend-marketplace-header__icon">
+            {item.renderer()}
+          </div>
+        ))}
+      </Box>
+      <CartDrawer />
+    </>
   );
 });
