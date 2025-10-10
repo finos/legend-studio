@@ -125,6 +125,22 @@ export class RawLakehouseConsumerDataCubeSource {
               );
           }
         },
+        {
+          beforeDeserialize: (callback, jsonValue, jsonParentValue) => {
+            /** backward compatibility for dpCoordinates */
+            if (!jsonValue && jsonParentValue.dpCoordinates) {
+              const dpCoordinates = deserialize(
+                VersionedProjectData.serialization.schema,
+                jsonParentValue.dpCoordinates,
+              );
+              const origin = new RawLakehouseSdlcOrigin();
+              origin.dpCoordinates = dpCoordinates;
+              callback(null, origin);
+            } else {
+              callback(null, jsonValue);
+            }
+          },
+        },
       ),
     }),
   );
