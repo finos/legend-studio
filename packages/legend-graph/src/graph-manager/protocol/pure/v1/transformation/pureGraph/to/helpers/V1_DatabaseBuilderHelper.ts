@@ -362,6 +362,7 @@ export const V1_buildRelationalOperationElement = (
           new Map<string, TableAlias>(),
           selfJoinTargets,
           generatedDbs,
+          true,
         );
     }
     return elementWithJoins;
@@ -374,6 +375,7 @@ export const V1_buildRelationalOperationElement = (
         tableAliasIndex,
         selfJoinTargets,
         generatedDbs,
+        true,
       ),
     );
     return dynFunc;

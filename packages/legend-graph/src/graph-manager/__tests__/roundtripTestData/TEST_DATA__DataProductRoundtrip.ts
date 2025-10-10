@@ -399,7 +399,106 @@ export const TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS = [
 
 export const TEST_DATA__DATAPRODUCT__INCLUDE = [
   {
-    path: 'my::relational::db',
+    path: 'model::lakehouse::Firm',
+    content: {
+      _type: 'class',
+      name: 'Firm',
+      package: 'model::lakehouse',
+      properties: [
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'id',
+        },
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'legalName',
+        },
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::lakehouse::Person',
+            },
+          },
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'employees',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::lakehouse::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'model::lakehouse',
+      properties: [
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'id',
+        },
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firmId',
+        },
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'lastName',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'my::relational::db1',
     content: {
       _type: 'relational',
       filters: [
@@ -415,42 +514,16 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                 column: 'id',
                 table: {
                   _type: 'Table',
-                  database: 'my::lakehouse::FirmIngest',
-                  mainTableDb: 'my::lakehouse::FirmIngest',
-                  schema: 'ALLOY_FIRM_GROUP',
-                  table: 'Firm',
+                  database: 'my::lakehouse::PersonIngest',
+                  mainTableDb: 'my::lakehouse::PersonIngest',
+                  schema: 'ALLOY_PERSON_GROUP',
+                  table: 'Person',
                 },
-                tableAlias: 'Firm',
+                tableAlias: 'Person',
               },
               {
                 _type: 'literal',
                 value: 123,
-              },
-            ],
-          },
-        },
-        {
-          _type: 'filter',
-          name: 'AccessPoint_Filter',
-          operation: {
-            _type: 'dynaFunc',
-            funcName: 'equal',
-            parameters: [
-              {
-                _type: 'column',
-                column: 'firm_id',
-                table: {
-                  _type: 'Table',
-                  database: 'my::lakehouse::PersonDataProduct',
-                  mainTableDb: 'my::lakehouse::PersonDataProduct',
-                  schema: 'default',
-                  table: 'ap1_PersonLatest',
-                },
-                tableAlias: 'ap1_PersonLatest',
-              },
-              {
-                _type: 'literal',
-                value: 234,
               },
             ],
           },
@@ -460,6 +533,12 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
         {
           packageableElementPointer: {
             path: 'my::lakehouse::FirmIngest',
+          },
+          storeType: 'Ingest',
+        },
+        {
+          packageableElementPointer: {
+            path: 'my::lakehouse::PersonIngest',
           },
           storeType: 'Ingest',
         },
@@ -515,24 +594,109 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                 column: 'id',
                 table: {
                   _type: 'Table',
-                  database: 'my::lakehouse::PersonDataProduct',
-                  mainTableDb: 'my::lakehouse::PersonDataProduct',
-                  schema: 'default',
-                  table: 'ap1_PersonLatest',
+                  database: 'my::lakehouse::PersonIngest',
+                  mainTableDb: 'my::lakehouse::PersonIngest',
+                  schema: 'ALLOY_PERSON_GROUP',
+                  table: 'Person',
                 },
-                tableAlias: 'ap1_PersonLatest',
+                tableAlias: 'Person',
               },
               {
                 _type: 'column',
                 column: 'firm_id',
                 table: {
                   _type: 'Table',
-                  database: 'my::lakehouse::PersonDataProduct',
-                  mainTableDb: 'my::lakehouse::PersonDataProduct',
+                  database: 'my::lakehouse::PersonIngest',
+                  mainTableDb: 'my::lakehouse::PersonIngest',
                   schema: 'default',
                   table: '{target}',
                 },
                 tableAlias: '{target}',
+              },
+            ],
+          },
+        },
+      ],
+      name: 'db1',
+      package: 'my::relational',
+      schemas: [
+        {
+          name: 'ALLOY_FIRM_GROUP',
+          tables: [],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
+    path: 'my::relational::db',
+    content: {
+      _type: 'relational',
+      filters: [
+        {
+          _type: 'filter',
+          name: 'AccessPoint_Filter',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'firm_id',
+                table: {
+                  _type: 'Table',
+                  database: 'my::relational::db1',
+                  mainTableDb: 'my::relational::db1',
+                  schema: 'PersonDataProduct',
+                  table: 'ap1_PersonLatest',
+                },
+                tableAlias: 'ap1_PersonLatest',
+              },
+              {
+                _type: 'literal',
+                value: 234,
+              },
+            ],
+          },
+        },
+      ],
+      includedStores: [
+        {
+          path: 'my::relational::db1',
+          type: 'STORE',
+        },
+      ],
+      joins: [
+        {
+          name: 'FirmPersonLakehouse2',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'id',
+                table: {
+                  _type: 'Table',
+                  database: 'my::relational::db1',
+                  mainTableDb: 'my::relational::db1',
+                  schema: 'ALLOY_FIRM_GROUP',
+                  table: 'Firm',
+                },
+                tableAlias: 'Firm',
+              },
+              {
+                _type: 'column',
+                column: 'id',
+                table: {
+                  _type: 'Table',
+                  database: 'my::relational::db1',
+                  mainTableDb: 'my::relational::db1',
+                  schema: 'ALLOY_FIRM_GROUP',
+                  table: 'Firm_V1',
+                },
+                tableAlias: 'Firm_V1',
               },
             ],
           },
@@ -649,10 +813,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                       fullPath: 'Int',
                       sourceInformation: {
                         endColumn: 13,
-                        endLine: 20,
+                        endLine: 32,
                         sourceId: '',
                         startColumn: 11,
-                        startLine: 20,
+                        startLine: 32,
                       },
                     },
                     typeArguments: [],
@@ -665,10 +829,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                   name: 'id',
                   sourceInformation: {
                     endColumn: 16,
-                    endLine: 20,
+                    endLine: 32,
                     sourceId: '',
                     startColumn: 7,
-                    startLine: 20,
+                    startLine: 32,
                   },
                 },
                 {
@@ -679,10 +843,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                       fullPath: 'Varchar',
                       sourceInformation: {
                         endColumn: 29,
-                        endLine: 21,
+                        endLine: 33,
                         sourceId: '',
                         startColumn: 18,
-                        startLine: 21,
+                        startLine: 33,
                       },
                     },
                     typeArguments: [],
@@ -691,10 +855,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                         _type: 'integer',
                         sourceInformation: {
                           endColumn: 28,
-                          endLine: 21,
+                          endLine: 33,
                           sourceId: '',
                           startColumn: 26,
-                          startLine: 21,
+                          startLine: 33,
                         },
                         value: 200,
                       },
@@ -707,10 +871,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                   name: 'last_name',
                   sourceInformation: {
                     endColumn: 32,
-                    endLine: 21,
+                    endLine: 33,
                     sourceId: '',
                     startColumn: 7,
-                    startLine: 21,
+                    startLine: 33,
                   },
                 },
                 {
@@ -721,10 +885,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                       fullPath: 'Int',
                       sourceInformation: {
                         endColumn: 18,
-                        endLine: 22,
+                        endLine: 34,
                         sourceId: '',
                         startColumn: 16,
-                        startLine: 22,
+                        startLine: 34,
                       },
                     },
                     typeArguments: [],
@@ -737,10 +901,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                   name: 'firm_id',
                   sourceInformation: {
                     endColumn: 21,
-                    endLine: 22,
+                    endLine: 34,
                     sourceId: '',
                     startColumn: 7,
-                    startLine: 22,
+                    startLine: 34,
                   },
                 },
               ],
@@ -770,10 +934,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
       },
       sourceInformation: {
         endColumn: 1,
-        endLine: 26,
+        endLine: 38,
         sourceId: '',
         startColumn: 1,
-        startLine: 17,
+        startLine: 29,
       },
       stereotypes: [],
       taggedValues: [],
@@ -811,10 +975,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                       fullPath: 'Int',
                       sourceInformation: {
                         endColumn: 13,
-                        endLine: 32,
+                        endLine: 44,
                         sourceId: '',
                         startColumn: 11,
-                        startLine: 32,
+                        startLine: 44,
                       },
                     },
                     typeArguments: [],
@@ -827,10 +991,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                   name: 'id',
                   sourceInformation: {
                     endColumn: 16,
-                    endLine: 32,
+                    endLine: 44,
                     sourceId: '',
                     startColumn: 7,
-                    startLine: 32,
+                    startLine: 44,
                   },
                 },
                 {
@@ -841,10 +1005,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                       fullPath: 'Varchar',
                       sourceInformation: {
                         endColumn: 30,
-                        endLine: 33,
+                        endLine: 45,
                         sourceId: '',
                         startColumn: 19,
-                        startLine: 33,
+                        startLine: 45,
                       },
                     },
                     typeArguments: [],
@@ -853,10 +1017,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                         _type: 'integer',
                         sourceInformation: {
                           endColumn: 29,
-                          endLine: 33,
+                          endLine: 45,
                           sourceId: '',
                           startColumn: 27,
-                          startLine: 33,
+                          startLine: 45,
                         },
                         value: 200,
                       },
@@ -869,10 +1033,101 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
                   name: 'legal_name',
                   sourceInformation: {
                     endColumn: 30,
-                    endLine: 33,
+                    endLine: 45,
                     sourceId: '',
                     startColumn: 7,
-                    startLine: 33,
+                    startLine: 45,
+                  },
+                },
+              ],
+            },
+          },
+          storageLayoutClusterColumns: [],
+          storageLayoutPartitionColumns: [],
+        },
+        {
+          ingestPartitionColumns: [],
+          name: 'Firm_V1',
+          preprocessors: [],
+          primaryKey: [],
+          privacyClassification: {
+            sensitivity: 'DP10',
+          },
+          source: {
+            _type: 'serializedSource',
+            schema: {
+              _type: 'relationType',
+              columns: [
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Int',
+                      sourceInformation: {
+                        endColumn: 13,
+                        endLine: 50,
+                        sourceId: '',
+                        startColumn: 11,
+                        startLine: 50,
+                      },
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [],
+                  },
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  name: 'id',
+                  sourceInformation: {
+                    endColumn: 16,
+                    endLine: 50,
+                    sourceId: '',
+                    startColumn: 7,
+                    startLine: 50,
+                  },
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                      sourceInformation: {
+                        endColumn: 30,
+                        endLine: 51,
+                        sourceId: '',
+                        startColumn: 19,
+                        startLine: 51,
+                      },
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        sourceInformation: {
+                          endColumn: 29,
+                          endLine: 51,
+                          sourceId: '',
+                          startColumn: 27,
+                          startLine: 51,
+                        },
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'legal_name',
+                  sourceInformation: {
+                    endColumn: 30,
+                    endLine: 51,
+                    sourceId: '',
+                    startColumn: 7,
+                    startLine: 51,
                   },
                 },
               ],
@@ -902,10 +1157,10 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
       },
       sourceInformation: {
         endColumn: 1,
-        endLine: 36,
+        endLine: 54,
         sourceId: '',
         startColumn: 1,
-        startLine: 29,
+        startLine: 41,
       },
       stereotypes: [],
       taggedValues: [],
