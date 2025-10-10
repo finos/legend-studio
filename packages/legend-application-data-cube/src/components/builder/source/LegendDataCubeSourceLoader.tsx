@@ -26,6 +26,8 @@ import { LegendDataCubeBlockingWindow } from '../../LegendDataCubeBlockingWindow
 import type { LakehouseProducerDataCubeSourceLoaderState } from '../../../stores/builder/source/LakehouseProducerDataCubeSourceLoaderState.js';
 import { LakehouseProducerDataCubeSourceLoader } from './LakehouseProducerDataCubeSourceLoader.js';
 import { LegendDataCubeSourceBuilderType } from '../../../stores/builder/source/LegendDataCubeSourceBuilderState.js';
+import { LakehouseConsumerDataCubeSourceLoader } from './LakehouseConsumerDataCubeSourceLoader.js';
+import type { LakehouseConsumerDataCubeSourceLoaderState } from '../../../stores/builder/source/LakehouseConsumerDataCubeSourceLoaderState.js';
 
 export const LegendDataCubeSourceLoader = observer(
   (props: { state: LegendDataCubeSourceLoaderState }) => {
@@ -95,6 +97,14 @@ export const LegendDataCubeSourceLoader = observer(
                   <LakehouseProducerDataCubeSourceLoader
                     partialSourceLoader={
                       state as LakehouseProducerDataCubeSourceLoaderState
+                    }
+                  />
+                )}
+                {state.label ===
+                  LegendDataCubeSourceBuilderType.LAKEHOUSE_CONSUMER && (
+                  <LakehouseConsumerDataCubeSourceLoader
+                    partialSourceLoader={
+                      state as LakehouseConsumerDataCubeSourceLoaderState
                     }
                   />
                 )}

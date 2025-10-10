@@ -58,7 +58,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             onChange={(newValue: { label: string; value: string } | null) => {
               state.setSelectedDataProduct(newValue?.value ?? '');
               state
-                .fetchAccessPoints(auth.user?.access_token)
+                .fetchDataProduct(auth.user?.access_token)
                 .catch((error) =>
                   store.alertService.alertUnhandledError(error),
                 );
@@ -76,37 +76,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {state.accessPoints.length > 0 && (
-          <div className="query-setup__wizard__group mt-2">
-            <div className="query-setup__wizard__group__title">
-              Access Point
-            </div>
-            <CustomSelectorInput
-              className="query-setup__wizard__selector"
-              options={state.accessPoints.map((accessPoint) => ({
-                label: accessPoint,
-                value: accessPoint,
-              }))}
-              disabled={false}
-              isLoading={false}
-              onChange={(newValue: { label: string; value: string } | null) => {
-                const accessPoint = newValue?.value ?? '';
-                state.setSelectedAccessPoint(accessPoint);
-              }}
-              value={
-                state.selectedAccessPoint
-                  ? {
-                      label: state.selectedAccessPoint,
-                      value: state.selectedAccessPoint,
-                    }
-                  : null
-              }
-              isClearable={false}
-              escapeClearsValue={true}
-            />
-          </div>
-        )}
-        {state.environments.length > 0 && state.selectedAccessPoint && (
+        {state.environments.length > 0 && (
           <div className="query-setup__wizard__group mt-3">
             <div className="query-setup__wizard__group__title">Environment</div>
             <CustomSelectorInput
@@ -122,7 +92,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               isLoading={state.ingestEnvLoadingState.isInProgress}
               onChange={(newValue: { label: string; value: string } | null) => {
                 state.setSelectedEnvironment(newValue?.value ?? '');
-                state.setWarehouse(state.DEFAULT_CONSUMER_WAREHOUSE);
+                state.fetchAccessPoints();
               }}
               value={
                 state.selectedEnvironment
@@ -138,7 +108,38 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             />
           </div>
         )}
-        {state.selectedEnvironment && (
+        {state.accessPoints.length > 0 && state.selectedEnvironment && (
+          <div className="query-setup__wizard__group mt-2">
+            <div className="query-setup__wizard__group__title">
+              Access Point
+            </div>
+            <CustomSelectorInput
+              className="query-setup__wizard__selector"
+              options={state.accessPoints.map((accessPoint) => ({
+                label: accessPoint,
+                value: accessPoint,
+              }))}
+              disabled={false}
+              isLoading={false}
+              onChange={(newValue: { label: string; value: string } | null) => {
+                const accessPoint = newValue?.value ?? '';
+                state.setSelectedAccessPoint(accessPoint);
+                state.setWarehouse(state.DEFAULT_CONSUMER_WAREHOUSE);
+              }}
+              value={
+                state.selectedAccessPoint
+                  ? {
+                      label: state.selectedAccessPoint,
+                      value: state.selectedAccessPoint,
+                    }
+                  : null
+              }
+              isClearable={false}
+              escapeClearsValue={true}
+            />
+          </div>
+        )}
+        {state.selectedAccessPoint && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">Warehouse</div>
             <FormTextInput
