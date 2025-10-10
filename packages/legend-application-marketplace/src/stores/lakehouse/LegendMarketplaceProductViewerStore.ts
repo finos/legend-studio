@@ -293,7 +293,7 @@ export class LegendMarketplaceProductViewerStore {
               );
             }
           },
-          openPowerBi: () => {
+          openPowerBi: (apg) => {
             if (
               entitlementsDataProductDetails.origin instanceof
               V1_SdlcDeploymentDataProductOrigin
@@ -301,9 +301,9 @@ export class LegendMarketplaceProductViewerStore {
               const {
                 group: groupId,
                 artifact: artifactId,
-                version,
+                version: versionId,
               } = entitlementsDataProductDetails.origin;
-              const { path, name: apg } = v1DataProduct;
+              const path = v1DataProduct.path;
               const powerBiUrl =
                 this.marketplaceBaseStore.applicationStore.config.powerBiUrl;
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
@@ -312,7 +312,7 @@ export class LegendMarketplaceProductViewerStore {
                   stringifyQueryParams({
                     groupId,
                     artifactId,
-                    version,
+                    versionId,
                     path,
                     apg,
                   }),

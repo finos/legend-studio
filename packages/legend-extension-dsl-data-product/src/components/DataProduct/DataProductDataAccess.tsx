@@ -136,8 +136,11 @@ export const TabMessageScreen = observer((props: { message: string }) => {
 });
 
 export const PowerBiScreen = observer(
-  (props: { dataAccessState: DataProductDataAccessState | undefined }) => {
-    const { dataAccessState } = props;
+  (props: {
+    dataAccessState: DataProductDataAccessState | undefined;
+    apgState: DataProductAPGState;
+  }) => {
+    const { dataAccessState, apgState } = props;
     if (
       !(
         dataAccessState?.entitlementsDataProductDetails.origin instanceof
@@ -151,7 +154,8 @@ export const PowerBiScreen = observer(
     }
     const loadPowerBi = (): void => {
       if (dataAccessState.dataProductViewerState.openPowerBi) {
-        dataAccessState.dataProductViewerState.openPowerBi();
+        const apg = apgState.apg.id;
+        dataAccessState.dataProductViewerState.openPowerBi(apg);
       }
     };
     return (
@@ -189,17 +193,26 @@ export const DataCubeScreen = observer(
     const [selectedEnvironment, setSelectedEnvironment] = useState<string>('');
     useEffect(() => {
       const fetchEnvironments = async (): Promise<void> => {
-        await dataAccessState.fetchIngestEnvironmentDetails(
-          auth.user?.access_token,
-        );
+        if (dataAccessState.ingestEnvironmentFetchState.isInInitialState) {
+          await dataAccessState.fetchIngestEnvironmentDetails(
+            auth.user?.access_token,
+          );
+        }
       };
       // eslint-disable-next-line no-void
       void fetchEnvironments();
     }, [auth.user?.access_token, dataAccessState]);
     const loadDataCube = (): void => {
       //dpCoordinates
+      const origin = dataAccessState.entitlementsDataProductDetails.origin;
       const dpCoordinates =
-        dataAccessState.entitlementsDataProductDetails.origin;
+        origin instanceof V1_SdlcDeploymentDataProductOrigin
+          ? {
+              groupId: origin.group,
+              artifactId: origin.artifact,
+              versionId: origin.version,
+            }
+          : undefined;
       //paths
       const path = apgState.dataProductViewerState.getPath();
       const accessPointName = accessPointdata?.id;
@@ -605,7 +618,10 @@ const TDSColumnCellRenderer = (props: {
               />
             )}
             {selectedTab === DataProductTabs.POWER_BI && (
-              <PowerBiScreen dataAccessState={dataAccessState} />
+              <PowerBiScreen
+                dataAccessState={dataAccessState}
+                apgState={apgState}
+              />
             )}
             {selectedTab === DataProductTabs.PYTHON && (
               <TabMessageScreen message={WORK_IN_PROGRESS} />
