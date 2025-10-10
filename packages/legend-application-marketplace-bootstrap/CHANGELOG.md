@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.143.0
+
+### Patch Changes
+
+- [#4530](https://github.com/finos/legend-studio/pull/4530) [`15ea4dd`](https://github.com/finos/legend-studio/commit/15ea4dd223070bf0d04d7b2cbd3a4b12a14c0386) ([@kelly-thai](https://github.com/kelly-thai)) - Fix CSS for marketplace page backgrounds
+
 ## 13.142.0
 
 ## 13.141.0
