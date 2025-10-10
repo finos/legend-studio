@@ -129,12 +129,10 @@ export class RawLakehouseConsumerDataCubeSource {
           beforeDeserialize: (callback, jsonValue, jsonParentValue) => {
             /** backward compatibility for dpCoordinates */
             if (!jsonValue && jsonParentValue.dpCoordinates) {
-              const dpCoordinates = deserialize(
-                VersionedProjectData.serialization.schema,
-                jsonParentValue.dpCoordinates,
-              );
-              const origin = new RawLakehouseSdlcOrigin();
-              origin.dpCoordinates = dpCoordinates;
+              const origin = {
+                _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
+                dpCoordinates: jsonParentValue.dpCoordinates,
+              } as PlainObject;
               callback(null, origin);
             } else {
               callback(null, jsonValue);
