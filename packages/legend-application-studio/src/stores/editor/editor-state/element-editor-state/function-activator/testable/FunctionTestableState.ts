@@ -54,12 +54,13 @@ import {
   InstanceValue,
   PackageableElementReference,
   Database,
-  RelationalCSVData,
   PackageableElementExplicitReference,
   observe_ValueSpecification,
   buildLambdaVariableExpressions,
   EqualTo,
   ModelStore,
+  RelationElementsData,
+  CORE_PURE_PATH,
 } from '@finos/legend-graph';
 import {
   TestablePackageableElementEditorState,
@@ -122,7 +123,14 @@ const resolveRuntimesFromQuery = (
 ): EngineRuntime[] | undefined => {
   try {
     const body = func.expressionSequence;
-    const rawLambda = new RawLambda([], body);
+    const rawLambda = new RawLambda(
+      func.parameters.map((_param) =>
+        editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+          _param,
+        ),
+      ),
+      body,
+    );
     const functions = new Map<string, SimpleFunctionExpression[]>();
     const valueSpec =
       editorStore.graphManagerState.graphManager.buildValueSpecification(
@@ -759,7 +767,18 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
     const functionSuite = new FunctionTestSuite();
     functionSuite.id = suiteName;
     const engineRuntimes = this.associatedRuntimes;
-    if (engineRuntimes?.length) {
+    if (!engineRuntimes?.length) {
+      const type = this.function.returnType.value.rawType;
+      if (
+        type.path === CORE_PURE_PATH.RELATION ||
+        type.path === CORE_PURE_PATH.TABULAR_DATASET
+      ) {
+        this.editorStore.applicationStore.notificationService.notifyWarning(
+          `Unable to find runtime or function contains accessors incompatible for test suite creation`,
+        );
+        return;
+      }
+    } else {
       try {
         assertTrue(
           engineRuntimes.length === 1,
@@ -791,9 +810,9 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
         const store = guaranteeNonNullable(stores[0]);
         const data = new FunctionTestData();
         if (store instanceof Database) {
-          const relational = new RelationalCSVData();
+          const relation = new RelationElementsData();
           data.element = PackageableElementExplicitReference.create(store);
-          data.data = relational;
+          data.data = relation;
         } else if (store instanceof ModelStore) {
           const modelStoreData = createBareExternalFormat();
           data.element = PackageableElementExplicitReference.create(store);

@@ -18,11 +18,14 @@ import { computed, makeObservable, observable, override } from 'mobx';
 import {
   type EmbeddedData,
   type ModelData,
+  type RelationElement,
+  type RelationRowTestData,
   ModelEmbeddedData,
   ModelInstanceData,
   ExternalFormatData,
   DataElementReference,
   ModelStoreData,
+  RelationElementsData,
 } from '../../../graph/metamodel/pure/data/EmbeddedData.js';
 import {
   type RelationalCSVDataTable,
@@ -141,6 +144,38 @@ const observe_RelationalCSVData = skipObserved(
   },
 );
 
+export const observe_RelationRowTestData = skipObserved(
+  (metamodel: RelationRowTestData): RelationRowTestData => {
+    makeObservable(metamodel, {
+      values: observable,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_RelationElement = skipObserved(
+  (metamodel: RelationElement): RelationElement => {
+    makeObservable(metamodel, {
+      paths: observable,
+      columns: observable,
+      rows: observable,
+      hashCode: computed,
+    });
+    metamodel.rows.forEach(observe_RelationRowTestData);
+    return metamodel;
+  },
+);
+
+export const observe_RelationElementsData = skipObserved(
+  (metamodel: RelationElementsData): RelationElementsData => {
+    makeObservable(metamodel, {
+      hashCode: computed,
+    });
+    metamodel.relationElements.forEach(observe_RelationElement);
+    return metamodel;
+  },
+);
+
 export const observe_INTERNAL__UnknownEmbeddedData = skipObserved(
   (metamodel: INTERNAL__UnknownEmbeddedData): INTERNAL__UnknownEmbeddedData => {
     makeObservable(metamodel, {
@@ -165,6 +200,8 @@ export function observe_EmbeddedData(
     return observe_ModelStoreData(metamodel, context);
   } else if (metamodel instanceof RelationalCSVData) {
     return observe_RelationalCSVData(metamodel);
+  } else if (metamodel instanceof RelationElementsData) {
+    return observe_RelationElementsData(metamodel);
   }
   const extraEmbeddedDataObservers = context.plugins.flatMap(
     (plugin) =>
