@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.3.6
+
+### Patch Changes
+
+- [#4542](https://github.com/finos/legend-studio/pull/4542) [`aa1f0af`](https://github.com/finos/legend-studio/commit/aa1f0af757fed3684336dfc02f94bb0f5a75de05) ([@mrudula-gs](https://github.com/mrudula-gs)) - Fix filters for lakehouse concepts in store
+
+- [#4539](https://github.com/finos/legend-studio/pull/4539) [`1b098b7`](https://github.com/finos/legend-studio/commit/1b098b7e9d843aab8e067d366dbd9367210e07d2) ([@yash0024](https://github.com/yash0024)) - Observe RelationElementsData and its fields
+
+- [#4536](https://github.com/finos/legend-studio/pull/4536) [`026decc`](https://github.com/finos/legend-studio/commit/026decc574c492f08728f41346df72c7595c53da) ([@mimi-tam](https://github.com/mimi-tam)) - Add wiring for include dataproduct in studio.
+
 ## 32.3.5
 
 ### Patch Changes
