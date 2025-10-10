@@ -1160,6 +1160,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildStores(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_STORES__SUCCESS);
 
+    // build data products
+    graphBuilderState.setMessage(`Building data products...`);
+    await this.buildDataProducts(graph, inputs, options);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DATA_PRODUCTS__SUCCESS,
+    );
+
     // build mappings
     graphBuilderState.setMessage(`Building mappings...`);
     await this.buildMappings(graph, inputs, options);
@@ -1191,13 +1198,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildDataElements(graph, inputs, options);
     stopWatch.record(
       GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DATA_ELEMENTS__SUCCESS,
-    );
-
-    // build data products
-    graphBuilderState.setMessage(`Building data products...`);
-    await this.buildDataProducts(graph, inputs, options);
-    stopWatch.record(
-      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DATA_PRODUCTS__SUCCESS,
     );
 
     // build other elements

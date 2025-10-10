@@ -108,6 +108,7 @@ import {
   type V1_MappingInclude,
   V1_MappingIncludeMapping,
 } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import { V1_MappingIncludeDataProduct } from '../../../model/packageableElements/dataProduct/V1_MappingIncludeDataProduct.js';
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
@@ -135,6 +136,7 @@ import {
   Email,
   ExternalDataProductType,
   InternalDataProductType,
+  ModelAccessPointGroup,
   SupportInfo,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
@@ -542,6 +544,17 @@ export class V1_ElementSecondPassBuilder
   getMappingIdentifier(protocol: V1_MappingInclude): string | undefined {
     if (protocol instanceof V1_INTERNAL__UnknownMappingInclude) {
       return undefined;
+    }
+    if (protocol instanceof V1_MappingIncludeDataProduct) {
+      const dataProduct = this.context.graph.getDataProduct(
+        protocol.includedDataProduct,
+      );
+      return guaranteeNonNullable(
+        dataProduct.accessPointGroups
+          .filter((apg) => apg instanceof ModelAccessPointGroup)
+          .at(0),
+        `include dataproduct requires Model AccessPoint Group. Can't find a Model AccessPoint Group for the dataproduct ${protocol.includedDataProduct}`,
+      ).mapping.value.path;
     }
     if (protocol instanceof V1_MappingIncludeMapping) {
       return protocol.includedMapping;

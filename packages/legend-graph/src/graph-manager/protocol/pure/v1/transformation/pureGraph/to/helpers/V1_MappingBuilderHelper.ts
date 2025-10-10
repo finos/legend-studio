@@ -48,6 +48,7 @@ import {
 import { EnumValueImplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/EnumValueReference.js';
 import type { MappingInclude } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
 import { MappingIncludeMapping } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingIncludeMapping.js';
+import { MappingIncludeDataProduct } from '../../../../../../../../graph/metamodel/pure/dataProduct/MappingIncludeDataProduct.js';
 import { INTERNAL__UnknownMappingInclude } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownMappingInclude.js';
 import { SubstituteStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
 import type { SetImplementation } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
@@ -71,6 +72,7 @@ import {
   type V1_MappingInclude,
   V1_MappingIncludeMapping,
 } from '../../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import { V1_MappingIncludeDataProduct } from '../../../../model/packageableElements/dataProduct/V1_MappingIncludeDataProduct.js';
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 import {
@@ -91,6 +93,7 @@ import { StoreTestData } from '../../../../../../../../graph/metamodel/pure/pack
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { ModelStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/model/ModelStore.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+import { ModelAccessPointGroup } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -207,6 +210,22 @@ export const V1_buildMappingInclude = (
     const metamodel = new INTERNAL__UnknownMappingInclude(parentMapping);
     metamodel.content = protocol.content;
     return metamodel;
+  } else if (protocol instanceof V1_MappingIncludeDataProduct) {
+    const dataProduct = context.graph.getDataProduct(
+      protocol.includedDataProduct,
+    );
+    const modelAPG = guaranteeNonNullable(
+      dataProduct.accessPointGroups
+        .filter((apg) => apg instanceof ModelAccessPointGroup)
+        .at(0),
+      `include dataproduct requires Model AccessPoint Group. Can't find a Model AccessPoint Group for the dataproduct ${protocol.includedDataProduct}`,
+    );
+    const includedMapping = new MappingIncludeDataProduct(
+      parentMapping,
+      modelAPG.mapping,
+      context.resolveDataProduct(protocol.includedDataProduct),
+    );
+    return includedMapping;
   } else if (protocol instanceof V1_MappingIncludeMapping) {
     const includedMapping = new MappingIncludeMapping(
       parentMapping,
