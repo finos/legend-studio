@@ -97,7 +97,7 @@ export const TEST__provideMockedBrowserPlatform = (
       navigate: () => {},
       baseUrl: TEST__APPLICATION_BASE_URL,
     });
-  const MOCK__BrowserPlatform = require('../ApplicationPlatformProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
+  const MOCK__BrowserPlatform = require('../ApplicationPlatformProvider.js'); // eslint-disable-line @typescript-eslint/no-require-imports
   MOCK__BrowserPlatform.useApplicationPlatform = createMock();
   MOCK__BrowserPlatform.useApplicationPlatform.mockReturnValue(value);
   return value;

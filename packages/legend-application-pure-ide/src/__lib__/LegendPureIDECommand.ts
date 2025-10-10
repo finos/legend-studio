@@ -26,6 +26,8 @@ export enum LEGEND_PURE_IDE_COMMAND_KEY {
   FULL_RECOMPILE_WITH_FULL_INIT = 'editor.full-compile.with-init',
   RUN_ALL_TESTS = 'editor.run-all-tests',
   RUN_RELAVANT_TESTS = 'editor.run-relavant-tests',
+  SPLIT_EDITOR_RIGHT = 'editor.split-right',
+  SPLIT_EDITOR_DOWN = 'editor.split-down',
 }
 
 export const LEGEND_PURE_IDE_COMMAND_CONFIG: CommandConfigData = {
@@ -66,6 +68,16 @@ export const LEGEND_PURE_IDE_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_PURE_IDE_COMMAND_KEY.RUN_RELAVANT_TESTS]: {
     title: 'Run relavant tests',
     defaultKeyboardShortcut: 'Shift+F10',
+  },
+  [LEGEND_PURE_IDE_COMMAND_KEY.SPLIT_EDITOR_RIGHT]: {
+    title: 'Split editor right',
+    defaultKeyboardShortcut: 'Control+Backslash',
+    additionalKeyboardShortcuts: ['Meta+Backslash'],
+  },
+  [LEGEND_PURE_IDE_COMMAND_KEY.SPLIT_EDITOR_DOWN]: {
+    title: 'Split editor down',
+    defaultKeyboardShortcut: 'Control+Shift+Backslash',
+    additionalKeyboardShortcuts: ['Meta+Shift+Backslash'],
   },
 };
 

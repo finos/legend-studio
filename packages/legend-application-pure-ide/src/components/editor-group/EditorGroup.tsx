@@ -87,7 +87,7 @@ const EditorGroupSplashScreen: React.FC = () => {
 
 export const EditorGroup = observer(() => {
   const ideStore = usePureIDEStore();
-  const currentTab = ideStore.tabManagerState.currentTab;
+  const currentTab = ideStore.editorSplitState.currentTab;
   const renderActiveEditorState = (): React.ReactNode => {
     if (currentTab instanceof FileEditorState) {
       if (currentTab.textEditorState.language === CODE_EDITOR_LANGUAGE.PURE) {
@@ -102,11 +102,11 @@ export const EditorGroup = observer(() => {
   const renderTab = (editorState: TabState): React.ReactNode | undefined => {
     if (editorState instanceof FileEditorState) {
       const showMoreInfo =
-        ideStore.tabManagerState.tabs.filter(
+        (ideStore.editorSplitState.activeLeaf?.tabManagerState.tabs.filter(
           (tab) =>
             tab instanceof FileEditorState &&
             tab.fileName === editorState.fileName,
-        ).length > 1;
+        ).length ?? 0) > 1;
       return (
         <div className="editor-group__header__tab">
           <div className="editor-group__header__tab__icon">
@@ -129,11 +129,11 @@ export const EditorGroup = observer(() => {
       );
     } else if (editorState instanceof DiagramEditorState) {
       const showMoreInfo =
-        ideStore.tabManagerState.tabs.filter(
+        (ideStore.editorSplitState.activeLeaf?.tabManagerState.tabs.filter(
           (tab) =>
             tab instanceof DiagramEditorState &&
             tab.diagramName === editorState.diagramName,
-        ).length > 1;
+        ).length ?? 0) > 1;
       return (
         <div className="editor-group__header__tab">
           <div className="editor-group__header__tab__icon">
@@ -160,10 +160,14 @@ export const EditorGroup = observer(() => {
     <div className="panel editor-group">
       <div className="panel__header editor-group__header">
         <div className="editor-group__header__tabs">
-          <TabManager
-            tabManagerState={ideStore.tabManagerState}
-            tabRenderer={renderTab}
-          />
+          {ideStore.editorSplitState.activeLeaf && (
+            <TabManager
+              tabManagerState={
+                ideStore.editorSplitState.activeLeaf.tabManagerState
+              }
+              tabRenderer={renderTab}
+            />
+          )}
         </div>
         <div className="panel__header__actions"></div>
       </div>
