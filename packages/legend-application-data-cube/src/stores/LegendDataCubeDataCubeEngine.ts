@@ -163,6 +163,7 @@ import {
   LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
   LakehouseConsumerDataCubeSource,
   RawLakehouseConsumerDataCubeSource,
+  RawLakehouseSdlcOrigin,
 } from './model/LakehouseConsumerDataCubeSource.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
@@ -172,6 +173,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
   private _ingestDefinition: PlainObject | undefined;
+  private _adhocDataProductGraphGrammar: string | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -394,7 +396,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           warehouse: rawSource.warehouse,
           path: rawSource.paths[0],
           accessPoint: rawSource.paths[1],
-          dpCoordinates: rawSource.dpCoordinates,
         },
         sourceType: source._type,
       };
@@ -746,7 +747,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         source.environment = rawSource.environment;
         source.paths = rawSource.paths;
         source.warehouse = rawSource.warehouse;
-        source.dpCoordinates = rawSource.dpCoordinates;
+        if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
+          source.dpCoordinates = rawSource.origin.dpCoordinates;
+        }
 
         //TODO: add support for parameters
         try {
@@ -1265,6 +1268,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   registerIngestDefinition(ingestDefinition: PlainObject | undefined) {
     this._ingestDefinition = ingestDefinition;
+  }
+
+  registerAdhocDataProductGraphGrammar(fullGraphGrammar: string | undefined) {
+    this._adhocDataProductGraphGrammar = fullGraphGrammar;
   }
 
   // ---------------------------------- CACHING --------------------------------------
@@ -1800,12 +1807,21 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     rawSource: RawLakehouseConsumerDataCubeSource,
     source: LakehouseConsumerDataCubeSource,
   ) {
-    const pmcd = await this._depotServerClient.getPureModelContextData(
-      rawSource.dpCoordinates.groupId,
-      rawSource.dpCoordinates.artifactId,
-      rawSource.dpCoordinates.versionId,
-      true,
-    );
+    let pmcd: PlainObject<V1_PureModelContextData> | undefined;
+    if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
+      const coordinates = guaranteeNonNullable(rawSource.origin.dpCoordinates);
+      pmcd = await this._depotServerClient.getPureModelContextData(
+        coordinates.groupId,
+        coordinates.artifactId,
+        coordinates.versionId,
+        true,
+      );
+    } else {
+      pmcd = await this.parseCompatibleModel(
+        guaranteeNonNullable(this._adhocDataProductGraphGrammar),
+      );
+    }
+
     const deserializedPMCD = guaranteeType(
       V1_deserializePureModelContext(pmcd),
       V1_PureModelContextData,
