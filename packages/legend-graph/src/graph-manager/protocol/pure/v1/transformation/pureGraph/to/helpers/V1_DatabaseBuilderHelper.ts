@@ -753,9 +753,7 @@ export const V1_buildDatabaseJoin = (
         existingRelationalElement instanceof TableReference ||
         existingRelationalElement instanceof ViewReference
       ) {
-        col = existingRelationalElement.value.columns.find(
-          (c) => c instanceof Column && c.name === columnName,
-        ) as Column | undefined;
+        col = getColumn(existingRelationalElement.value, columnName as string);
       } else if (database instanceof INTERNAL__LakehouseGeneratedDatabase) {
         col = new Column();
         col.name = columnName as string;
