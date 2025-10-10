@@ -79,6 +79,7 @@ import {
   type V1_MappingInclude,
   V1_MappingIncludeMapping,
 } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import { V1_MappingIncludeDataProduct } from '../../../model/packageableElements/dataProduct/V1_MappingIncludeDataProduct.js';
 import {
   type V1_EnumValueMappingSourceValue,
   V1_EnumValueMappingEnumSourceValue,
@@ -130,6 +131,10 @@ import {
   V1_deserializeEmbeddedDataType,
   V1_serializeEmbeddedDataType,
 } from './V1_DataElementSerializationHelper.js';
+import {
+  V1_MAPPING_INCLUDE_DATAPRODUCT_TYPE,
+  V1_mappingIncludeDataProductModelSchema,
+} from '../../../transformation/pureProtocol/serializationHelpers/V1_DataProductSerializationHelper.js';
 import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
@@ -1294,6 +1299,8 @@ const V1_serializeMappingInclude = (
 ): PlainObject<V1_MappingInclude> => {
   if (protocol instanceof V1_INTERNAL__UnknownMappingInclude) {
     return protocol.content;
+  } else if (protocol instanceof V1_MappingIncludeDataProduct) {
+    return serialize(V1_mappingIncludeDataProductModelSchema, protocol);
   } else if (protocol instanceof V1_MappingIncludeMapping) {
     return serialize(V1_mappingIncludeMappingModelSchema, protocol);
   }
@@ -1319,6 +1326,9 @@ const V1_deserializeMappingInclude = (
   json: PlainObject<V1_MappingInclude>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_MappingInclude => {
+  if (json._type === V1_MAPPING_INCLUDE_DATAPRODUCT_TYPE) {
+    return deserialize(V1_mappingIncludeDataProductModelSchema, json);
+  }
   if (!json._type || json._type === V1_MAPPING_INCLUDE_MAPPING_TYPE) {
     return deserialize(V1_mappingIncludeMappingModelSchema, {
       ...json,

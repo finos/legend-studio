@@ -832,3 +832,864 @@ export const TEST_DATA__DATAPRODUCT__INCLUDE = [
       'meta::external::ingest::specification::metamodel::IngestDefinition',
   },
 ];
+
+export const TEST_DATA__DATAPRODUCT__MAPPING__INCLUDE = [
+  {
+    path: 'entity::model::LegalEntity',
+    content: {
+      _type: 'class',
+      name: 'LegalEntity',
+      package: 'entity::model',
+      properties: [
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'identifier',
+        },
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'legalName',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'trade::model::Trade',
+    content: {
+      _type: 'class',
+      name: 'Trade',
+      package: 'trade::model',
+      properties: [
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'ticker',
+        },
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'quantity',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'trade::model::Trade_LegalEntity',
+    content: {
+      _type: 'association',
+      name: 'Trade_LegalEntity',
+      package: 'trade::model',
+      properties: [
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'entity::model::LegalEntity',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'client',
+        },
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'trade::model::Trade',
+            },
+          },
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'trades',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::relationship::Association',
+  },
+  {
+    path: 'entity::store::LegalEntityDatabase',
+    content: {
+      _type: 'relational',
+      filters: [],
+      joins: [],
+      name: 'LegalEntityDatabase',
+      package: 'entity::store',
+      schemas: [
+        {
+          name: 'LEGAL_ENTITY_SCHEMA',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'LEGAL_ENTITY_ID',
+                  nullable: false,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+                {
+                  name: 'LEGAL_NAME',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+              ],
+              name: 'LEGAL_ENTITY_TABLE',
+              primaryKey: ['LEGAL_ENTITY_ID'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
+    path: 'trade::store::TradeDatabase',
+    content: {
+      _type: 'relational',
+      filters: [],
+      joins: [],
+      name: 'TradeDatabase',
+      package: 'trade::store',
+      schemas: [
+        {
+          name: 'TRADE_SCHEMA',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'TICKER',
+                  nullable: false,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+                {
+                  name: 'QUANTITY',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'CLIENT_IDENTIFIER',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+              ],
+              name: 'TRADE_TABLE',
+              primaryKey: ['TICKER'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
+    path: 'entity::mapping::LegalEntityMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'relational',
+          class: 'entity::model::LegalEntity',
+          distinct: false,
+          id: 'legal_entity',
+          mainTable: {
+            _type: 'Table',
+            database: 'entity::store::LegalEntityDatabase',
+            mainTableDb: 'entity::store::LegalEntityDatabase',
+            schema: 'LEGAL_ENTITY_SCHEMA',
+            table: 'LEGAL_ENTITY_TABLE',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'LEGAL_ENTITY_ID',
+              table: {
+                _type: 'Table',
+                database: 'entity::store::LegalEntityDatabase',
+                mainTableDb: 'entity::store::LegalEntityDatabase',
+                schema: 'LEGAL_ENTITY_SCHEMA',
+                table: 'LEGAL_ENTITY_TABLE',
+              },
+              tableAlias: 'LEGAL_ENTITY_TABLE',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'entity::model::LegalEntity',
+                property: 'identifier',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'LEGAL_ENTITY_ID',
+                table: {
+                  _type: 'Table',
+                  database: 'entity::store::LegalEntityDatabase',
+                  mainTableDb: 'entity::store::LegalEntityDatabase',
+                  schema: 'LEGAL_ENTITY_SCHEMA',
+                  table: 'LEGAL_ENTITY_TABLE',
+                },
+                tableAlias: 'LEGAL_ENTITY_TABLE',
+              },
+              source: 'legal_entity',
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'entity::model::LegalEntity',
+                property: 'legalName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'LEGAL_NAME',
+                table: {
+                  _type: 'Table',
+                  database: 'entity::store::LegalEntityDatabase',
+                  mainTableDb: 'entity::store::LegalEntityDatabase',
+                  schema: 'LEGAL_ENTITY_SCHEMA',
+                  table: 'LEGAL_ENTITY_TABLE',
+                },
+                tableAlias: 'LEGAL_ENTITY_TABLE',
+              },
+              source: 'legal_entity',
+            },
+          ],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'LegalEntityMapping',
+      package: 'entity::mapping',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'trade::mapping::TradeMapping',
+    content: {
+      _type: 'mapping',
+      associationMappings: [
+        {
+          _type: 'xStore',
+          association: {
+            path: 'trade::model::Trade_LegalEntity',
+            type: 'ASSOCIATION',
+          },
+          propertyMappings: [
+            {
+              _type: 'xStorePropertyMapping',
+              crossExpression: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'func',
+                    function: 'equal',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'this',
+                          },
+                        ],
+                        property: 'clientIdentifier',
+                      },
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'that',
+                          },
+                        ],
+                        property: 'identifier',
+                      },
+                    ],
+                  },
+                ],
+                parameters: [],
+              },
+              property: {
+                class: 'trade::model::Trade_LegalEntity',
+                property: 'client',
+              },
+              source: '',
+              target: '',
+            },
+            {
+              _type: 'xStorePropertyMapping',
+              crossExpression: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'func',
+                    function: 'equal',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'this',
+                          },
+                        ],
+                        property: 'identifier',
+                      },
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'that',
+                          },
+                        ],
+                        property: 'clientIdentifier',
+                      },
+                    ],
+                  },
+                ],
+                parameters: [],
+              },
+              property: {
+                class: 'trade::model::Trade_LegalEntity',
+                property: 'trades',
+              },
+              source: '',
+              target: '',
+            },
+          ],
+          stores: [],
+        },
+      ],
+      classMappings: [
+        {
+          _type: 'relational',
+          class: 'trade::model::Trade',
+          distinct: false,
+          id: 'trade',
+          mainTable: {
+            _type: 'Table',
+            database: 'trade::store::TradeDatabase',
+            mainTableDb: 'trade::store::TradeDatabase',
+            schema: 'TRADE_SCHEMA',
+            table: 'TRADE_TABLE',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'TICKER',
+              table: {
+                _type: 'Table',
+                database: 'trade::store::TradeDatabase',
+                mainTableDb: 'trade::store::TradeDatabase',
+                schema: 'TRADE_SCHEMA',
+                table: 'TRADE_TABLE',
+              },
+              tableAlias: 'TRADE_TABLE',
+            },
+            {
+              _type: 'column',
+              column: 'QUANTITY',
+              table: {
+                _type: 'Table',
+                database: 'trade::store::TradeDatabase',
+                mainTableDb: 'trade::store::TradeDatabase',
+                schema: 'TRADE_SCHEMA',
+                table: 'TRADE_TABLE',
+              },
+              tableAlias: 'TRADE_TABLE',
+            },
+            {
+              _type: 'column',
+              column: 'CLIENT_IDENTIFIER',
+              table: {
+                _type: 'Table',
+                database: 'trade::store::TradeDatabase',
+                mainTableDb: 'trade::store::TradeDatabase',
+                schema: 'TRADE_SCHEMA',
+                table: 'TRADE_TABLE',
+              },
+              tableAlias: 'TRADE_TABLE',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'trade::model::Trade',
+                property: 'ticker',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'TICKER',
+                table: {
+                  _type: 'Table',
+                  database: 'trade::store::TradeDatabase',
+                  mainTableDb: 'trade::store::TradeDatabase',
+                  schema: 'TRADE_SCHEMA',
+                  table: 'TRADE_TABLE',
+                },
+                tableAlias: 'TRADE_TABLE',
+              },
+              source: 'trade',
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'trade::model::Trade',
+                property: 'quantity',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'QUANTITY',
+                table: {
+                  _type: 'Table',
+                  database: 'trade::store::TradeDatabase',
+                  mainTableDb: 'trade::store::TradeDatabase',
+                  schema: 'TRADE_SCHEMA',
+                  table: 'TRADE_TABLE',
+                },
+                tableAlias: 'TRADE_TABLE',
+              },
+              source: 'trade',
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              localMappingProperty: {
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+                type: 'String',
+              },
+              property: {
+                property: 'clientIdentifier',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'CLIENT_IDENTIFIER',
+                table: {
+                  _type: 'Table',
+                  database: 'trade::store::TradeDatabase',
+                  mainTableDb: 'trade::store::TradeDatabase',
+                  schema: 'TRADE_SCHEMA',
+                  table: 'TRADE_TABLE',
+                },
+                tableAlias: 'TRADE_TABLE',
+              },
+              source: 'trade',
+            },
+          ],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [
+        {
+          _type: 'mappingIncludeDataProduct',
+          includedDataProduct: 'entity::dataproduct::LegalEntityDataProduct',
+        },
+      ],
+      name: 'TradeMapping',
+      package: 'trade::mapping',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'trade::service::TradeService',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: '',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'serialize',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'graphFetch',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'getAll',
+                      parameters: [
+                        {
+                          _type: 'packageableElementPtr',
+                          fullPath: 'trade::model::Trade',
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'classInstance',
+                      type: 'rootGraphFetchTree',
+                      value: {
+                        _type: 'rootGraphFetchTree',
+                        class: 'trade::model::Trade',
+                        subTrees: [
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'quantity',
+                            subTrees: [],
+                            subTypeTrees: [],
+                          },
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'ticker',
+                            subTrees: [],
+                            subTypeTrees: [],
+                          },
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'client',
+                            subTrees: [
+                              {
+                                _type: 'propertyGraphFetchTree',
+                                parameters: [],
+                                property: 'legalName',
+                                subTrees: [],
+                                subTypeTrees: [],
+                              },
+                              {
+                                _type: 'propertyGraphFetchTree',
+                                parameters: [],
+                                property: 'identifier',
+                                subTrees: [],
+                                subTypeTrees: [],
+                              },
+                            ],
+                            subTypeTrees: [],
+                          },
+                        ],
+                        subTypeTrees: [],
+                      },
+                    },
+                  ],
+                },
+                {
+                  _type: 'classInstance',
+                  type: 'rootGraphFetchTree',
+                  value: {
+                    _type: 'rootGraphFetchTree',
+                    class: 'trade::model::Trade',
+                    subTrees: [
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'quantity',
+                        subTrees: [],
+                        subTypeTrees: [],
+                      },
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'ticker',
+                        subTrees: [],
+                        subTypeTrees: [],
+                      },
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'client',
+                        subTrees: [
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'legalName',
+                            subTrees: [],
+                            subTypeTrees: [],
+                          },
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'identifier',
+                            subTrees: [],
+                            subTypeTrees: [],
+                          },
+                        ],
+                        subTypeTrees: [],
+                      },
+                    ],
+                    subTypeTrees: [],
+                  },
+                },
+              ],
+            },
+          ],
+          parameters: [],
+        },
+        mapping: 'trade::mapping::TradeMapping',
+        runtime: {
+          _type: 'runtimePointer',
+          runtime: 'trade::runtime::TradeRuntime',
+        },
+      },
+      name: 'TradeService',
+      owners: ['anonymous'],
+      package: 'trade::service',
+      pattern: '/aeadc3bd-27ac-46ae-8989-073ea134aceb',
+      testSuites: [
+        {
+          _type: 'serviceTestSuite',
+          id: 'testSuite_1',
+          testData: {
+            connectionsTestData: [
+              {
+                data: {
+                  _type: 'relationalCSVData',
+                  tables: [
+                    {
+                      schema: 'LEGAL_ENTITY_SCHEMA',
+                      table: 'LEGAL_ENTITY_TABLE',
+                      values: 'LEGAL_ENTITY_ID,LEGAL_NAME\n1,Tesla\n',
+                    },
+                  ],
+                },
+                id: 'connection_2',
+              },
+              {
+                data: {
+                  _type: 'relationalCSVData',
+                  tables: [
+                    {
+                      schema: 'TRADE_SCHEMA',
+                      table: 'TRADE_TABLE',
+                      values: 'TICKER,QUANTITY,CLIENT_IDENTIFIER\nAPPL,10,1\n',
+                    },
+                  ],
+                },
+                id: 'connection_1',
+              },
+            ],
+          },
+          tests: [
+            {
+              _type: 'serviceTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '{\n  "quantity": 10,\n  "ticker": "APPL",\n  "client": {\n    "legalName": "Tesla",\n    "identifier": "1"\n  }\n}',
+                  },
+                  id: 'assertion_1',
+                },
+              ],
+              id: 'test_1',
+              keys: [],
+              serializationFormat: 'PURE',
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath: 'meta::legend::service::metamodel::Service',
+  },
+  {
+    path: 'trade::runtime::TradeRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'TradeRuntime',
+      package: 'trade::runtime',
+      runtimeValue: {
+        _type: 'engineRuntime',
+        connectionStores: [],
+        connections: [
+          {
+            store: {
+              path: 'trade::store::TradeDatabase',
+              type: 'STORE',
+            },
+            storeConnections: [
+              {
+                connection: {
+                  _type: 'RelationalDatabaseConnection',
+                  authenticationStrategy: {
+                    _type: 'h2Default',
+                  },
+                  databaseType: 'H2',
+                  datasourceSpecification: {
+                    _type: 'h2Local',
+                  },
+                  element: 'trade::store::TradeDatabase',
+                  type: 'H2',
+                },
+                id: 'connection_1',
+              },
+            ],
+          },
+          {
+            store: {
+              path: 'entity::store::LegalEntityDatabase',
+              type: 'STORE',
+            },
+            storeConnections: [
+              {
+                connection: {
+                  _type: 'RelationalDatabaseConnection',
+                  authenticationStrategy: {
+                    _type: 'h2Default',
+                  },
+                  databaseType: 'H2',
+                  datasourceSpecification: {
+                    _type: 'h2Local',
+                  },
+                  element: 'entity::store::LegalEntityDatabase',
+                  type: 'H2',
+                },
+                id: 'connection_2',
+              },
+            ],
+          },
+        ],
+        mappings: [
+          {
+            path: 'trade::mapping::TradeMapping',
+            type: 'MAPPING',
+          },
+        ],
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
+    path: 'entity::runtime::LegalEntityRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'LegalEntityRuntime',
+      package: 'entity::runtime',
+      runtimeValue: {
+        _type: 'engineRuntime',
+        connectionStores: [],
+        connections: [
+          {
+            store: {
+              path: 'entity::store::LegalEntityDatabase',
+              type: 'STORE',
+            },
+            storeConnections: [
+              {
+                connection: {
+                  _type: 'RelationalDatabaseConnection',
+                  authenticationStrategy: {
+                    _type: 'h2Default',
+                  },
+                  databaseType: 'H2',
+                  datasourceSpecification: {
+                    _type: 'h2Local',
+                  },
+                  element: 'entity::store::LegalEntityDatabase',
+                  type: 'H2',
+                },
+                id: 'connection_1',
+              },
+            ],
+          },
+        ],
+        mappings: [
+          {
+            path: 'entity::mapping::LegalEntityMapping',
+            type: 'MAPPING',
+          },
+        ],
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
+    path: 'entity::dataproduct::LegalEntityDataProduct',
+    content: {
+      _type: 'dataProduct',
+      accessPointGroups: [
+        {
+          _type: 'modelAccessPointGroup',
+          compatibleRuntimes: [
+            {
+              id: 'entityRuntime',
+              runtime: {
+                path: 'entity::runtime::LegalEntityRuntime',
+              },
+            },
+          ],
+          defaultRuntime: 'entityRuntime',
+          description:
+            'Entity Data model access point group for sharing data models with consumers',
+          id: 'modelAccessPointGroup',
+          mapping: {
+            path: 'entity::mapping::LegalEntityMapping',
+          },
+        },
+      ],
+      name: 'LegalEntityDataProduct',
+      package: 'entity::dataproduct',
+      type: {
+        _type: 'internalDataProductType',
+      },
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+];

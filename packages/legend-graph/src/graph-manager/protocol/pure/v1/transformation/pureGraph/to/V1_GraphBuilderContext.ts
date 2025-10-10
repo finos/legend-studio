@@ -112,6 +112,7 @@ import {
   RelationColumn,
   RelationType,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
+import { DataProduct } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_buildValueSpecification } from './helpers/V1_ValueSpecificationBuilderHelper.js';
 
 export const V1_buildFullPath = (
@@ -663,6 +664,13 @@ export class V1_GraphBuilderContext {
     this.createImplicitPackageableElementReference(
       path,
       this.graph.getDataElement,
+    );
+  resolveDataProduct = (
+    path: string,
+  ): PackageableElementImplicitReference<DataProduct> =>
+    this.createImplicitPackageableElementReference(
+      path,
+      this.graph.getDataProduct,
     );
 }
 

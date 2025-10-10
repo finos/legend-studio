@@ -61,6 +61,7 @@ import {
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
 } from './V1_CoreSerializationHelper.js';
+import { V1_MappingIncludeDataProduct } from '../../../model/packageableElements/dataProduct/V1_MappingIncludeDataProduct.js';
 
 export enum V1_AccessPointType {
   LAKEHOUSE = 'lakehouseAccessPoint',
@@ -341,3 +342,13 @@ export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
   taggedValues: customListWithSchema(V1_taggedValueModelSchema),
   title: optional(primitive()),
 });
+
+export const V1_MAPPING_INCLUDE_DATAPRODUCT_TYPE = 'mappingIncludeDataProduct';
+
+export const V1_mappingIncludeDataProductModelSchema = createModelSchema(
+  V1_MappingIncludeDataProduct,
+  {
+    _type: usingConstantValueSchema(V1_MAPPING_INCLUDE_DATAPRODUCT_TYPE),
+    includedDataProduct: primitive(),
+  },
+);
