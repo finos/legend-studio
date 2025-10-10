@@ -469,6 +469,7 @@ const LakehouseConsumerSourceViewer = observer(
     const dataSpacePath = guaranteeNonNullable(source.paths[0]);
     const accessPoint = guaranteeNonNullable(source.paths[1]);
     const accessPointPath = `${dataSpacePath}.${accessPoint}`;
+    // TODO: open adhoc dp in marketplace
     const link =
       application.config.legendLakehouseUrl && source.dpCoordinates
         ? EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl(

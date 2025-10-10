@@ -396,7 +396,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           warehouse: rawSource.warehouse,
           path: rawSource.paths[0],
           accessPoint: rawSource.paths[1],
-          dpCoordinates: rawSource.dpCoordinates,
         },
         sourceType: source._type,
       };
@@ -748,9 +747,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         source.environment = rawSource.environment;
         source.paths = rawSource.paths;
         source.warehouse = rawSource.warehouse;
-        if (rawSource.dpCoordinates) {
-          source.dpCoordinates = rawSource.dpCoordinates;
-        } else if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
+        if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
           source.dpCoordinates = rawSource.origin.dpCoordinates;
         }
 
@@ -1811,15 +1808,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     source: LakehouseConsumerDataCubeSource,
   ) {
     let pmcd: PlainObject<V1_PureModelContextData> | undefined;
-    if (!rawSource.origin) {
-      const coordinates = guaranteeNonNullable(rawSource.dpCoordinates);
-      pmcd = await this._depotServerClient.getPureModelContextData(
-        coordinates.groupId,
-        coordinates.artifactId,
-        coordinates.versionId,
-        true,
-      );
-    } else if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
+    if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
       const coordinates = guaranteeNonNullable(rawSource.origin.dpCoordinates);
       pmcd = await this._depotServerClient.getPureModelContextData(
         coordinates.groupId,

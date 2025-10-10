@@ -33,6 +33,7 @@ import type { LakehouseContractServerClient } from '@finos/legend-server-lakehou
 import { action, makeObservable, observable } from 'mobx';
 import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
 import {
+  LakehouseEnvironmentType,
   RawLakehouseConsumerDataCubeSource,
   RawLakehouseSdlcOrigin,
 } from '../../model/LakehouseConsumerDataCubeSource.js';
@@ -41,6 +42,7 @@ export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSo
   fullGraphGrammar: string | undefined;
   dataProductId: string | undefined;
   dpLoaded: boolean;
+  environment: string | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -100,6 +102,7 @@ export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSo
       this.setDpLoaded(false);
     }
     this.setDataProductId(rawSource.paths[0]);
+    this.environment = rawSource.environment;
     this.fullGraphGrammar = undefined;
   }
 
@@ -114,29 +117,38 @@ export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSo
           access_token,
         ),
       );
-    if (dataProducts.length > 0) {
-      const dataProduct =
-        dataProducts.length === 1
-          ? dataProducts.at(0)
-          : dataProducts
-              .filter(
-                (dp) =>
-                  Boolean(dp.lakehouseEnvironment) &&
-                  dp.lakehouseEnvironment?.type ===
-                    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-              )
-              .at(0);
 
-      if (
-        dataProduct?.origin &&
-        dataProduct.origin instanceof V1_AdHocDeploymentDataProductOrigin
-      ) {
-        this.fullGraphGrammar = guaranteeType(
-          dataProduct.origin,
-          V1_AdHocDeploymentDataProductOrigin,
-        ).definition;
-        this.setDpLoaded(true);
-      }
+    const selectedEnv = guaranteeNonNullable(this.environment);
+
+    const dataProduct = selectedEnv.includes(
+      LakehouseEnvironmentType.DEVELOPMENT,
+    )
+      ? dataProducts.find(
+          (dp) =>
+            dp.lakehouseEnvironment?.type ===
+            V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
+        )
+      : selectedEnv.includes(LakehouseEnvironmentType.PRODUCTION_PARALLEL)
+        ? dataProducts.find(
+            (dp) =>
+              dp.lakehouseEnvironment?.type ===
+              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+          )
+        : dataProducts.find(
+            (dp) =>
+              dp.lakehouseEnvironment?.type ===
+              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+          );
+
+    if (
+      dataProduct?.origin &&
+      dataProduct.origin instanceof V1_AdHocDeploymentDataProductOrigin
+    ) {
+      this.fullGraphGrammar = guaranteeType(
+        dataProduct.origin,
+        V1_AdHocDeploymentDataProductOrigin,
+      ).definition;
+      this.setDpLoaded(true);
     }
   }
 

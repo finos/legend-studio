@@ -46,15 +46,11 @@ import {
   type V1_EntitlementsDataProductDetails,
 } from '@finos/legend-graph';
 import {
+  LakehouseEnvironmentType,
   RawLakehouseAdhocOrigin,
   RawLakehouseConsumerDataCubeSource,
   RawLakehouseSdlcOrigin,
 } from '../../model/LakehouseConsumerDataCubeSource.js';
-
-enum EnvironmentType {
-  DEVELOPMENT = 'dev',
-  PRODUCTION_PARALLEL = 'pp',
-}
 
 export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   warehouse: string | undefined;
@@ -179,16 +175,16 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
         case V1_EntitlementsLakehouseEnvironmentType.PRODUCTION:
           return environments.filter(
             (env) =>
-              !env.includes(EnvironmentType.PRODUCTION_PARALLEL) &&
-              !env.includes(EnvironmentType.DEVELOPMENT),
+              !env.includes(LakehouseEnvironmentType.PRODUCTION_PARALLEL) &&
+              !env.includes(LakehouseEnvironmentType.DEVELOPMENT),
           );
         case V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL:
           return environments.filter((env) =>
-            env.includes(EnvironmentType.PRODUCTION_PARALLEL),
+            env.includes(LakehouseEnvironmentType.PRODUCTION_PARALLEL),
           );
         case V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT:
           return environments.filter((env) =>
-            env.includes(EnvironmentType.DEVELOPMENT),
+            env.includes(LakehouseEnvironmentType.DEVELOPMENT),
           );
         default:
           return environments;
@@ -220,13 +216,15 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   fetchAccessPoints() {
     this.resetAccessPoint();
     const selectedEnv = guaranteeNonNullable(this.selectedEnvironment);
-    const dataProduct = selectedEnv.includes(EnvironmentType.DEVELOPMENT)
+    const dataProduct = selectedEnv.includes(
+      LakehouseEnvironmentType.DEVELOPMENT,
+    )
       ? this.dataProductDetails.find(
           (dp) =>
             dp.lakehouseEnvironment?.type ===
             V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
         )
-      : selectedEnv.includes(EnvironmentType.PRODUCTION_PARALLEL)
+      : selectedEnv.includes(LakehouseEnvironmentType.PRODUCTION_PARALLEL)
         ? this.dataProductDetails.find(
             (dp) =>
               dp.lakehouseEnvironment?.type ===

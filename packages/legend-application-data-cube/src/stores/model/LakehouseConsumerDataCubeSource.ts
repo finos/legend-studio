@@ -22,7 +22,6 @@ import {
 import { VersionedProjectData } from '@finos/legend-server-depot';
 import {
   optionalCustom,
-  optionalCustomUsingModelSchema,
   SerializationFactory,
   UnsupportedOperationError,
   usingConstantValueSchema,
@@ -46,6 +45,11 @@ export class LakehouseConsumerDataCubeSource extends DataCubeSource {
   warehouse!: string;
   environment!: string;
   paths!: string[];
+}
+
+export enum LakehouseEnvironmentType {
+  DEVELOPMENT = 'dev',
+  PRODUCTION_PARALLEL = 'pp',
 }
 
 export abstract class RawLakehouseOrigin {}
