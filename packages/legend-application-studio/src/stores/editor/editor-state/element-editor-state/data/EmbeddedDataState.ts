@@ -24,6 +24,11 @@ import {
   ExternalFormatData,
   ModelStoreData,
   ModelEmbeddedData,
+  type RelationElement,
+  RelationElementsData,
+  RelationRowTestData,
+  observe_RelationRowTestData,
+  observe_RelationElement,
 } from '@finos/legend-graph';
 import {
   ContentType,
@@ -64,6 +69,9 @@ export const createEmbeddedData = (
   } else if (type === EmbeddedDataType.RELATIONAL_CSV) {
     const relational = new RelationalCSVData();
     return relational;
+  } else if (type === EmbeddedDataType.RELATION_ELEMENTS_DATA) {
+    const testData = new RelationElementsData();
+    return testData;
   } else if (type === EmbeddedDataType.MODEL_STORE_DATA) {
     const modelStoreData = new ModelStoreData();
     return modelStoreData;
@@ -198,6 +206,229 @@ export class ModelStoreDataState extends EmbeddedDataState {
         return new UnsupportedModelDataState(modelData, this);
       }) ?? []
     );
+  }
+}
+
+export class RelationElementState {
+  relationElement: RelationElement;
+
+  constructor(relationElement: RelationElement) {
+    makeObservable(this, {
+      relationElement: observable,
+      addColumn: action,
+      removeColumn: action,
+      updateColumn: action,
+      addRow: action,
+      removeRow: action,
+      updateRow: action,
+      clearAllData: action,
+      importCSV: action,
+    });
+    this.relationElement = relationElement;
+    this.relationElement = observe_RelationElement(relationElement);
+  }
+
+  addColumn(name: string): void {
+    this.relationElement.columns.push(name);
+    this.relationElement.rows.forEach((row) => {
+      row.values.push('');
+    });
+  }
+
+  removeColumn(index: number): void {
+    const columnToRemove = this.relationElement.columns[index];
+    if (columnToRemove) {
+      this.relationElement.columns.splice(index, 1);
+      this.relationElement.rows.forEach((row) => {
+        row.values.splice(index, 1);
+      });
+    }
+  }
+
+  updateColumn(index: number, name: string): void {
+    const oldName = this.relationElement.columns[index];
+    if (oldName && oldName !== name) {
+      this.relationElement.columns[index] = name;
+    }
+  }
+
+  addRow(): void {
+    const row = new RelationRowTestData();
+    row.values = [];
+    const newRow = observe_RelationRowTestData(row);
+    this.relationElement.columns.forEach((col) => {
+      newRow.values.push('');
+    });
+    this.relationElement.rows.push(newRow);
+  }
+
+  removeRow(index: number): void {
+    this.relationElement.rows.splice(index, 1);
+  }
+
+  updateRow(rowIndex: number, columnIndex: number, value: string): void {
+    if (this.relationElement.rows[rowIndex]) {
+      this.relationElement.rows[rowIndex].values[columnIndex] = value;
+    }
+  }
+
+  clearAllData(): void {
+    this.relationElement.rows.splice(0);
+  }
+
+  exportJSON(): string {
+    return JSON.stringify(
+      {
+        columns: this.relationElement.columns,
+        data: this.relationElement.rows,
+      },
+      null,
+      2,
+    );
+  }
+
+  exportSQL(): string {
+    if (
+      this.relationElement.columns.length === 0 ||
+      this.relationElement.rows.length === 0
+    ) {
+      return '';
+    }
+
+    const tableName = 'test_data';
+    const defaultDataType = 'VARCHAR(1000)';
+    const columnDefs = this.relationElement.columns
+      .map((col) => `${col} ${defaultDataType}`)
+      .join(', ');
+    const createTable = `CREATE TABLE ${tableName} (${columnDefs});`;
+
+    const insertStatements = this.relationElement.rows.map((row) => {
+      const values = this.relationElement.columns
+        .map((col, colIndex) => {
+          const value = row.values[colIndex] ?? '';
+          if (value !== '') {
+            return `'${value.replace(/'/g, "''")}'`;
+          }
+          return 'NULL';
+        })
+        .join(', ');
+      return `INSERT INTO ${tableName} VALUES (${values});`;
+    });
+
+    return [createTable, '', ...insertStatements].join('\n');
+  }
+
+  exportCSV(): string {
+    const headers = this.relationElement.columns.map((col) => col);
+    const csvLines = [headers.join(',')];
+
+    this.relationElement.rows.forEach((row) => {
+      const values = headers.map((header, headerIndex) => {
+        const value = row.values[headerIndex] ?? '';
+        if (value.includes(',') || value.includes('"')) {
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      });
+      csvLines.push(values.join(','));
+    });
+
+    return csvLines.join('\n');
+  }
+
+  private parseCSVLine(line: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  }
+
+  importCSV(csvContent: string): void {
+    const lines = csvContent.trim().split('\n');
+    if (lines.length === 0) {
+      return;
+    }
+
+    const firstLine = lines[0];
+    if (!firstLine) {
+      return;
+    }
+
+    const headers = this.parseCSVLine(firstLine);
+    this.relationElement.columns = headers;
+
+    this.relationElement.rows = lines.slice(1).map((line) => {
+      const values = this.parseCSVLine(line);
+      const row = new RelationRowTestData();
+      row.values = [];
+      headers.forEach((header, index) => {
+        row.values[index] = values[index] ?? '';
+      });
+      return observe_RelationRowTestData(row);
+    });
+  }
+}
+
+export class RelationElementsDataState extends EmbeddedDataState {
+  override embeddedData: RelationElementsData;
+  showImportCSVModal = false;
+  showNewRelationElementModal = false;
+  activeRelationElement: RelationElementState | undefined;
+  relationElementStates: RelationElementState[];
+
+  constructor(editorStore: EditorStore, embeddedData: RelationElementsData) {
+    super(editorStore, embeddedData);
+    makeObservable(this, {
+      embeddedData: observable,
+      showImportCSVModal: observable,
+      showNewRelationElementModal: observable,
+      activeRelationElement: observable,
+      setActiveRelationElement: action,
+      setShowImportCSVModal: action,
+      setShowNewRelationElementModal: action,
+      addRelationElement: action,
+    });
+    this.embeddedData = embeddedData;
+    this.relationElementStates = embeddedData.relationElements.map(
+      (relationElement) => new RelationElementState(relationElement),
+    );
+    this.activeRelationElement = this.relationElementStates[0];
+  }
+
+  label(): string {
+    return 'Relation Elements Test Data';
+  }
+
+  setActiveRelationElement(val: RelationElementState | undefined): void {
+    this.activeRelationElement = val;
+  }
+
+  addRelationElement(relationElement: RelationElement): void {
+    const newElementState = new RelationElementState(relationElement);
+    this.relationElementStates.push(newElementState);
+    this.embeddedData.relationElements.push(relationElement);
+    this.setActiveRelationElement(newElementState);
+  }
+
+  setShowImportCSVModal(show: boolean): void {
+    this.showImportCSVModal = show;
+  }
+
+  setShowNewRelationElementModal(show: boolean): void {
+    this.showNewRelationElementModal = show;
   }
 }
 
@@ -374,6 +605,8 @@ export function buildEmbeddedDataEditorState(
     );
   } else if (embeddedData instanceof RelationalCSVData) {
     return new RelationalCSVDataState(editorStore, embeddedData);
+  } else if (embeddedData instanceof RelationElementsData) {
+    return new RelationElementsDataState(editorStore, embeddedData);
   } else if (embeddedData instanceof DataElementReference) {
     return new DataElementReferenceState(editorStore, embeddedData, options);
   } else {

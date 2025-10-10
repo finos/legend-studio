@@ -128,6 +128,7 @@ export enum CORE_PURE_PATH {
   ANY = 'meta::pure::metamodel::type::Any',
   NIL = 'meta::pure::metamodel::type::Nil',
   RELATION = 'meta::pure::metamodel::relation::Relation',
+  TABULAR_DATASET = 'meta::pure::tds::TabularDataSet',
   VARIANT = 'meta::pure::metamodel::variant::Variant',
 
   // profile

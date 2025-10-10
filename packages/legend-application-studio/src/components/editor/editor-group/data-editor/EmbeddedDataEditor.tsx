@@ -48,6 +48,7 @@ import {
   RelationalCSVDataState,
   ModelStoreDataState,
   ModelEmbeddedDataState,
+  RelationElementsDataState,
 } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import {
   PackageableElementExplicitReference,
@@ -64,6 +65,7 @@ import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import { RelationElementsDataEditor } from './RelationElementsDataEditor.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -386,6 +388,13 @@ export function renderEmbeddedDataEditor(
   } else if (embeddedDataState instanceof RelationalCSVDataState) {
     return (
       <RelationalCSVDataEditor
+        dataState={embeddedDataState}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (embeddedDataState instanceof RelationElementsDataState) {
+    return (
+      <RelationElementsDataEditor
         dataState={embeddedDataState}
         isReadOnly={isReadOnly}
       />
