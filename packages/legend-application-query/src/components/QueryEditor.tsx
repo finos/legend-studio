@@ -454,11 +454,7 @@ export const QueryEditorExistingQueryHeader = observer(
           <div
             onDoubleClick={enableRename}
             className="query-editor__header__content__main query-editor__header__content__title"
-            title={
-              !isRenaming && !isEditingDescription
-                ? 'Double-click to rename query'
-                : undefined
-            }
+            title="Double-click to rename query"
           >
             {isEditingDescription ? (
               <div className="query-editor__header__content__main query-editor__header__content__title">
@@ -469,7 +465,7 @@ export const QueryEditorExistingQueryHeader = observer(
                       value={descriptionUpdate}
                       onChange={changeDescriptionUpdate}
                       placeholder="Add description"
-                      autoFocus
+                      autoFocus={true}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') {
                           event.stopPropagation();
