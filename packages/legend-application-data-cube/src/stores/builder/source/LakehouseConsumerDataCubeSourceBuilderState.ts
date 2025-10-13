@@ -65,6 +65,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   dpCoordinates: VersionedProjectData | undefined;
   origin: string | undefined;
   fullGraphGrammar: string | undefined;
+  deploymentId: number | undefined;
 
   dataProductDetails: V1_EntitlementsDataProductDetails[] = [];
 
@@ -249,6 +250,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       this.origin = V1_DataProductOriginType.AD_HOC_DEPLOYMENT;
       this.fullGraphGrammar = dataProduct.origin.definition;
     }
+    this.deploymentId = dataProduct?.deploymentId;
     this.setAccessPoints(
       dataProduct?.dataProduct.accessPoints.map(
         (accessPoint) => accessPoint.name,
@@ -335,6 +337,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     }
     rawSource.paths = this.paths;
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);
+    rawSource.deploymentId = this.deploymentId;
 
     return Promise.resolve(
       RawLakehouseConsumerDataCubeSource.serialization.toJson(rawSource),
