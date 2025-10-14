@@ -275,7 +275,6 @@ const TDSColumnCellRenderer = (props: {
   dataAccessState: DataProductDataAccessState | undefined;
 }): React.ReactNode => {
   const { params, apgState, dataAccessState } = props;
-  const dataProductViewerState = apgState.dataProductViewerState;
   const data = params.data;
   const enum DataProductTabs {
     COLUMNS = 'Columns',
@@ -292,133 +291,6 @@ const TDSColumnCellRenderer = (props: {
   ) => {
     setSelectedTab(newValue);
   };
-  const [accessPointGrammar, setAccessPointGrammar] =
-    useState<string>('Loading ...');
-  const [accessPointRelationType, setAccessPointRelationType] = useState<
-    V1_RelationType | undefined
-  >();
-  const [loadingAccessPointDetails, setLoadingAccessPointDetails] =
-    useState<boolean>(false);
-
-  useEffect(() => {
-    if (!data) {
-      return;
-    }
-    const fetchAccessPointGrammar = async () => {
-      try {
-        const grammar =
-          await dataProductViewerState.engineServerClient.JSONToGrammar_lambda(
-            V1_serializeRawValueSpecification(data.func),
-            V1_RenderStyle.PRETTY,
-          );
-        setAccessPointGrammar(grammar);
-      } catch {
-        throw new Error('Error fetching access point grammar');
-      }
-    };
-    const fetchAccessPointRelationType = async () => {
-      // First, check if we have the DataProduct artifact generation with lambda
-      // generic type type.
-      const artifactGeneration = dataProductViewerState.artifactGeneration;
-      const lambdaRelationType = artifactGeneration?.accessPointGroups
-        .find((apg) => apg.id === apgState.apg.id)
-        ?.accessPointImplementations.find((ap) => ap.id === data.id)
-        ?.lambdaGenericType?.typeArguments?.map((typeArg) => typeArg.rawType)
-        ?.filter((rawType) => rawType instanceof V1_RelationType)[0];
-      if (lambdaRelationType) {
-        setAccessPointRelationType(lambdaRelationType);
-      } else {
-        // Otherwise, get the lambda relation type from engine.
-        try {
-          const projectGAV = dataProductViewerState.projectGAV;
-          const entitlementsOrigin =
-            dataAccessState?.entitlementsDataProductDetails.origin;
-          const model =
-            projectGAV !== undefined
-              ? new V1_PureModelContextPointer(
-                  // TODO: remove as backend should handle undefined protocol input
-                  new V1_Protocol(
-                    V1_PureGraphManager.PURE_PROTOCOL_NAME,
-                    PureClientVersion.VX_X_X,
-                  ),
-                  new V1_LegendSDLC(
-                    projectGAV.groupId,
-                    projectGAV.artifactId,
-                    resolveVersion(projectGAV.versionId),
-                  ),
-                )
-              : entitlementsOrigin instanceof
-                    V1_AdHocDeploymentDataProductOrigin ||
-                  entitlementsOrigin === undefined
-                ? guaranteeType(
-                    dataProductViewerState.graphManagerState.graphManager,
-                    V1_PureGraphManager,
-                  ).getFullGraphModelData(
-                    dataProductViewerState.graphManagerState.graph,
-                  )
-                : entitlementsOrigin instanceof
-                    V1_SdlcDeploymentDataProductOrigin
-                  ? new V1_PureModelContextPointer(
-                      // TODO: remove as backend should handle undefined protocol input
-                      new V1_Protocol(
-                        V1_PureGraphManager.PURE_PROTOCOL_NAME,
-                        PureClientVersion.VX_X_X,
-                      ),
-                      new V1_LegendSDLC(
-                        entitlementsOrigin.group,
-                        entitlementsOrigin.artifact,
-                        resolveVersion(entitlementsOrigin.version),
-                      ),
-                    )
-                  : undefined;
-          const relationTypeInput = new V1_LambdaReturnTypeInput(
-            guaranteeNonNullable(
-              model,
-              `Unable to get model from data product origin of type ${entitlementsOrigin?.constructor.name}`,
-            ),
-            data.func,
-          );
-          const relationType = deserialize(
-            V1_relationTypeModelSchema,
-            await dataProductViewerState.engineServerClient.lambdaRelationType(
-              V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
-            ),
-          );
-          setAccessPointRelationType(relationType);
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Error fetching access point relation type: ${error.message}`,
-          );
-        }
-      }
-    };
-    const fetchAccessPointDetails = async () => {
-      return Promise.all([
-        fetchAccessPointGrammar(),
-        fetchAccessPointRelationType(),
-      ]);
-    };
-    setLoadingAccessPointDetails(true);
-    fetchAccessPointDetails()
-      .catch((error) => {
-        assertErrorThrown(error);
-        apgState.applicationStore.notificationService.notifyError(error);
-      })
-      .finally(() => {
-        setLoadingAccessPointDetails(false);
-      });
-  }, [
-    apgState.apg.id,
-    apgState.applicationStore.notificationService,
-    data,
-    dataAccessState?.entitlementsDataProductDetails.origin,
-    dataProductViewerState.artifactGeneration,
-    dataProductViewerState.engineServerClient,
-    dataProductViewerState.graphManagerState.graph,
-    dataProductViewerState.graphManagerState.graphManager,
-    dataProductViewerState.projectGAV,
-  ]);
 
   if (!data) {
     return null;
@@ -571,14 +443,14 @@ const TDSColumnCellRenderer = (props: {
       </div>
       <div className="access_group_gap" />
       <Box className="data-product__viewer__more-info__container">
-        {loadingAccessPointDetails && (
+        {loadingAccessPointGrammar && (
           <Box className="data-product__viewer__more-info__loading-indicator">
             <CubesLoadingIndicator isLoading={true}>
               <CubesLoadingIndicatorIcon />
             </CubesLoadingIndicator>
           </Box>
         )}
-        {!loadingAccessPointDetails && (
+        {!loadingAccessPointGrammar && (
           <>
             {selectedTab === DataProductTabs.COLUMNS && (
               <Box

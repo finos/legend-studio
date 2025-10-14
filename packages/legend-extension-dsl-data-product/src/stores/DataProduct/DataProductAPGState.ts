@@ -17,20 +17,21 @@
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type V1_AccessPointGroup,
-  type V1_DataSubscription,
-  type V1_User,
   type V1_ContractUserStatusResponse,
+  type V1_DataProductArtifact,
+  type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
-  V1_DataContract,
-  V1_EnrichedUserApprovalStatus,
-  V1_DataContractApprovedUsersResponseModelSchema,
-  V1_dataContractsResponseModelSchemaToContracts,
+  type V1_User,
   V1_ContractUserStatusResponseModelSchema,
-  V1_dataSubscriptionModelSchema,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
+  V1_DataContract,
+  V1_DataContractApprovedUsersResponseModelSchema,
+  V1_dataContractsResponseModelSchemaToContracts,
+  V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
+  V1_EnrichedUserApprovalStatus,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -55,6 +56,7 @@ import {
   DSL_DATAPRODUCT_EVENT,
   DSL_DATAPRODUCT_EVENT_STATUS,
 } from '../../__lib__/DSL_DataProduct_Event.js';
+import { DataProductAccessPointState } from './DataProductAccessPointState.js';
 
 export enum AccessPointGroupAccess {
   // can be used to indicate fetching or resyncing of group access
@@ -72,6 +74,7 @@ export class DataProductAPGState {
   readonly dataProductViewerState: DataProductViewerState;
   readonly applicationStore: GenericLegendApplicationStore;
   readonly apg: V1_AccessPointGroup;
+  readonly accessPointStates: DataProductAccessPointState[];
   readonly id = uuid();
 
   subscriptions: V1_DataSubscription[] = [];
@@ -104,6 +107,7 @@ export class DataProductAPGState {
       userAccessStatus: observable,
       associatedSystemAccountContractsAndApprovedUsers: observable,
       setAssociatedContract: action,
+      init: flow,
       fetchAndSetAssociatedSystemAccountContracts: flow,
       subscriptions: observable,
       fetchingSubscriptionsState: observable,
@@ -118,6 +122,9 @@ export class DataProductAPGState {
     this.apg = group;
     this.dataProductViewerState = dataProductViewerState;
     this.applicationStore = dataProductViewerState.applicationStore;
+    this.accessPointStates = this.apg.accessPoints.map(
+      (ap) => new DataProductAccessPointState(this, ap),
+    );
   }
 
   get access(): AccessPointGroupAccess {
@@ -178,6 +185,14 @@ export class DataProductAPGState {
         token,
       );
     }
+  }
+
+  *init(
+    artifactGenerationPromise: Promise<V1_DataProductArtifact | undefined>,
+  ): GeneratorFn<void> {
+    yield Promise.all(
+      this.accessPointStates.map((ap) => ap.init(artifactGenerationPromise)),
+    );
   }
 
   *fetchAndSetAssociatedSystemAccountContracts(

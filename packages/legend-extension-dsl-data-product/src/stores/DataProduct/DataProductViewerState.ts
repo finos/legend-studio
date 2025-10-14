@@ -66,7 +66,7 @@ export class DataProductViewerState extends BaseViewerState<
   readonly openPowerBi?: ((apg: string) => void) | undefined;
   readonly openDataCube?: ((sourceData: object) => void) | undefined;
 
-  readonly initState = ActionState.create();
+  readonly fetchingArtifactGenerationState = ActionState.create();
 
   constructor(
     product: V1_DataProduct,
@@ -125,15 +125,18 @@ export class DataProductViewerState extends BaseViewerState<
     );
   }
 
-  *init(): GeneratorFn<void> {
-    this.initState.inProgress();
+  async fetchDataProductArtifactGeneration(): Promise<
+    V1_DataProductArtifact | undefined
+  > {
+    this.fetchingArtifactGenerationState.inProgress();
+    let artifact: V1_DataProductArtifact | undefined;
     try {
       if (this.projectGAV !== undefined) {
         const storeProject = new StoreProjectData();
         storeProject.groupId = this.projectGAV.groupId;
         storeProject.artifactId = this.projectGAV.artifactId;
         const files = (
-          (yield this.depotServerClient.getGenerationFilesByType(
+          (await this.depotServerClient.getGenerationFilesByType(
             storeProject,
             resolveVersion(this.projectGAV.versionId),
             V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
@@ -145,9 +148,8 @@ export class DataProductViewerState extends BaseViewerState<
           ?.file.content;
         if (fileGen) {
           const content: PlainObject = JSON.parse(fileGen) as PlainObject;
-          const artifact =
-            V1_DataProductArtifact.serialization.fromJson(content);
-          this.artifactGeneration = artifact;
+          artifact = V1_DataProductArtifact.serialization.fromJson(content);
+          return artifact;
         } else {
           throw new Error(
             `Artifact generation not found for data product: ${storeProject.groupId}:${storeProject.artifactId}:${this.projectGAV.versionId}/${this.product.path}`,
@@ -158,7 +160,19 @@ export class DataProductViewerState extends BaseViewerState<
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error.message);
     } finally {
-      this.initState.complete();
+      this.fetchingArtifactGenerationState.complete();
     }
+    return artifact;
+  }
+
+  *init(): GeneratorFn<void> {
+    const artifactGenerationPromise = this.fetchDataProductArtifactGeneration();
+    Promise.all(
+      this.apgStates.map((apgState) =>
+        apgState.init(artifactGenerationPromise),
+      ),
+    );
+    const artifactGeneration = yield artifactGenerationPromise;
+    this.artifactGeneration = artifactGeneration;
   }
 }
