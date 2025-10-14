@@ -19,46 +19,64 @@ import type {
   NavigationZone,
 } from '@finos/legend-application';
 import {
+  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+  V1_DataProductArtifact,
   type GraphManagerState,
   type V1_DataProduct,
-  type V1_DataProductArtifact,
   type V1_EngineServerClient,
 } from '@finos/legend-graph';
-import { makeObservable } from 'mobx';
+import { flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
 import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
-import { type UserSearchService } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  type GeneratorFn,
+  type PlainObject,
+  type UserSearchService,
+} from '@finos/legend-shared';
 import { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductConfig } from './DataProductConfig.js';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import {
+  StoredFileGeneration,
+  type ProjectGAVCoordinates,
+} from '@finos/legend-storage';
+import {
+  type DepotServerClient,
+  resolveVersion,
+  StoreProjectData,
+} from '@finos/legend-server-depot';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
   DataProductLayoutState
 > {
   readonly engineServerClient: V1_EngineServerClient;
+  readonly depotServerClient: DepotServerClient;
   readonly graphManagerState: GraphManagerState;
   readonly apgStates: DataProductAPGState[];
   readonly userSearchService: UserSearchService | undefined;
   readonly dataProductConfig: DataProductConfig | undefined;
   readonly projectGAV: ProjectGAVCoordinates | undefined;
-  readonly artifactGeneration: V1_DataProductArtifact | undefined;
+  artifactGeneration: V1_DataProductArtifact | undefined;
 
   // actions
   readonly viewDataProductSource?: (() => void) | undefined;
   readonly openPowerBi?: ((apg: string) => void) | undefined;
   readonly openDataCube?: ((sourceData: object) => void) | undefined;
 
+  readonly initState = ActionState.create();
+
   constructor(
     product: V1_DataProduct,
     applicationStore: GenericLegendApplicationStore,
     engineServerClient: V1_EngineServerClient,
+    depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
     dataProductConfig: DataProductConfig | undefined,
     userSearchService: UserSearchService | undefined,
     projectGAV: ProjectGAVCoordinates | undefined,
-    artifactGeneration: V1_DataProductArtifact | undefined,
     actions: {
       viewDataProductSource?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
@@ -68,17 +86,20 @@ export class DataProductViewerState extends BaseViewerState<
   ) {
     super(product, applicationStore, new DataProductLayoutState(), actions);
 
-    makeObservable(this);
+    makeObservable(this, {
+      artifactGeneration: observable,
+      init: flow,
+    });
 
     this.apgStates = this.product.accessPointGroups.map(
       (e) => new DataProductAPGState(e, this),
     );
     this.engineServerClient = engineServerClient;
+    this.depotServerClient = depotServerClient;
     this.graphManagerState = graphManagerState;
     this.userSearchService = userSearchService;
     this.dataProductConfig = dataProductConfig;
     this.projectGAV = projectGAV;
-    this.artifactGeneration = artifactGeneration;
 
     // actions
     this.viewDataProductSource = actions.viewDataProductSource;
@@ -102,5 +123,42 @@ export class DataProductViewerState extends BaseViewerState<
     return Object.values(DATA_PRODUCT_VIEWER_SECTION).map((section) =>
       section.toString(),
     );
+  }
+
+  *init(): GeneratorFn<void> {
+    this.initState.inProgress();
+    try {
+      if (this.projectGAV !== undefined) {
+        const storeProject = new StoreProjectData();
+        storeProject.groupId = this.projectGAV.groupId;
+        storeProject.artifactId = this.projectGAV.artifactId;
+        const files = (
+          (yield this.depotServerClient.getGenerationFilesByType(
+            storeProject,
+            resolveVersion(this.projectGAV.versionId),
+            V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+          )) as PlainObject<StoredFileGeneration>[]
+        ).map((rawFile) =>
+          StoredFileGeneration.serialization.fromJson(rawFile),
+        );
+        const fileGen = files.filter((e) => e.path === this.product.path)[0]
+          ?.file.content;
+        if (fileGen) {
+          const content: PlainObject = JSON.parse(fileGen) as PlainObject;
+          const artifact =
+            V1_DataProductArtifact.serialization.fromJson(content);
+          this.artifactGeneration = artifact;
+        } else {
+          throw new Error(
+            `Artifact generation not found for data product: ${storeProject.groupId}:${storeProject.artifactId}:${this.projectGAV.versionId}/${this.product.path}`,
+          );
+        }
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error.message);
+    } finally {
+      this.initState.complete();
+    }
   }
 }

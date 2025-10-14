@@ -187,6 +187,7 @@ export { V1_GenerateSchemaInput } from './graph-manager/protocol/pure/v1/engine/
 export {
   V1_AccessPoint,
   V1_AccessPointGroup,
+  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProduct,
   V1_DataProductRegion,
   V1_DeliveryFrequency,

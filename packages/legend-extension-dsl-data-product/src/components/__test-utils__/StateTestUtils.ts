@@ -43,6 +43,7 @@ import { guaranteeType } from '@finos/legend-shared';
 import { Core_DataProductDataAccess_LegendApplicationPlugin } from '../Core_DataProductDataAccess_LegendApplicationPlugin.js';
 import { DataProductConfig } from '../../stores/DataProduct/DataProductConfig.js';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import { DepotServerClient } from '@finos/legend-server-depot';
 
 export class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -118,6 +119,9 @@ export const TEST__getDataProductViewerState = (
     pluginManager,
   );
   const engineServerClient = new V1_EngineServerClient({});
+  const depotServerClient = new DepotServerClient({
+    serverUrl: 'http://testDepotServerClientUrl',
+  });
   const graphManagerState = TEST__getTestGraphManagerState(
     guaranteeType(
       MOCK__applicationStore.pluginManager,
@@ -129,6 +133,7 @@ export const TEST__getDataProductViewerState = (
     dataProduct,
     MOCK__applicationStore,
     engineServerClient,
+    depotServerClient,
     graphManagerState,
     DataProductConfig.serialization.fromJson({
       publicStereotype: {
@@ -138,7 +143,6 @@ export const TEST__getDataProductViewerState = (
     }),
     undefined,
     projectGAVCoordinates,
-    undefined,
     {
       viewDataProductSource: jest.fn(),
     },

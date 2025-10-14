@@ -161,6 +161,7 @@ import {
   ProductViewer,
 } from '@finos/legend-extension-dsl-data-product';
 import type { LegendStudioApplicationStore } from '../../../../stores/LegendStudioBaseStore.js';
+import type { DepotServerClient } from '@finos/legend-server-depot';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -2345,6 +2346,7 @@ const getDataProductViewerState = (
   product: DataProduct,
   graphManagerState: GraphManagerState,
   applicationStore: LegendStudioApplicationStore,
+  depotServerClient: DepotServerClient,
 ) => {
   const graphManager = guaranteeType(
     graphManagerState.graphManager,
@@ -2359,9 +2361,9 @@ const getDataProductViewerState = (
     v1_dataProduct,
     applicationStore,
     remoteEngine.getEngineServerClient(),
+    depotServerClient,
     graphManagerState,
     applicationStore.config.options.dataProductConfig,
-    undefined,
     undefined,
     undefined,
     {},
@@ -2381,6 +2383,7 @@ export const DataProductEditor = observer(() => {
       product,
       editorStore.graphManagerState,
       editorStore.applicationStore,
+      editorStore.depotServerClient,
     ),
   );
 
@@ -2464,6 +2467,7 @@ export const DataProductEditor = observer(() => {
                 product,
                 editorStore.graphManagerState,
                 editorStore.applicationStore,
+                editorStore.depotServerClient,
               ),
             );
           }
@@ -2473,6 +2477,7 @@ export const DataProductEditor = observer(() => {
     [
       editorStore.applicationStore,
       editorStore.graphManagerState,
+      editorStore.depotServerClient,
       product,
       showPreview,
     ],
