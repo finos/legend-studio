@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.24
+
+### Patch Changes
+
+- [#4545](https://github.com/finos/legend-studio/pull/4545) [`a4ee199`](https://github.com/finos/legend-studio/commit/a4ee19935551193062679a7526e804b7e76f052c) ([@bojja-gs](https://github.com/bojja-gs)) - Reverted showdev feature flag to terminals and addons
+
 ## 0.1.23
 
 ### Patch Changes
