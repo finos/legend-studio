@@ -32,16 +32,12 @@ import {
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  type DataGridCellRendererParams,
   type DataGridColumnDefinition,
   DataGrid,
 } from '@finos/legend-lego/data-grid';
 import {
-  type V1_LakehouseAccessPoint,
   type V1_RelationTypeColumn,
   extractElementNameFromPath,
-  PureClientVersion,
-  V1_AdHocDeploymentDataProductOrigin,
   V1_AppliedFunction,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -55,16 +51,7 @@ import {
   V1_CString,
   V1_EnumValue,
   V1_getGenericTypeFullPath,
-  V1_LambdaReturnTypeInput,
-  V1_LegendSDLC,
-  V1_Protocol,
-  V1_PureGraphManager,
-  V1_PureModelContextPointer,
-  V1_RelationType,
-  V1_relationTypeModelSchema,
-  V1_RenderStyle,
   V1_SdlcDeploymentDataProductOrigin,
-  V1_serializeRawValueSpecification,
   V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
@@ -83,14 +70,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { useAuth } from 'react-oidc-context';
-import {
-  assertErrorThrown,
-  guaranteeNonNullable,
-  guaranteeType,
-  isNonEmptyString,
-} from '@finos/legend-shared';
-import { resolveVersion } from '@finos/legend-server-depot';
-import { deserialize } from 'serializr';
+import { guaranteeNonNullable, isNonEmptyString } from '@finos/legend-shared';
 import { type DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
@@ -105,11 +85,13 @@ import {
   type DataProductAPGState,
   AccessPointGroupAccess,
 } from '../../stores/DataProduct/DataProductAPGState.js';
+import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
+
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
 ) => (
@@ -137,27 +119,30 @@ export const TabMessageScreen = observer((props: { message: string }) => {
 
 export const PowerBiScreen = observer(
   (props: {
+    accessPointState: DataProductAccessPointState;
     dataAccessState: DataProductDataAccessState | undefined;
-    apgState: DataProductAPGState;
   }) => {
-    const { dataAccessState, apgState } = props;
+    const { accessPointState, dataAccessState } = props;
+
     if (
       !(
         dataAccessState?.entitlementsDataProductDetails.origin instanceof
         V1_SdlcDeploymentDataProductOrigin
       ) ||
-      !dataAccessState.dataProductViewerState.openPowerBi
+      !accessPointState.apgState.dataProductViewerState.openPowerBi
     ) {
       return (
         <TabMessageScreen message="Adhoc data products not supported in Power BI" />
       );
     }
+
     const loadPowerBi = (): void => {
       if (dataAccessState.dataProductViewerState.openPowerBi) {
-        const apg = apgState.apg.id;
+        const apg = accessPointState.apgState.apg.id;
         dataAccessState.dataProductViewerState.openPowerBi(apg);
       }
     };
+
     return (
       <div className="data-product__viewer__tab-screen">
         <button
@@ -172,28 +157,20 @@ export const PowerBiScreen = observer(
     );
   },
 );
+
 export const DataCubeScreen = observer(
   (props: {
+    accessPointState: DataProductAccessPointState;
     dataAccessState: DataProductDataAccessState | undefined;
-    apgState: DataProductAPGState;
-    params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
   }) => {
-    const { dataAccessState, apgState, params } = props;
-    if (
-      !(
-        dataAccessState?.entitlementsDataProductDetails.origin instanceof
-        V1_SdlcDeploymentDataProductOrigin
-      ) ||
-      !apgState.dataProductViewerState.openDataCube
-    ) {
-      return <TabMessageScreen message={WORK_IN_PROGRESS} />;
-    }
-    const accessPointdata = params.data;
+    const { accessPointState, dataAccessState } = props;
+
     const auth = useAuth();
     const [selectedEnvironment, setSelectedEnvironment] = useState<string>('');
+
     useEffect(() => {
       const fetchEnvironments = async (): Promise<void> => {
-        if (dataAccessState.ingestEnvironmentFetchState.isInInitialState) {
+        if (dataAccessState?.ingestEnvironmentFetchState.isInInitialState) {
           await dataAccessState.fetchIngestEnvironmentDetails(
             auth.user?.access_token,
           );
@@ -202,9 +179,10 @@ export const DataCubeScreen = observer(
       // eslint-disable-next-line no-void
       void fetchEnvironments();
     }, [auth.user?.access_token, dataAccessState]);
+
     const loadDataCube = (): void => {
       //dpCoordinates
-      const origin = dataAccessState.entitlementsDataProductDetails.origin;
+      const origin = dataAccessState?.entitlementsDataProductDetails.origin;
       const dpCoordinates =
         origin instanceof V1_SdlcDeploymentDataProductOrigin
           ? {
@@ -214,8 +192,8 @@ export const DataCubeScreen = observer(
             }
           : undefined;
       //paths
-      const path = apgState.dataProductViewerState.getPath();
-      const accessPointName = accessPointdata?.id;
+      const path = accessPointState.apgState.dataProductViewerState.getPath();
+      const accessPointName = accessPointState.accessPoint.id;
       const accessPointPath = [
         guaranteeNonNullable(path),
         guaranteeNonNullable(accessPointName),
@@ -227,10 +205,23 @@ export const DataCubeScreen = observer(
         environment: selectedEnvironment,
         paths: accessPointPath,
       };
-      if (apgState.dataProductViewerState.openDataCube) {
-        apgState.dataProductViewerState.openDataCube(sourceData);
+      if (accessPointState.apgState.dataProductViewerState.openDataCube) {
+        accessPointState.apgState.dataProductViewerState.openDataCube(
+          sourceData,
+        );
       }
     };
+
+    if (
+      !(
+        dataAccessState?.entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
+      ) ||
+      !accessPointState.apgState.dataProductViewerState.openDataCube
+    ) {
+      return <TabMessageScreen message={WORK_IN_PROGRESS} />;
+    }
+
     return (
       <div className="data-product__viewer__tab-screen">
         <CustomSelectorInput
@@ -269,13 +260,12 @@ export const DataCubeScreen = observer(
   },
 );
 
-const TDSColumnCellRenderer = (props: {
-  params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
-  apgState: DataProductAPGState;
+const AccessPointTable = (props: {
+  accessPointState: DataProductAccessPointState;
   dataAccessState: DataProductDataAccessState | undefined;
 }): React.ReactNode => {
-  const { params, apgState, dataAccessState } = props;
-  const data = params.data;
+  const { accessPointState, dataAccessState } = props;
+
   const enum DataProductTabs {
     COLUMNS = 'Columns',
     GRAMMAR = 'Grammar',
@@ -292,9 +282,10 @@ const TDSColumnCellRenderer = (props: {
     setSelectedTab(newValue);
   };
 
-  if (!data) {
+  if (!accessPointState) {
     return null;
   }
+
   const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
     [
       {
@@ -443,48 +434,63 @@ const TDSColumnCellRenderer = (props: {
       </div>
       <div className="access_group_gap" />
       <Box className="data-product__viewer__more-info__container">
-        {loadingAccessPointGrammar && (
-          <Box className="data-product__viewer__more-info__loading-indicator">
-            <CubesLoadingIndicator isLoading={true}>
-              <CubesLoadingIndicatorIcon />
-            </CubesLoadingIndicator>
-          </Box>
-        )}
-        {!loadingAccessPointGrammar && (
+        {selectedTab === DataProductTabs.COLUMNS && (
           <>
-            {selectedTab === DataProductTabs.COLUMNS && (
+            {accessPointState.fetchingRelationTypeState.isInProgress ? (
+              <Box className="data-product__viewer__more-info__loading-indicator">
+                <CubesLoadingIndicator isLoading={true}>
+                  <CubesLoadingIndicatorIcon />
+                </CubesLoadingIndicator>
+              </Box>
+            ) : accessPointState.fetchingRelationTypeState.hasCompleted ? (
               <Box
                 className={clsx(
                   'data-product__viewer__more-info__columns-grid ag-theme-balham',
                   {
                     'data-product__viewer__more-info__columns-grid--auto-height':
-                      (accessPointRelationType?.columns.length ?? 0) <=
+                      (accessPointState.relationType?.columns.length ?? 0) <=
                       MAX_GRID_AUTO_HEIGHT_ROWS,
                     'data-product__viewer__more-info__columns-grid--auto-height--empty':
-                      (accessPointRelationType?.columns.length ?? 0) === 0,
+                      (accessPointState.relationType?.columns.length ?? 0) ===
+                      0,
                     'data-product__viewer__more-info__columns-grid--auto-height--non-empty':
-                      (accessPointRelationType?.columns.length ?? 0) > 0 &&
-                      (accessPointRelationType?.columns.length ?? 0) <=
+                      (accessPointState.relationType?.columns.length ?? 0) >
+                        0 &&
+                      (accessPointState.relationType?.columns.length ?? 0) <=
                         MAX_GRID_AUTO_HEIGHT_ROWS,
                   },
                 )}
               >
                 <DataGrid
-                  rowData={accessPointRelationType?.columns ?? []}
+                  rowData={accessPointState.relationType?.columns ?? []}
                   columnDefs={relationColumnDefs}
                   domLayout={
-                    (accessPointRelationType?.columns.length ?? 0) >
+                    (accessPointState.relationType?.columns.length ?? 0) >
                     MAX_GRID_AUTO_HEIGHT_ROWS
                       ? 'normal'
                       : 'autoHeight'
                   }
                 />
               </Box>
+            ) : (
+              <TabMessageScreen message="Unable to fetch access point columns" />
             )}
-            {selectedTab === DataProductTabs.GRAMMAR && (
+          </>
+        )}
+        {selectedTab === DataProductTabs.GRAMMAR && (
+          <>
+            {accessPointState.fetchingGrammarState.isInProgress ? (
+              <Box className="data-product__viewer__more-info__loading-indicator">
+                <CubesLoadingIndicator isLoading={true}>
+                  <CubesLoadingIndicatorIcon />
+                </CubesLoadingIndicator>
+              </Box>
+            ) : accessPointState.fetchingGrammarState.hasCompleted ? (
               <Box className="data-product__viewer__more-info__grammar">
                 <CodeEditor
-                  inputValue={accessPointGrammar}
+                  inputValue={
+                    accessPointState.grammar ?? 'Unable to fetch grammar'
+                  }
                   isReadOnly={true}
                   language={CODE_EDITOR_LANGUAGE.TEXT}
                   hideMinimap={true}
@@ -497,27 +503,28 @@ const TDSColumnCellRenderer = (props: {
                   }}
                 />
               </Box>
-            )}
-            {selectedTab === DataProductTabs.DATACUBE && (
-              <DataCubeScreen
-                dataAccessState={dataAccessState}
-                apgState={apgState}
-                params={params}
-              />
-            )}
-            {selectedTab === DataProductTabs.POWER_BI && (
-              <PowerBiScreen
-                dataAccessState={dataAccessState}
-                apgState={apgState}
-              />
-            )}
-            {selectedTab === DataProductTabs.PYTHON && (
-              <TabMessageScreen message={WORK_IN_PROGRESS} />
-            )}
-            {selectedTab === DataProductTabs.SQL && (
-              <TabMessageScreen message={WORK_IN_PROGRESS} />
+            ) : (
+              <TabMessageScreen message="Unable to fetch access point grammar" />
             )}
           </>
+        )}
+        {selectedTab === DataProductTabs.DATACUBE && (
+          <DataCubeScreen
+            accessPointState={accessPointState}
+            dataAccessState={dataAccessState}
+          />
+        )}
+        {selectedTab === DataProductTabs.POWER_BI && (
+          <PowerBiScreen
+            accessPointState={accessPointState}
+            dataAccessState={dataAccessState}
+          />
+        )}
+        {selectedTab === DataProductTabs.PYTHON && (
+          <TabMessageScreen message={WORK_IN_PROGRESS} />
+        )}
+        {selectedTab === DataProductTabs.SQL && (
+          <TabMessageScreen message={WORK_IN_PROGRESS} />
         )}
       </Box>
     </div>
@@ -529,7 +536,7 @@ export const DataProductAccessPointGroupViewer = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { apgState, dataAccessState } = props;
-    const accessPoints = apgState.apg.accessPoints;
+    const accessPointStates = apgState.accessPointStates;
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
@@ -737,17 +744,17 @@ export const DataProductAccessPointGroupViewer = observer(
         </div>
         <div className="data-product__viewer__access-group__item__content">
           <div className="data-product__viewer__access-group__item__content__tab__content">
-            {accessPoints.map((accessPoint) => (
+            {accessPointStates.map((accessPointState) => (
               <div
-                key={accessPoint.id}
+                key={accessPointState.accessPoint.id}
                 className="data-product__viewer__access-point-section access_group_gap"
               >
                 <div className="data-product__viewer__access-point__info">
                   <div className="data-product__viewer__access-point__name">
-                    <strong>{accessPoint.id}</strong>
+                    <strong>{accessPointState.accessPoint.id}</strong>
                   </div>
                   <div className="data-product__viewer__access-point__description">
-                    {accessPoint.description?.trim() ?? (
+                    {accessPointState.accessPoint.description?.trim() ?? (
                       <span className="data-product__viewer__grid__empty-cell">
                         No description to provide
                       </span>
@@ -755,13 +762,8 @@ export const DataProductAccessPointGroupViewer = observer(
                   </div>
                 </div>
                 <div className="data-product__viewer__access-point__tabs">
-                  <TDSColumnCellRenderer
-                    params={
-                      {
-                        data: accessPoint,
-                      } as DataGridCellRendererParams<V1_LakehouseAccessPoint>
-                    }
-                    apgState={apgState}
+                  <AccessPointTable
+                    accessPointState={accessPointState}
                     dataAccessState={dataAccessState}
                   />
                 </div>
