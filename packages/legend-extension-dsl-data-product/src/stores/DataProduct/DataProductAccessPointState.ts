@@ -50,8 +50,8 @@ export class DataProductAccessPointState {
   relationType: V1_RelationType | undefined;
   grammar: string | undefined;
 
-  fetchingRelationTypeState = ActionState.create();
-  fetchingGrammarState = ActionState.create();
+  readonly fetchingRelationTypeState = ActionState.create();
+  readonly fetchingGrammarState = ActionState.create();
 
   constructor(apgState: DataProductAPGState, accessPoint: V1_AccessPoint) {
     makeAutoObservable(this, {
