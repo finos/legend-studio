@@ -19,11 +19,12 @@ import type {
   NavigationZone,
 } from '@finos/legend-application';
 import {
-  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
-  V1_DataProductArtifact,
   type GraphManagerState,
   type V1_DataProduct,
   type V1_EngineServerClient,
+  type V1_EntitlementsDataProductDetails,
+  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+  V1_DataProductArtifact,
 } from '@finos/legend-graph';
 import { flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
@@ -165,12 +166,12 @@ export class DataProductViewerState extends BaseViewerState<
     return artifact;
   }
 
-  *init(): GeneratorFn<void> {
+  *init(
+    entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
+  ): GeneratorFn<void> {
     const artifactGenerationPromise = this.fetchDataProductArtifactGeneration();
-    Promise.all(
-      this.apgStates.map((apgState) =>
-        apgState.init(artifactGenerationPromise),
-      ),
+    this.apgStates.map((apgState) =>
+      apgState.init(artifactGenerationPromise, entitlementsDataProductDetails),
     );
     const artifactGeneration = yield artifactGenerationPromise;
     this.artifactGeneration = artifactGeneration;

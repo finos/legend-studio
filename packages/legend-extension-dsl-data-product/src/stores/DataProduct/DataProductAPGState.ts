@@ -22,6 +22,7 @@ import {
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
+  type V1_EntitlementsDataProductDetails,
   type V1_User,
   V1_ContractUserStatusResponseModelSchema,
   V1_CreateSubscriptionInput,
@@ -189,9 +190,12 @@ export class DataProductAPGState {
 
   *init(
     artifactGenerationPromise: Promise<V1_DataProductArtifact | undefined>,
+    entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
   ): GeneratorFn<void> {
     yield Promise.all(
-      this.accessPointStates.map((ap) => ap.init(artifactGenerationPromise)),
+      this.accessPointStates.map((ap) =>
+        ap.init(artifactGenerationPromise, entitlementsDataProductDetails),
+      ),
     );
   }
 
