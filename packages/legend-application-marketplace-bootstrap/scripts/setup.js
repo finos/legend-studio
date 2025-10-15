@@ -85,6 +85,9 @@ export const setup = (outputDir) => {
         datacube: {
           url: 'http://localhost:9007/datacube',
         },
+        powerBi: {
+          url: 'http://localhost:9007/powerBi',
+        },
         documentation: {
           url: 'https://legend.finos.org',
           registry: [],
