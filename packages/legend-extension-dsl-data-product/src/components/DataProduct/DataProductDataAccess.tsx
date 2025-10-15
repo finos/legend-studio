@@ -260,276 +260,279 @@ export const DataCubeScreen = observer(
   },
 );
 
-const AccessPointTable = (props: {
-  accessPointState: DataProductAccessPointState;
-  dataAccessState: DataProductDataAccessState | undefined;
-}): React.ReactNode => {
-  const { accessPointState, dataAccessState } = props;
+const AccessPointTable = observer(
+  (props: {
+    accessPointState: DataProductAccessPointState;
+    dataAccessState: DataProductDataAccessState | undefined;
+  }): React.ReactNode => {
+    const { accessPointState, dataAccessState } = props;
 
-  const enum DataProductTabs {
-    COLUMNS = 'Columns',
-    GRAMMAR = 'Grammar',
-    DATACUBE = 'Datacube',
-    POWER_BI = 'Power BI',
-    PYTHON = 'Python',
-    SQL = 'SQL',
-  }
-  const [selectedTab, setSelectedTab] = useState(DataProductTabs.COLUMNS);
-  const handleTabChange = (
-    _: React.SyntheticEvent,
-    newValue: DataProductTabs,
-  ) => {
-    setSelectedTab(newValue);
-  };
+    const enum DataProductTabs {
+      COLUMNS = 'Columns',
+      GRAMMAR = 'Grammar',
+      DATACUBE = 'Datacube',
+      POWER_BI = 'Power BI',
+      PYTHON = 'Python',
+      SQL = 'SQL',
+    }
+    const [selectedTab, setSelectedTab] = useState(DataProductTabs.COLUMNS);
+    const handleTabChange = (
+      _: React.SyntheticEvent,
+      newValue: DataProductTabs,
+    ) => {
+      setSelectedTab(newValue);
+    };
 
-  if (!accessPointState) {
-    return null;
-  }
+    if (!accessPointState) {
+      return null;
+    }
 
-  const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
-    [
-      {
-        headerName: 'Column Name',
-        field: 'name',
-        flex: 1,
-      },
-      {
-        headerName: 'Column Type',
-        flex: 1,
-        valueGetter: (_params) =>
-          _params.data
-            ? `${extractElementNameFromPath(
-                V1_getGenericTypeFullPath(_params.data.genericType),
-              )}${
-                _params.data.genericType.typeVariableValues.length > 0
-                  ? `(${_params.data.genericType.typeVariableValues
-                      .map((valueSpec) => {
-                        // TODO: Move V1_stringifyValueSpecification out of
-                        // @finos/legend-query-builder so it can be used in other packages
-                        if (
-                          valueSpec instanceof V1_CDateTime ||
-                          valueSpec instanceof V1_CStrictDate ||
-                          valueSpec instanceof V1_CStrictTime ||
-                          valueSpec instanceof V1_CString ||
-                          valueSpec instanceof V1_CBoolean ||
-                          valueSpec instanceof V1_CByteArray ||
-                          valueSpec instanceof V1_CDecimal ||
-                          valueSpec instanceof V1_CFloat ||
-                          valueSpec instanceof V1_CFloat ||
-                          valueSpec instanceof V1_CInteger ||
-                          valueSpec instanceof V1_EnumValue
-                        ) {
-                          return valueSpec.value.toString();
-                        } else if (valueSpec instanceof V1_AppliedProperty) {
-                          return valueSpec.property;
-                        } else if (valueSpec instanceof V1_AppliedFunction) {
-                          return valueSpec.function;
-                        } else {
-                          return '';
-                        }
-                      })
-                      .join(',')})`
-                  : ''
-              }`
-            : '',
-      },
-    ];
-  return (
-    <div>
-      <div className="data-product__viewer__tabs-bar">
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          className="data-product__viewer__tabs"
-        >
-          <Tab
-            className={clsx('data-product__viewer__tab', {
-              'data-product__viewer__tab--selected':
-                selectedTab === DataProductTabs.COLUMNS,
-            })}
-            label={<span>Column Specifications</span>}
-            value={DataProductTabs.COLUMNS}
-          />
-          <Tab
-            className={clsx('data-product__viewer__tab', {
-              'data-product__viewer__tab--selected':
-                selectedTab === DataProductTabs.GRAMMAR,
-            })}
-            label={<span>Grammar</span>}
-            value={DataProductTabs.GRAMMAR}
-          />
-          <Tab
-            className={clsx('data-product__viewer__tab', {
-              'data-product__viewer__tab--selected':
-                selectedTab === DataProductTabs.DATACUBE,
-            })}
-            label={
-              <span className="label-container">
-                <DataCubeIcon.Cube
-                  className={clsx('data-product__viewer__tab-icon', {
-                    'data-product__viewer__tab-icon--selected':
-                      selectedTab === DataProductTabs.DATACUBE,
-                  })}
-                />
-                <span>Datacube</span>
-              </span>
-            }
-            value={DataProductTabs.DATACUBE}
-          />
-          <Tab
-            className={clsx('data-product__viewer__tab', {
-              'data-product__viewer__tab--selected':
-                selectedTab === DataProductTabs.POWER_BI,
-            })}
-            label={
-              <span className="label-container">
-                <PowerBiIcon
-                  className={clsx('data-product__viewer__tab-icon', {
-                    'data-product__viewer__tab-icon--selected':
-                      selectedTab === DataProductTabs.POWER_BI,
-                  })}
-                />
-                <span>Power BI</span>
-              </span>
-            }
-            value={DataProductTabs.POWER_BI}
-          />
-          <Tab
-            className={clsx('data-product__viewer__tab', {
-              'data-product__viewer__tab--selected':
-                selectedTab === DataProductTabs.PYTHON,
-            })}
-            label={
-              <span className="label-container">
-                <PythonIcon
-                  className={clsx('data-product__viewer__tab-icon', {
-                    'data-product__viewer__tab-icon--selected':
-                      selectedTab === DataProductTabs.PYTHON,
-                  })}
-                />
-                <span>Python</span>
-              </span>
-            }
-            value={DataProductTabs.PYTHON}
-          />
-          <Tab
-            className={clsx('data-product__viewer__tab', {
-              'data-product__viewer__tab--selected':
-                selectedTab === DataProductTabs.SQL,
-            })}
-            label={
-              <span className="label-container">
-                <SQLIcon
-                  className={clsx('data-product__viewer__tab-icon', {
-                    'data-product__viewer__tab-icon--selected':
-                      selectedTab === DataProductTabs.SQL,
-                  })}
-                />
-                <span>SQL</span>
-              </span>
-            }
-            value={DataProductTabs.SQL}
-          />
-        </Tabs>
-      </div>
-      <div className="access_group_gap" />
-      <Box className="data-product__viewer__more-info__container">
-        {selectedTab === DataProductTabs.COLUMNS && (
-          <>
-            {accessPointState.fetchingRelationTypeState.isInProgress ? (
-              <Box className="data-product__viewer__more-info__loading-indicator">
-                <CubesLoadingIndicator isLoading={true}>
-                  <CubesLoadingIndicatorIcon />
-                </CubesLoadingIndicator>
-              </Box>
-            ) : accessPointState.fetchingRelationTypeState.hasCompleted ? (
-              <Box
-                className={clsx(
-                  'data-product__viewer__more-info__columns-grid ag-theme-balham',
-                  {
-                    'data-product__viewer__more-info__columns-grid--auto-height':
-                      (accessPointState.relationType?.columns.length ?? 0) <=
-                      MAX_GRID_AUTO_HEIGHT_ROWS,
-                    'data-product__viewer__more-info__columns-grid--auto-height--empty':
-                      (accessPointState.relationType?.columns.length ?? 0) ===
-                      0,
-                    'data-product__viewer__more-info__columns-grid--auto-height--non-empty':
-                      (accessPointState.relationType?.columns.length ?? 0) >
-                        0 &&
-                      (accessPointState.relationType?.columns.length ?? 0) <=
+    const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
+      [
+        {
+          headerName: 'Column Name',
+          field: 'name',
+          flex: 1,
+        },
+        {
+          headerName: 'Column Type',
+          flex: 1,
+          valueGetter: (_params) =>
+            _params.data
+              ? `${extractElementNameFromPath(
+                  V1_getGenericTypeFullPath(_params.data.genericType),
+                )}${
+                  _params.data.genericType.typeVariableValues.length > 0
+                    ? `(${_params.data.genericType.typeVariableValues
+                        .map((valueSpec) => {
+                          // TODO: Move V1_stringifyValueSpecification out of
+                          // @finos/legend-query-builder so it can be used in other packages
+                          if (
+                            valueSpec instanceof V1_CDateTime ||
+                            valueSpec instanceof V1_CStrictDate ||
+                            valueSpec instanceof V1_CStrictTime ||
+                            valueSpec instanceof V1_CString ||
+                            valueSpec instanceof V1_CBoolean ||
+                            valueSpec instanceof V1_CByteArray ||
+                            valueSpec instanceof V1_CDecimal ||
+                            valueSpec instanceof V1_CFloat ||
+                            valueSpec instanceof V1_CFloat ||
+                            valueSpec instanceof V1_CInteger ||
+                            valueSpec instanceof V1_EnumValue
+                          ) {
+                            return valueSpec.value.toString();
+                          } else if (valueSpec instanceof V1_AppliedProperty) {
+                            return valueSpec.property;
+                          } else if (valueSpec instanceof V1_AppliedFunction) {
+                            return valueSpec.function;
+                          } else {
+                            return '';
+                          }
+                        })
+                        .join(',')})`
+                    : ''
+                }`
+              : '',
+        },
+      ];
+    return (
+      <div>
+        <div className="data-product__viewer__tabs-bar">
+          <Tabs
+            value={selectedTab}
+            onChange={handleTabChange}
+            className="data-product__viewer__tabs"
+          >
+            <Tab
+              className={clsx('data-product__viewer__tab', {
+                'data-product__viewer__tab--selected':
+                  selectedTab === DataProductTabs.COLUMNS,
+              })}
+              label={<span>Column Specifications</span>}
+              value={DataProductTabs.COLUMNS}
+            />
+            <Tab
+              className={clsx('data-product__viewer__tab', {
+                'data-product__viewer__tab--selected':
+                  selectedTab === DataProductTabs.GRAMMAR,
+              })}
+              label={<span>Grammar</span>}
+              value={DataProductTabs.GRAMMAR}
+            />
+            <Tab
+              className={clsx('data-product__viewer__tab', {
+                'data-product__viewer__tab--selected':
+                  selectedTab === DataProductTabs.DATACUBE,
+              })}
+              label={
+                <span className="label-container">
+                  <DataCubeIcon.Cube
+                    className={clsx('data-product__viewer__tab-icon', {
+                      'data-product__viewer__tab-icon--selected':
+                        selectedTab === DataProductTabs.DATACUBE,
+                    })}
+                  />
+                  <span>Datacube</span>
+                </span>
+              }
+              value={DataProductTabs.DATACUBE}
+            />
+            <Tab
+              className={clsx('data-product__viewer__tab', {
+                'data-product__viewer__tab--selected':
+                  selectedTab === DataProductTabs.POWER_BI,
+              })}
+              label={
+                <span className="label-container">
+                  <PowerBiIcon
+                    className={clsx('data-product__viewer__tab-icon', {
+                      'data-product__viewer__tab-icon--selected':
+                        selectedTab === DataProductTabs.POWER_BI,
+                    })}
+                  />
+                  <span>Power BI</span>
+                </span>
+              }
+              value={DataProductTabs.POWER_BI}
+            />
+            <Tab
+              className={clsx('data-product__viewer__tab', {
+                'data-product__viewer__tab--selected':
+                  selectedTab === DataProductTabs.PYTHON,
+              })}
+              label={
+                <span className="label-container">
+                  <PythonIcon
+                    className={clsx('data-product__viewer__tab-icon', {
+                      'data-product__viewer__tab-icon--selected':
+                        selectedTab === DataProductTabs.PYTHON,
+                    })}
+                  />
+                  <span>Python</span>
+                </span>
+              }
+              value={DataProductTabs.PYTHON}
+            />
+            <Tab
+              className={clsx('data-product__viewer__tab', {
+                'data-product__viewer__tab--selected':
+                  selectedTab === DataProductTabs.SQL,
+              })}
+              label={
+                <span className="label-container">
+                  <SQLIcon
+                    className={clsx('data-product__viewer__tab-icon', {
+                      'data-product__viewer__tab-icon--selected':
+                        selectedTab === DataProductTabs.SQL,
+                    })}
+                  />
+                  <span>SQL</span>
+                </span>
+              }
+              value={DataProductTabs.SQL}
+            />
+          </Tabs>
+        </div>
+        <div className="access_group_gap" />
+        <Box className="data-product__viewer__more-info__container">
+          {selectedTab === DataProductTabs.COLUMNS && (
+            <>
+              {accessPointState.fetchingRelationTypeState.isInProgress ? (
+                <Box className="data-product__viewer__more-info__loading-indicator">
+                  <CubesLoadingIndicator isLoading={true}>
+                    <CubesLoadingIndicatorIcon />
+                  </CubesLoadingIndicator>
+                </Box>
+              ) : accessPointState.fetchingRelationTypeState.hasCompleted ? (
+                <Box
+                  className={clsx(
+                    'data-product__viewer__more-info__columns-grid ag-theme-balham',
+                    {
+                      'data-product__viewer__more-info__columns-grid--auto-height':
+                        (accessPointState.relationType?.columns.length ?? 0) <=
                         MAX_GRID_AUTO_HEIGHT_ROWS,
-                  },
-                )}
-              >
-                <DataGrid
-                  rowData={accessPointState.relationType?.columns ?? []}
-                  columnDefs={relationColumnDefs}
-                  domLayout={
-                    (accessPointState.relationType?.columns.length ?? 0) >
-                    MAX_GRID_AUTO_HEIGHT_ROWS
-                      ? 'normal'
-                      : 'autoHeight'
-                  }
-                />
-              </Box>
-            ) : (
-              <TabMessageScreen message="Unable to fetch access point columns" />
-            )}
-          </>
-        )}
-        {selectedTab === DataProductTabs.GRAMMAR && (
-          <>
-            {accessPointState.fetchingGrammarState.isInProgress ? (
-              <Box className="data-product__viewer__more-info__loading-indicator">
-                <CubesLoadingIndicator isLoading={true}>
-                  <CubesLoadingIndicatorIcon />
-                </CubesLoadingIndicator>
-              </Box>
-            ) : accessPointState.fetchingGrammarState.hasCompleted ? (
-              <Box className="data-product__viewer__more-info__grammar">
-                <CodeEditor
-                  inputValue={
-                    accessPointState.grammar ?? 'Unable to fetch grammar'
-                  }
-                  isReadOnly={true}
-                  language={CODE_EDITOR_LANGUAGE.TEXT}
-                  hideMinimap={true}
-                  hideGutter={true}
-                  hideActionBar={true}
-                  lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
-                  extraEditorOptions={{
-                    scrollBeyondLastLine: false,
-                    wordWrap: 'on',
-                  }}
-                />
-              </Box>
-            ) : (
-              <TabMessageScreen message="Unable to fetch access point grammar" />
-            )}
-          </>
-        )}
-        {selectedTab === DataProductTabs.DATACUBE && (
-          <DataCubeScreen
-            accessPointState={accessPointState}
-            dataAccessState={dataAccessState}
-          />
-        )}
-        {selectedTab === DataProductTabs.POWER_BI && (
-          <PowerBiScreen
-            accessPointState={accessPointState}
-            dataAccessState={dataAccessState}
-          />
-        )}
-        {selectedTab === DataProductTabs.PYTHON && (
-          <TabMessageScreen message={WORK_IN_PROGRESS} />
-        )}
-        {selectedTab === DataProductTabs.SQL && (
-          <TabMessageScreen message={WORK_IN_PROGRESS} />
-        )}
-      </Box>
-    </div>
-  );
-};
+                      'data-product__viewer__more-info__columns-grid--auto-height--empty':
+                        (accessPointState.relationType?.columns.length ?? 0) ===
+                        0,
+                      'data-product__viewer__more-info__columns-grid--auto-height--non-empty':
+                        (accessPointState.relationType?.columns.length ?? 0) >
+                          0 &&
+                        (accessPointState.relationType?.columns.length ?? 0) <=
+                          MAX_GRID_AUTO_HEIGHT_ROWS,
+                    },
+                  )}
+                >
+                  <DataGrid
+                    rowData={accessPointState.relationType?.columns ?? []}
+                    columnDefs={relationColumnDefs}
+                    domLayout={
+                      (accessPointState.relationType?.columns.length ?? 0) >
+                      MAX_GRID_AUTO_HEIGHT_ROWS
+                        ? 'normal'
+                        : 'autoHeight'
+                    }
+                  />
+                </Box>
+              ) : (
+                <TabMessageScreen message="Unable to fetch access point columns" />
+              )}
+            </>
+          )}
+          {selectedTab === DataProductTabs.GRAMMAR && (
+            <>
+              {accessPointState.fetchingGrammarState.isInProgress ? (
+                <Box className="data-product__viewer__more-info__loading-indicator">
+                  <CubesLoadingIndicator isLoading={true}>
+                    <CubesLoadingIndicatorIcon />
+                  </CubesLoadingIndicator>
+                </Box>
+              ) : accessPointState.fetchingGrammarState.hasCompleted ? (
+                <Box className="data-product__viewer__more-info__grammar">
+                  <CodeEditor
+                    inputValue={
+                      accessPointState.grammar ?? 'Unable to fetch grammar'
+                    }
+                    isReadOnly={true}
+                    language={CODE_EDITOR_LANGUAGE.TEXT}
+                    hideMinimap={true}
+                    hideGutter={true}
+                    hideActionBar={true}
+                    lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
+                    extraEditorOptions={{
+                      scrollBeyondLastLine: false,
+                      wordWrap: 'on',
+                    }}
+                  />
+                </Box>
+              ) : (
+                <TabMessageScreen message="Unable to fetch access point grammar" />
+              )}
+            </>
+          )}
+          {selectedTab === DataProductTabs.DATACUBE && (
+            <DataCubeScreen
+              accessPointState={accessPointState}
+              dataAccessState={dataAccessState}
+            />
+          )}
+          {selectedTab === DataProductTabs.POWER_BI && (
+            <PowerBiScreen
+              accessPointState={accessPointState}
+              dataAccessState={dataAccessState}
+            />
+          )}
+          {selectedTab === DataProductTabs.PYTHON && (
+            <TabMessageScreen message={WORK_IN_PROGRESS} />
+          )}
+          {selectedTab === DataProductTabs.SQL && (
+            <TabMessageScreen message={WORK_IN_PROGRESS} />
+          )}
+        </Box>
+      </div>
+    );
+  },
+);
+
 export const DataProductAccessPointGroupViewer = observer(
   (props: {
     apgState: DataProductAPGState;
