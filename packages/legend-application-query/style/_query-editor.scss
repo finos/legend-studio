@@ -16,6 +16,22 @@
 
 @use 'mixins' as *;
 
+.input--with-validation__caution {
+  // Remove icon space if needed
+  display: flex;
+  align-items: center;
+}
+
+.input--caution {
+  outline: 0.2rem solid #ffd600 !important; // yellow for dark mode
+  box-shadow: 0 0 0.5rem #ffd600;
+}
+
+.theme--light .input--caution {
+  outline: 0.2rem solid #f68f1e !important; // orange for light mode
+  box-shadow: 0 0 0.5rem #f68f1e;
+}
+
 .query-editor {
   display: flex;
   flex-direction: column;
@@ -100,6 +116,10 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+
+      &__title__text--glow-yellow {
+        color: #ffd600;
       }
 
       &__title__btn {

@@ -1106,6 +1106,7 @@ export class ExistingQueryUpdateState {
   queryVersionId: string | undefined;
   projectVersions: string[] = [];
   updateDiffState: QueryBuilderDiffViewState | undefined;
+  descriptionAdder = false;
 
   constructor(editorState: ExistingQueryEditorStore) {
     this.editorStore = editorState;
@@ -1119,6 +1120,8 @@ export class ExistingQueryUpdateState {
       updateDiffState: observable,
       updateQueryState: observable,
       fetchProjectVersionState: observable,
+      descriptionAdder: observable,
+      setDescriptionAdder: action,
       showSaveModal: action,
       setShowQueryInfo: action,
       setProjectVersions: action,
@@ -1134,6 +1137,10 @@ export class ExistingQueryUpdateState {
 
   setQueryRenamer(val: boolean): void {
     this.queryRenamer = val;
+  }
+
+  setDescriptionAdder(val: boolean): void {
+    this.descriptionAdder = val;
   }
 
   setShowQueryInfo(val: boolean): void {
@@ -1186,6 +1193,7 @@ export class ExistingQueryUpdateState {
   *updateQuery(
     queryName: string | undefined,
     queryVersionId: string | undefined,
+    queryDescription: string | undefined,
   ): GeneratorFn<void> {
     try {
       this.updateQueryState.inProgress();
@@ -1207,9 +1215,7 @@ export class ExistingQueryUpdateState {
 
       query.name = queryName ?? query.name;
       query.versionId = queryVersionId ?? query.versionId;
-
-      query.description =
-        this.editorStore.query?.description ?? query.description;
+      query.description = queryDescription ?? query.description;
       const updatedQuery =
         (yield this.editorStore.graphManagerState.graphManager.updateQuery(
           query,
@@ -1548,7 +1554,11 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
               const updateQueryAndProceed = async (): Promise<void> => {
                 try {
                   await flowResult(
-                    this.updateState.updateQuery(undefined, undefined),
+                    this.updateState.updateQuery(
+                      undefined,
+                      undefined,
+                      undefined,
+                    ),
                   );
                   proceed();
                 } catch (error) {

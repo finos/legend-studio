@@ -123,6 +123,7 @@ export const V1_buildLightQuery = (
     protocol.artifactId,
     `Query 'artifactId' field is missing`,
   );
+  metamodel.description = protocol.description;
   metamodel.owner = protocol.owner;
   metamodel.lastUpdatedAt = protocol.lastUpdatedAt;
   metamodel.createdAt = protocol.createdAt;
