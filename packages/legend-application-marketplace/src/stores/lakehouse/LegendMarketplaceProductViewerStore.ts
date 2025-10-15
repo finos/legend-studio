@@ -268,6 +268,16 @@ export class LegendMarketplaceProductViewerStore {
         `Unable to get V1_DataProduct from details for id: ${entitlementsDataProductDetails.id}`,
       );
 
+      const projectGAV =
+        entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
+          ? {
+              groupId: entitlementsDataProductDetails.origin.group,
+              artifactId: entitlementsDataProductDetails.origin.artifact,
+              versionId: entitlementsDataProductDetails.origin.version,
+            }
+          : undefined;
+
       const dataProductViewerState = new DataProductViewerState(
         v1DataProduct,
         this.marketplaceBaseStore.applicationStore,
@@ -276,7 +286,7 @@ export class LegendMarketplaceProductViewerStore {
         graphManagerState,
         this.marketplaceBaseStore.applicationStore.config.options.dataProductConfig,
         this.marketplaceBaseStore.userSearchService,
-        undefined,
+        projectGAV,
         {
           viewDataProductSource: () => {
             if (
