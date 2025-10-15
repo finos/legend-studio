@@ -27,6 +27,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseAdHocViewUrl,
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { DataCubeIcon } from '@finos/legend-art';
 import {
@@ -469,7 +470,6 @@ const LakehouseConsumerSourceViewer = observer(
     const dataSpacePath = guaranteeNonNullable(source.paths[0]);
     const accessPoint = guaranteeNonNullable(source.paths[1]);
     const accessPointPath = `${dataSpacePath}.${accessPoint}`;
-    // TODO: open adhoc dp in marketplace
     const link =
       application.config.legendLakehouseUrl && source.dpCoordinates
         ? EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl(
@@ -481,7 +481,13 @@ const LakehouseConsumerSourceViewer = observer(
             ),
             dataSpacePath,
           )
-        : undefined;
+        : application.config.legendLakehouseUrl && source.deploymentId
+          ? EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseAdHocViewUrl(
+              application.config.legendLakehouseUrl,
+              guaranteeNonNullable(dataSpacePath.split('::').pop()),
+              source.deploymentId,
+            )
+          : undefined;
     return (
       <div className="h-full w-full px-2 pt-2">
         <div

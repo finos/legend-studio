@@ -92,6 +92,7 @@ import {
   V1_DataProductAccessor,
   PRECISE_PRIMITIVE_TYPE,
   CORE_PURE_PATH,
+  V1_DataProductOriginType,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -146,6 +147,7 @@ import { deserialize, serialize } from 'serializr';
 import {
   resolveVersion,
   type DepotServerClient,
+  type VersionedProjectData,
 } from '@finos/legend-server-depot';
 import {
   LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
@@ -201,7 +203,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
   override getDataFromSource(source?: DataCubeSource): PlainObject {
-    // TODO: add lakehouse sources
     if (source instanceof LegendQueryDataCubeSource) {
       const queryInfo = source.info;
       return {
@@ -289,6 +290,44 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           runtime: source.runtime,
         },
         sourceType: FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE,
+      };
+    } else if (source instanceof LakehouseProducerDataCubeSource) {
+      if (source instanceof LakehouseProducerIcebergCachedDataCubeSource) {
+        return {
+          db: source.db,
+          schema: source.schema,
+          table: source.table,
+          ingestDefinition: {
+            path: source.paths[0],
+          },
+          sourceType: LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
+        };
+      } else {
+        return {
+          ingestDefinition: {
+            path: source.paths[0],
+            dataset: source.paths[1],
+          },
+          warehouse: source.warehouse,
+          sourceType: LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
+        };
+      }
+    } else if (source instanceof LakehouseConsumerDataCubeSource) {
+      return {
+        environment: source.environment,
+        warehouse: source.warehouse,
+        deploymentId: source.deploymentId,
+        project: source.dpCoordinates
+          ? {
+              groupId: source.dpCoordinates.groupId,
+              artifactId: source.dpCoordinates.artifactId,
+              versionId: source.dpCoordinates.versionId,
+            }
+          : undefined,
+        dataProduct: {
+          path: source.paths[0],
+          accessPoint: source.paths[1],
+        },
       };
     }
     return {};
@@ -390,13 +429,31 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       const rawSource =
         RawLakehouseConsumerDataCubeSource.serialization.fromJson(source);
 
+      let sdlcInfo: VersionedProjectData | undefined;
+      let origin: V1_DataProductOriginType | undefined;
+      if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
+        sdlcInfo = rawSource.origin.dpCoordinates;
+        origin = V1_DataProductOriginType.SDLC_DEPLOYMENT;
+      } else {
+        origin = V1_DataProductOriginType.AD_HOC_DEPLOYMENT;
+      }
+
       return {
         dataProduct: {
-          environment: rawSource.environment,
-          warehouse: rawSource.warehouse,
           path: rawSource.paths[0],
           accessPoint: rawSource.paths[1],
+          project: sdlcInfo
+            ? {
+                groupId: sdlcInfo.groupId,
+                artifactId: sdlcInfo.artifactId,
+                versionId: sdlcInfo.versionId,
+              }
+            : undefined,
+          origin: origin,
+          deploymentId: rawSource.deploymentId,
         },
+        environment: rawSource.environment,
+        warehouse: rawSource.warehouse,
         sourceType: source._type,
       };
     }
@@ -661,6 +718,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
             rawSource.icebergConfig.icebergRef,
           );
+          source.paths = rawSource.paths;
 
           const { model, database, schema, table, runtime } =
             this._synthesizeMinimalModelContext({
@@ -705,6 +763,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           return source;
         } else {
           const source = new LakehouseProducerDataCubeSource();
+          source.warehouse = rawSource.warehouse;
+          source.paths = rawSource.paths;
 
           const query = new V1_ClassInstance();
           query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
@@ -747,6 +807,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         source.environment = rawSource.environment;
         source.paths = rawSource.paths;
         source.warehouse = rawSource.warehouse;
+        source.deploymentId = rawSource.deploymentId;
         if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
           source.dpCoordinates = rawSource.origin.dpCoordinates;
         }
