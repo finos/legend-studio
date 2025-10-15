@@ -92,7 +92,7 @@ import {
   LegendMarketplaceTelemetryHelper,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
-const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
+const ARTIFACT_GENERATION_DATA_PRODUCT_KEY = 'dataProduct';
 
 export class LegendMarketplaceProductViewerStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
@@ -432,7 +432,7 @@ export class LegendMarketplaceProductViewerStore {
           (yield this.marketplaceBaseStore.depotServerClient.getGenerationFilesByType(
             storeProject,
             resolveVersion(projectData.versionId),
-            ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
+            ARTIFACT_GENERATION_DATA_PRODUCT_KEY,
           )) as StoredFileGeneration[];
         const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
           ?.file.content;
