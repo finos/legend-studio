@@ -60,14 +60,14 @@ export class DataProductViewerState extends BaseViewerState<
   readonly userSearchService: UserSearchService | undefined;
   readonly dataProductConfig: DataProductConfig | undefined;
   readonly projectGAV: ProjectGAVCoordinates | undefined;
-  artifactGeneration: V1_DataProductArtifact | undefined;
+  dataProductArtifact: V1_DataProductArtifact | undefined;
 
   // actions
   readonly viewDataProductSource?: (() => void) | undefined;
   readonly openPowerBi?: ((apg: string) => void) | undefined;
   readonly openDataCube?: ((sourceData: object) => void) | undefined;
 
-  readonly fetchingArtifactGenerationState = ActionState.create();
+  readonly fetchingDataProductArtifactState = ActionState.create();
 
   constructor(
     product: V1_DataProduct,
@@ -88,7 +88,7 @@ export class DataProductViewerState extends BaseViewerState<
     super(product, applicationStore, new DataProductLayoutState(), actions);
 
     makeObservable(this, {
-      artifactGeneration: observable,
+      dataProductArtifact: observable,
       init: flow,
     });
 
@@ -126,10 +126,10 @@ export class DataProductViewerState extends BaseViewerState<
     );
   }
 
-  async fetchDataProductArtifactGeneration(): Promise<
+  async fetchDataProductArtifact(): Promise<
     V1_DataProductArtifact | undefined
   > {
-    this.fetchingArtifactGenerationState.inProgress();
+    this.fetchingDataProductArtifactState.inProgress();
     let artifact: V1_DataProductArtifact | undefined;
     try {
       if (this.projectGAV !== undefined) {
@@ -161,7 +161,7 @@ export class DataProductViewerState extends BaseViewerState<
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error.message);
     } finally {
-      this.fetchingArtifactGenerationState.complete();
+      this.fetchingDataProductArtifactState.complete();
     }
     return artifact;
   }
@@ -169,11 +169,11 @@ export class DataProductViewerState extends BaseViewerState<
   *init(
     entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
   ): GeneratorFn<void> {
-    const artifactGenerationPromise = this.fetchDataProductArtifactGeneration();
+    const dataProductArtifactPromise = this.fetchDataProductArtifact();
     this.apgStates.map((apgState) =>
-      apgState.init(artifactGenerationPromise, entitlementsDataProductDetails),
+      apgState.init(dataProductArtifactPromise, entitlementsDataProductDetails),
     );
-    const artifactGeneration = yield artifactGenerationPromise;
-    this.artifactGeneration = artifactGeneration;
+    const dataProductArtifact = yield dataProductArtifactPromise;
+    this.dataProductArtifact = dataProductArtifact;
   }
 }

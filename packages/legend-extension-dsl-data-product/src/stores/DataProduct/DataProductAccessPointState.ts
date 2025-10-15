@@ -67,25 +67,25 @@ export class DataProductAccessPointState {
   }
 
   *init(
-    artifactGenerationPromise: Promise<V1_DataProductArtifact | undefined>,
+    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
     entitlementsDataProductDetails?:
       | V1_EntitlementsDataProductDetails
       | undefined,
   ): GeneratorFn<void> {
     yield Promise.all([
       this.fetchRelationType(
-        artifactGenerationPromise,
+        dataProductArtifactPromise,
         entitlementsDataProductDetails,
       ),
       this.fetchGrammar(),
     ]);
   }
 
-  async fetchRelationTypeFromArtifactGeneration(
-    artifactGenerationPromise: Promise<V1_DataProductArtifact | undefined>,
+  async fetchRelationTypeFromArtifact(
+    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
   ): Promise<V1_RelationType | undefined> {
-    const artifactGeneration = await artifactGenerationPromise;
-    const lambdaRelationType = artifactGeneration?.accessPointGroups
+    const artifact = await dataProductArtifactPromise;
+    const lambdaRelationType = artifact?.accessPointGroups
       .find((apg) => apg.id === this.apgState.apg.id)
       ?.accessPointImplementations.find((ap) => ap.id === this.accessPoint.id)
       ?.lambdaGenericType?.typeArguments?.map((typeArg) => typeArg.rawType)
@@ -94,7 +94,7 @@ export class DataProductAccessPointState {
       return lambdaRelationType;
     } else {
       throw new Error(
-        `Artifact generation is missing relation type for access point: ${this.accessPoint.id}`,
+        `Data product artifact is missing relation type for access point: ${this.accessPoint.id}`,
       );
     }
   }
@@ -171,7 +171,7 @@ export class DataProductAccessPointState {
   }
 
   async fetchRelationType(
-    artifactGenerationPromise: Promise<V1_DataProductArtifact | undefined>,
+    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
     entitlementsDataProductDetails?:
       | V1_EntitlementsDataProductDetails
       | undefined,
@@ -179,7 +179,7 @@ export class DataProductAccessPointState {
     this.fetchingRelationTypeState.inProgress();
     try {
       const relationType = await Promise.any([
-        this.fetchRelationTypeFromArtifactGeneration(artifactGenerationPromise),
+        this.fetchRelationTypeFromArtifact(dataProductArtifactPromise),
         this.fetchRelationTypeFromEngine(entitlementsDataProductDetails),
       ]);
       this.relationType = relationType;
