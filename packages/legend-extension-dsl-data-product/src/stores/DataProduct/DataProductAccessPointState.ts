@@ -58,8 +58,6 @@ export class DataProductAccessPointState {
       relationType: observable,
       grammar: observable,
       init: flow,
-      fetchRelationType: flow,
-      fetchGrammar: flow,
     });
 
     this.apgState = apgState;
