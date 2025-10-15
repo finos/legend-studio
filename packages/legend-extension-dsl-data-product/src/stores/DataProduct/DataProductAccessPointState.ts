@@ -98,6 +98,7 @@ export class DataProductAccessPointState {
   }
 
   async fetchRelationTypeFromEngine(
+    abortController: AbortController,
     entitlementsDataProductDetails?:
       | V1_EntitlementsDataProductDetails
       | undefined,
@@ -153,6 +154,9 @@ export class DataProductAccessPointState {
         V1_relationTypeModelSchema,
         await this.apgState.dataProductViewerState.engineServerClient.lambdaRelationType(
           V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
+          {
+            abortController,
+          },
         ),
       );
       if (relationType !== undefined) {
@@ -176,10 +180,15 @@ export class DataProductAccessPointState {
   ): Promise<void> {
     this.fetchingRelationTypeState.inProgress();
     try {
+      const abortController = new AbortController();
       const relationType = await Promise.any([
         this.fetchRelationTypeFromArtifact(dataProductArtifactPromise),
-        this.fetchRelationTypeFromEngine(entitlementsDataProductDetails),
+        this.fetchRelationTypeFromEngine(
+          abortController,
+          entitlementsDataProductDetails,
+        ),
       ]);
+      abortController.abort();
       this.relationType = relationType;
     } catch (error) {
       assertErrorThrown(error);
