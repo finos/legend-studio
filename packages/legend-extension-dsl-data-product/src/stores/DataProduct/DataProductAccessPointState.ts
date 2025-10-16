@@ -162,7 +162,7 @@ export class DataProductAccessPointState {
       return relationType;
     }
     throw new Error(
-      `Unable to get relation type for non-lakehouse access point: ${this.accessPoint.id}`,
+      `Access point '${this.accessPoint.id}' is not a Lakehouse access point, cannot fetch relation type from engine`,
     );
   }
 
