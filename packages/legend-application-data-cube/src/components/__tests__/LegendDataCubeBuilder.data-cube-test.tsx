@@ -445,7 +445,7 @@ test('Loads DataCube from LakehouseConsumerDataCubeSource', async () => {
           },
         },
         configuration: {
-          name: `${mockDataCubeId}-lakehouse-query-name`,
+          name: `${mockDataCubeId}-name`,
           columns: [
             { name: 'firstName', type: 'String' },
             { name: 'lastName', type: 'String' },
@@ -466,11 +466,7 @@ test('Loads DataCube from LakehouseConsumerDataCubeSource', async () => {
   );
 
   // Wait for the DataCube name to appear
-  await screen.findByText(
-    `${mockDataCubeId}-lakehouse-query-name`,
-    {},
-    { timeout: 10000 },
-  );
+  await screen.findByText(`${mockDataCubeId}-name`, {}, { timeout: 10000 });
 
   // Wait for columns to appear
   await screen.findByText('firstName', {}, { timeout: 10000 });
