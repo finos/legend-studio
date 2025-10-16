@@ -26,12 +26,8 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import {
-  Box,
-  Checkbox,
   Container,
   FormControl,
-  FormControlLabel,
-  FormGroup,
   Grid2 as Grid,
   MenuItem,
   Select,
@@ -56,47 +52,7 @@ import {
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
 } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
-import {
-  type LegendMarketplaceSearchResultsStore,
-  DataProductSort,
-} from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
-
-const SearchResultsSortFilterPanel = observer(
-  (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
-    const { searchResultsStore } = props;
-
-    return (
-      <Box className="marketplace-lakehouse-search-results__sort-filters">
-        <Box className="marketplace-lakehouse-search-results__sort-filters__filter">
-          <Typography
-            variant="h4"
-            className="marketplace-lakehouse-search-results__subtitles"
-          >
-            Filters
-          </Typography>
-          <hr />
-          <FormGroup>
-            <Box className="marketplace-lakehouse-search-results__sort-filters__filter__section-header">
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={searchResultsStore.filterState.devEnvironment}
-                    onChange={() =>
-                      searchResultsStore.setDevEnvironmentFilter(
-                        !searchResultsStore.filterState.devEnvironment,
-                      )
-                    }
-                  />
-                }
-                label="Dev Data Products"
-              />
-            </Box>
-          </FormGroup>
-        </Box>
-      </Box>
-    );
-  },
-);
+import { DataProductSort } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 
 export const MarketplaceLakehouseSearchResults =
   withLegendMarketplaceSearchResultsStore(
@@ -203,12 +159,6 @@ export const MarketplaceLakehouseSearchResults =
             maxWidth="xxxl"
             className="marketplace-lakehouse-search-results__results-container"
           >
-            {searchResultsStore.marketplaceBaseStore
-              .enableProdParAdvancedFeatures && (
-              <SearchResultsSortFilterPanel
-                searchResultsStore={searchResultsStore}
-              />
-            )}
             <Grid
               container={true}
               spacing={{ xs: 2, sm: 3, xxl: 4 }}
