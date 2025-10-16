@@ -83,13 +83,13 @@ export class DataProductAccessPointState {
     dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
   ): Promise<V1_RelationType | undefined> {
     const artifact = await dataProductArtifactPromise;
-    const lambdaRelationType = artifact?.accessPointGroups
+    const relationType = artifact?.accessPointGroups
       .find((apg) => apg.id === this.apgState.apg.id)
       ?.accessPointImplementations.find((ap) => ap.id === this.accessPoint.id)
       ?.lambdaGenericType?.typeArguments.map((typeArg) => typeArg.rawType)
       .filter((rawType) => rawType instanceof V1_RelationType)[0];
-    if (lambdaRelationType !== undefined) {
-      return lambdaRelationType;
+    if (relationType !== undefined) {
+      return relationType;
     } else {
       throw new Error(
         `Data product artifact is missing relation type for access point: ${this.accessPoint.id}`,
