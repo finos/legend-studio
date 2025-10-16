@@ -76,6 +76,16 @@ export const TEST_DATA__DATAPRODUCT_DELIVERY = [
       coverageRegions: ['apac', 'namr'],
       deliveryFrequency: 'daily',
       description: 'Test description',
+      expertise: [
+        {
+          description: 'Expertise description',
+          expertIds: ['expert1', 'expert2'],
+        },
+        {
+          description: 'Second expertise',
+          expertIds: ['user1, user2'],
+        },
+      ],
       icon: {
         _type: 'libraryIcon',
         iconId: 'UpArrow',

@@ -31,6 +31,7 @@ import {
   type DataProductRuntimeInfo,
   LakehouseAccessPoint,
   UnknownDataProductIcon,
+  type Expertise,
 } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   observe_Abstract_PackageableElement,
@@ -200,6 +201,16 @@ export const observe_DataProductIcon = skipObserved(
   },
 );
 
+export const observe_Expertise = skipObserved(
+  (metamodel: Expertise): Expertise => {
+    makeObservable(metamodel, {
+      description: observable,
+      expertIds: observable,
+    });
+    return metamodel;
+  },
+);
+
 export const observe_DataProduct = skipObserved(
   (metamodel: DataProduct): DataProduct => {
     observe_Abstract_PackageableElement(metamodel);
@@ -211,6 +222,7 @@ export const observe_DataProduct = skipObserved(
       description: observable,
       supportInfo: observable,
       icon: observable,
+      expertise: observable,
     });
 
     if (metamodel.supportInfo) {
@@ -219,6 +231,7 @@ export const observe_DataProduct = skipObserved(
     if (metamodel.icon) {
       observe_DataProductIcon(metamodel.icon);
     }
+    metamodel.expertise?.forEach(observe_Expertise);
     metamodel.accessPointGroups.forEach(observe_APG);
     return metamodel;
   },

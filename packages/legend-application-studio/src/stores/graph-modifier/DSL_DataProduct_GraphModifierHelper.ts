@@ -34,6 +34,8 @@ import {
   type DataProductDiagram,
   type DataProductElementScope,
   observe_APG,
+  observe_Expertise,
+  type Expertise,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, swapEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -177,6 +179,45 @@ export const dataProduct_deleteAccessPointGroup = action(
     deleteEntry(product.accessPointGroups, accessPointGroup);
   },
 );
+
+export const dataProduct_addExpertise = action(
+  (product: DataProduct, expertise: Expertise) => {
+    const observedExpertise = observe_Expertise(expertise);
+    if (!product.expertise) {
+      product.expertise = [observedExpertise];
+    } else {
+      addUniqueEntry(product.expertise, observedExpertise);
+    }
+  },
+);
+
+export const dataProduct_deleteExpertise = action(
+  (product: DataProduct, expertise: Expertise) => {
+    if (product.expertise) {
+      deleteEntry(product.expertise, expertise);
+    }
+  },
+);
+
+export const expertise_setDescription = action(
+  (expertise: Expertise, desc: string) => {
+    expertise.description = desc;
+  },
+);
+
+export const expertise_addId = action((expertise: Expertise, id: string) => {
+  if (expertise.expertIds) {
+    addUniqueEntry(expertise.expertIds, id);
+  } else {
+    expertise.expertIds = [id];
+  }
+});
+
+export const expertise_deleteId = action((expertise: Expertise, id: string) => {
+  if (expertise.expertIds) {
+    deleteEntry(expertise.expertIds, id);
+  }
+});
 
 export const dataProduct_swapAccessPointGroups = action(
   (

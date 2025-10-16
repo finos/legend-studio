@@ -141,6 +141,7 @@ import {
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   V1_buildAccessPointGroup,
+  V1_buildDataProductExpertise,
   V1_buildDataProductIcon,
   V1_buildDataProductLink,
 } from './helpers/V1_DataProductBuilder.js';
@@ -778,6 +779,11 @@ export class V1_ElementSecondPassBuilder
       const dataProductType = new ExternalDataProductType();
       dataProductType.link = element.type.link;
       dataProduct.type = dataProductType;
+    }
+    if (element.expertise) {
+      dataProduct.expertise = element.expertise.map((expertise) =>
+        V1_buildDataProductExpertise(expertise),
+      );
     }
     dataProduct.deliveryFrequency = element.deliveryFrequency as
       | DataProduct_DeliveryFrequency

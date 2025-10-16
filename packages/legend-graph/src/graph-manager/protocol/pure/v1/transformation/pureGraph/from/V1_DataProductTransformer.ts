@@ -50,6 +50,7 @@ import {
   V1_InternalDataProductType,
   V1_ExternalDataProductType,
   V1_FunctionAccessPoint,
+  type V1_Expertise,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
@@ -126,6 +127,7 @@ export const V1_transformDataProduct = (
   product.coverageRegions = element.coverageRegions as
     | V1_DataProductRegion[]
     | undefined;
+  product.expertise = element.expertise as V1_Expertise[] | undefined;
   if (element.type instanceof InternalDataProductType) {
     product.type = new V1_InternalDataProductType();
   } else if (element.type instanceof ExternalDataProductType) {
