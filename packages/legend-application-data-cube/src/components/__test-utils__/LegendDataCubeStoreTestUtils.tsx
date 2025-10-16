@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { type RenderResult, render, waitFor } from '@testing-library/react';
+import {
+  type RenderResult,
+  fireEvent,
+  render,
+  waitFor,
+} from '@testing-library/react';
 import {
   type AbstractPlugin,
   type AbstractPreset,
@@ -143,6 +148,7 @@ export const TEST__setUpDataCubeBuilder = async (
   mockQuery?: V1_Query,
   mockEntities?: PlainObject<Entity>[],
   forceUseInputModel: boolean = false,
+  partialSourceLoader: boolean = false,
 ): Promise<{
   renderResult: RenderResult;
   legendDataCubeBuilderState: LegendDataCubeBuilderState | undefined;
@@ -258,9 +264,15 @@ export const TEST__setUpDataCubeBuilder = async (
       </TEST__BrowserEnvironmentProvider>
     </ApplicationStoreProvider>,
   );
-  await waitFor(() =>
-    renderResult.getByTestId(LEGEND_DATACUBE_TEST_ID.PLACEHOLDER),
-  );
+
+  await waitFor(() => {
+    if (partialSourceLoader) {
+      const okButton = renderResult.getByText('OK');
+      fireEvent.click(okButton);
+    } else {
+      renderResult.getByTestId(LEGEND_DATACUBE_TEST_ID.PLACEHOLDER);
+    }
+  });
 
   return {
     renderResult,

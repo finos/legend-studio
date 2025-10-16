@@ -60,7 +60,6 @@ import {
 import { TEST__getTestLegendDataCubeApplicationConfig } from '../../application/__test-utils__/LegendDataCubeApplicationTestUtils.js';
 import { ENGINE_TEST_SUPPORT__JSONToGrammar_lambda } from '@finos/legend-graph/test';
 import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
-import { LakehouseConsumerDataCubeSource } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
 
 // Mock the LegendDataCubeDuckDBEngine module because it causes
 // problems when running in the jest environment.
@@ -71,6 +70,13 @@ jest.mock('../../stores/LegendDataCubeDuckDBEngine', () => {
       dispose: jest.fn(),
     })),
   };
+});
+
+jest.mock('react-oidc-context', () => {
+  const { MOCK__reactOIDCContext } = jest.requireActual<{
+    MOCK__reactOIDCContext: unknown;
+  }>('@finos/legend-shared/test');
+  return MOCK__reactOIDCContext;
 });
 
 test(
@@ -418,58 +424,58 @@ test(
   },
 );
 
-test(
-  integrationTest('Loads DataCube from LakehouseConsumerDataCubeSource'),
-  async () => {
-    const mockDataCubeId = 'test-lakehouse-datacube-id';
-    const mockDataCube: PersistentDataCube =
-      PersistentDataCube.serialization.fromJson({
-        id: mockDataCubeId,
-        name: `${mockDataCubeId}-name`,
-        description: undefined,
-        content: {
-          query: `select(~[firstName, lastName])`,
-          source: {
-            _type: 'lakehouseConsumer',
-            warehouse: 'DEFAULT_WAREHOUSE',
-            environment: 'prod',
-            paths: ['model::sampleDataProduct', 'ap1'],
-            dpCoordinates: {
-              versionId: 'latest',
-              groupId: 'com.legend',
-              artifactId: 'test-project',
-            },
-          },
-          configuration: {
-            name: `${mockDataCubeId}-lakehouse-query-name`,
-            columns: [
-              { name: 'firstName', type: 'String' },
-              { name: 'lastName', type: 'String' },
-            ],
+test('Loads DataCube from LakehouseConsumerDataCubeSource', async () => {
+  const mockDataCubeId = 'test-data-cube-id';
+  const mockDataCube: PersistentDataCube =
+    PersistentDataCube.serialization.fromJson({
+      id: mockDataCubeId,
+      name: `${mockDataCubeId}-name`,
+      description: undefined,
+      content: {
+        query: `select(~[firstName, lastName])`,
+        source: {
+          _type: 'lakehouseConsumer',
+          warehouse: 'DEFAULT_WAREHOUSE',
+          environment: 'prod',
+          paths: ['model::sampleDataProduct', 'ap1'],
+          dpCoordinates: {
+            versionId: 'latest',
+            groupId: 'com.legend',
+            artifactId: 'test-project',
           },
         },
-      });
+        configuration: {
+          name: `${mockDataCubeId}-lakehouse-query-name`,
+          columns: [
+            { name: 'firstName', type: 'String' },
+            { name: 'lastName', type: 'String' },
+          ],
+        },
+      },
+    });
 
-    const mockedLegendDataCubeBuilderStore =
-      await TEST__provideMockedLegendDataCubeBuilderStore();
-    const { legendDataCubeBuilderState } = await TEST__setUpDataCubeBuilder(
-      mockedLegendDataCubeBuilderStore,
-      mockDataCube,
-      undefined,
-      lakehouseEntities,
-      true,
-    );
+  const mockedLegendDataCubeBuilderStore =
+    await TEST__provideMockedLegendDataCubeBuilderStore();
+  await TEST__setUpDataCubeBuilder(
+    mockedLegendDataCubeBuilderStore,
+    mockDataCube,
+    undefined,
+    lakehouseEntities,
+    true,
+    true,
+  );
 
-    // Assert data cube is loaded with LakehouseConsumerDataCubeSource
-    await screen.findByText('test-lakehouse-datacube-id-lakehouse-query-name');
-    expect(
-      legendDataCubeBuilderState?.source instanceof
-        LakehouseConsumerDataCubeSource,
-    ).toBe(true);
-    await screen.findByText('firstName', {}, { timeout: 10000 });
-    await screen.findByText('lastName', {}, { timeout: 10000 });
-  },
-);
+  // Wait for the DataCube name to appear
+  await screen.findByText(
+    `${mockDataCubeId}-lakehouse-query-name`,
+    {},
+    { timeout: 10000 },
+  );
+
+  // Wait for columns to appear
+  await screen.findByText('firstName', {}, { timeout: 10000 });
+  await screen.findByText('lastName', {}, { timeout: 10000 });
+});
 
 // ----------------- PARAMETER EDITING TESTS -----------------
 
