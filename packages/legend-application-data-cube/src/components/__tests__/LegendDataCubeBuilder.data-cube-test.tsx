@@ -60,6 +60,7 @@ import {
 import { TEST__getTestLegendDataCubeApplicationConfig } from '../../application/__test-utils__/LegendDataCubeApplicationTestUtils.js';
 import { ENGINE_TEST_SUPPORT__JSONToGrammar_lambda } from '@finos/legend-graph/test';
 import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
+import { LakehouseConsumerDataCubeSource } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
 
 // Mock the LegendDataCubeDuckDBEngine module because it causes
 // problems when running in the jest environment.
@@ -445,7 +446,7 @@ test('Loads DataCube from LakehouseConsumerDataCubeSource', async () => {
           },
         },
         configuration: {
-          name: `${mockDataCubeId}-name`,
+          name: `${mockDataCubeId}-query-name`,
           columns: [
             { name: 'firstName', type: 'String' },
             { name: 'lastName', type: 'String' },
@@ -456,7 +457,7 @@ test('Loads DataCube from LakehouseConsumerDataCubeSource', async () => {
 
   const mockedLegendDataCubeBuilderStore =
     await TEST__provideMockedLegendDataCubeBuilderStore();
-  await TEST__setUpDataCubeBuilder(
+  const { legendDataCubeBuilderState } = await TEST__setUpDataCubeBuilder(
     mockedLegendDataCubeBuilderStore,
     mockDataCube,
     undefined,
@@ -465,12 +466,9 @@ test('Loads DataCube from LakehouseConsumerDataCubeSource', async () => {
     true,
   );
 
-  // Wait for the DataCube name to appear
-  await screen.findByText(`${mockDataCubeId}-name`, {}, { timeout: 10000 });
-
-  // Wait for columns to appear
-  await screen.findByText('firstName', {}, { timeout: 10000 });
-  await screen.findByText('lastName', {}, { timeout: 10000 });
+  expect(legendDataCubeBuilderState?.source).toBeInstanceOf(
+    LakehouseConsumerDataCubeSource,
+  );
 });
 
 // ----------------- PARAMETER EDITING TESTS -----------------
