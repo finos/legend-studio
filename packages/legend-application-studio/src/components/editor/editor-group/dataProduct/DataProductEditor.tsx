@@ -2028,7 +2028,7 @@ const ExpertiseEditor = observer(
                     updateExpertiseDescription(expertise, event.target.value)
                   }
                   style={{
-                    height: '6.6rem',
+                    height: '100%',
                   }}
                 />
               </div>
