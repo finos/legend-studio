@@ -21,6 +21,7 @@ import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useEffect } from 'react';
 import type { LakehouseConsumerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseConsumerDataCubeSourceBuilderState.js';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
+import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 
 export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
   sourceBuilder: LakehouseConsumerDataCubeSourceBuilderState;
@@ -76,13 +77,13 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {state.environments.length > 0 && (
+        {state.filteredEnvironments.length > 0 && (
           <div className="query-setup__wizard__group mt-3">
             <div className="query-setup__wizard__group__title">Environment</div>
             <CustomSelectorInput
               className="query-setup__wizard__selector text-nowrap"
-              options={state.environments.map((env) => ({
-                label: env,
+              options={state.filteredEnvironments.map((env) => ({
+                label: guaranteeNonNullable(state.getEnvName(env)),
                 value: env,
               }))}
               disabled={
@@ -90,14 +91,21 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                 state.ingestEnvLoadingState.hasFailed
               }
               isLoading={state.ingestEnvLoadingState.isInProgress}
-              onChange={(newValue: { label: string; value: string } | null) => {
-                state.setSelectedEnvironment(newValue?.value ?? '');
+              onChange={(
+                newValue: {
+                  label: string;
+                  value: IngestDeploymentServerConfig;
+                } | null,
+              ) => {
+                state.setSelectedEnvironment(newValue?.value ?? undefined);
                 state.fetchAccessPoints();
               }}
               value={
                 state.selectedEnvironment
                   ? {
-                      label: state.selectedEnvironment,
+                      label: guaranteeNonNullable(
+                        state.getEnvName(state.selectedEnvironment),
+                      ),
                       value: state.selectedEnvironment,
                     }
                   : null

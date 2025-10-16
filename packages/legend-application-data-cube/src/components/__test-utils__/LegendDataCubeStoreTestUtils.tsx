@@ -53,6 +53,7 @@ import {
   V1_ExecuteInput,
   V1_PureModelContextData,
   V1_serializePureModelContext,
+  V1_serializePureModelContextData,
 } from '@finos/legend-graph';
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
 import {
@@ -170,6 +171,10 @@ export const TEST__setUpDataCubeBuilder = async (
       MOCK__builderStore.depotServerClient,
       'getVersionEntities',
     ).mockResolvedValue(mockEntities);
+    createSpy(
+      MOCK__builderStore.depotServerClient,
+      'getPureModelContextData',
+    ).mockResolvedValue(V1_serializePureModelContextData(pmcd));
     createSpy(
       MOCK__builderStore.engineServerClient,
       'lambdaReturnType',

@@ -51,6 +51,7 @@ import {
   V1_Query,
 } from '@finos/legend-graph';
 import depotEntities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
+import lakehouseEntities from './TEST_DATA__LHDataProduct.json' with { type: 'json' };
 import { LegendDataCubePluginManager } from '../../application/LegendDataCubePluginManager.js';
 import {
   ApplicationStore,
@@ -59,6 +60,7 @@ import {
 import { TEST__getTestLegendDataCubeApplicationConfig } from '../../application/__test-utils__/LegendDataCubeApplicationTestUtils.js';
 import { ENGINE_TEST_SUPPORT__JSONToGrammar_lambda } from '@finos/legend-graph/test';
 import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
+import { LakehouseConsumerDataCubeSource } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
 
 // Mock the LegendDataCubeDuckDBEngine module because it causes
 // problems when running in the jest environment.
@@ -413,6 +415,62 @@ test(
     expect(lambdaGrammar).toBe(
       "|domain::COVIDData.all()->project(~[Id:x: domain::COVIDData[1]|$x.id, 'Case Type':x: domain::COVIDData[1]|$x.caseType])->select(~[Id, 'Case Type'])->slice(0, 500)->meta::pure::mapping::from(mapping::CovidDataMapping, runtime::H2Runtime)",
     );
+  },
+);
+
+test(
+  integrationTest('Loads DataCube from LakehouseConsumerDataCubeSource'),
+  async () => {
+    const mockDataCubeId = 'test-lakehouse-datacube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[firstName, lastName])`,
+          source: {
+            _type: 'lakehouseConsumer',
+            warehouse: 'DEFAULT_WAREHOUSE',
+            environment: 'prod',
+            paths: ['model::sampleDataProduct', 'ap1'],
+            dpCoordinates: {
+              versionId: 'latest',
+              groupId: 'com.legend',
+              artifactId: 'test-project',
+            },
+          },
+          configuration: {
+            name: `${mockDataCubeId}-lakehouse-query-name`,
+            columns: [
+              { name: 'firstName', type: 'String' },
+              { name: 'lastName', type: 'String' },
+            ],
+          },
+        },
+      });
+
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    const { legendDataCubeBuilderState } = await TEST__setUpDataCubeBuilder(
+      mockedLegendDataCubeBuilderStore,
+      mockDataCube,
+      undefined,
+      lakehouseEntities,
+      true,
+    );
+
+    const okButton = await screen.findByText('OK');
+    fireEvent.click(okButton);
+
+    // Assert data cube is loaded with LakehouseConsumerDataCubeSource
+    await screen.findByText('test-lakehouse-datacube-id-lakehouse-query-name');
+    expect(
+      legendDataCubeBuilderState?.source instanceof
+        LakehouseConsumerDataCubeSource,
+    ).toBe(true);
+    await screen.findByText('firstName', {}, { timeout: 10000 });
+    await screen.findByText('lastName', {}, { timeout: 10000 });
   },
 );
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
@@ -44,9 +44,9 @@ import {
   V1_DataProductOriginType,
   V1_AdHocDeploymentDataProductOrigin,
   type V1_EntitlementsDataProductDetails,
+  V1_IngestEnvironmentClassification,
 } from '@finos/legend-graph';
 import {
-  LakehouseEnvironmentType,
   RawLakehouseAdhocOrigin,
   RawLakehouseConsumerDataCubeSource,
   RawLakehouseSdlcOrigin,
@@ -57,9 +57,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   selectedDataProduct: string | undefined;
   selectedAccessPoint: string | undefined;
   paths: string[] = [];
-  allEnvironments: string[] = [];
-  environments: string[] = [];
-  selectedEnvironment: string | undefined;
+  environments: IngestDeploymentServerConfig[] | undefined = [];
+  selectedEnvironment: IngestDeploymentServerConfig | undefined;
   dataProducts: V1_EntitlementsDataProductLite[] = [];
   accessPoints: string[] = [];
   dpCoordinates: VersionedProjectData | undefined;
@@ -92,11 +91,11 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       dataProducts: observable,
       selectedDataProduct: observable,
       accessPoints: observable,
-      environments: observable,
       selectedAccessPoint: observable,
       selectedEnvironment: observable,
       loadDataProducts: flow,
       fetchEnvironment: flow,
+      filteredEnvironments: computed,
 
       setWarehouse: action,
       setDataProducts: action,
@@ -104,7 +103,6 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       setAccessPoints: action,
       setSelectedAccessPoint: action,
       setSelectedEnvironment: action,
-      setEnvironments: action,
     });
   }
 
@@ -124,19 +122,17 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.accessPoints = accessPoints;
   }
 
-  setEnvironments(environments: string[]) {
-    this.environments = environments;
-  }
-
-  setAllEnvironments(environments: string[]) {
-    this.allEnvironments = environments;
+  setEnvironments(env: IngestDeploymentServerConfig[]) {
+    this.environments = env;
   }
 
   setSelectedAccessPoint(accessPoint: string | undefined) {
     this.selectedAccessPoint = accessPoint;
   }
 
-  setSelectedEnvironment(environment: string | undefined) {
+  setSelectedEnvironment(
+    environment: IngestDeploymentServerConfig | undefined,
+  ) {
     this.selectedEnvironment = environment;
   }
 
@@ -156,6 +152,72 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     }
   }
 
+  getEnvName(
+    env: IngestDeploymentServerConfig | undefined,
+  ): string | undefined {
+    if (env) {
+      const baseUrl = new URL(env.ingestServerUrl).hostname;
+      const subdomain = baseUrl.split('.')[0];
+      const parts = subdomain?.split('-');
+      return parts?.slice(0, -1).join('-');
+    }
+    return undefined;
+  }
+
+  get filteredEnvironments(): IngestDeploymentServerConfig[] {
+    if (!this.dataProductDetails.length) {
+      return [];
+    }
+
+    const filterEnvironments = (
+      type: V1_EntitlementsLakehouseEnvironmentType,
+    ): IngestDeploymentServerConfig[] => {
+      if (this.environments) {
+        switch (type) {
+          case V1_EntitlementsLakehouseEnvironmentType.PRODUCTION:
+            return this.environments.filter(
+              (env) =>
+                env.environmentClassification ===
+                V1_IngestEnvironmentClassification.PROD,
+            );
+          case V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL:
+            return this.environments.filter(
+              (env) =>
+                env.environmentClassification ===
+                V1_IngestEnvironmentClassification.PROD_PARALLEL,
+            );
+          case V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT:
+            return this.environments.filter(
+              (env) =>
+                env.environmentClassification ===
+                V1_IngestEnvironmentClassification.DEV,
+            );
+          default:
+            return this.environments;
+        }
+      }
+      return [];
+    };
+
+    if (this.dataProductDetails.length === 1) {
+      const environmentType =
+        this.dataProductDetails.at(0)?.lakehouseEnvironment?.type;
+      return environmentType ? filterEnvironments(environmentType) : [];
+    }
+
+    // handle multiple data products
+    const allEnvironments = new Set<IngestDeploymentServerConfig>();
+    this.dataProductDetails.forEach((dataProduct) => {
+      const environmentType = dataProduct.lakehouseEnvironment?.type;
+      if (environmentType) {
+        filterEnvironments(environmentType).forEach((env) =>
+          allEnvironments.add(env),
+        );
+      }
+    });
+    return Array.from(allEnvironments);
+  }
+
   async fetchDataProduct(access_token?: string) {
     this.resetEnvironment();
 
@@ -167,75 +229,31 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
           access_token,
         ),
       );
-
-    const filterEnvironments = (
-      type: V1_EntitlementsLakehouseEnvironmentType,
-      environments: string[],
-    ): string[] => {
-      switch (type) {
-        case V1_EntitlementsLakehouseEnvironmentType.PRODUCTION:
-          return environments.filter(
-            (env) =>
-              !env.includes(LakehouseEnvironmentType.PRODUCTION_PARALLEL) &&
-              !env.includes(LakehouseEnvironmentType.DEVELOPMENT),
-          );
-        case V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL:
-          return environments.filter((env) =>
-            env.includes(LakehouseEnvironmentType.PRODUCTION_PARALLEL),
-          );
-        case V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT:
-          return environments.filter((env) =>
-            env.includes(LakehouseEnvironmentType.DEVELOPMENT),
-          );
-        default:
-          return environments;
-      }
-    };
-
-    if (this.dataProductDetails.length === 1) {
-      const environmentType =
-        this.dataProductDetails.at(0)?.lakehouseEnvironment?.type;
-      if (environmentType) {
-        this.setEnvironments(
-          filterEnvironments(environmentType, this.allEnvironments),
-        );
-      }
-    } else if (this.dataProductDetails.length > 1) {
-      const allEnvironments = new Set<string>();
-      this.dataProductDetails.forEach((dataProduct) => {
-        const environmentType = dataProduct.lakehouseEnvironment?.type;
-        if (environmentType) {
-          filterEnvironments(environmentType, this.allEnvironments).forEach(
-            (env) => allEnvironments.add(env),
-          );
-        }
-      });
-      this.setEnvironments(Array.from(allEnvironments));
-    }
   }
 
   fetchAccessPoints() {
     this.resetAccessPoint();
     const selectedEnv = guaranteeNonNullable(this.selectedEnvironment);
-    const dataProduct = selectedEnv.includes(
-      LakehouseEnvironmentType.DEVELOPMENT,
-    )
-      ? this.dataProductDetails.find(
-          (dp) =>
-            dp.lakehouseEnvironment?.type ===
-            V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-        )
-      : selectedEnv.includes(LakehouseEnvironmentType.PRODUCTION_PARALLEL)
+    const dataProduct =
+      selectedEnv.environmentClassification ===
+      V1_IngestEnvironmentClassification.DEV
         ? this.dataProductDetails.find(
             (dp) =>
               dp.lakehouseEnvironment?.type ===
-              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+              V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
           )
-        : this.dataProductDetails.find(
-            (dp) =>
-              dp.lakehouseEnvironment?.type ===
-              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-          );
+        : selectedEnv.environmentClassification ===
+            V1_IngestEnvironmentClassification.PROD_PARALLEL
+          ? this.dataProductDetails.find(
+              (dp) =>
+                dp.lakehouseEnvironment?.type ===
+                V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+            )
+          : this.dataProductDetails.find(
+              (dp) =>
+                dp.lakehouseEnvironment?.type ===
+                V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+            );
     if (dataProduct?.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
       const versionedData = new VersionedProjectData();
       versionedData.groupId = dataProduct.origin.group;
@@ -264,16 +282,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       (yield this._platformServerClient.getIngestEnvironmentSummaries(
         access_token,
       )) as IngestDeploymentServerConfig[];
-    this.setAllEnvironments(
-      ingestServerConfigs
-        .map((config) => {
-          const baseUrl = new URL(config.ingestServerUrl).hostname;
-          const subdomain = baseUrl.split('.')[0];
-          const parts = subdomain?.split('-');
-          return parts?.slice(0, -1).join('-');
-        })
-        .filter((env) => env !== undefined),
-    );
+    this.setEnvironments(ingestServerConfigs);
     this.ingestEnvLoadingState.complete();
   }
 
@@ -326,7 +335,9 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     );
 
     const rawSource = new RawLakehouseConsumerDataCubeSource();
-    rawSource.environment = guaranteeNonNullable(this.selectedEnvironment);
+    rawSource.environment = guaranteeNonNullable(
+      this.getEnvName(this.selectedEnvironment),
+    );
     if (this.origin === V1_DataProductOriginType.SDLC_DEPLOYMENT) {
       const lakehouseOrigin = new RawLakehouseSdlcOrigin();
       lakehouseOrigin.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
