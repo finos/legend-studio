@@ -16,6 +16,7 @@
 
 import {
   hashArray,
+  uuid,
   type Hashable,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -343,6 +344,20 @@ export class ExternalDataProductType extends DataProductType {
   }
 }
 
+export class Expertise implements Hashable {
+  readonly uuid = uuid();
+  description: string | undefined;
+  expertIds: string[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_EXPERTISE,
+      this.description ?? '',
+      hashArray(this.expertIds ?? []),
+    ]);
+  }
+}
+
 export class DataProduct extends PackageableElement {
   title: string | undefined;
   description: string | undefined;
@@ -352,6 +367,7 @@ export class DataProduct extends PackageableElement {
   accessPointGroups: AccessPointGroup[] = [];
   supportInfo: SupportInfo | undefined;
   type: DataProductType | undefined;
+  expertise: Expertise[] | undefined;
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -372,6 +388,7 @@ export class DataProduct extends PackageableElement {
       this.type ?? '',
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
+      hashArray(this.expertise ?? []),
     ]);
   }
 }

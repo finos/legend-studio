@@ -43,6 +43,7 @@ import {
   DataProductRuntimeInfo,
   type DataProductElement,
   type Mapping,
+  Expertise,
   observe_DataProductElementScope,
   DataProductElementScope,
   validate_PureExecutionMapping,
@@ -78,6 +79,7 @@ import {
   accessPointGroup_swapAccessPoints,
   dataProduct_addAccessPoint,
   dataProduct_addAccessPointGroup,
+  dataProduct_addExpertise,
   dataProduct_deleteAccessPoint,
   dataProduct_deleteAccessPointGroup,
   dataProduct_swapAccessPointGroups,
@@ -724,6 +726,11 @@ export class DataProductEditorState extends ElementEditorState {
       }
       dataProduct_deleteAccessPointGroup(this.product, val.value);
     });
+  }
+
+  createExpertise() {
+    const newExpertise = new Expertise();
+    dataProduct_addExpertise(this.product, newExpertise);
   }
 
   *deploy(token: string | undefined): GeneratorFn<void> {

@@ -29,6 +29,7 @@ import {
   DataProductLibraryIcon,
   DataProductLink,
   DataProductRuntimeInfo,
+  Expertise,
   LakehouseAccessPoint,
   ModelAccessPointGroup,
   UnknownAccessPoint,
@@ -41,6 +42,7 @@ import {
   type V1_DataProductLink,
   V1_DataProductEmbeddedImageIcon,
   V1_DataProductLibraryIcon,
+  type V1_Expertise,
   V1_LakehouseAccessPoint,
   V1_ModelAccessPointGroup,
   V1_UnknownAccessPoint,
@@ -104,6 +106,15 @@ export const V1_buildDataProductIcon = (
   throw new UnsupportedOperationError(
     `Unsupported data product icon type ${icon}`,
   );
+};
+
+export const V1_buildDataProductExpertise = (
+  v1Expertise: V1_Expertise,
+): Expertise => {
+  const expertise = new Expertise();
+  expertise.description = v1Expertise.description;
+  expertise.expertIds = v1Expertise.expertIds;
+  return expertise;
 };
 
 export const V1_buildAccessPointGroup = (

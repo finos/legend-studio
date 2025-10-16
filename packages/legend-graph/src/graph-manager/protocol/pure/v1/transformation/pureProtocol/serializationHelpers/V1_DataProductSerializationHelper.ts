@@ -17,6 +17,7 @@
 import {
   createModelSchema,
   deserialize,
+  list,
   optional,
   primitive,
   serialize,
@@ -43,6 +44,7 @@ import {
   V1_InternalDataProductType,
   V1_ExternalDataProductType,
   V1_DataProductTypeValue,
+  V1_Expertise,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   UnsupportedOperationError,
@@ -54,6 +56,7 @@ import {
   optionalCustomUsingModelSchema,
   optionalCustom,
   optionalCustomList,
+  optionalCustomListWithSchema,
 } from '@finos/legend-shared';
 import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper.js';
 import {
@@ -287,6 +290,11 @@ export const V1_ExternalDataProductTypeModelSchema = createModelSchema(
   },
 );
 
+export const V1_ExpertiseModelSchema = createModelSchema(V1_Expertise, {
+  description: optional(primitive()),
+  expertIds: list(primitive()),
+});
+
 export const V1_deserializeDataProductType = (
   json: Record<string, unknown>,
 ): V1_DataProductType => {
@@ -327,6 +335,7 @@ export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
     (json) => (json as string).toUpperCase(),
   ),
   description: optional(primitive()),
+  expertise: optionalCustomListWithSchema(V1_ExpertiseModelSchema),
   icon: optionalCustom(
     V1_serializeDataProductIcon,
     V1_deserializeDataProductIcon,

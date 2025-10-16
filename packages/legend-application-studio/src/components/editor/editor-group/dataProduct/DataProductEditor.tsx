@@ -105,6 +105,7 @@ import {
   type PackageableElement,
   type DataProductElementScope,
   type DataProductElement,
+  type Expertise,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
@@ -134,6 +135,10 @@ import {
   runtimeInfo_setDescription,
   supportInfo_setSupportUrl,
   supportInfo_setWebsite,
+  expertise_setDescription,
+  expertise_addId,
+  expertise_deleteId,
+  dataProduct_deleteExpertise,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -1933,6 +1938,145 @@ const HomeTab = observer(
   },
 );
 
+const ExpertiseEditor = observer(
+  (props: { dataProductEditorState: DataProductEditorState }) => {
+    const { dataProductEditorState } = props;
+    const product = dataProductEditorState.product;
+
+    const NewExpertIdComponent = observer(
+      (newElementProps: { expertise: Expertise }) => {
+        const { expertise } = newElementProps;
+        const [title, setTitle] = useState('');
+
+        return (
+          <div className="data-product-editor__support-info__expertise-id-container">
+            <div className="panel__content__form__section__list__new-item__input">
+              <input
+                className="input input-group__input panel__content__form__section__input input--dark"
+                type="title"
+                placeholder="Enter User ID"
+                value={title}
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                }}
+              />
+            </div>
+            <button
+              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+              onClick={() => {
+                expertise_addId(expertise, title);
+                setTitle('');
+              }}
+            >
+              Save
+            </button>
+          </div>
+        );
+      },
+    );
+
+    const addNewExpertise = () => {
+      dataProductEditorState.createExpertise();
+    };
+
+    const updateExpertiseDescription = (
+      expertise: Expertise,
+      val: string | undefined,
+    ): void => {
+      if (val) {
+        expertise_setDescription(expertise, val);
+      }
+    };
+
+    const handleRemoveId = (expertise: Expertise, id: string) => {
+      expertise_deleteId(expertise, id);
+    };
+
+    const handleRemoveExpertise = (expertise: Expertise) => {
+      dataProduct_deleteExpertise(product, expertise);
+    };
+
+    return (
+      <>
+        <PanelHeader className="panel__header--access-point">
+          <div className="panel__content__form__section__header__label">
+            Expertise
+          </div>
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
+              className="panel__header__action"
+              onClick={addNewExpertise}
+              title="Add new expertise"
+            >
+              <PlusIcon />
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
+        {dataProductEditorState.product.expertise?.map((expertise) => (
+          <>
+            <div className="data-product-editor__expertise">
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__prompt">
+                  Description
+                </div>
+                <textarea
+                  className="panel__content__form__section__textarea"
+                  spellCheck={false}
+                  disabled={dataProductEditorState.isReadOnly}
+                  value={expertise.description ?? ''}
+                  onChange={(event) =>
+                    updateExpertiseDescription(expertise, event.target.value)
+                  }
+                  style={{
+                    height: '6.6rem',
+                  }}
+                />
+              </div>
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__prompt">
+                  User IDs
+                </div>
+                <div className="panel__content__form__section__list__id-list">
+                  {expertise.expertIds?.map((id) => (
+                    <div
+                      className="panel__content__form__section__list__item"
+                      key={id}
+                    >
+                      {id}
+
+                      <button
+                        className="panel__content__form__section__list__item__remove-btn"
+                        disabled={dataProductEditorState.isReadOnly}
+                        onClick={() => handleRemoveId(expertise, id)}
+                        tabIndex={-1}
+                      >
+                        <TimesIcon />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <NewExpertIdComponent expertise={expertise} />
+              </div>
+              <div className="data-product-editor__expertise__actions">
+                <button
+                  className="access-point-editor__generic-entry__remove-btn--group"
+                  onClick={() => {
+                    handleRemoveExpertise(expertise);
+                  }}
+                  tabIndex={-1}
+                  title="Remove Expertise"
+                >
+                  <TimesIcon />
+                </button>
+              </div>
+            </div>
+          </>
+        ))}
+      </>
+    );
+  },
+);
+
 const SupportTab = observer(
   (props: {
     dataProductEditorState: DataProductEditorState;
@@ -2192,6 +2336,7 @@ const SupportTab = observer(
           isReadOnly={isReadOnly}
           emptyMessage="No emails specified"
         />
+        <ExpertiseEditor dataProductEditorState={dataProductEditorState} />
       </div>
     );
   },

@@ -90,8 +90,6 @@
       }
 
       &__list__item {
-        width: unset;
-
         &__form {
           flex-direction: row;
         }
@@ -99,6 +97,11 @@
 
       &__list {
         max-width: none !important;
+
+        &__id-list {
+          display: flex;
+          gap: 0.5rem;
+        }
       }
     }
   }
@@ -167,6 +170,33 @@
 
     &__input {
       max-width: 45rem;
+    }
+
+    &__expertise-id-container {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  &__expertise {
+    display: flex;
+    align-items: start;
+    margin-bottom: 1rem;
+
+    &__container {
+      width: 100%;
+      margin: 0;
+      align-items: start;
+    }
+
+    &__actions {
+      align-items: center;
+      margin-top: auto;
+      margin-bottom: auto;
+
+      &__remove {
+        color: var(--color-light-grey-0);
+      }
     }
   }
 

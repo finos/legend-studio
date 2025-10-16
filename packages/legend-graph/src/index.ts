@@ -746,6 +746,7 @@ export {
   DataProductElementScope,
   DataProductDiagram,
   InternalDataProductType,
+  Expertise,
   type DataProductElement,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
