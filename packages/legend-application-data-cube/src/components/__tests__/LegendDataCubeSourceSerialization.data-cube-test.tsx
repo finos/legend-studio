@@ -22,6 +22,7 @@ import {
   RawLakehouseSdlcOrigin,
   RawLakehouseAdhocOrigin,
 } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
+import type { PlainObject } from '@finos/legend-shared';
 
 describe('RawLakehouseConsumerDataCubeSource serialization', () => {
   const baseSetup = () => {
@@ -67,7 +68,7 @@ describe('RawLakehouseConsumerDataCubeSource serialization', () => {
     const serialized = serialize(
       RawLakehouseConsumerDataCubeSource.serialization.schema,
       result,
-    );
+    ) as PlainObject<RawLakehouseConsumerDataCubeSource>;
     expect(serialized.origin).toMatchObject({
       _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
       dpCoordinates: {
@@ -91,7 +92,7 @@ describe('RawLakehouseConsumerDataCubeSource serialization', () => {
     const json = serialize(
       RawLakehouseConsumerDataCubeSource.serialization.schema,
       source,
-    );
+    ) as PlainObject<RawLakehouseConsumerDataCubeSource>;
 
     expect(json.origin).toMatchObject({
       _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
@@ -124,7 +125,7 @@ describe('RawLakehouseConsumerDataCubeSource serialization', () => {
     const json = serialize(
       RawLakehouseConsumerDataCubeSource.serialization.schema,
       source,
-    );
+    ) as PlainObject<RawLakehouseConsumerDataCubeSource>;
 
     expect(json.origin).toMatchObject({
       _type: V1_DataProductOriginType.AD_HOC_DEPLOYMENT,
