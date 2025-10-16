@@ -182,6 +182,7 @@ export class DataProductAccessPointState {
           entitlementsDataProductDetails,
         ),
       ]);
+      // Abort the engine request if we got the relation type from the artifact
       abortController.abort();
       this.relationType = relationType;
     } catch (error) {
