@@ -95,21 +95,18 @@ export class LegendMarketplaceSearchResultsStore {
     return (
       this.dataProductCardStates.filter((dataProductCardState) => {
         // Check if product matches environment
-        const siteEnv = this.marketplaceBaseStore.applicationStore.config.env;
-
-        switch (siteEnv) {
-          case 'prod':
-            return (
-              dataProductCardState.environmentClassification ===
-              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
-            );
-          case 'prod-par':
-            return (
-              dataProductCardState.environmentClassification ===
-              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
-            );
-          default:
-            return true;
+        if (this.marketplaceBaseStore.isProdEnv) {
+          return (
+            dataProductCardState.environmentClassification ===
+            V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
+          );
+        } else if (this.marketplaceBaseStore.isProdParEnv) {
+          return (
+            dataProductCardState.environmentClassification ===
+            V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
+          );
+        } else {
+          return true;
         }
       }) as BaseProductCardState[]
     )
