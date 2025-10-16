@@ -41,22 +41,15 @@ import {
   DepotScope,
 } from '@finos/legend-server-depot';
 
-export interface DataProductFilterConfig {
-  devEnvironment: boolean;
-}
-
 class DataProductFilterState {
   search?: string | undefined;
-  devEnvironment: boolean;
 
   constructor(search?: string | undefined) {
     makeObservable(this, {
       search: observable,
-      devEnvironment: observable,
     });
 
     this.search = search;
-    this.devEnvironment = false;
   }
 
   static default(): DataProductFilterState {
@@ -90,7 +83,6 @@ export class LegendMarketplaceSearchResultsStore {
       filterState: observable,
       sort: observable,
       handleSearch: action,
-      setDevEnvironmentFilter: action,
       setDataProductCardStates: action,
       setLegacyDataProductCardStates: action,
       setSort: action,
@@ -114,10 +106,7 @@ export class LegendMarketplaceSearchResultsStore {
           case 'prod-par':
             return (
               dataProductCardState.environmentClassification ===
-                V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL ||
-              (this.filterState.devEnvironment &&
-                dataProductCardState.environmentClassification ===
-                  V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT)
+              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
             );
           default:
             return true;
@@ -158,10 +147,6 @@ export class LegendMarketplaceSearchResultsStore {
 
   handleSearch(query: string | undefined) {
     this.filterState.search = query;
-  }
-
-  setDevEnvironmentFilter(value: boolean): void {
-    this.filterState.devEnvironment = value;
   }
 
   setSort(sort: DataProductSort): void {
