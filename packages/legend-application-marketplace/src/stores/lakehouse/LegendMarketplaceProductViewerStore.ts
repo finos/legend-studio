@@ -363,7 +363,7 @@ export class LegendMarketplaceProductViewerStore {
       );
       this.setDataProductViewer(dataProductViewerState);
       this.setDataProductDataAccess(dataProductDataAccessState);
-      dataProductViewerState.init();
+      dataProductViewerState.init(entitlementsDataProductDetails);
       dataProductDataAccessState.init(auth.user?.access_token);
       this.loadingProductState.complete();
       const origin =
