@@ -78,6 +78,8 @@ import {
   PURE_MappingIcon,
   GitBranchIcon,
   ListIcon,
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import {
   type ChangeEventHandler,
@@ -2496,19 +2498,7 @@ export const DataProductEditor = observer(() => {
               <button
                 className="btn__dropdown-combo__label"
                 onClick={() => {
-                  setShowPreview((prev) => {
-                    if (!prev) {
-                      setDataProductViewerState(
-                        getDataProductViewerState(
-                          product,
-                          editorStore.graphManagerState,
-                          editorStore.applicationStore,
-                          editorStore.depotServerClient,
-                        ),
-                      );
-                    }
-                    return !prev;
-                  });
+                  setShowPreview(!showPreview);
                 }}
                 title={showPreview ? 'Hide Preview' : 'Preview Description'}
                 tabIndex={-1}
@@ -2556,13 +2546,19 @@ export const DataProductEditor = observer(() => {
           <DataProductSidebar dataProductEditorState={dataProductEditorState} />
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel>{renderActivivtyBarTab()}</ResizablePanel>
-            {showPreview && dataProductViewerState && (
-              <ResizablePanelSplitter />
-            )}
-            {showPreview && dataProductViewerState && (
+            {showPreview && <ResizablePanelSplitter />}
+            {showPreview && (
               <ResizablePanel>
                 <div className="data-product-editor__preview-container theme__hc-light">
-                  <ProductViewer productViewerState={dataProductViewerState} />
+                  {dataProductViewerState !== undefined ? (
+                    <ProductViewer
+                      productViewerState={dataProductViewerState}
+                    />
+                  ) : (
+                    <CubesLoadingIndicator isLoading={true}>
+                      <CubesLoadingIndicatorIcon />
+                    </CubesLoadingIndicator>
+                  )}
                 </div>
               </ResizablePanel>
             )}
