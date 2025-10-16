@@ -2380,14 +2380,8 @@ export const DataProductEditor = observer(() => {
   const isReadOnly = dataProductEditorState.isReadOnly;
   const auth = useAuth();
   const [showPreview, setshowPreview] = useState(false);
-  const [dataProductViewerState, setDataProductViewerState] = useState(
-    getDataProductViewerState(
-      product,
-      editorStore.graphManagerState,
-      editorStore.applicationStore,
-      editorStore.depotServerClient,
-    ),
-  );
+  const [dataProductViewerState, setDataProductViewerState] =
+    useState<DataProductViewerState>();
 
   const deployDataProduct = (): void => {
     // Trigger OAuth flow if not authenticated
@@ -2548,8 +2542,10 @@ export const DataProductEditor = observer(() => {
           <DataProductSidebar dataProductEditorState={dataProductEditorState} />
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel>{renderActivivtyBarTab()}</ResizablePanel>
-            {showPreview && <ResizablePanelSplitter />}
-            {showPreview && (
+            {showPreview && dataProductViewerState && (
+              <ResizablePanelSplitter />
+            )}
+            {showPreview && dataProductViewerState && (
               <ResizablePanel>
                 <div className="data-product-editor__preview-container theme__hc-light">
                   <ProductViewer productViewerState={dataProductViewerState} />
