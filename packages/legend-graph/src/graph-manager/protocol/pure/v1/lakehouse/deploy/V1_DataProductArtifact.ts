@@ -186,8 +186,8 @@ export class V1_AccessPointImplementation {
       id: primitive(),
       description: optional(primitive()),
       resourceBuilder: custom(
-        (val) => V1_serializeResourceBuilder(val),
-        (val) => V1_deserializeResourceBuilder(val),
+        V1_serializeResourceBuilder,
+        V1_deserializeResourceBuilder,
       ),
       lambdaGenericType: custom(
         (val) => serialize(V1_genericTypeModelSchema, val),
