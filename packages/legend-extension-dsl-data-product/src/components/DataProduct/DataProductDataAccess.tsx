@@ -283,10 +283,6 @@ const AccessPointTable = observer(
       setSelectedTab(newValue);
     };
 
-    if (!accessPointState) {
-      return null;
-    }
-
     const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
       [
         {

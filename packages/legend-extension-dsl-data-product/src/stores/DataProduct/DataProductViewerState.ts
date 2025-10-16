@@ -137,11 +137,11 @@ export class DataProductViewerState extends BaseViewerState<
         storeProject.groupId = this.projectGAV.groupId;
         storeProject.artifactId = this.projectGAV.artifactId;
         const files = (
-          (await this.depotServerClient.getGenerationFilesByType(
+          await this.depotServerClient.getGenerationFilesByType(
             storeProject,
             resolveVersion(this.projectGAV.versionId),
             V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
-          )) as PlainObject<StoredFileGeneration>[]
+          )
         ).map((rawFile) =>
           StoredFileGeneration.serialization.fromJson(rawFile),
         );
@@ -173,7 +173,8 @@ export class DataProductViewerState extends BaseViewerState<
     this.apgStates.map((apgState) =>
       apgState.init(dataProductArtifactPromise, entitlementsDataProductDetails),
     );
-    const dataProductArtifact = yield dataProductArtifactPromise;
+    const dataProductArtifact =
+      (yield dataProductArtifactPromise) as V1_DataProductArtifact;
     this.dataProductArtifact = dataProductArtifact;
   }
 }

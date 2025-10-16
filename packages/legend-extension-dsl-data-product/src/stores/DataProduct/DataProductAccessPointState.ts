@@ -86,8 +86,8 @@ export class DataProductAccessPointState {
     const lambdaRelationType = artifact?.accessPointGroups
       .find((apg) => apg.id === this.apgState.apg.id)
       ?.accessPointImplementations.find((ap) => ap.id === this.accessPoint.id)
-      ?.lambdaGenericType?.typeArguments?.map((typeArg) => typeArg.rawType)
-      ?.filter((rawType) => rawType instanceof V1_RelationType)[0];
+      ?.lambdaGenericType?.typeArguments.map((typeArg) => typeArg.rawType)
+      .filter((rawType) => rawType instanceof V1_RelationType)[0];
     if (lambdaRelationType !== undefined) {
       return lambdaRelationType;
     } else {
@@ -159,13 +159,7 @@ export class DataProductAccessPointState {
           },
         ),
       );
-      if (relationType !== undefined) {
-        return relationType;
-      } else {
-        throw new Error(
-          `Engine failed to return relation type for access point: ${this.accessPoint.id}`,
-        );
-      }
+      return relationType;
     }
     throw new Error(
       `Unable to get relation type for non-lakehouse access point: ${this.accessPoint.id}`,
