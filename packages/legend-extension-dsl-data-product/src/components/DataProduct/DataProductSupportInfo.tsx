@@ -24,7 +24,7 @@ import {
   WorldOutlineIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { Box, Grid2 as Grid, Link } from '@mui/material';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
@@ -93,7 +93,7 @@ export const DataProductSupportInfo = observer(
                     <EnvelopeOutlineIcon />
                   </Box>
                   {supportInfo.emails.map((email, index) => (
-                    <>
+                    <Fragment key={email.hashCode}>
                       <Link
                         key={email.address}
                         className="data-product__viewer__support-info__link"
@@ -103,7 +103,7 @@ export const DataProductSupportInfo = observer(
                         <ExternalLinkIcon />
                       </Link>
                       {index < supportInfo.emails.length - 1 ? ', ' : null}
-                    </>
+                    </Fragment>
                   ))}
                 </Grid>
               )}
