@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { IngestDefinition, type PackageableElement } from '@finos/legend-graph';
+import {
+  type MatViewDataSet,
+  type PackageableElement,
+  type V1_RawLineageModel,
+  GRAPH_MANAGER_EVENT,
+  IngestDefinition,
+} from '@finos/legend-graph';
 import { ElementEditorState } from '../ElementEditorState.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -48,6 +54,7 @@ import {
 import type { AuthContextProps } from 'react-oidc-context';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
+import { LineageState } from '@finos/legend-query-builder';
 
 const createEditorInitialConfiguration = (): EditorInitialConfiguration => {
   const config = new EditorInitialConfiguration();
@@ -75,7 +82,9 @@ const PARSER_SECTION = `###Lakehouse`;
 export class IngestDefinitionEditorState extends ElementEditorState {
   validateAndDeployResponse: ValidateAndDeploymentResponse | undefined;
   deploymentState = ActionState.create();
+  lineageGenerationState = ActionState.create();
   deployOnOpen = false;
+  lineageState: LineageState;
 
   constructor(
     editorStore: EditorStore,
@@ -93,6 +102,7 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       setValidateAndDeployResponse: action,
       init_with_deploy: flow,
       deploy: flow,
+      generateLineage: flow,
     });
     if (
       config?.elementEditorConfiguration instanceof
@@ -101,6 +111,7 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       this.deployOnOpen =
         config.elementEditorConfiguration.deployOnOpen ?? false;
     }
+    this.lineageState = new LineageState(this.editorStore.applicationStore);
   }
 
   get deploymentResponse():
@@ -189,6 +200,51 @@ export class IngestDefinitionEditorState extends ElementEditorState {
     }
   }
 
+  getMatviewFuncNames(): string[] {
+    return (
+      this.ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.map(
+        (dataset) => dataset.name,
+      ) ?? []
+    );
+  }
+
+  *generateLineage(matviewDataset: MatViewDataSet): GeneratorFn<void> {
+    if (this.lineageGenerationState.isInProgress) {
+      this.editorStore.applicationStore.notificationService.notifyError(
+        'Lineage generation in progress already',
+      );
+      return;
+    }
+    try {
+      this.lineageGenerationState.inProgress();
+
+      const query = matviewDataset.source.function;
+
+      const lineageRawData =
+        (yield this.editorStore.graphManagerState.graphManager.generateLineage(
+          query,
+          undefined,
+          undefined,
+          this.editorStore.graphManagerState.graph,
+          undefined,
+        )) as V1_RawLineageModel;
+      const lineageData =
+        this.editorStore.graphManagerState.graphManager.buildLineage(
+          lineageRawData,
+        );
+      this.lineageState.setLineageData(lineageData);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.LINEAGE_GENERATION_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.lineageGenerationState.complete();
+    }
+  }
+
   reprocess(
     newElement: PackageableElement,
     editorStore: EditorStore,
@@ -200,6 +256,10 @@ export class IngestDefinitionEditorState extends ElementEditorState {
     return Boolean(
       this.ingest.appDirDeployment && this.textContent && this.ingestionManager,
     );
+  }
+
+  get validForLineageViewer(): boolean {
+    return Boolean(this.ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.length);
   }
 
   get validationMessage(): string {
