@@ -2357,7 +2357,7 @@ const getDataProductViewerState = (
     V1_DataProduct,
   );
   const remoteEngine = guaranteeType(graphManager.engine, V1_RemoteEngine);
-  return new DataProductViewerState(
+  const dataProductViewerState = new DataProductViewerState(
     v1_dataProduct,
     applicationStore,
     remoteEngine.getEngineServerClient(),
@@ -2368,6 +2368,8 @@ const getDataProductViewerState = (
     undefined,
     {},
   );
+  dataProductViewerState.init();
+  return dataProductViewerState;
 };
 
 export const DataProductEditor = observer(() => {
