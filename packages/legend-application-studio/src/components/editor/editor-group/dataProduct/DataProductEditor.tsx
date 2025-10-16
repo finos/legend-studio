@@ -2379,7 +2379,7 @@ export const DataProductEditor = observer(() => {
   const product = dataProductEditorState.product;
   const isReadOnly = dataProductEditorState.isReadOnly;
   const auth = useAuth();
-  const [showPreview, setshowPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [dataProductViewerState, setDataProductViewerState] =
     useState<DataProductViewerState>();
 
@@ -2495,7 +2495,21 @@ export const DataProductEditor = observer(() => {
             <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               <button
                 className="btn__dropdown-combo__label"
-                onClick={() => setshowPreview(!showPreview)}
+                onClick={() => {
+                  setShowPreview((prev) => {
+                    if (!prev) {
+                      setDataProductViewerState(
+                        getDataProductViewerState(
+                          product,
+                          editorStore.graphManagerState,
+                          editorStore.applicationStore,
+                          editorStore.depotServerClient,
+                        ),
+                      );
+                    }
+                    return !prev;
+                  });
+                }}
                 title={showPreview ? 'Hide Preview' : 'Preview Description'}
                 tabIndex={-1}
                 style={{
