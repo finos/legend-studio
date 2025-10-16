@@ -460,9 +460,6 @@ test(
       true,
     );
 
-    const okButton = await screen.findByText('OK');
-    fireEvent.click(okButton);
-
     // Assert data cube is loaded with LakehouseConsumerDataCubeSource
     await screen.findByText('test-lakehouse-datacube-id-lakehouse-query-name');
     expect(
