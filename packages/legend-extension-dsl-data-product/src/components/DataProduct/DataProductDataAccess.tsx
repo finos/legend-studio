@@ -110,6 +110,7 @@ export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
 
 export const TabMessageScreen = observer((props: { message: string }) => {
   const { message } = props;
+
   return (
     <Box className="data-product__viewer__tab-screen">
       <span>{message}</span>
@@ -331,6 +332,7 @@ const AccessPointTable = observer(
               : '',
         },
       ];
+
     return (
       <div>
         <div className="data-product__viewer__tabs-bar">
@@ -628,6 +630,7 @@ export const DataProductAccessPointGroupViewer = observer(
       const tooltipText = dataAccessState?.dataAccessPlugins
         .flatMap((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
         .filter(isNonEmptyString)[0];
+
       return (
         <>
           <ButtonGroup
@@ -715,6 +718,7 @@ export const DataProductAccessPointGroupViewer = observer(
         </>
       );
     };
+
     return (
       <div className="data-product__viewer__access-group__item">
         <div className="data-product__viewer__access-group__item__header">
