@@ -32,9 +32,9 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
   {
     dataProducts: [
       {
-        id: 'SDLC_RELEASE_DATAPRODUCT',
+        id: 'SDLC_PRODUCTION_DATAPRODUCT',
         deploymentId: 12345,
-        title: 'SDLC Release Data Product',
+        title: 'SDLC Production Data Product',
         description:
           'Comprehensive customer analytics data for business intelligence and reporting',
         origin: {
@@ -48,7 +48,7 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
         },
         dataProduct: {
-          name: 'SDLC_RELEASE_DATAPRODUCT',
+          name: 'SDLC_PRODUCTION_DATAPRODUCT',
           accessPoints: [
             {
               name: 'customer_demographics',
@@ -76,7 +76,7 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
         },
       },
       {
-        id: 'SDLC_SNAPSHOT_DATAPRODUCT',
+        id: 'SDLC_PROD_PARALLEL_DATAPRODUCT',
         deploymentId: 67890,
         origin: {
           type: 'SdlcDeployment',
@@ -89,7 +89,7 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
         },
         dataProduct: {
-          name: 'SDLC_SNAPSHOT_DATAPRODUCT',
+          name: 'SDLC_PROD_PARALLEL_DATAPRODUCT',
           accessPoints: [
             {
               name: 'regulatory_reports',
@@ -119,11 +119,11 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
     ],
   };
 
-export const mockReleaseSDLCDataProduct: PlainObject<Entity> = {
+export const mockProductionSDLCDataProduct: PlainObject<Entity> = {
   _type: 'dataProduct',
-  name: 'Sdlc_Release_DataProduct',
+  name: 'Sdlc_Production_DataProduct',
   package: 'test::dataproduct',
-  title: 'SDLC Release Data Product',
+  title: 'SDLC Production Data Product',
   description:
     'Comprehensive customer analytics data for business intelligence and reporting',
   accessPointGroups: [
@@ -157,9 +157,9 @@ export const mockReleaseSDLCDataProduct: PlainObject<Entity> = {
   icon: undefined,
 };
 
-export const mockSnapshotSDLCDataProduct: PlainObject<Entity> = {
+export const mockProdParallelSDLCDataProduct: PlainObject<Entity> = {
   _type: 'dataProduct',
-  name: 'SDLC_SNAPSHOT_DATAPRODUCT',
+  name: 'SDLC_PROD_PARALLEL_DATAPRODUCT',
   package: 'test::dataproduct',
   accessPointGroups: [],
   icon: undefined,
