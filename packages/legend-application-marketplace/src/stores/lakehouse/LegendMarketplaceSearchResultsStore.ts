@@ -245,6 +245,9 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   async fetchLegacyDataProducts(): Promise<void> {
+    if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
+      return;
+    }
     try {
       const dataSpaceEntitySummaries =
         (await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
