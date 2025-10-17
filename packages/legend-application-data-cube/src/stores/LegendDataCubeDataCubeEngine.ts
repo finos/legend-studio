@@ -93,6 +93,9 @@ import {
   PRECISE_PRIMITIVE_TYPE,
   CORE_PURE_PATH,
   V1_DataProductOriginType,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_EntitlementsLakehouseEnvironmentType,
+  V1_AdHocDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -164,23 +167,27 @@ import {
 import {
   LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
   LakehouseConsumerDataCubeSource,
+  LakehouseEnvironmentType,
   RawLakehouseConsumerDataCubeSource,
   RawLakehouseSdlcOrigin,
 } from './model/LakehouseConsumerDataCubeSource.js';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import { getAccessToken } from './AuthStore.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
   private readonly _depotServerClient: DepotServerClient;
   private readonly _engineServerClient: V1_EngineServerClient;
+  private readonly _lakehouseContractServerClient: LakehouseContractServerClient;
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
   private _ingestDefinition: PlainObject | undefined;
-  private _adhocDataProductGraphGrammar: string | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
     depotServerClient: DepotServerClient,
     engineServerClient: V1_EngineServerClient,
+    lakehouseContractServerClient: LakehouseContractServerClient,
     graphManager: V1_PureGraphManager,
   ) {
     super();
@@ -188,6 +195,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._application = application;
     this._depotServerClient = depotServerClient;
     this._engineServerClient = engineServerClient;
+    this._lakehouseContractServerClient = lakehouseContractServerClient;
     this._graphManager = graphManager;
     this._duckDBEngine = new LegendDataCubeDuckDBEngine();
   }
@@ -1331,10 +1339,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._ingestDefinition = ingestDefinition;
   }
 
-  registerAdhocDataProductGraphGrammar(fullGraphGrammar: string | undefined) {
-    this._adhocDataProductGraphGrammar = fullGraphGrammar;
-  }
-
   // ---------------------------------- CACHING --------------------------------------
 
   override async initializeCache(
@@ -1878,8 +1882,43 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         true,
       );
     } else {
+      const dataProducts =
+        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+          await this._lakehouseContractServerClient.getDataProduct(
+            rawSource.paths[0]?.split('::').pop() ?? '',
+            getAccessToken(),
+          ),
+        );
+
+      const selectedEnv = rawSource.environment;
+
+      const dataProduct = selectedEnv.includes(
+        LakehouseEnvironmentType.DEVELOPMENT,
+      )
+        ? dataProducts.find(
+            (dp) =>
+              dp.lakehouseEnvironment?.type ===
+              V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
+          )
+        : selectedEnv.includes(LakehouseEnvironmentType.PRODUCTION_PARALLEL)
+          ? dataProducts.find(
+              (dp) =>
+                dp.lakehouseEnvironment?.type ===
+                V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+            )
+          : dataProducts.find(
+              (dp) =>
+                dp.lakehouseEnvironment?.type ===
+                V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+            );
+
+      const fullGraphGrammar = guaranteeType(
+        dataProduct?.origin,
+        V1_AdHocDeploymentDataProductOrigin,
+      ).definition;
+
       pmcd = await this.parseCompatibleModel(
-        guaranteeNonNullable(this._adhocDataProductGraphGrammar),
+        guaranteeNonNullable(fullGraphGrammar),
       );
     }
 

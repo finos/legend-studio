@@ -33,8 +33,10 @@ import {
   type AuthProviderProps,
   withAuthenticationRequired,
   AuthProvider,
+  useAuth,
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
+import { setAccessToken } from '../stores/AuthStore.js';
 
 const LegendDataCubeWebApplicationRouter = observer(() => {
   const store = useLegendDataCubeBaseStore();
@@ -44,6 +46,16 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
       .initialize()
       .catch((error) => store.alertService.alertUnhandledError(error));
   }, [store]);
+
+  const auth = useAuth();
+
+  useEffect(() => {
+    if (auth.user?.access_token) {
+      setAccessToken(auth.user.access_token);
+    } else {
+      setAccessToken(undefined);
+    }
+  }, [auth.user]);
 
   return (
     <div className="h-full">
