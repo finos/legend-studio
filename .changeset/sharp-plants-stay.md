@@ -2,4 +2,4 @@
 '@finos/legend-application-marketplace': patch
 ---
 
-Filter data products by UI env instead of explicit filters
+Filter data products by env in config instead of UI filters
