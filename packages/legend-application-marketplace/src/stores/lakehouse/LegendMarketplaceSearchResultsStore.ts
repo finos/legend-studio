@@ -41,10 +41,6 @@ import {
 } from '@finos/legend-server-depot';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 
-export enum DataProductFilterType {
-  MODELED_DATA_PRODUCTS = 'MODELED_DATA_PRODUCTS',
-}
-
 export interface DataProductFilterConfig {
   modeledDataProducts?: boolean;
 }
@@ -114,7 +110,7 @@ export class LegendMarketplaceSearchResultsStore {
       legacyDataProductCardStates: observable,
       filterState: observable,
       sort: observable,
-      handleFilterToggle: action,
+      handleModeledDataProductsFilterToggle: action,
       handleSearch: action,
       setDataProductCardStates: action,
       setLegacyDataProductCardStates: action,
@@ -169,15 +165,9 @@ export class LegendMarketplaceSearchResultsStore {
     this.legacyDataProductCardStates = legacyDataProductCardStates;
   }
 
-  handleFilterToggle(filterType: DataProductFilterType): void {
-    switch (filterType) {
-      case DataProductFilterType.MODELED_DATA_PRODUCTS:
-        this.filterState.modeledDataProducts =
-          !this.filterState.modeledDataProducts;
-        break;
-      default:
-        break;
-    }
+  handleModeledDataProductsFilterToggle(): void {
+    this.filterState.modeledDataProducts =
+      !this.filterState.modeledDataProducts;
     LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
       this.marketplaceBaseStore.applicationStore.userDataService,
       this.filterState.currentFilterValues,

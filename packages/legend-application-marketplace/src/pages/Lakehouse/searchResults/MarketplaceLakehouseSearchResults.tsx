@@ -58,7 +58,6 @@ import {
 } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import {
   type LegendMarketplaceSearchResultsStore,
-  DataProductFilterType,
   DataProductSort,
 } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 
@@ -83,9 +82,7 @@ const SearchResultsSortFilterPanel = observer(
                   <Checkbox
                     checked={searchResultsStore.filterState.modeledDataProducts}
                     onChange={() =>
-                      searchResultsStore.handleFilterToggle(
-                        DataProductFilterType.MODELED_DATA_PRODUCTS,
-                      )
+                      searchResultsStore.handleModeledDataProductsFilterToggle()
                     }
                   />
                 }
