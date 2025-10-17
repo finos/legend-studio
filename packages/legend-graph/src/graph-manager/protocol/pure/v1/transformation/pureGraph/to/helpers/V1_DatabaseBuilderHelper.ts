@@ -641,6 +641,7 @@ const buildViewSecondPass = (
   srcView: V1_View,
   context: V1_GraphBuilderContext,
   schema: Schema,
+  database: Database,
 ): View => {
   const view = getView(schema, srcView.name);
   const columnMappings = srcView.columnMappings.map(
@@ -652,6 +653,8 @@ const buildViewSecondPass = (
           context,
           new Map<string, TableAlias>(),
           [],
+          buildGeneratedIndex(database),
+          true,
         ),
       ),
   );
@@ -661,6 +664,8 @@ const buildViewSecondPass = (
       context,
       new Map<string, TableAlias>(),
       [],
+      undefined,
+      true,
     ),
   );
   if (srcView.filter) {
@@ -699,7 +704,7 @@ export const V1_buildDatabaseSchemaViewsSecondPass = (
 ): Schema => {
   const schema = getSchema(database, srcSchema.name);
   schema.views = srcSchema.views.map((view) =>
-    buildViewSecondPass(view, context, schema),
+    buildViewSecondPass(view, context, schema, database),
   );
   return schema;
 };

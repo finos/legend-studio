@@ -198,7 +198,7 @@ export class DependencyManager {
   );
   getOwnNullableDataProduct = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnDataProduct(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableDataProduct(path),
   );
   getOwnNullableIngestDefinition = buildDependencyElementGetter(
     this,
