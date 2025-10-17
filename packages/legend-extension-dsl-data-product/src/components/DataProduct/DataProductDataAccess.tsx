@@ -38,6 +38,7 @@ import {
 import {
   type V1_RelationTypeColumn,
   extractElementNameFromPath,
+  V1_AdHocDeploymentDataProductOrigin,
   V1_AppliedFunction,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -49,6 +50,7 @@ import {
   V1_CStrictDate,
   V1_CStrictTime,
   V1_CString,
+  V1_DataProductOriginType,
   V1_EnumValue,
   V1_getGenericTypeFullPath,
   V1_SdlcDeploymentDataProductOrigin,
@@ -182,16 +184,7 @@ export const DataCubeScreen = observer(
     }, [auth.user?.access_token, dataAccessState]);
 
     const loadDataCube = (): void => {
-      //dpCoordinates
       const origin = dataAccessState?.entitlementsDataProductDetails.origin;
-      const dpCoordinates =
-        origin instanceof V1_SdlcDeploymentDataProductOrigin
-          ? {
-              groupId: origin.group,
-              artifactId: origin.artifact,
-              versionId: origin.version,
-            }
-          : undefined;
       //paths
       const path = accessPointState.apgState.dataProductViewerState.getPath();
       const accessPointName = accessPointState.accessPoint.id;
@@ -199,13 +192,43 @@ export const DataCubeScreen = observer(
         guaranteeNonNullable(path),
         guaranteeNonNullable(accessPointName),
       ];
-      const sourceData = {
+
+      const baseSource = {
         _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
-        dpCoordinates: dpCoordinates,
         warehouse: DEFAULT_CONSUMER_WAREHOUSE,
         environment: selectedEnvironment,
         paths: accessPointPath,
       };
+
+      let sourceData: Record<string, unknown>;
+      const deploymentId =
+        dataAccessState?.entitlementsDataProductDetails.deploymentId;
+      if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+        sourceData = {
+          ...baseSource,
+          dpCoordinates: {
+            groupId: origin.group,
+            artifactId: origin.artifact,
+            versionId: origin.version,
+          },
+        };
+      } else if (
+        origin instanceof V1_AdHocDeploymentDataProductOrigin &&
+        deploymentId !== undefined
+      ) {
+        sourceData = {
+          ...baseSource,
+          origin: { _type: V1_DataProductOriginType.AD_HOC_DEPLOYMENT },
+          deploymentId,
+        };
+      } else {
+        accessPointState.apgState.applicationStore.notificationService.notifyError(
+          new Error(
+            'Failed to open DataCube: unsupported data product origin.',
+          ),
+        );
+        return;
+      }
       if (accessPointState.apgState.dataProductViewerState.openDataCube) {
         accessPointState.apgState.dataProductViewerState.openDataCube(
           sourceData,
@@ -213,25 +236,15 @@ export const DataCubeScreen = observer(
       }
     };
 
-    if (
-      !(
-        dataAccessState?.entitlementsDataProductDetails.origin instanceof
-        V1_SdlcDeploymentDataProductOrigin
-      ) ||
-      !accessPointState.apgState.dataProductViewerState.openDataCube
-    ) {
-      return <TabMessageScreen message={WORK_IN_PROGRESS} />;
-    }
-
     return (
       <div className="data-product__viewer__tab-screen">
         <CustomSelectorInput
           className="data-product__viewer__tab-screen__dropdown"
-          options={dataAccessState.environmentDropDownValues.map((env) => ({
+          options={dataAccessState?.environmentDropDownValues.map((env) => ({
             label: env,
             value: env,
           }))}
-          isLoading={dataAccessState.ingestEnvironmentFetchState.isInProgress}
+          isLoading={dataAccessState?.ingestEnvironmentFetchState.isInProgress}
           onChange={(newValue: { label: string; value: string } | null) => {
             setSelectedEnvironment(newValue?.value ?? '');
           }}
