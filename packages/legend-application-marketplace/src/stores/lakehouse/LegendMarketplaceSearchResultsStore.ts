@@ -133,7 +133,8 @@ export class LegendMarketplaceSearchResultsStore {
       ) as BaseProductCardState[]
     )
       .concat(
-        this.marketplaceBaseStore.envState.supportsLegacyDataProducts()
+        this.marketplaceBaseStore.envState.supportsLegacyDataProducts() &&
+          this.filterState.modeledDataProducts
           ? (this.legacyDataProductCardStates as BaseProductCardState[])
           : [],
       )
