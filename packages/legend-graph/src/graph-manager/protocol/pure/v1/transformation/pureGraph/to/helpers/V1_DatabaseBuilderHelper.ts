@@ -644,6 +644,7 @@ const buildViewSecondPass = (
   database: Database,
 ): View => {
   const view = getView(schema, srcView.name);
+  const generatedIndex = buildGeneratedIndex(database);
   const columnMappings = srcView.columnMappings.map(
     (columnMapping) =>
       new ColumnMapping(
@@ -653,7 +654,7 @@ const buildViewSecondPass = (
           context,
           new Map<string, TableAlias>(),
           [],
-          buildGeneratedIndex(database),
+          generatedIndex,
           true,
         ),
       ),
@@ -664,7 +665,7 @@ const buildViewSecondPass = (
       context,
       new Map<string, TableAlias>(),
       [],
-      undefined,
+      generatedIndex,
       true,
     ),
   );
