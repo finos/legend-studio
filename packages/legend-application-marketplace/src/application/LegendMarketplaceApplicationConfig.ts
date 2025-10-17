@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-application';
 import type { AuthProviderProps } from 'react-oidc-context';
 import { DataProductConfig } from '@finos/legend-extension-dsl-data-product';
+import { LegendMarketplaceEnv } from '../stores/LegendMarketplaceEnvState.js';
 
 class LegendMarketplaceApplicationCoreOptions {
   dataProductConfig: DataProductConfig | undefined;
@@ -79,6 +80,7 @@ export interface LegendMarketplaceApplicationConfigurationData
   marketplace: {
     url: string;
     subscriptionUrl: string;
+    dataProductEnv: string;
     userSearchUrl?: string | undefined;
     userProfileImageUrl?: string | undefined;
     oidcConfig?: LegendMarketplaceOidcConfig | undefined;
@@ -129,6 +131,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
 
   readonly marketplaceServerUrl: string;
   readonly marketplaceSubscriptionUrl: string;
+  readonly dataProductEnv: LegendMarketplaceEnv;
   readonly marketplaceUserSearchUrl?: string | undefined;
   readonly marketplaceUserProfileImageUrl?: string | undefined;
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
@@ -172,6 +175,23 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
           `Can't configure application: 'marketplace.marketplaceSubscriptionUrl' field is missing or empty`,
         ),
       );
+    if (!input.configData.marketplace.dataProductEnv) {
+      throw new Error(
+        `Can't configure application: 'marketplace.dataProductEnv' field is missing or empty`,
+      );
+    }
+    switch (input.configData.marketplace.dataProductEnv) {
+      case 'prod':
+        this.dataProductEnv = LegendMarketplaceEnv.PRODUCTION;
+        break;
+      case 'prod-par':
+        this.dataProductEnv = LegendMarketplaceEnv.PRODUCTION_PARALLEL;
+        break;
+      default:
+        throw new Error(
+          `Can't configure application: 'marketplace.dataProductEnv' field must be 'prod' or 'prod-par'`,
+        );
+    }
     if (input.configData.marketplace.userSearchUrl) {
       this.marketplaceUserSearchUrl =
         LegendApplicationConfig.resolveAbsoluteUrl(

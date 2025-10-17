@@ -37,6 +37,7 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   marketplace: {
     url: 'https://testMarketplaceUrl',
     subscriptionUrl: 'https://testSubscriptionUrl',
+    dataProductEnv: 'prod',
     userSearchUrl: 'https://testUserSearchUrl',
     userProfileImageUrl: 'https://testUserProfileImageUrl',
   },
