@@ -78,7 +78,7 @@ const transformAccessPoint = (
     const func = new V1_FunctionAccessPoint();
     func.id = ap.id;
     func.description = ap.description;
-    func.query = V1_transformRawLambda(ap.func, context);
+    func.query = V1_transformRawLambda(ap.query, context);
     return func;
   } else if (ap instanceof UnknownAccessPoint) {
     const un = new V1_UnknownAccessPoint();
