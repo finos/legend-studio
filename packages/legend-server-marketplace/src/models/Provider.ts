@@ -23,6 +23,11 @@ export interface LightProvider {
   type: string;
 }
 
+export enum TerminalItemType {
+  TERMINAL = 'Terminal',
+  ADD_ON = 'Add-On',
+}
+
 export class TerminalResult {
   id!: number;
   category!: string;
@@ -32,6 +37,7 @@ export class TerminalResult {
   price!: number;
   phystr!: string;
   isOwned?: boolean;
+  vendorProfileId?: number;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(TerminalResult, {
@@ -43,8 +49,15 @@ export class TerminalResult {
       price: primitive(),
       phystr: primitive(),
       isOwned: primitive(),
+      vendorProfileId: primitive(),
     }),
   );
+
+  get terminalItemType(): TerminalItemType {
+    return this.category.toLowerCase() === 'vendor profile'
+      ? TerminalItemType.TERMINAL
+      : TerminalItemType.ADD_ON;
+  }
 }
 
 export interface Filter {

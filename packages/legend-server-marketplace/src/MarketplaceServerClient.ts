@@ -141,8 +141,10 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   private _cart = (user: string): string => `${this.baseUrl}/v1/cart/${user}`;
 
-  getCart = async (user: string): Promise<PlainObject<CartItem>[]> =>
-    this.get<PlainObject<CartItem>[]>(this._cart(user));
+  getCart = async (
+    user: string,
+  ): Promise<PlainObject<Record<number, CartItem[]>>> =>
+    this.get<PlainObject<Record<number, CartItem[]>>>(this._cart(user));
 
   getCartSummary = async (user: string): Promise<PlainObject<CartSummary>> =>
     this.get<PlainObject<CartSummary>>(`${this._cart(user)}/summary`);

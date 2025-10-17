@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   Dialog,
@@ -23,28 +22,26 @@ import {
   DialogActions,
   Button,
   Typography,
-  Card,
-  CardContent,
-  CardActions,
   Grid,
   Box,
   IconButton,
-  Chip,
-  CircularProgress,
 } from '@mui/material';
 import {
   CloseIcon,
   CheckCircleIcon,
-  PlusIcon,
   ArrowRightIcon,
+  WarningIcon,
 } from '@finos/legend-art';
-import type { TerminalResult } from '@finos/legend-server-marketplace';
-import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import { flowResult } from 'mobx';
+import {
+  TerminalItemType,
+  type TerminalResult,
+} from '@finos/legend-server-marketplace';
+import { RecommendedItemsCard } from './RecommendedItemsCard.js';
 
 interface RecommendedAddOnsModalProps {
   terminal: TerminalResult | null;
   recommendedItems: TerminalResult[];
+  message: string;
   showModal: boolean;
   setShowModal: (show: boolean) => void;
   onViewCart?: () => void;
@@ -52,26 +49,17 @@ interface RecommendedAddOnsModalProps {
 
 export const RecommendedAddOnsModal = observer(
   (props: RecommendedAddOnsModalProps) => {
-    const { terminal, recommendedItems, showModal, setShowModal, onViewCart } =
-      props;
-    const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
-    const cartStore = legendMarketplaceBaseStore.cartStore;
-
-    const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const {
+      terminal,
+      recommendedItems,
+      message,
+      showModal,
+      setShowModal,
+      onViewCart,
+    } = props;
 
     const closeModal = () => {
       setShowModal(false);
-    };
-
-    const handleAddAddonToCart = (addon: TerminalResult) => {
-      setIsAddingToCart(true);
-      flowResult(legendMarketplaceBaseStore.cartStore.addToCartWithAPI(addon))
-        .then(() => {
-          setIsAddingToCart(false);
-        })
-        .catch((error) => {
-          setIsAddingToCart(false);
-        });
     };
 
     const handleViewCart = () => {
@@ -92,20 +80,26 @@ export const RecommendedAddOnsModal = observer(
         className="recommended-addons-modal"
       >
         <DialogTitle className="recommended-addons-modal__header">
-          <CheckCircleIcon className="recommended-addons-modal__success-icon" />
+          {terminal?.terminalItemType === TerminalItemType.TERMINAL ? (
+            <CheckCircleIcon className="recommended-addons-modal__success-icon" />
+          ) : (
+            <WarningIcon className="recommended-addons-modal__warning-icon" />
+          )}
           <Box className="recommended-addons-modal__header-content">
             <Typography
               variant="h6"
               className="recommended-addons-modal__title"
             >
-              Item Added Successfully
+              {terminal?.terminalItemType === TerminalItemType.TERMINAL
+                ? 'Item Added Successfully'
+                : 'Unable to Add Item'}
             </Typography>
             {terminal && (
               <Typography
                 variant="body2"
                 className="recommended-addons-modal__subtitle"
               >
-                {terminal.productName} added to cart
+                {message}
               </Typography>
             )}
           </Box>
@@ -124,92 +118,44 @@ export const RecommendedAddOnsModal = observer(
               variant="h6"
               className="recommended-addons-modal__section-title"
             >
-              Recommended Add-Ons
+              {terminal?.terminalItemType === TerminalItemType.TERMINAL
+                ? 'Recommended Add-Ons'
+                : 'Recommended Terminals'}
             </Typography>
             <Typography
               variant="body2"
               className="recommended-addons-modal__section-description"
             >
-              Complete your setup with these recommended items
+              {terminal?.terminalItemType === TerminalItemType.TERMINAL
+                ? 'Complete your setup with these recommended add-ons'
+                : 'You must order a terminal license with this add-on'}
             </Typography>
           </Box>
 
           {recommendedItems.length === 0 ? (
             <Box className="recommended-addons-modal__empty-state">
               <Typography variant="body1">
-                No recommended add-ons available for this terminal.
+                {terminal?.terminalItemType === TerminalItemType.TERMINAL
+                  ? 'No recommended add-ons available for this terminal.'
+                  : 'No recommended terminals available for this add-on.'}
               </Typography>
             </Box>
           ) : (
             <Grid container={true} spacing={2}>
-              {recommendedItems.map((addon) => (
-                <Grid item={true} xs={12} sm={6} key={addon.id}>
-                  <Card className="recommended-addons-modal__addon-card">
-                    <CardContent className="recommended-addons-modal__card-content">
-                      <Box className="recommended-addons-modal__card-header">
-                        <Typography
-                          variant="subtitle1"
-                          className="recommended-addons-modal__product-name"
-                        >
-                          {addon.productName}
-                        </Typography>
-                        <Chip
-                          label={addon.providerName}
-                          size="small"
-                          className="recommended-addons-modal__provider-chip"
-                        />
-                      </Box>
-
-                      <Typography
-                        variant="body2"
-                        className="recommended-addons-modal__description"
-                      >
-                        {addon.description || 'No description available'}
-                      </Typography>
-
-                      <Box className="recommended-addons-modal__card-footer">
-                        <Typography
-                          variant="body2"
-                          className={`recommended-addons-modal__price ${addon.price === 0 ? 'recommended-addons-modal__price--free' : ''}`}
-                        >
-                          {addon.price === 0
-                            ? 'Free'
-                            : addon.price.toLocaleString('en-US', {
-                                style: 'currency',
-                                currency: 'USD',
-                                maximumFractionDigits: 2,
-                              })}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-
-                    <CardActions className="recommended-addons-modal__card-actions">
-                      <Button
-                        variant={
-                          cartStore.items.has(addon.id)
-                            ? 'outlined'
-                            : 'contained'
-                        }
-                        startIcon={
-                          isAddingToCart ? (
-                            <CircularProgress size={16} color="inherit" />
-                          ) : cartStore.items.has(addon.id) ? null : (
-                            <PlusIcon />
-                          )
-                        }
-                        onClick={() => handleAddAddonToCart(addon)}
-                        disabled={cartStore.items.has(addon.id)}
-                        fullWidth={true}
-                        className={`recommended-addons-modal__add-btn ${cartStore.items.has(addon.id) ? 'recommended-addons-modal__add-btn--added' : ''}`}
-                      >
-                        {!cartStore.items.has(addon.id)
-                          ? isAddingToCart
-                            ? 'Adding...'
-                            : 'Add to Cart'
-                          : 'Added to Cart'}
-                      </Button>
-                    </CardActions>
-                  </Card>
+              {recommendedItems.map((item) => (
+                <Grid item={true} xs={12} sm={6} key={item.id}>
+                  {terminal ? (
+                    <RecommendedItemsCard
+                      key={item.id}
+                      vendorProfileId={terminal.id}
+                      recommendedItem={item}
+                    />
+                  ) : (
+                    <RecommendedItemsCard
+                      key={item.id}
+                      recommendedItem={item}
+                    />
+                  )}
                 </Grid>
               ))}
             </Grid>

@@ -25,6 +25,7 @@ export interface CartItemRequest {
   model?: string;
   description: string;
   isOwned: string;
+  vendorProfileId?: number;
 }
 
 export interface CartItem extends CartItemRequest {
@@ -39,5 +40,7 @@ export interface CartSummary {
 
 export interface CartItemResponse {
   message: string;
-  marketplace_addons: TerminalResult[];
+  status_code: number;
+  marketplace_addons: TerminalResult[] | null;
+  marketplace_terminals: TerminalResult[] | null;
 }
