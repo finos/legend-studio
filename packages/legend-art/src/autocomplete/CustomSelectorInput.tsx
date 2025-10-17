@@ -98,8 +98,7 @@ const CustomMenuList = <Option extends SelectOption, IsMulti extends boolean>(
   // which causes `react-window` to throw an error
   if (Array.isArray(children) && children.length) {
     return (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      <FixedSizeList<any>
+      <FixedSizeList
         className={
           selectProps.darkMode ? 'scrollbar--light selector-menu--dark' : ''
         }

@@ -81,7 +81,15 @@ const SchemaLoader = observer(
       }
     };
     return (
-      <Dialog onClose={onClose} open={importState.importSchemaModal}>
+      <Dialog
+        onClose={onClose}
+        open={importState.importSchemaModal}
+        slotProps={{
+          transition: {
+            appear: false, // disable transition
+          },
+        }}
+      >
         <Modal
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
