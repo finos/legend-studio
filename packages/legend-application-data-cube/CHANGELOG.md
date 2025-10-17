@@ -1,5 +1,12 @@
 # @finos/legend-application-data-cube
 
+## 0.7.7
+
+### Patch Changes
+
+- [#4543](https://github.com/finos/legend-studio/pull/4543) [`a39959c`](https://github.com/finos/legend-studio/commit/a39959cbfd982761ef23a664940b518feb83b15d) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: support collection of lakehouse consumer and producer sources via telemetry
+  datacube: update lakehouse consumer source viewer
+
 ## 0.7.6
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.12
+
+### Patch Changes
+
+- [#4551](https://github.com/finos/legend-studio/pull/4551) [`69bc7f2`](https://github.com/finos/legend-studio/commit/69bc7f270080b56414da6525aca51b61a2a83cbf) ([@travisstebbins](https://github.com/travisstebbins)) - Use DataProduct artifact to display access point column names/types
+
 ## 0.0.11
 
 ## 0.0.10

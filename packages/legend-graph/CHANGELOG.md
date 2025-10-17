@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 32.3.7
+
+### Patch Changes
+
+- [#4557](https://github.com/finos/legend-studio/pull/4557) [`c9a4869`](https://github.com/finos/legend-studio/commit/c9a4869a463a710ca3b26a9a1c3cde9cdf90c408) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Added Function Access Point RTT test
+
+- [#4559](https://github.com/finos/legend-studio/pull/4559) [`cd817bd`](https://github.com/finos/legend-studio/commit/cd817bd5125a9fceb63fa754f4e14ccdd968c47b) ([@mrudula-gs](https://github.com/mrudula-gs)) - Fix views for lakehouse concepts in store
+
+- [#4551](https://github.com/finos/legend-studio/pull/4551) [`69bc7f2`](https://github.com/finos/legend-studio/commit/69bc7f270080b56414da6525aca51b61a2a83cbf) ([@travisstebbins](https://github.com/travisstebbins)) - Use DataProduct artifact to display access point column names/types
+
+- [#4557](https://github.com/finos/legend-studio/pull/4557) [`c9a4869`](https://github.com/finos/legend-studio/commit/c9a4869a463a710ca3b26a9a1c3cde9cdf90c408) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add FunctionAccessPoint to DataProduct Metamodel
+
+- [#4556](https://github.com/finos/legend-studio/pull/4556) [`fee0279`](https://github.com/finos/legend-studio/commit/fee0279f308a4ad9d73d179e02d4605af7f0b3f8) ([@kelly-thai](https://github.com/kelly-thai)) - Add Expertise to Data Product model and form mode
+
 ## 32.3.6
 
 ### Patch Changes

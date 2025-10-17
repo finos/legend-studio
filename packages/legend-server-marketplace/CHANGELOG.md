@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.16
+
+### Patch Changes
+
+- [#4561](https://github.com/finos/legend-studio/pull/4561) [`90aca84`](https://github.com/finos/legend-studio/commit/90aca84797103981c507716b2086b28fc155d3e2) ([@bojja-gs](https://github.com/bojja-gs)) - updated the cart models with marketplace server client
+
 ## 0.1.15
 
 ### Patch Changes

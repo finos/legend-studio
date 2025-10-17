@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.7
+
+### Patch Changes
+
+- [#4551](https://github.com/finos/legend-studio/pull/4551) [`69bc7f2`](https://github.com/finos/legend-studio/commit/69bc7f270080b56414da6525aca51b61a2a83cbf) ([@travisstebbins](https://github.com/travisstebbins)) - Remove unused getDeployedIngestDefinitions function
+
 ## 0.3.6
 
 ## 0.3.5
