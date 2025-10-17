@@ -27,16 +27,18 @@ import {
   V1_AdHocDeploymentDataProductOrigin,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
+  V1_IngestEnvironmentClassification,
   type PersistentDataCube,
 } from '@finos/legend-graph';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { action, makeObservable, observable } from 'mobx';
 import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
 import {
-  LakehouseEnvironmentType,
   RawLakehouseConsumerDataCubeSource,
   RawLakehouseSdlcOrigin,
 } from '../../model/LakehouseConsumerDataCubeSource.js';
+
+const PROD_PARALELLEL_SUFFIX = 'pp';
 
 export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
   fullGraphGrammar: string | undefined;
@@ -121,14 +123,14 @@ export class LakehouseConsumerDataCubeSourceLoaderState extends LegendDataCubeSo
     const selectedEnv = guaranteeNonNullable(this.environment);
 
     const dataProduct = selectedEnv.includes(
-      LakehouseEnvironmentType.DEVELOPMENT,
+      V1_IngestEnvironmentClassification.DEV,
     )
       ? dataProducts.find(
           (dp) =>
             dp.lakehouseEnvironment?.type ===
             V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
         )
-      : selectedEnv.includes(LakehouseEnvironmentType.PRODUCTION_PARALLEL)
+      : selectedEnv.includes(PROD_PARALELLEL_SUFFIX)
         ? dataProducts.find(
             (dp) =>
               dp.lakehouseEnvironment?.type ===

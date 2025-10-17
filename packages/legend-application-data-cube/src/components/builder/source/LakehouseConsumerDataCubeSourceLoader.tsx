@@ -37,11 +37,13 @@ export const LakehouseConsumerDataCubeSourceLoader = observer(
       <div className="flex h-full w-full">
         <div className="m-3 flex w-full flex-col items-stretch gap-2 text-neutral-500">
           <div className="query-setup__wizard__group">
-            <div className="query-setup__wizard__group__title">Ingest Urn</div>
+            <div className="query-setup__wizard__group__title">
+              Data Product
+            </div>
             <div className="flex h-full w-full flex-auto items-center justify-between text-nowrap">
               <FormTextInput
                 className="w-3/4 text-base"
-                value={partialSourceLoader.dataProductId}
+                value={partialSourceLoader.dataProductId ?? ''}
                 disabled={true}
               />
               <FormButton
