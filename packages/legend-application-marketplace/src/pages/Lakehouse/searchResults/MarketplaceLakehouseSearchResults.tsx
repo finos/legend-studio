@@ -89,7 +89,7 @@ const SearchResultsSortFilterPanel = observer(
                     }
                   />
                 }
-                label="Modeled Data Products"
+                label="Include Modeled Data Products"
               />
             </Box>
           </FormGroup>
