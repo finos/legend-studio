@@ -61,7 +61,7 @@
     "@fontsource/ubuntu-mono": "5.2.5",
     "@mui/material": "7.3.4",
     "@mui/system": "7.3.3",
-    "@mui/x-date-pickers": "8.14.1",
+    "@mui/x-date-pickers": "7.27.3",
     "@types/react": "19.0.10",
     "@types/react-window": "1.8.8",
     "clsx": "2.1.1",
