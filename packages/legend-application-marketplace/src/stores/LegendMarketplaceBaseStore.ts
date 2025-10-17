@@ -28,7 +28,7 @@ import {
   APPLICATION_EVENT,
   DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import {
   DepotServerClient,
   StoreProjectData,
@@ -84,18 +84,12 @@ export class LegendMarketplaceBaseStore {
   readonly initState = ActionState.create();
 
   showDemoModal = false;
-  INTERNAL__enableProdParAdvancedFeatures = false;
 
   constructor(applicationStore: LegendMarketplaceApplicationStore) {
     makeObservable<LegendMarketplaceBaseStore>(this, {
       showDemoModal: observable,
-      INTERNAL__enableProdParAdvancedFeatures: observable,
       setDemoModal: action,
-      setEnableProdParAdvancedFeatures: action,
       initialize: flow,
-      isProdEnv: computed,
-      isProdParEnv: computed,
-      enableProdParAdvancedFeatures: computed,
     });
 
     this.applicationStore = applicationStore;
@@ -294,22 +288,6 @@ export class LegendMarketplaceBaseStore {
 
   setDemoModal(val: boolean): void {
     this.showDemoModal = val;
-  }
-
-  setEnableProdParAdvancedFeatures(val: boolean): void {
-    this.INTERNAL__enableProdParAdvancedFeatures = val;
-  }
-
-  get isProdEnv(): boolean {
-    return this.applicationStore.config.env === 'prod';
-  }
-
-  get isProdParEnv(): boolean {
-    return this.applicationStore.config.env === 'prod-par';
-  }
-
-  get enableProdParAdvancedFeatures(): boolean {
-    return this.isProdParEnv && this.INTERNAL__enableProdParAdvancedFeatures;
   }
 
   *initialize(): GeneratorFn<void> {
