@@ -44,6 +44,7 @@ export const setup = (outputDir) => {
         marketplace: {
           url: 'http://localhost:6400/api',
           subscriptionUrl: 'http://localhost:6400/subscriptions/api',
+          dataProductEnv: 'prod',
           userSearchUrl: 'http://localhost:6400/user-search/api',
           userProfileImageUrl:
             'http://localhost:6400/user-profile-image/api?userId={userId}',
