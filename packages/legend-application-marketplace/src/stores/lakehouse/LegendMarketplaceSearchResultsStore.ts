@@ -41,15 +41,22 @@ import {
   DepotScope,
 } from '@finos/legend-server-depot';
 
+export interface DataProductFilterConfig {
+  devEnvironment: boolean;
+}
+
 class DataProductFilterState {
   search?: string | undefined;
+  devEnvironment: boolean;
 
   constructor(search?: string | undefined) {
     makeObservable(this, {
       search: observable,
+      devEnvironment: observable,
     });
 
     this.search = search;
+    this.devEnvironment = false;
   }
 
   static default(): DataProductFilterState {
@@ -83,6 +90,7 @@ export class LegendMarketplaceSearchResultsStore {
       filterState: observable,
       sort: observable,
       handleSearch: action,
+      setDevEnvironmentFilter: action,
       setDataProductCardStates: action,
       setLegacyDataProductCardStates: action,
       setSort: action,
@@ -94,7 +102,6 @@ export class LegendMarketplaceSearchResultsStore {
   get filterSortProducts(): BaseProductCardState[] | undefined {
     return (
       this.dataProductCardStates.filter((dataProductCardState) => {
-        // Check if product matches environment
         if (this.marketplaceBaseStore.isProdEnv) {
           return (
             dataProductCardState.environmentClassification ===
@@ -103,7 +110,10 @@ export class LegendMarketplaceSearchResultsStore {
         } else if (this.marketplaceBaseStore.isProdParEnv) {
           return (
             dataProductCardState.environmentClassification ===
-            V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
+              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL ||
+            (this.filterState.devEnvironment &&
+              dataProductCardState.environmentClassification ===
+                V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT)
           );
         } else {
           return true;
@@ -144,6 +154,10 @@ export class LegendMarketplaceSearchResultsStore {
 
   handleSearch(query: string | undefined) {
     this.filterState.search = query;
+  }
+
+  setDevEnvironmentFilter(value: boolean): void {
+    this.filterState.devEnvironment = value;
   }
 
   setSort(sort: DataProductSort): void {
