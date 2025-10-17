@@ -26,7 +26,6 @@ import {
   extractElementNameFromPath,
   extractPackagePathFromPath,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
-  V1_EntitlementsLakehouseEnvironmentType,
   V1_PureGraphManager,
 } from '@finos/legend-graph';
 import type { BaseProductCardState } from './dataProducts/BaseProductCardState.js';
@@ -40,27 +39,47 @@ import {
   type StoredSummaryEntity,
   DepotScope,
 } from '@finos/legend-server-depot';
+import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
+
+export enum DataProductFilterType {
+  MODELED_DATA_PRODUCTS = 'MODELED_DATA_PRODUCTS',
+}
 
 export interface DataProductFilterConfig {
-  devEnvironment: boolean;
+  modeledDataProducts?: boolean;
 }
 
 class DataProductFilterState {
+  modeledDataProducts: boolean;
   search?: string | undefined;
-  devEnvironment: boolean;
 
-  constructor(search?: string | undefined) {
+  constructor(
+    defaultBooleanFilters: DataProductFilterConfig,
+    search?: string | undefined,
+  ) {
     makeObservable(this, {
+      modeledDataProducts: observable,
       search: observable,
-      devEnvironment: observable,
     });
-
+    this.modeledDataProducts =
+      defaultBooleanFilters.modeledDataProducts ??
+      DataProductFilterState.default().modeledDataProducts;
     this.search = search;
-    this.devEnvironment = false;
   }
 
   static default(): DataProductFilterState {
-    return new DataProductFilterState();
+    return new DataProductFilterState(
+      {
+        modeledDataProducts: false,
+      },
+      undefined,
+    );
+  }
+
+  get currentFilterValues(): DataProductFilterConfig {
+    return {
+      modeledDataProducts: this.modeledDataProducts,
+    };
   }
 }
 
@@ -82,15 +101,21 @@ export class LegendMarketplaceSearchResultsStore {
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
 
-    this.filterState = DataProductFilterState.default();
+    const savedFilterConfig =
+      LegendMarketplaceUserDataHelper.getSavedDataProductFilterConfig(
+        this.marketplaceBaseStore.applicationStore.userDataService,
+      );
+    this.filterState = savedFilterConfig
+      ? new DataProductFilterState(savedFilterConfig, undefined)
+      : DataProductFilterState.default();
 
     makeObservable(this, {
       dataProductCardStates: observable,
       legacyDataProductCardStates: observable,
       filterState: observable,
       sort: observable,
+      handleFilterToggle: action,
       handleSearch: action,
-      setDevEnvironmentFilter: action,
       setDataProductCardStates: action,
       setLegacyDataProductCardStates: action,
       setSort: action,
@@ -101,26 +126,17 @@ export class LegendMarketplaceSearchResultsStore {
 
   get filterSortProducts(): BaseProductCardState[] | undefined {
     return (
-      this.dataProductCardStates.filter((dataProductCardState) => {
-        if (this.marketplaceBaseStore.isProdEnv) {
-          return (
-            dataProductCardState.environmentClassification ===
-            V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
-          );
-        } else if (this.marketplaceBaseStore.isProdParEnv) {
-          return (
-            dataProductCardState.environmentClassification ===
-              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL ||
-            (this.filterState.devEnvironment &&
-              dataProductCardState.environmentClassification ===
-                V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT)
-          );
-        } else {
-          return true;
-        }
-      }) as BaseProductCardState[]
+      this.dataProductCardStates.filter((dataProductCardState) =>
+        this.marketplaceBaseStore.envState.filterDataProduct(
+          dataProductCardState.environmentClassification,
+        ),
+      ) as BaseProductCardState[]
     )
-      .concat(this.legacyDataProductCardStates as BaseProductCardState[])
+      .concat(
+        this.marketplaceBaseStore.envState.supportsLegacyDataProducts()
+          ? (this.legacyDataProductCardStates as BaseProductCardState[])
+          : [],
+      )
       .filter((productCardState) => {
         // Check if product title matches search filter
         const titleMatch =
@@ -152,12 +168,23 @@ export class LegendMarketplaceSearchResultsStore {
     this.legacyDataProductCardStates = legacyDataProductCardStates;
   }
 
-  handleSearch(query: string | undefined) {
-    this.filterState.search = query;
+  handleFilterToggle(filterType: DataProductFilterType): void {
+    switch (filterType) {
+      case DataProductFilterType.MODELED_DATA_PRODUCTS:
+        this.filterState.modeledDataProducts =
+          !this.filterState.modeledDataProducts;
+        break;
+      default:
+        break;
+    }
+    LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
+      this.marketplaceBaseStore.applicationStore.userDataService,
+      this.filterState.currentFilterValues,
+    );
   }
 
-  setDevEnvironmentFilter(value: boolean): void {
-    this.filterState.devEnvironment = value;
+  handleSearch(query: string | undefined) {
+    this.filterState.search = query;
   }
 
   setSort(sort: DataProductSort): void {

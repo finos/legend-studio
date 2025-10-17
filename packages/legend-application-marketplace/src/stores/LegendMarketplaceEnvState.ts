@@ -26,7 +26,7 @@ export abstract class LegendMarketplaceEnvState {
 
   abstract supportsLegacyDataProducts(): boolean;
   abstract filterDataProduct(
-    classification: V1_EntitlementsLakehouseEnvironmentType,
+    classification: V1_EntitlementsLakehouseEnvironmentType | undefined,
   ): boolean;
 }
 
@@ -38,7 +38,7 @@ export class ProdLegendMarketplaceEnvState extends LegendMarketplaceEnvState {
   }
 
   filterDataProduct(
-    classification: V1_EntitlementsLakehouseEnvironmentType,
+    classification: V1_EntitlementsLakehouseEnvironmentType | undefined,
   ): boolean {
     return (
       classification === V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
@@ -54,12 +54,13 @@ export class ProdParallelLegendMarketplaceEnvState extends LegendMarketplaceEnvS
   }
 
   filterDataProduct(
-    classification: V1_EntitlementsLakehouseEnvironmentType,
+    classification: V1_EntitlementsLakehouseEnvironmentType | undefined,
   ): boolean {
     return (
       classification ===
         V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL ||
-      classification === V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT
+      classification === V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT ||
+      classification === undefined
     );
   }
 }

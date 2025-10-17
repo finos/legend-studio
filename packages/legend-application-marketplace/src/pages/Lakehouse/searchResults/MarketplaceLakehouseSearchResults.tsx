@@ -58,6 +58,7 @@ import {
 } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import {
   type LegendMarketplaceSearchResultsStore,
+  DataProductFilterType,
   DataProductSort,
 } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 
@@ -80,15 +81,15 @@ const SearchResultsSortFilterPanel = observer(
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={searchResultsStore.filterState.devEnvironment}
+                    checked={searchResultsStore.filterState.modeledDataProducts}
                     onChange={() =>
-                      searchResultsStore.setDevEnvironmentFilter(
-                        !searchResultsStore.filterState.devEnvironment,
+                      searchResultsStore.handleFilterToggle(
+                        DataProductFilterType.MODELED_DATA_PRODUCTS,
                       )
                     }
                   />
                 }
-                label="Dev Data Products"
+                label="Modeled Data Products"
               />
             </Box>
           </FormGroup>
@@ -203,8 +204,7 @@ export const MarketplaceLakehouseSearchResults =
             maxWidth="xxxl"
             className="marketplace-lakehouse-search-results__results-container"
           >
-            {searchResultsStore.marketplaceBaseStore
-              .enableProdParAdvancedFeatures && (
+            {searchResultsStore.marketplaceBaseStore.envState.supportsLegacyDataProducts() && (
               <SearchResultsSortFilterPanel
                 searchResultsStore={searchResultsStore}
               />
