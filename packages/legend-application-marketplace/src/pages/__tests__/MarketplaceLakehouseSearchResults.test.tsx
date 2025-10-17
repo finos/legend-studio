@@ -20,15 +20,17 @@ import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
 import { CORE_PURE_PATH } from '@finos/legend-graph';
 import {
-  mockDataProducts,
-  mockProductionSDLCDataProduct,
+  mockDataProductsResponse,
+  mockProductionSDLCDataProductEntity,
   mockProdParallelSDLCDataProduct,
+  mockLegacyDataProductSummaryEntity,
+  mockProductionSDLCDataProductNoTitleEntity,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
-import type { LegendMarketplaceApplicationConfigurationData } from '../../application/LegendMarketplaceApplicationConfig.js';
+import type { StoredSummaryEntity } from '@finos/legend-server-depot';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -48,12 +50,9 @@ jest.mock('swiper/modules', () => ({
   Autoplay: ({}) => <div></div>,
 }));
 
-const setupTestComponent = async (
-  query?: string,
-  extraConfigData?: Partial<LegendMarketplaceApplicationConfigurationData>,
-) => {
+const setupTestComponent = async (query?: string, dataProductEnv?: string) => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
-    extraConfigData,
+    dataProductEnv,
   });
   jest
     .spyOn(
@@ -65,7 +64,7 @@ const setupTestComponent = async (
   createSpy(
     MOCK__baseStore.lakehouseContractServerClient,
     'getDataProducts',
-  ).mockResolvedValue(mockDataProducts);
+  ).mockResolvedValue(mockDataProductsResponse);
   createSpy(
     MOCK__baseStore.depotServerClient,
     'getVersionEntities',
@@ -84,8 +83,21 @@ const setupTestComponent = async (
           {
             entity: {
               classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-              content: mockProductionSDLCDataProduct,
+              content: mockProductionSDLCDataProductEntity,
               path: 'test::dataproduct::TestSDLCDataProduct',
+            },
+          },
+        ];
+      } else if (
+        groupId === 'com.example.analytics' &&
+        artifactId === 'customer-analytics-notitle'
+      ) {
+        return [
+          {
+            entity: {
+              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+              content: mockProductionSDLCDataProductNoTitleEntity,
+              path: 'test::dataproduct::SDLCDataProductNoTitle',
             },
           },
         ];
@@ -111,7 +123,9 @@ const setupTestComponent = async (
   createSpy(
     MOCK__baseStore.depotServerClient,
     'getEntitiesSummaryByClassifier',
-  ).mockResolvedValue([]);
+  ).mockResolvedValue([
+    mockLegacyDataProductSummaryEntity,
+  ] as unknown as PlainObject<StoredSummaryEntity>[]);
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     MOCK__baseStore,
@@ -131,21 +145,43 @@ test('renders search box pre-filled based on URL query param', async () => {
   expect(screen.getByDisplayValue('data')).toBeDefined();
 });
 
-test('displays cards for SDLC data products', async () => {
-  await setupTestComponent();
+test('Prod data product environment only displays production data products', async () => {
+  await setupTestComponent(undefined, 'prod');
 
-  // Check for SLDC data products
-  await screen.findAllByText('SDLC Production Data Product');
+  expect(await screen.findByText('2 Products'));
+
+  // Data product with title shows title
+  expect(screen.getAllByText('SDLC Production Data Product')).toHaveLength(2);
   screen.getByText('1.2.0');
-  screen.getByText('PRODUCTION');
+  expect(screen.getAllByText('PRODUCTION')).toHaveLength(2);
   screen.getByText(
     'Comprehensive customer analytics data for business intelligence and reporting',
   );
 
-  // Check that SDLC data product without title uses ID
-  await screen.findAllByText('SDLC_PROD_PARALLEL_DATAPRODUCT');
-  screen.getByText('master-SNAPSHOT');
-  screen.getByText('PRODUCTION_PARALLEL');
+  // Data product without title shows name
+  expect(
+    screen.getAllByText('SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE'),
+  ).toHaveLength(2);
+  screen.getByText('1.3.0');
+
+  // Doesn't show non-production data products
+  expect(screen.queryByText('SDLC Prod-Parallel Data Product')).toBeNull();
+  expect(screen.queryByText('SDLC Development Data Product')).toBeNull();
+});
+
+test('Production-parallel environment displays production-parallel and development data products', async () => {
+  await setupTestComponent(undefined, 'prod-par');
+
+  expect(await screen.findByText('2 Products'));
+
+  expect(screen.getAllByText('SDLC Prod-Parallel Data Product')).toHaveLength(
+    2,
+  );
+  expect(screen.getAllByText('SDLC Development Data Product')).toHaveLength(2);
+
+  // Doesn't show production data products
+  expect(screen.queryByText('SDLC Production Data Product')).toBeNull();
+  expect(screen.queryByText('SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE')).toBeNull();
 });
 
 test('shows info popper for SDLC data products with correct details', async () => {
@@ -180,7 +216,7 @@ test('shows info popper for SDLC data products with correct details', async () =
   screen.getByText('Producer Environment Name');
   screen.getByText('production-analytics');
   screen.getByText('Producer Environment Type');
-  expect(screen.getAllByText('PRODUCTION')).toHaveLength(2);
+  expect(screen.getAllByText('PRODUCTION')).toHaveLength(3);
 
   screen.getByText('Data Product Project');
   screen.getByText('Group');
@@ -194,10 +230,48 @@ test('shows info popper for SDLC data products with correct details', async () =
 });
 
 test('filters data products by name based on query param', async () => {
-  await setupTestComponent('production');
+  await setupTestComponent('no_title');
 
-  await screen.findAllByText('SDLC Production Data Product');
-  expect(screen.queryByText('SDLC_PROD_PARALLEL_DATAPRODUCT')).toBeNull();
+  expect(await screen.findByText('1 Products'));
+
+  expect(
+    screen.getAllByText('SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE'),
+  ).toHaveLength(2);
+  expect(screen.queryByText('SDLC Production Data Product')).toBeNull();
+});
+
+test('Filter Panel shows up for prod data product env and filters modeled data products', async () => {
+  await setupTestComponent(undefined, 'prod');
+
+  expect(await screen.findByText('2 Products'));
+
+  // Check filter panel is present
+  screen.getByText('Filters');
+  const modeledDataProductsFilterButton = screen.getByText(
+    'Include Modeled Data Products',
+  );
+
+  // Check legacy data product is not present
+  expect(screen.queryByText('LegacyDataProduct')).toBeNull();
+
+  // Toggle on filter
+  fireEvent.click(modeledDataProductsFilterButton);
+
+  screen.getByText('3 Products');
+
+  // Check that legacy data products are included
+  expect(await screen.findAllByText('LegacyDataProduct')).toHaveLength(2);
+});
+
+test("Filter Panel doesn't show up for prod-par data product env", async () => {
+  await setupTestComponent(undefined, 'prod-par');
+
+  // Check filter is not present
+  expect(screen.queryByText('Filters')).toBeNull();
+  expect(screen.queryByText('Include Modeled Data Products')).toBeNull();
+
+  // Check that legacy data products are not included
+  expect(screen.queryByText('LegacyDataProduct')).toBeNull();
 });
 
 test('Sort dropdown correctly sorts and filters data products', async () => {
@@ -208,35 +282,6 @@ test('Sort dropdown correctly sorts and filters data products', async () => {
   fireEvent.mouseDown(sortDropdown);
   screen.getByText('Name A-Z');
   screen.getByText('Name Z-A');
-});
-
-test('Production environment only displays production data products', async () => {
-  await setupTestComponent(undefined, { env: 'prod' });
-
-  expect(
-    await screen.findAllByText('SDLC Production Data Product'),
-  ).toHaveLength(2);
-  expect(screen.queryByText('SDLC_PROD_PARALLEL_DATAPRODUCT')).toBeNull();
-});
-
-test('Production-parallel environment only displays production-parallel data products', async () => {
-  await setupTestComponent(undefined, { env: 'prod-par' });
-
-  expect(
-    await screen.findAllByText('SDLC_PROD_PARALLEL_DATAPRODUCT'),
-  ).toHaveLength(2);
-  expect(screen.queryByText('SDLC Production Data Product')).toBeNull();
-});
-
-test('Lower environments display all data products', async () => {
-  await setupTestComponent();
-
-  expect(
-    await screen.findAllByText('SDLC Production Data Product'),
-  ).toHaveLength(2);
-  expect(
-    await screen.findAllByText('SDLC_PROD_PARALLEL_DATAPRODUCT'),
-  ).toHaveLength(2);
 });
 
 test('Clicking on SDLC data product card navigates to data product viewer page', async () => {

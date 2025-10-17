@@ -35,7 +35,6 @@ import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../applicati
 import { LegendMarketplaceFrameworkProvider } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
-import type { LegendMarketplaceApplicationConfigurationData } from '../../application/LegendMarketplaceApplicationConfig.js';
 
 jest.mock('@finos/legend-graph', () => {
   const actual: Record<string, unknown> = jest.requireActual(
@@ -67,9 +66,7 @@ export const TEST__provideMockLegendMarketplaceBaseStore =
     pluginManager?: LegendMarketplacePluginManager;
     extraPlugins?: AbstractPlugin[];
     extraPresets?: AbstractPreset[];
-    extraConfigData?:
-      | Partial<LegendMarketplaceApplicationConfigurationData>
-      | undefined;
+    dataProductEnv?: string | undefined;
   }): Promise<LegendMarketplaceBaseStore> => {
     const pluginManager =
       customization?.pluginManager ?? LegendMarketplacePluginManager.create();
@@ -84,7 +81,7 @@ export const TEST__provideMockLegendMarketplaceBaseStore =
       customization?.applicationStore ??
       new ApplicationStore(
         TEST__getTestLegendMarketplaceApplicationConfig(
-          customization?.extraConfigData,
+          customization?.dataProductEnv,
         ),
         pluginManager,
       );
