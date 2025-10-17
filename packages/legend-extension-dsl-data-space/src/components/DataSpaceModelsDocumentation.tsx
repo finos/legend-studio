@@ -112,11 +112,13 @@ const ElementInfoTooltip: React.FC<{
         tooltip: 'data-space__viewer__tooltip',
         tooltipPlacementRight: 'data-space__viewer__tooltip--right',
       }}
-      TransitionProps={{
-        // disable transition
-        // NOTE: somehow, this is the only workaround we have, if for example
-        // we set `appear = true`, the tooltip will jump out of position
-        timeout: 0,
+      slotProps={{
+        transition: {
+          // disable transition
+          // NOTE: somehow, this is the only workaround we have, if for example
+          // we set `appear = true`, the tooltip will jump out of position
+          timeout: 0,
+        },
       }}
       title={
         <div className="data-space__viewer__tooltip__content">
@@ -167,11 +169,13 @@ const PropertyInfoTooltip: React.FC<{
         tooltip: 'data-space__viewer__tooltip',
         tooltipPlacementRight: 'data-space__viewer__tooltip--right',
       }}
-      TransitionProps={{
-        // disable transition
-        // NOTE: somehow, this is the only workaround we have, if for example
-        // we set `appear = true`, the tooltip will jump out of position
-        timeout: 0,
+      slotProps={{
+        transition: {
+          // disable transition
+          // NOTE: somehow, this is the only workaround we have, if for example
+          // we set `appear = true`, the tooltip will jump out of position
+          timeout: 0,
+        },
       }}
       title={
         <div className="data-space__viewer__tooltip__content">
@@ -1018,8 +1022,10 @@ const DataSpaceModelsDocumentationSearchBar = observer(
         </button>
         <BasePopover
           open={Boolean(documentationState.showSearchConfigurationMenu)}
-          TransitionProps={{
-            onEnter: onSearchConfigMenuOpen,
+          slotProps={{
+            transition: {
+              onEnter: onSearchConfigMenuOpen,
+            },
           }}
           anchorEl={searchConfigTriggerRef.current}
           onClose={closeSearchConfigMenu}

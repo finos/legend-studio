@@ -124,9 +124,11 @@ const DataSpaceTemplateQueryDialog = observer(
         <div>
           <BasePopover
             open={queryBuilderState.isTemplateQueryDialogOpen}
-            PaperProps={{
-              classes: {
-                root: '"query-builder__data-space__template-query-panel__container__root',
+            slotProps={{
+              paper: {
+                classes: {
+                  root: '"query-builder__data-space__template-query-panel__container__root',
+                },
               },
             }}
             className="query-builder__data-space__template-query-panel__container"

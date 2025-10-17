@@ -680,8 +680,10 @@ export const CustomDatePicker = <
       )}
       <BasePopover
         open={Boolean(anchorEl)}
-        TransitionProps={{
-          onEnter: handleEnter,
+        slotProps={{
+          transition: {
+            onEnter: handleEnter,
+          },
         }}
         anchorEl={anchorEl}
         onClose={closeCustomDatePickerPopover}

@@ -174,13 +174,13 @@ export function DropdownMenu(props: DropdownMenuProps) {
             },
           },
         },
+        transition: {
+          onEnter: () => setHasBeenOpened(true),
+        },
       }}
       elevation={1}
       marginThreshold={0}
       transitionDuration={0}
-      TransitionProps={{
-        onEnter: () => setHasBeenOpened(true),
-      }}
       onClose={onClose}
       {...menuProps}
     >
