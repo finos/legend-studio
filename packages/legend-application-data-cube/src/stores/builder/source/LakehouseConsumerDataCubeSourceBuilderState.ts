@@ -332,7 +332,6 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       lakehouseOrigin.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
       rawSource.origin = lakehouseOrigin;
     } else {
-      this._engine.registerAdhocDataProductGraphGrammar(this.fullGraphGrammar);
       rawSource.origin = new RawLakehouseAdhocOrigin();
     }
     rawSource.paths = this.paths;
