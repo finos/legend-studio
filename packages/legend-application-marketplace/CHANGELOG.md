@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.25
+
+### Patch Changes
+
+- [#4561](https://github.com/finos/legend-studio/pull/4561) [`90aca84`](https://github.com/finos/legend-studio/commit/90aca84797103981c507716b2086b28fc155d3e2) ([@bojja-gs](https://github.com/bojja-gs)) - Integrating full UI with workflow for terminals and addons
+
+- [#4551](https://github.com/finos/legend-studio/pull/4551) [`69bc7f2`](https://github.com/finos/legend-studio/commit/69bc7f270080b56414da6525aca51b61a2a83cbf) ([@travisstebbins](https://github.com/travisstebbins)) - Use DataProduct artifact to display access point column names/types
+
 ## 0.1.24
 
 ### Patch Changes
