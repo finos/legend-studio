@@ -21,13 +21,13 @@ import {
   assertErrorThrown,
   ActionState,
 } from '@finos/legend-shared';
-import type {
-  CartItem,
-  CartItemRequest,
-  CartItemResponse,
-  CartSummary,
-  OrderDetails,
-  TerminalResult,
+import {
+  type CartItem,
+  type CartItemRequest,
+  type CartItemResponse,
+  type CartSummary,
+  type OrderDetails,
+  type TerminalResult,
 } from '@finos/legend-server-marketplace';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
@@ -44,7 +44,7 @@ enum BUSINESS_REASONS {
 export class CartStore {
   readonly baseStore: LegendMarketplaceBaseStore;
 
-  items = new Map<number, CartItem>();
+  items: Record<number, CartItem[]> = {};
   businessReason: string | undefined = undefined;
   readonly initState = ActionState.create();
   readonly loadingState = ActionState.create();
@@ -64,9 +64,6 @@ export class CartStore {
       cartSummary: observable,
       setOpen: action,
       setBusinessReason: action,
-      addTerminalResult: action,
-      removeItem: action,
-      clear: action,
       initialize: flow,
       submitOrder: flow,
       refresh: flow,
@@ -86,14 +83,10 @@ export class CartStore {
     this.businessReason = val;
   }
 
-  addTerminalResult(cartItem: CartItem): void {
-    this.items.set(cartItem.id, cartItem);
-  }
-
-  *addToCartWithAPI(pr: TerminalResult): GeneratorFn<{
+  *addToCartWithAPI(cartItemData: CartItemRequest): GeneratorFn<{
     success: boolean;
     recommendations?: TerminalResult[];
-    message?: string;
+    message: string;
   }> {
     const applicationStore = this.baseStore.applicationStore;
     const user = applicationStore.identityService.currentUser;
@@ -106,8 +99,6 @@ export class CartStore {
 
     this.loadingState.inProgress();
     try {
-      const cartItemData: CartItemRequest = this.providerToCartRequest(pr);
-
       const response = (yield this.baseStore.marketplaceServerClient.addToCart(
         user,
         cartItemData,
@@ -119,32 +110,30 @@ export class CartStore {
         )) as CartSummary;
 
       this.refresh();
-      const successMessage: string = response.message;
-      toastManager.success(successMessage);
 
-      const recommendations: TerminalResult[] = response.marketplace_addons;
+      const responseMessage: string = response.message;
+      if (!/^2\d\d$/.test(String(response.status_code))) {
+        toastManager.warning(responseMessage);
+      } else {
+        toastManager.success(responseMessage);
+      }
+
+      const recommendations: TerminalResult[] =
+        response.marketplace_addons ?? response.marketplace_terminals ?? [];
 
       this.loadingState.complete();
       return {
         success: true,
         recommendations,
-        message: successMessage,
+        message: responseMessage,
       };
     } catch (error) {
       assertErrorThrown(error);
-      const message = `Failed to add ${pr.productName} to cart: ${error.message}`;
+      const message = `Failed to add ${cartItemData.productName} to cart: ${error.message}`;
       toastManager.error(message);
       this.loadingState.fail();
       return { success: false, message };
     }
-  }
-
-  removeItem(id: number): void {
-    this.items.delete(id);
-  }
-
-  clear(): void {
-    this.items.clear();
   }
 
   providerToCartRequest(provider: TerminalResult): CartItemRequest {
@@ -156,6 +145,7 @@ export class CartStore {
       price: provider.price,
       description: provider.description,
       isOwned: provider.isOwned ? 'true' : 'false',
+      vendorProfileId: provider.vendorProfileId ?? provider.id,
     };
   }
 
@@ -185,20 +175,16 @@ export class CartStore {
     }
 
     try {
-      const cartItems = (yield this.baseStore.marketplaceServerClient.getCart(
+      this.items = (yield this.baseStore.marketplaceServerClient.getCart(
         user,
-      )) as CartItem[];
+      )) as Record<number, CartItem[]>;
 
       this.cartSummary =
         (yield this.baseStore.marketplaceServerClient.getCartSummary(
           user,
         )) as CartSummary;
-      this.items = new Map(cartItems.map((item: CartItem) => [item.id, item]));
     } catch (error) {
       assertErrorThrown(error);
-      if (this.items.size > 0) {
-        toastManager.warning('Failed to refresh cart (using local state only)');
-      }
       this.baseStore.applicationStore.logService.error(
         LogEvent.create(APPLICATION_EVENT.IDENTITY_AUTO_FETCH__FAILURE),
         `Failed to refresh cart: ${error.message}`,
@@ -256,9 +242,7 @@ export class CartStore {
       const orderData: OrderDetails = {
         ordered_by: user,
         kerberos: user,
-        order_items: Object.fromEntries(
-          Array.from(this.items.entries()).map(([id, item]) => [id, [item]]),
-        ),
+        order_items: this.items,
         business_justification: this.businessReason,
       };
 
@@ -268,7 +252,7 @@ export class CartStore {
 
       toastManager.notify('Order created successfully!', 'success');
 
-      this.clear();
+      this.refresh();
       this.setBusinessReason(undefined);
       this.open = false;
       this.submitState.complete();
@@ -292,7 +276,7 @@ export class CartStore {
     this.loadingState.inProgress();
     try {
       yield this.baseStore.marketplaceServerClient.clearCart(user);
-      this.clear();
+      this.refresh();
       yield* this.getCartSummary();
       toastManager.success('Cart cleared successfully');
       this.setOpen(false);
@@ -317,12 +301,6 @@ export class CartStore {
     this.loadingState.inProgress();
     try {
       yield this.baseStore.marketplaceServerClient.deleteCartItem(user, cartId);
-
-      this.items.forEach((item, key) => {
-        if (item.cartId === cartId) {
-          this.items.delete(key);
-        }
-      });
 
       yield* this.getCartSummary();
       this.refresh();

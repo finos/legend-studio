@@ -41,37 +41,40 @@ export const LegendMarketplaceTerminalCard = observer(
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [showRecommendationsModal, setShowRecommendationsModal] =
       useState(false);
-    const [recommendedAddOns, setRecommendedAddOns] = useState<
-      TerminalResult[]
-    >([]);
+    const [recommendedItems, setRecommendedItems] = useState<TerminalResult[]>(
+      [],
+    );
+
+    const [modalMessage, setModalMessage] = useState<string>('');
 
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const applicationStore = legendMarketplaceBaseStore.applicationStore;
     const assetUrl = applicationStore.config.assetsBaseUrl;
 
-    const productToImageMap = (imageName: string): string | undefined => {
-      return applicationStore.config.assetsProductImageMap[imageName];
-    };
-
     const getImageUrl = (): string => {
-      const key = terminalResult.productName.toUpperCase();
-      return productToImageMap(key)
-        ? `${assetUrl}/${productToImageMap(key)}`
-        : `${assetUrl}/images1.jpg`;
+      const maxImageCount = 7;
+      const randomIndex = Math.floor(Math.random() * maxImageCount) + 1;
+      const selectedImage = `${assetUrl}/images${randomIndex}.jpg`;
+      return selectedImage;
     };
 
     const handleAddToCart = async () => {
       setIsAddingToCart(true);
       try {
         const result = await flowResult(
-          legendMarketplaceBaseStore.cartStore.addToCartWithAPI(terminalResult),
+          legendMarketplaceBaseStore.cartStore.addToCartWithAPI(
+            legendMarketplaceBaseStore.cartStore.providerToCartRequest(
+              terminalResult,
+            ),
+          ),
         );
         if (
           result.success &&
           result.recommendations &&
           result.recommendations.length > 0
         ) {
-          setRecommendedAddOns(result.recommendations);
+          setRecommendedItems(result.recommendations);
+          setModalMessage(result.message);
           setShowRecommendationsModal(true);
         }
       } catch (error) {
@@ -85,7 +88,7 @@ export const LegendMarketplaceTerminalCard = observer(
     };
 
     const isInCart = (providerId: number): boolean =>
-      legendMarketplaceBaseStore.cartStore.items.has(providerId);
+      providerId in legendMarketplaceBaseStore.cartStore.items;
 
     const handleViewCart = () => {
       legendMarketplaceBaseStore.cartStore.setOpen(true);
@@ -154,8 +157,9 @@ export const LegendMarketplaceTerminalCard = observer(
                   label={`${new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'USD',
+                    roundingIncrement: 1,
                     minimumFractionDigits: 0,
-                    maximumFractionDigits: 2,
+                    maximumFractionDigits: 0,
                   }).format(terminalResult.price)}/access`}
                   className="legend-marketplace-terminal-card__price"
                   sx={{ color: 'white', backgroundColor: '#077d55' }}
@@ -167,7 +171,8 @@ export const LegendMarketplaceTerminalCard = observer(
 
         <RecommendedAddOnsModal
           terminal={terminalResult}
-          recommendedItems={recommendedAddOns}
+          recommendedItems={recommendedItems}
+          message={modalMessage}
           showModal={showRecommendationsModal}
           setShowModal={setShowRecommendationsModal}
           onViewCart={handleViewCart}

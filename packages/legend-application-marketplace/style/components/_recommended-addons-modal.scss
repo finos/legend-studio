@@ -58,11 +58,10 @@
 
   &__success-icon {
     color: var(--color-success);
-    font-size: 2.4rem;
-    background: rgb(34 197 94 / 10%);
-    padding: 1rem;
-    border-radius: 50%;
-    border: 2px solid rgb(34 197 94 / 20%);
+  }
+
+  &__warning-icon {
+    color: var(--color-warning);
   }
 
   &__header-content {
@@ -258,7 +257,7 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
 
-    &--free {
+    &__free {
       background: linear-gradient(
         135deg,
         var(--color-modal-success-primary),
@@ -315,7 +314,7 @@
       }
     }
 
-    &--added {
+    &__added {
       background: linear-gradient(
         135deg,
         rgb(34 197 94 / 10%),
