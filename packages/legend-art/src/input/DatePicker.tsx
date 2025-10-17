@@ -18,23 +18,19 @@ import { useForkRef } from '@mui/material';
 import {
   DatePicker as BaseDatePicker,
   DateCalendar as BaseDateCalendar,
-  type BaseSingleInputFieldProps,
   type DatePickerProps,
-  type DateValidationError,
-  type FieldSection,
-  type UseDateFieldProps,
   type DateCalendarProps,
 } from '@mui/x-date-pickers';
-import { useDateField } from '@mui/x-date-pickers/DateField/useDateField.js';
+import { type DatePickerFieldProps as ImportedDatePickerFieldProps } from '@mui/x-date-pickers/DatePicker';
 import { forwardRef } from 'react';
 
-export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps<Date>>(
+export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(
   function DatePicker(props, ref) {
     return <BaseDateCalendar ref={ref} {...props} />;
   },
 );
 
-export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps<Date>>(
+export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
   function DatePicker(props, ref) {
     return <BaseDatePicker ref={ref} {...props} />;
   },
@@ -96,24 +92,19 @@ const DatePickerFieldInput = forwardRef<
   );
 });
 
-interface DatePickerFieldProps
-  extends UseDateFieldProps<Date, false>,
-    BaseSingleInputFieldProps<
-      Date | null,
-      Date,
-      FieldSection,
-      false,
-      DateValidationError
-    > {}
+type DatePickerFieldProps = Partial<ImportedDatePickerFieldProps> & {
+  className?: string;
+};
 
 export const DatePickerField = forwardRef<
   HTMLInputElement,
   DatePickerFieldProps
 >(function DatePickerField(props, ref) {
-  const { slots, slotProps, onClear, ...textFieldProps } = props;
-  const fieldResponse = useDateField<Date, false, DatePickerFieldProps>({
-    ...textFieldProps,
-  });
-
-  return <DatePickerFieldInput {...fieldResponse} ref={ref} />;
+  return (
+    <DatePickerFieldInput
+      {...props}
+      enableAccessibleFieldDOMStructure={false}
+      ref={ref}
+    />
+  );
 });

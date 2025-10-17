@@ -20,7 +20,7 @@ import {
   ThemeProvider,
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3/index.js';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 declare module '@mui/system' {
   interface BreakpointOverrides {
