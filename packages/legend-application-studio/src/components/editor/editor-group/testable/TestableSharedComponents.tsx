@@ -121,7 +121,11 @@ export const SharedDataElementModal = observer(
         open={true}
         onClose={close}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           darkMode={
@@ -193,7 +197,11 @@ export const RenameModal = observer(
         open={showModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <form
           onSubmit={(event) => {
@@ -613,8 +621,10 @@ const AssertFailViewer = observer(
                 open={showGenericDiffModal}
                 onClose={() => setShowGenericDiffModal(false)}
                 classes={{ container: 'search-modal__container' }}
-                PaperProps={{
-                  classes: { root: 'search-modal__inner-container' },
+                slotProps={{
+                  paper: {
+                    classes: { root: 'search-modal__inner-container' },
+                  },
                 }}
               >
                 <Modal
@@ -952,7 +962,11 @@ export const ExternalFormatParameterEditorModal = observer(
         open={true}
         onClose={onClose}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           darkMode={

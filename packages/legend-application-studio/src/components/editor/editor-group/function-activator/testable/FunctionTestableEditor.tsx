@@ -535,7 +535,11 @@ const NewParameterModal = observer(
         open={functionTestState.showNewParameterModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <form
           onSubmit={(event) => {
@@ -819,7 +823,11 @@ const CreateTestModal = observer(
         open={functionSuiteState.showCreateModal}
         onClose={close}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           darkMode={
@@ -1018,11 +1026,15 @@ const CreateFucntionTestSuiteModal = observer(
       <Dialog
         open={true}
         onClose={close}
-        TransitionProps={{
-          onEnter: handleEnter,
-        }}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          transition: {
+            onEnter: handleEnter,
+          },
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           darkMode={

@@ -417,7 +417,11 @@ export const ChangeExecutionModal = observer(
         open={executionState.showChangeExecModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <form
           onSubmit={(event) => {
@@ -580,7 +584,11 @@ export const NewExecutionParameterModal = observer(
         open={executionState.newKeyParameterModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <form
           onSubmit={(event) => {
@@ -634,7 +642,11 @@ const RenameModal = observer(
         open={showModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <form
           onSubmit={(event) => {

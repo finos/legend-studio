@@ -138,7 +138,11 @@ const RelationalTableIdentifierEditor = observer(
         open={dataState.showTableIdentifierModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <form
           onSubmit={(event) => {
@@ -260,7 +264,11 @@ const ImportModal = observer(
         open={dataState.showImportCSVModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           darkMode={

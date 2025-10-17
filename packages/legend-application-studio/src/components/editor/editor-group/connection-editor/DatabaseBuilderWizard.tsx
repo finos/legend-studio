@@ -301,9 +301,11 @@ export const DatabaseBuilderWizard = observer(
         open={databaseBuilderState.showModal}
         onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{
-          classes: {
-            root: 'search-modal__inner-container database-builder__container',
+        slotProps={{
+          paper: {
+            classes: {
+              root: 'search-modal__inner-container database-builder__container',
+            },
           },
         }}
       >

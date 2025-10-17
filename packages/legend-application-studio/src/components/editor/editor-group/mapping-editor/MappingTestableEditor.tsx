@@ -191,11 +191,15 @@ const CreateTestSuiteModal = observer(
       <Dialog
         open={true}
         onClose={close}
-        TransitionProps={{
-          onEnter: handleEnter,
-        }}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          transition: {
+            onEnter: handleEnter,
+          },
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           darkMode={
@@ -338,7 +342,11 @@ const CreateTestModal = observer(
         open={mappingSuiteState.showCreateModal}
         onClose={close}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           darkMode={
@@ -521,7 +529,11 @@ const CreateStoreTestDataModal = observer(
         open={mappingTestableDataState.showNewModal}
         onClose={close}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           darkMode={
