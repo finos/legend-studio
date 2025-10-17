@@ -31,7 +31,6 @@ import type {
 import type { AdhocDataProductDeployResponse } from './models/AdhocDataProductDeployResponse.js';
 import type {
   V1_IngestEnvironment,
-  V1_SandboxDataProductDeploymentResponse,
   V1_IngestDefinition,
   V1_ProducerEnvironment,
 } from '@finos/legend-graph';
@@ -130,12 +129,6 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
       {},
       this._token(token),
     );
-
-  getDeployedIngestDefinitions = (
-    ingestServerUrl: string | undefined,
-    token: string | undefined,
-  ): Promise<PlainObject<V1_SandboxDataProductDeploymentResponse>> =>
-    this.get(`${this._dataProduct(ingestServerUrl)}`, {}, this._token(token));
 
   getProducerEnvironment = (
     deploymentId: number,

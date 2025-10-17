@@ -94,28 +94,28 @@ import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type DataProduct,
+  type DataProductElement,
+  type DataProductElementScope,
+  type DataProductRuntimeInfo,
+  type Expertise,
   type GraphManagerState,
   type LakehouseAccessPoint,
-  type V1_DataProductArtifactAccessPointGroup,
-  type V1_DataProductArtifactAccessPointImplementation,
-  type V1_DataProductArtifactGeneration,
   type Mapping,
-  type PackageableRuntime,
-  type DataProductRuntimeInfo,
   type PackageableElement,
-  type DataProductElementScope,
-  type DataProductElement,
-  type Expertise,
+  type PackageableRuntime,
+  type V1_AccessPointGroupInfo,
+  type V1_AccessPointImplementation,
+  type V1_DataProductArtifact,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
   LakehouseTargetEnv,
   StereotypeExplicitReference,
+  V1_DataProduct,
   V1_DataProductIconLibraryId,
-  validate_PureExecutionMapping,
   V1_PureGraphManager,
   V1_RemoteEngine,
-  V1_DataProduct,
+  validate_PureExecutionMapping,
 } from '@finos/legend-graph';
 import {
   accessPoint_setClassification,
@@ -161,6 +161,7 @@ import {
   ProductViewer,
 } from '@finos/legend-extension-dsl-data-product';
 import type { LegendStudioApplicationStore } from '../../../../stores/LegendStudioBaseStore.js';
+import type { DepotServerClient } from '@finos/legend-server-depot';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -494,16 +495,15 @@ export const LakehouseDataProductAccessPointEditor = observer(
         if (dataProductContent) {
           const contentJson = JSON.parse(
             dataProductContent,
-          ) as V1_DataProductArtifactGeneration;
+          ) as V1_DataProductArtifact;
           const apPlanGeneration = contentJson.accessPointGroups
             .find(
-              (group: V1_DataProductArtifactAccessPointGroup) =>
+              (group: V1_AccessPointGroupInfo) =>
                 group.id === groupState.value.id,
             )
             ?.accessPointImplementations.find(
-              (
-                apImplementation: V1_DataProductArtifactAccessPointImplementation,
-              ) => apImplementation.id === accessPoint.id,
+              (apImplementation: V1_AccessPointImplementation) =>
+                apImplementation.id === accessPoint.id,
             );
 
           setDebugOutput(JSON.stringify(apPlanGeneration, null, 2));
@@ -2346,6 +2346,7 @@ const getDataProductViewerState = (
   product: DataProduct,
   graphManagerState: GraphManagerState,
   applicationStore: LegendStudioApplicationStore,
+  depotServerClient: DepotServerClient,
 ) => {
   const graphManager = guaranteeType(
     graphManagerState.graphManager,
@@ -2356,16 +2357,19 @@ const getDataProductViewerState = (
     V1_DataProduct,
   );
   const remoteEngine = guaranteeType(graphManager.engine, V1_RemoteEngine);
-  return new DataProductViewerState(
+  const dataProductViewerState = new DataProductViewerState(
     v1_dataProduct,
     applicationStore,
     remoteEngine.getEngineServerClient(),
+    depotServerClient,
     graphManagerState,
     applicationStore.config.options.dataProductConfig,
     undefined,
     undefined,
     {},
   );
+  dataProductViewerState.init();
+  return dataProductViewerState;
 };
 
 export const DataProductEditor = observer(() => {
@@ -2375,14 +2379,9 @@ export const DataProductEditor = observer(() => {
   const product = dataProductEditorState.product;
   const isReadOnly = dataProductEditorState.isReadOnly;
   const auth = useAuth();
-  const [showPreview, setshowPreview] = useState(false);
-  const [dataProductViewerState, setDataProductViewerState] = useState(
-    getDataProductViewerState(
-      product,
-      editorStore.graphManagerState,
-      editorStore.applicationStore,
-    ),
-  );
+  const [showPreview, setShowPreview] = useState(false);
+  const [dataProductViewerState, setDataProductViewerState] =
+    useState<DataProductViewerState>();
 
   const deployDataProduct = (): void => {
     // Trigger OAuth flow if not authenticated
@@ -2464,6 +2463,7 @@ export const DataProductEditor = observer(() => {
                 product,
                 editorStore.graphManagerState,
                 editorStore.applicationStore,
+                editorStore.depotServerClient,
               ),
             );
           }
@@ -2473,6 +2473,7 @@ export const DataProductEditor = observer(() => {
     [
       editorStore.applicationStore,
       editorStore.graphManagerState,
+      editorStore.depotServerClient,
       product,
       showPreview,
     ],
@@ -2494,7 +2495,21 @@ export const DataProductEditor = observer(() => {
             <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               <button
                 className="btn__dropdown-combo__label"
-                onClick={() => setshowPreview(!showPreview)}
+                onClick={() => {
+                  setShowPreview((prev) => {
+                    if (!prev) {
+                      setDataProductViewerState(
+                        getDataProductViewerState(
+                          product,
+                          editorStore.graphManagerState,
+                          editorStore.applicationStore,
+                          editorStore.depotServerClient,
+                        ),
+                      );
+                    }
+                    return !prev;
+                  });
+                }}
                 title={showPreview ? 'Hide Preview' : 'Preview Description'}
                 tabIndex={-1}
                 style={{
@@ -2541,8 +2556,10 @@ export const DataProductEditor = observer(() => {
           <DataProductSidebar dataProductEditorState={dataProductEditorState} />
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel>{renderActivivtyBarTab()}</ResizablePanel>
-            {showPreview && <ResizablePanelSplitter />}
-            {showPreview && (
+            {showPreview && dataProductViewerState && (
+              <ResizablePanelSplitter />
+            )}
+            {showPreview && dataProductViewerState && (
               <ResizablePanel>
                 <div className="data-product-editor__preview-container theme__hc-light">
                   <ProductViewer productViewerState={dataProductViewerState} />
