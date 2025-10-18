@@ -311,6 +311,10 @@ export {
   V1_UserApprovalStatus,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_ConsumerEntitlements.js';
 export {
+  V1_getEntitlementsEnvFromIngestEnv,
+  V1_isIngestEnvsCompatibleWithEntitlements,
+} from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_CoreLakehouseHelper.js';
+export {
   V1_AdhocTeam,
   V1_AppDirLevel,
   V1_AppDirNode,

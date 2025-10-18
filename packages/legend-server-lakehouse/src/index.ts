@@ -21,3 +21,4 @@ export * from './LakehouseIngestServerClient.js';
 export * from './LakehousePlatformServerClient.js';
 export * from './LakehouseIngestionManager.js';
 export * from './LakehouseContractServerClient.js';
+export * from './helpers/V1_IngestHelpers.js';
