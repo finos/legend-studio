@@ -55,6 +55,12 @@ import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
 import { V1_deserializeDataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import { LegacyDataProductCardState } from './lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { DataProductCardState } from './lakehouse/dataProducts/DataProductCardState.js';
+import {
+  LegendMarketplaceEnv,
+  ProdLegendMarketplaceEnvState,
+  ProdParallelLegendMarketplaceEnvState,
+  type LegendMarketplaceEnvState,
+} from './LegendMarketplaceEnvState.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -63,6 +69,7 @@ export type LegendMarketplaceApplicationStore = ApplicationStore<
 
 export class LegendMarketplaceBaseStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
+  readonly envState: LegendMarketplaceEnvState;
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
@@ -75,6 +82,7 @@ export class LegendMarketplaceBaseStore {
   readonly cartStore: CartStore;
 
   readonly initState = ActionState.create();
+
   showDemoModal = false;
 
   constructor(applicationStore: LegendMarketplaceApplicationStore) {
@@ -88,6 +96,10 @@ export class LegendMarketplaceBaseStore {
     this.pluginManager = applicationStore.pluginManager;
 
     // marketplace
+    this.envState =
+      applicationStore.config.dataProductEnv === LegendMarketplaceEnv.PRODUCTION
+        ? new ProdLegendMarketplaceEnvState()
+        : new ProdParallelLegendMarketplaceEnvState();
     this.marketplaceServerClient = new MarketplaceServerClient({
       serverUrl: this.applicationStore.config.marketplaceServerUrl,
       subscriptionUrl: this.applicationStore.config.marketplaceSubscriptionUrl,

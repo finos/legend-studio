@@ -25,7 +25,7 @@ import {
   V1_PureGraphManager,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { mockDataProducts } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
+import { mockDataProductsResponse } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
 import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import type { BaseProductCardState } from '../../stores/lakehouse/dataProducts/BaseProductCardState.js';
@@ -37,6 +37,7 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   marketplace: {
     url: 'https://testMarketplaceUrl',
     subscriptionUrl: 'https://testSubscriptionUrl',
+    dataProductEnv: 'prod',
     userSearchUrl: 'https://testUserSearchUrl',
     userProfileImageUrl: 'https://testUserProfileImageUrl',
   },
@@ -90,12 +91,16 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
 };
 
 export const TEST__getTestLegendMarketplaceApplicationConfig = (
-  extraConfigData = {},
+  dataProductEnv?: string | undefined,
 ): LegendMarketplaceApplicationConfig => {
   const config = new LegendMarketplaceApplicationConfig({
     configData: {
       ...TEST_DATA__appConfig,
-      ...extraConfigData,
+      marketplace: {
+        ...TEST_DATA__appConfig.marketplace,
+        dataProductEnv:
+          dataProductEnv ?? TEST_DATA__appConfig.marketplace.dataProductEnv,
+      },
     },
     versionData: TEST__getApplicationVersionData(),
     baseAddress: '/marketplace/',
@@ -114,7 +119,7 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
     const mockDataProductDetail = guaranteeNonNullable(
       guaranteeNonNullable(
         (
-          mockDataProducts as unknown as V1_EntitlementsDataProductDetailsResponse
+          mockDataProductsResponse as unknown as V1_EntitlementsDataProductDetailsResponse
         ).dataProducts,
       )[0],
     );

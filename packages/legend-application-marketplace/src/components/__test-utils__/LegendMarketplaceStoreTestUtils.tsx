@@ -66,6 +66,7 @@ export const TEST__provideMockLegendMarketplaceBaseStore =
     pluginManager?: LegendMarketplacePluginManager;
     extraPlugins?: AbstractPlugin[];
     extraPresets?: AbstractPreset[];
+    dataProductEnv?: string | undefined;
   }): Promise<LegendMarketplaceBaseStore> => {
     const pluginManager =
       customization?.pluginManager ?? LegendMarketplacePluginManager.create();
@@ -79,7 +80,9 @@ export const TEST__provideMockLegendMarketplaceBaseStore =
     const applicationStore =
       customization?.applicationStore ??
       new ApplicationStore(
-        TEST__getTestLegendMarketplaceApplicationConfig(),
+        TEST__getTestLegendMarketplaceApplicationConfig(
+          customization?.dataProductEnv,
+        ),
         pluginManager,
       );
     const mockBaseStore =

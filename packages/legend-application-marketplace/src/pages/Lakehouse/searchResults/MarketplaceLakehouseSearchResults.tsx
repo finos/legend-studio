@@ -19,11 +19,9 @@ import {
   useLegendMarketplaceSearchResultsStore,
   withLegendMarketplaceSearchResultsStore,
 } from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   CheckIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
@@ -34,18 +32,11 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  FormLabel,
   Grid2 as Grid,
   MenuItem,
   Select,
   Typography,
 } from '@mui/material';
-import {
-  type LegendMarketplaceSearchResultsStore,
-  DataProductFilterType,
-  DataProductSort,
-  UnmodeledDataProductDeployType,
-} from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import {
   generateLakehouseDataProductPath,
   generateLakehouseSearchResultsRoute,
@@ -55,10 +46,7 @@ import {
 import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
-import {
-  V1_IngestEnvironmentClassification,
-  V1_SdlcDeploymentDataProductOrigin,
-} from '@finos/legend-graph';
+import { V1_SdlcDeploymentDataProductOrigin } from '@finos/legend-graph';
 import { DataProductCardState } from '../../../stores/lakehouse/dataProducts/DataProductCardState.js';
 import { LegacyDataProductCardState } from '../../../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
@@ -68,17 +56,14 @@ import {
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
 } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import {
+  type LegendMarketplaceSearchResultsStore,
+  DataProductSort,
+} from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 
 const SearchResultsSortFilterPanel = observer(
   (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
     const { searchResultsStore } = props;
-
-    const [isUnmodeledFilterConfigOpen, setIsUnmodeledFilterConfigOpen] =
-      useState(searchResultsStore.filterState.unmodeledDataProducts);
-
-    const handleToggleUnmodeledFilterConfig = () => {
-      setIsUnmodeledFilterConfigOpen((prev) => !prev);
-    };
 
     return (
       <Box className="marketplace-lakehouse-search-results__sort-filters">
@@ -97,175 +82,13 @@ const SearchResultsSortFilterPanel = observer(
                   <Checkbox
                     checked={searchResultsStore.filterState.modeledDataProducts}
                     onChange={() =>
-                      searchResultsStore.handleFilterChange(
-                        DataProductFilterType.MODELED_DATA_PRODUCTS,
-                        undefined,
-                      )
+                      searchResultsStore.handleModeledDataProductsFilterToggle()
                     }
                   />
                 }
-                label="Modeled Data Products"
+                label="Include Modeled Data Products"
               />
             </Box>
-            <Box className="marketplace-lakehouse-search-results__sort-filters__filter__section-header">
-              <Box
-                className="marketplace-lakehouse-search-results__sort-filters__filter__expander"
-                onClick={handleToggleUnmodeledFilterConfig}
-              >
-                {isUnmodeledFilterConfigOpen ? (
-                  <ChevronDownIcon />
-                ) : (
-                  <ChevronRightIcon />
-                )}
-              </Box>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={
-                      searchResultsStore.filterState.unmodeledDataProducts
-                    }
-                    onChange={() => {
-                      searchResultsStore.handleFilterChange(
-                        DataProductFilterType.UNMODELED_DATA_PRODUCTS,
-                        undefined,
-                      );
-                      if (
-                        searchResultsStore.filterState.unmodeledDataProducts
-                      ) {
-                        setIsUnmodeledFilterConfigOpen(true);
-                      }
-                    }}
-                  />
-                }
-                label="Unmodeled Data Products"
-              />
-            </Box>
-            {isUnmodeledFilterConfigOpen === true && (
-              <Box className="marketplace-lakehouse-search-results__sort-filters__filter__unmodeled-config">
-                <Box>
-                  <FormLabel>Deploy Type</FormLabel>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          disabled={
-                            !searchResultsStore.filterState
-                              .unmodeledDataProducts
-                          }
-                          checked={
-                            searchResultsStore.filterState
-                              .unmodeledDataProductsConfig.sdlcDeploy
-                          }
-                          onChange={() =>
-                            searchResultsStore.handleFilterChange(
-                              DataProductFilterType.UNMODELED_DATA_PRODUCTS__DEPLOY_TYPE,
-                              UnmodeledDataProductDeployType.SDLC,
-                            )
-                          }
-                        />
-                      }
-                      label="SDLC Deployed"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          disabled={
-                            !searchResultsStore.filterState
-                              .unmodeledDataProducts
-                          }
-                          checked={
-                            searchResultsStore.filterState
-                              .unmodeledDataProductsConfig.sandboxDeploy
-                          }
-                          onChange={() =>
-                            searchResultsStore.handleFilterChange(
-                              DataProductFilterType.UNMODELED_DATA_PRODUCTS__DEPLOY_TYPE,
-                              UnmodeledDataProductDeployType.SANDBOX,
-                            )
-                          }
-                        />
-                      }
-                      label="Sandbox Deployed"
-                    />
-                  </FormGroup>
-                </Box>
-                <hr />
-                <Box>
-                  <FormLabel>Deploy Environment</FormLabel>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          disabled={
-                            !searchResultsStore.filterState
-                              .unmodeledDataProducts
-                          }
-                          checked={
-                            searchResultsStore.filterState
-                              .unmodeledDataProductsConfig
-                              .prodEnvironmentClassification
-                          }
-                          onChange={() =>
-                            searchResultsStore.handleFilterChange(
-                              DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION,
-                              V1_IngestEnvironmentClassification.PROD,
-                            )
-                          }
-                        />
-                      }
-                      label="Prod"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          disabled={
-                            !searchResultsStore.filterState
-                              .unmodeledDataProducts
-                          }
-                          checked={
-                            searchResultsStore.filterState
-                              .unmodeledDataProductsConfig
-                              .prodParallelEnvironmentClassification
-                          }
-                          onChange={() =>
-                            searchResultsStore.handleFilterChange(
-                              DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION,
-                              V1_IngestEnvironmentClassification.PROD_PARALLEL,
-                            )
-                          }
-                        />
-                      }
-                      label="Prod-Parallel"
-                    />
-                    {searchResultsStore.marketplaceBaseStore.applicationStore
-                      .config.options.showDevFeatures && (
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            disabled={
-                              !searchResultsStore.filterState
-                                .unmodeledDataProducts
-                            }
-                            checked={
-                              searchResultsStore.filterState
-                                .unmodeledDataProductsConfig
-                                .devEnvironmentClassification
-                            }
-                            onChange={() =>
-                              searchResultsStore.handleFilterChange(
-                                DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION,
-                                V1_IngestEnvironmentClassification.DEV,
-                              )
-                            }
-                          />
-                        }
-                        label="Dev"
-                      />
-                    )}
-                  </FormGroup>
-                </Box>
-              </Box>
-            )}
           </FormGroup>
         </Box>
       </Box>
@@ -378,9 +201,11 @@ export const MarketplaceLakehouseSearchResults =
             maxWidth="xxxl"
             className="marketplace-lakehouse-search-results__results-container"
           >
-            <SearchResultsSortFilterPanel
-              searchResultsStore={searchResultsStore}
-            />
+            {searchResultsStore.marketplaceBaseStore.envState.supportsLegacyDataProducts() && (
+              <SearchResultsSortFilterPanel
+                searchResultsStore={searchResultsStore}
+              />
+            )}
             <Grid
               container={true}
               spacing={{ xs: 2, sm: 3, xxl: 4 }}
