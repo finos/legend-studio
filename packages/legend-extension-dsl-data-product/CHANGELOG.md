@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.13
+
+### Patch Changes
+
+- [#4562](https://github.com/finos/legend-studio/pull/4562) [`c6471ce`](https://github.com/finos/legend-studio/commit/c6471ceb4d647d0ded577e610e07f4d428acd440) ([@TharunRajeev](https://github.com/TharunRajeev)) - Datacube navigation for AdHoc Dataproducts from marketplace.
+
 ## 0.0.12
 
 ### Patch Changes
