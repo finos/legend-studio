@@ -218,6 +218,71 @@
     width: 100%;
     padding: 10rem 4rem 1rem;
     box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
+
+    &__terminal {
+      &__access-section {
+        padding-top: 30px;
+
+        &__heading {
+          font-size: 20px;
+          font-weight: 500;
+        }
+
+        &__container {
+          gap: 12px;
+          padding-bottom: 15px;
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+        }
+
+        span {
+          font-size: 14px;
+          color: #333;
+          font-weight: bold;
+        }
+
+        &__user-edit-icon {
+          width: 20px;
+          height: 20px;
+          cursor: pointer;
+        }
+      }
+
+      &__access-table {
+        width: 100%;
+        overflow: hidden;
+
+        &--cell {
+          padding: 8px;
+          border-top: 1px solid #e0e0e0;
+          vertical-align: middle;
+          font-size: 14px;
+
+          &--entity {
+            font-weight: 500;
+            color: var(--color-hclight-blue-50);
+          }
+
+          &--cost {
+            font-weight: 300;
+          }
+
+          &--status {
+            text-align: center;
+          }
+        }
+
+        &--row {
+          background-color: white;
+          border-bottom: 1px solid #e5e7eb;
+
+          &:hover {
+            background-color: #f9f9f9;
+          }
+        }
+      }
+    }
   }
 
   &__support-info {
@@ -684,7 +749,7 @@
   padding-top: 2px;
 }
 
-.data-product__viewer__wiki__section__pricing {
+.data-product__viewer__wiki__terminal__section__pricing {
   height: 3.5rem;
   width: fit-content;
   min-width: 250px;

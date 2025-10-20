@@ -84,7 +84,6 @@ import {
 import {
   DataProductDataAccessState,
   DataProductViewerState,
-  TerminalProductLayoutState,
   TerminalProductViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
@@ -155,17 +154,16 @@ export class LegendMarketplaceProductViewerStore {
           deserialize(V1_TerminalModelSchema, rowData),
       );
 
-      this.setTerminalProductViewer(
-        new TerminalProductViewerState(
-          guaranteeNonNullable(
-            terminalProducts[0],
-            `No terminal found with ID ${terminalId}`,
-          ),
-          this.marketplaceBaseStore.applicationStore,
-          new TerminalProductLayoutState(),
+      const terminalProductViewerState = new TerminalProductViewerState(
+        this.marketplaceBaseStore.applicationStore,
+        guaranteeNonNullable(
+          terminalProducts[0],
+          `No terminal found with ID ${terminalId}`,
         ),
+        this.marketplaceBaseStore.userSearchService,
       );
 
+      this.setTerminalProductViewer(terminalProductViewerState);
       this.loadingProductState.complete();
       LegendMarketplaceTelemetryHelper.logEvent_LoadTerminal(
         this.marketplaceBaseStore.applicationStore.telemetryService,
