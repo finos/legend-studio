@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.26
+
+### Patch Changes
+
+- [#4521](https://github.com/finos/legend-studio/pull/4521) [`289f34f`](https://github.com/finos/legend-studio/commit/289f34f9aad0b36fa3fad3cf832642bdbf4a590f) ([@jackp5150](https://github.com/jackp5150)) - User Search service addition for user identification
+
+- [#4507](https://github.com/finos/legend-studio/pull/4507) [`f721233`](https://github.com/finos/legend-studio/commit/f721233f26d3d6d1afb3b4820ed3bcead15a618b) ([@travisstebbins](https://github.com/travisstebbins)) - Filter data products by env in config instead of UI filters
+
 ## 0.1.25
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.13
+
+### Patch Changes
+
+- [#4521](https://github.com/finos/legend-studio/pull/4521) [`289f34f`](https://github.com/finos/legend-studio/commit/289f34f9aad0b36fa3fad3cf832642bdbf4a590f) ([@jackp5150](https://github.com/jackp5150)) - Added table and access sections to terminal UI
+
+- [#4562](https://github.com/finos/legend-studio/pull/4562) [`c6471ce`](https://github.com/finos/legend-studio/commit/c6471ceb4d647d0ded577e610e07f4d428acd440) ([@TharunRajeev](https://github.com/TharunRajeev)) - Datacube navigation for AdHoc Dataproducts from marketplace.
+
 ## 0.0.12
 
 ### Patch Changes
