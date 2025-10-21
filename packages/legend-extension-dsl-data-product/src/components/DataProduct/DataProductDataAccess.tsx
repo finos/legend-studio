@@ -72,7 +72,12 @@ import {
   Tooltip,
 } from '@mui/material';
 import { useAuth } from 'react-oidc-context';
-import { guaranteeNonNullable, isNonEmptyString } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  assertNonNullable,
+  guaranteeNonNullable,
+  isNonEmptyString,
+} from '@finos/legend-shared';
 import { type DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
@@ -88,6 +93,12 @@ import {
   AccessPointGroupAccess,
 } from '../../stores/DataProduct/DataProductAPGState.js';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
+import {
+  buildIngestDeploymentServerConfigOption,
+  getIngestDeploymentServerConfigName,
+  type IngestDeploymentServerConfig,
+  type IngestDeploymentServerConfigOption,
+} from '@finos/legend-server-lakehouse';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
@@ -167,13 +178,25 @@ export const DataCubeScreen = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { accessPointState, dataAccessState } = props;
+    const openDataCube =
+      accessPointState.apgState.dataProductViewerState.openDataCube;
+    const dataProductOrigin =
+      dataAccessState?.entitlementsDataProductDetails.origin;
+    if (!dataAccessState || !dataProductOrigin || !openDataCube) {
+      return <TabMessageScreen message={WORK_IN_PROGRESS} />;
+    }
 
     const auth = useAuth();
-    const [selectedEnvironment, setSelectedEnvironment] = useState<string>('');
-
+    const [selectedEnvironment, setSelectedEnvironment] =
+      useState<IngestDeploymentServerConfig | null>(null);
+    const envOptions = dataAccessState.filteredDataProductQueryEnvs
+      .map(buildIngestDeploymentServerConfigOption)
+      .sort((a, b) =>
+        a.value.environmentName.localeCompare(b.value.environmentName),
+      );
     useEffect(() => {
       const fetchEnvironments = async (): Promise<void> => {
-        if (dataAccessState?.ingestEnvironmentFetchState.isInInitialState) {
+        if (dataAccessState.ingestEnvironmentFetchState.isInInitialState) {
           await dataAccessState.fetchIngestEnvironmentDetails(
             auth.user?.access_token,
           );
@@ -184,54 +207,55 @@ export const DataCubeScreen = observer(
     }, [auth.user?.access_token, dataAccessState]);
 
     const loadDataCube = (): void => {
-      const origin = dataAccessState?.entitlementsDataProductDetails.origin;
-      //paths
-      const path = accessPointState.apgState.dataProductViewerState.getPath();
-      const accessPointName = accessPointState.accessPoint.id;
-      const accessPointPath = [
-        guaranteeNonNullable(path),
-        guaranteeNonNullable(accessPointName),
-      ];
-
-      const baseSource = {
-        _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
-        warehouse: DEFAULT_CONSUMER_WAREHOUSE,
-        environment: selectedEnvironment,
-        paths: accessPointPath,
-      };
-
-      let sourceData: Record<string, unknown>;
-      const deploymentId =
-        dataAccessState?.entitlementsDataProductDetails.deploymentId;
-      if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
-        sourceData = {
-          ...baseSource,
-          dpCoordinates: {
-            groupId: origin.group,
-            artifactId: origin.artifact,
-            versionId: origin.version,
-          },
-        };
-      } else if (
-        origin instanceof V1_AdHocDeploymentDataProductOrigin &&
-        deploymentId !== undefined
-      ) {
-        sourceData = {
-          ...baseSource,
-          origin: { _type: V1_DataProductOriginType.AD_HOC_DEPLOYMENT },
-          deploymentId,
-        };
-      } else {
-        accessPointState.apgState.applicationStore.notificationService.notifyError(
-          new Error(
-            'Failed to open DataCube: unsupported data product origin.',
-          ),
+      try {
+        assertNonNullable(
+          selectedEnvironment,
+          'Env required to Open Data Cube',
         );
-        return;
-      }
-      if (accessPointState.apgState.dataProductViewerState.openDataCube) {
-        accessPointState.apgState.dataProductViewerState.openDataCube(
-          sourceData,
+        //paths
+        const path = accessPointState.apgState.dataProductViewerState.getPath();
+        const accessPointName = accessPointState.accessPoint.id;
+        const accessPointPath = [
+          guaranteeNonNullable(path),
+          guaranteeNonNullable(accessPointName),
+        ];
+        const sourceData: Record<string, unknown> = {
+          _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
+          warehouse: DEFAULT_CONSUMER_WAREHOUSE,
+          environment: getIngestDeploymentServerConfigName(selectedEnvironment),
+          paths: accessPointPath,
+        };
+        const deploymentId =
+          dataAccessState.entitlementsDataProductDetails.deploymentId;
+        if (dataProductOrigin instanceof V1_SdlcDeploymentDataProductOrigin) {
+          sourceData.origin = {
+            _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
+            dpCoordinates: {
+              groupId: dataProductOrigin.group,
+              artifactId: dataProductOrigin.artifact,
+              versionId: dataProductOrigin.version,
+            },
+          };
+        } else if (
+          dataProductOrigin instanceof V1_AdHocDeploymentDataProductOrigin
+        ) {
+          sourceData.origin = {
+            _type: V1_DataProductOriginType.AD_HOC_DEPLOYMENT,
+          };
+          sourceData.deploymentId = deploymentId;
+        } else {
+          accessPointState.apgState.applicationStore.notificationService.notifyError(
+            new Error(
+              'Failed to open DataCube: unsupported data product origin.',
+            ),
+          );
+          return;
+        }
+        openDataCube(sourceData);
+      } catch (error) {
+        assertErrorThrown(error);
+        accessPointState.apgState.applicationStore.notificationService.notifyError(
+          error,
         );
       }
     };
@@ -240,20 +264,14 @@ export const DataCubeScreen = observer(
       <div className="data-product__viewer__tab-screen">
         <CustomSelectorInput
           className="data-product__viewer__tab-screen__dropdown"
-          options={dataAccessState?.environmentDropDownValues.map((env) => ({
-            label: env,
-            value: env,
-          }))}
-          isLoading={dataAccessState?.ingestEnvironmentFetchState.isInProgress}
-          onChange={(newValue: { label: string; value: string } | null) => {
-            setSelectedEnvironment(newValue?.value ?? '');
+          options={envOptions}
+          isLoading={dataAccessState.ingestEnvironmentFetchState.isInProgress}
+          onChange={(newValue: IngestDeploymentServerConfigOption | null) => {
+            setSelectedEnvironment(newValue?.value ?? null);
           }}
           value={
             selectedEnvironment
-              ? {
-                  label: selectedEnvironment,
-                  value: selectedEnvironment,
-                }
+              ? buildIngestDeploymentServerConfigOption(selectedEnvironment)
               : null
           }
           placeholder={`Choose an Environment`}

@@ -33,6 +33,7 @@ import {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_deserializeIngestEnvironment,
   V1_ResourceType,
+  V1_isIngestEnvsCompatibleWithEntitlements,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -128,7 +129,7 @@ export class DataProductDataAccessState {
       lakehouseIngestEnvironmentDetails: observable,
       setDataContract: action,
       setAssociatedContracts: action,
-      environmentDropDownValues: computed,
+      filteredDataProductQueryEnvs: computed,
       setDataContractAccessPointGroup: action,
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
@@ -157,15 +158,17 @@ export class DataProductDataAccessState {
     return this.dataProductViewerState.product;
   }
 
-  get environmentDropDownValues(): string[] {
-    return this.lakehouseIngestEnvironmentSummaries
-      .map((config) => {
-        const baseUrl = new URL(config.ingestServerUrl).hostname;
-        const subdomain = baseUrl.split('.')[0];
-        const parts = subdomain?.split('-');
-        return parts?.slice(0, -1).join('-');
-      })
-      .filter(isNonNullable);
+  get filteredDataProductQueryEnvs(): IngestDeploymentServerConfig[] {
+    const dataProductEnv =
+      this.entitlementsDataProductDetails.lakehouseEnvironment?.type;
+    return this.lakehouseIngestEnvironmentSummaries.filter(
+      (env) =>
+        dataProductEnv === undefined ||
+        V1_isIngestEnvsCompatibleWithEntitlements(
+          env.environmentClassification,
+          dataProductEnv,
+        ),
+    );
   }
 
   setAssociatedContracts(val: V1_DataContract[] | undefined): void {
