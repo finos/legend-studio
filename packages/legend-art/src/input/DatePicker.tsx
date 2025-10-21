@@ -18,18 +18,23 @@ import { useForkRef } from '@mui/material';
 import {
   DatePicker as BaseDatePicker,
   DateCalendar as BaseDateCalendar,
+  type BaseSingleInputFieldProps,
   type DatePickerProps,
+  type DateValidationError,
+  type FieldSection,
+  type UseDateFieldProps,
   type DateCalendarProps,
 } from '@mui/x-date-pickers';
+import { useDateField } from '@mui/x-date-pickers/DateField/useDateField.js';
 import { forwardRef } from 'react';
 
-export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(
+export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps<Date>>(
   function DatePicker(props, ref) {
     return <BaseDateCalendar ref={ref} {...props} />;
   },
 );
 
-export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
+export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps<Date>>(
   function DatePicker(props, ref) {
     return <BaseDatePicker ref={ref} {...props} />;
   },
@@ -91,29 +96,24 @@ const DatePickerFieldInput = forwardRef<
   );
 });
 
+interface DatePickerFieldProps
+  extends UseDateFieldProps<Date, false>,
+    BaseSingleInputFieldProps<
+      Date | null,
+      Date,
+      FieldSection,
+      false,
+      DateValidationError
+    > {}
+
 export const DatePickerField = forwardRef<
   HTMLInputElement,
-  Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> & {
-    className?: string;
-    InputProps?: {
-      ref?: React.Ref<HTMLInputElement>;
-      endAdornment?: React.ReactNode;
-      startAdornment?: React.ReactNode;
-    };
-    inputRef?: React.Ref<HTMLInputElement>;
-    ownerState?: unknown;
-    enableAccessibleFieldDOMStructure?: boolean;
-    clearable?: boolean;
-    error?: boolean;
-    focused?: boolean;
-    onClear?: React.MouseEventHandler;
-  }
+  DatePickerFieldProps
 >(function DatePickerField(props, ref) {
-  return (
-    <DatePickerFieldInput
-      {...props}
-      enableAccessibleFieldDOMStructure={false}
-      ref={ref}
-    />
-  );
+  const { slots, slotProps, onClear, ...textFieldProps } = props;
+  const fieldResponse = useDateField<Date, false, DatePickerFieldProps>({
+    ...textFieldProps,
+  });
+
+  return <DatePickerFieldInput {...fieldResponse} ref={ref} />;
 });
