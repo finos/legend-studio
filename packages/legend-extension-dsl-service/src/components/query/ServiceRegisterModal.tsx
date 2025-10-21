@@ -246,7 +246,11 @@ export const ServiceRegisterModal = observer(
         open={true}
         onClose={onClose}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal darkMode={darkMode} className="search-modal">
           <ModalTitle title="Register Service Semi-interactively..." />

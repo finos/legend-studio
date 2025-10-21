@@ -25,7 +25,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useRef } from 'react';
-import { Box, Grid2 as Grid, Link } from '@mui/material';
+import { Box, Grid, Link } from '@mui/material';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
   generateAnchorForSection,

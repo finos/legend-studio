@@ -210,15 +210,17 @@ export const NewMappingElementModal = observer(() => {
     <Dialog
       open={Boolean(spec)}
       onClose={handleClose}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
       classes={{
         container: 'search-modal__container',
       }}
-      PaperProps={{
-        classes: {
-          root: 'search-modal__inner-container',
+      slotProps={{
+        transition: {
+          onEnter: handleEnter,
+        },
+        paper: {
+          classes: {
+            root: 'search-modal__inner-container',
+          },
         },
       }}
     >

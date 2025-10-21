@@ -53,8 +53,8 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
     <Dialog
       open={Boolean(applicationStore.alertService.actionAlertInfo)}
       onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
-      TransitionProps={{
-        onEnter: handleEnter,
+      slotProps={{
+        transition: { onEnter: handleEnter },
       }}
     >
       <form

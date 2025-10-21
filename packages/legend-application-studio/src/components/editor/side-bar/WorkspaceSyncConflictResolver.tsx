@@ -107,7 +107,11 @@ export const WorkspaceSyncConflictResolver = observer(() => {
       open={updateConflictState.showModal}
       onClose={noop}
       classes={{ container: 'search-modal__container' }}
-      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      slotProps={{
+        paper: {
+          classes: { root: 'search-modal__inner-container' },
+        },
+      }}
     >
       <Modal
         darkMode={

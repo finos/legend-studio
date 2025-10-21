@@ -21,7 +21,7 @@ import {
   CardActions as MuiCardActions,
   Button,
 } from '@mui/material';
-import clsx from 'clsx';
+import { clsx } from '../utils/ComponentUtils.js';
 
 export type MuiCardActionConfig = {
   title: string;
