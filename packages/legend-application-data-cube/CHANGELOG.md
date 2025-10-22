@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.8
+
+### Patch Changes
+
+- [#4570](https://github.com/finos/legend-studio/pull/4570) [`759a014`](https://github.com/finos/legend-studio/commit/759a0146b79132d39c3400b2bd062e1dade54122) ([@TharunRajeev](https://github.com/TharunRajeev)) - Removed Datacube loader screen for lakehouse consumer data products.
+
 ## 0.7.7
 
 ### Patch Changes

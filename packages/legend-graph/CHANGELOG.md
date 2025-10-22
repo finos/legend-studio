@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.8
+
+### Patch Changes
+
+- [#4572](https://github.com/finos/legend-studio/pull/4572) [`05b5718`](https://github.com/finos/legend-studio/commit/05b5718588247878906f1f6d0824676737ac11b9) ([@kelly-thai](https://github.com/kelly-thai)) - Add Access Point title and Access Point Group title to studio model
+
 ## 32.3.7
 
 ### Patch Changes
