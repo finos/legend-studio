@@ -213,7 +213,8 @@ export const DataCubeScreen = observer(
           'Env required to Open Data Cube',
         );
         //paths
-        const path = accessPointState.apgState.dataProductViewerState.product.path;
+        const path =
+          accessPointState.apgState.dataProductViewerState.product.path;
         const accessPointName = accessPointState.accessPoint.id;
         const accessPointPath = [
           guaranteeNonNullable(path),
