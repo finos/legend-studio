@@ -49,11 +49,6 @@ export class LakehouseConsumerDataCubeSource extends DataCubeSource {
   deploymentId?: number | undefined;
 }
 
-export enum LakehouseEnvironmentType {
-  DEVELOPMENT = 'dev',
-  PRODUCTION_PARALLEL = 'pp',
-}
-
 export abstract class RawLakehouseOrigin {}
 
 export class RawLakehouseAdhocOrigin extends RawLakehouseOrigin {

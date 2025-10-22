@@ -15,7 +15,7 @@
  */
 
 import {
-  type V1_EntitlementsLakehouseEnvironmentType,
+  V1_EntitlementsLakehouseEnvironmentType,
   V1_IngestEnvironmentClassification,
   V1_isIngestEnvsCompatibleWithEntitlements,
 } from '@finos/legend-graph';
@@ -28,6 +28,30 @@ export const getIngestDeploymentServerConfigName = (
   const subdomain = baseUrl.split('.')[0];
   const parts = subdomain?.split('-');
   return parts?.slice(0, -1).join('-');
+};
+
+export enum LakehouseEnvironmentType {
+  DEVELOPMENT = 'dev',
+  PRODUCTION_PARALLEL = 'pp',
+}
+
+export const isEnvNameCompatibleWithEntitlementsLakehouseEnvironmentType = (
+  envName: string,
+  entitlementType: V1_EntitlementsLakehouseEnvironmentType,
+): boolean => {
+  if (envName.startsWith(`${LakehouseEnvironmentType.DEVELOPMENT}-`)) {
+    return (
+      entitlementType === V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT
+    );
+  } else if (
+    envName.endsWith(`-${LakehouseEnvironmentType.PRODUCTION_PARALLEL}`)
+  ) {
+    return (
+      entitlementType ===
+      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
+    );
+  }
+  return entitlementType === V1_EntitlementsLakehouseEnvironmentType.PRODUCTION;
 };
 
 export type IngestDeploymentServerConfigOption = {
