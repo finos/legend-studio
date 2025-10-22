@@ -77,8 +77,6 @@ import type {
 } from '@finos/legend-server-lakehouse';
 import { LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE } from '../model/LakehouseProducerDataCubeSource.js';
 import { LakehouseProducerDataCubeSourceLoaderState } from './source/LakehouseProducerDataCubeSourceLoaderState.js';
-import { LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE } from '../model/LakehouseConsumerDataCubeSource.js';
-import { LakehouseConsumerDataCubeSourceLoaderState } from './source/LakehouseConsumerDataCubeSourceLoaderState.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -353,16 +351,6 @@ export class LegendDataCubeBuilderStore {
         );
       case LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE:
         return new LakehouseProducerDataCubeSourceLoaderState(
-          this.application,
-          this.engine,
-          this.alertService,
-          sourceData,
-          persistentDataCube,
-          onSuccess,
-          onError,
-        );
-      case LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE:
-        return new LakehouseConsumerDataCubeSourceLoaderState(
           this.application,
           this.engine,
           this.alertService,

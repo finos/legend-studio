@@ -93,6 +93,8 @@ import {
   PRECISE_PRIMITIVE_TYPE,
   CORE_PURE_PATH,
   V1_DataProductOriginType,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_AdHocDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -167,20 +169,27 @@ import {
   RawLakehouseConsumerDataCubeSource,
   RawLakehouseSdlcOrigin,
 } from './model/LakehouseConsumerDataCubeSource.js';
+import {
+  isEnvNameCompatibleWithEntitlementsLakehouseEnvironmentType,
+  type LakehouseContractServerClient,
+} from '@finos/legend-server-lakehouse';
+import { authStore } from './AuthStore.js';
+import { extractEntityNameFromPath } from '@finos/legend-storage';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
   private readonly _depotServerClient: DepotServerClient;
   private readonly _engineServerClient: V1_EngineServerClient;
+  private readonly _lakehouseContractServerClient: LakehouseContractServerClient;
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
   private _ingestDefinition: PlainObject | undefined;
-  private _adhocDataProductGraphGrammar: string | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
     depotServerClient: DepotServerClient,
     engineServerClient: V1_EngineServerClient,
+    lakehouseContractServerClient: LakehouseContractServerClient,
     graphManager: V1_PureGraphManager,
   ) {
     super();
@@ -189,6 +198,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._depotServerClient = depotServerClient;
     this._engineServerClient = engineServerClient;
     this._graphManager = graphManager;
+    this._lakehouseContractServerClient = lakehouseContractServerClient;
     this._duckDBEngine = new LegendDataCubeDuckDBEngine();
   }
 
@@ -1331,10 +1341,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._ingestDefinition = ingestDefinition;
   }
 
-  registerAdhocDataProductGraphGrammar(fullGraphGrammar: string | undefined) {
-    this._adhocDataProductGraphGrammar = fullGraphGrammar;
-  }
-
   // ---------------------------------- CACHING --------------------------------------
 
   override async initializeCache(
@@ -1878,8 +1884,32 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         true,
       );
     } else {
+      const dataProducts = rawSource.paths[0]
+        ? V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+            await this._lakehouseContractServerClient.getDataProduct(
+              extractEntityNameFromPath(rawSource.paths[0]),
+              authStore.getAccessToken(),
+            ),
+          )
+        : [];
+      const selectedEnv = rawSource.environment;
+      const dataProduct = dataProducts.find((dp) => {
+        const envType = dp.lakehouseEnvironment?.type;
+        if (!envType) {
+          return false;
+        }
+        return isEnvNameCompatibleWithEntitlementsLakehouseEnvironmentType(
+          selectedEnv,
+          envType,
+        );
+      });
+      const fullGraphGrammar = guaranteeType(
+        guaranteeNonNullable(dataProduct, 'Unable to resolve  data product ')
+          .origin,
+        V1_AdHocDeploymentDataProductOrigin,
+      ).definition;
       pmcd = await this.parseCompatibleModel(
-        guaranteeNonNullable(this._adhocDataProductGraphGrammar),
+        guaranteeNonNullable(fullGraphGrammar),
       );
     }
 
