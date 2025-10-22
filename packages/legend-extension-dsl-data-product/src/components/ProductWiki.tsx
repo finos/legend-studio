@@ -144,7 +144,8 @@ export const ProductWiki = observer(
         )}
         <ProductDescription productViewerState={productViewerState} />
         {isDataProductViewerState(productViewerState) &&
-          (productDataAccessState instanceof DataProductDataAccessState || productDataAccessState === undefined) && (
+          (productDataAccessState instanceof DataProductDataAccessState ||
+            productDataAccessState === undefined) && (
             <>
               <DataProducteDataAccess
                 dataProductViewerState={productViewerState}
