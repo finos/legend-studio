@@ -40,6 +40,7 @@ import type { Association } from '../packageableElements/domain/Association.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
+  title: string | undefined;
   description: string | undefined;
 
   constructor(id: string) {
@@ -161,6 +162,7 @@ export class DataProductDiagram implements Hashable {
 
 export class AccessPointGroup extends AnnotatedElement implements Hashable {
   id!: string;
+  title: string | undefined;
   description: string | undefined;
   accessPoints: AccessPoint[] = [];
 

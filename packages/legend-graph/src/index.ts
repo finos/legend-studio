@@ -741,8 +741,10 @@ export {
   UnknownDataProductIcon,
   DataProductElementScope,
   DataProductDiagram,
+  DataProductType,
   InternalDataProductType,
   Expertise,
+  ExternalDataProductType,
   type DataProductElement,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';

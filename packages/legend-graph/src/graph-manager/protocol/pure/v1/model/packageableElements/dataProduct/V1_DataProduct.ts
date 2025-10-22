@@ -41,6 +41,7 @@ export enum V1_DataProductTypeValue {
 
 export abstract class V1_AccessPoint implements Hashable {
   id!: string;
+  title: string | undefined;
   description: string | undefined;
 
   get hashCode(): string {
@@ -98,6 +99,7 @@ export class V1_FunctionAccessPoint extends V1_AccessPoint implements Hashable {
 
 export class V1_AccessPointGroup implements Hashable {
   id!: string;
+  title: string | undefined;
   description: string | undefined;
   stereotypes: V1_StereotypePtr[] = [];
   accessPoints: V1_AccessPoint[] = [];

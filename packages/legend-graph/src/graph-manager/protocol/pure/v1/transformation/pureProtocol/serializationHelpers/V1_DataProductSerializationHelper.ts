@@ -98,6 +98,7 @@ export const V1_lakehouseAccessPointModelSchema = createModelSchema(
     id: primitive(),
     reproducible: optional(primitive()),
     targetEnvironment: primitive(),
+    title: optional(primitive()),
   },
 );
 
@@ -108,6 +109,7 @@ export const V1_functionAccessPointModelSchema = createModelSchema(
     description: optional(primitive()),
     id: primitive(),
     query: usingModelSchema(V1_rawLambdaModelSchema),
+    title: optional(primitive()),
   },
 );
 
@@ -139,6 +141,8 @@ const V1_deserializeAccessPoint = (
       const unknown = new V1_UnknownAccessPoint();
       unknown.content = json;
       unknown.id = json.id as string;
+      unknown.description = json.description as string;
+      unknown.title = json.title as string;
       return unknown;
     }
   }
@@ -185,6 +189,7 @@ export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
     diagrams: customListWithSchema(V1_dataProductDiagramModelSchema),
     featuredElements: customListWithSchema(V1_ElementScopeModelSchema),
     id: primitive(),
+    title: optional(primitive()),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
     mapping: usingModelSchema(V1_packageableElementPointerModelSchema),
   },
@@ -199,6 +204,7 @@ export const V1_DefaultAccessPointGroupModelSchema = createModelSchema(
     ),
     description: optional(primitive()),
     id: primitive(),
+    title: optional(primitive()),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
