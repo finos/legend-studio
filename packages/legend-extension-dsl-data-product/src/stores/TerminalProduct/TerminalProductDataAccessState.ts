@@ -25,7 +25,7 @@ import {
   type PlainObject,
   type UserSearchService,
 } from '@finos/legend-shared';
-import { flow, makeObservable, observable } from 'mobx';
+import { flow, makeObservable } from 'mobx';
 import type { TerminalProductViewerState } from './TerminalProductViewerState.js';
 import { serialize } from 'serializr';
 import type { TerminalAccessServerClient } from '@finos/legend-server-marketplace';
