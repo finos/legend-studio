@@ -73,17 +73,21 @@ const transformAccessPoint = (
     lake.classification = ap.classification;
     lake.reproducible = ap.reproducible;
     lake.description = ap.description;
+    lake.title = ap.title;
     return lake;
   } else if (ap instanceof FunctionAccessPoint) {
     const func = new V1_FunctionAccessPoint();
     func.id = ap.id;
     func.description = ap.description;
+    func.title = func.title;
     func.query = V1_transformRawLambda(ap.query, context);
     return func;
   } else if (ap instanceof UnknownAccessPoint) {
     const un = new V1_UnknownAccessPoint();
     un.content = ap.content;
     un.id = ap.id;
+    un.description = ap.title;
+    un.title = ap.title;
     return un;
   }
   throw new UnsupportedOperationError(
@@ -164,6 +168,7 @@ export const V1_transformDataProduct = (
       if (metamodelGroup instanceof ModelAccessPointGroup) {
         const modelGroup = new V1_ModelAccessPointGroup();
         modelGroup.id = metamodelGroup.id;
+        modelGroup.title = metamodelGroup.title;
         modelGroup.description = metamodelGroup.description;
         modelGroup.stereotypes = metamodelGroup.stereotypes.map(
           V1_transformStereotype,
@@ -216,6 +221,7 @@ export const V1_transformDataProduct = (
       }
       const group = new V1_AccessPointGroup();
       group.id = metamodelGroup.id;
+      group.title = metamodelGroup.title;
       group.description = metamodelGroup.description;
       group.stereotypes = metamodelGroup.stereotypes.map(
         V1_transformStereotype,

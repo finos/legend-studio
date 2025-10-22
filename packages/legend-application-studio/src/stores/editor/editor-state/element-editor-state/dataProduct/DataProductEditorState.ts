@@ -108,6 +108,11 @@ export enum DATA_PRODUCT_TAB {
   APG = 'APG',
 }
 
+export enum DATA_PRODUCT_TYPE {
+  INTERNAL = 'Internal',
+  EXTERNAL = 'External',
+}
+
 export class AccessPointState {
   readonly uuid = uuid();
   state: AccessPointGroupState;
@@ -356,8 +361,18 @@ export class AccessPointGroupState {
     return (
       this.accessPointStates.length === 0 ||
       this.value.id === '' ||
+      !this.value.description ||
+      !this.value.title ||
       Boolean(
         this.accessPointStates.find((apState) => apState.accessPoint.id === ''),
+      ) ||
+      Boolean(
+        this.accessPointStates.find((apState) => !apState.accessPoint.title),
+      ) ||
+      Boolean(
+        this.accessPointStates.find(
+          (apState) => !apState.accessPoint.description,
+        ),
       )
     );
   }

@@ -20,6 +20,7 @@ import {
   type AccessPointGroupState,
   type AccessPointState,
   DATA_PRODUCT_TAB,
+  DATA_PRODUCT_TYPE,
   DataProductEditorState,
   generateUrlToDeployOnOpen,
   LakehouseAccessPointState,
@@ -116,6 +117,10 @@ import {
   V1_PureGraphManager,
   V1_RemoteEngine,
   validate_PureExecutionMapping,
+  InternalDataProductType,
+  ExternalDataProductType,
+  DataProductLink,
+  observer_DataProductLink,
 } from '@finos/legend-graph';
 import {
   accessPoint_setClassification,
@@ -135,10 +140,16 @@ import {
   runtimeInfo_setDescription,
   supportInfo_setSupportUrl,
   supportInfo_setWebsite,
+  dataProduct_setType,
   expertise_setDescription,
   expertise_addId,
   expertise_deleteId,
   dataProduct_deleteExpertise,
+  externalType_setLinkURL,
+  externalType_setLinkLabel,
+  accessPointGroup_setTitle,
+  accessPoint_setDescription,
+  accessPoint_setTitle,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -235,7 +246,7 @@ const AccessPointTitle = observer(
     };
     const updateAccessPointName: React.ChangeEventHandler<HTMLTextAreaElement> =
       action((event) => {
-        if (event.target.value.match(/^[0-9a-zA-Z_]+$/)) {
+        if (event.target.value.match(/^[0-9a-zA-Z_]*$/)) {
           accessPoint.id = event.target.value;
         }
       });
@@ -259,7 +270,7 @@ const AccessPointTitle = observer(
       <div
         className="access-point-editor__name__label"
         onClick={handleNameEdit}
-        title="Click to edit access point title"
+        title="Click to edit access point name"
         style={{ flex: '1 1 auto' }}
       >
         {accessPoint.id}
@@ -451,25 +462,38 @@ export const LakehouseDataProductAccessPointEditor = observer(
       .filter(filterByType(LakehouseAccessPointState))
       .find((pm) => pm.lambdaState.parserError);
     const [editingDescription, setEditingDescription] = useState(false);
-    const [isHovering, setIsHovering] = useState(false);
+    const [isHoveringDesc, setIsHoveringDesc] = useState(false);
+    const [editingTitle, setEditingTitle] = useState(false);
+    const [isHoveringTitle, setIsHoveringTitle] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const [debugOutput, setDebugOutput] = useState('');
 
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
       setEditingDescription(false);
-      setIsHovering(false);
+      setIsHoveringDesc(false);
     };
-    const handleMouseOver: React.MouseEventHandler<HTMLDivElement> = () => {
-      setIsHovering(true);
+    const handleMouseOverDesc: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHoveringDesc(true);
     };
-    const handleMouseOut: React.MouseEventHandler<HTMLDivElement> = () => {
-      setIsHovering(false);
+    const handleMouseOutDesc: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHoveringDesc(false);
     };
-    const updateAccessPointDescription: React.ChangeEventHandler<HTMLTextAreaElement> =
-      action((event) => {
-        accessPoint.description = event.target.value;
-      });
+
+    const handleTitleEdit = () => setEditingTitle(true);
+    const handleTitleBlur = () => {
+      setEditingTitle(false);
+      setIsHoveringTitle(false);
+    };
+    const handleMouseOverTitle: React.MouseEventHandler<
+      HTMLDivElement
+    > = () => {
+      setIsHoveringTitle(true);
+    };
+    const handleMouseOutTitle: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHoveringTitle(false);
+    };
+
     const updateAccessPointTargetEnvironment = action(
       (targetEnvironment: LakehouseTargetEnv) => {
         accessPoint.targetEnvironment = targetEnvironment;
@@ -758,12 +782,56 @@ export const LakehouseDataProductAccessPointEditor = observer(
                 </ControlledDropdownMenu>
               </div>
             </div>
+            {editingTitle ? (
+              <textarea
+                className="access-point-editor__name"
+                spellCheck={false}
+                value={accessPoint.title}
+                onChange={(event) =>
+                  accessPoint_setTitle(accessPoint, event.target.value)
+                }
+                placeholder={'Access Point Title'}
+                onBlur={handleTitleBlur}
+                style={{
+                  borderColor: 'transparent',
+                  margin: '0.5rem',
+                }}
+              />
+            ) : (
+              <div
+                onClick={handleTitleEdit}
+                title="Click to edit access point title"
+                className="access-point-editor__description-container"
+              >
+                {accessPoint.title ? (
+                  <HoverTextArea
+                    text={accessPoint.title}
+                    handleMouseOver={handleMouseOverTitle}
+                    handleMouseOut={handleMouseOutTitle}
+                    className="access-point-editor__title"
+                  />
+                ) : (
+                  <div
+                    className="access-point-editor__group-container__description--warning"
+                    onMouseOver={handleMouseOverTitle}
+                    onMouseOut={handleMouseOutTitle}
+                    style={{ fontSize: '15px' }}
+                  >
+                    <ErrorWarnIcon />
+                    Provide a title for this Access Point
+                  </div>
+                )}
+                {isHoveringTitle && hoverIcon()}
+              </div>
+            )}
             {editingDescription ? (
               <textarea
                 className="panel__content__form__section__input"
                 spellCheck={false}
                 value={accessPoint.description ?? ''}
-                onChange={updateAccessPointDescription}
+                onChange={(event) =>
+                  accessPoint_setDescription(accessPoint, event.target.value)
+                }
                 placeholder="Access Point description"
                 onBlur={handleDescriptionBlur}
                 style={{
@@ -783,20 +851,20 @@ export const LakehouseDataProductAccessPointEditor = observer(
                 {accessPoint.description ? (
                   <HoverTextArea
                     text={accessPoint.description}
-                    handleMouseOver={handleMouseOver}
-                    handleMouseOut={handleMouseOut}
+                    handleMouseOver={handleMouseOverDesc}
+                    handleMouseOut={handleMouseOutDesc}
                   />
                 ) : (
                   <div
                     className="access-point-editor__group-container__description--warning"
-                    onMouseOver={handleMouseOver}
-                    onMouseOut={handleMouseOut}
+                    onMouseOver={handleMouseOverDesc}
+                    onMouseOut={handleMouseOutDesc}
                   >
-                    <WarningIcon />
+                    <ErrorWarnIcon />
                     {AP_EMPTY_DESC_WARNING}
                   </div>
                 )}
-                {isHovering && hoverIcon()}
+                {isHoveringDesc && hoverIcon()}
               </div>
             )}
             <div className="access-point-editor__content">
@@ -1242,6 +1310,8 @@ const AccessPointGroupEditor = observer(
       groupState.value.id === newNamePlaceholder,
     );
     const [isHoveringName, setIsHoveringName] = useState(false);
+    const [editingTitle, setEditingTitle] = useState(false);
+    const [isHoveringTitle, setIsHoveringTitle] = useState(false);
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
       setEditingDescription(false);
@@ -1280,6 +1350,23 @@ const AccessPointGroupEditor = observer(
       }
     };
 
+    const handleTitleEdit = () => setEditingTitle(true);
+    const handleTitleBlur = () => {
+      setEditingTitle(false);
+      setIsHoveringTitle(false);
+    };
+    const handleMouseOverTitle: React.MouseEventHandler<
+      HTMLDivElement
+    > = () => {
+      setIsHoveringTitle(true);
+    };
+    const handleMouseOutTitle: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHoveringTitle(false);
+    };
+    const updateGroupTitle = (val: string | undefined): void => {
+      accessPointGroup_setTitle(groupState.value, val);
+    };
+
     const handleRemoveAccessPointGroup = (): void => {
       editorStore.applicationStore.alertService.setActionAlertInfo({
         message: `Are you sure you want to delete Access Point Group ${groupState.value.id} and all of its Access Points?`,
@@ -1314,7 +1401,7 @@ const AccessPointGroupEditor = observer(
         className="access-point-editor__group-container"
         data-testid={LEGEND_STUDIO_TEST_ID.ACCESS_POINT_GROUP_EDITOR}
       >
-        <div className="access-point-editor__group-container__title-editor">
+        <div className="access-point-editor__group-container__name-editor">
           {editingName ? (
             <textarea
               className="panel__content__form__section__input"
@@ -1338,13 +1425,13 @@ const AccessPointGroupEditor = observer(
             <div
               onClick={handleNameEdit}
               title="Click to edit group name"
-              className="access-point-editor__group-container__title"
+              className="access-point-editor__group-container__name"
             >
               <HoverTextArea
                 text={groupState.value.id}
                 handleMouseOver={handleMouseOverName}
                 handleMouseOut={handleMouseOutName}
-                className="access-point-editor__group-container__title"
+                className="access-point-editor__group-container__name"
               />
 
               {isHoveringName && hoverIcon()}
@@ -1361,6 +1448,50 @@ const AccessPointGroupEditor = observer(
             >
               <TimesIcon />
             </button>
+          )}
+        </div>
+        <div className="access-point-editor__group-container__name-editor">
+          {editingTitle ? (
+            <textarea
+              className="panel__content__form__section__input"
+              spellCheck={false}
+              value={groupState.value.title}
+              onChange={(event) => updateGroupTitle(event.target.value)}
+              placeholder="Access Point Group Title"
+              onBlur={handleTitleBlur}
+              style={{
+                overflow: 'hidden',
+                resize: 'none',
+                padding: '0.25rem',
+                margin: '0.5rem 0.5rem 0.5rem 0rem',
+              }}
+            />
+          ) : (
+            <div
+              onClick={handleTitleEdit}
+              title="Click to edit group title"
+              className="access-point-editor__group-container__description"
+            >
+              {groupState.value.title ? (
+                <HoverTextArea
+                  text={groupState.value.title}
+                  handleMouseOver={handleMouseOverTitle}
+                  handleMouseOut={handleMouseOutTitle}
+                  className="access-point-editor__group-container__title"
+                />
+              ) : (
+                <div
+                  className="access-point-editor__group-container__description--warning"
+                  onMouseOver={handleMouseOverTitle}
+                  onMouseOut={handleMouseOutTitle}
+                  style={{ fontSize: '15px' }}
+                >
+                  <ErrorWarnIcon />
+                  Provide a title for this Access Point Group
+                </div>
+              )}
+              {isHoveringTitle && hoverIcon()}
+            </div>
           )}
         </div>
         <div className="access-point-editor__group-container__description-editor">
@@ -1397,7 +1528,7 @@ const AccessPointGroupEditor = observer(
                   onMouseOver={handleMouseOverDescription}
                   onMouseOut={handleMouseOutDescription}
                 >
-                  <WarningIcon />
+                  <ErrorWarnIcon />
                   Users request access at the access point group level. Click
                   here to add a meaningful description to guide users.
                 </div>
@@ -1867,8 +1998,12 @@ const DataProductIconEditor = observer(
 );
 
 const HomeTab = observer(
-  (props: { product: DataProduct; isReadOnly: boolean }) => {
-    const { product, isReadOnly } = props;
+  (props: {
+    dataProductEditorState: DataProductEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { dataProductEditorState, isReadOnly } = props;
+    const product = dataProductEditorState.product;
 
     const updateDataProductTitle = (val: string | undefined): void => {
       dataProduct_setTitle(product, val ?? '');
@@ -1877,6 +2012,42 @@ const HomeTab = observer(
       HTMLTextAreaElement
     > = (event) => {
       dataProduct_setDescription(product, event.target.value);
+    };
+
+    const DATA_PRODUCT_TYPE_OPTIONS = [
+      { label: DATA_PRODUCT_TYPE.INTERNAL, value: DATA_PRODUCT_TYPE.INTERNAL },
+      { label: DATA_PRODUCT_TYPE.EXTERNAL, value: DATA_PRODUCT_TYPE.EXTERNAL },
+    ];
+    const handleDataProductTypeChange = action(
+      (val: { label: string; value: string } | null): void => {
+        if (val?.value === DATA_PRODUCT_TYPE.INTERNAL) {
+          dataProduct_setType(product, new InternalDataProductType());
+        } else if (val?.value === DATA_PRODUCT_TYPE.EXTERNAL) {
+          const externalType = new ExternalDataProductType();
+          const externalLink = observer_DataProductLink(
+            new DataProductLink(''),
+          );
+          externalType.link = externalLink;
+          dataProduct_setType(product, externalType);
+        }
+      },
+    );
+    const handleExternalURLChange: ChangeEventHandler<HTMLTextAreaElement> = (
+      event,
+    ) => {
+      if (
+        product.type instanceof ExternalDataProductType &&
+        event.target.value
+      ) {
+        externalType_setLinkURL(product.type, event.target.value);
+      }
+    };
+    const handleExternalLabelChange: ChangeEventHandler<HTMLTextAreaElement> = (
+      event,
+    ) => {
+      if (product.type instanceof ExternalDataProductType) {
+        externalType_setLinkLabel(product.type, event.target.value);
+      }
     };
 
     return (
@@ -1888,6 +2059,8 @@ const HomeTab = observer(
             prompt="Provide a descriptive name for the Data Product to appear in Marketplace."
             update={updateDataProductTitle}
             placeholder="Enter title"
+            hasError={product.title === '' || product.title === undefined}
+            errorClassName="data-product-editor__textbox-error"
           />
           <div className="panel__content__form__section">
             <div
@@ -1930,6 +2103,67 @@ const HomeTab = observer(
                 maxWidth: '100%',
               }}
             />
+          </div>
+          <div className="panel__content__form__section">
+            <div
+              className="panel__content__form__section__header__label"
+              style={{ justifyContent: 'space-between', width: '45rem' }}
+            >
+              Data Product Type
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              Select if this Data Product is Internal or External
+            </div>
+            <div className="panel__content__form__section__list__new-item__input">
+              <CustomSelectorInput
+                options={DATA_PRODUCT_TYPE_OPTIONS}
+                onChange={handleDataProductTypeChange}
+                value={
+                  product.type instanceof InternalDataProductType
+                    ? DATA_PRODUCT_TYPE_OPTIONS.find(
+                        (option) => option.value === DATA_PRODUCT_TYPE.INTERNAL,
+                      )
+                    : product.type instanceof ExternalDataProductType
+                      ? DATA_PRODUCT_TYPE_OPTIONS.find(
+                          (option) =>
+                            option.value === DATA_PRODUCT_TYPE.EXTERNAL,
+                        )
+                      : null
+                }
+                darkMode={true}
+              />
+            </div>
+            {product.type instanceof ExternalDataProductType && (
+              <div className="data-product-editor__external-link">
+                <div className="panel__content__form__section__header__prompt">
+                  External Link
+                </div>
+                <textarea
+                  className="input input-group__input panel__content__form__section__input input--dark input--small"
+                  spellCheck={false}
+                  disabled={isReadOnly}
+                  placeholder="External URL"
+                  value={product.type.link.url}
+                  onChange={handleExternalURLChange}
+                  style={{
+                    resize: 'none',
+                    padding: '0.25rem 0.5rem',
+                  }}
+                />
+                <textarea
+                  className="input input-group__input panel__content__form__section__input input--dark input--small"
+                  spellCheck={false}
+                  disabled={isReadOnly}
+                  placeholder="External Link Label"
+                  value={product.type.link.label ?? ''}
+                  onChange={handleExternalLabelChange}
+                  style={{
+                    resize: 'none',
+                    padding: '0.25rem 0.5rem',
+                  }}
+                />
+              </div>
+            )}
           </div>
           <DataProductIconEditor product={product} isReadOnly={isReadOnly} />
         </div>
@@ -2411,7 +2645,12 @@ export const DataProductEditor = observer(() => {
   const renderActivivtyBarTab = (): React.ReactNode => {
     switch (selectedActivity) {
       case DATA_PRODUCT_TAB.HOME:
-        return <HomeTab product={product} isReadOnly={isReadOnly} />;
+        return (
+          <HomeTab
+            dataProductEditorState={dataProductEditorState}
+            isReadOnly={isReadOnly}
+          />
+        );
       case DATA_PRODUCT_TAB.SUPPORT:
         return (
           <SupportTab

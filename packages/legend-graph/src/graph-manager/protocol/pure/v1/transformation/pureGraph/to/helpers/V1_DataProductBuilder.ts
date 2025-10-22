@@ -84,6 +84,7 @@ export const V1_buildAccessPoint = (
     lakeAccessPoint.reproducible = ap.reproducible;
     lakeAccessPoint.classification = ap.classification;
     lakeAccessPoint.description = ap.description;
+    lakeAccessPoint.title = ap.title;
     return lakeAccessPoint;
   } else if (ap instanceof V1_FunctionAccessPoint) {
     const functionAccessPoint = new FunctionAccessPoint(
@@ -95,11 +96,14 @@ export const V1_buildAccessPoint = (
       ),
     );
     functionAccessPoint.description = ap.description;
+    functionAccessPoint.title = ap.title;
     return functionAccessPoint;
   } else if (ap instanceof V1_UnknownAccessPoint) {
-    const unkown = new UnknownAccessPoint(ap.id);
-    unkown.content = ap.content;
-    return unkown;
+    const unknown = new UnknownAccessPoint(ap.id);
+    unknown.description = ap.description;
+    unknown.title = ap.title;
+    unknown.content = ap.content;
+    return unknown;
   }
   throw new UnsupportedOperationError(
     `Unsupported data product access type ${ap}`,
@@ -137,6 +141,7 @@ export const V1_buildAccessPointGroup = (
   if (elementGroup instanceof V1_ModelAccessPointGroup) {
     const group = new ModelAccessPointGroup();
     group.id = elementGroup.id;
+    group.title = elementGroup.title;
     group.description = elementGroup.description;
     group.accessPoints = elementGroup.accessPoints.map((ep) =>
       V1_buildAccessPoint(ep, context),
@@ -189,6 +194,7 @@ export const V1_buildAccessPointGroup = (
   } else {
     const group = new AccessPointGroup();
     group.id = elementGroup.id;
+    group.title = elementGroup.title;
     group.description = elementGroup.description;
     group.accessPoints = elementGroup.accessPoints.map((ep) =>
       V1_buildAccessPoint(ep, context),

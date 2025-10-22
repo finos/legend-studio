@@ -48,6 +48,7 @@ export const observe_AccessPoint = skipObserved(
     if (metamodel instanceof LakehouseAccessPoint) {
       makeObservable(metamodel, {
         id: observable,
+        title: observable,
         targetEnvironment: observable,
         classification: observable,
         func: observable.ref,
@@ -140,6 +141,7 @@ export const observe_AccessPointGroup = skipObserved(
     makeObservable(metamodel, {
       id: observable,
       description: observable,
+      title: observable,
       accessPoints: observable,
       stereotypes: observable,
       taggedValues: observable,
@@ -222,6 +224,7 @@ export const observe_DataProduct = skipObserved(
       description: observable,
       supportInfo: observable,
       icon: observable,
+      type: observable,
       expertise: observable,
     });
 
