@@ -20,3 +20,4 @@ export * from './models/Subscription.js';
 export * from './models/Cart.js';
 export * from './models/Order.js';
 export { MarketplaceServerClient } from './MarketplaceServerClient.js';
+export { TerminalAccessServerClient } from './TerminalAccessServerClient.js';

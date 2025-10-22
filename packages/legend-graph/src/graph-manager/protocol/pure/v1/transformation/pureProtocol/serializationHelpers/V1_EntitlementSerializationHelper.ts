@@ -44,6 +44,8 @@ import {
   V1_LiteDataContractsResponse,
   V1_LiteDataContract,
   V1_DataContractApprovedUsersResponse,
+  V1_TerminalOrderItem,
+  V1_TerminalProvisionPayload,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
@@ -436,6 +438,66 @@ export const V1_createContractPayloadModelSchema = (
       (val) => V1_deserializeOrganizationalScope(val, plugins),
     ),
   });
+
+export const V1_terminalOrderItemModelSchema = createModelSchema(
+  V1_TerminalOrderItem,
+  {
+    providerName: primitive(),
+    productName: primitive(),
+    category: primitive(),
+    price: primitive(),
+    id: primitive(),
+    perm_id: optional(primitive()),
+  },
+);
+
+export const V1_serializeOrderItems = (
+  val: Record<number, V1_TerminalOrderItem[]>,
+): Record<number, PlainObject<V1_TerminalOrderItem>[]> => {
+  const result: Record<number, PlainObject<V1_TerminalOrderItem>[]> = {};
+  for (const [key, items] of Object.entries(val)) {
+    result[Number(key)] = items.map(
+      (item: V1_TerminalOrderItem): PlainObject<V1_TerminalOrderItem> =>
+        serialize(V1_terminalOrderItemModelSchema, item),
+    );
+  }
+  return result;
+};
+
+export const V1_deserializeOrderItems = (
+  val: Record<string, PlainObject<V1_TerminalOrderItem>[]>,
+): Record<number, V1_TerminalOrderItem[]> => {
+  const result: Record<number, V1_TerminalOrderItem[]> = {};
+  for (const [key, items] of Object.entries(val)) {
+    result[Number(key)] = items.map(
+      (item: PlainObject<V1_TerminalOrderItem>): V1_TerminalOrderItem =>
+        deserialize(V1_terminalOrderItemModelSchema, item),
+    );
+  }
+  return result;
+};
+
+export const V1_terminalProvisionPayloadModelSchema = createModelSchema(
+  V1_TerminalProvisionPayload,
+  {
+    ordered_by: primitive(),
+    kerberos: primitive(),
+    order_items: custom(V1_serializeOrderItems, V1_deserializeOrderItems),
+    business_justification: primitive(),
+  },
+);
+
+export const V1_serializeTerminalProvisionPayload = (
+  payload: V1_TerminalProvisionPayload,
+): PlainObject<V1_TerminalProvisionPayload> => {
+  return serialize(V1_terminalProvisionPayloadModelSchema, payload);
+};
+
+export const V1_deserializeTerminalProvisionPayload = (
+  json: PlainObject<V1_TerminalProvisionPayload>,
+): V1_TerminalProvisionPayload => {
+  return deserialize(V1_terminalProvisionPayloadModelSchema, json);
+};
 
 export const V1_ContractUserStatusResponseModelSchema = createModelSchema(
   V1_ContractUserStatusResponse,

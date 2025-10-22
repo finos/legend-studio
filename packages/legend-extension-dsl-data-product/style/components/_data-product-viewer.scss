@@ -44,11 +44,14 @@
 
     &__content {
       display: flex;
-      flex-direction: column;
-      width: 100%;
+      flex-direction: row;
+      width: min(140rem, 80vw);
       min-width: 80rem;
       max-width: 140rem;
       padding: 3rem 8rem 2rem;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
     }
 
     &__content--expanded {
@@ -113,11 +116,13 @@
       @include flexCenter;
       @include ellipsisTextOverflow;
 
-      flex-grow: 1;
+      flex: 1;
+      min-width: 0;
+      max-width: 50vw;
+      font-size: 3rem;
       align-self: start;
-      align-items: end;
+      justify-content: flex-start;
       height: 5rem;
-      font-size: 3.6rem;
       font-weight: 400;
       color: var(--color-hclight-blue-60);
       background: unset !important;
@@ -330,6 +335,7 @@
   justify-content: flex-end;
   align-items: center;
   z-index: 10;
+  padding-top: 10px;
 
   &__container {
     width: auto;
@@ -755,6 +761,7 @@
   min-width: 250px;
   border: 1px solid var(--color-hclight-blue-60);
   color: var(--color-hclight-blue-60);
+  margin-top: 25px;
   padding: 12px 24px;
   font-size: 14px;
   transition: opacity 0.2s ease;

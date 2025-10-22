@@ -32,9 +32,22 @@ import type {
 } from '../stores/BaseLayoutState.js';
 import type { BaseViewerState } from '../stores/BaseViewerState.js';
 import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerState.js';
-import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
 import { ProductWiki } from './ProductWiki.js';
-import type { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
+import { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
+import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
+import type { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
+
+export const isDataProductViewerState = (
+  state: BaseViewerState<SupportedProducts, SupportedLayoutStates>,
+): state is DataProductViewerState => {
+  return state instanceof DataProductViewerState;
+};
+
+export const isTerminalProductViewerState = (
+  state: BaseViewerState<SupportedProducts, SupportedLayoutStates>,
+): state is TerminalProductViewerState => {
+  return state instanceof TerminalProductViewerState;
+};
 
 export type SupportedProducts = V1_Terminal | V1_DataProduct;
 export type SupportedLayoutStates =
@@ -138,18 +151,31 @@ const ProductHeader = observer(
       SupportedProducts,
       SupportedLayoutStates
     >;
-    dataAccessState: DataProductDataAccessState | undefined;
+    dataAccessState:
+      | DataProductDataAccessState
+      | TerminalProductDataAccessState
+      | undefined;
     showFullHeader: boolean;
   }) => {
     const { productViewerState, dataAccessState, showFullHeader } = props;
     const headerRef = useRef<HTMLDivElement>(null);
-    const isDataProductViewerState =
-      productViewerState instanceof DataProductViewerState;
-    const isTerminalProductViewerState =
-      productViewerState instanceof TerminalProductViewerState;
-    const productTitle = productViewerState.getTitle();
-    const productPath = productViewerState.getPath();
-    const productName = productViewerState.getName();
+
+    const productTitle =
+      productViewerState instanceof DataProductViewerState
+        ? productViewerState.product.title
+        : productViewerState instanceof TerminalProductViewerState
+          ? productViewerState.product.productName
+          : undefined;
+
+    const productPath =
+      productViewerState instanceof DataProductViewerState
+        ? productViewerState.product.path
+        : undefined;
+
+    const productName =
+      productViewerState instanceof DataProductViewerState
+        ? productViewerState.product.name
+        : undefined;
 
     useEffect(() => {
       if (headerRef.current) {
@@ -170,21 +196,25 @@ const ProductHeader = observer(
               productViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
-          {isDataProductViewerState && dataAccessState && (
+          <div className="data-product__viewer__header__main">
+            <div
+              className="data-product__viewer__header__title"
+              title={`${productTitle} - ${productPath}`}
+            >
+              {productTitle ? productTitle : productName}
+            </div>
+          </div>
+
+          {dataAccessState instanceof DataProductDataAccessState && (
             <DataProductEnvironmentLabel dataAccessState={dataAccessState} />
           )}
-          <div
-            className="data-product__viewer__header__title"
-            title={`${productTitle} - ${productPath}`}
-          >
-            {productTitle ? productTitle : productName}
-            {isTerminalProductViewerState && (
+          {isTerminalProductViewerState(productViewerState) && (
+            <div className="data-product__viewer__header__navigation">
               <TerminalNavigationSections
                 productViewerState={productViewerState}
               />
-            )}
-          </div>
-          <hr />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -197,9 +227,12 @@ export const ProductViewer = observer(
       SupportedProducts,
       SupportedLayoutStates
     >;
-    dataProductDataAccessState?: DataProductDataAccessState | undefined;
+    productDataAccessState?:
+      | DataProductDataAccessState
+      | TerminalProductDataAccessState
+      | undefined;
   }) => {
-    const { productViewerState, dataProductDataAccessState } = props;
+    const { productViewerState, productDataAccessState } = props;
     const frame = useRef<HTMLDivElement>(null);
     const [showFullHeader, setShowFullHeader] = useState(false);
     const [scrollPercentage, setScrollPercentage] = useState(0);
@@ -244,7 +277,7 @@ export const ProductViewer = observer(
         >
           <ProductHeader
             productViewerState={productViewerState}
-            dataAccessState={dataProductDataAccessState}
+            dataAccessState={productDataAccessState}
             showFullHeader={showFullHeader}
           />
           {productViewerState.layoutState.isTopScrollerVisible && (
@@ -275,7 +308,7 @@ export const ProductViewer = observer(
             <div className="data-product__viewer__content">
               <ProductWiki
                 productViewerState={productViewerState}
-                dataProductDataAccessState={dataProductDataAccessState}
+                productDataAccessState={productDataAccessState}
               />
             </div>
           </div>

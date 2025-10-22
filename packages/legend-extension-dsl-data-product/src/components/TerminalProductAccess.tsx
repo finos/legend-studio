@@ -25,6 +25,8 @@ import {
   DataGrid,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
+import type { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
+import { TerminalAccessViewer } from '../components/TerminalProduct/TerminalProductDataAccess.js';
 
 interface TerminalProductRowData {
   id: string;
@@ -61,9 +63,13 @@ const getFormattedPrice = (
   const displayPrice = isAnnual ? validPrice : validPrice / 12;
   const period = showPeriod ? (isAnnual ? '/year' : '/month') : '';
 
+  const usdFormatter = new Intl.NumberFormat('en-us', {
+    style: 'currency',
+    currency: 'USD',
+  });
   return {
     price: validPrice,
-    formattedPrice: `$${displayPrice.toFixed(2)}${period}`,
+    formattedPrice: `${usdFormatter.format(displayPrice)}${period}`,
     hasValidPrice: true,
   };
 };
@@ -105,8 +111,10 @@ export const TerminalProductPrice = observer(
 export const TerminalAccessAndTable = observer(
   ({
     terminalProductViewerState,
+    terminalProductDataAccessState,
   }: {
     terminalProductViewerState: TerminalProductViewerState;
+    terminalProductDataAccessState: TerminalProductDataAccessState;
   }) => {
     const terminal = terminalProductViewerState.product;
     const [currentUser] = useState<string | undefined>(
@@ -160,12 +168,15 @@ export const TerminalAccessAndTable = observer(
         resizable: true,
         cellClass:
           'data-product__viewer__content__terminal__access-table--cell--status',
+        cellRenderer: () => (
+          <div className="terminal-access-viewer-container">
+            <TerminalAccessViewer
+              terminalProductDataAccessState={terminalProductDataAccessState}
+            />
+          </div>
+        ),
       },
     ];
-
-    const editButtonClick = () => {
-      //To be implemented
-    };
 
     return (
       <div>
@@ -181,12 +192,14 @@ export const TerminalAccessAndTable = observer(
             <UserRenderer
               userId={currentUser}
               applicationStore={terminalProductViewerState.applicationStore}
-              userSearchService={terminalProductViewerState.userSearchService}
+              userSearchService={
+                terminalProductDataAccessState.userSearchService
+              }
             />
 
             <PencilEditIcon
               className="data-product__viewer__content__terminal__access-section__user-edit-icon"
-              onClick={editButtonClick}
+              onClick={() => {}}
             />
           </div>
         </div>
