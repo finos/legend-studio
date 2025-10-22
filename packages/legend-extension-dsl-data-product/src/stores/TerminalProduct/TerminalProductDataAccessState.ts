@@ -54,7 +54,6 @@ export class TerminalProductDataAccessState {
 
     makeObservable(this, {
       createTerminalRequest: flow,
-      creatingTerminalOrderState: observable,
     });
   }
 
