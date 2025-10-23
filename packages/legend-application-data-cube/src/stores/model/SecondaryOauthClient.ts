@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   UserManager,
   type UserManagerSettings,
@@ -41,11 +42,11 @@ export class SecondaryOAuthClient {
       if (Date.now() < exp - 10 * 60 * 1000) {
         return this.user.access_token;
       } else {
-        this.user = await this.userManager.signinPopup();
+        this.user = guaranteeNonNullable(await this.userManager.signinSilent());
         return this.user.access_token;
       }
     }
-    this.user = await this.userManager.signinPopup();
+    this.user = guaranteeNonNullable(await this.userManager.signinSilent());
     return this.user.access_token;
   }
 }

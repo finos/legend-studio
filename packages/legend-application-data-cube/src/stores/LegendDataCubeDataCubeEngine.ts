@@ -186,7 +186,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _lakehouseIngestServerClient: LakehouseIngestServerClient;
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
-  private readonly _secondaryOauthClient: SecondaryOAuthClient;
+  private _secondaryOauthClient?: SecondaryOAuthClient;
   private LAKEHOUSE_SECTION = '###Lakehouse';
 
   constructor(
@@ -205,10 +205,16 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._graphManager = graphManager;
     this._lakehouseContractServerClient = lakehouseContractServerClient;
     this._lakehouseIngestServerClient = lakehouseIngestServerClient;
-    this._secondaryOauthClient = new SecondaryOAuthClient(
-      guaranteeNonNullable(authStore.getUserManagerSettings()),
-    );
     this._duckDBEngine = new LegendDataCubeDuckDBEngine();
+  }
+
+  private get secondaryOauthClient(): SecondaryOAuthClient {
+    if (!this._secondaryOauthClient) {
+      this._secondaryOauthClient = new SecondaryOAuthClient(
+        guaranteeNonNullable(authStore.getUserManagerSettings()),
+      );
+    }
+    return this._secondaryOauthClient;
   }
 
   async initialize() {
@@ -734,7 +740,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           const refId = await this._duckDBEngine.ingestIcebergTable(
             rawSource.warehouse,
             rawSource.paths,
-            await this._secondaryOauthClient.getToken(),
+            await this.secondaryOauthClient.getToken(),
           );
           const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
             refId.dbReference,

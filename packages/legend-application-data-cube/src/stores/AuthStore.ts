@@ -30,7 +30,7 @@ class AuthStore {
     return this.accessToken;
   }
   setUserManagerSettings(settings?: UserManagerSettings) {
-    this.userManagerSettings = this.userManagerSettings;
+    this.userManagerSettings = settings;
   }
   getUserManagerSettings(): UserManagerSettings | undefined {
     return this.userManagerSettings;
