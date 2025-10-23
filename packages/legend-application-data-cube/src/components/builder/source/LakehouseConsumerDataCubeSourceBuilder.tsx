@@ -152,6 +152,11 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                   sourceBuilder.setWarehouse(
                     sourceBuilder.DEFAULT_CONSUMER_WAREHOUSE,
                   );
+                  sourceBuilder
+                    .initializeQuery()
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
                 }}
                 value={
                   sourceBuilder.selectedAccessPoint
@@ -174,21 +179,25 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               value={sourceBuilder.warehouse}
               onChange={(event) => {
                 sourceBuilder.setWarehouse(event.target.value);
-                sourceBuilder
-                  .initializeQuery()
-                  .catch((error) =>
-                    store.alertService.alertUnhandledError(error),
-                  );
               }}
             />
           </div>
         )}
         {sourceBuilder.warehouse && sourceBuilder.showQueryEditor && (
-          <div className="mt-4 border-t border-neutral-300 pt-3">
-            <div className="query-setup__wizard__group__title mb-2">
-              Query Editor
+          <div className="query-setup__wizard__group">
+            <div className="query-setup__wizard__group__title">Query</div>
+
+            <div
+              className="mt-2 h-40 w-full"
+              style={{
+                border: '2px solid #e5e7eb',
+                padding: '5px',
+                borderRadius: '5px',
+                position: 'relative',
+              }}
+            >
+              <DataCubeCodeEditor state={sourceBuilder.codeEditorState} />
             </div>
-            <DataCubeCodeEditor state={sourceBuilder.codeEditorState} />
           </div>
         )}
       </div>

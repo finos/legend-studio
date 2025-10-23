@@ -61,6 +61,9 @@ import {
   V1_ClassInstance,
   V1_ClassInstanceType,
   V1_DataProductAccessor,
+  V1_Protocol,
+  V1_PureGraphManager,
+  PureClientVersion,
 } from '@finos/legend-graph';
 import {
   RawLakehouseAdhocOrigin,
@@ -269,7 +272,14 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
           versionedData.versionId,
         );
         const model = V1_serializePureModelContext(
-          new V1_PureModelContextPointer(undefined, sdlc),
+          new V1_PureModelContextPointer(
+            // TODO: remove this when it is handled from backend
+            new V1_Protocol(
+              V1_PureGraphManager.PURE_PROTOCOL_NAME,
+              PureClientVersion.VX_X_X,
+            ),
+            sdlc,
+          ),
         );
 
         this.codeEditorState.setModel(model);
@@ -360,7 +370,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       Boolean(this.selectedAccessPoint) &&
       Boolean(this.selectedDataProduct) &&
       Boolean(this.selectedEnvironment) &&
-      this.codeEditorState.validationState.hasCompleted
+      !this.codeEditorState.hasErrors
     );
   }
 

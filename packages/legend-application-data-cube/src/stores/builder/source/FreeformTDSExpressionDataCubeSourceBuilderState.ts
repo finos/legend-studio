@@ -37,6 +37,9 @@ import {
   V1_serializePureModelContext,
   type V1_Mapping,
   V1_Lambda,
+  PureClientVersion,
+  V1_Protocol,
+  V1_PureGraphManager,
 } from '@finos/legend-graph';
 import {
   _lambda,
@@ -217,7 +220,14 @@ export class FreeformTDSExpressionDataCubeSourceBuilderState extends LegendDataC
         this.currentVersionId,
       );
       return V1_serializePureModelContext(
-        new V1_PureModelContextPointer(undefined, sdlc),
+        new V1_PureModelContextPointer(
+          // TODO: remove this when it is handled from backend
+          new V1_Protocol(
+            V1_PureGraphManager.PURE_PROTOCOL_NAME,
+            PureClientVersion.VX_X_X,
+          ),
+          sdlc,
+        ),
       );
     } else {
       return undefined;
