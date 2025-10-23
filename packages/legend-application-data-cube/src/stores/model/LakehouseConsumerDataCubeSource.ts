@@ -80,6 +80,7 @@ export class RawLakehouseConsumerDataCubeSource {
   paths!: string[];
   deploymentId?: number | undefined;
   origin?: RawLakehouseOrigin;
+  query?: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLakehouseConsumerDataCubeSource, {
@@ -88,6 +89,7 @@ export class RawLakehouseConsumerDataCubeSource {
       environment: primitive(),
       paths: list(primitive()),
       deploymentId: optional(primitive()),
+      query: optional(primitive()),
       origin: optionalCustom(
         (value) => {
           if (value instanceof RawLakehouseAdhocOrigin) {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { observer } from 'mobx-react-lite';
-import { FormTextInput } from '@finos/legend-data-cube';
+import { DataCubeCodeEditor, FormTextInput } from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
@@ -53,7 +53,9 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
     : null;
   const onEnvChange = (newValue: IngestDeploymentServerConfigOption | null) => {
     sourceBuilder.setSelectedEnvironment(newValue?.value ?? undefined);
-    sourceBuilder.fetchAccessPoints();
+    sourceBuilder
+      .fetchAccessPoints()
+      .catch((error) => store.alertService.alertUnhandledError(error));
   };
 
   useEffect(() => {
@@ -172,8 +174,21 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               value={sourceBuilder.warehouse}
               onChange={(event) => {
                 sourceBuilder.setWarehouse(event.target.value);
+                sourceBuilder
+                  .initializeQuery()
+                  .catch((error) =>
+                    store.alertService.alertUnhandledError(error),
+                  );
               }}
             />
+          </div>
+        )}
+        {sourceBuilder.warehouse && sourceBuilder.showQueryEditor && (
+          <div className="mt-4 border-t border-neutral-300 pt-3">
+            <div className="query-setup__wizard__group__title mb-2">
+              Query Editor
+            </div>
+            <DataCubeCodeEditor state={sourceBuilder.codeEditorState} />
           </div>
         )}
       </div>

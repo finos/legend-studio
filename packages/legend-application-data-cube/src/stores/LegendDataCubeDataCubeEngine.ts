@@ -1936,13 +1936,20 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       rawSource.paths[1],
       'Data Product access point expected as second path in lakehouse consumer source',
     );
-    const query = new V1_ClassInstance();
-    query.type = V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR;
-    const dataProductAccessor = new V1_DataProductAccessor();
-    dataProductAccessor.path = [dataProduct, accessPoint];
-    dataProductAccessor.parameters = [];
-    query.value = dataProductAccessor;
-    source.query = query;
+    if (rawSource.query) {
+      source.query = await this.parseValueSpecification(
+        guaranteeNonNullable(rawSource.query),
+        false,
+      );
+    } else {
+      const query = new V1_ClassInstance();
+      query.type = V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR;
+      const dataProductAccessor = new V1_DataProductAccessor();
+      dataProductAccessor.path = [dataProduct, accessPoint];
+      dataProductAccessor.parameters = [];
+      query.value = dataProductAccessor;
+      source.query = query;
+    }
 
     return V1_serializePureModelContext(deserializedPMCD);
   }
