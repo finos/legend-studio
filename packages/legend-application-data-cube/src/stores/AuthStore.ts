@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 import { makeAutoObservable } from 'mobx';
+import type { UserManagerSettings } from 'oidc-client-ts';
 
 class AuthStore {
   accessToken: string | undefined = undefined;
+  userManagerSettings: UserManagerSettings | undefined = undefined;
   constructor() {
     makeAutoObservable(this);
   }
@@ -26,6 +28,12 @@ class AuthStore {
   }
   getAccessToken(): string | undefined {
     return this.accessToken;
+  }
+  setUserManagerSettings(settings?: UserManagerSettings) {
+    this.userManagerSettings = this.userManagerSettings;
+  }
+  getUserManagerSettings(): UserManagerSettings | undefined {
+    return this.userManagerSettings;
   }
 }
 

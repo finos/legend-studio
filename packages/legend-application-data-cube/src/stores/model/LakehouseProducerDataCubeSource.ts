@@ -44,12 +44,10 @@ export class LakehouseProducerIcebergCachedDataCubeSource extends DataCubeSource
 
 export class IcebergConfig {
   catalogUrl!: string;
-  icebergRef!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(IcebergConfig, {
       catalogUrl: primitive(),
-      icebergRef: primitive(),
     }),
   );
 }

@@ -47,8 +47,6 @@ import {
   V1_deserializePureModelContext,
   V1_PureModelContextData,
 } from '@finos/legend-graph';
-import type { UserManagerSettings } from 'oidc-client-ts';
-import { SecondaryOAuthClient } from '../../model/SecondaryOauthClient.js';
 
 export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   deploymentId: number | undefined;
@@ -66,8 +64,6 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   databaseName: string | undefined;
   catalogUrl: string | undefined;
   milestoning: boolean;
-
-  userManagerSettings: UserManagerSettings | undefined;
 
   private LAKEHOUSE_SECTION = '###Lakehouse';
 
@@ -145,10 +141,6 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
 
   setEnableIceberg(enable: boolean) {
     this.enableIceberg = enable;
-  }
-
-  setUserManagerSettings(settings: UserManagerSettings) {
-    this.userManagerSettings = settings;
   }
 
   async fetchIngestUrns(access_token: string | undefined) {
@@ -337,35 +329,18 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   override async generateSourceData(): Promise<PlainObject> {
-    // register ingest definition
-
     const rawSource = new RawLakehouseProducerDataCubeSource();
     // build data cube source
     if (this.enableIceberg) {
-      const oauthClient = new SecondaryOAuthClient(
-        guaranteeNonNullable(this.userManagerSettings),
-      );
       this.milestoning =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.ingestDefinition as any).writeMode._type === 'batch_milestoned';
       this.createIcebergPath();
       const icebergConfig = new IcebergConfig();
       icebergConfig.catalogUrl = guaranteeNonNullable(this.catalogUrl);
-
-      const token = await oauthClient.getToken();
-
-      const refId = await this._engine.ingestIcebergTable(
-        guaranteeNonNullable(this.warehouse),
-        this.paths,
-        guaranteeNonNullable(this.catalogUrl),
-        undefined,
-        token,
-      );
-      icebergConfig.icebergRef = refId.dbReference;
       rawSource.icebergConfig = icebergConfig;
     } else {
       this.createPath();
-      this._engine.registerIngestDefinition(this.ingestDefinition);
     }
     rawSource.ingestDefinitionUrn = guaranteeNonNullable(
       this.selectedIngestUrn,

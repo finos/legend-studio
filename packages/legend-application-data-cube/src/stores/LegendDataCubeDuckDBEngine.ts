@@ -272,16 +272,8 @@ export class LegendDataCubeDuckDBEngine {
     warehouse: string,
     paths: string[],
     catalogApi: string,
-    refId?: string,
     token?: string,
   ) {
-    if (!isNullable(refId) && this._catalog.has(refId)) {
-      guaranteeNonNullable(this._catalog.get(refId));
-      return {
-        dbReference: refId,
-      };
-    }
-
     const schemaName = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
     LegendDataCubeDuckDBEngine.ingestFileTableCounter += 1;
     const tableName = `${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
@@ -322,7 +314,7 @@ export class LegendDataCubeDuckDBEngine {
       ]);
     await connection.close();
 
-    const ref = isNullable(refId) ? uuid() : refId;
+    const ref = uuid();
     this._catalog.set(ref, {
       schemaName,
       tableName,
