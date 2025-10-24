@@ -23,7 +23,12 @@ import {
   type DataCubeSource,
 } from '@finos/legend-data-cube';
 import { EngineError, type V1_Lambda } from '@finos/legend-graph';
-import { ActionState, assertErrorThrown, uuid } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  uuid,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 
 export class LegendDataCubeCodeEditorState extends DataCubeCodeEditorState {
@@ -36,7 +41,7 @@ export class LegendDataCubeCodeEditorState extends DataCubeCodeEditorState {
   constructor(
     engine: DataCubeEngine,
     alertService: DataCubeAlertService,
-    model: DataCubeSource | undefined,
+    model: DataCubeSource | PlainObject | undefined,
   ) {
     super(engine);
     makeObservable(this, {
@@ -64,6 +69,10 @@ export class LegendDataCubeCodeEditorState extends DataCubeCodeEditorState {
   initialize(query: string) {
     this.code = query;
     this.editorModel.setValue(this.code);
+  }
+
+  setModel(val: PlainObject | undefined) {
+    this.model = val;
   }
 
   showError(error: EngineError) {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { observer } from 'mobx-react-lite';
-import { FormTextInput } from '@finos/legend-data-cube';
+import { DataCubeCodeEditor, FormTextInput } from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
@@ -53,7 +53,9 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
     : null;
   const onEnvChange = (newValue: IngestDeploymentServerConfigOption | null) => {
     sourceBuilder.setSelectedEnvironment(newValue?.value ?? undefined);
-    sourceBuilder.fetchAccessPoints();
+    sourceBuilder
+      .fetchAccessPoints()
+      .catch((error) => store.alertService.alertUnhandledError(error));
   };
 
   useEffect(() => {
@@ -150,6 +152,11 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                   sourceBuilder.setWarehouse(
                     sourceBuilder.DEFAULT_CONSUMER_WAREHOUSE,
                   );
+                  sourceBuilder
+                    .initializeQuery()
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
                 }}
                 value={
                   sourceBuilder.selectedAccessPoint
@@ -174,6 +181,23 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                 sourceBuilder.setWarehouse(event.target.value);
               }}
             />
+          </div>
+        )}
+        {sourceBuilder.warehouse && sourceBuilder.showQueryEditor && (
+          <div className="query-setup__wizard__group">
+            <div className="query-setup__wizard__group__title">Query</div>
+
+            <div
+              className="mt-2 h-40 w-full"
+              style={{
+                border: '2px solid #e5e7eb',
+                padding: '5px',
+                borderRadius: '5px',
+                position: 'relative',
+              }}
+            >
+              <DataCubeCodeEditor state={sourceBuilder.codeEditorState} />
+            </div>
           </div>
         )}
       </div>
