@@ -72,6 +72,8 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     userData instanceof LegendUser && userData.displayName
       ? userData.displayName
       : userId;
+  const adjacentEnvState = marketplaceStore.adjacentEnvState;
+  const adjacentUrl = marketplaceStore.applicationStore.config.adjacentEnvUrl;
 
   const UserIconRenderer = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -108,6 +110,15 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             </Box>
           </MenuItem>
           <MenuContentDivider />
+          {adjacentEnvState && adjacentUrl && (
+            <>
+              <MenuItem component="a" target="_blank" href={adjacentUrl}>
+                {`${adjacentEnvState.label} Env`}
+              </MenuItem>
+
+              <MenuContentDivider />
+            </>
+          )}
           <MenuItem
             component="a"
             href={applicationStore.navigationService.navigator.generateAddress(
@@ -164,6 +175,15 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           >
             About
           </MenuItem>
+          {adjacentEnvState && adjacentUrl && (
+            <>
+              <MenuItem component="a" target="_blank" href={adjacentUrl}>
+                {`${adjacentEnvState.label} Env`}
+              </MenuItem>
+
+              <MenuContentDivider />
+            </>
+          )}
           <MenuItem
             component="a"
             href={applicationStore.navigationService.navigator.generateAddress(

@@ -81,6 +81,7 @@ export interface LegendMarketplaceApplicationConfigurationData
     url: string;
     subscriptionUrl: string;
     dataProductEnv: string;
+    adjacentEnvUrl?: string;
     userSearchUrl?: string | undefined;
     userProfileImageUrl?: string | undefined;
     oidcConfig?: LegendMarketplaceOidcConfig | undefined;
@@ -133,6 +134,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceServerUrl: string;
   readonly marketplaceSubscriptionUrl: string;
   readonly dataProductEnv: LegendMarketplaceEnv;
+  readonly adjacentEnvUrl: string | undefined;
   readonly marketplaceUserSearchUrl?: string | undefined;
   readonly marketplaceUserProfileImageUrl?: string | undefined;
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
@@ -194,6 +196,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
           `Can't configure application: 'marketplace.dataProductEnv' field must be 'prod' or 'prod-par'`,
         );
     }
+    this.adjacentEnvUrl = input.configData.marketplace.adjacentEnvUrl;
     if (input.configData.marketplace.userSearchUrl) {
       this.marketplaceUserSearchUrl =
         LegendApplicationConfig.resolveAbsoluteUrl(

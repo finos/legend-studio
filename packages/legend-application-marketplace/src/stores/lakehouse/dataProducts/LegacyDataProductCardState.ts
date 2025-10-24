@@ -54,6 +54,10 @@ export class LegacyDataProductCardState extends BaseProductCardState {
       : this.dataSpace.name;
   }
 
+  get name(): string {
+    return this.dataSpace.name;
+  }
+
   get description(): string | undefined {
     return this.dataSpace.description;
   }
