@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.9
+
+### Patch Changes
+
+- [#4576](https://github.com/finos/legend-studio/pull/4576) [`ddb3c1e`](https://github.com/finos/legend-studio/commit/ddb3c1e4412f39ec508a6d74e28de287f8e896fb) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: remove lakehouse producer source loader
+
 ## 0.7.8
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.9
+
+### Patch Changes
+
+- [#4571](https://github.com/finos/legend-studio/pull/4571) [`7ab2dde`](https://github.com/finos/legend-studio/commit/7ab2dde288b8ca18494e5c819354518e0554ca2c) ([@jackp5150](https://github.com/jackp5150)) - Added serialization for terminals
+
 ## 32.3.8
 
 ### Patch Changes
