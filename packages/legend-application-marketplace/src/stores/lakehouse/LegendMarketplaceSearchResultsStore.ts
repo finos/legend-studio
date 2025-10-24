@@ -141,7 +141,10 @@ export class LegendMarketplaceSearchResultsStore {
           this.filterState.search === '' ||
           productCardState.title
             .toLowerCase()
-            .includes(this.filterState.search.toLowerCase());
+            .includes(this.filterState.search.toLowerCase()) ||
+          // case insensitive for name
+          productCardState.name.toLowerCase() ===
+            this.filterState.search.toLowerCase();
         return titleMatch;
       })
       .sort((a, b) => {

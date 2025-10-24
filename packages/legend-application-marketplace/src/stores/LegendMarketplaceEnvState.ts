@@ -24,7 +24,14 @@ export enum LegendMarketplaceEnv {
 export abstract class LegendMarketplaceEnvState {
   abstract key: LegendMarketplaceEnv;
 
+  get label(): string {
+    return this.key;
+  }
+
   abstract supportsLegacyDataProducts(): boolean;
+
+  abstract get adjacentEnv(): LegendMarketplaceEnv | undefined;
+
   abstract filterDataProduct(
     classification: V1_EntitlementsLakehouseEnvironmentType | undefined,
   ): boolean;
@@ -35,6 +42,14 @@ export class ProdLegendMarketplaceEnvState extends LegendMarketplaceEnvState {
 
   supportsLegacyDataProducts(): boolean {
     return true;
+  }
+
+  override get label(): string {
+    return 'Prod';
+  }
+
+  override get adjacentEnv() {
+    return LegendMarketplaceEnv.PRODUCTION_PARALLEL;
   }
 
   filterDataProduct(
@@ -51,6 +66,14 @@ export class ProdParallelLegendMarketplaceEnvState extends LegendMarketplaceEnvS
 
   supportsLegacyDataProducts(): boolean {
     return false;
+  }
+
+  override get label(): string {
+    return 'Prod-Parallel';
+  }
+
+  override get adjacentEnv() {
+    return LegendMarketplaceEnv.PRODUCTION;
   }
 
   filterDataProduct(

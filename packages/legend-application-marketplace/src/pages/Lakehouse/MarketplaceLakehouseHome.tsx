@@ -59,6 +59,8 @@ export const MarketplaceLakehouseHome = observer(() => {
   const auth = useAuth();
   const configOptions = applicationStore.config.options;
   const showDevFeatures = configOptions.showDevFeatures;
+  const adjacentUrl = applicationStore.config.adjacentEnvUrl;
+  const adjacentEnvState = legendMarketplaceBaseStore.adjacentEnvState;
 
   const [highlightedDataProducts, setHighlightedDataProducts] = useState<
     BaseProductCardState[]
@@ -173,6 +175,12 @@ export const MarketplaceLakehouseHome = observer(() => {
     );
   };
 
+  const visitAdjacentEnv = (): void => {
+    if (adjacentUrl) {
+      applicationStore.navigationService.navigator.visitAddress(adjacentUrl);
+    }
+  };
+
   const handleShowDemo = (): void => {
     legendMarketplaceBaseStore.setDemoModal(true);
   };
@@ -187,6 +195,15 @@ export const MarketplaceLakehouseHome = observer(() => {
           >
             <SimpleCalendarIcon className="legend-marketplace-home__button__icon" />
             Schedule a Demo
+          </button>
+        )}
+        {adjacentUrl && adjacentEnvState && (
+          <button
+            className="legend-marketplace-home__button"
+            onClick={visitAdjacentEnv}
+          >
+            <OpenNewTabIcon className="legend-marketplace-home__button__icon" />
+            {`${adjacentEnvState.label} Env`}
           </button>
         )}
         <button

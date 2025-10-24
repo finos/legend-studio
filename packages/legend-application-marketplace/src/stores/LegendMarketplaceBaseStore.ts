@@ -73,6 +73,7 @@ export type LegendMarketplaceApplicationStore = ApplicationStore<
 export class LegendMarketplaceBaseStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly envState: LegendMarketplaceEnvState;
+  readonly adjacentEnvState: LegendMarketplaceEnvState | undefined;
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
@@ -104,6 +105,7 @@ export class LegendMarketplaceBaseStore {
       applicationStore.config.dataProductEnv === LegendMarketplaceEnv.PRODUCTION
         ? new ProdLegendMarketplaceEnvState()
         : new ProdParallelLegendMarketplaceEnvState();
+    this.adjacentEnvState = this.buildAdjacentEnvState();
     this.marketplaceServerClient = new MarketplaceServerClient({
       serverUrl: this.applicationStore.config.marketplaceServerUrl,
       subscriptionUrl: this.applicationStore.config.marketplaceSubscriptionUrl,
@@ -182,6 +184,16 @@ export class LegendMarketplaceBaseStore {
 
     // Initialize cart store
     this.cartStore = new CartStore(this);
+  }
+
+  buildAdjacentEnvState(): LegendMarketplaceEnvState | undefined {
+    const adjacentEnv = this.envState.adjacentEnv;
+    if (adjacentEnv) {
+      return adjacentEnv === LegendMarketplaceEnv.PRODUCTION
+        ? new ProdLegendMarketplaceEnvState()
+        : new ProdParallelLegendMarketplaceEnvState();
+    }
+    return undefined;
   }
 
   async initHighlightedDataProducts(
