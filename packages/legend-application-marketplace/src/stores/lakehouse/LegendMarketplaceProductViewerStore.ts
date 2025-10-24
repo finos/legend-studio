@@ -334,6 +334,15 @@ export class LegendMarketplaceProductViewerStore {
               const path = v1DataProduct.path;
               const powerBiUrl =
                 this.marketplaceBaseStore.applicationStore.config.powerBiUrl;
+              LegendMarketplaceTelemetryHelper.logEvent_OpenPowerBI(
+                this.marketplaceBaseStore.applicationStore.telemetryService,
+                entitlementsDataProductDetails.dataProduct.name,
+                entitlementsDataProductDetails.origin,
+                path,
+                apg,
+                entitlementsDataProductDetails.lakehouseEnvironment?.type,
+                undefined,
+              );
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 addQueryParametersToUrl(
                   powerBiUrl,
@@ -349,6 +358,11 @@ export class LegendMarketplaceProductViewerStore {
             }
           },
           openDataCube: (sourceData) => {
+            LegendMarketplaceTelemetryHelper.logEvent_OpenDataCube(
+              this.marketplaceBaseStore.applicationStore.telemetryService,
+              sourceData,
+              undefined,
+            );
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
                 this.marketplaceBaseStore.applicationStore.config
