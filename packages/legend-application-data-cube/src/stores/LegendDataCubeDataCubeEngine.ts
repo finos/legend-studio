@@ -172,24 +172,29 @@ import {
 import {
   isEnvNameCompatibleWithEntitlementsLakehouseEnvironmentType,
   type LakehouseContractServerClient,
+  type LakehouseIngestServerClient,
 } from '@finos/legend-server-lakehouse';
 import { authStore } from './AuthStore.js';
 import { extractEntityNameFromPath } from '@finos/legend-storage';
+import { SecondaryOAuthClient } from './model/SecondaryOauthClient.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
   private readonly _depotServerClient: DepotServerClient;
   private readonly _engineServerClient: V1_EngineServerClient;
   private readonly _lakehouseContractServerClient: LakehouseContractServerClient;
+  private readonly _lakehouseIngestServerClient: LakehouseIngestServerClient;
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
-  private _ingestDefinition: PlainObject | undefined;
+  private _secondaryOauthClient?: SecondaryOAuthClient;
+  private LAKEHOUSE_SECTION = '###Lakehouse';
 
   constructor(
     application: LegendDataCubeApplicationStore,
     depotServerClient: DepotServerClient,
     engineServerClient: V1_EngineServerClient,
     lakehouseContractServerClient: LakehouseContractServerClient,
+    lakehouseIngestServerClient: LakehouseIngestServerClient,
     graphManager: V1_PureGraphManager,
   ) {
     super();
@@ -199,7 +204,17 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._engineServerClient = engineServerClient;
     this._graphManager = graphManager;
     this._lakehouseContractServerClient = lakehouseContractServerClient;
+    this._lakehouseIngestServerClient = lakehouseIngestServerClient;
     this._duckDBEngine = new LegendDataCubeDuckDBEngine();
+  }
+
+  private get secondaryOauthClient(): SecondaryOAuthClient {
+    if (!this._secondaryOauthClient) {
+      this._secondaryOauthClient = new SecondaryOAuthClient(
+        guaranteeNonNullable(authStore.getUserManagerSettings()),
+      );
+    }
+    return this._secondaryOauthClient;
   }
 
   async initialize() {
@@ -720,13 +735,15 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         const rawSource =
           RawLakehouseProducerDataCubeSource.serialization.fromJson(value);
 
-        if (
-          rawSource.icebergConfig?.icebergRef &&
-          rawSource.icebergConfig.catalogUrl
-        ) {
+        if (rawSource.icebergConfig?.catalogUrl) {
           const source = new LakehouseProducerIcebergCachedDataCubeSource();
+          const refId = await this._duckDBEngine.ingestIcebergTable(
+            rawSource.warehouse,
+            rawSource.paths,
+            await this.secondaryOauthClient.getToken(),
+          );
           const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
-            rawSource.icebergConfig.icebergRef,
+            refId.dbReference,
           );
           source.paths = rawSource.paths;
 
@@ -784,7 +801,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           query.value = ingestAccesor;
           source.query = query;
 
-          const model = this._synthesizeLakehouseProducerPMCD(
+          const model = await this._synthesizeLakehouseProducerPMCD(
             rawSource,
             source,
           );
@@ -1335,12 +1352,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return this._engineServerClient.grammarToJSON_model(code);
   }
 
-  // ---------------------------------- INGEST ---------------------------------------
-
-  registerIngestDefinition(ingestDefinition: PlainObject | undefined) {
-    this._ingestDefinition = ingestDefinition;
-  }
-
   // ---------------------------------- CACHING --------------------------------------
 
   override async initializeCache(
@@ -1707,14 +1718,12 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     warehouse: string,
     paths: string[],
     catalogApi: string,
-    refId?: string,
     token?: string,
   ) {
     const { dbReference } = await this._duckDBEngine.ingestIcebergTable(
       warehouse,
       paths,
       catalogApi,
-      refId,
       token,
     );
     return { dbReference };
@@ -1839,7 +1848,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     };
   }
 
-  private _synthesizeLakehouseProducerPMCD(
+  private async _synthesizeLakehouseProducerPMCD(
     rawSource: RawLakehouseProducerDataCubeSource,
     source: LakehouseProducerDataCubeSource,
   ) {
@@ -1859,7 +1868,27 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
     const model = new V1_PureModelContextData();
     const ingestDefinition = new V1_IngestDefinition();
-    ingestDefinition.content = this._ingestDefinition as PlainObject;
+    // call the API
+    const ingestGrammar =
+      await this._lakehouseIngestServerClient.getIngestDefinitionGrammar(
+        rawSource.ingestDefinitionUrn,
+        rawSource.ingestServerUrl,
+        authStore.getAccessToken(),
+      );
+
+    const ingestPMCDPlainObject = await this.parseCompatibleModel(
+      `${this.LAKEHOUSE_SECTION}\n${ingestGrammar}`,
+    );
+
+    const ingestDefPMCD = guaranteeType(
+      V1_deserializePureModelContext(ingestPMCDPlainObject),
+      V1_PureModelContextData,
+    );
+
+    const ingestDefinitionObject = (
+      ingestDefPMCD.elements.at(0) as V1_IngestDefinition
+    ).content;
+    ingestDefinition.content = ingestDefinitionObject;
     const splits = rawSource.paths[0]?.split('::');
     ingestDefinition.name = guaranteeNonNullable(splits?.pop());
     ingestDefinition.package = guaranteeNonNullable(

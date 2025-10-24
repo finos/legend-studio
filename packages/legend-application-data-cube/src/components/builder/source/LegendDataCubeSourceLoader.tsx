@@ -23,8 +23,6 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { formatDistanceToNow } from '@finos/legend-shared';
 import type { LegendDataCubeSourceLoaderState } from '../../../stores/builder/source/LegendDataCubeSourceLoaderState.js';
 import { LegendDataCubeBlockingWindow } from '../../LegendDataCubeBlockingWindow.js';
-import type { LakehouseProducerDataCubeSourceLoaderState } from '../../../stores/builder/source/LakehouseProducerDataCubeSourceLoaderState.js';
-import { LakehouseProducerDataCubeSourceLoader } from './LakehouseProducerDataCubeSourceLoader.js';
 import { LegendDataCubeSourceBuilderType } from '../../../stores/builder/source/LegendDataCubeSourceBuilderState.js';
 
 export const LegendDataCubeSourceLoader = observer(
@@ -87,14 +85,6 @@ export const LegendDataCubeSourceLoader = observer(
                   <LocalFileDataCubePartialSourceLoader
                     partialSourceLoader={
                       state as LocalFileDataCubeSourceLoaderState
-                    }
-                  />
-                )}
-                {state.label ===
-                  LegendDataCubeSourceBuilderType.LAKEHOUSE_PRODUCER && (
-                  <LakehouseProducerDataCubeSourceLoader
-                    partialSourceLoader={
-                      state as LakehouseProducerDataCubeSourceLoaderState
                     }
                   />
                 )}

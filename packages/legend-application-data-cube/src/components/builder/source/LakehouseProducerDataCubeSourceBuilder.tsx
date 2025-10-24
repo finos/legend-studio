@@ -42,10 +42,6 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
     state.reset();
   }, [state]);
 
-  useEffect(() => {
-    state.setUserManagerSettings(auth.settings);
-  }, [state, auth]);
-
   function createUrnPairs(
     urns: string[],
   ): Record<string, string | undefined>[] {

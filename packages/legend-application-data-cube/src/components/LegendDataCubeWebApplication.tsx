@@ -51,10 +51,12 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
   useEffect(() => {
     if (auth.user?.access_token) {
       authStore.setAccessToken(auth.user.access_token);
+      authStore.setUserManagerSettings(auth.settings);
     } else {
       authStore.setAccessToken(undefined);
+      authStore.setUserManagerSettings(undefined);
     }
-  }, [auth.user]);
+  }, [auth]);
 
   return (
     <div className="h-full">
