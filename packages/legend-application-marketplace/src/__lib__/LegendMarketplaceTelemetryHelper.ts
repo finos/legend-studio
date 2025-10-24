@@ -20,6 +20,8 @@ import {
   V1_ResourceType,
   type V1_ContractUserEventRecord,
   type V1_EntitlementsLakehouseEnvironmentType,
+  V1_SdlcDeploymentDataProductOrigin,
+  type V1_EntitlementsDataProductOrigin,
 } from '@finos/legend-graph';
 import type { LegacyDataProductCardState } from '../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { LEGEND_MARKETPLACE_APP_EVENT } from './LegendMarketplaceAppEvent.js';
@@ -167,6 +169,67 @@ export class LegendMarketplaceTelemetryHelper {
           };
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.LOAD_DATA_PRODUCT,
+      telemetryData,
+    );
+  }
+
+  static logEvent_OpenPowerBI(
+    telemetryService: TelemetryService,
+    dataProductName: string,
+    origin: V1_EntitlementsDataProductOrigin,
+    path: string,
+    apg: string,
+    lakehouseEnvironmentClassification:
+      | V1_EntitlementsLakehouseEnvironmentType
+      | undefined,
+    error: string | undefined,
+  ): void {
+    if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+      const telemetryData =
+        error === undefined
+          ? {
+              groupId: origin.group,
+              artifactId: origin.artifact,
+              versionId: origin.version,
+              dataProduct: dataProductName,
+              path: path,
+              apg: apg,
+              lakehouseEnvironment: lakehouseEnvironmentClassification,
+              status: MARKETPLACE_EVENT_STATUS.SUCCESS,
+            }
+          : {
+              groupId: origin.group,
+              artifactId: origin.artifact,
+              versionId: origin.version,
+              dataProduct: dataProductName,
+              path: path,
+              apg: apg,
+              lakehouseEnvironment: lakehouseEnvironmentClassification,
+              status: MARKETPLACE_EVENT_STATUS.FAILURE,
+              error: error,
+            };
+      telemetryService.logEvent(
+        LEGEND_MARKETPLACE_APP_EVENT.OPEN_POWER_BI,
+        telemetryData,
+      );
+    }
+  }
+
+  static logEvent_OpenDataCube(
+    telemetryService: TelemetryService,
+    sourceData: object,
+    error: string | undefined,
+  ): void {
+    const telemetryData =
+      error === undefined
+        ? { ...sourceData, status: MARKETPLACE_EVENT_STATUS.SUCCESS }
+        : {
+            ...sourceData,
+            status: MARKETPLACE_EVENT_STATUS.FAILURE,
+            error: error,
+          };
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.OPEN_DATA_CUBE,
       telemetryData,
     );
   }
