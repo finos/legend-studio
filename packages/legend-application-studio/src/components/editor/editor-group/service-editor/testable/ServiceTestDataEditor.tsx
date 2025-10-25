@@ -385,7 +385,11 @@ export const UseDataElementModal = observer(
         open={useSharedModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           darkMode={
@@ -795,7 +799,11 @@ export const NewConnectionDataModal = observer(
         open={newConnectionState.showModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <form
           onSubmit={(event) => {

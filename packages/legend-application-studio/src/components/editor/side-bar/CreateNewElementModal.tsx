@@ -660,11 +660,15 @@ export const CreateNewLocalConnectionModal = observer(() => {
     <Dialog
       open={newElementState.showModal}
       onClose={closeModal}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
       classes={{ container: 'search-modal__container' }}
-      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      slotProps={{
+        transition: {
+          onEnter: handleEnter,
+        },
+        paper: {
+          classes: { root: 'search-modal__inner-container' },
+        },
+      }}
     >
       <form
         data-testid={LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL}
@@ -773,11 +777,15 @@ export const CreateNewElementModal = observer(() => {
     <Dialog
       open={newElementState.showModal}
       onClose={closeModal}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
       classes={{ container: 'search-modal__container' }}
-      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      slotProps={{
+        transition: {
+          onEnter: handleEnter,
+        },
+        paper: {
+          classes: { root: 'search-modal__inner-container' },
+        },
+      }}
     >
       <form
         data-testid={LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL}

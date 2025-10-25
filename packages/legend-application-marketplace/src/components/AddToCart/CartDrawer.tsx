@@ -42,13 +42,15 @@ export const CartDrawer = observer((): React.ReactNode => {
       anchor="right"
       open={cart.open}
       onClose={() => cart.setOpen(false)}
-      PaperProps={{
-        className: 'legend-marketplace-cart-drawer',
-        sx: {
-          width: { xs: '100vw', sm: '400px' },
-          maxWidth: '90vw',
-          marginTop: 'var(--legend-marketplace-header-height)',
-          height: 'calc(100% - var(--legend-marketplace-header-height))',
+      slotProps={{
+        paper: {
+          className: 'legend-marketplace-cart-drawer',
+          sx: {
+            width: { xs: '100vw', sm: '400px' },
+            maxWidth: '90vw',
+            marginTop: 'var(--legend-marketplace-header-height)',
+            height: 'calc(100% - var(--legend-marketplace-header-height))',
+          },
         },
       }}
     >

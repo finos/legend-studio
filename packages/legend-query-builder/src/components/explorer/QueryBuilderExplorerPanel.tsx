@@ -182,11 +182,13 @@ export const QueryBuilderSubclassInfoTooltip: React.FC<{
           }}
           open={open}
           onClose={() => setIsOpen(false)}
-          TransitionProps={{
-            // disable transition
-            // NOTE: somehow, this is the only workaround we have, if for example
-            // we set `appear = true`, the tooltip will jump out of position
-            timeout: 0,
+          slotProps={{
+            transition: {
+              // disable transition
+              // NOTE: somehow, this is the only workaround we have, if for example
+              // we set `appear = true`, the tooltip will jump out of position
+              timeout: 0,
+            },
           }}
           disableFocusListener={true}
           disableHoverListener={true}

@@ -143,7 +143,7 @@ export const RecommendedAddOnsModal = observer(
           ) : (
             <Grid container={true} spacing={2}>
               {recommendedItems.map((item) => (
-                <Grid item={true} xs={12} sm={6} key={item.id}>
+                <Grid size={{ xs: 12, sm: 6 }} key={item.id}>
                   {terminal ? (
                     <RecommendedItemsCard
                       key={item.id}

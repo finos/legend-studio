@@ -675,8 +675,10 @@ export const QueryLoaderDialog = observer(
           root: 'query-loader__dialog',
           container: 'query-loader__dialog__container',
         }}
-        PaperProps={{
-          classes: { root: 'query-loader__dialog__body' },
+        slotProps={{
+          paper: {
+            classes: { root: 'query-loader__dialog__body' },
+          },
         }}
       >
         <Modal

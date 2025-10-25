@@ -84,8 +84,10 @@ const SchemaLoader = observer(
       <Dialog
         onClose={onClose}
         open={importState.importSchemaModal}
-        TransitionProps={{
-          appear: false, // disable transition
+        slotProps={{
+          transition: {
+            appear: false, // disable transition
+          },
         }}
       >
         <Modal

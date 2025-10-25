@@ -534,8 +534,10 @@ const QueryBuilderSearchConfigToggleButtonGroup = observer(
           {header}
           {headerTooltipText && (
             <Tooltip
-              TransitionProps={{
-                timeout: 0,
+              slotProps={{
+                transition: {
+                  timeout: 0,
+                },
               }}
               title={<div>{headerTooltipText}</div>}
             >
@@ -617,9 +619,11 @@ export const QueryBuilderPropertySearchPanel = observer(
     return (
       <BasePopover
         open={propertySearchState.isSearchPanelOpen}
-        PaperProps={{
-          classes: {
-            root: 'query-builder-property-search-panel__container__root',
+        slotProps={{
+          paper: {
+            classes: {
+              root: 'query-builder-property-search-panel__container__root',
+            },
           },
         }}
         className={clsx('query-builder-property-search-panel__container', {

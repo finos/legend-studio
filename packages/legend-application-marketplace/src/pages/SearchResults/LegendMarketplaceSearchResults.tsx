@@ -27,7 +27,7 @@ import {
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { LegendMarketplaceSearchResultDrawerContent } from './LegendMarketplaceSearchResultDrawerContent.js';
-import { Drawer, Grid2 as Grid } from '@mui/material';
+import { Drawer, Grid } from '@mui/material';
 import { LegendMarketplaceProductSearchCard } from '../../components/DataProductCard/LegendMarketplaceDataProductSearchCard.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { withLegendMarketplaceVendorDataStore } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';

@@ -32,7 +32,7 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  Grid2 as Grid,
+  Grid,
   MenuItem,
   Select,
   Typography,

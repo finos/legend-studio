@@ -103,8 +103,10 @@ export const DataSpaceAdvancedSearchModal = observer(
           paper:
             'editor-modal__content data-space-advanced-search__dialog__container__content',
         }}
-        TransitionProps={{
-          onEnter: handleEnter,
+        slotProps={{
+          transition: {
+            onEnter: handleEnter,
+          },
         }}
       >
         <Modal

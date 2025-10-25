@@ -151,11 +151,15 @@ export const ClassMappingSelectorModal = observer(
       <Dialog
         open={true}
         onClose={hideClassMappingSelectorModal}
-        TransitionProps={{
-          onEnter: handleEnterClassMappingSelectorModal,
-        }}
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        slotProps={{
+          transition: {
+            onEnter: handleEnterClassMappingSelectorModal,
+          },
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
       >
         <Modal
           className={clsx('search-modal', {
