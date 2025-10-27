@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.10
+
+### Patch Changes
+
+- [#4575](https://github.com/finos/legend-studio/pull/4575) [`da25d80`](https://github.com/finos/legend-studio/commit/da25d80461051c55b9c150e5e52beae00ad12c1c) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: support user queries on lakehouse consumer source
+
 ## 0.7.9
 
 ### Patch Changes

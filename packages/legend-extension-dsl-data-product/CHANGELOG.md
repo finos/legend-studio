@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.16
+
+### Patch Changes
+
+- [#4577](https://github.com/finos/legend-studio/pull/4577) [`5c30065`](https://github.com/finos/legend-studio/commit/5c300651e63b569dbb3f569833bf70723a6c2540) ([@gs-gunjan](https://github.com/gs-gunjan)) - marketplace: add telemetry for opening datacube and powerbi from marketplace
+
 ## 0.0.15
 
 ### Patch Changes
