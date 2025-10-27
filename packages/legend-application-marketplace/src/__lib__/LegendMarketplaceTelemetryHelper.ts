@@ -20,8 +20,6 @@ import {
   V1_ResourceType,
   type V1_ContractUserEventRecord,
   type V1_EntitlementsLakehouseEnvironmentType,
-  V1_SdlcDeploymentDataProductOrigin,
-  type V1_EntitlementsDataProductOrigin,
 } from '@finos/legend-graph';
 import type { LegacyDataProductCardState } from '../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { LEGEND_MARKETPLACE_APP_EVENT } from './LegendMarketplaceAppEvent.js';
@@ -46,6 +44,11 @@ export enum CONTRACT_ACTION {
   DENIED = 'denied',
 }
 
+export enum PRODUCT_INTEGRATION_TYPE {
+  DATA_CUBE = 'dataCube',
+  POWER_BI = 'powerBI',
+}
+
 type MarketplaceDataProductOrigin_TelemetryData = {
   type: DATAPRODUCT_TYPE;
   groupId?: string | undefined;
@@ -63,6 +66,13 @@ type MarketplaceDataProduct_TelemetryData = {
     | V1_EntitlementsLakehouseEnvironmentType
     | undefined;
 };
+
+type MarketPlaceDataProductIntegration_TemeletryData =
+  MarketplaceDataProduct_TelemetryData & {
+    productIntegrationType?: PRODUCT_INTEGRATION_TYPE | undefined;
+    accessPointGroup?: string | undefined;
+    accessPointPath?: string | undefined;
+  };
 
 export class LegendMarketplaceTelemetryHelper {
   static logEvent_ClickingDataProductCard(
@@ -173,63 +183,21 @@ export class LegendMarketplaceTelemetryHelper {
     );
   }
 
-  static logEvent_OpenPowerBI(
+  static logEvent_OpenIntegratedProduct(
     telemetryService: TelemetryService,
-    dataProductName: string,
-    origin: V1_EntitlementsDataProductOrigin,
-    path: string,
-    apg: string,
-    lakehouseEnvironmentClassification:
-      | V1_EntitlementsLakehouseEnvironmentType
-      | undefined,
-    error: string | undefined,
-  ): void {
-    if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
-      const telemetryData =
-        error === undefined
-          ? {
-              groupId: origin.group,
-              artifactId: origin.artifact,
-              versionId: origin.version,
-              dataProduct: dataProductName,
-              path: path,
-              apg: apg,
-              lakehouseEnvironment: lakehouseEnvironmentClassification,
-              status: MARKETPLACE_EVENT_STATUS.SUCCESS,
-            }
-          : {
-              groupId: origin.group,
-              artifactId: origin.artifact,
-              versionId: origin.version,
-              dataProduct: dataProductName,
-              path: path,
-              apg: apg,
-              lakehouseEnvironment: lakehouseEnvironmentClassification,
-              status: MARKETPLACE_EVENT_STATUS.FAILURE,
-              error: error,
-            };
-      telemetryService.logEvent(
-        LEGEND_MARKETPLACE_APP_EVENT.OPEN_POWER_BI,
-        telemetryData,
-      );
-    }
-  }
-
-  static logEvent_OpenDataCube(
-    telemetryService: TelemetryService,
-    sourceData: object,
+    intTelemetryData: MarketPlaceDataProductIntegration_TemeletryData,
     error: string | undefined,
   ): void {
     const telemetryData =
       error === undefined
-        ? { ...sourceData, status: MARKETPLACE_EVENT_STATUS.SUCCESS }
+        ? { ...intTelemetryData, status: MARKETPLACE_EVENT_STATUS.SUCCESS }
         : {
-            ...sourceData,
+            ...intTelemetryData,
             status: MARKETPLACE_EVENT_STATUS.FAILURE,
             error: error,
           };
     telemetryService.logEvent(
-      LEGEND_MARKETPLACE_APP_EVENT.OPEN_DATA_CUBE,
+      LEGEND_MARKETPLACE_APP_EVENT.OPEN_INTEGRATED_PRODUCT,
       telemetryData,
     );
   }
