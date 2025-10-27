@@ -220,14 +220,15 @@ export const DataCubeScreen = observer(
           guaranteeNonNullable(path),
           guaranteeNonNullable(accessPointName),
         ];
+        const deploymentId =
+          dataAccessState.entitlementsDataProductDetails.deploymentId;
         const sourceData: Record<string, unknown> = {
           _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
           warehouse: DEFAULT_CONSUMER_WAREHOUSE,
           environment: getIngestDeploymentServerConfigName(selectedEnvironment),
           paths: accessPointPath,
+          deploymentId: deploymentId,
         };
-        const deploymentId =
-          dataAccessState.entitlementsDataProductDetails.deploymentId;
         if (dataProductOrigin instanceof V1_SdlcDeploymentDataProductOrigin) {
           sourceData.origin = {
             _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
@@ -243,7 +244,6 @@ export const DataCubeScreen = observer(
           sourceData.origin = {
             _type: V1_DataProductOriginType.AD_HOC_DEPLOYMENT,
           };
-          sourceData.deploymentId = deploymentId;
         } else {
           accessPointState.apgState.applicationStore.notificationService.notifyError(
             new Error(

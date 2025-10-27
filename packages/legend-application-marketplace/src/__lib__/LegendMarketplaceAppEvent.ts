@@ -28,4 +28,5 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   CLICK_HEADER_TAB = 'marketplace.click.header.tab',
   SCHEDULE_DEMO = 'marketplace.schedule.demo',
   CLICK_SUBSCRIBE_TO_NEWSLETTER = 'marketplace.click.subscribe.to.newsletter',
+  OPEN_INTEGRATED_PRODUCT = 'marketplace.open.integrated.product',
 }

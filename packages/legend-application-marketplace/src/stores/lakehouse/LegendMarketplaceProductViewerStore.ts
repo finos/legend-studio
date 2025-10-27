@@ -91,6 +91,7 @@ import {
 import {
   DATAPRODUCT_TYPE,
   LegendMarketplaceTelemetryHelper,
+  PRODUCT_INTEGRATION_TYPE,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 const ARTIFACT_GENERATION_DATA_PRODUCT_KEY = 'dataProduct';
@@ -334,6 +335,26 @@ export class LegendMarketplaceProductViewerStore {
               const path = v1DataProduct.path;
               const powerBiUrl =
                 this.marketplaceBaseStore.applicationStore.config.powerBiUrl;
+
+              LegendMarketplaceTelemetryHelper.logEvent_OpenIntegratedProduct(
+                this.marketplaceBaseStore.applicationStore.telemetryService,
+                {
+                  origin: {
+                    type: DATAPRODUCT_TYPE.SDLC,
+                    groupId,
+                    artifactId,
+                    versionId,
+                  },
+                  deploymentId: entitlementsDataProductDetails.deploymentId,
+                  productIntegrationType: PRODUCT_INTEGRATION_TYPE.POWER_BI,
+                  name: entitlementsDataProductDetails.dataProduct.name,
+                  accessPointGroup: apg,
+                  environmentClassification:
+                    entitlementsDataProductDetails.lakehouseEnvironment?.type,
+                },
+                undefined,
+              );
+
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 addQueryParametersToUrl(
                   powerBiUrl,
@@ -349,6 +370,35 @@ export class LegendMarketplaceProductViewerStore {
             }
           },
           openDataCube: (sourceData) => {
+            LegendMarketplaceTelemetryHelper.logEvent_OpenIntegratedProduct(
+              this.marketplaceBaseStore.applicationStore.telemetryService,
+              {
+                origin:
+                  entitlementsDataProductDetails.origin instanceof
+                  V1_SdlcDeploymentDataProductOrigin
+                    ? {
+                        type: DATAPRODUCT_TYPE.SDLC,
+                        groupId: entitlementsDataProductDetails.origin.group,
+                        artifactId:
+                          entitlementsDataProductDetails.origin.artifact,
+                        versionId:
+                          entitlementsDataProductDetails.origin.version,
+                      }
+                    : {
+                        type: DATAPRODUCT_TYPE.ADHOC,
+                      },
+                deploymentId: entitlementsDataProductDetails.deploymentId,
+                name: entitlementsDataProductDetails.dataProduct.name,
+                productIntegrationType: PRODUCT_INTEGRATION_TYPE.DATA_CUBE,
+                accessPointPath: (
+                  (sourceData as Record<string, unknown>).paths as string[]
+                ).at(1),
+                environmentClassification:
+                  entitlementsDataProductDetails.lakehouseEnvironment?.type,
+              },
+              undefined,
+            );
+
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
                 this.marketplaceBaseStore.applicationStore.config
