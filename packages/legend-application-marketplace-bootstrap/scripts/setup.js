@@ -71,6 +71,9 @@ export const setup = (outputDir) => {
         depot: {
           url: 'http://localhost:6200/depot/api',
         },
+        terminal: {
+          url: 'http://localhost:6400/terminal/api',
+        },
         studio: {
           url: 'http://localhost:9000/studio',
           instances: [
