@@ -376,10 +376,10 @@ export class DataProductAPGState {
           ),
         )) as V1_DataSubscriptionResponse[]
       ).flatMap((response) => response.subscriptions ?? []);
-      const subscriptions = rawSubscriptions?.map((rawSubscription) =>
+      const subscriptions = rawSubscriptions.map((rawSubscription) =>
         deserialize(V1_dataSubscriptionModelSchema, rawSubscription),
       );
-      this.setSubscriptions(subscriptions ?? []);
+      this.setSubscriptions(subscriptions);
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(`${error.message}`);
