@@ -594,20 +594,27 @@ export const DataProductAccessPointGroupViewer = observer(
       dataAccessState?.dataContract,
       dataAccessState?.lakehouseContractServerClient,
     ]);
+
     useEffect(() => {
       if (
         dataAccessState?.lakehouseContractServerClient &&
-        apgState.access === AccessPointGroupAccess.APPROVED &&
-        apgState.associatedContract &&
-        apgState.fetchingSubscriptionsState.isInInitialState
+        apgState.fetchingSubscriptionsState.isInInitialState &&
+        apgState.apgContracts.length > 0
       ) {
         apgState.fetchSubscriptions(
-          apgState.associatedContract.guid,
+          apgState.apgContracts,
           dataAccessState.lakehouseContractServerClient,
           auth.user?.access_token,
         );
       }
-    }, [apgState, auth.user?.access_token, dataAccessState]);
+    }, [
+      apgState,
+      apgState.fetchingSubscriptionsState,
+      apgState.apgContracts,
+      auth.user?.access_token,
+      dataAccessState?.lakehouseContractServerClient,
+    ]);
+
     const handleContractsClick = (): void => {
       if (dataAccessState) {
         apgState.handleContractClick(dataAccessState);
@@ -830,7 +837,7 @@ export const DataProductAccessPointGroupViewer = observer(
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />
         )}
-        {dataAccessState && apgState.associatedContract !== false && (
+        {dataAccessState && apgState.associatedUserContract !== false && (
           <DataProductSubscriptionViewer
             open={showSubscriptionsModal}
             apgState={apgState}
