@@ -79,6 +79,7 @@ import {
   PURE_MappingIcon,
   GitBranchIcon,
   ListIcon,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import {
   type ChangeEventHandler,
@@ -104,9 +105,6 @@ import {
   type Mapping,
   type PackageableElement,
   type PackageableRuntime,
-  type V1_AccessPointGroupInfo,
-  type V1_AccessPointImplementation,
-  type V1_DataProductArtifact,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
@@ -400,12 +398,12 @@ const AccessPointGenerationViewer = observer(
     const { accessPointState, generationOutput } = props;
     const editorStore = accessPointState.state.state.editorStore;
     const closeDebug = (): void => {
-      accessPointState.setShowDebug(false);
+      accessPointState.setArtifactContent(undefined);
     };
 
     return (
       <Dialog
-        open={accessPointState.showDebug}
+        open={accessPointState.artifactGenerationContent !== undefined}
         onClose={closeDebug}
         classes={{
           root: 'editor-modal__root-container',
@@ -466,7 +464,6 @@ export const LakehouseDataProductAccessPointEditor = observer(
     const [editingTitle, setEditingTitle] = useState(false);
     const [isHoveringTitle, setIsHoveringTitle] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
-    const [debugOutput, setDebugOutput] = useState('');
 
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
@@ -500,49 +497,10 @@ export const LakehouseDataProductAccessPointEditor = observer(
       },
     );
 
-    const debugPlanGeneration = async (): Promise<void> => {
-      try {
-        const generatedArtifacts =
-          await editorStore.graphManagerState.graphManager.generateArtifacts(
-            editorStore.graphManagerState.graph,
-            editorStore.graphEditorMode.getGraphTextInputOption(),
-            [groupState.state.elementPath],
-          );
-        const dataProductExtension = 'dataProduct';
-        const dataProductArtifact = generatedArtifacts.values.filter(
-          (artifact) => artifact.extension === dataProductExtension,
-        );
-        const dataProductContent =
-          dataProductArtifact[0]?.artifactsByExtensionElements[0]?.files[0]
-            ?.content ?? null;
-
-        if (dataProductContent) {
-          const contentJson = JSON.parse(
-            dataProductContent,
-          ) as V1_DataProductArtifact;
-          const apPlanGeneration = contentJson.accessPointGroups
-            .find(
-              (group: V1_AccessPointGroupInfo) =>
-                group.id === groupState.value.id,
-            )
-            ?.accessPointImplementations.find(
-              (apImplementation: V1_AccessPointImplementation) =>
-                apImplementation.id === accessPoint.id,
-            );
-
-          setDebugOutput(JSON.stringify(apPlanGeneration, null, 2));
-          accessPointState.setShowDebug(true);
-        } else {
-          throw new Error(
-            'Could not find contents of this data product artifact',
-          );
-        }
-      } catch (error) {
-        editorStore.applicationStore.notificationService.notifyError(
-          `Failed to fetch access point plan generation: ${error}`,
-        );
-      }
-    };
+    const debugPlanGeneration =
+      editorStore.applicationStore.guardUnhandledError(() =>
+        flowResult(accessPointState.generateArtifact()),
+      );
 
     const handleRemoveAccessPoint = (): void => {
       editorStore.applicationStore.alertService.setActionAlertInfo({
@@ -718,11 +676,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     <MenuContent>
                       <MenuContentItem
                         className="btn__dropdown-combo__option"
-                        onClick={() => {
-                          debugPlanGeneration().catch(
-                            editorStore.applicationStore.alertUnhandledError,
-                          );
-                        }}
+                        onClick={debugPlanGeneration}
                       >
                         <div
                           style={{
@@ -896,10 +850,10 @@ export const LakehouseDataProductAccessPointEditor = observer(
           >
             <TimesIcon />
           </button>
-          {accessPointState.showDebug && (
+          {accessPointState.artifactGenerationContent && (
             <AccessPointGenerationViewer
               accessPointState={accessPointState}
-              generationOutput={debugOutput}
+              generationOutput={accessPointState.artifactGenerationContent}
             />
           )}
         </div>
@@ -1401,6 +1355,7 @@ const AccessPointGroupEditor = observer(
         className="access-point-editor__group-container"
         data-testid={LEGEND_STUDIO_TEST_ID.ACCESS_POINT_GROUP_EDITOR}
       >
+        <PanelLoadingIndicator isLoading={groupState.isRunningProcess} />
         <div className="access-point-editor__group-container__name-editor">
           {editingName ? (
             <textarea
