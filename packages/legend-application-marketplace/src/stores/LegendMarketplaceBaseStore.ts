@@ -226,7 +226,6 @@ export class LegendMarketplaceBaseStore {
       const getDataProductState = async (
         dataProductId: string,
         deploymentId: number,
-        graphManager: V1_PureGraphManager,
       ) => {
         const rawResponse =
           await this.lakehouseContractServerClient.getDataProductByIdAndDID(
@@ -244,12 +243,7 @@ export class LegendMarketplaceBaseStore {
             convertEntitlementsDataProductDetailsToSearchResult(
               dataProductDetail,
             );
-          return new ProductCardState(
-            this,
-            searchResult,
-            graphManager,
-            new Map(),
-          );
+          return new ProductCardState(this, searchResult, new Map());
         } else {
           return undefined;
         }
@@ -258,7 +252,6 @@ export class LegendMarketplaceBaseStore {
       const getLegacyDataProductState = async (
         dataProductId: string,
         gav: string,
-        graphManager: V1_PureGraphManager,
       ) => {
         const coordinates = parseGAVCoordinates(gav);
         const storeProject = new StoreProjectData();
@@ -278,12 +271,7 @@ export class LegendMarketplaceBaseStore {
           coordinates.artifactId,
           coordinates.versionId,
         );
-        return new ProductCardState(
-          this,
-          searchResult,
-          graphManager,
-          new Map(),
-        );
+        return new ProductCardState(this, searchResult, new Map());
       };
 
       const graphManager = new V1_PureGraphManager(
@@ -309,19 +297,14 @@ export class LegendMarketplaceBaseStore {
               ? getDataProductState(
                   dataProduct.dataProductId,
                   dataProduct.deploymentId,
-                  graphManager,
                 )
               : getLegacyDataProductState(
                   dataProduct.dataProductId,
                   dataProduct.gav,
-                  graphManager,
                 ),
           ),
         )
       ).filter(isNonNullable);
-      dataProductStates.forEach((dataProductState) =>
-        dataProductState.init(token),
-      );
       return dataProductStates;
     }
     return undefined;

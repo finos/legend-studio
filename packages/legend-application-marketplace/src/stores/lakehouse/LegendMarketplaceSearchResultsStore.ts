@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import {
   ActionState,
   assertErrorThrown,
-  guaranteeNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import { V1_PureGraphManager } from '@finos/legend-graph';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 import {
   DataProductSearchResult,
@@ -83,7 +80,6 @@ export class LegendMarketplaceSearchResultsStore {
   productCardStates: ProductCardState[] = [];
   filterState: DataProductFilterState;
   sort: DataProductSort = DataProductSort.DEFAULT;
-  graphManager: V1_PureGraphManager | undefined;
 
   executingSearchState = ActionState.create();
 
@@ -169,46 +165,16 @@ export class LegendMarketplaceSearchResultsStore {
         DataProductSearchResult.serialization.fromJson(result),
       );
 
-      if (this.graphManager === undefined) {
-        // Crete graph manager for parsing ad-hoc deployed data products
-        const graphManager = new V1_PureGraphManager(
-          this.marketplaceBaseStore.applicationStore.pluginManager,
-          this.marketplaceBaseStore.applicationStore.logService,
-          this.marketplaceBaseStore.remoteEngine,
-        );
-        yield graphManager.initialize(
-          {
-            env: this.marketplaceBaseStore.applicationStore.config.env,
-            tabSize: DEFAULT_TAB_SIZE,
-            clientConfig: {
-              baseUrl:
-                this.marketplaceBaseStore.applicationStore.config
-                  .engineServerUrl,
-            },
-          },
-          { engine: this.marketplaceBaseStore.remoteEngine },
-        );
-        this.graphManager = graphManager;
-      }
-
       // Create data product card states
       const dataProductCardStates: ProductCardState[] = results.map(
         (result) =>
           new ProductCardState(
             this.marketplaceBaseStore,
             result,
-            guaranteeNonNullable(
-              this.graphManager,
-              'Graph manager is not initialized',
-            ),
             this.displayImageMap,
           ),
       );
       this.setProductCardStates(dataProductCardStates);
-
-      this.productCardStates.forEach((dataProductCardState) =>
-        dataProductCardState.init(token),
-      );
     } catch (error) {
       assertErrorThrown(error);
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(

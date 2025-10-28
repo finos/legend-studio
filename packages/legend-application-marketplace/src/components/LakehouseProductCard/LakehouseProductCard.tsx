@@ -231,7 +231,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                           groupId,
                           artifactId,
                           versionId,
-                          dataProductCardState.dataProductElement?.path,
+                          path,
                         ),
                       )
                     }

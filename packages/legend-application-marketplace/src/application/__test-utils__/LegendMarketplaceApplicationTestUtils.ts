@@ -19,8 +19,6 @@ import {
   type LegendMarketplaceApplicationConfigurationData,
   LegendMarketplaceApplicationConfig,
 } from '../LegendMarketplaceApplicationConfig.js';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import { V1_PureGraphManager } from '@finos/legend-graph';
 import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
@@ -114,26 +112,10 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
   override async getExtraHomePageDataProducts(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
   ): Promise<ProductCardState[] | undefined> {
-    const graphManager = new V1_PureGraphManager(
-      marketplaceBaseStore.applicationStore.pluginManager,
-      marketplaceBaseStore.applicationStore.logService,
-      marketplaceBaseStore.remoteEngine,
-    );
-    await graphManager.initialize(
-      {
-        env: marketplaceBaseStore.applicationStore.config.env,
-        tabSize: DEFAULT_TAB_SIZE,
-        clientConfig: {
-          baseUrl: marketplaceBaseStore.applicationStore.config.engineServerUrl,
-        },
-      },
-      { engine: marketplaceBaseStore.remoteEngine },
-    );
     const testImageMap = new Map<string, string>();
     const dataProductState = new ProductCardState(
       marketplaceBaseStore,
       mockSearchResult,
-      graphManager,
       testImageMap,
     );
     return [dataProductState];
