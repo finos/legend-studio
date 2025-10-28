@@ -187,6 +187,7 @@ export class ProductCardState {
     const entitlementsDataProductDetails =
       new V1_EntitlementsDataProductDetails();
     entitlementsDataProductDetails.origin = origin;
+    entitlementsDataProductDetails.fullPath = searchResultOrigin.path;
 
     // Fetch data product entity
     const v1_dataProduct = await getDataProductFromDetails(
