@@ -26,10 +26,12 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
   Select,
+  Switch,
   TextField,
   Tooltip,
 } from '@mui/material';
@@ -45,7 +47,7 @@ import {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { guaranteeNonNullable, isType } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -421,9 +423,26 @@ export const DataProductSubscriptionViewer = observer(
     const { open, apgState, dataAccessState, onClose } = props;
     const auth = useAuth();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
+    const [mineOnly, setMineOnly] = useState(true);
 
     const subscriptions = apgState.subscriptions;
     const isLoading = apgState.fetchingSubscriptionsState.isInProgress;
+
+    const subscriptionsToShow = useMemo(
+      () =>
+        mineOnly
+          ? subscriptions.filter(
+              (sub) =>
+                sub.createdBy ===
+                apgState.applicationStore.identityService.currentUser,
+            )
+          : subscriptions,
+      [
+        apgState.applicationStore.identityService.currentUser,
+        mineOnly,
+        subscriptions,
+      ],
+    );
 
     const createDialogHandleSubmit = async (
       _contract: V1_DataContract,
@@ -466,6 +485,15 @@ export const DataProductSubscriptionViewer = observer(
                   </span>{' '}
                   Data Product
                 </div>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={mineOnly}
+                      onChange={(event) => setMineOnly(event.target.checked)}
+                    />
+                  }
+                  label="Mine Only"
+                />
                 <span
                   className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
                   title={
@@ -489,7 +517,7 @@ export const DataProductSubscriptionViewer = observer(
 
                 <Box className="marketplace-lakehouse-subscriptions__subscriptions-viewer__grid ag-theme-balham">
                   <DataGrid
-                    rowData={subscriptions}
+                    rowData={subscriptionsToShow}
                     onRowDataUpdated={(params) => {
                       params.api.refreshCells({ force: true });
                     }}
