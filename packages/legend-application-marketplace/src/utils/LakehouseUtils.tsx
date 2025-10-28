@@ -18,7 +18,6 @@ import {
   type V1_EntitlementsDataProductDetails,
   type V1_PureGraphManager,
   type V1_DataProduct,
-  CORE_PURE_PATH,
   V1_AdHocDeploymentDataProductOrigin,
   V1_dataProductModelSchema,
   V1_SdlcDeploymentDataProductOrigin,
@@ -35,53 +34,30 @@ export const getDataProductFromDetails = async (
   marketplaceBaseStore: LegendMarketplaceBaseStore,
 ): Promise<V1_DataProduct | undefined> => {
   if (details.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
-    const rawEntities =
-      (await marketplaceBaseStore.depotServerClient.getVersionEntities(
+    const rawEntity =
+      await marketplaceBaseStore.depotServerClient.getVersionEntity(
         details.origin.group,
         details.origin.artifact,
         resolveVersion(details.origin.version),
-        CORE_PURE_PATH.DATA_PRODUCT,
-      )) as {
-        artifactId: string;
-        entity: Entity;
-        groupId: string;
-        versionId: string;
-        versionedEntity: boolean;
-      }[];
-    const entities = rawEntities.map((entity) =>
-      deserialize(V1_dataProductModelSchema, entity.entity.content),
-    );
-    const matchingEntities = entities.filter(
-      (entity) => entity.name.toLowerCase() === details.id.toLowerCase(),
-    );
-    if (matchingEntities.length === 0) {
-      throw new Error(
-        `No data product found with name ${details.id} in project`,
+        details.fullPath,
       );
-    } else if (matchingEntities.length > 1) {
-      throw new Error(
-        `Multiple data products found with name ${details.id} in project`,
-      );
-    }
-    return matchingEntities[0];
+    const entity = deserialize(V1_dataProductModelSchema, rawEntity.content);
+    return entity;
   } else if (details.origin instanceof V1_AdHocDeploymentDataProductOrigin) {
     const entities: Entity[] = await graphManager.pureCodeToEntities(
       details.origin.definition,
     );
-    const elements = entities
-      .filter((e) => e.classifierPath === CORE_PURE_PATH.DATA_PRODUCT)
+    const matchingEntities = entities
+      .filter((e) => e.path === details.fullPath)
       .map((entity) => deserialize(V1_dataProductModelSchema, entity.content));
-    const matchingEntities = elements.filter(
-      (element) => element.name.toLowerCase() === details.id.toLowerCase(),
-    );
     if (matchingEntities.length > 1) {
       throw new Error(
-        `Multiple data products found with name ${details.id} in deployed definition`,
+        `Multiple data products found with path ${details.fullPath} in deployed definition`,
       );
     }
     return guaranteeNonNullable(
       matchingEntities[0],
-      `No data product found with name ${details.id} in deployed definition`,
+      `No data product found with path ${details.fullPath} in deployed definition`,
     );
   } else {
     return undefined;
