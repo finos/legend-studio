@@ -2704,6 +2704,7 @@ __metadata:
   dependencies:
     "@finos/legend-application-studio-bootstrap": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    compression-webpack-plugin: "npm:10.0.0"
     copy-webpack-plugin: "npm:13.0.0"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
@@ -8688,6 +8689,18 @@ __metadata:
   dependencies:
     mime-db: "npm:>= 1.43.0 < 2"
   checksum: 10/58321a85b375d39230405654721353f709d0c1442129e9a17081771b816302a012471a9b8f4864c7dbe02eef7f2aaac3c614795197092262e94b409c9be108f0
+  languageName: node
+  linkType: hard
+
+"compression-webpack-plugin@npm:10.0.0":
+  version: 10.0.0
+  resolution: "compression-webpack-plugin@npm:10.0.0"
+  dependencies:
+    schema-utils: "npm:^4.0.0"
+    serialize-javascript: "npm:^6.0.0"
+  peerDependencies:
+    webpack: ^5.1.0
+  checksum: 10/d77e447acb8b209169932324704bfa468906aca9ecc5f55e431efcef782c3d16a1b05c28e3609cbe494364c3c6f1fd95dfee201ec305fae137ac64f2d63b3c96
   languageName: node
   linkType: hard
 
@@ -18903,7 +18916,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"serialize-javascript@npm:^6.0.1, serialize-javascript@npm:^6.0.2":
+"serialize-javascript@npm:^6.0.0, serialize-javascript@npm:^6.0.1, serialize-javascript@npm:^6.0.2":
   version: 6.0.2
   resolution: "serialize-javascript@npm:6.0.2"
   dependencies:
