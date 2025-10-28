@@ -34,6 +34,7 @@ import {
   V1_deserializeIngestEnvironment,
   V1_ResourceType,
   V1_isIngestEnvsCompatibleWithEntitlements,
+  type V1_EntitlementsUserEnv,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -107,6 +108,7 @@ export class DataProductDataAccessState {
   dataContract: V1_DataContract | undefined = undefined;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
+  userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined;
 
   readonly creatingContractState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
@@ -127,12 +129,15 @@ export class DataProductDataAccessState {
       creatingContractState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnvironmentDetails: observable,
+      userEntitlementsEnv: observable,
       setDataContract: action,
       setAssociatedContracts: action,
       filteredDataProductQueryEnvs: computed,
+      resolvedUserEnv: computed,
       setDataContractAccessPointGroup: action,
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
+      setEntitlementsEnv: action,
       createContract: flow,
       fetchContracts: action,
       fetchIngestEnvironmentDetails: action,
@@ -161,14 +166,31 @@ export class DataProductDataAccessState {
   get filteredDataProductQueryEnvs(): IngestDeploymentServerConfig[] {
     const dataProductEnv =
       this.entitlementsDataProductDetails.lakehouseEnvironment?.type;
-    return this.lakehouseIngestEnvironmentSummaries.filter(
-      (env) =>
-        dataProductEnv === undefined ||
-        V1_isIngestEnvsCompatibleWithEntitlements(
-          env.environmentClassification,
-          dataProductEnv,
-        ),
-    );
+    const filteredByClassification =
+      this.lakehouseIngestEnvironmentSummaries.filter(
+        (env) =>
+          dataProductEnv === undefined ||
+          V1_isIngestEnvsCompatibleWithEntitlements(
+            env.environmentClassification,
+            dataProductEnv,
+          ),
+      );
+    if (this.userEntitlementsEnv?.length) {
+      const userEnvs = this.userEntitlementsEnv.map(
+        (e) => e.lakehouseEnvironment,
+      );
+      return filteredByClassification.filter((e) =>
+        userEnvs.includes(e.environmentName),
+      );
+    }
+    return filteredByClassification;
+  }
+
+  get resolvedUserEnv(): IngestDeploymentServerConfig | undefined {
+    if (this.filteredDataProductQueryEnvs.length === 1) {
+      return this.filteredDataProductQueryEnvs[0];
+    }
+    return undefined;
   }
 
   setAssociatedContracts(val: V1_DataContract[] | undefined): void {
@@ -193,6 +215,10 @@ export class DataProductDataAccessState {
     this.lakehouseIngestEnvironmentDetails = details;
   }
 
+  setEntitlementsEnv(envs: V1_EntitlementsUserEnv[] | undefined): void {
+    this.userEntitlementsEnv = envs;
+  }
+
   async fetchIngestEnvironmentDetails(
     token: string | undefined,
   ): Promise<void> {
@@ -206,6 +232,7 @@ export class DataProductDataAccessState {
     this.ingestEnvironmentFetchState.inProgress();
     await this.fetchLakehouseIngestEnvironmentSummaries(token);
     await this.fetchLakehouseIngestEnvironmentDetails(token);
+    await this.fetchEntitlementsEnvs(token);
     this.ingestEnvironmentFetchState.complete();
   }
 
@@ -404,6 +431,23 @@ export class DataProductDataAccessState {
       this.applicationStore.logService.warn(
         LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load lakehouse environment details: ${error.message}`,
+      );
+    }
+  }
+
+  async fetchEntitlementsEnvs(token: string | undefined): Promise<void> {
+    try {
+      const envs =
+        await this.lakehouseContractServerClient.getUserEntitlementEnvs(
+          this.applicationStore.identityService.currentUser,
+          token,
+        );
+      this.setEntitlementsEnv(envs.users);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
+        `Unable to load entitlements envs: ${error.message}`,
       );
     }
   }

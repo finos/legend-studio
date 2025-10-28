@@ -185,33 +185,20 @@ export const DataCubeScreen = observer(
     if (!dataAccessState || !dataProductOrigin || !openDataCube) {
       return <TabMessageScreen message={WORK_IN_PROGRESS} />;
     }
-
-    const auth = useAuth();
+    const envs = dataAccessState.filteredDataProductQueryEnvs;
+    const resolvedUserEnv = dataAccessState.resolvedUserEnv;
     const [selectedEnvironment, setSelectedEnvironment] =
       useState<IngestDeploymentServerConfig | null>(null);
-    const envOptions = dataAccessState.filteredDataProductQueryEnvs
+    const envOptions = envs
       .map(buildIngestDeploymentServerConfigOption)
       .sort((a, b) =>
         a.value.environmentName.localeCompare(b.value.environmentName),
       );
-    useEffect(() => {
-      const fetchEnvironments = async (): Promise<void> => {
-        if (dataAccessState.ingestEnvironmentFetchState.isInInitialState) {
-          await dataAccessState.fetchIngestEnvironmentDetails(
-            auth.user?.access_token,
-          );
-        }
-      };
-      // eslint-disable-next-line no-void
-      void fetchEnvironments();
-    }, [auth.user?.access_token, dataAccessState]);
 
     const loadDataCube = (): void => {
       try {
-        assertNonNullable(
-          selectedEnvironment,
-          'Env required to Open Data Cube',
-        );
+        const dataCubeEnv = selectedEnvironment ?? resolvedUserEnv;
+        assertNonNullable(dataCubeEnv, 'Env required to Open Data Cube');
         //paths
         const path =
           accessPointState.apgState.dataProductViewerState.product.path;
@@ -225,7 +212,7 @@ export const DataCubeScreen = observer(
         const sourceData: Record<string, unknown> = {
           _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
           warehouse: DEFAULT_CONSUMER_WAREHOUSE,
-          environment: getIngestDeploymentServerConfigName(selectedEnvironment),
+          environment: getIngestDeploymentServerConfigName(dataCubeEnv),
           paths: accessPointPath,
           deploymentId: deploymentId,
         };
@@ -263,22 +250,24 @@ export const DataCubeScreen = observer(
 
     return (
       <div className="data-product__viewer__tab-screen">
-        <CustomSelectorInput
-          className="data-product__viewer__tab-screen__dropdown"
-          options={envOptions}
-          isLoading={dataAccessState.ingestEnvironmentFetchState.isInProgress}
-          onChange={(newValue: IngestDeploymentServerConfigOption | null) => {
-            setSelectedEnvironment(newValue?.value ?? null);
-          }}
-          value={
-            selectedEnvironment
-              ? buildIngestDeploymentServerConfigOption(selectedEnvironment)
-              : null
-          }
-          placeholder={`Choose an Environment`}
-          isClearable={false}
-          escapeClearsValue={true}
-        />
+        {!resolvedUserEnv && (
+          <CustomSelectorInput
+            className="data-product__viewer__tab-screen__dropdown"
+            options={envOptions}
+            isLoading={dataAccessState.ingestEnvironmentFetchState.isInProgress}
+            onChange={(newValue: IngestDeploymentServerConfigOption | null) => {
+              setSelectedEnvironment(newValue?.value ?? null);
+            }}
+            value={
+              selectedEnvironment
+                ? buildIngestDeploymentServerConfigOption(selectedEnvironment)
+                : null
+            }
+            placeholder={`Choose an Environment`}
+            isClearable={false}
+            escapeClearsValue={true}
+          />
+        )}
         <button
           onClick={loadDataCube}
           tabIndex={-1}
