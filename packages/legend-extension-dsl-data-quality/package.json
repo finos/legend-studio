@@ -22,9 +22,11 @@
   "type": "module",
   "exports": {
     "./graph": "./lib/graph-manager/index.js",
-    "./application-studio": "./lib/components/index.js",
+    "./application-studio": "./lib/components/studio/index.js",
     "./lib/index.css": "./lib/index.css"
   },
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "yarn clean && yarn build:sass && yarn build:ts",
     "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
