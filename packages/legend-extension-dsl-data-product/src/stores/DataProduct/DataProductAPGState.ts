@@ -360,6 +360,7 @@ export class DataProductAPGState {
   }
 
   *fetchSubscriptions(
+    contracts: V1_DataContract[],
     lakehouseContractServerClient: LakehouseContractServerClient,
     token: string | undefined,
   ): GeneratorFn<void> {
@@ -367,7 +368,7 @@ export class DataProductAPGState {
       this.fetchingSubscriptionsState.inProgress();
       const rawSubscriptions = (
         (yield Promise.all(
-          this.apgContracts.map(async (contract) =>
+          contracts.map(async (contract) =>
             lakehouseContractServerClient.getSubscriptionsForContract(
               contract.guid,
               token,
@@ -434,7 +435,11 @@ export class DataProductAPGState {
         this.applicationStore.notificationService.notifySuccess(
           `Subscription created`,
         );
-        this.fetchSubscriptions(lakehouseContractServerClient, token);
+        this.fetchSubscriptions(
+          this.apgContracts,
+          lakehouseContractServerClient,
+          token,
+        );
         this.logCreatingSubscription(request, undefined);
       } catch (error) {
         assertErrorThrown(error);
