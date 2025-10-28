@@ -34,13 +34,13 @@ import {
 } from '../serializationHelpers/DataProductSerializationHelper.js';
 
 export enum DataProductSearchResultDetailsType {
-  lakehouse = 'lakehouse',
-  legacy = 'legacy',
+  LAKEHOUSE = 'lakehouse',
+  LEGACY = 'legacy',
 }
 
 export enum LakehouseDataProductSearchResultOriginType {
-  sdlc = 'sdlc',
-  adhoc = 'adhoc',
+  SDLC = 'sdlcdeployment',
+  AD_HOC = 'adhocdeployment',
 }
 
 export abstract class LakehouseDataProductSearchResultOrigin {}
@@ -54,7 +54,7 @@ export class LakehouseSDLCDataProductSearchResultOrigin extends LakehouseDataPro
   static readonly serialization = new SerializationFactory(
     createModelSchema(LakehouseSDLCDataProductSearchResultOrigin, {
       _type: usingConstantValueSchema(
-        LakehouseDataProductSearchResultOriginType.sdlc,
+        LakehouseDataProductSearchResultOriginType.SDLC,
       ),
       groupId: primitive(),
       artifactId: primitive(),
@@ -68,7 +68,7 @@ export class LakehouseAdHocDataProductSearchResultOrigin extends LakehouseDataPr
   static readonly serialization = new SerializationFactory(
     createModelSchema(LakehouseAdHocDataProductSearchResultOrigin, {
       _type: usingConstantValueSchema(
-        LakehouseDataProductSearchResultOriginType.adhoc,
+        LakehouseDataProductSearchResultOriginType.AD_HOC,
       ),
     }),
   );
@@ -86,7 +86,7 @@ export class LakehouseDataProductSearchResultDetails extends DataProductSearchRe
   static readonly serialization = new SerializationFactory(
     createModelSchema(LakehouseDataProductSearchResultDetails, {
       _type: usingConstantValueSchema(
-        DataProductSearchResultDetailsType.lakehouse,
+        DataProductSearchResultDetailsType.LAKEHOUSE,
       ),
       dataProductId: primitive(),
       did: primitive(),
@@ -109,7 +109,7 @@ export class LegacyDataProductSearchResultDetails extends DataProductSearchResul
   static readonly serialization = new SerializationFactory(
     createModelSchema(LegacyDataProductSearchResultDetails, {
       _type: usingConstantValueSchema(
-        DataProductSearchResultDetailsType.legacy,
+        DataProductSearchResultDetailsType.LEGACY,
       ),
       groupId: primitive(),
       artifactId: primitive(),

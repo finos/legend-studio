@@ -21,12 +21,12 @@ export const deserializeLakehouseDataProductSearchResultOrigin = (
     return null;
   }
   switch (json._type) {
-    case LakehouseDataProductSearchResultOriginType.sdlc:
+    case LakehouseDataProductSearchResultOriginType.SDLC:
       return deserialize(
         LakehouseSDLCDataProductSearchResultOrigin.serialization.schema,
         json,
       );
-    case LakehouseDataProductSearchResultOriginType.adhoc:
+    case LakehouseDataProductSearchResultOriginType.AD_HOC:
       return deserialize(
         LakehouseAdHocDataProductSearchResultOrigin.serialization.schema,
         json,
@@ -62,12 +62,12 @@ export const deserializeDataProductSearchResultDetails = (
     return null;
   }
   switch (json._type) {
-    case DataProductSearchResultDetailsType.lakehouse:
+    case DataProductSearchResultDetailsType.LAKEHOUSE:
       return deserialize(
         LakehouseDataProductSearchResultDetails.serialization.schema,
         json,
       );
-    case DataProductSearchResultDetailsType.legacy:
+    case DataProductSearchResultDetailsType.LEGACY:
       return deserialize(
         LegacyDataProductSearchResultDetails.serialization.schema,
         json,
