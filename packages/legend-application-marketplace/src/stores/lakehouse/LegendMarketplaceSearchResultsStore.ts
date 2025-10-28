@@ -123,7 +123,7 @@ export class LegendMarketplaceSearchResultsStore {
       .sort((a, b) => {
         switch (this.sort) {
           case DataProductSort.DEFAULT:
-            return a.searchResult.similarity - b.searchResult.similarity;
+            return b.searchResult.similarity - a.searchResult.similarity;
           case DataProductSort.NAME_ALPHABETICAL:
             return a.searchResult.data_product_name.localeCompare(
               b.searchResult.data_product_name,
