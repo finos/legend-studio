@@ -27,6 +27,12 @@
     text-align: center;
   }
 
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
   &__create-btn {
     align-self: end;
     margin: 1rem 0;

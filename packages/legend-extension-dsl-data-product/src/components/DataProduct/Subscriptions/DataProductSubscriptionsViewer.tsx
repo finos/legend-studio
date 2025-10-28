@@ -577,36 +577,37 @@ export const DataProductSubscriptionViewer = observer(
                   </span>{' '}
                   Data Product
                 </div>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={mineOnly}
-                      onChange={(event) => setMineOnly(event.target.checked)}
-                    />
-                  }
-                  label="Mine Only"
-                />
-                <span
-                  className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
-                  title={
-                    !apgState.canCreateSubscription
-                      ? 'Cannot create subscription. No approved contracts found for this Access Point Group.'
-                      : undefined
-                  }
-                >
-                  <Button
-                    onClick={() => setShowCreateDialog(true)}
-                    variant="contained"
-                    disabled={!apgState.canCreateSubscription}
-                    loading={
-                      apgState.fetchingAccessState.isInProgress ||
-                      apgState.fetchingApprovedContractsState.isInProgress
+                <Box className="marketplace-lakehouse-subscriptions__subscriptions-viewer__actions">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={mineOnly}
+                        onChange={(event) => setMineOnly(event.target.checked)}
+                      />
+                    }
+                    label="Mine Only"
+                  />
+                  <span
+                    className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
+                    title={
+                      !apgState.canCreateSubscription
+                        ? 'Cannot create subscription. No approved contracts found for this Access Point Group.'
+                        : undefined
                     }
                   >
-                    Create New Subscription
-                  </Button>
-                </span>
-
+                    <Button
+                      onClick={() => setShowCreateDialog(true)}
+                      variant="contained"
+                      disabled={!apgState.canCreateSubscription}
+                      loading={
+                        apgState.fetchingAccessState.isInProgress ||
+                        apgState.fetchingApprovedContractsState.isInProgress
+                      }
+                    >
+                      Create New Subscription
+                    </Button>
+                  </span>
+                </Box>
                 <Box className="marketplace-lakehouse-subscriptions__subscriptions-viewer__grid ag-theme-balham">
                   <DataGrid
                     rowData={subscriptionsToShow}
