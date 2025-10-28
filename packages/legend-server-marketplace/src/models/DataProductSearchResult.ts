@@ -90,7 +90,7 @@ export class LakehouseDataProductSearchResultDetails extends DataProductSearchRe
       ),
       dataProductId: primitive(),
       did: primitive(),
-      producerEnviornmentName: primitive(),
+      producerEnvironmentName: primitive(),
       producerEnvironmentType: optional(primitive()),
       origin: custom(
         serializeLakehouseDataProductSearchResultOrigin,
