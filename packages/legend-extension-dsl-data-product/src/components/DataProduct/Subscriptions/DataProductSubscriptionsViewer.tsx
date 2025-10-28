@@ -168,8 +168,8 @@ const LakehouseSubscriptionsCreateDialog = observer(
 
     const approvedUserContract =
       apgState.userAccessStatus === V1_EnrichedUserApprovalStatus.APPROVED &&
-      apgState.associatedContract instanceof V1_DataContract
-        ? apgState.associatedContract
+      apgState.associatedUserContract instanceof V1_DataContract
+        ? apgState.associatedUserContract
         : undefined;
     const approvedSystemAccountContracts =
       apgState.associatedSystemAccountContractsAndApprovedUsers

@@ -324,7 +324,7 @@ export class DataProductDataAccessState {
           const groupAccessState = this.dataProductViewerState.apgStates.find(
             (e) => e.apg === group,
           );
-          groupAccessState?.setAssociatedContract(
+          groupAccessState?.setAssociatedUserContract(
             associatedContract,
             this.lakehouseContractServerClient,
             token,
