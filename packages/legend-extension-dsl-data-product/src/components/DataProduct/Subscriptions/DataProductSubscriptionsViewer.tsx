@@ -60,6 +60,7 @@ import {
 import {
   DataGrid,
   type DataGridCellRendererParams,
+  type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
@@ -458,6 +459,97 @@ export const DataProductSubscriptionViewer = observer(
       );
     };
 
+    const colDefs: DataGridColumnDefinition<V1_DataSubscription>[] = useMemo(
+      () => [
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Target Type',
+          valueGetter: (p) =>
+            p.data?.target instanceof V1_SnowflakeTarget
+              ? 'Snowflake'
+              : 'Unknown',
+          flex: 1,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Snowflake Account ID',
+          valueGetter: (p) =>
+            p.data?.target instanceof V1_SnowflakeTarget
+              ? p.data.target.snowflakeAccountId
+              : 'Unknown',
+          flex: 1,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Snowflake Region',
+          valueGetter: (p) =>
+            p.data?.target instanceof V1_SnowflakeTarget
+              ? p.data.target.snowflakeRegion
+              : 'Unknown',
+          flex: 1,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Snowflake Network',
+          valueGetter: (p) =>
+            p.data?.target instanceof V1_SnowflakeTarget
+              ? p.data.target.snowflakeNetwork
+              : 'Unknown',
+          flex: 1,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Created By',
+          cellRenderer: (
+            params: DataGridCellRendererParams<V1_DataSubscription>,
+          ) => {
+            return (
+              <UserRenderer
+                userId={params.data?.createdBy}
+                applicationStore={apgState.applicationStore}
+                userSearchService={
+                  apgState.dataProductViewerState.userSearchService
+                }
+              />
+            );
+          },
+          flex: 2,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Subscription Id',
+          valueGetter: (p) => p.data?.guid,
+          flex: 1,
+          hide: true,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Contract ID',
+          valueGetter: (p) => p.data?.dataContractId,
+          flex: 1,
+          hide: true,
+        },
+      ],
+      [
+        apgState.applicationStore,
+        apgState.dataProductViewerState.userSearchService,
+      ],
+    );
+
     return (
       <>
         <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="lg">
@@ -524,91 +616,7 @@ export const DataProductSubscriptionViewer = observer(
                     suppressFieldDotNotation={true}
                     suppressContextMenu={false}
                     rowHeight={45}
-                    columnDefs={[
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Target Type',
-                        valueGetter: (p) =>
-                          p.data?.target instanceof V1_SnowflakeTarget
-                            ? 'Snowflake'
-                            : 'Unknown',
-                        flex: 1,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Snowflake Account ID',
-                        valueGetter: (p) =>
-                          p.data?.target instanceof V1_SnowflakeTarget
-                            ? p.data.target.snowflakeAccountId
-                            : 'Unknown',
-                        flex: 1,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Snowflake Region',
-                        valueGetter: (p) =>
-                          p.data?.target instanceof V1_SnowflakeTarget
-                            ? p.data.target.snowflakeRegion
-                            : 'Unknown',
-                        flex: 1,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Snowflake Network',
-                        valueGetter: (p) =>
-                          p.data?.target instanceof V1_SnowflakeTarget
-                            ? p.data.target.snowflakeNetwork
-                            : 'Unknown',
-                        flex: 1,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Created By',
-                        cellRenderer: (
-                          params: DataGridCellRendererParams<V1_DataSubscription>,
-                        ) => {
-                          return (
-                            <UserRenderer
-                              userId={params.data?.createdBy}
-                              applicationStore={apgState.applicationStore}
-                              userSearchService={
-                                apgState.dataProductViewerState
-                                  .userSearchService
-                              }
-                            />
-                          );
-                        },
-                        flex: 2,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Subscription Id',
-                        valueGetter: (p) => p.data?.guid,
-                        flex: 1,
-                        hide: true,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Contract ID',
-                        valueGetter: (p) => p.data?.dataContractId,
-                        flex: 1,
-                        hide: true,
-                      },
-                    ]}
+                    columnDefs={colDefs}
                   />
                 </Box>
               </>
