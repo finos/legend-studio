@@ -58,7 +58,7 @@ import {
   V1_TerminalModelSchema,
 } from '@finos/legend-graph';
 import type { AuthContextProps } from 'react-oidc-context';
-import { getDataProductFromDetails } from './LakehouseUtils.js';
+import { getDataProductFromDetails } from '../../utils/LakehouseUtils.js';
 import {
   type Entity,
   type StoredFileGeneration,

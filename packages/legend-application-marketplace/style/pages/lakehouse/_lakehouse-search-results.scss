@@ -47,6 +47,7 @@
     display: flex;
     padding: 2rem;
     gap: 2rem;
+    flex-grow: 1;
   }
 
   &__subtitles {
@@ -110,6 +111,7 @@
   &__data-product-cards {
     width: 100%;
     justify-content: start;
+    height: fit-content;
   }
 
   &__loading-data-products-indicator {

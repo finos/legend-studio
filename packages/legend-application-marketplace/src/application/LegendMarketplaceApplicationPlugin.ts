@@ -17,12 +17,12 @@
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
-import type { BaseProductCardState } from '../stores/lakehouse/dataProducts/BaseProductCardState.js';
 import type {
   ContractConsumerTypeRendererConfig,
   DataProductDataAccess_LegendApplicationPlugin_Extension,
   AccessPointGroupAccess,
 } from '@finos/legend-extension-dsl-data-product';
+import type { ProductCardState } from '../stores/lakehouse/dataProducts/ProductCardState.js';
 
 export abstract class LegendMarketplaceApplicationPlugin
   extends LegendApplicationPlugin
@@ -46,7 +46,7 @@ export abstract class LegendMarketplaceApplicationPlugin
   async getExtraHomePageDataProducts?(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     token: string | undefined,
-  ): Promise<BaseProductCardState[] | undefined>;
+  ): Promise<ProductCardState[] | undefined>;
 
   /**
    * Returns additional details about a given access point group access type.

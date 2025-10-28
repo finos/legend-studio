@@ -27,7 +27,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
-import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
+import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 
 export const getDataProductFromDetails = async (
   details: V1_EntitlementsDataProductDetails,

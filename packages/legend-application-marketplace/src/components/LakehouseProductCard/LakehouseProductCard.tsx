@@ -17,15 +17,11 @@
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@finos/legend-application';
 import {
   OpenIcon,
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
   clsx,
   InfoCircleIcon,
+  MarkdownTextViewer,
 } from '@finos/legend-art';
-import {
-  V1_EntitlementsLakehouseEnvironmentType,
-  V1_SdlcDeploymentDataProductOrigin,
-} from '@finos/legend-graph';
+import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
   Popover,
@@ -35,7 +31,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  CircularProgress,
   IconButton,
   Chip,
 } from '@mui/material';
@@ -43,14 +38,18 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { type LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { LegendMarketplaceCard } from '../MarketplaceCard/LegendMarketplaceCard.js';
-import type { BaseProductCardState } from '../../stores/lakehouse/dataProducts/BaseProductCardState.js';
-import { DataProductCardState } from '../../stores/lakehouse/dataProducts/DataProductCardState.js';
+import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
+import {
+  LakehouseDataProductSearchResultDetails,
+  LakehouseSDLCDataProductSearchResultOrigin,
+  LegacyDataProductSearchResultDetails,
+} from '@finos/legend-server-marketplace';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
 const LakehouseDataProductCardInfoPopover = observer(
   (props: {
-    dataProductCardState: DataProductCardState;
+    dataProductCardState: ProductCardState;
     popoverAnchorEl: HTMLButtonElement | null;
     setPopoverAnchorEl: React.Dispatch<
       React.SetStateAction<HTMLButtonElement | null>
@@ -66,7 +65,58 @@ const LakehouseDataProductCardInfoPopover = observer(
 
     const popoverOpen = Boolean(popoverAnchorEl);
     const popoverId = popoverOpen ? 'popover' : undefined;
-    const origin = dataProductCardState.dataProductDetails.origin;
+    const dataProductDetails =
+      dataProductCardState.searchResult.dataProductDetails;
+
+    const dataProductId =
+      dataProductDetails instanceof LakehouseDataProductSearchResultDetails
+        ? dataProductDetails.dataProductId
+        : undefined;
+    const did =
+      dataProductDetails instanceof LakehouseDataProductSearchResultDetails
+        ? dataProductDetails.did
+        : undefined;
+    const producerEnvironmentName =
+      dataProductDetails instanceof LakehouseDataProductSearchResultDetails
+        ? dataProductDetails.producerEnvironmentName
+        : undefined;
+    const producerEnvironmentType =
+      dataProductDetails instanceof LakehouseDataProductSearchResultDetails
+        ? dataProductDetails.producerEnvironmentType
+        : undefined;
+
+    const groupId =
+      dataProductDetails instanceof LakehouseDataProductSearchResultDetails &&
+      dataProductDetails.origin instanceof
+        LakehouseSDLCDataProductSearchResultOrigin
+        ? dataProductDetails.origin.groupId
+        : dataProductDetails instanceof LegacyDataProductSearchResultDetails
+          ? dataProductDetails.groupId
+          : undefined;
+    const artifactId =
+      dataProductDetails instanceof LakehouseDataProductSearchResultDetails &&
+      dataProductDetails.origin instanceof
+        LakehouseSDLCDataProductSearchResultOrigin
+        ? dataProductDetails.origin.artifactId
+        : dataProductDetails instanceof LegacyDataProductSearchResultDetails
+          ? dataProductDetails.artifactId
+          : undefined;
+    const versionId =
+      dataProductDetails instanceof LakehouseDataProductSearchResultDetails &&
+      dataProductDetails.origin instanceof
+        LakehouseSDLCDataProductSearchResultOrigin
+        ? dataProductDetails.origin.versionId
+        : dataProductDetails instanceof LegacyDataProductSearchResultDetails
+          ? dataProductDetails.versionId
+          : undefined;
+    const path =
+      dataProductDetails instanceof LakehouseDataProductSearchResultDetails &&
+      dataProductDetails.origin instanceof
+        LakehouseSDLCDataProductSearchResultOrigin
+        ? dataProductDetails.origin.path
+        : dataProductDetails instanceof LegacyDataProductSearchResultDetails
+          ? dataProductDetails.path
+          : undefined;
 
     return (
       <Popover
@@ -107,72 +157,80 @@ const LakehouseDataProductCardInfoPopover = observer(
               Description
             </Box>
             <Box className="marketplace-lakehouse-data-product-card__popover__section-content">
-              {dataProductCardState.description}
+              <MarkdownTextViewer
+                className="marketplace-lakehouse-data-product-card__popover__section-content__markdown"
+                value={{
+                  value: dataProductCardState.description,
+                }}
+                components={{
+                  h1: 'h2',
+                  h2: 'h3',
+                  h3: 'h4',
+                }}
+              />
             </Box>
           </Box>
-          <Box className="marketplace-lakehouse-data-product-card__popover__section">
-            <Box className="marketplace-lakehouse-data-product-card__popover__section-header">
-              Deployment Details
+          {dataProductId !== undefined ||
+          did !== undefined ||
+          producerEnvironmentName !== undefined ||
+          producerEnvironmentType !== undefined ? (
+            <Box className="marketplace-lakehouse-data-product-card__popover__section">
+              <Box className="marketplace-lakehouse-data-product-card__popover__section-header">
+                Deployment Details
+              </Box>
+              <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>
+                        <b>Data Product ID</b>
+                      </TableCell>
+                      <TableCell>{dataProductId ?? 'Unknown'}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <b>Deployment ID</b>
+                      </TableCell>
+                      <TableCell>{did ?? 'Unknown'}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <b>Producer Environment Name</b>
+                      </TableCell>
+                      <TableCell>
+                        {producerEnvironmentName ?? 'Unknown'}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <b>Producer Environment Type</b>
+                      </TableCell>
+                      <TableCell>
+                        {producerEnvironmentType ?? 'Unknown'}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </Box>
-            <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>
-                      <b>Data Product ID</b>
-                    </TableCell>
-                    <TableCell>
-                      {dataProductCardState.dataProductDetails.id}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <b>Deployment ID</b>
-                    </TableCell>
-                    <TableCell>
-                      {dataProductCardState.dataProductDetails.deploymentId}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <b>Producer Environment Name</b>
-                    </TableCell>
-                    <TableCell>
-                      {dataProductCardState.dataProductDetails
-                        .lakehouseEnvironment?.producerEnvironmentName ??
-                        'Unknown'}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <b>Producer Environment Type</b>
-                    </TableCell>
-                    <TableCell>
-                      {dataProductCardState.dataProductDetails
-                        .lakehouseEnvironment?.type ?? 'Unknown'}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-          {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
+          ) : null}
+          {groupId !== undefined ||
+          artifactId !== undefined ||
+          versionId !== undefined ||
+          path !== undefined ? (
             <Box className="marketplace-lakehouse-data-product-card__popover__section">
               <Box className="marketplace-lakehouse-data-product-card__popover__section-header">
                 Data Product Project
-                {dataProductCardState.enrichedState.isInProgress === true && (
-                  <CircularProgress size={20} />
-                )}
-                {dataProductCardState.enrichedState.hasCompleted === true && (
+                {groupId && artifactId && versionId && path ? (
                   <IconButton
                     className="marketplace-lakehouse-data-product-card__popover__project-link"
                     onClick={() =>
                       applicationStore.navigationService.navigator.visitAddress(
                         EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                           applicationStore.config.studioApplicationUrl,
-                          origin.group,
-                          origin.artifact,
-                          origin.version,
+                          groupId,
+                          artifactId,
+                          versionId,
                           dataProductCardState.dataProductElement?.path,
                         ),
                       )
@@ -180,7 +238,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                   >
                     <OpenIcon />
                   </IconButton>
-                )}
+                ) : null}
               </Box>
               <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
                 <Table>
@@ -189,39 +247,31 @@ const LakehouseDataProductCardInfoPopover = observer(
                       <TableCell>
                         <b>Group</b>
                       </TableCell>
-                      <TableCell>{origin.group}</TableCell>
+                      <TableCell>{groupId ?? 'Unknown'}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>
                         <b>Artifact</b>
                       </TableCell>
-                      <TableCell>{origin.artifact}</TableCell>
+                      <TableCell>{artifactId ?? 'Unknown'}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>
                         <b>Version</b>
                       </TableCell>
-                      <TableCell>{origin.version}</TableCell>
+                      <TableCell>{versionId ?? 'Unknown'}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>
                         <b>Path</b>
                       </TableCell>
-                      <TableCell>
-                        {dataProductCardState.enrichedState.isInProgress ===
-                        true ? (
-                          <CircularProgress size={20} />
-                        ) : (
-                          (dataProductCardState.dataProductElement?.path ??
-                          'Unknown')
-                        )}
-                      </TableCell>
+                      <TableCell>{path ?? 'Unknown'}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
             </Box>
-          )}
+          ) : null}
         </Box>
       </Popover>
     );
@@ -230,8 +280,8 @@ const LakehouseDataProductCardInfoPopover = observer(
 
 export const LakehouseProductCard = observer(
   (props: {
-    productCardState: BaseProductCardState;
-    onClick: (productCardState: BaseProductCardState) => void;
+    productCardState: ProductCardState;
+    onClick: (productCardState: ProductCardState) => void;
   }): React.ReactNode => {
     const { productCardState, onClick } = props;
 
@@ -250,11 +300,7 @@ export const LakehouseProductCard = observer(
     const versionId = productCardState.versionId;
     const isSnapshot = versionId ? isSnapshotVersion(versionId) : undefined;
 
-    const content = productCardState.initState.isInProgress ? (
-      <CubesLoadingIndicator isLoading={true}>
-        <CubesLoadingIndicatorIcon />
-      </CubesLoadingIndicator>
-    ) : (
+    const content = (
       <>
         <Box className="marketplace-lakehouse-data-product-card__container">
           <Box className="marketplace-lakehouse-data-product-card__content">
@@ -272,11 +318,12 @@ export const LakehouseProductCard = observer(
                   },
                 )}
               />
-              {productCardState instanceof DataProductCardState && (
+              {productCardState.searchResult.dataProductDetails instanceof
+                LakehouseDataProductSearchResultDetails && (
                 <Chip
                   label={
-                    productCardState.environmentClassification ??
-                    'Unknown Environment'
+                    productCardState.searchResult.dataProductDetails
+                      .producerEnvironmentType ?? 'Unknown Environment'
                   }
                   size="small"
                   title="Environment Classification"
@@ -284,23 +331,25 @@ export const LakehouseProductCard = observer(
                     'marketplace-lakehouse-data-product-card__environment-classification',
                     {
                       'marketplace-lakehouse-data-product-card__environment-classification--unknown':
-                        productCardState.environmentClassification ===
-                        undefined,
+                        productCardState.searchResult.dataProductDetails
+                          .producerEnvironmentType === undefined,
                       'marketplace-lakehouse-data-product-card__environment-classification--dev':
-                        productCardState.environmentClassification ===
+                        productCardState.searchResult.dataProductDetails
+                          .producerEnvironmentType ===
                         V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
                       'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
-                        productCardState.environmentClassification ===
+                        productCardState.searchResult.dataProductDetails
+                          .producerEnvironmentType ===
                         V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
                       'marketplace-lakehouse-data-product-card__environment-classification--prod':
-                        productCardState.environmentClassification ===
+                        productCardState.searchResult.dataProductDetails
+                          .producerEnvironmentType ===
                         V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
                     },
                   )}
                 />
               )}
             </Box>
-
             <Box className="marketplace-lakehouse-data-product-card__name">
               {productCardState.title}
             </Box>
@@ -315,37 +364,45 @@ export const LakehouseProductCard = observer(
           {productCardState.title}
         </Box>
         <Box className="marketplace-lakehouse-data-product-card__description">
-          {truncatedDescription}
+          <MarkdownTextViewer
+            className="marketplace-lakehouse-data-product-card__description__markdown"
+            value={{
+              value: truncatedDescription,
+            }}
+            components={{
+              h1: 'h2',
+              h2: 'h3',
+              h3: 'h4',
+            }}
+          />
         </Box>
-        {productCardState instanceof DataProductCardState && (
-          <>
-            <IconButton
-              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                event.preventDefault();
-                event.stopPropagation();
-                setPopoverAnchorEl(event.currentTarget);
-              }}
-              className={clsx(
-                'marketplace-lakehouse-data-product-card__more-info-btn',
-                {
-                  'marketplace-lakehouse-data-product-card__more-info-btn--selected':
-                    Boolean(popoverAnchorEl),
-                },
-              )}
-              title="More Info"
-            >
-              <InfoCircleIcon />
-            </IconButton>
-            <LakehouseDataProductCardInfoPopover
-              dataProductCardState={productCardState}
-              popoverAnchorEl={popoverAnchorEl}
-              setPopoverAnchorEl={setPopoverAnchorEl}
-              applicationStore={
-                productCardState.marketplaceBaseStore.applicationStore
-              }
-            />
-          </>
-        )}
+        <>
+          <IconButton
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setPopoverAnchorEl(event.currentTarget);
+            }}
+            className={clsx(
+              'marketplace-lakehouse-data-product-card__more-info-btn',
+              {
+                'marketplace-lakehouse-data-product-card__more-info-btn--selected':
+                  Boolean(popoverAnchorEl),
+              },
+            )}
+            title="More Info"
+          >
+            <InfoCircleIcon />
+          </IconButton>
+          <LakehouseDataProductCardInfoPopover
+            dataProductCardState={productCardState}
+            popoverAnchorEl={popoverAnchorEl}
+            setPopoverAnchorEl={setPopoverAnchorEl}
+            applicationStore={
+              productCardState.marketplaceBaseStore.applicationStore
+            }
+          />
+        </>
       </>
     );
 

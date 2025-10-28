@@ -29,6 +29,4 @@ export {
 export * from './application/LegendMarketplaceApplicationPlugin.js';
 export { LegendMarketplaceProductViewerStore } from './stores/lakehouse/LegendMarketplaceProductViewerStore.js';
 export { LegendMarketplaceSearchResultsStore } from './stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
-export { BaseProductCardState } from './stores/lakehouse/dataProducts/BaseProductCardState.js';
-export { DataProductCardState } from './stores/lakehouse/dataProducts/DataProductCardState.js';
-export { LegacyDataProductCardState } from './stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
+export { ProductCardState } from './stores/lakehouse/dataProducts/ProductCardState.js';
