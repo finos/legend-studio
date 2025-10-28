@@ -48,6 +48,10 @@ import {
   DataProductElementScope,
   validate_PureExecutionMapping,
   type V1_RawLineageModel,
+  type ArtifactGenerationExtensionResult,
+  type V1_DataProductArtifact,
+  type V1_AccessPointGroupInfo,
+  type V1_AccessPointImplementation,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -127,6 +131,10 @@ export class AccessPointState {
       accessPoint: observable,
       changeGroupState: action,
     });
+  }
+
+  get isRunningProcess(): boolean {
+    return false;
   }
 
   changeGroupState(newGroup: AccessPointGroupState): void {
@@ -243,22 +251,23 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
 export class LakehouseAccessPointState extends AccessPointState {
   declare accessPoint: LakehouseAccessPoint;
   lambdaState: AccessPointLambdaEditorState;
-
-  showDebug = false;
-
+  artifactGenerationContent: string | undefined;
+  generatingArtifactState = ActionState.create();
   // Add lineage state and isGeneratingLineage
   lineageState: LineageState;
-  isGeneratingLineage = false;
+  generatingLineageAction = ActionState.create();
 
   constructor(val: LakehouseAccessPoint, editorState: AccessPointGroupState) {
     super(val, editorState);
     makeObservable(this, {
       lambdaState: observable,
-      showDebug: observable,
-      setShowDebug: action,
-      // Add observables for lineage
+      artifactGenerationContent: observable,
+      generatingArtifactState: observable,
+      generateArtifact: flow,
+      isRunningProcess: computed,
       lineageState: observable,
-      isGeneratingLineage: observable,
+      setArtifactContent: action,
+      generatingLineageAction: observable,
       generateLineage: flow,
     });
     this.accessPoint = val;
@@ -268,43 +277,102 @@ export class LakehouseAccessPointState extends AccessPointState {
     );
   }
 
-  setShowDebug(value: boolean): void {
-    this.showDebug = value;
+  get editorStore(): EditorStore {
+    return this.state.state.editorStore;
+  }
+
+  override get isRunningProcess(): boolean {
+    return (
+      this.generatingArtifactState.isInProgress ||
+      this.generatingLineageAction.isInProgress
+    );
+  }
+
+  setArtifactContent(val: string | undefined): void {
+    this.artifactGenerationContent = val;
   }
 
   *generateLineage(): GeneratorFn<void> {
-    if (this.isGeneratingLineage) {
+    if (this.generatingLineageAction.isInProgress) {
       return;
     }
     try {
-      this.isGeneratingLineage = true;
+      this.generatingLineageAction.inProgress();
       const lambda = this.accessPoint.func;
       const lineageRawData =
-        (yield this.state.state.editorStore.graphManagerState.graphManager.generateLineage(
+        (yield this.editorStore.graphManagerState.graphManager.generateLineage(
           lambda,
           undefined,
           undefined,
-          this.state.state.editorStore.graphManagerState.graph,
+          this.editorStore.graphManagerState.graph,
           undefined,
         )) as V1_RawLineageModel;
 
       const lineageData =
-        this.state.state.editorStore.graphManagerState.graphManager.buildLineage(
+        this.editorStore.graphManagerState.graphManager.buildLineage(
           lineageRawData,
         );
 
       this.lineageState.setLineageData(lineageData);
+      this.generatingLineageAction.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.state.state.editorStore.applicationStore.logService.error(
+      this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.LINEAGE_GENERATION_FAILURE),
         error,
       );
-      this.state.state.editorStore.applicationStore.notificationService.notifyError(
-        error,
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.generatingLineageAction.complete();
+    }
+  }
+
+  *generateArtifact(): GeneratorFn<void> {
+    try {
+      this.generatingArtifactState.inProgress();
+      const generatedArtifacts =
+        (yield this.editorStore.graphManagerState.graphManager.generateArtifacts(
+          this.editorStore.graphManagerState.graph,
+          this.editorStore.graphEditorMode.getGraphTextInputOption(),
+          [this.state.state.elementPath],
+        )) as unknown as ArtifactGenerationExtensionResult;
+      const dataProductExtension = 'dataProduct';
+      const dataProductArtifact = generatedArtifacts.values.filter(
+        (artifact) => artifact.extension === dataProductExtension,
+      );
+      const dataProductContent =
+        dataProductArtifact[0]?.artifactsByExtensionElements[0]?.files[0]
+          ?.content ?? null;
+
+      if (dataProductContent) {
+        const contentJson = JSON.parse(
+          dataProductContent,
+        ) as V1_DataProductArtifact;
+        const apPlanGeneration = contentJson.accessPointGroups
+          .find(
+            (group: V1_AccessPointGroupInfo) =>
+              group.id === this.state.value.id,
+          )
+          ?.accessPointImplementations.find(
+            (apImplementation: V1_AccessPointImplementation) =>
+              apImplementation.id === this.accessPoint.id,
+          );
+        this.artifactGenerationContent = JSON.stringify(
+          apPlanGeneration,
+          null,
+          2,
+        );
+      } else {
+        throw new Error(
+          'Could not find contents of this data product artifact',
+        );
+      }
+    } catch (error) {
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Failed to fetch access point plan generation: ${error}`,
       );
     } finally {
-      this.isGeneratingLineage = false;
+      this.generatingArtifactState.complete();
     }
   }
 }
@@ -330,6 +398,10 @@ export class AccessPointGroupState {
       swapAccessPoints: action,
       containsPublicStereotype: computed,
     });
+  }
+
+  get isRunningProcess(): boolean {
+    return Boolean(this.accessPointStates.find((e) => e.isRunningProcess));
   }
 
   get containsPublicStereotype(): StereotypeReference | undefined {

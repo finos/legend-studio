@@ -756,7 +756,7 @@ export const DataProductAccessPointGroupViewer = observer(
         <div className="data-product__viewer__access-group__item__header">
           <div className="data-product__viewer__access-group__item__header-main">
             <div className="data-product__viewer__access-group__item__header__title">
-              {apgState.apg.id}
+              {apgState.apg.title ?? apgState.apg.id}
             </div>
             <div className="data-product__viewer__access-group__item__header__type">
               LAKEHOUSE
@@ -786,7 +786,10 @@ export const DataProductAccessPointGroupViewer = observer(
               >
                 <div className="data-product__viewer__access-point__info">
                   <div className="data-product__viewer__access-point__name">
-                    <strong>{accessPointState.accessPoint.id}</strong>
+                    <strong>
+                      {accessPointState.accessPoint.title ??
+                        accessPointState.accessPoint.id}
+                    </strong>
                   </div>
                   <div className="data-product__viewer__access-point__description">
                     {accessPointState.accessPoint.description?.trim() ?? (

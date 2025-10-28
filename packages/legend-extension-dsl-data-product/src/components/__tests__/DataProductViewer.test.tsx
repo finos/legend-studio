@@ -281,9 +281,9 @@ describe('DataProductViewer', () => {
       screen.getByText(
         'Comprehensive customer analytics data for business intelligence and reporting',
       );
-      screen.getByText('GROUP1');
+      screen.getByText('Main Group Test');
       screen.getByText('Test access point group');
-      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer Demographics');
       await screen.findByText('Customer demographics data access point');
     });
 
@@ -294,9 +294,9 @@ describe('DataProductViewer', () => {
       screen.getByText(
         'Comprehensive customer analytics data for business intelligence and reporting',
       );
-      screen.getByText('GROUP1');
+      screen.getByText('Main Group Test');
       screen.getByText('Test access point group');
-      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer Demographics');
       await screen.findByText('Customer demographics data access point');
     });
 
@@ -313,9 +313,9 @@ describe('DataProductViewer', () => {
         getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
       );
 
-      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer Demographics');
       await screen.findByText('Customer demographics data access point');
-      await screen.findByText('GROUP1');
+      screen.getByText('Main Group Test');
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
 
@@ -337,9 +337,9 @@ describe('DataProductViewer', () => {
         },
       );
 
-      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer Demographics');
       await screen.findByText('Customer demographics data access point');
-      await screen.findByText('GROUP1');
+      screen.getByText('Main Group Test');
 
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
@@ -357,9 +357,9 @@ describe('DataProductViewer', () => {
         [],
       );
 
-      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer Demographics');
       await screen.findByText('Customer demographics data access point');
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
 
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
@@ -433,7 +433,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const requestAccessButton = await screen.findByRole('button', {
         name: 'REQUEST ACCESS',
       });
@@ -451,7 +451,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 
@@ -535,7 +535,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const pendingButton = await screen.findByRole('button', {
         name: 'PENDING MANAGER APPROVAL',
       });
@@ -581,7 +581,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 
@@ -668,7 +668,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const pendingButton = await screen.findByRole('button', {
         name: 'PENDING DATA OWNER APPROVAL',
       });
@@ -714,7 +714,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 
@@ -833,7 +833,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const entitledButton = await screen.findByRole('button', {
         name: 'ENTITLED',
       });
@@ -879,7 +879,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 
@@ -949,7 +949,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 

@@ -71,11 +71,13 @@ export const mockSDLCDataProduct: V1_DataProduct = deserialize(
       {
         _type: 'defaultAccessPointGroup',
         id: 'GROUP1',
+        title: 'Main Group Test',
         description: 'Test access point group',
         accessPoints: [
           {
             _type: 'lakehouseAccessPoint',
             id: 'customer_demographics',
+            title: 'Customer Demographics',
             description: 'Customer demographics data access point',
             func: {
               _type: 'lambda',
