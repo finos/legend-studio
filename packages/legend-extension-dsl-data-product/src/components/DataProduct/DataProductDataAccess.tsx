@@ -609,6 +609,8 @@ export const DataProductAccessPointGroupViewer = observer(
       }
     }, [
       apgState,
+      apgState.fetchingSubscriptionsState,
+      apgState.apgContracts,
       auth.user?.access_token,
       dataAccessState?.lakehouseContractServerClient,
     ]);
