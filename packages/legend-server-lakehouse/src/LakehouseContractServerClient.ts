@@ -141,7 +141,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       {},
       {},
       this._token(token),
-      { user },
     );
 
   // ------------------------------------------- Tasks -------------------------------------------
