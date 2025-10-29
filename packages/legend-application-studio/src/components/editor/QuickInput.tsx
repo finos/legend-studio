@@ -59,12 +59,16 @@ function QuickInputDialog<T>(props: {
     <NonBlockingDialog
       open={true}
       onClose={close}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
       onClickAway={close}
       classes={{ container: 'search-modal__container' }}
-      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      slotProps={{
+        transition: {
+          onEnter: handleEnter,
+        },
+        paper: {
+          classes: { root: 'search-modal__inner-container' },
+        },
+      }}
     >
       <Modal
         darkMode={

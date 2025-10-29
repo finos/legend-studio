@@ -65,11 +65,15 @@ export const CreateNewFilePrompt = observer(
       <Dialog
         open={true}
         onClose={closeModal}
-        TransitionProps={{
-          onEnter: handleEnter,
-        }}
         classes={{ container: 'command-modal__container' }}
-        PaperProps={{ classes: { root: 'command-modal__inner-container' } }}
+        slotProps={{
+          transition: {
+            onEnter: handleEnter,
+          },
+          paper: {
+            classes: { root: 'command-modal__inner-container' },
+          },
+        }}
       >
         <div className="modal modal--dark command-modal">
           <div className="modal__title">Create a new file</div>

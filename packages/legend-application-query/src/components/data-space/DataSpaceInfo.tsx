@@ -147,8 +147,10 @@ export const QueryEditorDataspaceInfoModal = observer(
         open={open}
         onClose={closeModal}
         classes={{ container: 'dataspace-info-modal__container' }}
-        PaperProps={{
-          classes: { root: 'dataspace-info-modal__inner-container' },
+        slotProps={{
+          paper: {
+            classes: { root: 'dataspace-info-modal__inner-container' },
+          },
         }}
       >
         <Modal

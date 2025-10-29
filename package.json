@@ -68,7 +68,7 @@
     "test:all": "cross-env TEST_GROUP=all jest",
     "test:group": "cross-env TEST_GROUP=$0 jest",
     "test:list-groups": "node ./scripts/test/printTestGroups.js",
-    "test:ci": "cross-env TEST_GROUP=$0 node --max-old-space-size=4096 ./node_modules/jest/bin/jest.js --coverage --maxWorkers=100%",
+    "test:ci": "cross-env TEST_GROUP=$0 node --max-old-space-size=4096 ./node_modules/jest/bin/jest.js --coverage --maxWorkers=50%",
     "test:debug": "cross-env TEST_GROUP=$0 node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "test:report-failure": "cross-env TEST_GROUP=$0 jest 2>&1 | grep 'FAIL'",
     "test:watch": "jest --watch",
@@ -94,6 +94,7 @@
     "last 2 Chrome versions"
   ],
   "resolutions": {
+    "@types/react": "19.0.10",
     "glob-parent": "^6.0.1",
     "whatwg-url": "^14.0.0"
   },

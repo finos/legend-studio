@@ -248,11 +248,15 @@ const ElementRenamer = observer(() => {
     <Dialog
       open={Boolean(element)}
       onClose={abort}
-      TransitionProps={{
-        onEnter: onEnter,
+      slotProps={{
+        transition: {
+          onEnter: onEnter,
+        },
+        paper: {
+          classes: { root: 'search-modal__inner-container' },
+        },
       }}
       classes={{ container: 'search-modal__container' }}
-      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <form className="modal modal--dark search-modal explorer__element-renamer">
         <div className="modal__title">Rename Element</div>
@@ -370,11 +374,15 @@ const SampleDataGenerator = observer(() => {
     <Dialog
       open={Boolean(selectedClass)}
       onClose={abort}
-      TransitionProps={{
-        onEnter: onEnter,
+      slotProps={{
+        transition: {
+          onEnter: onEnter,
+        },
+        paper: {
+          classes: { root: 'search-modal__inner-container' },
+        },
       }}
       classes={{ container: 'search-modal__container' }}
-      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <div className="modal modal--dark search-modal explorer__element-renamer">
         <div className="modal__title">Generate Sample Data</div>
