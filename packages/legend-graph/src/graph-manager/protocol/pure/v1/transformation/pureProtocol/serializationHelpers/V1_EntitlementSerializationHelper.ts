@@ -366,6 +366,9 @@ export const V1_contractUserEventRecordModelSchema = createModelSchema(
       V1_deserializeContractUserEventPayload,
     ),
     type: primitive(),
+    effectiveFrom: primitive(),
+    effectiveTo: primitive(),
+    isEscalated: primitive(),
   },
 );
 export const V1_taskMetadataModelSchema = createModelSchema(V1_TaskMetadata, {

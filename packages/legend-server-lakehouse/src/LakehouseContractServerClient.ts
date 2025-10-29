@@ -22,13 +22,14 @@ import type {
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_DataSubscriptionResponse,
-  V1_PendingTasksResponse,
   V1_EntitlementsDataProductDetailsResponse,
-  V1_TaskStatus,
-  V1_UserPendingContractsResponse,
-  V1_LiteDataContractsResponse,
-  V1_TaskResponse,
   V1_EntitlementsUserEnvResponse,
+  V1_LiteDataContractsResponse,
+  V1_PendingTasksResponse,
+  V1_TaskResponse,
+  V1_TaskStatus,
+  V1_UserPendingContractsRecord,
+  V1_UserPendingContractsResponse,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
@@ -127,6 +128,20 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       contractRequest,
       undefined,
       this._token(token),
+    );
+
+  escalateUserOnContract = (
+    contractId: string,
+    user: string,
+    forSystemAccount: boolean,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_UserPendingContractsRecord>> =>
+    this.post(
+      `${this._dataContracts()}/escalate/${encodeURIComponent(contractId)}/user/${encodeURIComponent(user)}?forSystemAccount=${forSystemAccount}`,
+      {},
+      {},
+      this._token(token),
+      { user },
     );
 
   // ------------------------------------------- Tasks -------------------------------------------
