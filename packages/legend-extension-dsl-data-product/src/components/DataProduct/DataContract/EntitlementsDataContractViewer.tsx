@@ -404,7 +404,9 @@ export const EntitlementsDataContractViewer = observer(
     // escalate contract for system accounts.
     const canEscalateContract =
       selectedTargetUser ===
-      currentViewer.applicationStore.identityService.currentUser;
+        currentViewer.applicationStore.identityService.currentUser &&
+      privilegeManagerApprovalTask?.rec.isEscalated !== undefined &&
+      privilegeManagerApprovalTask.rec.isEscalated === false;
 
     const copyTaskLink = (text: string): void => {
       currentViewer.applicationStore.clipboardService
