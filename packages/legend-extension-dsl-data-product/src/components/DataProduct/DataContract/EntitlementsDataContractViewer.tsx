@@ -405,11 +405,14 @@ export const EntitlementsDataContractViewer = observer(
       dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING;
     // TODO: determine if the selected user is a system account. Anyone can
     // escalate contract for system accounts.
-    const canEscalateContract =
+    const showEscalationButton =
       selectedTargetUser ===
-        currentViewer.applicationStore.identityService.currentUser &&
+      currentViewer.applicationStore.identityService.currentUser;
+    const isContractEscalatable =
       privilegeManagerApprovalTask?.rec.isEscalated !== undefined &&
       privilegeManagerApprovalTask.rec.isEscalated === false;
+    const isContractEscalated = privilegeManagerApprovalTask?.rec.isEscalated;
+    const canEscalateContract = showEscalationButton && isContractEscalatable;
 
     const copyContractId = (): void => {
       currentViewer.applicationStore.clipboardService
@@ -469,10 +472,18 @@ export const EntitlementsDataContractViewer = observer(
               >
                 <CopyIcon />
               </IconButton>
-              {canEscalateContract && (
+              {showEscalationButton && (
                 <IconButton
                   onClick={() => setShowEscalationModal(true)}
-                  title="Escalate request"
+                  title={
+                    canEscalateContract
+                      ? 'Escalate request'
+                      : isContractEscalated
+                        ? 'Request has been escalated'
+                        : 'Cannot escalate request'
+                  }
+                  disabled={!canEscalateContract}
+                  color={isContractEscalated ? 'success' : 'default'}
                 >
                   <ArrowUpFromBracketIcon />
                 </IconButton>
