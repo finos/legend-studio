@@ -408,6 +408,19 @@ export const EntitlementsDataContractViewer = observer(
       privilegeManagerApprovalTask?.rec.isEscalated !== undefined &&
       privilegeManagerApprovalTask.rec.isEscalated === false;
 
+    const copyContractId = (): void => {
+      currentViewer.applicationStore.clipboardService
+        .copyTextToClipboard(currentViewer.value.guid)
+        .then(() =>
+          currentViewer.applicationStore.notificationService.notifySuccess(
+            'Contract ID Copied to Clipboard',
+            undefined,
+            2500,
+          ),
+        )
+        .catch(currentViewer.applicationStore.alertUnhandledError);
+    };
+
     const copyTaskLink = (text: string): void => {
       currentViewer.applicationStore.clipboardService
         .copyTextToClipboard(text)
@@ -680,6 +693,9 @@ export const EntitlementsDataContractViewer = observer(
             )}
             <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
               Contract ID: {currentViewer.value.guid}
+              <IconButton onClick={() => copyContractId()}>
+                <CopyIcon />
+              </IconButton>
             </Box>
           </DialogContent>
         </Dialog>
