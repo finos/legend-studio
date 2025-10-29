@@ -467,7 +467,10 @@ export const EntitlementsDataContractViewer = observer(
                 <CopyIcon />
               </IconButton>
               {canEscalateContract && (
-                <IconButton onClick={() => setShowEscalationModal(true)}>
+                <IconButton
+                  onClick={() => setShowEscalationModal(true)}
+                  title="Escalate request"
+                >
                   <ArrowUpFromBracketIcon />
                 </IconButton>
               )}
