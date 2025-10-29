@@ -408,11 +408,9 @@ export const EntitlementsDataContractViewer = observer(
     const showEscalationButton =
       selectedTargetUser ===
       currentViewer.applicationStore.identityService.currentUser;
-    const isContractEscalatable =
-      privilegeManagerApprovalTask?.rec.isEscalated !== undefined &&
-      privilegeManagerApprovalTask.rec.isEscalated === false;
-    const isContractEscalated = privilegeManagerApprovalTask?.rec.isEscalated;
-    const canEscalateContract = showEscalationButton && isContractEscalatable;
+    const isContractEscalated =
+      privilegeManagerApprovalTask?.rec.isEscalated === true;
+    const canEscalateContract = showEscalationButton && !isContractEscalated;
 
     const copyContractId = (): void => {
       currentViewer.applicationStore.clipboardService
@@ -473,20 +471,22 @@ export const EntitlementsDataContractViewer = observer(
                 <CopyIcon />
               </IconButton>
               {showEscalationButton && (
-                <IconButton
-                  onClick={() => setShowEscalationModal(true)}
+                <span
                   title={
                     canEscalateContract
                       ? 'Escalate request'
                       : isContractEscalated
-                        ? 'Request has been escalated'
+                        ? 'Request has already been escalated'
                         : 'Cannot escalate request'
                   }
-                  disabled={!canEscalateContract}
-                  color={isContractEscalated ? 'success' : 'default'}
                 >
-                  <ArrowUpFromBracketIcon />
-                </IconButton>
+                  <IconButton
+                    onClick={() => setShowEscalationModal(true)}
+                    disabled={!canEscalateContract}
+                  >
+                    <ArrowUpFromBracketIcon />
+                  </IconButton>
+                </span>
               )}
             </>
           ) : (
