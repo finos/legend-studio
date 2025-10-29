@@ -22,6 +22,7 @@ import {
   Box,
   Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -52,12 +53,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   type UserSearchService,
   ActionState,
+  assertErrorThrown,
   formatDate,
   lodashCapitalize,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import {
+  ArrowUpFromBracketIcon,
   CloseIcon,
   CopyIcon,
   CubesLoadingIndicator,
@@ -167,6 +170,88 @@ const TaskApprovalView = (props: {
   }
 };
 
+const ContractEscalationModal = (props: {
+  open: boolean;
+  onClose: () => void;
+  currentViewer: EntitlementsDataContractViewerState;
+  selectedUser: string | undefined;
+}) => {
+  const { open, onClose, currentViewer, selectedUser } = props;
+
+  const auth = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (!selectedUser) {
+    return (
+      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
+        <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__escalation__content">
+          <div>
+            Can&apos;t escalate privilege manager approval request. No user
+            selected.
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} variant="outlined" disabled={isLoading}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  }
+
+  const handleEscalate = async () => {
+    setIsLoading(true);
+    try {
+      await currentViewer.lakehouseContractServerClient.escalateUserOnContract(
+        currentViewer.value.guid,
+        selectedUser,
+        false,
+        auth.user?.access_token,
+      );
+      currentViewer.applicationStore.notificationService.notifySuccess(
+        'Successfully escalated contract request',
+      );
+      onClose();
+    } catch (error) {
+      assertErrorThrown(error);
+      currentViewer.applicationStore.alertUnhandledError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
+      <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__escalation__content">
+        <CubesLoadingIndicator isLoading={isLoading}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+        {!isLoading && (
+          <div>
+            Are you sure you want to escalate the privilege manager approval
+            request?
+          </div>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            // eslint-disable-next-line no-void
+            void handleEscalate();
+          }}
+          variant="contained"
+          disabled={isLoading}
+        >
+          Escalate
+        </Button>
+        <Button onClick={onClose} variant="outlined" disabled={isLoading}>
+          Cancel
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 export const EntitlementsDataContractViewer = observer(
   (props: {
     open: boolean;
@@ -244,6 +329,7 @@ export const EntitlementsDataContractViewer = observer(
       string | undefined
     >(initialSelectedUser ?? targetUsers?.[0]);
     const [isLoading, setIsLoading] = useState(false);
+    const [showEscalationModal, setShowEscalationModal] = useState(false);
 
     useEffect(() => {
       if (!currentViewer.initializationState.hasCompleted) {
@@ -314,6 +400,11 @@ export const EntitlementsDataContractViewer = observer(
       privilegeManagerApprovalTask?.rec.status ===
         V1_UserApprovalStatus.PENDING ||
       dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING;
+    // TODO: determine if the selected user is a system account. Anyone can
+    // escalate contract for system accounts.
+    const canEscalateContract =
+      selectedTargetUser ===
+      currentViewer.applicationStore.identityService.currentUser;
 
     const copyTaskLink = (text: string): void => {
       currentViewer.applicationStore.clipboardService
@@ -360,6 +451,11 @@ export const EntitlementsDataContractViewer = observer(
               >
                 <CopyIcon />
               </IconButton>
+              {canEscalateContract && (
+                <IconButton onClick={() => setShowEscalationModal(true)}>
+                  <ArrowUpFromBracketIcon />
+                </IconButton>
+              )}
             </>
           ) : (
             <>Privilege Manager Approval</>
@@ -443,144 +539,155 @@ export const EntitlementsDataContractViewer = observer(
     ];
 
     return (
-      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
-        <DialogTitle>
-          {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
-        </DialogTitle>
-        <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
-          <CloseIcon />
-        </IconButton>
-        <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-          <CubesLoadingIndicator isLoading={isLoading}>
-            <CubesLoadingIndicatorIcon />
-          </CubesLoadingIndicator>
-          {!isLoading && (
-            <>
-              <div>
-                Access request for{' '}
-                <span className="marketplace-lakehouse-text__emphasis">
-                  {accessPointGroup}
-                </span>{' '}
-                Access Point Group in{' '}
-                <Link
-                  className="marketplace-lakehouse-text__emphasis"
-                  href={getDataProductUrl(
-                    dataProduct,
-                    currentViewer.value.deploymentId,
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {dataProduct}
-                </Link>{' '}
-                Data Product
-              </div>
-              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
-                <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
-                  <b>Ordered By: </b>
-                  <UserRenderer
-                    userId={currentViewer.value.createdBy}
-                    applicationStore={currentViewer.applicationStore}
-                    userSearchService={currentViewer.userSearchService}
-                  />
-                </div>
-                <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
-                  <b>
-                    Ordered For
-                    <Tooltip
-                      className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
-                      title={
-                        <>
-                          Contract consumer type:{' '}
-                          {getOrganizationalScopeTypeName(
-                            consumer,
-                            currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
-                          )}
-                          {getOrganizationalScopeTypeDetails(
-                            consumer,
-                            currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
-                          )}
-                        </>
-                      }
-                    >
-                      <InfoCircleIcon />
-                    </Tooltip>
-                    :{' '}
-                  </b>
-                  {targetUsers !== undefined ? (
-                    targetUsers.length === 1 ? (
-                      <UserRenderer
-                        key={targetUsers[0]}
-                        userId={targetUsers[0]}
-                        applicationStore={currentViewer.applicationStore}
-                        userSearchService={currentViewer.userSearchService}
-                      />
-                    ) : (
-                      <Select
-                        value={selectedTargetUser}
-                        onChange={(event) =>
-                          setSelectedTargetUser(event.target.value)
-                        }
-                        size="small"
-                        className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
-                      >
-                        {targetUserSelectItems}
-                      </Select>
-                    )
-                  ) : (
-                    stringifyOrganizationalScope(consumer)
-                  )}
-                </div>
+      <>
+        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
+          <DialogTitle>
+            {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
+          </DialogTitle>
+          <IconButton
+            onClick={onClose}
+            className="marketplace-dialog-close-btn"
+          >
+            <CloseIcon />
+          </IconButton>
+          <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
+            <CubesLoadingIndicator isLoading={isLoading}>
+              <CubesLoadingIndicatorIcon />
+            </CubesLoadingIndicator>
+            {!isLoading && (
+              <>
                 <div>
-                  <b>Business Justification: </b>
-                  {currentViewer.value.description}
-                </div>
-              </Box>
-              {!isContractInTerminalState(currentViewer.value) && (
-                <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<RefreshIcon />}
-                    onClick={() => {
-                      // eslint-disable-next-line no-void
-                      void refresh();
-                    }}
+                  Access request for{' '}
+                  <span className="marketplace-lakehouse-text__emphasis">
+                    {accessPointGroup}
+                  </span>{' '}
+                  Access Point Group in{' '}
+                  <Link
+                    className="marketplace-lakehouse-text__emphasis"
+                    href={getDataProductUrl(
+                      dataProduct,
+                      currentViewer.value.deploymentId,
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Refresh
-                  </Button>
-                </Box>
-              )}
-              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
-                <Timeline>
-                  {steps.map((step, index) => (
-                    <TimelineItem key={step.key}>
-                      <TimelineOppositeContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
-                        {step.label}
-                      </TimelineOppositeContent>
-                      <TimelineSeparator>
-                        <TimelineDot
-                          color={step.isDeniedStep ? 'error' : 'primary'}
-                          variant={
-                            step.isCompleteOrActive ? 'filled' : 'outlined'
-                          }
+                    {dataProduct}
+                  </Link>{' '}
+                  Data Product
+                </div>
+                <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
+                  <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
+                    <b>Ordered By: </b>
+                    <UserRenderer
+                      userId={currentViewer.value.createdBy}
+                      applicationStore={currentViewer.applicationStore}
+                      userSearchService={currentViewer.userSearchService}
+                    />
+                  </div>
+                  <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
+                    <b>
+                      Ordered For
+                      <Tooltip
+                        className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
+                        title={
+                          <>
+                            Contract consumer type:{' '}
+                            {getOrganizationalScopeTypeName(
+                              consumer,
+                              currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
+                            )}
+                            {getOrganizationalScopeTypeDetails(
+                              consumer,
+                              currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
+                            )}
+                          </>
+                        }
+                      >
+                        <InfoCircleIcon />
+                      </Tooltip>
+                      :{' '}
+                    </b>
+                    {targetUsers !== undefined ? (
+                      targetUsers.length === 1 ? (
+                        <UserRenderer
+                          key={targetUsers[0]}
+                          userId={targetUsers[0]}
+                          applicationStore={currentViewer.applicationStore}
+                          userSearchService={currentViewer.userSearchService}
                         />
-                        {index < steps.length - 1 && <TimelineConnector />}
-                      </TimelineSeparator>
-                      <TimelineContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
-                        {step.description}
-                      </TimelineContent>
-                    </TimelineItem>
-                  ))}
-                </Timeline>
-              </Box>
-            </>
-          )}
-          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
-            Contract ID: {currentViewer.value.guid}
-          </Box>
-        </DialogContent>
-      </Dialog>
+                      ) : (
+                        <Select
+                          value={selectedTargetUser}
+                          onChange={(event) =>
+                            setSelectedTargetUser(event.target.value)
+                          }
+                          size="small"
+                          className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
+                        >
+                          {targetUserSelectItems}
+                        </Select>
+                      )
+                    ) : (
+                      stringifyOrganizationalScope(consumer)
+                    )}
+                  </div>
+                  <div>
+                    <b>Business Justification: </b>
+                    {currentViewer.value.description}
+                  </div>
+                </Box>
+                {!isContractInTerminalState(currentViewer.value) && (
+                  <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<RefreshIcon />}
+                      onClick={() => {
+                        // eslint-disable-next-line no-void
+                        void refresh();
+                      }}
+                    >
+                      Refresh
+                    </Button>
+                  </Box>
+                )}
+                <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
+                  <Timeline>
+                    {steps.map((step, index) => (
+                      <TimelineItem key={step.key}>
+                        <TimelineOppositeContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
+                          {step.label}
+                        </TimelineOppositeContent>
+                        <TimelineSeparator>
+                          <TimelineDot
+                            color={step.isDeniedStep ? 'error' : 'primary'}
+                            variant={
+                              step.isCompleteOrActive ? 'filled' : 'outlined'
+                            }
+                          />
+                          {index < steps.length - 1 && <TimelineConnector />}
+                        </TimelineSeparator>
+                        <TimelineContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
+                          {step.description}
+                        </TimelineContent>
+                      </TimelineItem>
+                    ))}
+                  </Timeline>
+                </Box>
+              </>
+            )}
+            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
+              Contract ID: {currentViewer.value.guid}
+            </Box>
+          </DialogContent>
+        </Dialog>
+        <ContractEscalationModal
+          open={showEscalationModal && canEscalateContract}
+          onClose={() => setShowEscalationModal(false)}
+          currentViewer={currentViewer}
+          selectedUser={selectedTargetUser}
+        />
+      </>
     );
   },
 );
