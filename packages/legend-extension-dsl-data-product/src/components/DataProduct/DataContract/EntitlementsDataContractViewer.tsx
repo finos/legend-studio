@@ -175,8 +175,9 @@ const ContractEscalationModal = (props: {
   onClose: () => void;
   currentViewer: EntitlementsDataContractViewerState;
   selectedUser: string | undefined;
+  refresh: () => Promise<void>;
 }) => {
-  const { open, onClose, currentViewer, selectedUser } = props;
+  const { open, onClose, currentViewer, selectedUser, refresh } = props;
 
   const auth = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -211,6 +212,8 @@ const ContractEscalationModal = (props: {
       currentViewer.applicationStore.notificationService.notifySuccess(
         'Successfully escalated contract request',
       );
+      // eslint-disable-next-line no-void
+      void refresh();
       onClose();
     } catch (error) {
       assertErrorThrown(error);
@@ -707,6 +710,7 @@ export const EntitlementsDataContractViewer = observer(
           onClose={() => setShowEscalationModal(false)}
           currentViewer={currentViewer}
           selectedUser={selectedTargetUser}
+          refresh={refresh}
         />
       </>
     );
