@@ -44,6 +44,7 @@ import {
   LakehouseSDLCDataProductSearchResultOrigin,
   LegacyDataProductSearchResultDetails,
 } from '@finos/legend-server-marketplace';
+import { ProdParallelLegendMarketplaceEnvState } from '../../stores/LegendMarketplaceEnvState.js';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -299,56 +300,74 @@ export const LakehouseProductCard = observer(
 
     const versionId = productCardState.versionId;
     const isSnapshot = versionId ? isSnapshotVersion(versionId) : undefined;
+    const isLakehouse =
+      productCardState.searchResult.dataProductDetails instanceof
+      LakehouseDataProductSearchResultDetails;
 
     const content = (
       <>
         <Box className="marketplace-lakehouse-data-product-card__container">
           <Box className="marketplace-lakehouse-data-product-card__content">
             <Box className="marketplace-lakehouse-data-product-card__tags">
-              <Chip
-                size="small"
-                label={versionId ?? 'Unknown Version'}
-                className={clsx(
-                  'marketplace-lakehouse-data-product-card__version',
-                  {
-                    'marketplace-lakehouse-data-product-card__version--snapshot':
-                      isSnapshot,
-                    'marketplace-lakehouse-data-product-card__version--release':
-                      !isSnapshot,
-                  },
-                )}
-              />
-              {productCardState.searchResult.dataProductDetails instanceof
-                LakehouseDataProductSearchResultDetails && (
+              {isLakehouse && (
                 <Chip
-                  label={
-                    productCardState.searchResult.dataProductDetails
-                      .producerEnvironmentType ?? 'Unknown Environment'
-                  }
                   size="small"
-                  title="Environment Classification"
+                  label="Lakehouse"
                   className={clsx(
-                    'marketplace-lakehouse-data-product-card__environment-classification',
+                    'marketplace-lakehouse-data-product-card__lakehouse',
+                  )}
+                />
+              )}
+              {/* We only show version if it's a snapshot, because otherwise it's just the latest prod version */}
+              {isSnapshot && (
+                <Chip
+                  size="small"
+                  label={versionId ?? 'Unknown Version'}
+                  className={clsx(
+                    'marketplace-lakehouse-data-product-card__version',
                     {
-                      'marketplace-lakehouse-data-product-card__environment-classification--unknown':
-                        productCardState.searchResult.dataProductDetails
-                          .producerEnvironmentType === undefined,
-                      'marketplace-lakehouse-data-product-card__environment-classification--dev':
-                        productCardState.searchResult.dataProductDetails
-                          .producerEnvironmentType ===
-                        V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-                      'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
-                        productCardState.searchResult.dataProductDetails
-                          .producerEnvironmentType ===
-                        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
-                      'marketplace-lakehouse-data-product-card__environment-classification--prod':
-                        productCardState.searchResult.dataProductDetails
-                          .producerEnvironmentType ===
-                        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+                      'marketplace-lakehouse-data-product-card__version--snapshot':
+                        isSnapshot,
+                      'marketplace-lakehouse-data-product-card__version--release':
+                        !isSnapshot,
                     },
                   )}
                 />
               )}
+              {/* We only show environment classification in prod-par env, because otherwise they're all production */}
+              {productCardState.marketplaceBaseStore.envState instanceof
+                ProdParallelLegendMarketplaceEnvState &&
+                productCardState.searchResult.dataProductDetails instanceof
+                  LakehouseDataProductSearchResultDetails && (
+                  <Chip
+                    label={
+                      productCardState.searchResult.dataProductDetails
+                        .producerEnvironmentType ?? 'Unknown Environment'
+                    }
+                    size="small"
+                    title="Environment Classification"
+                    className={clsx(
+                      'marketplace-lakehouse-data-product-card__environment-classification',
+                      {
+                        'marketplace-lakehouse-data-product-card__environment-classification--unknown':
+                          productCardState.searchResult.dataProductDetails
+                            .producerEnvironmentType === undefined,
+                        'marketplace-lakehouse-data-product-card__environment-classification--dev':
+                          productCardState.searchResult.dataProductDetails
+                            .producerEnvironmentType ===
+                          V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
+                        'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
+                          productCardState.searchResult.dataProductDetails
+                            .producerEnvironmentType ===
+                          V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+                        'marketplace-lakehouse-data-product-card__environment-classification--prod':
+                          productCardState.searchResult.dataProductDetails
+                            .producerEnvironmentType ===
+                          V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+                      },
+                    )}
+                  />
+                )}
             </Box>
             <Box className="marketplace-lakehouse-data-product-card__name">
               {productCardState.title}

@@ -70,6 +70,11 @@
     overflow-wrap: anywhere;
   }
 
+  &__lakehouse {
+    color: var(--tw-color-green-100);
+    background: var(--tw-color-green-600);
+  }
+
   &__version {
     align-self: end;
     font-size: 1rem;
