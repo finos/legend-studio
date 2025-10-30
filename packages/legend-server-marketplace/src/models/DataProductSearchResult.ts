@@ -39,8 +39,8 @@ export enum DataProductSearchResultDetailsType {
 }
 
 export enum LakehouseDataProductSearchResultOriginType {
-  SDLC = 'sdlcdeployment',
-  AD_HOC = 'adhocdeployment',
+  SDLC = 'SdlcDeployment',
+  AD_HOC = 'AdHocDeployment',
 }
 
 export abstract class LakehouseDataProductSearchResultOrigin {}
@@ -78,7 +78,7 @@ export abstract class DataProductSearchResultDetails {}
 
 export class LakehouseDataProductSearchResultDetails extends DataProductSearchResultDetails {
   dataProductId!: string;
-  did!: number;
+  deploymentId!: number;
   producerEnvironmentName!: string;
   producerEnvironmentType!: V1_EntitlementsLakehouseEnvironmentType | undefined;
   origin!: LakehouseDataProductSearchResultOrigin;
@@ -89,7 +89,7 @@ export class LakehouseDataProductSearchResultDetails extends DataProductSearchRe
         DataProductSearchResultDetailsType.LAKEHOUSE,
       ),
       dataProductId: primitive(),
-      did: primitive(),
+      deploymentId: primitive(),
       producerEnvironmentName: primitive(),
       producerEnvironmentType: optional(primitive()),
       origin: custom(
@@ -120,11 +120,8 @@ export class LegacyDataProductSearchResultDetails extends DataProductSearchResul
 }
 
 export class DataProductSearchResult {
-  id!: string;
-  chunk_id!: string;
-  data_product_name!: string;
-  data_product_description!: string;
-  data_product_link!: string;
+  dataProductTitle!: string | null;
+  dataProductDescription!: string | null;
   embedding_type!: string;
   vendor_name!: string;
   tags1!: string[];
@@ -135,11 +132,8 @@ export class DataProductSearchResult {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductSearchResult, {
-      id: primitive(),
-      chunk_id: primitive(),
-      data_product_name: primitive(),
-      data_product_description: primitive(),
-      data_product_link: primitive(),
+      dataProductTitle: optional(primitive()),
+      dataProductDescription: optional(primitive()),
       embedding_type: primitive(),
       vendor_name: primitive(),
       tags1: list(primitive()),
