@@ -21,6 +21,7 @@ import {
   type DataProductIcon,
   type Email,
   type LakehouseAccessPoint,
+  type RelationElementsData,
   DataProductLink,
   observe_AccessPoint,
   observe_Email,
@@ -215,6 +216,24 @@ export const dataProduct_deleteExpertise = action(
   (product: DataProduct, expertise: Expertise) => {
     if (product.expertise) {
       deleteEntry(product.expertise, expertise);
+    }
+  },
+);
+
+export const dataProduct_deleteRelationElement = action(
+  (
+    product: DataProduct,
+    relationData: RelationElementsData,
+    accessPointId: string,
+  ) => {
+    const elementToDelete = relationData.relationElements.find(
+      (re) => re.paths[0] === accessPointId,
+    );
+    if (elementToDelete) {
+      deleteEntry(relationData.relationElements, elementToDelete);
+      if (relationData.relationElements.length === 0) {
+        product.sampleValues = undefined;
+      }
     }
   },
 );

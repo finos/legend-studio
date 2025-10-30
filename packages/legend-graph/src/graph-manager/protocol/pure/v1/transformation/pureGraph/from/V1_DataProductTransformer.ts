@@ -60,6 +60,7 @@ import {
   V1_transformTaggedValue,
 } from './V1_DomainTransformer.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
+import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 
 const transformAccessPoint = (
   ap: AccessPoint,
@@ -131,6 +132,9 @@ export const V1_transformDataProduct = (
   product.coverageRegions = element.coverageRegions as
     | V1_DataProductRegion[]
     | undefined;
+  product.sampleValues = element.sampleValues?.map((data) =>
+    V1_transformEmbeddedData(data, context),
+  );
   product.expertise = element.expertise as V1_Expertise[] | undefined;
   if (element.type instanceof InternalDataProductType) {
     product.type = new V1_InternalDataProductType();

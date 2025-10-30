@@ -88,12 +88,12 @@ const NewRelationElementModal = observer(
         path.push(schemaName);
         path.push(tableName);
       }
-      const relationalElement = new RelationElement();
-      relationalElement.columns = [];
-      relationalElement.rows = [];
-      relationalElement.paths = path;
+      const relationElement = new RelationElement();
+      relationElement.columns = [];
+      relationElement.rows = [];
+      relationElement.paths = path;
 
-      dataState.addRelationElement(relationalElement);
+      dataState.addRelationElement(relationElement);
       closeModal();
     };
 
@@ -112,7 +112,7 @@ const NewRelationElementModal = observer(
           }}
           className="modal modal--dark search-modal"
         >
-          <div className="modal__title">Add Relational Element</div>
+          <div className="modal__title">Add Relation Element</div>
           <div className="relational-data-editor__identifier">
             <div className="relational-data-editor__identifier__values">
               <CustomSelectorInput
@@ -159,7 +159,7 @@ const NewRelationElementModal = observer(
   },
 );
 
-const RelationElementEditor = observer(
+export const RelationElementEditor = observer(
   (props: {
     relationElementState: RelationElementState;
     isReadOnly: boolean;

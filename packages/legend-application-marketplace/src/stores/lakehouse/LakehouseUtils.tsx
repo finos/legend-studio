@@ -49,7 +49,12 @@ export const getDataProductFromDetails = async (
         versionedEntity: boolean;
       }[];
     const entities = rawEntities.map((entity) =>
-      deserialize(V1_dataProductModelSchema, entity.entity.content),
+      deserialize(
+        V1_dataProductModelSchema(
+          graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+        ),
+        entity.entity.content,
+      ),
     );
     const matchingEntities = entities.filter(
       (entity) => entity.name.toLowerCase() === details.id.toLowerCase(),
@@ -70,7 +75,14 @@ export const getDataProductFromDetails = async (
     );
     const elements = entities
       .filter((e) => e.classifierPath === CORE_PURE_PATH.DATA_PRODUCT)
-      .map((entity) => deserialize(V1_dataProductModelSchema, entity.content));
+      .map((entity) =>
+        deserialize(
+          V1_dataProductModelSchema(
+            graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
+          entity.content,
+        ),
+      );
     const matchingEntities = elements.filter(
       (element) => element.name.toLowerCase() === details.id.toLowerCase(),
     );

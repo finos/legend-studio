@@ -37,6 +37,7 @@ import type { Package } from '../packageableElements/domain/Package.js';
 import type { Class } from '../packageableElements/domain/Class.js';
 import type { Enumeration } from '../packageableElements/domain/Enumeration.js';
 import type { Association } from '../packageableElements/domain/Association.js';
+import type { EmbeddedData } from '../data/EmbeddedData.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
@@ -373,6 +374,7 @@ export class DataProduct extends PackageableElement {
   accessPointGroups: AccessPointGroup[] = [];
   supportInfo: SupportInfo | undefined;
   type: DataProductType | undefined;
+  sampleValues: EmbeddedData[] | undefined;
   expertise: Expertise[] | undefined;
 
   override accept_PackageableElementVisitor<T>(
@@ -394,6 +396,7 @@ export class DataProduct extends PackageableElement {
       this.type ?? '',
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
+      hashArray(this.sampleValues ?? []),
       hashArray(this.expertise ?? []),
     ]);
   }

@@ -363,6 +363,27 @@ const AccessPointTable = observer(
                 }`
               : '',
         },
+        {
+          headerName: 'Column Sample Values',
+          flex: 1,
+          wrapText: true,
+          autoHeight: true,
+          valueGetter: (_params) => {
+            if (!_params.data || !accessPointState.relationElement) {
+              return 'No sample values provided';
+            }
+            const columnName = _params.data.name;
+            const columnIndex =
+              accessPointState.relationElement.columns.indexOf(columnName);
+            if (columnIndex === -1) {
+              return 'No sample values provided';
+            }
+            const sampleValues = accessPointState.relationElement.rows
+              .map((row) => row.values[columnIndex])
+              .filter((value) => value !== undefined);
+            return sampleValues.join(', ');
+          },
+        },
       ];
 
     return (
@@ -467,13 +488,15 @@ const AccessPointTable = observer(
         <Box className="data-product__viewer__more-info__container">
           {selectedTab === DataProductTabs.COLUMNS && (
             <>
-              {accessPointState.fetchingRelationTypeState.isInProgress ? (
+              {accessPointState.fetchingRelationTypeState.isInProgress ||
+              accessPointState.fetchingRelationElement.isInProgress ? (
                 <Box className="data-product__viewer__more-info__loading-indicator">
                   <CubesLoadingIndicator isLoading={true}>
                     <CubesLoadingIndicatorIcon />
                   </CubesLoadingIndicator>
                 </Box>
-              ) : accessPointState.fetchingRelationTypeState.hasCompleted ? (
+              ) : accessPointState.fetchingRelationTypeState.hasCompleted &&
+                accessPointState.fetchingRelationElement.hasCompleted ? (
                 <Box
                   className={clsx(
                     'data-product__viewer__more-info__columns-grid ag-theme-balham',

@@ -31,6 +31,7 @@ import {
 } from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_StereotypePtr } from '../domain/V1_StereotypePtr.js';
 import type { V1_TaggedValue } from '../domain/V1_TaggedValue.js';
+import type { V1_EmbeddedData } from '../../data/V1_EmbeddedData.js';
 
 export const V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE = 'dataProduct';
 
@@ -328,6 +329,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   type: V1_DataProductType | undefined;
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
+  sampleValues: V1_EmbeddedData[] | undefined;
   expertise: V1_Expertise[] | undefined;
 
   override get hashCode(): string {
@@ -343,6 +345,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       this.type ?? '',
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
+      hashArray(this.sampleValues ?? []),
       hashArray(this.expertise ?? []),
     ]);
   }
