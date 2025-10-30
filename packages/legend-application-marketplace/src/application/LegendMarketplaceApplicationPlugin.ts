@@ -25,7 +25,7 @@ import type {
 } from '@finos/legend-extension-dsl-data-product';
 import type React from 'react';
 
-export interface AdditionalMarketplacePageConfigs {
+export interface AdditionalMarketplacePageConfig {
   path: string;
   component: React.FC;
   protected: boolean;
@@ -76,5 +76,5 @@ export abstract class LegendMarketplaceApplicationPlugin
    * These pages will be wrapped in all the usual context providers, so they will
    * have access to useLegendMarketplaceBaseStore and other similar hooks.
    */
-  getAdditionalMarketplacePageConfigs?(): AdditionalMarketplacePageConfigs[];
+  getAdditionalMarketplacePageConfigs?(): AdditionalMarketplacePageConfig[];
 }
