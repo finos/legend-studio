@@ -17,13 +17,11 @@
 import type { DataProductSearchResult } from '@finos/legend-server-marketplace';
 
 export const mockSearchResult: DataProductSearchResult = {
-  data_product_name: 'SDLC Release Data Product',
-  data_product_description:
+  dataProductTitle: 'SDLC Release Data Product',
+  dataProductDescription:
     'Comprehensive customer analytics data for business intelligence and reporting',
-  chunk_id: 'test-chunk-id',
-  data_product_link: 'https://test-data-product-link',
-  embedding_type: 'test-embedding-type',
   vendor_name: 'Example Vendor',
+  embedding_type: 'PRODUCT',
   tags1: [],
   tags2: [],
   tag_score: 0,
@@ -34,5 +32,4 @@ export const mockSearchResult: DataProductSearchResult = {
     path: 'test::SDLC_RELEASE_DATAPRODUCT',
   },
   similarity: 0.95,
-  id: '123e4567-e89b-12d3-a456-426614174000',
 };

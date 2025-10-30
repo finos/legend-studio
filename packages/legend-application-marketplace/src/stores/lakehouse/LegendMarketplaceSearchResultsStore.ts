@@ -121,13 +121,9 @@ export class LegendMarketplaceSearchResultsStore {
           case DataProductSort.DEFAULT:
             return b.searchResult.similarity - a.searchResult.similarity;
           case DataProductSort.NAME_ALPHABETICAL:
-            return a.searchResult.data_product_name.localeCompare(
-              b.searchResult.data_product_name,
-            );
+            return a.title.localeCompare(b.title);
           case DataProductSort.NAME_REVERSE_ALPHABETICAL:
-            return b.searchResult.data_product_name.localeCompare(
-              a.searchResult.data_product_name,
-            );
+            return b.title.localeCompare(a.title);
           default:
             return 0;
         }

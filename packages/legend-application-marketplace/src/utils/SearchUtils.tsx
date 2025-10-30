@@ -71,7 +71,7 @@ export const generatePathForDataProductSearchResult = (
   LakehouseDataProductSearchResultDetails
     ? generateLakehouseDataProductPath(
         searchResult.dataProductDetails.dataProductId,
-        searchResult.dataProductDetails.did,
+        searchResult.dataProductDetails.deploymentId,
       )
     : searchResult.dataProductDetails instanceof
         LegacyDataProductSearchResultDetails
@@ -89,15 +89,15 @@ export const convertEntitlementsDataProductDetailsToSearchResult = (
   entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
 ): DataProductSearchResult => {
   const searchResult = new DataProductSearchResult();
-  searchResult.data_product_name =
+  searchResult.dataProductTitle =
     entitlementsDataProductDetails.title ??
     entitlementsDataProductDetails.dataProduct.name;
-  searchResult.data_product_description =
+  searchResult.dataProductDescription =
     entitlementsDataProductDetails.description ?? '';
 
   const details = new LakehouseDataProductSearchResultDetails();
   details.dataProductId = entitlementsDataProductDetails.id;
-  details.did = entitlementsDataProductDetails.deploymentId;
+  details.deploymentId = entitlementsDataProductDetails.deploymentId;
   details.producerEnvironmentName =
     entitlementsDataProductDetails.lakehouseEnvironment
       ?.producerEnvironmentName ?? '';
@@ -131,9 +131,9 @@ export const convertLegacyDataProductToSearchResult = (
   versionId: string,
 ): DataProductSearchResult => {
   const searchResult = new DataProductSearchResult();
-  searchResult.data_product_name =
+  searchResult.dataProductTitle =
     legacyDataProduct.title ?? legacyDataProduct.name;
-  searchResult.data_product_description = legacyDataProduct.description ?? '';
+  searchResult.dataProductDescription = legacyDataProduct.description ?? '';
 
   const details = new LegacyDataProductSearchResultDetails();
   details.groupId = groupId;

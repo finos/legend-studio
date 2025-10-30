@@ -218,7 +218,7 @@ export const MarketplaceLakehouseSearchResults =
             >
               {searchResultsStore.filterSortProducts?.map(
                 (productCardState) => (
-                  <Grid key={productCardState.searchResult.id} size={1}>
+                  <Grid key={productCardState.guid} size={1}>
                     <LakehouseProductCard
                       productCardState={productCardState}
                       onClick={() => {

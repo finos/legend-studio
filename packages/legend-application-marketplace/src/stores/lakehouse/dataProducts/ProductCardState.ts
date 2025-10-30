@@ -22,6 +22,7 @@ import {
   LegacyDataProductSearchResultDetails,
   type DataProductSearchResult,
 } from '@finos/legend-server-marketplace';
+import { extractEntityNameFromPath } from '@finos/legend-storage';
 
 export class ProductCardState {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
@@ -41,15 +42,31 @@ export class ProductCardState {
   }
 
   get title(): string {
-    return this.searchResult.data_product_name;
+    return this.searchResult.dataProductTitle ?? this.dataProductId;
   }
 
   get description(): string {
-    return this.searchResult.data_product_description;
+    return this.searchResult.dataProductDescription ?? '';
+  }
+
+  get dataProductId(): string {
+    return this.searchResult.dataProductDetails instanceof
+      LakehouseDataProductSearchResultDetails
+      ? this.searchResult.dataProductDetails.dataProductId
+      : this.searchResult.dataProductDetails instanceof
+          LegacyDataProductSearchResultDetails
+        ? extractEntityNameFromPath(this.searchResult.dataProductDetails.path)
+        : 'unknown';
   }
 
   get guid(): string {
-    return this.searchResult.data_product_name;
+    return this.searchResult.dataProductDetails instanceof
+      LakehouseDataProductSearchResultDetails
+      ? `${this.searchResult.dataProductDetails.dataProductId}:${this.searchResult.dataProductDetails.deploymentId}`
+      : this.searchResult.dataProductDetails instanceof
+          LegacyDataProductSearchResultDetails
+        ? `${this.searchResult.dataProductDetails.groupId}:${this.searchResult.dataProductDetails.artifactId}:${this.searchResult.dataProductDetails.versionId}:${this.searchResult.dataProductDetails.path}`
+        : (this.searchResult.dataProductTitle ?? '');
   }
 
   get versionId(): string | undefined {

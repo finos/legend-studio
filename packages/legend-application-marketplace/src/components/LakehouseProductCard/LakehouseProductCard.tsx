@@ -72,9 +72,9 @@ const LakehouseDataProductCardInfoPopover = observer(
       dataProductDetails instanceof LakehouseDataProductSearchResultDetails
         ? dataProductDetails.dataProductId
         : undefined;
-    const did =
+    const deploymentId =
       dataProductDetails instanceof LakehouseDataProductSearchResultDetails
-        ? dataProductDetails.did
+        ? dataProductDetails.deploymentId
         : undefined;
     const producerEnvironmentName =
       dataProductDetails instanceof LakehouseDataProductSearchResultDetails
@@ -171,7 +171,7 @@ const LakehouseDataProductCardInfoPopover = observer(
             </Box>
           </Box>
           {dataProductId !== undefined ||
-          did !== undefined ||
+          deploymentId !== undefined ||
           producerEnvironmentName !== undefined ||
           producerEnvironmentType !== undefined ? (
             <Box className="marketplace-lakehouse-data-product-card__popover__section">
@@ -191,7 +191,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                       <TableCell>
                         <b>Deployment ID</b>
                       </TableCell>
-                      <TableCell>{did ?? 'Unknown'}</TableCell>
+                      <TableCell>{deploymentId ?? 'Unknown'}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>

@@ -45,14 +45,14 @@ export const logClickingDataProductCard = (
   const deploymentId =
     searchResult.dataProductDetails instanceof
     LakehouseDataProductSearchResultDetails
-      ? searchResult.dataProductDetails.did
+      ? searchResult.dataProductDetails.deploymentId
       : undefined;
   LegendMarketplaceTelemetryHelper.logEvent_ClickingDataProductCard(
     applicationStore.telemetryService,
     {
       origin: origin,
-      dataProductId: searchResult.data_product_name,
-      name: searchResult.data_product_name,
+      dataProductId: productCardState.dataProductId,
+      name: productCardState.title,
       deploymentId,
     },
     source,
