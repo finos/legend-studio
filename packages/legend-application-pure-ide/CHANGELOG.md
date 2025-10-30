@@ -1,5 +1,7 @@
 # @finos/legend-application-pure-ide
 
+## 8.0.402
+
 ## 8.0.401
 
 ### Patch Changes
