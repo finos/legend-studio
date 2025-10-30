@@ -111,7 +111,7 @@ export const TEST__setUpMarketplace = async (
 }> => {
   createSpy(
     MOCK__store.marketplaceServerClient,
-    'semanticSearch',
+    'dataProductSearch',
   ).mockResolvedValue(searchResults);
 
   const renderResult = render(

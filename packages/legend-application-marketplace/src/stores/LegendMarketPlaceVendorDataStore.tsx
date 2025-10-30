@@ -15,10 +15,8 @@
  */
 
 import {
-  type DataProduct,
   TerminalResult,
   type Filter,
-  type LightDataProduct,
   type MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
 import { action, flow, makeObservable, observable } from 'mobx';
@@ -48,15 +46,8 @@ export class LegendMarketPlaceVendorDataStore {
 
   //Vendor Data Page
   terminalProviders: TerminalResult[] = [];
-  terminalProvidersAsDataProducts: LightDataProduct[] = [];
   addOnProviders: TerminalResult[] = [];
   providers: TerminalResult[] = [];
-
-  // Data Products Page
-  dataProducts: DataProduct[] = [];
-
-  //Home Page
-  homeDataProducts: LightDataProduct[] = [];
 
   providersFilters: Filter[] = [];
 
@@ -72,11 +63,9 @@ export class LegendMarketPlaceVendorDataStore {
       populateProviders: action,
       providerDisplayState: observable,
       setProviderDisplayState: action,
-      terminalProvidersAsDataProducts: observable,
       providers: observable,
       setProviders: action,
       init: flow,
-      homeDataProducts: observable,
       providersFilters: observable,
       setProvidersFilters: action,
     });
@@ -97,14 +86,6 @@ export class LegendMarketPlaceVendorDataStore {
 
     try {
       yield this.populateProviders();
-      this.terminalProvidersAsDataProducts = this.terminalProviders.map(
-        (provider) =>
-          ({
-            description: provider.description,
-            provider: provider.providerName,
-            type: 'vendor',
-          }) as LightDataProduct,
-      );
     } catch (error) {
       this.applicationStore.notificationService.notifyError(
         `Failed to initialize vendors: ${error}`,

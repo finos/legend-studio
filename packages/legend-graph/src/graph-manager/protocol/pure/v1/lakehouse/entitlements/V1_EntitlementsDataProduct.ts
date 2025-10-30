@@ -71,6 +71,7 @@ export class V1_EntitlementsDataProductDetails {
   origin?: V1_EntitlementsDataProductOrigin | null;
   lakehouseEnvironment?: V1_EntitlementsLakehouseEnvironment | null;
   dataProduct!: V1_EntitlementsDataProduct;
+  fullPath!: string;
 }
 
 export class V1_EntitlementsDataProductLite {

@@ -19,17 +19,10 @@ import {
   type LegendMarketplaceApplicationConfigurationData,
   LegendMarketplaceApplicationConfig,
 } from '../LegendMarketplaceApplicationConfig.js';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import {
-  type V1_EntitlementsDataProductDetailsResponse,
-  V1_PureGraphManager,
-} from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { mockDataProductsResponse } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
 import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
-import type { BaseProductCardState } from '../../stores/lakehouse/dataProducts/BaseProductCardState.js';
-import { DataProductCardState } from '../../stores/lakehouse/dataProducts/DataProductCardState.js';
+import { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
+import { mockSearchResult } from '../../components/__test-utils__/TEST_DATA__SearchResultData.js';
 
 const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   appName: 'marketplace',
@@ -118,34 +111,11 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
 
   override async getExtraHomePageDataProducts(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
-  ): Promise<BaseProductCardState[] | undefined> {
-    const mockDataProductDetail = guaranteeNonNullable(
-      guaranteeNonNullable(
-        (
-          mockDataProductsResponse as unknown as V1_EntitlementsDataProductDetailsResponse
-        ).dataProducts,
-      )[0],
-    );
-    const graphManager = new V1_PureGraphManager(
-      marketplaceBaseStore.applicationStore.pluginManager,
-      marketplaceBaseStore.applicationStore.logService,
-      marketplaceBaseStore.remoteEngine,
-    );
-    await graphManager.initialize(
-      {
-        env: marketplaceBaseStore.applicationStore.config.env,
-        tabSize: DEFAULT_TAB_SIZE,
-        clientConfig: {
-          baseUrl: marketplaceBaseStore.applicationStore.config.engineServerUrl,
-        },
-      },
-      { engine: marketplaceBaseStore.remoteEngine },
-    );
+  ): Promise<ProductCardState[] | undefined> {
     const testImageMap = new Map<string, string>();
-    const dataProductState = new DataProductCardState(
+    const dataProductState = new ProductCardState(
       marketplaceBaseStore,
-      graphManager,
-      mockDataProductDetail,
+      mockSearchResult,
       testImageMap,
     );
     return [dataProductState];

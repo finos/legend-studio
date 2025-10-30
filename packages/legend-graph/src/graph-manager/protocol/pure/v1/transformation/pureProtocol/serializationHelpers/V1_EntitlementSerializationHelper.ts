@@ -579,6 +579,7 @@ export const V1_EntitlementsDataProductDetailsModelSchema = createModelSchema(
       V1_EntitlementsLakehouseEnvironmentModelSchema,
     ),
     dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
+    fullPath: primitive(),
   },
 );
 

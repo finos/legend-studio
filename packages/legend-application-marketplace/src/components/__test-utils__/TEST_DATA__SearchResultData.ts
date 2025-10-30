@@ -14,10 +14,22 @@
  * limitations under the License.
  */
 
-export * from './models/DataProductSearchResult.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
-export * from './models/Cart.js';
-export * from './models/Order.js';
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
-export { TerminalAccessServerClient } from './TerminalAccessServerClient.js';
+import type { DataProductSearchResult } from '@finos/legend-server-marketplace';
+
+export const mockSearchResult: DataProductSearchResult = {
+  dataProductTitle: 'SDLC Release Data Product',
+  dataProductDescription:
+    'Comprehensive customer analytics data for business intelligence and reporting',
+  vendor_name: 'Example Vendor',
+  embedding_type: 'PRODUCT',
+  tags1: [],
+  tags2: [],
+  tag_score: 0,
+  dataProductDetails: {
+    group: 'com.example.analytics',
+    artifact: 'customer-analytics',
+    version: '1.2.0',
+    path: 'test::SDLC_RELEASE_DATAPRODUCT',
+  },
+  similarity: 0.95,
+};
