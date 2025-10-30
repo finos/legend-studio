@@ -41,6 +41,7 @@ export enum V1_DataProductTypeValue {
 
 export abstract class V1_AccessPoint implements Hashable {
   id!: string;
+  title: string | undefined;
   description: string | undefined;
 
   get hashCode(): string {
@@ -98,6 +99,7 @@ export class V1_FunctionAccessPoint extends V1_AccessPoint implements Hashable {
 
 export class V1_AccessPointGroup implements Hashable {
   id!: string;
+  title: string | undefined;
   description: string | undefined;
   stereotypes: V1_StereotypePtr[] = [];
   accessPoints: V1_AccessPoint[] = [];
@@ -302,6 +304,19 @@ export class V1_ExternalDataProductType extends V1_DataProductType {
   }
 }
 
+export class V1_Expertise implements Hashable {
+  description: string | undefined;
+  expertIds: string[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_EXPERTISE,
+      this.description ?? '',
+      hashArray(this.expertIds ?? []),
+    ]);
+  }
+}
+
 export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   title: string | undefined;
   description: string | undefined;
@@ -313,6 +328,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   type: V1_DataProductType | undefined;
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
+  expertise: V1_Expertise[] | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -327,6 +343,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       this.type ?? '',
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
+      hashArray(this.expertise ?? []),
     ]);
   }
 

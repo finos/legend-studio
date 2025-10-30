@@ -59,7 +59,10 @@ import { MarketplaceLakehouseSearchResults } from '../pages/Lakehouse/searchResu
 import { LegacyDataProduct } from '../pages/Lakehouse/dataProduct/LegacyDataProduct.js';
 import { LegendMarketplaceAgents } from '../pages/Agents/LegendMarketplaceAgents.js';
 import { LegendMarketplaceInventory } from '../pages/Inventory/LegendMarketplaceInventory.js';
-import { LegendMarketplaceVendorData } from '../pages/TerminalsAddons/LegendMarketplaceTerminalsAddons.js';
+import {
+  LegendMarketplaceTerminalsAddOnsComingSoon,
+  LegendMarketplaceVendorData,
+} from '../pages/TerminalsAddons/LegendMarketplaceTerminalsAddons.js';
 import { CartToast } from '../components/Toast/CartToast.js';
 import { flowResult } from 'mobx';
 
@@ -110,6 +113,8 @@ const NotFoundPage = observer(() => {
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
   const marketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
+  const showDevFeatures =
+    marketplaceBaseStore.applicationStore.config.options.showDevFeatures;
 
   useEffect(() => {
     if (marketplaceBaseStore.initState.isInInitialState) {
@@ -245,9 +250,14 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_ADD_ONS}
-              element={<LegendMarketplaceVendorData />}
+              element={
+                showDevFeatures ? (
+                  <LegendMarketplaceVendorData />
+                ) : (
+                  <LegendMarketplaceTerminalsAddOnsComingSoon />
+                )
+              }
             />
-
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT}
               element={<ProtectedLakehouseDataProduct />}

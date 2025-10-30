@@ -17,30 +17,30 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 
 export class V1_Terminal implements Hashable {
-  id: string | undefined;
-  providerName: string | undefined;
-  productName: string | undefined;
-  category: string | undefined;
+  id!: string;
+  providerName!: string;
+  productName!: string;
+  category!: string;
   vendorProfileId: string | undefined;
   modelName: string | undefined;
   description: string | undefined;
   applicationName: string | undefined;
   tieredPrice: string | undefined;
-  price: string | undefined;
+  price!: string;
   totalFirmPrice: string | undefined;
 
   get hashCode(): string {
     return hashArray([
-      this.id ?? '',
-      this.providerName ?? '',
-      this.productName ?? '',
-      this.category ?? '',
+      this.id,
+      this.providerName,
+      this.productName,
+      this.category,
       this.vendorProfileId ?? '',
       this.modelName ?? '',
       this.description ?? '',
       this.applicationName ?? '',
       this.tieredPrice ?? '',
-      this.price ?? '',
+      this.price,
       this.totalFirmPrice ?? '',
     ]);
   }

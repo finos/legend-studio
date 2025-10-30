@@ -19,9 +19,9 @@ import type { LegendMarketplacePluginManager } from '../application/LegendMarket
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 import type { BaseProductCardState } from '../stores/lakehouse/dataProducts/BaseProductCardState.js';
 import type {
-  AccessPointGroupAccess,
   ContractConsumerTypeRendererConfig,
   DataProductDataAccess_LegendApplicationPlugin_Extension,
+  AccessPointGroupAccess,
 } from '@finos/legend-extension-dsl-data-product';
 
 export abstract class LegendMarketplaceApplicationPlugin

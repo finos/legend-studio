@@ -56,6 +56,9 @@ export const TerminalProduct = withLegendMarketplaceProductViewerStore(
         {productViewerStore.terminalProductViewer && (
           <ProductViewer
             productViewerState={productViewerStore.terminalProductViewer}
+            productDataAccessState={
+              productViewerStore.terminalProductDataAccess
+            }
           />
         )}
       </LegendMarketplacePage>

@@ -27,14 +27,15 @@ import {
   V1_AppDirLevel,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
+import type { StoredSummaryEntity } from '@finos/legend-server-depot';
 
-export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResponse> =
+export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDetailsResponse> =
   {
     dataProducts: [
       {
-        id: 'SDLC_RELEASE_DATAPRODUCT',
+        id: 'SDLC_PRODUCTION_DATAPRODUCT',
         deploymentId: 12345,
-        title: 'SDLC Release Data Product',
+        title: 'SDLC Production Data Product',
         description:
           'Comprehensive customer analytics data for business intelligence and reporting',
         origin: {
@@ -48,7 +49,7 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
         },
         dataProduct: {
-          name: 'SDLC_RELEASE_DATAPRODUCT',
+          name: 'SDLC_PRODUCTION_DATAPRODUCT',
           accessPoints: [
             {
               name: 'customer_demographics',
@@ -76,7 +77,49 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
         },
       },
       {
-        id: 'SDLC_SNAPSHOT_DATAPRODUCT',
+        id: 'SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE',
+        deploymentId: 12345,
+        origin: {
+          type: 'SdlcDeployment',
+          group: 'com.example.analytics',
+          artifact: 'customer-analytics-notitle',
+          version: '1.3.0',
+        },
+        lakehouseEnvironment: {
+          producerEnvironmentName: 'production-analytics',
+          type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+        },
+        dataProduct: {
+          name: 'SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE',
+          accessPoints: [
+            {
+              name: 'customer_demographics',
+              groups: ['marketing', 'analytics'],
+            },
+            {
+              name: 'customer_transactions',
+              groups: ['finance', 'analytics'],
+            },
+          ],
+          accessPointGroupStereotypeMappings: [
+            {
+              accessPointGroup: 'marketing',
+              stereotypes: [],
+            },
+            {
+              accessPointGroup: 'analytics',
+              stereotypes: [],
+            },
+          ],
+          owner: {
+            appDirId: 12345,
+            level: V1_AppDirLevel.DEPLOYMENT,
+          } satisfies V1_AppDirNode,
+        },
+      },
+      {
+        id: 'SDLC_PROD_PARALLEL_DATAPRODUCT',
+        title: 'SDLC Prod-Parallel Data Product',
         deploymentId: 67890,
         origin: {
           type: 'SdlcDeployment',
@@ -89,7 +132,7 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
         },
         dataProduct: {
-          name: 'SDLC_SNAPSHOT_DATAPRODUCT',
+          name: 'SDLC_PROD_PARALLEL_DATAPRODUCT',
           accessPoints: [
             {
               name: 'regulatory_reports',
@@ -116,14 +159,51 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
           } satisfies V1_AppDirNode,
         },
       },
+      {
+        id: 'SDLC_DEVELOPMENT_DATAPRODUCT',
+        title: 'SDLC Development Data Product',
+        deploymentId: 67890,
+        origin: {
+          type: 'SdlcDeployment',
+          group: 'com.example.finance',
+          artifact: 'financial-reporting',
+          version: 'master-SNAPSHOT',
+        },
+        lakehouseEnvironment: {
+          producerEnvironmentName: 'development-analytics',
+          type: V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
+        },
+        dataProduct: {
+          name: 'ADHOC_DEVELOPMENT_DATAPRODUCT',
+          accessPoints: [
+            {
+              name: 'TEST_VIEW',
+              groups: ['GROUP1'],
+            },
+          ],
+          accessPointGroupStereotypeMappings: [],
+          owner: {
+            appDirId: 22222,
+            level: V1_AppDirLevel.DEPLOYMENT,
+          },
+        },
+      },
     ],
   };
 
-export const mockReleaseSDLCDataProduct: PlainObject<Entity> = {
+export const mockProductionSDLCDataProductEntity: PlainObject<Entity> = {
   _type: 'dataProduct',
-  name: 'Sdlc_Release_DataProduct',
+  name: 'Sdlc_Production_DataProduct',
   package: 'test::dataproduct',
-  title: 'SDLC Release Data Product',
+  accessPointGroups: [],
+  icon: undefined,
+};
+
+export const mockProductionSDLCDataProductNoTitleEntity: PlainObject<Entity> = {
+  _type: 'dataProduct',
+  name: 'Sdlc_Production_DataProduct_NoTitle',
+  package: 'test::dataproduct',
+  title: 'SDLC Production Data Product',
   description:
     'Comprehensive customer analytics data for business intelligence and reporting',
   accessPointGroups: [
@@ -157,9 +237,17 @@ export const mockReleaseSDLCDataProduct: PlainObject<Entity> = {
   icon: undefined,
 };
 
-export const mockSnapshotSDLCDataProduct: PlainObject<Entity> = {
+export const mockLegacyDataProductSummaryEntity: StoredSummaryEntity = {
+  artifactId: 'test-legacy-data-product',
+  classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+  groupId: 'com.example.legacy',
+  path: 'test::dataproduct::LegacyDataProduct',
+  versionId: '1.0.0',
+};
+
+export const mockProdParallelSDLCDataProduct: PlainObject<Entity> = {
   _type: 'dataProduct',
-  name: 'SDLC_SNAPSHOT_DATAPRODUCT',
+  name: 'SDLC_PROD_PARALLEL_DATAPRODUCT',
   package: 'test::dataproduct',
   accessPointGroups: [],
   icon: undefined,

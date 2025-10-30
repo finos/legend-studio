@@ -479,6 +479,8 @@ import {
   FaWindowMaximize,
   FaWrench,
   FaPython,
+  FaStackOverflow,
+  FaGitlab,
 } from 'react-icons/fa';
 
 export const ArchiveIcon = FaArchive;
@@ -622,6 +624,8 @@ export const WindowMaximizeIcon = FaRegWindowMaximize; // to be reviewed/combine
 export const WizardHatIcon = FaHatWizard;
 export const WrenchIcon = FaWrench;
 export const PythonIcon = FaPython;
+export const StackOverflowIcon = FaStackOverflow;
+export const GitlabIcon = FaGitlab;
 
 //======================================================= fa6 ======================================================
 

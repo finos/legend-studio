@@ -135,11 +135,15 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
     <Dialog
       open={setupStore.showCreateWorkspaceModal}
       onClose={onClose}
-      TransitionProps={{
-        onEnter: handleEnter,
+      slotProps={{
+        transition: {
+          onEnter: handleEnter,
+        },
+        paper: {
+          classes: { root: 'search-modal__inner-container' },
+        },
       }}
       classes={{ container: 'search-modal__container' }}
-      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <form
         onSubmit={(event) => {

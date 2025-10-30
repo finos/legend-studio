@@ -57,12 +57,14 @@ const NewReviewModal = observer(() => {
     <Dialog
       open={editorStore.showSubmitReviewModal}
       onClose={onClose}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
-      PaperProps={{
-        classes: {
-          root: 'search-modal__inner-container',
+      slotProps={{
+        transition: {
+          onEnter: handleEnter,
+        },
+        paper: {
+          classes: {
+            root: 'search-modal__inner-container',
+          },
         },
       }}
     >

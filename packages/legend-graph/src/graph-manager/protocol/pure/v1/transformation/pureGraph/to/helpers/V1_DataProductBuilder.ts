@@ -29,6 +29,8 @@ import {
   DataProductLibraryIcon,
   DataProductLink,
   DataProductRuntimeInfo,
+  Expertise,
+  FunctionAccessPoint,
   LakehouseAccessPoint,
   ModelAccessPointGroup,
   UnknownAccessPoint,
@@ -41,6 +43,8 @@ import {
   type V1_DataProductLink,
   V1_DataProductEmbeddedImageIcon,
   V1_DataProductLibraryIcon,
+  type V1_Expertise,
+  V1_FunctionAccessPoint,
   V1_LakehouseAccessPoint,
   V1_ModelAccessPointGroup,
   V1_UnknownAccessPoint,
@@ -80,11 +84,26 @@ export const V1_buildAccessPoint = (
     lakeAccessPoint.reproducible = ap.reproducible;
     lakeAccessPoint.classification = ap.classification;
     lakeAccessPoint.description = ap.description;
+    lakeAccessPoint.title = ap.title;
     return lakeAccessPoint;
+  } else if (ap instanceof V1_FunctionAccessPoint) {
+    const functionAccessPoint = new FunctionAccessPoint(
+      ap.id,
+      V1_buildRawLambdaWithResolvedPaths(
+        ap.query.parameters,
+        ap.query.body,
+        context,
+      ),
+    );
+    functionAccessPoint.description = ap.description;
+    functionAccessPoint.title = ap.title;
+    return functionAccessPoint;
   } else if (ap instanceof V1_UnknownAccessPoint) {
-    const unkown = new UnknownAccessPoint(ap.id);
-    unkown.content = ap.content;
-    return unkown;
+    const unknown = new UnknownAccessPoint(ap.id);
+    unknown.description = ap.description;
+    unknown.title = ap.title;
+    unknown.content = ap.content;
+    return unknown;
   }
   throw new UnsupportedOperationError(
     `Unsupported data product access type ${ap}`,
@@ -106,6 +125,15 @@ export const V1_buildDataProductIcon = (
   );
 };
 
+export const V1_buildDataProductExpertise = (
+  v1Expertise: V1_Expertise,
+): Expertise => {
+  const expertise = new Expertise();
+  expertise.description = v1Expertise.description;
+  expertise.expertIds = v1Expertise.expertIds;
+  return expertise;
+};
+
 export const V1_buildAccessPointGroup = (
   elementGroup: V1_AccessPointGroup,
   context: V1_GraphBuilderContext,
@@ -113,6 +141,7 @@ export const V1_buildAccessPointGroup = (
   if (elementGroup instanceof V1_ModelAccessPointGroup) {
     const group = new ModelAccessPointGroup();
     group.id = elementGroup.id;
+    group.title = elementGroup.title;
     group.description = elementGroup.description;
     group.accessPoints = elementGroup.accessPoints.map((ep) =>
       V1_buildAccessPoint(ep, context),
@@ -165,6 +194,7 @@ export const V1_buildAccessPointGroup = (
   } else {
     const group = new AccessPointGroup();
     group.id = elementGroup.id;
+    group.title = elementGroup.title;
     group.description = elementGroup.description;
     group.accessPoints = elementGroup.accessPoints.map((ep) =>
       V1_buildAccessPoint(ep, context),

@@ -703,12 +703,17 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   lambdaRelationType = (
     input: PlainObject<V1_LambdaReturnTypeInput>,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<PlainObject<V1_RelationType>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_LAMBDA_RETURN_TYPE),
       `${this._pure()}/compilation/lambdaRelationType`,
       input,
-      {},
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       undefined,
       undefined,
       { enableCompression: true },

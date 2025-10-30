@@ -34,6 +34,10 @@ import {
   type DataProductDiagram,
   type DataProductElementScope,
   observe_APG,
+  type DataProductType,
+  type ExternalDataProductType,
+  observe_Expertise,
+  type Expertise,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, swapEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -62,6 +66,18 @@ export const accessPoint_setReproducible = action(
   },
 );
 
+export const accessPoint_setDescription = action(
+  (accessPoint: AccessPoint, description: string | undefined) => {
+    accessPoint.description = description;
+  },
+);
+
+export const accessPoint_setTitle = action(
+  (accessPoint: AccessPoint, title: string | undefined) => {
+    accessPoint.title = title;
+  },
+);
+
 export const accessPointGroup_setDescription = action(
   (group: AccessPointGroup, description: string) => {
     group.description = description;
@@ -71,6 +87,12 @@ export const accessPointGroup_setDescription = action(
 export const accessPointGroup_setName = action(
   (group: AccessPointGroup, name: string) => {
     group.id = name;
+  },
+);
+
+export const accessPointGroup_setTitle = action(
+  (group: AccessPointGroup, title: string | undefined) => {
+    group.title = title;
   },
 );
 
@@ -178,6 +200,45 @@ export const dataProduct_deleteAccessPointGroup = action(
   },
 );
 
+export const dataProduct_addExpertise = action(
+  (product: DataProduct, expertise: Expertise) => {
+    const observedExpertise = observe_Expertise(expertise);
+    if (!product.expertise) {
+      product.expertise = [observedExpertise];
+    } else {
+      addUniqueEntry(product.expertise, observedExpertise);
+    }
+  },
+);
+
+export const dataProduct_deleteExpertise = action(
+  (product: DataProduct, expertise: Expertise) => {
+    if (product.expertise) {
+      deleteEntry(product.expertise, expertise);
+    }
+  },
+);
+
+export const expertise_setDescription = action(
+  (expertise: Expertise, desc: string) => {
+    expertise.description = desc;
+  },
+);
+
+export const expertise_addId = action((expertise: Expertise, id: string) => {
+  if (expertise.expertIds) {
+    addUniqueEntry(expertise.expertIds, id);
+  } else {
+    expertise.expertIds = [id];
+  }
+});
+
+export const expertise_deleteId = action((expertise: Expertise, id: string) => {
+  if (expertise.expertIds) {
+    deleteEntry(expertise.expertIds, id);
+  }
+});
+
 export const dataProduct_swapAccessPointGroups = action(
   (
     product: DataProduct,
@@ -197,6 +258,24 @@ export const dataProduct_setTitle = action(
 export const dataProduct_setDescription = action(
   (product: DataProduct, description: string) => {
     product.description = description;
+  },
+);
+
+export const dataProduct_setType = action(
+  (product: DataProduct, type: DataProductType) => {
+    product.type = type;
+  },
+);
+
+export const externalType_setLinkURL = action(
+  (external: ExternalDataProductType, url: string) => {
+    external.link.url = url;
+  },
+);
+
+export const externalType_setLinkLabel = action(
+  (external: ExternalDataProductType, label: string | undefined) => {
+    external.link.label = label;
   },
 );
 

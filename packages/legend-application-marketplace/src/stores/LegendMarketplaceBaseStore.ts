@@ -33,7 +33,10 @@ import {
   DepotServerClient,
   StoreProjectData,
 } from '@finos/legend-server-depot';
-import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
+import {
+  MarketplaceServerClient,
+  TerminalAccessServerClient,
+} from '@finos/legend-server-marketplace';
 import {
   type V1_EngineServerClient,
   getCurrentUserIDFromEngineServer,
@@ -55,6 +58,12 @@ import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
 import { V1_deserializeDataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import { LegacyDataProductCardState } from './lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { DataProductCardState } from './lakehouse/dataProducts/DataProductCardState.js';
+import {
+  LegendMarketplaceEnv,
+  ProdLegendMarketplaceEnvState,
+  ProdParallelLegendMarketplaceEnvState,
+  type LegendMarketplaceEnvState,
+} from './LegendMarketplaceEnvState.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -63,6 +72,8 @@ export type LegendMarketplaceApplicationStore = ApplicationStore<
 
 export class LegendMarketplaceBaseStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
+  readonly envState: LegendMarketplaceEnvState;
+  readonly adjacentEnvState: LegendMarketplaceEnvState | undefined;
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
@@ -73,8 +84,10 @@ export class LegendMarketplaceBaseStore {
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
   readonly cartStore: CartStore;
+  readonly terminalAccessServerClient: TerminalAccessServerClient;
 
   readonly initState = ActionState.create();
+
   showDemoModal = false;
 
   constructor(applicationStore: LegendMarketplaceApplicationStore) {
@@ -88,6 +101,11 @@ export class LegendMarketplaceBaseStore {
     this.pluginManager = applicationStore.pluginManager;
 
     // marketplace
+    this.envState =
+      applicationStore.config.dataProductEnv === LegendMarketplaceEnv.PRODUCTION
+        ? new ProdLegendMarketplaceEnvState()
+        : new ProdParallelLegendMarketplaceEnvState();
+    this.adjacentEnvState = this.buildAdjacentEnvState();
     this.marketplaceServerClient = new MarketplaceServerClient({
       serverUrl: this.applicationStore.config.marketplaceServerUrl,
       subscriptionUrl: this.applicationStore.config.marketplaceSubscriptionUrl,
@@ -109,6 +127,14 @@ export class LegendMarketplaceBaseStore {
       baseUrl: this.applicationStore.config.lakehouseServerUrl,
     });
     this.lakehouseContractServerClient.setTracerService(
+      this.applicationStore.tracerService,
+    );
+
+    //terminal
+    this.terminalAccessServerClient = new TerminalAccessServerClient({
+      baseUrl: this.applicationStore.config.terminalServerUrl,
+    });
+    this.terminalAccessServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
 
@@ -158,6 +184,16 @@ export class LegendMarketplaceBaseStore {
 
     // Initialize cart store
     this.cartStore = new CartStore(this);
+  }
+
+  buildAdjacentEnvState(): LegendMarketplaceEnvState | undefined {
+    const adjacentEnv = this.envState.adjacentEnv;
+    if (adjacentEnv) {
+      return adjacentEnv === LegendMarketplaceEnv.PRODUCTION
+        ? new ProdLegendMarketplaceEnvState()
+        : new ProdParallelLegendMarketplaceEnvState();
+    }
+    return undefined;
   }
 
   async initHighlightedDataProducts(
@@ -319,7 +355,9 @@ export class LegendMarketplaceBaseStore {
 
     // Initialize cart store to load existing items
     try {
-      yield* this.cartStore.initialize();
+      if (this.applicationStore.config.options.showDevFeatures) {
+        yield* this.cartStore.initialize();
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.warn(

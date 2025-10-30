@@ -26,6 +26,7 @@ import {
   Typography,
   List,
   ListItem,
+  CircularProgress,
 } from '@mui/material';
 import type { Filter, TerminalResult } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceTerminalCard } from '../../components/ProviderCard/LegendMarketplaceTerminalCard.js';
@@ -40,7 +41,14 @@ import {
   withLegendMarketplaceVendorDataStore,
 } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 import { useParams } from '@finos/legend-application/browser';
-import { InfoCircleIcon } from '@finos/legend-art';
+import {
+  AnalyticsIcon,
+  CompassIcon,
+  DatabaseIcon,
+  InfoCircleIcon,
+  SparkleStarsIcon,
+} from '@finos/legend-art';
+import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -143,70 +151,82 @@ export const VendorDataMainContent = observer(
 
     return (
       <div className="legend-marketplace-vendordata-main">
-        <div className="legend-marketplace-vendordata-main-sidebar">
-          <div className="legend-marketplace-vendordata-main-sidebar__title">
-            Filters
+        {marketPlaceVendorDataState.fetchingProvidersState.isInProgress ? (
+          <div className="legend-marketplace-vendordata-main__loading">
+            <CircularProgress />
           </div>
-          <hr></hr>
-          <div className="legend-marketplace-vendordata-main-sidebar__subtitle">
-            Providers
-          </div>
-          <div className="legend-marketplace-vendordata-main-content__sidebar__checkbox-filter-group">
-            <FormGroup sx={{ gap: '1rem' }}>
-              {marketPlaceVendorDataState.terminalProviders.map((vendor) => (
-                <FormControlLabel
-                  key={vendor.id}
-                  control={<Checkbox color={'primary'} />}
-                  label={
-                    <Typography sx={{ fontSize: '14px' }}>
-                      {vendor.providerName}
-                    </Typography>
-                  }
+        ) : (
+          <>
+            <div className="legend-marketplace-vendordata-main-sidebar">
+              <div className="legend-marketplace-vendordata-main-sidebar__title">
+                Filters
+              </div>
+              <hr></hr>
+              <div className="legend-marketplace-vendordata-main-sidebar__subtitle">
+                Providers
+              </div>
+              <div className="legend-marketplace-vendordata-main-content__sidebar__checkbox-filter-group">
+                <FormGroup sx={{ gap: '1rem' }}>
+                  {marketPlaceVendorDataState.terminalProviders.map(
+                    (vendor) => (
+                      <FormControlLabel
+                        key={vendor.id}
+                        control={<Checkbox color={'primary'} />}
+                        label={
+                          <Typography sx={{ fontSize: '14px' }}>
+                            {vendor.providerName}
+                          </Typography>
+                        }
+                      />
+                    ),
+                  )}
+                </FormGroup>
+              </div>
+            </div>
+            <div className="legend-marketplace-vendordata-main-search-results">
+              {marketPlaceVendorDataState.providerDisplayState ===
+                VendorDataProviderType.ALL && (
+                <>
+                  <SearchResultsRenderer
+                    vendorDataState={marketPlaceVendorDataState}
+                    terminalResults={
+                      marketPlaceVendorDataState.terminalProviders
+                    }
+                    sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
+                    seeAll={true}
+                  />
+                  <hr />
+                  <SearchResultsRenderer
+                    vendorDataState={marketPlaceVendorDataState}
+                    terminalResults={marketPlaceVendorDataState.addOnProviders}
+                    sectionTitle={VendorDataProviderType.ADD_ONS}
+                    seeAll={true}
+                    tooltip={addOnsInfoMessage}
+                  />
+                </>
+              )}
+              {marketPlaceVendorDataState.providerDisplayState ===
+                VendorDataProviderType.TERMINAL_LICENSE && (
+                <SearchResultsRenderer
+                  vendorDataState={marketPlaceVendorDataState}
+                  terminalResults={marketPlaceVendorDataState.providers}
+                  sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
+                  seeAll={false}
                 />
-              ))}
-            </FormGroup>
-          </div>
-        </div>
-        <div className="legend-marketplace-vendordata-main-search-results">
-          {marketPlaceVendorDataState.providerDisplayState ===
-            VendorDataProviderType.ALL && (
-            <>
-              <SearchResultsRenderer
-                vendorDataState={marketPlaceVendorDataState}
-                terminalResults={marketPlaceVendorDataState.terminalProviders}
-                sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
-                seeAll={true}
-              />
-              <hr />
-              <SearchResultsRenderer
-                vendorDataState={marketPlaceVendorDataState}
-                terminalResults={marketPlaceVendorDataState.addOnProviders}
-                sectionTitle={VendorDataProviderType.ADD_ONS}
-                seeAll={true}
-                tooltip={addOnsInfoMessage}
-              />
-            </>
-          )}
-          {marketPlaceVendorDataState.providerDisplayState ===
-            VendorDataProviderType.TERMINAL_LICENSE && (
-            <SearchResultsRenderer
-              vendorDataState={marketPlaceVendorDataState}
-              terminalResults={marketPlaceVendorDataState.providers}
-              sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
-              seeAll={false}
-            />
-          )}
-          {marketPlaceVendorDataState.providerDisplayState ===
-            VendorDataProviderType.ADD_ONS && (
-            <SearchResultsRenderer
-              vendorDataState={marketPlaceVendorDataState}
-              terminalResults={marketPlaceVendorDataState.providers}
-              sectionTitle={VendorDataProviderType.ADD_ONS}
-              seeAll={false}
-              tooltip={addOnsInfoMessage}
-            />
-          )}
-        </div>
+              )}
+              {marketPlaceVendorDataState.providerDisplayState ===
+                VendorDataProviderType.ADD_ONS && (
+                <SearchResultsRenderer
+                  vendorDataState={marketPlaceVendorDataState}
+                  terminalResults={marketPlaceVendorDataState.providers}
+                  sectionTitle={VendorDataProviderType.ADD_ONS}
+                  seeAll={false}
+                  tooltip={addOnsInfoMessage}
+                />
+              )}
+            </div>
+          </>
+        )}
       </div>
     );
   },
@@ -277,3 +297,31 @@ export const LegendMarketplaceVendorDetails =
       );
     }),
   );
+
+export const LegendMarketplaceTerminalsAddOnsComingSoon = observer(() => {
+  const featuresPreviewItems = [
+    {
+      icon: <CompassIcon />,
+      title: 'Vendor Data',
+    },
+    {
+      icon: <AnalyticsIcon />,
+      title: 'Terminals',
+    },
+    {
+      icon: <SparkleStarsIcon />,
+      title: 'Add Ons',
+    },
+  ];
+
+  return (
+    <LegendMarketplacePage className="vendor-data-coming-soon">
+      <ComingSoonDisplay
+        loadingIcon={<DatabaseIcon />}
+        title="Terminals and Add Ons"
+        description="Discover quality vendor data available for use"
+        featuresPreviewItems={featuresPreviewItems}
+      />
+    </LegendMarketplacePage>
+  );
+});

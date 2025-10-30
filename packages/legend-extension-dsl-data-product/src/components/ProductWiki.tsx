@@ -15,15 +15,15 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { MarkdownTextViewer } from '@finos/legend-art';
-import type {
-  SupportedProducts,
-  SupportedLayoutStates,
+import {
+  type SupportedProducts,
+  type SupportedLayoutStates,
+  isTerminalProductViewerState,
+  isDataProductViewerState,
 } from './ProductViewer.js';
-import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
 import type { BaseViewerState } from '../stores/BaseViewerState.js';
-import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerState.js';
 import {
   DATA_PRODUCT_VIEWER_SECTION,
   TERMINAL_PRODUCT_VIEWER_SECTION,
@@ -31,48 +31,17 @@ import {
 } from '../stores/ProductViewerNavigation.js';
 import { DataProducteDataAccess } from './DataProduct/DataProductDataAccess.js';
 import { DataProductSupportInfo } from './DataProduct/DataProductSupportInfo.js';
-import type { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
+import { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
+import { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
+import {
+  TerminalAccessAndTable,
+  TerminalProductPrice,
+} from './TerminalProductAccess.js';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
 ) => (
   <div className="data-product__viewer__wiki__placeholder">{props.message}</div>
-);
-
-export const TerminalProductPrice = observer(
-  (props: { terminalProductViewerState: TerminalProductViewerState }) => {
-    const { terminalProductViewerState } = props;
-    const terminal = terminalProductViewerState.product;
-    const [isAnnual, setIsAnnual] = useState(true);
-
-    const availablePrice =
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      terminal.price || terminal.tieredPrice || terminal.totalFirmPrice;
-
-    if (!availablePrice) {
-      return (
-        <ProductWikiPlaceholder message="No price information available." />
-      );
-    }
-
-    const getDisplayPrice = () => {
-      const price = Number(availablePrice);
-      return isAnnual ? Number(price).toFixed(2) : (price / 12).toFixed(2);
-    };
-
-    const handlePricingToggle = () => {
-      setIsAnnual((prev) => !prev);
-    };
-
-    return (
-      <button
-        className="data-product__viewer__wiki__section__pricing"
-        onClick={handlePricingToggle}
-      >
-        ${getDisplayPrice()} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE
-      </button>
-    );
-  },
 );
 
 export const ProductDescription = observer(
@@ -84,14 +53,10 @@ export const ProductDescription = observer(
   }) => {
     const { productViewerState } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
-    const isDataProductViewerState =
-      productViewerState instanceof DataProductViewerState;
-    const isTerminalProductViewerState =
-      productViewerState instanceof TerminalProductViewerState;
 
-    const section = isDataProductViewerState
+    const section = isDataProductViewerState(productViewerState)
       ? DATA_PRODUCT_VIEWER_SECTION.DESCRIPTION
-      : isTerminalProductViewerState
+      : isTerminalProductViewerState(productViewerState)
         ? TERMINAL_PRODUCT_VIEWER_SECTION.DESCRIPTION
         : undefined;
     const anchor = section ? generateAnchorForSection(section) : '';
@@ -139,13 +104,12 @@ export const ProductWiki = observer(
       SupportedProducts,
       SupportedLayoutStates
     >;
-    dataProductDataAccessState: DataProductDataAccessState | undefined;
+    productDataAccessState:
+      | DataProductDataAccessState
+      | TerminalProductDataAccessState
+      | undefined;
   }) => {
-    const { productViewerState, dataProductDataAccessState } = props;
-    const isDataProductViewerState =
-      productViewerState instanceof DataProductViewerState;
-    const isTerminalProductViewerState =
-      productViewerState instanceof TerminalProductViewerState;
+    const { productViewerState, productDataAccessState } = props;
 
     useEffect(() => {
       if (
@@ -173,23 +137,32 @@ export const ProductWiki = observer(
 
     return (
       <div className="data-product__viewer__wiki">
-        <ProductDescription productViewerState={productViewerState} />
-        {isTerminalProductViewerState && (
+        {isTerminalProductViewerState(productViewerState) && (
           <TerminalProductPrice
             terminalProductViewerState={productViewerState}
           />
         )}
-        {isDataProductViewerState && (
-          <>
-            <DataProducteDataAccess
-              dataProductViewerState={productViewerState}
-              dataProductDataAccessState={dataProductDataAccessState}
+        <ProductDescription productViewerState={productViewerState} />
+        {isDataProductViewerState(productViewerState) &&
+          (productDataAccessState instanceof DataProductDataAccessState ||
+            productDataAccessState === undefined) && (
+            <>
+              <DataProducteDataAccess
+                dataProductViewerState={productViewerState}
+                dataProductDataAccessState={productDataAccessState}
+              />
+              <DataProductSupportInfo
+                dataProductViewerState={productViewerState}
+              />
+            </>
+          )}
+        {isTerminalProductViewerState(productViewerState) &&
+          productDataAccessState instanceof TerminalProductDataAccessState && (
+            <TerminalAccessAndTable
+              terminalProductViewerState={productViewerState}
+              terminalProductDataAccessState={productDataAccessState}
             />
-            <DataProductSupportInfo
-              dataProductViewerState={productViewerState}
-            />
-          </>
-        )}
+          )}
       </div>
     );
   },

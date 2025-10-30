@@ -1,5 +1,29 @@
 # @finos/legend-application-studio
 
+## 28.19.57
+
+## 28.19.56
+
+## 28.19.55
+
+## 28.19.54
+
+### Patch Changes
+
+- [#4572](https://github.com/finos/legend-studio/pull/4572) [`05b5718`](https://github.com/finos/legend-studio/commit/05b5718588247878906f1f6d0824676737ac11b9) ([@kelly-thai](https://github.com/kelly-thai)) - Add Data product Type, Access Point title, Access Point Group title to Data Product editor in form mode
+
+## 28.19.53
+
+## 28.19.52
+
+### Patch Changes
+
+- [#4557](https://github.com/finos/legend-studio/pull/4557) [`c9a4869`](https://github.com/finos/legend-studio/commit/c9a4869a463a710ca3b26a9a1c3cde9cdf90c408) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Converter for DataSpace to DataProduct Transformation
+
+- [#4551](https://github.com/finos/legend-studio/pull/4551) [`69bc7f2`](https://github.com/finos/legend-studio/commit/69bc7f270080b56414da6525aca51b61a2a83cbf) ([@travisstebbins](https://github.com/travisstebbins)) - Use DataProduct artifact to display access point column names/types
+
+- [#4556](https://github.com/finos/legend-studio/pull/4556) [`fee0279`](https://github.com/finos/legend-studio/commit/fee0279f308a4ad9d73d179e02d4605af7f0b3f8) ([@kelly-thai](https://github.com/kelly-thai)) - Add Expertise to Data Product model and form mode
+
 ## 28.19.51
 
 ### Patch Changes

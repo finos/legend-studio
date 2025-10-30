@@ -44,13 +44,13 @@ import {
   type TDSRowDataType,
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_Terminal,
-  DataProductArtifactGeneration,
   getRowDataFromExecutionResult,
   GraphDataWithOrigin,
   GraphManagerState,
   LegendSDLC,
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
+  V1_DataProductArtifact,
   V1_dataProductModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_PureGraphManager,
@@ -60,9 +60,9 @@ import {
 import type { AuthContextProps } from 'react-oidc-context';
 import { getDataProductFromDetails } from './LakehouseUtils.js';
 import {
-  parseGAVCoordinates,
-  type StoredFileGeneration,
   type Entity,
+  type StoredFileGeneration,
+  parseGAVCoordinates,
   parseProjectIdentifier,
 } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
@@ -84,21 +84,24 @@ import {
 import {
   DataProductDataAccessState,
   DataProductViewerState,
+  TerminalProductDataAccessState,
   TerminalProductLayoutState,
   TerminalProductViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
   DATAPRODUCT_TYPE,
   LegendMarketplaceTelemetryHelper,
+  PRODUCT_INTEGRATION_TYPE,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
-const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
+const ARTIFACT_GENERATION_DATA_PRODUCT_KEY = 'dataProduct';
 
 export class LegendMarketplaceProductViewerStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   dataProductViewer: DataProductViewerState | undefined;
   dataProductDataAccess: DataProductDataAccessState | undefined;
   terminalProductViewer: TerminalProductViewerState | undefined;
+  terminalProductDataAccess: TerminalProductDataAccessState | undefined;
   legacyDataProductViewer: DataSpaceViewerState | undefined;
 
   readonly loadingProductState = ActionState.create();
@@ -113,6 +116,7 @@ export class LegendMarketplaceProductViewerStore {
       legacyDataProductViewer: observable,
       setDataProductViewer: action,
       setDataProductDataAccess: action,
+      setTerminalProductDataAccess: action,
       setTerminalProductViewer: action,
       setLegacyDataProductViewer: action,
       initWithProduct: flow,
@@ -132,6 +136,11 @@ export class LegendMarketplaceProductViewerStore {
 
   setTerminalProductViewer(val: TerminalProductViewerState | undefined): void {
     this.terminalProductViewer = val;
+  }
+  setTerminalProductDataAccess(
+    val: TerminalProductDataAccessState | undefined,
+  ): void {
+    this.terminalProductDataAccess = val;
   }
 
   setLegacyDataProductViewer(val: DataSpaceViewerState | undefined): void {
@@ -155,16 +164,24 @@ export class LegendMarketplaceProductViewerStore {
           deserialize(V1_TerminalModelSchema, rowData),
       );
 
-      this.setTerminalProductViewer(
-        new TerminalProductViewerState(
-          guaranteeNonNullable(
-            terminalProducts[0],
-            `No terminal found with ID ${terminalId}`,
-          ),
-          this.marketplaceBaseStore.applicationStore,
-          new TerminalProductLayoutState(),
+      const terminalProductViewerState = new TerminalProductViewerState(
+        this.marketplaceBaseStore.applicationStore,
+        guaranteeNonNullable(
+          terminalProducts[0],
+          `No terminal found with ID ${terminalId}`,
         ),
+        new TerminalProductLayoutState(),
       );
+
+      const terminalProductDataAccessState = new TerminalProductDataAccessState(
+        terminalProductViewerState,
+        this.marketplaceBaseStore.terminalAccessServerClient,
+        this.marketplaceBaseStore.applicationStore,
+        this.marketplaceBaseStore.userSearchService,
+      );
+
+      this.setTerminalProductViewer(terminalProductViewerState);
+      this.setTerminalProductDataAccess(terminalProductDataAccessState);
 
       this.loadingProductState.complete();
       LegendMarketplaceTelemetryHelper.logEvent_LoadTerminal(
@@ -194,6 +211,7 @@ export class LegendMarketplaceProductViewerStore {
   ): GeneratorFn<void> {
     try {
       this.loadingProductState.inProgress();
+
       const rawResponse =
         (yield this.marketplaceBaseStore.lakehouseContractServerClient.getDataProductByIdAndDID(
           dataProductId,
@@ -267,14 +285,25 @@ export class LegendMarketplaceProductViewerStore {
         `Unable to get V1_DataProduct from details for id: ${entitlementsDataProductDetails.id}`,
       );
 
+      const projectGAV =
+        entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
+          ? {
+              groupId: entitlementsDataProductDetails.origin.group,
+              artifactId: entitlementsDataProductDetails.origin.artifact,
+              versionId: entitlementsDataProductDetails.origin.version,
+            }
+          : undefined;
+
       const dataProductViewerState = new DataProductViewerState(
         v1DataProduct,
         this.marketplaceBaseStore.applicationStore,
         this.marketplaceBaseStore.engineServerClient,
+        this.marketplaceBaseStore.depotServerClient,
         graphManagerState,
         this.marketplaceBaseStore.applicationStore.config.options.dataProductConfig,
         this.marketplaceBaseStore.userSearchService,
-        undefined,
+        projectGAV,
         {
           viewDataProductSource: () => {
             if (
@@ -306,6 +335,26 @@ export class LegendMarketplaceProductViewerStore {
               const path = v1DataProduct.path;
               const powerBiUrl =
                 this.marketplaceBaseStore.applicationStore.config.powerBiUrl;
+
+              LegendMarketplaceTelemetryHelper.logEvent_OpenIntegratedProduct(
+                this.marketplaceBaseStore.applicationStore.telemetryService,
+                {
+                  origin: {
+                    type: DATAPRODUCT_TYPE.SDLC,
+                    groupId,
+                    artifactId,
+                    versionId,
+                  },
+                  deploymentId: entitlementsDataProductDetails.deploymentId,
+                  productIntegrationType: PRODUCT_INTEGRATION_TYPE.POWER_BI,
+                  name: entitlementsDataProductDetails.dataProduct.name,
+                  accessPointGroup: apg,
+                  environmentClassification:
+                    entitlementsDataProductDetails.lakehouseEnvironment?.type,
+                },
+                undefined,
+              );
+
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 addQueryParametersToUrl(
                   powerBiUrl,
@@ -321,6 +370,35 @@ export class LegendMarketplaceProductViewerStore {
             }
           },
           openDataCube: (sourceData) => {
+            LegendMarketplaceTelemetryHelper.logEvent_OpenIntegratedProduct(
+              this.marketplaceBaseStore.applicationStore.telemetryService,
+              {
+                origin:
+                  entitlementsDataProductDetails.origin instanceof
+                  V1_SdlcDeploymentDataProductOrigin
+                    ? {
+                        type: DATAPRODUCT_TYPE.SDLC,
+                        groupId: entitlementsDataProductDetails.origin.group,
+                        artifactId:
+                          entitlementsDataProductDetails.origin.artifact,
+                        versionId:
+                          entitlementsDataProductDetails.origin.version,
+                      }
+                    : {
+                        type: DATAPRODUCT_TYPE.ADHOC,
+                      },
+                deploymentId: entitlementsDataProductDetails.deploymentId,
+                name: entitlementsDataProductDetails.dataProduct.name,
+                productIntegrationType: PRODUCT_INTEGRATION_TYPE.DATA_CUBE,
+                accessPointPath: (
+                  (sourceData as Record<string, unknown>).paths as string[]
+                ).at(1),
+                environmentClassification:
+                  entitlementsDataProductDetails.lakehouseEnvironment?.type,
+              },
+              undefined,
+            );
+
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
                 this.marketplaceBaseStore.applicationStore.config
@@ -351,6 +429,7 @@ export class LegendMarketplaceProductViewerStore {
       );
       this.setDataProductViewer(dataProductViewerState);
       this.setDataProductDataAccess(dataProductDataAccessState);
+      dataProductViewerState.init(entitlementsDataProductDetails);
       dataProductDataAccessState.init(auth.user?.access_token);
       this.loadingProductState.complete();
       const origin =
@@ -429,14 +508,13 @@ export class LegendMarketplaceProductViewerStore {
           (yield this.marketplaceBaseStore.depotServerClient.getGenerationFilesByType(
             storeProject,
             resolveVersion(projectData.versionId),
-            ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
+            ARTIFACT_GENERATION_DATA_PRODUCT_KEY,
           )) as StoredFileGeneration[];
         const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
           ?.file.content;
         if (fileGen) {
           const content: PlainObject = JSON.parse(fileGen) as PlainObject;
-          const gen =
-            DataProductArtifactGeneration.serialization.fromJson(content);
+          const gen = V1_DataProductArtifact.serialization.fromJson(content);
           const dataProductId = v1DataProduct.name.toUpperCase();
           const deploymentId = Number(gen.dataProduct.deploymentId);
           this.marketplaceBaseStore.applicationStore.navigationService.navigator.goToLocation(

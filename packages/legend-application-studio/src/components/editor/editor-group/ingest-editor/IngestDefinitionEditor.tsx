@@ -30,13 +30,16 @@ import {
   PanelHeader,
   PanelHeaderActions,
   RocketIcon,
+  EyeIcon,
+  ModalHeaderActions,
+  CustomSelectorInput,
 } from '@finos/legend-art';
 import {
   generateUrlToDeployOnOpen,
   IngestDefinitionEditorState,
 } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
@@ -46,6 +49,11 @@ import {
 } from '@finos/legend-server-lakehouse';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import {
+  LINEAGE_VIEW_MODE,
+  LineageViewerContent,
+} from '@finos/legend-query-builder';
+import type { MatViewDataSet } from '@finos/legend-graph';
 
 const IngestValidationError = observer(
   (props: {
@@ -186,6 +194,124 @@ const IngestDeploymentResponseModal = observer(
   },
 );
 
+export const IngestLineageModal = observer(
+  (props: { ingestDefinitionEditorState: IngestDefinitionEditorState }) => {
+    const { ingestDefinitionEditorState } = props;
+
+    const matviewFunctions =
+      ingestDefinitionEditorState.ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS;
+    const matviewNames =
+      ingestDefinitionEditorState.ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.map(
+        (dataset) => dataset.name,
+      ) ?? [];
+    const [selectedMatview, setSelectedMatview] = useState<
+      MatViewDataSet | undefined
+    >(undefined);
+
+    useEffect(() => {
+      if (!selectedMatview && matviewFunctions && matviewFunctions.length > 0) {
+        setSelectedMatview(matviewFunctions[0]);
+      }
+    }, [matviewFunctions, selectedMatview]);
+
+    useEffect(() => {
+      ingestDefinitionEditorState.lineageState.setSelectedTab(
+        LINEAGE_VIEW_MODE.DATABASE_LINEAGE,
+      );
+    }, [ingestDefinitionEditorState.lineageState]);
+
+    if (!matviewFunctions || matviewFunctions.length === 0) {
+      return null;
+    }
+
+    const isDarkMode =
+      !ingestDefinitionEditorState.lineageState.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
+
+    const closeLineageViewer = (): void => {
+      ingestDefinitionEditorState.lineageState.setLineageData(undefined);
+      ingestDefinitionEditorState.lineageState.setSelectedTab(
+        LINEAGE_VIEW_MODE.DATABASE_LINEAGE,
+      );
+      ingestDefinitionEditorState.lineageState.clearPropertySelections();
+    };
+
+    type DatasetOption = {
+      label: string;
+      value: MatViewDataSet;
+    };
+
+    const datasetOptions: DatasetOption[] = matviewNames
+      .map((name, index) => {
+        const dataset = matviewFunctions[index];
+        if (dataset) {
+          return {
+            label: name,
+            value: dataset,
+          };
+        }
+        return null;
+      })
+      .filter((option): option is DatasetOption => option !== null);
+
+    const handleDatasetChange = (option: DatasetOption | null): void => {
+      if (option?.value) {
+        setSelectedMatview(option.value);
+        flowResult(
+          ingestDefinitionEditorState.generateLineage(option.value),
+        ).catch(
+          ingestDefinitionEditorState.editorStore.applicationStore
+            .alertUnhandledError,
+        );
+      }
+    };
+
+    return (
+      <>
+        <Dialog
+          open={Boolean(ingestDefinitionEditorState.lineageState.lineageData)}
+          onClose={closeLineageViewer}
+        >
+          <Modal className="editor-modal" darkMode={isDarkMode}>
+            <ModalHeader>
+              <ModalTitle title="LineageViewer" />
+              <ModalHeaderActions>
+                <CustomSelectorInput
+                  options={datasetOptions}
+                  onChange={handleDatasetChange}
+                  value={
+                    selectedMatview
+                      ? {
+                          label: selectedMatview.name,
+                          value: selectedMatview,
+                        }
+                      : null
+                  }
+                  darkMode={isDarkMode}
+                />
+              </ModalHeaderActions>
+            </ModalHeader>
+            <ModalBody>
+              <div className="lineage-viewer" style={{ height: '100%' }}>
+                <LineageViewerContent
+                  lineageState={ingestDefinitionEditorState.lineageState}
+                />
+              </div>
+            </ModalBody>
+            <ModalFooter className="editor-modal__footer">
+              <ModalFooterButton
+                onClick={closeLineageViewer}
+                text="Close"
+                type="secondary"
+              />
+            </ModalFooter>
+          </Modal>
+        </Dialog>
+      </>
+    );
+  },
+);
+
 export const IngestDefinitionEditor = observer(() => {
   const editorStore = useEditorStore();
   const ingestDefinitionEditorState =
@@ -257,6 +383,7 @@ export const IngestDefinitionEditor = observer(() => {
   };
 
   const isValid = ingestDefinitionEditorState.validForDeployment;
+  const isValidForLineage = ingestDefinitionEditorState.validForLineageViewer;
   useEffect(() => {
     ingestDefinitionEditorState.generateElementGrammar();
   }, [ingestDefinitionEditorState]);
@@ -277,6 +404,21 @@ export const IngestDefinitionEditor = observer(() => {
     ingestDefinitionEditorState,
   ]);
 
+  const viewLineage = () => {
+    const firstMatViewQuery =
+      ingestDefinitionEditorState.ingest
+        .TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.[0];
+    if (firstMatViewQuery) {
+      flowResult(
+        ingestDefinitionEditorState.generateLineage(firstMatViewQuery),
+      ).catch(editorStore.applicationStore.alertUnhandledError);
+    } else {
+      editorStore.applicationStore.notificationService.notifyError(
+        'No MatView datasets available for lineage generation',
+      );
+    }
+  };
+
   return (
     <div className="data-product-editor">
       <PanelHeader
@@ -288,17 +430,34 @@ export const IngestDefinitionEditor = observer(() => {
       <PanelContent>
         <PanelHeader title="deployment" darkMode={true}>
           <PanelHeaderActions>
-            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-              <button
-                className="btn__dropdown-combo__label"
-                onClick={deployIngest}
-                title={ingestDefinitionEditorState.validationMessage}
-                tabIndex={-1}
-                disabled={!isValid}
-              >
-                <RocketIcon className="btn__dropdown-combo__label__icon" />
-                <div className="btn__dropdown-combo__label__title">Deploy</div>
-              </button>
+            <div className="panel__header__actions">
+              <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                <button
+                  className="btn__dropdown-combo__label"
+                  onClick={viewLineage}
+                  tabIndex={-1}
+                  disabled={!isValidForLineage}
+                >
+                  <EyeIcon className="btn__dropdown-combo__label__icon" />
+                  <div className="btn__dropdown-combo__label__title">
+                    Lineage
+                  </div>
+                </button>
+              </div>
+              <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                <button
+                  className="btn__dropdown-combo__label"
+                  onClick={deployIngest}
+                  title={ingestDefinitionEditorState.validationMessage}
+                  tabIndex={-1}
+                  disabled={!isValid}
+                >
+                  <RocketIcon className="btn__dropdown-combo__label__icon" />
+                  <div className="btn__dropdown-combo__label__title">
+                    Deploy
+                  </div>
+                </button>
+              </div>
             </div>
           </PanelHeaderActions>
         </PanelHeader>
@@ -309,6 +468,9 @@ export const IngestDefinitionEditor = observer(() => {
             language={CODE_EDITOR_LANGUAGE.PURE}
           />
         </PanelContent>
+        <IngestLineageModal
+          ingestDefinitionEditorState={ingestDefinitionEditorState}
+        />
         {renderDeploymentResponse()}
       </PanelContent>
     </div>

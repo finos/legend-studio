@@ -17,7 +17,7 @@
 import type { LegendUser } from '@finos/legend-shared';
 import { Avatar } from '@mui/material';
 import { Box } from '@mui/system';
-import clsx from 'clsx';
+import { clsx } from '../utils/ComponentUtils.js';
 
 export const UserDisplay = (props: {
   user: LegendUser;

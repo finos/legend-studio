@@ -1,5 +1,35 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.17
+
+## 0.0.16
+
+### Patch Changes
+
+- [#4577](https://github.com/finos/legend-studio/pull/4577) [`5c30065`](https://github.com/finos/legend-studio/commit/5c300651e63b569dbb3f569833bf70723a6c2540) ([@gs-gunjan](https://github.com/gs-gunjan)) - marketplace: add telemetry for opening datacube and powerbi from marketplace
+
+## 0.0.15
+
+### Patch Changes
+
+- [#4571](https://github.com/finos/legend-studio/pull/4571) [`7ab2dde`](https://github.com/finos/legend-studio/commit/7ab2dde288b8ca18494e5c819354518e0554ca2c) ([@jackp5150](https://github.com/jackp5150)) - Added terminal request flow to UI
+
+## 0.0.14
+
+## 0.0.13
+
+### Patch Changes
+
+- [#4521](https://github.com/finos/legend-studio/pull/4521) [`289f34f`](https://github.com/finos/legend-studio/commit/289f34f9aad0b36fa3fad3cf832642bdbf4a590f) ([@jackp5150](https://github.com/jackp5150)) - Added table and access sections to terminal UI
+
+- [#4562](https://github.com/finos/legend-studio/pull/4562) [`c6471ce`](https://github.com/finos/legend-studio/commit/c6471ceb4d647d0ded577e610e07f4d428acd440) ([@TharunRajeev](https://github.com/TharunRajeev)) - Datacube navigation for AdHoc Dataproducts from marketplace.
+
+## 0.0.12
+
+### Patch Changes
+
+- [#4551](https://github.com/finos/legend-studio/pull/4551) [`69bc7f2`](https://github.com/finos/legend-studio/commit/69bc7f270080b56414da6525aca51b61a2a83cbf) ([@travisstebbins](https://github.com/travisstebbins)) - Use DataProduct artifact to display access point column names/types
+
 ## 0.0.11
 
 ## 0.0.10

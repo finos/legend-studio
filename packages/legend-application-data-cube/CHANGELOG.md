@@ -1,5 +1,32 @@
 # @finos/legend-application-data-cube
 
+## 0.7.11
+
+## 0.7.10
+
+### Patch Changes
+
+- [#4575](https://github.com/finos/legend-studio/pull/4575) [`da25d80`](https://github.com/finos/legend-studio/commit/da25d80461051c55b9c150e5e52beae00ad12c1c) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: support user queries on lakehouse consumer source
+
+## 0.7.9
+
+### Patch Changes
+
+- [#4576](https://github.com/finos/legend-studio/pull/4576) [`ddb3c1e`](https://github.com/finos/legend-studio/commit/ddb3c1e4412f39ec508a6d74e28de287f8e896fb) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: remove lakehouse producer source loader
+
+## 0.7.8
+
+### Patch Changes
+
+- [#4570](https://github.com/finos/legend-studio/pull/4570) [`759a014`](https://github.com/finos/legend-studio/commit/759a0146b79132d39c3400b2bd062e1dade54122) ([@TharunRajeev](https://github.com/TharunRajeev)) - Removed Datacube loader screen for lakehouse consumer data products.
+
+## 0.7.7
+
+### Patch Changes
+
+- [#4543](https://github.com/finos/legend-studio/pull/4543) [`a39959c`](https://github.com/finos/legend-studio/commit/a39959cbfd982761ef23a664940b518feb83b15d) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: support collection of lakehouse consumer and producer sources via telemetry
+  datacube: update lakehouse consumer source viewer
+
 ## 0.7.6
 
 ### Patch Changes

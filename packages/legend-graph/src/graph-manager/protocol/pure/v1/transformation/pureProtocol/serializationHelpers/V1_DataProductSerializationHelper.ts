@@ -17,6 +17,7 @@
 import {
   createModelSchema,
   deserialize,
+  list,
   optional,
   primitive,
   serialize,
@@ -43,6 +44,8 @@ import {
   V1_InternalDataProductType,
   V1_ExternalDataProductType,
   V1_DataProductTypeValue,
+  V1_Expertise,
+  V1_FunctionAccessPoint,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   UnsupportedOperationError,
@@ -54,6 +57,7 @@ import {
   optionalCustomUsingModelSchema,
   optionalCustom,
   optionalCustomList,
+  optionalCustomListWithSchema,
 } from '@finos/legend-shared';
 import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper.js';
 import {
@@ -65,6 +69,7 @@ import { V1_MappingIncludeDataProduct } from '../../../model/packageableElements
 
 export enum V1_AccessPointType {
   LAKEHOUSE = 'lakehouseAccessPoint',
+  FUNCTION = 'functionAccessPoint',
   EQUAL_TO_JSON = 'equalToJson',
   EQUAL_TO_TDS = 'equalToTDS',
 }
@@ -93,6 +98,18 @@ export const V1_lakehouseAccessPointModelSchema = createModelSchema(
     id: primitive(),
     reproducible: optional(primitive()),
     targetEnvironment: primitive(),
+    title: optional(primitive()),
+  },
+);
+
+export const V1_functionAccessPointModelSchema = createModelSchema(
+  V1_FunctionAccessPoint,
+  {
+    _type: usingConstantValueSchema(V1_AccessPointType.FUNCTION),
+    description: optional(primitive()),
+    id: primitive(),
+    query: usingModelSchema(V1_rawLambdaModelSchema),
+    title: optional(primitive()),
   },
 );
 
@@ -103,6 +120,8 @@ const V1_serializeAccessPoint = (
     return serialize(V1_lakehouseAccessPointModelSchema, protocol);
   } else if (protocol instanceof V1_UnknownAccessPoint) {
     return protocol.content;
+  } else if (protocol instanceof V1_FunctionAccessPoint) {
+    return serialize(V1_functionAccessPointModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize access point type`,
@@ -116,10 +135,14 @@ const V1_deserializeAccessPoint = (
   switch (json._type) {
     case V1_AccessPointType.LAKEHOUSE:
       return deserialize(V1_lakehouseAccessPointModelSchema, json);
+    case V1_AccessPointType.FUNCTION:
+      return deserialize(V1_functionAccessPointModelSchema, json);
     default: {
       const unknown = new V1_UnknownAccessPoint();
       unknown.content = json;
       unknown.id = json.id as string;
+      unknown.description = json.description as string;
+      unknown.title = json.title as string;
       return unknown;
     }
   }
@@ -166,6 +189,7 @@ export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
     diagrams: customListWithSchema(V1_dataProductDiagramModelSchema),
     featuredElements: customListWithSchema(V1_ElementScopeModelSchema),
     id: primitive(),
+    title: optional(primitive()),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
     mapping: usingModelSchema(V1_packageableElementPointerModelSchema),
   },
@@ -180,6 +204,7 @@ export const V1_DefaultAccessPointGroupModelSchema = createModelSchema(
     ),
     description: optional(primitive()),
     id: primitive(),
+    title: optional(primitive()),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
@@ -287,6 +312,11 @@ export const V1_ExternalDataProductTypeModelSchema = createModelSchema(
   },
 );
 
+export const V1_ExpertiseModelSchema = createModelSchema(V1_Expertise, {
+  description: optional(primitive()),
+  expertIds: list(primitive()),
+});
+
 export const V1_deserializeDataProductType = (
   json: Record<string, unknown>,
 ): V1_DataProductType => {
@@ -327,6 +357,7 @@ export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
     (json) => (json as string).toUpperCase(),
   ),
   description: optional(primitive()),
+  expertise: optionalCustomListWithSchema(V1_ExpertiseModelSchema),
   icon: optionalCustom(
     V1_serializeDataProductIcon,
     V1_deserializeDataProductIcon,

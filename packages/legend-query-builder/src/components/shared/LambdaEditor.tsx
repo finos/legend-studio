@@ -724,8 +724,10 @@ const LambdaEditor_PopUp = observer(
     return (
       <Dialog
         open={true}
-        TransitionProps={{
-          onEnter,
+        slotProps={{
+          transition: {
+            onEnter,
+          },
         }}
         onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
         classes={{

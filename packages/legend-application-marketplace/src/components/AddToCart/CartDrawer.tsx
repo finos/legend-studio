@@ -42,13 +42,15 @@ export const CartDrawer = observer((): React.ReactNode => {
       anchor="right"
       open={cart.open}
       onClose={() => cart.setOpen(false)}
-      PaperProps={{
-        className: 'legend-marketplace-cart-drawer',
-        sx: {
-          width: { xs: '100vw', sm: '400px' },
-          maxWidth: '90vw',
-          marginTop: 'var(--legend-marketplace-header-height)',
-          height: 'calc(100% - var(--legend-marketplace-header-height))',
+      slotProps={{
+        paper: {
+          className: 'legend-marketplace-cart-drawer',
+          sx: {
+            width: { xs: '100vw', sm: '400px' },
+            maxWidth: '90vw',
+            marginTop: 'var(--legend-marketplace-header-height)',
+            height: 'calc(100% - var(--legend-marketplace-header-height))',
+          },
         },
       }}
     >
@@ -125,57 +127,59 @@ export const CartDrawer = observer((): React.ReactNode => {
         {!cart.loadingState.isInProgress &&
           cart.cartSummary.total_items > 0 && (
             <Box className="legend-marketplace-cart-drawer__items">
-              {Array.from(cart.items.values()).map((item) => (
-                <Box
-                  key={`${item.providerName}-${item.cartId}`}
-                  className="legend-marketplace-cart-drawer__item-card"
-                >
-                  <Box className="legend-marketplace-cart-drawer__item-card__header">
-                    <Box className="legend-marketplace-cart-drawer__item-card__title-section">
-                      <Chip
+              {Object.values(cart.items).map((value) =>
+                value.map((item) => (
+                  <Box
+                    key={`${item.providerName}-${item.cartId}`}
+                    className="legend-marketplace-cart-drawer__item-card"
+                  >
+                    <Box className="legend-marketplace-cart-drawer__item-card__header">
+                      <Box className="legend-marketplace-cart-drawer__item-card__title-section">
+                        <Chip
+                          size="small"
+                          label={item.providerName}
+                          className="legend-marketplace-cart-drawer__item-card__provider"
+                          variant="filled"
+                        />
+                        <Typography
+                          variant="h6"
+                          className="legend-marketplace-cart-drawer__item-card__name"
+                        >
+                          {item.productName}
+                        </Typography>
+                      </Box>
+                      <IconButton
                         size="small"
-                        label={item.providerName}
-                        className="legend-marketplace-cart-drawer__item-card__provider"
-                        variant="filled"
-                      />
-                      <Typography
-                        variant="h6"
-                        className="legend-marketplace-cart-drawer__item-card__name"
+                        onClick={() => cart.deleteCartItem(item.cartId)}
+                        className="legend-marketplace-cart-drawer__item-card__remove-btn"
+                        disabled={cart.loadingState.isInProgress}
                       >
-                        {item.productName}
-                      </Typography>
+                        <TrashIcon />
+                      </IconButton>
                     </Box>
-                    <IconButton
-                      size="small"
-                      onClick={() => cart.deleteCartItem(item.cartId)}
-                      className="legend-marketplace-cart-drawer__item-card__remove-btn"
-                      disabled={cart.loadingState.isInProgress}
-                    >
-                      <TrashIcon />
-                    </IconButton>
-                  </Box>
 
-                  <Box className="legend-marketplace-cart-drawer__item-card__content">
-                    <Box className="legend-marketplace-cart-drawer__item-card__price-section">
-                      <Typography
-                        variant="h6"
-                        className="legend-marketplace-cart-drawer__item-card__price"
-                      >
-                        {item.price.toLocaleString('en-US', {
-                          style: 'currency',
-                          currency: 'USD',
-                        })}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        className="legend-marketplace-cart-drawer__item-card__price-suffix"
-                      >
-                        /access
-                      </Typography>
+                    <Box className="legend-marketplace-cart-drawer__item-card__content">
+                      <Box className="legend-marketplace-cart-drawer__item-card__price-section">
+                        <Typography
+                          variant="h6"
+                          className="legend-marketplace-cart-drawer__item-card__price"
+                        >
+                          {item.price.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                          })}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          className="legend-marketplace-cart-drawer__item-card__price-suffix"
+                        >
+                          /access
+                        </Typography>
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              ))}
+                )),
+              )}
             </Box>
           )}
       </Box>

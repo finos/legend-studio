@@ -21,17 +21,53 @@ import {
   ExternalLinkIcon,
   HeadsetIcon,
   QuestionCircleOutlineIcon,
+  StackOverflowIcon,
   WorldOutlineIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef } from 'react';
-import { Box, Grid2 as Grid, Link } from '@mui/material';
+import { Fragment, useEffect, useRef } from 'react';
+import { Box, Grid, Link } from '@mui/material';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
   generateAnchorForSection,
   DATA_PRODUCT_VIEWER_SECTION,
 } from '../../stores/ProductViewerNavigation.js';
 import { ProductWikiPlaceholder } from '../ProductWiki.js';
+
+enum SUPPORT_TYPE {
+  DOCUMENTATION = 'DOCUMENTATION',
+  WEBSITE = 'WEBSITE',
+  SUPPORT = 'SUPPORT',
+  FAQ = 'FAQ',
+  EMAILS = 'EMAILS',
+}
+
+enum KNOWN_SUPPORT_SITES {
+  STACK_OVERFLOW = 'stackenterprise.co',
+}
+
+const getIconFromUrlandSupportType = (
+  type: SUPPORT_TYPE,
+  url: string | undefined,
+) => {
+  if (url?.includes(KNOWN_SUPPORT_SITES.STACK_OVERFLOW)) {
+    return <StackOverflowIcon />;
+  }
+  switch (type) {
+    case SUPPORT_TYPE.DOCUMENTATION:
+      return <DocumentIcon />;
+    case SUPPORT_TYPE.WEBSITE:
+      return <WorldOutlineIcon />;
+    case SUPPORT_TYPE.SUPPORT:
+      return <HeadsetIcon />;
+    case SUPPORT_TYPE.FAQ:
+      return <QuestionCircleOutlineIcon />;
+    case SUPPORT_TYPE.EMAILS:
+      return <EnvelopeOutlineIcon />;
+    default:
+      return <HeadsetIcon />;
+  }
+};
 
 export const DataProductSupportInfo = observer(
   (props: { dataProductViewerState: DataProductViewerState }) => {
@@ -90,10 +126,13 @@ export const DataProductSupportInfo = observer(
                   className="data-product__viewer__support-info__section"
                 >
                   <Box className="data-product__viewer__support-info__section__icon">
-                    <EnvelopeOutlineIcon />
+                    {getIconFromUrlandSupportType(
+                      SUPPORT_TYPE.EMAILS,
+                      undefined,
+                    )}
                   </Box>
                   {supportInfo.emails.map((email, index) => (
-                    <>
+                    <Fragment key={email.hashCode}>
                       <Link
                         key={email.address}
                         className="data-product__viewer__support-info__link"
@@ -103,7 +142,7 @@ export const DataProductSupportInfo = observer(
                         <ExternalLinkIcon />
                       </Link>
                       {index < supportInfo.emails.length - 1 ? ', ' : null}
-                    </>
+                    </Fragment>
                   ))}
                 </Grid>
               )}
@@ -113,7 +152,10 @@ export const DataProductSupportInfo = observer(
                   className="data-product__viewer__support-info__section"
                 >
                   <Box className="data-product__viewer__support-info__section__icon">
-                    <DocumentIcon />
+                    {getIconFromUrlandSupportType(
+                      SUPPORT_TYPE.DOCUMENTATION,
+                      supportInfo.documentation.url,
+                    )}
                   </Box>
                   <Link
                     className="data-product__viewer__support-info__link"
@@ -133,7 +175,10 @@ export const DataProductSupportInfo = observer(
                   className="data-product__viewer__support-info__section"
                 >
                   <Box className="data-product__viewer__support-info__section__icon">
-                    <HeadsetIcon />
+                    {getIconFromUrlandSupportType(
+                      SUPPORT_TYPE.SUPPORT,
+                      supportInfo.supportUrl.url,
+                    )}
                   </Box>
                   <Link
                     className="data-product__viewer__support-info__link"
@@ -152,7 +197,10 @@ export const DataProductSupportInfo = observer(
                   className="data-product__viewer__support-info__section"
                 >
                   <Box className="data-product__viewer__support-info__section__icon">
-                    <WorldOutlineIcon />
+                    {getIconFromUrlandSupportType(
+                      SUPPORT_TYPE.WEBSITE,
+                      supportInfo.website.url,
+                    )}
                   </Box>
                   <Link
                     className="data-product__viewer__support-info__link"
@@ -171,7 +219,10 @@ export const DataProductSupportInfo = observer(
                   className="data-product__viewer__support-info__section"
                 >
                   <Box className="data-product__viewer__support-info__section__icon">
-                    <QuestionCircleOutlineIcon />
+                    {getIconFromUrlandSupportType(
+                      SUPPORT_TYPE.FAQ,
+                      supportInfo.faqUrl.url,
+                    )}
                   </Box>
                   <Link
                     className="data-product__viewer__support-info__link"

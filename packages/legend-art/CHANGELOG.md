@@ -1,5 +1,13 @@
 # @finos/legend-art
 
+## 7.1.128
+
+## 7.1.127
+
+### Patch Changes
+
+- [#4572](https://github.com/finos/legend-studio/pull/4572) [`05b5718`](https://github.com/finos/legend-studio/commit/05b5718588247878906f1f6d0824676737ac11b9) ([@kelly-thai](https://github.com/kelly-thai)) - Add Data product Type, Access Point title, Access Point Group title to Data Product editor in form mode
+
 ## 7.1.126
 
 ## 7.1.125

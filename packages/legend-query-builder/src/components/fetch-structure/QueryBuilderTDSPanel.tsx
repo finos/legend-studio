@@ -928,9 +928,11 @@ const QueryBuilderProjectionColumnEditor = observer(
                 {aggregateColumnState && isPercentileOpen && (
                   <BasePopover
                     open={isPercentileOpen}
-                    PaperProps={{
-                      classes: {
-                        root: 'query-builder__projection__column__aggregate__operator__percentile__container__root',
+                    slotProps={{
+                      paper: {
+                        classes: {
+                          root: 'query-builder__projection__column__aggregate__operator__percentile__container__root',
+                        },
                       },
                     }}
                     className={clsx(

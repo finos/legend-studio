@@ -34,6 +34,8 @@ export abstract class BaseProductCardState {
 
   abstract init(): GeneratorFn<void>;
 
+  abstract get name(): string;
+
   abstract get title(): string;
 
   abstract get description(): string | undefined;

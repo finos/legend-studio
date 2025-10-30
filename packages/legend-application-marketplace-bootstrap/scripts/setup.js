@@ -44,6 +44,7 @@ export const setup = (outputDir) => {
         marketplace: {
           url: 'http://localhost:6400/api',
           subscriptionUrl: 'http://localhost:6400/subscriptions/api',
+          dataProductEnv: 'prod',
           userSearchUrl: 'http://localhost:6400/user-search/api',
           userProfileImageUrl:
             'http://localhost:6400/user-profile-image/api?userId={userId}',
@@ -70,6 +71,9 @@ export const setup = (outputDir) => {
         depot: {
           url: 'http://localhost:6200/depot/api',
         },
+        terminal: {
+          url: 'http://localhost:6400/terminal/api',
+        },
         studio: {
           url: 'http://localhost:9000/studio',
           instances: [
@@ -81,6 +85,12 @@ export const setup = (outputDir) => {
         },
         query: {
           url: 'http://localhost:9001/query',
+        },
+        datacube: {
+          url: 'http://localhost:9007/datacube',
+        },
+        powerBi: {
+          url: 'http://localhost:9007/powerBi',
         },
         documentation: {
           url: 'https://legend.finos.org',

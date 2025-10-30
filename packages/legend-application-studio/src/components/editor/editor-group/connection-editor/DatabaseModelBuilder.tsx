@@ -186,9 +186,11 @@ export const DatabaseModelBuilder = observer(
         open={databaseModelBuilderState.showModal}
         classes={{ container: 'search-modal__container' }}
         onClose={noop}
-        PaperProps={{
-          classes: {
-            root: 'search-modal__inner-container database-builder__container',
+        slotProps={{
+          paper: {
+            classes: {
+              root: 'search-modal__inner-container database-builder__container',
+            },
           },
         }}
       >

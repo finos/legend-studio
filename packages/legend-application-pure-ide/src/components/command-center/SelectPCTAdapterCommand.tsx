@@ -64,11 +64,11 @@ export const SelectPCTAdapterCommand = observer(() => {
     <Dialog
       open={Boolean(ideStore.PCTRunPath)}
       onClose={closeModal}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
       classes={{ container: 'command-modal__container' }}
-      PaperProps={{ classes: { root: 'command-modal__inner-container' } }}
+      slotProps={{
+        transition: { onEnter: handleEnter },
+        paper: { classes: { root: 'command-modal__inner-container' } },
+      }}
     >
       <div className="modal modal--dark command-modal">
         <div className="modal__title">Select PCT Adapter</div>

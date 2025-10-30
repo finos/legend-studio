@@ -40,7 +40,6 @@ import {
   LINEAGE_VIEW_MODE,
   type LineageState,
 } from '../../stores/lineage/LineageState.js';
-
 import {
   type Graph,
   type LineageEdge,
@@ -993,7 +992,7 @@ const LineageTabSelector = observer((props: { lineageState: LineageState }) => {
   );
 });
 
-const LineageViewerContent = observer(
+export const LineageViewerContent = observer(
   (props: { lineageState: LineageState }) => {
     const { lineageState } = props;
     const selectedTab = lineageState.selectedTab;

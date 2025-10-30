@@ -42,8 +42,9 @@ import {
   HammerIcon,
   TerminalIcon,
   ResizablePanelSplitterLine,
+  GitlabIcon,
 } from '@finos/legend-art';
-import { isNonNullable } from '@finos/legend-shared';
+import { assertErrorThrown, isNonNullable } from '@finos/legend-shared';
 import {
   useProjectViewerStore,
   withProjectViewerStore,
@@ -51,6 +52,7 @@ import {
 import {
   type ProjectViewerPathParams,
   generateSetupRoute,
+  generateViewProjectRoute,
 } from '../../__lib__/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { flowResult } from 'mobx';
@@ -71,6 +73,9 @@ import { EmbeddedQueryBuilder } from '../editor/EmbeddedQueryBuilder.js';
 import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
 import { PanelGroup } from '../editor/panel-group/PanelGroup.js';
+import { StoreProjectData } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
+import { Project } from '@finos/legend-server-sdlc';
 
 const ProjectViewerStatusBar = observer(() => {
   const params = useParams<ProjectViewerPathParams>();
@@ -82,6 +87,7 @@ const ProjectViewerStatusBar = observer(() => {
   const extraSDLCInfo = params.revisionId ?? params.versionId ?? 'HEAD';
   const projectId = params.projectId;
   const currentProject = editorStore.sdlcState.currentProject;
+  const gav = viewerStore.projectGAVCoordinates;
   const versionBehindProjectHead =
     viewerStore.currentRevision &&
     viewerStore.version &&
@@ -116,6 +122,54 @@ const ProjectViewerStatusBar = observer(() => {
   const toggleAssistant = (): void =>
     applicationStore.assistantService.toggleAssistant();
   const togglePanel = (): void => editorStore.panelGroupDisplayState.toggle();
+
+  const visitProject = async (): Promise<void> => {
+    try {
+      if (gav) {
+        const project = StoreProjectData.serialization.fromJson(
+          await editorStore.depotServerClient.getProject(
+            gav.groupId,
+            gav.artifactId,
+          ),
+        );
+        const sdlcProjectUrl = generateViewProjectRoute(project.projectId);
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
+            sdlcProjectUrl,
+          ),
+        );
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      editorStore.applicationStore.notificationService.notifyError(
+        `Can't open project.`,
+      );
+    }
+  };
+
+  const visitWebProjectUrl = async (): Promise<void> => {
+    try {
+      if (gav) {
+        const project = StoreProjectData.serialization.fromJson(
+          await editorStore.depotServerClient.getProject(
+            gav.groupId,
+            gav.artifactId,
+          ),
+        );
+        const sdlcProject = Project.serialization.fromJson(
+          await editorStore.sdlcServerClient.getProject(project.projectId),
+        );
+        applicationStore.navigationService.navigator.visitAddress(
+          sdlcProject.webUrl,
+        );
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      editorStore.applicationStore.notificationService.notifyError(
+        `Can't open project.`,
+      );
+    }
+  };
 
   return (
     <div
@@ -153,6 +207,36 @@ const ProjectViewerStatusBar = observer(() => {
                 ({description})
               </div>
             )}
+          </div>
+        )}
+        {!currentProject && gav && (
+          <div className="editor__status-bar__workspace">
+            <div className="editor__status-bar__workspace__icon">
+              <CodeBranchIcon />
+            </div>
+            <div className="editor__status-bar__workspace__project">
+              <button
+                className="editor__status-bar__workspace__project"
+                title="Go to Studio SDLC View of Project"
+                tabIndex={-1}
+                onClick={() => flowResult(visitProject())}
+              >
+                {`${generateGAVCoordinates(gav.groupId, gav.artifactId, undefined)}`}
+              </button>
+            </div>
+            /<div></div>
+            <div
+              onClick={() => flowResult(visitWebProjectUrl())}
+              className="editor__status-bar__workspace__workspace"
+            >
+              {gav.versionId}
+            </div>
+            <button
+              onClick={() => flowResult(visitWebProjectUrl())}
+              className="editor__status-bar__workspace__icon"
+            >
+              <GitlabIcon />
+            </button>
           </div>
         )}
       </div>

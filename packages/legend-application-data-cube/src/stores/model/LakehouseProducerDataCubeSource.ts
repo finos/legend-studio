@@ -29,6 +29,8 @@ export const LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE = 'lakehouseProducer';
 export class LakehouseProducerDataCubeSource extends DataCubeSource {
   model!: PlainObject<V1_PureModelContextData>;
   runtime!: string;
+  paths!: string[];
+  warehouse!: string;
 }
 
 export class LakehouseProducerIcebergCachedDataCubeSource extends DataCubeSource {
@@ -37,16 +39,15 @@ export class LakehouseProducerIcebergCachedDataCubeSource extends DataCubeSource
   db!: string;
   schema!: string;
   table!: string;
+  paths!: string[];
 }
 
 export class IcebergConfig {
   catalogUrl!: string;
-  icebergRef!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(IcebergConfig, {
       catalogUrl: primitive(),
-      icebergRef: primitive(),
     }),
   );
 }

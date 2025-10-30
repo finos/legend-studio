@@ -123,6 +123,10 @@ export class DataProductCardState extends BaseProductCardState {
         : this.dataProductDetails.dataProduct.name;
   }
 
+  get name(): string {
+    return this.dataProductDetails.dataProduct.name;
+  }
+
   get description(): string | undefined {
     return isNonEmptyString(this.dataProductDetails.description)
       ? this.dataProductDetails.description

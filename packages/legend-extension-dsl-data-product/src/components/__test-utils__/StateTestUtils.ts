@@ -17,6 +17,7 @@
 import {
   type LegendApplicationPlugin,
   ApplicationStore,
+  DEFAULT_TAB_SIZE,
   LegendApplicationConfig,
   LegendApplicationPluginManager,
 } from '@finos/legend-application';
@@ -28,10 +29,14 @@ import {
   type PureGraphPlugin,
   type V1_DataProduct,
   type V1_EntitlementsDataProductDetails,
-  V1_EngineServerClient,
+  V1_PureGraphManager,
+  V1_RemoteEngine,
 } from '@finos/legend-graph';
 import { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
-import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
+import {
+  ENGINE_TEST_SUPPORT__grammarToJSON_model,
+  TEST__getTestGraphManagerState,
+} from '@finos/legend-graph/test';
 import {
   LakehouseContractServerClient,
   LakehouseIngestServerClient,
@@ -43,6 +48,8 @@ import { guaranteeType } from '@finos/legend-shared';
 import { Core_DataProductDataAccess_LegendApplicationPlugin } from '../Core_DataProductDataAccess_LegendApplicationPlugin.js';
 import { DataProductConfig } from '../../stores/DataProduct/DataProductConfig.js';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import { DepotServerClient } from '@finos/legend-server-depot';
+import { createSpy } from '@finos/legend-shared/test';
 
 export class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -108,16 +115,25 @@ export const TEST__getGenericApplicationConfig = (
   return config;
 };
 
-export const TEST__getDataProductViewerState = (
+export const TEST__getDataProductViewerState = async (
   dataProduct: V1_DataProduct,
   projectGAVCoordinates?: ProjectGAVCoordinates,
-): DataProductViewerState => {
+): Promise<DataProductViewerState> => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   const MOCK__applicationStore = new ApplicationStore(
     TEST__getGenericApplicationConfig(),
     pluginManager,
   );
-  const engineServerClient = new V1_EngineServerClient({});
+  const remoteEngine = new V1_RemoteEngine(
+    {
+      baseUrl: 'http://test-engine-server-client-url',
+    },
+    MOCK__applicationStore.logService,
+  );
+  const engineServerClient = remoteEngine.getEngineServerClient();
+  const depotServerClient = new DepotServerClient({
+    serverUrl: 'http://testDepotServerClientUrl',
+  });
   const graphManagerState = TEST__getTestGraphManagerState(
     guaranteeType(
       MOCK__applicationStore.pluginManager,
@@ -125,10 +141,36 @@ export const TEST__getDataProductViewerState = (
     ),
   );
 
+  createSpy(engineServerClient, 'grammarToJSON_model').mockImplementation(
+    async (code) => {
+      return ENGINE_TEST_SUPPORT__grammarToJSON_model(code);
+    },
+  );
+
+  const graphManager = guaranteeType(
+    graphManagerState.graphManager,
+    V1_PureGraphManager,
+    'GraphManager must be a V1_PureGraphManager',
+  );
+  await graphManager.initialize(
+    {
+      env: 'test',
+      tabSize: DEFAULT_TAB_SIZE,
+      clientConfig: {
+        baseUrl: 'http://test-engine-server-client-url',
+      },
+    },
+    {
+      engine: remoteEngine,
+    },
+  );
+  await graphManagerState.initializeSystem();
+
   return new DataProductViewerState(
     dataProduct,
     MOCK__applicationStore,
     engineServerClient,
+    depotServerClient,
     graphManagerState,
     DataProductConfig.serialization.fromJson({
       publicStereotype: {

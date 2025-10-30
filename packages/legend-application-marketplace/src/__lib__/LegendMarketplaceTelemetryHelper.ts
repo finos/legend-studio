@@ -44,6 +44,11 @@ export enum CONTRACT_ACTION {
   DENIED = 'denied',
 }
 
+export enum PRODUCT_INTEGRATION_TYPE {
+  DATA_CUBE = 'dataCube',
+  POWER_BI = 'powerBI',
+}
+
 type MarketplaceDataProductOrigin_TelemetryData = {
   type: DATAPRODUCT_TYPE;
   groupId?: string | undefined;
@@ -61,6 +66,13 @@ type MarketplaceDataProduct_TelemetryData = {
     | V1_EntitlementsLakehouseEnvironmentType
     | undefined;
 };
+
+type MarketPlaceDataProductIntegration_TemeletryData =
+  MarketplaceDataProduct_TelemetryData & {
+    productIntegrationType?: PRODUCT_INTEGRATION_TYPE | undefined;
+    accessPointGroup?: string | undefined;
+    accessPointPath?: string | undefined;
+  };
 
 export class LegendMarketplaceTelemetryHelper {
   static logEvent_ClickingDataProductCard(
@@ -167,6 +179,25 @@ export class LegendMarketplaceTelemetryHelper {
           };
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.LOAD_DATA_PRODUCT,
+      telemetryData,
+    );
+  }
+
+  static logEvent_OpenIntegratedProduct(
+    telemetryService: TelemetryService,
+    intTelemetryData: MarketPlaceDataProductIntegration_TemeletryData,
+    error: string | undefined,
+  ): void {
+    const telemetryData =
+      error === undefined
+        ? { ...intTelemetryData, status: MARKETPLACE_EVENT_STATUS.SUCCESS }
+        : {
+            ...intTelemetryData,
+            status: MARKETPLACE_EVENT_STATUS.FAILURE,
+            error: error,
+          };
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.OPEN_INTEGRATED_PRODUCT,
       telemetryData,
     );
   }
