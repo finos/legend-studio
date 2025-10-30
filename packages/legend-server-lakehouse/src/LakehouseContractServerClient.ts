@@ -28,6 +28,7 @@ import type {
   V1_UserPendingContractsResponse,
   V1_LiteDataContractsResponse,
   V1_TaskResponse,
+  V1_EntitlementsUserEnvResponse,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
@@ -246,6 +247,20 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
     this.get(
       `${this._dataProducts()}/${dataProductId}/deployments/${deploymentId}`,
+      {},
+      this._token(token),
+    );
+
+  // --------------------------------------- Org Resolver  ---------------------------------------
+
+  private _orgResolver = (): string => `${this.baseUrl}/orgResolver`;
+
+  getUserEntitlementEnvs = (
+    userId: string,
+    token: string | undefined,
+  ): Promise<V1_EntitlementsUserEnvResponse> =>
+    this.get(
+      `${this._orgResolver()}/${userId}/lakehouse/environment`,
       {},
       this._token(token),
     );

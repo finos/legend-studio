@@ -327,6 +327,10 @@ export {
   V1_User,
   V1_UserType,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
+export type {
+  V1_UserEntitlementEnvsResponse as V1_EntitlementsUserEnvResponse,
+  V1_UserEntitlementEnv as V1_EntitlementsUserEnv,
+} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsEnv.js';
 export {
   V1_AccessPointGroupStereotypeMapping,
   V1_AdHocDeploymentDataProductOrigin,
