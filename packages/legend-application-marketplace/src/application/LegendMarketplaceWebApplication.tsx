@@ -274,6 +274,26 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                 />
               }
             />
+
+            {/* Plugin additional pages */}
+            {/* We filter out any pages with duplicate paths to avoid overwriting main pages */}
+            {applicationStore.pluginManager
+              .getApplicationPlugins()
+              .flatMap(
+                (plugin) =>
+                  plugin.getAdditionalMarketplacePageConfigs?.() ?? [],
+              )
+              .filter(
+                (pageConfig) =>
+                  !(pageConfig.path in LEGEND_MARKETPLACE_ROUTE_PATTERN),
+              )
+              .map((pageConfig) => (
+                <Route
+                  key={pageConfig.path}
+                  path={pageConfig.path}
+                  element={pageConfig.element}
+                />
+              ))}
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
