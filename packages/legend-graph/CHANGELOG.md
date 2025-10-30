@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.3.10
+
+### Patch Changes
+
+- [#4590](https://github.com/finos/legend-studio/pull/4590) [`6520522`](https://github.com/finos/legend-studio/commit/652052207031fc696a0da4668672ef5bc9b7acaf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add User Entitlements Env Models
+
+- [#4582](https://github.com/finos/legend-studio/pull/4582) [`6e19be8`](https://github.com/finos/legend-studio/commit/6e19be87755ab88bf8ef79b328890a3d5a517b3c) ([@jackp5150](https://github.com/jackp5150)) - Build temporary matview datasets
+
 ## 32.3.9
 
 ### Patch Changes

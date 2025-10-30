@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.10
+
+### Patch Changes
+
+- [#4590](https://github.com/finos/legend-studio/pull/4590) [`6520522`](https://github.com/finos/legend-studio/commit/652052207031fc696a0da4668672ef5bc9b7acaf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `getUserEntitlementEnvs` for entitlements environment and leverage for open in data cube.
+
 ## 0.3.9
 
 ### Patch Changes

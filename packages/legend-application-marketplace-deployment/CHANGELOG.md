@@ -1,5 +1,7 @@
 # @finos/legend-application-marketplace-deployment
 
+## 13.152.0
+
 ## 13.151.0
 
 ## 13.150.0
