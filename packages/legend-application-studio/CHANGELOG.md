@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.19.58
+
+### Patch Changes
+
+- [#4582](https://github.com/finos/legend-studio/pull/4582) [`6e19be8`](https://github.com/finos/legend-studio/commit/6e19be87755ab88bf8ef79b328890a3d5a517b3c) ([@jackp5150](https://github.com/jackp5150)) - Add lineage viewer to ingest defnitions
+
+- [#4560](https://github.com/finos/legend-studio/pull/4560) [`97e6711`](https://github.com/finos/legend-studio/commit/97e67115b3a7d99b6590bed0ca39a2451e32bab0) ([@travisstebbins](https://github.com/travisstebbins)) - Update Material UI dependencies to latest versions (@mui/material 7.3.4, @mui/system 7.3.3, @mui/lab 7.0.1-beta.18, @mui/x-date-pickers 8.14.1) and complete migration from deprecated TransitionProps/PaperProps to the new slotProps API across all Material UI Dialog, Modal, Popover, and Tooltip components. Also resolve MUI v8 date picker compatibility issues.
+
+  Reduce Jest worker count from 100% to 2 in test:ci script to address CI memory exhaustion caused by MUI v7's increased memory footprint (documented in mui/material-ui#46908 and #45804, showing 2-5x memory increase during builds/tests).
+
 ## 28.19.57
 
 ## 28.19.56
