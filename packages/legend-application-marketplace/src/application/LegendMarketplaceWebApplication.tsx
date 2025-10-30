@@ -291,7 +291,13 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                 <Route
                   key={pageConfig.path}
                   path={pageConfig.path}
-                  element={pageConfig.element}
+                  element={
+                    pageConfig.protected
+                      ? React.createElement(
+                          useProtectedPage(pageConfig.component),
+                        )
+                      : React.createElement(pageConfig.component)
+                  }
                 />
               ))}
             <Route path="*" element={<NotFoundPage />} />

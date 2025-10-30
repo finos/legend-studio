@@ -25,9 +25,9 @@ import type {
 } from '@finos/legend-extension-dsl-data-product';
 import type React from 'react';
 
-interface AdditionalMarketplacePageConfigs {
+export interface AdditionalMarketplacePageConfigs {
   path: string;
-  element: React.ReactElement;
+  component: React.FC;
   protected: boolean;
 }
 
