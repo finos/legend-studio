@@ -48,6 +48,7 @@ import {
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ResourceType,
   V1_UserApprovalStatus,
+  V1_UserType,
 } from '@finos/legend-graph';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -204,7 +205,7 @@ const ContractEscalationModal = (props: {
     setIsLoading(true);
     try {
       await currentViewer.lakehouseContractServerClient.escalateUserOnContract(
-        currentViewer.value.guid,
+        currentViewer.liteContract.guid,
         selectedUser,
         false,
         auth.user?.access_token,
@@ -275,7 +276,7 @@ export const EntitlementsDataContractViewer = observer(
       initialSelectedUser,
     } = props;
     const auth = useAuth();
-    const consumer = currentViewer.value.consumer;
+    const consumer = currentViewer.liteContract.consumer;
 
     // We try to get the target users from the associated tasks first, since the
     // tasks are what drive the timeline view. If there are no associated tasks,
@@ -367,7 +368,8 @@ export const EntitlementsDataContractViewer = observer(
     };
 
     if (
-      currentViewer.value.resourceType !== V1_ResourceType.ACCESS_POINT_GROUP
+      currentViewer.liteContract.resourceType !==
+      V1_ResourceType.ACCESS_POINT_GROUP
     ) {
       return (
         <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
@@ -380,15 +382,15 @@ export const EntitlementsDataContractViewer = observer(
           </IconButton>
           <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
             Unable to display data contract request details for resource of type{' '}
-            {currentViewer.value.resourceType} on data product{' '}
-            {currentViewer.value.resourceId}.
+            {currentViewer.liteContract.resourceType} on data product{' '}
+            {currentViewer.liteContract.resourceId}.
           </DialogContent>
         </Dialog>
       );
     }
 
-    const dataProduct = currentViewer.value.resourceId;
-    const accessPointGroup = currentViewer.value.accessPointGroup;
+    const dataProduct = currentViewer.liteContract.resourceId;
+    const accessPointGroup = currentViewer.liteContract.accessPointGroup;
     const privilegeManagerApprovalTask = currentViewer.associatedTasks?.find(
       (task) =>
         task.rec.consumer === selectedTargetUser &&
@@ -403,18 +405,19 @@ export const EntitlementsDataContractViewer = observer(
       privilegeManagerApprovalTask?.rec.status ===
         V1_UserApprovalStatus.PENDING ||
       dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING;
-    // TODO: determine if the selected user is a system account. Anyone can
-    // escalate contract for system accounts.
     const showEscalationButton =
       selectedTargetUser ===
-      currentViewer.applicationStore.identityService.currentUser;
+        currentViewer.applicationStore.identityService.currentUser ||
+      (selectedTargetUser !== undefined &&
+        currentViewer.getContractUserType(selectedTargetUser) ===
+          V1_UserType.SYSTEM_ACCOUNT);
     const isContractEscalated =
       privilegeManagerApprovalTask?.rec.isEscalated === true;
     const canEscalateContract = showEscalationButton && !isContractEscalated;
 
     const copyContractId = (): void => {
       currentViewer.applicationStore.clipboardService
-        .copyTextToClipboard(currentViewer.value.guid)
+        .copyTextToClipboard(currentViewer.liteContract.guid)
         .then(() =>
           currentViewer.applicationStore.notificationService.notifySuccess(
             'Contract ID Copied to Clipboard',
@@ -598,7 +601,7 @@ export const EntitlementsDataContractViewer = observer(
                     className="marketplace-lakehouse-text__emphasis"
                     href={getDataProductUrl(
                       dataProduct,
-                      currentViewer.value.deploymentId,
+                      currentViewer.liteContract.deploymentId,
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -611,7 +614,7 @@ export const EntitlementsDataContractViewer = observer(
                   <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
                     <b>Ordered By: </b>
                     <UserRenderer
-                      userId={currentViewer.value.createdBy}
+                      userId={currentViewer.liteContract.createdBy}
                       applicationStore={currentViewer.applicationStore}
                       userSearchService={currentViewer.userSearchService}
                     />
@@ -665,10 +668,10 @@ export const EntitlementsDataContractViewer = observer(
                   </div>
                   <div>
                     <b>Business Justification: </b>
-                    {currentViewer.value.description}
+                    {currentViewer.liteContract.description}
                   </div>
                 </Box>
-                {!isContractInTerminalState(currentViewer.value) && (
+                {!isContractInTerminalState(currentViewer.liteContract) && (
                   <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
                     <Button
                       size="small"
@@ -709,7 +712,7 @@ export const EntitlementsDataContractViewer = observer(
               </>
             )}
             <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
-              Contract ID: {currentViewer.value.guid}
+              Contract ID: {currentViewer.liteContract.guid}
               <IconButton onClick={() => copyContractId()}>
                 <CopyIcon />
               </IconButton>
