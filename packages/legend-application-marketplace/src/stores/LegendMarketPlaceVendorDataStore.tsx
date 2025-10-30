@@ -15,7 +15,7 @@
  */
 
 import {
-  DataProduct,
+  type DataProduct,
   TerminalResult,
   type Filter,
   type LightDataProduct,
@@ -26,7 +26,7 @@ import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from './LegendMarketplaceBaseStore.js';
-import type { GeneratorFn } from '@finos/legend-shared';
+import { ActionState, type GeneratorFn } from '@finos/legend-shared';
 import { toastManager } from '../components/Toast/CartToast.js';
 
 export enum VendorDataProviderType {
@@ -43,6 +43,8 @@ export class LegendMarketPlaceVendorDataStore {
   responseLimit = 6;
 
   currentUser = '';
+
+  readonly fetchingProvidersState = ActionState.create();
 
   //Vendor Data Page
   terminalProviders: TerminalResult[] = [];
@@ -74,9 +76,7 @@ export class LegendMarketPlaceVendorDataStore {
       providers: observable,
       setProviders: action,
       init: flow,
-      dataProducts: observable,
       homeDataProducts: observable,
-      populateDataProducts: action,
       providersFilters: observable,
       setProvidersFilters: action,
     });
@@ -108,22 +108,6 @@ export class LegendMarketPlaceVendorDataStore {
     } catch (error) {
       this.applicationStore.notificationService.notifyError(
         `Failed to initialize vendors: ${error}`,
-      );
-    }
-
-    try {
-      yield this.populateDataProducts();
-      this.homeDataProducts = this.dataProducts.map(
-        (product) =>
-          ({
-            description: product.description,
-            provider: product.productName,
-            type: product.provider,
-          }) as LightDataProduct,
-      );
-    } catch (error) {
-      this.applicationStore.notificationService.notifyError(
-        `Failed to initialize data products: ${error}`,
       );
     }
   }
@@ -159,6 +143,8 @@ export class LegendMarketPlaceVendorDataStore {
         .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
         .join('');
 
+      this.fetchingProvidersState.inProgress();
+
       this.terminalProviders = (
         await this.marketplaceServerClient.getVendorsByCategory(
           this.currentUser,
@@ -184,6 +170,8 @@ export class LegendMarketPlaceVendorDataStore {
       this.applicationStore.notificationService.notifyError(
         `Failed to fetch vendors: ${error}`,
       );
+    } finally {
+      this.fetchingProvidersState.complete();
     }
   }
 
@@ -193,6 +181,7 @@ export class LegendMarketPlaceVendorDataStore {
       .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
       .join('');
 
+    this.fetchingProvidersState.inProgress();
     this.marketplaceServerClient
       .getVendorsByCategory(
         this.currentUser,
@@ -205,21 +194,11 @@ export class LegendMarketPlaceVendorDataStore {
         this.providers = response.map((json) => {
           return TerminalResult.serialization.fromJson(json);
         });
+        this.fetchingProvidersState.complete();
       })
       .catch((error) => {
         toastManager.error(`Failed to fetch vendors: ${error.message}`);
+        this.fetchingProvidersState.fail();
       });
-  }
-
-  async populateDataProducts(): Promise<void> {
-    try {
-      this.dataProducts = (
-        await this.marketplaceServerClient.getDataProducts(this.responseLimit)
-      ).map((json) => DataProduct.serialization.fromJson(json));
-    } catch (error) {
-      this.applicationStore.notificationService.notifyError(
-        `Failed to fetch data products: ${error}`,
-      );
-    }
   }
 }

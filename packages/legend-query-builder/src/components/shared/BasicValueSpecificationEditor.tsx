@@ -148,11 +148,13 @@ export const VariableInfoTooltip: React.FC<{
         arrow: 'value-spec-paramater__tooltip__arrow',
         tooltipPlacementRight: 'value-spec-paramater__tooltip--right',
       }}
-      TransitionProps={{
-        // disable transition
-        // NOTE: somehow, this is the only workaround we have, if for example
-        // we set `appear = true`, the tooltip will jump out of position
-        timeout: 0,
+      slotProps={{
+        transition: {
+          // disable transition
+          // NOTE: somehow, this is the only workaround we have, if for example
+          // we set `appear = true`, the tooltip will jump out of position
+          timeout: 0,
+        },
       }}
       title={
         <div className="value-spec-paramater__tooltip__content">

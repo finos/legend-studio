@@ -109,8 +109,10 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
         arrow: 'query-builder__tooltip__arrow',
         tooltipPlacementRight: 'query-builder__tooltip--right',
       }}
-      TransitionProps={{
-        timeout: 0,
+      slotProps={{
+        transition: {
+          timeout: 0,
+        },
       }}
       title={
         <div className="query-builder__tooltip__content">

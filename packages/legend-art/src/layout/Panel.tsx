@@ -345,6 +345,8 @@ export const PanelFormTextField = forwardRef<
     inputType?: string | undefined;
     darkMode?: boolean;
     fullWidth?: boolean;
+    hasError?: boolean;
+    errorClassName?: string;
   }
 >(function PanelFormTextField(props, ref) {
   const {
@@ -359,6 +361,8 @@ export const PanelFormTextField = forwardRef<
     darkMode,
     fullWidth,
     inputType,
+    hasError,
+    errorClassName,
   } = props;
 
   const inputValue = value ?? '';
@@ -373,7 +377,12 @@ export const PanelFormTextField = forwardRef<
       <div className="panel__content__form__section__header__label">
         {capitalize(name)}
       </div>
-      <div className="panel__content__form__section__header__prompt">
+      <div
+        className={clsx(
+          'panel__content__form__section__header__prompt',
+          hasError && errorClassName,
+        )}
+      >
         {prompt}
       </div>
       <div className="input-group">
@@ -383,6 +392,7 @@ export const PanelFormTextField = forwardRef<
             className,
             { 'input--dark': darkMode ? darkMode : true },
             { 'input--small': !fullWidth },
+            hasError && errorClassName,
           )}
           ref={ref}
           type={inputType ? inputType : 'text'}

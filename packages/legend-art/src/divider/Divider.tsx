@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import clsx from 'clsx';
+import { clsx } from '../utils/ComponentUtils.js';
 
 export const DividerWithText: React.FC<{
   children?: React.ReactNode;

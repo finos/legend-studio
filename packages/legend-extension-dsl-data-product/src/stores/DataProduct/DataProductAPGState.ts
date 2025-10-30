@@ -17,19 +17,21 @@
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type V1_AccessPointGroup,
-  type V1_DataSubscription,
-  type V1_User,
   type V1_ContractUserStatusResponse,
+  type V1_DataProductArtifact,
+  type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
+  type V1_EntitlementsDataProductDetails,
+  type V1_User,
   V1_DataContract,
-  V1_EnrichedUserApprovalStatus,
   V1_DataContractApprovedUsersResponseModelSchema,
   V1_dataContractsResponseModelSchemaToContracts,
+  V1_EnrichedUserApprovalStatus,
   V1_ContractUserStatusResponseModelSchema,
-  V1_dataSubscriptionModelSchema,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
+  V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
 } from '@finos/legend-graph';
 import {
@@ -55,6 +57,7 @@ import {
   DSL_DATAPRODUCT_EVENT,
   DSL_DATAPRODUCT_EVENT_STATUS,
 } from '../../__lib__/DSL_DataProduct_Event.js';
+import { DataProductAccessPointState } from './DataProductAccessPointState.js';
 
 export enum AccessPointGroupAccess {
   // can be used to indicate fetching or resyncing of group access
@@ -72,13 +75,15 @@ export class DataProductAPGState {
   readonly dataProductViewerState: DataProductViewerState;
   readonly applicationStore: GenericLegendApplicationStore;
   readonly apg: V1_AccessPointGroup;
+  readonly accessPointStates: DataProductAccessPointState[];
   readonly id = uuid();
 
   subscriptions: V1_DataSubscription[] = [];
 
+  apgContracts: V1_DataContract[] = [];
   // ASSUMPTION: one contract per user per group;
   // false here mentions contracts have not been fetched
-  associatedContract: V1_DataContract | undefined | false = false;
+  associatedUserContract: V1_DataContract | undefined | false = false;
   userAccessStatus: V1_EnrichedUserApprovalStatus | undefined = undefined;
 
   associatedSystemAccountContractsAndApprovedUsers: {
@@ -100,10 +105,13 @@ export class DataProductAPGState {
     makeAutoObservable(this, {
       handleContractClick: action,
       handleDataProductContracts: action,
-      associatedContract: observable,
+      apgContracts: observable,
+      associatedUserContract: observable,
       userAccessStatus: observable,
       associatedSystemAccountContractsAndApprovedUsers: observable,
-      setAssociatedContract: action,
+      setApgContracts: action,
+      setAssociatedUserContract: action,
+      init: flow,
       fetchAndSetAssociatedSystemAccountContracts: flow,
       subscriptions: observable,
       fetchingSubscriptionsState: observable,
@@ -118,6 +126,9 @@ export class DataProductAPGState {
     this.apg = group;
     this.dataProductViewerState = dataProductViewerState;
     this.applicationStore = dataProductViewerState.applicationStore;
+    this.accessPointStates = this.apg.accessPoints.map(
+      (ap) => new DataProductAccessPointState(this, ap),
+    );
   }
 
   get access(): AccessPointGroupAccess {
@@ -133,7 +144,7 @@ export class DataProductAPGState {
     ) {
       return AccessPointGroupAccess.ENTERPRISE;
     }
-    if (this.associatedContract === false) {
+    if (this.associatedUserContract === false) {
       return AccessPointGroupAccess.UNKNOWN;
     } else if (
       this.userAccessStatus ===
@@ -156,7 +167,7 @@ export class DataProductAPGState {
 
   get canCreateSubscription(): boolean {
     return (
-      (this.associatedContract instanceof V1_DataContract &&
+      (this.associatedUserContract instanceof V1_DataContract &&
         this.userAccessStatus === V1_EnrichedUserApprovalStatus.APPROVED) ||
       this.associatedSystemAccountContractsAndApprovedUsers.some(
         (contract) => contract.approvedUsers.length > 0,
@@ -164,20 +175,35 @@ export class DataProductAPGState {
     );
   }
 
-  setAssociatedContract(
+  setApgContracts(val: V1_DataContract[]): void {
+    this.apgContracts = val;
+  }
+
+  setAssociatedUserContract(
     val: V1_DataContract | undefined,
     lakehouseContractServerClient: LakehouseContractServerClient,
     token: string | undefined,
   ): void {
-    this.associatedContract = val;
+    this.associatedUserContract = val;
 
-    if (this.associatedContract) {
+    if (this.associatedUserContract) {
       this.fetchUserAccessStatus(
-        this.associatedContract.guid,
+        this.associatedUserContract.guid,
         lakehouseContractServerClient,
         token,
       );
     }
+  }
+
+  *init(
+    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
+    entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
+  ): GeneratorFn<void> {
+    yield Promise.all(
+      this.accessPointStates.map((ap) =>
+        ap.init(dataProductArtifactPromise, entitlementsDataProductDetails),
+      ),
+    );
   }
 
   *fetchAndSetAssociatedSystemAccountContracts(
@@ -235,6 +261,9 @@ export class DataProductAPGState {
       const accessPointGroupContracts = contracts.filter((_contract) =>
         dataContractContainsAccessGroup(this.apg, _contract),
       );
+
+      this.setApgContracts(accessPointGroupContracts);
+
       const rawAccessPointGroupContractsWithMembers = await Promise.all(
         accessPointGroupContracts.map((_contract) =>
           lakehouseContractServerClient.getDataContract(
@@ -269,7 +298,7 @@ export class DataProductAPGState {
       );
       // ASSUMPTION: one contract per user per group
       const userContract = userContracts[0];
-      this.setAssociatedContract(
+      this.setAssociatedUserContract(
         userContract,
         lakehouseContractServerClient,
         token,
@@ -293,8 +322,8 @@ export class DataProductAPGState {
       case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
       case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
       case AccessPointGroupAccess.APPROVED:
-        if (this.associatedContract) {
-          dataAccessState.setDataContract(this.associatedContract);
+        if (this.associatedUserContract) {
+          dataAccessState.setDataContract(this.associatedUserContract);
         }
         break;
       default:
@@ -331,22 +360,26 @@ export class DataProductAPGState {
   }
 
   *fetchSubscriptions(
-    contractId: string,
+    contracts: V1_DataContract[],
     lakehouseContractServerClient: LakehouseContractServerClient,
     token: string | undefined,
   ): GeneratorFn<void> {
     try {
       this.fetchingSubscriptionsState.inProgress();
-      const rawSubscriptions =
-        (yield lakehouseContractServerClient.getSubscriptionsForContract(
-          contractId,
-          token,
-        )) as V1_DataSubscriptionResponse;
-      const subscriptions = rawSubscriptions.subscriptions?.map(
-        (rawSubscription) =>
-          deserialize(V1_dataSubscriptionModelSchema, rawSubscription),
+      const rawSubscriptions = (
+        (yield Promise.all(
+          contracts.map(async (contract) =>
+            lakehouseContractServerClient.getSubscriptionsForContract(
+              contract.guid,
+              token,
+            ),
+          ),
+        )) as V1_DataSubscriptionResponse[]
+      ).flatMap((response) => response.subscriptions ?? []);
+      const subscriptions = rawSubscriptions.map((rawSubscription) =>
+        deserialize(V1_dataSubscriptionModelSchema, rawSubscription),
       );
-      this.setSubscriptions(subscriptions ?? []);
+      this.setSubscriptions(subscriptions);
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(`${error.message}`);
@@ -403,7 +436,7 @@ export class DataProductAPGState {
           `Subscription created`,
         );
         this.fetchSubscriptions(
-          contractId,
+          this.apgContracts,
           lakehouseContractServerClient,
           token,
         );

@@ -16,6 +16,7 @@
 
 import {
   hashArray,
+  uuid,
   type Hashable,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -39,6 +40,7 @@ import type { Association } from '../packageableElements/domain/Association.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
+  title: string | undefined;
   description: string | undefined;
 
   constructor(id: string) {
@@ -55,15 +57,19 @@ export abstract class AccessPoint implements Hashable {
 }
 
 export class FunctionAccessPoint extends AccessPoint {
-  func: RawLambda;
+  query: RawLambda;
 
-  constructor(id: string, func: RawLambda) {
+  constructor(id: string, query: RawLambda) {
     super(id);
-    this.func = func;
+    this.query = query;
   }
 
   override get hashCode(): string {
-    return hashArray([super.hashCode, this.func]);
+    return hashArray([
+      super.hashCode,
+      CORE_HASH_STRUCTURE.FUNCTION_ACCESS_POINT,
+      this.query,
+    ]);
   }
 }
 
@@ -156,6 +162,7 @@ export class DataProductDiagram implements Hashable {
 
 export class AccessPointGroup extends AnnotatedElement implements Hashable {
   id!: string;
+  title: string | undefined;
   description: string | undefined;
   accessPoints: AccessPoint[] = [];
 
@@ -343,6 +350,20 @@ export class ExternalDataProductType extends DataProductType {
   }
 }
 
+export class Expertise implements Hashable {
+  readonly uuid = uuid();
+  description: string | undefined;
+  expertIds: string[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_EXPERTISE,
+      this.description ?? '',
+      hashArray(this.expertIds ?? []),
+    ]);
+  }
+}
+
 export class DataProduct extends PackageableElement {
   title: string | undefined;
   description: string | undefined;
@@ -352,6 +373,7 @@ export class DataProduct extends PackageableElement {
   accessPointGroups: AccessPointGroup[] = [];
   supportInfo: SupportInfo | undefined;
   type: DataProductType | undefined;
+  expertise: Expertise[] | undefined;
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -372,6 +394,7 @@ export class DataProduct extends PackageableElement {
       this.type ?? '',
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
+      hashArray(this.expertise ?? []),
     ]);
   }
 }

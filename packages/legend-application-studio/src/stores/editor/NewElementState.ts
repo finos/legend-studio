@@ -90,6 +90,7 @@ import {
   ModelAccessPointGroup,
   stub_Mapping,
   DataProductRuntimeInfo,
+  InternalDataProductType,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -117,6 +118,7 @@ import { createEmbeddedData } from './editor-state/element-editor-state/data/Emb
 import {
   dataProduct_addAccessPointGroup,
   dataProduct_setTitle,
+  dataProduct_setType,
 } from '../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 
 export const CUSTOM_LABEL = '(custom)';
@@ -547,6 +549,7 @@ export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct>
   override createElement(name: string): DataProduct {
     const dataProduct = new DataProduct(name);
     dataProduct_setTitle(dataProduct, this.title);
+    dataProduct_setType(dataProduct, new InternalDataProductType());
 
     if (this.type === DataProductType.LAKEHOUSE) {
       const defaultGroup = new AccessPointGroup();

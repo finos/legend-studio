@@ -589,8 +589,10 @@ const VirtualAssistantPanel = observer(
         // to make this popover behave like a popper
         // NOTE: we will cancel the effect of click-away trap using CSS
         hideBackdrop={true}
-        PaperProps={{
-          classes: { root: 'virtual-assistant__panel__container__root' },
+        slotProps={{
+          paper: {
+            classes: { root: 'virtual-assistant__panel__container__root' },
+          },
         }}
         // allow other modals to take the focus from the virtual assistant
         disableEnforceFocus={true}

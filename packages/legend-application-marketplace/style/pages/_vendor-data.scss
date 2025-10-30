@@ -79,6 +79,16 @@
   width: 100%;
   gap: 10px;
 
+  &__loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 60vh;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
   .legend-marketplace-vendordata-main-sidebar {
     width: 15%;
     padding: 20px;

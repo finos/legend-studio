@@ -14,30 +14,60 @@
  * limitations under the License.
  */
 import { observer } from 'mobx-react-lite';
-import { FormTextInput } from '@finos/legend-data-cube';
+import { DataCubeCodeEditor, FormTextInput } from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useEffect } from 'react';
 import type { LakehouseConsumerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseConsumerDataCubeSourceBuilderState.js';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
+import {
+  buildIngestDeploymentServerConfigOption,
+  type IngestDeploymentServerConfigOption,
+} from '@finos/legend-server-lakehouse';
+import { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
 
 export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
   sourceBuilder: LakehouseConsumerDataCubeSourceBuilderState;
-}> = observer(({ sourceBuilder: state }) => {
+}> = observer(({ sourceBuilder }) => {
   const auth = useAuth();
   const store = useLegendDataCubeBuilderStore();
+  const envOptions = sourceBuilder.environments
+    .map(buildIngestDeploymentServerConfigOption)
+    // not include dev
+    .filter(
+      (config) =>
+        config.value.environmentClassification !==
+        V1_IngestEnvironmentClassification.DEV,
+    )
+    .sort(
+      (a, b) =>
+        a.value.environmentName.localeCompare(b.value.environmentName) ||
+        a.value.environmentClassification.localeCompare(
+          b.value.environmentClassification,
+        ),
+    );
+
+  const selectedEnvOption = sourceBuilder.selectedEnvironment
+    ? buildIngestDeploymentServerConfigOption(sourceBuilder.selectedEnvironment)
+    : null;
+  const onEnvChange = (newValue: IngestDeploymentServerConfigOption | null) => {
+    sourceBuilder.setSelectedEnvironment(newValue?.value ?? undefined);
+    sourceBuilder
+      .fetchAccessPoints()
+      .catch((error) => store.alertService.alertUnhandledError(error));
+  };
 
   useEffect(() => {
-    state.reset();
+    sourceBuilder.reset();
     try {
-      state.loadDataProducts(auth.user?.access_token);
-      state.fetchEnvironment(auth.user?.access_token);
+      sourceBuilder.loadDataProducts(auth.user?.access_token);
+      sourceBuilder.fetchEnvironment(auth.user?.access_token);
     } catch (error) {
       assertErrorThrown(error);
       store.alertService.alertUnhandledError(error);
     }
-  }, [state, auth, store]);
+  }, [sourceBuilder, auth, store]);
 
   return (
     <div className="flex h-full w-full">
@@ -46,28 +76,28 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
           <div className="query-setup__wizard__group__title">Data Product</div>
           <CustomSelectorInput
             className="query-setup__wizard__selector text-nowrap"
-            options={state.dataProducts.map((dataProduct) => ({
+            options={sourceBuilder.dataProducts.map((dataProduct) => ({
               label: guaranteeNonNullable(dataProduct.fullPath),
               value: guaranteeNonNullable(dataProduct.fullPath),
             }))}
             disabled={
-              state.dataProductLoadingState.isInProgress ||
-              state.dataProductLoadingState.hasFailed
+              sourceBuilder.dataProductLoadingState.isInProgress ||
+              sourceBuilder.dataProductLoadingState.hasFailed
             }
-            isLoading={state.dataProductLoadingState.isInProgress}
+            isLoading={sourceBuilder.dataProductLoadingState.isInProgress}
             onChange={(newValue: { label: string; value: string } | null) => {
-              state.setSelectedDataProduct(newValue?.value ?? '');
-              state
+              sourceBuilder.setSelectedDataProduct(newValue?.value ?? '');
+              sourceBuilder
                 .fetchDataProduct(auth.user?.access_token)
                 .catch((error) =>
                   store.alertService.alertUnhandledError(error),
                 );
             }}
             value={
-              state.selectedDataProduct
+              sourceBuilder.selectedDataProduct
                 ? {
-                    label: state.selectedDataProduct,
-                    value: state.selectedDataProduct,
+                    label: sourceBuilder.selectedDataProduct,
+                    value: sourceBuilder.selectedDataProduct,
                   }
                 : null
             }
@@ -76,79 +106,98 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {state.environments.length > 0 && (
+        {sourceBuilder.environments.length > 0 && (
           <div className="query-setup__wizard__group mt-3">
             <div className="query-setup__wizard__group__title">Environment</div>
             <CustomSelectorInput
               className="query-setup__wizard__selector text-nowrap"
-              options={state.environments.map((env) => ({
-                label: env,
-                value: env,
-              }))}
+              options={envOptions}
               disabled={
-                state.ingestEnvLoadingState.isInProgress ||
-                state.ingestEnvLoadingState.hasFailed
+                sourceBuilder.ingestEnvLoadingState.isInProgress ||
+                sourceBuilder.ingestEnvLoadingState.hasFailed ||
+                !sourceBuilder.selectedDataProduct
               }
-              isLoading={state.ingestEnvLoadingState.isInProgress}
-              onChange={(newValue: { label: string; value: string } | null) => {
-                state.setSelectedEnvironment(newValue?.value ?? '');
-                state.fetchAccessPoints();
+              isLoading={sourceBuilder.ingestEnvLoadingState.isInProgress}
+              onChange={(
+                newValue: IngestDeploymentServerConfigOption | null,
+              ) => {
+                onEnvChange(newValue);
               }}
-              value={
-                state.selectedEnvironment
-                  ? {
-                      label: state.selectedEnvironment,
-                      value: state.selectedEnvironment,
-                    }
-                  : null
-              }
+              value={selectedEnvOption}
               placeholder={`Choose an Environment`}
               isClearable={false}
               escapeClearsValue={true}
             />
           </div>
         )}
-        {state.accessPoints.length > 0 && state.selectedEnvironment && (
-          <div className="query-setup__wizard__group mt-2">
-            <div className="query-setup__wizard__group__title">
-              Access Point
+        {sourceBuilder.accessPoints.length > 0 &&
+          sourceBuilder.selectedEnvironment && (
+            <div className="query-setup__wizard__group mt-2">
+              <div className="query-setup__wizard__group__title">
+                Access Point
+              </div>
+              <CustomSelectorInput
+                className="query-setup__wizard__selector"
+                options={sourceBuilder.accessPoints.map((accessPoint) => ({
+                  label: accessPoint,
+                  value: accessPoint,
+                }))}
+                disabled={false}
+                isLoading={false}
+                onChange={(
+                  newValue: { label: string; value: string } | null,
+                ) => {
+                  const accessPoint = newValue?.value ?? '';
+                  sourceBuilder.setSelectedAccessPoint(accessPoint);
+                  sourceBuilder.setWarehouse(
+                    sourceBuilder.DEFAULT_CONSUMER_WAREHOUSE,
+                  );
+                  sourceBuilder
+                    .initializeQuery()
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
+                }}
+                value={
+                  sourceBuilder.selectedAccessPoint
+                    ? {
+                        label: sourceBuilder.selectedAccessPoint,
+                        value: sourceBuilder.selectedAccessPoint,
+                      }
+                    : null
+                }
+                isClearable={false}
+                escapeClearsValue={true}
+              />
             </div>
-            <CustomSelectorInput
-              className="query-setup__wizard__selector"
-              options={state.accessPoints.map((accessPoint) => ({
-                label: accessPoint,
-                value: accessPoint,
-              }))}
-              disabled={false}
-              isLoading={false}
-              onChange={(newValue: { label: string; value: string } | null) => {
-                const accessPoint = newValue?.value ?? '';
-                state.setSelectedAccessPoint(accessPoint);
-                state.setWarehouse(state.DEFAULT_CONSUMER_WAREHOUSE);
-              }}
-              value={
-                state.selectedAccessPoint
-                  ? {
-                      label: state.selectedAccessPoint,
-                      value: state.selectedAccessPoint,
-                    }
-                  : null
-              }
-              isClearable={false}
-              escapeClearsValue={true}
-            />
-          </div>
-        )}
-        {state.selectedAccessPoint && (
+          )}
+        {sourceBuilder.selectedAccessPoint && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">Warehouse</div>
             <FormTextInput
               className="w-full text-base text-black"
-              value={state.warehouse}
+              value={sourceBuilder.warehouse}
               onChange={(event) => {
-                state.setWarehouse(event.target.value);
+                sourceBuilder.setWarehouse(event.target.value);
               }}
             />
+          </div>
+        )}
+        {sourceBuilder.warehouse && sourceBuilder.showQueryEditor && (
+          <div className="query-setup__wizard__group">
+            <div className="query-setup__wizard__group__title">Query</div>
+
+            <div
+              className="mt-2 h-40 w-full"
+              style={{
+                border: '2px solid #e5e7eb',
+                padding: '5px',
+                borderRadius: '5px',
+                position: 'relative',
+              }}
+            >
+              <DataCubeCodeEditor state={sourceBuilder.codeEditorState} />
+            </div>
           </div>
         )}
       </div>

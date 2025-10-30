@@ -267,9 +267,9 @@ export const EntitlementsDataContractViewer = observer(
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
-      if (apgState?.associatedContract) {
+      if (apgState?.associatedUserContract) {
         apgState.fetchUserAccessStatus(
-          apgState.associatedContract.guid,
+          apgState.associatedUserContract.guid,
           currentViewer.lakehouseContractServerClient,
           auth.user?.access_token,
         );

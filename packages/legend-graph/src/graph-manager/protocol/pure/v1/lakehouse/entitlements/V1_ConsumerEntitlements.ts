@@ -161,6 +161,22 @@ export abstract class V1_ContractUserEventPayload {
   eventTimestamp!: string;
 }
 
+export class V1_TerminalOrderItem {
+  providerName!: string;
+  productName!: string;
+  category!: string;
+  price!: number;
+  id!: number;
+  perm_id?: number;
+}
+
+export class V1_TerminalProvisionPayload {
+  ordered_by!: string;
+  kerberos!: string;
+  order_items!: Record<number, V1_TerminalOrderItem[]>;
+  business_justification!: string;
+}
+
 export class V1_ContractUserEventPrivilegeManagerPayload extends V1_ContractUserEventPayload {
   candidateIdentity!: string;
   managerIdentity!: string;

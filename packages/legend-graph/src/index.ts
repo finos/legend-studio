@@ -187,7 +187,10 @@ export { V1_GenerateSchemaInput } from './graph-manager/protocol/pure/v1/engine/
 export {
   V1_AccessPoint,
   V1_AccessPointGroup,
+  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProduct,
+  V1_DataProductRegion,
+  V1_DeliveryFrequency,
   V1_DataProductDiagram,
   V1_DataProductEmbeddedImageIcon,
   V1_DataProductIcon,
@@ -305,8 +308,14 @@ export {
   V1_TaskResponse,
   V1_TaskStatus,
   V1_TaskStatusChangeResponse,
+  V1_TerminalOrderItem,
+  V1_TerminalProvisionPayload,
   V1_UserApprovalStatus,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_ConsumerEntitlements.js';
+export {
+  V1_getEntitlementsEnvFromIngestEnv,
+  V1_isIngestEnvsCompatibleWithEntitlements,
+} from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_CoreLakehouseHelper.js';
 export {
   V1_AdhocTeam,
   V1_AppDirLevel,
@@ -318,6 +327,10 @@ export {
   V1_User,
   V1_UserType,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
+export type {
+  V1_UserEntitlementEnvsResponse as V1_EntitlementsUserEnvResponse,
+  V1_UserEntitlementEnv as V1_EntitlementsUserEnv,
+} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsEnv.js';
 export {
   V1_AccessPointGroupStereotypeMapping,
   V1_AdHocDeploymentDataProductOrigin,
@@ -357,6 +370,7 @@ export {
   V1_pendingTasksResponseModelSchema,
   V1_SdlcDeploymentDataProductOriginModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
+  V1_terminalProvisionPayloadModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
 export {
   V1_CreateSubscriptionInput,
@@ -368,15 +382,7 @@ export {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
-export {
-  V1_DataProductArtifactAccessPointGroup,
-  V1_DataProductArtifactAccessPointImplementation,
-  V1_DataProductArtifactDataProduct,
-  V1_DataProductArtifactGeneration,
-  V1_DataProductArtifactResourceBuilder,
-  V1_DataProductDefinitionAndArtifact,
-  V1_SandboxDataProductDeploymentResponse,
-} from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
+export * from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
 export {
   V1_IngestEnvironmentType,
   V1_IngestEnvironmentClassification,
@@ -525,7 +531,6 @@ export {
 export { ExecutionError } from './graph-manager/action/ExecutionError.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';
 export * from './graph-manager/action/generation/ArtifactGenerationExtensionResult.js';
-export * from './graph-manager/action/generation/dataProduct/DataProductArtifactGeneration.js';
 
 export * from './graph-manager/action/execution/ExecutionResultHelper.js';
 export * from './graph-manager/PureGraphManagerPlugin.js';
@@ -731,6 +736,8 @@ export {
   DataProductIcon,
   DataProductLibraryIcon,
   DataProductLink,
+  DataProduct_DeliveryFrequency,
+  DataProduct_Region,
   Email,
   FunctionAccessPoint,
   LakehouseAccessPoint,
@@ -741,7 +748,10 @@ export {
   UnknownDataProductIcon,
   DataProductElementScope,
   DataProductDiagram,
+  DataProductType,
   InternalDataProductType,
+  Expertise,
+  ExternalDataProductType,
   type DataProductElement,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';

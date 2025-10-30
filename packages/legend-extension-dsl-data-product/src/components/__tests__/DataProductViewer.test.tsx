@@ -24,14 +24,14 @@ import {
   type V1_TaskResponse,
   V1_AccessPointGroupReferenceType,
   V1_ContractState,
-  V1_dataProductModelSchema,
   V1_EnrichedUserApprovalStatus,
-  V1_EntitlementsDataProductDetailsModelSchema,
   V1_OrganizationalScopeType,
   V1_UserType,
 } from '@finos/legend-graph';
 import {
+  getMockDataProductGenerationFilesByType,
   mockEnterpriseDataProduct,
+  mockEntitlementsAdHocDataProduct,
   mockEntitlementsEnterpriseDataProduct,
   mockEntitlementsSDLCDataProduct,
   mockEntitlementsSDLCDataProductNoSupportInfo,
@@ -49,10 +49,12 @@ import {
   TEST__getDataProductDataAccessState,
   TEST__getDataProductViewerState,
 } from '../__test-utils__/StateTestUtils.js';
-import { deserialize } from 'serializr';
 import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
 import { flowResult } from 'mobx';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import type {
+  ProjectGAVCoordinates,
+  StoredFileGeneration,
+} from '@finos/legend-storage';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -80,22 +82,13 @@ jest.mock('swiper/modules', () => ({
   }));
 
 const setupLakehouseDataProductTest = async (
-  dataProductObject: PlainObject<V1_DataProduct>,
-  entitlementsDataProductDetailsObject:
-    | PlainObject<V1_EntitlementsDataProductDetails>
-    | undefined,
+  dataProduct: V1_DataProduct,
+  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails | undefined,
   mockContracts: V1_DataContract[],
   projectGAVCoordinates?: ProjectGAVCoordinates,
+  mockGenerationFiles?: StoredFileGeneration[],
 ) => {
-  const dataProduct = deserialize(V1_dataProductModelSchema, dataProductObject);
-  const entitlementsDataProductDetails = entitlementsDataProductDetailsObject
-    ? deserialize(
-        V1_EntitlementsDataProductDetailsModelSchema,
-        entitlementsDataProductDetailsObject,
-      )
-    : undefined;
-
-  const dataProductViewerState = TEST__getDataProductViewerState(
+  const dataProductViewerState = await TEST__getDataProductViewerState(
     dataProduct,
     projectGAVCoordinates,
   );
@@ -179,42 +172,54 @@ const setupLakehouseDataProductTest = async (
   createSpy(
     dataProductViewerState.engineServerClient,
     'lambdaRelationType',
-  ).mockResolvedValue({
-    _type: 'relationType',
-    columns: [
-      {
-        name: 'varchar_val',
-        multiplicity: {
-          lowerBound: 1,
-          upperBound: 1,
-        },
-        genericType: {
-          multiplicityArguments: [],
-          typeArguments: [],
-          rawType: {
-            _type: 'packageableType',
-            fullPath: 'meta::pure::precisePrimitives::Varchar',
+  ).mockImplementation(async () => {
+    return new Promise((resolve) => {
+      const response = {
+        _type: 'relationType',
+        columns: [
+          {
+            name: 'varchar_val',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            genericType: {
+              multiplicityArguments: [],
+              typeArguments: [],
+              rawType: {
+                _type: 'packageableType',
+                fullPath: 'meta::pure::precisePrimitives::Varchar',
+              },
+              typeVariableValues: [{ _type: 'integer', value: 32 }],
+            },
           },
-          typeVariableValues: [{ _type: 'integer', value: 32 }],
-        },
-      },
-      {
-        name: 'int_val',
-        multiplicity: {
-          lowerBound: 1,
-          upperBound: 1,
-        },
-        genericType: {
-          multiplicityArguments: [],
-          typeArguments: [],
-          rawType: {
-            _type: 'packageableType',
-            fullPath: 'meta::pure::precisePrimitives::Int',
+          {
+            name: 'int_val',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            genericType: {
+              multiplicityArguments: [],
+              typeArguments: [],
+              rawType: {
+                _type: 'packageableType',
+                fullPath: 'meta::pure::precisePrimitives::Int',
+              },
+              typeVariableValues: [],
+            },
           },
-          typeVariableValues: [],
-        },
-      },
-    ],
+        ],
+      };
+
+      if (mockGenerationFiles) {
+        // Simulate engine response taking some time to ensure the artifact is used
+        // instead of the engine response
+        setTimeout(() => resolve(response), 500);
+      } else {
+        resolve(response);
+      }
+    });
   });
 
   createSpy(
@@ -232,6 +237,18 @@ const setupLakehouseDataProductTest = async (
     ];
   });
 
+  // depotServerClient spies
+  createSpy(
+    dataProductViewerState.depotServerClient,
+    'getGenerationFilesByType',
+  ).mockResolvedValue(
+    mockGenerationFiles
+      ? (mockGenerationFiles as unknown as PlainObject<StoredFileGeneration>[])
+      : [],
+  );
+
+  dataProductViewerState.init(entitlementsDataProductDetails);
+
   let renderResult;
 
   await act(async () => {
@@ -240,7 +257,7 @@ const setupLakehouseDataProductTest = async (
       <AuthProvider>
         <ProductViewer
           productViewerState={dataProductViewerState}
-          dataProductDataAccessState={dataProductDataAccessState}
+          productDataAccessState={dataProductDataAccessState}
         />
       </AuthProvider>,
     );
@@ -264,9 +281,9 @@ describe('DataProductViewer', () => {
       screen.getByText(
         'Comprehensive customer analytics data for business intelligence and reporting',
       );
-      screen.getByText('GROUP1');
+      screen.getByText('Main Group Test');
       screen.getByText('Test access point group');
-      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer Demographics');
       await screen.findByText('Customer demographics data access point');
     });
 
@@ -277,22 +294,53 @@ describe('DataProductViewer', () => {
       screen.getByText(
         'Comprehensive customer analytics data for business intelligence and reporting',
       );
-      screen.getByText('GROUP1');
+      screen.getByText('Main Group Test');
       screen.getByText('Test access point group');
-      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer Demographics');
       await screen.findByText('Customer demographics data access point');
     });
 
-    test('Access Point "More Info" button shows table with access point columns and types', async () => {
+    test('Access Point Column Specifications table shows columns and types from artifact when data product artifact is present', async () => {
       await setupLakehouseDataProductTest(
         mockSDLCDataProduct,
         mockEntitlementsSDLCDataProduct,
         [],
+        {
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '1.0.0',
+        },
+        getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
       );
 
-      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer Demographics');
       await screen.findByText('Customer demographics data access point');
-      await screen.findByText('GROUP1');
+      screen.getByText('Main Group Test');
+      await screen.findByText('Column Name');
+      screen.getByText('Column Type');
+
+      await screen.findByText('artifact_varchar_val');
+      screen.getByText('Varchar(500)');
+      screen.getByText('artifact_int_val');
+      screen.getByText('Int');
+    });
+
+    test('Access Point Column Specifications table shows columns and types from engine for SDLC data product when data product artifact is not present', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        {
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '1.0.0',
+        },
+      );
+
+      await screen.findByText('Customer Demographics');
+      await screen.findByText('Customer demographics data access point');
+      screen.getByText('Main Group Test');
+
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
 
@@ -302,16 +350,16 @@ describe('DataProductViewer', () => {
       screen.getByText('Int');
     });
 
-    test('Access Point "More Info" button shows table with access point columns and types even when DataProductDataAccessState is not configured', async () => {
-      await setupLakehouseDataProductTest(mockSDLCDataProduct, undefined, [], {
-        groupId: 'test.group',
-        artifactId: 'test-artifact',
-        versionId: '1.0.0',
-      });
+    test('Access Point Column Specifications table shows columns and types from engine for ad-hoc data product when data product artifact is not present', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsAdHocDataProduct,
+        [],
+      );
 
-      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer Demographics');
       await screen.findByText('Customer demographics data access point');
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
 
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
@@ -385,7 +433,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const requestAccessButton = await screen.findByRole('button', {
         name: 'REQUEST ACCESS',
       });
@@ -403,7 +451,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 
@@ -487,7 +535,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const pendingButton = await screen.findByRole('button', {
         name: 'PENDING MANAGER APPROVAL',
       });
@@ -533,7 +581,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 
@@ -620,7 +668,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const pendingButton = await screen.findByRole('button', {
         name: 'PENDING DATA OWNER APPROVAL',
       });
@@ -666,7 +714,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 
@@ -785,7 +833,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const entitledButton = await screen.findByRole('button', {
         name: 'ENTITLED',
       });
@@ -831,7 +879,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 
@@ -901,7 +949,7 @@ describe('DataProductViewer', () => {
         mockContracts,
       );
 
-      await screen.findByText('GROUP1');
+      await screen.findByText('Main Group Test');
       const secondaryButton = await screen.findByTitle('More options');
       fireEvent.click(secondaryButton);
 

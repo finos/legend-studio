@@ -1,5 +1,27 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.151.0
+
+## 13.150.0
+
+## 13.149.0
+
+## 13.148.0
+
+## 13.147.0
+
+### Patch Changes
+
+- [#4507](https://github.com/finos/legend-studio/pull/4507) [`f721233`](https://github.com/finos/legend-studio/commit/f721233f26d3d6d1afb3b4820ed3bcead15a618b) ([@travisstebbins](https://github.com/travisstebbins)) - Filter data products by env in config instead of UI filters
+
+## 13.146.0
+
+### Patch Changes
+
+- [#4551](https://github.com/finos/legend-studio/pull/4551) [`69bc7f2`](https://github.com/finos/legend-studio/commit/69bc7f270080b56414da6525aca51b61a2a83cbf) ([@travisstebbins](https://github.com/travisstebbins)) - Update setup.js script config
+
+## 13.145.0
+
 ## 13.144.0
 
 ## 13.143.0

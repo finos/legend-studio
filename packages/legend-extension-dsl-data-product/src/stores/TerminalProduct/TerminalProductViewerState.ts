@@ -14,28 +14,25 @@
  * limitations under the License.
  */
 
-import type { V1_Terminal } from '@finos/legend-graph';
 import { BaseViewerState } from '../BaseViewerState.js';
-import type { TerminalProductLayoutState } from '../BaseLayoutState.js';
 import { TERMINAL_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
+import type { V1_Terminal } from '@finos/legend-graph';
+import type { TerminalProductLayoutState } from '../BaseLayoutState.js';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
 
 export class TerminalProductViewerState extends BaseViewerState<
   V1_Terminal,
   TerminalProductLayoutState
 > {
-  public override getTitle(): string | undefined {
-    return this.product.productName;
+  constructor(
+    applicationStore: GenericLegendApplicationStore,
+    product: V1_Terminal,
+    terminalProductLayoutState: TerminalProductLayoutState,
+  ) {
+    super(product, applicationStore, terminalProductLayoutState);
   }
 
-  public override getPath(): string | undefined {
-    return undefined;
-  }
-
-  public override getName(): string | undefined {
-    return undefined;
-  }
-
-  protected override getValidSections(): string[] {
+  protected getValidSections(): string[] {
     return Object.values(TERMINAL_PRODUCT_VIEWER_SECTION).map((section) =>
       section.toString(),
     );

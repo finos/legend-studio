@@ -1,5 +1,19 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.9
+
+### Patch Changes
+
+- [#4571](https://github.com/finos/legend-studio/pull/4571) [`7ab2dde`](https://github.com/finos/legend-studio/commit/7ab2dde288b8ca18494e5c819354518e0554ca2c) ([@jackp5150](https://github.com/jackp5150)) - Added serialization for terminals
+
+## 0.3.8
+
+## 0.3.7
+
+### Patch Changes
+
+- [#4551](https://github.com/finos/legend-studio/pull/4551) [`69bc7f2`](https://github.com/finos/legend-studio/commit/69bc7f270080b56414da6525aca51b61a2a83cbf) ([@travisstebbins](https://github.com/travisstebbins)) - Remove unused getDeployedIngestDefinitions function
+
 ## 0.3.6
 
 ## 0.3.5

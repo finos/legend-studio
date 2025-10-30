@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-application';
 import type { AuthProviderProps } from 'react-oidc-context';
 import { DataProductConfig } from '@finos/legend-extension-dsl-data-product';
+import { LegendMarketplaceEnv } from '../stores/LegendMarketplaceEnvState.js';
 
 class LegendMarketplaceApplicationCoreOptions {
   dataProductConfig: DataProductConfig | undefined;
@@ -79,11 +80,14 @@ export interface LegendMarketplaceApplicationConfigurationData
   marketplace: {
     url: string;
     subscriptionUrl: string;
+    dataProductEnv: string;
+    adjacentEnvUrl?: string;
     userSearchUrl?: string | undefined;
     userProfileImageUrl?: string | undefined;
     oidcConfig?: LegendMarketplaceOidcConfig | undefined;
   };
   depot: { url: string };
+  terminal: { url: string };
   engine: {
     url: string;
     queryUrl?: string;
@@ -129,12 +133,15 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
 
   readonly marketplaceServerUrl: string;
   readonly marketplaceSubscriptionUrl: string;
+  readonly dataProductEnv: LegendMarketplaceEnv;
+  readonly adjacentEnvUrl: string | undefined;
   readonly marketplaceUserSearchUrl?: string | undefined;
   readonly marketplaceUserProfileImageUrl?: string | undefined;
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
   readonly datacubeApplicationUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
+  readonly terminalServerUrl: string;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl: string;
   readonly lakehousePlatformUrl: string;
@@ -172,6 +179,24 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
           `Can't configure application: 'marketplace.marketplaceSubscriptionUrl' field is missing or empty`,
         ),
       );
+    if (!input.configData.marketplace.dataProductEnv) {
+      throw new Error(
+        `Can't configure application: 'marketplace.dataProductEnv' field is missing or empty`,
+      );
+    }
+    switch (input.configData.marketplace.dataProductEnv) {
+      case 'prod':
+        this.dataProductEnv = LegendMarketplaceEnv.PRODUCTION;
+        break;
+      case 'prod-par':
+        this.dataProductEnv = LegendMarketplaceEnv.PRODUCTION_PARALLEL;
+        break;
+      default:
+        throw new Error(
+          `Can't configure application: 'marketplace.dataProductEnv' field must be 'prod' or 'prod-par'`,
+        );
+    }
+    this.adjacentEnvUrl = input.configData.marketplace.adjacentEnvUrl;
     if (input.configData.marketplace.userSearchUrl) {
       this.marketplaceUserSearchUrl =
         LegendApplicationConfig.resolveAbsoluteUrl(
@@ -218,6 +243,18 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       guaranteeNonEmptyString(
         input.configData.depot.url,
         `Can't configure application: 'depot.url' field is missing or empty`,
+      ),
+    );
+
+    // Terminal
+    assertNonNullable(
+      input.configData.terminal,
+      `Can't configure application: 'terminal' field is missing`,
+    );
+    this.terminalServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.terminal.url,
+        `Can't configure application: 'terminal.url' field is missing or empty`,
       ),
     );
 

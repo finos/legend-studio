@@ -53,9 +53,6 @@ export abstract class BaseViewerState<
   }
 
   protected abstract getValidSections(): string[];
-  public abstract getTitle(): string | undefined;
-  public abstract getPath(): string | undefined;
-  public abstract getName(): string | undefined;
 
   changeZone(zone: NavigationZone, force = false): void {
     if (force) {

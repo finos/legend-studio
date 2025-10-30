@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 import { INTERNAL__UnknownPackageableElement } from '../INTERNAL__UnknownPackageableElement.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
 
@@ -22,9 +23,36 @@ export class AppDirNode {
   level!: string;
 }
 
+export interface TEMPORARY_IngestLambdaFunction {
+  _type: string;
+  body: unknown[];
+  parameters?: unknown[];
+}
+
+export interface TEMPORARY_IngestDataset {
+  name: string;
+  source?: {
+    _type: string;
+    function?: TEMPORARY_IngestLambdaFunction;
+  };
+}
+
+export interface TEMPORARY_IngestContent {
+  _type: string;
+  datasets?: TEMPORARY_IngestDataset[];
+}
+
+export interface MatViewDataSet {
+  name: string;
+  source: {
+    function: RawLambda;
+  };
+}
+
 // will extend UnknownPackageableElement for now until we want to expose more of the forms
 export class IngestDefinition extends INTERNAL__UnknownPackageableElement {
   appDirDeployment?: AppDirNode;
+  TEMPORARY_MATVIEW_FUNCTION_DATA_SETS: MatViewDataSet[] | undefined;
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,

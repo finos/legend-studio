@@ -20,7 +20,7 @@ import {
   Step as MuiStep,
   StepLabel as MuiStepLabel,
 } from '@mui/material';
-import clsx from 'clsx';
+import { clsx } from '../utils/ComponentUtils.js';
 
 export const BaseStepper: React.FC<
   {

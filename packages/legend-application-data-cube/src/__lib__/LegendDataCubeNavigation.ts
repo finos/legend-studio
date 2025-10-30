@@ -49,6 +49,13 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl = (
   dataProductPath: string,
 ) => `${LakehouseApplicationUrl}/dataProduct/${gav}/${dataProductPath}`;
 
+export const EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseAdHocViewUrl = (
+  LakehouseApplicationUrl: string,
+  dataProductId: string,
+  deploymentId: number,
+) =>
+  `${LakehouseApplicationUrl}/dataProduct/deployed/${dataProductId}/${deploymentId}`;
+
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCViewUrl = (
   studioApplicationUrl: string,
   projectId: string,

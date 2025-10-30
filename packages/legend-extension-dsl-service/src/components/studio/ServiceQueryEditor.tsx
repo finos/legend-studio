@@ -152,12 +152,14 @@ const NewServiceModal = observer(() => {
     <Dialog
       open={editorStore.showNewServiceModal}
       onClose={onClose}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
-      PaperProps={{
-        classes: {
-          root: 'search-modal__inner-container',
+      slotProps={{
+        transition: {
+          onEnter: handleEnter,
+        },
+        paper: {
+          classes: {
+            root: 'search-modal__inner-container',
+          },
         },
       }}
     >
@@ -294,12 +296,14 @@ const RegisterServiceModal = observer(() => {
     <Dialog
       open={editorStore.showServiceRegistrationModal}
       onClose={onClose}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
-      PaperProps={{
-        classes: {
-          root: 'search-modal__inner-container',
+      slotProps={{
+        transition: {
+          onEnter: handleEnter,
+        },
+        paper: {
+          classes: {
+            root: 'search-modal__inner-container',
+          },
         },
       }}
     >

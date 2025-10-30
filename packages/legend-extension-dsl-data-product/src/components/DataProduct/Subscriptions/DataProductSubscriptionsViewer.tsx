@@ -26,10 +26,12 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
   Select,
+  Switch,
   TextField,
   Tooltip,
 } from '@mui/material';
@@ -45,7 +47,7 @@ import {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { guaranteeNonNullable, isType } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -58,6 +60,7 @@ import {
 import {
   DataGrid,
   type DataGridCellRendererParams,
+  type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
@@ -168,8 +171,8 @@ const LakehouseSubscriptionsCreateDialog = observer(
 
     const approvedUserContract =
       apgState.userAccessStatus === V1_EnrichedUserApprovalStatus.APPROVED &&
-      apgState.associatedContract instanceof V1_DataContract
-        ? apgState.associatedContract
+      apgState.associatedUserContract instanceof V1_DataContract
+        ? apgState.associatedUserContract
         : undefined;
     const approvedSystemAccountContracts =
       apgState.associatedSystemAccountContractsAndApprovedUsers
@@ -421,9 +424,26 @@ export const DataProductSubscriptionViewer = observer(
     const { open, apgState, dataAccessState, onClose } = props;
     const auth = useAuth();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
+    const [mineOnly, setMineOnly] = useState(true);
 
     const subscriptions = apgState.subscriptions;
     const isLoading = apgState.fetchingSubscriptionsState.isInProgress;
+
+    const subscriptionsToShow = useMemo(
+      () =>
+        mineOnly
+          ? subscriptions.filter(
+              (sub) =>
+                sub.createdBy ===
+                apgState.applicationStore.identityService.currentUser,
+            )
+          : subscriptions,
+      [
+        apgState.applicationStore.identityService.currentUser,
+        mineOnly,
+        subscriptions,
+      ],
+    );
 
     const createDialogHandleSubmit = async (
       _contract: V1_DataContract,
@@ -438,6 +458,97 @@ export const DataProductSubscriptionViewer = observer(
         ),
       );
     };
+
+    const colDefs: DataGridColumnDefinition<V1_DataSubscription>[] = useMemo(
+      () => [
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Target Type',
+          valueGetter: (p) =>
+            p.data?.target instanceof V1_SnowflakeTarget
+              ? 'Snowflake'
+              : 'Unknown',
+          flex: 1,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Snowflake Account ID',
+          valueGetter: (p) =>
+            p.data?.target instanceof V1_SnowflakeTarget
+              ? p.data.target.snowflakeAccountId
+              : 'Unknown',
+          flex: 1,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Snowflake Region',
+          valueGetter: (p) =>
+            p.data?.target instanceof V1_SnowflakeTarget
+              ? p.data.target.snowflakeRegion
+              : 'Unknown',
+          flex: 1,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Snowflake Network',
+          valueGetter: (p) =>
+            p.data?.target instanceof V1_SnowflakeTarget
+              ? p.data.target.snowflakeNetwork
+              : 'Unknown',
+          flex: 1,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Created By',
+          cellRenderer: (
+            params: DataGridCellRendererParams<V1_DataSubscription>,
+          ) => {
+            return (
+              <UserRenderer
+                userId={params.data?.createdBy}
+                applicationStore={apgState.applicationStore}
+                userSearchService={
+                  apgState.dataProductViewerState.userSearchService
+                }
+              />
+            );
+          },
+          flex: 2,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Subscription Id',
+          valueGetter: (p) => p.data?.guid,
+          flex: 1,
+          hide: true,
+        },
+        {
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          headerName: 'Contract ID',
+          valueGetter: (p) => p.data?.dataContractId,
+          flex: 1,
+          hide: true,
+        },
+      ],
+      [
+        apgState.applicationStore,
+        apgState.dataProductViewerState.userSearchService,
+      ],
+    );
 
     return (
       <>
@@ -466,121 +577,47 @@ export const DataProductSubscriptionViewer = observer(
                   </span>{' '}
                   Data Product
                 </div>
-                <span
-                  className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
-                  title={
-                    !apgState.canCreateSubscription
-                      ? 'Cannot create subscription. No approved contracts found for this Access Point Group.'
-                      : undefined
-                  }
-                >
-                  <Button
-                    onClick={() => setShowCreateDialog(true)}
-                    variant="contained"
-                    disabled={!apgState.canCreateSubscription}
-                    loading={
-                      apgState.fetchingAccessState.isInProgress ||
-                      apgState.fetchingApprovedContractsState.isInProgress
+                <Box className="marketplace-lakehouse-subscriptions__subscriptions-viewer__actions">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={mineOnly}
+                        onChange={(event) => setMineOnly(event.target.checked)}
+                      />
+                    }
+                    label="Mine Only"
+                  />
+                  <span
+                    className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
+                    title={
+                      !apgState.canCreateSubscription
+                        ? 'Cannot create subscription. No approved contracts found for this Access Point Group.'
+                        : undefined
                     }
                   >
-                    Create New Subscription
-                  </Button>
-                </span>
-
+                    <Button
+                      onClick={() => setShowCreateDialog(true)}
+                      variant="contained"
+                      disabled={!apgState.canCreateSubscription}
+                      loading={
+                        apgState.fetchingAccessState.isInProgress ||
+                        apgState.fetchingApprovedContractsState.isInProgress
+                      }
+                    >
+                      Create New Subscription
+                    </Button>
+                  </span>
+                </Box>
                 <Box className="marketplace-lakehouse-subscriptions__subscriptions-viewer__grid ag-theme-balham">
                   <DataGrid
-                    rowData={subscriptions}
+                    rowData={subscriptionsToShow}
                     onRowDataUpdated={(params) => {
                       params.api.refreshCells({ force: true });
                     }}
                     suppressFieldDotNotation={true}
                     suppressContextMenu={false}
                     rowHeight={45}
-                    columnDefs={[
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Target Type',
-                        valueGetter: (p) =>
-                          p.data?.target instanceof V1_SnowflakeTarget
-                            ? 'Snowflake'
-                            : 'Unknown',
-                        flex: 1,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Snowflake Account ID',
-                        valueGetter: (p) =>
-                          p.data?.target instanceof V1_SnowflakeTarget
-                            ? p.data.target.snowflakeAccountId
-                            : 'Unknown',
-                        flex: 1,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Snowflake Region',
-                        valueGetter: (p) =>
-                          p.data?.target instanceof V1_SnowflakeTarget
-                            ? p.data.target.snowflakeRegion
-                            : 'Unknown',
-                        flex: 1,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Snowflake Network',
-                        valueGetter: (p) =>
-                          p.data?.target instanceof V1_SnowflakeTarget
-                            ? p.data.target.snowflakeNetwork
-                            : 'Unknown',
-                        flex: 1,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Created By',
-                        cellRenderer: (
-                          params: DataGridCellRendererParams<V1_DataSubscription>,
-                        ) => {
-                          return (
-                            <UserRenderer
-                              userId={params.data?.createdBy}
-                              applicationStore={apgState.applicationStore}
-                              userSearchService={
-                                apgState.dataProductViewerState
-                                  .userSearchService
-                              }
-                            />
-                          );
-                        },
-                        flex: 2,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Subscription Id',
-                        valueGetter: (p) => p.data?.guid,
-                        flex: 1,
-                        hide: true,
-                      },
-                      {
-                        minWidth: 50,
-                        sortable: true,
-                        resizable: true,
-                        headerName: 'Contract ID',
-                        valueGetter: (p) => p.data?.dataContractId,
-                        flex: 1,
-                        hide: true,
-                      },
-                    ]}
+                    columnDefs={colDefs}
                   />
                 </Box>
               </>

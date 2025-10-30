@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { assertNonEmptyString } from '@finos/legend-shared';
+import { assertNonEmptyString, isNonNullable } from '@finos/legend-shared';
 import type { PackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { Profile } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import { Enumeration } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -91,9 +91,12 @@ import type { V1_IngestDefinition } from '../../../model/packageableElements/ing
 import {
   AppDirNode,
   IngestDefinition,
+  type MatViewDataSet,
+  type TEMPORARY_IngestContent,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import type { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
+import { RawLambda } from '../../../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -198,6 +201,38 @@ export class V1_ElementFirstPassBuilder
       metamodelApp.level = appDir.level;
       metamodel.appDirDeployment = metamodelApp;
     }
+    const rawContent = element.content as unknown as TEMPORARY_IngestContent;
+    const dataSets = rawContent.datasets ?? [];
+    if (dataSets.length > 0) {
+      const matViewDataSets: MatViewDataSet[] = dataSets
+        .filter(
+          (dataset) =>
+            dataset.source?._type === 'FunctionSource' &&
+            dataset.source.function?._type === 'lambda',
+        )
+        .map((dataset) => {
+          const source = dataset.source;
+          const functionData = source?.function;
+
+          if (!source || !functionData) {
+            return undefined;
+          }
+
+          const matViewDataSet: MatViewDataSet = {
+            name: dataset.name,
+            source: {
+              function: new RawLambda(
+                functionData.parameters ?? [],
+                functionData.body,
+              ),
+            },
+          };
+          return matViewDataSet;
+        })
+        .filter(isNonNullable);
+      metamodel.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS = matViewDataSets;
+    }
+
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     this.context.currentSubGraph.INTERNAL__setOwnUnknownElement(

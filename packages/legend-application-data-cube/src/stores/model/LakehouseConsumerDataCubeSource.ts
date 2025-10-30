@@ -32,6 +32,7 @@ import {
   createModelSchema,
   deserialize,
   list,
+  optional,
   primitive,
   serialize,
 } from 'serializr';
@@ -45,11 +46,7 @@ export class LakehouseConsumerDataCubeSource extends DataCubeSource {
   warehouse!: string;
   environment!: string;
   paths!: string[];
-}
-
-export enum LakehouseEnvironmentType {
-  DEVELOPMENT = 'dev',
-  PRODUCTION_PARALLEL = 'pp',
+  deploymentId?: number | undefined;
 }
 
 export abstract class RawLakehouseOrigin {}
@@ -81,7 +78,9 @@ export class RawLakehouseConsumerDataCubeSource {
   warehouse!: string;
   environment!: string;
   paths!: string[];
+  deploymentId?: number | undefined;
   origin?: RawLakehouseOrigin;
+  query?: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLakehouseConsumerDataCubeSource, {
@@ -89,6 +88,8 @@ export class RawLakehouseConsumerDataCubeSource {
       warehouse: primitive(),
       environment: primitive(),
       paths: list(primitive()),
+      deploymentId: optional(primitive()),
+      query: optional(primitive()),
       origin: optionalCustom(
         (value) => {
           if (value instanceof RawLakehouseAdhocOrigin) {

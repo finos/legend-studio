@@ -16,14 +16,17 @@
 
 import {
   type V1_DataProduct,
-  type V1_EntitlementsDataProductDetails,
   V1_AppDirLevel,
+  V1_dataProductModelSchema,
+  type V1_EntitlementsDataProductDetails,
+  V1_EntitlementsDataProductDetailsModelSchema,
   V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
-import type { PlainObject } from '@finos/legend-shared';
+import { type StoredFileGeneration } from '@finos/legend-storage';
+import { deserialize } from 'serializr';
 
-export const mockEntitlementsSDLCDataProduct: PlainObject<V1_EntitlementsDataProductDetails> =
-  {
+export const mockEntitlementsSDLCDataProduct: V1_EntitlementsDataProductDetails =
+  deserialize(V1_EntitlementsDataProductDetailsModelSchema, {
     id: 'MOCK_SDLC_DATAPRODUCT',
     deploymentId: 11111,
     title: 'Mock SDLC Data Product',
@@ -53,66 +56,71 @@ export const mockEntitlementsSDLCDataProduct: PlainObject<V1_EntitlementsDataPro
         level: V1_AppDirLevel.DEPLOYMENT,
       },
     },
-  };
+  });
 
-export const mockSDLCDataProduct: PlainObject<V1_DataProduct> = {
-  _type: 'dataProduct',
-  package: 'test',
-  name: 'Mock_SDLC_DataProduct',
-  title: 'Mock SDLC Data Product',
-  description:
-    'Comprehensive customer analytics data for business intelligence and reporting',
-  accessPointGroups: [
-    {
-      _type: 'defaultAccessPointGroup',
-      id: 'GROUP1',
-      description: 'Test access point group',
-      accessPoints: [
-        {
-          _type: 'lakehouseAccessPoint',
-          id: 'customer_demographics',
-          description: 'Customer demographics data access point',
-          func: {
-            _type: 'lambda',
-            body: [
-              {
-                _type: 'classInstance',
-                type: 'I',
-                value: {
-                  metadata: false,
-                  path: ['test', 'IngestDefinition'],
+export const mockSDLCDataProduct: V1_DataProduct = deserialize(
+  V1_dataProductModelSchema,
+  {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_SDLC_DataProduct',
+    title: 'Mock SDLC Data Product',
+    description:
+      'Comprehensive customer analytics data for business intelligence and reporting',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'GROUP1',
+        title: 'Main Group Test',
+        description: 'Test access point group',
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'customer_demographics',
+            title: 'Customer Demographics',
+            description: 'Customer demographics data access point',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
                 },
-              },
-            ],
-            parameters: [],
+              ],
+              parameters: [],
+            },
           },
+        ],
+      },
+    ],
+    supportInfo: {
+      documentation: {
+        label: 'Documentation Link Label',
+        url: 'https://example.com/docs',
+      },
+      website: {
+        url: 'https://example-website.com',
+      },
+      emails: [
+        {
+          title: 'Person 1 Email',
+          address: 'person1@example.com',
+        },
+        {
+          title: 'Person 2 Email',
+          address: 'person2@example.com',
         },
       ],
     },
-  ],
-  supportInfo: {
-    documentation: {
-      label: 'Documentation Link Label',
-      url: 'https://example.com/docs',
-    },
-    website: {
-      url: 'https://example-website.com',
-    },
-    emails: [
-      {
-        title: 'Person 1 Email',
-        address: 'person1@example.com',
-      },
-      {
-        title: 'Person 2 Email',
-        address: 'person2@example.com',
-      },
-    ],
   },
-};
+);
 
-export const mockEntitlementsSDLCDataProductNoSupportInfo: PlainObject<V1_EntitlementsDataProductDetails> =
-  {
+export const mockEntitlementsSDLCDataProductNoSupportInfo: V1_EntitlementsDataProductDetails =
+  deserialize(V1_EntitlementsDataProductDetailsModelSchema, {
     id: 'MOCK_SDLC_DATAPRODUCT',
     deploymentId: 11111,
     title: 'Mock SDLC Data Product',
@@ -142,47 +150,50 @@ export const mockEntitlementsSDLCDataProductNoSupportInfo: PlainObject<V1_Entitl
         level: V1_AppDirLevel.DEPLOYMENT,
       },
     },
-  };
+  });
 
-export const mockSDLCDataProductNoSupportInfo: PlainObject<V1_DataProduct> = {
-  _type: 'dataProduct',
-  package: 'test',
-  name: 'Mock_SDLC_DataProduct',
-  title: 'Mock SDLC Data Product',
-  description:
-    'Comprehensive customer analytics data for business intelligence and reporting',
-  accessPointGroups: [
-    {
-      _type: 'defaultAccessPointGroup',
-      id: 'GROUP1',
-      description: 'Test access point group',
-      accessPoints: [
-        {
-          _type: 'lakehouseAccessPoint',
-          id: 'customer_demographics',
-          description: 'Customer demographics data access point',
-          func: {
-            _type: 'lambda',
-            body: [
-              {
-                _type: 'classInstance',
-                type: 'I',
-                value: {
-                  metadata: false,
-                  path: ['test', 'IngestDefinition'],
-                },
-              },
-            ],
-            parameters: [],
-          },
-        },
-      ],
-    },
-  ],
-};
-
-export const mockEntitlementsEnterpriseDataProduct: PlainObject<V1_EntitlementsDataProductDetails> =
+export const mockSDLCDataProductNoSupportInfo: V1_DataProduct = deserialize(
+  V1_dataProductModelSchema,
   {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_SDLC_DataProduct',
+    title: 'Mock SDLC Data Product',
+    description:
+      'Comprehensive customer analytics data for business intelligence and reporting',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'GROUP1',
+        description: 'Test access point group',
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'customer_demographics',
+            description: 'Customer demographics data access point',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
+                },
+              ],
+              parameters: [],
+            },
+          },
+        ],
+      },
+    ],
+  },
+);
+
+export const mockEntitlementsEnterpriseDataProduct: V1_EntitlementsDataProductDetails =
+  deserialize(V1_EntitlementsDataProductDetailsModelSchema, {
     id: 'MOCK_ENTERPRISE_DATAPRODUCT',
     deploymentId: 33333,
     title: 'Mock Enterprise Data Product',
@@ -212,53 +223,56 @@ export const mockEntitlementsEnterpriseDataProduct: PlainObject<V1_EntitlementsD
         level: V1_AppDirLevel.DEPLOYMENT,
       },
     },
-  };
+  });
 
-export const mockEnterpriseDataProduct: PlainObject<V1_DataProduct> = {
-  _type: 'dataProduct',
-  package: 'test',
-  name: 'Mock_Enterprise_DataProduct',
-  title: 'Mock Enterprise Data Product',
-  description:
-    'Robust and secure data product for enterprise-wide analytics and reporting',
-  accessPointGroups: [
-    {
-      _type: 'defaultAccessPointGroup',
-      id: 'ENTERPRISE_GROUP',
-      description: 'Test enterprise access point group',
-      stereotypes: [
-        {
-          profile: 'test::profile::EnterpriseDataProduct',
-          value: 'enterprise',
-        },
-      ],
-      accessPoints: [
-        {
-          _type: 'lakehouseAccessPoint',
-          id: 'enterprise_data',
-          description: 'Enterprise data access point',
-          func: {
-            _type: 'lambda',
-            body: [
-              {
-                _type: 'classInstance',
-                type: 'I',
-                value: {
-                  metadata: false,
-                  path: ['test', 'IngestDefinition'],
-                },
-              },
-            ],
-            parameters: [],
-          },
-        },
-      ],
-    },
-  ],
-};
-
-export const mockEntitlementsAdHocDataProduct: PlainObject<V1_EntitlementsDataProductDetails> =
+export const mockEnterpriseDataProduct: V1_DataProduct = deserialize(
+  V1_dataProductModelSchema,
   {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_Enterprise_DataProduct',
+    title: 'Mock Enterprise Data Product',
+    description:
+      'Robust and secure data product for enterprise-wide analytics and reporting',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'ENTERPRISE_GROUP',
+        description: 'Test enterprise access point group',
+        stereotypes: [
+          {
+            profile: 'test::profile::EnterpriseDataProduct',
+            value: 'enterprise',
+          },
+        ],
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'enterprise_data',
+            description: 'Enterprise data access point',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
+                },
+              ],
+              parameters: [],
+            },
+          },
+        ],
+      },
+    ],
+  },
+);
+
+export const mockEntitlementsAdHocDataProduct: V1_EntitlementsDataProductDetails =
+  deserialize(V1_EntitlementsDataProductDetailsModelSchema, {
     id: 'MOCK_ADHOC_DATAPRODUCT',
     deploymentId: 22222,
     title: 'Mock Ad-Hoc Data Product',
@@ -287,57 +301,94 @@ export const mockEntitlementsAdHocDataProduct: PlainObject<V1_EntitlementsDataPr
         level: V1_AppDirLevel.DEPLOYMENT,
       },
     },
-  };
+  });
 
-export const mockAdHocDataProductPMCD = {
-  _type: 'data',
-  elements: [
-    {
-      _type: 'ingestDefinition',
-      package: 'test',
-      name: 'IngestDefinition',
-      owner: {
-        _type: 'appDir',
-        production: {
-          appDirId: 22222,
-          level: 'DEPLOYMENT',
+export const getMockDataProductGenerationFilesByType = (
+  dataProduct: V1_DataProduct,
+): StoredFileGeneration[] => [
+  {
+    artifactId: 'test-artifact',
+    groupId: 'test.group',
+    path: dataProduct.path,
+    type: 'dataProduct',
+    versionId: 'test-version',
+    file: {
+      path: '/test/path/dataProduct/generation.json',
+      content: JSON.stringify({
+        dataProduct: {
+          dataProductType: {
+            _type: 'internalDataProductType',
+          },
+          path: dataProduct.path,
+          deploymentId: '11111',
+          description: dataProduct.description,
+          title: dataProduct.title,
         },
-      },
-    },
-    {
-      _type: 'dataProduct',
-      package: 'test',
-      name: 'Mock_AdHoc_DataProduct',
-      title: 'Mock Ad-Hoc Data Product',
-      description:
-        'Flexible and dynamic data product for ad hoc analysis and reporting',
-      accessPointGroups: [
-        {
-          _type: 'defaultAccessPointGroup',
-          id: 'GROUP1',
-          description: 'Test ad-hoc access point group',
-          accessPoints: [
-            {
-              _type: 'lakehouseAccessPoint',
-              id: 'test_view',
-              func: {
-                _type: 'lambda',
-                body: [
-                  {
-                    _type: 'classInstance',
-                    type: 'I',
-                    value: {
-                      metadata: false,
-                      path: ['test', 'IngestDefinition'],
-                    },
-                  },
-                ],
-                parameters: [],
-              },
+        accessPointGroups: dataProduct.accessPointGroups.map((group) => ({
+          id: group.id,
+          desecription: group.description,
+          accessPointImplementations: group.accessPoints.map((ap) => ({
+            resourceBuilder: {
+              _type: 'databaseDDL',
+              reproducible: false,
+              targetEnvironment: 'Snowflake',
+              script: '',
+              resourceType: 'VIEW',
             },
-          ],
-        },
-      ],
+            id: ap.id,
+            lambdaGenericType: {
+              rawType: {
+                _type: 'packageableType',
+                fullPath:
+                  'meta::external::ingest::accessor::IngestRelationAccessor',
+              },
+              typeArguments: [
+                {
+                  rawType: {
+                    _type: 'relationType',
+                    columns: [
+                      {
+                        name: 'artifact_varchar_val',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        genericType: {
+                          multiplicityArguments: [],
+                          typeArguments: [],
+                          rawType: {
+                            _type: 'packageableType',
+                            fullPath: 'meta::pure::precisePrimitives::Varchar',
+                          },
+                          typeVariableValues: [
+                            { _type: 'integer', value: 500 },
+                          ],
+                        },
+                      },
+                      {
+                        name: 'artifact_int_val',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        genericType: {
+                          multiplicityArguments: [],
+                          typeArguments: [],
+                          rawType: {
+                            _type: 'packageableType',
+                            fullPath: 'meta::pure::precisePrimitives::Int',
+                          },
+                          typeVariableValues: [],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          })),
+        })),
+      }),
     },
-  ],
-};
+  },
+];

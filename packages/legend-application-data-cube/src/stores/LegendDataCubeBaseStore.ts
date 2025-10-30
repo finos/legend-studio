@@ -162,6 +162,8 @@ export class LegendDataCubeBaseStore {
       this.application,
       this.depotServerClient,
       this.engineServerClient,
+      this.lakehouseContractServerClient,
+      this.lakehouseIngestServerClient,
       this.graphManager,
     );
     this.taskService = new DataCubeTaskService();

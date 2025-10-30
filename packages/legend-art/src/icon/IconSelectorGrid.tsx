@@ -16,7 +16,7 @@
 
 import { IconSelectorIcons } from './Icon.js';
 import { observer } from 'mobx-react-lite';
-import clsx from 'clsx';
+import { clsx } from '../utils/ComponentUtils.js';
 
 export const IconSelectorGrid = observer(
   (props: {

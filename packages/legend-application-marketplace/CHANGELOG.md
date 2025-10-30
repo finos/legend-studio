@@ -1,5 +1,43 @@
 # @finos/legend-application-marketplace
 
+## 0.1.30
+
+## 0.1.29
+
+### Patch Changes
+
+- [#4577](https://github.com/finos/legend-studio/pull/4577) [`5c30065`](https://github.com/finos/legend-studio/commit/5c300651e63b569dbb3f569833bf70723a6c2540) ([@gs-gunjan](https://github.com/gs-gunjan)) - marketplace: add telemetry for opening datacube and powerbi from marketplace
+
+## 0.1.28
+
+### Patch Changes
+
+- [#4571](https://github.com/finos/legend-studio/pull/4571) [`7ab2dde`](https://github.com/finos/legend-studio/commit/7ab2dde288b8ca18494e5c819354518e0554ca2c) ([@jackp5150](https://github.com/jackp5150)) - Added terminal request flow to UI
+
+## 0.1.27
+
+## 0.1.26
+
+### Patch Changes
+
+- [#4521](https://github.com/finos/legend-studio/pull/4521) [`289f34f`](https://github.com/finos/legend-studio/commit/289f34f9aad0b36fa3fad3cf832642bdbf4a590f) ([@jackp5150](https://github.com/jackp5150)) - User Search service addition for user identification
+
+- [#4507](https://github.com/finos/legend-studio/pull/4507) [`f721233`](https://github.com/finos/legend-studio/commit/f721233f26d3d6d1afb3b4820ed3bcead15a618b) ([@travisstebbins](https://github.com/travisstebbins)) - Filter data products by env in config instead of UI filters
+
+## 0.1.25
+
+### Patch Changes
+
+- [#4561](https://github.com/finos/legend-studio/pull/4561) [`90aca84`](https://github.com/finos/legend-studio/commit/90aca84797103981c507716b2086b28fc155d3e2) ([@bojja-gs](https://github.com/bojja-gs)) - Integrating full UI with workflow for terminals and addons
+
+- [#4551](https://github.com/finos/legend-studio/pull/4551) [`69bc7f2`](https://github.com/finos/legend-studio/commit/69bc7f270080b56414da6525aca51b61a2a83cbf) ([@travisstebbins](https://github.com/travisstebbins)) - Use DataProduct artifact to display access point column names/types
+
+## 0.1.24
+
+### Patch Changes
+
+- [#4545](https://github.com/finos/legend-studio/pull/4545) [`a4ee199`](https://github.com/finos/legend-studio/commit/a4ee19935551193062679a7526e804b7e76f052c) ([@bojja-gs](https://github.com/bojja-gs)) - Reverted showdev feature flag to terminals and addons
+
 ## 0.1.23
 
 ### Patch Changes
