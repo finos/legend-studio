@@ -276,7 +276,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
 
             {/* Plugin additional pages */}
-            {/* We filter out any pages with duplicate paths to avoid overwriting main pages */}
+            {/* We filter out any pages with paths that exist above to avoid overwriting main pages */}
             {applicationStore.pluginManager
               .getApplicationPlugins()
               .flatMap(
