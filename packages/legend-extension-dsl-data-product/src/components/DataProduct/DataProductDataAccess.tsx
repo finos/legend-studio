@@ -271,7 +271,7 @@ export const DataCubeScreen = observer(
         <button
           onClick={loadDataCube}
           tabIndex={-1}
-          disabled={!selectedEnvironment}
+          disabled={!(selectedEnvironment ?? resolvedUserEnv)}
           className="data-product__viewer__tab-screen__btn"
           title="Open in Datacube"
         >
