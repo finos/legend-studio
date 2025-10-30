@@ -71,6 +71,9 @@
   }
 
   &__lakehouse {
+    align-self: end;
+    font-size: 1rem;
+    text-transform: none;
     color: var(--tw-color-green-100);
     background: var(--tw-color-green-600);
   }
