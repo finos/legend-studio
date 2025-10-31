@@ -22,11 +22,12 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { type PlainObject } from '@finos/legend-shared';
+import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import {
-  GraphManagerState,
+  type V1_DataContract,
   type V1_LiteDataContract,
   type V1_TaskResponse,
+  GraphManagerState,
 } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
 import { AuthProvider } from 'react-oidc-context';
@@ -38,13 +39,14 @@ import {
 } from '../__test-utils__/StateTestUtils.js';
 import {
   mockDataContract,
-  mockPendingManagerApprovalTasksResponse,
+  getMockPendingManagerApprovalTasksResponse,
   mockPendingDataOwnerApprovalTasksResponse,
   mockApprovedTasksResponse,
   mockDeniedTasksResponse,
   mockPendingManagerApprovalMultipleAssigneesTasksResponse,
   mockDataContractMultipleConsumers,
   mockPendingManagerApprovalMultipleConsumersTasksResponse,
+  mockDataContractWithSystemAccountMember,
 } from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 import { ApplicationStore } from '@finos/legend-application';
 import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
@@ -56,26 +58,19 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
-jest.mock('swiper/react', () => ({
-  Swiper: ({}) => <div></div>,
-  SwiperSlide: ({}) => <div></div>,
-}));
-
-jest.mock('swiper/modules', () => ({
-  Navigation: ({}) => <div></div>,
-  Pagination: ({}) => <div></div>,
-  Autoplay: ({}) => <div></div>,
-}));
-
 const setupDataContractViewerTest = async (
   mockContract: V1_LiteDataContract,
   mockTasks: V1_TaskResponse,
   initialSelectedUser?: string,
+  contractWithMembers?: V1_DataContract,
 ) => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   const MOCK__applicationStore = new ApplicationStore(
     TEST__getGenericApplicationConfig(),
     pluginManager,
+  );
+  MOCK__applicationStore.identityService.setCurrentUser(
+    'test-consumer-user-id',
   );
 
   const lakehouseContractServerClient = new LakehouseContractServerClient({
@@ -89,9 +84,15 @@ const setupDataContractViewerTest = async (
   createSpy(
     lakehouseContractServerClient,
     'getContractTasks',
-  ).mockImplementation(async (contractId: string) => {
-    return mockTasks as unknown as PlainObject<V1_TaskResponse>;
-  });
+  ).mockResolvedValue(mockTasks as unknown as PlainObject<V1_TaskResponse>);
+
+  createSpy(lakehouseContractServerClient, 'getDataContract').mockResolvedValue(
+    {
+      dataContracts: contractWithMembers
+        ? [{ dataContract: contractWithMembers }]
+        : [],
+    },
+  );
 
   const MOCK__contractViewerState = new EntitlementsDataContractViewerState(
     mockContract,
@@ -133,7 +134,7 @@ describe('EntitlementsDataContractViewer', () => {
   test('Displays contract details', async () => {
     await setupDataContractViewerTest(
       mockDataContract,
-      mockPendingManagerApprovalTasksResponse,
+      getMockPendingManagerApprovalTasksResponse(),
     );
 
     // Verify title
@@ -168,7 +169,7 @@ describe('EntitlementsDataContractViewer', () => {
   test('Shows correct details for Pending Privilege Manager Approval', async () => {
     await setupDataContractViewerTest(
       mockDataContract,
-      mockPendingManagerApprovalTasksResponse,
+      getMockPendingManagerApprovalTasksResponse(),
     );
 
     // Verify pending assignee
@@ -258,23 +259,118 @@ describe('EntitlementsDataContractViewer', () => {
   });
 
   test('Refresh button re-initializes data contract viewer', async () => {
-    const { MOCK__contractViewerState: mockedContractViewerState } =
-      await setupDataContractViewerTest(
-        mockDataContract,
-        mockPendingManagerApprovalTasksResponse,
-      );
+    const { MOCK__contractViewerState } = await setupDataContractViewerTest(
+      mockDataContract,
+      getMockPendingManagerApprovalTasksResponse(),
+    );
 
     // Verify refresh button
     const refreshButton = await screen.findByRole('button', {
       name: 'Refresh',
     });
 
-    const initSpy = jest.spyOn(mockedContractViewerState, 'init');
+    const initSpy = jest.spyOn(MOCK__contractViewerState, 'init');
 
     expect(initSpy).toHaveBeenCalledTimes(0);
 
     fireEvent.click(refreshButton);
 
     await waitFor(() => expect(initSpy).toHaveBeenCalledTimes(1));
+  });
+
+  test("Shows escalate button for user's own task", async () => {
+    await setupDataContractViewerTest(
+      mockDataContract,
+      getMockPendingManagerApprovalTasksResponse(),
+    );
+
+    // Verify escalate button
+    await screen.findByText('Pending Data Contract Request');
+    await screen.findByText('test-consumer-user-id');
+    await screen.findByTitle('Escalate request');
+  });
+
+  test("Doesn't show escalate button for another user's task", async () => {
+    await setupDataContractViewerTest(
+      mockDataContract,
+      getMockPendingManagerApprovalTasksResponse(),
+      'test-consumer-user-id-2',
+    );
+
+    // Verify no escalate button
+    await screen.findByText('Pending Data Contract Request');
+    await screen.findByText('test-consumer-user-id-2');
+    expect(screen.queryByTitle('Escalate request')).toBeNull();
+  });
+
+  test('Shows escalate button for system accountn task', async () => {
+    await setupDataContractViewerTest(
+      mockDataContract,
+      getMockPendingManagerApprovalTasksResponse(),
+      'test-system-account-user-id',
+      mockDataContractWithSystemAccountMember,
+    );
+
+    // Verify escalate button
+    await screen.findByText('Pending Data Contract Request');
+    await screen.findByText('test-system-account-user-id');
+    await screen.findByTitle('Escalate request');
+  });
+
+  test('Disables escalate button for already escalated task', async () => {
+    await setupDataContractViewerTest(
+      mockDataContract,
+      getMockPendingManagerApprovalTasksResponse(true),
+    );
+
+    // Verify escalate button
+    await screen.findByText('Pending Data Contract Request');
+    await screen.findByText('test-consumer-user-id');
+    const escalateButton = (
+      await screen.findByTitle('Request has already been escalated')
+    ).firstElementChild;
+    expect(escalateButton?.hasAttribute('disabled')).toBe(true);
+  });
+
+  test('Clicking escalate button opens confirm modal and submitting modal calls escalate endpoint', async () => {
+    const { MOCK__contractViewerState } = await setupDataContractViewerTest(
+      mockDataContract,
+      getMockPendingManagerApprovalTasksResponse(),
+    );
+
+    const escalateSpy = jest.spyOn(
+      MOCK__contractViewerState.lakehouseContractServerClient,
+      'escalateUserOnContract',
+    );
+
+    expect(escalateSpy).toHaveBeenCalledTimes(0);
+
+    // Get escalate button
+    await screen.findByText('Pending Data Contract Request');
+    await screen.findByText('test-consumer-user-id');
+    const escalateButton = guaranteeNonNullable(
+      (await screen.findByTitle('Escalate request')).firstElementChild,
+    );
+    fireEvent.click(escalateButton);
+
+    await screen.findByText(
+      'Are you sure you want to escalate the privilege manager approval request?',
+    );
+    const confirmButton = await screen.findByRole('button', {
+      name: 'Escalate',
+    });
+
+    // Verify escalate API called
+    await act(async () => {
+      fireEvent.click(confirmButton);
+    });
+
+    expect(escalateSpy).toHaveBeenCalledTimes(1);
+    expect(escalateSpy).toHaveBeenCalledWith(
+      mockDataContract.guid,
+      'test-consumer-user-id',
+      false,
+      'mock-access-token',
+    );
   });
 });

@@ -17,6 +17,7 @@
 import {
   type V1_ContractUserEventDataProducerPayload,
   type V1_ContractUserEventPrivilegeManagerPayload,
+  type V1_DataContract,
   type V1_LiteDataContract,
   type V1_TaskResponse,
   V1_ApprovalType,
@@ -76,7 +77,53 @@ export const mockDataContractMultipleConsumers: V1_LiteDataContract = {
   accessPointGroup: 'GROUP1',
 };
 
-export const mockPendingManagerApprovalTasksResponse: V1_TaskResponse = {
+export const mockDataContractWithSystemAccountMember: V1_DataContract = {
+  description: 'Test data contract with system account member',
+  guid: 'test-data-contract-with-system-account-member-id',
+  version: 0,
+  state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+  resource: {
+    _type: V1_ResourceType.ACCESS_POINT_GROUP,
+    dataProduct: 'MOCK_SDLC_DATAPRODUCT',
+    accessPointGroup: 'GROUP1',
+  },
+  members: [
+    {
+      guid: 'member-1-guid',
+      user: {
+        name: 'test-consumer-user-id',
+        userType: V1_UserType.WORKFORCE_USER,
+      },
+      status: V1_UserApprovalStatus.PENDING,
+    },
+    {
+      guid: 'member-2-guid',
+      user: {
+        name: 'test-system-account-user-id',
+        userType: V1_UserType.SYSTEM_ACCOUNT,
+      },
+      status: V1_UserApprovalStatus.PENDING,
+    },
+  ],
+  consumer: {
+    _type: V1_OrganizationalScopeType.AdHocTeam,
+    users: [
+      {
+        name: 'test-consumer-user-id',
+        type: V1_UserType.WORKFORCE_USER,
+      },
+      {
+        name: 'test-system-account-user-id',
+        type: V1_UserType.SYSTEM_ACCOUNT,
+      },
+    ],
+  },
+  createdBy: 'test-requester-user-id',
+};
+
+export const getMockPendingManagerApprovalTasksResponse = (
+  isEscalated: boolean = false,
+): V1_TaskResponse => ({
   tasks: [
     {
       assignees: ['test-privilege-manager-user-id'],
@@ -92,11 +139,45 @@ export const mockPendingManagerApprovalTasksResponse: V1_TaskResponse = {
         type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
         effectiveFrom: '2025-08-07T00:00:00.000Z',
         effectiveTo: '2026-08-07T00:00:00.000Z',
-        isEscalated: false,
+        isEscalated,
+      },
+    },
+    {
+      assignees: ['test-privilege-manager-user-id'],
+      rec: {
+        consumer: 'test-consumer-user-id-2',
+        dataContractId: 'test-data-contract-id',
+        eventPayload: {
+          type: V1_ContractEventPayloadType.SUBMITTED,
+          eventTimestamp: '2025-08-06T11:54:46.069672876Z',
+        },
+        status: V1_UserApprovalStatus.PENDING,
+        taskId: 'mock-privilege-manager-approval-task-id-2',
+        type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+        effectiveFrom: '2025-08-07T00:00:00.000Z',
+        effectiveTo: '2026-08-07T00:00:00.000Z',
+        isEscalated,
+      },
+    },
+    {
+      assignees: ['test-privilege-manager-user-id'],
+      rec: {
+        consumer: 'test-system-account-user-id',
+        dataContractId: 'test-data-contract-id',
+        eventPayload: {
+          type: V1_ContractEventPayloadType.SUBMITTED,
+          eventTimestamp: '2025-08-06T11:54:46.069672876Z',
+        },
+        status: V1_UserApprovalStatus.PENDING,
+        taskId: 'mock-privilege-manager-approval-task-id-3',
+        type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+        effectiveFrom: '2025-08-07T00:00:00.000Z',
+        effectiveTo: '2026-08-07T00:00:00.000Z',
+        isEscalated,
       },
     },
   ],
-};
+});
 
 export const mockPendingManagerApprovalMultipleAssigneesTasksResponse: V1_TaskResponse =
   {
