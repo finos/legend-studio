@@ -76,7 +76,6 @@ import {
   CONTRACT_ACTION,
   LegendMarketplaceTelemetryHelper,
 } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
-import type { GridApi } from 'ag-grid-community';
 
 const EntitlementsDashboardActionModal = (props: {
   open: boolean;
@@ -299,12 +298,8 @@ export const EntitlementsPendingTasksDashboard = observer(
     >();
     const [selectedContractTargetUser, setSelectedContractTargetUser] =
       useState<string | undefined>();
-    const [privilegeManagerGridApi, setPrivilegeManagerGridApi] =
-      useState<GridApi | null>(null);
-    const [dataOwnerGridApi, setDataOwnerGridApi] = useState<GridApi | null>(
-      null,
-    );
-    const [otherGridApi, setOtherGridApi] = useState<GridApi | null>(null);
+
+    const auth = useAuth();
 
     // Effects
 
@@ -371,7 +366,11 @@ export const EntitlementsPendingTasksDashboard = observer(
     const rowSelection = useMemo<
       DataGridRowSelectionOptions | 'single' | 'multiple'
     >(
-      () => ({ mode: 'multiRow', checkboxes: false, headerCheckbox: false }),
+      () => ({
+        mode: 'multiRow',
+        checkboxes: false,
+        headerCheckbox: false,
+      }),
       [],
     );
 
@@ -743,9 +742,6 @@ export const EntitlementsPendingTasksDashboard = observer(
               <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
                 <DataGrid
                   rowData={privilegeManagerTasks}
-                  onGridReady={(params) => {
-                    setPrivilegeManagerGridApi(params.api);
-                  }}
                   onRowDataUpdated={(params) => {
                     params.api.refreshCells({ force: true });
                   }}
@@ -780,9 +776,6 @@ export const EntitlementsPendingTasksDashboard = observer(
               <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
                 <DataGrid
                   rowData={dataOwnerTasks}
-                  onGridReady={(params) => {
-                    setDataOwnerGridApi(params.api);
-                  }}
                   onRowDataUpdated={(params) => {
                     params.api.refreshCells({ force: true });
                   }}
@@ -806,9 +799,6 @@ export const EntitlementsPendingTasksDashboard = observer(
                 <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
                   <DataGrid
                     rowData={otherTasks}
-                    onGridReady={(params) => {
-                      setOtherGridApi(params.api);
-                    }}
                     onRowDataUpdated={(params) => {
                       params.api.refreshCells({ force: true });
                     }}
@@ -854,9 +844,12 @@ export const EntitlementsPendingTasksDashboard = observer(
               )
             }
             onRefresh={() => {
-              privilegeManagerGridApi?.refreshCells({ force: true });
-              dataOwnerGridApi?.refreshCells({ force: true });
-              otherGridApi?.refreshCells({ force: true });
+              flowResult(
+                dashboardState.updateContract(
+                  selectedContract.guid,
+                  auth.user?.access_token,
+                ),
+              );
             }}
             getContractTaskUrl={(taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(

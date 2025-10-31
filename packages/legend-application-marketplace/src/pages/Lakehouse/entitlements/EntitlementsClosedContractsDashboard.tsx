@@ -59,7 +59,7 @@ import {
   generateLakehouseTaskPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { LakehouseEntitlementsStore } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
-import type { GridApi } from 'ag-grid-community';
+import { flowResult } from 'mobx';
 
 const UserAccessStatusCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
@@ -134,7 +134,6 @@ export const EntitlementsClosedContractsDashboard = observer(
     const { allContracts } = dashboardState;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
-    const [gridApi, setGridApi] = useState<GridApi | null>(null);
 
     const myClosedContracts = useMemo(
       () =>
@@ -347,9 +346,6 @@ export const EntitlementsClosedContractsDashboard = observer(
         <Box className="marketplace-lakehouse-entitlements__completed-contracts__grid ag-theme-balham">
           <DataGrid
             rowData={gridRowData}
-            onGridReady={(params) => {
-              setGridApi(params.api);
-            }}
             onRowDataUpdated={(params) => {
               params.api.refreshCells({ force: true });
             }}
@@ -383,7 +379,14 @@ export const EntitlementsClosedContractsDashboard = observer(
                 marketplaceBaseStore.userSearchService,
               )
             }
-            onRefresh={() => gridApi?.refreshCells({ force: true })}
+            onRefresh={() => {
+              flowResult(
+                dashboardState.updateContract(
+                  selectedContract.guid,
+                  auth.user?.access_token,
+                ),
+              );
+            }}
             getContractTaskUrl={(taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseTaskPath(taskId),
