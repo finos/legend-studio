@@ -17,6 +17,7 @@
 import {
   ActionState,
   assertErrorThrown,
+  isNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -65,6 +66,7 @@ export class EntitlementsDashboardState {
       fetchPendingContracts: flow,
       fetchPendingTasks: flow,
       fetchAllContracts: flow,
+      updateContract: flow,
       init: flow,
       deny: flow,
     });
@@ -154,6 +156,50 @@ export class EntitlementsDashboardState {
 
   setAllContracts(val: V1_LiteDataContract[] | undefined): void {
     this.allContracts = val;
+  }
+
+  *updateContract(
+    contractId: string,
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    const [newPendingContracts, newAllContracts] = (yield Promise.all([
+      (async () =>
+        (
+          await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getPendingContracts(
+            TEST_USER2,
+            token,
+          )
+        ).records ?? [])(),
+      (async () => {
+        const rawContracts =
+          await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getLiteDataContracts(
+            token,
+          );
+        return V1_liteDataContractsResponseModelSchemaToContracts(
+          rawContracts,
+          this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        );
+      })(),
+    ])) as [V1_UserPendingContractsRecord[], V1_LiteDataContract[]];
+
+    this.setPendingContracts(
+      this.pendingContracts
+        ?.map((contract) =>
+          contract.contractId === contractId
+            ? newPendingContracts.find((c) => c.contractId === contractId)
+            : contract,
+        )
+        .filter(isNonNullable),
+    );
+    this.setAllContracts(
+      this.allContracts
+        ?.map((contract) =>
+          contract.guid === contractId
+            ? newAllContracts.find((c) => c.guid === contractId)
+            : contract,
+        )
+        .filter(isNonNullable),
+    );
   }
 
   *approve(

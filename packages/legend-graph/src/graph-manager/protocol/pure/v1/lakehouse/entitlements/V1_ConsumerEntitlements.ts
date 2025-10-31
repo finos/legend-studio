@@ -196,6 +196,9 @@ export class V1_ContractUserEventRecord {
   consumer!: string;
   eventPayload!: V1_ContractUserEventPayload | undefined;
   type!: V1_ApprovalType;
+  effectiveFrom!: string;
+  effectiveTo!: string;
+  isEscalated!: boolean;
 }
 
 export class V1_PendingTasksResponse {

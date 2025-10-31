@@ -55,7 +55,11 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
           entitlementsStore.dashboardViewer.init(auth.user?.access_token),
         );
       }
-    }, [auth.user?.access_token, entitlementsStore]);
+    }, [
+      entitlementsStore.dashboardViewer.initializationState,
+      auth.user?.access_token,
+      entitlementsStore,
+    ]);
 
     // Callbacks
 

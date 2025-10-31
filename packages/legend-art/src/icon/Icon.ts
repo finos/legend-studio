@@ -629,8 +629,9 @@ export const GitlabIcon = FaGitlab;
 
 //======================================================= fa6 ======================================================
 
-import { FaChartColumn } from 'react-icons/fa6';
+import { FaArrowUpFromBracket, FaChartColumn } from 'react-icons/fa6';
 
+export const ArrowUpFromBracketIcon = FaArrowUpFromBracket;
 export const PowerBiIcon = FaChartColumn;
 //======================================================= GI =======================================================
 import {

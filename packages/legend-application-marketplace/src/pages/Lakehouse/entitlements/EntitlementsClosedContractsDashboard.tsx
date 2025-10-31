@@ -18,6 +18,7 @@ import {
   type V1_ContractUserEventRecord,
   type V1_EnrichedUserApprovalStatus,
   type V1_LiteDataContract,
+  GraphManagerState,
   V1_AdhocTeam,
   V1_ContractUserStatusResponseModelSchema,
   V1_ResourceType,
@@ -58,6 +59,7 @@ import {
   generateLakehouseTaskPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { LakehouseEntitlementsStore } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
+import { flowResult } from 'mobx';
 
 const UserAccessStatusCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
@@ -370,9 +372,21 @@ export const EntitlementsClosedContractsDashboard = observer(
                 selectedContract,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
+                new GraphManagerState(
+                  marketplaceBaseStore.applicationStore.pluginManager,
+                  marketplaceBaseStore.applicationStore.logService,
+                ),
                 marketplaceBaseStore.userSearchService,
               )
             }
+            onRefresh={async () => {
+              await flowResult(
+                dashboardState.updateContract(
+                  selectedContract.guid,
+                  auth.user?.access_token,
+                ),
+              );
+            }}
             getContractTaskUrl={(taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseTaskPath(taskId),
