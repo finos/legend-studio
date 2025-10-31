@@ -209,7 +209,7 @@
     );
     color: var(--color-modal-text-muted);
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 700;
     height: auto;
     padding: 0.4rem 1rem;
     border-radius: 12px;
@@ -239,7 +239,7 @@
     );
     color: var(--color-modal-purple-secondary);
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 700;
     height: auto;
     padding: 0.5rem 1.2rem;
     border-radius: 16px;
@@ -280,7 +280,7 @@
     );
     color: var(--color-white);
     text-transform: none;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1.3rem;
     padding: 1rem 2rem;
     border-radius: 16px;
@@ -355,7 +355,7 @@
 
   &__close-button {
     font-size: 1.4rem;
-    font-weight: 600;
+    font-weight: 700;
     min-width: 120px;
     padding: 1rem 2rem;
     border: 2px solid var(--color-modal-border-light);
