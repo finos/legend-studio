@@ -59,6 +59,8 @@ export class EntitlementsDataContractViewerState {
       associatedTasks: observable,
       contractWithMembers: observable,
       setAssociatedTasks: action,
+      fetchTasks: flow,
+      fetchContractWithMembers: flow,
       init: flow,
     });
 
@@ -73,10 +75,10 @@ export class EntitlementsDataContractViewerState {
     this.associatedTasks = associatedTasks;
   }
 
-  async fetchTasks(token: string | undefined): Promise<void> {
+  *fetchTasks(token: string | undefined): GeneratorFn<void> {
     this.setAssociatedTasks(undefined);
     const pendingTasks =
-      await this.lakehouseContractServerClient.getContractTasks(
+      yield this.lakehouseContractServerClient.getContractTasks(
         this.liteContract.guid,
         token,
       );
@@ -84,11 +86,11 @@ export class EntitlementsDataContractViewerState {
     this.setAssociatedTasks(tasks);
   }
 
-  async fetchContractWithMembers(token: string | undefined): Promise<void> {
+  *fetchContractWithMembers(token: string | undefined): GeneratorFn<void> {
     this.fetchingMembersState.inProgress();
     try {
       const rawContracts =
-        await this.lakehouseContractServerClient.getDataContract(
+        yield this.lakehouseContractServerClient.getDataContract(
           this.liteContract.guid,
           true,
           token,
