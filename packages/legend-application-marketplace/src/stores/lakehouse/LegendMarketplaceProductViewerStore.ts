@@ -494,7 +494,9 @@ export class LegendMarketplaceProductViewerStore {
         storeProject.groupId = projectData.groupId;
         storeProject.artifactId = projectData.artifactId;
         const v1DataProduct = deserialize(
-          V1_dataProductModelSchema,
+          V1_dataProductModelSchema(
+            this.marketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
           (
             (yield this.marketplaceBaseStore.depotServerClient.getVersionEntity(
               projectData.groupId,

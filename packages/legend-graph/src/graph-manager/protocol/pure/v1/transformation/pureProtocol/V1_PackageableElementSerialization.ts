@@ -257,7 +257,7 @@ class V1_PackageableElementSerializer
   visit_DataProduct(
     element: V1_DataProduct,
   ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_dataProductModelSchema, element);
+    return serialize(V1_dataProductModelSchema(this.plugins), element);
   }
 
   visit_Mapping(element: V1_Mapping): PlainObject<V1_PackageableElement> {
@@ -394,7 +394,7 @@ export const V1_deserializePackageableElement = (
       case V1_MEM_SQL_TYPE:
         return deserialize(V1_MemSQLModelSchema(plugins), json);
       case V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_dataProductModelSchema, json);
+        return deserialize(V1_dataProductModelSchema(plugins), json);
       case V1_INGEST_DEFINITION_TYPE:
         return V1_createIngestDef(name, packagePath, json);
       default: {

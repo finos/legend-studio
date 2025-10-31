@@ -24,6 +24,7 @@ import {
 import {
   createModelSchema,
   custom,
+  deserialize,
   list,
   optional,
   primitive,
@@ -34,6 +35,8 @@ import {
   V1_deserializeGenericType,
   V1_genericTypeModelSchema,
 } from '../../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
+import type { V1_RelationElement } from '../../model/data/V1_EmbeddedData.js';
+import { V1_relationElementModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';
 
 export enum V1_DataProductTypeEnum {
   INTERNAL = 'internalDataProductType',
@@ -179,6 +182,7 @@ export class V1_AccessPointImplementation {
   id!: string;
   description: string | undefined;
   resourceBuilder!: V1_ResourceBuilder;
+  relationElement: V1_RelationElement | undefined;
   lambdaGenericType: V1_GenericType | undefined;
 
   static readonly serialization = new SerializationFactory(
@@ -188,6 +192,12 @@ export class V1_AccessPointImplementation {
       resourceBuilder: custom(
         V1_serializeResourceBuilder,
         V1_deserializeResourceBuilder,
+      ),
+      relationElement: optional(
+        custom(
+          (val) => serialize(V1_relationElementModelSchema, val),
+          (val) => deserialize(V1_relationElementModelSchema, val),
+        ),
       ),
       lambdaGenericType: custom(
         (val) => serialize(V1_genericTypeModelSchema, val),

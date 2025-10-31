@@ -52,13 +52,27 @@ import {
   type V1_DataProductArtifact,
   type V1_AccessPointGroupInfo,
   type V1_AccessPointImplementation,
+  RelationElementsData,
+  RelationElement,
+  observe_RelationElement,
+  observe_RelationElementsData,
+  V1_PureGraphManager,
+  V1_LambdaReturnTypeInput,
+  V1_transformRawLambda,
+  V1_GraphTransformerContextBuilder,
+  V1_relationTypeModelSchema,
+  V1_RemoteEngine,
+  DataElementReference,
+  DataElement,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
+import { RelationElementState } from '../data/EmbeddedDataState.js';
 import {
   action,
   computed,
   flow,
+  flowResult,
   makeObservable,
   observable,
   runInAction,
@@ -105,6 +119,7 @@ import type {
   AdhocDataProductDeployResponse,
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
+import { deserialize } from 'serializr';
 
 export enum DATA_PRODUCT_TAB {
   HOME = 'Home',
@@ -145,6 +160,8 @@ export class AccessPointState {
 export class AccessPointLambdaEditorState extends LambdaEditorState {
   readonly editorStore: EditorStore;
   readonly val: LakehouseAccessPointState;
+  lambdaRelationColumns: string[] | undefined;
+  isUpdatingRelationColumns = false;
 
   constructor(val: LakehouseAccessPointState) {
     super('', LAMBDA_PIPE, {
@@ -152,6 +169,80 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
     });
     this.val = val;
     this.editorStore = val.state.state.editorStore;
+
+    makeObservable(this, {
+      lambdaRelationColumns: observable,
+      isUpdatingRelationColumns: observable,
+      setLambdaRelationColumns: action,
+      updateLambdaRelationColumns: flow,
+    });
+
+    flowResult(this.updateLambdaRelationColumns()).catch(
+      this.editorStore.applicationStore.alertUnhandledError,
+    );
+  }
+
+  setLambdaRelationColumns(columns: string[] | undefined): void {
+    this.lambdaRelationColumns = columns;
+  }
+
+  setIsUpdatingRelationColumns(value: boolean): void {
+    this.isUpdatingRelationColumns = value;
+  }
+
+  *updateLambdaRelationColumns(): GeneratorFn<void> {
+    // Prevent concurrent calls
+    if (this.isUpdatingRelationColumns) {
+      return;
+    }
+
+    this.setIsUpdatingRelationColumns(true);
+    const relationElement = this.val.relationElementState?.relationElement;
+    if (relationElement) {
+      this.val.deleteRelationElement();
+    }
+    try {
+      const model = guaranteeType(
+        this.editorStore.graphManagerState.graphManager,
+        V1_PureGraphManager,
+      ).getFullGraphModelData(this.editorStore.graphManagerState.graph);
+
+      const relationTypeInput = new V1_LambdaReturnTypeInput(
+        model,
+        V1_transformRawLambda(
+          this.val.accessPoint.func,
+          new V1_GraphTransformerContextBuilder(
+            this.editorStore.pluginManager.getPureProtocolProcessorPlugins(),
+          ).build(),
+        ),
+      );
+
+      const relationType = deserialize(
+        V1_relationTypeModelSchema,
+        (yield guaranteeType(
+          guaranteeType(
+            this.editorStore.graphManagerState.graphManager,
+            V1_PureGraphManager,
+          ).engine,
+          V1_RemoteEngine,
+        )
+          .getEngineServerClient()
+          .lambdaRelationType(
+            V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
+          )) as object,
+      );
+
+      this.setLambdaRelationColumns(
+        relationType.columns.map((column) => column.name),
+      );
+    } catch {
+      this.setLambdaRelationColumns(undefined);
+    } finally {
+      if (relationElement) {
+        this.val.addRelationElement(relationElement, false);
+      }
+      this.setIsUpdatingRelationColumns(false);
+    }
   }
 
   override get lambdaId(): string {
@@ -253,6 +344,10 @@ export class LakehouseAccessPointState extends AccessPointState {
   lambdaState: AccessPointLambdaEditorState;
   artifactGenerationContent: string | undefined;
   generatingArtifactState = ActionState.create();
+  relationElementState: RelationElementState | undefined;
+  showSampleValuesEditor = true;
+  showSampleValuesModal = false;
+
   // Add lineage state and isGeneratingLineage
   lineageState: LineageState;
   generatingLineageAction = ActionState.create();
@@ -265,16 +360,195 @@ export class LakehouseAccessPointState extends AccessPointState {
       generatingArtifactState: observable,
       generateArtifact: flow,
       isRunningProcess: computed,
+      relationElementState: observable,
+      showSampleValuesEditor: observable,
+      setShowSampleValuesEditor: action,
+      showSampleValuesModal: observable,
+      setShowSampleValuesModal: action,
+      addRelationElement: action,
+      deleteRelationElement: action,
+      // Add observables for lineage
       lineageState: observable,
       setArtifactContent: action,
       generatingLineageAction: observable,
       generateLineage: flow,
+      hasRelationElementMismatch: computed,
     });
     this.accessPoint = val;
     this.lambdaState = new AccessPointLambdaEditorState(this);
     this.lineageState = new LineageState(
       this.state.state.editorStore.applicationStore,
     );
+    this.relationElementState = this.getRelationElementState();
+  }
+
+  get hasRelationElementMismatch(): boolean {
+    if (!this.relationElementState) {
+      return false;
+    }
+
+    const relationElement = this.relationElementState.relationElement;
+    const lambdaColumns = this.lambdaState.lambdaRelationColumns;
+
+    if (lambdaColumns === undefined) {
+      return true;
+    }
+
+    const relationColumnSet = new Set(relationElement.columns);
+    const lambdaColumnSet = new Set(lambdaColumns);
+
+    if (relationColumnSet.size !== lambdaColumnSet.size) {
+      return true;
+    }
+
+    return !Array.from(lambdaColumnSet).every((col) =>
+      relationColumnSet.has(col),
+    );
+  }
+
+  getRelationElementMismatchMessage(): string | undefined {
+    if (!this.hasRelationElementMismatch) {
+      return undefined;
+    }
+
+    const lambdaColumns = this.lambdaState.lambdaRelationColumns;
+
+    if (lambdaColumns === undefined) {
+      return `Fix compiler errors and make sure AccessPoint ${this.accessPoint.id} returns a Relation type`;
+    }
+
+    return `Sample values columns must match: [${lambdaColumns.join(', ')}]`;
+  }
+
+  setShowSampleValuesEditor(value: boolean): void {
+    this.showSampleValuesEditor = value;
+  }
+
+  setShowSampleValuesModal(value: boolean): void {
+    this.showSampleValuesModal = value;
+  }
+
+  getRelationElementState(): RelationElementState | undefined {
+    const relationElement = this.getRelationElement();
+    return relationElement
+      ? new RelationElementState(relationElement)
+      : undefined;
+  }
+
+  getRelationElement(): RelationElement | undefined {
+    const product = this.state.state.product;
+    if (!product.sampleValues) {
+      return undefined;
+    }
+    for (const embeddedData of product.sampleValues) {
+      if (embeddedData instanceof RelationElementsData) {
+        const relationElement = embeddedData.relationElements.find(
+          (res) => res.paths[0] === this.accessPoint.id,
+        );
+        if (relationElement) {
+          return relationElement;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  relationElementExistsinDataElementReference(): string | undefined {
+    const product = this.state.state.product;
+    if (!product.sampleValues) {
+      return undefined;
+    }
+    for (const embeddedData of product.sampleValues) {
+      if (embeddedData instanceof DataElementReference) {
+        const dataElement = embeddedData.dataElement.value;
+        if (
+          dataElement instanceof DataElement &&
+          dataElement.data instanceof RelationElementsData
+        ) {
+          const relationElement = dataElement.data.relationElements.find(
+            (res) => res.paths[0] === this.accessPoint.id,
+          );
+          if (relationElement) {
+            return dataElement.path;
+          }
+        }
+      }
+    }
+    return undefined;
+  }
+
+  createAndaddRelationElement(): void {
+    const newElement = new RelationElement();
+    newElement.paths = [this.accessPoint.id];
+
+    if (this.lambdaState.lambdaRelationColumns) {
+      newElement.columns = [...this.lambdaState.lambdaRelationColumns];
+    } else {
+      this.state.state.editorStore.applicationStore.notificationService.notifyError(
+        `Can't get AccessPoint Relation columns. Fix compiler errors and make sure AccessPoint ${this.accessPoint.id} returns a Relation`,
+      );
+      return;
+    }
+
+    newElement.rows = [];
+    this.addRelationElement(observe_RelationElement(newElement), true);
+  }
+
+  addRelationElement(newElement: RelationElement, openModal: boolean): void {
+    const product = this.state.state.product;
+
+    let relationElementsData = product.sampleValues?.find(
+      (embeddedData) => embeddedData instanceof RelationElementsData,
+    );
+
+    if (!relationElementsData) {
+      if (!product.sampleValues) {
+        product.sampleValues = [];
+      }
+      relationElementsData = observe_RelationElementsData(
+        new RelationElementsData(),
+      );
+      relationElementsData.relationElements = [];
+      product.sampleValues.push(relationElementsData);
+    }
+    addUniqueEntry(relationElementsData.relationElements, newElement);
+
+    this.relationElementState = new RelationElementState(newElement);
+
+    if (openModal) {
+      this.setShowSampleValuesModal(true);
+    }
+  }
+
+  deleteRelationElement(): void {
+    const product = this.state.state.product;
+    if (!product.sampleValues) {
+      return;
+    }
+
+    product.sampleValues.forEach((embeddedData) => {
+      if (embeddedData instanceof RelationElementsData) {
+        const elementToRemove = embeddedData.relationElements.find(
+          (re) => re.paths[0] === this.accessPoint.id,
+        );
+        if (elementToRemove) {
+          deleteEntry(embeddedData.relationElements, elementToRemove);
+        }
+      }
+    });
+
+    product.sampleValues = product.sampleValues.filter(
+      (ed) =>
+        !(ed instanceof RelationElementsData) || ed.relationElements.length > 0,
+    );
+
+    if (product.sampleValues.length === 0) {
+      product.sampleValues = undefined;
+    }
+
+    if (this.relationElementState) {
+      this.relationElementState = undefined;
+    }
   }
 
   get editorStore(): EditorStore {
@@ -451,6 +725,9 @@ export class AccessPointGroupState {
 
   deleteAccessPoint(val: AccessPointState): void {
     const state = this.accessPointStates.find((a) => a === val);
+    if (state instanceof LakehouseAccessPointState) {
+      state.deleteRelationElement();
+    }
     deleteEntry(this.accessPointStates, state);
     dataProduct_deleteAccessPoint(this.value, val.accessPoint);
   }

@@ -198,6 +198,12 @@ test(integrationTest('Editing access points'), async () => {
   fireEvent.click(await findByText(editorGroup, 'Access Points'));
   await findByText(editorGroup, 'New description here');
 
+  // check that Sample Values button appears for adding test data
+  const sampleValuesButton =
+    within(editorGroup).queryByTitle('Add sample values');
+  expect(sampleValuesButton).not.toBeNull();
+  expect(sampleValuesButton?.textContent).toContain('Sample Values');
+
   //remove first access point
   fireEvent.click(
     guaranteeNonNullable(
