@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.251
+
 ## 0.1.250
 
 ## 0.1.249
