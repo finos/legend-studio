@@ -44,15 +44,21 @@ import { LegendDataCubeBuilder } from '../builder/LegendDataCubeBuilder.js';
 import { LEGEND_DATACUBE_TEST_ID } from '@finos/legend-data-cube';
 import { Core_LegendDataCube_LegendApplicationPlugin } from '../../application/Core_LegendDataCube_LegendApplicationPlugin.js';
 import {
+  V1_EngineServerClient,
   type PersistentDataCube,
   type V1_LambdaReturnTypeInput,
   type V1_Query,
   type V1_RawLambda,
   type V1_ValueSpecification,
+  V1_AppDirLevel,
   V1_entitiesToPureModelContextData,
+  V1_EntitlementsLakehouseEnvironmentType,
   V1_ExecuteInput,
+  V1_PureGraphManager,
   V1_PureModelContextData,
   V1_serializePureModelContext,
+  type V1_EntitlementsDataProductDetails,
+  type V1_EntitlementsDataProductDetailsResponse,
 } from '@finos/legend-graph';
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
 import {
@@ -65,7 +71,310 @@ import {
   ENGINE_TEST_SUPPORT__transformTdsToRelation_lambda,
 } from '@finos/legend-graph/test';
 import type { Entity } from '@finos/legend-storage';
+import { LegendDataCubeDataCubeEngine } from '../../stores/LegendDataCubeDataCubeEngine.js';
 import { LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin } from '../builder/source/LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin.js';
+import { DepotServerClient } from '@finos/legend-server-depot';
+import {
+  LakehouseContractServerClient,
+  LakehouseIngestServerClient,
+} from '@finos/legend-server-lakehouse';
+
+export const DEFAULT_MOCK_ADHOC_DATA_PRODUCT: PlainObject = {
+  dataProducts: [
+    {
+      id: 'test-id',
+      deploymentId: 22222,
+      description: 'test description',
+      origin: {
+        type: 'AdHocDeployment',
+        definition: 'test-definition',
+      },
+      lakehouseEnvironment: {
+        producerEnvironmentName: 'DEVELOPMENT',
+        type: 'DEVELOPMENT',
+      },
+      dataProduct: {
+        name: 'MOCK_ADHOC_DATAPRODUCT',
+        accessPoints: [
+          {
+            name: 'TEST_VIEW',
+            groups: ['GROUP1'],
+          },
+        ],
+        accessPointGroupStereotypeMappings: [],
+        owner: {
+          appDirId: 22222,
+          level: V1_AppDirLevel.DEPLOYMENT,
+        },
+      },
+    },
+  ],
+};
+
+export const DEFAULT_MOCK_PMCD: PlainObject<V1_PureModelContextData> = {
+  _type: 'pureModelContextData',
+  elements: [
+    {
+      _type: 'packageableElement',
+      name: 'LakehouseConsumer',
+      package: 'adhoc::test',
+    },
+  ],
+};
+
+export const TEST__provideMockedLegendDataCubeEngine = async (customization?: {
+  mock?: LegendDataCubeDataCubeEngine | undefined;
+  applicationStore?: LegendDataCubeApplicationStore | undefined;
+  pluginManager?: LegendDataCubePluginManager | undefined;
+  extraPlugins?: AbstractPlugin[] | undefined;
+  extraPresets?: AbstractPreset[] | undefined;
+  depotServerClient?: DepotServerClient | undefined;
+  enginerServerClient?: V1_EngineServerClient | undefined;
+  lakehouseContractServerClient?: LakehouseContractServerClient | undefined;
+  ingestServer?: LakehouseIngestServerClient | undefined;
+  graphManager?: V1_PureGraphManager | undefined;
+  mockPMCD?: PlainObject<V1_PureModelContextData>;
+  mockEntitlementsAdHocDataProduct?: PlainObject<V1_EntitlementsDataProductDetailsResponse>;
+}): Promise<LegendDataCubeDataCubeEngine> => {
+  //create application store
+  const pluginManager =
+    customization?.pluginManager ?? LegendDataCubePluginManager.create();
+  pluginManager
+    .usePlugins([
+      new Core_LegendDataCube_LegendApplicationPlugin(),
+      new Core_LegendDataCubeApplicationPlugin(),
+      new LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin(),
+      ...(customization?.extraPlugins ?? []),
+    ])
+    .usePresets([
+      new DSL_DataSpace_GraphManagerPreset(),
+      ...(customization?.extraPresets ?? []),
+    ])
+    .install();
+  const applicationStore =
+    customization?.applicationStore ??
+    new ApplicationStore(
+      TEST__getTestLegendDataCubeApplicationConfig(),
+      pluginManager,
+    );
+  //Server Clients
+  const depotServerClient =
+    customization?.depotServerClient ??
+    new DepotServerClient({
+      serverUrl: applicationStore.config.depotServerUrl,
+    });
+  const engineServerClient =
+    customization?.enginerServerClient ??
+    new V1_EngineServerClient({
+      baseUrl: applicationStore.config.engineServerUrl,
+    });
+
+  const lakehouseIngestServerClient =
+    customization?.ingestServer ?? new LakehouseIngestServerClient(undefined);
+  const lakehouseContractServerClient =
+    customization?.lakehouseContractServerClient ??
+    new LakehouseContractServerClient({
+      baseUrl: applicationStore.config.lakehouseContractUrl,
+    });
+
+  if (customization?.mockPMCD) {
+    createSpy(depotServerClient, 'getPureModelContextData').mockResolvedValue(
+      customization.mockPMCD,
+    );
+  }
+
+  if (customization?.mockEntitlementsAdHocDataProduct) {
+    createSpy(
+      lakehouseContractServerClient,
+      'getDataProduct',
+    ).mockResolvedValue(customization.mockEntitlementsAdHocDataProduct);
+  }
+  createSpy(
+    lakehouseIngestServerClient,
+    'getIngestDefinitionGrammar',
+  ).mockResolvedValue('test-ingest-definition-grammar');
+
+  const graphManager =
+    customization?.graphManager ??
+    new V1_PureGraphManager(
+      applicationStore.pluginManager,
+      applicationStore.logService,
+    );
+  const value =
+    customization?.mock ??
+    new LegendDataCubeDataCubeEngine(
+      applicationStore,
+      depotServerClient,
+      engineServerClient,
+      lakehouseContractServerClient,
+      lakehouseIngestServerClient,
+      graphManager,
+    );
+  if ('initialize' in value && typeof value.initialize === 'function') {
+    await value.initialize();
+  }
+  return value;
+};
+
+export const mockAdhocDataProduct: V1_EntitlementsDataProductDetails = {
+  id: 'test-id',
+  deploymentId: 1,
+  title: 'test-title',
+  description: 'test description',
+  origin: {
+    definition: 'test definition',
+    type: 'AdHocDeployment',
+  },
+  lakehouseEnvironment: {
+    producerEnvironmentName: 'test-producer-environment',
+    type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+  },
+  dataProduct: {
+    name: 'test-dataproduct-name',
+    accessPoints: [
+      {
+        name: 'test-accesspoint-name',
+        groups: ['test-group'],
+      },
+      {
+        name: 'test-accesspoint-name-1',
+        groups: ['test-group'],
+      },
+    ],
+    accessPointGroupStereotypeMappings: [
+      {
+        accessPointGroup: 'MIGRATION',
+        stereotypes: [],
+      },
+    ],
+    owner: {
+      appDirId: 123456,
+      level: V1_AppDirLevel.DEPLOYMENT,
+    },
+  },
+};
+
+export const mockLakehouseConsumerAdHocDataProduct = {
+  _type: 'lakehouseConsumer',
+  warehouse: 'TEST_WAREHOUSE',
+  environment: 'dev-testEnv',
+  paths: ['dataProduct::test_DataProduct', 'test_dataset'],
+  origin: {
+    _type: 'AdHocDeployment',
+  },
+  deploymentId: 123456,
+};
+
+export const mockLakehouseProducerAdHocDataProduct = {
+  _type: 'lakehouseProducer',
+  ingestDefinitionUrn: 'test_ingest-definition-urn',
+  warehouse: 'TEST_WAREHOUSE',
+  ingestServerUrl: 'https://test-prod-ingest-server.com',
+  paths: ['dataProduct::test_Data-Product', 'test_data-set'],
+};
+
+export const columns = [
+  {
+    name: 'testName0',
+    type: 'testName0-test-type',
+  },
+  {
+    name: 'testName1',
+    type: 'testName1-test-type',
+  },
+  {
+    name: 'testName2',
+    type: 'testName2-test-type',
+  },
+  {
+    name: 'testName3',
+    type: 'testName3-test-type',
+  },
+  {
+    name: 'testName4',
+    type: 'testName4-test-type',
+  },
+  {
+    name: 'testName5',
+    type: 'testName5-test-type',
+  },
+];
+
+export const mockAdHocDataProductPMCD = {
+  _type: 'data',
+  elements: [
+    {
+      _type: 'ingestDefinition',
+      package: 'test',
+      name: 'IngestDefinition',
+      owner: {
+        _type: 'ownerTestType',
+        production: {
+          appDirId: 22222,
+          level: 'DEPLOYMENT',
+        },
+      },
+    },
+    {
+      _type: 'dataProduct',
+      package: 'test',
+      name: 'Mock_AdHoc_DataProduct',
+      title: 'Mock Ad-Hoc Data Product',
+      description: 'test description',
+      accessPointGroups: [
+        {
+          _type: 'defaultAccessPointGroup',
+          id: 'GROUP1',
+          description: 'Test ad-hoc access point group',
+          accessPoints: [
+            {
+              _type: 'lakehouseAccessPoint',
+              id: 'test_view',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'classInstance',
+                    type: 'I',
+                    value: {
+                      metadata: false,
+                      path: ['test', 'IngestDefinition'],
+                    },
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      package: '__internal__',
+      name: 'SectionIndex',
+      sections: [
+        {
+          parserName: 'Pure',
+          elements: [],
+          imports: [],
+          _type: 'importAware',
+        },
+        {
+          parserName: 'Lakehouse',
+          elements: ['migration_test::test:Product'],
+          _type: 'default',
+        },
+        {
+          parserName: 'DataProduct',
+          elements: ['lakeMigration::dataProduct::test:Product'],
+          imports: [],
+          _type: 'importAware',
+        },
+      ],
+      _type: 'sectionIndex',
+    },
+  ],
+};
 
 export const TEST__provideMockedLegendDataCubeBaseStore =
   async (customization?: {
