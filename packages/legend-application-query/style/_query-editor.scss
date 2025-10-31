@@ -104,6 +104,11 @@
         }
       }
 
+      &__btn--warning-icon {
+        margin-right: 0.2rem;
+        margin-left: -0.5rem;
+      }
+
       &__title__text {
         @include flexVCenter;
 
@@ -119,7 +124,17 @@
       }
 
       &__title__text--glow-yellow {
-        color: #ffd600;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+
+      &__title__text--light-mode {
+        color: #f68f1e !important;
+      }
+
+      &__title__text--dark-mode {
+        color: #ffd600 !important;
       }
 
       &__title__btn {
@@ -293,7 +308,7 @@
       }
     }
 
-    &__action + &__action {
+    &__action+&__action {
       margin-left: 0;
     }
 
@@ -417,7 +432,7 @@
     }
   }
 
-  &__field + &__field {
+  &__field+&__field {
     margin-top: 0.5rem;
   }
 }

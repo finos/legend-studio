@@ -211,11 +211,11 @@ export class QueryCreatorState {
       query.originalVersionId =
         query.versionId === LATEST_VERSION_ALIAS
           ? VersionedProjectData.serialization.fromJson(
-              (yield this.editorStore.depotServerClient.getLatestVersion(
-                query.groupId,
-                query.artifactId,
-              )) as PlainObject<VersionedProjectData>,
-            ).versionId
+            (yield this.editorStore.depotServerClient.getLatestVersion(
+              query.groupId,
+              query.artifactId,
+            )) as PlainObject<VersionedProjectData>,
+          ).versionId
           : query.versionId;
       if (this.originalQuery) {
         query.stereotypes =
@@ -352,10 +352,10 @@ export abstract class QueryEditorStore {
         generateDefaultQueriesSummaryText: (queries) =>
           queries.length
             ? `Showing ${quantifyList(
-                queries,
-                'recently viewed query',
-                'recently viewed queries',
-              )}`
+              queries,
+              'recently viewed query',
+              'recently viewed queries',
+            )}`
             : `No recently viewed queries`,
         onQueryDeleted: (queryId): void =>
           LegendQueryUserDataHelper.removeRecentlyViewedQuery(
@@ -760,7 +760,7 @@ export abstract class QueryEditorStore {
         );
         const mappingPath = executionContext
           ? dataSpaceAnalysisResult.executionContextsIndex.get(executionContext)
-              ?.mapping.path
+            ?.mapping.path
           : undefined;
         if (mappingPath) {
           const pmcd =
@@ -1060,9 +1060,8 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     return {
       defaultName: options?.update
         ? `${extractElementNameFromPath(this.servicePath)}`
-        : `New Query for ${extractElementNameFromPath(this.servicePath)}${
-            this.executionKey ? `[${this.executionKey}]` : ''
-          }`,
+        : `New Query for ${extractElementNameFromPath(this.servicePath)}${this.executionKey ? `[${this.executionKey}]` : ''
+        }`,
       decorator: (query: Query): void => {
         query.id = uuid();
         query.groupId = this.groupId;
@@ -1106,7 +1105,7 @@ export class ExistingQueryUpdateState {
   queryVersionId: string | undefined;
   projectVersions: string[] = [];
   updateDiffState: QueryBuilderDiffViewState | undefined;
-  descriptionAdder = false;
+  descriptionEditor = false;
 
   constructor(editorState: ExistingQueryEditorStore) {
     this.editorStore = editorState;
@@ -1120,8 +1119,8 @@ export class ExistingQueryUpdateState {
       updateDiffState: observable,
       updateQueryState: observable,
       fetchProjectVersionState: observable,
-      descriptionAdder: observable,
-      setDescriptionAdder: action,
+      descriptionEditor: observable,
+      showDescriptionEditor: action,
       showSaveModal: action,
       setShowQueryInfo: action,
       setProjectVersions: action,
@@ -1139,8 +1138,8 @@ export class ExistingQueryUpdateState {
     this.queryRenamer = val;
   }
 
-  setDescriptionAdder(val: boolean): void {
-    this.descriptionAdder = val;
+  showDescriptionEditor(val: boolean): void {
+    this.descriptionEditor = val;
   }
 
   setShowQueryInfo(val: boolean): void {
@@ -1306,7 +1305,7 @@ const resolveExecutionContext = (
       if (
         dataSpace.defaultExecutionContext.mapping.value !== queryMapping &&
         dataSpace.defaultExecutionContext.defaultRuntime.value.path !==
-          queryRuntime.path
+        queryRuntime.path
       ) {
         const matchingExecContexts = dataSpace.executionContexts.filter(
           (ec) => ec.mapping.value === queryMapping,
@@ -1457,7 +1456,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       !(
         dataSpaceTaggedValue !== undefined ||
         queryInfo?.executionContext instanceof
-          QueryDataSpaceExecutionContextInfo
+        QueryDataSpaceExecutionContextInfo
       )
     ) {
       yield flowResult(this.buildFullGraph());
@@ -1661,10 +1660,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       classQueryBuilderState.executionContextState.setRuntimeValue(
         exec.runtime
           ? new RuntimePointer(
-              PackageableElementExplicitReference.create(
-                this.graphManagerState.graph.getRuntime(exec.runtime),
-              ),
-            )
+            PackageableElementExplicitReference.create(
+              this.graphManagerState.graph.getRuntime(exec.runtime),
+            ),
+          )
           : undefined,
       );
       return classQueryBuilderState;

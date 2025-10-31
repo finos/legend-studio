@@ -311,7 +311,7 @@ export const QueryEditorExistingQueryHeader = observer(
     const { existingEditorStore } = props;
     const updateState = existingEditorStore.updateState;
     const isRenaming = updateState.queryRenamer;
-    const isEditingDescription = updateState.descriptionAdder;
+    const isEditingDescription = updateState.descriptionEditor;
     const applicationStore = useApplicationStore();
     const isLightMode =
       applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
@@ -320,7 +320,7 @@ export const QueryEditorExistingQueryHeader = observer(
       existingEditorStore.lightQuery.name,
     );
 
-    const [descriptionUpdate, setDescriptionUpdate] = useState<string>(
+    const [descriptionValue, setDescriptionValue] = useState<string>(
       existingEditorStore.lightQuery.description ?? '',
     );
 
@@ -337,8 +337,8 @@ export const QueryEditorExistingQueryHeader = observer(
     };
 
     const enableDescriptionUpdate = (): void => {
-      setDescriptionUpdate(existingEditorStore.lightQuery.description ?? '');
-      updateState.setDescriptionAdder(true);
+      setDescriptionValue(existingEditorStore.lightQuery.description ?? '');
+      updateState.showDescriptionEditor(true);
     };
 
     const updateDescription = (val: string): void => {
@@ -352,9 +352,9 @@ export const QueryEditorExistingQueryHeader = observer(
       event,
     ) => setQueryRenameName(event.target.value);
 
-    const changeDescriptionUpdate: React.ChangeEventHandler<
+    const handleChangeDescription: React.ChangeEventHandler<
       HTMLInputElement
-    > = (event) => setDescriptionUpdate(event.target.value);
+    > = (event) => setDescriptionValue(event.target.value);
 
     const debouncedLoadQueries = useMemo(
       () =>
@@ -462,19 +462,19 @@ export const QueryEditorExistingQueryHeader = observer(
                   <div className="input--with-validation">
                     <input
                       className="input input--dark query-editor__rename__input"
-                      value={descriptionUpdate}
-                      onChange={changeDescriptionUpdate}
+                      value={descriptionValue}
+                      onChange={handleChangeDescription}
                       placeholder="Add description"
                       autoFocus={true}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') {
                           event.stopPropagation();
-                          updateState.setDescriptionAdder(false);
-                          updateDescription(descriptionUpdate);
+                          updateState.showDescriptionEditor(false);
+                          updateDescription(descriptionValue);
                         } else if (event.key === 'Escape') {
                           event.stopPropagation();
-                          updateState.setDescriptionAdder(false);
-                          setDescriptionUpdate(
+                          updateState.showDescriptionEditor(false);
+                          setDescriptionValue(
                             existingEditorStore.lightQuery.description ?? '',
                           );
                         }
@@ -486,8 +486,8 @@ export const QueryEditorExistingQueryHeader = observer(
                       className="query-editor__header__content__title__actions__action"
                       tabIndex={-1}
                       onClick={() => {
-                        updateState.setDescriptionAdder(false);
-                        updateDescription(descriptionUpdate);
+                        updateState.showDescriptionEditor(false);
+                        updateDescription(descriptionValue);
                       }}
                     >
                       <CheckIcon />
@@ -496,8 +496,8 @@ export const QueryEditorExistingQueryHeader = observer(
                       className="query-editor__header__content__title__actions__action"
                       tabIndex={-1}
                       onClick={() => {
-                        updateState.setDescriptionAdder(false);
-                        setDescriptionUpdate(
+                        updateState.showDescriptionEditor(false);
+                        setDescriptionValue(
                           existingEditorStore.lightQuery.description ?? '',
                         );
                       }}
@@ -536,17 +536,17 @@ export const QueryEditorExistingQueryHeader = observer(
                   className={clsx(
                     'query-editor__header__content__title__text',
                     'query-editor__header__content__title__text--glow-yellow',
+
+                    {
+                      'query-editor__header__content__title__text--light-mode':
+                        isLightMode,
+                      'query-editor__header__content__title__text--dark-mode':
+                        !isLightMode,
+                    },
                   )}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    color: isLightMode ? '#f68f1e' : '#ffd600',
-                  }}
                 >
                   <button
                     className="query-editor__header__conten__title__btn panel__content__form__section__list__item__edit-btn"
-                    style={{ marginRight: '0.2rem', marginLeft: '-0.5rem' }}
                     title="No description, Click to add one"
                     onClick={enableDescriptionUpdate}
                   >
@@ -910,7 +910,7 @@ export const QueryEditor = observer(() => {
             (editorStore.queryBuilderState instanceof
               DataSpaceQueryBuilderState ||
               editorStore.queryBuilderState instanceof
-                DataSpaceQuerySetupState) &&
+              DataSpaceQuerySetupState) &&
             editorStore.queryBuilderState.canBuildQuery && (
               <button
                 title="Open Query Chat."
