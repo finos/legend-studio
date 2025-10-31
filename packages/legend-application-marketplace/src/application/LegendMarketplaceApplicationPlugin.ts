@@ -23,6 +23,13 @@ import type {
   DataProductDataAccess_LegendApplicationPlugin_Extension,
   AccessPointGroupAccess,
 } from '@finos/legend-extension-dsl-data-product';
+import type React from 'react';
+
+export interface AdditionalMarketplacePageConfig {
+  path: string;
+  component: React.FC;
+  protected: boolean;
+}
 
 export abstract class LegendMarketplaceApplicationPlugin
   extends LegendApplicationPlugin
@@ -63,4 +70,11 @@ export abstract class LegendMarketplaceApplicationPlugin
    * - Organizational scope type details renderer
    */
   getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
+
+  /**
+   * Config to allow adding arbitrary additional pages to the marketplace application.
+   * These pages will be wrapped in all the usual context providers, so they will
+   * have access to useLegendMarketplaceBaseStore and other similar hooks.
+   */
+  getAdditionalMarketplacePageConfigs?(): AdditionalMarketplacePageConfig[];
 }

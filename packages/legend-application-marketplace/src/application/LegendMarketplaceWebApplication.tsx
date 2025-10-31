@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   CubesLoadingIndicator,
@@ -110,6 +110,18 @@ const NotFoundPage = observer(() => {
   );
 });
 
+const useProtectedPage = (PageComponent: React.FC): React.FC =>
+  withAuthenticationRequired(PageComponent, {
+    OnRedirecting: () => (
+      <CubesLoadingIndicator isLoading={true}>
+        <CubesLoadingIndicatorIcon />
+      </CubesLoadingIndicator>
+    ),
+    signinRedirectArgs: {
+      state: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    },
+  });
+
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
   const marketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
@@ -132,84 +144,6 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
       },
     );
   }, [applicationStore]);
-
-  const ProtectedLakehouseMarketplace = withAuthenticationRequired(
-    MarketplaceLakehouseHome,
-    {
-      OnRedirecting: () => (
-        <CubesLoadingIndicator isLoading={true}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-      ),
-      signinRedirectArgs: {
-        state: `${window.location.pathname}${window.location.search}`,
-      },
-    },
-  );
-
-  const ProtectedLakehouseSearchResults = withAuthenticationRequired(
-    MarketplaceLakehouseSearchResults,
-    {
-      OnRedirecting: () => (
-        <CubesLoadingIndicator isLoading={true}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-      ),
-      signinRedirectArgs: {
-        state: `${window.location.pathname}${window.location.search}`,
-      },
-    },
-  );
-
-  const ProtectedLakehouseDataProduct = withAuthenticationRequired(
-    LakehouseDataProduct,
-    {
-      OnRedirecting: () => (
-        <CubesLoadingIndicator isLoading={true}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-      ),
-      signinRedirectArgs: {
-        state: `${window.location.pathname}${window.location.search}`,
-      },
-    },
-  );
-
-  const ProtectedTerminalProduct = withAuthenticationRequired(TerminalProduct, {
-    OnRedirecting: () => (
-      <CubesLoadingIndicator isLoading={true}>
-        <CubesLoadingIndicatorIcon />
-      </CubesLoadingIndicator>
-    ),
-    signinRedirectArgs: {
-      state: `${window.location.pathname}${window.location.search}`,
-    },
-  });
-
-  const ProtectedLakehouseEntitlements = withAuthenticationRequired(
-    LakehouseEntitlements,
-    {
-      OnRedirecting: () => (
-        <CubesLoadingIndicator isLoading={true}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-      ),
-      signinRedirectArgs: {
-        state: `${window.location.pathname}${window.location.search}`,
-      },
-    },
-  );
-
-  const ProtectedLakehouseAdmin = withAuthenticationRequired(LakehouseAdmin, {
-    OnRedirecting: () => (
-      <CubesLoadingIndicator isLoading={true}>
-        <CubesLoadingIndicatorIcon />
-      </CubesLoadingIndicator>
-    ),
-    signinRedirectArgs: {
-      state: `${window.location.pathname}${window.location.search}`,
-    },
-  });
 
   return (
     <div className="app">
@@ -234,7 +168,9 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               path={
                 LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
               }
-              element={<ProtectedLakehouseSearchResults />}
+              element={React.createElement(
+                useProtectedPage(MarketplaceLakehouseSearchResults),
+              )}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_APIS}
@@ -260,11 +196,13 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT}
-              element={<ProtectedLakehouseDataProduct />}
+              element={React.createElement(
+                useProtectedPage(LakehouseDataProduct),
+              )}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_PRODUCT}
-              element={<ProtectedTerminalProduct />}
+              element={React.createElement(useProtectedPage(TerminalProduct))}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT}
@@ -276,15 +214,19 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}
-              element={<ProtectedLakehouseEntitlements />}
+              element={React.createElement(
+                useProtectedPage(LakehouseEntitlements),
+              )}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
-              element={<ProtectedLakehouseMarketplace />}
+              element={React.createElement(
+                useProtectedPage(MarketplaceLakehouseHome),
+              )}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN}
-              element={<ProtectedLakehouseAdmin />}
+              element={React.createElement(useProtectedPage(LakehouseAdmin))}
             />
 
             {/* Reroute pages */}
@@ -332,6 +274,30 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                 />
               }
             />
+
+            {/* Plugin additional pages */}
+            {/* We filter out any pages with paths that exist above to avoid overwriting main pages */}
+            {applicationStore.pluginManager
+              .getApplicationPlugins()
+              .flatMap(
+                (plugin) =>
+                  plugin.getAdditionalMarketplacePageConfigs?.() ?? [],
+              )
+              .filter(
+                (pageConfig) =>
+                  !(pageConfig.path in LEGEND_MARKETPLACE_ROUTE_PATTERN),
+              )
+              .map((pageConfig) => (
+                <Route
+                  key={pageConfig.path}
+                  path={pageConfig.path}
+                  element={React.createElement(
+                    pageConfig.protected
+                      ? useProtectedPage(pageConfig.component)
+                      : pageConfig.component,
+                  )}
+                />
+              ))}
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
