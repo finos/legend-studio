@@ -47,6 +47,7 @@ import {
   mockDataContractMultipleConsumers,
   mockPendingManagerApprovalMultipleConsumersTasksResponse,
   mockDataContractWithSystemAccountMember,
+  mockEscalatedPendingManagerApprovalTasksResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 import { ApplicationStore } from '@finos/legend-application';
 import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
@@ -76,6 +77,9 @@ const setupDataContractViewerTest = async (
   const lakehouseContractServerClient = new LakehouseContractServerClient({
     baseUrl: 'http://test-contract-server-client',
   });
+  lakehouseContractServerClient.setTracerService(
+    MOCK__applicationStore.tracerService,
+  );
 
   MOCK__applicationStore.navigationService.navigator.generateAddress = jest.fn(
     (location: string) => location,
@@ -338,12 +342,26 @@ describe('EntitlementsDataContractViewer', () => {
       getMockPendingManagerApprovalTasksResponse(),
     );
 
-    const escalateSpy = jest.spyOn(
+    const escalateSpy = createSpy(
       MOCK__contractViewerState.lakehouseContractServerClient,
       'escalateUserOnContract',
-    );
+    ).mockImplementation(async () => Promise.resolve({}));
 
     expect(escalateSpy).toHaveBeenCalledTimes(0);
+
+    // Verify 1 approver
+    await screen.findByText('Assignee:');
+    screen.getByText('test-privilege-manager-user-id');
+    expect(screen.queryByText('test-privilege-manager-user-id-2')).toBeNull();
+    expect(screen.queryByText('test-privilege-manager-user-id-3')).toBeNull();
+
+    // Setup mock for tasks after escalation: update existing spy instead of re-spying
+    createSpy(
+      MOCK__contractViewerState.lakehouseContractServerClient,
+      'getContractTasks',
+    ).mockResolvedValue(
+      mockEscalatedPendingManagerApprovalTasksResponse as unknown as PlainObject<V1_TaskResponse>,
+    );
 
     // Get escalate button
     await screen.findByText('Pending Data Contract Request');
@@ -372,5 +390,11 @@ describe('EntitlementsDataContractViewer', () => {
       false,
       'mock-access-token',
     );
+
+    // Verify multiple approvers after escalation
+    await screen.findByText('Assignees (3):');
+    screen.getByText('test-privilege-manager-user-id');
+    screen.getByText('test-privilege-manager-user-id-2');
+    screen.getByText('test-privilege-manager-user-id-3');
   });
 });

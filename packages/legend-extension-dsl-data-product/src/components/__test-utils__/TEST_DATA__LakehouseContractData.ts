@@ -179,6 +179,33 @@ export const getMockPendingManagerApprovalTasksResponse = (
   ],
 });
 
+export const mockEscalatedPendingManagerApprovalTasksResponse: V1_TaskResponse =
+  {
+    tasks: [
+      {
+        assignees: [
+          'test-privilege-manager-user-id',
+          'test-privilege-manager-user-id-2',
+          'test-privilege-manager-user-id-3',
+        ],
+        rec: {
+          consumer: 'test-consumer-user-id',
+          dataContractId: 'test-data-contract-id',
+          eventPayload: {
+            type: V1_ContractEventPayloadType.SUBMITTED,
+            eventTimestamp: '2025-08-06T11:54:46.069672876Z',
+          },
+          status: V1_UserApprovalStatus.PENDING,
+          taskId: 'mock-privilege-manager-approval-task-id',
+          type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+          effectiveFrom: '2025-08-07T00:00:00.000Z',
+          effectiveTo: '2026-08-07T00:00:00.000Z',
+          isEscalated: true,
+        },
+      },
+    ],
+  };
+
 export const mockPendingManagerApprovalMultipleAssigneesTasksResponse: V1_TaskResponse =
   {
     tasks: [
