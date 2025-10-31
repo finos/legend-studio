@@ -162,28 +162,25 @@ export class EntitlementsDashboardState {
     contractId: string,
     token: string | undefined,
   ): GeneratorFn<void> {
-    const [newPendingContracts, newAllContracts]: [
-      V1_UserPendingContractsRecord[],
-      V1_LiteDataContract[],
-    ] = yield Promise.all([
+    const [newPendingContracts, newAllContracts] = (yield Promise.all([
       (async () =>
         (
-          (await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getPendingContracts(
+          await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getPendingContracts(
             TEST_USER2,
             token,
-          )) as V1_UserPendingContractsResponse
+          )
         ).records ?? [])(),
       (async () => {
         const rawContracts =
-          (await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getLiteDataContracts(
+          await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getLiteDataContracts(
             token,
-          )) as PlainObject<V1_LiteDataContractsResponse>;
+          );
         return V1_liteDataContractsResponseModelSchemaToContracts(
           rawContracts,
           this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
         );
       })(),
-    ]);
+    ])) as [V1_UserPendingContractsRecord[], V1_LiteDataContract[]];
 
     this.setPendingContracts(
       this.pendingContracts

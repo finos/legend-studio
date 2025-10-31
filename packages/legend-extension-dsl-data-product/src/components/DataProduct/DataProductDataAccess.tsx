@@ -847,7 +847,7 @@ export const DataProductAccessPointGroupViewer = observer(
             onClose={() => dataAccessState.setDataContract(undefined)}
             currentViewer={entitlementsDataContractViewerState}
             onRefresh={() => {
-              if (apgState?.associatedUserContract) {
+              if (apgState.associatedUserContract) {
                 apgState.fetchUserAccessStatus(
                   apgState.associatedUserContract.guid,
                   dataAccessState.lakehouseContractServerClient,

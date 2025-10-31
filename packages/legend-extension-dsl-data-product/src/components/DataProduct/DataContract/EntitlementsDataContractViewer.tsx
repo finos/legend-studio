@@ -263,7 +263,7 @@ export const EntitlementsDataContractViewer = observer(
     getContractTaskUrl: (taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
     initialSelectedUser?: string | undefined;
-    onRefresh?: () => void;
+    onRefresh?: (() => void) | (() => Promise<void>);
   }) => {
     const {
       open,
@@ -357,7 +357,7 @@ export const EntitlementsDataContractViewer = observer(
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
       currentViewer.initializationState = ActionState.create();
-      onRefresh?.();
+      await onRefresh?.();
     };
 
     if (

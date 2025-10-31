@@ -379,8 +379,8 @@ export const EntitlementsClosedContractsDashboard = observer(
                 marketplaceBaseStore.userSearchService,
               )
             }
-            onRefresh={() => {
-              flowResult(
+            onRefresh={async () => {
+              await flowResult(
                 dashboardState.updateContract(
                   selectedContract.guid,
                   auth.user?.access_token,
