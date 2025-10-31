@@ -378,6 +378,7 @@ export const EntitlementsClosedContractsDashboard = observer(
                 marketplaceBaseStore.userSearchService,
               )
             }
+            onRefresh={() => dashboardState.refresh()}
             getContractTaskUrl={(taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseTaskPath(taskId),

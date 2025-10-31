@@ -141,6 +141,7 @@ export const LakehouseAdminContractsDashboard = observer(
                 adminStore.legendMarketplaceBaseStore.userSearchService,
               )
             }
+            onRefresh={() => adminStore.refresh()}
             getContractTaskUrl={(taskId: string) =>
               adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseTaskPath(taskId),

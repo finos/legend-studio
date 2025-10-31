@@ -31,6 +31,7 @@ import { makeObservable, flow, action, observable } from 'mobx';
 
 export class LakehouseAdminStore {
   readonly legendMarketplaceBaseStore: LegendMarketplaceBaseStore;
+  initializationState = ActionState.create();
   subscriptionsInitializationState = ActionState.create();
   contractsInitializationState = ActionState.create();
   subscriptions: V1_DataSubscription[] = [];
@@ -41,9 +42,11 @@ export class LakehouseAdminStore {
     makeObservable(this, {
       subscriptions: observable,
       contracts: observable,
+      initializationState: observable,
       init: flow,
       setSubscriptions: action,
       setContracts: action,
+      refresh: action,
     });
   }
 
@@ -92,7 +95,16 @@ export class LakehouseAdminStore {
       }
     };
 
-    yield Promise.all([fetchSubscriptions(), fetchContracts()]);
+    this.initializationState.inProgress();
+    try {
+      yield Promise.all([fetchSubscriptions(), fetchContracts()]);
+    } finally {
+      this.initializationState.complete();
+    }
+  }
+
+  refresh(): void {
+    this.initializationState = ActionState.create();
   }
 
   setSubscriptions(val: V1_DataSubscription[]): void {

@@ -846,7 +846,15 @@ export const DataProductAccessPointGroupViewer = observer(
             open={true}
             onClose={() => dataAccessState.setDataContract(undefined)}
             currentViewer={entitlementsDataContractViewerState}
-            apgState={apgState}
+            onRefresh={() => {
+              if (apgState?.associatedUserContract) {
+                apgState.fetchUserAccessStatus(
+                  apgState.associatedUserContract.guid,
+                  dataAccessState.lakehouseContractServerClient,
+                  auth.user?.access_token,
+                );
+              }
+            }}
             getContractTaskUrl={dataAccessState.getContractTaskUrl}
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />

@@ -79,7 +79,6 @@ import {
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
 import { isContractInTerminalState } from '../../../utils/DataContractUtils.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import type { DataProductAPGState } from '../../../stores/DataProduct/DataProductAPGState.js';
 
 const AssigneesList = (props: {
   userIds: string[];
@@ -263,17 +262,17 @@ export const EntitlementsDataContractViewer = observer(
     currentViewer: EntitlementsDataContractViewerState;
     getContractTaskUrl: (taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
-    apgState?: DataProductAPGState | undefined;
     initialSelectedUser?: string | undefined;
+    onRefresh?: () => void;
   }) => {
     const {
       open,
       currentViewer,
       getContractTaskUrl,
       getDataProductUrl,
-      apgState,
       onClose,
       initialSelectedUser,
+      onRefresh,
     } = props;
     const auth = useAuth();
     const consumer = currentViewer.liteContract.consumer;
@@ -357,14 +356,8 @@ export const EntitlementsDataContractViewer = observer(
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
-      if (apgState?.associatedUserContract) {
-        apgState.fetchUserAccessStatus(
-          apgState.associatedUserContract.guid,
-          currentViewer.lakehouseContractServerClient,
-          auth.user?.access_token,
-        );
-      }
       currentViewer.initializationState = ActionState.create();
+      onRefresh?.();
     };
 
     if (
