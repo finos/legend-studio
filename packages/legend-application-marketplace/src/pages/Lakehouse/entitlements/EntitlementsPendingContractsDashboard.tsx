@@ -60,6 +60,7 @@ import {
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { LakehouseEntitlementsStore } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
 import type { GridApi } from 'ag-grid-community';
+import { flowResult } from 'mobx';
 
 const AssigneesCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
@@ -468,7 +469,15 @@ export const EntitlementsPendingContractsDashboard = observer(
                 marketplaceBaseStore.userSearchService,
               )
             }
-            onRefresh={() => gridApi?.refreshCells({ force: true })}
+            onRefresh={async () => {
+              await flowResult(
+                dashboardState.updateContract(
+                  selectedContract.guid,
+                  auth.user?.access_token,
+                ),
+              );
+              gridApi?.refreshCells({ force: true });
+            }}
             getContractTaskUrl={(taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseTaskPath(taskId),
