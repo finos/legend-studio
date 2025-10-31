@@ -24,6 +24,7 @@ import {
 } from '@testing-library/react';
 import { type PlainObject } from '@finos/legend-shared';
 import {
+  GraphManagerState,
   type V1_LiteDataContract,
   type V1_TaskResponse,
 } from '@finos/legend-graph';
@@ -96,6 +97,10 @@ const setupDataContractViewerTest = async (
     mockContract,
     MOCK__applicationStore,
     lakehouseContractServerClient,
+    new GraphManagerState(
+      MOCK__applicationStore.pluginManager,
+      MOCK__applicationStore.logService,
+    ),
     undefined,
   );
 

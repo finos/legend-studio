@@ -24,7 +24,10 @@ import {
   type DataGridRowClickedEvent,
 } from '@finos/legend-lego/data-grid';
 import { Box } from '@mui/material';
-import { type V1_LiteDataContract } from '@finos/legend-graph';
+import {
+  GraphManagerState,
+  type V1_LiteDataContract,
+} from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useState } from 'react';
 import {
@@ -131,6 +134,10 @@ export const LakehouseAdminContractsDashboard = observer(
                 selectedContract,
                 adminStore.legendMarketplaceBaseStore.applicationStore,
                 adminStore.legendMarketplaceBaseStore.lakehouseContractServerClient,
+                new GraphManagerState(
+                  adminStore.legendMarketplaceBaseStore.applicationStore.pluginManager,
+                  adminStore.legendMarketplaceBaseStore.applicationStore.logService,
+                ),
                 adminStore.legendMarketplaceBaseStore.userSearchService,
               )
             }

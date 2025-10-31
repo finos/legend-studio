@@ -18,6 +18,7 @@ import {
   type V1_ContractUserEventRecord,
   type V1_EnrichedUserApprovalStatus,
   type V1_LiteDataContract,
+  GraphManagerState,
   V1_AdhocTeam,
   V1_ContractUserStatusResponseModelSchema,
   V1_ResourceType,
@@ -370,6 +371,10 @@ export const EntitlementsClosedContractsDashboard = observer(
                 selectedContract,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
+                new GraphManagerState(
+                  marketplaceBaseStore.applicationStore.pluginManager,
+                  marketplaceBaseStore.applicationStore.logService,
+                ),
                 marketplaceBaseStore.userSearchService,
               )
             }

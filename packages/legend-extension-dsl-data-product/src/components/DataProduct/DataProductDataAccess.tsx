@@ -597,11 +597,13 @@ export const DataProductAccessPointGroupViewer = observer(
             ),
             apgState.applicationStore,
             dataAccessState.lakehouseContractServerClient,
+            apgState.dataProductViewerState.graphManagerState,
             apgState.dataProductViewerState.userSearchService,
           )
         : undefined;
     }, [
       apgState.applicationStore,
+      apgState.dataProductViewerState.graphManagerState,
       apgState.dataProductViewerState.userSearchService,
       dataAccessState?.dataContract,
       dataAccessState?.lakehouseContractServerClient,

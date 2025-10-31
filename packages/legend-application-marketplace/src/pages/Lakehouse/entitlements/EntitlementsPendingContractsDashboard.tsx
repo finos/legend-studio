@@ -18,6 +18,7 @@ import {
   type V1_ContractUserEventRecord,
   type V1_LiteDataContract,
   type V1_UserPendingContractsRecord,
+  GraphManagerState,
   V1_AdhocTeam,
   V1_ContractState,
   V1_deserializeTaskResponse,
@@ -455,6 +456,10 @@ export const EntitlementsPendingContractsDashboard = observer(
                 selectedContract,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
+                new GraphManagerState(
+                  marketplaceBaseStore.applicationStore.pluginManager,
+                  marketplaceBaseStore.applicationStore.logService,
+                ),
                 marketplaceBaseStore.userSearchService,
               )
             }
