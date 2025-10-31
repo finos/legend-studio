@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.33
+
+### Patch Changes
+
+- [#4599](https://github.com/finos/legend-studio/pull/4599) [`c262878`](https://github.com/finos/legend-studio/commit/c262878d4625ba9bf699bb21dd41f2096992561c) ([@travisstebbins](https://github.com/travisstebbins)) - Add support for additional Marketplace pages via plugin
+
 ## 0.1.32
 
 ## 0.1.31

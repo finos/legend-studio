@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.11
+
+### Patch Changes
+
+- [#4593](https://github.com/finos/legend-studio/pull/4593) [`aaaa81c`](https://github.com/finos/legend-studio/commit/aaaa81c4a5d0ecfcc54f061fa95b9f6f25bef8a5) ([@yash0024](https://github.com/yash0024)) - Add sampleValues to DataProduct
+
 ## 32.3.10
 
 ### Patch Changes
