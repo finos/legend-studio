@@ -61,7 +61,6 @@ export class EntitlementsDashboardState {
       setPendingTasks: action,
       setPendingContracts: action,
       setAllContracts: action,
-      refresh: action,
       approve: flow,
       fetchPendingContracts: flow,
       fetchPendingTasks: flow,
@@ -143,10 +142,6 @@ export class EntitlementsDashboardState {
         `Error fetching all data contracts: ${error.message}`,
       );
     }
-  }
-
-  refresh(): void {
-    this.initializationState = ActionState.create();
   }
 
   setPendingTasks(val: V1_ContractUserEventRecord[] | undefined): void {
