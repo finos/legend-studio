@@ -1199,14 +1199,23 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
                   : undefined;
             if (this._isPermissionDeniedError(error)) {
               error.message.concat(
-                `\nPlease check your access for data product: ${link ?? '[Link Unavailable]'}`,
+                `\n\nPlease check your access for data product: ${link ?? '[Link Unavailable]'}`,
               );
             }
           } else if (source instanceof LakehouseProducerDataCubeSource) {
             if (this._isPermissionDeniedError(error)) {
               error.message.concat(
-                `\nIngest: ${source.paths[0]}`,
-                `\nPlease check your access for lakehouse warehouse: ${source.warehouse}`,
+                `\n\nPlease check your access for Ingest: ${source.paths[0]}`,
+                `\nLakehouse Warehouse: ${source.warehouse}`,
+                `\nDeployment ID: ${source.deploymentId ?? 'N/A'}`,
+              );
+            }
+          } else if (
+            source instanceof LakehouseProducerIcebergCachedDataCubeSource
+          ) {
+            if (this._isPermissionDeniedError(error)) {
+              error.message.concat(
+                `\n\nPlease check your access for Ingest: ${source.paths[0]}`,
                 `\nDeployment ID: ${source.deploymentId ?? 'N/A'}`,
               );
             }
@@ -2099,9 +2108,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       'invalid user id or password',
       'Incorrect username or password',
       'not authorized',
+      'this session does not have a current database',
     ];
-    return PERMISSION_ERRORS.find((e) =>
-      error.message.toLowerCase().includes(e),
+    return Boolean(
+      PERMISSION_ERRORS.find((e) => error.message.toLowerCase().includes(e)),
     );
   }
 }
