@@ -47,7 +47,6 @@ import {
   V1_deserializePureModelContext,
   V1_PureModelContextData,
 } from '@finos/legend-graph';
-import { raw } from 'serializr';
 
 export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   deploymentId: number | undefined;
