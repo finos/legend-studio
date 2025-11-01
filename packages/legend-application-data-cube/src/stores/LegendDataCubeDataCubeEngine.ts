@@ -175,8 +175,15 @@ import {
   type LakehouseIngestServerClient,
 } from '@finos/legend-server-lakehouse';
 import { authStore } from './AuthStore.js';
-import { extractEntityNameFromPath } from '@finos/legend-storage';
+import {
+  extractEntityNameFromPath,
+  generateGAVCoordinates,
+} from '@finos/legend-storage';
 import { SecondaryOAuthClient } from './model/SecondaryOauthClient.js';
+import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseAdHocViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl,
+} from '../__lib__/LegendDataCubeNavigation.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -746,6 +753,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             refId.dbReference,
           );
           source.paths = rawSource.paths;
+          source.deploymentId = rawSource.deploymentId;
 
           const { model, database, schema, table, runtime } =
             this._synthesizeMinimalModelContext({
@@ -792,6 +800,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           const source = new LakehouseProducerDataCubeSource();
           source.warehouse = rawSource.warehouse;
           source.paths = rawSource.paths;
+          source.deploymentId = rawSource.deploymentId;
 
           const query = new V1_ClassInstance();
           query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
@@ -1166,6 +1175,42 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       if (error instanceof DataCubeExecutionError) {
         try {
           error.queryCode = await this.getValueSpecificationCode(query, true);
+          if (source instanceof LakehouseConsumerDataCubeSource) {
+            const dataSpacePath = guaranteeNonNullable(source.paths[0]);
+            const link =
+              this._application.config.legendLakehouseUrl &&
+              source.dpCoordinates
+                ? EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl(
+                    this._application.config.legendLakehouseUrl,
+                    generateGAVCoordinates(
+                      source.dpCoordinates.groupId,
+                      source.dpCoordinates.artifactId,
+                      source.dpCoordinates.versionId,
+                    ),
+                    dataSpacePath,
+                  )
+                : this._application.config.legendLakehouseUrl &&
+                    source.deploymentId
+                  ? EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseAdHocViewUrl(
+                      this._application.config.legendLakehouseUrl,
+                      guaranteeNonNullable(dataSpacePath.split('::').pop()),
+                      source.deploymentId,
+                    )
+                  : undefined;
+            if (this._isPermissionDeniedError(error)) {
+              error.message.concat(
+                `\nPlease check your access for data product: ${link ?? '[Link Unavailable]'}`,
+              );
+            }
+          } else if (source instanceof LakehouseProducerDataCubeSource) {
+            if (this._isPermissionDeniedError(error)) {
+              error.message.concat(
+                `\nIngest: ${source.paths[0]}`,
+                `\nPlease check your access for lakehouse warehouse: ${source.warehouse}`,
+                `\nDeployment ID: ${source.deploymentId ?? 'N/A'}`,
+              );
+            }
+          }
         } catch {
           // ignore
         }
@@ -2046,5 +2091,17 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   override sendTelemetry(event: string, data: PlainObject) {
     this._application.telemetryService.logEvent(event, data);
+  }
+
+  private _isPermissionDeniedError(error: Error) {
+    const PERMISSION_ERRORS = [
+      'permission denied',
+      'invalid user id or password',
+      'Incorrect username or password',
+      'not authorized',
+    ];
+    return PERMISSION_ERRORS.find((e) =>
+      error.message.toLowerCase().includes(e),
+    );
   }
 }

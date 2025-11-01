@@ -31,6 +31,7 @@ export class LakehouseProducerDataCubeSource extends DataCubeSource {
   runtime!: string;
   paths!: string[];
   warehouse!: string;
+  deploymentId: number | undefined;
 }
 
 export class LakehouseProducerIcebergCachedDataCubeSource extends DataCubeSource {
@@ -40,6 +41,7 @@ export class LakehouseProducerIcebergCachedDataCubeSource extends DataCubeSource
   schema!: string;
   table!: string;
   paths!: string[];
+  deploymentId: number | undefined;
 }
 
 export class IcebergConfig {
@@ -57,6 +59,7 @@ export class RawLakehouseProducerDataCubeSource {
   warehouse!: string;
   ingestServerUrl!: string;
   paths!: string[];
+  deploymentId?: number;
   icebergConfig?: IcebergConfig;
 
   static readonly serialization = new SerializationFactory(
@@ -66,6 +69,7 @@ export class RawLakehouseProducerDataCubeSource {
       warehouse: primitive(),
       ingestServerUrl: primitive(),
       paths: list(primitive()),
+      deploymentId: optional(primitive()),
       icebergConfig: optional(
         usingModelSchema(IcebergConfig.serialization.schema),
       ),
