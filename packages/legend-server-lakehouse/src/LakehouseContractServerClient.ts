@@ -25,7 +25,7 @@ import type {
   V1_EntitlementsDataProductDetailsResponse,
   V1_EntitlementsUserEnvResponse,
   V1_LiteDataContractsResponse,
-  V1_LiteDataContractWithUserStatusResponse,
+  V1_LiteDataContractWithUserStatus,
   V1_PendingTasksResponse,
   V1_TaskResponse,
   V1_TaskStatus,
@@ -111,7 +111,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   getContractsForUser = (
     user: string,
     token: string | undefined,
-  ): Promise<PlainObject<V1_LiteDataContractWithUserStatusResponse>[]> => {
+  ): Promise<PlainObject<V1_LiteDataContractWithUserStatus>[]> => {
     return this.get(
       `${this._dataContracts()}/user/${user}`,
       {},

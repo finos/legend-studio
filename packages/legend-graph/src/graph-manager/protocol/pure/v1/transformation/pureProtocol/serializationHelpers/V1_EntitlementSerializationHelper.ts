@@ -309,7 +309,7 @@ export const V1_pendingTaskWithAssigneesModelSchema = createModelSchema(
   },
 );
 
-export const V1_liteDataContractWithUserStatusResponseModelSchema = (
+export const V1_liteDataContractWithUserStatusModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
   createModelSchema(V1_LiteDataContractWithUserStatus, {

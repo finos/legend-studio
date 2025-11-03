@@ -26,14 +26,14 @@ import {
   type V1_ContractUserEventRecord,
   type V1_LiteDataContract,
   type V1_LiteDataContractsResponse,
-  type V1_LiteDataContractWithUserStatusResponse,
+  type V1_LiteDataContractWithUserStatus,
   type V1_PendingTasksResponse,
   type V1_TaskStatus,
   type V1_TaskStatusChangeResponse,
   type V1_UserPendingContractsRecord,
   type V1_UserPendingContractsResponse,
   V1_liteDataContractsResponseModelSchemaToContracts,
-  V1_liteDataContractWithUserStatusResponseModelSchema,
+  V1_liteDataContractWithUserStatusModelSchema,
   V1_pendingTasksResponseModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
 } from '@finos/legend-graph';
@@ -49,7 +49,7 @@ export class EntitlementsDashboardState {
   pendingTasks: V1_ContractUserEventRecord[] | undefined;
   pendingContracts: V1_UserPendingContractsRecord[] | undefined;
   allContracts: V1_LiteDataContract[] | undefined;
-  myContracts: V1_LiteDataContractWithUserStatusResponse[] | undefined;
+  myContracts: V1_LiteDataContractWithUserStatus[] | undefined;
 
   readonly initializationState = ActionState.create();
   readonly changingState = ActionState.create();
@@ -167,10 +167,10 @@ export class EntitlementsDashboardState {
           this.lakehouseEntitlementsStore.applicationStore.identityService
             .currentUser,
           token,
-        )) as PlainObject<V1_LiteDataContractWithUserStatusResponse>[];
+        )) as PlainObject<V1_LiteDataContractWithUserStatus>[];
       const contracts = rawContracts.map((rawContract) =>
         deserialize(
-          V1_liteDataContractWithUserStatusResponseModelSchema(
+          V1_liteDataContractWithUserStatusModelSchema(
             this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
           ),
           rawContract,
@@ -197,9 +197,7 @@ export class EntitlementsDashboardState {
     this.allContracts = val;
   }
 
-  setMyContracts(
-    val: V1_LiteDataContractWithUserStatusResponse[] | undefined,
-  ): void {
+  setMyContracts(val: V1_LiteDataContractWithUserStatus[] | undefined): void {
     this.myContracts = val;
   }
 
