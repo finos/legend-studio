@@ -754,6 +754,7 @@ export const EntitlementsPendingTasksDashboard = observer(
                   columnDefs={privilegeManagerColDefs}
                   overlayNoRowsTemplate="You have no contracts to approve as a Privilege Manager"
                   loading={loading}
+                  overlayLoadingTemplate="Loading contracts"
                 />
               </Box>
             </Box>
@@ -788,6 +789,7 @@ export const EntitlementsPendingTasksDashboard = observer(
                   columnDefs={dataOwnerColDefs}
                   overlayNoRowsTemplate="You have no contracts to approve as a Data Owner"
                   loading={loading}
+                  overlayLoadingTemplate="Loading contracts"
                 />
               </Box>
             </Box>
@@ -810,6 +812,7 @@ export const EntitlementsPendingTasksDashboard = observer(
                     onCellClicked={handleCellClicked}
                     columnDefs={otherTasksColDefs}
                     loading={loading}
+                    overlayLoadingTemplate="Loading contracts"
                   />
                 </Box>
               </Box>
