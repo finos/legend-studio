@@ -140,7 +140,7 @@ export const EntitlementsClosedContractsDashboard = observer(
       () =>
         myContracts
           ?.filter((contract) => isApprovalStatusTerminal(contract.status))
-          ?.map((contract) => contract.contractResultLite) ?? [],
+          .map((contract) => contract.contractResultLite) ?? [],
       [myContracts],
     );
     const myClosedContractIds = useMemo(
