@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.14
+
+### Patch Changes
+
+- [#4606](https://github.com/finos/legend-studio/pull/4606) [`474c6df`](https://github.com/finos/legend-studio/commit/474c6df2a7cdbce1ad5917c177693039f741ed85) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: improve error message for lakehouse data cube sources
+
 ## 0.7.13
 
 ## 0.7.12
