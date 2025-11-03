@@ -374,6 +374,10 @@ export const EntitlementsClosedContractsDashboard = observer(
                 marketplaceBaseStore.userSearchService,
               )
             }
+            initialSelectedUser={
+              dashboardState.lakehouseEntitlementsStore.applicationStore
+                .identityService.currentUser
+            }
             onRefresh={async () => {
               await flowResult(
                 dashboardState.updateContract(
