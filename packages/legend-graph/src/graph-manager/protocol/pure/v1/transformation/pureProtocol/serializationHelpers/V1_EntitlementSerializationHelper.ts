@@ -313,7 +313,7 @@ export const V1_liteDataContractWithUserStatusResponseModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
   createModelSchema(V1_LiteDataContractWithUserStatusResponse, {
-    contractResultLite: customListWithSchema(
+    contractResultLite: usingModelSchema(
       V1_liteDataContractModelSchema(plugins),
     ),
     status: primitive(),
