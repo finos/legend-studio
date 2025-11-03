@@ -41,14 +41,18 @@ import {
   TEST_USER2,
   type LakehouseEntitlementsStore,
 } from './LakehouseEntitlementsStore.js';
+import { isMemberOfContract } from '@finos/legend-extension-dsl-data-product';
 
 export class EntitlementsDashboardState {
   readonly lakehouseEntitlementsStore: LakehouseEntitlementsStore;
   pendingTasks: V1_ContractUserEventRecord[] | undefined;
   pendingContracts: V1_UserPendingContractsRecord[] | undefined;
   allContracts: V1_LiteDataContract[] | undefined;
-  initializationState = ActionState.create();
-  changingState = ActionState.create();
+  myContracts: V1_LiteDataContract[] | undefined;
+
+  readonly initializationState = ActionState.create();
+  readonly fetchingMyContractsState = ActionState.create();
+  readonly changingState = ActionState.create();
 
   constructor(state: LakehouseEntitlementsStore) {
     this.lakehouseEntitlementsStore = state;
@@ -57,15 +61,15 @@ export class EntitlementsDashboardState {
       pendingTasks: observable,
       pendingContracts: observable,
       allContracts: observable,
-      changingState: observable,
-      initializationState: observable,
       setPendingTasks: action,
       setPendingContracts: action,
       setAllContracts: action,
+      setMyContracts: action,
       approve: flow,
       fetchPendingContracts: flow,
       fetchPendingTasks: flow,
       fetchAllContracts: flow,
+      fetchMyContracts: flow,
       updateContract: flow,
       init: flow,
       deny: flow,
@@ -74,21 +78,30 @@ export class EntitlementsDashboardState {
 
   *init(token: string | undefined): GeneratorFn<void> {
     this.initializationState.inProgress();
-    Promise.all([
-      flowResult(this.fetchPendingTasks(token)).catch(
-        this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
-      ),
-      flowResult(this.fetchPendingContracts(token)).catch(
-        this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
-      ),
-      flowResult(this.fetchAllContracts(token)).catch(
-        this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
-      ),
-    ])
-      .catch(
-        this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
-      )
-      .finally(() => this.initializationState.complete());
+    try {
+      yield Promise.all([
+        flowResult(this.fetchPendingTasks(token)).catch(
+          this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
+        ),
+        flowResult(this.fetchPendingContracts(token)).catch(
+          this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
+        ),
+        (async () => {
+          await flowResult(this.fetchAllContracts(token)).catch(
+            this.lakehouseEntitlementsStore.applicationStore
+              .alertUnhandledError,
+          );
+          flowResult(this.fetchMyContracts(token));
+        })(),
+      ]);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError(
+        error,
+      );
+    } finally {
+      this.initializationState.complete();
+    }
   }
 
   *fetchPendingContracts(token: string | undefined): GeneratorFn<void> {
@@ -146,6 +159,32 @@ export class EntitlementsDashboardState {
     }
   }
 
+  *fetchMyContracts(token: string | undefined): GeneratorFn<void> {
+    this.fetchingMyContractsState.inProgress();
+
+    try {
+      this.setMyContracts(undefined);
+      const myContracts =
+        this.allContracts?.filter((_contract) =>
+          isMemberOfContract(
+            this.lakehouseEntitlementsStore.applicationStore.identityService
+              .currentUser,
+            _contract,
+            this.lakehouseEntitlementsStore.lakehouseContractServerClient,
+            token,
+          ),
+        ) ?? [];
+      this.setMyContracts([...myContracts]);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
+        `Error fetching my contracts: ${error.message}`,
+      );
+    } finally {
+      this.fetchingMyContractsState.complete();
+    }
+  }
+
   setPendingTasks(val: V1_ContractUserEventRecord[] | undefined): void {
     this.pendingTasks = val;
   }
@@ -156,6 +195,10 @@ export class EntitlementsDashboardState {
 
   setAllContracts(val: V1_LiteDataContract[] | undefined): void {
     this.allContracts = val;
+  }
+
+  setMyContracts(val: V1_LiteDataContract[] | undefined): void {
+    this.myContracts = val;
   }
 
   *updateContract(
