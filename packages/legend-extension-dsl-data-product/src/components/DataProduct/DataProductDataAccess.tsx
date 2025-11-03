@@ -38,6 +38,7 @@ import {
 import {
   type V1_RelationTypeColumn,
   extractElementNameFromPath,
+  V1_AccessPointGroupReference,
   V1_AdHocDeploymentDataProductOrigin,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -590,18 +591,25 @@ export const DataProductAccessPointGroupViewer = observer(
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
 
     const entitlementsDataContractViewerState = useMemo(() => {
-      return dataAccessState?.dataContract
+      return dataAccessState?.dataContract &&
+        dataAccessState.dataContract.resource instanceof
+          V1_AccessPointGroupReference &&
+        dataAccessState.dataContract.resource.accessPointGroup ===
+          apgState.apg.id
         ? new EntitlementsDataContractViewerState(
             V1_transformDataContractToLiteDatacontract(
               dataAccessState.dataContract,
             ),
             apgState.applicationStore,
             dataAccessState.lakehouseContractServerClient,
+            apgState.dataProductViewerState.graphManagerState,
             apgState.dataProductViewerState.userSearchService,
           )
         : undefined;
     }, [
+      apgState.apg.id,
       apgState.applicationStore,
+      apgState.dataProductViewerState.graphManagerState,
       apgState.dataProductViewerState.userSearchService,
       dataAccessState?.dataContract,
       dataAccessState?.lakehouseContractServerClient,
@@ -844,7 +852,15 @@ export const DataProductAccessPointGroupViewer = observer(
             open={true}
             onClose={() => dataAccessState.setDataContract(undefined)}
             currentViewer={entitlementsDataContractViewerState}
-            apgState={apgState}
+            onRefresh={() => {
+              if (apgState.associatedUserContract) {
+                apgState.fetchUserAccessStatus(
+                  apgState.associatedUserContract.guid,
+                  dataAccessState.lakehouseContractServerClient,
+                  auth.user?.access_token,
+                );
+              }
+            }}
             getContractTaskUrl={dataAccessState.getContractTaskUrl}
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />

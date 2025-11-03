@@ -15,15 +15,18 @@
  */
 
 import {
+  type GraphManagerState,
+  type V1_DataContract,
   type V1_LiteDataContract,
   type V1_TaskMetadata,
-  type V1_TaskResponse,
+  type V1_UserType,
+  V1_dataContractsResponseModelSchemaToContracts,
   V1_deserializeTaskResponse,
+  V1_observe_DataContract,
   V1_observe_LiteDataContract,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
-  type PlainObject,
   type UserSearchService,
   ActionState,
   assertErrorThrown,
@@ -33,29 +36,37 @@ import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export class EntitlementsDataContractViewerState {
-  readonly value: V1_LiteDataContract;
+  readonly liteContract: V1_LiteDataContract;
   readonly applicationStore: GenericLegendApplicationStore;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
+  readonly graphManagerState: GraphManagerState;
   readonly userSearchService?: UserSearchService | undefined;
   associatedTasks: V1_TaskMetadata[] | undefined;
   initializationState = ActionState.create();
+  contractWithMembers: V1_DataContract | undefined;
+
+  readonly fetchingMembersState = ActionState.create();
 
   constructor(
     dataContract: V1_LiteDataContract,
     applicationStore: GenericLegendApplicationStore,
     lakehouseContractServerClient: LakehouseContractServerClient,
+    graphManagerState: GraphManagerState,
     userSearchService: UserSearchService | undefined,
   ) {
     makeObservable(this, {
-      value: observable,
+      liteContract: observable,
       associatedTasks: observable,
+      contractWithMembers: observable,
       setAssociatedTasks: action,
+      setContractWithMembers: action,
       init: flow,
     });
 
-    this.value = V1_observe_LiteDataContract(dataContract);
+    this.liteContract = V1_observe_LiteDataContract(dataContract);
     this.applicationStore = applicationStore;
     this.lakehouseContractServerClient = lakehouseContractServerClient;
+    this.graphManagerState = graphManagerState;
     this.userSearchService = userSearchService;
   }
 
@@ -63,21 +74,61 @@ export class EntitlementsDataContractViewerState {
     this.associatedTasks = associatedTasks;
   }
 
+  setContractWithMembers(
+    contractWithMembers: V1_DataContract | undefined,
+  ): void {
+    this.contractWithMembers = contractWithMembers;
+  }
+
+  async fetchTasks(token: string | undefined): Promise<void> {
+    this.setAssociatedTasks(undefined);
+    const pendingTasks =
+      await this.lakehouseContractServerClient.getContractTasks(
+        this.liteContract.guid,
+        token,
+      );
+    const tasks = V1_deserializeTaskResponse(pendingTasks);
+    this.setAssociatedTasks(tasks);
+  }
+
+  async fetchContractWithMembers(token: string | undefined): Promise<void> {
+    this.fetchingMembersState.inProgress();
+    try {
+      const rawContracts =
+        await this.lakehouseContractServerClient.getDataContract(
+          this.liteContract.guid,
+          true,
+          token,
+        );
+      const contracts = V1_dataContractsResponseModelSchemaToContracts(
+        rawContracts,
+        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+      );
+      this.setContractWithMembers(
+        contracts[0] ? V1_observe_DataContract(contracts[0]) : undefined,
+      );
+    } finally {
+      this.fetchingMembersState.complete();
+    }
+  }
+
   *init(token: string | undefined): GeneratorFn<void> {
     try {
       this.initializationState.inProgress();
-      this.setAssociatedTasks(undefined);
-      const pendingTasks =
-        (yield this.lakehouseContractServerClient.getContractTasks(
-          this.value.guid,
-          token,
-        )) as PlainObject<V1_TaskResponse>;
-      const tasks = V1_deserializeTaskResponse(pendingTasks);
-      this.setAssociatedTasks(tasks);
+      yield Promise.all([
+        this.fetchTasks(token),
+        this.fetchContractWithMembers(token),
+      ]);
     } catch (error) {
       assertErrorThrown(error);
     } finally {
       this.initializationState.complete();
     }
+  }
+
+  getContractUserType(userId: string): V1_UserType | undefined {
+    return this.contractWithMembers?.members.find(
+      (member) => member.user.name === userId,
+    )?.user.userType;
   }
 }

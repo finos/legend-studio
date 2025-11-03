@@ -39,8 +39,10 @@ export const LakehouseAdmin = withLakehouseAdminStore(
     const [selectedTab, setSelectedTab] = useState(AdminTabs.ALL_CONTRACTS);
 
     useEffect(() => {
-      adminStore.init(auth.user?.access_token);
-    }, [auth.user?.access_token, adminStore]);
+      if (adminStore.initializationState.isInInitialState) {
+        adminStore.init(auth.user?.access_token);
+      }
+    }, [auth.user?.access_token, adminStore, adminStore.initializationState]);
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-admin">

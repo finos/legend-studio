@@ -18,6 +18,7 @@ import { useSearchParams } from '@finos/legend-application/browser';
 import {
   type V1_ContractUserEventRecord,
   type V1_LiteDataContract,
+  GraphManagerState,
   V1_ApprovalType,
   V1_ResourceType,
 } from '@finos/legend-graph';
@@ -298,6 +299,8 @@ export const EntitlementsPendingTasksDashboard = observer(
     const [selectedContractTargetUser, setSelectedContractTargetUser] =
       useState<string | undefined>();
 
+    const auth = useAuth();
+
     // Effects
 
     useEffect(() => {
@@ -363,7 +366,11 @@ export const EntitlementsPendingTasksDashboard = observer(
     const rowSelection = useMemo<
       DataGridRowSelectionOptions | 'single' | 'multiple'
     >(
-      () => ({ mode: 'multiRow', checkboxes: false, headerCheckbox: false }),
+      () => ({
+        mode: 'multiRow',
+        checkboxes: false,
+        headerCheckbox: false,
+      }),
       [],
     );
 
@@ -829,9 +836,21 @@ export const EntitlementsPendingTasksDashboard = observer(
                 selectedContract,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
+                new GraphManagerState(
+                  marketplaceBaseStore.applicationStore.pluginManager,
+                  marketplaceBaseStore.applicationStore.logService,
+                ),
                 marketplaceBaseStore.userSearchService,
               )
             }
+            onRefresh={async () => {
+              await flowResult(
+                dashboardState.updateContract(
+                  selectedContract.guid,
+                  auth.user?.access_token,
+                ),
+              );
+            }}
             getContractTaskUrl={(taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseTaskPath(taskId),
