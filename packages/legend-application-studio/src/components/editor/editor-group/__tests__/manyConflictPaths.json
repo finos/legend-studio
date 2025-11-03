@@ -1,0 +1,3902 @@
+{
+  "conflicts": [
+    {
+      "groupId": "group10",
+      "artifactId": "artifact78",
+      "versions": ["group10:artifact78:271.0.0", "group10:artifact78:272.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact29",
+      "versions": ["group10:artifact29:184.0.0", "group10:artifact29:183.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact10",
+      "versions": ["group10:artifact10:250.0.0", "group10:artifact10:252.0.0"]
+    },
+    {
+      "groupId": "group11",
+      "artifactId": "artifact95",
+      "versions": ["group11:artifact95:492.0.0", "group11:artifact95:493.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact33",
+      "versions": ["group8:artifact33:402.0.0", "group8:artifact33:401.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact72",
+      "versions": ["group10:artifact72:249.0.0", "group10:artifact72:248.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact17",
+      "versions": ["group8:artifact17:174.0.0", "group8:artifact17:175.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact30",
+      "versions": ["group10:artifact30:182.0.0", "group10:artifact30:183.0.0"]
+    },
+    {
+      "groupId": "group17",
+      "artifactId": "artifact91",
+      "versions": ["group17:artifact91:313.0.0", "group17:artifact91:312.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact77",
+      "versions": ["group14:artifact77:269.0.0", "group14:artifact77:270.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact69",
+      "versions": ["group14:artifact69:439.0.0", "group14:artifact69:438.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact41",
+      "versions": ["group14:artifact41:598.0.0", "group14:artifact41:597.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact76",
+      "versions": ["group10:artifact76:274.0.0", "group10:artifact76:273.0.0"]
+    },
+    {
+      "groupId": "group17",
+      "artifactId": "artifact90",
+      "versions": ["group17:artifact90:294.0.0", "group17:artifact90:293.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact67",
+      "versions": ["group14:artifact67:252.0.0", "group14:artifact67:251.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact32",
+      "versions": ["group10:artifact32:187.0.0", "group10:artifact32:186.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact73",
+      "versions": ["group14:artifact73:248.0.0", "group14:artifact73:245.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact54",
+      "versions": ["group14:artifact54:226.0.0", "group14:artifact54:227.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact37",
+      "versions": ["group14:artifact37:455.0.0", "group14:artifact37:454.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact31",
+      "versions": ["group10:artifact31:195.0.0", "group10:artifact31:194.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact64",
+      "versions": ["group14:artifact64:235.0.0", "group14:artifact64:236.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact79",
+      "versions": ["group10:artifact79:178.0.0", "group10:artifact79:179.0.0"]
+    },
+    {
+      "groupId": "group19",
+      "artifactId": "artifact117",
+      "versions": [
+        "group19:artifact117:2051.0.0",
+        "group19:artifact117:2055.0.0"
+      ]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact62",
+      "versions": ["group8:artifact62:173.0.0", "group8:artifact62:172.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact42",
+      "versions": ["group14:artifact42:537.0.0", "group14:artifact42:538.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact6",
+      "versions": ["group8:artifact6:290.0.0", "group8:artifact6:291.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact75",
+      "versions": ["group10:artifact75:290.0.0", "group10:artifact75:291.0.0"]
+    },
+    {
+      "groupId": "group12",
+      "artifactId": "artifact96",
+      "versions": ["group12:artifact96:289.0.0", "group12:artifact96:288.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact36",
+      "versions": ["group14:artifact36:284.0.0", "group14:artifact36:285.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact81",
+      "versions": ["group10:artifact81:262.0.0", "group10:artifact81:263.0.0"]
+    },
+    {
+      "groupId": "group15",
+      "artifactId": "artifact86",
+      "versions": ["group15:artifact86:282.0.0", "group15:artifact86:283.0.0"]
+    },
+    {
+      "groupId": "group17",
+      "artifactId": "artifact92",
+      "versions": ["group17:artifact92:287.0.0", "group17:artifact92:288.0.0"]
+    },
+    {
+      "groupId": "group12",
+      "artifactId": "artifact97",
+      "versions": ["group12:artifact97:285.0.0", "group12:artifact97:286.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact105",
+      "versions": ["group8:artifact105:452.0.0", "group8:artifact105:451.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact27",
+      "versions": ["group10:artifact27:186.0.0", "group10:artifact27:187.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact61",
+      "versions": ["group14:artifact61:231.0.0", "group14:artifact61:232.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact52",
+      "versions": ["group14:artifact52:439.0.0", "group14:artifact52:440.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact28",
+      "versions": ["group10:artifact28:172.0.0", "group10:artifact28:171.0.0"]
+    },
+    {
+      "groupId": "group6",
+      "artifactId": "artifact7",
+      "versions": ["group6:artifact7:284.0.0", "group6:artifact7:283.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact16",
+      "versions": ["group8:artifact16:605.0.0", "group8:artifact16:606.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact11",
+      "versions": ["group8:artifact11:483.0.0", "group8:artifact11:486.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact83",
+      "versions": ["group10:artifact83:249.0.0", "group10:artifact83:248.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact108",
+      "versions": ["group14:artifact108:294.0.0", "group14:artifact108:293.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact84",
+      "versions": ["group8:artifact84:330.0.0", "group8:artifact84:329.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact14",
+      "versions": ["group8:artifact14:315.0.0", "group8:artifact14:314.0.0"]
+    },
+    {
+      "groupId": "group17",
+      "artifactId": "artifact88",
+      "versions": ["group17:artifact88:285.0.0", "group17:artifact88:287.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact59",
+      "versions": ["group14:artifact59:260.0.0", "group14:artifact59:259.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact82",
+      "versions": ["group10:artifact82:308.0.0", "group10:artifact82:309.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact56",
+      "versions": ["group14:artifact56:187.0.0", "group14:artifact56:188.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact74",
+      "versions": ["group14:artifact74:397.0.0", "group14:artifact74:398.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact13",
+      "versions": ["group8:artifact13:577.0.0", "group8:artifact13:576.0.0"]
+    },
+    {
+      "groupId": "group8",
+      "artifactId": "artifact15",
+      "versions": ["group8:artifact15:401.0.0", "group8:artifact15:399.0.0"]
+    },
+    {
+      "groupId": "group17",
+      "artifactId": "artifact89",
+      "versions": ["group17:artifact89:281.0.0", "group17:artifact89:280.0.0"]
+    },
+    {
+      "groupId": "group14",
+      "artifactId": "artifact65",
+      "versions": ["group14:artifact65:276.0.0", "group14:artifact65:277.0.0"]
+    },
+    {
+      "groupId": "group10",
+      "artifactId": "artifact85",
+      "versions": ["group10:artifact85:274.0.0", "group10:artifact85:275.0.0"]
+    }
+  ],
+  "graph": {
+    "nodes": {
+      "group14:artifact57:470.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact57",
+        "versionId": "470.0.0",
+        "projectId": "PROD-48631",
+        "forwardEdges": [
+          "group17:artifact88:285.0.0",
+          "group15:artifact86:282.0.0",
+          "group11:artifact95:492.0.0",
+          "group10:artifact75:290.0.0",
+          "group8:artifact84:329.0.0",
+          "group14:artifact55:484.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact43:470.0.0",
+          "group14:artifact46:284.0.0"
+        ],
+        "id": "group14:artifact57:470.0.0"
+      },
+      "group14:artifact59:260.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact59",
+        "versionId": "260.0.0",
+        "projectId": "PROD-30473",
+        "forwardEdges": [
+          "group20:artifact4:2.0.0",
+          "group10:artifact78:272.0.0"
+        ],
+        "backEdges": ["group14:artifact69:439.0.0"],
+        "id": "group14:artifact59:260.0.0"
+      },
+      "group10:artifact10:250.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact10",
+        "versionId": "250.0.0",
+        "projectId": "PROD-30366",
+        "forwardEdges": ["group10:artifact83:248.0.0"],
+        "backEdges": [
+          "group17:artifact88:285.0.0",
+          "group14:artifact73:245.0.0"
+        ],
+        "id": "group10:artifact10:250.0.0"
+      },
+      "group20:artifact102:2.0.0": {
+        "groupId": "group20",
+        "artifactId": "artifact102",
+        "versionId": "2.0.0",
+        "projectId": "PROD-51617",
+        "forwardEdges": [],
+        "backEdges": ["group14:artifact60:226.0.0"],
+        "id": "group20:artifact102:2.0.0"
+      },
+      "group3:artifact2:0.4.17": {
+        "groupId": "group3",
+        "artifactId": "artifact2",
+        "versionId": "0.4.17",
+        "projectId": "PROD-63067",
+        "forwardEdges": [],
+        "backEdges": ["group9:artifact106:1.1.5"],
+        "id": "group3:artifact2:0.4.17"
+      },
+      "group14:artifact61:232.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact61",
+        "versionId": "232.0.0",
+        "projectId": "PROD-37404",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group14:artifact52:440.0.0"
+        ],
+        "id": "group14:artifact61:232.0.0"
+      },
+      "group17:artifact91:312.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact91",
+        "versionId": "312.0.0",
+        "projectId": "PROD-30467",
+        "forwardEdges": [
+          "group10:artifact29:183.0.0",
+          "group17:artifact90:293.0.0",
+          "group20:artifact1:5.1.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact28:171.0.0",
+          "group20:artifact115:2.0.0",
+          "group20:artifact116:5.6.0"
+        ],
+        "backEdges": [
+          "group14:artifact65:276.0.0",
+          "group14:artifact68:291.0.0",
+          "group13:artifact38:374.0.0",
+          "group17:artifact89:280.0.0",
+          "group13:artifact39:281.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact37:454.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact50:447.0.0",
+          "group14:artifact108:293.0.0"
+        ],
+        "id": "group17:artifact91:312.0.0"
+      },
+      "group8:artifact84:329.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact84",
+        "versionId": "329.0.0",
+        "projectId": "PROD-30455",
+        "forwardEdges": [
+          "group10:artifact85:274.0.0",
+          "group12:artifact97:285.0.0",
+          "group8:artifact6:290.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact72:248.0.0",
+          "group10:artifact27:186.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact57:470.0.0",
+          "group14:artifact42:537.0.0",
+          "group11:artifact95:492.0.0",
+          "group14:artifact41:597.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact58:461.0.0",
+          "group18:artifact19:408.0.0",
+          "group18:artifact48:406.0.0",
+          "group14:artifact50:447.0.0",
+          "group13:artifact38:374.0.0",
+          "group8:artifact16:605.0.0",
+          "group13:artifact40:384.0.0",
+          "group10:artifact70:336.0.0",
+          "group10:artifact93:524.0.0",
+          "group8:artifact14:314.0.0",
+          "group13:artifact39:281.0.0",
+          "group8:artifact33:401.0.0",
+          "group8:artifact13:576.0.0",
+          "group8:artifact11:483.0.0",
+          "group8:artifact34:580.0.0",
+          "group8:artifact15:399.0.0"
+        ],
+        "id": "group8:artifact84:329.0.0"
+      },
+      "group15:artifact86:283.0.0": {
+        "groupId": "group15",
+        "artifactId": "artifact86",
+        "versionId": "283.0.0",
+        "projectId": "PROD-30456",
+        "forwardEdges": [
+          "group17:artifact88:287.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group14:artifact42:538.0.0",
+          "group14:artifact54:227.0.0",
+          "group14:artifact111:495.0.0",
+          "group14:artifact74:398.0.0",
+          "group14:artifact52:440.0.0",
+          "group17:artifact92:288.0.0",
+          "group1:artifact118:2.11.0"
+        ],
+        "id": "group15:artifact86:283.0.0"
+      },
+      "group14:artifact73:245.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact73",
+        "versionId": "245.0.0",
+        "projectId": "PROD-30462",
+        "forwardEdges": [
+          "group10:artifact10:250.0.0",
+          "group20:artifact3:2.0.0"
+        ],
+        "backEdges": [
+          "group17:artifact88:285.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group14:artifact73:245.0.0"
+      },
+      "group14:artifact52:440.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact52",
+        "versionId": "440.0.0",
+        "projectId": "PROD-49576",
+        "forwardEdges": [
+          "group14:artifact69:439.0.0",
+          "group14:artifact61:232.0.0",
+          "group8:artifact62:173.0.0",
+          "group15:artifact86:283.0.0"
+        ],
+        "backEdges": ["group8:artifact16:606.0.0"],
+        "id": "group14:artifact52:440.0.0"
+      },
+      "group10:artifact75:157.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact75",
+        "versionId": "157.0.0",
+        "projectId": "PROD-30486",
+        "forwardEdges": [
+          "group10:artifact79:100.0.0",
+          "group10:artifact83:141.0.0"
+        ],
+        "backEdges": [
+          "group17:artifact90:165.0.0",
+          "group6:artifact7:160.0.0",
+          "group15:artifact86:151.0.0",
+          "group17:artifact88:159.0.0"
+        ],
+        "id": "group10:artifact75:157.0.0"
+      },
+      "group17:artifact88:285.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact88",
+        "versionId": "285.0.0",
+        "projectId": "PROD-30469",
+        "forwardEdges": [
+          "group10:artifact10:250.0.0",
+          "group17:artifact90:293.0.0",
+          "group14:artifact36:284.0.0",
+          "group10:artifact75:290.0.0",
+          "group6:artifact7:283.0.0",
+          "group14:artifact73:245.0.0",
+          "group10:artifact28:171.0.0",
+          "group20:artifact113:5.0.0",
+          "group10:artifact27:186.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact57:470.0.0",
+          "group14:artifact42:537.0.0",
+          "group15:artifact86:282.0.0",
+          "group14:artifact77:269.0.0",
+          "group14:artifact55:484.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact37:454.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact68:291.0.0",
+          "group13:artifact38:374.0.0",
+          "group13:artifact40:384.0.0",
+          "group13:artifact39:281.0.0",
+          "group14:artifact60:226.0.0"
+        ],
+        "id": "group17:artifact88:285.0.0"
+      },
+      "group10:artifact85:274.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact85",
+        "versionId": "274.0.0",
+        "projectId": "PROD-30488",
+        "forwardEdges": [
+          "group10:artifact81:262.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact109:459.0.0",
+          "group14:artifact68:291.0.0",
+          "group13:artifact38:374.0.0",
+          "group13:artifact40:384.0.0",
+          "group11:artifact95:492.0.0",
+          "group17:artifact89:280.0.0",
+          "group13:artifact39:281.0.0",
+          "group8:artifact84:329.0.0",
+          "group8:artifact11:483.0.0",
+          "group14:artifact67:251.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group10:artifact85:274.0.0"
+      },
+      "group17:artifact89:281.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact89",
+        "versionId": "281.0.0",
+        "projectId": "PROD-30468",
+        "forwardEdges": [
+          "group17:artifact91:313.0.0",
+          "group10:artifact85:275.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group14:artifact37:455.0.0",
+          "group8:artifact16:606.0.0"
+        ],
+        "id": "group17:artifact89:281.0.0"
+      },
+      "group12:artifact96:289.0.0": {
+        "groupId": "group12",
+        "artifactId": "artifact96",
+        "versionId": "289.0.0",
+        "projectId": "PROD-46423",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact28:172.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": ["group14:artifact41:598.0.0"],
+        "id": "group12:artifact96:289.0.0"
+      },
+      "group4:artifact9:260.0.0": {
+        "groupId": "group4",
+        "artifactId": "artifact9",
+        "versionId": "260.0.0",
+        "projectId": "PROD-51885",
+        "forwardEdges": [
+          "group17:artifact90:293.0.0",
+          "group10:artifact83:248.0.0"
+        ],
+        "backEdges": ["group14:artifact68:291.0.0"],
+        "id": "group4:artifact9:260.0.0"
+      },
+      "group17:artifact91:313.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact91",
+        "versionId": "313.0.0",
+        "projectId": "PROD-30467",
+        "forwardEdges": [
+          "group10:artifact29:184.0.0",
+          "group17:artifact90:294.0.0",
+          "group20:artifact1:5.1.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact28:172.0.0",
+          "group10:artifact79:179.0.0",
+          "group20:artifact115:2.0.0",
+          "group20:artifact116:5.6.0"
+        ],
+        "backEdges": [
+          "group14:artifact108:294.0.0",
+          "group17:artifact89:281.0.0",
+          "group14:artifact69:439.0.0",
+          "group14:artifact37:455.0.0",
+          "group14:artifact65:277.0.0"
+        ],
+        "id": "group17:artifact91:313.0.0"
+      },
+      "group8:artifact84:330.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact84",
+        "versionId": "330.0.0",
+        "projectId": "PROD-30455",
+        "forwardEdges": [
+          "group10:artifact72:249.0.0",
+          "group10:artifact83:249.0.0",
+          "group12:artifact97:286.0.0",
+          "group10:artifact85:275.0.0",
+          "group10:artifact81:263.0.0",
+          "group8:artifact6:291.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0",
+          "group10:artifact27:187.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact41:598.0.0",
+          "group8:artifact14:315.0.0",
+          "group8:artifact33:402.0.0",
+          "group14:artifact42:538.0.0",
+          "group8:artifact13:577.0.0",
+          "group8:artifact15:401.0.0",
+          "group8:artifact16:606.0.0",
+          "group11:artifact95:493.0.0",
+          "group8:artifact11:486.0.0"
+        ],
+        "id": "group8:artifact84:330.0.0"
+      },
+      "group14:artifact73:248.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact73",
+        "versionId": "248.0.0",
+        "projectId": "PROD-30462",
+        "forwardEdges": [
+          "group20:artifact3:2.0.0",
+          "group10:artifact10:252.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group17:artifact88:287.0.0"
+        ],
+        "id": "group14:artifact73:248.0.0"
+      },
+      "group10:artifact32:99.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact32",
+        "versionId": "99.0.0",
+        "projectId": "PROD-34325",
+        "forwardEdges": [
+          "group10:artifact27:98.0.0",
+          "group10:artifact30:96.0.0"
+        ],
+        "backEdges": ["group17:artifact90:165.0.0"],
+        "id": "group10:artifact32:99.0.0"
+      },
+      "group20:artifact3:2.0.0": {
+        "groupId": "group20",
+        "artifactId": "artifact3",
+        "versionId": "2.0.0",
+        "projectId": "PROD-51612",
+        "forwardEdges": [],
+        "backEdges": [
+          "group14:artifact73:138.0.0",
+          "group14:artifact73:248.0.0",
+          "group14:artifact73:245.0.0"
+        ],
+        "id": "group20:artifact3:2.0.0"
+      },
+      "group14:artifact77:270.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact77",
+        "versionId": "270.0.0",
+        "projectId": "PROD-30452",
+        "forwardEdges": [
+          "group17:artifact88:287.0.0",
+          "group10:artifact75:291.0.0"
+        ],
+        "backEdges": ["group14:artifact69:439.0.0"],
+        "id": "group14:artifact77:270.0.0"
+      },
+      "group8:artifact62:172.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact62",
+        "versionId": "172.0.0",
+        "projectId": "PROD-32426",
+        "forwardEdges": ["group10:artifact79:178.0.0"],
+        "backEdges": [
+          "group14:artifact57:470.0.0",
+          "group14:artifact52:439.0.0",
+          "group14:artifact42:537.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact37:454.0.0",
+          "group14:artifact45:572.0.0",
+          "group14:artifact109:459.0.0",
+          "group13:artifact38:374.0.0",
+          "group8:artifact16:605.0.0",
+          "group13:artifact40:384.0.0",
+          "group13:artifact39:281.0.0",
+          "group14:artifact47:440.0.0",
+          "group14:artifact46:284.0.0"
+        ],
+        "id": "group8:artifact62:172.0.0"
+      },
+      "group10:artifact30:182.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact30",
+        "versionId": "182.0.0",
+        "projectId": "PROD-30375",
+        "forwardEdges": ["group10:artifact28:171.0.0"],
+        "backEdges": [
+          "group17:artifact90:293.0.0",
+          "group10:artifact81:262.0.0",
+          "group13:artifact39:281.0.0",
+          "group10:artifact32:186.0.0",
+          "group10:artifact31:194.0.0",
+          "group18:artifact19:408.0.0",
+          "group10:artifact27:186.0.0"
+        ],
+        "id": "group10:artifact30:182.0.0"
+      },
+      "group12:artifact96:288.0.0": {
+        "groupId": "group12",
+        "artifactId": "artifact96",
+        "versionId": "288.0.0",
+        "projectId": "PROD-46423",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact28:171.0.0"
+        ],
+        "backEdges": ["group14:artifact41:597.0.0"],
+        "id": "group12:artifact96:288.0.0"
+      },
+      "group14:artifact35:495.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact35",
+        "versionId": "495.0.0",
+        "projectId": "PROD-32601",
+        "forwardEdges": [
+          "group17:artifact90:293.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact76:273.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact109:459.0.0",
+          "group14:artifact55:484.0.0"
+        ],
+        "id": "group14:artifact35:495.0.0"
+      },
+      "group8:artifact11:486.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact11",
+        "versionId": "486.0.0",
+        "projectId": "PROD-29879",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact31:195.0.0",
+          "group8:artifact84:330.0.0",
+          "group10:artifact85:275.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact80:27.0.0",
+          "group10:artifact28:172.0.0",
+          "group8:artifact17:175.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group19:artifact117:2055.0.0",
+          "group14:artifact42:538.0.0",
+          "group8:artifact13:577.0.0",
+          "group8:artifact16:606.0.0"
+        ],
+        "id": "group8:artifact11:486.0.0"
+      },
+      "group14:artifact42:538.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact42",
+        "versionId": "538.0.0",
+        "projectId": "PROD-33409",
+        "forwardEdges": [
+          "group14:artifact41:598.0.0",
+          "group17:artifact90:294.0.0",
+          "group10:artifact83:249.0.0",
+          "group17:artifact88:287.0.0",
+          "group8:artifact13:577.0.0",
+          "group8:artifact62:173.0.0",
+          "group10:artifact81:263.0.0",
+          "group15:artifact86:283.0.0",
+          "group14:artifact69:439.0.0",
+          "group8:artifact84:330.0.0",
+          "group8:artifact16:606.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0",
+          "group14:artifact74:398.0.0",
+          "group11:artifact95:493.0.0",
+          "group8:artifact11:486.0.0"
+        ],
+        "backEdges": ["group1:artifact118:2.11.0"],
+        "id": "group14:artifact42:538.0.0"
+      },
+      "group8:artifact6:290.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact6",
+        "versionId": "290.0.0",
+        "projectId": "PROD-30461",
+        "forwardEdges": [
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": ["group8:artifact84:329.0.0"],
+        "id": "group8:artifact6:290.0.0"
+      },
+      "group5:artifact8:313.0.0": {
+        "groupId": "group5",
+        "artifactId": "artifact8",
+        "versionId": "313.0.0",
+        "projectId": "PROD-50498",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group14:artifact110:101.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact25:176.0.0"
+        ],
+        "backEdges": ["group14:artifact51:312.0.0"],
+        "id": "group5:artifact8:313.0.0"
+      },
+      "group14:artifact53:453.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact53",
+        "versionId": "453.0.0",
+        "projectId": "PROD-49578",
+        "forwardEdges": [
+          "group15:artifact86:282.0.0",
+          "group14:artifact58:461.0.0",
+          "group18:artifact19:408.0.0",
+          "group10:artifact28:171.0.0",
+          "group14:artifact69:438.0.0",
+          "group17:artifact90:293.0.0",
+          "group8:artifact16:605.0.0",
+          "group10:artifact70:336.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact93:524.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact31:194.0.0",
+          "group8:artifact13:576.0.0",
+          "group8:artifact11:483.0.0",
+          "group12:artifact94:512.0.0",
+          "group18:artifact20:391.0.0"
+        ],
+        "backEdges": [
+          "group13:artifact38:374.0.0",
+          "group13:artifact39:281.0.0"
+        ],
+        "id": "group14:artifact53:453.0.0"
+      },
+      "group8:artifact62:173.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact62",
+        "versionId": "173.0.0",
+        "projectId": "PROD-32426",
+        "forwardEdges": ["group10:artifact79:179.0.0"],
+        "backEdges": [
+          "group14:artifact42:538.0.0",
+          "group14:artifact37:455.0.0",
+          "group8:artifact16:606.0.0",
+          "group14:artifact52:440.0.0",
+          "group1:artifact118:2.11.0"
+        ],
+        "id": "group8:artifact62:173.0.0"
+      },
+      "group14:artifact58:461.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact58",
+        "versionId": "461.0.0",
+        "projectId": "PROD-49593",
+        "forwardEdges": [
+          "group14:artifact52:439.0.0",
+          "group8:artifact84:329.0.0",
+          "group17:artifact91:312.0.0",
+          "group13:artifact107:113.0.0",
+          "group10:artifact28:171.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact49:582.0.0",
+          "group17:artifact90:293.0.0",
+          "group8:artifact16:605.0.0",
+          "group13:artifact40:384.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group17:artifact89:280.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact31:194.0.0",
+          "group8:artifact11:483.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": [
+          "group13:artifact38:374.0.0",
+          "group14:artifact53:453.0.0",
+          "group13:artifact39:281.0.0",
+          "group14:artifact46:284.0.0",
+          "group14:artifact50:447.0.0"
+        ],
+        "id": "group14:artifact58:461.0.0"
+      },
+      "group13:artifact107:113.0.0": {
+        "groupId": "group13",
+        "artifactId": "artifact107",
+        "versionId": "113.0.0",
+        "projectId": "PROD-96612",
+        "forwardEdges": [
+          "group17:artifact88:285.0.0",
+          "group15:artifact86:282.0.0",
+          "group14:artifact61:231.0.0",
+          "group11:artifact95:492.0.0",
+          "group10:artifact75:290.0.0",
+          "group17:artifact89:280.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": [
+          "group13:artifact38:374.0.0",
+          "group13:artifact39:281.0.0",
+          "group14:artifact58:461.0.0"
+        ],
+        "id": "group13:artifact107:113.0.0"
+      },
+      "group20:artifact116:5.6.0": {
+        "groupId": "group20",
+        "artifactId": "artifact116",
+        "versionId": "5.6.0",
+        "projectId": "PROD-51625",
+        "forwardEdges": [],
+        "backEdges": [
+          "group17:artifact91:313.0.0",
+          "group17:artifact91:312.0.0"
+        ],
+        "id": "group20:artifact116:5.6.0"
+      },
+      "group14:artifact109:459.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact109",
+        "versionId": "459.0.0",
+        "projectId": "PROD-50648",
+        "forwardEdges": [
+          "group8:artifact21:151.0.0",
+          "group17:artifact90:293.0.0",
+          "group10:artifact85:274.0.0",
+          "group8:artifact105:451.0.0",
+          "group11:artifact95:492.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact23:169.0.0",
+          "group8:artifact62:172.0.0",
+          "group14:artifact67:251.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact35:495.0.0"
+        ],
+        "backEdges": ["group14:artifact55:484.0.0"],
+        "id": "group14:artifact109:459.0.0"
+      },
+      "group17:artifact90:293.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact90",
+        "versionId": "293.0.0",
+        "projectId": "PROD-30451",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact32:186.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact30:182.0.0",
+          "group10:artifact28:171.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact42:537.0.0",
+          "group14:artifact53:453.0.0",
+          "group17:artifact91:312.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact37:454.0.0",
+          "group14:artifact44:467.0.0",
+          "group14:artifact45:572.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact50:447.0.0",
+          "group14:artifact109:459.0.0",
+          "group14:artifact43:470.0.0",
+          "group14:artifact68:291.0.0",
+          "group17:artifact88:285.0.0",
+          "group13:artifact38:374.0.0",
+          "group13:artifact40:384.0.0",
+          "group17:artifact92:287.0.0",
+          "group4:artifact9:260.0.0",
+          "group14:artifact66:257.0.0",
+          "group13:artifact39:281.0.0",
+          "group14:artifact47:440.0.0",
+          "group14:artifact60:226.0.0",
+          "group14:artifact35:495.0.0",
+          "group14:artifact46:284.0.0"
+        ],
+        "id": "group17:artifact90:293.0.0"
+      },
+      "group14:artifact68:291.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact68",
+        "versionId": "291.0.0",
+        "projectId": "PROD-50493",
+        "forwardEdges": [
+          "group17:artifact90:293.0.0",
+          "group10:artifact85:274.0.0",
+          "group17:artifact88:285.0.0",
+          "group10:artifact78:271.0.0",
+          "group14:artifact61:231.0.0",
+          "group4:artifact9:260.0.0",
+          "group10:artifact81:262.0.0",
+          "group17:artifact89:280.0.0",
+          "group17:artifact91:312.0.0",
+          "group14:artifact59:259.0.0"
+        ],
+        "backEdges": ["group14:artifact46:284.0.0"],
+        "id": "group14:artifact68:291.0.0"
+      },
+      "group8:artifact16:605.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact16",
+        "versionId": "605.0.0",
+        "projectId": "PROD-29628",
+        "forwardEdges": [
+          "group14:artifact52:439.0.0",
+          "group10:artifact75:290.0.0",
+          "group8:artifact105:451.0.0",
+          "group11:artifact95:492.0.0",
+          "group8:artifact84:329.0.0",
+          "group8:artifact17:174.0.0",
+          "group14:artifact41:597.0.0",
+          "group14:artifact69:438.0.0",
+          "group19:artifact117:2051.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group17:artifact89:280.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0",
+          "group10:artifact80:27.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": [
+          "group7:artifact71:421.0.0",
+          "group14:artifact42:537.0.0",
+          "group14:artifact53:453.0.0",
+          "group18:artifact18:404.0.0",
+          "group14:artifact58:461.0.0",
+          "group18:artifact19:408.0.0",
+          "group12:artifact98:442.0.0",
+          "group14:artifact49:582.0.0",
+          "group14:artifact50:447.0.0",
+          "group13:artifact38:374.0.0",
+          "group10:artifact93:524.0.0",
+          "group8:artifact13:576.0.0",
+          "group12:artifact94:512.0.0",
+          "group8:artifact34:580.0.0",
+          "group14:artifact46:284.0.0",
+          "group18:artifact20:391.0.0"
+        ],
+        "id": "group8:artifact16:605.0.0"
+      },
+      "group20:artifact1:5.1.0": {
+        "groupId": "group20",
+        "artifactId": "artifact1",
+        "versionId": "5.1.0",
+        "projectId": "PROD-51607",
+        "forwardEdges": [],
+        "backEdges": [
+          "group17:artifact91:313.0.0",
+          "group17:artifact91:312.0.0"
+        ],
+        "id": "group20:artifact1:5.1.0"
+      },
+      "group13:artifact40:384.0.0": {
+        "groupId": "group13",
+        "artifactId": "artifact40",
+        "versionId": "384.0.0",
+        "projectId": "PROD-73031",
+        "forwardEdges": [
+          "group14:artifact61:231.0.0",
+          "group15:artifact86:282.0.0",
+          "group10:artifact75:290.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact28:171.0.0",
+          "group14:artifact45:572.0.0",
+          "group17:artifact90:293.0.0",
+          "group10:artifact85:274.0.0",
+          "group17:artifact88:285.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact31:194.0.0",
+          "group8:artifact11:483.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": ["group14:artifact58:461.0.0"],
+        "id": "group13:artifact40:384.0.0"
+      },
+      "group10:artifact70:336.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact70",
+        "versionId": "336.0.0",
+        "projectId": "PROD-30372",
+        "forwardEdges": [
+          "group10:artifact83:248.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0",
+          "group10:artifact28:171.0.0"
+        ],
+        "backEdges": [
+          "group10:artifact93:524.0.0",
+          "group14:artifact53:453.0.0",
+          "group12:artifact94:512.0.0"
+        ],
+        "id": "group10:artifact70:336.0.0"
+      },
+      "group14:artifact66:257.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact66",
+        "versionId": "257.0.0",
+        "projectId": "PROD-50495",
+        "forwardEdges": [
+          "group17:artifact90:293.0.0",
+          "group10:artifact83:248.0.0"
+        ],
+        "backEdges": ["group14:artifact60:226.0.0"],
+        "id": "group14:artifact66:257.0.0"
+      },
+      "group14:artifact64:235.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact64",
+        "versionId": "235.0.0",
+        "projectId": "PROD-49184",
+        "forwardEdges": ["group10:artifact81:262.0.0"],
+        "backEdges": ["group14:artifact65:276.0.0"],
+        "id": "group14:artifact64:235.0.0"
+      },
+      "group10:artifact12:21.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact12",
+        "versionId": "21.0.0",
+        "projectId": "PROD-33370",
+        "forwardEdges": [],
+        "backEdges": ["group10:artifact83:141.0.0"],
+        "id": "group10:artifact12:21.0.0"
+      },
+      "group14:artifact47:440.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact47",
+        "versionId": "440.0.0",
+        "projectId": "PROD-49568",
+        "forwardEdges": [
+          "group14:artifact43:470.0.0",
+          "group17:artifact90:293.0.0",
+          "group7:artifact71:421.0.0",
+          "group14:artifact52:439.0.0",
+          "group14:artifact42:537.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0",
+          "group8:artifact62:172.0.0",
+          "group12:artifact98:442.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "backEdges": [
+          "group13:artifact38:374.0.0",
+          "group13:artifact39:281.0.0"
+        ],
+        "id": "group14:artifact47:440.0.0"
+      },
+      "group20:artifact99:5.9.0": {
+        "groupId": "group20",
+        "artifactId": "artifact99",
+        "versionId": "5.9.0",
+        "projectId": "PROD-51614",
+        "forwardEdges": [],
+        "backEdges": ["group14:artifact60:226.0.0"],
+        "id": "group20:artifact99:5.9.0"
+      },
+      "group10:artifact75:291.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact75",
+        "versionId": "291.0.0",
+        "projectId": "PROD-30486",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact41:598.0.0",
+          "group8:artifact13:577.0.0",
+          "group15:artifact86:283.0.0",
+          "group12:artifact96:289.0.0",
+          "group12:artifact97:286.0.0",
+          "group10:artifact82:309.0.0",
+          "group8:artifact84:330.0.0",
+          "group8:artifact15:401.0.0",
+          "group14:artifact37:455.0.0",
+          "group14:artifact77:270.0.0",
+          "group8:artifact11:486.0.0",
+          "group17:artifact90:294.0.0",
+          "group8:artifact14:315.0.0",
+          "group14:artifact42:538.0.0",
+          "group6:artifact7:284.0.0",
+          "group17:artifact88:287.0.0",
+          "group14:artifact54:227.0.0",
+          "group8:artifact33:402.0.0",
+          "group19:artifact117:2055.0.0",
+          "group8:artifact105:452.0.0",
+          "group14:artifact69:439.0.0",
+          "group8:artifact16:606.0.0",
+          "group14:artifact111:495.0.0",
+          "group11:artifact95:493.0.0",
+          "group14:artifact74:398.0.0",
+          "group17:artifact92:288.0.0"
+        ],
+        "id": "group10:artifact75:291.0.0"
+      },
+      "group8:artifact6:291.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact6",
+        "versionId": "291.0.0",
+        "projectId": "PROD-30461",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": ["group8:artifact84:330.0.0"],
+        "id": "group8:artifact6:291.0.0"
+      },
+      "group10:artifact79:179.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact79",
+        "versionId": "179.0.0",
+        "projectId": "PROD-30358",
+        "forwardEdges": ["group14:artifact5:2.14.0"],
+        "backEdges": [
+          "group14:artifact41:598.0.0",
+          "group14:artifact61:232.0.0",
+          "group8:artifact13:577.0.0",
+          "group15:artifact86:283.0.0",
+          "group14:artifact56:188.0.0",
+          "group17:artifact89:281.0.0",
+          "group12:artifact96:289.0.0",
+          "group10:artifact72:249.0.0",
+          "group12:artifact97:286.0.0",
+          "group17:artifact91:313.0.0",
+          "group10:artifact82:309.0.0",
+          "group8:artifact84:330.0.0",
+          "group8:artifact15:401.0.0",
+          "group14:artifact37:455.0.0",
+          "group10:artifact85:275.0.0",
+          "group10:artifact28:172.0.0",
+          "group8:artifact11:486.0.0",
+          "group17:artifact90:294.0.0",
+          "group8:artifact14:315.0.0",
+          "group14:artifact108:294.0.0",
+          "group10:artifact83:249.0.0",
+          "group14:artifact42:538.0.0",
+          "group8:artifact62:173.0.0",
+          "group10:artifact81:263.0.0",
+          "group8:artifact33:402.0.0",
+          "group19:artifact117:2055.0.0",
+          "group8:artifact105:452.0.0",
+          "group14:artifact69:439.0.0",
+          "group10:artifact76:274.0.0",
+          "group8:artifact6:291.0.0",
+          "group10:artifact75:291.0.0",
+          "group8:artifact16:606.0.0",
+          "group8:artifact17:175.0.0",
+          "group11:artifact95:493.0.0",
+          "group14:artifact74:398.0.0"
+        ],
+        "id": "group10:artifact79:179.0.0"
+      },
+      "group12:artifact94:512.0.0": {
+        "groupId": "group12",
+        "artifactId": "artifact94",
+        "versionId": "512.0.0",
+        "projectId": "PROD-55518",
+        "forwardEdges": [
+          "group12:artifact97:285.0.0",
+          "group8:artifact16:605.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact70:336.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact17:174.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact13:576.0.0",
+          "group8:artifact11:483.0.0"
+        ],
+        "backEdges": [
+          "group10:artifact93:524.0.0",
+          "group14:artifact53:453.0.0",
+          "group18:artifact19:408.0.0",
+          "group18:artifact48:406.0.0",
+          "group14:artifact50:447.0.0"
+        ],
+        "id": "group12:artifact94:512.0.0"
+      },
+      "group11:artifact95:493.0.0": {
+        "groupId": "group11",
+        "artifactId": "artifact95",
+        "versionId": "493.0.0",
+        "projectId": "PROD-30471",
+        "forwardEdges": [
+          "group8:artifact33:402.0.0",
+          "group10:artifact83:249.0.0",
+          "group12:artifact97:286.0.0",
+          "group8:artifact84:330.0.0",
+          "group10:artifact76:274.0.0",
+          "group10:artifact85:275.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact80:27.0.0",
+          "group10:artifact79:179.0.0",
+          "group10:artifact78:272.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact41:598.0.0",
+          "group8:artifact105:452.0.0",
+          "group14:artifact69:439.0.0",
+          "group14:artifact42:538.0.0",
+          "group14:artifact37:455.0.0",
+          "group8:artifact16:606.0.0"
+        ],
+        "id": "group11:artifact95:493.0.0"
+      },
+      "group7:artifact71:421.0.0": {
+        "groupId": "group7",
+        "artifactId": "artifact71",
+        "versionId": "421.0.0",
+        "projectId": "PROD-50471",
+        "forwardEdges": [
+          "group8:artifact16:605.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0",
+          "group10:artifact24:34.0.0"
+        ],
+        "backEdges": ["group14:artifact47:440.0.0"],
+        "id": "group7:artifact71:421.0.0"
+      },
+      "group14:artifact52:439.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact52",
+        "versionId": "439.0.0",
+        "projectId": "PROD-49576",
+        "forwardEdges": [
+          "group15:artifact86:282.0.0",
+          "group14:artifact61:231.0.0",
+          "group8:artifact62:172.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "backEdges": [
+          "group13:artifact38:374.0.0",
+          "group8:artifact16:605.0.0",
+          "group14:artifact47:440.0.0",
+          "group14:artifact58:461.0.0",
+          "group18:artifact48:406.0.0",
+          "group14:artifact46:284.0.0"
+        ],
+        "id": "group14:artifact52:439.0.0"
+      },
+      "group15:artifact86:282.0.0": {
+        "groupId": "group15",
+        "artifactId": "artifact86",
+        "versionId": "282.0.0",
+        "projectId": "PROD-30456",
+        "forwardEdges": [
+          "group17:artifact88:285.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact57:470.0.0",
+          "group14:artifact74:397.0.0",
+          "group14:artifact52:439.0.0",
+          "group14:artifact42:537.0.0",
+          "group14:artifact53:453.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact69:438.0.0",
+          "group13:artifact38:374.0.0",
+          "group13:artifact40:384.0.0",
+          "group17:artifact92:287.0.0",
+          "group14:artifact54:226.0.0",
+          "group13:artifact39:281.0.0",
+          "group14:artifact46:284.0.0"
+        ],
+        "id": "group15:artifact86:282.0.0"
+      },
+      "group2:artifact103:28.0.0": {
+        "groupId": "group2",
+        "artifactId": "artifact103",
+        "versionId": "28.0.0",
+        "projectId": "PROD-59859",
+        "forwardEdges": [
+          "group14:artifact60:226.0.0",
+          "group14:artifact46:284.0.0"
+        ],
+        "backEdges": [],
+        "id": "group2:artifact103:28.0.0"
+      },
+      "group14:artifact5:2.9.0": {
+        "groupId": "group14",
+        "artifactId": "artifact5",
+        "versionId": "2.9.0",
+        "projectId": "PROD-50849",
+        "forwardEdges": [],
+        "backEdges": ["group10:artifact79:100.0.0"],
+        "id": "group14:artifact5:2.9.0"
+      },
+      "group20:artifact114:3.0.0": {
+        "groupId": "group20",
+        "artifactId": "artifact114",
+        "versionId": "3.0.0",
+        "projectId": "PROD-52507",
+        "forwardEdges": [],
+        "backEdges": ["group14:artifact60:226.0.0"],
+        "id": "group20:artifact114:3.0.0"
+      },
+      "group18:artifact19:408.0.0": {
+        "groupId": "group18",
+        "artifactId": "artifact19",
+        "versionId": "408.0.0",
+        "projectId": "PROD-75318",
+        "forwardEdges": [
+          "group8:artifact16:605.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact84:329.0.0",
+          "group8:artifact17:174.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0",
+          "group10:artifact30:182.0.0",
+          "group12:artifact94:512.0.0",
+          "group18:artifact20:391.0.0"
+        ],
+        "backEdges": ["group14:artifact53:453.0.0"],
+        "id": "group18:artifact19:408.0.0"
+      },
+      "group10:artifact80:9.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact80",
+        "versionId": "9.0.0",
+        "projectId": "PROD-66612",
+        "forwardEdges": [],
+        "backEdges": [
+          "group10:artifact81:121.0.0",
+          "group10:artifact83:141.0.0"
+        ],
+        "id": "group10:artifact80:9.0.0"
+      },
+      "group10:artifact28:171.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact28",
+        "versionId": "171.0.0",
+        "projectId": "PROD-30364",
+        "forwardEdges": ["group10:artifact79:178.0.0"],
+        "backEdges": [
+          "group10:artifact29:183.0.0",
+          "group14:artifact53:453.0.0",
+          "group17:artifact91:312.0.0",
+          "group14:artifact41:597.0.0",
+          "group14:artifact58:461.0.0",
+          "group17:artifact90:293.0.0",
+          "group17:artifact88:285.0.0",
+          "group13:artifact40:384.0.0",
+          "group10:artifact70:336.0.0",
+          "group10:artifact81:262.0.0",
+          "group13:artifact39:281.0.0",
+          "group10:artifact31:194.0.0",
+          "group8:artifact11:483.0.0",
+          "group10:artifact30:182.0.0",
+          "group12:artifact96:288.0.0",
+          "group10:artifact27:186.0.0"
+        ],
+        "id": "group10:artifact28:171.0.0"
+      },
+      "group12:artifact98:442.0.0": {
+        "groupId": "group12",
+        "artifactId": "artifact98",
+        "versionId": "442.0.0",
+        "projectId": "PROD-65901",
+        "forwardEdges": [
+          "group8:artifact16:605.0.0",
+          "group10:artifact93:524.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact13:576.0.0",
+          "group14:artifact50:447.0.0"
+        ],
+        "backEdges": ["group14:artifact47:440.0.0"],
+        "id": "group12:artifact98:442.0.0"
+      },
+      "group14:artifact49:582.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact49",
+        "versionId": "582.0.0",
+        "projectId": "PROD-49570",
+        "forwardEdges": ["group8:artifact16:605.0.0"],
+        "backEdges": ["group14:artifact58:461.0.0"],
+        "id": "group14:artifact49:582.0.0"
+      },
+      "group14:artifact50:447.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact50",
+        "versionId": "447.0.0",
+        "projectId": "PROD-49574",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group8:artifact84:329.0.0",
+          "group8:artifact17:174.0.0",
+          "group17:artifact91:312.0.0",
+          "group18:artifact18:404.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact69:438.0.0",
+          "group18:artifact48:406.0.0",
+          "group17:artifact90:293.0.0",
+          "group8:artifact16:605.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group12:artifact94:512.0.0"
+        ],
+        "backEdges": ["group12:artifact98:442.0.0"],
+        "id": "group14:artifact50:447.0.0"
+      },
+      "group14:artifact63:35.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact63",
+        "versionId": "35.0.0",
+        "projectId": "PROD-49596",
+        "forwardEdges": [],
+        "backEdges": [
+          "group14:artifact54:226.0.0",
+          "group14:artifact54:227.0.0"
+        ],
+        "id": "group14:artifact63:35.0.0"
+      },
+      "group10:artifact83:248.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact83",
+        "versionId": "248.0.0",
+        "projectId": "PROD-30489",
+        "forwardEdges": [
+          "group10:artifact79:178.0.0",
+          "group10:artifact80:27.0.0",
+          "group10:artifact12:38.0.0"
+        ],
+        "backEdges": [
+          "group10:artifact10:250.0.0",
+          "group7:artifact71:421.0.0",
+          "group14:artifact42:537.0.0",
+          "group8:artifact105:451.0.0",
+          "group11:artifact95:492.0.0",
+          "group8:artifact84:329.0.0",
+          "group14:artifact41:597.0.0",
+          "group10:artifact76:273.0.0",
+          "group14:artifact37:454.0.0",
+          "group6:artifact7:283.0.0",
+          "group18:artifact19:408.0.0",
+          "group14:artifact50:447.0.0",
+          "group19:artifact117:2051.0.0",
+          "group14:artifact43:470.0.0",
+          "group10:artifact78:271.0.0",
+          "group13:artifact38:374.0.0",
+          "group4:artifact9:260.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact93:524.0.0",
+          "group13:artifact39:281.0.0",
+          "group8:artifact33:401.0.0",
+          "group12:artifact96:288.0.0",
+          "group18:artifact20:391.0.0",
+          "group8:artifact15:399.0.0",
+          "group14:artifact46:284.0.0",
+          "group8:artifact22:318.0.0",
+          "group14:artifact74:397.0.0",
+          "group8:artifact6:290.0.0",
+          "group14:artifact61:231.0.0",
+          "group10:artifact75:290.0.0",
+          "group5:artifact8:313.0.0",
+          "group14:artifact53:453.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact44:467.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact109:459.0.0",
+          "group17:artifact90:293.0.0",
+          "group8:artifact16:605.0.0",
+          "group13:artifact40:384.0.0",
+          "group10:artifact70:336.0.0",
+          "group14:artifact66:257.0.0",
+          "group14:artifact47:440.0.0",
+          "group8:artifact13:576.0.0",
+          "group10:artifact72:248.0.0",
+          "group8:artifact11:483.0.0",
+          "group14:artifact60:226.0.0",
+          "group12:artifact94:512.0.0",
+          "group8:artifact34:580.0.0"
+        ],
+        "id": "group10:artifact83:248.0.0"
+      },
+      "group10:artifact28:90.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact28",
+        "versionId": "90.0.0",
+        "projectId": "PROD-30364",
+        "forwardEdges": ["group10:artifact79:100.0.0"],
+        "backEdges": [
+          "group10:artifact81:121.0.0",
+          "group17:artifact90:165.0.0",
+          "group10:artifact27:98.0.0",
+          "group10:artifact30:96.0.0",
+          "group10:artifact29:96.0.0",
+          "group17:artifact88:159.0.0"
+        ],
+        "id": "group10:artifact28:90.0.0"
+      },
+      "group14:artifact37:455.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact37",
+        "versionId": "455.0.0",
+        "projectId": "PROD-49558",
+        "forwardEdges": [
+          "group17:artifact90:294.0.0",
+          "group17:artifact89:281.0.0",
+          "group8:artifact105:452.0.0",
+          "group10:artifact83:249.0.0",
+          "group17:artifact88:287.0.0",
+          "group17:artifact91:313.0.0",
+          "group8:artifact62:173.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0",
+          "group11:artifact95:493.0.0"
+        ],
+        "backEdges": ["group14:artifact69:439.0.0"],
+        "id": "group14:artifact37:455.0.0"
+      },
+      "group13:artifact39:281.0.0": {
+        "groupId": "group13",
+        "artifactId": "artifact39",
+        "versionId": "281.0.0",
+        "projectId": "PROD-71321",
+        "forwardEdges": [
+          "group15:artifact86:282.0.0",
+          "group10:artifact75:290.0.0",
+          "group14:artifact53:453.0.0",
+          "group8:artifact84:329.0.0",
+          "group17:artifact91:312.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact58:461.0.0",
+          "group10:artifact28:171.0.0",
+          "group14:artifact45:572.0.0",
+          "group17:artifact90:293.0.0",
+          "group10:artifact85:274.0.0",
+          "group17:artifact88:285.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group17:artifact89:280.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact31:194.0.0",
+          "group14:artifact47:440.0.0",
+          "group8:artifact11:483.0.0",
+          "group10:artifact30:182.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": [
+          "group13:artifact38:374.0.0",
+          "group14:artifact46:284.0.0"
+        ],
+        "id": "group13:artifact39:281.0.0"
+      },
+      "group10:artifact85:275.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact85",
+        "versionId": "275.0.0",
+        "projectId": "PROD-30488",
+        "forwardEdges": [
+          "group10:artifact81:263.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group17:artifact89:281.0.0",
+          "group14:artifact69:439.0.0",
+          "group14:artifact67:252.0.0",
+          "group8:artifact84:330.0.0",
+          "group11:artifact95:493.0.0",
+          "group8:artifact11:486.0.0"
+        ],
+        "id": "group10:artifact85:275.0.0"
+      },
+      "group8:artifact26:173.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact26",
+        "versionId": "173.0.0",
+        "projectId": "PROD-48737",
+        "forwardEdges": [
+          "group10:artifact79:178.0.0",
+          "group10:artifact25:176.0.0"
+        ],
+        "backEdges": ["group14:artifact43:470.0.0"],
+        "id": "group8:artifact26:173.0.0"
+      },
+      "group8:artifact33:401.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact33",
+        "versionId": "401.0.0",
+        "projectId": "PROD-32602",
+        "forwardEdges": [
+          "group10:artifact82:308.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact74:397.0.0",
+          "group11:artifact95:492.0.0",
+          "group14:artifact44:467.0.0",
+          "group14:artifact69:438.0.0",
+          "group8:artifact34:580.0.0",
+          "group8:artifact15:399.0.0"
+        ],
+        "id": "group8:artifact33:401.0.0"
+      },
+      "group10:artifact80:27.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact80",
+        "versionId": "27.0.0",
+        "projectId": "PROD-66612",
+        "forwardEdges": [],
+        "backEdges": [
+          "group16:artifact87:167.0.0",
+          "group8:artifact14:315.0.0",
+          "group10:artifact83:249.0.0",
+          "group11:artifact95:492.0.0",
+          "group10:artifact81:263.0.0",
+          "group8:artifact16:605.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact14:314.0.0",
+          "group8:artifact16:606.0.0",
+          "group8:artifact11:483.0.0",
+          "group11:artifact95:493.0.0",
+          "group8:artifact11:486.0.0"
+        ],
+        "id": "group10:artifact80:27.0.0"
+      },
+      "group10:artifact28:172.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact28",
+        "versionId": "172.0.0",
+        "projectId": "PROD-30364",
+        "forwardEdges": ["group10:artifact79:179.0.0"],
+        "backEdges": [
+          "group10:artifact29:184.0.0",
+          "group14:artifact41:598.0.0",
+          "group17:artifact90:294.0.0",
+          "group12:artifact96:289.0.0",
+          "group17:artifact88:287.0.0",
+          "group10:artifact31:195.0.0",
+          "group17:artifact91:313.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact30:183.0.0",
+          "group8:artifact11:486.0.0",
+          "group10:artifact27:187.0.0"
+        ],
+        "id": "group10:artifact28:172.0.0"
+      },
+      "group20:artifact4:2.0.0": {
+        "groupId": "group20",
+        "artifactId": "artifact4",
+        "versionId": "2.0.0",
+        "projectId": "PROD-51608",
+        "forwardEdges": [],
+        "backEdges": [
+          "group14:artifact59:260.0.0",
+          "group14:artifact59:259.0.0"
+        ],
+        "id": "group20:artifact4:2.0.0"
+      },
+      "group18:artifact20:391.0.0": {
+        "groupId": "group18",
+        "artifactId": "artifact20",
+        "versionId": "391.0.0",
+        "projectId": "PROD-76263",
+        "forwardEdges": [
+          "group8:artifact16:605.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact17:174.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact53:453.0.0",
+          "group18:artifact19:408.0.0"
+        ],
+        "id": "group18:artifact20:391.0.0"
+      },
+      "group8:artifact15:399.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact15",
+        "versionId": "399.0.0",
+        "projectId": "PROD-46421",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact33:401.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact41:597.0.0",
+          "group14:artifact44:467.0.0"
+        ],
+        "id": "group8:artifact15:399.0.0"
+      },
+      "group8:artifact22:318.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact22",
+        "versionId": "318.0.0",
+        "projectId": "PROD-49657",
+        "forwardEdges": [
+          "group11:artifact95:492.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact76:273.0.0"
+        ],
+        "backEdges": ["group14:artifact55:484.0.0"],
+        "id": "group8:artifact22:318.0.0"
+      },
+      "group14:artifact36:156.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact36",
+        "versionId": "156.0.0",
+        "projectId": "PROD-33989",
+        "forwardEdges": ["group6:artifact7:160.0.0"],
+        "backEdges": ["group17:artifact88:159.0.0"],
+        "id": "group14:artifact36:156.0.0"
+      },
+      "group14:artifact36:284.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact36",
+        "versionId": "284.0.0",
+        "projectId": "PROD-33989",
+        "forwardEdges": ["group6:artifact7:283.0.0"],
+        "backEdges": ["group17:artifact88:285.0.0"],
+        "id": "group14:artifact36:284.0.0"
+      },
+      "group10:artifact79:100.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact79",
+        "versionId": "100.0.0",
+        "projectId": "PROD-30358",
+        "forwardEdges": ["group14:artifact5:2.9.0"],
+        "backEdges": [
+          "group10:artifact81:121.0.0",
+          "group17:artifact90:165.0.0",
+          "group10:artifact75:157.0.0",
+          "group10:artifact83:141.0.0",
+          "group10:artifact28:90.0.0",
+          "group15:artifact86:151.0.0"
+        ],
+        "id": "group10:artifact79:100.0.0"
+      },
+      "group20:artifact101:4.1.0": {
+        "groupId": "group20",
+        "artifactId": "artifact101",
+        "versionId": "4.1.0",
+        "projectId": "PROD-51616",
+        "forwardEdges": [],
+        "backEdges": ["group14:artifact60:226.0.0"],
+        "id": "group20:artifact101:4.1.0"
+      },
+      "group17:artifact88:287.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact88",
+        "versionId": "287.0.0",
+        "projectId": "PROD-30469",
+        "forwardEdges": [
+          "group17:artifact90:294.0.0",
+          "group6:artifact7:284.0.0",
+          "group14:artifact73:248.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact28:172.0.0",
+          "group20:artifact113:5.0.0",
+          "group14:artifact36:285.0.0",
+          "group10:artifact27:187.0.0",
+          "group10:artifact10:252.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group14:artifact42:538.0.0",
+          "group14:artifact37:455.0.0",
+          "group14:artifact77:270.0.0",
+          "group15:artifact86:283.0.0"
+        ],
+        "id": "group17:artifact88:287.0.0"
+      },
+      "group10:artifact75:290.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact75",
+        "versionId": "290.0.0",
+        "projectId": "PROD-30486",
+        "forwardEdges": [
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact57:470.0.0",
+          "group12:artifact97:285.0.0",
+          "group15:artifact86:282.0.0",
+          "group14:artifact42:537.0.0",
+          "group14:artifact77:269.0.0",
+          "group8:artifact105:451.0.0",
+          "group11:artifact95:492.0.0",
+          "group8:artifact84:329.0.0",
+          "group14:artifact41:597.0.0",
+          "group14:artifact37:454.0.0",
+          "group6:artifact7:283.0.0",
+          "group14:artifact50:447.0.0",
+          "group19:artifact117:2051.0.0",
+          "group17:artifact88:285.0.0",
+          "group13:artifact38:374.0.0",
+          "group17:artifact92:287.0.0",
+          "group13:artifact39:281.0.0",
+          "group8:artifact33:401.0.0",
+          "group12:artifact96:288.0.0",
+          "group8:artifact15:399.0.0",
+          "group14:artifact46:284.0.0",
+          "group14:artifact74:397.0.0",
+          "group5:artifact8:313.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact69:438.0.0",
+          "group18:artifact48:406.0.0",
+          "group17:artifact90:293.0.0",
+          "group8:artifact16:605.0.0",
+          "group14:artifact54:226.0.0",
+          "group13:artifact40:384.0.0",
+          "group10:artifact82:308.0.0",
+          "group8:artifact14:314.0.0",
+          "group8:artifact13:576.0.0",
+          "group8:artifact11:483.0.0",
+          "group14:artifact60:226.0.0",
+          "group12:artifact94:512.0.0",
+          "group8:artifact34:580.0.0"
+        ],
+        "id": "group10:artifact75:290.0.0"
+      },
+      "group14:artifact69:438.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact69",
+        "versionId": "438.0.0",
+        "projectId": "PROD-63342",
+        "forwardEdges": [
+          "group14:artifact65:276.0.0",
+          "group15:artifact86:282.0.0",
+          "group14:artifact77:269.0.0",
+          "group8:artifact105:451.0.0",
+          "group11:artifact95:492.0.0",
+          "group17:artifact91:312.0.0",
+          "group14:artifact37:454.0.0",
+          "group6:artifact7:283.0.0",
+          "group14:artifact73:245.0.0",
+          "group10:artifact85:274.0.0",
+          "group17:artifact88:285.0.0",
+          "group10:artifact78:271.0.0",
+          "group17:artifact92:287.0.0",
+          "group17:artifact89:280.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact33:401.0.0",
+          "group14:artifact74:397.0.0",
+          "group14:artifact61:231.0.0",
+          "group14:artifact56:187.0.0",
+          "group10:artifact75:290.0.0",
+          "group14:artifact67:251.0.0",
+          "group14:artifact59:259.0.0",
+          "group17:artifact90:293.0.0",
+          "group14:artifact54:226.0.0",
+          "group10:artifact82:308.0.0",
+          "group14:artifact108:293.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact109:459.0.0",
+          "group14:artifact52:439.0.0",
+          "group13:artifact38:374.0.0",
+          "group8:artifact16:605.0.0",
+          "group14:artifact42:537.0.0",
+          "group14:artifact53:453.0.0",
+          "group14:artifact47:440.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact44:467.0.0",
+          "group14:artifact35:495.0.0",
+          "group14:artifact46:284.0.0",
+          "group14:artifact50:447.0.0"
+        ],
+        "id": "group14:artifact69:438.0.0"
+      },
+      "group18:artifact48:406.0.0": {
+        "groupId": "group18",
+        "artifactId": "artifact48",
+        "versionId": "406.0.0",
+        "projectId": "PROD-76265",
+        "forwardEdges": [
+          "group14:artifact52:439.0.0",
+          "group10:artifact75:290.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact79:178.0.0",
+          "group12:artifact94:512.0.0"
+        ],
+        "backEdges": ["group14:artifact50:447.0.0"],
+        "id": "group18:artifact48:406.0.0"
+      },
+      "group10:artifact31:195.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact31",
+        "versionId": "195.0.0",
+        "projectId": "PROD-47014",
+        "forwardEdges": [
+          "group10:artifact28:172.0.0",
+          "group10:artifact30:183.0.0"
+        ],
+        "backEdges": ["group8:artifact14:315.0.0", "group8:artifact11:486.0.0"],
+        "id": "group10:artifact31:195.0.0"
+      },
+      "group8:artifact14:314.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact14",
+        "versionId": "314.0.0",
+        "projectId": "PROD-33133",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact31:194.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact80:27.0.0"
+        ],
+        "backEdges": ["group8:artifact13:576.0.0"],
+        "id": "group8:artifact14:314.0.0"
+      },
+      "group8:artifact13:576.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact13",
+        "versionId": "576.0.0",
+        "projectId": "PROD-29627",
+        "forwardEdges": [
+          "group8:artifact16:605.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact14:314.0.0",
+          "group8:artifact84:329.0.0",
+          "group14:artifact41:597.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact42:537.0.0",
+          "group14:artifact53:453.0.0",
+          "group18:artifact18:404.0.0",
+          "group12:artifact98:442.0.0",
+          "group12:artifact94:512.0.0"
+        ],
+        "id": "group8:artifact13:576.0.0"
+      },
+      "group10:artifact29:96.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact29",
+        "versionId": "96.0.0",
+        "projectId": "PROD-30394",
+        "forwardEdges": ["group10:artifact28:90.0.0"],
+        "backEdges": ["group10:artifact27:98.0.0"],
+        "id": "group10:artifact29:96.0.0"
+      },
+      "group20:artifact113:5.0.0": {
+        "groupId": "group20",
+        "artifactId": "artifact113",
+        "versionId": "5.0.0",
+        "projectId": "PROD-51627",
+        "forwardEdges": [],
+        "backEdges": [
+          "group17:artifact88:285.0.0",
+          "group17:artifact88:287.0.0",
+          "group17:artifact88:159.0.0"
+        ],
+        "id": "group20:artifact113:5.0.0"
+      },
+      "group8:artifact34:580.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact34",
+        "versionId": "580.0.0",
+        "projectId": "PROD-30472",
+        "forwardEdges": [
+          "group8:artifact16:605.0.0",
+          "group11:artifact95:492.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact93:524.0.0",
+          "group8:artifact84:329.0.0",
+          "group14:artifact41:597.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact33:401.0.0",
+          "group8:artifact11:483.0.0"
+        ],
+        "backEdges": ["group14:artifact45:572.0.0"],
+        "id": "group8:artifact34:580.0.0"
+      },
+      "group1:artifact118:2.11.0": {
+        "groupId": "group1",
+        "artifactId": "artifact118",
+        "versionId": "2.11.0",
+        "projectId": "PROD-42889",
+        "forwardEdges": [
+          "group14:artifact42:538.0.0",
+          "group9:artifact106:1.1.5",
+          "group8:artifact62:173.0.0",
+          "group8:artifact16:606.0.0",
+          "group14:artifact111:495.0.0",
+          "group15:artifact86:283.0.0"
+        ],
+        "backEdges": [],
+        "id": "group1:artifact118:2.11.0"
+      },
+      "group17:artifact92:288.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact92",
+        "versionId": "288.0.0",
+        "projectId": "PROD-28740",
+        "forwardEdges": [
+          "group17:artifact90:294.0.0",
+          "group10:artifact75:291.0.0",
+          "group15:artifact86:283.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group14:artifact111:495.0.0",
+          "group14:artifact74:398.0.0"
+        ],
+        "id": "group17:artifact92:288.0.0"
+      },
+      "group14:artifact65:276.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact65",
+        "versionId": "276.0.0",
+        "projectId": "PROD-49288",
+        "forwardEdges": [
+          "group10:artifact81:262.0.0",
+          "group17:artifact91:312.0.0",
+          "group14:artifact64:235.0.0"
+        ],
+        "backEdges": ["group14:artifact69:438.0.0"],
+        "id": "group14:artifact65:276.0.0"
+      },
+      "group10:artifact29:183.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact29",
+        "versionId": "183.0.0",
+        "projectId": "PROD-30394",
+        "forwardEdges": ["group10:artifact28:171.0.0"],
+        "backEdges": [
+          "group17:artifact91:312.0.0",
+          "group10:artifact27:186.0.0"
+        ],
+        "id": "group10:artifact29:183.0.0"
+      },
+      "group10:artifact32:187.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact32",
+        "versionId": "187.0.0",
+        "projectId": "PROD-34325",
+        "forwardEdges": [
+          "group10:artifact30:183.0.0",
+          "group10:artifact27:187.0.0"
+        ],
+        "backEdges": ["group17:artifact90:294.0.0"],
+        "id": "group10:artifact32:187.0.0"
+      },
+      "group14:artifact77:269.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact77",
+        "versionId": "269.0.0",
+        "projectId": "PROD-30452",
+        "forwardEdges": [
+          "group17:artifact88:285.0.0",
+          "group10:artifact75:290.0.0"
+        ],
+        "backEdges": ["group14:artifact69:438.0.0"],
+        "id": "group14:artifact77:269.0.0"
+      },
+      "group8:artifact105:451.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact105",
+        "versionId": "451.0.0",
+        "projectId": "PROD-30454",
+        "forwardEdges": [
+          "group11:artifact95:492.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact76:273.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact109:459.0.0",
+          "group8:artifact16:605.0.0",
+          "group14:artifact37:454.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group8:artifact105:451.0.0"
+      },
+      "group10:artifact76:273.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact76",
+        "versionId": "273.0.0",
+        "projectId": "PROD-30491",
+        "forwardEdges": [
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group8:artifact22:318.0.0",
+          "group8:artifact105:451.0.0",
+          "group11:artifact95:492.0.0",
+          "group14:artifact35:495.0.0"
+        ],
+        "id": "group10:artifact76:273.0.0"
+      },
+      "group6:artifact7:283.0.0": {
+        "groupId": "group6",
+        "artifactId": "artifact7",
+        "versionId": "283.0.0",
+        "projectId": "PROD-30365",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group10:artifact83:248.0.0"
+        ],
+        "backEdges": [
+          "group17:artifact88:285.0.0",
+          "group14:artifact36:284.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group6:artifact7:283.0.0"
+      },
+      "group14:artifact36:285.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact36",
+        "versionId": "285.0.0",
+        "projectId": "PROD-33989",
+        "forwardEdges": ["group6:artifact7:284.0.0"],
+        "backEdges": ["group17:artifact88:287.0.0"],
+        "id": "group14:artifact36:285.0.0"
+      },
+      "group10:artifact10:252.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact10",
+        "versionId": "252.0.0",
+        "projectId": "PROD-30366",
+        "forwardEdges": ["group10:artifact83:249.0.0"],
+        "backEdges": [
+          "group17:artifact88:287.0.0",
+          "group14:artifact73:248.0.0"
+        ],
+        "id": "group10:artifact10:252.0.0"
+      },
+      "group10:artifact29:184.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact29",
+        "versionId": "184.0.0",
+        "projectId": "PROD-30394",
+        "forwardEdges": ["group10:artifact28:172.0.0"],
+        "backEdges": [
+          "group17:artifact91:313.0.0",
+          "group10:artifact27:187.0.0"
+        ],
+        "id": "group10:artifact29:184.0.0"
+      },
+      "group14:artifact43:470.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact43",
+        "versionId": "470.0.0",
+        "projectId": "PROD-47340",
+        "forwardEdges": [
+          "group14:artifact57:470.0.0",
+          "group17:artifact90:293.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact26:173.0.0",
+          "group10:artifact25:176.0.0",
+          "group14:artifact44:467.0.0",
+          "group14:artifact51:312.0.0"
+        ],
+        "backEdges": ["group14:artifact47:440.0.0"],
+        "id": "group14:artifact43:470.0.0"
+      },
+      "group10:artifact78:271.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact78",
+        "versionId": "271.0.0",
+        "projectId": "PROD-30490",
+        "forwardEdges": [
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact68:291.0.0",
+          "group11:artifact95:492.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact59:259.0.0"
+        ],
+        "id": "group10:artifact78:271.0.0"
+      },
+      "group13:artifact38:374.0.0": {
+        "groupId": "group13",
+        "artifactId": "artifact38",
+        "versionId": "374.0.0",
+        "projectId": "PROD-29877",
+        "forwardEdges": [
+          "group14:artifact52:439.0.0",
+          "group14:artifact61:231.0.0",
+          "group15:artifact86:282.0.0",
+          "group10:artifact75:290.0.0",
+          "group11:artifact95:492.0.0",
+          "group14:artifact53:453.0.0",
+          "group8:artifact84:329.0.0",
+          "group17:artifact91:312.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact45:572.0.0",
+          "group14:artifact69:438.0.0",
+          "group17:artifact90:293.0.0",
+          "group10:artifact85:274.0.0",
+          "group17:artifact88:285.0.0",
+          "group8:artifact16:605.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group17:artifact89:280.0.0",
+          "group13:artifact39:281.0.0",
+          "group10:artifact79:178.0.0",
+          "group14:artifact47:440.0.0",
+          "group8:artifact11:483.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": ["group14:artifact46:284.0.0"],
+        "id": "group13:artifact38:374.0.0"
+      },
+      "group10:artifact82:309.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact82",
+        "versionId": "309.0.0",
+        "projectId": "PROD-30493",
+        "forwardEdges": [
+          "group10:artifact81:263.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group8:artifact33:402.0.0",
+          "group14:artifact108:294.0.0",
+          "group14:artifact69:439.0.0"
+        ],
+        "id": "group10:artifact82:309.0.0"
+      },
+      "group10:artifact81:262.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact81",
+        "versionId": "262.0.0",
+        "projectId": "PROD-30487",
+        "forwardEdges": [
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact80:27.0.0",
+          "group10:artifact30:182.0.0",
+          "group10:artifact28:171.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact65:276.0.0",
+          "group7:artifact71:421.0.0",
+          "group14:artifact42:537.0.0",
+          "group8:artifact105:451.0.0",
+          "group11:artifact95:492.0.0",
+          "group17:artifact91:312.0.0",
+          "group8:artifact84:329.0.0",
+          "group14:artifact41:597.0.0",
+          "group14:artifact50:447.0.0",
+          "group19:artifact117:2051.0.0",
+          "group10:artifact85:274.0.0",
+          "group10:artifact78:271.0.0",
+          "group13:artifact38:374.0.0",
+          "group13:artifact39:281.0.0",
+          "group8:artifact33:401.0.0",
+          "group8:artifact15:399.0.0",
+          "group14:artifact46:284.0.0",
+          "group8:artifact6:290.0.0",
+          "group5:artifact8:313.0.0",
+          "group14:artifact53:453.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact68:291.0.0",
+          "group8:artifact16:605.0.0",
+          "group10:artifact82:308.0.0",
+          "group14:artifact64:235.0.0",
+          "group8:artifact14:314.0.0",
+          "group8:artifact13:576.0.0",
+          "group8:artifact11:483.0.0",
+          "group8:artifact34:580.0.0",
+          "group14:artifact108:293.0.0"
+        ],
+        "id": "group10:artifact81:262.0.0"
+      },
+      "group8:artifact15:401.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact15",
+        "versionId": "401.0.0",
+        "projectId": "PROD-46421",
+        "forwardEdges": [
+          "group8:artifact33:402.0.0",
+          "group10:artifact83:249.0.0",
+          "group8:artifact84:330.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": ["group14:artifact41:598.0.0"],
+        "id": "group8:artifact15:401.0.0"
+      },
+      "group10:artifact10:138.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact10",
+        "versionId": "138.0.0",
+        "projectId": "PROD-30366",
+        "forwardEdges": ["group10:artifact83:141.0.0"],
+        "backEdges": [
+          "group14:artifact73:138.0.0",
+          "group17:artifact88:159.0.0"
+        ],
+        "id": "group10:artifact10:138.0.0"
+      },
+      "group10:artifact78:272.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact78",
+        "versionId": "272.0.0",
+        "projectId": "PROD-30490",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact81:263.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact59:260.0.0",
+          "group14:artifact69:439.0.0",
+          "group11:artifact95:493.0.0"
+        ],
+        "id": "group10:artifact78:272.0.0"
+      },
+      "group10:artifact27:186.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact27",
+        "versionId": "186.0.0",
+        "projectId": "PROD-30367",
+        "forwardEdges": [
+          "group10:artifact29:183.0.0",
+          "group10:artifact30:182.0.0",
+          "group10:artifact28:171.0.0"
+        ],
+        "backEdges": [
+          "group17:artifact88:285.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact32:186.0.0"
+        ],
+        "id": "group10:artifact27:186.0.0"
+      },
+      "group17:artifact90:294.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact90",
+        "versionId": "294.0.0",
+        "projectId": "PROD-30451",
+        "forwardEdges": [
+          "group10:artifact32:187.0.0",
+          "group10:artifact83:249.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact28:172.0.0",
+          "group10:artifact79:179.0.0",
+          "group10:artifact30:183.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group17:artifact88:287.0.0",
+          "group14:artifact42:538.0.0",
+          "group17:artifact91:313.0.0",
+          "group14:artifact37:455.0.0",
+          "group17:artifact92:288.0.0"
+        ],
+        "id": "group17:artifact90:294.0.0"
+      },
+      "group8:artifact14:315.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact14",
+        "versionId": "315.0.0",
+        "projectId": "PROD-33133",
+        "forwardEdges": [
+          "group10:artifact31:195.0.0",
+          "group8:artifact84:330.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact80:27.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": ["group8:artifact13:577.0.0"],
+        "id": "group8:artifact14:315.0.0"
+      },
+      "group6:artifact7:160.0.0": {
+        "groupId": "group6",
+        "artifactId": "artifact7",
+        "versionId": "160.0.0",
+        "projectId": "PROD-30365",
+        "forwardEdges": [
+          "group10:artifact75:157.0.0",
+          "group10:artifact83:141.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact36:156.0.0",
+          "group17:artifact88:159.0.0"
+        ],
+        "id": "group6:artifact7:160.0.0"
+      },
+      "group14:artifact74:397.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact74",
+        "versionId": "397.0.0",
+        "projectId": "PROD-30463",
+        "forwardEdges": [
+          "group15:artifact86:282.0.0",
+          "group17:artifact92:287.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact33:401.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact42:537.0.0",
+          "group14:artifact44:467.0.0",
+          "group14:artifact45:572.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group14:artifact74:397.0.0"
+      },
+      "group14:artifact108:294.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact108",
+        "versionId": "294.0.0",
+        "projectId": "PROD-50563",
+        "forwardEdges": [
+          "group16:artifact87:167.0.0",
+          "group17:artifact91:313.0.0",
+          "group10:artifact82:309.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": ["group14:artifact69:439.0.0"],
+        "id": "group14:artifact108:294.0.0"
+      },
+      "group10:artifact83:249.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact83",
+        "versionId": "249.0.0",
+        "projectId": "PROD-30489",
+        "forwardEdges": [
+          "group10:artifact80:27.0.0",
+          "group10:artifact79:179.0.0",
+          "group10:artifact12:38.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact41:598.0.0",
+          "group14:artifact61:232.0.0",
+          "group8:artifact13:577.0.0",
+          "group10:artifact10:252.0.0",
+          "group12:artifact96:289.0.0",
+          "group10:artifact72:249.0.0",
+          "group8:artifact84:330.0.0",
+          "group8:artifact15:401.0.0",
+          "group14:artifact37:455.0.0",
+          "group10:artifact78:272.0.0",
+          "group8:artifact11:486.0.0",
+          "group17:artifact90:294.0.0",
+          "group14:artifact42:538.0.0",
+          "group6:artifact7:284.0.0",
+          "group10:artifact81:263.0.0",
+          "group8:artifact33:402.0.0",
+          "group19:artifact117:2055.0.0",
+          "group8:artifact105:452.0.0",
+          "group14:artifact69:439.0.0",
+          "group10:artifact76:274.0.0",
+          "group8:artifact6:291.0.0",
+          "group10:artifact75:291.0.0",
+          "group8:artifact16:606.0.0",
+          "group11:artifact95:493.0.0",
+          "group14:artifact74:398.0.0"
+        ],
+        "id": "group10:artifact83:249.0.0"
+      },
+      "group6:artifact7:284.0.0": {
+        "groupId": "group6",
+        "artifactId": "artifact7",
+        "versionId": "284.0.0",
+        "projectId": "PROD-30365",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact75:291.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group17:artifact88:287.0.0",
+          "group14:artifact36:285.0.0"
+        ],
+        "id": "group6:artifact7:284.0.0"
+      },
+      "group14:artifact56:187.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact56",
+        "versionId": "187.0.0",
+        "projectId": "PROD-49584",
+        "forwardEdges": ["group10:artifact79:178.0.0"],
+        "backEdges": ["group14:artifact69:438.0.0"],
+        "id": "group14:artifact56:187.0.0"
+      },
+      "group10:artifact83:141.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact83",
+        "versionId": "141.0.0",
+        "projectId": "PROD-30489",
+        "forwardEdges": [
+          "group10:artifact81:121.0.0",
+          "group10:artifact79:100.0.0",
+          "group10:artifact12:21.0.0",
+          "group10:artifact80:9.0.0"
+        ],
+        "backEdges": [
+          "group17:artifact90:165.0.0",
+          "group10:artifact75:157.0.0",
+          "group6:artifact7:160.0.0",
+          "group10:artifact10:138.0.0"
+        ],
+        "id": "group10:artifact83:141.0.0"
+      },
+      "group10:artifact30:96.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact30",
+        "versionId": "96.0.0",
+        "projectId": "PROD-30375",
+        "forwardEdges": ["group10:artifact28:90.0.0"],
+        "backEdges": [
+          "group10:artifact81:121.0.0",
+          "group17:artifact90:165.0.0",
+          "group10:artifact27:98.0.0",
+          "group10:artifact32:99.0.0"
+        ],
+        "id": "group10:artifact30:96.0.0"
+      },
+      "group8:artifact17:174.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact17",
+        "versionId": "174.0.0",
+        "projectId": "PROD-33142",
+        "forwardEdges": ["group10:artifact79:178.0.0"],
+        "backEdges": [
+          "group8:artifact16:605.0.0",
+          "group10:artifact93:524.0.0",
+          "group18:artifact18:404.0.0",
+          "group8:artifact11:483.0.0",
+          "group18:artifact19:408.0.0",
+          "group12:artifact94:512.0.0",
+          "group18:artifact20:391.0.0",
+          "group14:artifact50:447.0.0"
+        ],
+        "id": "group8:artifact17:174.0.0"
+      },
+      "group10:artifact81:263.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact81",
+        "versionId": "263.0.0",
+        "projectId": "PROD-30487",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact80:27.0.0",
+          "group10:artifact28:172.0.0",
+          "group10:artifact79:179.0.0",
+          "group10:artifact30:183.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact41:598.0.0",
+          "group8:artifact14:315.0.0",
+          "group14:artifact108:294.0.0",
+          "group14:artifact42:538.0.0",
+          "group8:artifact13:577.0.0",
+          "group8:artifact33:402.0.0",
+          "group19:artifact117:2055.0.0",
+          "group8:artifact105:452.0.0",
+          "group14:artifact69:439.0.0",
+          "group17:artifact91:313.0.0",
+          "group10:artifact82:309.0.0",
+          "group8:artifact84:330.0.0",
+          "group14:artifact64:236.0.0",
+          "group8:artifact15:401.0.0",
+          "group10:artifact85:275.0.0",
+          "group8:artifact6:291.0.0",
+          "group8:artifact16:606.0.0",
+          "group11:artifact95:493.0.0",
+          "group14:artifact65:277.0.0",
+          "group10:artifact78:272.0.0",
+          "group8:artifact11:486.0.0"
+        ],
+        "id": "group10:artifact81:263.0.0"
+      },
+      "group14:artifact54:227.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact54",
+        "versionId": "227.0.0",
+        "projectId": "PROD-49579",
+        "forwardEdges": [
+          "group10:artifact75:291.0.0",
+          "group15:artifact86:283.0.0",
+          "group14:artifact63:35.0.0"
+        ],
+        "backEdges": ["group14:artifact69:439.0.0"],
+        "id": "group14:artifact54:227.0.0"
+      },
+      "group10:artifact30:183.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact30",
+        "versionId": "183.0.0",
+        "projectId": "PROD-30375",
+        "forwardEdges": ["group10:artifact28:172.0.0"],
+        "backEdges": [
+          "group17:artifact90:294.0.0",
+          "group10:artifact32:187.0.0",
+          "group10:artifact31:195.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact27:187.0.0"
+        ],
+        "id": "group10:artifact30:183.0.0"
+      },
+      "group14:artifact59:259.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact59",
+        "versionId": "259.0.0",
+        "projectId": "PROD-30473",
+        "forwardEdges": [
+          "group10:artifact78:271.0.0",
+          "group20:artifact4:2.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact68:291.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group14:artifact59:259.0.0"
+      },
+      "group8:artifact105:452.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact105",
+        "versionId": "452.0.0",
+        "projectId": "PROD-30454",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact76:274.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0",
+          "group11:artifact95:493.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group14:artifact37:455.0.0",
+          "group8:artifact16:606.0.0"
+        ],
+        "id": "group8:artifact105:452.0.0"
+      },
+      "group14:artifact54:226.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact54",
+        "versionId": "226.0.0",
+        "projectId": "PROD-49579",
+        "forwardEdges": [
+          "group15:artifact86:282.0.0",
+          "group10:artifact75:290.0.0",
+          "group14:artifact63:35.0.0"
+        ],
+        "backEdges": ["group14:artifact69:438.0.0"],
+        "id": "group14:artifact54:226.0.0"
+      },
+      "group10:artifact82:308.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact82",
+        "versionId": "308.0.0",
+        "projectId": "PROD-30493",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group8:artifact33:401.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact108:293.0.0"
+        ],
+        "id": "group10:artifact82:308.0.0"
+      },
+      "group10:artifact27:98.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact27",
+        "versionId": "98.0.0",
+        "projectId": "PROD-30367",
+        "forwardEdges": [
+          "group10:artifact30:96.0.0",
+          "group10:artifact28:90.0.0",
+          "group10:artifact29:96.0.0"
+        ],
+        "backEdges": [
+          "group10:artifact32:99.0.0",
+          "group17:artifact88:159.0.0"
+        ],
+        "id": "group10:artifact27:98.0.0"
+      },
+      "group10:artifact76:274.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact76",
+        "versionId": "274.0.0",
+        "projectId": "PROD-30491",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group8:artifact105:452.0.0",
+          "group11:artifact95:493.0.0"
+        ],
+        "id": "group10:artifact76:274.0.0"
+      },
+      "group10:artifact31:194.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact31",
+        "versionId": "194.0.0",
+        "projectId": "PROD-47014",
+        "forwardEdges": [
+          "group10:artifact30:182.0.0",
+          "group10:artifact28:171.0.0"
+        ],
+        "backEdges": [
+          "group13:artifact40:384.0.0",
+          "group14:artifact53:453.0.0",
+          "group8:artifact14:314.0.0",
+          "group13:artifact39:281.0.0",
+          "group14:artifact58:461.0.0",
+          "group8:artifact11:483.0.0"
+        ],
+        "id": "group10:artifact31:194.0.0"
+      },
+      "group10:artifact72:248.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact72",
+        "versionId": "248.0.0",
+        "projectId": "PROD-30482",
+        "forwardEdges": [
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": ["group8:artifact84:329.0.0"],
+        "id": "group10:artifact72:248.0.0"
+      },
+      "group8:artifact11:483.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact11",
+        "versionId": "483.0.0",
+        "projectId": "PROD-29879",
+        "forwardEdges": [
+          "group10:artifact85:274.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact84:329.0.0",
+          "group8:artifact17:174.0.0",
+          "group10:artifact31:194.0.0",
+          "group10:artifact79:178.0.0",
+          "group10:artifact80:27.0.0",
+          "group10:artifact28:171.0.0"
+        ],
+        "backEdges": [
+          "group7:artifact71:421.0.0",
+          "group14:artifact42:537.0.0",
+          "group14:artifact53:453.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact58:461.0.0",
+          "group18:artifact19:408.0.0",
+          "group19:artifact117:2051.0.0",
+          "group13:artifact38:374.0.0",
+          "group8:artifact16:605.0.0",
+          "group13:artifact40:384.0.0",
+          "group10:artifact70:336.0.0",
+          "group10:artifact93:524.0.0",
+          "group13:artifact39:281.0.0",
+          "group14:artifact47:440.0.0",
+          "group8:artifact13:576.0.0",
+          "group12:artifact94:512.0.0",
+          "group8:artifact34:580.0.0",
+          "group14:artifact46:284.0.0"
+        ],
+        "id": "group8:artifact11:483.0.0"
+      },
+      "group20:artifact115:2.0.0": {
+        "groupId": "group20",
+        "artifactId": "artifact115",
+        "versionId": "2.0.0",
+        "projectId": "PROD-51624",
+        "forwardEdges": [],
+        "backEdges": [
+          "group17:artifact91:313.0.0",
+          "group17:artifact91:312.0.0"
+        ],
+        "id": "group20:artifact115:2.0.0"
+      },
+      "group10:artifact27:187.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact27",
+        "versionId": "187.0.0",
+        "projectId": "PROD-30367",
+        "forwardEdges": [
+          "group10:artifact29:184.0.0",
+          "group10:artifact28:172.0.0",
+          "group10:artifact30:183.0.0"
+        ],
+        "backEdges": [
+          "group10:artifact32:187.0.0",
+          "group17:artifact88:287.0.0",
+          "group8:artifact84:330.0.0"
+        ],
+        "id": "group10:artifact27:187.0.0"
+      },
+      "group16:artifact87:167.0.0": {
+        "groupId": "group16",
+        "artifactId": "artifact87",
+        "versionId": "167.0.0",
+        "projectId": "PROD-48872",
+        "forwardEdges": ["group10:artifact80:27.0.0"],
+        "backEdges": [
+          "group8:artifact21:151.0.0",
+          "group14:artifact108:294.0.0",
+          "group8:artifact23:169.0.0",
+          "group14:artifact108:293.0.0"
+        ],
+        "id": "group16:artifact87:167.0.0"
+      },
+      "group14:artifact41:598.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact41",
+        "versionId": "598.0.0",
+        "projectId": "PROD-46446",
+        "forwardEdges": [
+          "group19:artifact117:2055.0.0",
+          "group12:artifact96:289.0.0",
+          "group10:artifact83:249.0.0",
+          "group8:artifact84:330.0.0",
+          "group8:artifact15:401.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact28:172.0.0",
+          "group10:artifact79:179.0.0",
+          "group11:artifact95:493.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact42:538.0.0",
+          "group8:artifact13:577.0.0",
+          "group8:artifact16:606.0.0"
+        ],
+        "id": "group14:artifact41:598.0.0"
+      },
+      "group8:artifact21:151.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact21",
+        "versionId": "151.0.0",
+        "projectId": "PROD-49658",
+        "forwardEdges": ["group16:artifact87:167.0.0"],
+        "backEdges": ["group14:artifact109:459.0.0"],
+        "id": "group8:artifact21:151.0.0"
+      },
+      "group12:artifact97:285.0.0": {
+        "groupId": "group12",
+        "artifactId": "artifact97",
+        "versionId": "285.0.0",
+        "projectId": "PROD-33030",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group11:artifact95:492.0.0",
+          "group8:artifact84:329.0.0",
+          "group12:artifact94:512.0.0"
+        ],
+        "id": "group12:artifact97:285.0.0"
+      },
+      "group14:artifact42:537.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact42",
+        "versionId": "537.0.0",
+        "projectId": "PROD-33409",
+        "forwardEdges": [
+          "group14:artifact74:397.0.0",
+          "group15:artifact86:282.0.0",
+          "group10:artifact75:290.0.0",
+          "group11:artifact95:492.0.0",
+          "group8:artifact84:329.0.0",
+          "group14:artifact41:597.0.0",
+          "group14:artifact69:438.0.0",
+          "group17:artifact90:293.0.0",
+          "group17:artifact88:285.0.0",
+          "group8:artifact16:605.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact13:576.0.0",
+          "group8:artifact11:483.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": ["group14:artifact47:440.0.0"],
+        "id": "group14:artifact42:537.0.0"
+      },
+      "group11:artifact95:492.0.0": {
+        "groupId": "group11",
+        "artifactId": "artifact95",
+        "versionId": "492.0.0",
+        "projectId": "PROD-30471",
+        "forwardEdges": [
+          "group10:artifact85:274.0.0",
+          "group12:artifact97:285.0.0",
+          "group10:artifact78:271.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact33:401.0.0",
+          "group10:artifact76:273.0.0",
+          "group10:artifact80:27.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact57:470.0.0",
+          "group8:artifact22:318.0.0",
+          "group14:artifact42:537.0.0",
+          "group8:artifact105:451.0.0",
+          "group14:artifact41:597.0.0",
+          "group14:artifact55:484.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact37:454.0.0",
+          "group14:artifact69:438.0.0",
+          "group14:artifact109:459.0.0",
+          "group13:artifact38:374.0.0",
+          "group8:artifact16:605.0.0",
+          "group8:artifact34:580.0.0",
+          "group14:artifact46:284.0.0"
+        ],
+        "id": "group11:artifact95:492.0.0"
+      },
+      "group8:artifact13:577.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact13",
+        "versionId": "577.0.0",
+        "projectId": "PROD-29627",
+        "forwardEdges": [
+          "group14:artifact41:598.0.0",
+          "group8:artifact14:315.0.0",
+          "group10:artifact83:249.0.0",
+          "group8:artifact84:330.0.0",
+          "group10:artifact81:263.0.0",
+          "group8:artifact16:606.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0",
+          "group8:artifact11:486.0.0"
+        ],
+        "backEdges": ["group14:artifact42:538.0.0"],
+        "id": "group8:artifact13:577.0.0"
+      },
+      "group14:artifact41:597.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact41",
+        "versionId": "597.0.0",
+        "projectId": "PROD-46446",
+        "forwardEdges": [
+          "group19:artifact117:2051.0.0",
+          "group11:artifact95:492.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact79:178.0.0",
+          "group12:artifact96:288.0.0",
+          "group10:artifact28:171.0.0",
+          "group8:artifact15:399.0.0"
+        ],
+        "backEdges": [
+          "group8:artifact16:605.0.0",
+          "group14:artifact42:537.0.0",
+          "group8:artifact13:576.0.0",
+          "group8:artifact34:580.0.0"
+        ],
+        "id": "group14:artifact41:597.0.0"
+      },
+      "group10:artifact32:186.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact32",
+        "versionId": "186.0.0",
+        "projectId": "PROD-34325",
+        "forwardEdges": [
+          "group10:artifact30:182.0.0",
+          "group10:artifact27:186.0.0"
+        ],
+        "backEdges": ["group17:artifact90:293.0.0"],
+        "id": "group10:artifact32:186.0.0"
+      },
+      "group18:artifact18:404.0.0": {
+        "groupId": "group18",
+        "artifactId": "artifact18",
+        "versionId": "404.0.0",
+        "projectId": "PROD-75319",
+        "forwardEdges": [
+          "group8:artifact16:605.0.0",
+          "group8:artifact17:174.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact13:576.0.0"
+        ],
+        "backEdges": ["group14:artifact50:447.0.0"],
+        "id": "group18:artifact18:404.0.0"
+      },
+      "group14:artifact55:484.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact55",
+        "versionId": "484.0.0",
+        "projectId": "PROD-32600",
+        "forwardEdges": [
+          "group14:artifact109:459.0.0",
+          "group8:artifact22:318.0.0",
+          "group17:artifact88:285.0.0",
+          "group11:artifact95:492.0.0",
+          "group10:artifact79:178.0.0",
+          "group14:artifact35:495.0.0"
+        ],
+        "backEdges": ["group14:artifact57:470.0.0"],
+        "id": "group14:artifact55:484.0.0"
+      },
+      "group15:artifact86:151.0.0": {
+        "groupId": "group15",
+        "artifactId": "artifact86",
+        "versionId": "151.0.0",
+        "projectId": "PROD-30456",
+        "forwardEdges": [
+          "group10:artifact75:157.0.0",
+          "group10:artifact79:100.0.0",
+          "group17:artifact88:159.0.0"
+        ],
+        "backEdges": ["group9:artifact106:1.1.5"],
+        "id": "group15:artifact86:151.0.0"
+      },
+      "group14:artifact37:454.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact37",
+        "versionId": "454.0.0",
+        "projectId": "PROD-49558",
+        "forwardEdges": [
+          "group17:artifact90:293.0.0",
+          "group17:artifact88:285.0.0",
+          "group8:artifact105:451.0.0",
+          "group11:artifact95:492.0.0",
+          "group10:artifact75:290.0.0",
+          "group10:artifact83:248.0.0",
+          "group17:artifact89:280.0.0",
+          "group17:artifact91:312.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": ["group14:artifact69:438.0.0"],
+        "id": "group14:artifact37:454.0.0"
+      },
+      "group8:artifact23:169.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact23",
+        "versionId": "169.0.0",
+        "projectId": "PROD-50655",
+        "forwardEdges": ["group16:artifact87:167.0.0"],
+        "backEdges": ["group14:artifact109:459.0.0"],
+        "id": "group8:artifact23:169.0.0"
+      },
+      "group14:artifact45:572.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact45",
+        "versionId": "572.0.0",
+        "projectId": "PROD-48510",
+        "forwardEdges": [
+          "group17:artifact90:293.0.0",
+          "group14:artifact74:397.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact62:172.0.0",
+          "group8:artifact34:580.0.0"
+        ],
+        "backEdges": [
+          "group13:artifact38:374.0.0",
+          "group13:artifact40:384.0.0",
+          "group13:artifact39:281.0.0"
+        ],
+        "id": "group14:artifact45:572.0.0"
+      },
+      "group14:artifact56:188.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact56",
+        "versionId": "188.0.0",
+        "projectId": "PROD-49584",
+        "forwardEdges": ["group10:artifact79:179.0.0"],
+        "backEdges": ["group14:artifact69:439.0.0"],
+        "id": "group14:artifact56:188.0.0"
+      },
+      "group14:artifact51:312.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact51",
+        "versionId": "312.0.0",
+        "projectId": "PROD-49575",
+        "forwardEdges": ["group5:artifact8:313.0.0"],
+        "backEdges": ["group14:artifact43:470.0.0"],
+        "id": "group14:artifact51:312.0.0"
+      },
+      "group19:artifact117:2051.0.0": {
+        "groupId": "group19",
+        "artifactId": "artifact117",
+        "versionId": "2051.0.0",
+        "projectId": "PROD-84892",
+        "forwardEdges": [
+          "group10:artifact75:290.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0"
+        ],
+        "backEdges": [
+          "group8:artifact16:605.0.0",
+          "group14:artifact41:597.0.0"
+        ],
+        "id": "group19:artifact117:2051.0.0"
+      },
+      "group10:artifact72:249.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact72",
+        "versionId": "249.0.0",
+        "projectId": "PROD-30482",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": ["group8:artifact84:330.0.0"],
+        "id": "group10:artifact72:249.0.0"
+      },
+      "group17:artifact92:287.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact92",
+        "versionId": "287.0.0",
+        "projectId": "PROD-28740",
+        "forwardEdges": [
+          "group17:artifact90:293.0.0",
+          "group15:artifact86:282.0.0",
+          "group10:artifact75:290.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact74:397.0.0",
+          "group14:artifact60:226.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group17:artifact92:287.0.0"
+      },
+      "group12:artifact97:286.0.0": {
+        "groupId": "group12",
+        "artifactId": "artifact97",
+        "versionId": "286.0.0",
+        "projectId": "PROD-33030",
+        "forwardEdges": [
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group8:artifact84:330.0.0",
+          "group11:artifact95:493.0.0"
+        ],
+        "id": "group12:artifact97:286.0.0"
+      },
+      "group10:artifact93:524.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact93",
+        "versionId": "524.0.0",
+        "projectId": "PROD-55520",
+        "forwardEdges": [
+          "group8:artifact16:605.0.0",
+          "group10:artifact70:336.0.0",
+          "group10:artifact83:248.0.0",
+          "group8:artifact84:329.0.0",
+          "group8:artifact17:174.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0",
+          "group12:artifact94:512.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact53:453.0.0",
+          "group12:artifact98:442.0.0",
+          "group8:artifact34:580.0.0"
+        ],
+        "id": "group10:artifact93:524.0.0"
+      },
+      "group17:artifact89:280.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact89",
+        "versionId": "280.0.0",
+        "projectId": "PROD-30468",
+        "forwardEdges": [
+          "group10:artifact85:274.0.0",
+          "group17:artifact91:312.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact68:291.0.0",
+          "group13:artifact38:374.0.0",
+          "group8:artifact16:605.0.0",
+          "group13:artifact39:281.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact37:454.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group17:artifact89:280.0.0"
+      },
+      "group14:artifact110:101.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact110",
+        "versionId": "101.0.0",
+        "projectId": "PROD-50851",
+        "forwardEdges": [],
+        "backEdges": ["group5:artifact8:313.0.0"],
+        "id": "group14:artifact110:101.0.0"
+      },
+      "group14:artifact64:236.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact64",
+        "versionId": "236.0.0",
+        "projectId": "PROD-49184",
+        "forwardEdges": ["group10:artifact81:263.0.0"],
+        "backEdges": ["group14:artifact65:277.0.0"],
+        "id": "group14:artifact64:236.0.0"
+      },
+      "group10:artifact79:178.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact79",
+        "versionId": "178.0.0",
+        "projectId": "PROD-30358",
+        "forwardEdges": ["group14:artifact5:2.14.0"],
+        "backEdges": [
+          "group14:artifact57:470.0.0",
+          "group8:artifact105:451.0.0",
+          "group17:artifact91:312.0.0",
+          "group8:artifact84:329.0.0",
+          "group10:artifact76:273.0.0",
+          "group14:artifact43:470.0.0",
+          "group10:artifact85:274.0.0",
+          "group13:artifact38:374.0.0",
+          "group10:artifact81:262.0.0",
+          "group8:artifact62:172.0.0",
+          "group12:artifact96:288.0.0",
+          "group14:artifact35:495.0.0",
+          "group14:artifact74:397.0.0",
+          "group8:artifact6:290.0.0",
+          "group14:artifact56:187.0.0",
+          "group5:artifact8:313.0.0",
+          "group14:artifact53:453.0.0",
+          "group8:artifact17:174.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact109:459.0.0",
+          "group17:artifact90:293.0.0",
+          "group8:artifact16:605.0.0",
+          "group13:artifact40:384.0.0",
+          "group10:artifact82:308.0.0",
+          "group10:artifact70:336.0.0",
+          "group14:artifact47:440.0.0",
+          "group8:artifact11:483.0.0",
+          "group10:artifact72:248.0.0",
+          "group12:artifact94:512.0.0",
+          "group12:artifact97:285.0.0",
+          "group7:artifact71:421.0.0",
+          "group15:artifact86:282.0.0",
+          "group14:artifact42:537.0.0",
+          "group11:artifact95:492.0.0",
+          "group18:artifact18:404.0.0",
+          "group14:artifact41:597.0.0",
+          "group14:artifact55:484.0.0",
+          "group14:artifact37:454.0.0",
+          "group18:artifact19:408.0.0",
+          "group10:artifact28:171.0.0",
+          "group14:artifact45:572.0.0",
+          "group12:artifact98:442.0.0",
+          "group14:artifact50:447.0.0",
+          "group19:artifact117:2051.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact93:524.0.0",
+          "group17:artifact89:280.0.0",
+          "group13:artifact39:281.0.0",
+          "group8:artifact26:173.0.0",
+          "group8:artifact33:401.0.0",
+          "group18:artifact20:391.0.0",
+          "group8:artifact15:399.0.0",
+          "group14:artifact46:284.0.0",
+          "group8:artifact22:318.0.0",
+          "group14:artifact61:231.0.0",
+          "group10:artifact75:290.0.0",
+          "group14:artifact44:467.0.0",
+          "group14:artifact69:438.0.0",
+          "group18:artifact48:406.0.0",
+          "group8:artifact14:314.0.0",
+          "group10:artifact25:176.0.0",
+          "group8:artifact13:576.0.0",
+          "group8:artifact34:580.0.0",
+          "group14:artifact108:293.0.0"
+        ],
+        "id": "group10:artifact79:178.0.0"
+      },
+      "group17:artifact88:159.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact88",
+        "versionId": "159.0.0",
+        "projectId": "PROD-30469",
+        "forwardEdges": [
+          "group17:artifact90:165.0.0",
+          "group10:artifact75:157.0.0",
+          "group14:artifact36:156.0.0",
+          "group6:artifact7:160.0.0",
+          "group14:artifact73:138.0.0",
+          "group10:artifact27:98.0.0",
+          "group10:artifact28:90.0.0",
+          "group10:artifact10:138.0.0",
+          "group20:artifact113:5.0.0"
+        ],
+        "backEdges": ["group15:artifact86:151.0.0"],
+        "id": "group17:artifact88:159.0.0"
+      },
+      "group14:artifact46:284.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact46",
+        "versionId": "284.0.0",
+        "projectId": "PROD-61028",
+        "forwardEdges": [
+          "group14:artifact57:470.0.0",
+          "group14:artifact52:439.0.0",
+          "group15:artifact86:282.0.0",
+          "group10:artifact75:290.0.0",
+          "group11:artifact95:492.0.0",
+          "group14:artifact58:461.0.0",
+          "group14:artifact69:438.0.0",
+          "group17:artifact90:293.0.0",
+          "group14:artifact68:291.0.0",
+          "group13:artifact38:374.0.0",
+          "group8:artifact16:605.0.0",
+          "group10:artifact81:262.0.0",
+          "group10:artifact83:248.0.0",
+          "group13:artifact39:281.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact11:483.0.0",
+          "group8:artifact62:172.0.0"
+        ],
+        "backEdges": ["group2:artifact103:28.0.0"],
+        "id": "group14:artifact46:284.0.0"
+      },
+      "group14:artifact65:277.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact65",
+        "versionId": "277.0.0",
+        "projectId": "PROD-49288",
+        "forwardEdges": [
+          "group17:artifact91:313.0.0",
+          "group14:artifact64:236.0.0",
+          "group10:artifact81:263.0.0"
+        ],
+        "backEdges": ["group14:artifact69:439.0.0"],
+        "id": "group14:artifact65:277.0.0"
+      },
+      "group14:artifact73:138.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact73",
+        "versionId": "138.0.0",
+        "projectId": "PROD-30462",
+        "forwardEdges": [
+          "group10:artifact10:138.0.0",
+          "group20:artifact3:2.0.0"
+        ],
+        "backEdges": ["group17:artifact88:159.0.0"],
+        "id": "group14:artifact73:138.0.0"
+      },
+      "group14:artifact67:252.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact67",
+        "versionId": "252.0.0",
+        "projectId": "PROD-49603",
+        "forwardEdges": ["group10:artifact85:275.0.0"],
+        "backEdges": ["group14:artifact69:439.0.0"],
+        "id": "group14:artifact67:252.0.0"
+      },
+      "group14:artifact61:231.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact61",
+        "versionId": "231.0.0",
+        "projectId": "PROD-37404",
+        "forwardEdges": [
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact68:291.0.0",
+          "group14:artifact52:439.0.0",
+          "group13:artifact38:374.0.0",
+          "group13:artifact40:384.0.0",
+          "group13:artifact107:113.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group14:artifact61:231.0.0"
+      },
+      "group14:artifact5:2.14.0": {
+        "groupId": "group14",
+        "artifactId": "artifact5",
+        "versionId": "2.14.0",
+        "projectId": "PROD-50849",
+        "forwardEdges": [],
+        "backEdges": [
+          "group10:artifact79:178.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "id": "group14:artifact5:2.14.0"
+      },
+      "group14:artifact44:467.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact44",
+        "versionId": "467.0.0",
+        "projectId": "PROD-49564",
+        "forwardEdges": [
+          "group17:artifact90:293.0.0",
+          "group14:artifact74:397.0.0",
+          "group10:artifact83:248.0.0",
+          "group10:artifact79:178.0.0",
+          "group8:artifact33:401.0.0",
+          "group14:artifact69:438.0.0",
+          "group8:artifact15:399.0.0"
+        ],
+        "backEdges": ["group14:artifact43:470.0.0"],
+        "id": "group14:artifact44:467.0.0"
+      },
+      "group14:artifact67:251.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact67",
+        "versionId": "251.0.0",
+        "projectId": "PROD-49603",
+        "forwardEdges": ["group10:artifact85:274.0.0"],
+        "backEdges": [
+          "group14:artifact109:459.0.0",
+          "group14:artifact69:438.0.0"
+        ],
+        "id": "group14:artifact67:251.0.0"
+      },
+      "group20:artifact104:2.0.0": {
+        "groupId": "group20",
+        "artifactId": "artifact104",
+        "versionId": "2.0.0",
+        "projectId": "PROD-51619",
+        "forwardEdges": [],
+        "backEdges": ["group14:artifact60:226.0.0"],
+        "id": "group20:artifact104:2.0.0"
+      },
+      "group10:artifact81:121.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact81",
+        "versionId": "121.0.0",
+        "projectId": "PROD-30487",
+        "forwardEdges": [
+          "group10:artifact79:100.0.0",
+          "group10:artifact30:96.0.0",
+          "group10:artifact28:90.0.0",
+          "group10:artifact80:9.0.0"
+        ],
+        "backEdges": ["group10:artifact83:141.0.0"],
+        "id": "group10:artifact81:121.0.0"
+      },
+      "group17:artifact90:165.0.0": {
+        "groupId": "group17",
+        "artifactId": "artifact90",
+        "versionId": "165.0.0",
+        "projectId": "PROD-30451",
+        "forwardEdges": [
+          "group10:artifact75:157.0.0",
+          "group10:artifact79:100.0.0",
+          "group10:artifact83:141.0.0",
+          "group10:artifact30:96.0.0",
+          "group10:artifact28:90.0.0",
+          "group10:artifact32:99.0.0"
+        ],
+        "backEdges": ["group17:artifact88:159.0.0"],
+        "id": "group17:artifact90:165.0.0"
+      },
+      "group10:artifact112:2.7.3": {
+        "groupId": "group10",
+        "artifactId": "artifact112",
+        "versionId": "2.7.3",
+        "projectId": "PROD-71626",
+        "forwardEdges": [],
+        "backEdges": ["group14:artifact60:226.0.0"],
+        "id": "group10:artifact112:2.7.3"
+      },
+      "group8:artifact33:402.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact33",
+        "versionId": "402.0.0",
+        "projectId": "PROD-32602",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group8:artifact84:330.0.0",
+          "group10:artifact82:309.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group8:artifact15:401.0.0",
+          "group11:artifact95:493.0.0",
+          "group14:artifact74:398.0.0"
+        ],
+        "id": "group8:artifact33:402.0.0"
+      },
+      "group19:artifact117:2055.0.0": {
+        "groupId": "group19",
+        "artifactId": "artifact117",
+        "versionId": "2055.0.0",
+        "projectId": "PROD-84892",
+        "forwardEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact81:263.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0",
+          "group8:artifact11:486.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact41:598.0.0",
+          "group8:artifact16:606.0.0"
+        ],
+        "id": "group19:artifact117:2055.0.0"
+      },
+      "group14:artifact69:439.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact69",
+        "versionId": "439.0.0",
+        "projectId": "PROD-63342",
+        "forwardEdges": [
+          "group14:artifact59:260.0.0",
+          "group14:artifact61:232.0.0",
+          "group15:artifact86:283.0.0",
+          "group14:artifact56:188.0.0",
+          "group17:artifact89:281.0.0",
+          "group17:artifact91:313.0.0",
+          "group10:artifact82:309.0.0",
+          "group14:artifact37:455.0.0",
+          "group10:artifact85:275.0.0",
+          "group14:artifact73:248.0.0",
+          "group14:artifact77:270.0.0",
+          "group14:artifact65:277.0.0",
+          "group10:artifact78:272.0.0",
+          "group17:artifact90:294.0.0",
+          "group14:artifact108:294.0.0",
+          "group10:artifact83:249.0.0",
+          "group14:artifact67:252.0.0",
+          "group6:artifact7:284.0.0",
+          "group17:artifact88:287.0.0",
+          "group10:artifact81:263.0.0",
+          "group14:artifact54:227.0.0",
+          "group8:artifact33:402.0.0",
+          "group8:artifact105:452.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0",
+          "group11:artifact95:493.0.0",
+          "group14:artifact74:398.0.0",
+          "group17:artifact92:288.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact42:538.0.0",
+          "group8:artifact16:606.0.0",
+          "group14:artifact111:495.0.0",
+          "group14:artifact52:440.0.0"
+        ],
+        "id": "group14:artifact69:439.0.0"
+      },
+      "group20:artifact100:3.1.0": {
+        "groupId": "group20",
+        "artifactId": "artifact100",
+        "versionId": "3.1.0",
+        "projectId": "PROD-51615",
+        "forwardEdges": [],
+        "backEdges": ["group14:artifact60:226.0.0"],
+        "id": "group20:artifact100:3.1.0"
+      },
+      "group9:artifact106:1.1.5": {
+        "groupId": "group9",
+        "artifactId": "artifact106",
+        "versionId": "1.1.5",
+        "projectId": "PROD-78667",
+        "forwardEdges": [
+          "group3:artifact2:0.4.17",
+          "group15:artifact86:151.0.0"
+        ],
+        "backEdges": ["group1:artifact118:2.11.0"],
+        "id": "group9:artifact106:1.1.5"
+      },
+      "group10:artifact25:176.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact25",
+        "versionId": "176.0.0",
+        "projectId": "PROD-33037",
+        "forwardEdges": ["group10:artifact79:178.0.0"],
+        "backEdges": [
+          "group14:artifact43:470.0.0",
+          "group5:artifact8:313.0.0",
+          "group8:artifact26:173.0.0"
+        ],
+        "id": "group10:artifact25:176.0.0"
+      },
+      "group8:artifact16:606.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact16",
+        "versionId": "606.0.0",
+        "projectId": "PROD-29628",
+        "forwardEdges": [
+          "group14:artifact41:598.0.0",
+          "group10:artifact83:249.0.0",
+          "group8:artifact62:173.0.0",
+          "group10:artifact81:263.0.0",
+          "group14:artifact52:440.0.0",
+          "group19:artifact117:2055.0.0",
+          "group17:artifact89:281.0.0",
+          "group8:artifact105:452.0.0",
+          "group14:artifact69:439.0.0",
+          "group8:artifact84:330.0.0",
+          "group10:artifact75:291.0.0",
+          "group8:artifact17:175.0.0",
+          "group10:artifact80:27.0.0",
+          "group10:artifact79:179.0.0",
+          "group11:artifact95:493.0.0",
+          "group8:artifact11:486.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact42:538.0.0",
+          "group8:artifact13:577.0.0",
+          "group1:artifact118:2.11.0"
+        ],
+        "id": "group8:artifact16:606.0.0"
+      },
+      "group8:artifact17:175.0.0": {
+        "groupId": "group8",
+        "artifactId": "artifact17",
+        "versionId": "175.0.0",
+        "projectId": "PROD-33142",
+        "forwardEdges": ["group10:artifact79:179.0.0"],
+        "backEdges": ["group8:artifact16:606.0.0", "group8:artifact11:486.0.0"],
+        "id": "group8:artifact17:175.0.0"
+      },
+      "group10:artifact24:34.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact24",
+        "versionId": "34.0.0",
+        "projectId": "PROD-50716",
+        "forwardEdges": [],
+        "backEdges": ["group7:artifact71:421.0.0"],
+        "id": "group10:artifact24:34.0.0"
+      },
+      "group14:artifact111:495.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact111",
+        "versionId": "495.0.0",
+        "projectId": "PROD-49190",
+        "forwardEdges": [
+          "group14:artifact69:439.0.0",
+          "group10:artifact75:291.0.0",
+          "group15:artifact86:283.0.0",
+          "group17:artifact92:288.0.0"
+        ],
+        "backEdges": ["group1:artifact118:2.11.0"],
+        "id": "group14:artifact111:495.0.0"
+      },
+      "group14:artifact60:226.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact60",
+        "versionId": "226.0.0",
+        "projectId": "PROD-37397",
+        "forwardEdges": [
+          "group20:artifact102:2.0.0",
+          "group20:artifact101:4.1.0",
+          "group10:artifact75:290.0.0",
+          "group20:artifact114:3.0.0",
+          "group20:artifact104:2.0.0",
+          "group10:artifact112:2.7.3",
+          "group17:artifact90:293.0.0",
+          "group17:artifact88:285.0.0",
+          "group17:artifact92:287.0.0",
+          "group20:artifact100:3.1.0",
+          "group10:artifact83:248.0.0",
+          "group14:artifact66:257.0.0",
+          "group20:artifact99:5.9.0"
+        ],
+        "backEdges": ["group2:artifact103:28.0.0"],
+        "id": "group14:artifact60:226.0.0"
+      },
+      "group14:artifact74:398.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact74",
+        "versionId": "398.0.0",
+        "projectId": "PROD-30463",
+        "forwardEdges": [
+          "group8:artifact33:402.0.0",
+          "group10:artifact83:249.0.0",
+          "group10:artifact75:291.0.0",
+          "group10:artifact79:179.0.0",
+          "group15:artifact86:283.0.0",
+          "group17:artifact92:288.0.0"
+        ],
+        "backEdges": [
+          "group14:artifact69:439.0.0",
+          "group14:artifact42:538.0.0"
+        ],
+        "id": "group14:artifact74:398.0.0"
+      },
+      "group10:artifact12:38.0.0": {
+        "groupId": "group10",
+        "artifactId": "artifact12",
+        "versionId": "38.0.0",
+        "projectId": "PROD-33370",
+        "forwardEdges": [],
+        "backEdges": [
+          "group10:artifact83:249.0.0",
+          "group10:artifact83:248.0.0"
+        ],
+        "id": "group10:artifact12:38.0.0"
+      },
+      "group14:artifact108:293.0.0": {
+        "groupId": "group14",
+        "artifactId": "artifact108",
+        "versionId": "293.0.0",
+        "projectId": "PROD-50563",
+        "forwardEdges": [
+          "group16:artifact87:167.0.0",
+          "group10:artifact82:308.0.0",
+          "group10:artifact81:262.0.0",
+          "group17:artifact91:312.0.0",
+          "group10:artifact79:178.0.0"
+        ],
+        "backEdges": ["group14:artifact69:438.0.0"],
+        "id": "group14:artifact108:293.0.0"
+      }
+    },
+    "rootNodes": ["group2:artifact103:28.0.0", "group1:artifact118:2.11.0"]
+  }
+}
