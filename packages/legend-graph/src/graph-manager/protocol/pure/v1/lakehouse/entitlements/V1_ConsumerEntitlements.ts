@@ -85,6 +85,12 @@ export class V1_LiteDataContractsResponse {
   dataContracts?: V1_LiteDataContract[];
 }
 
+export class V1_LiteDataContractWithUserStatusResponse {
+  contractResultLite!: V1_LiteDataContract;
+  status!: V1_UserApprovalStatus;
+  pendingTaskWithAssignees!: V1_PendingTaskWithAssignees | null;
+}
+
 // -------------------------------------- Data Contract Approval ---------------------------------------
 
 export enum V1_UserApprovalStatus {

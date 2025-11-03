@@ -49,6 +49,7 @@ import {
   EntitlementsDataContractViewerState,
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
+  isApprovalStatusTerminal,
   isContractInTerminalState,
   MultiUserRenderer,
   stringifyOrganizationalScope,
@@ -137,8 +138,9 @@ export const EntitlementsClosedContractsDashboard = observer(
 
     const myClosedContracts = useMemo(
       () =>
-        myContracts.filter((contract) => isContractInTerminalState(contract)) ??
-        [],
+        myContracts
+          ?.filter((contract) => isApprovalStatusTerminal(contract.status))
+          ?.map((contract) => contract.contractResultLite) ?? [],
       [myContracts],
     );
     const myClosedContractIds = useMemo(
@@ -352,10 +354,7 @@ export const EntitlementsClosedContractsDashboard = observer(
             defaultColDef={defaultColDef}
             rowHeight={45}
             overlayNoRowsTemplate="You have no closed contracts"
-            loading={
-              dashboardState.fetchingContractMembersState.isInProgress ||
-              dashboardState.initializationState.isInProgress
-            }
+            loading={dashboardState.initializationState.isInProgress}
             overlayLoadingTemplate="Loading contracts"
           />
         </Box>

@@ -23,6 +23,7 @@ import {
   V1_AdhocTeam,
   V1_ContractState,
   V1_deserializeTaskResponse,
+  V1_UserApprovalStatus,
   V1_UserType,
 } from '@finos/legend-graph';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
@@ -80,6 +81,17 @@ export const isContractInTerminalState = (
     V1_ContractState.COMPLETED,
     V1_ContractState.REJECTED,
   ].includes(contract.state);
+};
+
+export const isApprovalStatusTerminal = (
+  userApprovalStatus: V1_UserApprovalStatus,
+): boolean => {
+  return [
+    V1_UserApprovalStatus.APPROVED,
+    V1_UserApprovalStatus.CLOSED,
+    V1_UserApprovalStatus.DENIED,
+    V1_UserApprovalStatus.REVOKED,
+  ].includes(userApprovalStatus);
 };
 
 export const isMemberOfContract = async (

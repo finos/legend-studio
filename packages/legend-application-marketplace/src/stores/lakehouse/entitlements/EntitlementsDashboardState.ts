@@ -26,39 +26,32 @@ import {
   type V1_ContractUserEventRecord,
   type V1_LiteDataContract,
   type V1_LiteDataContractsResponse,
+  type V1_LiteDataContractWithUserStatusResponse,
   type V1_PendingTasksResponse,
   type V1_TaskStatus,
   type V1_TaskStatusChangeResponse,
   type V1_UserPendingContractsRecord,
   type V1_UserPendingContractsResponse,
   V1_liteDataContractsResponseModelSchemaToContracts,
+  V1_liteDataContractWithUserStatusResponseModelSchema,
   V1_pendingTasksResponseModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
 } from '@finos/legend-graph';
-import {
-  makeObservable,
-  flow,
-  observable,
-  action,
-  flowResult,
-  computed,
-} from 'mobx';
+import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import {
   TEST_USER,
   TEST_USER2,
   type LakehouseEntitlementsStore,
 } from './LakehouseEntitlementsStore.js';
-import { isMemberOfContract } from '@finos/legend-extension-dsl-data-product';
 
 export class EntitlementsDashboardState {
   readonly lakehouseEntitlementsStore: LakehouseEntitlementsStore;
   pendingTasks: V1_ContractUserEventRecord[] | undefined;
   pendingContracts: V1_UserPendingContractsRecord[] | undefined;
   allContracts: V1_LiteDataContract[] | undefined;
-  userContractMemberMap: Map<string, boolean> = new Map();
+  myContracts: V1_LiteDataContractWithUserStatusResponse[] | undefined;
 
   readonly initializationState = ActionState.create();
-  readonly fetchingContractMembersState = ActionState.create();
   readonly changingState = ActionState.create();
 
   constructor(state: LakehouseEntitlementsStore) {
@@ -68,19 +61,19 @@ export class EntitlementsDashboardState {
       pendingTasks: observable,
       pendingContracts: observable,
       allContracts: observable,
-      userContractMemberMap: observable,
+      myContracts: observable,
       setPendingTasks: action,
       setPendingContracts: action,
       setAllContracts: action,
+      setMyContracts: action,
       approve: flow,
       fetchPendingContracts: flow,
       fetchPendingTasks: flow,
       fetchAllContracts: flow,
-      fetchUserContractMembers: flow,
+      fetchMyContracts: flow,
       updateContract: flow,
       init: flow,
       deny: flow,
-      myContracts: computed,
     });
   }
 
@@ -94,13 +87,12 @@ export class EntitlementsDashboardState {
         flowResult(this.fetchPendingContracts(token)).catch(
           this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
         ),
-        (async () => {
-          await flowResult(this.fetchAllContracts(token)).catch(
-            this.lakehouseEntitlementsStore.applicationStore
-              .alertUnhandledError,
-          );
-          flowResult(this.fetchUserContractMembers(token));
-        })(),
+        flowResult(this.fetchAllContracts(token)).catch(
+          this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
+        ),
+        flowResult(this.fetchMyContracts(token)).catch(
+          this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
+        ),
       ]);
     } catch (error) {
       assertErrorThrown(error);
@@ -167,32 +159,30 @@ export class EntitlementsDashboardState {
     }
   }
 
-  *fetchUserContractMembers(token: string | undefined): GeneratorFn<void> {
-    this.fetchingContractMembersState.inProgress();
-
-    yield Promise.all(
-      (this.allContracts ?? []).map(async (_contract) => {
-        try {
-          const isMember = await isMemberOfContract(
-            this.lakehouseEntitlementsStore.applicationStore.identityService
-              .currentUser,
-            _contract,
-            this.lakehouseEntitlementsStore.lakehouseContractServerClient,
-            token,
-          );
-          this.userContractMemberMap.set(_contract.guid, isMember);
-        } catch {}
-      }),
-    );
-    this.fetchingContractMembersState.complete();
-  }
-
-  get myContracts(): V1_LiteDataContract[] {
-    return (
-      this.allContracts?.filter((contract) =>
-        this.userContractMemberMap.get(contract.guid),
-      ) ?? []
-    );
+  *fetchMyContracts(token: string | undefined): GeneratorFn<void> {
+    try {
+      this.setMyContracts(undefined);
+      const rawContracts =
+        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getContractsForUser(
+          this.lakehouseEntitlementsStore.applicationStore.identityService
+            .currentUser,
+          token,
+        )) as PlainObject<V1_LiteDataContractWithUserStatusResponse>[];
+      const contracts = rawContracts.map((rawContract) =>
+        deserialize(
+          V1_liteDataContractWithUserStatusResponseModelSchema(
+            this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
+          rawContract,
+        ),
+      );
+      this.setMyContracts([...contracts]);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
+        `Error fetching all data contracts: ${error.message}`,
+      );
+    }
   }
 
   setPendingTasks(val: V1_ContractUserEventRecord[] | undefined): void {
@@ -205,6 +195,12 @@ export class EntitlementsDashboardState {
 
   setAllContracts(val: V1_LiteDataContract[] | undefined): void {
     this.allContracts = val;
+  }
+
+  setMyContracts(
+    val: V1_LiteDataContractWithUserStatusResponse[] | undefined,
+  ): void {
+    this.myContracts = val;
   }
 
   *updateContract(
