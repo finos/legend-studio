@@ -137,9 +137,8 @@ export const EntitlementsClosedContractsDashboard = observer(
 
     const myClosedContracts = useMemo(
       () =>
-        myContracts?.filter((contract) =>
-          isContractInTerminalState(contract),
-        ) ?? [],
+        myContracts.filter((contract) => isContractInTerminalState(contract)) ??
+        [],
       [myContracts],
     );
     const myClosedContractIds = useMemo(
@@ -354,7 +353,7 @@ export const EntitlementsClosedContractsDashboard = observer(
             rowHeight={45}
             overlayNoRowsTemplate="You have no closed contracts"
             loading={
-              dashboardState.fetchingMyContractsState.isInProgress ||
+              dashboardState.fetchingContractMembersState.isInProgress ||
               dashboardState.initializationState.isInProgress
             }
             overlayLoadingTemplate="Loading contracts"
