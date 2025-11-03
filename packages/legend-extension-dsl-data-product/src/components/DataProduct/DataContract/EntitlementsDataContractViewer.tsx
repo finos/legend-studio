@@ -360,28 +360,6 @@ export const EntitlementsDataContractViewer = observer(
       await onRefresh?.();
     };
 
-    if (
-      currentViewer.liteContract.resourceType !==
-      V1_ResourceType.ACCESS_POINT_GROUP
-    ) {
-      return (
-        <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
-          <DialogTitle>Data Contract Request</DialogTitle>
-          <IconButton
-            onClick={onClose}
-            className="marketplace-dialog-close-btn"
-          >
-            <CloseIcon />
-          </IconButton>
-          <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-            Unable to display data contract request details for resource of type{' '}
-            {currentViewer.liteContract.resourceType} on data product{' '}
-            {currentViewer.liteContract.resourceId}.
-          </DialogContent>
-        </Dialog>
-      );
-    }
-
     const dataProduct = currentViewer.liteContract.resourceId;
     const accessPointGroup = currentViewer.liteContract.accessPointGroup;
     const privilegeManagerApprovalTask = currentViewer.associatedTasks?.find(
@@ -433,6 +411,99 @@ export const EntitlementsDataContractViewer = observer(
         )
         .catch(currentViewer.applicationStore.alertUnhandledError);
     };
+
+    if (
+      currentViewer.liteContract.resourceType !==
+      V1_ResourceType.ACCESS_POINT_GROUP
+    ) {
+      return (
+        <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
+          <DialogTitle>
+            {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
+          </DialogTitle>
+          <IconButton
+            onClick={onClose}
+            className="marketplace-dialog-close-btn"
+          >
+            <CloseIcon />
+          </IconButton>
+          <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
+            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
+              <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
+                <b>Ordered By: </b>
+                <UserRenderer
+                  userId={currentViewer.liteContract.createdBy}
+                  applicationStore={currentViewer.applicationStore}
+                  userSearchService={currentViewer.userSearchService}
+                />
+              </div>
+              <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
+                <b>
+                  Ordered For
+                  <Tooltip
+                    className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
+                    title={
+                      <>
+                        Contract consumer type:{' '}
+                        {getOrganizationalScopeTypeName(
+                          consumer,
+                          currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
+                        )}
+                        {getOrganizationalScopeTypeDetails(
+                          consumer,
+                          currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
+                        )}
+                      </>
+                    }
+                  >
+                    <InfoCircleIcon />
+                  </Tooltip>
+                  :{' '}
+                </b>
+                {targetUsers !== undefined ? (
+                  targetUsers.length === 1 ? (
+                    <UserRenderer
+                      key={targetUsers[0]}
+                      userId={targetUsers[0]}
+                      applicationStore={currentViewer.applicationStore}
+                      userSearchService={currentViewer.userSearchService}
+                    />
+                  ) : (
+                    <Select
+                      value={selectedTargetUser}
+                      onChange={(event) =>
+                        setSelectedTargetUser(event.target.value)
+                      }
+                      size="small"
+                      className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
+                    >
+                      {targetUserSelectItems}
+                    </Select>
+                  )
+                ) : (
+                  stringifyOrganizationalScope(consumer)
+                )}
+              </div>
+              <div>
+                <b>Business Justification: </b>
+                {currentViewer.liteContract.description}
+              </div>
+            </Box>
+            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
+              Unable to display data contract tasks for resource of type{' '}
+              {currentViewer.liteContract.resourceType} on data product{' '}
+              {currentViewer.liteContract.resourceId}.
+            </Box>
+            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
+              Contract ID: {currentViewer.liteContract.guid}
+              <IconButton onClick={() => copyContractId()}>
+                <CopyIcon />
+              </IconButton>
+            </Box>
+          </DialogContent>
+        </Dialog>
+      );
+    }
 
     const steps: {
       key: string;
