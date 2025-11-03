@@ -46,7 +46,7 @@ import {
   V1_DataContractApprovedUsersResponse,
   V1_TerminalOrderItem,
   V1_TerminalProvisionPayload,
-  V1_LiteDataContractWithUserStatusResponse,
+  V1_LiteDataContractWithUserStatus,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
@@ -312,7 +312,7 @@ export const V1_pendingTaskWithAssigneesModelSchema = createModelSchema(
 export const V1_liteDataContractWithUserStatusResponseModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
-  createModelSchema(V1_LiteDataContractWithUserStatusResponse, {
+  createModelSchema(V1_LiteDataContractWithUserStatus, {
     contractResultLite: usingModelSchema(
       V1_liteDataContractModelSchema(plugins),
     ),

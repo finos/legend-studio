@@ -85,7 +85,7 @@ export class V1_LiteDataContractsResponse {
   dataContracts?: V1_LiteDataContract[];
 }
 
-export class V1_LiteDataContractWithUserStatusResponse {
+export class V1_LiteDataContractWithUserStatus {
   contractResultLite!: V1_LiteDataContract;
   status!: V1_UserApprovalStatus;
   pendingTaskWithAssignees!: V1_PendingTaskWithAssignees | null;

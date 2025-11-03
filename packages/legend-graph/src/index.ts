@@ -302,7 +302,7 @@ export {
   V1_EnrichedUserApprovalStatus,
   V1_LiteDataContract,
   V1_LiteDataContractsResponse,
-  V1_LiteDataContractWithUserStatusResponse,
+  V1_LiteDataContractWithUserStatus as V1_LiteDataContractWithUserStatusResponse,
   V1_PendingTasksResponse,
   V1_ResourceType,
   V1_TaskMetadata,
