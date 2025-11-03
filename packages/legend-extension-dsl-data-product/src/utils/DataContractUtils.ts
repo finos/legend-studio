@@ -84,7 +84,7 @@ export const isContractInTerminalState = (
 
 export const isMemberOfContract = async (
   user: string,
-  contract: V1_DataContract,
+  contract: V1_DataContract | V1_LiteDataContract,
   lakehouseContractServerClient: LakehouseContractServerClient,
   token: string | undefined,
 ): Promise<boolean> => {
