@@ -375,8 +375,10 @@ export const EntitlementsClosedContractsDashboard = observer(
               )
             }
             initialSelectedUser={
-              dashboardState.lakehouseEntitlementsStore.applicationStore
-                .identityService.currentUser
+              myClosedContractIds.has(selectedContract.guid)
+                ? dashboardState.lakehouseEntitlementsStore.applicationStore
+                    .identityService.currentUser
+                : undefined
             }
             onRefresh={async () => {
               await flowResult(
