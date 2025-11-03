@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.1.2
+
+### Patch Changes
+
+- [#4604](https://github.com/finos/legend-studio/pull/4604) [`712e3ed`](https://github.com/finos/legend-studio/commit/712e3ed84d73dba929cd4a2013974e7b11458a13) ([@yash0024](https://github.com/yash0024)) - Limit on paths traversed on studio conflict viewer
+
 ## 6.1.1
 
 ## 6.1.0

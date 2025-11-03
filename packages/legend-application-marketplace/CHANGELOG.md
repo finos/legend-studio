@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.34
+
+### Patch Changes
+
+- [#4602](https://github.com/finos/legend-studio/pull/4602) [`8c9e370`](https://github.com/finos/legend-studio/commit/8c9e3702d76fe82a0089b00a81ecac5a78c62c94) ([@travisstebbins](https://github.com/travisstebbins)) - Add contract escalation feature for Marketplace Lakehouse entitlements requests
+
 ## 0.1.33
 
 ### Patch Changes
