@@ -191,9 +191,12 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       case 'prod-par':
         this.dataProductEnv = LegendMarketplaceEnv.PRODUCTION_PARALLEL;
         break;
+      case 'dev':
+        this.dataProductEnv = LegendMarketplaceEnv.DEVELOPMENT;
+        break;
       default:
         throw new Error(
-          `Can't configure application: 'marketplace.dataProductEnv' field must be 'prod' or 'prod-par'`,
+          `Can't configure application: 'marketplace.dataProductEnv' field must be 'prod', 'prod-par', or 'dev'`,
         );
     }
     this.adjacentEnvUrl = input.configData.marketplace.adjacentEnvUrl;
