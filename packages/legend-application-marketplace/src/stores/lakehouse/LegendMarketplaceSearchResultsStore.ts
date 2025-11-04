@@ -54,29 +54,20 @@ export interface DataProductFilterConfig {
 
 class DataProductFilterState {
   modeledDataProducts: boolean;
-  search?: string | undefined;
 
-  constructor(
-    defaultBooleanFilters: DataProductFilterConfig,
-    search?: string | undefined,
-  ) {
+  constructor(defaultBooleanFilters: DataProductFilterConfig) {
     makeObservable(this, {
       modeledDataProducts: observable,
-      search: observable,
     });
     this.modeledDataProducts =
       defaultBooleanFilters.modeledDataProducts ??
       DataProductFilterState.default().modeledDataProducts;
-    this.search = search;
   }
 
   static default(): DataProductFilterState {
-    return new DataProductFilterState(
-      {
-        modeledDataProducts: false,
-      },
-      undefined,
-    );
+    return new DataProductFilterState({
+      modeledDataProducts: false,
+    });
   }
 
   get currentFilterValues(): DataProductFilterConfig {
@@ -112,7 +103,7 @@ export class LegendMarketplaceSearchResultsStore {
         this.marketplaceBaseStore.applicationStore.userDataService,
       );
     this.filterState = savedFilterConfig
-      ? new DataProductFilterState(savedFilterConfig, undefined)
+      ? new DataProductFilterState(savedFilterConfig)
       : DataProductFilterState.default();
 
     makeObservable(this, {
@@ -121,7 +112,6 @@ export class LegendMarketplaceSearchResultsStore {
       sort: observable,
       useIndexSearch: observable,
       handleModeledDataProductsFilterToggle: action,
-      handleSearch: action,
       setProductCardStates: action,
       setSort: action,
       setUseIndexSearch: action,
@@ -165,10 +155,6 @@ export class LegendMarketplaceSearchResultsStore {
     );
   }
 
-  handleSearch(query: string | undefined) {
-    this.filterState.search = query;
-  }
-
   setSort(sort: DataProductSort): void {
     this.sort = sort;
   }
@@ -185,6 +171,7 @@ export class LegendMarketplaceSearchResultsStore {
     this.executingSearchState.inProgress();
 
     try {
+      this.setProductCardStates([]);
       const results = useIndexSearch
         ? yield this.executeIndexSearch(query, token)
         : yield this.executeSemanticSearch(query);

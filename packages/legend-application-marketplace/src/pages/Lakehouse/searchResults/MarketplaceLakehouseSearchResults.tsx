@@ -100,7 +100,6 @@ export const MarketplaceLakehouseSearchResults =
       const searchResultsStore = useLegendMarketplaceSearchResultsStore();
       const auth = useAuth();
 
-      const [query, setQuery] = useState<string | undefined>();
       const applicationStore =
         searchResultsStore.marketplaceBaseStore.applicationStore;
       const searchQuery =
@@ -110,7 +109,7 @@ export const MarketplaceLakehouseSearchResults =
             sanitizeParametersInsteadOfUrl: true,
           },
         );
-      searchResultsStore.handleSearch(searchQuery);
+      const [query, setQuery] = useState<string | undefined>(searchQuery);
 
       useEffect(() => {
         if (
