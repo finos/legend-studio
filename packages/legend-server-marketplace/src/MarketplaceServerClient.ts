@@ -25,6 +25,7 @@ import type {
   CartSummary,
 } from './models/Cart.js';
 import type { OrderDetails } from './models/Order.js';
+import type { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
@@ -99,13 +100,14 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   dataProductSearch = async (
     query: string,
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
     searchType: string = 'hybrid',
   ): Promise<PlainObject<DataProductSearchResult>[]> =>
     (
       await this.get<
         MarketplaceServerResponse<PlainObject<DataProductSearchResult>[]>
       >(
-        `${this._search()}/dataProducts?query=${query}&search_type=${searchType}`,
+        `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}`,
       )
     ).results;
 

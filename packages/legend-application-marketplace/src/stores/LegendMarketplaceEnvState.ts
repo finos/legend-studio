@@ -24,10 +24,12 @@ import {
 export enum LegendMarketplaceEnv {
   PRODUCTION = 'PRODUCTION',
   PRODUCTION_PARALLEL = 'PRODUCTION_PARALLEL',
+  DEVELOPMENT = 'DEVELOPMENT',
 }
 
 export abstract class LegendMarketplaceEnvState {
   abstract key: LegendMarketplaceEnv;
+  abstract lakehouseEnvironment: V1_EntitlementsLakehouseEnvironmentType;
 
   get label(): string {
     return this.key;
@@ -71,6 +73,7 @@ export abstract class LegendMarketplaceEnvState {
 
 export class ProdLegendMarketplaceEnvState extends LegendMarketplaceEnvState {
   key = LegendMarketplaceEnv.PRODUCTION;
+  lakehouseEnvironment = V1_EntitlementsLakehouseEnvironmentType.PRODUCTION;
 
   override get label(): string {
     return 'Prod';
@@ -91,6 +94,8 @@ export class ProdLegendMarketplaceEnvState extends LegendMarketplaceEnvState {
 
 export class ProdParallelLegendMarketplaceEnvState extends LegendMarketplaceEnvState {
   key = LegendMarketplaceEnv.PRODUCTION_PARALLEL;
+  lakehouseEnvironment =
+    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL;
 
   override get label(): string {
     return 'Prod-Parallel';
@@ -105,10 +110,27 @@ export class ProdParallelLegendMarketplaceEnvState extends LegendMarketplaceEnvS
   }
 
   supportedClassifications() {
-    return [
-      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
-      V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-      undefined,
-    ];
+    return [V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL];
+  }
+}
+
+export class DevelopmentLegendMarketplaceEnvState extends LegendMarketplaceEnvState {
+  key = LegendMarketplaceEnv.DEVELOPMENT;
+  lakehouseEnvironment = V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT;
+
+  override get label(): string {
+    return 'Development';
+  }
+
+  override get adjacentEnv() {
+    return LegendMarketplaceEnv.PRODUCTION_PARALLEL;
+  }
+
+  supportsLegacyDataProducts(): boolean {
+    return true;
+  }
+
+  supportedClassifications() {
+    return [V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT, undefined];
   }
 }

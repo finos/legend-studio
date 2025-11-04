@@ -198,8 +198,10 @@ export class LegendMarketplaceSearchResultsStore {
   private async executeSemanticSearch(
     query: string,
   ): Promise<ProductCardState[]> {
-    const rawResults =
-      await this.marketplaceServerClient.dataProductSearch(query);
+    const rawResults = await this.marketplaceServerClient.dataProductSearch(
+      query,
+      this.marketplaceBaseStore.envState.lakehouseEnvironment,
+    );
     const results = rawResults.map((result) =>
       DataProductSearchResult.serialization.fromJson(result),
     );

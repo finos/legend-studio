@@ -56,6 +56,7 @@ import { CartStore } from './cart/CartStore.js';
 import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
 import { V1_deserializeDataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import {
+  DevelopmentLegendMarketplaceEnvState,
   LegendMarketplaceEnv,
   ProdLegendMarketplaceEnvState,
   ProdParallelLegendMarketplaceEnvState,
@@ -106,7 +107,10 @@ export class LegendMarketplaceBaseStore {
     this.envState =
       applicationStore.config.dataProductEnv === LegendMarketplaceEnv.PRODUCTION
         ? new ProdLegendMarketplaceEnvState()
-        : new ProdParallelLegendMarketplaceEnvState();
+        : applicationStore.config.dataProductEnv ===
+            LegendMarketplaceEnv.PRODUCTION_PARALLEL
+          ? new ProdParallelLegendMarketplaceEnvState()
+          : new DevelopmentLegendMarketplaceEnvState();
     this.adjacentEnvState = this.buildAdjacentEnvState();
     this.marketplaceServerClient = new MarketplaceServerClient({
       serverUrl: this.applicationStore.config.marketplaceServerUrl,
