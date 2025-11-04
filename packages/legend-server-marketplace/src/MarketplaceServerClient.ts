@@ -16,10 +16,7 @@
 
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
 import type { LightProvider, TerminalResult } from './models/Provider.js';
-import type {
-  DataProduct,
-  DataProductSearchResult,
-} from './models/DataProduct.js';
+import type { DataProductSearchResult } from './models/DataProductSearchResult.js';
 import type { Subscription } from './models/Subscription.js';
 import type {
   CartItem,
@@ -100,16 +97,15 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   private _search = (): string => `${this.baseUrl}/v1/search`;
 
-  semanticSearch = async (
+  dataProductSearch = async (
     query: string,
-    vendorName: string,
-    limit: number,
+    searchType: string = 'hybrid',
   ): Promise<PlainObject<DataProductSearchResult>[]> =>
     (
       await this.get<
         MarketplaceServerResponse<PlainObject<DataProductSearchResult>[]>
       >(
-        `${this._search()}/semantic/catalog?query=${query}&vendor_name=${vendorName}&limit=${limit}`,
+        `${this._search()}/dataProducts?query=${query}&search_type=${searchType}`,
       )
     ).results;
 
@@ -123,19 +119,6 @@ export class MarketplaceServerClient extends AbstractServerClient {
         `${this.subscriptionUrl}/v1/service/subscription/${user}`,
       )
     ).subscription_feeds;
-
-  // ------------------------------------------- Data Products -----------------------------------------
-
-  private _dataProducts = (): string => `${this.baseUrl}/v1/products`;
-
-  getDataProducts = async (
-    page_size: number,
-  ): Promise<PlainObject<DataProduct>[]> =>
-    (
-      await this.get<MarketplaceServerResponse<PlainObject<DataProduct>[]>>(
-        `${this._dataProducts()}/?page_size=${page_size}`,
-      )
-    ).results;
 
   // ------------------------------------------- Cart -------------------------------------------
 

@@ -14,32 +14,20 @@
  * limitations under the License.
  */
 
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import {
   ActionState,
   assertErrorThrown,
   type GeneratorFn,
+  type PlainObject,
 } from '@finos/legend-shared';
-import {
-  extractElementNameFromPath,
-  extractPackagePathFromPath,
-  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
-  V1_PureGraphManager,
-} from '@finos/legend-graph';
-import type { BaseProductCardState } from './dataProducts/BaseProductCardState.js';
-import { DataProductCardState } from './dataProducts/DataProductCardState.js';
-import {
-  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-  V1_deserializeDataSpace,
-} from '@finos/legend-extension-dsl-data-space/graph';
-import { LegacyDataProductCardState } from './dataProducts/LegacyDataProductCardState.js';
-import {
-  type StoredSummaryEntity,
-  DepotScope,
-} from '@finos/legend-server-depot';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
+import {
+  DataProductSearchResult,
+  type MarketplaceServerClient,
+} from '@finos/legend-server-marketplace';
+import { ProductCardState } from './dataProducts/ProductCardState.js';
 
 export interface DataProductFilterConfig {
   modeledDataProducts?: boolean;
@@ -80,22 +68,24 @@ class DataProductFilterState {
 }
 
 export enum DataProductSort {
+  DEFAULT = 'Default',
   NAME_ALPHABETICAL = 'Name A-Z',
   NAME_REVERSE_ALPHABETICAL = 'Name Z-A',
 }
 
 export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
+  readonly marketplaceServerClient: MarketplaceServerClient;
   readonly displayImageMap = new Map<string, string>();
-  dataProductCardStates: DataProductCardState[] = [];
-  legacyDataProductCardStates: LegacyDataProductCardState[] = [];
+  productCardStates: ProductCardState[] = [];
   filterState: DataProductFilterState;
-  sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
+  sort: DataProductSort = DataProductSort.DEFAULT;
 
-  loadingAllProductsState = ActionState.create();
+  executingSearchState = ActionState.create();
 
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
+    this.marketplaceServerClient = marketplaceBaseStore.marketplaceServerClient;
 
     const savedFilterConfig =
       LegendMarketplaceUserDataHelper.getSavedDataProductFilterConfig(
@@ -106,66 +96,42 @@ export class LegendMarketplaceSearchResultsStore {
       : DataProductFilterState.default();
 
     makeObservable(this, {
-      dataProductCardStates: observable,
-      legacyDataProductCardStates: observable,
+      productCardStates: observable,
       filterState: observable,
       sort: observable,
       handleModeledDataProductsFilterToggle: action,
       handleSearch: action,
-      setDataProductCardStates: action,
-      setLegacyDataProductCardStates: action,
+      setProductCardStates: action,
       setSort: action,
       filterSortProducts: computed,
-      init: flow,
+      executeSearch: flow,
     });
   }
 
-  get filterSortProducts(): BaseProductCardState[] | undefined {
-    return (
-      this.dataProductCardStates.filter((dataProductCardState) =>
+  get filterSortProducts(): ProductCardState[] | undefined {
+    return this.productCardStates
+      .filter((productCardState) =>
         this.marketplaceBaseStore.envState.filterDataProduct(
-          dataProductCardState.environmentClassification,
+          productCardState,
+          this.filterState.modeledDataProducts,
         ),
-      ) as BaseProductCardState[]
-    )
-      .concat(
-        this.marketplaceBaseStore.envState.supportsLegacyDataProducts() &&
-          this.filterState.modeledDataProducts
-          ? (this.legacyDataProductCardStates as BaseProductCardState[])
-          : [],
       )
-      .filter((productCardState) => {
-        // Check if product title matches search filter
-        const titleMatch =
-          this.filterState.search === undefined ||
-          this.filterState.search === '' ||
-          productCardState.title
-            .toLowerCase()
-            .includes(this.filterState.search.toLowerCase()) ||
-          // case insensitive for name
-          productCardState.name.toLowerCase() ===
-            this.filterState.search.toLowerCase();
-        return titleMatch;
-      })
       .sort((a, b) => {
-        if (this.sort === DataProductSort.NAME_ALPHABETICAL) {
-          return a.title.localeCompare(b.title);
-        } else {
-          return b.title.localeCompare(a.title);
+        switch (this.sort) {
+          case DataProductSort.DEFAULT:
+            return b.searchResult.similarity - a.searchResult.similarity;
+          case DataProductSort.NAME_ALPHABETICAL:
+            return a.title.localeCompare(b.title);
+          case DataProductSort.NAME_REVERSE_ALPHABETICAL:
+            return b.title.localeCompare(a.title);
+          default:
+            return 0;
         }
       });
   }
 
-  setDataProductCardStates(
-    dataProductCardStates: DataProductCardState[],
-  ): void {
-    this.dataProductCardStates = dataProductCardStates;
-  }
-
-  setLegacyDataProductCardStates(
-    legacyDataProductCardStates: LegacyDataProductCardState[],
-  ): void {
-    this.legacyDataProductCardStates = legacyDataProductCardStates;
+  setProductCardStates(dataProductCardStates: ProductCardState[]): void {
+    this.productCardStates = dataProductCardStates;
   }
 
   handleModeledDataProductsFilterToggle(): void {
@@ -185,112 +151,33 @@ export class LegendMarketplaceSearchResultsStore {
     this.sort = sort;
   }
 
-  async fetchDataProducts(token: string | undefined): Promise<void> {
+  *executeSearch(query: string, token: string | undefined): GeneratorFn<void> {
     try {
-      const rawResponse =
-        await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProducts(
-          token,
-        );
-      const dataProductDetails =
-        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-          rawResponse,
-        );
-
-      // Crete graph manager for parsing ad-hoc deployed data products
-      const graphManager = new V1_PureGraphManager(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
-      );
-      await graphManager.initialize(
-        {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl:
-              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
+      this.executingSearchState.inProgress();
+      const rawResults = (yield this.marketplaceServerClient.dataProductSearch(
+        query,
+      )) as PlainObject<DataProductSearchResult>[];
+      const results = rawResults.map((result) =>
+        DataProductSearchResult.serialization.fromJson(result),
       );
 
-      const dataProductCardStates = dataProductDetails
-        .sort((a, b) => a.id.localeCompare(b.id))
-        .map(
-          (dataProductDetail) =>
-            new DataProductCardState(
-              this.marketplaceBaseStore,
-              graphManager,
-              dataProductDetail,
-              this.displayImageMap,
-            ),
-        );
-      this.setDataProductCardStates(dataProductCardStates);
-      this.dataProductCardStates.forEach((dataProductCardState) =>
-        dataProductCardState.init(),
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
-        `Unable to load products: ${error.message}`,
-      );
-    }
-  }
-
-  async fetchLegacyDataProducts(): Promise<void> {
-    if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
-      return;
-    }
-    try {
-      const dataSpaceEntitySummaries =
-        (await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
-          DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-          {
-            scope: DepotScope.RELEASES,
-            summary: true,
-          },
-        )) as unknown as StoredSummaryEntity[];
-      const legacyDataProductCardStates = dataSpaceEntitySummaries.map(
-        (entity) => {
-          const dataSpace = V1_deserializeDataSpace({
-            executionContexts: [],
-            defaultExecutionContext: '',
-            package: extractPackagePathFromPath(entity.path) ?? entity.path,
-            name: extractElementNameFromPath(entity.path),
-          });
-          return new LegacyDataProductCardState(
+      // Create data product card states
+      const dataProductCardStates: ProductCardState[] = results.map(
+        (result) =>
+          new ProductCardState(
             this.marketplaceBaseStore,
-            dataSpace,
-            entity.groupId,
-            entity.artifactId,
-            entity.versionId,
+            result,
             this.displayImageMap,
-          );
-        },
+          ),
       );
-      this.setLegacyDataProductCardStates(legacyDataProductCardStates);
-      this.legacyDataProductCardStates.forEach((legacyDataProductCardState) =>
-        legacyDataProductCardState.init(),
-      );
+      this.setProductCardStates(dataProductCardStates);
     } catch (error) {
       assertErrorThrown(error);
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
-        `Unable to load legacy products: ${error.message}`,
+        `Error executing search: ${error.message}`,
       );
-    }
-  }
-
-  *init(token?: string | undefined): GeneratorFn<void> {
-    if (!this.loadingAllProductsState.hasCompleted) {
-      try {
-        this.loadingAllProductsState.inProgress();
-        yield Promise.all([
-          this.fetchDataProducts(token),
-          this.fetchLegacyDataProducts(),
-        ]);
-      } finally {
-        this.loadingAllProductsState.complete();
-      }
+    } finally {
+      this.executingSearchState.complete();
     }
   }
 }

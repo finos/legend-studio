@@ -53,17 +53,19 @@ import {
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
 import { CartStore } from './cart/CartStore.js';
-import type { BaseProductCardState } from './lakehouse/dataProducts/BaseProductCardState.js';
 import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
 import { V1_deserializeDataSpace } from '@finos/legend-extension-dsl-data-space/graph';
-import { LegacyDataProductCardState } from './lakehouse/dataProducts/LegacyDataProductCardState.js';
-import { DataProductCardState } from './lakehouse/dataProducts/DataProductCardState.js';
 import {
   LegendMarketplaceEnv,
   ProdLegendMarketplaceEnvState,
   ProdParallelLegendMarketplaceEnvState,
   type LegendMarketplaceEnvState,
 } from './LegendMarketplaceEnvState.js';
+import { ProductCardState } from './lakehouse/dataProducts/ProductCardState.js';
+import {
+  convertEntitlementsDataProductDetailsToSearchResult,
+  convertLegacyDataProductToSearchResult,
+} from '../utils/SearchUtils.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -198,7 +200,7 @@ export class LegendMarketplaceBaseStore {
 
   async initHighlightedDataProducts(
     token: string | undefined,
-  ): Promise<BaseProductCardState[] | undefined> {
+  ): Promise<ProductCardState[] | undefined> {
     const highlightedDataProducts =
       this.applicationStore.config.options.highlightedDataProducts
         ?.split(',')
@@ -224,7 +226,6 @@ export class LegendMarketplaceBaseStore {
       const getDataProductState = async (
         dataProductId: string,
         deploymentId: number,
-        graphManager: V1_PureGraphManager,
       ) => {
         const rawResponse =
           await this.lakehouseContractServerClient.getDataProductByIdAndDID(
@@ -236,21 +237,23 @@ export class LegendMarketplaceBaseStore {
           V1_entitlementsDataProductDetailsResponseToDataProductDetails(
             rawResponse,
           )[0];
-        return dataProductDetail
-          ? new DataProductCardState(
-              this,
-              graphManager,
+
+        if (dataProductDetail) {
+          const searchResult =
+            convertEntitlementsDataProductDetailsToSearchResult(
               dataProductDetail,
-              new Map(),
-            )
-          : undefined;
+            );
+          return new ProductCardState(this, searchResult, new Map());
+        } else {
+          return undefined;
+        }
       };
 
       const getLegacyDataProductState = async (
         dataProductId: string,
-        gave: string,
+        gav: string,
       ) => {
-        const coordinates = parseGAVCoordinates(gave);
+        const coordinates = parseGAVCoordinates(gav);
         const storeProject = new StoreProjectData();
         storeProject.groupId = coordinates.groupId;
         storeProject.artifactId = coordinates.artifactId;
@@ -262,14 +265,13 @@ export class LegendMarketplaceBaseStore {
         const dataSpace = V1_deserializeDataSpace(
           (legacyDataProuct as unknown as Entity).content,
         );
-        return new LegacyDataProductCardState(
-          this,
+        const searchResult = convertLegacyDataProductToSearchResult(
           dataSpace,
           coordinates.groupId,
           coordinates.artifactId,
           coordinates.versionId,
-          new Map(),
         );
+        return new ProductCardState(this, searchResult, new Map());
       };
 
       const graphManager = new V1_PureGraphManager(
@@ -295,7 +297,6 @@ export class LegendMarketplaceBaseStore {
               ? getDataProductState(
                   dataProduct.dataProductId,
                   dataProduct.deploymentId,
-                  graphManager,
                 )
               : getLegacyDataProductState(
                   dataProduct.dataProductId,
@@ -304,7 +305,6 @@ export class LegendMarketplaceBaseStore {
           ),
         )
       ).filter(isNonNullable);
-      dataProductStates.forEach((dataProductState) => dataProductState.init());
       return dataProductStates;
     }
     return undefined;

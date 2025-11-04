@@ -15,6 +15,11 @@
  */
 
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
+import type { ProductCardState } from './lakehouse/dataProducts/ProductCardState.js';
+import {
+  LakehouseDataProductSearchResultDetails,
+  LegacyDataProductSearchResultDetails,
+} from '@finos/legend-server-marketplace';
 
 export enum LegendMarketplaceEnv {
   PRODUCTION = 'PRODUCTION',
@@ -28,21 +33,44 @@ export abstract class LegendMarketplaceEnvState {
     return this.key;
   }
 
-  abstract supportsLegacyDataProducts(): boolean;
-
   abstract get adjacentEnv(): LegendMarketplaceEnv | undefined;
 
-  abstract filterDataProduct(
-    classification: V1_EntitlementsLakehouseEnvironmentType | undefined,
-  ): boolean;
+  abstract supportsLegacyDataProducts(): boolean;
+
+  abstract supportedClassifications(): (
+    | V1_EntitlementsLakehouseEnvironmentType
+    | undefined
+  )[];
+
+  filterDataProduct(
+    productCardState: ProductCardState,
+    includeLegacyDataProducts: boolean,
+  ): boolean {
+    if (
+      productCardState.searchResult.dataProductDetails instanceof
+      LegacyDataProductSearchResultDetails
+    ) {
+      if (this.supportsLegacyDataProducts() && includeLegacyDataProducts) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (
+      productCardState.searchResult.dataProductDetails instanceof
+      LakehouseDataProductSearchResultDetails
+    ) {
+      const classification =
+        productCardState.searchResult.dataProductDetails
+          .producerEnvironmentType;
+      return this.supportedClassifications().includes(classification);
+    } else {
+      return true;
+    }
+  }
 }
 
 export class ProdLegendMarketplaceEnvState extends LegendMarketplaceEnvState {
   key = LegendMarketplaceEnv.PRODUCTION;
-
-  supportsLegacyDataProducts(): boolean {
-    return true;
-  }
 
   override get label(): string {
     return 'Prod';
@@ -52,21 +80,17 @@ export class ProdLegendMarketplaceEnvState extends LegendMarketplaceEnvState {
     return LegendMarketplaceEnv.PRODUCTION_PARALLEL;
   }
 
-  filterDataProduct(
-    classification: V1_EntitlementsLakehouseEnvironmentType | undefined,
-  ): boolean {
-    return (
-      classification === V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
-    );
+  supportsLegacyDataProducts(): boolean {
+    return true;
+  }
+
+  supportedClassifications() {
+    return [V1_EntitlementsLakehouseEnvironmentType.PRODUCTION];
   }
 }
 
 export class ProdParallelLegendMarketplaceEnvState extends LegendMarketplaceEnvState {
   key = LegendMarketplaceEnv.PRODUCTION_PARALLEL;
-
-  supportsLegacyDataProducts(): boolean {
-    return false;
-  }
 
   override get label(): string {
     return 'Prod-Parallel';
@@ -76,14 +100,15 @@ export class ProdParallelLegendMarketplaceEnvState extends LegendMarketplaceEnvS
     return LegendMarketplaceEnv.PRODUCTION;
   }
 
-  filterDataProduct(
-    classification: V1_EntitlementsLakehouseEnvironmentType | undefined,
-  ): boolean {
-    return (
-      classification ===
-        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL ||
-      classification === V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT ||
-      classification === undefined
-    );
+  supportsLegacyDataProducts(): boolean {
+    return false;
+  }
+
+  supportedClassifications() {
+    return [
+      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+      V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
+      undefined,
+    ];
   }
 }

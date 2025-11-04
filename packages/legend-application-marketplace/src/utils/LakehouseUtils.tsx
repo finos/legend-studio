@@ -18,16 +18,16 @@ import {
   type V1_EntitlementsDataProductDetails,
   type V1_PureGraphManager,
   type V1_DataProduct,
-  CORE_PURE_PATH,
   V1_AdHocDeploymentDataProductOrigin,
   V1_dataProductModelSchema,
   V1_SdlcDeploymentDataProductOrigin,
+  CORE_PURE_PATH,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
-import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
+import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 
 export const getDataProductFromDetails = async (
   details: V1_EntitlementsDataProductDetails,
