@@ -23,6 +23,7 @@ export {
   generateEditorRoute,
   generateReviewRoute,
   generateViewProjectRoute,
+  generateViewVersionRoute,
 } from './__lib__/LegendStudioNavigation.js';
 export * from './__lib__/LegendStudioTesting.js';
 export * from './__lib__/LegendStudioApplicationNavigationContext.js';

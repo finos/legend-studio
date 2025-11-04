@@ -1,0 +1,84 @@
+{
+  "name": "@finos/legend-extension-application-studio-depot-dashboard",
+  "version": "0.0.0",
+  "description": "Legend extension for Depot",
+  "keywords": [
+    "legend",
+    "legend-extension",
+    "application-studio-depot-dashboard",
+    "store",
+    "relational",
+    "database",
+    "db"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.gs.com/qubits/legendarea.git",
+    "directory": "packages/legend-extension-application-studio-depot-dashboard"
+  },
+  "license": "UNLICENSED",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./application-studio": "./lib/index.js",
+    "./lib/index.css": "./lib/index.css"
+  },
+  "browser": {
+    "buffer": false
+  },
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:sass && yarn build:ts",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
+    "build:ts": "tsc --project ./tsconfig.build.json",
+    "clean": "rimraf \"lib\" \"build\"",
+    "dev": "npm-run-all --parallel dev:sass dev:ts",
+    "dev:sass": "sass style lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
+    "@finos/legend-art": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-lego": "workspace:*",
+    "@finos/legend-server-depot": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
+    "@types/react": "19.0.10",
+    "ag-grid-community": "33.1.1",
+    "ag-grid-react": "33.1.1",
+    "mobx": "6.13.6",
+    "mobx-react-lite": "4.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "serializr": "3.0.3"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "2.2.5",
+    "@jest/globals": "29.7.0",
+    "cross-env": "7.0.3",
+    "eslint": "9.22.0",
+    "jest": "29.7.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "6.0.1",
+    "sass": "1.85.1",
+    "typescript": "5.8.2"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  },
+  "extensions": {
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-application-studio-metadata-dashboard",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-application-studio-metadata-dashboard",
+    "applicationStudioPlugin": "@finos/legend-extension-application-studio-depot-dashboard"
+  }
+}

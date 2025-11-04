@@ -197,6 +197,9 @@ export {
   V1_DataProductLibraryIcon,
   V1_Email,
   V1_LakehouseAccessPoint,
+  V1_DataProductType,
+  V1_InternalDataProductType,
+  V1_ExternalDataProductType,
   V1_SupportInfo,
   V1_UnknownDataProductIcon,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_DataProduct.js';
@@ -224,6 +227,7 @@ export {
   V1_createRelationType,
   V1_createRelationTypeColumn,
 } from './graph-manager/protocol/pure/v1/helpers/V1_DomainHelper.js';
+export * from './graph-manager/protocol/pure/v1/helpers/V1_DataProductHelper.js';
 export {
   V1_buildExecutionResult,
   V1_deserializeExecutionResult,
@@ -382,7 +386,11 @@ export {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
-export * from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
+export {
+  V1_DataProductArtifact,
+  V1_AccessPointImplementation,
+  V1_AccessPointGroupInfo,
+} from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
 export {
   V1_IngestEnvironmentType,
   V1_IngestEnvironmentClassification,

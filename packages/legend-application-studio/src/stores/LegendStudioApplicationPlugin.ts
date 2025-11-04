@@ -25,7 +25,10 @@ import type {
   NewElementState,
 } from './editor/NewElementState.js';
 import type { Class, PackageableElement, Testable } from '@finos/legend-graph';
-import { LegendApplicationPlugin } from '@finos/legend-application';
+import {
+  LegendApplicationPlugin,
+  type ApplicationPageEntry,
+} from '@finos/legend-application';
 import type { TestableMetadata } from './editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import type {
   ExtensionModelImportRendererState,
@@ -81,6 +84,10 @@ export type TestRunnerViewConfiguration = {
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
 
+export type StudioApplicationPageEntry = ApplicationPageEntry & {
+  nonSDLCApp?: boolean | undefined;
+};
+
 export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlugin {
   /**
    * This helps to better type-check for this empty abtract type
@@ -91,6 +98,11 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerApplicationPlugin(this);
   }
+
+  /**
+   * Get the list of application page entries to be rendered.
+   */
+  override getExtraApplicationPageEntries?(): StudioApplicationPageEntry[];
 
   /**
    * Get the list of extension state builders for editor store.

@@ -12,6 +12,9 @@
     { "path": "../legend-extension-assortment/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-product/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-quality/tsconfig.build.json" },
+    {
+      "path": "../legend-extension-application-studio-depot-dashboard/tsconfig.build.json"
+    },
     { "path": "../legend-extension-dsl-data-space-studio/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },

@@ -64,6 +64,7 @@
     { "path": "packages/legend-extension-dsl-data-product" },
     { "path": "packages/legend-extension-dsl-data-space" },
     { "path": "packages/legend-extension-dsl-data-space-studio" },
+    { "path": "packages/legend-extension-application-studio-depot-dashboard"},
     { "path": "packages/legend-extension-dsl-service" },
     { "path": "packages/legend-extension-dsl-persistence" },
     { "path": "packages/legend-extension-store-service-store" },
