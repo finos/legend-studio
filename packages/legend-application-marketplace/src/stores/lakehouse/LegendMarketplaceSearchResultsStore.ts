@@ -267,7 +267,7 @@ export class LegendMarketplaceSearchResultsStore {
               _type: LakehouseDataProductSearchResultOriginType.AD_HOC,
             });
       const searchResult = DataProductSearchResult.serialization.fromJson({
-        dataProductTitle: detail.title,
+        dataProductTitle: detail.title ?? detail.dataProduct.name,
         dataProductDescription: detail.description,
         tags1: [],
         tags2: [],
@@ -311,7 +311,7 @@ export class LegendMarketplaceSearchResultsStore {
         name: extractElementNameFromPath(entity.path),
       });
       const searchResult = DataProductSearchResult.serialization.fromJson({
-        dataProductTitle: dataSpace.title,
+        dataProductTitle: dataSpace.title ?? dataSpace.name,
         dataProductDescription: dataSpace.description,
         tags1: [],
         tags2: [],
