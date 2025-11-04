@@ -177,11 +177,15 @@ export class LegendMarketplaceSearchResultsStore {
     this.useIndexSearch = value;
   }
 
-  *executeSearch(query: string, token: string | undefined): GeneratorFn<void> {
+  *executeSearch(
+    query: string,
+    useIndexSearch: boolean,
+    token: string | undefined,
+  ): GeneratorFn<void> {
     this.executingSearchState.inProgress();
 
     try {
-      const results = this.useIndexSearch
+      const results = useIndexSearch
         ? yield this.executeIndexSearch(query, token)
         : yield this.executeSemanticSearch(query);
       this.setProductCardStates(results);

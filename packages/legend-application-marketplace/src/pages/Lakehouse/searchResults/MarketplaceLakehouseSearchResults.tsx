@@ -19,7 +19,7 @@ import {
   useLegendMarketplaceSearchResultsStore,
   withLegendMarketplaceSearchResultsStore,
 } from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CheckIcon,
   CubesLoadingIndicator,
@@ -100,6 +100,7 @@ export const MarketplaceLakehouseSearchResults =
       const searchResultsStore = useLegendMarketplaceSearchResultsStore();
       const auth = useAuth();
 
+      const [query, setQuery] = useState<string | undefined>();
       const applicationStore =
         searchResultsStore.marketplaceBaseStore.applicationStore;
       const searchQuery =
@@ -118,6 +119,7 @@ export const MarketplaceLakehouseSearchResults =
         ) {
           searchResultsStore.executeSearch(
             searchQuery,
+            searchResultsStore.useIndexSearch,
             auth.user?.access_token,
           );
         }
@@ -126,9 +128,13 @@ export const MarketplaceLakehouseSearchResults =
       const isLoadingDataProducts =
         searchResultsStore.executingSearchState.isInProgress;
 
-      const handleSearch = (query: string | undefined): void => {
+      const handleSearch = (): void => {
         if (query) {
-          searchResultsStore.executeSearch(query, auth.user?.access_token);
+          searchResultsStore.executeSearch(
+            query,
+            searchResultsStore.useIndexSearch,
+            auth.user?.access_token,
+          );
           searchResultsStore.marketplaceBaseStore.applicationStore.navigationService.navigator.updateCurrentLocation(
             generateLakehouseSearchResultsRoute(query),
           );
@@ -139,14 +145,15 @@ export const MarketplaceLakehouseSearchResults =
         <LegendMarketplacePage className="marketplace-lakehouse-search-results">
           <Container className="marketplace-lakehouse-search-results__search-container">
             <LegendMarketplaceSearchBar
-              onSearch={(query) => {
-                handleSearch(query);
+              onSearch={() => {
+                handleSearch();
                 LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
                   applicationStore.telemetryService,
                   query,
                   LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
                 );
               }}
+              onChange={(val) => setQuery(val)}
               placeholder="Search Legend Marketplace"
               className="marketplace-lakehouse-search-results__search-bar"
               initialValue={searchQuery}
@@ -165,17 +172,18 @@ export const MarketplaceLakehouseSearchResults =
                   control={
                     <Switch
                       checked={searchResultsStore.useIndexSearch}
-                      onChange={(event) =>
+                      onChange={(event) => {
                         searchResultsStore.setUseIndexSearch(
                           event.target.checked,
-                        )
-                      }
+                        );
+                        handleSearch();
+                      }}
                     />
                   }
                   label={
                     <>
                       Use Index Search{' '}
-                      <Tooltip title="Index search provides the most up-to-date results by searching directly on deployed data products, while semantic search provides enhanced relevance through NLP techniques. Only use index search if you are trying to find a recently deployed data product.">
+                      <Tooltip title="Index search provides the most up-to-date results by searching directly on deployed data products. Only use index search if you are trying to find a recently deployed data product.">
                         <InfoCircleIcon />
                       </Tooltip>
                     </>
