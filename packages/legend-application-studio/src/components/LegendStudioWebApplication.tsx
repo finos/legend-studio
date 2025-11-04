@@ -154,7 +154,6 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                   path={LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PCT_REPORT}
                   element={<PureCompatibilityTestManager />}
                 />
-
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </>
