@@ -122,8 +122,6 @@ export class LegacyDataProductSearchResultDetails extends DataProductSearchResul
 export class DataProductSearchResult {
   dataProductTitle!: string | null;
   dataProductDescription!: string | null;
-  embedding_type!: string;
-  vendor_name!: string;
   tags1!: string[];
   tags2!: string[];
   tag_score!: number;

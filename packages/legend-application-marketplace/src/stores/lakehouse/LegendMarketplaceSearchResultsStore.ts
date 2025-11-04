@@ -20,14 +20,33 @@ import {
   ActionState,
   assertErrorThrown,
   type GeneratorFn,
-  type PlainObject,
 } from '@finos/legend-shared';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 import {
   DataProductSearchResult,
+  DataProductSearchResultDetailsType,
+  LakehouseAdHocDataProductSearchResultOrigin,
+  LakehouseDataProductSearchResultOriginType,
+  LakehouseSDLCDataProductSearchResultOrigin,
   type MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
 import { ProductCardState } from './dataProducts/ProductCardState.js';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import {
+  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+  V1_deserializeDataSpace,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_PureGraphManager,
+  extractPackagePathFromPath,
+  extractElementNameFromPath,
+  V1_SdlcDeploymentDataProductOrigin,
+} from '@finos/legend-graph';
+import {
+  type StoredSummaryEntity,
+  DepotScope,
+} from '@finos/legend-server-depot';
 
 export interface DataProductFilterConfig {
   modeledDataProducts?: boolean;
@@ -80,6 +99,7 @@ export class LegendMarketplaceSearchResultsStore {
   productCardStates: ProductCardState[] = [];
   filterState: DataProductFilterState;
   sort: DataProductSort = DataProductSort.DEFAULT;
+  useIndexSearch = false;
 
   executingSearchState = ActionState.create();
 
@@ -99,10 +119,12 @@ export class LegendMarketplaceSearchResultsStore {
       productCardStates: observable,
       filterState: observable,
       sort: observable,
+      useIndexSearch: observable,
       handleModeledDataProductsFilterToggle: action,
       handleSearch: action,
       setProductCardStates: action,
       setSort: action,
+      setUseIndexSearch: action,
       filterSortProducts: computed,
       executeSearch: flow,
     });
@@ -151,26 +173,18 @@ export class LegendMarketplaceSearchResultsStore {
     this.sort = sort;
   }
 
-  *executeSearch(query: string, token: string | undefined): GeneratorFn<void> {
-    try {
-      this.executingSearchState.inProgress();
-      const rawResults = (yield this.marketplaceServerClient.dataProductSearch(
-        query,
-      )) as PlainObject<DataProductSearchResult>[];
-      const results = rawResults.map((result) =>
-        DataProductSearchResult.serialization.fromJson(result),
-      );
+  setUseIndexSearch(value: boolean): void {
+    this.useIndexSearch = value;
+  }
 
-      // Create data product card states
-      const dataProductCardStates: ProductCardState[] = results.map(
-        (result) =>
-          new ProductCardState(
-            this.marketplaceBaseStore,
-            result,
-            this.displayImageMap,
-          ),
-      );
-      this.setProductCardStates(dataProductCardStates);
+  *executeSearch(query: string, token: string | undefined): GeneratorFn<void> {
+    this.executingSearchState.inProgress();
+
+    try {
+      const results = this.useIndexSearch
+        ? yield this.executeIndexSearch(query, token)
+        : yield this.executeSemanticSearch(query);
+      this.setProductCardStates(results);
     } catch (error) {
       assertErrorThrown(error);
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
@@ -179,5 +193,150 @@ export class LegendMarketplaceSearchResultsStore {
     } finally {
       this.executingSearchState.complete();
     }
+  }
+
+  private async executeSemanticSearch(
+    query: string,
+  ): Promise<ProductCardState[]> {
+    const rawResults =
+      await this.marketplaceServerClient.dataProductSearch(query);
+    const results = rawResults.map((result) =>
+      DataProductSearchResult.serialization.fromJson(result),
+    );
+
+    // Create data product card states
+    const dataProductCardStates: ProductCardState[] = results.map(
+      (result) =>
+        new ProductCardState(
+          this.marketplaceBaseStore,
+          result,
+          this.displayImageMap,
+        ),
+    );
+    return dataProductCardStates;
+  }
+
+  private async executeIndexSearch(
+    query: string,
+    token: string | undefined,
+  ): Promise<ProductCardState[]> {
+    const [dataProducts, legacyDataProducts] = await Promise.all([
+      this.fetchDataProducts(token),
+      this.fetchLegacyDataProducts(),
+    ]);
+
+    return [...dataProducts, ...legacyDataProducts].filter((productCardState) =>
+      productCardState.title.toLowerCase().includes(query.toLowerCase()),
+    );
+  }
+
+  private async fetchDataProducts(
+    token: string | undefined,
+  ): Promise<ProductCardState[]> {
+    const rawResponse =
+      await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProducts(
+        token,
+      );
+    const dataProductDetails =
+      V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+        rawResponse,
+      );
+
+    // Crete graph manager for parsing ad-hoc deployed data products
+    const graphManager = new V1_PureGraphManager(
+      this.marketplaceBaseStore.applicationStore.pluginManager,
+      this.marketplaceBaseStore.applicationStore.logService,
+      this.marketplaceBaseStore.remoteEngine,
+    );
+    await graphManager.initialize(
+      {
+        env: this.marketplaceBaseStore.applicationStore.config.env,
+        tabSize: DEFAULT_TAB_SIZE,
+        clientConfig: {
+          baseUrl:
+            this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
+        },
+      },
+      { engine: this.marketplaceBaseStore.remoteEngine },
+    );
+
+    return dataProductDetails.map((detail) => {
+      const origin =
+        detail.origin instanceof V1_SdlcDeploymentDataProductOrigin
+          ? LakehouseSDLCDataProductSearchResultOrigin.serialization.fromJson({
+              _type: LakehouseDataProductSearchResultOriginType.SDLC,
+              groupId: detail.origin.group,
+              artifactId: detail.origin.artifact,
+              versionId: detail.origin.version,
+              path: detail.fullPath,
+            })
+          : LakehouseAdHocDataProductSearchResultOrigin.serialization.fromJson({
+              _type: LakehouseDataProductSearchResultOriginType.AD_HOC,
+            });
+      const searchResult = DataProductSearchResult.serialization.fromJson({
+        dataProductTitle: detail.title,
+        dataProductDescription: detail.description,
+        tags1: [],
+        tags2: [],
+        tag_score: 0,
+        similarity: 0,
+        dataProductDetails: {
+          _type: DataProductSearchResultDetailsType.LAKEHOUSE,
+          dataProductId: detail.dataProduct.name,
+          deploymentId: detail.deploymentId,
+          producerEnvironmentName:
+            detail.lakehouseEnvironment?.producerEnvironmentName,
+          producerEnvironmentType: detail.lakehouseEnvironment?.type,
+          origin,
+        },
+      });
+      return new ProductCardState(
+        this.marketplaceBaseStore,
+        searchResult,
+        this.displayImageMap,
+      );
+    });
+  }
+
+  private async fetchLegacyDataProducts(): Promise<ProductCardState[]> {
+    if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
+      return [];
+    }
+    const dataSpaceEntitySummaries =
+      (await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
+        DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+        {
+          scope: DepotScope.RELEASES,
+          summary: true,
+        },
+      )) as unknown as StoredSummaryEntity[];
+    return dataSpaceEntitySummaries.map((entity) => {
+      const dataSpace = V1_deserializeDataSpace({
+        executionContexts: [],
+        defaultExecutionContext: '',
+        package: extractPackagePathFromPath(entity.path) ?? entity.path,
+        name: extractElementNameFromPath(entity.path),
+      });
+      const searchResult = DataProductSearchResult.serialization.fromJson({
+        dataProductTitle: dataSpace.title,
+        dataProductDescription: dataSpace.description,
+        tags1: [],
+        tags2: [],
+        tag_score: 0,
+        similarity: 0,
+        dataProductDetails: {
+          _type: DataProductSearchResultDetailsType.LEGACY,
+          groupId: entity.groupId,
+          artifactId: entity.artifactId,
+          versionId: entity.versionId,
+          path: entity.path,
+        },
+      });
+      return new ProductCardState(
+        this.marketplaceBaseStore,
+        searchResult,
+        this.displayImageMap,
+      );
+    });
   }
 }

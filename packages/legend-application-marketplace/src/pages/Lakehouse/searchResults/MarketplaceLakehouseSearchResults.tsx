@@ -24,6 +24,7 @@ import {
   CheckIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import {
   Box,
@@ -35,6 +36,8 @@ import {
   Grid,
   MenuItem,
   Select,
+  Switch,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import {
@@ -56,7 +59,7 @@ import {
 import { generatePathForDataProductSearchResult } from '../../../utils/SearchUtils.js';
 import { logClickingDataProductCard } from '../../../utils/LogUtils.js';
 
-const SearchResultsSortFilterPanel = observer(
+const SearchResultsFilterPanel = observer(
   (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
     const { searchResultsStore } = props;
 
@@ -157,48 +160,72 @@ export const MarketplaceLakehouseSearchResults =
               >
                 {searchResultsStore.filterSortProducts?.length ?? '0'} Products
               </Typography>
-              <FormControl sx={{ width: '8.2rem' }}>
-                <Select
-                  autoWidth={true}
-                  displayEmpty={true}
-                  value={'Sort'}
-                  onChange={(e) => {
-                    searchResultsStore.setSort(
-                      e.target.value as DataProductSort,
-                    );
-                  }}
-                  sx={{
-                    '& .MuiSelect-select': {
-                      fontWeight: '500',
-                      fontSize: '1.6rem',
-                      padding: '1rem',
-                      minHeight: 'unset !important',
-                    },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'black',
-                      borderRadius: '0rem',
-                    },
-                  }}
-                >
-                  <MenuItem disabled={true} value="Sort">
-                    Sort
-                  </MenuItem>
-                  {Object.values(DataProductSort).map((sortValue) => {
-                    return (
-                      <MenuItem
-                        key={sortValue}
-                        value={sortValue}
-                        sx={{
-                          gap: '0.5rem',
-                        }}
-                      >
-                        {sortValue}
-                        {searchResultsStore.sort === sortValue && <CheckIcon />}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
+              <Box>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={searchResultsStore.useIndexSearch}
+                      onChange={(event) =>
+                        searchResultsStore.setUseIndexSearch(
+                          event.target.checked,
+                        )
+                      }
+                    />
+                  }
+                  label={
+                    <>
+                      Use Index Search{' '}
+                      <Tooltip title="Index search provides the most up-to-date results by searching directly on deployed data products, while semantic search provides enhanced relevance through NLP techniques. Only use index search if you are trying to find a recently deployed data product.">
+                        <InfoCircleIcon />
+                      </Tooltip>
+                    </>
+                  }
+                />
+                <FormControl sx={{ width: '8.2rem' }}>
+                  <Select
+                    autoWidth={true}
+                    displayEmpty={true}
+                    value={'Sort'}
+                    onChange={(e) => {
+                      searchResultsStore.setSort(
+                        e.target.value as DataProductSort,
+                      );
+                    }}
+                    sx={{
+                      '& .MuiSelect-select': {
+                        fontWeight: '500',
+                        fontSize: '1.6rem',
+                        padding: '1rem',
+                        minHeight: 'unset !important',
+                      },
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'black',
+                        borderRadius: '0rem',
+                      },
+                    }}
+                  >
+                    <MenuItem disabled={true} value="Sort">
+                      Sort
+                    </MenuItem>
+                    {Object.values(DataProductSort).map((sortValue) => {
+                      return (
+                        <MenuItem
+                          key={sortValue}
+                          value={sortValue}
+                          sx={{
+                            gap: '0.5rem',
+                          }}
+                        >
+                          {sortValue}
+                          {searchResultsStore.sort === sortValue && (
+                            <CheckIcon />
+                          )}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
+              </Box>
             </div>
           </div>
           <Container
@@ -206,7 +233,7 @@ export const MarketplaceLakehouseSearchResults =
             className="marketplace-lakehouse-search-results__results-container"
           >
             {searchResultsStore.marketplaceBaseStore.envState.supportsLegacyDataProducts() && (
-              <SearchResultsSortFilterPanel
+              <SearchResultsFilterPanel
                 searchResultsStore={searchResultsStore}
               />
             )}
