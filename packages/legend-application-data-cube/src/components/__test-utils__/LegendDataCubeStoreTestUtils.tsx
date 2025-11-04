@@ -229,6 +229,7 @@ export const mockAdhocDataProduct: V1_EntitlementsDataProductDetails = {
     producerEnvironmentName: 'test-producer-environment',
     type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
   },
+  fullPath: 'test::path::to::test-dataproduct-name',
   dataProduct: {
     name: 'test-dataproduct-name',
     accessPoints: [

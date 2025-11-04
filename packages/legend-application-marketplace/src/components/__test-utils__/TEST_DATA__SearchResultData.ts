@@ -20,8 +20,6 @@ export const mockSearchResult: DataProductSearchResult = {
   dataProductTitle: 'SDLC Release Data Product',
   dataProductDescription:
     'Comprehensive customer analytics data for business intelligence and reporting',
-  vendor_name: 'Example Vendor',
-  embedding_type: 'PRODUCT',
   tags1: [],
   tags2: [],
   tag_score: 0,
