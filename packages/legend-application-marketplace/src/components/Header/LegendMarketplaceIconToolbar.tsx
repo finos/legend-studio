@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useApplicationStore } from '@finos/legend-application';
 import {
   HelpOutlineIcon,
   MenuContentDivider,
@@ -24,7 +23,11 @@ import {
 import { observer } from 'mobx-react-lite';
 import { Avatar, Box, IconButton, Link, Menu, MenuItem } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { assertErrorThrown, LegendUser } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  isNonNullable,
+  LegendUser,
+} from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
@@ -32,12 +35,11 @@ import { CartDrawer } from '../AddToCart/CartDrawer.js';
 import { CartBadge } from './CartBadge.js';
 
 export const LegendMarketplaceIconToolbar = observer(() => {
-  const applicationStore = useApplicationStore();
   const marketplaceStore = useLegendMarketplaceBaseStore();
+  const applicationStore = marketplaceStore.applicationStore;
   const userId = applicationStore.identityService.currentUser;
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
-  const showDevFeatures =
-    marketplaceStore.applicationStore.config.options.showDevFeatures;
+  const showDevFeatures = applicationStore.config.options.showDevFeatures;
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {
       if (userId) {
@@ -62,18 +64,18 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   ]);
 
   const imgSrc =
-    marketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
+    applicationStore.config.marketplaceUserProfileImageUrl?.replace(
       '{userId}',
       userId,
     );
-  const userDirectoryLink = `${marketplaceStore.applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl}/${userId}`;
+  const userDirectoryLink = `${applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl}/${userId}`;
 
   const userName =
     userData instanceof LegendUser && userData.displayName
       ? userData.displayName
       : userId;
   const adjacentEnvState = marketplaceStore.adjacentEnvState;
-  const adjacentUrl = marketplaceStore.applicationStore.config.adjacentEnvUrl;
+  const adjacentUrl = applicationStore.config.adjacentEnvUrl;
 
   const UserIconRenderer = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -158,6 +160,11 @@ export const LegendMarketplaceIconToolbar = observer(() => {
 
     const open = Boolean(anchorEl);
 
+    const additionalHelpMenuItems = applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap((plugin) => plugin.getAdditionalHelpMenuItemConfigs?.())
+      .filter(isNonNullable);
+
     return (
       <>
         <IconButton
@@ -180,7 +187,6 @@ export const LegendMarketplaceIconToolbar = observer(() => {
               <MenuItem component="a" target="_blank" href={adjacentUrl}>
                 {`${adjacentEnvState.label} Env`}
               </MenuItem>
-
               <MenuContentDivider />
             </>
           )}
@@ -195,6 +201,26 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           >
             Admin
           </MenuItem>
+          {additionalHelpMenuItems.length > 0 && (
+            <>
+              <MenuContentDivider />
+              {additionalHelpMenuItems.map((item) => (
+                <MenuItem
+                  key={item.label}
+                  onClick={() => {
+                    setAnchorEl(null);
+                    item.onClick?.();
+                  }}
+                  component={item.href ? 'a' : 'div'}
+                  href={item.href}
+                  target={item.href ? '_blank' : undefined}
+                  rel={item.href ? 'noopener noreferrer' : undefined}
+                >
+                  {item.label}
+                </MenuItem>
+              ))}
+            </>
+          )}
         </Menu>
         <LegendMarketplaceAppInfo
           open={openAppInfo}
