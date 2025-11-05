@@ -46,6 +46,7 @@ import {
   V1_DataContractApprovedUsersResponse,
   V1_TerminalOrderItem,
   V1_TerminalProvisionPayload,
+  V1_LiteDataContractWithUserStatus,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
@@ -83,6 +84,7 @@ import {
   V1_UnknownDataProductOriginType,
 } from '../../../lakehouse/entitlements/V1_EntitlementsDataProduct.js';
 import { V1_stereotypePtrModelSchema } from './V1_CoreSerializationHelper.js';
+import { V1_PendingTaskWithAssignees } from '../../../lakehouse/entitlements/V1_EntitlementsTasks.js';
 
 export enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
@@ -296,6 +298,27 @@ export const V1_liteDataContractsResponseModelSchema = (
   createModelSchema(V1_LiteDataContractsResponse, {
     dataContracts: optional(
       customListWithSchema(V1_liteDataContractModelSchema(plugins)),
+    ),
+  });
+
+export const V1_pendingTaskWithAssigneesModelSchema = createModelSchema(
+  V1_PendingTaskWithAssignees,
+  {
+    taskId: primitive(),
+    assignees: list(primitive()),
+  },
+);
+
+export const V1_liteDataContractWithUserStatusModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_LiteDataContractWithUserStatus, {
+    contractResultLite: usingModelSchema(
+      V1_liteDataContractModelSchema(plugins),
+    ),
+    status: primitive(),
+    pendingTaskWithAssignees: optional(
+      usingModelSchema(V1_pendingTaskWithAssigneesModelSchema),
     ),
   });
 

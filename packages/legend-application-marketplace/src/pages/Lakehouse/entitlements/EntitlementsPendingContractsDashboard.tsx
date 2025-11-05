@@ -446,6 +446,8 @@ export const EntitlementsPendingContractsDashboard = observer(
             defaultColDef={defaultColDef}
             rowHeight={45}
             overlayNoRowsTemplate="You have no pending contracts"
+            loading={dashboardState.initializationState.isInProgress}
+            overlayLoadingTemplate="Loading contracts"
           />
         </Box>
         {selectedContract !== undefined && (

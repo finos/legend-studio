@@ -49,6 +49,7 @@ import {
   EntitlementsDataContractViewerState,
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
+  isApprovalStatusTerminal,
   isContractInTerminalState,
   MultiUserRenderer,
   stringifyOrganizationalScope,
@@ -131,28 +132,20 @@ const UserAccessStatusCellRenderer = (props: {
 export const EntitlementsClosedContractsDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
-    const { allContracts } = dashboardState;
+    const { allContracts, myContracts } = dashboardState;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
 
     const myClosedContracts = useMemo(
       () =>
-        allContracts?.filter(
-          (contract) =>
-            isContractInTerminalState(contract) &&
-            contract.consumer instanceof V1_AdhocTeam &&
-            contract.consumer.users.some(
-              (user) =>
-                user.name ===
-                dashboardState.lakehouseEntitlementsStore.applicationStore
-                  .identityService.currentUser,
-            ),
-        ) ?? [],
-      [
-        allContracts,
-        dashboardState.lakehouseEntitlementsStore.applicationStore
-          .identityService.currentUser,
-      ],
+        myContracts
+          ?.filter((contract) => isApprovalStatusTerminal(contract.status))
+          .map((contract) => contract.contractResultLite) ?? [],
+      [myContracts],
+    );
+    const myClosedContractIds = useMemo(
+      () => new Set(myClosedContracts.map((c) => c.guid)),
+      [myClosedContracts],
     );
     const closedContractsForOthers = useMemo(
       () =>
@@ -162,9 +155,9 @@ export const EntitlementsClosedContractsDashboard = observer(
             contract.createdBy ===
               dashboardState.lakehouseEntitlementsStore.applicationStore
                 .identityService.currentUser &&
-            !myClosedContracts.includes(contract),
+            !myClosedContractIds.has(contract.guid),
         ) ?? [],
-      [allContracts, myClosedContracts, dashboardState],
+      [allContracts, myClosedContractIds, dashboardState],
     );
 
     const [selectedContract, setSelectedContract] = useState<
@@ -361,6 +354,8 @@ export const EntitlementsClosedContractsDashboard = observer(
             defaultColDef={defaultColDef}
             rowHeight={45}
             overlayNoRowsTemplate="You have no closed contracts"
+            loading={dashboardState.initializationState.isInProgress}
+            overlayLoadingTemplate="Loading contracts"
           />
         </Box>
         {selectedContract !== undefined && (
@@ -378,6 +373,12 @@ export const EntitlementsClosedContractsDashboard = observer(
                 ),
                 marketplaceBaseStore.userSearchService,
               )
+            }
+            initialSelectedUser={
+              myClosedContractIds.has(selectedContract.guid)
+                ? dashboardState.lakehouseEntitlementsStore.applicationStore
+                    .identityService.currentUser
+                : undefined
             }
             onRefresh={async () => {
               await flowResult(
