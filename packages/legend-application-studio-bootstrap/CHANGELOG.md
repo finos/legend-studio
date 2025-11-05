@@ -1,5 +1,11 @@
 # @finos/legend-application-studio-bootstrap
 
+## 13.156.0
+
+### Patch Changes
+
+- [#4611](https://github.com/finos/legend-studio/pull/4611) [`5dabccf`](https://github.com/finos/legend-studio/commit/5dabccf9ddbdb87a58d339a07ce3f1764df8ef6b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Data Product Dashboard to studio application extension
+
 ## 13.155.0
 
 ## 13.154.0

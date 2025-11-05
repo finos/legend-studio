@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.62
+
+### Patch Changes
+
+- [#4610](https://github.com/finos/legend-studio/pull/4610) [`9aff881`](https://github.com/finos/legend-studio/commit/9aff881f84fa41ec30e1e47eb973f636c0b42196) ([@yash0024](https://github.com/yash0024)) - Add test to check 'View Conflicts' page doesn't crash if there are a large number of conflict paths
+
+- [#4611](https://github.com/finos/legend-studio/pull/4611) [`5dabccf`](https://github.com/finos/legend-studio/commit/5dabccf9ddbdb87a58d339a07ce3f1764df8ef6b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Data Product Dashboard to studio application extension
+
 ## 28.19.61
 
 ## 28.19.60

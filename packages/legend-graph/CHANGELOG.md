@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.3.13
+
+### Patch Changes
+
+- [#4608](https://github.com/finos/legend-studio/pull/4608) [`7fda83e`](https://github.com/finos/legend-studio/commit/7fda83e746d4b76681ee40fee4afec94b82f3425) ([@travisstebbins](https://github.com/travisstebbins)) - Fix Marketplace "My Closed Requests" view
+
+- [#4611](https://github.com/finos/legend-studio/pull/4611) [`5dabccf`](https://github.com/finos/legend-studio/commit/5dabccf9ddbdb87a58d339a07ce3f1764df8ef6b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Data Product Dashboard to studio application extension
+
 ## 32.3.12
 
 ### Patch Changes
