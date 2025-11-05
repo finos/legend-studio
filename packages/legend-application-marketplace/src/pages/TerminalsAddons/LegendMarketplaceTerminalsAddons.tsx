@@ -49,6 +49,7 @@ import {
   SparkleStarsIcon,
 } from '@finos/legend-art';
 import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -235,6 +236,7 @@ export const VendorDataMainContent = observer(
 export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
   observer(() => {
     const marketPlaceVendorDataStore = useLegendMarketPlaceVendorDataStore();
+    const marketplaceBaseStore = useLegendMarketplaceBaseStore();
 
     const onChange = (query: string | undefined) => {
       marketPlaceVendorDataStore.setProvidersFilters([
@@ -250,7 +252,10 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
       <LegendMarketplacePage className="legend-marketplace-vendor-data">
         <div className="legend-marketplace-banner">
           <div className="legend-marketplace-banner__search-bar">
-            <LegendMarketplaceSearchBar onSearch={onChange} />
+            <LegendMarketplaceSearchBar
+              marketplaceBaseStore={marketplaceBaseStore}
+              onSearch={onChange}
+            />
           </div>
         </div>
 

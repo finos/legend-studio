@@ -25,11 +25,13 @@ import {
   useLegendMarketPlaceVendorDataStore,
   withLegendMarketplaceVendorDataStore,
 } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 
 export const LegendMarketplaceSubscriptions =
   withLegendMarketplaceVendorDataStore(
     observer(() => {
       const vendorDataStore = useLegendMarketPlaceVendorDataStore();
+      const marketplaceBaseStore = useLegendMarketplaceBaseStore();
       const [subscriptionData, setSubscriptionData] = useState<Subscription[]>(
         [],
       );
@@ -114,10 +116,12 @@ export const LegendMarketplaceSubscriptions =
                 Subscriptions
               </Typography>
               <LegendMarketplaceSearchBar
+                marketplaceBaseStore={marketplaceBaseStore}
                 placeholder="Search user"
                 onSearch={onUserSearch}
               />
               <LegendMarketplaceSearchBar
+                marketplaceBaseStore={marketplaceBaseStore}
                 placeholder="Search all subscriptions"
                 onSearch={() => {}}
               />
