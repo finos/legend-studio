@@ -109,6 +109,14 @@ export const MarketplaceLakehouseSearchResults =
             sanitizeParametersInsteadOfUrl: true,
           },
         );
+      const useIndexSearch =
+        applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
+          LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_INDEX_SEARCH,
+        )
+          ? applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
+              LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_INDEX_SEARCH,
+            ) === 'true'
+          : marketplaceBaseStore.useIndexSearch;
       const [query, setQuery] = useState<string | undefined>(searchQuery);
 
       // Execute initial search on page load
@@ -119,32 +127,16 @@ export const MarketplaceLakehouseSearchResults =
         ) {
           searchResultsStore.executeSearch(
             searchQuery,
-            marketplaceBaseStore.useIndexSearch,
+            useIndexSearch,
             auth.user?.access_token,
           );
         }
       }, [
         auth.user?.access_token,
-        marketplaceBaseStore.useIndexSearch,
+        useIndexSearch,
         searchQuery,
         searchResultsStore,
         searchResultsStore.executingSearchState.isInInitialState,
-      ]);
-
-      // Execute search whenever search query or useIndexSearch changes
-      useEffect(() => {
-        if (searchQuery) {
-          searchResultsStore.executeSearch(
-            searchQuery,
-            marketplaceBaseStore.useIndexSearch,
-            auth.user?.access_token,
-          );
-        }
-      }, [
-        auth.user?.access_token,
-        marketplaceBaseStore.useIndexSearch,
-        searchQuery,
-        searchResultsStore,
       ]);
 
       useSyncStateAndSearchParam(
@@ -171,14 +163,11 @@ export const MarketplaceLakehouseSearchResults =
         if (query) {
           searchResultsStore.executeSearch(
             query,
-            marketplaceBaseStore.useIndexSearch,
+            useIndexSearch,
             auth.user?.access_token,
           );
           applicationStore.navigationService.navigator.updateCurrentLocation(
-            generateLakehouseSearchResultsRoute(
-              query,
-              marketplaceBaseStore.useIndexSearch,
-            ),
+            generateLakehouseSearchResultsRoute(query, useIndexSearch),
           );
         }
       };
