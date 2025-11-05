@@ -49,6 +49,7 @@ export abstract class V1_AccessPoint implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT,
       this.id,
+      this.title ?? '',
       this.description ?? '',
     ]);
   }
@@ -109,6 +110,7 @@ export class V1_AccessPointGroup implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT_GROUP,
       this.id,
+      this.title ?? '',
       this.description ?? '',
       hashArray(this.accessPoints),
       hashArray(this.stereotypes),
