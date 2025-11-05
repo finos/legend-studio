@@ -27,6 +27,7 @@ import {
   StoredSummaryEntity,
   type StoreProjectData,
   type DepotServerClient,
+  MASTER_SNAPSHOT_ALIAS,
 } from '@finos/legend-server-depot';
 import {
   ActionState,
@@ -225,7 +226,9 @@ export class DataProductDepotDashboardState {
   MAX_CALLS = 3000;
   fetchingProductsState = ActionState.create();
   scope = DepotScope.RELEASES;
+  includeWorkspaceSnapshot = false;
   entitiesSummary: StoredSummaryEntity[] | undefined;
+
   dataProductEntitiesStates: DataProductEntityState[] | undefined;
 
   constructor(depotStore: DepotServerClient, store: DepotDashboardStore) {
@@ -237,6 +240,8 @@ export class DataProductDepotDashboardState {
       gridApi: observable,
       dataProductEntitiesStates: observable,
       setGridApi: action,
+      includeWorkspaceSnapshot: observable,
+      setIncludeWorkspaceSnapshot: action,
       entitiySummarryCount: computed,
       init: flow,
       fetchedCount: computed,
@@ -281,6 +286,10 @@ export class DataProductDepotDashboardState {
     return `Maximum of ${this.MAX_CALLS} data products fetched out of ${this.totalCount} available. This is to prevent hit on depot server.`;
   }
 
+  setIncludeWorkspaceSnapshot(val: boolean): void {
+    this.includeWorkspaceSnapshot = val;
+  }
+
   updateRow(updatedEntity: DataProductEntityState) {
     if (this.gridApi) {
       const rowNode = this.gridApi.getRowNode(updatedEntity.id);
@@ -312,24 +321,31 @@ export class DataProductDepotDashboardState {
       this.fetchingProductsState.inProgress();
       this.dataProductEntitiesStates = undefined;
       this.entitiesSummary = undefined;
-      const _summary =
+      const summary = (
         (yield this.depotServerClient.getEntitiesSummaryByClassifier(
           CORE_PURE_PATH.DATA_PRODUCT,
           {
             summary: true,
             scope: this.scope,
           },
-        )) as unknown as PlainObject<StoredSummaryEntity>[];
-      const summary = _summary.map((storeEntity) =>
-        StoredSummaryEntity.serialization.fromJson(storeEntity),
-      );
+        )) as unknown as PlainObject<StoredSummaryEntity>[]
+      )
+        .map((storeEntity) =>
+          StoredSummaryEntity.serialization.fromJson(storeEntity),
+        )
+        .filter((info) => {
+          if (
+            this.scope === DepotScope.SNAPSHOT &&
+            !this.includeWorkspaceSnapshot
+          ) {
+            return info.versionId === MASTER_SNAPSHOT_ALIAS;
+          }
+          return true;
+        });
       this.entitiesSummary = summary;
-      const entities = summary.map(
-        (s) => new DataProductEntityState(s, this.store),
-      );
-      this.dataProductEntitiesStates = entities.sort((a, b) =>
-        a.gaProject.localeCompare(b.gaProject),
-      );
+      this.dataProductEntitiesStates = summary
+        .map((s) => new DataProductEntityState(s, this.store))
+        .sort((a, b) => a.gaProject.localeCompare(b.gaProject));
       flowResult(this.fetchEntities()).catch((error) => {
         assertErrorThrown(error);
         this.store.applicationStore.notificationService.notifyError(error);

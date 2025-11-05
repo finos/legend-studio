@@ -581,6 +581,15 @@ export const DepotDashboard = withDepotSetupStore(
       );
     };
 
+    const handleWorkspaceSnapshotToggle = () => {
+      dataProductDepotState.setIncludeWorkspaceSnapshot(
+        !dataProductDepotState.includeWorkspaceSnapshot,
+      );
+      flowResult(dataProductDepotState.init()).catch(
+        depotSetupStore.applicationStore.alertUnhandledError,
+      );
+    };
+
     useEffect(() => {
       flowResult(dataProductDepotState.init()).catch(
         depotSetupStore.applicationStore.alertUnhandledError,
@@ -634,6 +643,25 @@ export const DepotDashboard = withDepotSetupStore(
                   >
                     Snapshots
                   </button>
+                  {dataProductDepotState.scope === DepotScope.SNAPSHOT && (
+                    <label
+                      style={{
+                        marginLeft: '2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontWeight: 500,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={dataProductDepotState.includeWorkspaceSnapshot}
+                        onChange={handleWorkspaceSnapshotToggle}
+                        style={{ accentColor: '#2563eb' }}
+                      />
+                      Include workspace snapshots
+                    </label>
+                  )}
                 </div>
                 <div className="panel__content__form__section__header__label">
                   Element Type
