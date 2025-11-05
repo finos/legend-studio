@@ -213,7 +213,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
                     setAnchorEl(null);
                     item.onClick?.();
                   }}
-                  component={item.href ? 'a' : 'div'}
+                  component={item.href ? 'a' : 'li'}
                   href={item.href}
                   target={item.href ? '_blank' : undefined}
                   rel={item.href ? 'noopener noreferrer' : undefined}
