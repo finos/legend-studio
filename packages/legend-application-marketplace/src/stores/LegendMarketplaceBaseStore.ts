@@ -92,11 +92,14 @@ export class LegendMarketplaceBaseStore {
   readonly initState = ActionState.create();
 
   showDemoModal = false;
+  useIndexSearch = false;
 
   constructor(applicationStore: LegendMarketplaceApplicationStore) {
     makeObservable<LegendMarketplaceBaseStore>(this, {
       showDemoModal: observable,
+      useIndexSearch: observable,
       setDemoModal: action,
+      setUseIndexSearch: action,
       initialize: flow,
     });
 
@@ -316,6 +319,10 @@ export class LegendMarketplaceBaseStore {
 
   setDemoModal(val: boolean): void {
     this.showDemoModal = val;
+  }
+
+  setUseIndexSearch(value: boolean): void {
+    this.useIndexSearch = value;
   }
 
   *initialize(): GeneratorFn<void> {

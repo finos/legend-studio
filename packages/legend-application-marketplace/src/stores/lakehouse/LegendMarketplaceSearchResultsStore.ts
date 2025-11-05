@@ -90,7 +90,6 @@ export class LegendMarketplaceSearchResultsStore {
   productCardStates: ProductCardState[] = [];
   filterState: DataProductFilterState;
   sort: DataProductSort = DataProductSort.DEFAULT;
-  useIndexSearch = false;
 
   executingSearchState = ActionState.create();
 
@@ -110,11 +109,9 @@ export class LegendMarketplaceSearchResultsStore {
       productCardStates: observable,
       filterState: observable,
       sort: observable,
-      useIndexSearch: observable,
       handleModeledDataProductsFilterToggle: action,
       setProductCardStates: action,
       setSort: action,
-      setUseIndexSearch: action,
       filterSortProducts: computed,
       executeSearch: flow,
     });
@@ -157,10 +154,6 @@ export class LegendMarketplaceSearchResultsStore {
 
   setSort(sort: DataProductSort): void {
     this.sort = sort;
-  }
-
-  setUseIndexSearch(value: boolean): void {
-    this.useIndexSearch = value;
   }
 
   *executeSearch(

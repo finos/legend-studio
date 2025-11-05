@@ -182,6 +182,7 @@ export const MarketplaceLakehouseHome = observer(() => {
           Marketplace
         </Box>
         <LegendMarketplaceSearchBar
+          marketplaceBaseStore={legendMarketplaceBaseStore}
           onSearch={(query) => {
             if (isNonEmptyString(query)) {
               handleSearch(query);

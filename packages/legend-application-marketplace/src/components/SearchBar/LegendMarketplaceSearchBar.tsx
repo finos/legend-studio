@@ -15,8 +15,18 @@
  */
 
 import { type JSX, useState } from 'react';
-import { IconButton, InputAdornment, TextField } from '@mui/material';
-import { clsx, SearchIcon, TuneIcon } from '@finos/legend-art';
+import {
+  FormControlLabel,
+  IconButton,
+  InputAdornment,
+  Menu,
+  MenuItem,
+  Switch,
+  TextField,
+  Tooltip,
+} from '@mui/material';
+import { clsx, InfoCircleIcon, SearchIcon, TuneIcon } from '@finos/legend-art';
+import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 
 export interface Vendor {
   provider: string;
@@ -25,15 +35,27 @@ export interface Vendor {
 }
 
 export const LegendMarketplaceSearchBar = (props: {
+  marketplaceBaseStore: LegendMarketplaceBaseStore;
   onSearch?: (query: string | undefined) => void;
   initialValue?: string | undefined;
   placeholder?: string;
   onChange?: (query: string) => void;
   className?: string | undefined;
 }): JSX.Element => {
-  const { onSearch, initialValue, placeholder, onChange, className } = props;
+  const {
+    marketplaceBaseStore,
+    onSearch,
+    initialValue,
+    placeholder,
+    onChange,
+    className,
+  } = props;
 
   const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
+  const [searchMenuAnchorEl, setSearchMenuAnchorEl] =
+    useState<HTMLElement | null>();
+
+  const searchMenuOpen = Boolean(searchMenuAnchorEl);
 
   return (
     <form
@@ -58,7 +80,12 @@ export const LegendMarketplaceSearchBar = (props: {
             className: 'legend-marketplace__search-bar__input',
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={() => {}} title="filter">
+                <IconButton
+                  onClick={(event) =>
+                    setSearchMenuAnchorEl(event.currentTarget)
+                  }
+                  title="filter"
+                >
                   <TuneIcon />
                 </IconButton>
                 <IconButton
@@ -72,6 +99,32 @@ export const LegendMarketplaceSearchBar = (props: {
           },
         }}
       />
+      <Menu
+        anchorEl={searchMenuAnchorEl}
+        open={searchMenuOpen}
+        onClose={() => setSearchMenuAnchorEl(null)}
+      >
+        <MenuItem>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={marketplaceBaseStore.useIndexSearch}
+                onChange={(event) => {
+                  marketplaceBaseStore.setUseIndexSearch(event.target.checked);
+                }}
+              />
+            }
+            label={
+              <>
+                Use Index Search{' '}
+                <Tooltip title="Index search provides the most up-to-date results by searching directly on deployed data products. Only use index search if you are trying to find a recently deployed data product.">
+                  <InfoCircleIcon />
+                </Tooltip>
+              </>
+            }
+          />
+        </MenuItem>
+      </Menu>
     </form>
   );
 };

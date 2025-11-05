@@ -24,7 +24,6 @@ import {
   CheckIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
-  InfoCircleIcon,
 } from '@finos/legend-art';
 import {
   Box,
@@ -36,8 +35,6 @@ import {
   Grid,
   MenuItem,
   Select,
-  Switch,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import {
@@ -100,8 +97,8 @@ export const MarketplaceLakehouseSearchResults =
       const searchResultsStore = useLegendMarketplaceSearchResultsStore();
       const auth = useAuth();
 
-      const applicationStore =
-        searchResultsStore.marketplaceBaseStore.applicationStore;
+      const marketplaceBaseStore = searchResultsStore.marketplaceBaseStore;
+      const applicationStore = marketplaceBaseStore.applicationStore;
       const searchQuery =
         applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
           LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
@@ -118,11 +115,17 @@ export const MarketplaceLakehouseSearchResults =
         ) {
           searchResultsStore.executeSearch(
             searchQuery,
-            searchResultsStore.useIndexSearch,
+            marketplaceBaseStore.useIndexSearch,
             auth.user?.access_token,
           );
         }
-      }, [auth.user?.access_token, searchQuery, searchResultsStore]);
+      }, [
+        auth.user?.access_token,
+        marketplaceBaseStore.useIndexSearch,
+        searchQuery,
+        searchResultsStore,
+        searchResultsStore.executingSearchState.isInInitialState,
+      ]);
 
       const isLoadingDataProducts =
         searchResultsStore.executingSearchState.isInProgress;
@@ -131,10 +134,10 @@ export const MarketplaceLakehouseSearchResults =
         if (query) {
           searchResultsStore.executeSearch(
             query,
-            searchResultsStore.useIndexSearch,
+            marketplaceBaseStore.useIndexSearch,
             auth.user?.access_token,
           );
-          searchResultsStore.marketplaceBaseStore.applicationStore.navigationService.navigator.updateCurrentLocation(
+          applicationStore.navigationService.navigator.updateCurrentLocation(
             generateLakehouseSearchResultsRoute(query),
           );
         }
@@ -144,6 +147,7 @@ export const MarketplaceLakehouseSearchResults =
         <LegendMarketplacePage className="marketplace-lakehouse-search-results">
           <Container className="marketplace-lakehouse-search-results__search-container">
             <LegendMarketplaceSearchBar
+              marketplaceBaseStore={searchResultsStore.marketplaceBaseStore}
               onSearch={() => {
                 handleSearch();
                 LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
@@ -166,73 +170,48 @@ export const MarketplaceLakehouseSearchResults =
               >
                 {searchResultsStore.filterSortProducts?.length ?? '0'} Products
               </Typography>
-              <Box>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={searchResultsStore.useIndexSearch}
-                      onChange={(event) => {
-                        searchResultsStore.setUseIndexSearch(
-                          event.target.checked,
-                        );
-                        handleSearch();
-                      }}
-                    />
-                  }
-                  label={
-                    <>
-                      Use Index Search{' '}
-                      <Tooltip title="Index search provides the most up-to-date results by searching directly on deployed data products. Only use index search if you are trying to find a recently deployed data product.">
-                        <InfoCircleIcon />
-                      </Tooltip>
-                    </>
-                  }
-                />
-                <FormControl sx={{ width: '8.2rem' }}>
-                  <Select
-                    autoWidth={true}
-                    displayEmpty={true}
-                    value={'Sort'}
-                    onChange={(e) => {
-                      searchResultsStore.setSort(
-                        e.target.value as DataProductSort,
-                      );
-                    }}
-                    sx={{
-                      '& .MuiSelect-select': {
-                        fontWeight: '500',
-                        fontSize: '1.6rem',
-                        padding: '1rem',
-                        minHeight: 'unset !important',
-                      },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'black',
-                        borderRadius: '0rem',
-                      },
-                    }}
-                  >
-                    <MenuItem disabled={true} value="Sort">
-                      Sort
-                    </MenuItem>
-                    {Object.values(DataProductSort).map((sortValue) => {
-                      return (
-                        <MenuItem
-                          key={sortValue}
-                          value={sortValue}
-                          sx={{
-                            gap: '0.5rem',
-                          }}
-                        >
-                          {sortValue}
-                          {searchResultsStore.sort === sortValue && (
-                            <CheckIcon />
-                          )}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </Box>
+              <FormControl sx={{ width: '8.2rem' }}>
+                <Select
+                  autoWidth={true}
+                  displayEmpty={true}
+                  value={'Sort'}
+                  onChange={(e) => {
+                    searchResultsStore.setSort(
+                      e.target.value as DataProductSort,
+                    );
+                  }}
+                  sx={{
+                    '& .MuiSelect-select': {
+                      fontWeight: '500',
+                      fontSize: '1.6rem',
+                      padding: '1rem',
+                      minHeight: 'unset !important',
+                    },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'black',
+                      borderRadius: '0rem',
+                    },
+                  }}
+                >
+                  <MenuItem disabled={true} value="Sort">
+                    Sort
+                  </MenuItem>
+                  {Object.values(DataProductSort).map((sortValue) => {
+                    return (
+                      <MenuItem
+                        key={sortValue}
+                        value={sortValue}
+                        sx={{
+                          gap: '0.5rem',
+                        }}
+                      >
+                        {sortValue}
+                        {searchResultsStore.sort === sortValue && <CheckIcon />}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
             </div>
           </div>
           <Container
