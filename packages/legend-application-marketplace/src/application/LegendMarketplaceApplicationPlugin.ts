@@ -88,5 +88,7 @@ export abstract class LegendMarketplaceApplicationPlugin
    * Config to allow adding additional MenuItem elements to the LegendMarketplaceIconToolbar's
    * help menu
    */
-  getAdditionalHelpMenuItemConfigs?(): AdditionalMarketplaceHelpMenuItemConfig[];
+  getAdditionalHelpMenuItemConfigs?(
+    marketplaceBaseStore: LegendMarketplaceBaseStore,
+  ): AdditionalMarketplaceHelpMenuItemConfig[];
 }

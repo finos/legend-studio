@@ -162,7 +162,9 @@ export const LegendMarketplaceIconToolbar = observer(() => {
 
     const additionalHelpMenuItems = applicationStore.pluginManager
       .getApplicationPlugins()
-      .flatMap((plugin) => plugin.getAdditionalHelpMenuItemConfigs?.())
+      .flatMap((plugin) =>
+        plugin.getAdditionalHelpMenuItemConfigs?.(marketplaceStore),
+      )
       .filter(isNonNullable);
 
     return (
