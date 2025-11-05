@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.36
+
+### Patch Changes
+
+- [#4617](https://github.com/finos/legend-studio/pull/4617) [`0d72a88`](https://github.com/finos/legend-studio/commit/0d72a88368613e288d61a82979f28bb5d28c52a9) ([@travisstebbins](https://github.com/travisstebbins)) - Add plugin function for additional help menu items in Marketplace
+
 ## 0.1.35
 
 ### Patch Changes

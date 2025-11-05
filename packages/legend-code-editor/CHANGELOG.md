@@ -1,5 +1,7 @@
 # @finos/legend-code-editor
 
+## 2.0.133
+
 ## 2.0.132
 
 ## 2.0.131
