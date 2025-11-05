@@ -111,6 +111,7 @@ export const MarketplaceLakehouseSearchResults =
         );
       const [query, setQuery] = useState<string | undefined>(searchQuery);
 
+      // Execute initial search on page load
       useEffect(() => {
         if (
           searchResultsStore.executingSearchState.isInInitialState &&
@@ -128,6 +129,22 @@ export const MarketplaceLakehouseSearchResults =
         searchQuery,
         searchResultsStore,
         searchResultsStore.executingSearchState.isInInitialState,
+      ]);
+
+      // Execute search whenever search query or useIndexSearch changes
+      useEffect(() => {
+        if (searchQuery) {
+          searchResultsStore.executeSearch(
+            searchQuery,
+            marketplaceBaseStore.useIndexSearch,
+            auth.user?.access_token,
+          );
+        }
+      }, [
+        auth.user?.access_token,
+        marketplaceBaseStore.useIndexSearch,
+        searchQuery,
+        searchResultsStore,
       ]);
 
       useSyncStateAndSearchParam(
