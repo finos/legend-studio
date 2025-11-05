@@ -31,6 +31,12 @@ export interface AdditionalMarketplacePageConfig {
   protected: boolean;
 }
 
+export interface AdditionalMarketplaceHelpMenuItemConfig {
+  label: string;
+  onClick?: () => void;
+  href?: string;
+}
+
 export abstract class LegendMarketplaceApplicationPlugin
   extends LegendApplicationPlugin
   implements DataProductDataAccess_LegendApplicationPlugin_Extension
@@ -77,4 +83,12 @@ export abstract class LegendMarketplaceApplicationPlugin
    * have access to useLegendMarketplaceBaseStore and other similar hooks.
    */
   getAdditionalMarketplacePageConfigs?(): AdditionalMarketplacePageConfig[];
+
+  /**
+   * Config to allow adding additional MenuItem elements to the LegendMarketplaceIconToolbar's
+   * help menu
+   */
+  getAdditionalHelpMenuItemConfigs?(
+    marketplaceBaseStore: LegendMarketplaceBaseStore,
+  ): AdditionalMarketplaceHelpMenuItemConfig[];
 }
