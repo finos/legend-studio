@@ -105,7 +105,10 @@ export const MarketplaceLakehouseHome = observer(() => {
 
   const handleSearch = (query: string): void => {
     applicationStore.navigationService.navigator.goToLocation(
-      generateLakehouseSearchResultsRoute(query),
+      generateLakehouseSearchResultsRoute(
+        query,
+        legendMarketplaceBaseStore.useIndexSearch,
+      ),
     );
   };
 
@@ -183,6 +186,7 @@ export const MarketplaceLakehouseHome = observer(() => {
         </Box>
         <LegendMarketplaceSearchBar
           marketplaceBaseStore={legendMarketplaceBaseStore}
+          showSettings={true}
           onSearch={(query) => {
             if (isNonEmptyString(query)) {
               handleSearch(query);

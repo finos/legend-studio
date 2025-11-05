@@ -19,7 +19,7 @@ import {
   useLegendMarketplaceSearchResultsStore,
   withLegendMarketplaceSearchResultsStore,
 } from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   CheckIcon,
   CubesLoadingIndicator,
@@ -55,6 +55,8 @@ import {
 } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { generatePathForDataProductSearchResult } from '../../../utils/SearchUtils.js';
 import { logClickingDataProductCard } from '../../../utils/LogUtils.js';
+import { useSyncStateAndSearchParam } from '@finos/legend-application';
+import { useSearchParams } from '@finos/legend-application/browser';
 
 const SearchResultsFilterPanel = observer(
   (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
@@ -96,6 +98,7 @@ export const MarketplaceLakehouseSearchResults =
     observer(() => {
       const searchResultsStore = useLegendMarketplaceSearchResultsStore();
       const auth = useAuth();
+      const [searchParams, setSearchParams] = useSearchParams();
 
       const marketplaceBaseStore = searchResultsStore.marketplaceBaseStore;
       const applicationStore = marketplaceBaseStore.applicationStore;
@@ -127,6 +130,23 @@ export const MarketplaceLakehouseSearchResults =
         searchResultsStore.executingSearchState.isInInitialState,
       ]);
 
+      useSyncStateAndSearchParam(
+        marketplaceBaseStore.useIndexSearch,
+        useCallback(
+          (val: string | undefined) => {
+            marketplaceBaseStore.setUseIndexSearch(val === 'true');
+          },
+          [marketplaceBaseStore],
+        ),
+        LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_INDEX_SEARCH,
+        searchParams,
+        setSearchParams,
+        useCallback(
+          () => marketplaceBaseStore.initState.hasCompleted,
+          [marketplaceBaseStore],
+        ),
+      );
+
       const isLoadingDataProducts =
         searchResultsStore.executingSearchState.isInProgress;
 
@@ -138,7 +158,10 @@ export const MarketplaceLakehouseSearchResults =
             auth.user?.access_token,
           );
           applicationStore.navigationService.navigator.updateCurrentLocation(
-            generateLakehouseSearchResultsRoute(query),
+            generateLakehouseSearchResultsRoute(
+              query,
+              marketplaceBaseStore.useIndexSearch,
+            ),
           );
         }
       };
@@ -148,6 +171,7 @@ export const MarketplaceLakehouseSearchResults =
           <Container className="marketplace-lakehouse-search-results__search-container">
             <LegendMarketplaceSearchBar
               marketplaceBaseStore={searchResultsStore.marketplaceBaseStore}
+              showSettings={true}
               onSearch={() => {
                 handleSearch();
                 LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
