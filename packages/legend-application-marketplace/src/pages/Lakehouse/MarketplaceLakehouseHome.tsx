@@ -243,7 +243,9 @@ export const MarketplaceLakehouseHome = observer(() => {
                           );
                           if (path) {
                             applicationStore.navigationService.navigator.visitAddress(
-                              path,
+                              applicationStore.navigationService.navigator.generateAddress(
+                                path,
+                              ),
                             );
                           }
                           logClickingDataProductCard(
@@ -260,7 +262,7 @@ export const MarketplaceLakehouseHome = observer(() => {
               <SwiperSlide key={2}>
                 <div className="marketplace-lakehouse-home__carousel-slide">
                   {highlightedDataProducts.map(
-                    (productCardState: ProductCardState, index: number) => (
+                    (productCardState: ProductCardState) => (
                       <LakehouseHighlightedProductCard
                         key={`slide-2-${productCardState.guid}`}
                         productCardState={productCardState}
@@ -270,7 +272,9 @@ export const MarketplaceLakehouseHome = observer(() => {
                           );
                           if (path) {
                             applicationStore.navigationService.navigator.visitAddress(
-                              path,
+                              applicationStore.navigationService.navigator.generateAddress(
+                                path,
+                              ),
                             );
                           }
                           logClickingDataProductCard(
@@ -287,7 +291,7 @@ export const MarketplaceLakehouseHome = observer(() => {
               <SwiperSlide key={3}>
                 <div className="marketplace-lakehouse-home__carousel-slide">
                   {highlightedDataProducts.map(
-                    (productCardState: ProductCardState, index: number) => (
+                    (productCardState: ProductCardState) => (
                       <LakehouseHighlightedProductCard
                         key={`slide-1-${productCardState.guid}`}
                         productCardState={productCardState}
@@ -297,7 +301,9 @@ export const MarketplaceLakehouseHome = observer(() => {
                           );
                           if (path) {
                             applicationStore.navigationService.navigator.visitAddress(
-                              path,
+                              applicationStore.navigationService.navigator.generateAddress(
+                                path,
+                              ),
                             );
                           }
                           logClickingDataProductCard(
