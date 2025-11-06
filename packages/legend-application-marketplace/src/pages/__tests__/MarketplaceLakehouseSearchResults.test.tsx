@@ -74,12 +74,9 @@ const setupTestComponent = async (
         V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
       ) {
         return mockProdParSearchResultResponse;
-      } else if (
-        lakehouseEnv === V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT
-      ) {
+      } else {
         return mockDevSearchResultResponse;
       }
-      throw new Error(`Unknown lakehouseEnv: ${lakehouseEnv}`);
     },
   );
 
@@ -97,7 +94,7 @@ const setupTestComponent = async (
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     MOCK__baseStore,
-    `/dataProduct/results?query=${query ?? 'data'}${useIndexSearch ? '&useIndexSearch=true' : ''}`,
+    `/dataProduct/results?query=${query}${useIndexSearch ? '&useIndexSearch=true' : ''}`,
   );
 
   return { MOCK__baseStore, renderResult };
@@ -134,7 +131,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
   test('Toggling useIndexSearch and updating search box value, then searching, updates URL', async () => {
     const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-    const searchInput = screen.getByDisplayValue('data') as HTMLInputElement;
+    const searchInput = screen.getByDisplayValue('data');
 
     // Update search input
     fireEvent.change(searchInput, { target: { value: 'new search' } });
@@ -143,9 +140,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
     // Turn on index search
     const searchSettingsButton = screen.getByTitle('Search settings');
     fireEvent.click(searchSettingsButton);
-    const indexSearchSwitch = screen.getByRole('switch', {
+    const indexSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
       name: /Use Index Search/,
-    }) as HTMLInputElement;
+    });
     fireEvent.click(indexSearchSwitch);
     expect(indexSearchSwitch.checked).toBe(true);
 
