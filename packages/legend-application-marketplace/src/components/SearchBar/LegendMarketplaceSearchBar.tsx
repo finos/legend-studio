@@ -98,10 +98,7 @@ export const LegendMarketplaceSearchBar = observer(
                       <TuneIcon />
                     </IconButton>
                   )}
-                  <IconButton
-                    onClick={() => onSearch?.(searchQuery)}
-                    title="search"
-                  >
+                  <IconButton type="submit" title="search">
                     <SearchIcon />
                   </IconButton>
                 </InputAdornment>
