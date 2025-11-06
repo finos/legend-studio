@@ -52,12 +52,10 @@ import {
   type V1_ValueSpecification,
   V1_AppDirLevel,
   V1_entitiesToPureModelContextData,
-  V1_EntitlementsLakehouseEnvironmentType,
   V1_ExecuteInput,
   V1_PureGraphManager,
   V1_PureModelContextData,
   V1_serializePureModelContext,
-  type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsDataProductDetailsResponse,
 } from '@finos/legend-graph';
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
@@ -214,45 +212,6 @@ export const TEST__provideMockedLegendDataCubeEngine = async (customization?: {
     await value.initialize();
   }
   return value;
-};
-
-export const mockAdhocDataProduct: V1_EntitlementsDataProductDetails = {
-  id: 'test-id',
-  deploymentId: 1,
-  title: 'test-title',
-  description: 'test description',
-  origin: {
-    definition: 'test definition',
-    type: 'AdHocDeployment',
-  },
-  lakehouseEnvironment: {
-    producerEnvironmentName: 'test-producer-environment',
-    type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-  },
-  fullPath: 'test::path::to::test-dataproduct-name',
-  dataProduct: {
-    name: 'test-dataproduct-name',
-    accessPoints: [
-      {
-        name: 'test-accesspoint-name',
-        groups: ['test-group'],
-      },
-      {
-        name: 'test-accesspoint-name-1',
-        groups: ['test-group'],
-      },
-    ],
-    accessPointGroupStereotypeMappings: [
-      {
-        accessPointGroup: 'MIGRATION',
-        stereotypes: [],
-      },
-    ],
-    owner: {
-      appDirId: 123456,
-      level: V1_AppDirLevel.DEPLOYMENT,
-    },
-  },
 };
 
 export const mockLakehouseConsumerAdHocDataProduct = {
