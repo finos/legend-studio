@@ -19,6 +19,8 @@ import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.j
 import {
   ActionState,
   assertErrorThrown,
+  isNonNullable,
+  LogEvent,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
@@ -47,6 +49,7 @@ import {
   type StoredSummaryEntity,
   DepotScope,
 } from '@finos/legend-server-depot';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 
 export interface DataProductFilterConfig {
   modeledDataProducts?: boolean;
@@ -222,9 +225,21 @@ export class LegendMarketplaceSearchResultsStore {
         query,
         this.marketplaceBaseStore.envState.lakehouseEnvironment,
       );
-      const results = rawResults.map((result) =>
-        DataProductSearchResult.serialization.fromJson(result),
-      );
+      const results = rawResults
+        .map((result) => {
+          try {
+            return DataProductSearchResult.serialization.fromJson(result);
+          } catch (error) {
+            this.marketplaceBaseStore.applicationStore.logService.error(
+              LogEvent.create(
+                LEGEND_MARKETPLACE_APP_EVENT.DESERIALIZE_DATA_PRODUCT_SEARCH_RESULT_FAILURE,
+              ),
+              `Can't deserialize data product search result: ${error}`,
+            );
+            return undefined;
+          }
+        })
+        .filter(isNonNullable);
 
       // Create data product card states
       const dataProductCardStates: ProductCardState[] = results.map(
@@ -284,47 +299,61 @@ export class LegendMarketplaceSearchResultsStore {
         { engine: this.marketplaceBaseStore.remoteEngine },
       );
 
-      const productCardStates = dataProductDetails.map((detail) => {
-        const origin =
-          detail.origin instanceof V1_SdlcDeploymentDataProductOrigin
-            ? LakehouseSDLCDataProductSearchResultOrigin.serialization.fromJson(
-                {
-                  _type: LakehouseDataProductSearchResultOriginType.SDLC,
-                  groupId: detail.origin.group,
-                  artifactId: detail.origin.artifact,
-                  versionId: detail.origin.version,
-                  path: detail.fullPath,
+      const productCardStates = dataProductDetails
+        .map((detail) => {
+          try {
+            const origin =
+              detail.origin instanceof V1_SdlcDeploymentDataProductOrigin
+                ? LakehouseSDLCDataProductSearchResultOrigin.serialization.fromJson(
+                    {
+                      _type: LakehouseDataProductSearchResultOriginType.SDLC,
+                      groupId: detail.origin.group,
+                      artifactId: detail.origin.artifact,
+                      versionId: detail.origin.version,
+                      path: detail.fullPath,
+                    },
+                  )
+                : LakehouseAdHocDataProductSearchResultOrigin.serialization.fromJson(
+                    {
+                      _type: LakehouseDataProductSearchResultOriginType.AD_HOC,
+                    },
+                  );
+            const searchResult = DataProductSearchResult.serialization.fromJson(
+              {
+                dataProductTitle: detail.title ?? detail.dataProduct.name,
+                dataProductDescription: detail.description,
+                tags1: [],
+                tags2: [],
+                tag_score: 0,
+                similarity: 0,
+                dataProductDetails: {
+                  _type: DataProductSearchResultDetailsType.LAKEHOUSE,
+                  dataProductId: detail.dataProduct.name,
+                  deploymentId: detail.deploymentId,
+                  producerEnvironmentName:
+                    detail.lakehouseEnvironment?.producerEnvironmentName,
+                  producerEnvironmentType: detail.lakehouseEnvironment?.type,
+                  origin,
                 },
-              )
-            : LakehouseAdHocDataProductSearchResultOrigin.serialization.fromJson(
-                {
-                  _type: LakehouseDataProductSearchResultOriginType.AD_HOC,
-                },
-              );
-        const searchResult = DataProductSearchResult.serialization.fromJson({
-          dataProductTitle: detail.title ?? detail.dataProduct.name,
-          dataProductDescription: detail.description,
-          tags1: [],
-          tags2: [],
-          tag_score: 0,
-          similarity: 0,
-          dataProductDetails: {
-            _type: DataProductSearchResultDetailsType.LAKEHOUSE,
-            dataProductId: detail.dataProduct.name,
-            deploymentId: detail.deploymentId,
-            producerEnvironmentName:
-              detail.lakehouseEnvironment?.producerEnvironmentName,
-            producerEnvironmentType: detail.lakehouseEnvironment?.type,
-            origin,
-          },
-        });
+              },
+            );
 
-        return new ProductCardState(
-          this.marketplaceBaseStore,
-          searchResult,
-          this.displayImageMap,
-        );
-      });
+            return new ProductCardState(
+              this.marketplaceBaseStore,
+              searchResult,
+              this.displayImageMap,
+            );
+          } catch (error) {
+            this.marketplaceBaseStore.applicationStore.logService.error(
+              LogEvent.create(
+                LEGEND_MARKETPLACE_APP_EVENT.DESERIALIZE_DATA_PRODUCT_SEARCH_RESULT_FAILURE,
+              ),
+              `Can't deserialize data product search result: ${error}`,
+            );
+            return undefined;
+          }
+        })
+        .filter(isNonNullable);
       this.setIndexSearchDataProductCardStates(
         productCardStates.filter((productCardState) =>
           productCardState.title.toLowerCase().includes(query.toLowerCase()),
@@ -350,34 +379,48 @@ export class LegendMarketplaceSearchResultsStore {
             summary: true,
           },
         )) as unknown as StoredSummaryEntity[];
-      const productCardStates = dataSpaceEntitySummaries.map((entity) => {
-        const dataSpace = V1_deserializeDataSpace({
-          executionContexts: [],
-          defaultExecutionContext: '',
-          package: extractPackagePathFromPath(entity.path) ?? entity.path,
-          name: extractElementNameFromPath(entity.path),
-        });
-        const searchResult = DataProductSearchResult.serialization.fromJson({
-          dataProductTitle: dataSpace.title ?? dataSpace.name,
-          dataProductDescription: dataSpace.description,
-          tags1: [],
-          tags2: [],
-          tag_score: 0,
-          similarity: 0,
-          dataProductDetails: {
-            _type: DataProductSearchResultDetailsType.LEGACY,
-            groupId: entity.groupId,
-            artifactId: entity.artifactId,
-            versionId: entity.versionId,
-            path: entity.path,
-          },
-        });
-        return new ProductCardState(
-          this.marketplaceBaseStore,
-          searchResult,
-          this.displayImageMap,
-        );
-      });
+      const productCardStates = dataSpaceEntitySummaries
+        .map((entity) => {
+          try {
+            const dataSpace = V1_deserializeDataSpace({
+              executionContexts: [],
+              defaultExecutionContext: '',
+              package: extractPackagePathFromPath(entity.path) ?? entity.path,
+              name: extractElementNameFromPath(entity.path),
+            });
+            const searchResult = DataProductSearchResult.serialization.fromJson(
+              {
+                dataProductTitle: dataSpace.title ?? dataSpace.name,
+                dataProductDescription: dataSpace.description,
+                tags1: [],
+                tags2: [],
+                tag_score: 0,
+                similarity: 0,
+                dataProductDetails: {
+                  _type: DataProductSearchResultDetailsType.LEGACY,
+                  groupId: entity.groupId,
+                  artifactId: entity.artifactId,
+                  versionId: entity.versionId,
+                  path: entity.path,
+                },
+              },
+            );
+            return new ProductCardState(
+              this.marketplaceBaseStore,
+              searchResult,
+              this.displayImageMap,
+            );
+          } catch (error) {
+            this.marketplaceBaseStore.applicationStore.logService.error(
+              LogEvent.create(
+                LEGEND_MARKETPLACE_APP_EVENT.DESERIALIZE_DATA_PRODUCT_SEARCH_RESULT_FAILURE,
+              ),
+              `Can't deserialize data product search result: ${error}`,
+            );
+            return undefined;
+          }
+        })
+        .filter(isNonNullable);
       this.setIndexSearchLegacyDataProductCardStates(
         productCardStates.filter((productCardState) =>
           productCardState.title.toLowerCase().includes(query.toLowerCase()),
