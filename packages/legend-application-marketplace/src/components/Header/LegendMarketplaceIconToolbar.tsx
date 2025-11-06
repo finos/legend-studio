@@ -122,6 +122,23 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           <MenuItem
             component="a"
             href={applicationStore.navigationService.navigator.generateAddress(
+              LEGEND_MARKETPLACE_ROUTE_PATTERN.SUBSCRIPTIONS,
+            )}
+          >
+            View Terminal Subscriptions
+          </MenuItem>
+          <MenuItem
+            component="a"
+            href={applicationStore.navigationService.navigator.generateAddress(
+              LEGEND_MARKETPLACE_ROUTE_PATTERN.ORDERS,
+            )}
+          >
+            View Orders
+          </MenuItem>
+          <MenuContentDivider />
+          <MenuItem
+            component="a"
+            href={applicationStore.navigationService.navigator.generateAddress(
               LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
             )}
           >

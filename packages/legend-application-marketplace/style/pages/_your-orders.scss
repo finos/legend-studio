@@ -1,0 +1,499 @@
+/**
+ * Copyright (c) 2025-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Using CSS custom properties from legend-art variables
+
+// === Mixins ===
+@use 'mixins' as *;
+
+@mixin transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@mixin hover-lift {
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 10%),
+      0 4px 6px -4px rgb(0 0 0 / 10%);
+  }
+}
+
+@mixin glass-effect {
+  background: rgb(255 255 255 / 80%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgb(255 255 255 / 20%);
+}
+
+// === Main Container ===
+.legend-marketplace-your-orders {
+  background-color: var(--color-white);
+  min-height: 100vh;
+
+  &__header {
+    padding: 1.5rem 0 1rem;
+    margin-bottom: 1.5rem;
+
+    .MuiBreadcrumbs-root {
+      font-size: 0.875rem;
+      font-weight: 500;
+
+      .MuiLink-root {
+        color: rgb(255 255 255 / 90%);
+        text-decoration: none;
+        @include transition-smooth;
+
+        &:hover {
+          color: var(--color-white);
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  &__content {
+    width: 100%;
+    padding: 0 1.5rem 2rem;
+    background: var(--color-white);
+
+    @media (width <= 768px) {
+      padding: 0 1rem 1.5rem;
+    }
+  }
+
+  &__header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    gap: 1rem;
+
+    @media (width <= 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: var(--color-dark-grey-100);
+    }
+  }
+
+  &__refresh-button {
+    border: 1px solid var(--color-light-grey-300) !important;
+    color: var(--color-dark-grey-400) !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 6px !important;
+    @include transition-smooth;
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-blue-100) !important;
+      background-color: var(--color-light-grey-0) !important;
+      color: var(--color-blue-100) !important;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.7 !important;
+      cursor: not-allowed !important;
+      border-color: var(--color-light-grey-200) !important;
+      color: var(--color-dark-grey-500) !important;
+      background-color: var(--color-light-grey-100) !important;
+    }
+
+    .MuiSvgIcon-root {
+      font-size: 1rem;
+    }
+
+    .MuiCircularProgress-root {
+      color: var(--color-blue-100) !important;
+    }
+  }
+}
+
+// === Tabs Styling ===
+.orders-tabs {
+  border-bottom: 1px solid var(--color-light-grey-200);
+  margin-bottom: 1.5rem;
+
+  .MuiTab-root {
+    text-transform: none !important;
+    font-size: 2rem !important;
+    font-weight: 500 !important;
+    min-width: 120px !important;
+    padding: 0.75rem 1rem !important;
+    color: var(--color-dark-grey-500) !important;
+    @include transition-smooth;
+
+    &:hover {
+      color: var(--color-dark-grey-400) !important;
+      background-color: rgb(59 130 246 / 5%);
+    }
+
+    &.Mui-selected {
+      color: var(--color-blue-100) !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  .MuiTabs-indicator {
+    background-color: var(--color-blue-100) !important;
+    height: 2px !important;
+    border-radius: 1px !important;
+  }
+}
+
+// === Loading State ===
+.orders-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 0;
+  gap: 0.75rem;
+
+  .MuiCircularProgress-root {
+    color: var(--color-blue-100);
+  }
+
+  .loading-text {
+    font-size: 1rem;
+    color: var(--color-dark-grey-400);
+    font-weight: 500;
+  }
+}
+
+// === Empty State ===
+.orders-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  background-color: var(--color-light-grey-50);
+  border-radius: 1rem;
+  border: 1px dashed var(--color-light-grey-300);
+  text-align: center;
+
+  .empty-icon {
+    margin-bottom: 1rem;
+    opacity: 0.5;
+    color: var(--color-dark-grey-500);
+  }
+
+  .empty-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--color-dark-grey-100);
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-description {
+    font-size: 1.3rem;
+    color: var(--color-dark-grey-500);
+    max-width: 380px;
+    line-height: 1.5;
+  }
+}
+
+// === Table Container ===
+.orders-table-container {
+  background: var(--color-white);
+  border-radius: 1rem !important;
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 10%),
+    0 1px 2px -1px rgb(0 0 0 / 10%) !important;
+  border: 1px solid var(--color-light-grey-200) !important;
+  overflow: hidden;
+
+  .MuiTable-root {
+    .MuiTableHead-root {
+      background-color: var(--color-light-grey-100);
+
+      .MuiTableCell-root {
+        font-weight: 600 !important;
+        font-size: 1.5rem !important;
+        color: var(--color-dark-grey-400) !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 1rem 0.75rem !important;
+        border-bottom: 1px solid var(--color-light-grey-200) !important;
+      }
+    }
+
+    .MuiTableBody-root {
+      .MuiTableRow-root {
+        @include transition-smooth;
+
+        cursor: pointer;
+
+        &:hover {
+          background-color: rgb(59 130 246 / 2%) !important;
+        }
+
+        &:not(:last-child) {
+          border-bottom: 1px solid rgb(243 244 246 / 50%);
+        }
+
+        .MuiTableCell-root {
+          font-size: 1.5rem;
+          vertical-align: middle;
+        }
+      }
+    }
+  }
+}
+
+// === Order Status Chip ===
+.order-status-chip {
+  &--open {
+    background-color: rgb(245 158 11 / 10%) !important;
+    color: var(--color-yellow-400) !important;
+    font-weight: 500 !important;
+    font-size: 1.3rem !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 0.375rem !important;
+
+    .MuiSvgIcon-root {
+      font-size: 1.3rem;
+    }
+  }
+
+  &--closed {
+    background-color: rgb(34 197 94 / 10%) !important;
+    color: var(--color-green-500) !important;
+    font-weight: 500 !important;
+    font-size: 1.5rem !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 0.375rem !important;
+
+    .MuiSvgIcon-root {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// === Order Row Details ===
+.order-row {
+  &__id-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+
+    .expand-button {
+      padding: 0.25rem !important;
+      border-radius: 0.375rem !important;
+      @include transition-smooth;
+
+      &:hover {
+        background-color: rgb(59 130 246 / 8%) !important;
+      }
+
+      .MuiSvgIcon-root {
+        font-size: 1.5rem;
+        color: var(--color-dark-grey-500);
+      }
+    }
+
+    .order-id {
+      font-weight: 600 !important;
+      color: var(--color-blue-100) !important;
+      font-size: 1.5rem !important;
+    }
+  }
+
+  &__date {
+    font-size: 1.5rem;
+    color: var(--color-dark-grey-400);
+    font-weight: 400;
+  }
+
+  &__items-count {
+    font-weight: 600 !important;
+    font-size: 1.5rem !important;
+    color: var(--color-dark-grey-100);
+  }
+
+  &__total-cost {
+    font-weight: 600;
+    color: var(--color-green-500);
+    font-size: 1.5rem;
+  }
+
+  &__timeline {
+    font-size: 1.5rem;
+    font-weight: 400;
+
+    &--completed {
+      color: var(--color-green-500);
+    }
+
+    &--estimated {
+      color: var(--color-dark-grey-400);
+    }
+
+    &--empty {
+      color: var(--color-dark-grey-500);
+    }
+  }
+
+  &__stage {
+    font-weight: 600 !important;
+    color: var(--color-white) !important;
+    font-size: 1.1rem !important;
+    background: linear-gradient(
+      135deg,
+      var(--color-purple-100),
+      var(--color-magenta-100)
+    ) !important;
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+    border: none !important;
+    text-transform: capitalize !important;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 10%) !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    display: inline-block !important;
+  }
+}
+
+// === Expandable Details ===
+.order-details {
+  margin: 1rem;
+  padding: 1rem;
+  background-color: rgb(248 250 252 / 50%);
+  border-radius: 0.5rem;
+  border: 1px solid rgb(243 244 246 / 60%);
+
+  &__title {
+    font-size: 2rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.75rem !important;
+    color: var(--color-dark-grey-100);
+  }
+
+  &__items-table {
+    .MuiTable-root {
+      .MuiTableHead-root {
+        background: linear-gradient(
+          135deg,
+          var(--color-light-grey-0),
+          var(--color-light-grey-50)
+        );
+
+        .MuiTableCell-root {
+          border-bottom: 2px solid var(--color-blue-200) !important;
+          padding: 12px 10px !important;
+          font-size: 1.5rem !important;
+          font-weight: 700 !important;
+          color: var(--color-dark-grey-400) !important;
+          text-transform: uppercase;
+          letter-spacing: 0.075em;
+          position: relative;
+
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 10px;
+            right: 10px;
+            height: 1px;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              var(--color-blue-100),
+              transparent
+            );
+          }
+
+          .MuiTypography-root {
+            font-size: 1.6rem !important;
+            font-weight: 700 !important;
+            color: var(--color-dark-grey-500) !important;
+            text-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+          }
+        }
+      }
+
+      .MuiTableBody-root {
+        .MuiTableRow-root {
+          cursor: default;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background-color: var(--color-light-shade-50) !important;
+            transform: translateY(-1px);
+          }
+
+          &:nth-child(odd) {
+            background-color: rgba(var(--color-light-grey-0), 0.3);
+          }
+
+          .MuiTableCell-root {
+            padding: 0.5rem 0.375rem !important;
+            border-bottom: 1px solid rgb(243 244 246 / 30%) !important;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--color-dark-grey-400);
+            vertical-align: middle;
+          }
+        }
+      }
+    }
+  }
+
+  &__product-name {
+    font-weight: 600 !important;
+    color: var(--color-dark-grey-400);
+    font-size: 1.3rem !important;
+    line-height: 1.2;
+  }
+
+  &__provider-name {
+    font-weight: 600 !important;
+    color: var(--color-dark-grey-300);
+    font-size: 1.3rem !important;
+    line-height: 1.2;
+  }
+
+  &__category-name {
+    font-weight: 600 !important;
+    color: var(--color-dark-grey-300);
+    font-size: 1.3rem !important;
+    text-transform: uppercase !important;
+    line-height: 1.2 !important;
+  }
+
+  &__provider-chip {
+    background-color: var(--color-white) !important;
+    border: 1px solid var(--color-light-grey-200) !important;
+    color: var(--color-dark-grey-400) !important;
+    font-size: 1.5rem !important;
+    height: 20px !important;
+    font-weight: 500 !important;
+    border-radius: 0.375rem !important;
+  }
+
+  &__price {
+    font-size: 1.5rem;
+    font-weight: 500 !important;
+    color: var(--color-dark-grey-400);
+  }
+}

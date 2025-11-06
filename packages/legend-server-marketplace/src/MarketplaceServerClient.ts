@@ -20,7 +20,10 @@ import type {
   DataProduct,
   DataProductSearchResult,
 } from './models/DataProduct.js';
-import type { Subscription } from './models/Subscription.js';
+import type {
+  SubscriptionRequest,
+  SubscriptionResponse,
+} from './models/Subscription.js';
 import type {
   CartItem,
   CartItemRequest,
@@ -28,6 +31,10 @@ import type {
   CartSummary,
 } from './models/Cart.js';
 import type { OrderDetails } from './models/Order.js';
+import {
+  type TerminalProductOrderResponse,
+  OrderStatusCategory,
+} from './models/TerminalProductOrder.js';
 
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
@@ -115,14 +122,21 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Subscriptions -----------------------------------------
 
+  private _subscriptions = (user: string): string =>
+    `${this.baseUrl}/v1/service/subscription/${user}`;
+
   getSubscriptions = async (
     user: string,
-  ): Promise<PlainObject<Subscription>[]> =>
-    (
-      await this.get<{ subscription_feeds: PlainObject<Subscription>[] }>(
-        `${this.subscriptionUrl}/v1/service/subscription/${user}`,
-      )
-    ).subscription_feeds;
+  ): Promise<PlainObject<SubscriptionResponse>> =>
+    this.get<PlainObject<SubscriptionResponse>>(this._subscriptions(user));
+
+  cancelSubscriptions = async (
+    cancellationRequest: SubscriptionRequest,
+  ): Promise<PlainObject<{ message: string }>> =>
+    this.post(
+      `${this.baseUrl}/v1/workflow/cancel/subscription`,
+      cancellationRequest,
+    );
 
   // ------------------------------------------- Data Products -----------------------------------------
 
@@ -166,4 +180,21 @@ export class MarketplaceServerClient extends AbstractServerClient {
     orderData: OrderDetails,
   ): Promise<PlainObject<unknown>> =>
     this.post(`${this.baseUrl}/v1/workflow/create/order`, orderData);
+
+  // ------------------------------------------- Orders -------------------------------------------
+  private _orders = (): string => `${this.baseUrl}/v1/workflow/fetch/orders`;
+
+  fetchOrders = async (
+    user: string,
+    category: OrderStatusCategory = OrderStatusCategory.OPEN,
+  ): Promise<PlainObject<TerminalProductOrderResponse>> =>
+    this.get<PlainObject<TerminalProductOrderResponse>>(
+      this._orders(),
+      undefined,
+      undefined,
+      {
+        kerberos: user,
+        category,
+      },
+    );
 }
