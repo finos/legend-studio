@@ -103,13 +103,45 @@ test('navigates to search results page if search box contains text', async () =>
   const searchInput = screen.getByPlaceholderText(
     'Which data can I help you find?',
   );
-  const searchButton = screen.getByTitle('search');
+  const searchButton = screen.getByTitle('Search');
   fireEvent.change(searchInput, { target: { value: 'data' } });
   fireEvent.click(searchButton);
 
   await waitFor(() =>
     expect(mockGoToLocation).toHaveBeenLastCalledWith(
       '/dataProduct/results?query=data',
+    ),
+  );
+});
+
+test('navigates to search results page with index search if search box contains text and index search is enabled', async () => {
+  const { MOCK__baseStore } = await setupTestComponent();
+  const mockGoToLocation = jest.fn();
+  MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
+    mockGoToLocation;
+
+  // Enter search test
+  const searchInput = screen.getByPlaceholderText(
+    'Which data can I help you find?',
+  );
+  fireEvent.change(searchInput, { target: { value: 'data' } });
+
+  // Enable index search
+  const searchSettingsButton = screen.getByTitle('Search settings');
+  fireEvent.click(searchSettingsButton);
+  const indexSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
+    name: /Use Index Search/,
+  });
+  fireEvent.click(indexSearchSwitch);
+  expect(indexSearchSwitch.checked).toBe(true);
+
+  // Click search button
+  const searchButton = screen.getByTitle('Search');
+  fireEvent.click(searchButton);
+
+  await waitFor(() =>
+    expect(mockGoToLocation).toHaveBeenLastCalledWith(
+      '/dataProduct/results?query=data&useIndexSearch=true',
     ),
   );
 });
