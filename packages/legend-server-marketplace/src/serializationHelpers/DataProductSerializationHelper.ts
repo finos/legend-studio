@@ -48,7 +48,9 @@ export const deserializeLakehouseDataProductSearchResultOrigin = (
         json,
       );
     default: {
-      throw new UnsupportedOperationError();
+      throw new UnsupportedOperationError(
+        `Cannot deserialize search result origin of type '${json._type}'`,
+      );
     }
   }
 };
@@ -89,7 +91,9 @@ export const deserializeDataProductSearchResultDetails = (
         json,
       );
     default: {
-      throw new UnsupportedOperationError();
+      throw new UnsupportedOperationError(
+        `Cannot deserialize search result details of type '${json._type}'`,
+      );
     }
   }
 };
