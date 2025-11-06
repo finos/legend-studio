@@ -15,7 +15,7 @@
  */
 
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
@@ -114,6 +114,12 @@ describe('MarketplaceLakehouseSearchResults', () => {
     expect(screen.getByDisplayValue('data')).toBeDefined();
   });
 
+  test('Sets useIndexSearch state based on param', async () => {
+    const { MOCK__baseStore } = await setupTestComponent('data', 'prod', true);
+
+    expect(MOCK__baseStore.useIndexSearch).toBe(true);
+  });
+
   test('Sort dropdown is rendered', async () => {
     await setupTestComponent('data', 'prod');
 
@@ -123,6 +129,40 @@ describe('MarketplaceLakehouseSearchResults', () => {
     screen.getByText('Default');
     screen.getByText('Name A-Z');
     screen.getByText('Name Z-A');
+  });
+
+  test('Toggling useIndexSearch and updating search box value, then searching, updates URL', async () => {
+    const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+    const searchInput = screen.getByDisplayValue('data') as HTMLInputElement;
+
+    // Update search input
+    fireEvent.change(searchInput, { target: { value: 'new search' } });
+    screen.getByDisplayValue('new search');
+
+    // Turn on index search
+    const searchSettingsButton = screen.getByTitle('Search settings');
+    fireEvent.click(searchSettingsButton);
+    const indexSearchSwitch = screen.getByRole('switch', {
+      name: /Use Index Search/,
+    }) as HTMLInputElement;
+    fireEvent.click(indexSearchSwitch);
+    expect(indexSearchSwitch.checked).toBe(true);
+
+    // Click search
+    const searchButton = screen.getByTitle('Search');
+
+    const mockUpdateCurrentLocation = jest.fn();
+    MOCK__baseStore.applicationStore.navigationService.navigator.updateCurrentLocation =
+      mockUpdateCurrentLocation;
+
+    fireEvent.click(searchButton);
+
+    await waitFor(() =>
+      expect(mockUpdateCurrentLocation).toHaveBeenCalledWith(
+        '/dataProduct/results?query=new%20search&useIndexSearch=true',
+      ),
+    );
   });
 
   describe('Semantic search', () => {

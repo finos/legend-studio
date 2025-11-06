@@ -92,12 +92,12 @@ export const LegendMarketplaceSearchBar = observer(
                       onClick={(event) =>
                         setSearchMenuAnchorEl(event.currentTarget)
                       }
-                      title="filter"
+                      title="Search settings"
                     >
                       <TuneIcon />
                     </IconButton>
                   )}
-                  <IconButton type="submit" title="search">
+                  <IconButton type="submit" title="Search">
                     <SearchIcon />
                   </IconButton>
                 </InputAdornment>
