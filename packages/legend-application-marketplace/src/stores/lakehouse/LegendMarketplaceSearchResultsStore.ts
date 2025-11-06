@@ -336,11 +336,12 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   private async fetchLegacyDataProducts(query: string): Promise<void> {
+    if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
+      return;
+    }
+
     this.fetchingIndexSearchLegacyDataProductsState.inProgress();
     try {
-      if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
-        return;
-      }
       const dataSpaceEntitySummaries =
         (await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
