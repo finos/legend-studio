@@ -23,11 +23,11 @@ import {
   MenuItem,
   Switch,
   TextField,
-  Tooltip,
 } from '@mui/material';
-import { clsx, InfoCircleIcon, SearchIcon, TuneIcon } from '@finos/legend-art';
+import { clsx, SearchIcon, TuneIcon } from '@finos/legend-art';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { observer } from 'mobx-react-lite';
+import { LegendMarketplaceInfoTooltip } from '../InfoTooltip/LegendMarketplaceInfoTooltip.js';
 
 export interface Vendor {
   provider: string;
@@ -124,9 +124,7 @@ export const LegendMarketplaceSearchBar = observer(
                 label={
                   <>
                     Use Index Search{' '}
-                    <Tooltip title="Index search provides the most up-to-date results by searching directly on deployed data products. Only use index search if you are trying to find a recently deployed data product.">
-                      <InfoCircleIcon />
-                    </Tooltip>
+                    <LegendMarketplaceInfoTooltip title="Index search provides the most up-to-date results by searching directly on deployed data products. Only use index search if you are trying to find a recently deployed data product." />
                   </>
                 }
               />

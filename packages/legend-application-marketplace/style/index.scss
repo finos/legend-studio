@@ -17,21 +17,22 @@
 @forward 'mui';
 @forward 'app';
 
+@forward 'components/cart-drawer';
+@forward 'components/coming-soon-display';
 @forward 'components/dataContract-creator';
 @forward 'components/header';
+@forward 'components/homebuttons';
+@forward 'components/info-tooltip';
 @forward 'components/lakehouse-data-product-card';
 @forward 'components/legend-marketplace-card';
 @forward 'components/multi-user-cell-renderer';
 @forward 'components/notification';
 @forward 'components/product-search-card';
 @forward 'components/radio-selector';
+@forward 'components/recommended-addons-modal';
+@forward 'components/release-notes';
 @forward 'components/search-bar';
 @forward 'components/vendor-card';
-@forward 'components/homebuttons';
-@forward 'components/coming-soon-display';
-@forward 'components/release-notes';
-@forward 'components/cart-drawer';
-@forward 'components/recommended-addons-modal';
 
 @forward 'pages/coming-soon';
 @forward 'pages/home';
