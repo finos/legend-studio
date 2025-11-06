@@ -44,7 +44,6 @@ export const LegendMarketplaceSearchBar = observer(
     onChange?: (query: string) => void;
     className?: string | undefined;
     showSettings?: boolean;
-    onToggleSearchMode?: () => void;
   }): JSX.Element => {
     const {
       marketplaceBaseStore,
@@ -54,10 +53,12 @@ export const LegendMarketplaceSearchBar = observer(
       onChange,
       className,
       showSettings,
-      onToggleSearchMode,
     } = props;
 
     const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
+    const [useIndexSearch, setUseIndexSearch] = useState(
+      marketplaceBaseStore.useIndexSearch,
+    );
     const [searchMenuAnchorEl, setSearchMenuAnchorEl] =
       useState<HTMLElement | null>();
 
@@ -68,6 +69,7 @@ export const LegendMarketplaceSearchBar = observer(
         className={clsx('legend-marketplace__search-bar', className)}
         onSubmit={(event) => {
           event.preventDefault();
+          marketplaceBaseStore.setUseIndexSearch(useIndexSearch);
           onSearch?.(searchQuery);
         }}
       >
@@ -119,10 +121,7 @@ export const LegendMarketplaceSearchBar = observer(
                   <Switch
                     checked={marketplaceBaseStore.useIndexSearch}
                     onChange={(event) => {
-                      marketplaceBaseStore.setUseIndexSearch(
-                        event.target.checked,
-                      );
-                      onToggleSearchMode?.();
+                      setUseIndexSearch(event.target.checked);
                     }}
                   />
                 }

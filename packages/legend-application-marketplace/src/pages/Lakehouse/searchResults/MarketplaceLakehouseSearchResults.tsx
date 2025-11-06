@@ -176,9 +176,6 @@ export const MarketplaceLakehouseSearchResults =
               onSearch={() => {
                 handleSearch();
               }}
-              onToggleSearchMode={() => {
-                handleSearch();
-              }}
               onChange={(val) => setQuery(val)}
               placeholder="Search Legend Marketplace"
               className="marketplace-lakehouse-search-results__search-bar"
