@@ -127,7 +127,7 @@ export class DevelopmentLegendMarketplaceEnvState extends LegendMarketplaceEnvSt
   }
 
   supportsLegacyDataProducts(): boolean {
-    return true;
+    return false;
   }
 
   supportedClassifications() {
