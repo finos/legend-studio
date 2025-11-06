@@ -31,7 +31,6 @@ import {
 } from '../__lib__/LegendMarketplaceNavigation.js';
 import {
   type V1_EntitlementsDataProductDetails,
-  buildPath,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import type { V1_DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
@@ -139,7 +138,7 @@ export const convertLegacyDataProductToSearchResult = (
   details.groupId = groupId;
   details.artifactId = artifactid;
   details.versionId = versionId;
-  details.path = buildPath(legacyDataProduct.package, legacyDataProduct.name);
+  details.path = legacyDataProduct.path;
 
   searchResult.dataProductDetails = details;
 
