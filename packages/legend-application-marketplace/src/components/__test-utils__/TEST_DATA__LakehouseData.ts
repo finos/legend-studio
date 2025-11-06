@@ -26,7 +26,6 @@ import {
   V1_EntitlementsLakehouseEnvironmentType,
   V1_AppDirLevel,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
 import type { StoredSummaryEntity } from '@finos/legend-server-depot';
 
 export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDetailsResponse> =
@@ -38,6 +37,7 @@ export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDet
         title: 'SDLC Production Data Product',
         description:
           'Comprehensive customer analytics data for business intelligence and reporting',
+        fullPath: 'test::dataproduct::Sdlc_Production_DataProduct',
         origin: {
           type: 'SdlcDeployment',
           group: 'com.example.analytics',
@@ -85,6 +85,8 @@ export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDet
           artifact: 'customer-analytics-notitle',
           version: '1.3.0',
         },
+        fullPath: 'test::dataproduct::Sdlc_Production_DataProduct_No_Title',
+
         lakehouseEnvironment: {
           producerEnvironmentName: 'production-analytics',
           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
@@ -127,6 +129,7 @@ export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDet
           artifact: 'financial-reporting',
           version: 'master-SNAPSHOT',
         },
+        fullPath: 'test::dataproduct::Sdlc_Prod_Parallel_DataProduct',
         lakehouseEnvironment: {
           producerEnvironmentName: 'production-finance',
           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
@@ -169,6 +172,7 @@ export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDet
           artifact: 'financial-reporting',
           version: 'master-SNAPSHOT',
         },
+        fullPath: 'test::dataproduct::Sdlc_Development_DataProduct',
         lakehouseEnvironment: {
           producerEnvironmentName: 'development-analytics',
           type: V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
@@ -191,66 +195,12 @@ export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDet
     ],
   };
 
-export const mockProductionSDLCDataProductEntity: PlainObject<Entity> = {
-  _type: 'dataProduct',
-  name: 'Sdlc_Production_DataProduct',
-  package: 'test::dataproduct',
-  accessPointGroups: [],
-  icon: undefined,
-};
-
-export const mockProductionSDLCDataProductNoTitleEntity: PlainObject<Entity> = {
-  _type: 'dataProduct',
-  name: 'Sdlc_Production_DataProduct_NoTitle',
-  package: 'test::dataproduct',
-  title: 'SDLC Production Data Product',
-  description:
-    'Comprehensive customer analytics data for business intelligence and reporting',
-  accessPointGroups: [
-    {
-      id: 'testSDLCAccessPointGroup',
-      description: 'A test access point group',
-      accessPoints: [
-        {
-          _type: 'lakehouseAccessPoint',
-          id: 'testSDLCAccessPoint',
-          targetEnvironment: 'Snowflake',
-          reproducible: false,
-          func: {
-            _type: 'lambda',
-            parameters: [],
-            body: [
-              {
-                _type: 'classInstance',
-                type: 'I',
-                value: {
-                  metadata: false,
-                  path: ['my::sandboxIngestDefinition', 'TESTTABLE'],
-                },
-              },
-            ],
-          },
-        },
-      ],
-    },
-  ],
-  icon: undefined,
-};
-
 export const mockLegacyDataProductSummaryEntity: StoredSummaryEntity = {
   artifactId: 'test-legacy-data-product',
   classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
   groupId: 'com.example.legacy',
   path: 'test::dataproduct::LegacyDataProduct',
   versionId: '1.0.0',
-};
-
-export const mockProdParallelSDLCDataProduct: PlainObject<Entity> = {
-  _type: 'dataProduct',
-  name: 'SDLC_PROD_PARALLEL_DATAPRODUCT',
-  package: 'test::dataproduct',
-  accessPointGroups: [],
-  icon: undefined,
 };
 
 export const mockDevIngestEnvironmentSummaryResponse: PlainObject<IngestDeploymentServerConfig> =
