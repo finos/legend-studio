@@ -159,6 +159,11 @@ export const MarketplaceLakehouseSearchResults =
           applicationStore.navigationService.navigator.updateCurrentLocation(
             generateLakehouseSearchResultsRoute(query, useIndexSearch),
           );
+          LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
+            applicationStore.telemetryService,
+            query,
+            LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
+          );
         }
       };
 
@@ -170,11 +175,9 @@ export const MarketplaceLakehouseSearchResults =
               showSettings={true}
               onSearch={() => {
                 handleSearch();
-                LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
-                  applicationStore.telemetryService,
-                  query,
-                  LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
-                );
+              }}
+              onToggleSearchMode={() => {
+                handleSearch();
               }}
               onChange={(val) => setQuery(val)}
               placeholder="Search Legend Marketplace"
