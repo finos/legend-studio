@@ -174,9 +174,9 @@ export const MarketplaceLakehouseSearchResults =
         <LegendMarketplacePage className="marketplace-lakehouse-search-results">
           <Container className="marketplace-lakehouse-search-results__search-container">
             <LegendMarketplaceSearchBar
-              marketplaceBaseStore={searchResultsStore.marketplaceBaseStore}
               showSettings={true}
               onSearch={handleSearch}
+              initialUseIndexSearch={useIndexSearch}
               placeholder="Search Legend Marketplace"
               className="marketplace-lakehouse-search-results__search-bar"
               initialValue={searchQuery}

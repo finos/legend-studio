@@ -192,9 +192,9 @@ export const MarketplaceLakehouseHome = observer(() => {
           Marketplace
         </Box>
         <LegendMarketplaceSearchBar
-          marketplaceBaseStore={legendMarketplaceBaseStore}
           showSettings={true}
           onSearch={handleSearch}
+          initialUseIndexSearch={legendMarketplaceBaseStore.useIndexSearch}
           placeholder="Which data can I help you find?"
           className="marketplace-lakehouse-home__search-bar"
         />

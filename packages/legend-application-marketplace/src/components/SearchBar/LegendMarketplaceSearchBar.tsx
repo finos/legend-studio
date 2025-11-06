@@ -25,7 +25,6 @@ import {
   TextField,
 } from '@mui/material';
 import { clsx, SearchIcon, TuneIcon } from '@finos/legend-art';
-import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceInfoTooltip } from '../InfoTooltip/LegendMarketplaceInfoTooltip.js';
 
@@ -37,27 +36,27 @@ export interface Vendor {
 
 export const LegendMarketplaceSearchBar = observer(
   (props: {
-    marketplaceBaseStore: LegendMarketplaceBaseStore;
     onSearch?: (query: string | undefined, useIndexSearch: boolean) => void;
     initialValue?: string | undefined;
     placeholder?: string;
     onChange?: (query: string) => void;
     className?: string | undefined;
     showSettings?: boolean;
+    initialUseIndexSearch?: boolean;
   }): JSX.Element => {
     const {
-      marketplaceBaseStore,
       onSearch,
       initialValue,
       placeholder,
       onChange,
       className,
       showSettings,
+      initialUseIndexSearch,
     } = props;
 
     const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
     const [useIndexSearch, setUseIndexSearch] = useState(
-      marketplaceBaseStore.useIndexSearch,
+      initialUseIndexSearch ?? false,
     );
     const [searchMenuAnchorEl, setSearchMenuAnchorEl] =
       useState<HTMLElement | null>();
