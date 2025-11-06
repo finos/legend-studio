@@ -125,7 +125,238 @@ describe('MarketplaceLakehouseSearchResults', () => {
     screen.getByText('Name Z-A');
   });
 
-  describe('Semantic search', () => {});
+  describe('Semantic search', () => {
+    test('Semantic search only calls semantic search endpoint', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('2 Products');
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        MOCK__baseStore.lakehouseContractServerClient.getDataProducts,
+      ).not.toHaveBeenCalled();
+      expect(
+        MOCK__baseStore.depotServerClient.getEntitiesSummaryByClassifier,
+      ).not.toHaveBeenCalled();
+    });
+
+    test('Prod data product environment only displays production data products', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('2 Products');
+
+      // Lakehouse Data Product with title shows title
+      expect(screen.getAllByText('Lakehouse SDLC Data Product')).toHaveLength(
+        2,
+      );
+      screen.getByText('This is a lakehouse SDLC Data Product');
+
+      // Lakehouse Data Product without title shows name
+      expect(
+        screen.getAllByText('LAKEHOUSE_SDLC_DATA_PRODUCT_NO_TITLE'),
+      ).toHaveLength(2);
+    });
+
+    test('Production-parallel environment displays production-parallel data products', async () => {
+      await setupTestComponent('data', 'prod-par');
+
+      expect(await screen.findByText('2 Products'));
+
+      // Shows SDLC Data Product title
+      expect(screen.getAllByText('Lakehouse SDLC Data Product')).toHaveLength(
+        2,
+      );
+
+      // Shows Ad-hoc Data Product title
+      expect(screen.getAllByText('Lakehouse Ad-hoc Data Product')).toHaveLength(
+        2,
+      );
+    });
+
+    test('Development environment displays development data products', async () => {
+      await setupTestComponent('data', 'dev');
+
+      expect(await screen.findByText('2 Products'));
+
+      // Shows title
+      expect(screen.getAllByText('Lakehouse SDLC Data Product')).toHaveLength(
+        2,
+      );
+      expect(screen.getAllByText('Lakehouse Ad-hoc Data Product')).toHaveLength(
+        2,
+      );
+
+      // Shows version if snapshot
+      screen.getByText('test_branch-SNAPSHOT');
+    });
+
+    test('shows info popper for Lakehouse data products with correct details', async () => {
+      await setupTestComponent('data', 'prod');
+
+      const findDataProductTitle = await screen.findAllByText(
+        'Lakehouse SDLC Data Product',
+      );
+      const dataProductTitle = guaranteeNonNullable(findDataProductTitle[0]);
+      const dataProductCard = guaranteeNonNullable(
+        dataProductTitle.parentElement?.parentElement,
+      );
+
+      fireEvent.mouseEnter(dataProductCard);
+
+      const infoButton = screen.getByRole('button', { name: 'More Info' });
+
+      fireEvent.click(guaranteeNonNullable(infoButton));
+
+      await screen.findByText('Description');
+      expect(
+        screen.getAllByText('This is a lakehouse SDLC Data Product'),
+      ).toHaveLength(2);
+
+      screen.getByText('Deployment Details');
+      screen.getByText('Data Product ID');
+      screen.getByText('LAKEHOUSE_SDLC_DATA_PRODUCT');
+      screen.getByText('Deployment ID');
+      screen.getByText('12345');
+      screen.getByText('Producer Environment Name');
+      screen.getByText('test-prod-producer-env');
+      screen.getByText('Producer Environment Type');
+      screen.getByText('PRODUCTION');
+
+      screen.getByText('Data Product Project');
+      screen.getByText('Group');
+      screen.getByText('com.example.lakehouse');
+      screen.getByText('Artifact');
+      screen.getByText('lakehouse-sdlc-data-product');
+      screen.getByText('Version');
+      screen.getByText('1.0.0');
+      screen.getByText('Path');
+      screen.getByText('test::Lakehouse_Sdlc_Data_Product');
+    });
+
+    test('Clicking on Lakehouse Data Product card navigates to data product viewer page', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      const mockVisitAddress = jest.fn();
+      MOCK__baseStore.applicationStore.navigationService.navigator.visitAddress =
+        mockVisitAddress;
+
+      const findDataProductTitle = await screen.findAllByText(
+        'Lakehouse SDLC Data Product',
+      );
+      const dataProductTitle = guaranteeNonNullable(findDataProductTitle[0]);
+      fireEvent.click(dataProductTitle);
+
+      expect(mockVisitAddress).toHaveBeenCalledWith(
+        expect.stringContaining(
+          '/dataProduct/deployed/LAKEHOUSE_SDLC_DATA_PRODUCT/12345',
+        ),
+      );
+    });
+
+    test('Clicking on Legacy Data Product card navigates to data product viewer page', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      const mockVisitAddress = jest.fn();
+      MOCK__baseStore.applicationStore.navigationService.navigator.visitAddress =
+        mockVisitAddress;
+
+      // Toggle on legacy data products
+      screen.getByText('Filters');
+      const modeledDataProductsFilterButton = screen.getByText(
+        'Include Modeled Data Products',
+      );
+      fireEvent.click(modeledDataProductsFilterButton);
+
+      const dataProductTitle = guaranteeNonNullable(
+        (await screen.findAllByText('Legacy Data Product'))[0],
+      );
+
+      fireEvent.click(dataProductTitle);
+
+      expect(mockVisitAddress).toHaveBeenCalledWith(
+        expect.stringContaining(
+          '/dataProduct/legacy/com.example.legacy:legacy-data-product:2.0.0/test::Legacy_Data_Product',
+        ),
+      );
+    });
+
+    test('Filter Panel shows up for prod data product env and filters modeled data products', async () => {
+      await setupTestComponent('data', 'prod');
+
+      expect(await screen.findByText('2 Products'));
+
+      // Check filter panel is present
+      screen.getByText('Filters');
+      const modeledDataProductsFilterButton = screen.getByText(
+        'Include Modeled Data Products',
+      );
+
+      // Check legacy data product is not present
+      expect(screen.queryByText('Legacy Data Product')).toBeNull();
+
+      // Toggle on filter
+      fireEvent.click(modeledDataProductsFilterButton);
+
+      screen.getByText('4 Products');
+
+      // Check that legacy data products are included
+      // Legacy Data Product with title shows title
+      expect(screen.getAllByText('Legacy Data Product')).toHaveLength(2);
+
+      // Legacy Data Product without title shows packageable element name
+      expect(screen.getAllByText('Legacy_Data_Product_No_Title')).toHaveLength(
+        2,
+      );
+    });
+
+    test("Filter Panel doesn't show up for prod-par data product env", async () => {
+      await setupTestComponent('data', 'prod-par');
+
+      // Check filter is not present
+      expect(screen.queryByText('Filters')).toBeNull();
+      expect(screen.queryByText('Include Modeled Data Products')).toBeNull();
+
+      // Check that legacy data products are not included
+      expect(screen.queryByText('Legacy Data Product')).toBeNull();
+    });
+
+    test("Filter Panel doesn't show up for dev data product env", async () => {
+      await setupTestComponent('data', 'dev');
+
+      // Check filter is not present
+      expect(screen.queryByText('Filters')).toBeNull();
+      expect(screen.queryByText('Include Modeled Data Products')).toBeNull();
+
+      // Check that legacy data products are not included
+      expect(screen.queryByText('Legacy Data Product')).toBeNull();
+    });
+
+    test('Lakehouse data products show Lakehouse chip', async () => {
+      await setupTestComponent('data', 'prod');
+
+      expect(await screen.findByText('2 Products'));
+
+      // Check for 2 lakehouse chips
+      expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
+
+      // Toggle on modeled data products
+      screen.getByText('Filters');
+      const modeledDataProductsFilterButton = screen.getByText(
+        'Include Modeled Data Products',
+      );
+      fireEvent.click(modeledDataProductsFilterButton);
+
+      await screen.findByText('4 Products');
+
+      // Check that legacy data product is rendered
+      expect(await screen.findAllByText('Legacy Data Product')).toHaveLength(2);
+
+      // Check for still 2 lakehouse chips
+      expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
+    });
+  });
 
   describe('Index search', () => {
     test('Index search only calls lakehouse and metadata endpoints', async () => {
@@ -347,6 +578,17 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
     test("Filter Panel doesn't show up for prod-par data product env", async () => {
       await setupTestComponent('data', 'prod-par', true);
+
+      // Check filter is not present
+      expect(screen.queryByText('Filters')).toBeNull();
+      expect(screen.queryByText('Include Modeled Data Products')).toBeNull();
+
+      // Check that legacy data products are not included
+      expect(screen.queryByText('LegacyDataProduct')).toBeNull();
+    });
+
+    test("Filter Panel doesn't show up for dev data product env", async () => {
+      await setupTestComponent('data', 'dev', true);
 
       // Check filter is not present
       expect(screen.queryByText('Filters')).toBeNull();

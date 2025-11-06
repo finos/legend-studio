@@ -37,7 +37,7 @@ export const mockProdSearchResultResponse: PlainObject<DataProductSearchResult>[
           groupId: 'com.example.lakehouse',
           artifactId: 'lakehouse-sdlc-data-product',
           versionId: '1.0.0',
-          path: 'test::Lakehosue_Sdlc_Data_Product',
+          path: 'test::Lakehouse_Sdlc_Data_Product',
         },
       },
     },
@@ -59,7 +59,7 @@ export const mockProdSearchResultResponse: PlainObject<DataProductSearchResult>[
           groupId: 'com.example.lakehouse',
           artifactId: 'lakehouse-sdlc-data-product',
           versionId: '1.0.0',
-          path: 'test::Lakehosue_Sdlc_Data_Product_No_Title',
+          path: 'test::Lakehouse_Sdlc_Data_Product_No_Title',
         },
       },
     },
@@ -115,7 +115,7 @@ export const mockProdParSearchResultResponse: PlainObject<DataProductSearchResul
           groupId: 'com.example',
           artifactId: 'lakehouse-sdlc-data-product',
           versionId: '1.0.0',
-          path: 'test::Lakehosue_Sdlc_Data_Product',
+          path: 'test::Lakehouse_Sdlc_Data_Product',
         },
       },
     },
@@ -134,10 +134,6 @@ export const mockProdParSearchResultResponse: PlainObject<DataProductSearchResul
         producerEnvironmentType: 'PRODUCTION_PARALLEL',
         origin: {
           _type: 'AdHocDeployment',
-          groupId: 'com.example',
-          artifactId: 'lakehouse-sdlc-data-product',
-          versionId: '1.0.0',
-          path: 'test::Lakehosue_AdHoc_Data_Product',
         },
       },
     },
@@ -145,6 +141,28 @@ export const mockProdParSearchResultResponse: PlainObject<DataProductSearchResul
 
 export const mockDevSearchResultResponse: PlainObject<DataProductSearchResult>[] =
   [
+    {
+      dataProductTitle: 'Lakehouse SDLC Data Product',
+      dataProductDescription: 'This is a lakehouse SDLC Data Product',
+      tags1: [],
+      tags2: [],
+      tag_score: 0,
+      similarity: 0,
+      dataProductDetails: {
+        _type: 'lakehouse',
+        dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',
+        deploymentId: 45678,
+        producerEnvironmentName: 'test-prod-producer-env',
+        producerEnvironmentType: 'DEVELOPMENT',
+        origin: {
+          _type: 'SdlcDeployment',
+          groupId: 'com.example',
+          artifactId: 'lakehouse-sdlc-data-product',
+          versionId: 'test_branch-SNAPSHOT',
+          path: 'test::Lakehouse_Sdlc_Data_Product',
+        },
+      },
+    },
     {
       dataProductTitle: 'Lakehouse Ad-hoc Data Product',
       dataProductDescription: 'This is a lakehouse Ad-hoc Data Product',
