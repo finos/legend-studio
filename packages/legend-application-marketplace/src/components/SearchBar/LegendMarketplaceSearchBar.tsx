@@ -119,7 +119,7 @@ export const LegendMarketplaceSearchBar = observer(
               <FormControlLabel
                 control={
                   <Switch
-                    checked={marketplaceBaseStore.useIndexSearch}
+                    checked={useIndexSearch}
                     onChange={(event) => {
                       setUseIndexSearch(event.target.checked);
                     }}
