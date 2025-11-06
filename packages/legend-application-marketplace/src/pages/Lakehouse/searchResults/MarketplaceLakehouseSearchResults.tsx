@@ -156,11 +156,6 @@ export const MarketplaceLakehouseSearchResults =
 
       const handleSearch = (): void => {
         if (query) {
-          searchResultsStore.executeSearch(
-            query,
-            useIndexSearch,
-            auth.user?.access_token,
-          );
           applicationStore.navigationService.navigator.updateCurrentLocation(
             generateLakehouseSearchResultsRoute(query, useIndexSearch),
           );
