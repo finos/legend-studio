@@ -121,7 +121,6 @@ export class LegendMarketplaceSearchResultsStore {
       setIndexSearchLegacyDataProductCardStates: action,
       setSort: action,
       filterSortProducts: computed,
-      isInInitialState: computed,
       isLoading: computed,
       executeSearch: flow,
     });
@@ -153,14 +152,6 @@ export class LegendMarketplaceSearchResultsStore {
             return 0;
         }
       });
-  }
-
-  get isInInitialState(): boolean {
-    return (
-      this.executingSemanticSearchState.isInInitialState &&
-      this.fetchingIndexSearchDataProductsState.isInInitialState &&
-      this.fetchingIndexSearchLegacyDataProductsState.isInInitialState
-    );
   }
 
   get isLoading(): boolean {

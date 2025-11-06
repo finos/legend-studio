@@ -119,9 +119,9 @@ export const MarketplaceLakehouseSearchResults =
           : marketplaceBaseStore.useIndexSearch;
       const [query, setQuery] = useState<string | undefined>(searchQuery);
 
-      // Execute initial search on page load
+      // Execute search whenever search query or search mode changes
       useEffect(() => {
-        if (searchResultsStore.isInInitialState && searchQuery) {
+        if (searchQuery) {
           searchResultsStore.executeSearch(
             searchQuery,
             useIndexSearch,
@@ -133,7 +133,6 @@ export const MarketplaceLakehouseSearchResults =
         useIndexSearch,
         searchQuery,
         searchResultsStore,
-        searchResultsStore.isInInitialState,
       ]);
 
       useSyncStateAndSearchParam(
