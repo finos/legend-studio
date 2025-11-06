@@ -44,7 +44,10 @@ import {
   LakehouseSDLCDataProductSearchResultOrigin,
   LegacyDataProductSearchResultDetails,
 } from '@finos/legend-server-marketplace';
-import { ProdParallelLegendMarketplaceEnvState } from '../../stores/LegendMarketplaceEnvState.js';
+import {
+  DevelopmentLegendMarketplaceEnvState,
+  ProdParallelLegendMarketplaceEnvState,
+} from '../../stores/LegendMarketplaceEnvState.js';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -334,9 +337,11 @@ export const LakehouseProductCard = observer(
                   )}
                 />
               )}
-              {/* We only show environment classification in prod-par env, because otherwise they're all production */}
-              {productCardState.marketplaceBaseStore.envState instanceof
-                ProdParallelLegendMarketplaceEnvState &&
+              {/* We only show environment classification in prod-par and dev env, because otherwise they're all production */}
+              {(productCardState.marketplaceBaseStore.envState instanceof
+                ProdParallelLegendMarketplaceEnvState ||
+                productCardState.marketplaceBaseStore.envState instanceof
+                  DevelopmentLegendMarketplaceEnvState) &&
                 productCardState.searchResult.dataProductDetails instanceof
                   LakehouseDataProductSearchResultDetails && (
                   <Chip
