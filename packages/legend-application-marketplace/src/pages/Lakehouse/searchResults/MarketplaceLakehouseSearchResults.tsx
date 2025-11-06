@@ -57,6 +57,7 @@ import { generatePathForDataProductSearchResult } from '../../../utils/SearchUti
 import { logClickingDataProductCard } from '../../../utils/LogUtils.js';
 import { useSyncStateAndSearchParam } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
+import { isNonEmptyString } from '@finos/legend-shared';
 
 const SearchResultsFilterPanel = observer(
   (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
@@ -157,7 +158,7 @@ export const MarketplaceLakehouseSearchResults =
         _query: string | undefined,
         _useIndexSearch: boolean,
       ): void => {
-        if (_query) {
+        if (isNonEmptyString(_query)) {
           applicationStore.navigationService.navigator.updateCurrentLocation(
             generateLakehouseSearchResultsRoute(_query, _useIndexSearch),
           );
