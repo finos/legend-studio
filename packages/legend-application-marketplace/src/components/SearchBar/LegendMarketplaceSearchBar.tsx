@@ -38,7 +38,7 @@ export interface Vendor {
 export const LegendMarketplaceSearchBar = observer(
   (props: {
     marketplaceBaseStore: LegendMarketplaceBaseStore;
-    onSearch?: (query: string | undefined) => void;
+    onSearch?: (query: string | undefined, useIndexSearch: boolean) => void;
     initialValue?: string | undefined;
     placeholder?: string;
     onChange?: (query: string) => void;
@@ -69,8 +69,7 @@ export const LegendMarketplaceSearchBar = observer(
         className={clsx('legend-marketplace__search-bar', className)}
         onSubmit={(event) => {
           event.preventDefault();
-          marketplaceBaseStore.setUseIndexSearch(useIndexSearch);
-          onSearch?.(searchQuery);
+          onSearch?.(searchQuery, useIndexSearch);
         }}
       >
         <TextField

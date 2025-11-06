@@ -19,7 +19,7 @@ import {
   useLegendMarketplaceSearchResultsStore,
   withLegendMarketplaceSearchResultsStore,
 } from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   CheckIcon,
   CubesLoadingIndicator,
@@ -117,7 +117,6 @@ export const MarketplaceLakehouseSearchResults =
               LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_INDEX_SEARCH,
             ) === 'true'
           : marketplaceBaseStore.useIndexSearch;
-      const [query, setQuery] = useState<string | undefined>(searchQuery);
 
       // Execute search whenever search query or search mode changes
       useEffect(() => {
@@ -154,14 +153,17 @@ export const MarketplaceLakehouseSearchResults =
 
       const isLoadingDataProducts = searchResultsStore.isLoading;
 
-      const handleSearch = (): void => {
-        if (query) {
+      const handleSearch = (
+        _query: string | undefined,
+        _useIndexSearch: boolean,
+      ): void => {
+        if (_query) {
           applicationStore.navigationService.navigator.updateCurrentLocation(
-            generateLakehouseSearchResultsRoute(query, useIndexSearch),
+            generateLakehouseSearchResultsRoute(_query, _useIndexSearch),
           );
           LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
             applicationStore.telemetryService,
-            query,
+            _query,
             LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
           );
         }
@@ -173,10 +175,7 @@ export const MarketplaceLakehouseSearchResults =
             <LegendMarketplaceSearchBar
               marketplaceBaseStore={searchResultsStore.marketplaceBaseStore}
               showSettings={true}
-              onSearch={() => {
-                handleSearch();
-              }}
-              onChange={(val) => setQuery(val)}
+              onSearch={handleSearch}
               placeholder="Search Legend Marketplace"
               className="marketplace-lakehouse-search-results__search-bar"
               initialValue={searchQuery}
