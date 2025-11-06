@@ -103,13 +103,20 @@ export const MarketplaceLakehouseHome = observer(() => {
     legendMarketplaceBaseStore,
   ]);
 
-  const handleSearch = (query: string): void => {
-    applicationStore.navigationService.navigator.goToLocation(
-      generateLakehouseSearchResultsRoute(
-        query,
-        legendMarketplaceBaseStore.useIndexSearch,
-      ),
-    );
+  const handleSearch = (
+    _query: string | undefined,
+    _useIndexSearch: boolean,
+  ): void => {
+    if (isNonEmptyString(_query)) {
+      applicationStore.navigationService.navigator.goToLocation(
+        generateLakehouseSearchResultsRoute(_query, _useIndexSearch),
+      );
+      LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
+        applicationStore.telemetryService,
+        _query,
+        LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
+      );
+    }
   };
 
   const getCarouselTitle = (): string => {
@@ -187,16 +194,7 @@ export const MarketplaceLakehouseHome = observer(() => {
         <LegendMarketplaceSearchBar
           marketplaceBaseStore={legendMarketplaceBaseStore}
           showSettings={true}
-          onSearch={(query) => {
-            if (isNonEmptyString(query)) {
-              handleSearch(query);
-              LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
-                applicationStore.telemetryService,
-                query,
-                LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
-              );
-            }
-          }}
+          onSearch={handleSearch}
           placeholder="Which data can I help you find?"
           className="marketplace-lakehouse-home__search-bar"
         />
