@@ -87,11 +87,15 @@ export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly displayImageMap = new Map<string, string>();
-  productCardStates: ProductCardState[] = [];
+  semanticSearchProductCardStates: ProductCardState[] = [];
+  indexSearchDataProductCardStates: ProductCardState[] = [];
+  indexSearchLegacyDataProductCardStates: ProductCardState[] = [];
   filterState: DataProductFilterState;
   sort: DataProductSort = DataProductSort.DEFAULT;
 
-  executingSearchState = ActionState.create();
+  readonly executingSemanticSearchState = ActionState.create();
+  readonly fetchingIndexSearchDataProductsState = ActionState.create();
+  readonly fetchingIndexSearchLegacyDataProductsState = ActionState.create();
 
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
@@ -106,19 +110,31 @@ export class LegendMarketplaceSearchResultsStore {
       : DataProductFilterState.default();
 
     makeObservable(this, {
-      productCardStates: observable,
+      semanticSearchProductCardStates: observable,
+      indexSearchDataProductCardStates: observable,
+      indexSearchLegacyDataProductCardStates: observable,
       filterState: observable,
       sort: observable,
       handleModeledDataProductsFilterToggle: action,
-      setProductCardStates: action,
+      setSemanticSearchProductCardStates: action,
+      setIndexSearchDataProductCardStates: action,
+      setIndexSearchLegacyDataProductCardStates: action,
       setSort: action,
       filterSortProducts: computed,
+      isInInitialState: computed,
+      isLoading: computed,
       executeSearch: flow,
     });
   }
 
   get filterSortProducts(): ProductCardState[] | undefined {
-    return this.productCardStates
+    const productCardStates = this.marketplaceBaseStore.useIndexSearch
+      ? [
+          ...this.indexSearchDataProductCardStates,
+          ...this.indexSearchLegacyDataProductCardStates,
+        ].sort((a, b) => a.title.localeCompare(b.title))
+      : this.semanticSearchProductCardStates;
+    return productCardStates
       .filter((productCardState) =>
         this.marketplaceBaseStore.envState.filterDataProduct(
           productCardState,
@@ -139,8 +155,37 @@ export class LegendMarketplaceSearchResultsStore {
       });
   }
 
-  setProductCardStates(dataProductCardStates: ProductCardState[]): void {
-    this.productCardStates = dataProductCardStates;
+  get isInInitialState(): boolean {
+    return (
+      this.executingSemanticSearchState.isInInitialState &&
+      this.fetchingIndexSearchDataProductsState.isInInitialState &&
+      this.fetchingIndexSearchLegacyDataProductsState.isInInitialState
+    );
+  }
+
+  get isLoading(): boolean {
+    return this.marketplaceBaseStore.useIndexSearch
+      ? this.fetchingIndexSearchDataProductsState.isInProgress ||
+          this.fetchingIndexSearchLegacyDataProductsState.isInProgress
+      : this.executingSemanticSearchState.isInProgress;
+  }
+
+  setSemanticSearchProductCardStates(
+    dataProductCardStates: ProductCardState[],
+  ): void {
+    this.semanticSearchProductCardStates = dataProductCardStates;
+  }
+
+  setIndexSearchDataProductCardStates(
+    dataProductCardStates: ProductCardState[],
+  ): void {
+    this.indexSearchDataProductCardStates = dataProductCardStates;
+  }
+
+  setIndexSearchLegacyDataProductCardStates(
+    dataProductCardStates: ProductCardState[],
+  ): void {
+    this.indexSearchLegacyDataProductCardStates = dataProductCardStates;
   }
 
   handleModeledDataProductsFilterToggle(): void {
@@ -161,168 +206,193 @@ export class LegendMarketplaceSearchResultsStore {
     useIndexSearch: boolean,
     token: string | undefined,
   ): GeneratorFn<void> {
-    this.executingSearchState.inProgress();
-
     try {
-      this.setProductCardStates([]);
-      const results = useIndexSearch
-        ? yield this.executeIndexSearch(query, token)
-        : yield this.executeSemanticSearch(query);
-      this.setProductCardStates(results);
+      this.setSemanticSearchProductCardStates([]);
+      this.setIndexSearchDataProductCardStates([]);
+      this.setIndexSearchLegacyDataProductCardStates([]);
+      if (useIndexSearch) {
+        yield this.executeIndexSearch(query, token);
+      } else {
+        yield this.executeSemanticSearch(query);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
         `Error executing search: ${error.message}`,
       );
-    } finally {
-      this.executingSearchState.complete();
     }
   }
 
-  private async executeSemanticSearch(
-    query: string,
-  ): Promise<ProductCardState[]> {
-    const rawResults = await this.marketplaceServerClient.dataProductSearch(
-      query,
-      this.marketplaceBaseStore.envState.lakehouseEnvironment,
-    );
-    const results = rawResults.map((result) =>
-      DataProductSearchResult.serialization.fromJson(result),
-    );
+  private async executeSemanticSearch(query: string): Promise<void> {
+    this.executingSemanticSearchState.inProgress();
 
-    // Create data product card states
-    const dataProductCardStates: ProductCardState[] = results.map(
-      (result) =>
-        new ProductCardState(
-          this.marketplaceBaseStore,
-          result,
-          this.displayImageMap,
-        ),
-    );
-    return dataProductCardStates;
+    try {
+      const rawResults = await this.marketplaceServerClient.dataProductSearch(
+        query,
+        this.marketplaceBaseStore.envState.lakehouseEnvironment,
+      );
+      const results = rawResults.map((result) =>
+        DataProductSearchResult.serialization.fromJson(result),
+      );
+
+      // Create data product card states
+      const dataProductCardStates: ProductCardState[] = results.map(
+        (result) =>
+          new ProductCardState(
+            this.marketplaceBaseStore,
+            result,
+            this.displayImageMap,
+          ),
+      );
+      this.setSemanticSearchProductCardStates(dataProductCardStates);
+    } finally {
+      this.executingSemanticSearchState.complete();
+    }
   }
 
   private async executeIndexSearch(
     query: string,
     token: string | undefined,
-  ): Promise<ProductCardState[]> {
-    const [dataProducts, legacyDataProducts] = await Promise.all([
-      this.fetchDataProducts(token),
-      this.fetchLegacyDataProducts(),
+  ): Promise<void> {
+    await Promise.all([
+      this.fetchDataProducts(query, token),
+      this.fetchLegacyDataProducts(query),
     ]);
-
-    return [...dataProducts, ...legacyDataProducts].filter((productCardState) =>
-      productCardState.title.toLowerCase().includes(query.toLowerCase()),
-    );
   }
 
   private async fetchDataProducts(
+    query: string,
     token: string | undefined,
-  ): Promise<ProductCardState[]> {
-    const rawResponse =
-      await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProducts(
-        token,
+  ): Promise<void> {
+    this.fetchingIndexSearchDataProductsState.inProgress();
+    try {
+      const rawResponse =
+        await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProducts(
+          token,
+        );
+      const dataProductDetails =
+        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+          rawResponse,
+        );
+
+      // Crete graph manager for parsing ad-hoc deployed data products
+      const graphManager = new V1_PureGraphManager(
+        this.marketplaceBaseStore.applicationStore.pluginManager,
+        this.marketplaceBaseStore.applicationStore.logService,
+        this.marketplaceBaseStore.remoteEngine,
       );
-    const dataProductDetails =
-      V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-        rawResponse,
+      await graphManager.initialize(
+        {
+          env: this.marketplaceBaseStore.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl:
+              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: this.marketplaceBaseStore.remoteEngine },
       );
 
-    // Crete graph manager for parsing ad-hoc deployed data products
-    const graphManager = new V1_PureGraphManager(
-      this.marketplaceBaseStore.applicationStore.pluginManager,
-      this.marketplaceBaseStore.applicationStore.logService,
-      this.marketplaceBaseStore.remoteEngine,
-    );
-    await graphManager.initialize(
-      {
-        env: this.marketplaceBaseStore.applicationStore.config.env,
-        tabSize: DEFAULT_TAB_SIZE,
-        clientConfig: {
-          baseUrl:
-            this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-        },
-      },
-      { engine: this.marketplaceBaseStore.remoteEngine },
-    );
+      const productCardStates = dataProductDetails.map((detail) => {
+        const origin =
+          detail.origin instanceof V1_SdlcDeploymentDataProductOrigin
+            ? LakehouseSDLCDataProductSearchResultOrigin.serialization.fromJson(
+                {
+                  _type: LakehouseDataProductSearchResultOriginType.SDLC,
+                  groupId: detail.origin.group,
+                  artifactId: detail.origin.artifact,
+                  versionId: detail.origin.version,
+                  path: detail.fullPath,
+                },
+              )
+            : LakehouseAdHocDataProductSearchResultOrigin.serialization.fromJson(
+                {
+                  _type: LakehouseDataProductSearchResultOriginType.AD_HOC,
+                },
+              );
+        const searchResult = DataProductSearchResult.serialization.fromJson({
+          dataProductTitle: detail.title ?? detail.dataProduct.name,
+          dataProductDescription: detail.description,
+          tags1: [],
+          tags2: [],
+          tag_score: 0,
+          similarity: 0,
+          dataProductDetails: {
+            _type: DataProductSearchResultDetailsType.LAKEHOUSE,
+            dataProductId: detail.dataProduct.name,
+            deploymentId: detail.deploymentId,
+            producerEnvironmentName:
+              detail.lakehouseEnvironment?.producerEnvironmentName,
+            producerEnvironmentType: detail.lakehouseEnvironment?.type,
+            origin,
+          },
+        });
 
-    return dataProductDetails.map((detail) => {
-      const origin =
-        detail.origin instanceof V1_SdlcDeploymentDataProductOrigin
-          ? LakehouseSDLCDataProductSearchResultOrigin.serialization.fromJson({
-              _type: LakehouseDataProductSearchResultOriginType.SDLC,
-              groupId: detail.origin.group,
-              artifactId: detail.origin.artifact,
-              versionId: detail.origin.version,
-              path: detail.fullPath,
-            })
-          : LakehouseAdHocDataProductSearchResultOrigin.serialization.fromJson({
-              _type: LakehouseDataProductSearchResultOriginType.AD_HOC,
-            });
-      const searchResult = DataProductSearchResult.serialization.fromJson({
-        dataProductTitle: detail.title ?? detail.dataProduct.name,
-        dataProductDescription: detail.description,
-        tags1: [],
-        tags2: [],
-        tag_score: 0,
-        similarity: 0,
-        dataProductDetails: {
-          _type: DataProductSearchResultDetailsType.LAKEHOUSE,
-          dataProductId: detail.dataProduct.name,
-          deploymentId: detail.deploymentId,
-          producerEnvironmentName:
-            detail.lakehouseEnvironment?.producerEnvironmentName,
-          producerEnvironmentType: detail.lakehouseEnvironment?.type,
-          origin,
-        },
+        return new ProductCardState(
+          this.marketplaceBaseStore,
+          searchResult,
+          this.displayImageMap,
+        );
       });
-      return new ProductCardState(
-        this.marketplaceBaseStore,
-        searchResult,
-        this.displayImageMap,
+      this.setIndexSearchDataProductCardStates(
+        productCardStates.filter((productCardState) =>
+          productCardState.title.toLowerCase().includes(query.toLowerCase()),
+        ),
       );
-    });
+    } finally {
+      this.fetchingIndexSearchDataProductsState.complete();
+    }
   }
 
-  private async fetchLegacyDataProducts(): Promise<ProductCardState[]> {
-    if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
-      return [];
-    }
-    const dataSpaceEntitySummaries =
-      (await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
-        DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-        {
-          scope: DepotScope.RELEASES,
-          summary: true,
-        },
-      )) as unknown as StoredSummaryEntity[];
-    return dataSpaceEntitySummaries.map((entity) => {
-      const dataSpace = V1_deserializeDataSpace({
-        executionContexts: [],
-        defaultExecutionContext: '',
-        package: extractPackagePathFromPath(entity.path) ?? entity.path,
-        name: extractElementNameFromPath(entity.path),
+  private async fetchLegacyDataProducts(query: string): Promise<void> {
+    this.fetchingIndexSearchLegacyDataProductsState.inProgress();
+    try {
+      if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
+        return;
+      }
+      const dataSpaceEntitySummaries =
+        (await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
+          DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+          {
+            scope: DepotScope.RELEASES,
+            summary: true,
+          },
+        )) as unknown as StoredSummaryEntity[];
+      const productCardStates = dataSpaceEntitySummaries.map((entity) => {
+        const dataSpace = V1_deserializeDataSpace({
+          executionContexts: [],
+          defaultExecutionContext: '',
+          package: extractPackagePathFromPath(entity.path) ?? entity.path,
+          name: extractElementNameFromPath(entity.path),
+        });
+        const searchResult = DataProductSearchResult.serialization.fromJson({
+          dataProductTitle: dataSpace.title ?? dataSpace.name,
+          dataProductDescription: dataSpace.description,
+          tags1: [],
+          tags2: [],
+          tag_score: 0,
+          similarity: 0,
+          dataProductDetails: {
+            _type: DataProductSearchResultDetailsType.LEGACY,
+            groupId: entity.groupId,
+            artifactId: entity.artifactId,
+            versionId: entity.versionId,
+            path: entity.path,
+          },
+        });
+        return new ProductCardState(
+          this.marketplaceBaseStore,
+          searchResult,
+          this.displayImageMap,
+        );
       });
-      const searchResult = DataProductSearchResult.serialization.fromJson({
-        dataProductTitle: dataSpace.title ?? dataSpace.name,
-        dataProductDescription: dataSpace.description,
-        tags1: [],
-        tags2: [],
-        tag_score: 0,
-        similarity: 0,
-        dataProductDetails: {
-          _type: DataProductSearchResultDetailsType.LEGACY,
-          groupId: entity.groupId,
-          artifactId: entity.artifactId,
-          versionId: entity.versionId,
-          path: entity.path,
-        },
-      });
-      return new ProductCardState(
-        this.marketplaceBaseStore,
-        searchResult,
-        this.displayImageMap,
+      this.setIndexSearchLegacyDataProductCardStates(
+        productCardStates.filter((productCardState) =>
+          productCardState.title.toLowerCase().includes(query.toLowerCase()),
+        ),
       );
-    });
+    } finally {
+      this.fetchingIndexSearchLegacyDataProductsState.complete();
+    }
   }
 }

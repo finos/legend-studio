@@ -121,10 +121,7 @@ export const MarketplaceLakehouseSearchResults =
 
       // Execute initial search on page load
       useEffect(() => {
-        if (
-          searchResultsStore.executingSearchState.isInInitialState &&
-          searchQuery
-        ) {
+        if (searchResultsStore.isInInitialState && searchQuery) {
           searchResultsStore.executeSearch(
             searchQuery,
             useIndexSearch,
@@ -136,7 +133,7 @@ export const MarketplaceLakehouseSearchResults =
         useIndexSearch,
         searchQuery,
         searchResultsStore,
-        searchResultsStore.executingSearchState.isInInitialState,
+        searchResultsStore.isInInitialState,
       ]);
 
       useSyncStateAndSearchParam(
@@ -156,8 +153,7 @@ export const MarketplaceLakehouseSearchResults =
         ),
       );
 
-      const isLoadingDataProducts =
-        searchResultsStore.executingSearchState.isInProgress;
+      const isLoadingDataProducts = searchResultsStore.isLoading;
 
       const handleSearch = (): void => {
         if (query) {
