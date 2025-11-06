@@ -22,7 +22,9 @@ import {
 import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
-import { mockSearchResult } from '../../components/__test-utils__/TEST_DATA__SearchResultData.js';
+import { mockProdSearchResultResponse } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
+import { DataProductSearchResult } from '@finos/legend-server-marketplace';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   appName: 'marketplace',
@@ -112,10 +114,13 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
   override async getExtraHomePageDataProducts(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
   ): Promise<ProductCardState[] | undefined> {
+    const searchResult = DataProductSearchResult.serialization.fromJson(
+      guaranteeNonNullable(mockProdSearchResultResponse[0]),
+    );
     const testImageMap = new Map<string, string>();
     const dataProductState = new ProductCardState(
       marketplaceBaseStore,
-      mockSearchResult,
+      searchResult,
       testImageMap,
     );
     return [dataProductState];
