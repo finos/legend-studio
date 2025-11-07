@@ -55,6 +55,7 @@ export const mockEntitlementsSDLCDataProduct: V1_EntitlementsDataProductDetailsR
             level: V1_AppDirLevel.DEPLOYMENT,
           },
         },
+        fullPath: 'com::example::analytics::Mock_SDLC_DataProduct',
       },
     ],
   };
@@ -165,6 +166,7 @@ export const mockEntitlementsAdHocDataProduct: V1_EntitlementsDataProductDetails
             level: V1_AppDirLevel.DEPLOYMENT,
           },
         },
+        fullPath: 'com::example::analytics::Mock_AdHoc_DataProduct',
       },
     ],
   };

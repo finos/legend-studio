@@ -15,8 +15,18 @@
  */
 
 import { type JSX, useState } from 'react';
-import { IconButton, InputAdornment, TextField } from '@mui/material';
+import {
+  FormControlLabel,
+  IconButton,
+  InputAdornment,
+  Menu,
+  MenuItem,
+  Switch,
+  TextField,
+} from '@mui/material';
 import { clsx, SearchIcon, TuneIcon } from '@finos/legend-art';
+import { observer } from 'mobx-react-lite';
+import { LegendMarketplaceInfoTooltip } from '../InfoTooltip/LegendMarketplaceInfoTooltip.js';
 
 export interface Vendor {
   provider: string;
@@ -24,54 +34,103 @@ export interface Vendor {
   type: string;
 }
 
-export const LegendMarketplaceSearchBar = (props: {
-  onSearch?: (query: string | undefined) => void;
-  initialValue?: string | undefined;
-  placeholder?: string;
-  onChange?: (query: string) => void;
-  className?: string | undefined;
-}): JSX.Element => {
-  const { onSearch, initialValue, placeholder, onChange, className } = props;
+export const LegendMarketplaceSearchBar = observer(
+  (props: {
+    onSearch?: (query: string | undefined, useIndexSearch: boolean) => void;
+    initialValue?: string | undefined;
+    placeholder?: string;
+    onChange?: (query: string) => void;
+    className?: string | undefined;
+    showSettings?: boolean;
+    initialUseIndexSearch?: boolean;
+  }): JSX.Element => {
+    const {
+      onSearch,
+      initialValue,
+      placeholder,
+      onChange,
+      className,
+      showSettings,
+      initialUseIndexSearch,
+    } = props;
 
-  const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
+    const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
+    const [useIndexSearch, setUseIndexSearch] = useState(
+      initialUseIndexSearch ?? false,
+    );
+    const [searchMenuAnchorEl, setSearchMenuAnchorEl] =
+      useState<HTMLElement | null>();
 
-  return (
-    <form
-      className={clsx('legend-marketplace__search-bar', className)}
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSearch?.(searchQuery);
-      }}
-    >
-      <TextField
-        className="legend-marketplace__search-bar__text-field"
-        type="search"
-        placeholder={placeholder ?? 'Search'}
-        fullWidth={true}
-        value={searchQuery}
-        onChange={(event) => {
-          setSearchQuery(event.target.value);
-          onChange?.(event.target.value);
+    const searchMenuOpen = Boolean(searchMenuAnchorEl);
+
+    return (
+      <form
+        className={clsx('legend-marketplace__search-bar', className)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSearch?.(searchQuery, useIndexSearch);
         }}
-        slotProps={{
-          input: {
-            className: 'legend-marketplace__search-bar__input',
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => {}} title="filter">
-                  <TuneIcon />
-                </IconButton>
-                <IconButton
-                  onClick={() => onSearch?.(searchQuery)}
-                  title="search"
-                >
-                  <SearchIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-      />
-    </form>
-  );
-};
+      >
+        <TextField
+          className="legend-marketplace__search-bar__text-field"
+          type="search"
+          placeholder={placeholder ?? 'Search'}
+          fullWidth={true}
+          value={searchQuery}
+          onChange={(event) => {
+            setSearchQuery(event.target.value);
+            onChange?.(event.target.value);
+          }}
+          slotProps={{
+            input: {
+              className: 'legend-marketplace__search-bar__input',
+              endAdornment: (
+                <InputAdornment position="end">
+                  {showSettings && (
+                    <IconButton
+                      onClick={(event) =>
+                        setSearchMenuAnchorEl(event.currentTarget)
+                      }
+                      title="Search settings"
+                    >
+                      <TuneIcon />
+                    </IconButton>
+                  )}
+                  <IconButton type="submit" title="Search">
+                    <SearchIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        {showSettings && (
+          <Menu
+            anchorEl={searchMenuAnchorEl}
+            open={searchMenuOpen}
+            onClose={() => setSearchMenuAnchorEl(null)}
+          >
+            <MenuItem>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={useIndexSearch}
+                    onChange={(event) => {
+                      setUseIndexSearch(event.target.checked);
+                    }}
+                  />
+                }
+                label={
+                  <>
+                    Use Index Search{' '}
+                    <LegendMarketplaceInfoTooltip title="Index search provides the most up-to-date results by searching directly on deployed data products. Only use index search if you are trying to find a recently deployed data product." />
+                  </>
+                }
+              />
+            </MenuItem>
+          </Menu>
+        )}
+      </form>
+    );
+  },
+);

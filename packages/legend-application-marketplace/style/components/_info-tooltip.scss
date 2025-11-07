@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-export * from './models/DataProductSearchResult.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
-export * from './models/Cart.js';
-export * from './models/Order.js';
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
-export { TerminalAccessServerClient } from './TerminalAccessServerClient.js';
+@use 'mixins' as *;
+
+.legend-marketplace__info-tooltip {
+  &__icon {
+    @include hoverableLightTooltipIcon;
+
+    display: inline-block;
+    font-size: 1.5rem;
+    margin-left: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+}

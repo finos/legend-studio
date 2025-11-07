@@ -16,7 +16,7 @@
 
 export enum LEGEND_MARKETPLACE_APP_EVENT {
   FETCH_DATA_PRODUCT_FAILURE = 'marketplace.fetch.data-product.failure',
-
+  DESERIALIZE_DATA_PRODUCT_SEARCH_RESULT_FAILURE = 'marketplace.search.deserialize.data-product-search-result.failure',
   LOAD_DATA_PRODUCT = 'marketplace.load.data-product',
   LOAD_SDLC_DATA_PRODUCT = 'marketplace.load.sdlc.data-product',
   LOAD_TERMINAL = 'marketplace.load.terminal',

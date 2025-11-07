@@ -14,10 +14,26 @@
  * limitations under the License.
  */
 
-export * from './models/DataProductSearchResult.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
-export * from './models/Cart.js';
-export * from './models/Order.js';
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
-export { TerminalAccessServerClient } from './TerminalAccessServerClient.js';
+import { clsx, InfoCircleIcon } from '@finos/legend-art';
+import { Tooltip } from '@mui/material';
+
+export const LegendMarketplaceInfoTooltip = (props: {
+  title: string;
+  className?: string | undefined;
+}) => {
+  const { title, className } = props;
+
+  return (
+    <Tooltip
+      className={clsx('legend-marketplace__info-tooltip__icon', className)}
+      title={title}
+      slotProps={{
+        tooltip: {
+          className: 'legend-marketplace__info-tooltip__content',
+        },
+      }}
+    >
+      <InfoCircleIcon />
+    </Tooltip>
+  );
+};
