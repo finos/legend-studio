@@ -128,7 +128,7 @@ test('navigates to search results page with index search if search box contains 
 
   // Enable index search
   const indexSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
-    name: /Use Index Search/,
+    name: /Index Search/,
   });
   fireEvent.click(indexSearchSwitch);
   expect(indexSearchSwitch.checked).toBe(true);

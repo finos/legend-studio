@@ -139,7 +139,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
     // Turn on index search
     const indexSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
-      name: /Use Index Search/,
+      name: /Index Search/,
     });
     fireEvent.click(indexSearchSwitch);
     expect(indexSearchSwitch.checked).toBe(true);
