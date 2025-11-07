@@ -138,8 +138,6 @@ describe('MarketplaceLakehouseSearchResults', () => {
     screen.getByDisplayValue('new search');
 
     // Turn on index search
-    const searchSettingsButton = screen.getByTitle('Search settings');
-    fireEvent.click(searchSettingsButton);
     const indexSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
       name: /Use Index Search/,
     });

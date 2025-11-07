@@ -127,8 +127,6 @@ test('navigates to search results page with index search if search box contains 
   fireEvent.change(searchInput, { target: { value: 'data' } });
 
   // Enable index search
-  const searchSettingsButton = screen.getByTitle('Search settings');
-  fireEvent.click(searchSettingsButton);
   const indexSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
     name: /Use Index Search/,
   });
