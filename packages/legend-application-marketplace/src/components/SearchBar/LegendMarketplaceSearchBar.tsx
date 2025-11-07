@@ -25,6 +25,11 @@ import {
 import { clsx, SearchIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceInfoTooltip } from '../InfoTooltip/LegendMarketplaceInfoTooltip.js';
+import {
+  type LEGEND_MARKETPLACE_PAGE,
+  LegendMarketplaceTelemetryHelper,
+} from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import type { TelemetryService } from '@finos/legend-application';
 
 export interface Vendor {
   provider: string;
@@ -41,6 +46,8 @@ export const LegendMarketplaceSearchBar = observer(
     className?: string | undefined;
     showIndexSearchToggle?: boolean;
     initialUseIndexSearch?: boolean;
+    telemetryService?: TelemetryService;
+    marketplacePage?: LEGEND_MARKETPLACE_PAGE;
   }): JSX.Element => {
     const {
       onSearch,
@@ -50,6 +57,8 @@ export const LegendMarketplaceSearchBar = observer(
       className,
       showIndexSearchToggle,
       initialUseIndexSearch,
+      telemetryService,
+      marketplacePage,
     } = props;
 
     const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
@@ -87,6 +96,13 @@ export const LegendMarketplaceSearchBar = observer(
                           checked={useIndexSearch}
                           onChange={(event) => {
                             setUseIndexSearch(event.target.checked);
+                            if (telemetryService && marketplacePage) {
+                              LegendMarketplaceTelemetryHelper.logEvent_ToggleUseIndexSearch(
+                                telemetryService,
+                                event.target.checked,
+                                marketplacePage,
+                              );
+                            }
                           }}
                         />
                       }

@@ -23,6 +23,7 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   LOAD_LEGACY_DATA_PRODUCT = 'marketplace.load.legacy.data-product',
   CLICK_DATA_PRODUCT_CARD = 'marketplace.click.data-product.card',
   CLICK_LEGACY_DATA_PRODUCT_CARD = 'marketplace.click.legacy.data-product.card',
+  TOGGLE_USE_INDEX_SEARCH = 'marketplace.search.toggle-use-index-search',
   SEARCH_QUERY = 'marketplace.search.query',
   ACTION_DATA_CONTRACTS = 'marketplace.action.data.contracts',
   CLICK_HEADER_TAB = 'marketplace.click.header.tab',
