@@ -108,7 +108,7 @@ export const LegendMarketplaceSearchBar = observer(
                       }
                       label={
                         <>
-                          Use Index Search{' '}
+                          Index Search{' '}
                           <LegendMarketplaceInfoTooltip title="Index search provides the most up-to-date results by searching directly on deployed data products. Only use index search if you are trying to find a recently deployed data product." />
                         </>
                       }
