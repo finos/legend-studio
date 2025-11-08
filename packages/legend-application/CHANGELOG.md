@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.80
+
+### Patch Changes
+
+- [#4598](https://github.com/finos/legend-studio/pull/4598) [`a4080ff`](https://github.com/finos/legend-studio/commit/a4080ffd3fd7d1488c910efa0084477cb80502c4) ([@travisstebbins](https://github.com/travisstebbins)) - Add useSyncStateAndSearchParam util hook
+
 ## 16.0.79
 
 ## 16.0.78
