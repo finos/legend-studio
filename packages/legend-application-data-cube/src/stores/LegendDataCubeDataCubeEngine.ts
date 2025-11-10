@@ -747,6 +747,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           const refId = await this._duckDBEngine.ingestIcebergTable(
             rawSource.warehouse,
             rawSource.paths,
+            rawSource.icebergConfig.catalogUrl,
             await this.secondaryOauthClient.getToken(),
           );
           const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
@@ -1766,21 +1767,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const { dbReference, columnNames } =
       await this._duckDBEngine.ingestLocalFileData(data, format, refId);
     return { dbReference, columnNames };
-  }
-
-  async ingestIcebergTable(
-    warehouse: string,
-    paths: string[],
-    catalogApi: string,
-    token?: string,
-  ) {
-    const { dbReference } = await this._duckDBEngine.ingestIcebergTable(
-      warehouse,
-      paths,
-      catalogApi,
-      token,
-    );
-    return { dbReference };
   }
 
   private _getColumnType(col: string[], column: V1_Column) {
