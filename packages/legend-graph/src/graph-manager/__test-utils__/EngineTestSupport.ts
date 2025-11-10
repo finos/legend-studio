@@ -41,7 +41,8 @@ import type {
 } from '../protocol/pure/v1/engine/compilation/V1_LambdaReturnType.js';
 import type { V1_RawLambda } from '../protocol/pure/v1/model/rawValueSpecification/V1_RawLambda.js';
 
-export const ENGINE_TEST_SUPPORT_API_URL = 'http://localhost:6300/api';
+export const ENGINE_TEST_SUPPORT_API_URL =
+  'https://int.exec.alloy.site.gs.com/api/';
 
 export { AxiosError as ENGINE_TEST_SUPPORT__NetworkClientError };
 
