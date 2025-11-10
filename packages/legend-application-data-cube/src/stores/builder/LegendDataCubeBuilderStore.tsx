@@ -681,18 +681,19 @@ export class LegendDataCubeBuilderStore {
     state: LegendDataCubeCodeEditorState,
   ): Promise<void> {
     const builder = this.builder;
-    if (
-      !builder ||
-      !(
-        builder.source instanceof LakehouseConsumerDataCubeSource ||
-        builder.source instanceof LakehouseProducerDataCubeSource
-      )
-    ) {
-      throw new Error(
-        `DataCube builder is undefined or source type is not supported.`,
-      );
-    }
+
     try {
+      if (
+        !builder ||
+        !(
+          builder.source instanceof LakehouseConsumerDataCubeSource ||
+          builder.source instanceof LakehouseProducerDataCubeSource
+        )
+      ) {
+        throw new Error(
+          `DataCube builder is undefined or source type is not supported.`,
+        );
+      }
       const newSource = builder.source;
       let serializedRawSource;
       if (newSource instanceof LakehouseConsumerDataCubeSource) {
@@ -727,6 +728,7 @@ export class LegendDataCubeBuilderStore {
     } catch (error) {
       assertErrorThrown(error);
       const message = `DataCube reload Failure: ${error.message}`;
+      this.queryEditorDisplay.close();
       this.alertService.alertError(error, {
         message: message,
       });
