@@ -286,6 +286,7 @@ export enum DataCubeTitleBarMenuItems {
   UPDATE_INFO = 'Update Info...',
   DELETE_DATACUBE = 'Delete DataCube...',
   SEE_DOCUMENTATION = 'See Documentation',
+  EDIT_SOURCE_QUERY = 'Edit Source Query',
   EDIT_QUERY = 'Edit Latest Saved Query',
   ABOUT = 'About',
   UNDO = 'Undo',
