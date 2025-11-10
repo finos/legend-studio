@@ -57,6 +57,18 @@ export class ServiceRegistrationEnvironmentConfig {
   );
 }
 
+export class UserSearchConfig {
+  applicationDirectoryUrl!: string;
+  userProfileImageUrl!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(UserSearchConfig, {
+      applicationDirectoryUrl: primitive(),
+      userProfileImageUrl: primitive(),
+    }),
+  );
+}
+
 class LegendStudioApplicationCoreOptions {
   /**
    * Indicates if we should enable strict-mode for graph builder
@@ -122,6 +134,8 @@ class LegendStudioApplicationCoreOptions {
 
   dataProductConfig: DataProductConfig | undefined;
 
+  userSearchConfig: UserSearchConfig | undefined;
+
   /**
    * Indicates if we should enable oauth flow
    *
@@ -149,6 +163,9 @@ class LegendStudioApplicationCoreOptions {
       ),
       dataProductConfig: optional(
         usingModelSchema(DataProductConfig.serialization.schema),
+      ),
+      userSearchConfig: optional(
+        usingModelSchema(UserSearchConfig.serialization.schema),
       ),
       enableOauthFlow: optional(primitive()),
     }),
