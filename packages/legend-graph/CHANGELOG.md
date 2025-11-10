@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.15
+
+### Patch Changes
+
+- [#4598](https://github.com/finos/legend-studio/pull/4598) [`a4080ff`](https://github.com/finos/legend-studio/commit/a4080ffd3fd7d1488c910efa0084477cb80502c4) ([@travisstebbins](https://github.com/travisstebbins)) - Add fullPath to V1_EntitlementsDataProductDetails model
+
 ## 32.3.14
 
 ## 32.3.13
