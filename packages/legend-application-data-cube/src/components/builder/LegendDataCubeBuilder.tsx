@@ -211,6 +211,13 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
                   logMenuItem(DataCubeTitleBarMenuItems.VIEW_SOURCE);
                 },
               },
+              {
+                label: DataCubeTitleBarMenuItems.EDIT_SOURCE_QUERY,
+                action: () => {
+                  store.queryEditorDisplay.open();
+                  logMenuItem(DataCubeTitleBarMenuItems.EDIT_SOURCE_QUERY);
+                },
+              },
             ]
           : []),
         ...(persistentDataCube
