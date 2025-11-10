@@ -1,5 +1,5 @@
 ---
-'@finos/legend-application-marketplace-deployment': patch
+'@finos/legend-application-marketplace': patch
 ---
 
-Add email to LegendUser response
+Update test utils with new DataProductConfig

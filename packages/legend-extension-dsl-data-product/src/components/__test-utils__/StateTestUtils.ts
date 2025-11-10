@@ -177,6 +177,10 @@ export const TEST__getDataProductViewerState = async (
         profile: 'test::profile::EnterpriseDataProduct',
         stereotype: 'enterprise',
       },
+      vendorTaggedValue: {
+        profile: 'test::profile::VDP',
+        value: ['Status', 'Owner'],
+      },
     }),
     undefined,
     projectGAVCoordinates,

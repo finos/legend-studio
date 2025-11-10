@@ -83,6 +83,10 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
           profile: 'test::profile::EnterpriseDataProduct',
           stereotype: 'enterprise',
         },
+        vendorTaggedValue: {
+          profile: 'test::profile::VDP',
+          value: ['Status', 'Owner'],
+        },
       },
       showDevFeatures: true,
     },
