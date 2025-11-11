@@ -335,11 +335,36 @@ export const getWebAppBaseWebpackConfig = (
     },
     optimization: isEnvProduction
       ? {
+          runtimeChunk: 'single',
           splitChunks: {
+            chunks: 'all',
             cacheGroups: {
+              monaco: {
+                test: /[\\/]node_modules[\\/]monaco-editor[\\/]/,
+                name: 'monaco',
+                priority: 30,
+                enforce: true,
+              },
+              aggrid: {
+                test: /[\\/]node_modules[\\/](@ag-grid-|ag-grid-)/,
+                name: 'aggrid',
+                priority: 25,
+                enforce: true,
+              },
+              cytoscape: {
+                test: /[\\/]node_modules[\\/]cytoscape[\\/]/,
+                name: 'cytoscape',
+                priority: 20,
+                enforce: true,
+              },
+              mathjs: {
+                test: /[\\/]node_modules[\\/]mathjs[\\/]/,
+                name: 'mathjs',
+                priority: 15,
+                enforce: true,
+              },
               defaultVendors: {
-                test: /node_modules/,
-                chunks: (chunkFilename) => chunkFilename !== 'service-worker',
+                test: /[\\/]node_modules[\\/]/,
                 name: 'vendor',
                 priority: -10,
                 enforce: true,
@@ -372,9 +397,10 @@ export const getWebAppBaseWebpackConfig = (
        * We specify it here to slim down the `webpack` config in top-level modules
        */
       new MonacoWebpackPlugin({
-        // Only include what we need to lessen the bundle loads
-        // See https://github.com/microsoft/monaco-editor-webpack-plugin
-        languages: [
+        languages: (process.env.STUDIO_MONACO_LANGS &&
+          process.env.STUDIO_MONACO_LANGS.split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)) || [
           'json',
           'java',
           'markdown',
@@ -383,11 +409,10 @@ export const getWebAppBaseWebpackConfig = (
           'xml',
           'graphql',
         ],
-        // Exclude/include features
-        // NOTE: the downside to this is that sometimes `monaco-editor` changes their
-        // bundling or list of features and we could end up with features suddenly not
-        // working as expected
-        features: [
+        features: (process.env.STUDIO_MONACO_FEATURES &&
+          process.env.STUDIO_MONACO_FEATURES.split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)) || [
           'linesOperations',
           'bracketMatching',
           'clipboard',

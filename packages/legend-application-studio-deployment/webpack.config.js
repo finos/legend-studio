@@ -17,6 +17,7 @@
 import { resolve, dirname } from 'path';
 import webpack from 'webpack';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
+import CompressionPlugin from 'compression-webpack-plugin';
 import appConfig from './studio.config.js';
 import {
   getEnvInfo,
@@ -54,14 +55,29 @@ export default (env, arg) => {
       new DefinePlugin({
         AG_GRID_LICENSE: null,
       }),
+      !isEnvDevelopment &&
+        new CompressionPlugin({
+          filename: '[path][base].gz',
+          algorithm: 'gzip',
+          test: /\.(js|css|html|svg)$/i,
+          threshold: 8192,
+          minRatio: 0.8,
+        }),
+      !isEnvDevelopment &&
+        new CompressionPlugin({
+          filename: '[path][base].br',
+          algorithm: 'brotliCompress',
+          compressionOptions: { level: 11 },
+          test: /\.(js|css|html|svg)$/i,
+          threshold: 8192,
+          minRatio: 0.8,
+        }),
 
-      // For development, we want to serve the `config.json` and `version.json` files at the `/baseUrl`
       isEnvDevelopment &&
         new CopyWebpackPlugin({
           patterns: [
             {
               from: resolve(__dirname, './dev/config.json'),
-              // trim the leading and trailing slash
               to:
                 appConfig.baseUrl.length === 1
                   ? undefined
@@ -69,7 +85,6 @@ export default (env, arg) => {
             },
             {
               from: resolve(__dirname, './dev/version.json'),
-              // trim the leading and trailing slash
               to:
                 appConfig.baseUrl.length === 1
                   ? undefined
