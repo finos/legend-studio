@@ -713,7 +713,6 @@ export class LegendDataCubeBuilderStore {
         serializedRawSource =
           RawLakehouseProducerDataCubeSource.serialization.toJson(rawSource);
       }
-      newSource.query = await this.engine.parseValueSpecification(state.code);
       const processedSource =
         await this.engine.processSource(serializedRawSource);
       const newSpecification = await this.engine.generateBaseSpecification(
