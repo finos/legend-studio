@@ -31,8 +31,16 @@ import {
   waitFor,
 } from '@testing-library/dom';
 import {
+  TEST__provideMockedLegendDataCubeBaseStore,
   TEST__provideMockedLegendDataCubeBuilderStore,
+  TEST__provideMockedLegendDataCubeEngine,
   TEST__setUpDataCubeBuilder,
+  mockAdHocDataProductPMCD,
+  mockLakehouseConsumerAdHocDataProduct,
+  mockLakehouseProducerAdHocDataProduct,
+  DEFAULT_MOCK_ADHOC_DATA_PRODUCT,
+  columns,
+  DEFAULT_MOCK_PMCD,
 } from '../__test-utils__/LegendDataCubeStoreTestUtils.js';
 import {
   NetworkClientError,
@@ -48,7 +56,15 @@ import {
   V1_CFloat,
   V1_CInteger,
   V1_CString,
+  V1_DataProduct,
+  V1_IngestDefinition,
+  V1_LakehouseRuntime,
+  V1_PackageableRuntime,
+  V1_PureModelContextData,
   V1_Query,
+  V1_ValueSpecification,
+  V1_deserializePureModelContext,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import depotEntities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
 import { LegendDataCubePluginManager } from '../../application/LegendDataCubePluginManager.js';
@@ -59,6 +75,8 @@ import {
 import { TEST__getTestLegendDataCubeApplicationConfig } from '../../application/__test-utils__/LegendDataCubeApplicationTestUtils.js';
 import { ENGINE_TEST_SUPPORT__JSONToGrammar_lambda } from '@finos/legend-graph/test';
 import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
+import { LakehouseConsumerDataCubeSource } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
+import { LakehouseProducerDataCubeSource } from '../../stores/model/LakehouseProducerDataCubeSource.js';
 
 // Mock the LegendDataCubeDuckDBEngine module because it causes
 // problems when running in the jest environment.
@@ -70,6 +88,25 @@ jest.mock('../../stores/LegendDataCubeDuckDBEngine', () => {
     })),
   };
 });
+
+const serializedProducerQuery = {
+  _type: 'classInstance',
+  multiplicity: { lowerBound: 1, upperBound: 1 },
+  type: 'I',
+  value: {
+    path: ['dataProduct::test_Data-Product', 'test_data-set'],
+    metadata: false,
+  },
+};
+const serializedConsumerQuery = {
+  _type: 'classInstance',
+  multiplicity: { lowerBound: 1, upperBound: 1 },
+  type: 'P',
+  value: {
+    path: ['dataProduct::test_DataProduct', 'test_dataset'],
+    parameters: [],
+  },
+};
 
 test(
   integrationTest('Load DataCube window appears on first load'),
@@ -1426,6 +1463,104 @@ test(
     fireEvent.click(valueSpecEditorInput);
     fireEvent.keyDown(valueSpecEditorInput, { key: 'ArrowDown' });
     await screen.findByText('March');
+  },
+);
+
+test(
+  integrationTest('Process Source for adhoc lakehouse consumer source'),
+  async () => {
+    await TEST__provideMockedLegendDataCubeBaseStore();
+    const engine = await TEST__provideMockedLegendDataCubeEngine({
+      mockPMCD: DEFAULT_MOCK_PMCD,
+      mockEntitlementsAdHocDataProduct: DEFAULT_MOCK_ADHOC_DATA_PRODUCT,
+    });
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockAdHocDataProductPMCD,
+    );
+
+    createSpy(engine, '_getLambdaRelationType').mockResolvedValue({ columns });
+
+    const result = guaranteeType(
+      await engine.processSource(mockLakehouseConsumerAdHocDataProduct),
+      LakehouseConsumerDataCubeSource,
+    );
+
+    const deserializedPMCD = guaranteeType(
+      V1_deserializePureModelContext(result.model),
+      V1_PureModelContextData,
+    );
+    //result tests
+    expect(result).toBeDefined();
+    expect(result.columns).toBeDefined();
+    //query tests
+    expect(result.query).toBeInstanceOf(V1_ValueSpecification);
+    const serialized = V1_serializeValueSpecification(result.query, []);
+    expect(serialized).toEqual(serializedConsumerQuery);
+    //deserializedPMCD tests
+    expect(deserializedPMCD.elements.length).toBe(4);
+    const elements = deserializedPMCD.elements;
+    const runtimeElement = elements.find(
+      (el) => el instanceof V1_PackageableRuntime,
+    );
+    const ingestDefinition = elements.find(
+      (el) => el instanceof V1_IngestDefinition,
+    );
+    const dataProduct = elements.find((el) => el instanceof V1_DataProduct);
+    expect(ingestDefinition).toBeDefined();
+    expect(dataProduct).toBeDefined();
+    expect(runtimeElement).toBeDefined();
+    expect(runtimeElement?.name).toBe('lakehouseConsumer');
+    expect(runtimeElement?.package).toBe('runtime');
+    expect(runtimeElement?.runtimeValue).toBeInstanceOf(V1_LakehouseRuntime);
+    const runtimeValue = runtimeElement?.runtimeValue as V1_LakehouseRuntime;
+    expect(runtimeValue.warehouse).toBe('TEST_WAREHOUSE');
+    expect(runtimeValue.environment).toBe('dev-testEnv');
+  },
+);
+
+test(
+  integrationTest('Process Source for adhoc lakehouse producer source'),
+  async () => {
+    await TEST__provideMockedLegendDataCubeBaseStore();
+    const engine = await TEST__provideMockedLegendDataCubeEngine({
+      mockPMCD: DEFAULT_MOCK_PMCD,
+      mockEntitlementsAdHocDataProduct: DEFAULT_MOCK_ADHOC_DATA_PRODUCT,
+    });
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockAdHocDataProductPMCD,
+    );
+
+    createSpy(engine, '_getLambdaRelationType').mockResolvedValue({ columns });
+
+    const result = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    const deserializedPMCD = guaranteeType(
+      V1_deserializePureModelContext(result.model),
+      V1_PureModelContextData,
+    );
+    //result tests
+    expect(result).toBeDefined();
+    expect(result.columns).toBeDefined();
+    //query tests
+    expect(result.query).toBeInstanceOf(V1_ValueSpecification);
+    const serialized = V1_serializeValueSpecification(result.query, []);
+    expect(serialized).toEqual(serializedProducerQuery);
+    //deserializedPMCD tests
+    expect(deserializedPMCD.elements.length).toBe(2);
+    const elements = deserializedPMCD.elements;
+    const runtimeElement = elements.find(
+      (el) => el instanceof V1_PackageableRuntime,
+    );
+    const ingestDefinition = elements.find(
+      (el) => el instanceof V1_IngestDefinition,
+    );
+    expect(ingestDefinition).toBeDefined();
+    expect(runtimeElement).toBeDefined();
+    expect(runtimeElement?.name).toBe('lakehouseProducer');
+    expect(runtimeElement?.package).toBe('runtime');
   },
 );
 

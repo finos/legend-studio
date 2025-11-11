@@ -24,6 +24,7 @@ import {
 import {
   createModelSchema,
   custom,
+  deserialize,
   list,
   optional,
   primitive,
@@ -34,6 +35,8 @@ import {
   V1_deserializeGenericType,
   V1_genericTypeModelSchema,
 } from '../../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
+import type { V1_RelationElement } from '../../model/data/V1_EmbeddedData.js';
+import { V1_relationElementModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';
 
 export enum V1_DataProductTypeEnum {
   INTERNAL = 'internalDataProductType',
@@ -51,46 +54,50 @@ export enum V1_DatabaseDDLImplementationType {
   PROCEDURE = 'PROCEDURE',
 }
 
-export abstract class V1_DataProductType {}
+export abstract class V1_Artifact_DataProductType {}
 
-export class V1_ExternalDataProductType extends V1_DataProductType {
+export class V1_Artifact_ExternalDataProductType extends V1_Artifact_DataProductType {
   link: string | undefined;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_ExternalDataProductType, {
+    createModelSchema(V1_Artifact_ExternalDataProductType, {
       _type: usingConstantValueSchema(V1_DataProductTypeEnum.EXTERNAL),
       link: optional(primitive()),
     }),
   );
 }
 
-export class V1_InternalDataProductType extends V1_DataProductType {
+export class V1_Artifact_InternalDataProductType extends V1_Artifact_DataProductType {
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_InternalDataProductType, {
+    createModelSchema(V1_Artifact_InternalDataProductType, {
       _type: usingConstantValueSchema(V1_DataProductTypeEnum.INTERNAL),
     }),
   );
 }
 
 export const V1_serializeDataProductType = (
-  DataProductType: V1_DataProductType,
-): PlainObject<V1_DataProductType> => {
-  if (DataProductType instanceof V1_ExternalDataProductType) {
-    return V1_ExternalDataProductType.serialization.toJson(DataProductType);
-  } else if (DataProductType instanceof V1_InternalDataProductType) {
-    return V1_InternalDataProductType.serialization.toJson(DataProductType);
+  DataProductType: V1_Artifact_DataProductType,
+): PlainObject<V1_Artifact_DataProductType> => {
+  if (DataProductType instanceof V1_Artifact_ExternalDataProductType) {
+    return V1_Artifact_ExternalDataProductType.serialization.toJson(
+      DataProductType,
+    );
+  } else if (DataProductType instanceof V1_Artifact_InternalDataProductType) {
+    return V1_Artifact_InternalDataProductType.serialization.toJson(
+      DataProductType,
+    );
   }
   throw new UnsupportedOperationError();
 };
 
 export const V1_deserializeDataProductType = (
-  json: PlainObject<V1_DataProductType>,
-): V1_DataProductType => {
+  json: PlainObject<V1_Artifact_DataProductType>,
+): V1_Artifact_DataProductType => {
   switch (json._type) {
     case V1_DataProductTypeEnum.EXTERNAL:
-      return V1_ExternalDataProductType.serialization.fromJson(json);
+      return V1_Artifact_ExternalDataProductType.serialization.fromJson(json);
     case V1_DataProductTypeEnum.INTERNAL:
-      return V1_InternalDataProductType.serialization.fromJson(json);
+      return V1_Artifact_InternalDataProductType.serialization.fromJson(json);
     default:
       throw new Error(`Unknown V1_DataProductType type: ${json._type}`);
   }
@@ -101,7 +108,7 @@ export class V1_DataProductInfo {
   deploymentId: string | undefined;
   description: string | undefined;
   title: string | undefined;
-  dataProductType: V1_DataProductType | undefined;
+  dataProductType: V1_Artifact_DataProductType | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataProductInfo, {
@@ -179,6 +186,7 @@ export class V1_AccessPointImplementation {
   id!: string;
   description: string | undefined;
   resourceBuilder!: V1_ResourceBuilder;
+  relationElement: V1_RelationElement | undefined;
   lambdaGenericType: V1_GenericType | undefined;
 
   static readonly serialization = new SerializationFactory(
@@ -188,6 +196,12 @@ export class V1_AccessPointImplementation {
       resourceBuilder: custom(
         V1_serializeResourceBuilder,
         V1_deserializeResourceBuilder,
+      ),
+      relationElement: optional(
+        custom(
+          (val) => serialize(V1_relationElementModelSchema, val),
+          (val) => deserialize(V1_relationElementModelSchema, val),
+        ),
       ),
       lambdaGenericType: custom(
         (val) => serialize(V1_genericTypeModelSchema, val),

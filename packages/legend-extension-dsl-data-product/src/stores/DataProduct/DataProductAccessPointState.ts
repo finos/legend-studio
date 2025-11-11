@@ -26,6 +26,7 @@ import {
   V1_Protocol,
   V1_PureGraphManager,
   V1_PureModelContextPointer,
+  type V1_RelationElement,
   V1_RelationType,
   V1_relationTypeModelSchema,
   V1_RenderStyle,
@@ -48,9 +49,11 @@ export class DataProductAccessPointState {
   readonly apgState: DataProductAPGState;
   readonly accessPoint: V1_AccessPoint;
   relationType: V1_RelationType | undefined;
+  relationElement: V1_RelationElement | undefined;
   grammar: string | undefined;
 
   readonly fetchingRelationTypeState = ActionState.create();
+  readonly fetchingRelationElement = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
 
   constructor(apgState: DataProductAPGState, accessPoint: V1_AccessPoint) {
@@ -75,6 +78,7 @@ export class DataProductAccessPointState {
         dataProductArtifactPromise,
         entitlementsDataProductDetails,
       ),
+      this.fetchSampleDataFromArtifact(dataProductArtifactPromise),
       this.fetchGrammar(),
     ]);
   }
@@ -94,6 +98,27 @@ export class DataProductAccessPointState {
       throw new Error(
         `Data product artifact is missing relation type for access point: ${this.accessPoint.id}`,
       );
+    }
+  }
+
+  async fetchSampleDataFromArtifact(
+    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
+  ): Promise<void> {
+    this.fetchingRelationElement.inProgress();
+    try {
+      const artifact = await dataProductArtifactPromise;
+      this.relationElement = artifact?.accessPointGroups
+        .find((apg) => apg.id === this.apgState.apg.id)
+        ?.accessPointImplementations.find(
+          (ap) => ap.id === this.accessPoint.id,
+        )?.relationElement;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.apgState.applicationStore.notificationService.notifyError(
+        `Error fetching access point sample data: ${error.message}`,
+      );
+    } finally {
+      this.fetchingRelationElement.complete();
     }
   }
 

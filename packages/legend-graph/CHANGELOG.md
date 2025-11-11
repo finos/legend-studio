@@ -1,5 +1,41 @@
 # @finos/legend-graph
 
+## 32.3.15
+
+### Patch Changes
+
+- [#4598](https://github.com/finos/legend-studio/pull/4598) [`a4080ff`](https://github.com/finos/legend-studio/commit/a4080ffd3fd7d1488c910efa0084477cb80502c4) ([@travisstebbins](https://github.com/travisstebbins)) - Add fullPath to V1_EntitlementsDataProductDetails model
+
+## 32.3.14
+
+## 32.3.13
+
+### Patch Changes
+
+- [#4608](https://github.com/finos/legend-studio/pull/4608) [`7fda83e`](https://github.com/finos/legend-studio/commit/7fda83e746d4b76681ee40fee4afec94b82f3425) ([@travisstebbins](https://github.com/travisstebbins)) - Fix Marketplace "My Closed Requests" view
+
+- [#4611](https://github.com/finos/legend-studio/pull/4611) [`5dabccf`](https://github.com/finos/legend-studio/commit/5dabccf9ddbdb87a58d339a07ce3f1764df8ef6b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Data Product Dashboard to studio application extension
+
+## 32.3.12
+
+### Patch Changes
+
+- [#4602](https://github.com/finos/legend-studio/pull/4602) [`8c9e370`](https://github.com/finos/legend-studio/commit/8c9e3702d76fe82a0089b00a81ecac5a78c62c94) ([@travisstebbins](https://github.com/travisstebbins)) - Add contract escalation feature for Marketplace Lakehouse entitlements requests
+
+## 32.3.11
+
+### Patch Changes
+
+- [#4593](https://github.com/finos/legend-studio/pull/4593) [`aaaa81c`](https://github.com/finos/legend-studio/commit/aaaa81c4a5d0ecfcc54f061fa95b9f6f25bef8a5) ([@yash0024](https://github.com/yash0024)) - Add sampleValues to DataProduct
+
+## 32.3.10
+
+### Patch Changes
+
+- [#4590](https://github.com/finos/legend-studio/pull/4590) [`6520522`](https://github.com/finos/legend-studio/commit/652052207031fc696a0da4668672ef5bc9b7acaf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add User Entitlements Env Models
+
+- [#4582](https://github.com/finos/legend-studio/pull/4582) [`6e19be8`](https://github.com/finos/legend-studio/commit/6e19be87755ab88bf8ef79b328890a3d5a517b3c) ([@jackp5150](https://github.com/jackp5150)) - Build temporary matview datasets
+
 ## 32.3.9
 
 ### Patch Changes

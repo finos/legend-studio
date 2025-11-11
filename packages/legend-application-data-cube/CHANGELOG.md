@@ -1,5 +1,25 @@
 # @finos/legend-application-data-cube
 
+## 0.7.17
+
+### Patch Changes
+
+- [#4598](https://github.com/finos/legend-studio/pull/4598) [`a4080ff`](https://github.com/finos/legend-studio/commit/a4080ffd3fd7d1488c910efa0084477cb80502c4) ([@travisstebbins](https://github.com/travisstebbins)) - Remove unused test variable
+
+## 0.7.16
+
+## 0.7.15
+
+## 0.7.14
+
+### Patch Changes
+
+- [#4606](https://github.com/finos/legend-studio/pull/4606) [`474c6df`](https://github.com/finos/legend-studio/commit/474c6df2a7cdbce1ad5917c177693039f741ed85) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: improve error message for lakehouse data cube sources
+
+## 0.7.13
+
+## 0.7.12
+
 ## 0.7.11
 
 ## 0.7.10

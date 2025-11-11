@@ -1,5 +1,41 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.24
+
+## 0.0.23
+
+## 0.0.22
+
+### Patch Changes
+
+- [#4608](https://github.com/finos/legend-studio/pull/4608) [`7fda83e`](https://github.com/finos/legend-studio/commit/7fda83e746d4b76681ee40fee4afec94b82f3425) ([@travisstebbins](https://github.com/travisstebbins)) - Fix Marketplace "My Closed Requests" view
+
+## 0.0.21
+
+### Patch Changes
+
+- [#4602](https://github.com/finos/legend-studio/pull/4602) [`8c9e370`](https://github.com/finos/legend-studio/commit/8c9e3702d76fe82a0089b00a81ecac5a78c62c94) ([@travisstebbins](https://github.com/travisstebbins)) - Add contract escalation feature for Marketplace Lakehouse entitlements requests
+
+## 0.0.20
+
+### Patch Changes
+
+- [#4593](https://github.com/finos/legend-studio/pull/4593) [`aaaa81c`](https://github.com/finos/legend-studio/commit/aaaa81c4a5d0ecfcc54f061fa95b9f6f25bef8a5) ([@yash0024](https://github.com/yash0024)) - New column for sampleValues in marketplace
+
+## 0.0.19
+
+## 0.0.18
+
+### Patch Changes
+
+- [#4590](https://github.com/finos/legend-studio/pull/4590) [`6520522`](https://github.com/finos/legend-studio/commit/652052207031fc696a0da4668672ef5bc9b7acaf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `getUserEntitlementEnvs` for entitlements environment and leverage for open in data cube.
+
+- [#4589](https://github.com/finos/legend-studio/pull/4589) [`a4b7ab1`](https://github.com/finos/legend-studio/commit/a4b7ab18f06648bbd202a54a993a0938a69a19c5) ([@travisstebbins](https://github.com/travisstebbins)) - Fix fetching DataProduct subscriptions
+
+- [#4560](https://github.com/finos/legend-studio/pull/4560) [`97e6711`](https://github.com/finos/legend-studio/commit/97e67115b3a7d99b6590bed0ca39a2451e32bab0) ([@travisstebbins](https://github.com/travisstebbins)) - Update Material UI dependencies to latest versions (@mui/material 7.3.4, @mui/system 7.3.3, @mui/lab 7.0.1-beta.18, @mui/x-date-pickers 8.14.1) and complete migration from deprecated TransitionProps/PaperProps to the new slotProps API across all Material UI Dialog, Modal, Popover, and Tooltip components. Also resolve MUI v8 date picker compatibility issues.
+
+  Reduce Jest worker count from 100% to 2 in test:ci script to address CI memory exhaustion caused by MUI v7's increased memory footprint (documented in mui/material-ui#46908 and #45804, showing 2-5x memory increase during builds/tests).
+
 ## 0.0.17
 
 ## 0.0.16

@@ -30,6 +30,8 @@ import type { RawProjectDependencyReport } from './models/RawProjectDependencyRe
 
 // max depth is to prevent cycles from breaking tree
 const MAX_DEPTH = 100;
+// Limit total paths to prevent memory exhaustion
+const MAX_PATHS_PER_VERSION = 50;
 
 const isRootNode = (
   node: ProjectDependencyVersionNode,
@@ -51,8 +53,24 @@ const walkBackWardEdges = (
       walkBackWardEdges(dependant, graph, paths, depth + 1, maxDepth),
     )
     .flat();
-  dependantPaths.forEach((r) => r.push(node));
-  return dependantPaths;
+  let limitedPaths: ProjectDependencyVersionNode[][];
+  if (dependantPaths.length <= MAX_PATHS_PER_VERSION) {
+    limitedPaths = dependantPaths;
+  } else {
+    for (let i = dependantPaths.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = dependantPaths[i];
+      const swapValue = dependantPaths[j];
+      if (temp !== undefined && swapValue !== undefined) {
+        dependantPaths[i] = swapValue;
+        dependantPaths[j] = temp;
+      }
+    }
+    // each subset of size MAX_PATHS_PER_VERSION is equally likely to be picked up now
+    limitedPaths = dependantPaths.slice(0, MAX_PATHS_PER_VERSION);
+  }
+  limitedPaths.forEach((r) => r.push(node));
+  return limitedPaths;
 };
 
 // Here we are rebuilding all the paths to said project dependency version which are causing conflicts

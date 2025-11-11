@@ -38,6 +38,7 @@ import {
 import {
   type V1_RelationTypeColumn,
   extractElementNameFromPath,
+  V1_AccessPointGroupReference,
   V1_AdHocDeploymentDataProductOrigin,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -271,7 +272,7 @@ export const DataCubeScreen = observer(
         <button
           onClick={loadDataCube}
           tabIndex={-1}
-          disabled={!selectedEnvironment}
+          disabled={!(selectedEnvironment ?? resolvedUserEnv)}
           className="data-product__viewer__tab-screen__btn"
           title="Open in Datacube"
         >
@@ -351,6 +352,27 @@ const AccessPointTable = observer(
                     : ''
                 }`
               : '',
+        },
+        {
+          headerName: 'Column Sample Values',
+          flex: 1,
+          wrapText: true,
+          autoHeight: true,
+          valueGetter: (_params) => {
+            if (!_params.data || !accessPointState.relationElement) {
+              return 'No sample values provided';
+            }
+            const columnName = _params.data.name;
+            const columnIndex =
+              accessPointState.relationElement.columns.indexOf(columnName);
+            if (columnIndex === -1) {
+              return 'No sample values provided';
+            }
+            const sampleValues = accessPointState.relationElement.rows
+              .map((row) => row.values[columnIndex])
+              .filter((value) => value !== undefined);
+            return sampleValues.join(', ');
+          },
         },
       ];
 
@@ -456,13 +478,15 @@ const AccessPointTable = observer(
         <Box className="data-product__viewer__more-info__container">
           {selectedTab === DataProductTabs.COLUMNS && (
             <>
-              {accessPointState.fetchingRelationTypeState.isInProgress ? (
+              {accessPointState.fetchingRelationTypeState.isInProgress ||
+              accessPointState.fetchingRelationElement.isInProgress ? (
                 <Box className="data-product__viewer__more-info__loading-indicator">
                   <CubesLoadingIndicator isLoading={true}>
                     <CubesLoadingIndicatorIcon />
                   </CubesLoadingIndicator>
                 </Box>
-              ) : accessPointState.fetchingRelationTypeState.hasCompleted ? (
+              ) : accessPointState.fetchingRelationTypeState.hasCompleted &&
+                accessPointState.fetchingRelationElement.hasCompleted ? (
                 <Box
                   className={clsx(
                     'data-product__viewer__more-info__columns-grid ag-theme-balham',
@@ -567,18 +591,25 @@ export const DataProductAccessPointGroupViewer = observer(
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
 
     const entitlementsDataContractViewerState = useMemo(() => {
-      return dataAccessState?.dataContract
+      return dataAccessState?.dataContract &&
+        dataAccessState.dataContract.resource instanceof
+          V1_AccessPointGroupReference &&
+        dataAccessState.dataContract.resource.accessPointGroup ===
+          apgState.apg.id
         ? new EntitlementsDataContractViewerState(
             V1_transformDataContractToLiteDatacontract(
               dataAccessState.dataContract,
             ),
             apgState.applicationStore,
             dataAccessState.lakehouseContractServerClient,
+            apgState.dataProductViewerState.graphManagerState,
             apgState.dataProductViewerState.userSearchService,
           )
         : undefined;
     }, [
+      apgState.apg.id,
       apgState.applicationStore,
+      apgState.dataProductViewerState.graphManagerState,
       apgState.dataProductViewerState.userSearchService,
       dataAccessState?.dataContract,
       dataAccessState?.lakehouseContractServerClient,
@@ -821,7 +852,15 @@ export const DataProductAccessPointGroupViewer = observer(
             open={true}
             onClose={() => dataAccessState.setDataContract(undefined)}
             currentViewer={entitlementsDataContractViewerState}
-            apgState={apgState}
+            onRefresh={() => {
+              if (apgState.associatedUserContract) {
+                apgState.fetchUserAccessStatus(
+                  apgState.associatedUserContract.guid,
+                  dataAccessState.lakehouseContractServerClient,
+                  auth.user?.access_token,
+                );
+              }
+            }}
             getContractTaskUrl={dataAccessState.getContractTaskUrl}
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />

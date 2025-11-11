@@ -348,6 +348,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     rawSource.ingestServerUrl = guaranteeNonNullable(this.ingestionServerUrl);
     rawSource.paths = this.paths;
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);
+    rawSource.deploymentId = guaranteeNonNullable(this.deploymentId);
 
     return Promise.resolve(
       RawLakehouseProducerDataCubeSource.serialization.toJson(rawSource),

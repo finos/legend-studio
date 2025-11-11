@@ -1,5 +1,29 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.15
+
+## 0.3.14
+
+## 0.3.13
+
+### Patch Changes
+
+- [#4608](https://github.com/finos/legend-studio/pull/4608) [`7fda83e`](https://github.com/finos/legend-studio/commit/7fda83e746d4b76681ee40fee4afec94b82f3425) ([@travisstebbins](https://github.com/travisstebbins)) - Fix Marketplace "My Closed Requests" view
+
+## 0.3.12
+
+### Patch Changes
+
+- [#4602](https://github.com/finos/legend-studio/pull/4602) [`8c9e370`](https://github.com/finos/legend-studio/commit/8c9e3702d76fe82a0089b00a81ecac5a78c62c94) ([@travisstebbins](https://github.com/travisstebbins)) - Add contract escalation feature for Marketplace Lakehouse entitlements requests
+
+## 0.3.11
+
+## 0.3.10
+
+### Patch Changes
+
+- [#4590](https://github.com/finos/legend-studio/pull/4590) [`6520522`](https://github.com/finos/legend-studio/commit/652052207031fc696a0da4668672ef5bc9b7acaf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `getUserEntitlementEnvs` for entitlements environment and leverage for open in data cube.
+
 ## 0.3.9
 
 ### Patch Changes

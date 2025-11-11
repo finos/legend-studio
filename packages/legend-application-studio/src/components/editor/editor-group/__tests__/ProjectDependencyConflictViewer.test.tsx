@@ -172,3 +172,62 @@ test.skip(integrationTest('Test Project Report With Conflicts'), async () => {
   expect(queryByText(dependencyExplorer, '2.0.0')).toBeDefined();
   expect(queryByText(dependencyExplorer, '3.0.0')).toBeDefined();
 });
+
+test(
+  integrationTest(
+    "Test View Conflicts doesn't break if there are many conflict paths",
+  ),
+  async () => {
+    const manyConflictPaths = await import('./manyConflictPaths.json');
+
+    const MOCK__editorStore = TEST__provideMockedEditorStore();
+    renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      {
+        entities: [],
+        projectConfiguration: TEST_DATA__ProjectConfiguration,
+        latestProjectStructureVersion: TEST_DATA__latestProjectStructure,
+        projects: TEST_DATA__Projects,
+        projectDependency: TEST_DATA__DependencyEntities,
+        projectDependencyReport: manyConflictPaths.default,
+      },
+    );
+
+    fireEvent.click(renderResult.getByText('config'));
+    const editorGroup = await renderResult.findByTestId(
+      LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
+    );
+
+    await waitFor(() => renderResult.getByText('Project Structure'));
+    await findByText(editorGroup, 'Project Dependencies');
+    fireEvent.click(getByText(editorGroup, 'Project Dependencies'));
+
+    await findByText(editorGroup, 'View Dependency Explorer');
+    await findByText(editorGroup, 'View Conflicts');
+
+    fireEvent.click(getByText(editorGroup, 'View Conflicts'));
+    const dependencyExplorer = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
+
+    expect(dependencyExplorer).toBeDefined();
+
+    await waitFor(() => getByTitle(dependencyExplorer, 'group10:artifact78'));
+    fireEvent.click(getByTitle(dependencyExplorer, 'group10:artifact78'));
+    await waitFor(() =>
+      getByTitle(dependencyExplorer, 'group10:artifact78.271.0.0'),
+    );
+    await waitFor(() =>
+      getByTitle(dependencyExplorer, 'group10:artifact78.272.0.0'),
+    );
+
+    await waitFor(() => getByTitle(dependencyExplorer, 'group10:artifact29'));
+    fireEvent.click(getByTitle(dependencyExplorer, 'group10:artifact29'));
+    await waitFor(() =>
+      getByTitle(dependencyExplorer, 'group10:artifact29.183.0.0'),
+    );
+    await waitFor(() =>
+      getByTitle(dependencyExplorer, 'group10:artifact29.184.0.0'),
+    );
+  },
+);

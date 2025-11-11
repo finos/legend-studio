@@ -21,7 +21,6 @@ import {
   type V1_ContractUserEventRecord,
   type V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
-import type { LegacyDataProductCardState } from '../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { LEGEND_MARKETPLACE_APP_EVENT } from './LegendMarketplaceAppEvent.js';
 
 export enum LEGEND_MARKETPLACE_PAGE {
@@ -84,23 +83,6 @@ export class LegendMarketplaceTelemetryHelper {
       LEGEND_MARKETPLACE_APP_EVENT.CLICK_DATA_PRODUCT_CARD,
       {
         ...dataProductData,
-        clickedFrom: clickedFrom,
-      },
-    );
-  }
-
-  static logEvent_ClickingLegacyDataProductCard(
-    telemetryService: TelemetryService,
-    productCardState: LegacyDataProductCardState,
-    clickedFrom: LEGEND_MARKETPLACE_PAGE,
-  ): void {
-    telemetryService.logEvent(
-      LEGEND_MARKETPLACE_APP_EVENT.CLICK_LEGACY_DATA_PRODUCT_CARD,
-      {
-        name: productCardState.dataSpace.name,
-        groupId: productCardState.groupId,
-        artifactId: productCardState.artifactId,
-        versionId: productCardState.versionId,
         clickedFrom: clickedFrom,
       },
     );

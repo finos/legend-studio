@@ -1,5 +1,47 @@
 # @finos/legend-application-marketplace
 
+## 0.1.37
+
+### Patch Changes
+
+- [#4598](https://github.com/finos/legend-studio/pull/4598) [`a4080ff`](https://github.com/finos/legend-studio/commit/a4080ffd3fd7d1488c910efa0084477cb80502c4) ([@travisstebbins](https://github.com/travisstebbins)) - Integrate Marketplace Search API
+
+## 0.1.36
+
+### Patch Changes
+
+- [#4617](https://github.com/finos/legend-studio/pull/4617) [`0d72a88`](https://github.com/finos/legend-studio/commit/0d72a88368613e288d61a82979f28bb5d28c52a9) ([@travisstebbins](https://github.com/travisstebbins)) - Add plugin function for additional help menu items in Marketplace
+
+## 0.1.35
+
+### Patch Changes
+
+- [#4608](https://github.com/finos/legend-studio/pull/4608) [`7fda83e`](https://github.com/finos/legend-studio/commit/7fda83e746d4b76681ee40fee4afec94b82f3425) ([@travisstebbins](https://github.com/travisstebbins)) - Fix Marketplace "My Closed Requests" view
+
+## 0.1.34
+
+### Patch Changes
+
+- [#4602](https://github.com/finos/legend-studio/pull/4602) [`8c9e370`](https://github.com/finos/legend-studio/commit/8c9e3702d76fe82a0089b00a81ecac5a78c62c94) ([@travisstebbins](https://github.com/travisstebbins)) - Add contract escalation feature for Marketplace Lakehouse entitlements requests
+
+## 0.1.33
+
+### Patch Changes
+
+- [#4599](https://github.com/finos/legend-studio/pull/4599) [`c262878`](https://github.com/finos/legend-studio/commit/c262878d4625ba9bf699bb21dd41f2096992561c) ([@travisstebbins](https://github.com/travisstebbins)) - Add support for additional Marketplace pages via plugin
+
+## 0.1.32
+
+## 0.1.31
+
+### Patch Changes
+
+- [#4589](https://github.com/finos/legend-studio/pull/4589) [`a4b7ab1`](https://github.com/finos/legend-studio/commit/a4b7ab18f06648bbd202a54a993a0938a69a19c5) ([@travisstebbins](https://github.com/travisstebbins)) - Fix fetching DataProduct subscriptions
+
+- [#4560](https://github.com/finos/legend-studio/pull/4560) [`97e6711`](https://github.com/finos/legend-studio/commit/97e67115b3a7d99b6590bed0ca39a2451e32bab0) ([@travisstebbins](https://github.com/travisstebbins)) - Update Material UI dependencies to latest versions (@mui/material 7.3.4, @mui/system 7.3.3, @mui/lab 7.0.1-beta.18, @mui/x-date-pickers 8.14.1) and complete migration from deprecated TransitionProps/PaperProps to the new slotProps API across all Material UI Dialog, Modal, Popover, and Tooltip components. Also resolve MUI v8 date picker compatibility issues.
+
+  Reduce Jest worker count from 100% to 2 in test:ci script to address CI memory exhaustion caused by MUI v7's increased memory footprint (documented in mui/material-ui#46908 and #45804, showing 2-5x memory increase during builds/tests).
+
 ## 0.1.30
 
 ## 0.1.29

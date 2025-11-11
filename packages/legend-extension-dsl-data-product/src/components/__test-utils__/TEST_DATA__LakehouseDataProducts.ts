@@ -59,7 +59,7 @@ export const mockEntitlementsSDLCDataProduct: V1_EntitlementsDataProductDetails 
   });
 
 export const mockSDLCDataProduct: V1_DataProduct = deserialize(
-  V1_dataProductModelSchema,
+  V1_dataProductModelSchema([]),
   {
     _type: 'dataProduct',
     package: 'test',
@@ -153,7 +153,7 @@ export const mockEntitlementsSDLCDataProductNoSupportInfo: V1_EntitlementsDataPr
   });
 
 export const mockSDLCDataProductNoSupportInfo: V1_DataProduct = deserialize(
-  V1_dataProductModelSchema,
+  V1_dataProductModelSchema([]),
   {
     _type: 'dataProduct',
     package: 'test',
@@ -226,7 +226,7 @@ export const mockEntitlementsEnterpriseDataProduct: V1_EntitlementsDataProductDe
   });
 
 export const mockEnterpriseDataProduct: V1_DataProduct = deserialize(
-  V1_dataProductModelSchema,
+  V1_dataProductModelSchema([]),
   {
     _type: 'dataProduct',
     package: 'test',

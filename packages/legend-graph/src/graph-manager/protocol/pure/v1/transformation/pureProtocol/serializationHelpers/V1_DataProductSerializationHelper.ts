@@ -21,6 +21,7 @@ import {
   optional,
   primitive,
   serialize,
+  type ModelSchema,
 } from 'serializr';
 import {
   type V1_AccessPoint,
@@ -66,6 +67,12 @@ import {
   V1_taggedValueModelSchema,
 } from './V1_CoreSerializationHelper.js';
 import { V1_MappingIncludeDataProduct } from '../../../model/packageableElements/dataProduct/V1_MappingIncludeDataProduct.js';
+import {
+  V1_deserializeEmbeddedDataType,
+  V1_serializeEmbeddedDataType,
+} from './V1_DataElementSerializationHelper.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import type { V1_EmbeddedData } from '../../../model/data/V1_EmbeddedData.js';
 
 export enum V1_AccessPointType {
   LAKEHOUSE = 'lakehouseAccessPoint',
@@ -341,38 +348,45 @@ export const V1_serializeDataProductType = (
   throw new Error(`Unknown V1_DataProductType instance: ${value}`);
 };
 
-export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
-  _type: usingConstantValueSchema(V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE),
-  accessPointGroups: customList(
-    V1_serializeAccessPointGroup,
-    V1_deserializeAccessPointGroup,
-  ),
-  coverageRegions: optionalCustomList(
-    (json) => (json as string).toLowerCase(),
-    (json) => (json as unknown as string).toUpperCase(),
-  ),
+export const V1_dataProductModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataProduct> =>
+  createModelSchema(V1_DataProduct, {
+    _type: usingConstantValueSchema(V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE),
+    accessPointGroups: customList(
+      V1_serializeAccessPointGroup,
+      V1_deserializeAccessPointGroup,
+    ),
+    coverageRegions: optionalCustomList(
+      (json) => (json as string).toLowerCase(),
+      (json) => (json as unknown as string).toUpperCase(),
+    ),
 
-  deliveryFrequency: optionalCustom(
-    (json) => (json as string).toLowerCase(),
-    (json) => (json as string).toUpperCase(),
-  ),
-  description: optional(primitive()),
-  expertise: optionalCustomListWithSchema(V1_ExpertiseModelSchema),
-  icon: optionalCustom(
-    V1_serializeDataProductIcon,
-    V1_deserializeDataProductIcon,
-  ),
-  name: primitive(),
-  package: primitive(),
-  type: optionalCustom(
-    V1_serializeDataProductType,
-    V1_deserializeDataProductType,
-  ),
-  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
-  supportInfo: optionalCustomUsingModelSchema(V1_SupportInfoModelSchema),
-  taggedValues: customListWithSchema(V1_taggedValueModelSchema),
-  title: optional(primitive()),
-});
+    deliveryFrequency: optionalCustom(
+      (json) => (json as string).toLowerCase(),
+      (json) => (json as string).toUpperCase(),
+    ),
+    description: optional(primitive()),
+    sampleValues: optionalCustomList(
+      (data: V1_EmbeddedData) => V1_serializeEmbeddedDataType(data, plugins),
+      (data) => V1_deserializeEmbeddedDataType(data, plugins),
+    ),
+    expertise: optionalCustomListWithSchema(V1_ExpertiseModelSchema),
+    icon: optionalCustom(
+      V1_serializeDataProductIcon,
+      V1_deserializeDataProductIcon,
+    ),
+    name: primitive(),
+    package: primitive(),
+    type: optionalCustom(
+      V1_serializeDataProductType,
+      V1_deserializeDataProductType,
+    ),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+    supportInfo: optionalCustomUsingModelSchema(V1_SupportInfoModelSchema),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema),
+    title: optional(primitive()),
+  });
 
 export const V1_MAPPING_INCLUDE_DATAPRODUCT_TYPE = 'mappingIncludeDataProduct';
 

@@ -197,6 +197,9 @@ export {
   V1_DataProductLibraryIcon,
   V1_Email,
   V1_LakehouseAccessPoint,
+  V1_DataProductType,
+  V1_InternalDataProductType,
+  V1_ExternalDataProductType,
   V1_SupportInfo,
   V1_UnknownDataProductIcon,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_DataProduct.js';
@@ -224,6 +227,7 @@ export {
   V1_createRelationType,
   V1_createRelationTypeColumn,
 } from './graph-manager/protocol/pure/v1/helpers/V1_DomainHelper.js';
+export * from './graph-manager/protocol/pure/v1/helpers/V1_DataProductHelper.js';
 export {
   V1_buildExecutionResult,
   V1_deserializeExecutionResult,
@@ -302,6 +306,7 @@ export {
   V1_EnrichedUserApprovalStatus,
   V1_LiteDataContract,
   V1_LiteDataContractsResponse,
+  V1_LiteDataContractWithUserStatus,
   V1_PendingTasksResponse,
   V1_ResourceType,
   V1_TaskMetadata,
@@ -366,6 +371,7 @@ export {
   V1_EntitlementsDataProductModelSchema,
   V1_EntitlementsLakehouseEnvironmentModelSchema,
   V1_liteDataContractsResponseModelSchemaToContracts,
+  V1_liteDataContractWithUserStatusModelSchema,
   V1_OrganizationalScopeType,
   V1_pendingTasksResponseModelSchema,
   V1_SdlcDeploymentDataProductOriginModelSchema,
@@ -382,7 +388,11 @@ export {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
-export * from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
+export {
+  V1_DataProductArtifact,
+  V1_AccessPointImplementation,
+  V1_AccessPointGroupInfo,
+} from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
 export {
   V1_IngestEnvironmentType,
   V1_IngestEnvironmentClassification,
@@ -777,6 +787,7 @@ export {
 } from './graph/metamodel/pure/data/EmbeddedData.js';
 export {
   V1_EmbeddedData,
+  V1_RelationElement,
   V1_DataElementReference,
   V1_ExternalFormatData,
   type V1_EmbeddedDataVisitor,
@@ -794,6 +805,7 @@ export {
   observe_DataElementReference,
   observe_RelationElement,
   observe_RelationRowTestData,
+  observe_RelationElementsData,
 } from './graph-manager/action/changeDetection/DSL_Data_ObserverHelper.js';
 export { V1_transformExternalFormatData } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
 export { V1_externalFormatDataModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';

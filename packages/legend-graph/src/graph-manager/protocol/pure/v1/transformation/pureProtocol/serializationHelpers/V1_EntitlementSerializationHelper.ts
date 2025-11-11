@@ -46,6 +46,7 @@ import {
   V1_DataContractApprovedUsersResponse,
   V1_TerminalOrderItem,
   V1_TerminalProvisionPayload,
+  V1_LiteDataContractWithUserStatus,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
@@ -83,6 +84,7 @@ import {
   V1_UnknownDataProductOriginType,
 } from '../../../lakehouse/entitlements/V1_EntitlementsDataProduct.js';
 import { V1_stereotypePtrModelSchema } from './V1_CoreSerializationHelper.js';
+import { V1_PendingTaskWithAssignees } from '../../../lakehouse/entitlements/V1_EntitlementsTasks.js';
 
 export enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
@@ -299,6 +301,27 @@ export const V1_liteDataContractsResponseModelSchema = (
     ),
   });
 
+export const V1_pendingTaskWithAssigneesModelSchema = createModelSchema(
+  V1_PendingTaskWithAssignees,
+  {
+    taskId: primitive(),
+    assignees: list(primitive()),
+  },
+);
+
+export const V1_liteDataContractWithUserStatusModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_LiteDataContractWithUserStatus, {
+    contractResultLite: usingModelSchema(
+      V1_liteDataContractModelSchema(plugins),
+    ),
+    status: primitive(),
+    pendingTaskWithAssignees: optional(
+      usingModelSchema(V1_pendingTaskWithAssigneesModelSchema),
+    ),
+  });
+
 export const V1_contractUserEventPrivilegeManagerPayloadModelSchema =
   createModelSchema(V1_ContractUserEventPrivilegeManagerPayload, {
     type: primitive(),
@@ -366,6 +389,9 @@ export const V1_contractUserEventRecordModelSchema = createModelSchema(
       V1_deserializeContractUserEventPayload,
     ),
     type: primitive(),
+    effectiveFrom: primitive(),
+    effectiveTo: primitive(),
+    isEscalated: primitive(),
   },
 );
 export const V1_taskMetadataModelSchema = createModelSchema(V1_TaskMetadata, {
@@ -579,6 +605,7 @@ export const V1_EntitlementsDataProductDetailsModelSchema = createModelSchema(
       V1_EntitlementsLakehouseEnvironmentModelSchema,
     ),
     dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
+    fullPath: primitive(),
   },
 );
 

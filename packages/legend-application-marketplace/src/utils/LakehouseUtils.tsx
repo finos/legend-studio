@@ -18,16 +18,16 @@ import {
   type V1_EntitlementsDataProductDetails,
   type V1_PureGraphManager,
   type V1_DataProduct,
-  CORE_PURE_PATH,
   V1_AdHocDeploymentDataProductOrigin,
   V1_dataProductModelSchema,
   V1_SdlcDeploymentDataProductOrigin,
+  CORE_PURE_PATH,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
-import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
+import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 
 export const getDataProductFromDetails = async (
   details: V1_EntitlementsDataProductDetails,
@@ -49,7 +49,12 @@ export const getDataProductFromDetails = async (
         versionedEntity: boolean;
       }[];
     const entities = rawEntities.map((entity) =>
-      deserialize(V1_dataProductModelSchema, entity.entity.content),
+      deserialize(
+        V1_dataProductModelSchema(
+          graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+        ),
+        entity.entity.content,
+      ),
     );
     const matchingEntities = entities.filter(
       (entity) => entity.name.toLowerCase() === details.id.toLowerCase(),
@@ -70,7 +75,14 @@ export const getDataProductFromDetails = async (
     );
     const elements = entities
       .filter((e) => e.classifierPath === CORE_PURE_PATH.DATA_PRODUCT)
-      .map((entity) => deserialize(V1_dataProductModelSchema, entity.content));
+      .map((entity) =>
+        deserialize(
+          V1_dataProductModelSchema(
+            graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
+          entity.content,
+        ),
+      );
     const matchingEntities = elements.filter(
       (element) => element.name.toLowerCase() === details.id.toLowerCase(),
     );

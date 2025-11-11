@@ -40,8 +40,8 @@ import {
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
 import { createSpy } from '@finos/legend-shared/test';
 import {
+  getMockPendingManagerApprovalTasksResponse,
   mockApprovedTasksResponse,
-  mockPendingManagerApprovalTasksResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 import { AuthProvider } from 'react-oidc-context';
 import { ProductViewer } from '../ProductViewer.js';
@@ -164,7 +164,7 @@ const setupLakehouseDataProductTest = async (
       ) {
         return mockApprovedTasksResponse as unknown as PlainObject<V1_TaskResponse>;
       }
-      return mockPendingManagerApprovalTasksResponse as unknown as PlainObject<V1_TaskResponse>;
+      return getMockPendingManagerApprovalTasksResponse() as unknown as PlainObject<V1_TaskResponse>;
     });
   }
 

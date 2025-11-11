@@ -1,5 +1,37 @@
 # @finos/legend-application-studio
 
+## 28.19.64
+
+## 28.19.63
+
+## 28.19.62
+
+### Patch Changes
+
+- [#4610](https://github.com/finos/legend-studio/pull/4610) [`9aff881`](https://github.com/finos/legend-studio/commit/9aff881f84fa41ec30e1e47eb973f636c0b42196) ([@yash0024](https://github.com/yash0024)) - Add test to check 'View Conflicts' page doesn't crash if there are a large number of conflict paths
+
+- [#4611](https://github.com/finos/legend-studio/pull/4611) [`5dabccf`](https://github.com/finos/legend-studio/commit/5dabccf9ddbdb87a58d339a07ce3f1764df8ef6b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Data Product Dashboard to studio application extension
+
+## 28.19.61
+
+## 28.19.60
+
+### Patch Changes
+
+- [#4593](https://github.com/finos/legend-studio/pull/4593) [`aaaa81c`](https://github.com/finos/legend-studio/commit/aaaa81c4a5d0ecfcc54f061fa95b9f6f25bef8a5) ([@yash0024](https://github.com/yash0024)) - Form mode for DataProduct sampleValues
+
+## 28.19.59
+
+## 28.19.58
+
+### Patch Changes
+
+- [#4582](https://github.com/finos/legend-studio/pull/4582) [`6e19be8`](https://github.com/finos/legend-studio/commit/6e19be87755ab88bf8ef79b328890a3d5a517b3c) ([@jackp5150](https://github.com/jackp5150)) - Add lineage viewer to ingest defnitions
+
+- [#4560](https://github.com/finos/legend-studio/pull/4560) [`97e6711`](https://github.com/finos/legend-studio/commit/97e67115b3a7d99b6590bed0ca39a2451e32bab0) ([@travisstebbins](https://github.com/travisstebbins)) - Update Material UI dependencies to latest versions (@mui/material 7.3.4, @mui/system 7.3.3, @mui/lab 7.0.1-beta.18, @mui/x-date-pickers 8.14.1) and complete migration from deprecated TransitionProps/PaperProps to the new slotProps API across all Material UI Dialog, Modal, Popover, and Tooltip components. Also resolve MUI v8 date picker compatibility issues.
+
+  Reduce Jest worker count from 100% to 2 in test:ci script to address CI memory exhaustion caused by MUI v7's increased memory footprint (documented in mui/material-ui#46908 and #45804, showing 2-5x memory increase during builds/tests).
+
 ## 28.19.57
 
 ## 28.19.56

@@ -17,12 +17,25 @@
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
-import type { BaseProductCardState } from '../stores/lakehouse/dataProducts/BaseProductCardState.js';
 import type {
   ContractConsumerTypeRendererConfig,
   DataProductDataAccess_LegendApplicationPlugin_Extension,
   AccessPointGroupAccess,
 } from '@finos/legend-extension-dsl-data-product';
+import type { ProductCardState } from '../stores/lakehouse/dataProducts/ProductCardState.js';
+import type React from 'react';
+
+export interface AdditionalMarketplacePageConfig {
+  path: string;
+  component: React.FC;
+  protected: boolean;
+}
+
+export interface AdditionalMarketplaceHelpMenuItemConfig {
+  label: string;
+  onClick?: () => void;
+  href?: string;
+}
 
 export abstract class LegendMarketplaceApplicationPlugin
   extends LegendApplicationPlugin
@@ -46,7 +59,7 @@ export abstract class LegendMarketplaceApplicationPlugin
   async getExtraHomePageDataProducts?(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     token: string | undefined,
-  ): Promise<BaseProductCardState[] | undefined>;
+  ): Promise<ProductCardState[] | undefined>;
 
   /**
    * Returns additional details about a given access point group access type.
@@ -63,4 +76,19 @@ export abstract class LegendMarketplaceApplicationPlugin
    * - Organizational scope type details renderer
    */
   getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
+
+  /**
+   * Config to allow adding arbitrary additional pages to the marketplace application.
+   * These pages will be wrapped in all the usual context providers, so they will
+   * have access to useLegendMarketplaceBaseStore and other similar hooks.
+   */
+  getAdditionalMarketplacePageConfigs?(): AdditionalMarketplacePageConfig[];
+
+  /**
+   * Config to allow adding additional MenuItem elements to the LegendMarketplaceIconToolbar's
+   * help menu
+   */
+  getAdditionalHelpMenuItemConfigs?(
+    marketplaceBaseStore: LegendMarketplaceBaseStore,
+  ): AdditionalMarketplaceHelpMenuItemConfig[];
 }

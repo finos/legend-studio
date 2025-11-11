@@ -780,6 +780,9 @@ export class V1_ElementSecondPassBuilder
       dataProductType.link = element.type.link;
       dataProduct.type = dataProductType;
     }
+    dataProduct.sampleValues = element.sampleValues?.map((data) =>
+      V1_buildEmbeddedData(data, this.context),
+    );
     if (element.expertise) {
       dataProduct.expertise = element.expertise.map((expertise) =>
         V1_buildDataProductExpertise(expertise),

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-studio-bootstrap",
-  "version": "13.151.0",
+  "version": "13.158.0",
   "description": "Legend Studio application bootrap",
   "keywords": [
     "legend",
@@ -47,6 +47,7 @@
     "@finos/legend-application": "workspace:*",
     "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-extension-application-studio-depot-dashboard": "workspace:*",
     "@finos/legend-extension-assortment": "workspace:*",
     "@finos/legend-extension-dsl-data-product": "workspace:*",
     "@finos/legend-extension-dsl-data-quality": "workspace:*",

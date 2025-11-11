@@ -70,6 +70,14 @@
     overflow-wrap: anywhere;
   }
 
+  &__lakehouse {
+    align-self: end;
+    font-size: 1rem;
+    text-transform: none;
+    color: var(--tw-color-green-100);
+    background: var(--tw-color-green-600);
+  }
+
   &__version {
     align-self: end;
     font-size: 1rem;
@@ -117,6 +125,12 @@
     flex: 1;
     width: 100%;
     color: var(--color-light-grey-180);
+
+    &__markdown {
+      background: unset;
+      color: unset;
+      padding: unset;
+    }
   }
 
   &__more-info-btn {
@@ -165,6 +179,12 @@
 
       font-style: italic;
       color: var(--color-dark-grey-400);
+    }
+
+    &__section-content__markdown {
+      background: unset;
+      color: unset;
+      padding: 0;
     }
 
     &__table td {

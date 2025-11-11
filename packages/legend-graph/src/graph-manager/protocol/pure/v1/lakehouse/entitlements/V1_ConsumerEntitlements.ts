@@ -85,6 +85,12 @@ export class V1_LiteDataContractsResponse {
   dataContracts?: V1_LiteDataContract[];
 }
 
+export class V1_LiteDataContractWithUserStatus {
+  contractResultLite!: V1_LiteDataContract;
+  status!: V1_UserApprovalStatus;
+  pendingTaskWithAssignees!: V1_PendingTaskWithAssignees | null;
+}
+
 // -------------------------------------- Data Contract Approval ---------------------------------------
 
 export enum V1_UserApprovalStatus {
@@ -196,6 +202,9 @@ export class V1_ContractUserEventRecord {
   consumer!: string;
   eventPayload!: V1_ContractUserEventPayload | undefined;
   type!: V1_ApprovalType;
+  effectiveFrom!: string;
+  effectiveTo!: string;
+  isEscalated!: boolean;
 }
 
 export class V1_PendingTasksResponse {

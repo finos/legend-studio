@@ -58,7 +58,7 @@ import {
   V1_TerminalModelSchema,
 } from '@finos/legend-graph';
 import type { AuthContextProps } from 'react-oidc-context';
-import { getDataProductFromDetails } from './LakehouseUtils.js';
+import { getDataProductFromDetails } from '../../utils/LakehouseUtils.js';
 import {
   type Entity,
   type StoredFileGeneration,
@@ -494,7 +494,9 @@ export class LegendMarketplaceProductViewerStore {
         storeProject.groupId = projectData.groupId;
         storeProject.artifactId = projectData.artifactId;
         const v1DataProduct = deserialize(
-          V1_dataProductModelSchema,
+          V1_dataProductModelSchema(
+            this.marketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
           (
             (yield this.marketplaceBaseStore.depotServerClient.getVersionEntity(
               projectData.groupId,
