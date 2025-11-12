@@ -37,7 +37,10 @@ export class QueryBuilderConfig {
    * This is the URL of the LegendAI service
    */
   legendAIServiceURL = '';
-
+  /**
+   * This is the URL of the Legend MCP service
+   */
+  legendMCPServiceURL = '';
   /**
    * This is the URL of the zipkin trace
    */
@@ -54,6 +57,7 @@ export class QueryBuilderConfig {
       TEMPORARY__enableExportToCube: optional(primitive()),
       TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
       legendAIServiceURL: optional(primitive()),
+      legendMCPServiceURL: optional(primitive()),
       zipkinTraceBaseURL: optional(primitive()),
       enableTypedTDS: optional(primitive()),
     }),
