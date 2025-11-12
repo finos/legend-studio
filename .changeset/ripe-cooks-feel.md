@@ -1,2 +1,5 @@
----Added Legend MCP service URL
 ---
+'@finos/legend-query-builder': patch
+---
+
+Added Legend MCP service URL
