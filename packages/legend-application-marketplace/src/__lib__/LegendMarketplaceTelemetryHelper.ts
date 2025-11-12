@@ -88,6 +88,20 @@ export class LegendMarketplaceTelemetryHelper {
     );
   }
 
+  static logEvent_ToggleUseIndexSearch(
+    telemetryService: TelemetryService,
+    value: boolean,
+    toggledFrom: LEGEND_MARKETPLACE_PAGE,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_USE_INDEX_SEARCH,
+      {
+        value,
+        toggledFrom,
+      },
+    );
+  }
+
   static logEvent_SearchQuery(
     telemetryService: TelemetryService,
     query: string | undefined,

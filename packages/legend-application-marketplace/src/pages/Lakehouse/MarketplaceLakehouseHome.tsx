@@ -192,9 +192,11 @@ export const MarketplaceLakehouseHome = observer(() => {
           Marketplace
         </Box>
         <LegendMarketplaceSearchBar
-          showSettings={true}
+          showIndexSearchToggle={true}
           onSearch={handleSearch}
           initialUseIndexSearch={legendMarketplaceBaseStore.useIndexSearch}
+          telemetryService={applicationStore.telemetryService}
+          marketplacePage={LEGEND_MARKETPLACE_PAGE.HOME_PAGE}
           placeholder="Which data can I help you find?"
           className="marketplace-lakehouse-home__search-bar"
         />
