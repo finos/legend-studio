@@ -308,7 +308,7 @@
       }
     }
 
-    &__action+&__action {
+    &__action + &__action {
       margin-left: 0;
     }
 
@@ -432,7 +432,7 @@
     }
   }
 
-  &__field+&__field {
+  &__field + &__field {
     margin-top: 0.5rem;
   }
 }

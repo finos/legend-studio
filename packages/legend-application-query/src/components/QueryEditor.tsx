@@ -910,7 +910,7 @@ export const QueryEditor = observer(() => {
             (editorStore.queryBuilderState instanceof
               DataSpaceQueryBuilderState ||
               editorStore.queryBuilderState instanceof
-              DataSpaceQuerySetupState) &&
+                DataSpaceQuerySetupState) &&
             editorStore.queryBuilderState.canBuildQuery && (
               <button
                 title="Open Query Chat."
