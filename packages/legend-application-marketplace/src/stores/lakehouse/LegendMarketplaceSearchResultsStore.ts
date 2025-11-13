@@ -23,7 +23,6 @@ import {
   LogEvent,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 import {
   DataProductSearchResult,
   DataProductSearchResultDetailsType,
@@ -51,35 +50,6 @@ import {
 } from '@finos/legend-server-depot';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 
-export interface DataProductFilterConfig {
-  modeledDataProducts?: boolean;
-}
-
-class DataProductFilterState {
-  modeledDataProducts: boolean;
-
-  constructor(defaultBooleanFilters: DataProductFilterConfig) {
-    makeObservable(this, {
-      modeledDataProducts: observable,
-    });
-    this.modeledDataProducts =
-      defaultBooleanFilters.modeledDataProducts ??
-      DataProductFilterState.default().modeledDataProducts;
-  }
-
-  static default(): DataProductFilterState {
-    return new DataProductFilterState({
-      modeledDataProducts: false,
-    });
-  }
-
-  get currentFilterValues(): DataProductFilterConfig {
-    return {
-      modeledDataProducts: this.modeledDataProducts,
-    };
-  }
-}
-
 export enum DataProductSort {
   DEFAULT = 'Default',
   NAME_ALPHABETICAL = 'Name A-Z',
@@ -93,7 +63,6 @@ export class LegendMarketplaceSearchResultsStore {
   semanticSearchProductCardStates: ProductCardState[] = [];
   producerSearchDataProductCardStates: ProductCardState[] = [];
   producerSearchLegacyDataProductCardStates: ProductCardState[] = [];
-  filterState: DataProductFilterState;
   sort: DataProductSort = DataProductSort.DEFAULT;
 
   readonly executingSemanticSearchState = ActionState.create();
@@ -104,21 +73,11 @@ export class LegendMarketplaceSearchResultsStore {
     this.marketplaceBaseStore = marketplaceBaseStore;
     this.marketplaceServerClient = marketplaceBaseStore.marketplaceServerClient;
 
-    const savedFilterConfig =
-      LegendMarketplaceUserDataHelper.getSavedDataProductFilterConfig(
-        this.marketplaceBaseStore.applicationStore.userDataService,
-      );
-    this.filterState = savedFilterConfig
-      ? new DataProductFilterState(savedFilterConfig)
-      : DataProductFilterState.default();
-
     makeObservable(this, {
       semanticSearchProductCardStates: observable,
       producerSearchDataProductCardStates: observable,
       producerSearchLegacyDataProductCardStates: observable,
-      filterState: observable,
       sort: observable,
-      handleModeledDataProductsFilterToggle: action,
       setSemanticSearchProductCardStates: action,
       setProducerSearchDataProductCardStates: action,
       setProducerSearchLegacyDataProductCardStates: action,
@@ -138,10 +97,7 @@ export class LegendMarketplaceSearchResultsStore {
       : this.semanticSearchProductCardStates;
     return productCardStates
       .filter((productCardState) =>
-        this.marketplaceBaseStore.envState.filterDataProduct(
-          productCardState,
-          this.filterState.modeledDataProducts,
-        ),
+        this.marketplaceBaseStore.envState.filterDataProduct(productCardState),
       )
       .sort((a, b) => {
         switch (this.sort) {
@@ -180,15 +136,6 @@ export class LegendMarketplaceSearchResultsStore {
     dataProductCardStates: ProductCardState[],
   ): void {
     this.producerSearchLegacyDataProductCardStates = dataProductCardStates;
-  }
-
-  handleModeledDataProductsFilterToggle(): void {
-    this.filterState.modeledDataProducts =
-      !this.filterState.modeledDataProducts;
-    LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
-      this.marketplaceBaseStore.applicationStore.userDataService,
-      this.filterState.currentFilterValues,
-    );
   }
 
   setSort(sort: DataProductSort): void {

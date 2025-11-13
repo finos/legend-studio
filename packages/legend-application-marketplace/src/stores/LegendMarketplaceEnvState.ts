@@ -44,15 +44,12 @@ export abstract class LegendMarketplaceEnvState {
     | undefined
   )[];
 
-  filterDataProduct(
-    productCardState: ProductCardState,
-    includeLegacyDataProducts: boolean,
-  ): boolean {
+  filterDataProduct(productCardState: ProductCardState): boolean {
     if (
       productCardState.searchResult.dataProductDetails instanceof
       LegacyDataProductSearchResultDetails
     ) {
-      if (this.supportsLegacyDataProducts() && includeLegacyDataProducts) {
+      if (this.supportsLegacyDataProducts()) {
         return true;
       } else {
         return false;

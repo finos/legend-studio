@@ -26,21 +26,14 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import {
-  Box,
-  Checkbox,
   Container,
   FormControl,
-  FormControlLabel,
-  FormGroup,
   Grid,
   MenuItem,
   Select,
   Typography,
 } from '@mui/material';
-import {
-  type LegendMarketplaceSearchResultsStore,
-  DataProductSort,
-} from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
+import { DataProductSort } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import {
   generateLakehouseSearchResultsRoute,
   LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
@@ -58,41 +51,6 @@ import { logClickingDataProductCard } from '../../../utils/LogUtils.js';
 import { useSyncStateAndSearchParam } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
 import { isNonEmptyString } from '@finos/legend-shared';
-
-const SearchResultsFilterPanel = observer(
-  (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
-    const { searchResultsStore } = props;
-
-    return (
-      <Box className="marketplace-lakehouse-search-results__sort-filters">
-        <Box className="marketplace-lakehouse-search-results__sort-filters__filter">
-          <Typography
-            variant="h4"
-            className="marketplace-lakehouse-search-results__subtitles"
-          >
-            Filters
-          </Typography>
-          <hr />
-          <FormGroup>
-            <Box className="marketplace-lakehouse-search-results__sort-filters__filter__section-header">
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={searchResultsStore.filterState.modeledDataProducts}
-                    onChange={() =>
-                      searchResultsStore.handleModeledDataProductsFilterToggle()
-                    }
-                  />
-                }
-                label="Include Modeled Data Products"
-              />
-            </Box>
-          </FormGroup>
-        </Box>
-      </Box>
-    );
-  },
-);
 
 export const MarketplaceLakehouseSearchResults =
   withLegendMarketplaceSearchResultsStore(
@@ -238,11 +196,6 @@ export const MarketplaceLakehouseSearchResults =
             maxWidth="xxxl"
             className="marketplace-lakehouse-search-results__results-container"
           >
-            {searchResultsStore.marketplaceBaseStore.envState.supportsLegacyDataProducts() && (
-              <SearchResultsFilterPanel
-                searchResultsStore={searchResultsStore}
-              />
-            )}
             <Grid
               container={true}
               spacing={{ xs: 2, sm: 3, xxl: 4 }}
