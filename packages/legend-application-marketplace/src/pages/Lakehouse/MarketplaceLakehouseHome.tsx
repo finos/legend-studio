@@ -105,11 +105,11 @@ export const MarketplaceLakehouseHome = observer(() => {
 
   const handleSearch = (
     _query: string | undefined,
-    _useIndexSearch: boolean,
+    _useProducerSearch: boolean,
   ): void => {
     if (isNonEmptyString(_query)) {
       applicationStore.navigationService.navigator.goToLocation(
-        generateLakehouseSearchResultsRoute(_query, _useIndexSearch),
+        generateLakehouseSearchResultsRoute(_query, _useProducerSearch),
       );
       LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
         applicationStore.telemetryService,
@@ -194,7 +194,9 @@ export const MarketplaceLakehouseHome = observer(() => {
         <LegendMarketplaceSearchBar
           showSettings={true}
           onSearch={handleSearch}
-          initialUseIndexSearch={legendMarketplaceBaseStore.useIndexSearch}
+          initialUseProducerSearch={
+            legendMarketplaceBaseStore.useProducerSearch
+          }
           placeholder="Which data can I help you find?"
           className="marketplace-lakehouse-home__search-bar"
         />

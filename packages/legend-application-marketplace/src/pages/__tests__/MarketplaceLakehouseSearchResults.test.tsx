@@ -44,7 +44,7 @@ jest.mock('react-oidc-context', () => {
 const setupTestComponent = async (
   query: string,
   dataProductEnv: 'prod' | 'prod-par' | 'dev',
-  useIndexSearch?: boolean,
+  useProducerSearch?: boolean,
 ) => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
     dataProductEnv,
@@ -55,7 +55,7 @@ const setupTestComponent = async (
       'getCurrentAddress',
     )
     .mockReturnValue(
-      `http://localhost/dataProduct/results?query=${query}${useIndexSearch ? '&useIndexSearch=true' : ''}`,
+      `http://localhost/dataProduct/results?query=${query}${useProducerSearch ? '&useProducerSearch=true' : ''}`,
     );
 
   // Spies for semantic search
@@ -80,7 +80,7 @@ const setupTestComponent = async (
     },
   );
 
-  // Spies for index search
+  // Spies for producer search
   createSpy(
     MOCK__baseStore.lakehouseContractServerClient,
     'getDataProducts',
@@ -94,7 +94,7 @@ const setupTestComponent = async (
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     MOCK__baseStore,
-    `/dataProduct/results?query=${query}${useIndexSearch ? '&useIndexSearch=true' : ''}`,
+    `/dataProduct/results?query=${query}${useProducerSearch ? '&useProducerSearch=true' : ''}`,
   );
 
   return { MOCK__baseStore, renderResult };
@@ -111,10 +111,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
     expect(screen.getByDisplayValue('data')).toBeDefined();
   });
 
-  test('Sets useIndexSearch state based on param', async () => {
+  test('Sets useProducerSearch state based on param', async () => {
     const { MOCK__baseStore } = await setupTestComponent('data', 'prod', true);
 
-    expect(MOCK__baseStore.useIndexSearch).toBe(true);
+    expect(MOCK__baseStore.useProducerSearch).toBe(true);
   });
 
   test('Sort dropdown is rendered', async () => {
@@ -128,7 +128,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     screen.getByText('Name Z-A');
   });
 
-  test('Toggling useIndexSearch and updating search box value, then searching, updates URL', async () => {
+  test('Toggling useProducerSearch and updating search box value, then searching, updates URL', async () => {
     const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
     const searchInput = screen.getByDisplayValue('data');
@@ -137,14 +137,14 @@ describe('MarketplaceLakehouseSearchResults', () => {
     fireEvent.change(searchInput, { target: { value: 'new search' } });
     screen.getByDisplayValue('new search');
 
-    // Turn on index search
+    // Turn on producer search
     const searchSettingsButton = screen.getByTitle('Search settings');
     fireEvent.click(searchSettingsButton);
-    const indexSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
-      name: /Use Index Search/,
+    const producerSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
+      name: /Producer Search/,
     });
-    fireEvent.click(indexSearchSwitch);
-    expect(indexSearchSwitch.checked).toBe(true);
+    fireEvent.click(producerSearchSwitch);
+    expect(producerSearchSwitch.checked).toBe(true);
 
     // Click search
     const searchButton = screen.getByTitle('Search');
@@ -157,7 +157,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
     await waitFor(() =>
       expect(mockUpdateCurrentLocation).toHaveBeenCalledWith(
-        '/dataProduct/results?query=new%20search&useIndexSearch=true',
+        '/dataProduct/results?query=new%20search&useProducerSearch=true',
       ),
     );
   });
@@ -395,8 +395,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
     });
   });
 
-  describe('Index search', () => {
-    test('Index search only calls lakehouse and metadata endpoints', async () => {
+  describe('Producer Search', () => {
+    test('Producer search only calls lakehouse and metadata endpoints', async () => {
       const { MOCK__baseStore } = await setupTestComponent(
         'data',
         'prod',
