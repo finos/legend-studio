@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import {
   LakehouseAdHocDataProductSearchResultOrigin,
@@ -51,8 +51,8 @@ export class ProductCardState {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly searchResult: DataProductSearchResult;
   readonly displayImage: string;
-  dataProductElement: V1_DataProduct | V1_DataSpace | undefined;
   readonly graphManager: V1_PureGraphManager;
+  dataProductElement: V1_DataProduct | V1_DataSpace | undefined;
 
   readonly initState = ActionState.create();
 
@@ -62,7 +62,10 @@ export class ProductCardState {
     graphManager: V1_PureGraphManager,
     displayImageMap: Map<string, string>,
   ) {
-    makeObservable(this);
+    makeObservable(this, {
+      dataProductElement: observable,
+      setDataProductElement: action,
+    });
 
     this.marketplaceBaseStore = marketplaceBaseStore;
     this.searchResult = searchResult;
