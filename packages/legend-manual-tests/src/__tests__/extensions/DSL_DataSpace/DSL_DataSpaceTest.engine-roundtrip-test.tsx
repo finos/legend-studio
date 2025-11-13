@@ -27,6 +27,7 @@ import {
   V1_buildArtifactsByExtensionElement,
 } from '@finos/legend-graph';
 import {
+  assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
   type PlainObject,
@@ -269,12 +270,20 @@ describe(
           graphManager.getFullGraphModelData(graphManagerState.graph),
           [dataspacePath],
         );
-        const artifacts = V1_buildArtifactsByExtensionElement(
-          (await ENGINE_TEST_SUPPORT__generateArtifacts(
-            input,
-          )) as unknown as V1_ArtifactGenerationExtensionOutput,
-        );
-        const dataspaceArtifacts = artifacts.values
+        let artifacts;
+        try {
+          artifacts = V1_buildArtifactsByExtensionElement(
+            (await ENGINE_TEST_SUPPORT__generateArtifacts(
+              input,
+            )) as unknown as V1_ArtifactGenerationExtensionOutput,
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          console.log(error.stack);
+          console.log(error.message);
+          console.log(error.cause);
+        }
+        const dataspaceArtifacts = artifacts?.values
           .filter(
             (artifact) =>
               artifact.extension ===
@@ -288,7 +297,7 @@ describe(
               )
               .flatMap((e) => e.files),
           );
-        const fileGens = dataspaceArtifacts.map((file) => {
+        const fileGens = dataspaceArtifacts?.map((file) => {
           const storedFileGeneration = new StoredFileGeneration();
           storedFileGeneration.groupId = 'engine-test';
           storedFileGeneration.artifactId = 'test';
@@ -304,7 +313,7 @@ describe(
         });
         const analyticsResult = JSON.parse(
           guaranteeNonNullable(
-            fileGens.find((file) =>
+            fileGens?.find((file) =>
               file.file.path.includes('AnalyticsResult.json'),
             )?.file.content,
             'fail to generate analytics result artifact',
@@ -324,7 +333,7 @@ describe(
             stub_RawLambda(),
             [],
             true,
-            fileGens.map((fileGen) => ({
+            fileGens?.map((fileGen) => ({
               groupId: fileGen.groupId,
               artifactId: fileGen.artifactId,
               versionId: fileGen.versionId,
