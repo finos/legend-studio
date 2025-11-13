@@ -299,17 +299,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
       MOCK__baseStore.applicationStore.navigationService.navigator.visitAddress =
         mockVisitAddress;
 
-      // Toggle on legacy data products
-      screen.getByText('Filters');
-      const modeledDataProductsFilterButton = screen.getByText(
-        'Include Modeled Data Products',
-      );
-      fireEvent.click(modeledDataProductsFilterButton);
-
       const dataProductTitle = guaranteeNonNullable(
         (await screen.findAllByText('Legacy Data Product'))[0],
       );
-
       fireEvent.click(dataProductTitle);
 
       expect(mockVisitAddress).toHaveBeenCalledWith(
@@ -319,79 +311,15 @@ describe('MarketplaceLakehouseSearchResults', () => {
       );
     });
 
-    test('Filter Panel shows up for prod data product env and filters modeled data products', async () => {
-      await setupTestComponent('data', 'prod');
-
-      expect(await screen.findByText('2 Products'));
-
-      // Check filter panel is present
-      screen.getByText('Filters');
-      const modeledDataProductsFilterButton = screen.getByText(
-        'Include Modeled Data Products',
-      );
-
-      // Check legacy data product is not present
-      expect(screen.queryByText('Legacy Data Product')).toBeNull();
-
-      // Toggle on filter
-      fireEvent.click(modeledDataProductsFilterButton);
-
-      screen.getByText('4 Products');
-
-      // Check that legacy data products are included
-      // Legacy Data Product with title shows title
-      expect(screen.getAllByText('Legacy Data Product')).toHaveLength(2);
-
-      // Legacy Data Product without title shows packageable element name
-      expect(screen.getAllByText('Legacy_Data_Product_No_Title')).toHaveLength(
-        2,
-      );
-    });
-
-    test("Filter Panel doesn't show up for prod-par data product env", async () => {
-      await setupTestComponent('data', 'prod-par');
-
-      // Check filter is not present
-      expect(screen.queryByText('Filters')).toBeNull();
-      expect(screen.queryByText('Include Modeled Data Products')).toBeNull();
-
-      // Check that legacy data products are not included
-      expect(screen.queryByText('Legacy Data Product')).toBeNull();
-    });
-
-    test("Filter Panel doesn't show up for dev data product env", async () => {
-      await setupTestComponent('data', 'dev');
-
-      // Check filter is not present
-      expect(screen.queryByText('Filters')).toBeNull();
-      expect(screen.queryByText('Include Modeled Data Products')).toBeNull();
-
-      // Check that legacy data products are not included
-      expect(screen.queryByText('Legacy Data Product')).toBeNull();
-    });
-
     test('Lakehouse data products show Lakehouse chip', async () => {
       await setupTestComponent('data', 'prod');
 
-      expect(await screen.findByText('2 Products'));
+      expect(await screen.findByText('4 Products'));
 
       // Check for 2 lakehouse chips
       expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
-
-      // Toggle on modeled data products
-      screen.getByText('Filters');
-      const modeledDataProductsFilterButton = screen.getByText(
-        'Include Modeled Data Products',
-      );
-      fireEvent.click(modeledDataProductsFilterButton);
-
-      await screen.findByText('4 Products');
-
       // Check that legacy data product is rendered
       expect(await screen.findAllByText('Legacy Data Product')).toHaveLength(2);
-
-      // Check for still 2 lakehouse chips
-      expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
     });
   });
 
@@ -570,17 +498,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
       MOCK__baseStore.applicationStore.navigationService.navigator.visitAddress =
         mockVisitAddress;
 
-      // Toggle on legacy data products
-      screen.getByText('Filters');
-      const modeledDataProductsFilterButton = screen.getByText(
-        'Include Modeled Data Products',
-      );
-      fireEvent.click(modeledDataProductsFilterButton);
-
       const dataProductTitle = guaranteeNonNullable(
         (await screen.findAllByText('LegacyDataProduct'))[0],
       );
-
       fireEvent.click(dataProductTitle);
 
       expect(mockVisitAddress).toHaveBeenCalledWith(
@@ -590,73 +510,15 @@ describe('MarketplaceLakehouseSearchResults', () => {
       );
     });
 
-    test('Filter Panel shows up for prod data product env and filters modeled data products', async () => {
-      await setupTestComponent('data', 'prod', true);
-
-      expect(await screen.findByText('2 Products'));
-
-      // Check filter panel is present
-      screen.getByText('Filters');
-      const modeledDataProductsFilterButton = screen.getByText(
-        'Include Modeled Data Products',
-      );
-
-      // Check legacy data product is not present
-      expect(screen.queryByText('LegacyDataProduct')).toBeNull();
-
-      // Toggle on filter
-      fireEvent.click(modeledDataProductsFilterButton);
-
-      screen.getByText('3 Products');
-
-      // Check that legacy data products are included
-      expect(await screen.findAllByText('LegacyDataProduct')).toHaveLength(2);
-    });
-
-    test("Filter Panel doesn't show up for prod-par data product env", async () => {
-      await setupTestComponent('data', 'prod-par', true);
-
-      // Check filter is not present
-      expect(screen.queryByText('Filters')).toBeNull();
-      expect(screen.queryByText('Include Modeled Data Products')).toBeNull();
-
-      // Check that legacy data products are not included
-      expect(screen.queryByText('LegacyDataProduct')).toBeNull();
-    });
-
-    test("Filter Panel doesn't show up for dev data product env", async () => {
-      await setupTestComponent('data', 'dev', true);
-
-      // Check filter is not present
-      expect(screen.queryByText('Filters')).toBeNull();
-      expect(screen.queryByText('Include Modeled Data Products')).toBeNull();
-
-      // Check that legacy data products are not included
-      expect(screen.queryByText('LegacyDataProduct')).toBeNull();
-    });
-
     test('Lakehouse data products show Lakehouse chip', async () => {
       await setupTestComponent('data', 'prod', true);
 
-      expect(await screen.findByText('2 Products'));
+      expect(await screen.findByText('4 Products'));
 
       // Check for 2 lakehouse chips
       expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
-
-      // Toggle on modeled data products
-      screen.getByText('Filters');
-      const modeledDataProductsFilterButton = screen.getByText(
-        'Include Modeled Data Products',
-      );
-      fireEvent.click(modeledDataProductsFilterButton);
-
-      await screen.findByText('3 Products');
-
       // Check that legacy data product is rendered
       expect(await screen.findAllByText('LegacyDataProduct')).toHaveLength(2);
-
-      // Check for still 2 lakehouse chips
-      expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
     });
   });
 });
