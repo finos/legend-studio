@@ -22,7 +22,12 @@ import {
   CardContent,
   ClickAwayListener,
 } from '@mui/material';
-import { clsx, deserializeIcon } from '@finos/legend-art';
+import {
+  clsx,
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
+  deserializeIcon,
+} from '@finos/legend-art';
 import {
   type V1_DataProductIcon,
   V1_DataProductEmbeddedImageIcon,
@@ -38,6 +43,7 @@ export const LegendMarketplaceCard = (props: {
   moreInfoPreview?: 'small' | 'large' | undefined;
   className?: string;
   cardMedia?: V1_DataProductIcon | string | undefined;
+  loadingMedia?: boolean;
 }): JSX.Element => {
   const {
     content,
@@ -48,6 +54,7 @@ export const LegendMarketplaceCard = (props: {
     moreInfoPreview,
     className,
     cardMedia,
+    loadingMedia,
   } = props;
 
   const cardImage =
@@ -125,13 +132,18 @@ export const LegendMarketplaceCard = (props: {
       )}
       ref={containerRef}
       sx={
-        cardImage
+        !loadingMedia && cardImage
           ? {
               background: `url(${cardImage})`,
             }
           : {}
       }
     >
+      {loadingMedia && (
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      )}
       {cardIcon !== undefined && (
         <div className="legend-marketplace-card__icon">
           {deserializeIcon(cardIcon.libraryId, cardIcon.iconId)}

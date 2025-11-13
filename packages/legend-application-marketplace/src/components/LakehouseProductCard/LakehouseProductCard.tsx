@@ -444,6 +444,7 @@ export const LakehouseProductCard = observer(
         moreInfo={moreInfoContent}
         moreInfoPreview={moreInfoPreview}
         cardMedia={productCardState.icon ?? productCardState.displayImage}
+        loadingMedia={productCardState.initState.isInProgress}
       />
     );
   },
