@@ -22,7 +22,6 @@ import {
   isNonNullable,
   LogEvent,
   type GeneratorFn,
-  type PlainObject,
 } from '@finos/legend-shared';
 import {
   DataProductSearchResult,
@@ -152,10 +151,29 @@ export class LegendMarketplaceSearchResultsStore {
       this.setSemanticSearchProductCardStates([]);
       this.setProducerSearchDataProductCardStates([]);
       this.setProducerSearchLegacyDataProductCardStates([]);
+
+      // Crete graph manager for parsing ad-hoc deployed data products
+      const graphManager = new V1_PureGraphManager(
+        this.marketplaceBaseStore.applicationStore.pluginManager,
+        this.marketplaceBaseStore.applicationStore.logService,
+        this.marketplaceBaseStore.remoteEngine,
+      );
+      yield graphManager.initialize(
+        {
+          env: this.marketplaceBaseStore.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl:
+              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: this.marketplaceBaseStore.remoteEngine },
+      );
+
       if (useProducerSearch) {
-        yield this.executeProducerSearch(query, token);
+        yield this.executeProducerSearch(query, token, graphManager);
       } else {
-        yield this.executeSemanticSearch(query);
+        yield this.executeSemanticSearch(query, graphManager);
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -165,7 +183,10 @@ export class LegendMarketplaceSearchResultsStore {
     }
   }
 
-  private async executeSemanticSearch(query: string): Promise<void> {
+  private async executeSemanticSearch(
+    query: string,
+    graphManager: V1_PureGraphManager,
+  ): Promise<void> {
     this.executingSemanticSearchState.inProgress();
 
     try {
@@ -195,6 +216,7 @@ export class LegendMarketplaceSearchResultsStore {
           new ProductCardState(
             this.marketplaceBaseStore,
             result,
+            graphManager,
             this.displayImageMap,
           ),
       );
@@ -207,108 +229,29 @@ export class LegendMarketplaceSearchResultsStore {
   private async executeProducerSearch(
     query: string,
     token: string | undefined,
+    graphManager: V1_PureGraphManager,
   ): Promise<void> {
     await Promise.all([
-      this.fetchDataProducts(query, token),
-      this.fetchLegacyDataProducts(query),
+      this.fetchDataProducts(query, graphManager, token),
+      this.fetchLegacyDataProducts(query, graphManager),
     ]);
   }
 
   private async fetchDataProducts(
     query: string,
+    graphManager: V1_PureGraphManager,
     token: string | undefined,
   ): Promise<void> {
     this.fetchingProducerSearchDataProductsState.inProgress();
     try {
-      this.executingSearchState.inProgress();
-      const rawResults = (yield this.marketplaceServerClient.semanticSearch(
-        query,
-      )) as PlainObject<TMP__DataProductSearchResult>[];
-      const results = rawResults.map((result) =>
-        TMP__DataProductSearchResult.serialization.fromJson(result),
-      );
-
-      // tmp convert to new type
-      const convertedResults = results.map((result) => {
-        const newResult = new DataProductSearchResult();
-        newResult.dataProductName = result.data_product_name;
-        newResult.dataProductDescription = result.data_product_description;
-        newResult.similarity = result.similarity;
-        newResult.id = result.id;
-        const legacyMatch = result.data_product_link.match(
-          /\/taxonomy\/dataspace\/(?<gav>.+)\/(?<path>.+)/,
+      const rawResponse =
+        await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProducts(
+          token,
         );
-        const lakehouseMatch = result.data_product_link.match(
-          /\/lakehouse\/dataProduct\/deployed\/(?<dataProductId>.+)\/(?<deploymentId>\d+)/,
+      const dataProductDetails =
+        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+          rawResponse,
         );
-        if (legacyMatch !== null && legacyMatch.groups !== undefined) {
-          const { gav, path } = legacyMatch.groups;
-          const coordinates = parseGAVCoordinates(guaranteeNonNullable(gav));
-          const details = new LegacyDataProductSearchResultDetails();
-          details.groupId = coordinates.groupId;
-          details.artifactId = coordinates.artifactId;
-          details.versionId = coordinates.versionId;
-          details.path = guaranteeNonNullable(path);
-          newResult.dataProductDetails = details;
-        } else if (
-          lakehouseMatch !== null &&
-          lakehouseMatch.groups !== undefined
-        ) {
-          const { dataProductId, deploymentId } = lakehouseMatch.groups;
-          const lakehouseDetails =
-            new LakehouseDataProductSearchResultDetails();
-          lakehouseDetails.dataProductId = guaranteeNonNullable(dataProductId);
-          lakehouseDetails.did = parseInt(guaranteeNonNullable(deploymentId));
-          lakehouseDetails.producerEnvironmentName = '';
-          lakehouseDetails.producerEnvironmentType = '';
-          const origin = new LakehouseSDLCDataProductSearchResultOrigin();
-          origin.groupId = '';
-          origin.artifactId = '';
-          origin.versionId = '';
-          origin.path = '';
-          lakehouseDetails.origin = origin;
-          newResult.dataProductDetails = lakehouseDetails;
-        } else {
-          const details = new LegacyDataProductSearchResultDetails();
-          details.groupId = '';
-          details.artifactId = '';
-          details.versionId = '';
-          details.path = '';
-          newResult.dataProductDetails = details;
-        }
-        return newResult;
-      });
-
-      // Crete graph manager for parsing ad-hoc deployed data products
-      const graphManager = new V1_PureGraphManager(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
-      );
-
-      // Create data product card states
-      const dataProductCardStates: ProductCardState[] = convertedResults.map(
-        (result) =>
-          new ProductCardState(
-            this.marketplaceBaseStore,
-            result,
-            graphManager,
-            this.displayImageMap,
-          ),
-      );
-      this.setProductCardStates(dataProductCardStates);
-
-      yield graphManager.initialize(
-        {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl:
-              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
-      );
 
       const productCardStates = dataProductDetails
         .map((detail) => {
@@ -352,6 +295,7 @@ export class LegendMarketplaceSearchResultsStore {
             return new ProductCardState(
               this.marketplaceBaseStore,
               searchResult,
+              graphManager,
               this.displayImageMap,
             );
           } catch (error) {
@@ -375,7 +319,10 @@ export class LegendMarketplaceSearchResultsStore {
     }
   }
 
-  private async fetchLegacyDataProducts(query: string): Promise<void> {
+  private async fetchLegacyDataProducts(
+    query: string,
+    graphManager: V1_PureGraphManager,
+  ): Promise<void> {
     if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
       return;
     }
@@ -419,6 +366,7 @@ export class LegendMarketplaceSearchResultsStore {
             return new ProductCardState(
               this.marketplaceBaseStore,
               searchResult,
+              graphManager,
               this.displayImageMap,
             );
           } catch (error) {
