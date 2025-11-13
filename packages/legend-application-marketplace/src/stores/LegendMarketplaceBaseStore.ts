@@ -326,6 +326,9 @@ export class LegendMarketplaceBaseStore {
           ),
         )
       ).filter(isNonNullable);
+      dataProductStates.forEach((dataProductState) =>
+        dataProductState.init(token),
+      );
       return dataProductStates;
     }
     return undefined;

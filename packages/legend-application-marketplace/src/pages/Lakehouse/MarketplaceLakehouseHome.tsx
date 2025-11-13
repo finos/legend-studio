@@ -66,21 +66,28 @@ export const MarketplaceLakehouseHome = observer(() => {
       setLoading(true);
 
       try {
-        const dataProducts = await Promise.all([
-          await legendMarketplaceBaseStore.initHighlightedDataProducts(
-            auth.user?.access_token,
-          ),
-          ...applicationStore.pluginManager
-            .getApplicationPlugins()
-            .flatMap(
-              async (plugin) =>
-                (await plugin.getExtraHomePageDataProducts?.(
-                  legendMarketplaceBaseStore,
-                  auth.user?.access_token,
-                )) ?? [],
+        const dataProducts = (
+          await Promise.all([
+            await legendMarketplaceBaseStore.initHighlightedDataProducts(
+              auth.user?.access_token,
             ),
-        ]);
-        setHighlightedDataProducts(dataProducts.filter(isNonNullable).flat());
+            ...applicationStore.pluginManager
+              .getApplicationPlugins()
+              .flatMap(
+                async (plugin) =>
+                  (await plugin.getExtraHomePageDataProducts?.(
+                    legendMarketplaceBaseStore,
+                    auth.user?.access_token,
+                  )) ?? [],
+              ),
+          ])
+        )
+          .filter(isNonNullable)
+          .flat();
+        dataProducts.forEach((dataProductState) =>
+          dataProductState.init(auth.user?.access_token),
+        );
+        setHighlightedDataProducts(dataProducts);
       } catch (error) {
         assertErrorThrown(error);
         applicationStore.notificationService.notifyError(

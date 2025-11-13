@@ -171,9 +171,9 @@ export class LegendMarketplaceSearchResultsStore {
       );
 
       if (useProducerSearch) {
-        yield this.executeProducerSearch(query, token, graphManager);
+        yield this.executeProducerSearch(query, graphManager, token);
       } else {
-        yield this.executeSemanticSearch(query, graphManager);
+        yield this.executeSemanticSearch(query, graphManager, token);
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -186,6 +186,7 @@ export class LegendMarketplaceSearchResultsStore {
   private async executeSemanticSearch(
     query: string,
     graphManager: V1_PureGraphManager,
+    token: string | undefined,
   ): Promise<void> {
     this.executingSemanticSearchState.inProgress();
 
@@ -220,6 +221,9 @@ export class LegendMarketplaceSearchResultsStore {
             this.displayImageMap,
           ),
       );
+      dataProductCardStates.forEach((dataProductState) =>
+        dataProductState.init(token),
+      );
       this.setSemanticSearchProductCardStates(dataProductCardStates);
     } finally {
       this.executingSemanticSearchState.complete();
@@ -228,12 +232,12 @@ export class LegendMarketplaceSearchResultsStore {
 
   private async executeProducerSearch(
     query: string,
-    token: string | undefined,
     graphManager: V1_PureGraphManager,
+    token: string | undefined,
   ): Promise<void> {
     await Promise.all([
       this.fetchDataProducts(query, graphManager, token),
-      this.fetchLegacyDataProducts(query, graphManager),
+      this.fetchLegacyDataProducts(query, graphManager, token),
     ]);
   }
 
@@ -309,11 +313,14 @@ export class LegendMarketplaceSearchResultsStore {
           }
         })
         .filter(isNonNullable);
-      this.setProducerSearchDataProductCardStates(
-        productCardStates.filter((productCardState) =>
+      const filteredProductCardStates = productCardStates.filter(
+        (productCardState) =>
           productCardState.title.toLowerCase().includes(query.toLowerCase()),
-        ),
       );
+      filteredProductCardStates.forEach((dataProductState) =>
+        dataProductState.init(token),
+      );
+      this.setProducerSearchDataProductCardStates(filteredProductCardStates);
     } finally {
       this.fetchingProducerSearchDataProductsState.complete();
     }
@@ -322,6 +329,7 @@ export class LegendMarketplaceSearchResultsStore {
   private async fetchLegacyDataProducts(
     query: string,
     graphManager: V1_PureGraphManager,
+    token: string | undefined,
   ): Promise<void> {
     if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
       return;
@@ -380,10 +388,15 @@ export class LegendMarketplaceSearchResultsStore {
           }
         })
         .filter(isNonNullable);
-      this.setProducerSearchLegacyDataProductCardStates(
-        productCardStates.filter((productCardState) =>
+      const filteredProductCardStates = productCardStates.filter(
+        (productCardState) =>
           productCardState.title.toLowerCase().includes(query.toLowerCase()),
-        ),
+      );
+      filteredProductCardStates.forEach((dataProductState) =>
+        dataProductState.init(token),
+      );
+      this.setProducerSearchLegacyDataProductCardStates(
+        filteredProductCardStates,
       );
     } finally {
       this.fetchingProducerSearchLegacyDataProductsState.complete();
