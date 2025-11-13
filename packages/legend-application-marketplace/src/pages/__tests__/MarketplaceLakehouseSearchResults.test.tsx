@@ -166,7 +166,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Semantic search only calls semantic search endpoint', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('2 Products');
+      await screen.findByText('4 Products');
 
       expect(
         MOCK__baseStore.marketplaceServerClient.dataProductSearch,
@@ -179,10 +179,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
       ).not.toHaveBeenCalled();
     });
 
-    test('Prod data product environment only displays production data products', async () => {
+    test('Prod data product environment only displays production data products and legacy data products', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('2 Products');
+      await screen.findByText('4 Products');
 
       // Lakehouse Data Product with title shows title
       expect(screen.getAllByText('Lakehouse SDLC Data Product')).toHaveLength(
@@ -194,6 +194,14 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(
         screen.getAllByText('LAKEHOUSE_SDLC_DATA_PRODUCT_NO_TITLE'),
       ).toHaveLength(2);
+
+      // Legacy Data Product with title shows title
+      expect(screen.getAllByText('Legacy Data Product')).toHaveLength(2);
+
+      // Legacy Data Product without title shows name
+      expect(screen.getAllByText('Legacy_Data_Product_No_Title')).toHaveLength(
+        2,
+      );
     });
 
     test('Production-parallel environment displays production-parallel data products', async () => {
@@ -331,7 +339,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
         true,
       );
 
-      await screen.findByText('2 Products');
+      await screen.findByText('3 Products');
 
       expect(
         MOCK__baseStore.lakehouseContractServerClient.getDataProducts,
@@ -344,10 +352,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
       ).not.toHaveBeenCalled();
     });
 
-    test('Prod data product environment only displays production data products', async () => {
+    test('Prod data product environment only displays production data products and legacy data products', async () => {
       await setupTestComponent('data', 'prod', true);
 
-      await screen.findByText('2 Products');
+      await screen.findByText('3 Products');
 
       // Data product with title shows title
       expect(screen.getAllByText('SDLC Production Data Product')).toHaveLength(
@@ -361,6 +369,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(
         screen.getAllByText('SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE'),
       ).toHaveLength(2);
+
+      // Legacy data product shows title
+      expect(screen.getAllByText('LegacyDataProduct')).toHaveLength(2);
 
       // Doesn't show non-production data products
       expect(screen.queryByText('SDLC Prod-Parallel Data Product')).toBeNull();
@@ -387,10 +398,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(screen.queryByText('SDLC Development Data Product')).toBeNull();
     });
 
-    test('Development environment displays development data products', async () => {
+    test('Development environment displays development data products and legacy data products', async () => {
       await setupTestComponent('data', 'dev', true);
 
-      expect(await screen.findByText('1 Products'));
+      expect(await screen.findByText('2 Products'));
 
       // Shows title
       expect(screen.getAllByText('SDLC Development Data Product')).toHaveLength(
@@ -398,6 +409,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
       );
       // Shows version
       screen.getByText('master-SNAPSHOT');
+
+      // Shows legacy data product
+      expect(screen.getAllByText('LegacyDataProduct')).toHaveLength(2);
 
       // Doesn't show production or production-parallel data products
       expect(screen.queryByText('SDLC Production Data Product')).toBeNull();
@@ -513,7 +527,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Lakehouse data products show Lakehouse chip', async () => {
       await setupTestComponent('data', 'prod', true);
 
-      expect(await screen.findByText('4 Products'));
+      expect(await screen.findByText('3 Products'));
 
       // Check for 2 lakehouse chips
       expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
