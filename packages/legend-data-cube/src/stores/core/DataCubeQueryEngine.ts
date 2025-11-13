@@ -18,6 +18,7 @@ import { TailwindCSSPalette } from '@finos/legend-art';
 import {
   DATE_FORMAT,
   PRIMITIVE_TYPE,
+  PRECISE_PRIMITIVE_TYPE,
   type V1_AppliedFunction,
 } from '@finos/legend-graph';
 import {
@@ -349,6 +350,7 @@ export const EMPTY_VALUE_PLACEHOLDER = '(None)';
 export function _defaultPrimitiveTypeValue(type: string): unknown {
   switch (type) {
     case PRIMITIVE_TYPE.STRING:
+    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
       return '';
     case PRIMITIVE_TYPE.BOOLEAN:
       return false;
@@ -359,11 +361,27 @@ export function _defaultPrimitiveTypeValue(type: string): unknown {
     case PRIMITIVE_TYPE.FLOAT:
     case PRIMITIVE_TYPE.INTEGER:
     case PRIMITIVE_TYPE.BINARY:
+    case PRECISE_PRIMITIVE_TYPE.INT:
+    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+    case PRECISE_PRIMITIVE_TYPE.NUMERIC:
+    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.FLOAT:
+    case PRECISE_PRIMITIVE_TYPE.U_INT:
+    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
       return 0;
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
+    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
       return formatDate(new Date(Date.now()), DATE_FORMAT);
     case PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
       return formatDate(new Date(Date.now()), DATE_TIME_FORMAT);
     default:
       throw new UnsupportedOperationError(
@@ -398,13 +416,30 @@ export function getDataType(type: string): DataCubeColumnDataType {
     case PRIMITIVE_TYPE.INTEGER:
     case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.FLOAT:
+    case PRECISE_PRIMITIVE_TYPE.INT:
+    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+    case PRECISE_PRIMITIVE_TYPE.NUMERIC:
+    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.FLOAT:
+    case PRECISE_PRIMITIVE_TYPE.U_INT:
+    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
       return DataCubeColumnDataType.NUMBER;
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
+    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
       return DataCubeColumnDataType.DATE;
     case PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
       return DataCubeColumnDataType.TIME;
     case PRIMITIVE_TYPE.STRING:
+    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
     default:
       return DataCubeColumnDataType.TEXT;
   }

@@ -44,7 +44,12 @@ import {
 } from '../../core/DataCubeFormUtils.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import { DATE_FORMAT, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import {
+  DATE_FORMAT,
+  PRECISE_PRIMITIVE_TYPE,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
+
 import { formatDate, guaranteeIsNumber, parseISO } from '@finos/legend-shared';
 import { evaluate } from 'mathjs';
 import { useDataCube } from '../../DataCubeProvider.js';
@@ -344,6 +349,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
     // WIP: support collection/column
     switch (value.type) {
       case PRIMITIVE_TYPE.STRING:
+      case PRECISE_PRIMITIVE_TYPE.VARCHAR:
         return (
           <DataCubeEditorFilterConditionNodeTextValueEditor
             ref={ref as React.RefObject<HTMLInputElement>}
@@ -355,6 +361,18 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.DECIMAL:
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.INTEGER:
+      case PRECISE_PRIMITIVE_TYPE.INT:
+      case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+      case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+      case PRECISE_PRIMITIVE_TYPE.NUMERIC:
+      case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+      case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+      case PRECISE_PRIMITIVE_TYPE.FLOAT:
+      case PRECISE_PRIMITIVE_TYPE.U_INT:
+      case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+      case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+      case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+      case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
         return (
           <DataCubeEditorFilterConditionNodeNumberValueEditor
             ref={ref as React.RefObject<HTMLInputElement>}
@@ -365,6 +383,10 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
+      case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
+      case PRECISE_PRIMITIVE_TYPE.DATETIME:
+      case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+      case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
         return (
           <DataCubeEditorFilterConditionNodeDateValueEditor
             ref={ref as React.RefObject<HTMLInputElement>}
@@ -381,6 +403,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
             view={view}
           />
         );
+      case DataCubeOperationAdvancedValueType.VOID:
       default:
         return null;
     }
