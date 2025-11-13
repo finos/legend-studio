@@ -22,6 +22,7 @@ import {
   isNonNullable,
   LogEvent,
   type GeneratorFn,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
   DataProductSearchResult,
@@ -219,14 +220,64 @@ export class LegendMarketplaceSearchResultsStore {
   ): Promise<void> {
     this.fetchingProducerSearchDataProductsState.inProgress();
     try {
-      const rawResponse =
-        await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProducts(
-          token,
+      this.executingSearchState.inProgress();
+      const rawResults = (yield this.marketplaceServerClient.semanticSearch(
+        query,
+      )) as PlainObject<TMP__DataProductSearchResult>[];
+      const results = rawResults.map((result) =>
+        TMP__DataProductSearchResult.serialization.fromJson(result),
+      );
+
+      // tmp convert to new type
+      const convertedResults = results.map((result) => {
+        const newResult = new DataProductSearchResult();
+        newResult.dataProductName = result.data_product_name;
+        newResult.dataProductDescription = result.data_product_description;
+        newResult.similarity = result.similarity;
+        newResult.id = result.id;
+        const legacyMatch = result.data_product_link.match(
+          /\/taxonomy\/dataspace\/(?<gav>.+)\/(?<path>.+)/,
         );
-      const dataProductDetails =
-        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-          rawResponse,
+        const lakehouseMatch = result.data_product_link.match(
+          /\/lakehouse\/dataProduct\/deployed\/(?<dataProductId>.+)\/(?<deploymentId>\d+)/,
         );
+        if (legacyMatch !== null && legacyMatch.groups !== undefined) {
+          const { gav, path } = legacyMatch.groups;
+          const coordinates = parseGAVCoordinates(guaranteeNonNullable(gav));
+          const details = new LegacyDataProductSearchResultDetails();
+          details.groupId = coordinates.groupId;
+          details.artifactId = coordinates.artifactId;
+          details.versionId = coordinates.versionId;
+          details.path = guaranteeNonNullable(path);
+          newResult.dataProductDetails = details;
+        } else if (
+          lakehouseMatch !== null &&
+          lakehouseMatch.groups !== undefined
+        ) {
+          const { dataProductId, deploymentId } = lakehouseMatch.groups;
+          const lakehouseDetails =
+            new LakehouseDataProductSearchResultDetails();
+          lakehouseDetails.dataProductId = guaranteeNonNullable(dataProductId);
+          lakehouseDetails.did = parseInt(guaranteeNonNullable(deploymentId));
+          lakehouseDetails.producerEnvironmentName = '';
+          lakehouseDetails.producerEnvironmentType = '';
+          const origin = new LakehouseSDLCDataProductSearchResultOrigin();
+          origin.groupId = '';
+          origin.artifactId = '';
+          origin.versionId = '';
+          origin.path = '';
+          lakehouseDetails.origin = origin;
+          newResult.dataProductDetails = lakehouseDetails;
+        } else {
+          const details = new LegacyDataProductSearchResultDetails();
+          details.groupId = '';
+          details.artifactId = '';
+          details.versionId = '';
+          details.path = '';
+          newResult.dataProductDetails = details;
+        }
+        return newResult;
+      });
 
       // Crete graph manager for parsing ad-hoc deployed data products
       const graphManager = new V1_PureGraphManager(
@@ -234,7 +285,20 @@ export class LegendMarketplaceSearchResultsStore {
         this.marketplaceBaseStore.applicationStore.logService,
         this.marketplaceBaseStore.remoteEngine,
       );
-      await graphManager.initialize(
+
+      // Create data product card states
+      const dataProductCardStates: ProductCardState[] = convertedResults.map(
+        (result) =>
+          new ProductCardState(
+            this.marketplaceBaseStore,
+            result,
+            graphManager,
+            this.displayImageMap,
+          ),
+      );
+      this.setProductCardStates(dataProductCardStates);
+
+      yield graphManager.initialize(
         {
           env: this.marketplaceBaseStore.applicationStore.config.env,
           tabSize: DEFAULT_TAB_SIZE,

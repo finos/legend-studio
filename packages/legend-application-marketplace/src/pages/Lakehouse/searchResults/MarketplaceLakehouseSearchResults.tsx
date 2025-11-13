@@ -207,6 +207,7 @@ export const MarketplaceLakehouseSearchResults =
                   <Grid key={productCardState.guid} size={1}>
                     <LakehouseProductCard
                       productCardState={productCardState}
+                      moreInfoPreview="small"
                       onClick={() => {
                         const path = generatePathForDataProductSearchResult(
                           productCardState.searchResult,
