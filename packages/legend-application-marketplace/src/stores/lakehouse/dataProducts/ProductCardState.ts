@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import {
   LakehouseAdHocDataProductSearchResultOrigin,
@@ -65,6 +65,7 @@ export class ProductCardState {
     makeObservable(this, {
       dataProductElement: observable,
       setDataProductElement: action,
+      init: flow,
     });
 
     this.marketplaceBaseStore = marketplaceBaseStore;
