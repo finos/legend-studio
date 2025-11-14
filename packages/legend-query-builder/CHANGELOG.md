@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.17.59
+
+### Patch Changes
+
+- [#4629](https://github.com/finos/legend-studio/pull/4629) [`0f22fa6`](https://github.com/finos/legend-studio/commit/0f22fa64ef3f3e3e4f9a3f98510a37200d086aac) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - Added Legend MCP service URL
+
 ## 4.17.58
 
 ## 4.17.57

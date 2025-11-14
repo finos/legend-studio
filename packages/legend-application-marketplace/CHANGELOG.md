@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.38
+
+### Patch Changes
+
+- [#4630](https://github.com/finos/legend-studio/pull/4630) [`e403489`](https://github.com/finos/legend-studio/commit/e40348957c4ce0eb81aa733bd0f44a63d1f150d1) ([@travisstebbins](https://github.com/travisstebbins)) - Update Marketplace search results page
+
 ## 0.1.37
 
 ### Patch Changes
