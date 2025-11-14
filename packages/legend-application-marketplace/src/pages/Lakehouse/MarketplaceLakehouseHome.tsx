@@ -42,9 +42,9 @@ import {
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
-import { LakehouseHighlightedProductCard } from '../../components/LakehouseProductCard/LakehouseHighlightedProductCard.js';
 import { generatePathForDataProductSearchResult } from '../../utils/SearchUtils.js';
 import { logClickingDataProductCard } from '../../utils/LogUtils.js';
+import { LakehouseProductCard } from '../../components/LakehouseProductCard/LakehouseProductCard.js';
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -66,21 +66,28 @@ export const MarketplaceLakehouseHome = observer(() => {
       setLoading(true);
 
       try {
-        const dataProducts = await Promise.all([
-          await legendMarketplaceBaseStore.initHighlightedDataProducts(
-            auth.user?.access_token,
-          ),
-          ...applicationStore.pluginManager
-            .getApplicationPlugins()
-            .flatMap(
-              async (plugin) =>
-                (await plugin.getExtraHomePageDataProducts?.(
-                  legendMarketplaceBaseStore,
-                  auth.user?.access_token,
-                )) ?? [],
+        const dataProducts = (
+          await Promise.all([
+            await legendMarketplaceBaseStore.initHighlightedDataProducts(
+              auth.user?.access_token,
             ),
-        ]);
-        setHighlightedDataProducts(dataProducts.filter(isNonNullable).flat());
+            ...applicationStore.pluginManager
+              .getApplicationPlugins()
+              .flatMap(
+                async (plugin) =>
+                  (await plugin.getExtraHomePageDataProducts?.(
+                    legendMarketplaceBaseStore,
+                    auth.user?.access_token,
+                  )) ?? [],
+              ),
+          ])
+        )
+          .filter(isNonNullable)
+          .flat();
+        dataProducts.forEach((dataProductState) =>
+          dataProductState.init(auth.user?.access_token),
+        );
+        setHighlightedDataProducts(dataProducts);
       } catch (error) {
         assertErrorThrown(error);
         applicationStore.notificationService.notifyError(
@@ -234,9 +241,11 @@ export const MarketplaceLakehouseHome = observer(() => {
                 <div className="marketplace-lakehouse-home__carousel-slide">
                   {highlightedDataProducts.map(
                     (productCardState: ProductCardState) => (
-                      <LakehouseHighlightedProductCard
+                      <LakehouseProductCard
                         key={`slide-1-${productCardState.guid}`}
                         productCardState={productCardState}
+                        moreInfoPreview="large"
+                        hideInfoPopover={true}
                         onClick={() => {
                           const path = generatePathForDataProductSearchResult(
                             productCardState.searchResult,
@@ -263,9 +272,11 @@ export const MarketplaceLakehouseHome = observer(() => {
                 <div className="marketplace-lakehouse-home__carousel-slide">
                   {highlightedDataProducts.map(
                     (productCardState: ProductCardState) => (
-                      <LakehouseHighlightedProductCard
+                      <LakehouseProductCard
                         key={`slide-2-${productCardState.guid}`}
                         productCardState={productCardState}
+                        moreInfoPreview="large"
+                        hideInfoPopover={true}
                         onClick={() => {
                           const path = generatePathForDataProductSearchResult(
                             productCardState.searchResult,
@@ -292,9 +303,11 @@ export const MarketplaceLakehouseHome = observer(() => {
                 <div className="marketplace-lakehouse-home__carousel-slide">
                   {highlightedDataProducts.map(
                     (productCardState: ProductCardState) => (
-                      <LakehouseHighlightedProductCard
+                      <LakehouseProductCard
                         key={`slide-1-${productCardState.guid}`}
                         productCardState={productCardState}
+                        moreInfoPreview="large"
+                        hideInfoPopover={true}
                         onClick={() => {
                           const path = generatePathForDataProductSearchResult(
                             productCardState.searchResult,

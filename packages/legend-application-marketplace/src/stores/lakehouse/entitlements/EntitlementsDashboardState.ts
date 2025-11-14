@@ -116,7 +116,7 @@ export class EntitlementsDashboardState {
     } catch (error) {
       assertErrorThrown(error);
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
-        `Error fetching pending contacts: ${error.message}`,
+        `Error fetching pending contracts: ${error.message}`,
       );
     }
   }

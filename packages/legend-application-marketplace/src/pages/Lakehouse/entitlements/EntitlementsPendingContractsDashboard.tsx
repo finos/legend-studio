@@ -106,7 +106,7 @@ const AssigneesCellRenderer = (props: {
         } catch (error) {
           assertErrorThrown(error);
           entitlementsStore.applicationStore.notificationService.notifyError(
-            `Error fetching contact assignees: ${error.message}`,
+            `Error fetching contract assignees: ${error.message}`,
           );
         } finally {
           setLoading(false);
@@ -187,7 +187,7 @@ const TargetUserCellRenderer = observer(
           } catch (error) {
             assertErrorThrown(error);
             entitlementsStore.applicationStore.notificationService.notifyError(
-              `Error fetching contact target users: ${error.message}`,
+              `Error fetching contract target users: ${error.message}`,
             );
           } finally {
             setLoading(false);

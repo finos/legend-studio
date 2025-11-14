@@ -286,8 +286,11 @@ export const LakehouseProductCard = observer(
   (props: {
     productCardState: ProductCardState;
     onClick: (productCardState: ProductCardState) => void;
+    moreInfoPreview?: 'small' | 'large' | undefined;
+    hideInfoPopover?: boolean;
   }): React.ReactNode => {
-    const { productCardState, onClick } = props;
+    const { productCardState, onClick, moreInfoPreview, hideInfoPopover } =
+      props;
 
     const [popoverAnchorEl, setPopoverAnchorEl] =
       useState<HTMLButtonElement | null>(null);
@@ -374,9 +377,6 @@ export const LakehouseProductCard = observer(
                   />
                 )}
             </Box>
-            <Box className="marketplace-lakehouse-data-product-card__name">
-              {productCardState.title}
-            </Box>
           </Box>
         </Box>
       </>
@@ -400,33 +400,35 @@ export const LakehouseProductCard = observer(
             }}
           />
         </Box>
-        <>
-          <IconButton
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setPopoverAnchorEl(event.currentTarget);
-            }}
-            className={clsx(
-              'marketplace-lakehouse-data-product-card__more-info-btn',
-              {
-                'marketplace-lakehouse-data-product-card__more-info-btn--selected':
-                  Boolean(popoverAnchorEl),
-              },
-            )}
-            title="More Info"
-          >
-            <InfoCircleIcon />
-          </IconButton>
-          <LakehouseDataProductCardInfoPopover
-            dataProductCardState={productCardState}
-            popoverAnchorEl={popoverAnchorEl}
-            setPopoverAnchorEl={setPopoverAnchorEl}
-            applicationStore={
-              productCardState.marketplaceBaseStore.applicationStore
-            }
-          />
-        </>
+        {!hideInfoPopover && (
+          <>
+            <IconButton
+              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setPopoverAnchorEl(event.currentTarget);
+              }}
+              className={clsx(
+                'marketplace-lakehouse-data-product-card__more-info-btn',
+                {
+                  'marketplace-lakehouse-data-product-card__more-info-btn--selected':
+                    Boolean(popoverAnchorEl),
+                },
+              )}
+              title="More Info"
+            >
+              <InfoCircleIcon />
+            </IconButton>
+            <LakehouseDataProductCardInfoPopover
+              dataProductCardState={productCardState}
+              popoverAnchorEl={popoverAnchorEl}
+              setPopoverAnchorEl={setPopoverAnchorEl}
+              applicationStore={
+                productCardState.marketplaceBaseStore.applicationStore
+              }
+            />
+          </>
+        )}
       </>
     );
 
@@ -437,7 +439,9 @@ export const LakehouseProductCard = observer(
         onClick={() => onClick(productCardState)}
         className="marketplace-lakehouse-data-product-card"
         moreInfo={moreInfoContent}
-        cardMedia={productCardState.displayImage}
+        moreInfoPreview={moreInfoPreview}
+        cardMedia={productCardState.icon ?? productCardState.displayImage}
+        loadingMedia={productCardState.initState.isInProgress}
       />
     );
   },

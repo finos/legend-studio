@@ -14,30 +14,63 @@
  * limitations under the License.
  */
 
-import { makeObservable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import {
+  LakehouseAdHocDataProductSearchResultOrigin,
   LakehouseDataProductSearchResultDetails,
   LakehouseSDLCDataProductSearchResultOrigin,
   LegacyDataProductSearchResultDetails,
   type DataProductSearchResult,
 } from '@finos/legend-server-marketplace';
 import { extractEntityNameFromPath } from '@finos/legend-storage';
+import {
+  type V1_DataProductIcon,
+  type V1_PureGraphManager,
+  V1_DataProduct,
+  V1_EntitlementsDataProductDetails,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_SdlcDeploymentDataProductOrigin,
+} from '@finos/legend-graph';
+import {
+  V1_deserializeDataSpace,
+  type V1_DataSpace,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  ActionState,
+  assertErrorThrown,
+  guaranteeNonNullable,
+  LogEvent,
+  type GeneratorFn,
+  type PlainObject,
+} from '@finos/legend-shared';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../__lib__/LegendMarketplaceAppEvent.js';
+import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
 
 export class ProductCardState {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly searchResult: DataProductSearchResult;
   readonly displayImage: string;
+  readonly graphManager: V1_PureGraphManager;
+  dataProductElement: V1_DataProduct | V1_DataSpace | undefined;
+
+  readonly initState = ActionState.create();
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     searchResult: DataProductSearchResult,
+    graphManager: V1_PureGraphManager,
     displayImageMap: Map<string, string>,
   ) {
-    makeObservable(this);
+    makeObservable(this, {
+      dataProductElement: observable,
+      setDataProductElement: action,
+      init: flow,
+    });
 
     this.marketplaceBaseStore = marketplaceBaseStore;
     this.searchResult = searchResult;
+    this.graphManager = graphManager;
     this.displayImage = this.getDataProductImage(displayImageMap);
   }
 
@@ -81,6 +114,51 @@ export class ProductCardState {
         : undefined;
   }
 
+  get icon(): V1_DataProductIcon | undefined {
+    return this.dataProductElement instanceof V1_DataProduct
+      ? this.dataProductElement.icon
+      : undefined;
+  }
+
+  *init(token: string | undefined): GeneratorFn<void> {
+    this.initState.inProgress();
+    try {
+      if (
+        this.searchResult.dataProductDetails instanceof
+        LakehouseDataProductSearchResultDetails
+      ) {
+        const dataProduct = (yield this.getLakehouseDataProduct(
+          this.searchResult.dataProductDetails,
+          token,
+        )) as V1_DataProduct | undefined;
+        this.setDataProductElement(dataProduct);
+      } else if (
+        this.searchResult.dataProductDetails instanceof
+        LegacyDataProductSearchResultDetails
+      ) {
+        const dataProduct = (yield this.getLegacyDataProduct(
+          this.searchResult.dataProductDetails,
+        )) as V1_DataProduct | undefined;
+        this.setDataProductElement(dataProduct);
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.marketplaceBaseStore.applicationStore.logService.warn(
+        LogEvent.create(
+          LEGEND_MARKETPLACE_APP_EVENT.FETCH_DATA_PRODUCT_FAILURE,
+        ),
+        `Failed to load data product with identifier ${this.guid}: ${error.message}`,
+        error.message,
+      );
+    } finally {
+      this.initState.complete();
+    }
+  }
+
+  setDataProductElement(value: V1_DataProduct | undefined): void {
+    this.dataProductElement = value;
+  }
+
   getDataProductImage(productImageMap: Map<string, string>): string {
     const maxImageCount = 7;
     const existingImage = productImageMap.get(this.title);
@@ -92,5 +170,76 @@ export class ProductCardState {
     const selectedImage = `/assets/images${randomIndex}.jpg`;
     productImageMap.set(this.title, selectedImage);
     return selectedImage;
+  }
+
+  async getLakehouseDataProduct(
+    searchResultDetails: LakehouseDataProductSearchResultDetails,
+    token: string | undefined,
+  ): Promise<V1_DataProduct | undefined> {
+    if (
+      searchResultDetails.origin instanceof
+      LakehouseSDLCDataProductSearchResultOrigin
+    ) {
+      // Build V1_EntitlementsDataProductDetails
+      const entitlementsDataProductDetails =
+        new V1_EntitlementsDataProductDetails();
+      entitlementsDataProductDetails.id = searchResultDetails.dataProductId;
+      entitlementsDataProductDetails.deploymentId =
+        searchResultDetails.deploymentId;
+      const origin = new V1_SdlcDeploymentDataProductOrigin();
+      origin.group = searchResultDetails.origin.groupId;
+      origin.artifact = searchResultDetails.origin.artifactId;
+      origin.version = searchResultDetails.origin.versionId;
+      entitlementsDataProductDetails.origin = origin;
+
+      // Fetch data product entity
+      const v1_dataProduct = await getDataProductFromDetails(
+        entitlementsDataProductDetails,
+        this.graphManager,
+        this.marketplaceBaseStore,
+      );
+
+      return v1_dataProduct;
+    } else if (
+      searchResultDetails.origin instanceof
+      LakehouseAdHocDataProductSearchResultOrigin
+    ) {
+      const rawResponse =
+        await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProductByIdAndDID(
+          searchResultDetails.dataProductId,
+          searchResultDetails.deploymentId,
+          token,
+        );
+      const entitlementsDataProductDetails = guaranteeNonNullable(
+        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+          rawResponse,
+        )[0],
+      );
+
+      // Build data product entity
+      const v1_dataProduct = await getDataProductFromDetails(
+        entitlementsDataProductDetails,
+        this.graphManager,
+        this.marketplaceBaseStore,
+      );
+
+      return v1_dataProduct;
+    }
+    return undefined;
+  }
+
+  async getLegacyDataProduct(
+    searchResultDetails: LegacyDataProductSearchResultDetails,
+  ): Promise<V1_DataSpace | undefined> {
+    const dataSpaceEntity = (
+      await this.marketplaceBaseStore.depotServerClient.getVersionEntity(
+        searchResultDetails.groupId,
+        searchResultDetails.artifactId,
+        searchResultDetails.versionId,
+        searchResultDetails.path,
+      )
+    ).content as PlainObject<V1_DataSpace>;
+    const dataSpace = V1_deserializeDataSpace(dataSpaceEntity);
+    return dataSpace;
   }
 }

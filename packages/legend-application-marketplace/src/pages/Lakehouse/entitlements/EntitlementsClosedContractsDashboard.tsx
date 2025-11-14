@@ -100,7 +100,7 @@ const UserAccessStatusCellRenderer = (props: {
         } catch (error) {
           assertErrorThrown(error);
           entitlementsStore.applicationStore.notificationService.notifyError(
-            `Error fetching contact user access status: ${error.message}`,
+            `Error fetching contract user access status: ${error.message}`,
           );
         } finally {
           setLoading(false);

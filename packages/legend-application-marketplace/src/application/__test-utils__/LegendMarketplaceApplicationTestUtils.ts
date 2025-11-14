@@ -25,6 +25,8 @@ import { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCar
 import { mockProdSearchResultResponse } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
 import { DataProductSearchResult } from '@finos/legend-server-marketplace';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { V1_PureGraphManager } from '@finos/legend-graph';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
 const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   appName: 'marketplace',
@@ -114,6 +116,23 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
   override async getExtraHomePageDataProducts(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
   ): Promise<ProductCardState[] | undefined> {
+    // Crete graph manager for parsing ad-hoc deployed data products
+    const graphManager = new V1_PureGraphManager(
+      marketplaceBaseStore.applicationStore.pluginManager,
+      marketplaceBaseStore.applicationStore.logService,
+      marketplaceBaseStore.remoteEngine,
+    );
+    await graphManager.initialize(
+      {
+        env: marketplaceBaseStore.applicationStore.config.env,
+        tabSize: DEFAULT_TAB_SIZE,
+        clientConfig: {
+          baseUrl: marketplaceBaseStore.applicationStore.config.engineServerUrl,
+        },
+      },
+      { engine: marketplaceBaseStore.remoteEngine },
+    );
+
     const searchResult = DataProductSearchResult.serialization.fromJson(
       guaranteeNonNullable(mockProdSearchResultResponse[0]),
     );
@@ -121,6 +140,7 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
     const dataProductState = new ProductCardState(
       marketplaceBaseStore,
       searchResult,
+      graphManager,
       testImageMap,
     );
     return [dataProductState];

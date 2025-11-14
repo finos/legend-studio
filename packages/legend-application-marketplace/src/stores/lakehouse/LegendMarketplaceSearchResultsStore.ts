@@ -151,10 +151,29 @@ export class LegendMarketplaceSearchResultsStore {
       this.setSemanticSearchProductCardStates([]);
       this.setProducerSearchDataProductCardStates([]);
       this.setProducerSearchLegacyDataProductCardStates([]);
+
+      // Crete graph manager for parsing ad-hoc deployed data products
+      const graphManager = new V1_PureGraphManager(
+        this.marketplaceBaseStore.applicationStore.pluginManager,
+        this.marketplaceBaseStore.applicationStore.logService,
+        this.marketplaceBaseStore.remoteEngine,
+      );
+      yield graphManager.initialize(
+        {
+          env: this.marketplaceBaseStore.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl:
+              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: this.marketplaceBaseStore.remoteEngine },
+      );
+
       if (useProducerSearch) {
-        yield this.executeProducerSearch(query, token);
+        yield this.executeProducerSearch(query, graphManager, token);
       } else {
-        yield this.executeSemanticSearch(query);
+        yield this.executeSemanticSearch(query, graphManager, token);
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -164,7 +183,11 @@ export class LegendMarketplaceSearchResultsStore {
     }
   }
 
-  private async executeSemanticSearch(query: string): Promise<void> {
+  private async executeSemanticSearch(
+    query: string,
+    graphManager: V1_PureGraphManager,
+    token: string | undefined,
+  ): Promise<void> {
     this.executingSemanticSearchState.inProgress();
 
     try {
@@ -194,8 +217,12 @@ export class LegendMarketplaceSearchResultsStore {
           new ProductCardState(
             this.marketplaceBaseStore,
             result,
+            graphManager,
             this.displayImageMap,
           ),
+      );
+      dataProductCardStates.forEach((dataProductState) =>
+        dataProductState.init(token),
       );
       this.setSemanticSearchProductCardStates(dataProductCardStates);
     } finally {
@@ -205,16 +232,18 @@ export class LegendMarketplaceSearchResultsStore {
 
   private async executeProducerSearch(
     query: string,
+    graphManager: V1_PureGraphManager,
     token: string | undefined,
   ): Promise<void> {
     await Promise.all([
-      this.fetchDataProducts(query, token),
-      this.fetchLegacyDataProducts(query),
+      this.fetchDataProducts(query, graphManager, token),
+      this.fetchLegacyDataProducts(query, graphManager, token),
     ]);
   }
 
   private async fetchDataProducts(
     query: string,
+    graphManager: V1_PureGraphManager,
     token: string | undefined,
   ): Promise<void> {
     this.fetchingProducerSearchDataProductsState.inProgress();
@@ -227,24 +256,6 @@ export class LegendMarketplaceSearchResultsStore {
         V1_entitlementsDataProductDetailsResponseToDataProductDetails(
           rawResponse,
         );
-
-      // Crete graph manager for parsing ad-hoc deployed data products
-      const graphManager = new V1_PureGraphManager(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
-      );
-      await graphManager.initialize(
-        {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl:
-              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
-      );
 
       const productCardStates = dataProductDetails
         .map((detail) => {
@@ -288,6 +299,7 @@ export class LegendMarketplaceSearchResultsStore {
             return new ProductCardState(
               this.marketplaceBaseStore,
               searchResult,
+              graphManager,
               this.displayImageMap,
             );
           } catch (error) {
@@ -301,17 +313,24 @@ export class LegendMarketplaceSearchResultsStore {
           }
         })
         .filter(isNonNullable);
-      this.setProducerSearchDataProductCardStates(
-        productCardStates.filter((productCardState) =>
+      const filteredProductCardStates = productCardStates.filter(
+        (productCardState) =>
           productCardState.title.toLowerCase().includes(query.toLowerCase()),
-        ),
       );
+      filteredProductCardStates.forEach((dataProductState) =>
+        dataProductState.init(token),
+      );
+      this.setProducerSearchDataProductCardStates(filteredProductCardStates);
     } finally {
       this.fetchingProducerSearchDataProductsState.complete();
     }
   }
 
-  private async fetchLegacyDataProducts(query: string): Promise<void> {
+  private async fetchLegacyDataProducts(
+    query: string,
+    graphManager: V1_PureGraphManager,
+    token: string | undefined,
+  ): Promise<void> {
     if (!this.marketplaceBaseStore.envState.supportsLegacyDataProducts()) {
       return;
     }
@@ -355,6 +374,7 @@ export class LegendMarketplaceSearchResultsStore {
             return new ProductCardState(
               this.marketplaceBaseStore,
               searchResult,
+              graphManager,
               this.displayImageMap,
             );
           } catch (error) {
@@ -368,10 +388,15 @@ export class LegendMarketplaceSearchResultsStore {
           }
         })
         .filter(isNonNullable);
-      this.setProducerSearchLegacyDataProductCardStates(
-        productCardStates.filter((productCardState) =>
+      const filteredProductCardStates = productCardStates.filter(
+        (productCardState) =>
           productCardState.title.toLowerCase().includes(query.toLowerCase()),
-        ),
+      );
+      filteredProductCardStates.forEach((dataProductState) =>
+        dataProductState.init(token),
+      );
+      this.setProducerSearchLegacyDataProductCardStates(
+        filteredProductCardStates,
       );
     } finally {
       this.fetchingProducerSearchLegacyDataProductsState.complete();
