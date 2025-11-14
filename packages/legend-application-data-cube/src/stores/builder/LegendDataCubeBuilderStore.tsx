@@ -691,7 +691,7 @@ export class LegendDataCubeBuilderStore {
         )
       ) {
         throw new Error(
-          `DataCube builder is undefined or source type is not supported.`,
+          `DataCube builder is undefined or source type: '${builder?.source}' is not supported.`,
         );
       }
       const newSource = builder.source;
