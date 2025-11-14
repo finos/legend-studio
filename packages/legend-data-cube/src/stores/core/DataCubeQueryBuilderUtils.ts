@@ -28,6 +28,7 @@ import {
   extractElementNameFromPath,
   extractPackagePathFromPath,
   PRIMITIVE_TYPE,
+  PRECISE_PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -204,6 +205,7 @@ export function _primitiveValue(
   };
   switch (type) {
     case PRIMITIVE_TYPE.STRING:
+    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
       return _val(new V1_CString(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.BOOLEAN:
       return _val(
@@ -220,6 +222,8 @@ export function _primitiveValue(
       );
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.DECIMAL:
+    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+    case PRECISE_PRIMITIVE_TYPE.NUMERIC:
       return _val(
         new V1_CDecimal(),
         guaranteeIsNumber(
@@ -227,6 +231,14 @@ export function _primitiveValue(
         ),
       );
     case PRIMITIVE_TYPE.INTEGER:
+    case PRECISE_PRIMITIVE_TYPE.U_INT:
+    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
+    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.INT:
+    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
       return _val(
         new V1_CInteger(),
         guaranteeIsNumber(
@@ -234,6 +246,8 @@ export function _primitiveValue(
         ),
       );
     case PRIMITIVE_TYPE.FLOAT:
+    case PRECISE_PRIMITIVE_TYPE.FLOAT:
+    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
       return _val(
         new V1_CFloat(),
         guaranteeIsNumber(
@@ -242,6 +256,7 @@ export function _primitiveValue(
       );
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
+    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
       return _val(new V1_CStrictDate(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.DATETIME:
       return _val(new V1_CDateTime(), guaranteeIsString(value));
@@ -310,15 +325,33 @@ export function _colSpec(
 export function _value(value: DataCubeOperationValue) {
   switch (value.type) {
     case PRIMITIVE_TYPE.STRING:
+    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
     case PRIMITIVE_TYPE.BOOLEAN:
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.INTEGER:
     case PRIMITIVE_TYPE.FLOAT:
+    case PRECISE_PRIMITIVE_TYPE.INT:
+    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+    case PRECISE_PRIMITIVE_TYPE.NUMERIC:
+    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.FLOAT:
+    case PRECISE_PRIMITIVE_TYPE.U_INT:
+    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.DATETIME:
     case PRIMITIVE_TYPE.STRICTDATE:
-    case PRIMITIVE_TYPE.STRICTTIME: {
+    case PRIMITIVE_TYPE.STRICTTIME:
+    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
+    case PRIMITIVE_TYPE.STRICTTIME:
+    case PRECISE_PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP: {
       if (Array.isArray(value.value)) {
         return _collection(
           value.value.map((val) => _primitiveValue(value.type, val)),

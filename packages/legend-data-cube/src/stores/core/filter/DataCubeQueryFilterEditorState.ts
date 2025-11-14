@@ -103,7 +103,7 @@ export class DataCubeFilterEditorConditionTreeNode extends DataCubeFilterEditorT
   setValue(value: DataCubeOperationValue) {
     this.value = isObservable(value)
       ? value
-      : makeObservable(value, { value: observable });
+      : makeObservable(value, 'value' in value ? { value: observable } : {});
   }
 
   updateValue(value: unknown) {
