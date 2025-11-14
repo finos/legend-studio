@@ -317,13 +317,15 @@ export class DataProductAPGState {
     switch (this.access) {
       case AccessPointGroupAccess.NO_ACCESS:
       case AccessPointGroupAccess.DENIED:
-        dataAccessState.setDataContractAccessPointGroup(this.apg);
+        dataAccessState.setDataContractCreatorAPG(this.apg);
         break;
       case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
       case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
       case AccessPointGroupAccess.APPROVED:
         if (this.associatedUserContract) {
-          dataAccessState.setDataContract(this.associatedUserContract);
+          dataAccessState.setDataContractViewerContract(
+            this.associatedUserContract,
+          );
         }
         break;
       default:

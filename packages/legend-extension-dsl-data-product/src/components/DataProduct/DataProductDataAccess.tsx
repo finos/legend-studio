@@ -591,14 +591,14 @@ export const DataProductAccessPointGroupViewer = observer(
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
 
     const entitlementsDataContractViewerState = useMemo(() => {
-      return dataAccessState?.dataContract &&
-        dataAccessState.dataContract.resource instanceof
+      return dataAccessState?.dataContractViewerContract &&
+        dataAccessState.dataContractViewerContract.resource instanceof
           V1_AccessPointGroupReference &&
-        dataAccessState.dataContract.resource.accessPointGroup ===
+        dataAccessState.dataContractViewerContract.resource.accessPointGroup ===
           apgState.apg.id
         ? new EntitlementsDataContractViewerState(
             V1_transformDataContractToLiteDatacontract(
-              dataAccessState.dataContract,
+              dataAccessState.dataContractViewerContract,
             ),
             apgState.applicationStore,
             dataAccessState.lakehouseContractServerClient,
@@ -611,7 +611,7 @@ export const DataProductAccessPointGroupViewer = observer(
       apgState.applicationStore,
       apgState.dataProductViewerState.graphManagerState,
       apgState.dataProductViewerState.userSearchService,
-      dataAccessState?.dataContract,
+      dataAccessState?.dataContractViewerContract,
       dataAccessState?.lakehouseContractServerClient,
     ]);
 
@@ -755,9 +755,7 @@ export const DataProductAccessPointGroupViewer = observer(
               val !== AccessPointGroupAccess.DENIED && (
                 <MenuItem
                   onClick={() => {
-                    dataAccessState?.setDataContractAccessPointGroup(
-                      apgState.apg,
-                    );
+                    dataAccessState?.setDataContractCreatorAPG(apgState.apg);
                     setIsEntitledButtonGroupMenuOpen(false);
                   }}
                 >
@@ -835,12 +833,10 @@ export const DataProductAccessPointGroupViewer = observer(
             ))}
           </div>
         </div>
-        {dataAccessState?.dataContractAccessPointGroup === apgState.apg && (
+        {dataAccessState?.dataContractCreatorAPG === apgState.apg && (
           <EntitlementsDataContractCreator
             open={true}
-            onClose={() =>
-              dataAccessState.setDataContractAccessPointGroup(undefined)
-            }
+            onClose={() => dataAccessState.setDataContractCreatorAPG(undefined)}
             apgState={apgState}
             dataAccessState={dataAccessState}
             token={auth.user?.access_token}
@@ -849,7 +845,9 @@ export const DataProductAccessPointGroupViewer = observer(
         {entitlementsDataContractViewerState && dataAccessState && (
           <EntitlementsDataContractViewer
             open={true}
-            onClose={() => dataAccessState.setDataContract(undefined)}
+            onClose={() =>
+              dataAccessState.setDataContractViewerContract(undefined)
+            }
             currentViewer={entitlementsDataContractViewerState}
             onRefresh={() => {
               if (apgState.associatedUserContract) {

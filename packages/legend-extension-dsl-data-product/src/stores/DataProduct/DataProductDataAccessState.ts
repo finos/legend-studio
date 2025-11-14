@@ -104,8 +104,8 @@ export class DataProductDataAccessState {
 
   // state
   associatedContracts: V1_DataContract[] | undefined = undefined;
-  dataContractAccessPointGroup: V1_AccessPointGroup | undefined = undefined;
-  dataContract: V1_DataContract | undefined = undefined;
+  dataContractCreatorAPG: V1_AccessPointGroup | undefined = undefined;
+  dataContractViewerContract: V1_DataContract | undefined = undefined;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
   userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined;
@@ -124,17 +124,17 @@ export class DataProductDataAccessState {
   ) {
     makeObservable(this, {
       associatedContracts: observable,
-      dataContractAccessPointGroup: observable,
-      dataContract: observable,
+      dataContractCreatorAPG: observable,
+      dataContractViewerContract: observable,
       creatingContractState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnvironmentDetails: observable,
       userEntitlementsEnv: observable,
-      setDataContract: action,
+      setDataContractViewerContract: action,
       setAssociatedContracts: action,
       filteredDataProductQueryEnvs: computed,
       resolvedUserEnv: computed,
-      setDataContractAccessPointGroup: action,
+      setDataContractCreatorAPG: action,
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
       setEntitlementsEnv: action,
@@ -197,12 +197,12 @@ export class DataProductDataAccessState {
     this.associatedContracts = val;
   }
 
-  setDataContractAccessPointGroup(val: V1_AccessPointGroup | undefined) {
-    this.dataContractAccessPointGroup = val;
+  setDataContractCreatorAPG(val: V1_AccessPointGroup | undefined) {
+    this.dataContractCreatorAPG = val;
   }
 
-  setDataContract(val: V1_DataContract | undefined) {
-    this.dataContract = val;
+  setDataContractViewerContract(val: V1_DataContract | undefined) {
+    this.dataContractViewerContract = val;
   }
 
   setLakehouseIngestEnvironmentSummaries(
@@ -358,8 +358,8 @@ export class DataProductDataAccessState {
           );
         }
 
-        this.setDataContractAccessPointGroup(undefined);
-        this.setDataContract(associatedContract);
+        this.setDataContractCreatorAPG(undefined);
+        this.setDataContractViewerContract(associatedContract);
         this.applicationStore.notificationService.notifySuccess(
           `Contract created, please go to contract view for pending tasks`,
         );
