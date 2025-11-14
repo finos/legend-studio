@@ -24,15 +24,15 @@ import {
   type V1_DataSubscriptionTarget,
   type V1_EntitlementsDataProductDetails,
   type V1_User,
-  V1_DataContract,
-  V1_DataContractApprovedUsersResponseModelSchema,
-  V1_dataContractsResponseModelSchemaToContracts,
-  V1_EnrichedUserApprovalStatus,
   V1_ContractUserStatusResponseModelSchema,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
+  V1_DataContract,
+  V1_DataContractApprovedUsersResponseModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
+  V1_deserializeDataContractResponse,
+  V1_EnrichedUserApprovalStatus,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -275,9 +275,11 @@ export class DataProductAPGState {
       );
       const accessPointGroupContractsWithMembers =
         rawAccessPointGroupContractsWithMembers.flatMap((_response) =>
-          V1_dataContractsResponseModelSchemaToContracts(
+          V1_deserializeDataContractResponse(
             _response,
             this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+          ).map(
+            (_contractAndSubscription) => _contractAndSubscription.dataContract,
           ),
         );
       const userContracts = (
@@ -317,15 +319,15 @@ export class DataProductAPGState {
     switch (this.access) {
       case AccessPointGroupAccess.NO_ACCESS:
       case AccessPointGroupAccess.DENIED:
-        dataAccessState.setDataContractCreatorAPG(this.apg);
+        dataAccessState.setContractCreatorAPG(this.apg);
         break;
       case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
       case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
       case AccessPointGroupAccess.APPROVED:
         if (this.associatedUserContract) {
-          dataAccessState.setDataContractViewerContract(
-            this.associatedUserContract,
-          );
+          dataAccessState.setContractViewerContractAndSubscription({
+            dataContract: this.associatedUserContract,
+          });
         }
         break;
       default:

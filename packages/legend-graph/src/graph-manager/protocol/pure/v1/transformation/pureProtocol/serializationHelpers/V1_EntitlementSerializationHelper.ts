@@ -290,6 +290,9 @@ export const V1_dataContractsResponseModelSchema = (
     dataContracts: optional(
       customListWithSchema(V1_dataContractSubscriptionsModelSchema(plugins)),
     ),
+    subscriptions: optional(
+      customListWithSchema(V1_dataSubscriptionModelSchema),
+    ),
   });
 
 export const V1_liteDataContractsResponseModelSchema = (
@@ -422,15 +425,15 @@ export const V1_TaskStatusChangeResponseModelSchema = createModelSchema(
   },
 );
 
-export const V1_dataContractsResponseModelSchemaToContracts = (
+export const V1_deserializeDataContractResponse = (
   json: PlainObject<V1_DataContractsResponse>,
   plugins: PureProtocolProcessorPlugin[],
-): V1_DataContract[] => {
+): V1_DataContractSubscriptions[] => {
   const contracts = deserialize(
     V1_dataContractsResponseModelSchema(plugins),
     json,
   );
-  return contracts.dataContracts?.map((e) => e.dataContract) ?? [];
+  return contracts.dataContracts ?? [];
 };
 
 export const V1_liteDataContractsResponseModelSchemaToContracts = (

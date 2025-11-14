@@ -47,6 +47,7 @@ import {
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ResourceType,
+  V1_SnowflakeTarget,
   V1_UserApprovalStatus,
   V1_UserType,
 } from '@finos/legend-graph';
@@ -776,10 +777,26 @@ export const EntitlementsDataContractViewer = observer(
               </>
             )}
             <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
-              Contract ID: {currentViewer.liteContract.guid}
-              <IconButton onClick={() => copyContractId()}>
-                <CopyIcon />
-              </IconButton>
+              <Box>
+                Contract ID: {currentViewer.liteContract.guid}
+                <IconButton onClick={() => copyContractId()}>
+                  <CopyIcon />
+                </IconButton>
+              </Box>
+              {currentViewer.subscription !== undefined && (
+                <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer_subscription-info">
+                  A{' '}
+                  <span title={currentViewer.subscription.guid}>
+                    subscription
+                  </span>{' '}
+                  has been auto-created for you
+                  {currentViewer.subscription.target instanceof
+                  V1_SnowflakeTarget
+                    ? ` with Snowflake account ${currentViewer.subscription.target.snowflakeAccountId}.`
+                    : '.'}
+                  .
+                </Box>
+              )}
             </Box>
           </DialogContent>
         </Dialog>

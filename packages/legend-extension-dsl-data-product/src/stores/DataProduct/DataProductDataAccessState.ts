@@ -20,9 +20,11 @@ import {
   type V1_CreateContractPayload,
   type V1_DataContract,
   type V1_DataContractsResponse,
+  type V1_DataContractSubscriptions,
   type V1_DataProduct,
   type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
+  type V1_EntitlementsUserEnv,
   type V1_IngestEnvironment,
   type V1_OrganizationalScope,
   V1_AdhocTeam,
@@ -30,11 +32,10 @@ import {
   V1_AppDirNode,
   V1_AppDirNodeModelSchema,
   V1_createContractPayloadModelSchema,
-  V1_dataContractsResponseModelSchemaToContracts,
+  V1_deserializeDataContractResponse,
   V1_deserializeIngestEnvironment,
-  V1_ResourceType,
   V1_isIngestEnvsCompatibleWithEntitlements,
-  type V1_EntitlementsUserEnv,
+  V1_ResourceType,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -104,8 +105,10 @@ export class DataProductDataAccessState {
 
   // state
   associatedContracts: V1_DataContract[] | undefined = undefined;
-  dataContractCreatorAPG: V1_AccessPointGroup | undefined = undefined;
-  dataContractViewerContract: V1_DataContract | undefined = undefined;
+  contractCreatorAPG: V1_AccessPointGroup | undefined = undefined;
+  contractViewerContractAndSubscription:
+    | V1_DataContractSubscriptions
+    | undefined = undefined;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
   userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined;
@@ -124,17 +127,17 @@ export class DataProductDataAccessState {
   ) {
     makeObservable(this, {
       associatedContracts: observable,
-      dataContractCreatorAPG: observable,
-      dataContractViewerContract: observable,
+      contractCreatorAPG: observable,
+      contractViewerContractAndSubscription: observable,
       creatingContractState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnvironmentDetails: observable,
       userEntitlementsEnv: observable,
-      setDataContractViewerContract: action,
+      setContractViewerContractAndSubscription: action,
       setAssociatedContracts: action,
       filteredDataProductQueryEnvs: computed,
       resolvedUserEnv: computed,
-      setDataContractCreatorAPG: action,
+      setContractCreatorAPG: action,
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
       setEntitlementsEnv: action,
@@ -197,12 +200,14 @@ export class DataProductDataAccessState {
     this.associatedContracts = val;
   }
 
-  setDataContractCreatorAPG(val: V1_AccessPointGroup | undefined) {
-    this.dataContractCreatorAPG = val;
+  setContractCreatorAPG(val: V1_AccessPointGroup | undefined) {
+    this.contractCreatorAPG = val;
   }
 
-  setDataContractViewerContract(val: V1_DataContract | undefined) {
-    this.dataContractViewerContract = val;
+  setContractViewerContractAndSubscription(
+    val: V1_DataContractSubscriptions | undefined,
+  ) {
+    this.contractViewerContractAndSubscription = val;
   }
 
   setLakehouseIngestEnvironmentSummaries(
@@ -249,16 +254,19 @@ export class DataProductDataAccessState {
           [serialize(V1_AppDirNodeModelSchema, didNode)],
           token,
         );
-      const dataProductContracts =
-        V1_dataContractsResponseModelSchemaToContracts(
-          _contracts,
-          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-        ).filter((_contract) =>
+      const dataProductContracts = V1_deserializeDataContractResponse(
+        _contracts,
+        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+      )
+        .filter((_contractAndSubscription) =>
           dataContractContainsDataProduct(
             this.product,
             this.entitlementsDataProductDetails.deploymentId,
-            _contract,
+            _contractAndSubscription.dataContract,
           ),
+        )
+        .map(
+          (_contractAndSubscription) => _contractAndSubscription.dataContract,
         );
       this.setAssociatedContracts(dataProductContracts);
       this.dataProductViewerState.apgStates.forEach((e) => {
@@ -333,18 +341,19 @@ export class DataProductDataAccessState {
         } satisfies V1_CreateContractPayload,
       ) as PlainObject<V1_CreateContractPayload>;
       try {
-        const contracts = V1_dataContractsResponseModelSchemaToContracts(
+        const contractsAndSubscriptions = V1_deserializeDataContractResponse(
           (yield this.lakehouseContractServerClient.createContract(
             request,
             token,
           )) as PlainObject<V1_DataContractsResponse>,
           this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         );
-        const associatedContract = contracts[0];
+        const associatedContractAndSubscription = contractsAndSubscriptions[0];
         // Only if the user has requested a contract for themself do we update the associated contract.
         if (
-          associatedContract?.consumer instanceof V1_AdhocTeam &&
-          associatedContract.consumer.users.some(
+          associatedContractAndSubscription?.dataContract.consumer instanceof
+            V1_AdhocTeam &&
+          associatedContractAndSubscription.dataContract.consumer.users.some(
             (u) => u.name === this.applicationStore.identityService.currentUser,
           )
         ) {
@@ -352,14 +361,16 @@ export class DataProductDataAccessState {
             (e) => e.apg === group,
           );
           apgState?.setAssociatedUserContract(
-            associatedContract,
+            associatedContractAndSubscription.dataContract,
             this.lakehouseContractServerClient,
             token,
           );
         }
 
-        this.setDataContractCreatorAPG(undefined);
-        this.setDataContractViewerContract(associatedContract);
+        this.setContractCreatorAPG(undefined);
+        this.setContractViewerContractAndSubscription(
+          associatedContractAndSubscription,
+        );
         this.applicationStore.notificationService.notifySuccess(
           `Contract created, please go to contract view for pending tasks`,
         );
