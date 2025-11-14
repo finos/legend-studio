@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.19
+
+### Patch Changes
+
+- [#4628](https://github.com/finos/legend-studio/pull/4628) [`1f81433`](https://github.com/finos/legend-studio/commit/1f8143341e4924702e67b05a356b43be3a211db7) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added edit query overlay to modify data source query.
+
 ## 0.7.18
 
 ### Patch Changes
