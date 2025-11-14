@@ -55,7 +55,7 @@ import { MarketplaceLakehouseHeader } from '../components/Header/LegendMarketpla
 import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
 import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js';
 import { LakehouseSDLCDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js';
-import { MarketplaceLakehouseSearchResults } from '../pages/Lakehouse/searchResults/MarketplaceLakehouseSearchResults.js';
+import { LegendMarketplaceSearchResults } from '../pages/Lakehouse/searchResults/LegendMarketplaceSearchResults.js';
 import { LegacyDataProduct } from '../pages/Lakehouse/dataProduct/LegacyDataProduct.js';
 import { LegendMarketplaceAgents } from '../pages/Agents/LegendMarketplaceAgents.js';
 import { LegendMarketplaceInventory } from '../pages/Inventory/LegendMarketplaceInventory.js';
@@ -169,7 +169,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                 LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
               }
               element={React.createElement(
-                useProtectedPage(MarketplaceLakehouseSearchResults),
+                useProtectedPage(LegendMarketplaceSearchResults),
               )}
             />
             <Route

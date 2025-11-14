@@ -52,7 +52,7 @@ import { useSyncStateAndSearchParam } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
 import { isNonEmptyString } from '@finos/legend-shared';
 
-export const MarketplaceLakehouseSearchResults =
+export const LegendMarketplaceSearchResults =
   withLegendMarketplaceSearchResultsStore(
     observer(() => {
       const searchResultsStore = useLegendMarketplaceSearchResultsStore();
