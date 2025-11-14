@@ -131,18 +131,17 @@ export const LegendMarketplaceCard = (props: {
         className,
       )}
       ref={containerRef}
-      sx={
-        !loadingMedia && cardImage
-          ? {
-              background: `url(${cardImage})`,
-            }
-          : {}
-      }
     >
       {loadingMedia && (
         <CubesLoadingIndicator isLoading={true}>
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
+      )}
+      {cardImage !== undefined && (
+        <div
+          className="legend-marketplace-card__image"
+          style={{ background: `url(${cardImage})` }}
+        ></div>
       )}
       {cardIcon !== undefined && (
         <div className="legend-marketplace-card__icon">
