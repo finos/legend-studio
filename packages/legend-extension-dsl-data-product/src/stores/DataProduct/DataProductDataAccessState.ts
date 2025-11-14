@@ -337,7 +337,7 @@ export class DataProductDataAccessState {
           (yield this.lakehouseContractServerClient.createContract(
             request,
             token,
-          )) as unknown as PlainObject<V1_DataContractsResponse>,
+          )) as PlainObject<V1_DataContractsResponse>,
           this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         );
         const associatedContract = contracts[0];
@@ -348,10 +348,10 @@ export class DataProductDataAccessState {
             (u) => u.name === this.applicationStore.identityService.currentUser,
           )
         ) {
-          const groupAccessState = this.dataProductViewerState.apgStates.find(
+          const apgState = this.dataProductViewerState.apgStates.find(
             (e) => e.apg === group,
           );
-          groupAccessState?.setAssociatedUserContract(
+          apgState?.setAssociatedUserContract(
             associatedContract,
             this.lakehouseContractServerClient,
             token,
