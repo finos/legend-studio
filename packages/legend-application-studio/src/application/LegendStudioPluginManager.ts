@@ -24,17 +24,25 @@ import {
 } from '@finos/legend-graph';
 import { Core_LegendStudioApplicationPlugin } from '../components/extensions/Core_LegendStudioApplicationPlugin.js';
 import type { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplicationPlugin.js';
+import type {
+  LegendUserPlugin,
+  LegendUserPluginManager,
+} from '@finos/legend-shared';
 
 export class LegendStudioPluginManager
   extends LegendApplicationPluginManager<LegendStudioApplicationPlugin>
-  implements GraphManagerPluginManager
+  implements GraphManagerPluginManager, LegendUserPluginManager
 {
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
+  private userPlugins: LegendUserPlugin[] = [];
 
   private constructor() {
     super();
+  }
+  registerUserPlugin(plugin: LegendUserPlugin): void {
+    this.userPlugins.push(plugin);
   }
 
   static create(): LegendStudioPluginManager {
@@ -65,6 +73,10 @@ export class LegendStudioPluginManager
 
   getPureGraphPlugins(): PureGraphPlugin[] {
     return [...this.pureGraphPlugins];
+  }
+
+  getUserPlugins(): LegendUserPlugin[] {
+    return [...this.userPlugins];
   }
 
   override getHiddenPluginNames(): string[] {

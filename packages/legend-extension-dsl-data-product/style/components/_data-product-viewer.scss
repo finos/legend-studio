@@ -316,6 +316,12 @@
       }
     }
 
+    &__expertise {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
     &__link {
       @include flexVCenter;
 
@@ -702,6 +708,13 @@
         font-weight: 500;
       }
 
+      &__subtitle {
+        @extend .data-product__viewer__wiki__section__header__label;
+
+        font-size: 1.8rem;
+        color: var(--color-hclight-blue-60);
+      }
+
       &__anchor {
         @include flexVCenter;
 
@@ -729,6 +742,52 @@
 
     &__content {
       margin-bottom: 3rem;
+    }
+  }
+
+  &__tags {
+    overflow-y: scroll;
+    display: flex;
+    width: 100%;
+
+    &__chip {
+      font-size: 11px;
+      border-radius: 0.5rem;
+    }
+  }
+
+  &__expertise {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__expert-contact {
+    display: flex;
+
+    &__icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    &__info {
+      display: flex;
+      flex-direction: column;
+      margin-left: 1rem;
+      justify-content: center;
+
+      &__id {
+        font-weight: bold;
+        color: var(--color-hclight-blue-60);
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      &__subtitle {
+        font-size: 12px;
+      }
     }
   }
 

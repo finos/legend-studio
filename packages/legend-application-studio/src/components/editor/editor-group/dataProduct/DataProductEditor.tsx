@@ -88,7 +88,11 @@ import {
   useRef,
   useState,
 } from 'react';
-import { filterByType, guaranteeType } from '@finos/legend-shared';
+import {
+  filterByType,
+  guaranteeType,
+  UserSearchService,
+} from '@finos/legend-shared';
 import { InlineLambdaEditor, LineageViewer } from '@finos/legend-query-builder';
 import { action, autorun, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
@@ -142,7 +146,7 @@ import {
   expertise_setDescription,
   expertise_addId,
   expertise_deleteId,
-  dataProduct_deleteExpertise,
+  supportInfo_deleteExpertise,
   externalType_setLinkURL,
   externalType_setLinkLabel,
   accessPointGroup_setTitle,
@@ -2488,7 +2492,9 @@ const ExpertiseEditor = observer(
     };
 
     const handleRemoveExpertise = (expertise: Expertise) => {
-      dataProduct_deleteExpertise(product, expertise);
+      if (product.supportInfo) {
+        supportInfo_deleteExpertise(product.supportInfo, expertise);
+      }
     };
 
     return (
@@ -2507,66 +2513,68 @@ const ExpertiseEditor = observer(
             </PanelHeaderActionItem>
           </PanelHeaderActions>
         </PanelHeader>
-        {dataProductEditorState.product.expertise?.map((expertise) => (
-          <>
-            <div className="data-product-editor__expertise">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__prompt">
-                  Description
+        {dataProductEditorState.product.supportInfo?.expertise?.map(
+          (expertise) => (
+            <>
+              <div className="data-product-editor__expertise">
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__prompt">
+                    Description
+                  </div>
+                  <textarea
+                    className="panel__content__form__section__textarea"
+                    spellCheck={false}
+                    disabled={dataProductEditorState.isReadOnly}
+                    value={expertise.description ?? ''}
+                    onChange={(event) =>
+                      updateExpertiseDescription(expertise, event.target.value)
+                    }
+                    style={{
+                      height: '100%',
+                    }}
+                  />
                 </div>
-                <textarea
-                  className="panel__content__form__section__textarea"
-                  spellCheck={false}
-                  disabled={dataProductEditorState.isReadOnly}
-                  value={expertise.description ?? ''}
-                  onChange={(event) =>
-                    updateExpertiseDescription(expertise, event.target.value)
-                  }
-                  style={{
-                    height: '100%',
-                  }}
-                />
-              </div>
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__prompt">
-                  User IDs
-                </div>
-                <div className="panel__content__form__section__list__id-list">
-                  {expertise.expertIds?.map((id) => (
-                    <div
-                      className="panel__content__form__section__list__item"
-                      key={id}
-                    >
-                      {id}
-
-                      <button
-                        className="panel__content__form__section__list__item__remove-btn"
-                        disabled={dataProductEditorState.isReadOnly}
-                        onClick={() => handleRemoveId(expertise, id)}
-                        tabIndex={-1}
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__prompt">
+                    User IDs
+                  </div>
+                  <div className="panel__content__form__section__list__id-list">
+                    {expertise.expertIds?.map((id) => (
+                      <div
+                        className="panel__content__form__section__list__item"
+                        key={id}
                       >
-                        <TimesIcon />
-                      </button>
-                    </div>
-                  ))}
+                        {id}
+
+                        <button
+                          className="panel__content__form__section__list__item__remove-btn"
+                          disabled={dataProductEditorState.isReadOnly}
+                          onClick={() => handleRemoveId(expertise, id)}
+                          tabIndex={-1}
+                        >
+                          <TimesIcon />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <NewExpertIdComponent expertise={expertise} />
                 </div>
-                <NewExpertIdComponent expertise={expertise} />
+                <div className="data-product-editor__expertise__actions">
+                  <button
+                    className="access-point-editor__generic-entry__remove-btn--group"
+                    onClick={() => {
+                      handleRemoveExpertise(expertise);
+                    }}
+                    tabIndex={-1}
+                    title="Remove Expertise"
+                  >
+                    <TimesIcon />
+                  </button>
+                </div>
               </div>
-              <div className="data-product-editor__expertise__actions">
-                <button
-                  className="access-point-editor__generic-entry__remove-btn--group"
-                  onClick={() => {
-                    handleRemoveExpertise(expertise);
-                  }}
-                  tabIndex={-1}
-                  title="Remove Expertise"
-                >
-                  <TimesIcon />
-                </button>
-              </div>
-            </div>
-          </>
-        ))}
+            </>
+          ),
+        )}
       </>
     );
   },
@@ -2852,6 +2860,27 @@ const getDataProductViewerState = (
     V1_DataProduct,
   );
   const remoteEngine = guaranteeType(graphManager.engine, V1_RemoteEngine);
+  let userSearchService: UserSearchService | undefined = undefined;
+  if (applicationStore.pluginManager.getUserPlugins().length > 0) {
+    applicationStore.pluginManager
+      .getUserPlugins()
+      .forEach((plugin) =>
+        plugin.setup(
+          applicationStore.config.options.userSearchConfig
+            ?.applicationDirectoryUrl,
+        ),
+      );
+    userSearchService = new UserSearchService({
+      userProfileImageUrl:
+        applicationStore.config.options.userSearchConfig?.userProfileImageUrl,
+      applicationDirectoryUrl:
+        applicationStore.config.options.userSearchConfig
+          ?.applicationDirectoryUrl,
+    });
+    userSearchService.registerPlugins(
+      applicationStore.pluginManager.getUserPlugins(),
+    );
+  }
   const dataProductViewerState = new DataProductViewerState(
     v1_dataProduct,
     applicationStore,
@@ -2859,7 +2888,7 @@ const getDataProductViewerState = (
     depotServerClient,
     graphManagerState,
     applicationStore.config.options.dataProductConfig,
-    undefined,
+    userSearchService,
     undefined,
     {},
   );

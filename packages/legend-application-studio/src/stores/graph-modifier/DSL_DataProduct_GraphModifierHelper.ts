@@ -201,21 +201,21 @@ export const dataProduct_deleteAccessPointGroup = action(
   },
 );
 
-export const dataProduct_addExpertise = action(
-  (product: DataProduct, expertise: Expertise) => {
+export const supportInfo_addExpertise = action(
+  (supportInfo: SupportInfo, expertise: Expertise) => {
     const observedExpertise = observe_Expertise(expertise);
-    if (!product.expertise) {
-      product.expertise = [observedExpertise];
+    if (!supportInfo.expertise) {
+      supportInfo.expertise = [observedExpertise];
     } else {
-      addUniqueEntry(product.expertise, observedExpertise);
+      addUniqueEntry(supportInfo.expertise, observedExpertise);
     }
   },
 );
 
-export const dataProduct_deleteExpertise = action(
-  (product: DataProduct, expertise: Expertise) => {
-    if (product.expertise) {
-      deleteEntry(product.expertise, expertise);
+export const supportInfo_deleteExpertise = action(
+  (supportInfo: SupportInfo, expertise: Expertise) => {
+    if (supportInfo.expertise) {
+      deleteEntry(supportInfo.expertise, expertise);
     }
   },
 );

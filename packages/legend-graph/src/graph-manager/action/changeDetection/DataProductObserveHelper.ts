@@ -78,6 +78,17 @@ export const observer_DataProductLink = skipObserved(
     return metamodel;
   },
 );
+
+export const observe_Expertise = skipObserved(
+  (metamodel: Expertise): Expertise => {
+    makeObservable(metamodel, {
+      description: observable,
+      expertIds: observable,
+    });
+    return metamodel;
+  },
+);
+
 export const observe_SupportInfo = skipObserved(
   (metamodel: SupportInfo): SupportInfo => {
     makeObservable(metamodel, {
@@ -86,8 +97,10 @@ export const observe_SupportInfo = skipObserved(
       faqUrl: observable,
       supportUrl: observable,
       emails: observable,
+      expertise: observable,
     });
     metamodel.emails.forEach(observe_Email);
+    metamodel.expertise?.forEach(observe_Expertise);
     if (metamodel.documentation) {
       observer_DataProductLink(metamodel.documentation);
     }
@@ -203,16 +216,6 @@ export const observe_DataProductIcon = skipObserved(
   },
 );
 
-export const observe_Expertise = skipObserved(
-  (metamodel: Expertise): Expertise => {
-    makeObservable(metamodel, {
-      description: observable,
-      expertIds: observable,
-    });
-    return metamodel;
-  },
-);
-
 export const observe_DataProduct = skipObserved(
   (metamodel: DataProduct): DataProduct => {
     observe_Abstract_PackageableElement(metamodel);
@@ -225,7 +228,6 @@ export const observe_DataProduct = skipObserved(
       supportInfo: observable,
       icon: observable,
       type: observable,
-      expertise: observable,
     });
 
     if (metamodel.supportInfo) {
@@ -234,7 +236,6 @@ export const observe_DataProduct = skipObserved(
     if (metamodel.icon) {
       observe_DataProductIcon(metamodel.icon);
     }
-    metamodel.expertise?.forEach(observe_Expertise);
     metamodel.accessPointGroups.forEach(observe_APG);
     return metamodel;
   },

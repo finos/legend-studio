@@ -131,8 +131,6 @@ import {
   type V1_DataProduct,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
-  type DataProduct_DeliveryFrequency,
-  type DataProduct_Region,
   Email,
   ExternalDataProductType,
   InternalDataProductType,
@@ -144,6 +142,7 @@ import {
   V1_buildDataProductExpertise,
   V1_buildDataProductIcon,
   V1_buildDataProductLink,
+  V1_buildDataProductOperationalMetadata,
 } from './helpers/V1_DataProductBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { IncludeStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';
@@ -767,6 +766,10 @@ export class V1_ElementSecondPassBuilder
       supportInfo.supportUrl = protocolSupportInfo.supportUrl
         ? V1_buildDataProductLink(protocolSupportInfo.supportUrl)
         : undefined;
+      supportInfo.expertise =
+        protocolSupportInfo.expertise?.map((expertise) =>
+          V1_buildDataProductExpertise(expertise),
+        ) ?? [];
       supportInfo.emails = protocolSupportInfo.emails.map((elementEmail) => {
         const email = new Email(elementEmail.address, elementEmail.title);
         return email;
@@ -783,17 +786,11 @@ export class V1_ElementSecondPassBuilder
     dataProduct.sampleValues = element.sampleValues?.map((data) =>
       V1_buildEmbeddedData(data, this.context),
     );
-    if (element.expertise) {
-      dataProduct.expertise = element.expertise.map((expertise) =>
-        V1_buildDataProductExpertise(expertise),
+    if (element.operational) {
+      dataProduct.operational = V1_buildDataProductOperationalMetadata(
+        element.operational,
       );
     }
-    dataProduct.deliveryFrequency = element.deliveryFrequency as
-      | DataProduct_DeliveryFrequency
-      | undefined;
-    dataProduct.coverageRegions = element.coverageRegions as
-      | DataProduct_Region[]
-      | undefined;
     dataProduct.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);

@@ -18,6 +18,7 @@ export enum DATA_PRODUCT_VIEWER_SECTION {
   DESCRIPTION = 'description',
   DATA_ACCESS = 'data-access',
   SUPPORT_INFO = 'support-info',
+  VENDOR_DATA = 'vendor-data',
 }
 
 export enum TERMINAL_PRODUCT_VIEWER_SECTION {

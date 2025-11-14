@@ -27,6 +27,7 @@ export class LegendUser {
   id!: string;
   lastName!: string | undefined;
   title: string | undefined;
+  email: string | undefined;
 
   constructor(id?: string | undefined, displayName?: string | undefined) {
     this.id = id ?? '';
@@ -44,6 +45,7 @@ export class LegendUser {
       id: primitive(),
       lastName: optional(primitive()),
       title: optional(primitive()),
+      email: optional(primitive()),
     }),
   );
 }

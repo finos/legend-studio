@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { StereotypeConfig } from '@finos/legend-application';
+import { StereotypeConfig, TaggedValueConfig } from '@finos/legend-application';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, primitive } from 'serializr';
 
@@ -51,6 +51,7 @@ export class DataProductConfig {
   publicClassifications: string[] = [];
   classificationDoc!: string;
   publicStereotype!: StereotypeConfig;
+  vendorTaggedValue!: TaggedValueConfig;
   imageConfig!: DataProductImageConfig;
 
   static readonly serialization = new SerializationFactory(
@@ -59,6 +60,9 @@ export class DataProductConfig {
       publicClassifications: list(primitive()),
       classificationDoc: primitive(),
       publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
+      vendorTaggedValue: usingModelSchema(
+        TaggedValueConfig.serialization.schema,
+      ),
       imageConfig: usingModelSchema(
         DataProductImageConfig.serialization.schema,
       ),

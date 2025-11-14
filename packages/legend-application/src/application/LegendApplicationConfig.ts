@@ -34,7 +34,7 @@ import {
   collectDocumentationLinkEntryFromConfig,
 } from '../stores/DocumentationService.js';
 import type { SettingOverrideConfigData } from '../stores/SettingService.js';
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, list, primitive } from 'serializr';
 
 export interface LegendApplicationVersionData {
   buildTime?: string;
@@ -55,6 +55,18 @@ export class StereotypeConfig {
     createModelSchema(StereotypeConfig, {
       profile: primitive(),
       stereotype: primitive(),
+    }),
+  );
+}
+
+export class TaggedValueConfig {
+  profile!: string;
+  value!: string[];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TaggedValueConfig, {
+      profile: primitive(),
+      value: list(primitive()),
     }),
   );
 }
