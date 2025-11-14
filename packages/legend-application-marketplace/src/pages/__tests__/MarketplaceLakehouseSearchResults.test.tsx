@@ -15,7 +15,7 @@
  */
 
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, getByRole, screen, waitFor } from '@testing-library/react';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
@@ -185,23 +185,17 @@ describe('MarketplaceLakehouseSearchResults', () => {
       await screen.findByText('4 Products');
 
       // Lakehouse Data Product with title shows title
-      expect(screen.getAllByText('Lakehouse SDLC Data Product')).toHaveLength(
-        2,
-      );
+      expect(screen.getByText('Lakehouse SDLC Data Product'));
       screen.getByText('This is a lakehouse SDLC Data Product');
 
       // Lakehouse Data Product without title shows name
-      expect(
-        screen.getAllByText('LAKEHOUSE_SDLC_DATA_PRODUCT_NO_TITLE'),
-      ).toHaveLength(2);
+      expect(screen.getByText('LAKEHOUSE_SDLC_DATA_PRODUCT_NO_TITLE'));
 
       // Legacy Data Product with title shows title
-      expect(screen.getAllByText('Legacy Data Product')).toHaveLength(2);
+      expect(screen.getByText('Legacy Data Product'));
 
       // Legacy Data Product without title shows name
-      expect(screen.getAllByText('Legacy_Data_Product_No_Title')).toHaveLength(
-        2,
-      );
+      expect(screen.getAllByText('Legacy_Data_Product_No_Title'));
     });
 
     test('Production-parallel environment displays production-parallel data products', async () => {
@@ -210,14 +204,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(await screen.findByText('2 Products'));
 
       // Shows SDLC Data Product title
-      expect(screen.getAllByText('Lakehouse SDLC Data Product')).toHaveLength(
-        2,
-      );
+      expect(screen.getByText('Lakehouse SDLC Data Product'));
 
       // Shows Ad-hoc Data Product title
-      expect(screen.getAllByText('Lakehouse Ad-hoc Data Product')).toHaveLength(
-        2,
-      );
+      expect(screen.getByText('Lakehouse Ad-hoc Data Product'));
     });
 
     test('Development environment displays development data products', async () => {
@@ -226,12 +216,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(await screen.findByText('2 Products'));
 
       // Shows title
-      expect(screen.getAllByText('Lakehouse SDLC Data Product')).toHaveLength(
-        2,
-      );
-      expect(screen.getAllByText('Lakehouse Ad-hoc Data Product')).toHaveLength(
-        2,
-      );
+      expect(screen.getByText('Lakehouse SDLC Data Product'));
+      expect(screen.getByText('Lakehouse Ad-hoc Data Product'));
 
       // Shows version if snapshot
       screen.getByText('test_branch-SNAPSHOT');
@@ -240,18 +226,12 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('shows info popper for Lakehouse data products with correct details', async () => {
       await setupTestComponent('data', 'prod');
 
-      const findDataProductTitle = await screen.findAllByText(
-        'Lakehouse SDLC Data Product',
+      const contentContainer = guaranteeNonNullable(
+        screen.getByText('Lakehouse SDLC Data Product').parentElement,
       );
-      const dataProductTitle = guaranteeNonNullable(findDataProductTitle[0]);
-      const dataProductCard = guaranteeNonNullable(
-        dataProductTitle.parentElement?.parentElement,
-      );
-
-      fireEvent.mouseEnter(dataProductCard);
-
-      const infoButton = screen.getByRole('button', { name: 'More Info' });
-
+      const infoButton = getByRole(contentContainer, 'button', {
+        name: 'More Info',
+      });
       fireEvent.click(guaranteeNonNullable(infoButton));
 
       await screen.findByText('Description');
@@ -327,7 +307,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       // Check for 2 lakehouse chips
       expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
       // Check that legacy data product is rendered
-      expect(await screen.findAllByText('Legacy Data Product')).toHaveLength(2);
+      expect(await screen.findByText('Legacy Data Product'));
     });
   });
 
@@ -358,20 +338,16 @@ describe('MarketplaceLakehouseSearchResults', () => {
       await screen.findByText('3 Products');
 
       // Data product with title shows title
-      expect(screen.getAllByText('SDLC Production Data Product')).toHaveLength(
-        2,
-      );
+      expect(screen.getByText('SDLC Production Data Product'));
       screen.getByText(
         'Comprehensive customer analytics data for business intelligence and reporting',
       );
 
       // Data product without title shows name
-      expect(
-        screen.getAllByText('SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE'),
-      ).toHaveLength(2);
+      expect(screen.getByText('SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE'));
 
       // Legacy data product shows title
-      expect(screen.getAllByText('LegacyDataProduct')).toHaveLength(2);
+      expect(screen.getByText('LegacyDataProduct'));
 
       // Doesn't show non-production data products
       expect(screen.queryByText('SDLC Prod-Parallel Data Product')).toBeNull();
@@ -384,9 +360,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(await screen.findByText('1 Products'));
 
       // Shows title
-      expect(
-        screen.getAllByText('SDLC Prod-Parallel Data Product'),
-      ).toHaveLength(2);
+      expect(screen.getByText('SDLC Prod-Parallel Data Product'));
       // Shows version
       screen.getByText('master-SNAPSHOT');
 
@@ -404,14 +378,12 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(await screen.findByText('2 Products'));
 
       // Shows title
-      expect(screen.getAllByText('SDLC Development Data Product')).toHaveLength(
-        2,
-      );
+      expect(screen.getByText('SDLC Development Data Product'));
       // Shows version
       screen.getByText('master-SNAPSHOT');
 
       // Shows legacy data product
-      expect(screen.getAllByText('LegacyDataProduct')).toHaveLength(2);
+      expect(screen.getByText('LegacyDataProduct'));
 
       // Doesn't show production or production-parallel data products
       expect(screen.queryByText('SDLC Production Data Product')).toBeNull();
@@ -426,27 +398,19 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       expect(await screen.findByText('1 Products'));
 
-      expect(
-        screen.getAllByText('SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE'),
-      ).toHaveLength(2);
+      expect(screen.getByText('SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE'));
       expect(screen.queryByText('SDLC Production Data Product')).toBeNull();
     });
 
     test('shows info popper for Lakehouse data products with correct details', async () => {
       await setupTestComponent('data', 'prod', true);
 
-      const findDataProductTitle = await screen.findAllByText(
-        'SDLC Production Data Product',
+      const contentContainer = guaranteeNonNullable(
+        screen.getByText('SDLC Production Data Product').parentElement,
       );
-      const dataProductTitle = guaranteeNonNullable(findDataProductTitle[0]);
-      const dataProductCard = guaranteeNonNullable(
-        dataProductTitle.parentElement?.parentElement,
-      );
-
-      fireEvent.mouseEnter(dataProductCard);
-
-      const infoButton = screen.getByRole('button', { name: 'More Info' });
-
+      const infoButton = getByRole(contentContainer, 'button', {
+        name: 'More Info',
+      });
       fireEvent.click(guaranteeNonNullable(infoButton));
 
       await screen.findByText('Description');
@@ -532,7 +496,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       // Check for 2 lakehouse chips
       expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
       // Check that legacy data product is rendered
-      expect(await screen.findAllByText('LegacyDataProduct')).toHaveLength(2);
+      expect(await screen.findByText('LegacyDataProduct'));
     });
   });
 });
