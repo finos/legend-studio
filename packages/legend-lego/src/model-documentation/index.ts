@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2025-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,6 @@
  * limitations under the License.
  */
 
-@forward 'application/fuzzy-search';
-@forward 'application/tab-manager';
-@forward 'application/activity-bar';
-@forward 'application/undo-redo-button';
-@forward 'application/documentation-link';
-
-// Reset (override library styles)
-@forward 'reset/monaco-editor';
-@forward 'code-editor';
-
-@forward 'data-grid';
-
-@forward 'graph-editor/packageable-element-option-label';
-@forward 'model-documentation/model-documentation-viewer';
+export * from './ModelDocumentationState.js';
+export * from './ModelDocumentationViewer.js';
+export * from './ModelDocumentationAnalysis.js';

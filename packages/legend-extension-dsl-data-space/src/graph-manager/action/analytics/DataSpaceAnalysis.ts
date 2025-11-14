@@ -15,7 +15,6 @@
  */
 
 import type {
-  Multiplicity,
   Mapping,
   PackageableRuntime,
   PureModel,
@@ -26,6 +25,7 @@ import type {
 import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
+import type { NormalizedDocumentationEntry } from '@finos/legend-lego/model-documentation';
 
 export class DataSpaceExecutionContextAnalysisResult {
   name!: string;
@@ -57,72 +57,6 @@ export class DataSpaceStereotypeInfo {
 
   profile!: string;
   value!: string;
-}
-
-export class NormalizedDataSpaceDocumentationEntry {
-  readonly uuid = uuid();
-  readonly text: string;
-  readonly documentation: string;
-  readonly elementEntry: DataSpaceModelDocumentationEntry;
-  readonly entry: DataSpaceBasicDocumentationEntry;
-
-  constructor(
-    text: string,
-    documentation: string,
-    elementEntry: DataSpaceModelDocumentationEntry,
-    entry: DataSpaceBasicDocumentationEntry,
-  ) {
-    this.text = text;
-    this.documentation = documentation;
-    this.elementEntry = elementEntry;
-    this.entry = entry;
-  }
-
-  get humanizedText(): string {
-    return prettyCONSTName(this.text);
-  }
-}
-
-export class DataSpaceBasicDocumentationEntry {
-  name!: string;
-  docs: string[] = [];
-
-  get humanizedName(): string {
-    return prettyCONSTName(this.name);
-  }
-}
-
-export class DataSpacePropertyDocumentationEntry extends DataSpaceBasicDocumentationEntry {
-  milestoning?: string | undefined;
-  /**
-   * Make this optional for backward compatibility
-   *
-   * @backwardCompatibility
-   */
-  type?: string | undefined;
-  /**
-   * Make this optional for backward compatibility
-   *
-   * @backwardCompatibility
-   */
-  multiplicity?: Multiplicity | undefined;
-}
-
-export class DataSpaceModelDocumentationEntry extends DataSpaceBasicDocumentationEntry {
-  path!: string;
-}
-
-export class DataSpaceClassDocumentationEntry extends DataSpaceModelDocumentationEntry {
-  properties: DataSpacePropertyDocumentationEntry[] = [];
-  milestoning?: string | undefined;
-}
-
-export class DataSpaceEnumerationDocumentationEntry extends DataSpaceModelDocumentationEntry {
-  enumValues: DataSpaceBasicDocumentationEntry[] = [];
-}
-
-export class DataSpaceAssociationDocumentationEntry extends DataSpaceModelDocumentationEntry {
-  properties: DataSpacePropertyDocumentationEntry[] = [];
 }
 
 export class DataSpaceDiagramAnalysisResult {
@@ -209,7 +143,7 @@ export class DataSpaceAnalysisResult {
   executionContextsIndex!: Map<string, DataSpaceExecutionContextAnalysisResult>;
   defaultExecutionContext!: DataSpaceExecutionContextAnalysisResult;
 
-  elementDocs: NormalizedDataSpaceDocumentationEntry[] = [];
+  elementDocs: NormalizedDocumentationEntry[] = [];
 
   elements: string[] = [];
 

@@ -48,6 +48,7 @@ import {
   resolveVersion,
   StoreProjectData,
 } from '@finos/legend-server-depot';
+import { DataProductViewerModelsDocumentationState } from './DataProductModelsDocumentationState.js';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
@@ -60,6 +61,7 @@ export class DataProductViewerState extends BaseViewerState<
   readonly userSearchService: UserSearchService | undefined;
   readonly dataProductConfig: DataProductConfig | undefined;
   readonly projectGAV: ProjectGAVCoordinates | undefined;
+  readonly modelsDocumentationState: DataProductViewerModelsDocumentationState;
   dataProductArtifact: V1_DataProductArtifact | undefined;
 
   // actions
@@ -106,6 +108,9 @@ export class DataProductViewerState extends BaseViewerState<
     this.viewDataProductSource = actions.viewDataProductSource;
     this.openPowerBi = actions.openPowerBi;
     this.openDataCube = actions.openDataCube;
+
+    this.modelsDocumentationState =
+      new DataProductViewerModelsDocumentationState(this);
   }
 
   protected getValidSections(): string[] {

@@ -83,7 +83,6 @@ import {
 import {
   DataSpaceAnalysisResult,
   DataSpaceDiagramAnalysisResult,
-  NormalizedDataSpaceDocumentationEntry,
   DataSpaceExecutableAnalysisResult,
   DataSpaceExecutableTDSResultColumn,
   DataSpaceExecutableTDSResult,
@@ -91,11 +90,6 @@ import {
   DataSpaceServiceExecutableInfo,
   DataSpaceStereotypeInfo,
   DataSpaceTaggedValueInfo,
-  DataSpaceClassDocumentationEntry,
-  DataSpacePropertyDocumentationEntry,
-  DataSpaceEnumerationDocumentationEntry,
-  DataSpaceBasicDocumentationEntry,
-  DataSpaceAssociationDocumentationEntry,
   DataSpaceMultiExecutionServiceExecutableInfo,
   DataSpaceMultiExecutionServiceKeyedExecutableInfo,
   DataSpaceTemplateExecutableInfo,
@@ -121,6 +115,14 @@ import { DATASPACE_ANALYTICS_FILE_NAME } from '../../../action/analytics/DataSpa
 import { buildDataSpaceElements } from '../../../DSL_DataSpaceAnalyticsHelper.js';
 import { DSL_DATASPACE_EVENT } from '../../../../__lib__/DSL_DataSpace_Event.js';
 import { deserialize } from 'serializr';
+import {
+  AssociationDocumentationEntry,
+  BasicDocumentationEntry,
+  ClassDocumentationEntry,
+  EnumerationDocumentationEntry,
+  NormalizedDocumentationEntry,
+  PropertyDocumentationEntry,
+} from '@finos/legend-lego/model-documentation';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data product';
 const TEMPORARY__TDS_SAMPLE_VALUES__DELIMITER = '-- e.g.';
@@ -917,15 +919,15 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
     // elements documentation
     result.elementDocs = analysisResult.elementDocs.flatMap((docEntry) => {
-      const entries: NormalizedDataSpaceDocumentationEntry[] = [];
+      const entries: NormalizedDocumentationEntry[] = [];
       if (docEntry instanceof V1_DataSpaceClassDocumentationEntry) {
-        const classData = new DataSpaceClassDocumentationEntry();
+        const classData = new ClassDocumentationEntry();
         classData.name = docEntry.name;
         classData.docs = docEntry.docs;
         classData.path = docEntry.path;
         classData.milestoning = docEntry.milestoning;
         entries.push(
-          new NormalizedDataSpaceDocumentationEntry(
+          new NormalizedDocumentationEntry(
             docEntry.name,
             docEntry.docs.join('\n').trim(),
             classData,
@@ -934,7 +936,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         );
 
         docEntry.properties.forEach((property) => {
-          const propertyData = new DataSpacePropertyDocumentationEntry();
+          const propertyData = new PropertyDocumentationEntry();
           propertyData.name = property.name;
           propertyData.docs = property.docs;
           propertyData.type = property.type;
@@ -947,7 +949,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             : undefined;
           classData.properties.push(propertyData);
           entries.push(
-            new NormalizedDataSpaceDocumentationEntry(
+            new NormalizedDocumentationEntry(
               property.name,
               property.docs.join('\n').trim(),
               classData,
@@ -958,12 +960,12 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       } else if (
         docEntry instanceof V1_DataSpaceEnumerationDocumentationEntry
       ) {
-        const enumerationData = new DataSpaceEnumerationDocumentationEntry();
+        const enumerationData = new EnumerationDocumentationEntry();
         enumerationData.name = docEntry.name;
         enumerationData.docs = docEntry.docs;
         enumerationData.path = docEntry.path;
         entries.push(
-          new NormalizedDataSpaceDocumentationEntry(
+          new NormalizedDocumentationEntry(
             docEntry.name,
             docEntry.docs.join('\n').trim(),
             enumerationData,
@@ -971,12 +973,12 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           ),
         );
         docEntry.enumValues.forEach((enumValue) => {
-          const enumData = new DataSpaceBasicDocumentationEntry();
+          const enumData = new BasicDocumentationEntry();
           enumData.name = enumValue.name;
           enumData.docs = enumValue.docs;
           enumerationData.enumValues.push(enumData);
           entries.push(
-            new NormalizedDataSpaceDocumentationEntry(
+            new NormalizedDocumentationEntry(
               enumValue.name,
               enumValue.docs.join('\n').trim(),
               enumerationData,
@@ -987,12 +989,12 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       } else if (
         docEntry instanceof V1_DataSpaceAssociationDocumentationEntry
       ) {
-        const associationData = new DataSpaceAssociationDocumentationEntry();
+        const associationData = new AssociationDocumentationEntry();
         associationData.name = docEntry.name;
         associationData.docs = docEntry.docs;
         associationData.path = docEntry.path;
         entries.push(
-          new NormalizedDataSpaceDocumentationEntry(
+          new NormalizedDocumentationEntry(
             docEntry.name,
             docEntry.docs.join('\n').trim(),
             associationData,
@@ -1000,7 +1002,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           ),
         );
         docEntry.properties.forEach((property) => {
-          const propertyData = new DataSpacePropertyDocumentationEntry();
+          const propertyData = new PropertyDocumentationEntry();
           propertyData.name = property.name;
           propertyData.docs = property.docs;
           propertyData.type = property.type;
@@ -1013,7 +1015,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             : undefined;
           associationData.properties.push(propertyData);
           entries.push(
-            new NormalizedDataSpaceDocumentationEntry(
+            new NormalizedDocumentationEntry(
               property.name,
               property.docs.join('\n'),
               associationData,
