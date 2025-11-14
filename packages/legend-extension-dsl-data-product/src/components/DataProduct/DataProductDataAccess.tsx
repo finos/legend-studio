@@ -618,7 +618,6 @@ export const DataProductAccessPointGroupViewer = observer(
     useEffect(() => {
       if (
         dataAccessState?.lakehouseContractServerClient &&
-        apgState.fetchingSubscriptionsState.isInInitialState &&
         apgState.apgContracts.length > 0
       ) {
         apgState.fetchSubscriptions(

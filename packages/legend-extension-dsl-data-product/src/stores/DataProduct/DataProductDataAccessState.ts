@@ -364,6 +364,7 @@ export class DataProductDataAccessState {
           `Contract created, please go to contract view for pending tasks`,
         );
         this.logCreatingContract(request, consumerType, undefined);
+        yield this.fetchContracts(token);
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.notificationService.notifyError(
