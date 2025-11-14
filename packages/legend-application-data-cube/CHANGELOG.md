@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.18
+
+### Patch Changes
+
+- [#4622](https://github.com/finos/legend-studio/pull/4622) [`fecbcd0`](https://github.com/finos/legend-studio/commit/fecbcd03141d40451e982591913eb1c688074480) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: cleanup + fixing iceberg flow
+
 ## 0.7.17
 
 ### Patch Changes
