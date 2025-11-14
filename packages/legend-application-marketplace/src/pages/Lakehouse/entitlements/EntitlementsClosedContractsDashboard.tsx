@@ -365,6 +365,7 @@ export const EntitlementsClosedContractsDashboard = observer(
             currentViewer={
               new EntitlementsDataContractViewerState(
                 selectedContract,
+                undefined,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
                 new GraphManagerState(

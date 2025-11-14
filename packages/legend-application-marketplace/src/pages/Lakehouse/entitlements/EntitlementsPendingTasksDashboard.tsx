@@ -837,6 +837,7 @@ export const EntitlementsPendingTasksDashboard = observer(
             currentViewer={
               new EntitlementsDataContractViewerState(
                 selectedContract,
+                undefined,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
                 new GraphManagerState(
