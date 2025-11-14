@@ -82,7 +82,8 @@
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    padding: 1rem;
+    background-origin: content-box;
+    padding: 3rem;
   }
 
   &__content-container {

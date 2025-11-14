@@ -140,7 +140,7 @@ export const LegendMarketplaceCard = (props: {
       {cardImage !== undefined && (
         <div
           className="legend-marketplace-card__image"
-          style={{ background: `url(${cardImage})` }}
+          style={{ backgroundImage: `url(${cardImage})` }}
         ></div>
       )}
       {cardIcon !== undefined && (
