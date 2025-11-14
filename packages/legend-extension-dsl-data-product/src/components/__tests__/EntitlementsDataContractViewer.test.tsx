@@ -100,6 +100,7 @@ const setupDataContractViewerTest = async (
 
   const MOCK__contractViewerState = new EntitlementsDataContractViewerState(
     mockContract,
+    undefined,
     MOCK__applicationStore,
     lakehouseContractServerClient,
     new GraphManagerState(
