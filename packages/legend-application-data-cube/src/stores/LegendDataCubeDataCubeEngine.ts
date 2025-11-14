@@ -803,13 +803,20 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           source.paths = rawSource.paths;
           source.deploymentId = rawSource.deploymentId;
 
-          const query = new V1_ClassInstance();
-          query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
-          const ingestAccesor = new V1_RelationStoreAccessor();
-          ingestAccesor.path = rawSource.paths;
-          ingestAccesor.metadata = false;
-          query.value = ingestAccesor;
-          source.query = query;
+          if (rawSource.query) {
+            source.query = await this.parseValueSpecification(
+              guaranteeNonNullable(rawSource.query),
+              false,
+            );
+          } else {
+            const query = new V1_ClassInstance();
+            query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
+            const ingestAccesor = new V1_RelationStoreAccessor();
+            ingestAccesor.path = rawSource.paths;
+            ingestAccesor.metadata = false;
+            query.value = ingestAccesor;
+            source.query = query;
+          }
 
           const model = await this._synthesizeLakehouseProducerPMCD(
             rawSource,

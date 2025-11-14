@@ -61,6 +61,7 @@ export class RawLakehouseProducerDataCubeSource {
   paths!: string[];
   deploymentId?: number;
   icebergConfig?: IcebergConfig;
+  query?: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLakehouseProducerDataCubeSource, {
@@ -73,6 +74,7 @@ export class RawLakehouseProducerDataCubeSource {
       icebergConfig: optional(
         usingModelSchema(IcebergConfig.serialization.schema),
       ),
+      query: optional(primitive()),
     }),
   );
 }
