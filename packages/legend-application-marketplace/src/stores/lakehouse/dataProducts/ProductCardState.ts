@@ -127,18 +127,18 @@ export class ProductCardState {
         this.searchResult.dataProductDetails instanceof
         LakehouseDataProductSearchResultDetails
       ) {
-        const dataProduct = yield this.getLakehouseDataProduct(
+        const dataProduct = (yield this.getLakehouseDataProduct(
           this.searchResult.dataProductDetails,
           token,
-        );
+        )) as V1_DataProduct | undefined;
         this.setDataProductElement(dataProduct);
       } else if (
         this.searchResult.dataProductDetails instanceof
         LegacyDataProductSearchResultDetails
       ) {
-        const dataProduct = yield this.getLegacyDataProduct(
+        const dataProduct = (yield this.getLegacyDataProduct(
           this.searchResult.dataProductDetails,
-        );
+        )) as V1_DataProduct | undefined;
         this.setDataProductElement(dataProduct);
       }
     } catch (error) {
