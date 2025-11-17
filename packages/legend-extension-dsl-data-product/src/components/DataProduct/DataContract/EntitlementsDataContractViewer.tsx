@@ -781,7 +781,7 @@ export const EntitlementsDataContractViewer = observer(
               {currentViewer.subscription !== undefined && (
                 <Alert
                   severity="info"
-                  className="marketplace-lakehouse-entitlements__data-contract-viewer__footer_subscription-info"
+                  className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__subscription-info"
                 >
                   A subscription has been auto-created for you
                   {currentViewer.subscription.target instanceof
