@@ -19,6 +19,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Alert,
   Box,
   Button,
   Dialog,
@@ -784,18 +785,17 @@ export const EntitlementsDataContractViewer = observer(
                 </IconButton>
               </Box>
               {currentViewer.subscription !== undefined && (
-                <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer_subscription-info">
-                  A{' '}
-                  <span title={currentViewer.subscription.guid}>
-                    subscription
-                  </span>{' '}
-                  has been auto-created for you
+                <Alert
+                  severity="info"
+                  className="marketplace-lakehouse-entitlements__data-contract-viewer__footer_subscription-info"
+                >
+                  A subscription has been auto-created for you
                   {currentViewer.subscription.target instanceof
                   V1_SnowflakeTarget
                     ? ` with Snowflake account ${currentViewer.subscription.target.snowflakeAccountId}.`
                     : '.'}
                   .
-                </Box>
+                </Alert>
               )}
             </Box>
           </DialogContent>
