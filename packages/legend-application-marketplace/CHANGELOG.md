@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.39
+
+### Patch Changes
+
+- [#4631](https://github.com/finos/legend-studio/pull/4631) [`97c1c0f`](https://github.com/finos/legend-studio/commit/97c1c0f0e9a9076196f12287457e4c488b60daea) ([@travisstebbins](https://github.com/travisstebbins)) - Show data product image/icon in search results
+
+- [#4624](https://github.com/finos/legend-studio/pull/4624) [`8926940`](https://github.com/finos/legend-studio/commit/8926940ce7f86ec907147c57db54315aef4bb738) ([@kelly-thai](https://github.com/kelly-thai)) - Update test utils with new DataProductConfig
+
 ## 0.1.38
 
 ### Patch Changes
