@@ -778,12 +778,6 @@ export const EntitlementsDataContractViewer = observer(
               </>
             )}
             <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
-              <Box>
-                Contract ID: {currentViewer.liteContract.guid}
-                <IconButton onClick={() => copyContractId()}>
-                  <CopyIcon />
-                </IconButton>
-              </Box>
               {currentViewer.subscription !== undefined && (
                 <Alert
                   severity="info"
@@ -792,11 +786,17 @@ export const EntitlementsDataContractViewer = observer(
                   A subscription has been auto-created for you
                   {currentViewer.subscription.target instanceof
                   V1_SnowflakeTarget
-                    ? ` with Snowflake account ${currentViewer.subscription.target.snowflakeAccountId}.`
-                    : '.'}
+                    ? ` with Snowflake account ${currentViewer.subscription.target.snowflakeAccountId}`
+                    : ''}
                   .
                 </Alert>
               )}
+              <Box>
+                Contract ID: {currentViewer.liteContract.guid}
+                <IconButton onClick={() => copyContractId()}>
+                  <CopyIcon />
+                </IconButton>
+              </Box>
             </Box>
           </DialogContent>
         </Dialog>
