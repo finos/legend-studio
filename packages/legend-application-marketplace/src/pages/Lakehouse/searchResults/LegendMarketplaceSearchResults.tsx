@@ -52,7 +52,7 @@ import { useSyncStateAndSearchParam } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
 import { isNonEmptyString } from '@finos/legend-shared';
 
-export const MarketplaceLakehouseSearchResults =
+export const LegendMarketplaceSearchResults =
   withLegendMarketplaceSearchResultsStore(
     observer(() => {
       const searchResultsStore = useLegendMarketplaceSearchResultsStore();
@@ -207,6 +207,7 @@ export const MarketplaceLakehouseSearchResults =
                   <Grid key={productCardState.guid} size={1}>
                     <LakehouseProductCard
                       productCardState={productCardState}
+                      moreInfoPreview="small"
                       onClick={() => {
                         const path = generatePathForDataProductSearchResult(
                           productCardState.searchResult,
