@@ -97,7 +97,7 @@ import {
   accessPointGroup_swapAccessPoints,
   dataProduct_addAccessPoint,
   dataProduct_addAccessPointGroup,
-  dataProduct_addExpertise,
+  supportInfo_addExpertise,
   dataProduct_deleteAccessPoint,
   dataProduct_deleteAccessPointGroup,
   dataProduct_swapAccessPointGroups,
@@ -108,6 +108,7 @@ import {
   modelAccessPointGroup_setDefaultRuntime,
   modelAccessPointGroup_setElementExclude,
   modelAccessPointGroup_setMapping,
+  dataProduct_setSupportInfoIfAbsent,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LambdaEditorState, LineageState } from '@finos/legend-query-builder';
 import {
@@ -1093,8 +1094,11 @@ export class DataProductEditorState extends ElementEditorState {
   }
 
   createExpertise() {
+    dataProduct_setSupportInfoIfAbsent(this.product);
     const newExpertise = new Expertise();
-    dataProduct_addExpertise(this.product, newExpertise);
+    if (this.product.supportInfo) {
+      supportInfo_addExpertise(this.product.supportInfo, newExpertise);
+    }
   }
 
   *deploy(token: string | undefined): GeneratorFn<void> {

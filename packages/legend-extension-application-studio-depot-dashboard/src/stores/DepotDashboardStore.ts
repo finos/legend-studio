@@ -105,15 +105,13 @@ export const getDataProductValue = (
         .map((apg) => apg.accessPoints.length)
         .join(',');
     case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_REGIONS:
-      return dataProduct.coverageRegions?.length ? 'Y' : false;
+      return dataProduct.operational?.coverageRegions?.length ? 'Y' : false;
     case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_DELIVERY_FREQUENCY:
-      return dataProduct.deliveryFrequency ?? false;
+      return dataProduct.operational?.updateFrequency ?? false;
     case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_ICON:
       return dataProduct.icon !== undefined ? 'Y' : false;
     case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_SAMPLE_VALUES:
       return dataProduct.sampleValues?.length ? 'Y' : false;
-    case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_EXPERTISE:
-      return dataProduct.expertise?.length ? 'Y' : false;
     case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_STEREOTYPES:
       return dataProduct.stereotypes.length
         ? dataProduct.stereotypes

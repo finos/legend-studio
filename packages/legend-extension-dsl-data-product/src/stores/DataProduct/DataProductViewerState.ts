@@ -114,6 +114,18 @@ export class DataProductViewerState extends BaseViewerState<
     );
   }
 
+  get isVDP(): boolean {
+    const vendorProfile = this.dataProductConfig?.vendorTaggedValue.profile;
+    if (!vendorProfile) {
+      return false;
+    }
+    return Boolean(
+      this.product.taggedValues.find(
+        (taggedValue) => taggedValue.tag.profile === vendorProfile,
+      ),
+    );
+  }
+
   async fetchDataProductArtifact(): Promise<
     V1_DataProductArtifact | undefined
   > {
