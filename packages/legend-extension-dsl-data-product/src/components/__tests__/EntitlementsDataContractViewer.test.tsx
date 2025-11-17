@@ -25,6 +25,7 @@ import {
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import {
   type V1_DataContract,
+  type V1_DataSubscription,
   type V1_LiteDataContract,
   type V1_TaskResponse,
   GraphManagerState,
@@ -38,16 +39,17 @@ import {
   TEST__LegendApplicationPluginManager,
 } from '../__test-utils__/StateTestUtils.js';
 import {
-  mockDataContract,
   getMockPendingManagerApprovalTasksResponse,
-  mockPendingDataOwnerApprovalTasksResponse,
   mockApprovedTasksResponse,
-  mockDeniedTasksResponse,
-  mockPendingManagerApprovalMultipleAssigneesTasksResponse,
+  mockDataContract,
   mockDataContractMultipleConsumers,
-  mockPendingManagerApprovalMultipleConsumersTasksResponse,
   mockDataContractWithSystemAccountMember,
+  mockDeniedTasksResponse,
   mockEscalatedPendingManagerApprovalTasksResponse,
+  mockPendingDataOwnerApprovalTasksResponse,
+  mockPendingManagerApprovalMultipleAssigneesTasksResponse,
+  mockPendingManagerApprovalMultipleConsumersTasksResponse,
+  mockAutoCreatedSubscription,
 } from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 import { ApplicationStore } from '@finos/legend-application';
 import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
@@ -64,6 +66,7 @@ const setupDataContractViewerTest = async (
   mockTasks: V1_TaskResponse,
   initialSelectedUser?: string,
   contractWithMembers?: V1_DataContract,
+  mockSubscription?: V1_DataSubscription,
 ) => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   const MOCK__applicationStore = new ApplicationStore(
@@ -100,7 +103,7 @@ const setupDataContractViewerTest = async (
 
   const MOCK__contractViewerState = new EntitlementsDataContractViewerState(
     mockContract,
-    undefined,
+    mockSubscription,
     MOCK__applicationStore,
     lakehouseContractServerClient,
     new GraphManagerState(
@@ -397,5 +400,20 @@ describe('EntitlementsDataContractViewer', () => {
     screen.getByText('test-privilege-manager-user-id');
     screen.getByText('test-privilege-manager-user-id-2');
     screen.getByText('test-privilege-manager-user-id-3');
+  });
+
+  test('Renders subscription details if provided', async () => {
+    await setupDataContractViewerTest(
+      mockDataContract,
+      getMockPendingManagerApprovalTasksResponse(),
+      undefined,
+      undefined,
+      mockAutoCreatedSubscription,
+    );
+
+    // Verify subscription info in footer
+    await screen.findByText(
+      `A subscription has been auto-created for you with Snowflake account test-snowflake-account-id.`,
+    );
   });
 });
