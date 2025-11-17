@@ -1,5 +1,11 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.4
+
+### Patch Changes
+
+- [#4624](https://github.com/finos/legend-studio/pull/4624) [`8926940`](https://github.com/finos/legend-studio/commit/8926940ce7f86ec907147c57db54315aef4bb738) ([@kelly-thai](https://github.com/kelly-thai)) - Add expertise, coverage regions, update frequency refactor to studio metamodel
+
 ## 0.1.3
 
 ## 0.1.2

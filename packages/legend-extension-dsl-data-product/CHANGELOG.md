@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.25
+
+### Patch Changes
+
+- [#4624](https://github.com/finos/legend-studio/pull/4624) [`8926940`](https://github.com/finos/legend-studio/commit/8926940ce7f86ec907147c57db54315aef4bb738) ([@kelly-thai](https://github.com/kelly-thai)) - Add tags and expertise to data product viewer
+
 ## 0.0.24
 
 ## 0.0.23

@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.81
+
+### Patch Changes
+
+- [#4624](https://github.com/finos/legend-studio/pull/4624) [`8926940`](https://github.com/finos/legend-studio/commit/8926940ce7f86ec907147c57db54315aef4bb738) ([@kelly-thai](https://github.com/kelly-thai)) - Add TaggedValueConfig
+
 ## 16.0.80
 
 ### Patch Changes
