@@ -26,6 +26,8 @@ export { GeneralizationView } from '../graph/metamodel/pure/packageableElements/
 export { Point } from '../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
 export { Rectangle } from '../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Rectangle.js';
 export { PositionedRectangle } from '../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_PositionedRectangle.js';
+export { RelationshipViewEnd } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipViewEnd.js';
+export { ClassViewReference } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassViewReference.js';
 
 export * from '../graph/helpers/DSL_Diagram_Helper.js';
 export * from './DSL_Diagram_GraphManagerHelper.js';
@@ -33,3 +35,4 @@ export { V1_DSL_Diagram_PackageableElementPointerType } from './protocol/pure/DS
 export { V1_resolveDiagram } from './protocol/pure/v1/transformation/pureGraph/V1_DSL_Diagram_GraphBuilderHelper.js';
 export { V1_transformDiagram } from './protocol/pure/v1/transformation/pureGraph/V1_DSL_Diagram_TransformerHelper.js';
 export * from './protocol/pure/v1/transformation/pureProtocol/V1_DSL_Diagram_ProtocolHelper.js';
+export * from './action/changeDetection/DSL_Diagram_ObserverHelper.js';

@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
+import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
+import type { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
+
 export enum DATA_PRODUCT_VIEWER_SECTION {
-  DESCRIPTION = 'description',
   DATA_ACCESS = 'data-access',
+  DESCRIPTION = 'description',
+  DIAGRAM_VIEWER = 'diagram-viewer',
+  MODELS_DOCUMENTATION = 'models-documentation',
   SUPPORT_INFO = 'support-info',
   VENDOR_DATA = 'vendor-data',
 }
@@ -47,3 +52,11 @@ export const TERMINAL_PRODUCT_VIEWER_ANCHORS = Object.values(
 
 export const extractSectionFromAnchor = (anchor: string): string =>
   decodeURIComponent(anchor);
+
+export const generateAnchorForDiagram = (
+  diagram: DiagramAnalysisResult,
+): string =>
+  [
+    DATA_PRODUCT_VIEWER_SECTION.DIAGRAM_VIEWER,
+    generateAnchorChunk(diagram.title),
+  ].join(NAVIGATION_ZONE_SEPARATOR);

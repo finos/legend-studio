@@ -467,3 +467,16 @@
     display: none;
   }
 }
+
+.diagram-viewer__placeholder {
+  @include flexCenter;
+
+  justify-content: flex-start;
+  width: 100%;
+  border-radius: 0.2rem;
+  color: var(--color-dark-grey-300);
+  user-select: none;
+  height: auto;
+  background: transparent;
+  font-style: italic;
+}

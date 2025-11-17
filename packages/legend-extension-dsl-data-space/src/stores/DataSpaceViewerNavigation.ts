@@ -15,10 +15,8 @@
  */
 
 import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
-import type {
-  DataSpaceDiagramAnalysisResult,
-  DataSpaceExecutableAnalysisResult,
-} from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
+import type { DataSpaceExecutableAnalysisResult } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
+import type { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   DESCRIPTION = 'description',
@@ -56,7 +54,7 @@ export const generateAnchorForQuickStart = (
     generateAnchorChunk(quickStart.title),
   ].join(NAVIGATION_ZONE_SEPARATOR);
 export const generateAnchorForDiagram = (
-  diagram: DataSpaceDiagramAnalysisResult,
+  diagram: DiagramAnalysisResult,
 ): string =>
   [
     DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,

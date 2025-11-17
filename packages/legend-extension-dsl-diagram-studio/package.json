@@ -1,31 +1,27 @@
 {
-  "name": "@finos/legend-extension-dsl-diagram",
-  "version": "8.1.194",
-  "description": "Legend extension for Diagram DSL",
+  "name": "@finos/legend-extension-dsl-diagram-studio",
+  "version": "0.0.1",
+  "description": "Legend extension for Diagram DSL Studio",
   "keywords": [
     "legend",
     "legend-extension",
     "dsl",
-    "dsl-diagram"
+    "dsl-diagram-studio"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-diagram",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-diagram-studio",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-extension-dsl-diagram"
+    "directory": "packages/legend-extension-dsl-diagram-studio"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
   "type": "module",
   "exports": {
-    ".": "./lib/index.js",
-    "./graph": "./lib/graph-manager/index.js",
-    "./application": "./lib/components/index.js",
-    "./application-studio": "./lib/components/studio/index.js",
-    "./lib/index.css": "./lib/index.css"
+    ".": "./lib/index.js"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -47,8 +43,10 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-code-editor": "workspace:*",
+    "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
@@ -80,10 +78,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-diagram",
-    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-diagram",
-    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-diagram",
-    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-diagram",
     "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-diagram"
   }
 }

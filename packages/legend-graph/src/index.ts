@@ -193,6 +193,7 @@ export {
   V1_DataProductRegion,
   V1_DeliveryFrequency,
   V1_DataProductDiagram,
+  V1_ModelAccessPointGroup,
   V1_DataProductEmbeddedImageIcon,
   V1_DataProductIcon,
   V1_DataProductLibraryIcon,

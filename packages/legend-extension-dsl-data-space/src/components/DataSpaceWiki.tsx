@@ -16,12 +16,16 @@
 
 import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
-import { DataSpaceDiagramViewer } from './DataSpaceDiagramViewer.js';
 import { DataSpaceQuickStart } from './DataSpaceQuickStart.js';
 import { DataSpaceDataAccess } from './DataSpaceDataAccess.js';
 import { DataSpaceDescription } from './DataSpaceDescription.js';
 import { useEffect } from 'react';
 import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
+import { DiagramViewer } from '@finos/legend-extension-dsl-diagram';
+import {
+  generateAnchorForActivity,
+  generateAnchorForDiagram,
+} from '../stores/DataSpaceViewerNavigation.js';
 
 export const DataSpaceWiki = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -54,7 +58,41 @@ export const DataSpaceWiki = observer(
     return (
       <div className="data-space__viewer__wiki">
         <DataSpaceDescription dataSpaceViewerState={dataSpaceViewerState} />
-        <DataSpaceDiagramViewer dataSpaceViewerState={dataSpaceViewerState} />
+        <DiagramViewer
+          applicationStore={dataSpaceViewerState.applicationStore}
+          diagramViewerState={dataSpaceViewerState.diagramViewerState}
+          actions={{
+            onQueryClass: dataSpaceViewerState.queryClass,
+            onViewClassDocumentation: (classPath) =>
+              dataSpaceViewerState.modelsDocumentationState.viewClassDocumentation(
+                classPath,
+              ),
+            hasClassDocumentation: (classPath) =>
+              dataSpaceViewerState.modelsDocumentationState.hasClassDocumentation(
+                classPath,
+              ),
+            onSyncZoneWithNavigation: (diagram) => {
+              dataSpaceViewerState.syncZoneWithNavigation(
+                generateAnchorForDiagram(diagram),
+              );
+            },
+            onGenerateAnchorForActivity: (activity) => {
+              return generateAnchorForActivity(activity);
+            },
+            onChangeZone: (zone, force) => {
+              dataSpaceViewerState.changeZone(zone, force);
+            },
+            onSetWikiPageAnchor: (anchorKey: string, element: HTMLElement) => {
+              dataSpaceViewerState.layoutState.setWikiPageAnchor(
+                anchorKey,
+                element,
+              );
+            },
+            onUnsetWikiPageAnchor: (anchorKey: string) => {
+              dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchorKey);
+            },
+          }}
+        />
         <ModelsDocumentation
           modelsDocumentationState={
             dataSpaceViewerState.modelsDocumentationState

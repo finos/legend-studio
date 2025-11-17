@@ -21,15 +21,14 @@ import {
   isType,
   uuid,
 } from '@finos/legend-shared';
-import {
-  type DiagramRenderer,
-  DIAGRAM_INTERACTION_MODE,
-} from '../../components/DiagramRenderer.js';
+
 import { PanelDisplayState } from '@finos/legend-art';
 import {
-  type PackageableElement,
   type AbstractProperty,
+  type Class,
+  type PackageableElement,
   type PropertyReference,
+  type GenericTypeReference,
   GenericTypeExplicitReference,
   Property,
   GenericType,
@@ -43,13 +42,51 @@ import {
   ClassEditorState,
   ElementEditorState,
   class_addProperty,
+  class_addSuperType,
 } from '@finos/legend-application-studio';
-import type { ClassView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';
-import type { Point } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
-import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
-import type { PropertyHolderView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyHolderView.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioCommand.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY } from '../__lib__/DSL_Diagram_LegendStudioCommand.js';
 import type { CommandRegistrar } from '@finos/legend-application';
+import {
+  type ClassView,
+  type DiagramRenderer,
+  type Point,
+  type PropertyHolderView,
+  type DiagramRendererCallbacks,
+  type RelationshipViewEnd,
+  type Rectangle,
+  type RelationshipView,
+  type PositionedRectangle,
+  type PropertyView,
+  type GeneralizationView,
+  type AssociationView,
+  Diagram,
+  DIAGRAM_INTERACTION_MODE,
+} from '@finos/legend-extension-dsl-diagram';
+import {
+  classView_setHideProperties,
+  classView_setHideStereotypes,
+  classView_setHideTaggedValues,
+  diagram_addClassView,
+  diagram_addGeneralizationView,
+  diagram_addPropertyView,
+  diagram_deleteAssociationView,
+  diagram_deleteClassView,
+  diagram_deleteGeneralizationView,
+  diagram_deletePropertyView,
+  diagram_setAssociationViews,
+  diagram_setClassViews,
+  diagram_setGeneralizationViews,
+  diagram_setPropertyViews,
+  findOrBuildPoint,
+  positionedRectangle_forceRefreshHash,
+  positionedRectangle_setPosition,
+  positionedRectangle_setRectangle,
+  relationshipEdgeView_setOffsetX,
+  relationshipEdgeView_setOffsetY,
+  relationshipView_changePoint,
+  relationshipView_simplifyPath,
+  relationshipView_setPath,
+} from './DSL_Diagram_GraphModifierHelper.js';
 
 export abstract class DiagramEditorSidePanelState {
   readonly uuid = uuid();
@@ -328,8 +365,197 @@ export class DiagramEditorState
     this.setShowContextMenu(false);
   }
 
+  setupCallbacks(): DiagramRendererCallbacks {
+    return {
+      // Domain mutations (from legend-application-studio)
+      onClass_addSuperType: (
+        subclass: Class,
+        superType: GenericTypeReference,
+      ): void => {
+        class_addSuperType(subclass, superType);
+      },
+
+      onClass_addProperty: (ownerClass: Class, property: Property): void => {
+        class_addProperty(ownerClass, property);
+      },
+
+      // Diagram mutations - ClassView
+      onDiagram_setClassViews: (
+        diagram: Diagram,
+        classViews: ClassView[],
+      ): void => {
+        diagram_setClassViews(diagram, classViews);
+      },
+
+      onDiagram_addClassView: (
+        diagram: Diagram,
+        classView: ClassView,
+      ): void => {
+        diagram_addClassView(diagram, classView);
+      },
+
+      onDiagram_deleteClassView: (
+        diagram: Diagram,
+        classView: ClassView,
+      ): void => {
+        diagram_deleteClassView(diagram, classView);
+      },
+
+      // Diagram mutations - AssociationView
+      onDiagram_setAssociationViews: (
+        diagram: Diagram,
+        associationViews: AssociationView[],
+      ): void => {
+        diagram_setAssociationViews(diagram, associationViews);
+      },
+
+      onDiagram_deleteAssociationView: (
+        diagram: Diagram,
+        associationView: AssociationView,
+      ): void => {
+        diagram_deleteAssociationView(diagram, associationView);
+      },
+
+      // Diagram mutations - GeneralizationView
+      onDiagram_setGeneralizationViews: (
+        diagram: Diagram,
+        generalizationViews: GeneralizationView[],
+      ): void => {
+        diagram_setGeneralizationViews(diagram, generalizationViews);
+      },
+
+      onDiagram_addGeneralizationView: (
+        diagram: Diagram,
+        view: GeneralizationView,
+      ): void => {
+        diagram_addGeneralizationView(diagram, view);
+      },
+
+      onDiagram_deleteGeneralizationView: (
+        diagram: Diagram,
+        view: GeneralizationView,
+      ): void => {
+        diagram_deleteGeneralizationView(diagram, view);
+      },
+
+      // Diagram mutations - PropertyView
+      onDiagram_setPropertyViews: (
+        diagram: Diagram,
+        propertyViews: PropertyView[],
+      ): void => {
+        diagram_setPropertyViews(diagram, propertyViews);
+      },
+
+      onDiagram_addPropertyView: (
+        diagram: Diagram,
+        view: PropertyView,
+      ): void => {
+        diagram_addPropertyView(diagram, view);
+      },
+
+      onDiagram_deletePropertyView: (
+        diagram: Diagram,
+        view: PropertyView,
+      ): void => {
+        diagram_deletePropertyView(diagram, view);
+      },
+
+      // ClassView display mutations
+      onClassView_setHideProperties: (
+        classView: ClassView,
+        hide: boolean,
+      ): void => {
+        classView_setHideProperties(classView, hide);
+      },
+
+      onClassView_setHideStereotypes: (
+        classView: ClassView,
+        hide: boolean,
+      ): void => {
+        classView_setHideStereotypes(classView, hide);
+      },
+
+      onClassView_setHideTaggedValues: (
+        classView: ClassView,
+        hide: boolean,
+      ): void => {
+        classView_setHideTaggedValues(classView, hide);
+      },
+
+      // RelationshipEdgeOffset mutations
+      onRelationshipEdgeView_setOffsetX: (
+        edge: RelationshipViewEnd,
+        offsetX: number,
+      ): void => {
+        relationshipEdgeView_setOffsetX(edge, offsetX);
+      },
+
+      onRelationshipEdgeView_setOffsetY: (
+        edge: RelationshipViewEnd,
+        offsetY: number,
+      ): void => {
+        relationshipEdgeView_setOffsetY(edge, offsetY);
+      },
+
+      // RelationshipView path mutations
+      onRelationshipView_changePoint: (
+        relationship: RelationshipView,
+        oldPoint: Point,
+        newPoint: Point,
+      ): void => {
+        relationshipView_changePoint(relationship, oldPoint, newPoint);
+      },
+
+      onRelationshipView_simplifyPath: (
+        relationship: RelationshipView,
+      ): void => {
+        relationshipView_simplifyPath(relationship);
+      },
+
+      onRelationshipView_setPath: (
+        relationship: RelationshipView,
+        path: Point[],
+      ): void => {
+        relationshipView_setPath(relationship, path);
+      },
+
+      // PositionedRectangle mutations
+      onPositionedRectangle_setRectangle: (
+        classView: ClassView,
+        rectangle: Rectangle,
+      ): void => {
+        positionedRectangle_setRectangle(classView, rectangle);
+      },
+
+      onPositionedRectangle_setPosition: (
+        classView: ClassView,
+        position: Point,
+      ): void => {
+        positionedRectangle_setPosition(classView, position);
+      },
+
+      onPositionedRectangle_forceRefreshHash: (
+        positionedRectangle: PositionedRectangle,
+      ): void => {
+        positionedRectangle_forceRefreshHash(positionedRectangle);
+      },
+
+      // Helper functions
+      onFindOrBuildPoint: (
+        relationship: RelationshipView,
+        x: number,
+        y: number,
+        zoom: number,
+        editable: boolean,
+      ): Point | undefined => {
+        return findOrBuildPoint(relationship, x, y, zoom, editable);
+      },
+    };
+  }
+
   setupRenderer(): void {
     this.renderer.setIsReadOnly(this.isReadOnly);
+
     const handleEditClassView = (classView: ClassView): void => {
       this.setSidePanelState(
         new DiagramEditorClassViewEditorSidePanelState(

@@ -82,7 +82,6 @@ import {
 } from '../../../../graph-manager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
   DataSpaceAnalysisResult,
-  DataSpaceDiagramAnalysisResult,
   DataSpaceExecutableAnalysisResult,
   DataSpaceExecutableTDSResultColumn,
   DataSpaceExecutableTDSResult,
@@ -96,6 +95,7 @@ import {
   DataSpaceFunctionPointerExecutableInfo,
   DataSpaceExecutionContextRuntimeMetadata,
 } from '../../../action/analytics/DataSpaceAnalysis.js';
+import { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
 import {
   type V1_DataSpaceAnalysisResult,
@@ -1031,7 +1031,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     result.diagrams = (
       buildMinimalGraph && isMiniGraphSuccess ? [] : analysisResult.diagrams
     ).map((diagramProtocol) => {
-      const diagram = new DataSpaceDiagramAnalysisResult();
+      const diagram = new DiagramAnalysisResult();
       diagram.title = diagramProtocol.title;
       diagram.description = diagramProtocol.description;
       diagram.diagram = getDiagram(diagramProtocol.diagram, graph);

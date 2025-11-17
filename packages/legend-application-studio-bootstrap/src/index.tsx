@@ -29,7 +29,7 @@ import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-sto
 import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service/application-studio';
 import { Assortment_GraphManagerPreset } from '@finos/legend-extension-assortment/graph';
 import { DSL_Text_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-text/application-studio';
-import { DSL_Diagram_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-diagram/application-studio';
+import { DSL_Diagram_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-diagram-studio';
 import { DSL_Persistence_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-persistence/application-studio';
 import { STO_ServiceStore_LegendStudioApplicationPlugin } from '@finos/legend-extension-store-service-store/application-studio';
 import { Assortment_LegendStudioApplicationPreset } from '@finos/legend-extension-assortment/application-studio';
