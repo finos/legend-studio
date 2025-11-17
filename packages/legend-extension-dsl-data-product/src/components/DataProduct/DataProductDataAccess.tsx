@@ -601,7 +601,7 @@ export const DataProductAccessPointGroupViewer = observer(
               dataAccessState.contractViewerContractAndSubscription
                 .dataContract,
             ),
-            dataAccessState.contractViewerContractAndSubscription?.subscriptions?.[0],
+            dataAccessState.contractViewerContractAndSubscription.subscriptions?.[0],
             apgState.applicationStore,
             dataAccessState.lakehouseContractServerClient,
             apgState.dataProductViewerState.graphManagerState,
