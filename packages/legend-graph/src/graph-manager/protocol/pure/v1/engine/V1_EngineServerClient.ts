@@ -147,6 +147,8 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   VALIDATE_FUNCTION_ACTIVATOR = 'validate function activator',
   RENDER_FUNCTION_ACTIVATOR_ARTIFACT = 'render function activator artifact',
   PUBLISH_FUNCTION_ACTIVATOR_TO_SANDBOX = 'publish function activator to sandbox',
+
+  PUSH_TO_DEV_MODE = 'Push to Dev Mode',
 }
 
 export type V1_GrammarParserBatchInputEntry = {
@@ -1219,5 +1221,21 @@ export class V1_EngineServerClient extends AbstractServerClient {
               generateOpenApi: TEMPORARY__useGenerateOpenApi,
             },
       { enableCompression: true },
+    );
+
+  // ------------------------------------------- Dev Mode -------------------------------------------
+  _devMetadata = (): string => `${this.baseUrl}/lakehouse/sdlc/deploy/project`;
+
+  pushToDevMetadata = (
+    did: string,
+    projectName: string,
+    request: PlainObject,
+  ): Promise<PlainObject> =>
+    this.postWithTracing(
+      this.getTraceData(
+        CORE_ENGINE_ACTIVITY_TRACE.VALIDATE_SERVICE_ASSERTION_ID,
+      ),
+      `${this._devMetadata()}/${did}/${projectName}`,
+      request,
     );
 }

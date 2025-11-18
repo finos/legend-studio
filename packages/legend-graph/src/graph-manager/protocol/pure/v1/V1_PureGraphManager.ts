@@ -370,6 +370,8 @@ import {
   type V1_RawLineageModel,
 } from './model/lineage/V1_Lineage.js';
 import { V1_IngestDefinition } from './model/packageableElements/ingest/V1_IngestDefinition.js';
+import type { DevMetadataResult } from '../../../action/dev-metadata/DevMetadataResult.js';
+import { V1_DevMetadataPushRequest } from './engine/dev-metadata/V1_DevMetadataPushRequest.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -4274,6 +4276,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       'userHasPrototypeProjectAccess is only supported by remote engine',
     );
     return engine.getEngineServerClient().validUserAccessRole(userId);
+  }
+  // --------------------------------------------- SDLC --------------------------------------------------
+
+  async pushToDevMetadata(
+    did: string,
+    projectName: string,
+    graph: PureModel,
+  ): Promise<DevMetadataResult> {
+    const request = new V1_DevMetadataPushRequest();
+    request.projectText = await this.graphToPureCode(graph);
+    return this.engine.pushToDevMetadata(did, projectName, request);
   }
 
   // --------------------------------------------- Change Detection ---------------------------------------------
