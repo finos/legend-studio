@@ -64,20 +64,20 @@ export const ProductTags = observer(
                 : 'Internal'
             }
           />
-          {product.operational?.updateFrequency && (
+          {product.operationalMetadata?.updateFrequency && (
             <Chip
               className="data-product__viewer__wiki__tags__chip"
-              label={`Refreshed: ${product.operational.updateFrequency}`}
+              label={`Refreshed: ${product.operationalMetadata.updateFrequency}`}
             />
           )}
-          {product.operational?.coverageRegions &&
-            product.operational.coverageRegions.length > 0 && (
+          {product.operationalMetadata?.coverageRegions &&
+            product.operationalMetadata.coverageRegions.length > 0 && (
               <Chip
                 className="data-product__viewer__wiki__tags__chip"
                 label={
-                  product.operational.coverageRegions.length === 4
+                  product.operationalMetadata.coverageRegions.length === 4
                     ? 'Global'
-                    : product.operational.coverageRegions.join(', ')
+                    : product.operationalMetadata.coverageRegions.join(', ')
                 }
               />
             )}

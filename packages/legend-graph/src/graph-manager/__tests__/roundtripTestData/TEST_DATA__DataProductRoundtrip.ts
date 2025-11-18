@@ -73,7 +73,7 @@ export const TEST_DATA__DATAPRODUCT_DELIVERY = [
           id: 'default',
         },
       ],
-      operational: {
+      operationalMetadata: {
         coverageRegions: ['apac', 'namr'],
         updateFrequency: 'daily',
       },
