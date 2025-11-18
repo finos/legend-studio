@@ -43,6 +43,7 @@ import {
   RobotIcon,
   WorkflowIcon,
   ReadMeIcon,
+  DevIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useEffect, useState } from 'react';
@@ -375,6 +376,17 @@ export const ActivityBar = observer(() => {
       title: 'Workflow Manager',
       icon: <WrenchIcon />,
       disabled: editorStore.isInConflictResolutionMode,
+    },
+    {
+      mode: ACTIVITY_MODE.DEV_MODE,
+      title: 'Dev Mode (Beta)',
+      icon: (
+        <>
+          <DevIcon className="activity-bar__icon--service-registrar" />
+          <ActivityBarItemExperimentalBadge />
+        </>
+      ),
+      disabled: editorStore.isInConflictResolutionMode || lazyTextModeEnabled,
     },
     {
       mode: ACTIVITY_MODE.REGISTER_SERVICES,

@@ -123,6 +123,7 @@ import {
 import type { QueryBuilderDataCubeViewerState } from '@finos/legend-query-builder';
 import { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
 import { LakehouseIngestionManager } from '@finos/legend-server-lakehouse';
+import { DevMetadataState } from './sidebar-state/dev-metadata/DevMetadataState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -181,6 +182,7 @@ export class EditorStore implements CommandRegistrar {
   globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState;
   globalEndToEndWorkflowState: GlobalEndToEndWorkflowState;
   devToolState: DevToolPanelState;
+  devMetadataState: DevMetadataState;
   sqlPlaygroundState: SQLPlaygroundPanelState;
 
   modelImporterState: ModelImporterState;
@@ -277,6 +279,7 @@ export class EditorStore implements CommandRegistrar {
     this.graphEditorMode = new GraphEditFormModeState(this);
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolPanelState(this);
+    this.devMetadataState = new DevMetadataState(this);
     this.sqlPlaygroundState = new SQLPlaygroundPanelState(this);
     this.embeddedQueryBuilderState = new EmbeddedQueryBuilderState(this);
     // side bar panels
