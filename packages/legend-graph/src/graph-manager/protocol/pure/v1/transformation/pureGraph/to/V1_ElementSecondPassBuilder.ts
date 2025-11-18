@@ -786,9 +786,9 @@ export class V1_ElementSecondPassBuilder
     dataProduct.sampleValues = element.sampleValues?.map((data) =>
       V1_buildEmbeddedData(data, this.context),
     );
-    if (element.operational) {
-      dataProduct.operational = V1_buildDataProductOperationalMetadata(
-        element.operational,
+    if (element.operationalMetadata) {
+      dataProduct.operationalMetadata = V1_buildDataProductOperationalMetadata(
+        element.operationalMetadata,
       );
     }
     dataProduct.stereotypes = element.stereotypes

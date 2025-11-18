@@ -391,7 +391,7 @@ export class DataProduct extends PackageableElement {
   supportInfo: SupportInfo | undefined;
   type: DataProductType | undefined;
   sampleValues: EmbeddedData[] | undefined;
-  operational: DataProductOperationalMetadata | undefined;
+  operationalMetadata: DataProductOperationalMetadata | undefined;
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -411,7 +411,7 @@ export class DataProduct extends PackageableElement {
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
       hashArray(this.sampleValues ?? []),
-      this.operational ?? '',
+      this.operationalMetadata ?? '',
     ]);
   }
 }

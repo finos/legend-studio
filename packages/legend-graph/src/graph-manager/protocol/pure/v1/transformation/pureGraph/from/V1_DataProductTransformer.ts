@@ -144,17 +144,15 @@ export const V1_transformDataProduct = (
     product.icon = transformDataProductIcon(element.icon);
   }
 
-  if (!element.operational) {
-    product.operational = undefined;
+  if (!element.operationalMetadata) {
+    product.operationalMetadata = undefined;
   } else {
-    const operational = new V1_DataProductOperationalMetadata();
-    operational.updateFrequency = element.operational.updateFrequency as
-      | V1_DeliveryFrequency
-      | undefined;
-    operational.coverageRegions = element.operational.coverageRegions as
-      | V1_DataProductRegion[]
-      | undefined;
-    product.operational = operational;
+    const operationalMetadata = new V1_DataProductOperationalMetadata();
+    operationalMetadata.updateFrequency = element.operationalMetadata
+      .updateFrequency as V1_DeliveryFrequency | undefined;
+    operationalMetadata.coverageRegions = element.operationalMetadata
+      .coverageRegions as V1_DataProductRegion[] | undefined;
+    product.operationalMetadata = operationalMetadata;
   }
 
   if (!element.supportInfo) {

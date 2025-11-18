@@ -347,7 +347,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
   sampleValues: V1_EmbeddedData[] | undefined;
-  operational: V1_DataProductOperationalMetadata | undefined;
+  operationalMetadata: V1_DataProductOperationalMetadata | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -361,7 +361,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
       hashArray(this.sampleValues ?? []),
-      this.operational ?? '',
+      this.operationalMetadata ?? '',
     ]);
   }
 

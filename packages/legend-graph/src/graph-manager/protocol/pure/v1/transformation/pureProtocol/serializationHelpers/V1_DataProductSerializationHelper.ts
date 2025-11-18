@@ -383,7 +383,7 @@ export const V1_dataProductModelSchema = (
       V1_deserializeDataProductIcon,
     ),
     name: primitive(),
-    operational: optionalCustomUsingModelSchema(
+    operationalMetadata: optionalCustomUsingModelSchema(
       V1_DataProductOperationalMetadataModelSchema,
     ),
     package: primitive(),
