@@ -21,7 +21,6 @@
     1px 4px 6px rgb(0 0 0 / 10%), -1px 4px 6px rgb(0 0 0 / 10%);
   --legend-marketplace-card-shadow-hover:
     2px 5px 8px rgb(0 0 0 / 20%), -2px 5px 8px rgb(0 0 0 / 20%);
-  --legend-marketplace-card-gradient-size: 15%;
 }
 
 .legend-marketplace-card {
@@ -49,16 +48,8 @@
   }
 
   &--with-preview {
-    &--small {
-      .legend-marketplace-card__icon {
-        bottom: 40%;
-      }
-    }
-
-    &--large {
-      .legend-marketplace-card__icon {
-        bottom: 55%;
-      }
+    .legend-marketplace-card__icon {
+      bottom: 50%;
     }
   }
 
@@ -81,10 +72,9 @@
     width: 100%;
     height: 100%;
     background-size: contain;
-    background-position: center;
+    background-position: top;
     background-repeat: no-repeat;
     background-origin: content-box;
-    padding: 3rem;
   }
 
   &__content-container {
@@ -129,13 +119,8 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: calc(100% + var(--legend-marketplace-card-gradient-size));
-    background: linear-gradient(
-      to bottom,
-      rgb(0 0 0 / 0%) 0%,
-      rgb(0 0 0 / 90%) var(--legend-marketplace-card-gradient-size),
-      rgb(0 0 0 / 90%) 100%
-    );
+    height: 100%;
+    background: var(--color-black);
     transform: translateY(100%);
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     z-index: 1;
@@ -146,7 +131,7 @@
 
       position: absolute;
       padding: 1.5rem;
-      top: var(--legend-marketplace-card-gradient-size);
+      top: 0;
       bottom: 0;
       left: 0;
       width: 100%;
@@ -155,12 +140,8 @@
       font-size: 1.5rem;
     }
 
-    &--preview--small {
-      transform: translateY(65%);
-    }
-
-    &--preview--large {
-      transform: translateY(40%);
+    &--preview {
+      transform: translateY(50%);
     }
 
     &--visible {
