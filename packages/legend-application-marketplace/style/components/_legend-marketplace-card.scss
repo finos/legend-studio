@@ -50,7 +50,7 @@
   &--with-preview {
     &--small {
       .legend-marketplace-card__icon {
-        bottom: 40%;
+        bottom: 45%;
       }
     }
 
@@ -68,7 +68,7 @@
     width: 100%;
 
     svg {
-      font-size: 12rem;
+      font-size: 13rem;
       color: var(--color-white);
     }
   }
@@ -149,7 +149,7 @@
     }
 
     &--preview--small {
-      transform: translateY(65%);
+      transform: translateY(55%);
     }
 
     &--preview--large {
