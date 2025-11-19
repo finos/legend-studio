@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.41
+
+### Patch Changes
+
+- [#4644](https://github.com/finos/legend-studio/pull/4644) [`d13afe6`](https://github.com/finos/legend-studio/commit/d13afe62c49f096226206fc4753d8787f091bd16) ([@travisstebbins](https://github.com/travisstebbins)) - Revamp card image UI
+
 ## 0.1.40
 
 ### Patch Changes
