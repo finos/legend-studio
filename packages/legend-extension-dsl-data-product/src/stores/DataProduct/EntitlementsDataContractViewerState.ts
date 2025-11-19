@@ -17,10 +17,11 @@
 import {
   type GraphManagerState,
   type V1_DataContract,
+  type V1_DataSubscription,
   type V1_LiteDataContract,
   type V1_TaskMetadata,
   type V1_UserType,
-  V1_dataContractsResponseModelSchemaToContracts,
+  V1_deserializeDataContractResponse,
   V1_deserializeTaskResponse,
   V1_observe_DataContract,
   V1_observe_LiteDataContract,
@@ -37,6 +38,7 @@ import type { LakehouseContractServerClient } from '@finos/legend-server-lakehou
 
 export class EntitlementsDataContractViewerState {
   readonly liteContract: V1_LiteDataContract;
+  readonly subscription: V1_DataSubscription | undefined;
   readonly applicationStore: GenericLegendApplicationStore;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly graphManagerState: GraphManagerState;
@@ -49,6 +51,7 @@ export class EntitlementsDataContractViewerState {
 
   constructor(
     dataContract: V1_LiteDataContract,
+    subscription: V1_DataSubscription | undefined,
     applicationStore: GenericLegendApplicationStore,
     lakehouseContractServerClient: LakehouseContractServerClient,
     graphManagerState: GraphManagerState,
@@ -64,6 +67,7 @@ export class EntitlementsDataContractViewerState {
     });
 
     this.liteContract = V1_observe_LiteDataContract(dataContract);
+    this.subscription = subscription;
     this.applicationStore = applicationStore;
     this.lakehouseContractServerClient = lakehouseContractServerClient;
     this.graphManagerState = graphManagerState;
@@ -94,18 +98,20 @@ export class EntitlementsDataContractViewerState {
   async fetchContractWithMembers(token: string | undefined): Promise<void> {
     this.fetchingMembersState.inProgress();
     try {
-      const rawContracts =
+      const rawContractsAndSubscriptions =
         await this.lakehouseContractServerClient.getDataContract(
           this.liteContract.guid,
           true,
           token,
         );
-      const contracts = V1_dataContractsResponseModelSchemaToContracts(
-        rawContracts,
+      const contractsAndSubscriptions = V1_deserializeDataContractResponse(
+        rawContractsAndSubscriptions,
         this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
       );
       this.setContractWithMembers(
-        contracts[0] ? V1_observe_DataContract(contracts[0]) : undefined,
+        contractsAndSubscriptions[0]?.dataContract
+          ? V1_observe_DataContract(contractsAndSubscriptions[0].dataContract)
+          : undefined,
       );
     } finally {
       this.fetchingMembersState.complete();

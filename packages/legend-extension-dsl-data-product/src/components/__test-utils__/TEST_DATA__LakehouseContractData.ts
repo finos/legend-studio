@@ -18,16 +18,19 @@ import {
   type V1_ContractUserEventDataProducerPayload,
   type V1_ContractUserEventPrivilegeManagerPayload,
   type V1_DataContract,
+  type V1_DataSubscription,
   type V1_LiteDataContract,
   type V1_TaskResponse,
   V1_ApprovalType,
   V1_ContractEventPayloadType,
   V1_ContractState,
+  V1_dataSubscriptionModelSchema,
   V1_OrganizationalScopeType,
   V1_ResourceType,
   V1_UserApprovalStatus,
   V1_UserType,
 } from '@finos/legend-graph';
+import { deserialize } from 'serializr';
 
 export const mockDataContract: V1_LiteDataContract = {
   description: 'Test contract creation request',
@@ -386,3 +389,18 @@ export const mockDeniedTasksResponse: V1_TaskResponse = {
     },
   ],
 };
+
+export const mockAutoCreatedSubscription: V1_DataSubscription = deserialize(
+  V1_dataSubscriptionModelSchema,
+  {
+    guid: 'test-subscription-guid',
+    dataContractId: 'test-data-contract-id',
+    target: {
+      _type: 'Snowflake',
+      snowflakeAccountId: 'test-snowflake-account-id',
+      snowflakeRegion: 'AWS_US_EAST_1',
+      snowflakeNetwork: 'PUBLIC',
+    },
+    createdBy: 'test-requester-user-id',
+  },
+);

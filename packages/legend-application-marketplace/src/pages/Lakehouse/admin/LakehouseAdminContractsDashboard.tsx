@@ -132,6 +132,7 @@ export const LakehouseAdminContractsDashboard = observer(
             currentViewer={
               new EntitlementsDataContractViewerState(
                 selectedContract,
+                undefined,
                 adminStore.legendMarketplaceBaseStore.applicationStore,
                 adminStore.legendMarketplaceBaseStore.lakehouseContractServerClient,
                 new GraphManagerState(

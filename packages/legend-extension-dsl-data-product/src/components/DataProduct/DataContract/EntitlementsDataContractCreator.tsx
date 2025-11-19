@@ -54,7 +54,7 @@ export const EntitlementsDataContractCreator = observer(
     const { open, onClose, token, apgState, dataAccessState } = props;
     const viewerState = dataAccessState.dataProductViewerState;
     const accessPointGroup = guaranteeNonNullable(
-      dataAccessState.dataContractAccessPointGroup,
+      dataAccessState.contractCreatorAPG,
       'Cannot show DataContractCreator. No access point group is selected.',
     );
     const consumerTypeRendererConfigs: ContractConsumerTypeRendererConfig[] =
