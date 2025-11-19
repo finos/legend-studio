@@ -40,7 +40,7 @@ export const LegendMarketplaceCard = (props: {
   actions?: JSX.Element;
   onClick?: () => void;
   moreInfo?: JSX.Element | undefined;
-  moreInfoPreview?: boolean | undefined;
+  moreInfoPreview?: 'small' | 'large' | undefined;
   className?: string;
   cardMedia?: V1_DataProductIcon | string | undefined;
   loadingMedia?: boolean;
@@ -88,8 +88,10 @@ export const LegendMarketplaceCard = (props: {
         <ClickAwayListener onClickAway={() => setIsMouseOver(false)}>
           <CardContent
             className={clsx('legend-marketplace-card__more-info', {
-              'legend-marketplace-card__more-info--preview':
-                moreInfoPreview === true,
+              'legend-marketplace-card__more-info--preview--small':
+                moreInfoPreview === 'small',
+              'legend-marketplace-card__more-info--preview--large':
+                moreInfoPreview === 'large',
               'legend-marketplace-card__more-info--visible': isMouseOver,
             })}
             onMouseEnter={
@@ -121,7 +123,10 @@ export const LegendMarketplaceCard = (props: {
           'legend-marketplace-card--small': size === 'small',
           'legend-marketplace-card--large': size === 'large',
           'legend-marketplace-card--with-icon': cardIcon !== undefined,
-          'legend-marketplace-card--with-preview': moreInfoPreview === true,
+          'legend-marketplace-card--with-preview--small':
+            moreInfoPreview === 'small',
+          'legend-marketplace-card--with-preview--large':
+            moreInfoPreview === 'large',
         },
         className,
       )}

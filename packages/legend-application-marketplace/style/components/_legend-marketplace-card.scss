@@ -48,8 +48,16 @@
   }
 
   &--with-preview {
-    .legend-marketplace-card__icon {
-      bottom: 50%;
+    &--small {
+      .legend-marketplace-card__icon {
+        bottom: 40%;
+      }
+    }
+
+    &--large {
+      .legend-marketplace-card__icon {
+        bottom: 55%;
+      }
     }
   }
 
@@ -140,8 +148,12 @@
       font-size: 1.5rem;
     }
 
-    &--preview {
-      transform: translateY(50%);
+    &--preview--small {
+      transform: translateY(65%);
+    }
+
+    &--preview--large {
+      transform: translateY(40%);
     }
 
     &--visible {

@@ -286,7 +286,7 @@ export const LakehouseProductCard = observer(
   (props: {
     productCardState: ProductCardState;
     onClick: (productCardState: ProductCardState) => void;
-    moreInfoPreview?: boolean;
+    moreInfoPreview?: 'small' | 'large' | undefined;
     hideInfoPopover?: boolean;
     hideTags?: boolean;
   }): React.ReactNode => {
@@ -385,8 +385,7 @@ export const LakehouseProductCard = observer(
                   )}
               </Box>
             )}
-
-            {!moreInfoPreview && (
+            {moreInfoPreview === undefined && (
               <Box className="marketplace-lakehouse-data-product-card__name">
                 {productCardState.title}
               </Box>

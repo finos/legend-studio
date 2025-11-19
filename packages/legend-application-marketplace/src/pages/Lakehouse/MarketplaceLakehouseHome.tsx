@@ -244,7 +244,7 @@ export const MarketplaceLakehouseHome = observer(() => {
                       <LakehouseProductCard
                         key={`slide-1-${productCardState.guid}`}
                         productCardState={productCardState}
-                        moreInfoPreview={true}
+                        moreInfoPreview="large"
                         hideInfoPopover={true}
                         hideTags={true}
                         onClick={() => {
@@ -276,7 +276,7 @@ export const MarketplaceLakehouseHome = observer(() => {
                       <LakehouseProductCard
                         key={`slide-2-${productCardState.guid}`}
                         productCardState={productCardState}
-                        moreInfoPreview={true}
+                        moreInfoPreview="large"
                         hideInfoPopover={true}
                         hideTags={true}
                         onClick={() => {
@@ -308,7 +308,7 @@ export const MarketplaceLakehouseHome = observer(() => {
                       <LakehouseProductCard
                         key={`slide-1-${productCardState.guid}`}
                         productCardState={productCardState}
-                        moreInfoPreview={true}
+                        moreInfoPreview="large"
                         hideInfoPopover={true}
                         hideTags={true}
                         onClick={() => {
