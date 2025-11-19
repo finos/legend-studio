@@ -1,5 +1,11 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.5
+
+### Patch Changes
+
+- [#4638](https://github.com/finos/legend-studio/pull/4638) [`80904a4`](https://github.com/finos/legend-studio/commit/80904a41f08ee55bd1ae802797ad12e342865b4b) ([@kelly-thai](https://github.com/kelly-thai)) - Update operational metadata roundtrip in studio
+
 ## 0.1.4
 
 ### Patch Changes

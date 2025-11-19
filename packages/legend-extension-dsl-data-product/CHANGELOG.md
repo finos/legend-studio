@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.26
+
+### Patch Changes
+
+- [#4638](https://github.com/finos/legend-studio/pull/4638) [`80904a4`](https://github.com/finos/legend-studio/commit/80904a41f08ee55bd1ae802797ad12e342865b4b) ([@kelly-thai](https://github.com/kelly-thai)) - Update operational metadata roundtrip in studio
+
+- [#4637](https://github.com/finos/legend-studio/pull/4637) [`2f99ad0`](https://github.com/finos/legend-studio/commit/2f99ad0660f45e4467f73b899731d0e4f66ee1e7) ([@travisstebbins](https://github.com/travisstebbins)) - Show message when Marketplace subscription is auto-created
+
 ## 0.0.25
 
 ### Patch Changes

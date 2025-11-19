@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.132
+
+### Patch Changes
+
+- [#4641](https://github.com/finos/legend-studio/pull/4641) [`f28c30e`](https://github.com/finos/legend-studio/commit/f28c30e988912cfe5502b55535698b11b6ba9b23) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add DevIcon
+
 ## 7.1.131
 
 ## 7.1.130

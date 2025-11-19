@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.40
+
+### Patch Changes
+
+- [#4637](https://github.com/finos/legend-studio/pull/4637) [`2f99ad0`](https://github.com/finos/legend-studio/commit/2f99ad0660f45e4467f73b899731d0e4f66ee1e7) ([@travisstebbins](https://github.com/travisstebbins)) - Show message when Marketplace subscription is auto-created
+
 ## 0.1.39
 
 ### Patch Changes
