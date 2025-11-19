@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.67
+
+### Patch Changes
+
+- [#4641](https://github.com/finos/legend-studio/pull/4641) [`f28c30e`](https://github.com/finos/legend-studio/commit/f28c30e988912cfe5502b55535698b11b6ba9b23) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Dev Mode Push to studio
+
 ## 28.19.66
 
 ### Patch Changes

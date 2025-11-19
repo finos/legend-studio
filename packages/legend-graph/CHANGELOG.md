@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.3.17
+
+### Patch Changes
+
+- [#4641](https://github.com/finos/legend-studio/pull/4641) [`f28c30e`](https://github.com/finos/legend-studio/commit/f28c30e988912cfe5502b55535698b11b6ba9b23) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Dev Mode Push to studio
+
+- [#4638](https://github.com/finos/legend-studio/pull/4638) [`80904a4`](https://github.com/finos/legend-studio/commit/80904a41f08ee55bd1ae802797ad12e342865b4b) ([@kelly-thai](https://github.com/kelly-thai)) - Update operational metadata roundtrip in studio
+
+- [#4637](https://github.com/finos/legend-studio/pull/4637) [`2f99ad0`](https://github.com/finos/legend-studio/commit/2f99ad0660f45e4467f73b899731d0e4f66ee1e7) ([@travisstebbins](https://github.com/travisstebbins)) - Update handling of deserializing V1_DataContractsResponse
+
 ## 32.3.16
 
 ### Patch Changes
