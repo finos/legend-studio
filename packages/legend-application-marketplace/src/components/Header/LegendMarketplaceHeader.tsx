@@ -28,6 +28,7 @@ import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js'
 import { matchPath } from '@finos/legend-application/browser';
 import { useEffect, useState } from 'react';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import { useAuth } from 'react-oidc-context';
 
 const HEADER_HEIGHT = 64;
 const MIN_HEADER_OPACITY = 0.75;
@@ -84,6 +85,7 @@ const LegendMarketplaceBaseHeader = observer(
     const { homeUrl, pages, showIcons } = props;
 
     const applicationStore = useApplicationStore();
+    const auth = useAuth();
 
     const [headerBackdropOpacity, setHeaderBackdropOpacity] = useState(1);
     const [headerBlurOpacity, setHeaderBlurOpacity] = useState(0);
@@ -120,8 +122,10 @@ const LegendMarketplaceBaseHeader = observer(
     }, []);
 
     useEffect(() => {
-      applicationStore.releaseNotesService.updateViewedVersion();
-    }, [applicationStore]);
+      if (auth.isAuthenticated) {
+        applicationStore.releaseNotesService.updateViewedVersion();
+      }
+    }, [applicationStore, auth.isAuthenticated]);
 
     const navigateToHome = (): void => {
       applicationStore.navigationService.navigator.goToLocation(homeUrl);

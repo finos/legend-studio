@@ -64,6 +64,7 @@ import {
   openShowcaseManager,
 } from '../../stores/ShowcaseManagerState.js';
 import { toggleShowcasePanel } from './ShowcaseSideBar.js';
+import { useAuth, type AuthContextProps } from 'react-oidc-context';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
@@ -83,10 +84,19 @@ const SettingsMenu = observer(
   }),
 );
 
+const useOptionalAuth = (): AuthContextProps | undefined => {
+  try {
+    return useAuth();
+  } catch {
+    return undefined;
+  }
+};
+
 export const ActivityBarMenu: React.FC<{
   openShowcasePanel?: () => void;
 }> = ({ openShowcasePanel }) => {
   const applicationStore = useLegendStudioApplicationStore();
+  const auth = useOptionalAuth();
   const appDocUrl = applicationStore.documentationService.url;
   const docLinks = applicationStore.documentationService.links;
   // about modal
@@ -122,8 +132,10 @@ export const ActivityBarMenu: React.FC<{
     ShowcaseManagerState.retrieveNullableState(applicationStore);
   // release notification
   useEffect(() => {
-    applicationStore.releaseNotesService.updateViewedVersion();
-  }, [applicationStore]);
+    if (auth === undefined || auth.isAuthenticated) {
+      applicationStore.releaseNotesService.updateViewedVersion();
+    }
+  }, [applicationStore, auth, auth?.isAuthenticated]);
 
   return (
     <>
