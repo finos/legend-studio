@@ -1,5 +1,21 @@
 # @finos/legend-application-studio
 
+## 28.19.68
+
+## 28.19.67
+
+### Patch Changes
+
+- [#4641](https://github.com/finos/legend-studio/pull/4641) [`f28c30e`](https://github.com/finos/legend-studio/commit/f28c30e988912cfe5502b55535698b11b6ba9b23) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Dev Mode Push to studio
+
+## 28.19.66
+
+### Patch Changes
+
+- [#4624](https://github.com/finos/legend-studio/pull/4624) [`8926940`](https://github.com/finos/legend-studio/commit/8926940ce7f86ec907147c57db54315aef4bb738) ([@kelly-thai](https://github.com/kelly-thai)) - Add user search config to studio
+
+## 28.19.65
+
 ## 28.19.64
 
 ## 28.19.63

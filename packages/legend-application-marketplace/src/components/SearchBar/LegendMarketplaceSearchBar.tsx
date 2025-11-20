@@ -36,13 +36,13 @@ export interface Vendor {
 
 export const LegendMarketplaceSearchBar = observer(
   (props: {
-    onSearch?: (query: string | undefined, useIndexSearch: boolean) => void;
+    onSearch?: (query: string | undefined, useProducerSearch: boolean) => void;
     initialValue?: string | undefined;
     placeholder?: string;
     onChange?: (query: string) => void;
     className?: string | undefined;
     showSettings?: boolean;
-    initialUseIndexSearch?: boolean;
+    initialUseProducerSearch?: boolean;
   }): JSX.Element => {
     const {
       onSearch,
@@ -51,12 +51,12 @@ export const LegendMarketplaceSearchBar = observer(
       onChange,
       className,
       showSettings,
-      initialUseIndexSearch,
+      initialUseProducerSearch,
     } = props;
 
     const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
-    const [useIndexSearch, setUseIndexSearch] = useState(
-      initialUseIndexSearch ?? false,
+    const [useProducerSearch, setUseProducerSearch] = useState(
+      initialUseProducerSearch ?? false,
     );
     const [searchMenuAnchorEl, setSearchMenuAnchorEl] =
       useState<HTMLElement | null>();
@@ -68,7 +68,7 @@ export const LegendMarketplaceSearchBar = observer(
         className={clsx('legend-marketplace__search-bar', className)}
         onSubmit={(event) => {
           event.preventDefault();
-          onSearch?.(searchQuery, useIndexSearch);
+          onSearch?.(searchQuery, useProducerSearch);
         }}
       >
         <TextField
@@ -114,16 +114,16 @@ export const LegendMarketplaceSearchBar = observer(
               <FormControlLabel
                 control={
                   <Switch
-                    checked={useIndexSearch}
+                    checked={useProducerSearch}
                     onChange={(event) => {
-                      setUseIndexSearch(event.target.checked);
+                      setUseProducerSearch(event.target.checked);
                     }}
                   />
                 }
                 label={
                   <>
-                    Use Index Search{' '}
-                    <LegendMarketplaceInfoTooltip title="Index search provides the most up-to-date results by searching directly on deployed data products. Only use index search if you are trying to find a recently deployed data product." />
+                    Producer Search{' '}
+                    <LegendMarketplaceInfoTooltip title="Use this search if you have just created a data product and would like to immediately see it" />
                   </>
                 }
               />

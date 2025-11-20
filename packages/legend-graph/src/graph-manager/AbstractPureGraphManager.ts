@@ -123,6 +123,7 @@ import type {
   LineageModel,
   RawLineageModel,
 } from '../graph/metamodel/pure/lineage/LineageModel.js';
+import type { DevMetadataResult } from './action/dev-metadata/DevMetadataResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -433,6 +434,14 @@ export abstract class AbstractPureGraphManager {
   }>;
 
   abstract userHasPrototypeProjectAccess(userId: string): Promise<boolean>;
+
+  // ------------------------------------------- Dev Mode -------------------------------------------
+
+  abstract pushToDevMetadata(
+    did: string,
+    projectName: string,
+    graph: PureModel,
+  ): Promise<DevMetadataResult>;
 
   // ------------------------------------------- Test -------------------------------------------
 

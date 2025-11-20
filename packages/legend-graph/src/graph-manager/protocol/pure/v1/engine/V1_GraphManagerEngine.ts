@@ -99,6 +99,8 @@ import type {
   V1_LineageInput,
   V1_RawLineageModel,
 } from '../model/lineage/V1_Lineage.js';
+import type { V1_DevMetadataPushRequest } from './dev-metadata/V1_DevMetadataPushRequest.js';
+import type { DevMetadataResult } from '../../../../action/dev-metadata/DevMetadataResult.js';
 
 export interface V1_GraphManagerEngine {
   config: TEMPORARY__AbstractEngineConfig;
@@ -416,4 +418,11 @@ export interface V1_GraphManagerEngine {
   getAvailableRelationalDatabaseTypeConfigurations: () => Promise<
     V1_RelationalConnectionBuilder[]
   >;
+
+  // ------------------------------------------- Dev Mode -------------------------------------------
+  pushToDevMetadata(
+    did: string,
+    projectName: string,
+    request: V1_DevMetadataPushRequest,
+  ): Promise<DevMetadataResult>;
 }

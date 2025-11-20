@@ -41,6 +41,8 @@ import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSet
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { ReleaseViewer } from '@finos/legend-application';
 import { isNonNullable } from '@finos/legend-shared';
+import { LakehouseConsumerDataCubeSource } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
+import { LakehouseProducerDataCubeSource } from '../../stores/model/LakehouseProducerDataCubeSource.js';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -181,7 +183,9 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
   const application = store.application;
   const builder = store.builder;
   const persistentDataCube = builder?.persistentDataCube;
-
+  const isLakehouseSource =
+    store.builder?.source instanceof LakehouseConsumerDataCubeSource ||
+    store.builder?.source instanceof LakehouseProducerDataCubeSource;
   const logMenuItem = (menuName: string) => {
     store.engine.sendTelemetry(DataCubeEvent.SELECT_ITEM_TITLE_BAR, {
       ...store.engine.getDataFromSource(
@@ -210,6 +214,14 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
                   store.sourceViewerDisplay.open();
                   logMenuItem(DataCubeTitleBarMenuItems.VIEW_SOURCE);
                 },
+              },
+              {
+                label: DataCubeTitleBarMenuItems.EDIT_SOURCE_QUERY,
+                action: () => {
+                  store.queryEditorDisplay.open();
+                  logMenuItem(DataCubeTitleBarMenuItems.EDIT_SOURCE_QUERY);
+                },
+                disabled: !isLakehouseSource,
               },
             ]
           : []),

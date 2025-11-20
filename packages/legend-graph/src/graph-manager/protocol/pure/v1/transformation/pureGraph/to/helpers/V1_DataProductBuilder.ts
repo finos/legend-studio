@@ -24,10 +24,13 @@ import {
   type DataProductElement,
   type DataProductIcon,
   AccessPointGroup,
+  type DataProduct_DeliveryFrequency,
+  type DataProduct_Region,
   DataProductElementScope,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   DataProductLink,
+  DataProductOperationalMetadata,
   DataProductRuntimeInfo,
   Expertise,
   FunctionAccessPoint,
@@ -49,6 +52,7 @@ import {
   V1_ModelAccessPointGroup,
   V1_UnknownAccessPoint,
   V1_UnknownDataProductIcon,
+  type V1_DataProductOperationalMetadata,
 } from '../../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
@@ -132,6 +136,19 @@ export const V1_buildDataProductExpertise = (
   expertise.description = v1Expertise.description;
   expertise.expertIds = v1Expertise.expertIds;
   return expertise;
+};
+
+export const V1_buildDataProductOperationalMetadata = (
+  operationalMetadata: V1_DataProductOperationalMetadata,
+): DataProductOperationalMetadata => {
+  const metamodelOperationalMetadata = new DataProductOperationalMetadata();
+  metamodelOperationalMetadata.updateFrequency =
+    operationalMetadata.updateFrequency as
+      | DataProduct_DeliveryFrequency
+      | undefined;
+  metamodelOperationalMetadata.coverageRegions =
+    operationalMetadata.coverageRegions as DataProduct_Region[] | undefined;
+  return metamodelOperationalMetadata;
 };
 
 export const V1_buildAccessPointGroup = (

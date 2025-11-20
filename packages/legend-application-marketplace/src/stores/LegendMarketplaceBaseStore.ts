@@ -92,14 +92,14 @@ export class LegendMarketplaceBaseStore {
   readonly initState = ActionState.create();
 
   showDemoModal = false;
-  useIndexSearch = false;
+  useProducerSearch = false;
 
   constructor(applicationStore: LegendMarketplaceApplicationStore) {
     makeObservable<LegendMarketplaceBaseStore>(this, {
       showDemoModal: observable,
-      useIndexSearch: observable,
+      useProducerSearch: observable,
       setDemoModal: action,
-      setUseIndexSearch: action,
+      setUseProducerSearch: action,
       initialize: flow,
     });
 
@@ -233,6 +233,7 @@ export class LegendMarketplaceBaseStore {
       const getDataProductState = async (
         dataProductId: string,
         deploymentId: number,
+        graphManager: V1_PureGraphManager,
       ) => {
         const rawResponse =
           await this.lakehouseContractServerClient.getDataProductByIdAndDID(
@@ -250,7 +251,12 @@ export class LegendMarketplaceBaseStore {
             convertEntitlementsDataProductDetailsToSearchResult(
               dataProductDetail,
             );
-          return new ProductCardState(this, searchResult, new Map());
+          return new ProductCardState(
+            this,
+            searchResult,
+            graphManager,
+            new Map(),
+          );
         } else {
           return undefined;
         }
@@ -259,6 +265,7 @@ export class LegendMarketplaceBaseStore {
       const getLegacyDataProductState = async (
         dataProductId: string,
         gav: string,
+        graphManager: V1_PureGraphManager,
       ) => {
         const coordinates = parseGAVCoordinates(gav);
         const storeProject = new StoreProjectData();
@@ -278,7 +285,12 @@ export class LegendMarketplaceBaseStore {
           coordinates.artifactId,
           coordinates.versionId,
         );
-        return new ProductCardState(this, searchResult, new Map());
+        return new ProductCardState(
+          this,
+          searchResult,
+          graphManager,
+          new Map(),
+        );
       };
 
       const graphManager = new V1_PureGraphManager(
@@ -304,14 +316,19 @@ export class LegendMarketplaceBaseStore {
               ? getDataProductState(
                   dataProduct.dataProductId,
                   dataProduct.deploymentId,
+                  graphManager,
                 )
               : getLegacyDataProductState(
                   dataProduct.dataProductId,
                   dataProduct.gav,
+                  graphManager,
                 ),
           ),
         )
       ).filter(isNonNullable);
+      dataProductStates.forEach((dataProductState) =>
+        dataProductState.init(token),
+      );
       return dataProductStates;
     }
     return undefined;
@@ -321,8 +338,8 @@ export class LegendMarketplaceBaseStore {
     this.showDemoModal = val;
   }
 
-  setUseIndexSearch(value: boolean): void {
-    this.useIndexSearch = value;
+  setUseProducerSearch(value: boolean): void {
+    this.useProducerSearch = value;
   }
 
   *initialize(): GeneratorFn<void> {

@@ -73,19 +73,11 @@ export const TEST_DATA__DATAPRODUCT_DELIVERY = [
           id: 'default',
         },
       ],
-      coverageRegions: ['apac', 'namr'],
-      deliveryFrequency: 'daily',
+      operationalMetadata: {
+        coverageRegions: ['apac', 'namr'],
+        updateFrequency: 'daily',
+      },
       description: 'Test description',
-      expertise: [
-        {
-          description: 'Expertise description',
-          expertIds: ['expert1', 'expert2'],
-        },
-        {
-          description: 'Second expertise',
-          expertIds: ['user1, user2'],
-        },
-      ],
       icon: {
         _type: 'libraryIcon',
         iconId: 'UpArrow',
@@ -104,6 +96,16 @@ export const TEST_DATA__DATAPRODUCT_DELIVERY = [
           label: 'exampleDoc',
           url: 'https://example.org',
         },
+        expertise: [
+          {
+            description: 'Expertise description',
+            expertIds: ['expert1', 'expert2'],
+          },
+          {
+            description: 'Second expertise',
+            expertIds: ['user1, user2'],
+          },
+        ],
         emails: [
           {
             address: 'someEmail@test.org',

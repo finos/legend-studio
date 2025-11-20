@@ -56,58 +56,6 @@
     font-size: 2.2rem;
   }
 
-  &__sort-filters {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    font-size: 1.8rem;
-    min-width: 25rem;
-    height: 100%;
-    background: #f2f2f2;
-    padding: 1.6rem;
-    width: 15%;
-
-    &__filter {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-
-      .MuiSvgIcon-root {
-        font-size: 2rem;
-      }
-
-      .MuiFormControlLabel-label {
-        font-size: 1.4rem;
-      }
-
-      .Mui-checked:not(.Mui-disabled) {
-        color: #000;
-      }
-
-      &__section-header {
-        @include flexVCenter;
-
-        margin-left: 3rem;
-      }
-
-      &__expander {
-        @include flexCenter;
-
-        min-width: 3rem;
-        margin-left: -3rem;
-        cursor: pointer;
-      }
-
-      &__unmodeled-config {
-        margin-left: 5.5rem;
-
-        hr {
-          margin-right: 2rem;
-        }
-      }
-    }
-  }
-
   &__data-product-cards {
     width: 100%;
     justify-content: start;

@@ -18,7 +18,6 @@ import type {
   V1_ContractUserStatusResponse,
   V1_CreateContractPayload,
   V1_CreateSubscriptionInput,
-  V1_DataContract,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_DataSubscriptionResponse,
@@ -134,7 +133,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   createContract = (
     contractRequest: PlainObject<V1_CreateContractPayload>,
     token: string | undefined,
-  ): Promise<V1_DataContract> =>
+  ): Promise<V1_DataContractsResponse> =>
     this.post(
       `${this._dataContracts()}`,
       contractRequest,

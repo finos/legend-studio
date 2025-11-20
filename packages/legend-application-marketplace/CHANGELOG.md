@@ -1,5 +1,31 @@
 # @finos/legend-application-marketplace
 
+## 0.1.41
+
+### Patch Changes
+
+- [#4644](https://github.com/finos/legend-studio/pull/4644) [`d13afe6`](https://github.com/finos/legend-studio/commit/d13afe62c49f096226206fc4753d8787f091bd16) ([@travisstebbins](https://github.com/travisstebbins)) - Revamp card image UI
+
+## 0.1.40
+
+### Patch Changes
+
+- [#4637](https://github.com/finos/legend-studio/pull/4637) [`2f99ad0`](https://github.com/finos/legend-studio/commit/2f99ad0660f45e4467f73b899731d0e4f66ee1e7) ([@travisstebbins](https://github.com/travisstebbins)) - Show message when Marketplace subscription is auto-created
+
+## 0.1.39
+
+### Patch Changes
+
+- [#4631](https://github.com/finos/legend-studio/pull/4631) [`97c1c0f`](https://github.com/finos/legend-studio/commit/97c1c0f0e9a9076196f12287457e4c488b60daea) ([@travisstebbins](https://github.com/travisstebbins)) - Show data product image/icon in search results
+
+- [#4624](https://github.com/finos/legend-studio/pull/4624) [`8926940`](https://github.com/finos/legend-studio/commit/8926940ce7f86ec907147c57db54315aef4bb738) ([@kelly-thai](https://github.com/kelly-thai)) - Update test utils with new DataProductConfig
+
+## 0.1.38
+
+### Patch Changes
+
+- [#4630](https://github.com/finos/legend-studio/pull/4630) [`e403489`](https://github.com/finos/legend-studio/commit/e40348957c4ce0eb81aa733bd0f44a63d1f150d1) ([@travisstebbins](https://github.com/travisstebbins)) - Update Marketplace search results page
+
 ## 0.1.37
 
 ### Patch Changes

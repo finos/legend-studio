@@ -38,7 +38,7 @@ export function INTERNAL__MonacoEditorWidgetsRoot() {
   return (
     <div
       id={MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID}
-      className="monaco-editor" // keep this root class so widgets can be styled properly
+      className="monaco-editor z-[999999]" // keep this root class so widgets can be styled properly
     />
   );
 }

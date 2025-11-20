@@ -51,6 +51,7 @@ import {
   V1_ExternalDataProductType,
   V1_FunctionAccessPoint,
   type V1_Expertise,
+  V1_DataProductOperationalMetadata,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
@@ -126,16 +127,9 @@ export const V1_transformDataProduct = (
   V1_initPackageableElement(product, element);
   product.description = element.description;
   product.title = element.title;
-  product.deliveryFrequency = element.deliveryFrequency as
-    | V1_DeliveryFrequency
-    | undefined;
-  product.coverageRegions = element.coverageRegions as
-    | V1_DataProductRegion[]
-    | undefined;
   product.sampleValues = element.sampleValues?.map((data) =>
     V1_transformEmbeddedData(data, context),
   );
-  product.expertise = element.expertise as V1_Expertise[] | undefined;
   if (element.type instanceof InternalDataProductType) {
     product.type = new V1_InternalDataProductType();
   } else if (element.type instanceof ExternalDataProductType) {
@@ -150,10 +144,24 @@ export const V1_transformDataProduct = (
     product.icon = transformDataProductIcon(element.icon);
   }
 
+  if (!element.operationalMetadata) {
+    product.operationalMetadata = undefined;
+  } else {
+    const operationalMetadata = new V1_DataProductOperationalMetadata();
+    operationalMetadata.updateFrequency = element.operationalMetadata
+      .updateFrequency as V1_DeliveryFrequency | undefined;
+    operationalMetadata.coverageRegions = element.operationalMetadata
+      .coverageRegions as V1_DataProductRegion[] | undefined;
+    product.operationalMetadata = operationalMetadata;
+  }
+
   if (!element.supportInfo) {
     product.supportInfo = undefined;
   } else {
     const supportInfo = new V1_SupportInfo();
+    supportInfo.expertise = element.supportInfo.expertise as
+      | V1_Expertise[]
+      | undefined;
     supportInfo.documentation = element.supportInfo.documentation;
     supportInfo.website = element.supportInfo.website;
     supportInfo.faqUrl = element.supportInfo.faqUrl;

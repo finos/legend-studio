@@ -37,7 +37,7 @@ export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
 
 export enum LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
   QUERY = 'query',
-  USE_INDEX_SEARCH = 'useIndexSearch',
+  USE_PRODUCER_SEARCH = 'useProducerSearch',
 }
 export type LegendTerminalProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TERMINAL_ID]: string;
@@ -108,15 +108,15 @@ export const generateLakehouseTaskPath = (taskId: string): string =>
 
 export const generateLakehouseSearchResultsRoute = (
   query: string | undefined,
-  useIndexSearch: boolean,
+  useProducerSearch: boolean,
 ): string =>
   addQueryParametersToUrl(
     LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]:
         query ? query : undefined,
-      [LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_INDEX_SEARCH]:
-        useIndexSearch ? useIndexSearch : undefined,
+      [LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_PRODUCER_SEARCH]:
+        useProducerSearch ? useProducerSearch : undefined,
     }),
   );
 

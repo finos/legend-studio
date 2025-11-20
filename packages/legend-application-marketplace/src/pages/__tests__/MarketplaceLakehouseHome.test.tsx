@@ -114,7 +114,7 @@ test('navigates to search results page if search box contains text', async () =>
   );
 });
 
-test('navigates to search results page with index search if search box contains text and index search is enabled', async () => {
+test('navigates to search results page with producer search if search box contains text and producer search is enabled', async () => {
   const { MOCK__baseStore } = await setupTestComponent();
   const mockGoToLocation = jest.fn();
   MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
@@ -126,14 +126,14 @@ test('navigates to search results page with index search if search box contains 
   );
   fireEvent.change(searchInput, { target: { value: 'data' } });
 
-  // Enable index search
+  // Enable producer search
   const searchSettingsButton = screen.getByTitle('Search settings');
   fireEvent.click(searchSettingsButton);
-  const indexSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
-    name: /Use Index Search/,
+  const producerSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
+    name: /Producer Search/,
   });
-  fireEvent.click(indexSearchSwitch);
-  expect(indexSearchSwitch.checked).toBe(true);
+  fireEvent.click(producerSearchSwitch);
+  expect(producerSearchSwitch.checked).toBe(true);
 
   // Click search button
   const searchButton = screen.getByTitle('Search');
@@ -141,7 +141,7 @@ test('navigates to search results page with index search if search box contains 
 
   await waitFor(() =>
     expect(mockGoToLocation).toHaveBeenLastCalledWith(
-      '/dataProduct/results?query=data&useIndexSearch=true',
+      '/dataProduct/results?query=data&useProducerSearch=true',
     ),
   );
 });

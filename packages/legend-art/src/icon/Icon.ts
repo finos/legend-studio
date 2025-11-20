@@ -376,6 +376,7 @@ import {
   FaCrosshairs,
   FaCube,
   FaDatabase,
+  FaDev,
   FaDollarSign,
   FaDownload,
   FaEdit,
@@ -582,6 +583,7 @@ export const PauseCircleIcon = FaPauseCircle;
 export const PencilEditIcon = FaEdit; // to be reviewed/combined
 export const PiedPiperSquareIcon = FaPiedPiperSquare; // to be reviewed/combined
 export const PlayIcon = FaPlay;
+export const DevIcon = FaDev;
 export const PlusIcon = FaPlus;
 export const PuzzlePieceIcon = FaPuzzlePiece; // to be reviewed/combined
 export const QuestionCircleIcon = FaQuestionCircle;

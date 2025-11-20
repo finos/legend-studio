@@ -1,5 +1,21 @@
 # @finos/legend-application-data-cube
 
+## 0.7.21
+
+## 0.7.20
+
+## 0.7.19
+
+### Patch Changes
+
+- [#4628](https://github.com/finos/legend-studio/pull/4628) [`1f81433`](https://github.com/finos/legend-studio/commit/1f8143341e4924702e67b05a356b43be3a211db7) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added edit query overlay to modify data source query.
+
+## 0.7.18
+
+### Patch Changes
+
+- [#4622](https://github.com/finos/legend-studio/pull/4622) [`fecbcd0`](https://github.com/finos/legend-studio/commit/fecbcd03141d40451e982591913eb1c688074480) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: cleanup + fixing iceberg flow
+
 ## 0.7.17
 
 ### Patch Changes
