@@ -43,6 +43,7 @@ import { ReleaseViewer } from '@finos/legend-application';
 import { isNonNullable } from '@finos/legend-shared';
 import { LakehouseConsumerDataCubeSource } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
 import { LakehouseProducerDataCubeSource } from '../../stores/model/LakehouseProducerDataCubeSource.js';
+import { useAuth, type AuthContextProps } from 'react-oidc-context';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -80,6 +81,12 @@ export const LegendDataCubeReleaseLogManager = observer(
   (props: { showOnlyLatestNotes: boolean }) => {
     const { showOnlyLatestNotes } = props;
     const store = useLegendDataCubeBuilderStore();
+    let auth: AuthContextProps | undefined;
+    try {
+      auth = useAuth();
+    } catch {
+      auth = undefined;
+    }
     const applicationStore = store.application;
     const releaseService = applicationStore.releaseNotesService;
     const releaseNotes =
@@ -87,7 +94,11 @@ export const LegendDataCubeReleaseLogManager = observer(
         ? releaseService.showableVersions()
         : releaseService.releaseNotes) ?? [];
 
-    applicationStore.releaseNotesService.updateViewedVersion();
+    useEffect(() => {
+      if (auth === undefined || auth.isAuthenticated) {
+        applicationStore.releaseNotesService.updateViewedVersion();
+      }
+    }, [applicationStore, auth, auth?.isAuthenticated]);
 
     return (
       <div className="legend-datacube-release-notes h-full items-center p-3">
@@ -308,6 +319,12 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
     const params = useParams<LegendDataCubeBuilderPathParams>();
     const dataCubeId =
       params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_ID];
+    let auth: AuthContextProps | undefined;
+    try {
+      auth = useAuth();
+    } catch {
+      auth = undefined;
+    }
 
     useEffect(() => {
       application.navigationService.navigator.blockNavigation(
@@ -345,10 +362,10 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
 
       if (releaseService.isConfigured && isOpen && releaseNotes?.length) {
         store.releaseNotesDisplay.open();
-      } else {
+      } else if (auth === undefined || auth.isAuthenticated) {
         releaseService.updateViewedVersion();
       }
-    }, [application, store]);
+    }, [application, store, auth, auth?.isAuthenticated]);
 
     if (!store.initializeState.hasSucceeded) {
       return (
