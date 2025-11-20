@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
-import { MarkdownTextViewer } from '@finos/legend-art';
+import { AnchorLinkIcon, MarkdownTextViewer } from '@finos/legend-art';
 import {
   type SupportedProducts,
   type SupportedLayoutStates,
@@ -37,11 +37,61 @@ import {
   TerminalAccessAndTable,
   TerminalProductPrice,
 } from './TerminalProductAccess.js';
+import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerState.js';
+import { Chip, Stack } from '@mui/material';
+import { V1_ExternalDataProductType } from '@finos/legend-graph';
+import { prettyCONSTName } from '@finos/legend-shared';
+import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
 ) => (
   <div className="data-product__viewer__wiki__placeholder">{props.message}</div>
+);
+
+export const ProductTags = observer(
+  (props: { productViewerState: DataProductViewerState }) => {
+    const { productViewerState } = props;
+    const product = productViewerState.product;
+
+    return (
+      <div className="data-product__viewer__wiki__tags">
+        <Stack direction="row" spacing={1}>
+          <Chip
+            className="data-product__viewer__wiki__tags__chip"
+            label={
+              product.type instanceof V1_ExternalDataProductType
+                ? 'External'
+                : 'Internal'
+            }
+          />
+          {product.operationalMetadata?.updateFrequency && (
+            <Chip
+              className="data-product__viewer__wiki__tags__chip"
+              label={`Refreshed: ${product.operationalMetadata.updateFrequency}`}
+            />
+          )}
+          {product.operationalMetadata?.coverageRegions &&
+            product.operationalMetadata.coverageRegions.length > 0 && (
+              <Chip
+                className="data-product__viewer__wiki__tags__chip"
+                label={
+                  product.operationalMetadata.coverageRegions.length === 4
+                    ? 'Global'
+                    : product.operationalMetadata.coverageRegions.join(', ')
+                }
+              />
+            )}
+          {productViewerState.isVDP && (
+            <Chip
+              className="data-product__viewer__wiki__tags__chip"
+              label="Vendor Data Product"
+            />
+          )}
+        </Stack>
+      </div>
+    );
+  },
 );
 
 export const ProductDescription = observer(
@@ -73,6 +123,9 @@ export const ProductDescription = observer(
 
     return (
       <div ref={sectionRef} className="data-product__viewer__wiki__section">
+        {productViewerState instanceof DataProductViewerState && (
+          <ProductTags productViewerState={productViewerState} />
+        )}
         <div className="data-product__viewer__wiki__section__content">
           {productViewerState.product.description !== undefined ? (
             <div className="data-product__viewer__description">
@@ -98,6 +151,52 @@ export const ProductDescription = observer(
     );
   },
 );
+
+export const ProductVendorInfo = observer(
+  (props: { productViewerState: DataProductViewerState }) => {
+    const { productViewerState } = props;
+    const product = productViewerState.product;
+    const vendorDataTags = product.taggedValues.filter(
+      (taggedValue) =>
+        taggedValue.tag.profile ===
+        productViewerState.dataProductConfig?.vendorTaggedValue.profile,
+    );
+
+    const anchor = generateAnchorForSection(
+      DATA_PRODUCT_VIEWER_SECTION.VENDOR_DATA,
+    );
+
+    return (
+      <div>
+        <div className="data-product__viewer__wiki__section__header">
+          <div className="data-product__viewer__wiki__section__header__label">
+            Vendor Data
+            <button
+              className="data-product__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => productViewerState.changeZone(anchor, true)}
+            >
+              <AnchorLinkIcon />
+            </button>
+          </div>
+        </div>
+        {vendorDataTags.map((taggedValue) => (
+          <div key={taggedValue.tag.value}>
+            <div className="data-product__viewer__access-point__info">
+              <div className="data-product__viewer__access-point__name">
+                <strong>{prettyCONSTName(taggedValue.tag.value)}</strong>
+              </div>
+              <div className="data-product__viewer__access-point__description">
+                {taggedValue.value}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  },
+);
+
 export const ProductWiki = observer(
   (props: {
     productViewerState: BaseViewerState<
@@ -150,6 +249,15 @@ export const ProductWiki = observer(
               <DataProducteDataAccess
                 dataProductViewerState={productViewerState}
                 dataProductDataAccessState={productDataAccessState}
+              />
+              {productViewerState.isVDP && (
+                <ProductVendorInfo productViewerState={productViewerState} />
+              )}
+              <ModelsDocumentation
+                modelsDocumentationState={
+                  productViewerState.modelsDocumentationState
+                }
+                applicationStore={productViewerState.applicationStore}
               />
               <DataProductSupportInfo
                 dataProductViewerState={productViewerState}

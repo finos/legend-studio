@@ -30,6 +30,7 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import { GlobalTestRunner } from './testable/GlobalTestRunner.js';
 import { RegisterService } from './RegisterService.js';
 import { EndToEndWorkflow } from './end-to-end-workflow/EndToEndWorkflows.js';
+import { DevMetadataPanel } from './DevMetadataPanel.js';
 
 /**
  * Wrapper component around different implementations of sidebar, such as to view domain, to manage SDLC, etc.
@@ -63,6 +64,8 @@ export const SideBar = observer(() => {
             globalTestRunnerState={editorStore.globalTestRunnerState}
           />
         );
+      case ACTIVITY_MODE.DEV_MODE:
+        return <DevMetadataPanel />;
       case ACTIVITY_MODE.REGISTER_SERVICES:
         return (
           <RegisterService

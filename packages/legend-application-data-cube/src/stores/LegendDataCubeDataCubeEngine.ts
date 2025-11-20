@@ -747,6 +747,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           const refId = await this._duckDBEngine.ingestIcebergTable(
             rawSource.warehouse,
             rawSource.paths,
+            rawSource.icebergConfig.catalogUrl,
             await this.secondaryOauthClient.getToken(),
           );
           const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
@@ -802,13 +803,20 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           source.paths = rawSource.paths;
           source.deploymentId = rawSource.deploymentId;
 
-          const query = new V1_ClassInstance();
-          query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
-          const ingestAccesor = new V1_RelationStoreAccessor();
-          ingestAccesor.path = rawSource.paths;
-          ingestAccesor.metadata = false;
-          query.value = ingestAccesor;
-          source.query = query;
+          if (rawSource.query) {
+            source.query = await this.parseValueSpecification(
+              guaranteeNonNullable(rawSource.query),
+              false,
+            );
+          } else {
+            const query = new V1_ClassInstance();
+            query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
+            const ingestAccesor = new V1_RelationStoreAccessor();
+            ingestAccesor.path = rawSource.paths;
+            ingestAccesor.metadata = false;
+            query.value = ingestAccesor;
+            source.query = query;
+          }
 
           const model = await this._synthesizeLakehouseProducerPMCD(
             rawSource,
@@ -1766,21 +1774,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const { dbReference, columnNames } =
       await this._duckDBEngine.ingestLocalFileData(data, format, refId);
     return { dbReference, columnNames };
-  }
-
-  async ingestIcebergTable(
-    warehouse: string,
-    paths: string[],
-    catalogApi: string,
-    token?: string,
-  ) {
-    const { dbReference } = await this._duckDBEngine.ingestIcebergTable(
-      warehouse,
-      paths,
-      catalogApi,
-      token,
-    );
-    return { dbReference };
   }
 
   private _getColumnType(col: string[], column: V1_Column) {

@@ -75,6 +75,16 @@ import type {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
+import { LegendDataCubeEditSourceQuery } from '../../components/builder/LegendDataCubeEditSourceQuery.js';
+import type { LegendDataCubeCodeEditorState } from './LegendDataCubeCodeEditorState.js';
+import {
+  LakehouseConsumerDataCubeSource,
+  RawLakehouseConsumerDataCubeSource,
+} from '../model/LakehouseConsumerDataCubeSource.js';
+import {
+  LakehouseProducerDataCubeSource,
+  RawLakehouseProducerDataCubeSource,
+} from '../model/LakehouseProducerDataCubeSource.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -152,6 +162,9 @@ export class LegendDataCubeBuilderStore {
 
   readonly codeEditorState = ActionState.create();
   readonly codeEditorDisplay: LegendDataCubeBlockingWindowState;
+
+  readonly queryEditorState = ActionState.create();
+  readonly queryEditorDisplay: LegendDataCubeBlockingWindowState;
 
   readonly deleteState = ActionState.create();
   dataCubeToDelete?: LightPersistentDataCube | PersistentDataCube | undefined;
@@ -233,6 +246,14 @@ export class LegendDataCubeBuilderStore {
     this.codeEditorDisplay = new LegendDataCubeBlockingWindowState(
       'Edit Latest Saved Query',
       () => <LegendDataCubeQueryEditor />,
+      {
+        ...DEFAULT_ALERT_WINDOW_CONFIG,
+        height: 400,
+      },
+    );
+    this.queryEditorDisplay = new LegendDataCubeBlockingWindowState(
+      'Edit Source Query',
+      () => <LegendDataCubeEditSourceQuery />,
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
         height: 400,
@@ -655,6 +676,62 @@ export class LegendDataCubeBuilderStore {
     val: LightPersistentDataCube | PersistentDataCube | undefined,
   ) {
     this.dataCubeToDelete = val;
+  }
+  async updateBuilderWithNewSpecification(
+    state: LegendDataCubeCodeEditorState,
+  ): Promise<void> {
+    const builder = this.builder;
+
+    try {
+      if (
+        !builder ||
+        !(
+          builder.source instanceof LakehouseConsumerDataCubeSource ||
+          builder.source instanceof LakehouseProducerDataCubeSource
+        )
+      ) {
+        throw new Error(
+          `DataCube builder is undefined or source type: '${builder?.source}' is not supported.`,
+        );
+      }
+      const newSource = builder.source;
+      let serializedRawSource;
+      if (newSource instanceof LakehouseConsumerDataCubeSource) {
+        const rawSource =
+          RawLakehouseConsumerDataCubeSource.serialization.fromJson(
+            builder.initialSpecification.source,
+          );
+        rawSource.query = state.code;
+        serializedRawSource =
+          RawLakehouseConsumerDataCubeSource.serialization.toJson(rawSource);
+      } else {
+        const rawSource =
+          RawLakehouseProducerDataCubeSource.serialization.fromJson(
+            builder.initialSpecification.source,
+          );
+        rawSource.query = state.code;
+        serializedRawSource =
+          RawLakehouseProducerDataCubeSource.serialization.toJson(rawSource);
+      }
+      const processedSource =
+        await this.engine.processSource(serializedRawSource);
+      const newSpecification = await this.engine.generateBaseSpecification(
+        serializedRawSource,
+        processedSource,
+      );
+      newSpecification.configuration =
+        builder.initialSpecification.configuration;
+
+      this.setBuilder(new LegendDataCubeBuilderState(this, newSpecification));
+      this.queryEditorDisplay.close();
+    } catch (error) {
+      assertErrorThrown(error);
+      const message = `DataCube reload Failure: ${error.message}`;
+      this.queryEditorDisplay.close();
+      this.alertService.alertError(error, {
+        message: message,
+      });
+    }
   }
 
   async deleteDataCube() {

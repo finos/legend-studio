@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-lego",
-  "version": "2.0.144",
+  "version": "2.0.148",
   "description": "Legend code editor support",
   "keywords": [
     "legend",
@@ -25,6 +25,7 @@
     "./code-editor/test/MockedMonacoEditor.js": "./lib/code-editor/__test-utils__/MockedMonacoEditor.js",
     "./data-grid": "./lib/data-grid/index.js",
     "./graph-editor": "./lib/graph-editor/index.js",
+    "./model-documentation": "./lib/model-documentation/index.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",

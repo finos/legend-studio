@@ -172,6 +172,8 @@ import {
   type V1_RawLineageModel,
   V1_LineageInput,
 } from '../model/lineage/V1_Lineage.js';
+import { V1_DevMetadataPushRequest } from './dev-metadata/V1_DevMetadataPushRequest.js';
+import { DevMetadataResult } from '../../../../action/dev-metadata/DevMetadataResult.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -1402,5 +1404,19 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
         dbTypeToDataSourceAndAuthMap,
       ),
     );
+  }
+  // ------------------------------------------- Ddev Mode -------------------------------------------
+
+  async pushToDevMetadata(
+    did: string,
+    projectName: string,
+    request: V1_DevMetadataPushRequest,
+  ): Promise<DevMetadataResult> {
+    const result = (await this.engineServerClient.pushToDevMetadata(
+      did,
+      projectName,
+      V1_DevMetadataPushRequest.serialization.toJson(request),
+    )) as unknown as PlainObject<DevMetadataResult>;
+    return DevMetadataResult.serialization.fromJson(result);
   }
 }

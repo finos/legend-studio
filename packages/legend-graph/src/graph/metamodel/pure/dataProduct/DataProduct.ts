@@ -52,6 +52,7 @@ export abstract class AccessPoint implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT,
       this.id,
+      this.title ?? '',
       this.description ?? '',
     ]);
   }
@@ -171,6 +172,8 @@ export class AccessPointGroup extends AnnotatedElement implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT_GROUP,
       this.id,
+      this.title ?? '',
+
       this.description ?? '',
       hashArray(this.accessPoints),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
@@ -239,6 +242,7 @@ export class SupportInfo implements Hashable {
   faqUrl: DataProductLink | undefined;
   supportUrl: DataProductLink | undefined;
   emails: Email[] = [];
+  expertise: Expertise[] | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -248,6 +252,7 @@ export class SupportInfo implements Hashable {
       this.faqUrl ?? '',
       this.supportUrl ?? '',
       hashArray(this.emails),
+      hashArray(this.expertise ?? []),
     ]);
   }
 }
@@ -365,17 +370,28 @@ export class Expertise implements Hashable {
   }
 }
 
+export class DataProductOperationalMetadata implements Hashable {
+  coverageRegions: DataProduct_Region[] | undefined;
+  updateFrequency: DataProduct_DeliveryFrequency | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_OPERATIONAL_METADATA,
+      hashArray(this.coverageRegions ?? []),
+      this.updateFrequency ?? '',
+    ]);
+  }
+}
+
 export class DataProduct extends PackageableElement {
   title: string | undefined;
   description: string | undefined;
-  coverageRegions: DataProduct_Region[] | undefined;
-  deliveryFrequency: DataProduct_DeliveryFrequency | undefined;
   icon: DataProductIcon | undefined;
   accessPointGroups: AccessPointGroup[] = [];
   supportInfo: SupportInfo | undefined;
   type: DataProductType | undefined;
   sampleValues: EmbeddedData[] | undefined;
-  expertise: Expertise[] | undefined;
+  operationalMetadata: DataProductOperationalMetadata | undefined;
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -388,8 +404,6 @@ export class DataProduct extends PackageableElement {
       CORE_HASH_STRUCTURE.DATA_PRODUCT,
       this.title ?? '',
       this.description ?? '',
-      hashArray(this.coverageRegions ?? []),
-      this.deliveryFrequency ?? '',
       this.icon ?? '',
       hashArray(this.accessPointGroups),
       this.supportInfo ?? '',
@@ -397,7 +411,7 @@ export class DataProduct extends PackageableElement {
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
       hashArray(this.sampleValues ?? []),
-      hashArray(this.expertise ?? []),
+      this.operationalMetadata ?? '',
     ]);
   }
 }

@@ -42,6 +42,7 @@ const LegendDataCubeBuilderStoreProvider = (props: {
       />
       <LegendDataCubeBlockingWindow windowState={store.codeEditorDisplay} />
       <LegendDataCubeSourceLoaderBlockingWindow />
+      <LegendDataCubeBlockingWindow windowState={store.queryEditorDisplay} />
     </LegendDataCubeBuilderStoreContext.Provider>
   );
 };

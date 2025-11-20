@@ -169,6 +169,7 @@ export {
 export { default as V1_CORE_SYSTEM_MODELS } from './graph-manager/protocol/pure/v1/V1_Core_SystemModels.json' with { type: 'json' };
 export { V1_PureGraphManager } from './graph-manager/protocol/pure/v1/V1_PureGraphManager.js';
 export * from './graph-manager/protocol/pure/v1/engine/artifactGeneration/V1_DataSpaceArtifacts.js';
+export { V1_DevMetadataPushRequest } from './graph-manager/protocol/pure/v1/engine/dev-metadata/V1_DevMetadataPushRequest.js';
 
 // V1 protocols
 export { V1_Class } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_Class.js';
@@ -303,6 +304,7 @@ export {
   V1_DataContract,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
+  V1_DataContractSubscriptions,
   V1_EnrichedUserApprovalStatus,
   V1_LiteDataContract,
   V1_LiteDataContractsResponse,
@@ -361,8 +363,8 @@ export {
   V1_createContractPayloadModelSchema,
   V1_DataContractApprovedUsersResponseModelSchema,
   V1_dataContractsResponseModelSchema,
-  V1_dataContractsResponseModelSchemaToContracts,
   V1_DataProductOriginType,
+  V1_deserializeDataContractResponse,
   V1_deserializeTaskResponse,
   V1_EntitlementsAccessPointModelSchema,
   V1_EntitlementsDataProductDetailsModelSchema,
@@ -549,6 +551,7 @@ export * from './graph-manager/action/query/QuerySearchSpecification.js';
 export * from './graph-manager/action/EngineError.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
+export { DevMetadataResult } from './graph-manager/action/dev-metadata/DevMetadataResult.js';
 export {
   CodeCompletionResult,
   Completion,

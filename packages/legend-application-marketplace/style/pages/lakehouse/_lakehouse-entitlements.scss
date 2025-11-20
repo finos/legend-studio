@@ -279,9 +279,18 @@
   }
 
   &__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     align-self: start;
     margin-top: auto;
+    width: 100%;
     color: var(--color-light-grey-300);
+
+    &__subscription-info {
+      width: 100%;
+      font-size: 1.4rem;
+    }
   }
 }
 

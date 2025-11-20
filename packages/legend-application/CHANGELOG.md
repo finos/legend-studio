@@ -1,5 +1,19 @@
 # @finos/legend-application
 
+## 16.0.82
+
+## 16.0.81
+
+### Patch Changes
+
+- [#4624](https://github.com/finos/legend-studio/pull/4624) [`8926940`](https://github.com/finos/legend-studio/commit/8926940ce7f86ec907147c57db54315aef4bb738) ([@kelly-thai](https://github.com/kelly-thai)) - Add TaggedValueConfig
+
+## 16.0.80
+
+### Patch Changes
+
+- [#4598](https://github.com/finos/legend-studio/pull/4598) [`a4080ff`](https://github.com/finos/legend-studio/commit/a4080ffd3fd7d1488c910efa0084477cb80502c4) ([@travisstebbins](https://github.com/travisstebbins)) - Add useSyncStateAndSearchParam util hook
+
 ## 16.0.79
 
 ## 16.0.78

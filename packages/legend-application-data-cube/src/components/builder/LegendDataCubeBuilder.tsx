@@ -41,6 +41,9 @@ import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSet
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { ReleaseViewer } from '@finos/legend-application';
 import { isNonNullable } from '@finos/legend-shared';
+import { LakehouseConsumerDataCubeSource } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
+import { LakehouseProducerDataCubeSource } from '../../stores/model/LakehouseProducerDataCubeSource.js';
+import { useAuth, type AuthContextProps } from 'react-oidc-context';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -78,6 +81,12 @@ export const LegendDataCubeReleaseLogManager = observer(
   (props: { showOnlyLatestNotes: boolean }) => {
     const { showOnlyLatestNotes } = props;
     const store = useLegendDataCubeBuilderStore();
+    let auth: AuthContextProps | undefined;
+    try {
+      auth = useAuth();
+    } catch {
+      auth = undefined;
+    }
     const applicationStore = store.application;
     const releaseService = applicationStore.releaseNotesService;
     const releaseNotes =
@@ -85,7 +94,11 @@ export const LegendDataCubeReleaseLogManager = observer(
         ? releaseService.showableVersions()
         : releaseService.releaseNotes) ?? [];
 
-    applicationStore.releaseNotesService.updateViewedVersion();
+    useEffect(() => {
+      if (auth === undefined || auth.isAuthenticated) {
+        applicationStore.releaseNotesService.updateViewedVersion();
+      }
+    }, [applicationStore, auth, auth?.isAuthenticated]);
 
     return (
       <div className="legend-datacube-release-notes h-full items-center p-3">
@@ -181,7 +194,9 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
   const application = store.application;
   const builder = store.builder;
   const persistentDataCube = builder?.persistentDataCube;
-
+  const isLakehouseSource =
+    store.builder?.source instanceof LakehouseConsumerDataCubeSource ||
+    store.builder?.source instanceof LakehouseProducerDataCubeSource;
   const logMenuItem = (menuName: string) => {
     store.engine.sendTelemetry(DataCubeEvent.SELECT_ITEM_TITLE_BAR, {
       ...store.engine.getDataFromSource(
@@ -210,6 +225,14 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
                   store.sourceViewerDisplay.open();
                   logMenuItem(DataCubeTitleBarMenuItems.VIEW_SOURCE);
                 },
+              },
+              {
+                label: DataCubeTitleBarMenuItems.EDIT_SOURCE_QUERY,
+                action: () => {
+                  store.queryEditorDisplay.open();
+                  logMenuItem(DataCubeTitleBarMenuItems.EDIT_SOURCE_QUERY);
+                },
+                disabled: !isLakehouseSource,
               },
             ]
           : []),
@@ -296,6 +319,12 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
     const params = useParams<LegendDataCubeBuilderPathParams>();
     const dataCubeId =
       params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_ID];
+    let auth: AuthContextProps | undefined;
+    try {
+      auth = useAuth();
+    } catch {
+      auth = undefined;
+    }
 
     useEffect(() => {
       application.navigationService.navigator.blockNavigation(
@@ -333,10 +362,10 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
 
       if (releaseService.isConfigured && isOpen && releaseNotes?.length) {
         store.releaseNotesDisplay.open();
-      } else {
+      } else if (auth === undefined || auth.isAuthenticated) {
         releaseService.updateViewedVersion();
       }
-    }, [application, store]);
+    }, [application, store, auth, auth?.isAuthenticated]);
 
     if (!store.initializeState.hasSucceeded) {
       return (

@@ -17,11 +17,11 @@
 import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceDiagramViewer } from './DataSpaceDiagramViewer.js';
-import { DataSpaceModelsDocumentation } from './DataSpaceModelsDocumentation.js';
 import { DataSpaceQuickStart } from './DataSpaceQuickStart.js';
 import { DataSpaceDataAccess } from './DataSpaceDataAccess.js';
 import { DataSpaceDescription } from './DataSpaceDescription.js';
 import { useEffect } from 'react';
+import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 
 export const DataSpaceWiki = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -55,8 +55,11 @@ export const DataSpaceWiki = observer(
       <div className="data-space__viewer__wiki">
         <DataSpaceDescription dataSpaceViewerState={dataSpaceViewerState} />
         <DataSpaceDiagramViewer dataSpaceViewerState={dataSpaceViewerState} />
-        <DataSpaceModelsDocumentation
-          dataSpaceViewerState={dataSpaceViewerState}
+        <ModelsDocumentation
+          modelsDocumentationState={
+            dataSpaceViewerState.modelsDocumentationState
+          }
+          applicationStore={dataSpaceViewerState.applicationStore}
         />
         <DataSpaceQuickStart dataSpaceViewerState={dataSpaceViewerState} />
         <DataSpaceDataAccess dataSpaceViewerState={dataSpaceViewerState} />

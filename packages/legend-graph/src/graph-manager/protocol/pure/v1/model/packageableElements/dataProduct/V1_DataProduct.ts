@@ -16,6 +16,7 @@
 
 import {
   hashArray,
+  uuid,
   type Hashable,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -49,6 +50,7 @@ export abstract class V1_AccessPoint implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT,
       this.id,
+      this.title ?? '',
       this.description ?? '',
     ]);
   }
@@ -109,6 +111,7 @@ export class V1_AccessPointGroup implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT_GROUP,
       this.id,
+      this.title ?? '',
       this.description ?? '',
       hashArray(this.accessPoints),
       hashArray(this.stereotypes),
@@ -144,6 +147,7 @@ export class V1_SupportInfo implements Hashable {
   faqUrl: V1_DataProductLink | undefined;
   supportUrl: V1_DataProductLink | undefined;
   emails: V1_Email[] = [];
+  expertise: V1_Expertise[] | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -153,6 +157,7 @@ export class V1_SupportInfo implements Hashable {
       this.faqUrl ?? '',
       this.supportUrl ?? '',
       hashArray(this.emails),
+      hashArray(this.expertise ?? []),
     ]);
   }
 }
@@ -306,6 +311,7 @@ export class V1_ExternalDataProductType extends V1_DataProductType {
 }
 
 export class V1_Expertise implements Hashable {
+  readonly uuid = uuid();
   description: string | undefined;
   expertIds: string[] | undefined;
 
@@ -318,11 +324,22 @@ export class V1_Expertise implements Hashable {
   }
 }
 
+export class V1_DataProductOperationalMetadata implements Hashable {
+  coverageRegions: V1_DataProductRegion[] | undefined;
+  updateFrequency: V1_DeliveryFrequency | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_OPERATIONAL_METADATA,
+      hashArray(this.coverageRegions ?? []),
+      this.updateFrequency ?? '',
+    ]);
+  }
+}
+
 export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   title: string | undefined;
   description: string | undefined;
-  coverageRegions: V1_DataProductRegion[] | undefined;
-  deliveryFrequency: V1_DeliveryFrequency | undefined;
   icon: V1_DataProductIcon | undefined;
   accessPointGroups: V1_AccessPointGroup[] = [];
   supportInfo: V1_SupportInfo | undefined;
@@ -330,15 +347,13 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
   sampleValues: V1_EmbeddedData[] | undefined;
-  expertise: V1_Expertise[] | undefined;
+  operationalMetadata: V1_DataProductOperationalMetadata | undefined;
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT,
       this.title ?? '',
       this.description ?? '',
-      hashArray(this.coverageRegions ?? []),
-      this.deliveryFrequency ?? '',
       this.icon ?? '',
       hashArray(this.accessPointGroups),
       this.supportInfo ?? '',
@@ -346,7 +361,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
       hashArray(this.sampleValues ?? []),
-      hashArray(this.expertise ?? []),
+      this.operationalMetadata ?? '',
     ]);
   }
 

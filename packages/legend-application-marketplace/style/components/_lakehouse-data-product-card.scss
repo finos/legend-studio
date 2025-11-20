@@ -31,17 +31,6 @@
     gap: 2rem;
   }
 
-  &__icon {
-    @include flexCenter;
-
-    width: 10rem;
-
-    svg {
-      font-size: 5rem;
-      color: var(--color-blue-300);
-    }
-  }
-
   &__content {
     @include flexVCenter;
 
@@ -64,10 +53,20 @@
 
     width: 100%;
     justify-content: space-between;
+    font-family: 'GS Sans Condensed', 'Trebuchet MS', sans-serif;
     font-size: 2.8rem;
-    font-weight: 500;
+    font-weight: 400;
+    letter-spacing: 0;
     color: white;
     overflow-wrap: anywhere;
+  }
+
+  &__lakehouse {
+    align-self: end;
+    font-size: 1rem;
+    text-transform: none;
+    color: var(--tw-color-green-100);
+    background: var(--tw-color-green-600);
   }
 
   &__version {
@@ -117,6 +116,12 @@
     flex: 1;
     width: 100%;
     color: var(--color-light-grey-180);
+
+    &__markdown {
+      background: unset;
+      color: unset;
+      padding: unset;
+    }
   }
 
   &__more-info-btn {
@@ -144,8 +149,12 @@
     min-width: 40rem;
 
     &__name {
-      font-size: 2rem;
-      font-weight: 500;
+      @include flexVCenter;
+
+      font-family: 'GS Sans Condensed', 'Trebuchet MS', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 400;
+      letter-spacing: 0;
       margin-bottom: 1rem;
       color: var(--color-blue-100);
     }
@@ -167,6 +176,12 @@
       color: var(--color-dark-grey-400);
     }
 
+    &__section-content__markdown {
+      background: unset;
+      color: unset;
+      padding: 0;
+    }
+
     &__table td {
       font-size: 1.6rem;
     }
@@ -179,59 +194,5 @@
 
   &:hover {
     transform: unset;
-  }
-}
-
-.lakehouse-highlighted-data-product-card {
-  height: 28rem;
-  cursor: pointer;
-  margin: 1rem;
-  box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
-  background-color: var(--color-black);
-  width: 45rem;
-
-  &__action {
-    height: 100%;
-  }
-
-  &__image {
-    width: 100%;
-    height: 55%;
-    position: absolute;
-    aspect-ratio: auto;
-    top: 0;
-    left: 0;
-  }
-
-  &__content {
-    position: absolute;
-    bottom: 0;
-    height: 55%;
-    background-color: rgb(11 11 11 / 70%);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    word-wrap: break-word;
-    width: 100%;
-    padding: 0.5rem 1.2rem;
-
-    &:hover {
-      height: 100%;
-      background-color: rgb(27 26 26 / 90%);
-    }
-  }
-
-  &__title {
-    font-size: 3rem;
-    font-family: 'GS Sans Condensed', 'Trebuchet MS', sans-serif;
-    margin-bottom: 0.5rem;
-    word-wrap: break-word;
-    color: var(--color-white);
-    opacity: 0.95;
-  }
-
-  &__description {
-    font-size: 1.6rem;
-    color: var(--color-white);
-    opacity: 0.95;
   }
 }

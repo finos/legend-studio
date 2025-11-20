@@ -22,11 +22,12 @@ import {
   HeadsetIcon,
   QuestionCircleOutlineIcon,
   StackOverflowIcon,
+  UserCircleIcon,
   WorldOutlineIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { Fragment, useEffect, useRef } from 'react';
-import { Box, Grid, Link } from '@mui/material';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { Avatar, Box, Grid, Link, Stack } from '@mui/material';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
   generateAnchorForSection,
@@ -68,6 +69,73 @@ const getIconFromUrlandSupportType = (
       return <HeadsetIcon />;
   }
 };
+import { assertErrorThrown, LegendUser } from '@finos/legend-shared';
+
+const ExpertDisplay = observer(
+  (props: {
+    dataproductViewerState: DataProductViewerState;
+    expertId: string;
+  }) => {
+    const { dataproductViewerState, expertId } = props;
+    const [userInfo, setUserInfo] = useState<LegendUser | null>(null);
+    const imgSrc =
+      dataproductViewerState.userSearchService?.userProfileImageUrl?.replace(
+        '{userId}',
+        expertId,
+      );
+
+    useEffect(() => {
+      const fetchEmail = async () => {
+        try {
+          const userData =
+            await dataproductViewerState.userSearchService?.getOrFetchUser(
+              expertId,
+            );
+          if (userData instanceof LegendUser) {
+            setUserInfo(userData);
+          }
+        } catch (error) {
+          assertErrorThrown(error);
+          dataproductViewerState.applicationStore.notificationService.notifyError(
+            `Failed to fetch user data: ${error}`,
+          );
+        }
+      };
+
+      // eslint-disable-next-line no-void
+      void fetchEmail();
+    }, [expertId, dataproductViewerState]);
+
+    return (
+      <>
+        {userInfo !== null && (
+          <div className="data-product__viewer__wiki__expert-contact">
+            {imgSrc ? (
+              <Avatar
+                className="legend-user-display__avatar legend-user-display__avatar--image"
+                src={imgSrc}
+                alt={expertId}
+              />
+            ) : (
+              <UserCircleIcon />
+            )}
+            <div className="data-product__viewer__wiki__expert-contact__info">
+              <a
+                className="data-product__viewer__wiki__expert-contact__info__id"
+                href={`mailto:${userInfo.email}`}
+              >
+                {userInfo.firstName} {userInfo.lastName} <EnvelopeOutlineIcon />
+              </a>
+              <div className="data-product__viewer__wiki__expert-contact__info__subtitle">
+                {userInfo.divisionName}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  },
+);
 
 export const DataProductSupportInfo = observer(
   (props: { dataProductViewerState: DataProductViewerState }) => {
@@ -79,13 +147,15 @@ export const DataProductSupportInfo = observer(
     );
 
     const supportInfo = dataProductViewerState.product.supportInfo;
+    const expertise = supportInfo?.expertise;
     const doesSupportInfoExist =
-      supportInfo !== undefined &&
-      (supportInfo.emails.length > 0 ||
-        supportInfo.documentation ||
-        supportInfo.website ||
-        supportInfo.faqUrl ||
-        supportInfo.supportUrl);
+      (supportInfo !== undefined &&
+        (supportInfo.emails.length > 0 ||
+          supportInfo.documentation ||
+          supportInfo.website ||
+          supportInfo.faqUrl ||
+          supportInfo.supportUrl)) ||
+      (expertise !== undefined && expertise.length > 0);
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -120,7 +190,7 @@ export const DataProductSupportInfo = observer(
               columns={2}
               className="data-product__viewer__support-info_container"
             >
-              {supportInfo.emails.length > 0 && (
+              {supportInfo?.emails && supportInfo.emails.length > 0 && (
                 <Grid
                   size={1}
                   className="data-product__viewer__support-info__section"
@@ -146,7 +216,7 @@ export const DataProductSupportInfo = observer(
                   ))}
                 </Grid>
               )}
-              {supportInfo.documentation !== undefined && (
+              {supportInfo?.documentation !== undefined && (
                 <Grid
                   size={1}
                   className="data-product__viewer__support-info__section"
@@ -169,7 +239,7 @@ export const DataProductSupportInfo = observer(
                   </Link>
                 </Grid>
               )}
-              {supportInfo.supportUrl !== undefined && (
+              {supportInfo?.supportUrl !== undefined && (
                 <Grid
                   size={1}
                   className="data-product__viewer__support-info__section"
@@ -191,7 +261,7 @@ export const DataProductSupportInfo = observer(
                   </Link>
                 </Grid>
               )}
-              {supportInfo.website !== undefined && (
+              {supportInfo?.website !== undefined && (
                 <Grid
                   size={1}
                   className="data-product__viewer__support-info__section"
@@ -213,7 +283,7 @@ export const DataProductSupportInfo = observer(
                   </Link>
                 </Grid>
               )}
-              {supportInfo.faqUrl !== undefined && (
+              {supportInfo?.faqUrl !== undefined && (
                 <Grid
                   size={1}
                   className="data-product__viewer__support-info__section"
@@ -233,6 +303,33 @@ export const DataProductSupportInfo = observer(
                     {supportInfo.faqUrl.label ?? supportInfo.faqUrl.url}
                     <ExternalLinkIcon />
                   </Link>
+                </Grid>
+              )}
+              {expertise !== undefined && expertise.length > 0 && (
+                <Grid
+                  size={2}
+                  className="data-product__viewer__support-info__expertise"
+                >
+                  <div className="data-product__viewer__wiki__section__header__subtitle">
+                    Expertise
+                  </div>
+                  {expertise.map((exp) => (
+                    <div
+                      className="data-product__viewer__wiki__expertise"
+                      key={exp.uuid}
+                    >
+                      {exp.description}
+                      <Stack direction="row" spacing={2}>
+                        {exp.expertIds?.map((expertId) => (
+                          <ExpertDisplay
+                            dataproductViewerState={dataProductViewerState}
+                            expertId={expertId}
+                            key={expertId}
+                          />
+                        ))}
+                      </Stack>
+                    </div>
+                  ))}
                 </Grid>
               )}
             </Grid>

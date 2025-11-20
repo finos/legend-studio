@@ -43,6 +43,7 @@ import {
   RobotIcon,
   WorkflowIcon,
   ReadMeIcon,
+  DevIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useEffect, useState } from 'react';
@@ -63,6 +64,7 @@ import {
   openShowcaseManager,
 } from '../../stores/ShowcaseManagerState.js';
 import { toggleShowcasePanel } from './ShowcaseSideBar.js';
+import { useAuth, type AuthContextProps } from 'react-oidc-context';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
@@ -82,10 +84,19 @@ const SettingsMenu = observer(
   }),
 );
 
+const useOptionalAuth = (): AuthContextProps | undefined => {
+  try {
+    return useAuth();
+  } catch {
+    return undefined;
+  }
+};
+
 export const ActivityBarMenu: React.FC<{
   openShowcasePanel?: () => void;
 }> = ({ openShowcasePanel }) => {
   const applicationStore = useLegendStudioApplicationStore();
+  const auth = useOptionalAuth();
   const appDocUrl = applicationStore.documentationService.url;
   const docLinks = applicationStore.documentationService.links;
   // about modal
@@ -121,8 +132,10 @@ export const ActivityBarMenu: React.FC<{
     ShowcaseManagerState.retrieveNullableState(applicationStore);
   // release notification
   useEffect(() => {
-    applicationStore.releaseNotesService.updateViewedVersion();
-  }, [applicationStore]);
+    if (auth === undefined || auth.isAuthenticated) {
+      applicationStore.releaseNotesService.updateViewedVersion();
+    }
+  }, [applicationStore, auth, auth?.isAuthenticated]);
 
   return (
     <>
@@ -375,6 +388,17 @@ export const ActivityBar = observer(() => {
       title: 'Workflow Manager',
       icon: <WrenchIcon />,
       disabled: editorStore.isInConflictResolutionMode,
+    },
+    {
+      mode: ACTIVITY_MODE.DEV_MODE,
+      title: 'Dev Mode (Beta)',
+      icon: (
+        <>
+          <DevIcon className="activity-bar__icon--service-registrar" />
+          <ActivityBarItemExperimentalBadge />
+        </>
+      ),
+      disabled: editorStore.isInConflictResolutionMode || lazyTextModeEnabled,
     },
     {
       mode: ACTIVITY_MODE.REGISTER_SERVICES,

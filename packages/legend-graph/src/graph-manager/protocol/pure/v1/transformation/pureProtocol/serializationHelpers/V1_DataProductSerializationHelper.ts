@@ -47,6 +47,7 @@ import {
   V1_DataProductTypeValue,
   V1_Expertise,
   V1_FunctionAccessPoint,
+  V1_DataProductOperationalMetadata,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   UnsupportedOperationError,
@@ -296,13 +297,33 @@ const V1_DataProductLinkModelSchema = createModelSchema(V1_DataProductLink, {
   url: primitive(),
 });
 
+export const V1_ExpertiseModelSchema = createModelSchema(V1_Expertise, {
+  description: optional(primitive()),
+  expertIds: list(primitive()),
+});
+
 export const V1_SupportInfoModelSchema = createModelSchema(V1_SupportInfo, {
   documentation: optional(usingModelSchema(V1_DataProductLinkModelSchema)),
   emails: customListWithSchema(V1_EmailModelSchema),
   faqUrl: optional(usingModelSchema(V1_DataProductLinkModelSchema)),
   supportUrl: optional(usingModelSchema(V1_DataProductLinkModelSchema)),
+  expertise: optionalCustomListWithSchema(V1_ExpertiseModelSchema),
   website: optional(usingModelSchema(V1_DataProductLinkModelSchema)),
 });
+
+export const V1_DataProductOperationalMetadataModelSchema = createModelSchema(
+  V1_DataProductOperationalMetadata,
+  {
+    coverageRegions: optionalCustomList(
+      (json) => (json as string).toLowerCase(),
+      (json) => (json as unknown as string).toUpperCase(),
+    ),
+    updateFrequency: optionalCustom(
+      (json) => (json as string).toLowerCase(),
+      (json) => (json as string).toUpperCase(),
+    ),
+  },
+);
 
 export const V1_InternalDataProductTypeModelSchema = createModelSchema(
   V1_InternalDataProductType,
@@ -318,11 +339,6 @@ export const V1_ExternalDataProductTypeModelSchema = createModelSchema(
     link: usingModelSchema(V1_DataProductLinkModelSchema),
   },
 );
-
-export const V1_ExpertiseModelSchema = createModelSchema(V1_Expertise, {
-  description: optional(primitive()),
-  expertIds: list(primitive()),
-});
 
 export const V1_deserializeDataProductType = (
   json: Record<string, unknown>,
@@ -357,26 +373,19 @@ export const V1_dataProductModelSchema = (
       V1_serializeAccessPointGroup,
       V1_deserializeAccessPointGroup,
     ),
-    coverageRegions: optionalCustomList(
-      (json) => (json as string).toLowerCase(),
-      (json) => (json as unknown as string).toUpperCase(),
-    ),
-
-    deliveryFrequency: optionalCustom(
-      (json) => (json as string).toLowerCase(),
-      (json) => (json as string).toUpperCase(),
-    ),
     description: optional(primitive()),
     sampleValues: optionalCustomList(
       (data: V1_EmbeddedData) => V1_serializeEmbeddedDataType(data, plugins),
       (data) => V1_deserializeEmbeddedDataType(data, plugins),
     ),
-    expertise: optionalCustomListWithSchema(V1_ExpertiseModelSchema),
     icon: optionalCustom(
       V1_serializeDataProductIcon,
       V1_deserializeDataProductIcon,
     ),
     name: primitive(),
+    operationalMetadata: optionalCustomUsingModelSchema(
+      V1_DataProductOperationalMetadataModelSchema,
+    ),
     package: primitive(),
     type: optionalCustom(
       V1_serializeDataProductType,
