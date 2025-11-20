@@ -529,7 +529,10 @@ const SampleValuesEditorModal = observer(
             <div
               style={{
                 padding: 0,
-                minHeight: 'auto',
+                height: '100%',
+                flex: 1,
+                overflowY: 'auto',
+                overflowX: 'hidden',
               }}
             >
               {dataElementPath !== undefined ? (
