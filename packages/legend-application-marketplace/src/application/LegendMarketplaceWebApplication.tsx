@@ -65,6 +65,8 @@ import {
 } from '../pages/TerminalsAddons/LegendMarketplaceTerminalsAddons.js';
 import { CartToast } from '../components/Toast/CartToast.js';
 import { flowResult } from 'mobx';
+import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketplaceSubscriptions.js';
+import { LegendMarketplaceYourOrders } from '../pages/Profile/LegendMarketplaceYourOrders.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -144,6 +146,20 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
       },
     );
   }, [applicationStore]);
+
+  const ProtectedYourOrders = withAuthenticationRequired(
+    LegendMarketplaceYourOrders,
+    {
+      OnRedirecting: () => (
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      ),
+      signinRedirectArgs: {
+        state: `${window.location.pathname}${window.location.search}`,
+      },
+    },
+  );
 
   return (
     <div className="app">
@@ -298,6 +314,14 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                   )}
                 />
               ))}
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.ORDERS}
+              element={<ProtectedYourOrders />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SUBSCRIPTIONS}
+              element={<LegendMarketplaceSubscriptions />}
+            />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

@@ -15,7 +15,7 @@
  */
 
 import { SerializationFactory } from '@finos/legend-shared';
-import { alias, createModelSchema, primitive } from 'serializr';
+import { alias, createModelSchema, list, object, primitive } from 'serializr';
 
 export class Subscription {
   carrierVendor!: string;
@@ -23,9 +23,13 @@ export class Subscription {
   sourceVendor!: string;
   itemName!: string;
   serviceName!: string;
-  monthlyAmount!: number;
+  annualAmount!: number;
   taxValue!: number;
   costCode!: string;
+  price!: number;
+  servicepriceId?: number;
+  permId!: number;
+  id!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Subscription, {
@@ -34,9 +38,43 @@ export class Subscription {
       sourceVendor: alias('SourceVendor', primitive()),
       itemName: alias('ItemName', primitive()),
       serviceName: alias('ServiceName', primitive()),
-      monthlyAmount: alias('MonthlyAmount', primitive()),
+      annualAmount: alias('AnnualAmount', primitive()),
       taxValue: alias('TaxValue', primitive()),
       costCode: alias('CostCode', primitive()),
+      price: primitive(),
+      servicepriceId: primitive(),
+      permId: primitive(),
+      id: primitive(),
     }),
   );
+}
+
+export class SubscriptionResponse {
+  subscriptionFeeds!: Subscription[];
+  TotalMonthlyCost!: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(SubscriptionResponse, {
+      subscriptionFeeds: alias(
+        'subscription_feeds',
+        list(object(Subscription)),
+      ),
+      TotalMonthlyCost: primitive(),
+    }),
+  );
+}
+
+export interface ProductSubscription {
+  providerName: string;
+  productName: string;
+  category: string;
+  price: number;
+  servicepriceId: number;
+  model: string;
+}
+
+export interface SubscriptionRequest {
+  ordered_by: string;
+  kerberos: string;
+  order_items: Record<number, ProductSubscription[]>;
 }
