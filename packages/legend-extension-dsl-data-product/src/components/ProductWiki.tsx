@@ -41,6 +41,7 @@ import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerS
 import { Chip, Stack } from '@mui/material';
 import { V1_ExternalDataProductType } from '@finos/legend-graph';
 import { prettyCONSTName } from '@finos/legend-shared';
+import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
@@ -252,6 +253,12 @@ export const ProductWiki = observer(
               {productViewerState.isVDP && (
                 <ProductVendorInfo productViewerState={productViewerState} />
               )}
+              <ModelsDocumentation
+                modelsDocumentationState={
+                  productViewerState.modelsDocumentationState
+                }
+                applicationStore={productViewerState.applicationStore}
+              />
               <DataProductSupportInfo
                 dataProductViewerState={productViewerState}
               />
