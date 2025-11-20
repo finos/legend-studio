@@ -68,6 +68,8 @@ export class DiagramEditorState
   filePath: string;
   fileLine: number;
   fileColumn: number;
+  // Track command registration subscribers to avoid duplicate registration
+  private _commandsRefCount = 0;
 
   constructor(
     ideStore: PureIDEStore,
@@ -226,9 +228,13 @@ export class DiagramEditorState
   }
 
   registerCommands(): void {
+    this._commandsRefCount += 1;
+    if (this._commandsRefCount > 1) {
+      return;
+    }
     const DEFAULT_TRIGGER = (): boolean =>
       // make sure the current active editor is this diagram editor
-      this.ideStore.tabManagerState.currentTab === this &&
+      this.ideStore.editorSplitState.currentTab === this &&
       // make sure the renderer is initialized
       this.isDiagramRendererInitialized;
     this.ideStore.applicationStore.commandService.registerCommand({
@@ -254,6 +260,12 @@ export class DiagramEditorState
   }
 
   deregisterCommands(): void {
+    if (this._commandsRefCount > 0) {
+      this._commandsRefCount -= 1;
+    }
+    if (this._commandsRefCount > 0) {
+      return;
+    }
     [
       LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.RECENTER,
       LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_KEY.USE_ZOOM_TOOL,

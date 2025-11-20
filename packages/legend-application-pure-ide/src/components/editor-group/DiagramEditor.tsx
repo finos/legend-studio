@@ -406,7 +406,10 @@ export const DiagramEditor = observer(
     const { diagramEditorState } = props;
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
 
-    useCommands(diagramEditorState);
+    const ideStore = usePureIDEStore();
+    const isActiveEditor =
+      ideStore.editorSplitState.currentTab === diagramEditorState;
+    useCommands(diagramEditorState, isActiveEditor);
 
     return (
       <div className="diagram-editor">

@@ -71,9 +71,9 @@ export const StatusBar = observer(() => {
         <div className="editor__status-bar__workspace"></div>
       </div>
       <div className="editor__status-bar__right">
-        {ideStore.tabManagerState.currentTab instanceof FileEditorState && (
+        {ideStore.editorSplitState.currentTab instanceof FileEditorState && (
           <FileEditorStatusBar
-            fileEditorState={ideStore.tabManagerState.currentTab}
+            fileEditorState={ideStore.editorSplitState.currentTab}
           />
         )}
         <button
