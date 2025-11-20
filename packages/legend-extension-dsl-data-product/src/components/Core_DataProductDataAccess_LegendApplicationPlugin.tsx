@@ -263,6 +263,7 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
       },
       {
         type: 'Producer',
+        enableForEnterpriseAPGs: true,
         createContractRenderer: (
           apgState: DataProductAPGState,
           handleOrganizationalScopeChange: (
