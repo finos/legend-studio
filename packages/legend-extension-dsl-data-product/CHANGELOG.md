@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.27
+
+### Patch Changes
+
+- [#4653](https://github.com/finos/legend-studio/pull/4653) [`185e6cb`](https://github.com/finos/legend-studio/commit/185e6cb2e2a4fd111e3b3bbd1c7905e7daf2045f) ([@travisstebbins](https://github.com/travisstebbins)) - Enable producer contract request for enterprise APGs
+
+- [#4646](https://github.com/finos/legend-studio/pull/4646) [`9f77df4`](https://github.com/finos/legend-studio/commit/9f77df4a7e1ddff7446197981dbe3248d3986b70) ([@jackp5150](https://github.com/jackp5150)) - Added ModelDocumentation viewing to ProductWiki
+
 ## 0.0.26
 
 ### Patch Changes

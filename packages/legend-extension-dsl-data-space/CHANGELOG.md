@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.171
+
+### Patch Changes
+
+- [#4646](https://github.com/finos/legend-studio/pull/4646) [`9f77df4`](https://github.com/finos/legend-studio/commit/9f77df4a7e1ddff7446197981dbe3248d3986b70) ([@jackp5150](https://github.com/jackp5150)) - Refactored existing model-documentation code into legend-lego
+
 ## 10.4.170
 
 ## 10.4.169
