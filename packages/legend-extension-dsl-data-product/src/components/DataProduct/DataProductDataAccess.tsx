@@ -25,7 +25,6 @@ import {
   QuestionCircleIcon,
   CustomSelectorInput,
   DataCubeIcon,
-  PythonIcon,
   SQLIcon,
   PowerBiIcon,
 } from '@finos/legend-art';
@@ -295,7 +294,6 @@ const AccessPointTable = observer(
       GRAMMAR = 'Grammar',
       DATACUBE = 'Datacube',
       POWER_BI = 'Power BI',
-      PYTHON = 'Python',
       SQL = 'SQL',
     }
     const [selectedTab, setSelectedTab] = useState(DataProductTabs.COLUMNS);
@@ -439,24 +437,6 @@ const AccessPointTable = observer(
             <Tab
               className={clsx('data-product__viewer__tab', {
                 'data-product__viewer__tab--selected':
-                  selectedTab === DataProductTabs.PYTHON,
-              })}
-              label={
-                <span className="label-container">
-                  <PythonIcon
-                    className={clsx('data-product__viewer__tab-icon', {
-                      'data-product__viewer__tab-icon--selected':
-                        selectedTab === DataProductTabs.PYTHON,
-                    })}
-                  />
-                  <span>Python</span>
-                </span>
-              }
-              value={DataProductTabs.PYTHON}
-            />
-            <Tab
-              className={clsx('data-product__viewer__tab', {
-                'data-product__viewer__tab--selected':
                   selectedTab === DataProductTabs.SQL,
               })}
               label={
@@ -563,9 +543,6 @@ const AccessPointTable = observer(
               accessPointState={accessPointState}
               dataAccessState={dataAccessState}
             />
-          )}
-          {selectedTab === DataProductTabs.PYTHON && (
-            <TabMessageScreen message={WORK_IN_PROGRESS} />
           )}
           {selectedTab === DataProductTabs.SQL && (
             <TabMessageScreen message={WORK_IN_PROGRESS} />
