@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.22
+
+### Patch Changes
+
+- [#4649](https://github.com/finos/legend-studio/pull/4649) [`bc522d3`](https://github.com/finos/legend-studio/commit/bc522d303197e1e07cc08ac617c3f082c9fd07f5) ([@kelly-thai](https://github.com/kelly-thai)) - Fix Release Notes Modal to persist after redirect call
+
 ## 0.7.21
 
 ## 0.7.20

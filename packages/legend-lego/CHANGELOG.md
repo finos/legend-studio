@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 2.0.149
+
+### Patch Changes
+
+- [#4646](https://github.com/finos/legend-studio/pull/4646) [`9f77df4`](https://github.com/finos/legend-studio/commit/9f77df4a7e1ddff7446197981dbe3248d3986b70) ([@jackp5150](https://github.com/jackp5150)) - Added shared model-documentation viewer and state for Data products and data spaces.
+
 ## 2.0.148
 
 ## 2.0.147
