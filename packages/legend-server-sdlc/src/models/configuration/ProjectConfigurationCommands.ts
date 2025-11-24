@@ -42,7 +42,7 @@ export class UpdatePlatformConfigurationsCommand {
   }
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(PlatformConfiguration, {
+    createModelSchema(UpdatePlatformConfigurationsCommand, {
       platformConfigurations: optionalCustom(
         (val) =>
           val === undefined
