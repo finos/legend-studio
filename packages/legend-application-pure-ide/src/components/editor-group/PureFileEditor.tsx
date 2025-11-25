@@ -145,8 +145,8 @@ const RenameConceptPrompt = observer(
 );
 
 export const PureFileEditor = observer(
-  (props: { editorState: FileEditorState }) => {
-    const { editorState } = props;
+  (props: { editorState: FileEditorState; leafId?: string }) => {
+    const { editorState, leafId } = props;
     const definitionProviderDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
@@ -325,14 +325,17 @@ export const PureFileEditor = observer(
 
         // Restore the editor model and view state
         newEditor.setModel(editorState.textEditorState.model);
-        if (editorState.textEditorState.viewState) {
-          newEditor.restoreViewState(editorState.textEditorState.viewState);
+        const viewStateToRestore = leafId
+          ? editorState.textEditorState.getViewStateForLeaf(leafId)
+          : editorState.textEditorState.viewState;
+        if (viewStateToRestore) {
+          newEditor.restoreViewState(viewStateToRestore);
         }
         newEditor.focus(); // focus on the editor initially
         editorState.textEditorState.setEditor(newEditor);
         setEditor(newEditor);
       }
-    }, [ideStore, applicationStore, editorState, editor]);
+    }, [ideStore, applicationStore, editorState, editor, leafId]);
 
     if (editor) {
       definitionProviderDisposer.current?.dispose();
@@ -653,7 +656,8 @@ export const PureFileEditor = observer(
         );
     }
 
-    useCommands(editorState);
+    const isActiveEditor = ideStore.editorSplitState.currentTab === editorState;
+    useCommands(editorState, isActiveEditor);
 
     useEffect(() => {
       if (isContextMenuOpen) {
@@ -727,9 +731,12 @@ export const PureFileEditor = observer(
       () => (): void => {
         if (editor) {
           // persist editor view state (cursor, scroll, etc.) to restore on re-open
-          editorState.textEditorState.setViewState(
-            editor.saveViewState() ?? undefined,
-          );
+          const saved = editor.saveViewState() ?? undefined;
+          if (leafId) {
+            editorState.textEditorState.setViewStateForLeaf(leafId, saved);
+          } else {
+            editorState.textEditorState.setViewState(saved);
+          }
           editor.dispose();
 
           definitionProviderDisposer.current?.dispose();
@@ -738,7 +745,7 @@ export const PureFileEditor = observer(
           pureIdentifierSuggestionProviderDisposer.current?.dispose();
         }
       },
-      [editorState, editor],
+      [editorState, editor, leafId],
     );
 
     return (

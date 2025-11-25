@@ -80,6 +80,27 @@ export abstract class TabManagerState {
     this.currentTab = val;
   }
 
+  /**
+   * Insert a tab at a specific index without triggering onOpen.
+   * Respect the pinned partition: pinned tabs must stay before unpinned ones.
+   */
+  insertTabAtIndex(tab: TabState, index: number): void {
+    // If the tab already exists in this manager, do nothing (external callers
+    // should have removed it from its previous manager before inserting).
+    if (this.tabs.includes(tab)) {
+      this.setCurrentTab(tab);
+      return;
+    }
+
+    const pinnedCount = this.tabs.filter((t) => t.isPinned).length;
+    const minIndex = tab.isPinned ? 0 : pinnedCount;
+    const maxIndex = tab.isPinned ? pinnedCount : this.tabs.length;
+    const clampedIndex = Math.max(minIndex, Math.min(index, maxIndex));
+
+    this.tabs.splice(clampedIndex, 0, tab);
+    this.setCurrentTab(tab);
+  }
+
   closeAllOtherTabs(tab: TabState): void {
     assertNonNullable(
       this.tabs.find((e) => e === tab),
