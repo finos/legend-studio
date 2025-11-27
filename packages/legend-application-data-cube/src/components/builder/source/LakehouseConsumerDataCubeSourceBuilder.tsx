@@ -63,6 +63,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
     try {
       sourceBuilder.loadDataProducts(auth.user?.access_token);
       sourceBuilder.fetchEnvironment(auth.user?.access_token);
+      sourceBuilder.fetchUserEntitlementEnvs(auth.user?.access_token);
     } catch (error) {
       assertErrorThrown(error);
       store.alertService.alertUnhandledError(error);

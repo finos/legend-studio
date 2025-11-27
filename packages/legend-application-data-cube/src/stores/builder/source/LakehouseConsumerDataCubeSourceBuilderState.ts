@@ -64,6 +64,7 @@ import {
   V1_Protocol,
   V1_PureGraphManager,
   PureClientVersion,
+  type V1_EntitlementsUserEnvResponse,
 } from '@finos/legend-graph';
 import {
   RawLakehouseAdhocOrigin,
@@ -83,6 +84,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   origin: string | undefined;
   fullGraphGrammar: string | undefined;
   deploymentId: number | undefined;
+  userEntitlementEnvs: string[] = [];
   dataProductDetails: V1_EntitlementsDataProductDetails[] | undefined;
   showQueryEditor = false;
   DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
@@ -114,6 +116,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       selectedDataProduct: observable,
       accessPoints: observable,
       allEnvironments: observable,
+      dataProductDetails: observable,
       environments: computed,
       selectedDataProductDetail: computed,
       selectedAccessPoint: observable,
@@ -122,6 +125,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       setShowQueryEditor: action,
       loadDataProducts: flow,
       fetchEnvironment: flow,
+      fetchUserEntitlementEnvs: flow,
 
       setWarehouse: action,
       setDataProducts: action,
@@ -129,6 +133,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       setAccessPoints: action,
       setSelectedAccessPoint: action,
       setSelectedEnvironment: action,
+      setUserEntitlementEnv: action,
     });
 
     this.codeEditorState = new LegendDataCubeCodeEditorState(
@@ -175,6 +180,10 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.selectedEnvironment = environment;
   }
 
+  setUserEntitlementEnv(envs: string[]) {
+    this.userEntitlementEnvs = envs;
+  }
+
   setShowQueryEditor(val: boolean): void {
     this.showQueryEditor = val;
   }
@@ -192,7 +201,12 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
             .map((type) =>
               filterEnvironmentsByEntitlementsEnv(type, allEnvironments),
             )
-            .flat(),
+            .flat()
+            .filter((env) =>
+              this.userEntitlementEnvs.some((userEnv) =>
+                userEnv.includes(env.environmentName),
+              ),
+            ),
         );
       }
       return allEnvironments;
@@ -318,6 +332,19 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       )) as IngestDeploymentServerConfig[];
     this.setAllEnvironments(ingestServerConfigs);
     this.ingestEnvLoadingState.complete();
+  }
+
+  *fetchUserEntitlementEnvs(
+    access_token: string | undefined,
+  ): GeneratorFn<void> {
+    const entitledEnvs =
+      (yield this._contractServerClient.getUserEntitlementEnvs(
+        this._application.identityService.currentUser,
+        access_token,
+      )) as V1_EntitlementsUserEnvResponse;
+    this.setUserEntitlementEnv(
+      entitledEnvs.users.map((env) => env.lakehouseEnvironment),
+    );
   }
 
   async initializeQuery() {
