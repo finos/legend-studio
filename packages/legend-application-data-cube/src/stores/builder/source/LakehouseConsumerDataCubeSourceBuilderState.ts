@@ -116,6 +116,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       selectedDataProduct: observable,
       accessPoints: observable,
       allEnvironments: observable,
+      dataProductDetails: observable,
       environments: computed,
       selectedDataProductDetail: computed,
       selectedAccessPoint: observable,
@@ -124,6 +125,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       setShowQueryEditor: action,
       loadDataProducts: flow,
       fetchEnvironment: flow,
+      fetchUserEntitlementEnvs: flow,
 
       setWarehouse: action,
       setDataProducts: action,
