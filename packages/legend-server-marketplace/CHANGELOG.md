@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.27
+
+### Patch Changes
+
+- [#4661](https://github.com/finos/legend-studio/pull/4661) [`96658e2`](https://github.com/finos/legend-studio/commit/96658e2c29949243eb4ef1bd9ec113c84ce128b5) ([@bojja-gs](https://github.com/bojja-gs)) - Updated Models for subscriptions cancellations and your orders
+
 ## 0.1.26
 
 ## 0.1.25
