@@ -17,7 +17,10 @@
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
 import type { LightProvider, TerminalResult } from './models/Provider.js';
 import type { DataProductSearchResult } from './models/DataProductSearchResult.js';
-import type { Subscription } from './models/Subscription.js';
+import type {
+  SubscriptionRequest,
+  SubscriptionResponse,
+} from './models/Subscription.js';
 import type {
   CartItem,
   CartItemRequest,
@@ -26,6 +29,10 @@ import type {
 } from './models/Cart.js';
 import type { OrderDetails } from './models/Order.js';
 import type { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
+import {
+  type TerminalProductOrderResponse,
+  OrderStatusCategory,
+} from './models/TerminalProductOrder.js';
 
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
@@ -113,14 +120,21 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Subscriptions -----------------------------------------
 
+  private _subscriptions = (user: string): string =>
+    `${this.baseUrl}/v1/service/subscription/${user}`;
+
   getSubscriptions = async (
     user: string,
-  ): Promise<PlainObject<Subscription>[]> =>
-    (
-      await this.get<{ subscription_feeds: PlainObject<Subscription>[] }>(
-        `${this.subscriptionUrl}/v1/service/subscription/${user}`,
-      )
-    ).subscription_feeds;
+  ): Promise<PlainObject<SubscriptionResponse>> =>
+    this.get<PlainObject<SubscriptionResponse>>(this._subscriptions(user));
+
+  cancelSubscriptions = async (
+    cancellationRequest: SubscriptionRequest,
+  ): Promise<PlainObject<{ message: string }>> =>
+    this.post(
+      `${this.baseUrl}/v1/workflow/cancel/subscription`,
+      cancellationRequest,
+    );
 
   // ------------------------------------------- Cart -------------------------------------------
 
@@ -151,4 +165,21 @@ export class MarketplaceServerClient extends AbstractServerClient {
     orderData: OrderDetails,
   ): Promise<PlainObject<unknown>> =>
     this.post(`${this.baseUrl}/v1/workflow/create/order`, orderData);
+
+  // ------------------------------------------- Orders -------------------------------------------
+  private _orders = (): string => `${this.baseUrl}/v1/workflow/fetch/orders`;
+
+  fetchOrders = async (
+    user: string,
+    category: OrderStatusCategory = OrderStatusCategory.OPEN,
+  ): Promise<PlainObject<TerminalProductOrderResponse>> =>
+    this.get<PlainObject<TerminalProductOrderResponse>>(
+      this._orders(),
+      undefined,
+      undefined,
+      {
+        kerberos: user,
+        category,
+      },
+    );
 }

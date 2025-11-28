@@ -15,182 +15,240 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { Breadcrumbs, Link, Typography } from '@mui/material';
+import { Button, Typography, CircularProgress } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
-import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { useCallback, useEffect, useState } from 'react';
-import { Subscription } from '@finos/legend-server-marketplace';
-import { DataGrid } from '@finos/legend-lego/data-grid';
+import type {
+  Subscription,
+  ProductSubscription,
+  SubscriptionRequest,
+} from '@finos/legend-server-marketplace';
 import {
-  useLegendMarketPlaceVendorDataStore,
-  withLegendMarketplaceVendorDataStore,
-} from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
+  DataGrid,
+  type DataGridCellRendererParams,
+} from '@finos/legend-lego/data-grid';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+
+import { flowResult } from 'mobx';
+import { UserSearchInput } from '@finos/legend-art';
+import type { LegendUser } from '@finos/legend-shared';
+import {
+  useLegendMarketplaceSubscriptionsStore,
+  withLegendMarketplaceSubscriptionsStore,
+} from '../../application/providers/LegendMarketplaceSubscriptionsStoreProvider.js';
 
 export const LegendMarketplaceSubscriptions =
-  withLegendMarketplaceVendorDataStore(
+  withLegendMarketplaceSubscriptionsStore(
     observer(() => {
-      const vendorDataStore = useLegendMarketPlaceVendorDataStore();
-      const [subscriptionData, setSubscriptionData] = useState<Subscription[]>(
-        [],
-      );
+      const marketplaceStore = useLegendMarketplaceBaseStore();
+      const subscriptionStore = useLegendMarketplaceSubscriptionsStore();
+      const [userSearchEnabled, setUserSearchEnabled] =
+        useState<boolean>(false);
       const initialUser =
-        vendorDataStore.applicationStore.identityService.currentUser;
-
-      const sortData = (data: Subscription[]): Subscription[] => {
-        if (data.length > 0) {
-          const sortedData = [...data].sort((a, b) => {
-            if (a.carrierVendor === b.carrierVendor) {
-              return a.model > b.model ? 1 : -1;
-            }
-            return a.carrierVendor > b.carrierVendor ? 1 : -1;
-          });
-          return sortedData;
-        } else {
-          return [];
-        }
-      };
+        marketplaceStore.applicationStore.identityService.currentUser;
 
       const fetchSubscriptions = useCallback(
-        async (user: string): Promise<Subscription[]> => {
-          try {
-            const subscriptions =
-              await vendorDataStore.marketplaceServerClient.getSubscriptions(
-                user,
-              );
-            const serializedSubs = subscriptions.map((json) =>
-              Subscription.serialization.fromJson(json),
-            );
-            return sortData(serializedSubs);
-          } catch (error) {
-            vendorDataStore.applicationStore.notificationService.notifyError(
-              `Failed to fetch subscriptions: ${error}`,
-            );
-            return [];
-          }
+        async (user: string) => {
+          flowResult(subscriptionStore.fetchSubscription(user)).catch(
+            marketplaceStore.applicationStore.alertUnhandledError,
+          );
         },
-        [vendorDataStore],
+        [
+          subscriptionStore,
+          marketplaceStore.applicationStore.alertUnhandledError,
+        ],
       );
 
-      const onUserSearch = (user: string | undefined): void => {
-        if (!user) {
-          return;
-        }
-        fetchSubscriptions(user)
-          .then((subscriptions) => setSubscriptionData(subscriptions))
-          .catch((error) => {
-            vendorDataStore.applicationStore.alertUnhandledError(error);
-          });
+      const cancelSubscription = () => {
+        const orderItems: Record<number, ProductSubscription[]> = {};
+        subscriptionStore.selectedSubscriptions.forEach((s) => {
+          const subscription: ProductSubscription = {
+            providerName: s.carrierVendor,
+            productName: s.serviceName,
+            category: s.itemName,
+            price: s.price,
+            servicepriceId: s.servicepriceId ?? 0,
+            model: s.model,
+          };
+          if (s.permId in orderItems) {
+            orderItems[s.permId]?.push(subscription);
+          } else {
+            orderItems[s.permId] = [subscription];
+          }
+        });
+        const cancellationRequest: SubscriptionRequest = {
+          ordered_by: initialUser,
+          kerberos: subscriptionStore.selectedUser.id,
+          order_items: orderItems,
+        };
+
+        flowResult(
+          subscriptionStore.cancelSubscription(cancellationRequest),
+        ).catch(marketplaceStore.applicationStore.alertUnhandledError);
       };
 
       useEffect(() => {
-        fetchSubscriptions(initialUser)
-          .then((subscriptions) => setSubscriptionData(subscriptions))
-          .catch((error) => {
-            vendorDataStore.applicationStore.alertUnhandledError(error);
-          });
-      }, [initialUser, fetchSubscriptions, vendorDataStore.applicationStore]);
+        flowResult(subscriptionStore.refresh()).catch(
+          marketplaceStore.applicationStore.alertUnhandledError,
+        );
+      }, [
+        subscriptionStore,
+        marketplaceStore.applicationStore.alertUnhandledError,
+      ]);
 
       return (
         <LegendMarketplacePage className="legend-marketplace-home">
-          <div className="legend-marketplace-subscriptions-header">
-            <Breadcrumbs
-              separator="›"
-              aria-label="breadcrumb"
-              color="white"
-              sx={{ fontSize: '16px' }}
-            >
-              <Link href="/" underline="hover" color="white">
-                Account
-              </Link>
-              <Link href="/subscriptions" underline="hover" color="white">
-                Subscriptions
-              </Link>
-            </Breadcrumbs>
-          </div>
-
           <div className="legend-marketplace-subscriptions-content">
             <div className="legend-marketplace-subscriptions-content__search-section">
               <Typography variant="h2" fontWeight="bold">
                 Subscriptions
               </Typography>
-              <LegendMarketplaceSearchBar
-                placeholder="Search user"
-                onSearch={onUserSearch}
-              />
-              <LegendMarketplaceSearchBar
-                placeholder="Search all subscriptions"
-                onSearch={() => {}}
-              />
+              {userSearchEnabled ? (
+                <UserSearchInput
+                  className="legend-marketplace-subscriptions__user-input"
+                  userValue={subscriptionStore.selectedUser}
+                  setUserValue={(_user: LegendUser): void => {
+                    subscriptionStore.setSelectedUser(_user);
+                    fetchSubscriptions(_user.id).catch(
+                      marketplaceStore.applicationStore.alertUnhandledError,
+                    );
+                  }}
+                  userSearchService={marketplaceStore.userSearchService}
+                  label="Search user"
+                  required={true}
+                  variant="outlined"
+                  fullWidth={true}
+                />
+              ) : (
+                <Button
+                  variant="contained"
+                  className="legend-marketplace-subscriptions-content_button"
+                  onClick={() => setUserSearchEnabled(!userSearchEnabled)}
+                >
+                  Change User
+                </Button>
+              )}
+              <Button
+                className="legend-marketplace-subscriptions-content__cancel-button"
+                disabled={
+                  subscriptionStore.selectedSubscriptions.length <= 0 ||
+                  subscriptionStore.cancelSubscriptionState.isInProgress
+                }
+                onClick={cancelSubscription}
+                variant="contained"
+                color="secondary"
+                startIcon={
+                  subscriptionStore.cancelSubscriptionState.isInProgress ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : null
+                }
+                sx={{ minWidth: 180 }}
+              >
+                {subscriptionStore.cancelSubscriptionState.isInProgress
+                  ? 'Cancelling...'
+                  : 'Cancel Subscription'}
+              </Button>
             </div>
 
-            <div
-              className="legend-marketplace-subscriptions-content__subscription-grid ag-theme-balham"
-              style={{ height: '1000px', width: '100%', fontSize: '14px' }}
-            >
-              <DataGrid
-                rowData={subscriptionData}
-                columnDefs={[
-                  {
-                    minWidth: 50,
-                    headerName: 'Carrier Vendor',
-                    field: 'carrierVendor',
-                    spanRows: true,
-                    suppressHeaderMenuButton: true,
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    headerName: 'Product',
-                    field: 'model',
-                    spanRows: true,
-                    suppressHeaderMenuButton: true,
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    headerName: 'Source Vendor',
-                    field: 'sourceVendor',
-                    suppressHeaderMenuButton: true,
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    headerName: 'Item Type',
-                    field: 'itemName',
-                    suppressHeaderMenuButton: true,
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    headerName: 'Service',
-                    field: 'serviceName',
-                    suppressHeaderMenuButton: true,
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    headerName: 'Cost (USD)',
-                    field: 'monthlyAmount',
-                    suppressHeaderMenuButton: true,
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    headerName: 'Cost Code',
-                    field: 'costCode',
-                    suppressHeaderMenuButton: true,
-                    flex: 1,
-                  },
-                ]}
-                enableCellSpan={true}
-                defaultColDef={{
-                  headerStyle: {
-                    fontSize: '18px',
-                    backgroundColor: '#dce3e8',
-                  },
-                }}
-              />
-            </div>
+            {subscriptionStore.fetchSubscriptionState.isInProgress ? (
+              <CircularProgress size={25} />
+            ) : (
+              <div
+                className="legend-marketplace-subscriptions-content__subscription-grid ag-theme-balham"
+                style={{ height: '1000px', width: '100%', fontSize: '14px' }}
+              >
+                <DataGrid
+                  rowData={subscriptionStore.subscriptionFeeds}
+                  columnDefs={[
+                    {
+                      minWidth: 50,
+                      headerName: 'Carrier Vendor',
+                      field: 'carrierVendor',
+                      spanRows: true,
+                      suppressHeaderMenuButton: true,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      headerName: 'Product',
+                      field: 'model',
+                      spanRows: true,
+                      suppressHeaderMenuButton: true,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      headerName: 'Source Vendor',
+                      field: 'sourceVendor',
+                      suppressHeaderMenuButton: true,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      headerName: 'Item Type',
+                      field: 'itemName',
+                      suppressHeaderMenuButton: true,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      headerName: 'Service',
+                      field: 'serviceName',
+                      suppressHeaderMenuButton: true,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      headerName: 'Cost (USD)',
+                      field: 'annualAmount',
+                      suppressHeaderMenuButton: true,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      headerName: 'Cost Code',
+                      field: 'costCode',
+                      suppressHeaderMenuButton: true,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 60,
+                      headerName: 'Cancel Subscription',
+                      suppressHeaderMenuButton: true,
+                      flex: 1,
+                      cellRenderer: (
+                        params: DataGridCellRendererParams<Subscription>,
+                      ) => (
+                        <input
+                          type="checkbox"
+                          checked={subscriptionStore.selectedSubscriptions.some(
+                            (sub) => sub.id === params.data?.id,
+                          )}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              subscriptionStore.addSelectedSubscriptions(
+                                params.data ?? null,
+                              );
+                            } else {
+                              subscriptionStore.removeSelectedSubscription(
+                                params.data ?? null,
+                              );
+                            }
+                          }}
+                        />
+                      ),
+                    },
+                  ]}
+                  enableCellSpan={true}
+                  defaultColDef={{
+                    headerStyle: {
+                      fontSize: '18px',
+                      backgroundColor: '#dce3e8',
+                    },
+                  }}
+                />
+              </div>
+            )}
           </div>
         </LegendMarketplacePage>
       );
