@@ -106,6 +106,8 @@ export class ProjectConfigurationEditorState extends EditorState {
       setProjectConfiguration: action,
       setSelectedTab: action,
       setManualOverwrite: action,
+      syncExclusionsToProjectDependencies: action,
+      loadExclusionsFromProjectDependencies: action,
       fectchAssociatedProjectsAndVersions: flow,
       updateProjectConfiguration: flow,
       updateToLatestStructure: flow,
@@ -131,6 +133,7 @@ export class ProjectConfigurationEditorState extends EditorState {
 
   setProjectConfiguration(projectConfiguration: ProjectConfiguration): void {
     this.projectConfiguration = projectConfiguration;
+    this.loadExclusionsFromProjectDependencies();
   }
 
   setSelectedTab(tab: CONFIGURATION_EDITOR_TAB): void {
@@ -191,6 +194,24 @@ export class ProjectConfigurationEditorState extends EditorState {
     );
   }
 
+  syncExclusionsToProjectDependencies(): void {
+    this.currentProjectConfiguration.projectDependencies.forEach((dep) => {
+      const exclusions = this.projectDependencyEditorState.getExclusions(
+        dep.projectId,
+      );
+      dep.setExclusions(exclusions);
+    });
+  }
+
+  loadExclusionsFromProjectDependencies(): void {
+    this.projectConfiguration?.projectDependencies.forEach((dep) => {
+      if (dep.exclusions && dep.exclusions.length > 0) {
+        this.projectDependencyEditorState.dependencyExclusions[dep.projectId] =
+          [...dep.exclusions];
+      }
+    });
+  }
+
   *fectchAssociatedProjectsAndVersions(): GeneratorFn<void> {
     this.fetchingProjectVersionsState.inProgress();
     try {
@@ -234,6 +255,9 @@ export class ProjectConfigurationEditorState extends EditorState {
   ): GeneratorFn<void> {
     try {
       this.updatingConfigurationState.inProgress();
+
+      this.syncExclusionsToProjectDependencies();
+
       yield this.editorStore.sdlcServerClient.updateConfiguration(
         this.editorStore.sdlcState.activeProject.projectId,
         this.editorStore.sdlcState.activeWorkspace,
@@ -340,6 +364,8 @@ export class ProjectConfigurationEditorState extends EditorState {
       showLoading: true,
     });
     try {
+      this.syncExclusionsToProjectDependencies();
+
       const updateProjectConfigurationCommand =
         new UpdateProjectConfigurationCommand(
           this.currentProjectConfiguration.groupId,

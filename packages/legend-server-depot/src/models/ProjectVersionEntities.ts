@@ -14,19 +14,31 @@
  * limitations under the License.
  */
 
-import { list, createModelSchema, primitive, raw } from 'serializr';
+import { list, createModelSchema, primitive, raw, optional } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 import { type Entity, generateGAVCoordinates } from '@finos/legend-storage';
+
+export interface ProjectDependencyExclusionCoordinates {
+  groupId: string;
+  artifactId: string;
+}
 
 export class ProjectDependencyCoordinates {
   groupId: string;
   artifactId: string;
   versionId: string;
+  exclusions?: ProjectDependencyExclusionCoordinates[] | undefined;
 
-  constructor(groupId: string, artifactId: string, versionId: string) {
+  constructor(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    exclusions?: ProjectDependencyExclusionCoordinates[] | undefined,
+  ) {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
+    this.exclusions = exclusions;
   }
 
   static readonly serialization = new SerializationFactory(
@@ -34,9 +46,11 @@ export class ProjectDependencyCoordinates {
       groupId: primitive(),
       artifactId: primitive(),
       versionId: primitive(),
+      exclusions: optional(list(raw())),
     }),
   );
 }
+
 export class ProjectVersionEntities {
   groupId!: string;
   artifactId!: string;

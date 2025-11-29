@@ -334,7 +334,10 @@ export class DepotServerClient extends AbstractServerClient {
      */
     dependencies: PlainObject<ProjectDependencyCoordinates>[],
   ): Promise<PlainObject<RawProjectDependencyReport>> =>
-    this.post(`${this._projects()}/analyzeDependencyTree`, dependencies);
+    this.post(
+      `${this._projects()}/analyzeDependencyTreeFromArtifactDependencies`,
+      dependencies,
+    );
 
   // ------------------------------------------- File Generation -------------------------------------------
 
