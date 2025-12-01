@@ -99,6 +99,7 @@ import {
   type IngestDeploymentServerConfig,
   type IngestDeploymentServerConfigOption,
 } from '@finos/legend-server-lakehouse';
+import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
@@ -861,7 +862,10 @@ export const DataProducteDataAccess = observer(
     dataProductDataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { dataProductViewerState, dataProductDataAccessState } = props;
-    const documentationUrl = 'todo.com';
+    const documentationUrl =
+      dataProductViewerState.applicationStore.documentationService.getDocEntry(
+        DSL_DATA_PRODUCT_DOCUMENTATION_KEY.DATA_ACCESS,
+      )?.url;
     const sectionRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForSection(
       DATA_PRODUCT_VIEWER_SECTION.DATA_ACCESS,
@@ -878,9 +882,11 @@ export const DataProducteDataAccess = observer(
     }, [dataProductViewerState, anchor]);
 
     const seeDocumentation = (): void => {
-      dataProductViewerState.applicationStore.navigationService.navigator.visitAddress(
-        documentationUrl,
-      );
+      if (documentationUrl) {
+        dataProductViewerState.applicationStore.navigationService.navigator.visitAddress(
+          documentationUrl,
+        );
+      }
     };
 
     return (
