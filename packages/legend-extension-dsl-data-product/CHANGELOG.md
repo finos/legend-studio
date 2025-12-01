@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.28
+
+### Patch Changes
+
+- [#4654](https://github.com/finos/legend-studio/pull/4654) [`4d4bd54`](https://github.com/finos/legend-studio/commit/4d4bd54333c2d05e5e9e20627083d03e7021fa8c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Removed Python tab
+
+- [#4663](https://github.com/finos/legend-studio/pull/4663) [`41f3d67`](https://github.com/finos/legend-studio/commit/41f3d676e5ae1a0db29c597a0fac041ba79138b2) ([@travisstebbins](https://github.com/travisstebbins)) - Fix handling data access documentation
+
 ## 0.0.27
 
 ### Patch Changes
