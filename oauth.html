@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Token Handler</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .config-section, .token-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px 5px 5px 0;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .token-display {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OAuth 2.0 Token Handler</h1>
+        
+        <div class="config-section">
+            <h3>OAuth Configuration</h3>
+            <label>Authorization Server URL</label>
+            <input type="text" id="issuer" placeholder="https://accounts.google.com" value="https://accounts.google.com">
+            
+            <label>Client ID</label>
+            <input type="text" id="clientId" placeholder="your-client-id.apps.googleusercontent.com">
+            
+            <label>Redirect URI</label>
+            <input type="text" id="redirectUri" value="http://localhost:8080/callback">
+            
+            <label>Scope</label>
+            <input type="text" id="scope" placeholder="openid profile email" value="openid profile email">
+            
+            <button onclick="startOAuth()">Start OAuth Flow</button>
+            <div class="info">
+                <strong>Note:</strong> This example uses PKCE flow (recommended for browser apps). 
+                Make sure your OAuth provider is configured to allow this redirect URI.
+            </div>
+        </div>
+
+        <div class="token-section">
+            <h3>Token Status</h3>
+            <div id="status"></div>
+            <div id="tokenDisplay"></div>
+            <div id="actions" style="display: none;">
+                <button onclick="refreshToken()">Refresh Token</button>
+                <button onclick="revokeToken()">Revoke Token</button>
+                <button onclick="clearTokens()">Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Simple OAuth handler without external dependencies
+        class SimpleOAuth {
+            constructor() {
+                this.codeVerifier = null;
+            }
+
+            // Generate random string for PKCE
+            generateRandomString(length) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+                let result = '';
+                const randomValues = new Uint8Array(length);
+                crypto.getRandomValues(randomValues);
+                for (let i = 0; i < length; i++) {
+                    result += chars[randomValues[i] % chars.length];
+                }
+                return result;
+            }
+
+            // Generate PKCE code challenge
+            async generateCodeChallenge(verifier) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(verifier);
+                const hash = await crypto.subtle.digest('SHA-256', data);
+                return btoa(String.fromCharCode(...new Uint8Array(hash)))
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=/g, '');
+            }
+
+            // Start OAuth flow with PKCE
+            async startAuthFlow(config) {
+                this.codeVerifier = this.generateRandomString(128);
+                const codeChallenge = await this.generateCodeChallenge(this.codeVerifier);
+                const state = this.generateRandomString(32);
+
+                // Store verifier and state
+                sessionStorage.setItem('oauth_verifier', this.codeVerifier);
+                sessionStorage.setItem('oauth_state', state);
+
+                // Build authorization URL
+                const params = new URLSearchParams({
+                    client_id: config.clientId,
+                    redirect_uri: config.redirectUri,
+                    response_type: 'code',
+                    scope: config.scope,
+                    state: state,
+                    code_challenge: codeChallenge,
+                    code_challenge_method: 'S256'
+                });
+
+                const authUrl = `${config.issuer}/o/oauth2/v2/auth?${params.toString()}`;
+                window.location.href = authUrl;
+            }
+
+            // Exchange code for token
+            async exchangeCodeForToken(code, config) {
+                const verifier = sessionStorage.getItem('oauth_verifier');
+                
+                const params = new URLSearchParams({
+                    client_id: config.clientId,
+                    code: code,
+                    redirect_uri: config.redirectUri,
+                    grant_type: 'authorization_code',
+                    code_verifier: verifier
+                });
+
+                const response = await fetch(`${config.issuer}/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params.toString()
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Token exchange failed: ${response.statusText}`);
+                }
+
+                const tokens = await response.json();
+                
+                // Store tokens
+                sessionStorage.setItem('access_token', tokens.access_token);
+                if (tokens.refresh_token) {
+                    sessionStorage.setItem('refresh_token', tokens.refresh_token);
+                }
+                if (tokens.expires_in) {
+                    const expiresAt = Date.now() + (tokens.expires_in * 1000);
+                    sessionStorage.setItem('token_expires_at', expiresAt.toString());
+                }
+
+                return tokens;
+            }
+
+            // Refresh access token
+            async refreshAccessToken(config) {
+                const refreshToken = sessionStorage.getItem('refresh_token');
+                if (!refreshToken) {
+                    throw new Error('No refresh token available');
+                }
+
+                const params = new URLSearchParams({
+                    client_id: config.clientId,
+                    refresh_token: refreshToken,
+                    grant_type: 'refresh_token'
+                });
+
+                const response = await fetch(`${config.issuer}/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params.toString()
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Token refresh failed: ${response.statusText}`);
+                }
+
+                const tokens = await response.json();
+                
+                sessionStorage.setItem('access_token', tokens.access_token);
+                if (tokens.expires_in) {
+                    const expiresAt = Date.now() + (tokens.expires_in * 1000);
+                    sessionStorage.setItem('token_expires_at', expiresAt.toString());
+                }
+
+                return tokens;
+            }
+
+            // Get current token
+            getAccessToken() {
+                return sessionStorage.getItem('access_token');
+            }
+
+            // Check if token is expired
+            isTokenExpired() {
+                const expiresAt = sessionStorage.getItem('token_expires_at');
+                if (!expiresAt) return true;
+                return Date.now() >= parseInt(expiresAt);
+            }
+
+            // Clear all tokens
+            clearTokens() {
+                sessionStorage.removeItem('access_token');
+                sessionStorage.removeItem('refresh_token');
+                sessionStorage.removeItem('token_expires_at');
+                sessionStorage.removeItem('oauth_verifier');
+                sessionStorage.removeItem('oauth_state');
+            }
+        }
+
+        // Make OAuth handler globally available
+        window.oauthHandler = new SimpleOAuth();
+
+        // Handle OAuth callback
+        window.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const storedState = sessionStorage.getItem('oauth_state');
+
+            if (code && state === storedState) {
+                try {
+                    const config = {
+                        issuer: document.getElementById('issuer').value || sessionStorage.getItem('oauth_issuer'),
+                        clientId: sessionStorage.getItem('oauth_client_id'),
+                        redirectUri: sessionStorage.getItem('oauth_redirect_uri')
+                    };
+
+                    showStatus('Exchanging code for token...', 'info');
+                    const tokens = await window.oauthHandler.exchangeCodeForToken(code, config);
+                    
+                    // Clean up URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                    showStatus('Successfully obtained access token!', 'success');
+                    displayToken();
+                } catch (error) {
+                    showStatus(`Error: ${error.message}`, 'error');
+                }
+            } else {
+                checkExistingToken();
+            }
+        });
+
+        // Global functions
+        window.startOAuth = async function() {
+            const config = {
+                issuer: document.getElementById('issuer').value,
+                clientId: document.getElementById('clientId').value,
+                redirectUri: document.getElementById('redirectUri').value,
+                scope: document.getElementById('scope').value
+            };
+
+            if (!config.clientId) {
+                showStatus('Please enter a Client ID', 'error');
+                return;
+            }
+
+            // Store config for callback
+            sessionStorage.setItem('oauth_issuer', config.issuer);
+            sessionStorage.setItem('oauth_client_id', config.clientId);
+            sessionStorage.setItem('oauth_redirect_uri', config.redirectUri);
+
+            await window.oauthHandler.startAuthFlow(config);
+        };
+
+        window.refreshToken = async function() {
+            try {
+                const config = {
+                    issuer: sessionStorage.getItem('oauth_issuer'),
+                    clientId: sessionStorage.getItem('oauth_client_id')
+                };
+
+                showStatus('Refreshing token...', 'info');
+                await window.oauthHandler.refreshAccessToken(config);
+                showStatus('Token refreshed successfully!', 'success');
+                displayToken();
+            } catch (error) {
+                showStatus(`Error refreshing token: ${error.message}`, 'error');
+            }
+        };
+
+        window.revokeToken = function() {
+            // Note: Actual revocation would require calling the provider's revoke endpoint
+            showStatus('Token revoked (cleared from storage)', 'success');
+            window.oauthHandler.clearTokens();
+            checkExistingToken();
+        };
+
+        window.clearTokens = function() {
+            window.oauthHandler.clearTokens();
+            showStatus('All tokens cleared', 'success');
+            checkExistingToken();
+        };
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        function displayToken() {
+            const token = window.oauthHandler.getAccessToken();
+            const isExpired = window.oauthHandler.isTokenExpired();
+            const expiresAt = sessionStorage.getItem('token_expires_at');
+            
+            if (token) {
+                const tokenPreview = token.substring(0, 50) + '...';
+                let html = `<div class="token-display">
+                    <strong>Access Token:</strong><br>
+                    ${tokenPreview}<br><br>
+                    <strong>Status:</strong> ${isExpired ? '❌ Expired' : '✅ Valid'}<br>
+                `;
+                
+                if (expiresAt) {
+                    const expiryDate = new Date(parseInt(expiresAt));
+                    html += `<strong>Expires:</strong> ${expiryDate.toLocaleString()}`;
+                }
+                
+                html += '</div>';
+                document.getElementById('tokenDisplay').innerHTML = html;
+                document.getElementById('actions').style.display = 'block';
+            }
+        }
+
+        function checkExistingToken() {
+            const token = window.oauthHandler.getAccessToken();
+            if (token) {
+                const isExpired = window.oauthHandler.isTokenExpired();
+                showStatus(isExpired ? 'Token expired' : 'Token available', isExpired ? 'error' : 'success');
+                displayToken();
+            } else {
+                showStatus('No token available. Configure OAuth and start the flow.', 'info');
+                document.getElementById('actions').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
