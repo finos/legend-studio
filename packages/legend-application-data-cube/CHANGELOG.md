@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.23
+
+### Patch Changes
+
+- [#4660](https://github.com/finos/legend-studio/pull/4660) [`9f7369c`](https://github.com/finos/legend-studio/commit/9f7369cf779f752322dc84f7f89a2486cf7ea9bd) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: filtering based on user entitlements
+
 ## 0.7.22
 
 ### Patch Changes
