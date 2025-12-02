@@ -19,14 +19,14 @@ import {
   NewElementDriver,
 } from '@finos/legend-application-studio';
 import {
-  type DataQualityValidationConfiguration,
   DataQualityClassValidationsConfiguration,
-  DataQualityServiceValidationConfiguration,
-  DataQualityRelationValidationConfiguration,
-  DataSpaceDataQualityExecutionContext,
-  MappingAndRuntimeDataQualityExecutionContext,
   DataQualityRelationQueryLambda,
   DataQualityRelationValidation,
+  DataQualityRelationValidationConfiguration,
+  DataQualityServiceValidationConfiguration,
+  type DataQualityValidationConfiguration,
+  DataSpaceDataQualityExecutionContext,
+  MappingAndRuntimeDataQualityExecutionContext,
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
@@ -36,17 +36,17 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
-  type Mapping,
-  type PackageableRuntime,
   type Class,
-  getMappingCompatibleRuntimes,
-  PackageableElementExplicitReference,
   getMappingCompatibleClasses,
+  getMappingCompatibleRuntimes,
+  type Mapping,
+  PackageableElementExplicitReference,
+  type PackageableRuntime,
   RawLambda,
 } from '@finos/legend-graph';
 import {
-  type PackageableElementOption,
   buildElementOption,
+  type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
 import {
   DataSpace,
@@ -177,14 +177,20 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
   createDefaultValidation(): DataQualityRelationValidation[] {
     const body = [
       {
-        _type: 'boolean',
-        value: true,
+        _type: 'func',
+        function: 'assertRelationNotEmpty',
+        parameters: [
+          {
+            _type: 'var',
+            name: 'rel',
+          },
+        ],
       },
     ];
     const parameters = [
       {
         _type: 'var',
-        name: 'row',
+        name: 'rel',
       },
     ];
     const assertion = new RawLambda(parameters, body);
