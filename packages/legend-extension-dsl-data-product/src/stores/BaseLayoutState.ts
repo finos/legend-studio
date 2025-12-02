@@ -16,10 +16,15 @@
 import { action, computed, makeObservable, observable } from 'mobx';
 import { isNonNullable } from '@finos/legend-shared';
 import {
-  DATA_PRODUCT_VIEWER_ANCHORS,
+  DATA_PRODUCT_DEFAULT_ANCHORS,
+  DATA_PRODUCT_MODELAPG_ANCHORS,
+  DATA_PRODUCT_VDP_ANCHORS,
+  generateAnchorForSection,
   TERMINAL_PRODUCT_VIEWER_ANCHORS,
 } from './ProductViewerNavigation.js';
 import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
+import type { V1_DataProduct } from '@finos/legend-graph';
+import type { DataProductViewerState } from './DataProduct/DataProductViewerState.js';
 
 export type WikiPageNavigationCommand = { anchor: string };
 
@@ -33,6 +38,7 @@ export abstract class BaseLayoutState {
   private wikiPageAnchorIndex = new Map<string, HTMLElement>();
   wikiPageNavigationCommand?: WikiPageNavigationCommand | undefined;
   private wikiPageVisibleAnchors: string[] = [];
+  private renderedGrids = 0;
   private wikiPageScrollIntersectionObserver?: IntersectionObserver | undefined;
 
   constructor() {
@@ -41,6 +47,8 @@ export abstract class BaseLayoutState {
       | 'wikiPageAnchorIndex'
       | 'wikiPageVisibleAnchors'
       | 'updatePageVisibleAnchors'
+      | 'renderedGrids'
+      | 'expectedGridCount'
     >(this, {
       currentNavigationZone: observable,
       isExpandedModeEnabled: observable,
@@ -49,13 +57,16 @@ export abstract class BaseLayoutState {
       frame: observable.ref,
       wikiPageAnchorIndex: observable,
       wikiPageNavigationCommand: observable.ref,
+      renderedGrids: observable,
       isWikiPageFullyRendered: computed,
+      expectedGridCount: computed,
       registerWikiPageScrollObserver: action,
       setCurrentNavigationZone: action,
       enableExpandedMode: action,
       setFrame: action,
       setTopScrollerVisible: action,
       setWikiPageAnchor: action,
+      markGridAsRendered: action,
       unsetWikiPageAnchor: action,
       setWikiPageAnchorToNavigate: action,
       updatePageVisibleAnchors: action,
@@ -63,15 +74,25 @@ export abstract class BaseLayoutState {
   }
 
   protected abstract getValidAnchors(): string[];
+  protected abstract get expectedGridCount(): number;
 
   get isWikiPageFullyRendered(): boolean {
-    return (
+    const allAnchorsPresent =
       Boolean(this.frame) &&
       this.getValidAnchors().every((anchor) =>
         this.wikiPageAnchorIndex.has(anchor),
       ) &&
-      Array.from(this.wikiPageAnchorIndex.values()).every(isNonNullable)
-    );
+      Array.from(this.wikiPageAnchorIndex.values()).every(isNonNullable);
+
+    const areAllGridsRendered =
+      this.expectedGridCount === 0 ||
+      this.renderedGrids >= this.expectedGridCount;
+
+    return allAnchorsPresent && areAllGridsRendered;
+  }
+
+  markGridAsRendered(): void {
+    this.renderedGrids += 1;
   }
 
   setCurrentNavigationZone(val: string): void {
@@ -208,13 +229,50 @@ export abstract class BaseLayoutState {
 }
 
 export class DataProductLayoutState extends BaseLayoutState {
+  private dataProduct: V1_DataProduct;
+  private dataProductViewerState!: DataProductViewerState;
+
+  constructor(dataProduct: V1_DataProduct) {
+    super();
+    this.dataProduct = dataProduct;
+  }
+
+  get expectedGridCount(): number {
+    return this.dataProduct.accessPointGroups.reduce(
+      (total, apg) => total + apg.accessPoints.length,
+      0,
+    );
+  }
+
+  setViewerState(viewerState: DataProductViewerState): void {
+    this.dataProductViewerState = viewerState;
+  }
+
   protected getValidAnchors(): string[] {
-    return DATA_PRODUCT_VIEWER_ANCHORS;
+    const anchors = [...DATA_PRODUCT_DEFAULT_ANCHORS]
+      .concat(
+        this.dataProductViewerState.isVDP ? [...DATA_PRODUCT_VDP_ANCHORS] : [],
+      )
+      .concat(
+        this.dataProductViewerState.getModelAccessPointGroup()
+          ? [...DATA_PRODUCT_MODELAPG_ANCHORS]
+          : [],
+      );
+
+    const apgAnchors = this.dataProduct.accessPointGroups.map((apg) =>
+      generateAnchorForSection(`apg-${apg.id}`),
+    );
+
+    return [...anchors, ...apgAnchors];
   }
 }
 
 export class TerminalProductLayoutState extends BaseLayoutState {
   protected getValidAnchors(): string[] {
     return TERMINAL_PRODUCT_VIEWER_ANCHORS;
+  }
+
+  protected get expectedGridCount(): number {
+    return 0;
   }
 }
