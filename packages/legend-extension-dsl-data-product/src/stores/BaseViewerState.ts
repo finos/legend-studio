@@ -74,4 +74,18 @@ export abstract class BaseViewerState<
       this.layoutState.setCurrentNavigationZone(zone);
     }
   }
+
+  copyLinkToClipboard(zone: NavigationZone): void {
+    const url = `${window.location.origin}${window.location.pathname}#${zone}`;
+    this.applicationStore.clipboardService
+      .copyTextToClipboard(url)
+      .then(() =>
+        this.applicationStore.notificationService.notifySuccess(
+          'Copied to clipboard',
+          undefined,
+          2500,
+        ),
+      )
+      .catch(this.applicationStore.alertUnhandledError);
+  }
 }

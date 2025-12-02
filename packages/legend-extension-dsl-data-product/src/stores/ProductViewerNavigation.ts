@@ -17,19 +17,31 @@
 import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
 import type { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
 
-export enum DATA_PRODUCT_VIEWER_SECTION {
-  DATA_ACCESS = 'data-access',
-  DESCRIPTION = 'description',
-  DIAGRAM_VIEWER = 'diagram-viewer',
-  MODELS_DOCUMENTATION = 'models-documentation',
-  SUPPORT_INFO = 'support-info',
-  VENDOR_DATA = 'vendor-data',
-}
-
 export enum TERMINAL_PRODUCT_VIEWER_SECTION {
   DESCRIPTION = 'description',
   PRICE = 'price',
 }
+
+export enum DATA_PRODUCT_DEFAULT_SECTION {
+  DATA_ACCESS = 'data-access',
+  DESCRIPTION = 'description',
+  SUPPORT_INFO = 'support-info',
+}
+
+export enum DATA_PRODUCT_MODELAPG_SECTION {
+  DIAGRAM_VIEWER = 'diagram-viewer',
+  MODELS_DOCUMENTATION = 'models-documentation',
+}
+
+export enum DATA_PRODUCT_VDP_SECTION {
+  VENDOR_DATA = 'vendor-data',
+}
+
+export const DATA_PRODUCT_VIEWER_SECTION = {
+  ...DATA_PRODUCT_DEFAULT_SECTION,
+  ...DATA_PRODUCT_VDP_SECTION,
+  ...DATA_PRODUCT_MODELAPG_SECTION,
+};
 
 const generateAnchorChunk = (text: string): string =>
   encodeURIComponent(
@@ -42,14 +54,31 @@ const generateAnchorChunk = (text: string): string =>
 export const generateAnchorForSection = (activity: string): string =>
   generateAnchorChunk(activity);
 
-export const DATA_PRODUCT_VIEWER_ANCHORS = Object.values(
-  DATA_PRODUCT_VIEWER_SECTION,
-).map((activity) => generateAnchorForSection(activity));
+export const generateAnchorsFromSections = (
+  sections: readonly string[],
+): string[] => {
+  return sections.map((section) => generateAnchorForSection(section));
+};
 
-export const TERMINAL_PRODUCT_VIEWER_ANCHORS = Object.values(
-  TERMINAL_PRODUCT_VIEWER_SECTION,
-).map((activity) => generateAnchorForSection(activity));
+export const DATA_PRODUCT_VIEWER_ANCHORS = generateAnchorsFromSections(
+  Object.values(DATA_PRODUCT_VIEWER_SECTION),
+);
 
+export const DATA_PRODUCT_VDP_ANCHORS = generateAnchorsFromSections(
+  Object.values(DATA_PRODUCT_VDP_SECTION),
+);
+
+export const DATA_PRODUCT_DEFAULT_ANCHORS = generateAnchorsFromSections(
+  Object.values(DATA_PRODUCT_DEFAULT_SECTION),
+);
+
+export const DATA_PRODUCT_MODELAPG_ANCHORS = generateAnchorsFromSections(
+  Object.values(DATA_PRODUCT_MODELAPG_SECTION),
+);
+
+export const TERMINAL_PRODUCT_VIEWER_ANCHORS = generateAnchorsFromSections(
+  Object.values(TERMINAL_PRODUCT_VIEWER_SECTION),
+);
 export const extractSectionFromAnchor = (anchor: string): string =>
   decodeURIComponent(anchor);
 
@@ -57,6 +86,6 @@ export const generateAnchorForDiagram = (
   diagram: DiagramAnalysisResult,
 ): string =>
   [
-    DATA_PRODUCT_VIEWER_SECTION.DIAGRAM_VIEWER,
+    DATA_PRODUCT_MODELAPG_SECTION.DIAGRAM_VIEWER,
     generateAnchorChunk(diagram.title),
   ].join(NAVIGATION_ZONE_SEPARATOR);
