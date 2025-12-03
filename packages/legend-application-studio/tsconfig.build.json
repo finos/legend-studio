@@ -12,6 +12,7 @@
     { "path": "../legend-code-editor/tsconfig.build.json" },
     { "path": "../legend-data-cube/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-product/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
     { "path": "../legend-graph/tsconfig.build.json" },
     { "path": "../legend-lego/tsconfig.build.json" },
     { "path": "../legend-query-builder/tsconfig.build.json" },

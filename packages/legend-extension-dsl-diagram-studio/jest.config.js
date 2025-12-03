@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2025-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,16 @@
  * limitations under the License.
  */
 
-export * from './graph-manager/index.js';
-export * from './components/index.js';
+import { getBaseJestDOMProjectConfig } from '../../scripts/test/jest.config.base.js';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const packageJson = loadJSON(resolve(__dirname, './package.json'));
+
+export default getBaseJestDOMProjectConfig(
+  packageJson.name,
+  'packages/legend-extension-dsl-diagram-studio',
+);

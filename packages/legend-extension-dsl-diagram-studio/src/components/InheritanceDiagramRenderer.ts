@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-import { DiagramRenderer } from '../DiagramRenderer.js';
 import { uuid } from '@finos/legend-shared';
 import {
   type Class,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
-import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
-import { ClassView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';
+import {
+  DiagramRenderer,
+  Diagram,
+  ClassView,
+} from '@finos/legend-extension-dsl-diagram';
 
 export class InheritanceDiagramRenderer extends DiagramRenderer {
   constructor(div: HTMLDivElement, _class: Class) {

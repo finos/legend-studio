@@ -22,9 +22,11 @@ import {
   type GraphManagerState,
   type V1_DataProduct,
   type V1_EngineServerClient,
+  type V1_DataProductDiagram,
   type V1_EntitlementsDataProductDetails,
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProductArtifact,
+  V1_ModelAccessPointGroup,
 } from '@finos/legend-graph';
 import { flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
@@ -49,6 +51,11 @@ import {
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import { DataProductViewerModelsDocumentationState } from './DataProductModelsDocumentationState.js';
+import {
+  getDiagram,
+  DiagramAnalysisResult,
+} from '@finos/legend-extension-dsl-diagram';
+import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramViewerState.js';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
@@ -62,13 +69,13 @@ export class DataProductViewerState extends BaseViewerState<
   readonly dataProductConfig: DataProductConfig | undefined;
   readonly projectGAV: ProjectGAVCoordinates | undefined;
   readonly modelsDocumentationState: DataProductViewerModelsDocumentationState;
+  readonly diagramViewerState: DataProductViewerDiagramViewerState;
   dataProductArtifact: V1_DataProductArtifact | undefined;
 
   // actions
   readonly viewDataProductSource?: (() => void) | undefined;
   readonly openPowerBi?: ((apg: string) => void) | undefined;
   readonly openDataCube?: ((sourceData: object) => void) | undefined;
-
   readonly fetchingDataProductArtifactState = ActionState.create();
 
   constructor(
@@ -104,6 +111,8 @@ export class DataProductViewerState extends BaseViewerState<
     this.dataProductConfig = dataProductConfig;
     this.projectGAV = projectGAV;
 
+    this.diagramViewerState = new DataProductViewerDiagramViewerState(this);
+
     // actions
     this.viewDataProductSource = actions.viewDataProductSource;
     this.openPowerBi = actions.openPowerBi;
@@ -129,6 +138,32 @@ export class DataProductViewerState extends BaseViewerState<
         (taggedValue) => taggedValue.tag.profile === vendorProfile,
       ),
     );
+  }
+
+  getModelAccessPointGroup(): V1_ModelAccessPointGroup | undefined {
+    return this.product.accessPointGroups.find(
+      (apg): apg is V1_ModelAccessPointGroup =>
+        apg instanceof V1_ModelAccessPointGroup,
+    );
+  }
+
+  getModelAccessPointDiagrams(): DiagramAnalysisResult[] {
+    const modelAPG = this.getModelAccessPointGroup();
+
+    if (!modelAPG || modelAPG.diagrams.length === 0) {
+      return [];
+    }
+
+    return modelAPG.diagrams.map((v1Diagram: V1_DataProductDiagram) => {
+      const result = new DiagramAnalysisResult();
+      result.title = v1Diagram.title;
+      result.description = v1Diagram.description;
+      result.diagram = getDiagram(
+        v1Diagram.diagram.path,
+        this.graphManagerState.graph,
+      );
+      return result;
+    });
   }
 
   async fetchDataProductArtifact(): Promise<

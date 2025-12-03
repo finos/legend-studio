@@ -24,8 +24,8 @@ import type {
 } from '@finos/legend-graph';
 import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import type { NormalizedDocumentationEntry } from '@finos/legend-lego/model-documentation';
+import type { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
 
 export class DataSpaceExecutionContextAnalysisResult {
   name!: string;
@@ -57,13 +57,6 @@ export class DataSpaceStereotypeInfo {
 
   profile!: string;
   value!: string;
-}
-
-export class DataSpaceDiagramAnalysisResult {
-  readonly uuid = uuid();
-  title!: string;
-  description?: string | undefined;
-  diagram!: Diagram;
 }
 
 export abstract class DataSpaceExecutableInfo {
@@ -147,7 +140,7 @@ export class DataSpaceAnalysisResult {
 
   elements: string[] = [];
 
-  diagrams: DataSpaceDiagramAnalysisResult[] = [];
+  diagrams: DiagramAnalysisResult[] = [];
 
   executables: DataSpaceExecutableAnalysisResult[] = [];
 

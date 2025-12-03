@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2025-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,38 +39,55 @@ import {
   clsx,
   useResizeDetector,
   createFilter,
+  MarkdownTextViewer,
 } from '@finos/legend-art';
-import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useRef } from 'react';
-import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
+import type { Diagram } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
 import {
+  type DiagramAnalysisResult,
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
   DiagramRenderer,
-} from '@finos/legend-extension-dsl-diagram/application';
-import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
+} from './DiagramRenderer.js';
+import type { DiagramViewerState } from './DiagramViewerState.js';
 import { at } from '@finos/legend-shared';
-import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
-import { useCommands } from '@finos/legend-application';
 import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-  generateAnchorForDiagram,
-} from '../stores/DataSpaceViewerNavigation.js';
-import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
+  useCommands,
+  type GenericLegendApplicationStore,
+  type NavigationZone,
+} from '@finos/legend-application';
+import type { Class } from '@finos/legend-graph';
 
-const DataSpaceDiagramCanvas = observer(
+enum DIAGRAM_VIEWER_MODES {
+  DIAGRAM_VIEWER = 'diagram-viewer',
+  MODELS_DOCUMENTATION = 'models-documentation',
+}
+
+const DiagramCanvas = observer(
   forwardRef<
     HTMLDivElement,
     {
-      dataSpaceViewerState: DataSpaceViewerState;
+      diagramViewerState: DiagramViewerState;
       diagram: Diagram;
+      actions: {
+        onQueryClass?: ((_class: Class) => void) | undefined;
+        onViewClassDocumentation: (classPath: string) => void;
+        hasClassDocumentation: (classPath: string) => boolean;
+        onGenerateAnchorForActivity: (activity: string) => string;
+        onChangeZone: (zone: NavigationZone, force?: boolean) => void;
+      };
     }
-  >(function DataSpaceDiagramCanvas(props, _ref) {
-    const { dataSpaceViewerState, diagram } = props;
-    const diagramViewerState = dataSpaceViewerState.diagramViewerState;
+  >(function DiagramCanvas(props, _ref) {
+    const { diagramViewerState, diagram, actions } = props;
+    const {
+      onQueryClass,
+      onViewClassDocumentation,
+      hasClassDocumentation,
+      onGenerateAnchorForActivity,
+      onChangeZone,
+    } = actions;
     const ref = _ref as React.RefObject<HTMLDivElement>;
     const descriptionText = diagramViewerState.currentDiagram?.description;
 
@@ -97,27 +114,25 @@ const DataSpaceDiagramCanvas = observer(
       }
     }, [diagramViewerState, width, height]);
 
-    // actions
     const queryClass = (): void => {
-      if (diagramViewerState.contextMenuClassView) {
-        dataSpaceViewerState.queryClass(
-          diagramViewerState.contextMenuClassView.class.value,
-        );
+      if (onQueryClass && diagramViewerState.contextMenuClassView) {
+        onQueryClass(diagramViewerState.contextMenuClassView.class.value);
       }
     };
+
     const viewClassDocumentation = (): void => {
       if (
         diagramViewerState.contextMenuClassView &&
-        dataSpaceViewerState.modelsDocumentationState.hasClassDocumentation(
+        hasClassDocumentation(
           diagramViewerState.contextMenuClassView.class.value.path,
         )
       ) {
-        dataSpaceViewerState.modelsDocumentationState.viewClassDocumentation(
+        onViewClassDocumentation(
           diagramViewerState.contextMenuClassView.class.value.path,
         );
-        dataSpaceViewerState.changeZone(
-          generateAnchorForActivity(
-            DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
+        onChangeZone(
+          onGenerateAnchorForActivity(
+            DIAGRAM_VIEWER_MODES.MODELS_DOCUMENTATION,
           ),
         );
       }
@@ -138,7 +153,7 @@ const DataSpaceDiagramCanvas = observer(
               onClick={viewClassDocumentation}
               disabled={
                 !diagramViewerState.contextMenuClassView ||
-                !dataSpaceViewerState.modelsDocumentationState.hasClassDocumentation(
+                !hasClassDocumentation(
                   diagramViewerState.contextMenuClassView.class.value.path,
                 )
               }
@@ -175,7 +190,11 @@ const DataSpaceDiagramCanvas = observer(
             </div>
             <div className="data-space__viewer__diagram-viewer__description__content">
               {descriptionText ? (
-                <DataSpaceMarkdownTextViewer value={descriptionText} />
+                <MarkdownTextViewer
+                  value={{
+                    value: descriptionText,
+                  }}
+                />
               ) : (
                 <div className="data-space__viewer__diagram-viewer__description__content__placeholder">
                   (not specified)
@@ -217,11 +236,9 @@ const DataSpaceDiagramCanvas = observer(
 
 type DiagramOption = {
   label: React.ReactNode;
-  value: DataSpaceDiagramAnalysisResult;
+  value: DiagramAnalysisResult;
 };
-const buildDiagramOption = (
-  diagram: DataSpaceDiagramAnalysisResult,
-): DiagramOption => ({
+const buildDiagramOption = (diagram: DiagramAnalysisResult): DiagramOption => ({
   label: (
     <div className="data-space__viewer__diagram-viewer__header__navigation__selector__label">
       <ShapesIcon className="data-space__viewer__diagram-viewer__header__navigation__selector__icon" />
@@ -233,15 +250,17 @@ const buildDiagramOption = (
   value: diagram,
 });
 
-const DataSpaceDiagramViewerHeader = observer(
-  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
-    const { dataSpaceViewerState } = props;
-    const applicationStore = dataSpaceViewerState.applicationStore;
-    const diagramViewerState = dataSpaceViewerState.diagramViewerState;
-    const diagramOptions =
-      dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.map(
-        buildDiagramOption,
-      );
+const DiagramViewerHeader = observer(
+  (props: {
+    applicationStore: GenericLegendApplicationStore;
+    diagramViewerState: DiagramViewerState;
+    actions: {
+      onSyncZoneWithNavigation: (diagram: DiagramAnalysisResult) => void;
+    };
+  }) => {
+    const { applicationStore, diagramViewerState, actions } = props;
+    const { onSyncZoneWithNavigation } = actions;
+    const diagramOptions = diagramViewerState.diagrams.map(buildDiagramOption);
     const selectedDiagramOption = diagramViewerState.currentDiagram
       ? buildDiagramOption(diagramViewerState.currentDiagram)
       : null;
@@ -298,22 +317,18 @@ const DataSpaceDiagramViewerHeader = observer(
                 if (
                   isNaN(value) ||
                   value < 1 ||
-                  value >
-                    dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.length
+                  value > diagramViewerState.diagrams.length
                 ) {
                   return;
                 }
                 diagramViewerState.setCurrentDiagram(
-                  at(
-                    dataSpaceViewerState.dataSpaceAnalysisResult.diagrams,
-                    value - 1,
-                  ),
+                  at(diagramViewerState.diagrams, value - 1),
                 );
               }}
             />
           </div>
           <div className="data-space__viewer__diagram-viewer__header__navigation__pager__count">
-            /{dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.length}
+            /{diagramViewerState.diagrams.length}
           </div>
         </div>
         <div className="data-space__viewer__diagram-viewer__header__actions">
@@ -325,10 +340,8 @@ const DataSpaceDiagramViewerHeader = observer(
                   tabIndex={-1}
                   onClick={(): void => {
                     if (diagramViewerState.currentDiagram) {
-                      dataSpaceViewerState.syncZoneWithNavigation(
-                        generateAnchorForDiagram(
-                          diagramViewerState.currentDiagram,
-                        ),
+                      onSyncZoneWithNavigation(
+                        diagramViewerState.currentDiagram,
                       );
                     }
                   }}
@@ -483,27 +496,47 @@ const DataSpaceDiagramViewerHeader = observer(
   },
 );
 
-export const DataSpaceDiagramViewer = observer(
-  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
-    const { dataSpaceViewerState } = props;
-    const diagramViewerState = dataSpaceViewerState.diagramViewerState;
-    const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+export const DiagramPlaceholder: React.FC<{ message: string }> = (props) => (
+  <div className="diagram-viewer__placeholder">{props.message}</div>
+);
+
+export const DiagramViewer = observer(
+  (props: {
+    applicationStore: GenericLegendApplicationStore;
+    diagramViewerState: DiagramViewerState;
+    actions: {
+      onQueryClass?: ((_class: Class) => void) | undefined;
+      onViewClassDocumentation: (classPath: string) => void;
+      hasClassDocumentation: (classPath: string) => boolean;
+      onSyncZoneWithNavigation: (diagram: DiagramAnalysisResult) => void;
+      onGenerateAnchorForActivity: (activity: string) => string;
+      onChangeZone: (zone: NavigationZone, force?: boolean) => void;
+      onSetWikiPageAnchor: (anchorKey: string, element: HTMLElement) => void;
+      onUnsetWikiPageAnchor: (anchorKey: string) => void;
+    };
+  }) => {
+    const { diagramViewerState, applicationStore, actions } = props;
+    const {
+      onSyncZoneWithNavigation,
+      onGenerateAnchorForActivity,
+      onSetWikiPageAnchor,
+      onUnsetWikiPageAnchor,
+      onChangeZone,
+    } = actions;
+    const diagrams = diagramViewerState.diagrams;
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForActivity(
-      DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
+    const anchor = onGenerateAnchorForActivity(
+      DIAGRAM_VIEWER_MODES.DIAGRAM_VIEWER,
     );
 
     useCommands(diagramViewerState);
 
     useEffect(() => {
       if (sectionRef.current) {
-        dataSpaceViewerState.layoutState.setWikiPageAnchor(
-          anchor,
-          sectionRef.current,
-        );
+        onSetWikiPageAnchor(anchor, sectionRef.current);
       }
-      return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
-    }, [dataSpaceViewerState, anchor]);
+      return () => onUnsetWikiPageAnchor(anchor);
+    }, [onSetWikiPageAnchor, onUnsetWikiPageAnchor, anchor]);
 
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
     const previousDiagram = diagramViewerState.previousDiagram;
@@ -512,17 +545,13 @@ export const DataSpaceDiagramViewer = observer(
     const showPreviousDiagram = (): void => {
       if (previousDiagram) {
         diagramViewerState.setCurrentDiagram(previousDiagram);
-        dataSpaceViewerState.syncZoneWithNavigation(
-          generateAnchorForDiagram(previousDiagram),
-        );
+        onSyncZoneWithNavigation(previousDiagram);
       }
     };
     const showNextDiagram = (): void => {
       if (nextDiagram) {
         diagramViewerState.setCurrentDiagram(nextDiagram);
-        dataSpaceViewerState.syncZoneWithNavigation(
-          generateAnchorForDiagram(nextDiagram),
-        );
+        onSyncZoneWithNavigation(nextDiagram);
       }
     };
 
@@ -534,26 +563,29 @@ export const DataSpaceDiagramViewer = observer(
             <button
               className="data-space__viewer__wiki__section__header__anchor"
               tabIndex={-1}
-              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+              onClick={() => onChangeZone(anchor, true)}
             >
               <AnchorLinkIcon />
             </button>
           </div>
         </div>
         <div className="data-space__viewer__wiki__section__content">
-          {analysisResult.diagrams.length > 0 && (
+          {diagrams.length > 0 && (
             <div className="data-space__viewer__diagram-viewer">
-              <DataSpaceDiagramViewerHeader
-                dataSpaceViewerState={dataSpaceViewerState}
+              <DiagramViewerHeader
+                applicationStore={applicationStore}
+                diagramViewerState={diagramViewerState}
+                actions={actions}
               />
               <div className="data-space__viewer__diagram-viewer__carousel">
                 <div className="data-space__viewer__diagram-viewer__carousel__frame">
                   <div className="data-space__viewer__diagram-viewer__carousel__frame__display">
                     {diagramViewerState.currentDiagram && (
-                      <DataSpaceDiagramCanvas
-                        dataSpaceViewerState={dataSpaceViewerState}
+                      <DiagramCanvas
+                        diagramViewerState={diagramViewerState}
                         diagram={diagramViewerState.currentDiagram.diagram}
                         ref={diagramCanvasRef}
+                        actions={actions}
                       />
                     )}
                   </div>
@@ -583,7 +615,7 @@ export const DataSpaceDiagramViewer = observer(
                   </button>
                   <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators">
                     <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators__notch">
-                      {analysisResult.diagrams.map((diagram) => (
+                      {diagrams.map((diagram) => (
                         <button
                           key={diagram.uuid}
                           className={clsx(
@@ -598,9 +630,7 @@ export const DataSpaceDiagramViewer = observer(
                           }`}
                           onClick={() => {
                             diagramViewerState.setCurrentDiagram(diagram);
-                            dataSpaceViewerState.syncZoneWithNavigation(
-                              generateAnchorForDiagram(diagram),
-                            );
+                            onSyncZoneWithNavigation(diagram);
                           }}
                         >
                           <CircleIcon />
@@ -612,9 +642,7 @@ export const DataSpaceDiagramViewer = observer(
               </div>
             </div>
           )}
-          {!analysisResult.diagrams.length && (
-            <DataSpaceWikiPlaceholder message="(not specified)" />
-          )}
+          {!diagrams.length && <DiagramPlaceholder message="(not specified)" />}
         </div>
       </div>
     );

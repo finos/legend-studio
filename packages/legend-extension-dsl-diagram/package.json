@@ -47,7 +47,6 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
-    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-code-editor": "workspace:*",
     "@finos/legend-graph": "workspace:*",

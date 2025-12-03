@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import { type Class, isElementReadOnly } from '@finos/legend-graph';
 import { InheritanceDiagramRenderer } from './InheritanceDiagramRenderer.js';
-import { DSL_DIAGRAM_TEST_ID } from '../../__lib__/studio/DSL_Diagram_LegendStudioTesting.js';
+import { DSL_DIAGRAM_TEST_ID } from '../__lib__/DSL_Diagram_LegendStudioTesting.js';
 import { useResizeDetector } from '@finos/legend-art';
 
 export const ClassDiagramPreview = observer((props: { _class: Class }) => {

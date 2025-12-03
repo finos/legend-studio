@@ -27,6 +27,7 @@ import type { BaseViewerState } from '../stores/BaseViewerState.js';
 import {
   DATA_PRODUCT_VIEWER_SECTION,
   TERMINAL_PRODUCT_VIEWER_SECTION,
+  generateAnchorForDiagram,
   generateAnchorForSection,
 } from '../stores/ProductViewerNavigation.js';
 import { DataProducteDataAccess } from './DataProduct/DataProductDataAccess.js';
@@ -42,6 +43,7 @@ import { Chip, Stack } from '@mui/material';
 import { V1_ExternalDataProductType } from '@finos/legend-graph';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
+import { DiagramViewer } from '@finos/legend-extension-dsl-diagram';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
@@ -253,12 +255,55 @@ export const ProductWiki = observer(
               {productViewerState.isVDP && (
                 <ProductVendorInfo productViewerState={productViewerState} />
               )}
-              <ModelsDocumentation
-                modelsDocumentationState={
-                  productViewerState.modelsDocumentationState
-                }
-                applicationStore={productViewerState.applicationStore}
-              />
+              {productViewerState.getModelAccessPointGroup() && (
+                <>
+                  <ModelsDocumentation
+                    modelsDocumentationState={
+                      productViewerState.modelsDocumentationState
+                    }
+                    applicationStore={productViewerState.applicationStore}
+                  />
+                  <DiagramViewer
+                    applicationStore={productViewerState.applicationStore}
+                    diagramViewerState={productViewerState.diagramViewerState}
+                    actions={{
+                      onViewClassDocumentation: (classPath) =>
+                        productViewerState.modelsDocumentationState.viewClassDocumentation(
+                          classPath,
+                        ),
+                      hasClassDocumentation: (classPath) =>
+                        productViewerState.modelsDocumentationState.hasClassDocumentation(
+                          classPath,
+                        ),
+                      onSyncZoneWithNavigation: (diagram) => {
+                        productViewerState.syncZoneWithNavigation(
+                          generateAnchorForDiagram(diagram),
+                        );
+                      },
+                      onGenerateAnchorForActivity: (activity) => {
+                        return generateAnchorForSection(activity);
+                      },
+                      onChangeZone: (zone, force) => {
+                        productViewerState.changeZone(zone, force);
+                      },
+                      onSetWikiPageAnchor: (
+                        anchorKey: string,
+                        element: HTMLElement,
+                      ) => {
+                        productViewerState.layoutState.setWikiPageAnchor(
+                          anchorKey,
+                          element,
+                        );
+                      },
+                      onUnsetWikiPageAnchor: (anchorKey: string) => {
+                        productViewerState.layoutState.unsetWikiPageAnchor(
+                          anchorKey,
+                        );
+                      },
+                    }}
+                  />
+                </>
+              )}
               <DataProductSupportInfo
                 dataProductViewerState={productViewerState}
               />

@@ -64,6 +64,7 @@ import {
   V1_RemoteEngine,
   DataElementReference,
   DataElement,
+  DataProductDiagram,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -98,8 +99,10 @@ import {
   dataProduct_addAccessPoint,
   dataProduct_addAccessPointGroup,
   supportInfo_addExpertise,
+  modelAccessPointGroup_addDiagram,
   dataProduct_deleteAccessPoint,
   dataProduct_deleteAccessPointGroup,
+  modelAccessPointGroup_removeDiagram,
   dataProduct_swapAccessPointGroups,
   modelAccessPointGroup_addCompatibleRuntime,
   modelAccessPointGroup_addElement,
@@ -121,6 +124,7 @@ import type {
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
 import { deserialize } from 'serializr';
+import { Diagram } from '@finos/legend-extension-dsl-diagram';
 
 export enum DATA_PRODUCT_TAB {
   HOME = 'Home',
@@ -762,11 +766,13 @@ export class AccessPointGroupState {
 
 export class ModelAccessPointGroupState extends AccessPointGroupState {
   declare value: ModelAccessPointGroup;
+  readonly editorState: DataProductEditorState;
   showNewModal = false;
 
   constructor(val: ModelAccessPointGroup, editorState: DataProductEditorState) {
     super(val, editorState);
     this.value = val;
+    this.editorState = editorState;
   }
 
   setMapping(mapping: Mapping): void {
@@ -793,6 +799,23 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
     }
   }
 
+  getCompatibleDiagramOptions(): {
+    label: string;
+    value: PackageableElement;
+  }[] {
+    const currentDiagrams = this.value.diagrams.map(
+      (diagram) => diagram.diagram,
+    );
+
+    return this.state.editorStore.graphManagerState.graph.allOwnElements
+      .filter((element): element is Diagram => element instanceof Diagram)
+      .filter((diagram) => !currentDiagrams.includes(diagram))
+      .map((diagram) => ({
+        label: diagram.path,
+        value: diagram,
+      }));
+  }
+
   removeCompatibleRuntime(runtime: DataProductRuntimeInfo): void {
     modelAccessPointGroup_removeCompatibleRuntime(this.value, runtime);
     if (runtime === this.value.defaultRuntime) {
@@ -803,6 +826,18 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
       }
     }
   }
+
+  addDiagram = (option: { label: string; value: PackageableElement }): void => {
+    const diagramValue = option.value;
+    const newDiagram = new DataProductDiagram();
+    newDiagram.title = diagramValue.name;
+    newDiagram.diagram = diagramValue;
+    modelAccessPointGroup_addDiagram(this.value, newDiagram);
+  };
+
+  handleRemoveDiagram = (diagram: DataProductDiagram): void => {
+    modelAccessPointGroup_removeDiagram(this.value, diagram);
+  };
 
   addFeaturedElement(element: DataProductElement): void {
     const elementPointer = observe_DataProductElementScope(

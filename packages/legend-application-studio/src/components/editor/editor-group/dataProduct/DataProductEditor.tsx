@@ -99,7 +99,6 @@ import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
-  type DataProduct,
   type DataProductElement,
   type DataProductElementScope,
   type DataProductRuntimeInfo,
@@ -109,6 +108,8 @@ import {
   type Mapping,
   type PackageableElement,
   type PackageableRuntime,
+  type DataProduct,
+  type DataProductDiagram,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
@@ -152,6 +153,8 @@ import {
   accessPointGroup_setTitle,
   accessPoint_setDescription,
   accessPoint_setTitle,
+  dataProductDiagram_setTitle,
+  dataProductDiagram_setDescription,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -1368,7 +1371,10 @@ export const CompatibleRuntimesEditor = observer(
                 handleAddRuntime(event);
               }}
               placeholder="Select a runtime to add..."
-              darkMode={true}
+              darkMode={
+                !groupState.state.editorStore.applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
         );
@@ -1389,6 +1395,119 @@ export const CompatibleRuntimesEditor = observer(
         isReadOnly={groupState.state.isReadOnly}
         emptyMessage="No runtimes specified"
         emptyClassName="data-product-editor__empty-runtime"
+      />
+    );
+  },
+);
+
+export const CompatibleDiagramsEditor = observer(
+  (props: { groupState: ModelAccessPointGroupState }) => {
+    const { groupState } = props;
+    const group = groupState.value;
+
+    const handleDiagramTitleChange = (
+      diagram: DataProductDiagram,
+      value: string | undefined,
+    ): void => {
+      dataProductDiagram_setTitle(diagram, value ?? '');
+    };
+
+    const handleDiagramDescriptionChange = (
+      diagram: DataProductDiagram,
+      value: string | undefined,
+    ): void => {
+      dataProductDiagram_setDescription(diagram, value);
+    };
+
+    const handleAddDiagram = (option: {
+      label: string;
+      value: PackageableElement;
+    }): void => {
+      groupState.addDiagram(option);
+    };
+
+    const handleRemoveDiagram = (diagram: DataProductDiagram): void => {
+      groupState.handleRemoveDiagram(diagram);
+    };
+
+    // ListEditor component renderers
+    const DiagramComponent = observer(
+      (diagramComponentProps: {
+        item: DataProductDiagram;
+      }): React.ReactElement => {
+        const { item } = diagramComponentProps;
+
+        return (
+          <>
+            <div className="panel__content__form__section__list__item__content">
+              <div className="panel__content__form__section__header__label">
+                Diagram
+              </div>
+              <div className="panel__content__form__section__list__item__content__title">
+                {item.title}
+              </div>
+            </div>
+            <div className="panel__content__form__section__list__item__form">
+              <PanelFormTextField
+                name="Title"
+                value={item.title}
+                update={(value) => handleDiagramTitleChange(item, value)}
+                placeholder="Enter title"
+                className="dataSpace-editor__general__diagrams__title"
+              />
+              <PanelFormTextField
+                name="Description"
+                value={item.description ?? ''}
+                update={(value) => handleDiagramDescriptionChange(item, value)}
+                placeholder="Enter description"
+                className="dataSpace-editor__general__diagrams__description"
+              />
+            </div>
+          </>
+        );
+      },
+    );
+
+    const NewDiagramComponent = observer(
+      (newDiagramProps: {
+        onFinishEditing: () => void;
+      }): React.ReactElement => {
+        const { onFinishEditing } = newDiagramProps;
+
+        return (
+          <div className="panel__content__form__section__list__new-item__input">
+            <CustomSelectorInput
+              options={groupState.getCompatibleDiagramOptions()}
+              onChange={(event: {
+                label: string;
+                value: PackageableElement;
+              }) => {
+                onFinishEditing();
+                handleAddDiagram(event);
+              }}
+              placeholder="Select a diagram to add..."
+              darkMode={
+                !groupState.state.editorStore.applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+            />
+          </div>
+        );
+      },
+    );
+
+    return (
+      <ListEditor
+        title="Diagrams"
+        prompt="Add diagrams to include in this Data Product. Set a title and description for each diagram."
+        items={group.diagrams}
+        keySelector={(element: DataProductDiagram) => element.hashCode}
+        ItemComponent={DiagramComponent}
+        NewItemComponent={NewDiagramComponent}
+        handleRemoveItem={handleRemoveDiagram}
+        isReadOnly={groupState.state.isReadOnly}
+        emptyMessage="No Diagrams specified"
+        emptyClassName="data-product-editor__empty-diagram"
       />
     );
   },
@@ -1467,7 +1586,10 @@ export const FeaturedElementsEditor = observer(
                 handleAddElement(event);
               }}
               placeholder="Select an element to add..."
-              darkMode={true}
+              darkMode={
+                !groupState.state.editorStore.applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
         );
@@ -1557,6 +1679,7 @@ const ModelAccessPointGroupEditor = observer(
           </button>
         </div>
         <CompatibleRuntimesEditor groupState={groupState} />
+        <CompatibleDiagramsEditor groupState={groupState} />
         <FeaturedElementsEditor
           groupState={groupState}
           isReadOnly={isReadOnly}
@@ -2286,6 +2409,7 @@ const HomeTab = observer(
       { label: DATA_PRODUCT_TYPE.INTERNAL, value: DATA_PRODUCT_TYPE.INTERNAL },
       { label: DATA_PRODUCT_TYPE.EXTERNAL, value: DATA_PRODUCT_TYPE.EXTERNAL },
     ];
+
     const handleDataProductTypeChange = action(
       (val: { label: string; value: string } | null): void => {
         if (val?.value === DATA_PRODUCT_TYPE.INTERNAL) {
@@ -2398,7 +2522,10 @@ const HomeTab = observer(
                         )
                       : null
                 }
-                darkMode={true}
+                darkMode={
+                  !dataProductEditorState.editorStore.applicationStore
+                    .layoutService.TEMPORARY__isLightColorThemeEnabled
+                }
               />
             </div>
             {product.type instanceof ExternalDataProductType && (

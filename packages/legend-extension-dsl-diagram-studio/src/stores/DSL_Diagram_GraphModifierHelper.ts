@@ -16,27 +16,26 @@
 
 import { addUniqueEntry, changeEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
-import type { AssociationView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_AssociationView.js';
-import type { ClassView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';
-import type { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
-import type { GeneralizationView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_GeneralizationView.js';
+
 import {
   _findOrBuildPoint,
   _relationshipView_simplifyPath,
+  type Rectangle,
+  type PositionedRectangle,
+  type Point,
+  type RelationshipView,
+  type RelationshipViewEnd,
+  type PropertyView,
   _relationshipView_setPath,
-} from '../../graph/helpers/DSL_Diagram_Helper.js';
-import type { PropertyView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyView.js';
-import type { RelationshipViewEnd } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipViewEnd.js';
-import type { RelationshipView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_RelationshipView.js';
-import type { Point } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
-import type { PositionedRectangle } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_PositionedRectangle.js';
-import type { Rectangle } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Rectangle.js';
-import {
+  type GeneralizationView,
+  type Diagram,
+  type ClassView,
+  type AssociationView,
   observe_AssociationView,
   observe_ClassView,
   observe_GeneralizationView,
   observe_PropertyView,
-} from '../../graph-manager/action/changeDetection/DSL_Diagram_ObserverHelper.js';
+} from '@finos/legend-extension-dsl-diagram';
 
 export const diagram_setClassViews = action(
   (diagram: Diagram, val: ClassView[]): void => {

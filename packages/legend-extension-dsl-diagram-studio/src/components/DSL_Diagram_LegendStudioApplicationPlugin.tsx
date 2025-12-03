@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../package.json' with { type: 'json' };
+import packageJson from '../../package.json' with { type: 'json' };
 import {
   LegendStudioApplicationPlugin,
   type NewElementFromStateCreator,
@@ -38,23 +38,23 @@ import {
 } from '@finos/legend-application-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
-import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
-import { DiagramEditorState } from '../../stores/studio/DiagramEditorState.js';
+import { Diagram } from '@finos/legend-extension-dsl-diagram';
+import { DiagramEditorState } from '../stores/DiagramEditorState.js';
 import { DiagramEditor } from './DiagramEditor.js';
 import { ClassDiagramPreview } from './ClassDiagramPreview.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioDocumentation.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/DSL_Diagram_LegendStudioDocumentation.js';
 import {
   EMPTY_DIAGRAM_SNIPPET,
   getDiagramSnippetWithGeneralizationView,
   getDiagramSnippetWithOneClassView,
   getDiagramSnippetWithPropertyView,
-} from '../../__lib__/studio/DSL_Diagram_LegendStudioCodeSnippet.js';
+} from '../__lib__/DSL_Diagram_LegendStudioCodeSnippet.js';
 import {
   collectKeyedCommandConfigEntriesFromConfig,
   type KeyedCommandConfigEntry,
 } from '@finos/legend-application';
-import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/studio/DSL_Diagram_LegendStudioCommand.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG } from '../__lib__/DSL_Diagram_LegendStudioCommand.js';
 import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 import type { DocumentationEntry } from '@finos/legend-shared';
 

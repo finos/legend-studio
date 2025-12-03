@@ -1,28 +1,27 @@
 {
-  "name": "@finos/legend-extension-dsl-data-product",
-  "version": "0.0.28",
-  "description": "Legend data product viewer core",
+  "name": "@finos/legend-extension-dsl-diagram-studio",
+  "version": "0.0.1",
+  "description": "Legend extension for Diagram DSL Studio",
   "keywords": [
     "legend",
-    "data product",
-    "viewer"
+    "legend-extension",
+    "dsl",
+    "dsl-diagram-studio"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-data-product",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-diagram-studio",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-extension-dsl-data-product"
+    "directory": "packages/legend-extension-dsl-diagram-studio"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
   "type": "module",
   "exports": {
-    ".": "./lib/index.js",
-    "./test": "./lib/__test__.js",
-    "./lib/index.css": "./lib/index.css"
+    ".": "./lib/index.js"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -44,45 +43,33 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-code-editor": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-lego": "workspace:*",
-    "@finos/legend-server-depot": "workspace:*",
-    "@finos/legend-server-lakehouse": "workspace:*",
-    "@finos/legend-server-marketplace": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "@mui/lab": "7.0.1-beta.18",
-    "@mui/material": "7.3.4",
-    "@testing-library/dom": "10.4.0",
-    "@testing-library/react": "16.2.0",
     "@types/react": "19.0.10",
-    "@types/react-dom": "19.0.4",
-    "dompurify": "3.2.5",
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
-    "mobx-utils": "6.1.0",
-    "node-diff3": "3.1.2",
-    "oidc-client-ts": "^3.2.0",
     "react": "19.0.0",
     "react-dnd": "16.0.1",
     "react-dom": "19.0.0",
-    "react-oidc-context": "^3.3.0",
-    "serializr": "3.0.3",
-    "yaml": "2.7.0"
+    "serializr": "3.0.3"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "29.7.0",
+    "@testing-library/dom": "10.4.0",
+    "@testing-library/react": "16.2.0",
     "cross-env": "7.0.3",
-    "eslint": "9.20.1",
+    "eslint": "9.22.0",
     "jest": "29.7.0",
     "npm-run-all": "4.1.5",
     "rimraf": "6.0.1",
-    "sass": "1.85.0",
-    "typescript": "5.7.3"
+    "sass": "1.85.1",
+    "typescript": "5.8.2"
   },
   "peerDependencies": {
     "react": "^19.0.0"
@@ -91,6 +78,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "dataProductDataAccessApplicationPlugin": "@finos/legend-application-plugin-dsl-data-product-data-access"
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-diagram"
   }
 }

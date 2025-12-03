@@ -17,6 +17,7 @@
     { "path": "../legend-extension-dsl-data-space-studio" },
     { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-extension-dsl-diagram" },
+    { "path": "../legend-extension-dsl-diagram-studio" },
     { "path": "../legend-extension-dsl-persistence" },
     { "path": "../legend-extension-dsl-service" },
     { "path": "../legend-extension-dsl-text" },

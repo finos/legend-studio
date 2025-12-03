@@ -18,20 +18,13 @@ import { useRef, useState, useEffect, useCallback, forwardRef } from 'react';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { observer } from 'mobx-react-lite';
 import {
-  DIAGRAM_ALIGNER_OPERATOR,
-  DiagramRenderer,
-  DIAGRAM_INTERACTION_MODE,
-  DIAGRAM_RELATIONSHIP_EDIT_MODE,
-  DIAGRAM_ZOOM_LEVELS,
-} from '../DiagramRenderer.js';
-import {
   type DiagramEditorInlineClassCreatorState,
   type DiagramEditorInlineClassRenamerState,
   type DiagramEditorInlinePropertyEditorState,
   DIAGRAM_EDITOR_SIDE_PANEL_TAB,
   DiagramEditorClassViewEditorSidePanelState,
   DiagramEditorState,
-} from '../../stores/studio/DiagramEditorState.js';
+} from '../stores/DiagramEditorState.js';
 import {
   type ResizablePanelHandlerProps,
   ContextMenu,
@@ -107,19 +100,26 @@ import {
   property_setMultiplicity,
   queryClass,
 } from '@finos/legend-application-studio';
-import { cleanUpDeadReferencesInDiagram } from '../../graph/helpers/DSL_Diagram_Helper.js';
-import { Point } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
 import {
   classView_setHideProperties,
   classView_setHideStereotypes,
   classView_setHideTaggedValues,
-} from '../../stores/studio/DSL_Diagram_GraphModifierHelper.js';
-import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
-import { DSL_DIAGRAM_TEST_ID } from '../../__lib__/studio/DSL_Diagram_LegendStudioTesting.js';
+} from '../stores/DSL_Diagram_GraphModifierHelper.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
+import { DSL_DIAGRAM_TEST_ID } from '../__lib__/DSL_Diagram_LegendStudioTesting.js';
 import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
+import {
+  cleanUpDeadReferencesInDiagram,
+  Point,
+  DIAGRAM_ALIGNER_OPERATOR,
+  DiagramRenderer,
+  DIAGRAM_INTERACTION_MODE,
+  DIAGRAM_RELATIONSHIP_EDIT_MODE,
+  DIAGRAM_ZOOM_LEVELS,
+} from '@finos/legend-extension-dsl-diagram';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<
@@ -1201,6 +1201,7 @@ const DiagramEditorDiagramCanvas = observer(
       const renderer = new DiagramRenderer(
         ref.current,
         diagramEditorState.diagram,
+        diagramEditorState.setupCallbacks(),
       );
       diagramEditorState.setRenderer(renderer);
       diagramEditorState.setupRenderer();

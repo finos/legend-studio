@@ -20,4 +20,8 @@ export {
   DIAGRAM_ZOOM_LEVELS,
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
+  DiagramAnalysisResult,
 } from './DiagramRenderer.js';
+export * from './DiagramViewerState.js';
+export * from './DiagramViewer.js';
+export * from './DiagramRenderer.js';
