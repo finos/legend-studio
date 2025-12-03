@@ -71,12 +71,6 @@ export const getOrganizationalScopeTypeDetails = (
         ))}
       </>
     );
-  } else if (scope instanceof V1_ProducerScope) {
-    return (
-      <Typography variant="body2">
-        <b>Producer DID:</b> {scope.did}
-      </Typography>
-    );
   } else {
     const detailsRenderers = plugins
       .flatMap((plugin) =>
