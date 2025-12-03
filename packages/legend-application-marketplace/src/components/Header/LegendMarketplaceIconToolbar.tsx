@@ -27,18 +27,24 @@ import {
   assertErrorThrown,
   isNonNullable,
   LegendUser,
+  LogEvent,
 } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { CartDrawer } from '../AddToCart/CartDrawer.js';
 import { CartBadge } from './CartBadge.js';
+import { useAuth } from 'react-oidc-context';
+import type { V1_UserPendingContractsResponse } from '@finos/legend-graph';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 
 export const LegendMarketplaceIconToolbar = observer(() => {
   const marketplaceStore = useLegendMarketplaceBaseStore();
   const applicationStore = marketplaceStore.applicationStore;
+  const auth = useAuth();
   const userId = applicationStore.identityService.currentUser;
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
+  const [pendingContractsCount, setPendingContractsCount] = useState<number>(0);
   const showDevFeatures = applicationStore.config.options.showDevFeatures;
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {
@@ -57,10 +63,35 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     };
     // eslint-disable-next-line no-void
     void fetchUserData();
+    const fetchPendingContracts = async (): Promise<void> => {
+      if (userId) {
+        try {
+          const pendingContracts =
+            (await marketplaceStore.lakehouseContractServerClient.getPendingContracts(
+              userId,
+              auth.user?.access_token,
+            )) as V1_UserPendingContractsResponse;
+          const count = pendingContracts.records?.length ?? 0;
+          setPendingContractsCount(count);
+        } catch (error) {
+          assertErrorThrown(error);
+          applicationStore.logService.error(
+            LogEvent.create(
+              LEGEND_MARKETPLACE_APP_EVENT.FETCH_PENDING_CONTRACT,
+            ),
+            error,
+          );
+        }
+      }
+    };
+    // eslint-disable-next-line no-void
+    void fetchPendingContracts();
   }, [
     userId,
     applicationStore.notificationService,
     marketplaceStore.userSearchService,
+    auth.user?.access_token,
+    marketplaceStore.lakehouseContractServerClient,
   ]);
 
   const imgSrc =
@@ -79,7 +110,6 @@ export const LegendMarketplaceIconToolbar = observer(() => {
 
   const UserIconRenderer = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-
     const open = Boolean(anchorEl);
 
     return (
@@ -88,15 +118,22 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           onClick={(event) => setAnchorEl(event.currentTarget)}
           className="legend-marketplace-header__menu__icon"
         >
-          {imgSrc ? (
-            <Avatar
-              className="legend-user-display__avatar legend-user-display__avatar--image"
-              src={imgSrc}
-              alt={userName}
-            />
-          ) : (
-            <UserCircleIcon />
-          )}
+          <div className="legend-marketplace-header__contract__count">
+            {imgSrc ? (
+              <Avatar
+                className="legend-user-display__avatar legend-user-display__avatar--image"
+                src={imgSrc}
+                alt={userName}
+              />
+            ) : (
+              <UserCircleIcon />
+            )}
+            {pendingContractsCount > 0 && (
+              <span className="legend-marketplace-header__contract__badge__avatar">
+                {pendingContractsCount}
+              </span>
+            )}
+          </div>
         </IconButton>
         <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
           <MenuItem>
@@ -144,7 +181,12 @@ export const LegendMarketplaceIconToolbar = observer(() => {
               LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
             )}
           >
-            View Lakehouse Entitlements
+            <span>View Lakehouse Entitlements</span>
+            {pendingContractsCount > 0 && (
+              <span className="legend-marketplace-header__contract__badge__menu__item">
+                {pendingContractsCount}
+              </span>
+            )}
           </MenuItem>
         </Menu>
       </>
