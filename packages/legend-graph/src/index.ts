@@ -552,7 +552,14 @@ export * from './graph-manager/action/query/QuerySearchSpecification.js';
 export * from './graph-manager/action/EngineError.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
-export { DevMetadataResult } from './graph-manager/action/dev-metadata/DevMetadataResult.js';
+export {
+  LogType,
+  DeployProjectResponse,
+  BuildLog,
+  BuildPhaseActionState,
+  BuildPhaseStatus,
+} from './graph-manager/action/dev-metadata/DeployProjectResponse.js';
+export { MetadataRequestOptions } from './graph-manager/action/dev-metadata/MetadataRequestOptions.js';
 export {
   CodeCompletionResult,
   Completion,

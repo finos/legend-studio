@@ -173,7 +173,7 @@ import {
   V1_LineageInput,
 } from '../model/lineage/V1_Lineage.js';
 import { V1_DevMetadataPushRequest } from './dev-metadata/V1_DevMetadataPushRequest.js';
-import { DevMetadataResult } from '../../../../action/dev-metadata/DevMetadataResult.js';
+import { DeployProjectResponse } from '../../../../action/dev-metadata/DeployProjectResponse.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -1408,15 +1408,11 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   // ------------------------------------------- Ddev Mode -------------------------------------------
 
   async pushToDevMetadata(
-    did: string,
-    projectName: string,
     request: V1_DevMetadataPushRequest,
-  ): Promise<DevMetadataResult> {
+  ): Promise<DeployProjectResponse> {
     const result = (await this.engineServerClient.pushToDevMetadata(
-      did,
-      projectName,
       V1_DevMetadataPushRequest.serialization.toJson(request),
-    )) as unknown as PlainObject<DevMetadataResult>;
-    return DevMetadataResult.serialization.fromJson(result);
+    )) as unknown as PlainObject<DeployProjectResponse>;
+    return DeployProjectResponse.serialization.fromJson(result);
   }
 }

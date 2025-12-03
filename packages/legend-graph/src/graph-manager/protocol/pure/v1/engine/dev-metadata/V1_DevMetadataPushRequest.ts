@@ -14,16 +14,47 @@
  * limitations under the License.
  */
 
-import { SerializationFactory } from '@finos/legend-shared';
-import { createModelSchema, primitive } from 'serializr';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import { createModelSchema, optional, primitive, raw } from 'serializr';
+import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
+import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+
+export class V1_MetadatProject {
+  versionId: string | undefined;
+  groupId!: string;
+  artifactId!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_MetadatProject, {
+      groupId: primitive(),
+      artifactId: primitive(),
+      versionId: optional(primitive()),
+    }),
+  );
+}
+
+export class V1_MetadataRequestOptions {
+  includeArtifacts: boolean | undefined;
+  buildOverrides: Record<string, string> | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_MetadataRequestOptions, {
+      includeArtifacts: optional(primitive()),
+      buildOverrides: optional(raw()),
+    }),
+  );
+}
 
 export class V1_DevMetadataPushRequest {
-  // TODO: repalce with pmcd once backend changed are complete
-  projectText!: string;
+  model!: V1_PureModelContext;
+  options: V1_MetadataRequestOptions | undefined;
+  project!: V1_MetadatProject;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DevMetadataPushRequest, {
-      projectText: primitive(),
+      model: V1_pureModelContextPropSchema,
+      options: usingModelSchema(V1_MetadataRequestOptions.serialization.schema),
+      project: usingModelSchema(V1_MetadatProject.serialization.schema),
     }),
   );
 }
