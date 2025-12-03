@@ -1,5 +1,19 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.29
+
+### Patch Changes
+
+- [#4671](https://github.com/finos/legend-studio/pull/4671) [`0acfaac`](https://github.com/finos/legend-studio/commit/0acfaac4961a2f779ba92002fe9c102e99cbf259) ([@travisstebbins](https://github.com/travisstebbins)) - Fix create producer contract input being prefilled with user ID
+
+- [#4666](https://github.com/finos/legend-studio/pull/4666) [`0bdc8b8`](https://github.com/finos/legend-studio/commit/0bdc8b828069759124dbb3a5ec2db0206f9a7d28) ([@travisstebbins](https://github.com/travisstebbins)) - Improve handling of errors when fetching access point relation type
+
+- [#4675](https://github.com/finos/legend-studio/pull/4675) [`f60b1ae`](https://github.com/finos/legend-studio/commit/f60b1aee9f775bf03a33a44a4c6b6ceb8ec58638) ([@kelly-thai](https://github.com/kelly-thai)) - Update tags CSS
+
+- [#4669](https://github.com/finos/legend-studio/pull/4669) [`08f0211`](https://github.com/finos/legend-studio/commit/08f0211ea0d3f96a5ae5308016cbc62b56b1967f) ([@jackp5150](https://github.com/jackp5150)) - Added diagram viewer/state logic
+
+- [#4670](https://github.com/finos/legend-studio/pull/4670) [`5681691`](https://github.com/finos/legend-studio/commit/5681691e4eb4457f0c2f577083d833c96ea4dda6) ([@travisstebbins](https://github.com/travisstebbins)) - Improve producer contract rendering
+
 ## 0.0.28
 
 ### Patch Changes

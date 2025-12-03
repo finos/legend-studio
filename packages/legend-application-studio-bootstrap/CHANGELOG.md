@@ -1,5 +1,11 @@
 # @finos/legend-application-studio-bootstrap
 
+## 13.165.0
+
+### Patch Changes
+
+- [#4669](https://github.com/finos/legend-studio/pull/4669) [`08f0211`](https://github.com/finos/legend-studio/commit/08f0211ea0d3f96a5ae5308016cbc62b56b1967f) ([@jackp5150](https://github.com/jackp5150)) - Changed dependencies to reference new dsl-diagram-studio package
+
 ## 13.164.0
 
 ## 13.163.0

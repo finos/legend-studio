@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-diagram
 
+## 8.1.196
+
+### Patch Changes
+
+- [#4669](https://github.com/finos/legend-studio/pull/4669) [`08f0211`](https://github.com/finos/legend-studio/commit/08f0211ea0d3f96a5ae5308016cbc62b56b1967f) ([@jackp5150](https://github.com/jackp5150)) - Added general diagram viewer/state components
+
 ## 8.1.195
 
 ## 8.1.194
