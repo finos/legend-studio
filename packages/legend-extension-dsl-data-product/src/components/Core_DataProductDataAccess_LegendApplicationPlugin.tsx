@@ -69,9 +69,9 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
       return _adhocTeam;
     };
 
-    const buildProducerScope = (deploymentId: string): V1_ProducerScope => {
+    const buildProducerScope = (producerDid: string): V1_ProducerScope => {
       const producerScope = new V1_ProducerScope();
-      producerScope.did = deploymentId;
+      producerScope.did = producerDid;
       return producerScope;
     };
 
@@ -95,16 +95,16 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
         handleIsValidChange,
         enableUserSearch,
       } = props;
-      const [description, setDescription] = useState<string>('');
       const [user, setUser] = useState<LegendUser>(new LegendUser());
+      const [producerDid, setProducerDid] = useState<string>('');
+      const [description, setDescription] = useState<string>('');
       const [loadingCurrentUser, setLoadingCurrentUser] = useState(false);
 
       // Update parent state whenever local state changes
       useEffect(() => {
         if (type === 'producer') {
-          const deploymentId = user.id;
-          if (deploymentId) {
-            handleOrganizationalScopeChange(buildProducerScope(deploymentId));
+          if (producerDid !== '') {
+            handleOrganizationalScopeChange(buildProducerScope(producerDid));
           }
         } else {
           handleOrganizationalScopeChange(
@@ -122,6 +122,7 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
       }, [
         type,
         user,
+        producerDid,
         description,
         handleOrganizationalScopeChange,
         handleDescriptionChange,
@@ -167,14 +168,12 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
           )}
           {type === 'producer' ? (
             <TextField
-              className="marketplace-lakehouse-entitlements__data-contract-creator__business-justification-input"
+              className="marketplace-lakehouse-entitlements__data-contract-creator__producer-input"
               key={label}
-              value={user.id}
+              value={producerDid}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 const value = event.target.value.replace(/\D/g, '');
-                const updatedUser = new LegendUser();
-                updatedUser.id = value;
-                setUser(updatedUser);
+                setProducerDid(value);
               }}
               label={label}
               required={true}
