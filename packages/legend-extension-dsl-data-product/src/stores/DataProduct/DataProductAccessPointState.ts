@@ -212,9 +212,16 @@ export class DataProductAccessPointState {
       this.relationType = relationType;
     } catch (error) {
       assertErrorThrown(error);
-      this.apgState.applicationStore.notificationService.notifyError(
-        `Error fetching access point relation type: ${error.message}`,
-      );
+      if (error instanceof AggregateError) {
+        // Default to showing the relation type from engine error
+        this.apgState.applicationStore.notificationService.notifyError(
+          `Error fetching access point relation type: ${error.errors[1] ?? error.errors[0] ?? error.message}`,
+        );
+      } else {
+        this.apgState.applicationStore.notificationService.notifyError(
+          `Error fetching access point relation type: ${error.message}`,
+        );
+      }
     } finally {
       this.fetchingRelationTypeState.complete();
     }
