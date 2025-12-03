@@ -448,7 +448,7 @@ test(
           await screen.findAllByRole('button', {
             name: 'Add Value',
           })
-        )[1],
+        )[2],
       ),
     );
     const newElementDropdown = await screen.findByText(
