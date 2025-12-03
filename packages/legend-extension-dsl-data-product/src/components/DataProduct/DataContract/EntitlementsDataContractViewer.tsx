@@ -415,6 +415,69 @@ export const EntitlementsDataContractViewer = observer(
         .catch(currentViewer.applicationStore.alertUnhandledError);
     };
 
+    const contractMetadataSection = (
+      <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
+        <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
+          <b>Ordered By: </b>
+          <UserRenderer
+            userId={currentViewer.liteContract.createdBy}
+            applicationStore={currentViewer.applicationStore}
+            userSearchService={currentViewer.userSearchService}
+          />
+        </div>
+        <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
+          <b>
+            Ordered For
+            <Tooltip
+              className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
+              title={
+                <>
+                  Contract consumer type:{' '}
+                  {getOrganizationalScopeTypeName(
+                    consumer,
+                    currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
+                  )}
+                  {getOrganizationalScopeTypeDetails(
+                    consumer,
+                    currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
+                  )}
+                </>
+              }
+            >
+              <InfoCircleIcon />
+            </Tooltip>
+            :{' '}
+          </b>
+          {!(consumer instanceof V1_ProducerScope) &&
+          targetUsers !== undefined ? (
+            targetUsers.length === 1 ? (
+              <UserRenderer
+                key={targetUsers[0]}
+                userId={targetUsers[0]}
+                applicationStore={currentViewer.applicationStore}
+                userSearchService={currentViewer.userSearchService}
+              />
+            ) : (
+              <Select
+                value={selectedTargetUser}
+                onChange={(event) => setSelectedTargetUser(event.target.value)}
+                size="small"
+                className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
+              >
+                {targetUserSelectItems}
+              </Select>
+            )
+          ) : (
+            stringifyOrganizationalScope(consumer)
+          )}
+        </div>
+        <div>
+          <b>Business Justification: </b>
+          {currentViewer.liteContract.description}
+        </div>
+      </Box>
+    );
+
     if (
       currentViewer.liteContract.resourceType !==
       V1_ResourceType.ACCESS_POINT_GROUP
@@ -431,67 +494,7 @@ export const EntitlementsDataContractViewer = observer(
             <CloseIcon />
           </IconButton>
           <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
-              <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
-                <b>Ordered By: </b>
-                <UserRenderer
-                  userId={currentViewer.liteContract.createdBy}
-                  applicationStore={currentViewer.applicationStore}
-                  userSearchService={currentViewer.userSearchService}
-                />
-              </div>
-              <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
-                <b>
-                  Ordered For
-                  <Tooltip
-                    className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
-                    title={
-                      <>
-                        Contract consumer type:{' '}
-                        {getOrganizationalScopeTypeName(
-                          consumer,
-                          currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
-                        )}
-                        {getOrganizationalScopeTypeDetails(
-                          consumer,
-                          currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
-                        )}
-                      </>
-                    }
-                  >
-                    <InfoCircleIcon />
-                  </Tooltip>
-                  :{' '}
-                </b>
-                {targetUsers !== undefined ? (
-                  targetUsers.length === 1 ? (
-                    <UserRenderer
-                      key={targetUsers[0]}
-                      userId={targetUsers[0]}
-                      applicationStore={currentViewer.applicationStore}
-                      userSearchService={currentViewer.userSearchService}
-                    />
-                  ) : (
-                    <Select
-                      value={selectedTargetUser}
-                      onChange={(event) =>
-                        setSelectedTargetUser(event.target.value)
-                      }
-                      size="small"
-                      className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
-                    >
-                      {targetUserSelectItems}
-                    </Select>
-                  )
-                ) : (
-                  stringifyOrganizationalScope(consumer)
-                )}
-              </div>
-              <div>
-                <b>Business Justification: </b>
-                {currentViewer.liteContract.description}
-              </div>
-            </Box>
+            {contractMetadataSection}
             <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
               Unable to display data contract tasks for resource of type{' '}
               {currentViewer.liteContract.resourceType} on data product{' '}
@@ -677,68 +680,7 @@ export const EntitlementsDataContractViewer = observer(
                   </Link>{' '}
                   Data Product
                 </div>
-                <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
-                  <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
-                    <b>Ordered By: </b>
-                    <UserRenderer
-                      userId={currentViewer.liteContract.createdBy}
-                      applicationStore={currentViewer.applicationStore}
-                      userSearchService={currentViewer.userSearchService}
-                    />
-                  </div>
-                  <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
-                    <b>
-                      Ordered For
-                      <Tooltip
-                        className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
-                        title={
-                          <>
-                            Contract consumer type:{' '}
-                            {getOrganizationalScopeTypeName(
-                              consumer,
-                              currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
-                            )}
-                            {getOrganizationalScopeTypeDetails(
-                              consumer,
-                              currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
-                            )}
-                          </>
-                        }
-                      >
-                        <InfoCircleIcon />
-                      </Tooltip>
-                      :{' '}
-                    </b>
-                    {!(consumer instanceof V1_ProducerScope) &&
-                    targetUsers !== undefined ? (
-                      targetUsers.length === 1 ? (
-                        <UserRenderer
-                          key={targetUsers[0]}
-                          userId={targetUsers[0]}
-                          applicationStore={currentViewer.applicationStore}
-                          userSearchService={currentViewer.userSearchService}
-                        />
-                      ) : (
-                        <Select
-                          value={selectedTargetUser}
-                          onChange={(event) =>
-                            setSelectedTargetUser(event.target.value)
-                          }
-                          size="small"
-                          className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
-                        >
-                          {targetUserSelectItems}
-                        </Select>
-                      )
-                    ) : (
-                      stringifyOrganizationalScope(consumer)
-                    )}
-                  </div>
-                  <div>
-                    <b>Business Justification: </b>
-                    {currentViewer.liteContract.description}
-                  </div>
-                </Box>
+                {contractMetadataSection}
                 {!isContractInTerminalState(currentViewer.liteContract) && (
                   <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
                     <Button
