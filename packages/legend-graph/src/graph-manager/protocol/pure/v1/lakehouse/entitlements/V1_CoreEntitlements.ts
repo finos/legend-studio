@@ -39,6 +39,10 @@ export class V1_AdhocTeam extends V1_OrganizationalScope {
   users: V1_User[] = [];
 }
 
+export class V1_ProducerScope extends V1_OrganizationalScope {
+  did!: string;
+}
+
 export class V1_UnknownOrganizationalScopeType extends V1_OrganizationalScope {
   content!: PlainObject;
 }
@@ -50,10 +54,6 @@ export class V1_LogicalEntitlements {
 
 export class V1_Role {
   name!: string;
-}
-
-export class V1_ProducerScope extends V1_OrganizationalScope {
-  did!: string;
 }
 
 export class V1_RoleMembership {

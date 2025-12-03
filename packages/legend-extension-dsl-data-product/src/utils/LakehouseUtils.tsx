@@ -17,11 +17,13 @@
 import {
   V1_AdhocTeam,
   V1_AppDirOrganizationalScope,
+  V1_ProducerScope,
   V1_UnknownOrganizationalScopeType,
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import { isNonNullable } from '@finos/legend-shared';
+import { Box, Typography } from '@mui/material';
 
 export const getOrganizationalScopeTypeName = (
   scope: V1_OrganizationalScope,
@@ -31,6 +33,8 @@ export const getOrganizationalScopeTypeName = (
     return 'AppDir Node';
   } else if (scope instanceof V1_AdhocTeam) {
     return 'Ad-hoc Team';
+  } else if (scope instanceof V1_ProducerScope) {
+    return 'Producer';
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return 'Unknown';
   } else {
@@ -42,7 +46,7 @@ export const getOrganizationalScopeTypeName = (
       )
       .filter(isNonNullable);
 
-    return typeNames[0] ?? 'Unknown';
+    return typeNames[0] ?? scope.constructor.name;
   }
 };
 
@@ -51,11 +55,22 @@ export const getOrganizationalScopeTypeDetails = (
   plugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
 ): React.ReactNode => {
   if (
-    scope instanceof V1_AppDirOrganizationalScope ||
     scope instanceof V1_AdhocTeam ||
     scope instanceof V1_UnknownOrganizationalScopeType
   ) {
     return undefined;
+  } else if (scope instanceof V1_AppDirOrganizationalScope) {
+    return (
+      <>
+        {scope.appDirNode.map((node) => (
+          <Box key={`${node.level}-${node.appDirId}`} mb="sm">
+            <Typography variant="body2">
+              <b>{node.level}</b>: {node.appDirId}
+            </Typography>
+          </Box>
+        ))}
+      </>
+    );
   } else {
     const detailsRenderers = plugins
       .flatMap((plugin) =>
@@ -84,8 +99,10 @@ export const stringifyOrganizationalScope = (
       .join(', ');
   } else if (scope instanceof V1_AdhocTeam) {
     return scope.users.map((user) => user.name).join(', ');
+  } else if (scope instanceof V1_ProducerScope) {
+    return `Producer DID: ${scope.did}`;
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return JSON.stringify(scope.content);
   }
-  return '';
+  return JSON.stringify(scope);
 };
