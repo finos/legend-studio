@@ -92,6 +92,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     marketplaceStore.userSearchService,
     auth.user?.access_token,
     marketplaceStore.lakehouseContractServerClient,
+    applicationStore.logService,
   ]);
 
   const imgSrc =
