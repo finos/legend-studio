@@ -418,7 +418,7 @@ export const EntitlementsDataContractViewer = observer(
     const contractMetadataSection = (
       <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
         <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
-          <b>Ordered By: </b>
+          <b>Ordered By:&nbsp;</b>
           <UserRenderer
             userId={currentViewer.liteContract.createdBy}
             applicationStore={currentViewer.applicationStore}
