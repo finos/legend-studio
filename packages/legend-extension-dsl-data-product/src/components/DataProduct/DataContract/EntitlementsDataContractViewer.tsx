@@ -47,6 +47,7 @@ import {
   V1_ApprovalType,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
+  V1_ProducerScope,
   V1_ResourceType,
   V1_SnowflakeTarget,
   V1_UserApprovalStatus,
@@ -708,7 +709,8 @@ export const EntitlementsDataContractViewer = observer(
                       </Tooltip>
                       :{' '}
                     </b>
-                    {targetUsers !== undefined ? (
+                    {!(consumer instanceof V1_ProducerScope) &&
+                    targetUsers !== undefined ? (
                       targetUsers.length === 1 ? (
                         <UserRenderer
                           key={targetUsers[0]}
