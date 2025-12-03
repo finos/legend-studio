@@ -30,9 +30,10 @@ import {
   V1_UserApprovalStatus,
   V1_UserType,
 } from '@finos/legend-graph';
+import type { PlainObject } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 
-export const mockDataContract: V1_LiteDataContract = {
+export const mockDataContract: PlainObject<V1_LiteDataContract> = {
   description: 'Test contract creation request',
   guid: 'test-data-contract-id',
   version: 0,
@@ -54,24 +55,15 @@ export const mockDataContract: V1_LiteDataContract = {
   accessPointGroup: 'GROUP1',
 };
 
-export const mockDataContractMultipleConsumers: V1_LiteDataContract = {
+export const mockProducerDataContract: PlainObject<V1_LiteDataContract> = {
   description: 'Test contract creation request',
   guid: 'test-data-contract-id',
   version: 0,
   state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
   members: [],
   consumer: {
-    _type: V1_OrganizationalScopeType.AdHocTeam,
-    users: [
-      {
-        name: 'test-consumer-user-id-1',
-        type: V1_UserType.WORKFORCE_USER,
-      },
-      {
-        name: 'test-consumer-user-id-2',
-        type: V1_UserType.WORKFORCE_USER,
-      },
-    ],
+    _type: V1_OrganizationalScopeType.Producer,
+    did: 12345,
   },
   createdBy: 'test-requester-user-id',
   resourceId: 'MOCK_SDLC_DATAPRODUCT',
@@ -80,49 +72,77 @@ export const mockDataContractMultipleConsumers: V1_LiteDataContract = {
   accessPointGroup: 'GROUP1',
 };
 
-export const mockDataContractWithSystemAccountMember: V1_DataContract = {
-  description: 'Test data contract with system account member',
-  guid: 'test-data-contract-with-system-account-member-id',
-  version: 0,
-  state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
-  resource: {
-    _type: V1_ResourceType.ACCESS_POINT_GROUP,
-    dataProduct: 'MOCK_SDLC_DATAPRODUCT',
+export const mockDataContractMultipleConsumers: PlainObject<V1_LiteDataContract> =
+  {
+    description: 'Test contract creation request',
+    guid: 'test-data-contract-id',
+    version: 0,
+    state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+    members: [],
+    consumer: {
+      _type: V1_OrganizationalScopeType.AdHocTeam,
+      users: [
+        {
+          name: 'test-consumer-user-id-1',
+          type: V1_UserType.WORKFORCE_USER,
+        },
+        {
+          name: 'test-consumer-user-id-2',
+          type: V1_UserType.WORKFORCE_USER,
+        },
+      ],
+    },
+    createdBy: 'test-requester-user-id',
+    resourceId: 'MOCK_SDLC_DATAPRODUCT',
+    resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+    deploymentId: 11111,
     accessPointGroup: 'GROUP1',
-  },
-  members: [
-    {
-      guid: 'member-1-guid',
-      user: {
-        name: 'test-consumer-user-id',
-        userType: V1_UserType.WORKFORCE_USER,
-      },
-      status: V1_UserApprovalStatus.PENDING,
+  };
+
+export const mockDataContractWithSystemAccountMember: PlainObject<V1_DataContract> =
+  {
+    description: 'Test data contract with system account member',
+    guid: 'test-data-contract-with-system-account-member-id',
+    version: 0,
+    state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+    resource: {
+      _type: V1_ResourceType.ACCESS_POINT_GROUP,
+      dataProduct: 'MOCK_SDLC_DATAPRODUCT',
+      accessPointGroup: 'GROUP1',
     },
-    {
-      guid: 'member-2-guid',
-      user: {
-        name: 'test-system-account-user-id',
-        userType: V1_UserType.SYSTEM_ACCOUNT,
-      },
-      status: V1_UserApprovalStatus.PENDING,
-    },
-  ],
-  consumer: {
-    _type: V1_OrganizationalScopeType.AdHocTeam,
-    users: [
+    members: [
       {
-        name: 'test-consumer-user-id',
-        type: V1_UserType.WORKFORCE_USER,
+        guid: 'member-1-guid',
+        user: {
+          name: 'test-consumer-user-id',
+          userType: V1_UserType.WORKFORCE_USER,
+        },
+        status: V1_UserApprovalStatus.PENDING,
       },
       {
-        name: 'test-system-account-user-id',
-        type: V1_UserType.SYSTEM_ACCOUNT,
+        guid: 'member-2-guid',
+        user: {
+          name: 'test-system-account-user-id',
+          userType: V1_UserType.SYSTEM_ACCOUNT,
+        },
+        status: V1_UserApprovalStatus.PENDING,
       },
     ],
-  },
-  createdBy: 'test-requester-user-id',
-};
+    consumer: {
+      _type: V1_OrganizationalScopeType.AdHocTeam,
+      users: [
+        {
+          name: 'test-consumer-user-id',
+          type: V1_UserType.WORKFORCE_USER,
+        },
+        {
+          name: 'test-system-account-user-id',
+          type: V1_UserType.SYSTEM_ACCOUNT,
+        },
+      ],
+    },
+    createdBy: 'test-requester-user-id',
+  };
 
 export const getMockPendingManagerApprovalTasksResponse = (
   isEscalated: boolean = false,

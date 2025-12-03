@@ -29,6 +29,7 @@ import {
   type V1_LiteDataContract,
   type V1_TaskResponse,
   GraphManagerState,
+  V1_liteDataContractModelSchema,
 } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
 import { AuthProvider } from 'react-oidc-context';
@@ -50,9 +51,11 @@ import {
   mockPendingManagerApprovalMultipleAssigneesTasksResponse,
   mockPendingManagerApprovalMultipleConsumersTasksResponse,
   mockAutoCreatedSubscription,
+  mockProducerDataContract,
 } from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 import { ApplicationStore } from '@finos/legend-application';
 import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import { deserialize } from 'serializr';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -62,10 +65,10 @@ jest.mock('react-oidc-context', () => {
 });
 
 const setupDataContractViewerTest = async (
-  mockContract: V1_LiteDataContract,
+  mockContractObject: PlainObject<V1_LiteDataContract>,
   mockTasks: V1_TaskResponse,
   initialSelectedUser?: string,
-  contractWithMembers?: V1_DataContract,
+  contractWithMembersObject?: PlainObject<V1_DataContract>,
   mockSubscription?: V1_DataSubscription,
 ) => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
@@ -95,10 +98,17 @@ const setupDataContractViewerTest = async (
 
   createSpy(lakehouseContractServerClient, 'getDataContract').mockResolvedValue(
     {
-      dataContracts: contractWithMembers
-        ? [{ dataContract: contractWithMembers }]
+      dataContracts: contractWithMembersObject
+        ? [{ dataContract: contractWithMembersObject }]
         : [],
     },
+  );
+
+  const mockContract = deserialize(
+    V1_liteDataContractModelSchema(
+      MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+    ),
+    mockContractObject,
   );
 
   const MOCK__contractViewerState = new EntitlementsDataContractViewerState(
@@ -172,6 +182,17 @@ describe('EntitlementsDataContractViewer', () => {
 
     // Verify Contract ID
     screen.getByText('Contract ID: test-data-contract-id');
+  });
+
+  test('Displays correct "ordered for" for producer contract type', async () => {
+    await setupDataContractViewerTest(
+      mockProducerDataContract,
+      getMockPendingManagerApprovalTasksResponse(),
+    );
+
+    // Verify metadata
+    screen.getByText(/Ordered For/);
+    screen.getByText('Producer DID: 12345');
   });
 
   test('Shows correct details for Pending Privilege Manager Approval', async () => {
@@ -249,7 +270,7 @@ describe('EntitlementsDataContractViewer', () => {
     screen.getByText('test-privilege-manager-user-id-2');
   });
 
-  test('Shows list of "ordered for"" if there is more than 1 consumer and respects initialSelectedUser', async () => {
+  test('Shows list of "ordered for" if there is more than 1 consumer and respects initialSelectedUser', async () => {
     await setupDataContractViewerTest(
       mockDataContractMultipleConsumers,
       mockPendingManagerApprovalMultipleConsumersTasksResponse,

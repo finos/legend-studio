@@ -372,6 +372,7 @@ export {
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsDataProductModelSchema,
   V1_EntitlementsLakehouseEnvironmentModelSchema,
+  V1_liteDataContractModelSchema,
   V1_liteDataContractsResponseModelSchemaToContracts,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_OrganizationalScopeType,
