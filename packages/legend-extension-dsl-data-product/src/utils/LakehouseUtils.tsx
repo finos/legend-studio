@@ -46,7 +46,7 @@ export const getOrganizationalScopeTypeName = (
       )
       .filter(isNonNullable);
 
-    return typeNames[0] ?? scope.constructor.name ?? 'Unknown';
+    return typeNames[0] ?? scope.constructor.name;
   }
 };
 
