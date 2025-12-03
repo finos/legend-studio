@@ -94,6 +94,7 @@ import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
 import type { PersistentDataCube } from '../../../../action/query/PersistentDataCube.js';
 import { type V1_LambdaTdsToRelationInput } from './pureProtocol/V1_LambdaTdsToRelationInput.js';
 import type { V1_RawLineageModel } from '../model/lineage/V1_Lineage.js';
+import type { V1_DevMetadataPushRequest } from './dev-metadata/V1_DevMetadataPushRequest.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -1224,18 +1225,17 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
 
   // ------------------------------------------- Dev Mode -------------------------------------------
-  _devMetadata = (): string => `${this.baseUrl}/lakehouse/sdlc/deploy/project`;
+  _devMetadata = (): string =>
+    `${this.baseUrl}/lakehouse/metadata/deploy/project`;
 
   pushToDevMetadata = (
-    did: string,
-    projectName: string,
-    request: PlainObject,
+    request: PlainObject<V1_DevMetadataPushRequest>,
   ): Promise<PlainObject> =>
     this.postWithTracing(
       this.getTraceData(
         CORE_ENGINE_ACTIVITY_TRACE.VALIDATE_SERVICE_ASSERTION_ID,
       ),
-      `${this._devMetadata()}/${did}/${projectName}`,
+      `${this._devMetadata()}`,
       request,
     );
 }

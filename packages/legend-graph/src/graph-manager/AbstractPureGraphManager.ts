@@ -123,7 +123,8 @@ import type {
   LineageModel,
   RawLineageModel,
 } from '../graph/metamodel/pure/lineage/LineageModel.js';
-import type { DevMetadataResult } from './action/dev-metadata/DevMetadataResult.js';
+import type { DeployProjectResponse } from './action/dev-metadata/DeployProjectResponse.js';
+import type { MetadataRequestOptions } from './action/dev-metadata/MetadataRequestOptions.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -438,10 +439,12 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Dev Mode -------------------------------------------
 
   abstract pushToDevMetadata(
-    did: string,
-    projectName: string,
+    groupId: string,
+    artiactId: string,
+    versionId: string | undefined,
+    options: MetadataRequestOptions | undefined,
     graph: PureModel,
-  ): Promise<DevMetadataResult>;
+  ): Promise<DeployProjectResponse>;
 
   // ------------------------------------------- Test -------------------------------------------
 

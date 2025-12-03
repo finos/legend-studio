@@ -370,8 +370,13 @@ import {
   type V1_RawLineageModel,
 } from './model/lineage/V1_Lineage.js';
 import { V1_IngestDefinition } from './model/packageableElements/ingest/V1_IngestDefinition.js';
-import type { DevMetadataResult } from '../../../action/dev-metadata/DevMetadataResult.js';
-import { V1_DevMetadataPushRequest } from './engine/dev-metadata/V1_DevMetadataPushRequest.js';
+import type { DeployProjectResponse } from '../../../action/dev-metadata/DeployProjectResponse.js';
+import {
+  V1_DevMetadataPushRequest,
+  V1_MetadataRequestOptions,
+  V1_MetadatProject,
+} from './engine/dev-metadata/V1_DevMetadataPushRequest.js';
+import type { MetadataRequestOptions } from '../../../action/dev-metadata/MetadataRequestOptions.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -4280,13 +4285,28 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // --------------------------------------------- SDLC --------------------------------------------------
 
   async pushToDevMetadata(
-    did: string,
-    projectName: string,
+    groupId: string,
+    artiactId: string,
+    versionId: string,
+    options: MetadataRequestOptions | undefined,
     graph: PureModel,
-  ): Promise<DevMetadataResult> {
+  ): Promise<DeployProjectResponse> {
     const request = new V1_DevMetadataPushRequest();
-    request.projectText = await this.graphToPureCode(graph);
-    return this.engine.pushToDevMetadata(did, projectName, request);
+    const project = new V1_MetadatProject();
+    project.groupId = groupId;
+    project.artifactId = artiactId;
+    project.versionId = versionId;
+    request.project = project;
+    if (options) {
+      const requestOptions = new V1_MetadataRequestOptions();
+      requestOptions.includeArtifacts = options.includeArtifacts;
+      requestOptions.buildOverrides = options.buildOverrides;
+      request.options = requestOptions;
+    }
+    request.model = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+      : this.getFullGraphModelData(graph);
+    return this.engine.pushToDevMetadata(request);
   }
 
   // --------------------------------------------- Change Detection ---------------------------------------------

@@ -17,48 +17,48 @@
 import {
   ActionState,
   assertErrorThrown,
-  assertNonEmptyString,
   assertNonNullable,
   assertTrue,
-  filterByType,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore.js';
 import { action, flow, makeObservable, observable } from 'mobx';
-import { type DevMetadataResult, IngestDefinition } from '@finos/legend-graph';
-import { generateGAVCoordinates } from '@finos/legend-storage';
+import {
+  type DeployProjectResponse,
+  MetadataRequestOptions,
+} from '@finos/legend-graph';
 
 export class DevMetadataState {
   readonly editorStore: EditorStore;
-  result: DevMetadataResult | undefined;
+  result: DeployProjectResponse | undefined;
+  options: MetadataRequestOptions = new MetadataRequestOptions();
   pushState = ActionState.create();
-  did = '';
 
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
 
     makeObservable(this, {
       pushState: observable,
-      did: observable,
-      setDid: action,
       push: flow,
-      init: action,
+      options: observable,
+      setOptions: action,
     });
   }
 
-  setDid(did: string): void {
-    this.did = did;
+  setOptions(options: MetadataRequestOptions): void {
+    this.options = options;
   }
 
-  init(): void {
-    if (!this.did) {
-      const ingestDID = this.editorStore.graphManagerState.graph.allElements
-        .filter(filterByType(IngestDefinition))[0]
-        ?.appDirDeployment?.appDirId?.toString();
-      if (ingestDID) {
-        this.setDid(ingestDID);
-      }
+  get projectGAV(): { groupId: string; artifactId: string } | undefined {
+    const currentProjectConfiguration =
+      this.editorStore.projectConfigurationEditorState.projectConfiguration;
+    if (currentProjectConfiguration) {
+      return {
+        groupId: currentProjectConfiguration.groupId,
+        artifactId: currentProjectConfiguration.artifactId,
+      };
     }
+    return undefined;
   }
 
   *push(): GeneratorFn<void> {
@@ -78,34 +78,23 @@ export class DevMetadataState {
         currentProjectConfiguration,
         'Project Name required to push to dev mode',
       );
-      const projectId = generateGAVCoordinates(
-        currentProjectConfiguration.groupId,
-        currentProjectConfiguration.artifactId,
-        undefined,
-      );
-      assertNonEmptyString(this.did, 'DID required to push to dev mode');
       this.pushState.inProgress();
-      this.editorStore.applicationStore.alertService.setBlockingAlert({
-        message: 'Pushing to Dev Mode',
-        showLoading: true,
-      });
       const result =
         (yield this.editorStore.graphManagerState.graphManager.pushToDevMetadata(
-          this.did,
-          projectId,
+          currentProjectConfiguration.groupId,
+          currentProjectConfiguration.artifactId,
+          undefined,
+          this.options,
           this.editorStore.graphManagerState.graph,
-        )) as DevMetadataResult;
+        )) as DeployProjectResponse;
       this.result = result;
-      this.editorStore.applicationStore.notificationService.notifySuccess(
-        `Pushed to dev mode`,
-      );
+      this.pushState.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.pushState.fail();
-    } finally {
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Error pushing to dev metadata: ${error.message}`,
       );
+      this.pushState.fail();
     }
   }
 }
