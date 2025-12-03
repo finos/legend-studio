@@ -446,7 +446,7 @@ export const EntitlementsDataContractViewer = observer(
             >
               <InfoCircleIcon />
             </Tooltip>
-            :{' '}
+            :
           </b>
           {!(consumer instanceof V1_ProducerScope) &&
           targetUsers !== undefined ? (
@@ -468,7 +468,7 @@ export const EntitlementsDataContractViewer = observer(
               </Select>
             )
           ) : (
-            stringifyOrganizationalScope(consumer)
+            ` ${stringifyOrganizationalScope(consumer)}`
           )}
         </div>
         <div>
