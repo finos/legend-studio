@@ -274,7 +274,7 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
           <CommonRenderer
             key="producer"
             type="producer"
-            label="Producer"
+            label="Producer DID"
             apgState={apgState}
             handleOrganizationalScopeChange={handleOrganizationalScopeChange}
             handleDescriptionChange={handleDescriptionChange}
