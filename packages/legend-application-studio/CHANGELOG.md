@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.71
+
+### Patch Changes
+
+- [#4669](https://github.com/finos/legend-studio/pull/4669) [`08f0211`](https://github.com/finos/legend-studio/commit/08f0211ea0d3f96a5ae5308016cbc62b56b1967f) ([@jackp5150](https://github.com/jackp5150)) - Updated editor logic to handle diagram conversion
+
+- [#4674](https://github.com/finos/legend-studio/pull/4674) [`39abe54`](https://github.com/finos/legend-studio/commit/39abe5448d229945415f6aa49ca8f0f74c2776ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add feedback to dev push panel and log viewing
+
 ## 28.19.70
 
 ## 28.19.69

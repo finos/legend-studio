@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.3.18
+
+### Patch Changes
+
+- [#4670](https://github.com/finos/legend-studio/pull/4670) [`5681691`](https://github.com/finos/legend-studio/commit/5681691e4eb4457f0c2f577083d833c96ea4dda6) ([@travisstebbins](https://github.com/travisstebbins)) - Improve producer contract rendering
+
+- [#4674](https://github.com/finos/legend-studio/pull/4674) [`39abe54`](https://github.com/finos/legend-studio/commit/39abe5448d229945415f6aa49ca8f0f74c2776ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add feedback to dev push panel and log viewing
+
+- [#4669](https://github.com/finos/legend-studio/pull/4669) [`08f0211`](https://github.com/finos/legend-studio/commit/08f0211ea0d3f96a5ae5308016cbc62b56b1967f) ([@jackp5150](https://github.com/jackp5150)) - Exported V1_ModelAccessPointGroup for diagram viewer
+
 ## 32.3.17
 
 ### Patch Changes

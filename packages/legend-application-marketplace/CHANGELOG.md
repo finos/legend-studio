@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.44
+
+### Patch Changes
+
+- [#4671](https://github.com/finos/legend-studio/pull/4671) [`0acfaac`](https://github.com/finos/legend-studio/commit/0acfaac4961a2f779ba92002fe9c102e99cbf259) ([@travisstebbins](https://github.com/travisstebbins)) - Fix create producer contract input being prefilled with user ID
+
 ## 0.1.43
 
 ### Patch Changes
