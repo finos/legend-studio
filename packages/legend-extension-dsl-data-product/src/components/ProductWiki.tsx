@@ -255,54 +255,55 @@ export const ProductWiki = observer(
               {productViewerState.isVDP && (
                 <ProductVendorInfo productViewerState={productViewerState} />
               )}
-              {productViewerState.getModelAccessPointGroup() && (
-                <>
+              {productViewerState.getModelAccessPointGroup() &&
+                productViewerState.modelsDocumentationState && (
                   <ModelsDocumentation
                     modelsDocumentationState={
                       productViewerState.modelsDocumentationState
                     }
                     applicationStore={productViewerState.applicationStore}
                   />
-                  <DiagramViewer
-                    applicationStore={productViewerState.applicationStore}
-                    diagramViewerState={productViewerState.diagramViewerState}
-                    actions={{
-                      onViewClassDocumentation: (classPath) =>
-                        productViewerState.modelsDocumentationState.viewClassDocumentation(
-                          classPath,
-                        ),
-                      hasClassDocumentation: (classPath) =>
-                        productViewerState.modelsDocumentationState.hasClassDocumentation(
-                          classPath,
-                        ),
-                      onSyncZoneWithNavigation: (diagram) => {
-                        productViewerState.syncZoneWithNavigation(
-                          generateAnchorForDiagram(diagram),
-                        );
-                      },
-                      onGenerateAnchorForActivity: (activity) => {
-                        return generateAnchorForSection(activity);
-                      },
-                      onChangeZone: (zone, force) => {
-                        productViewerState.changeZone(zone, force);
-                      },
-                      onSetWikiPageAnchor: (
-                        anchorKey: string,
-                        element: HTMLElement,
-                      ) => {
-                        productViewerState.layoutState.setWikiPageAnchor(
-                          anchorKey,
-                          element,
-                        );
-                      },
-                      onUnsetWikiPageAnchor: (anchorKey: string) => {
-                        productViewerState.layoutState.unsetWikiPageAnchor(
-                          anchorKey,
-                        );
-                      },
-                    }}
-                  />
-                </>
+                )}
+              {productViewerState.getModelAccessPointGroup() && (
+                <DiagramViewer
+                  applicationStore={productViewerState.applicationStore}
+                  diagramViewerState={productViewerState.diagramViewerState}
+                  actions={{
+                    onViewClassDocumentation: (classPath) =>
+                      productViewerState.modelsDocumentationState?.viewClassDocumentation(
+                        classPath,
+                      ),
+                    hasClassDocumentation: (classPath) =>
+                      productViewerState.modelsDocumentationState?.hasClassDocumentation(
+                        classPath,
+                      ) ?? false,
+                    onSyncZoneWithNavigation: (diagram) => {
+                      productViewerState.syncZoneWithNavigation(
+                        generateAnchorForDiagram(diagram),
+                      );
+                    },
+                    onGenerateAnchorForActivity: (activity) => {
+                      return generateAnchorForSection(activity);
+                    },
+                    onChangeZone: (zone, force) => {
+                      productViewerState.changeZone(zone, force);
+                    },
+                    onSetWikiPageAnchor: (
+                      anchorKey: string,
+                      element: HTMLElement,
+                    ) => {
+                      productViewerState.layoutState.setWikiPageAnchor(
+                        anchorKey,
+                        element,
+                      );
+                    },
+                    onUnsetWikiPageAnchor: (anchorKey: string) => {
+                      productViewerState.layoutState.unsetWikiPageAnchor(
+                        anchorKey,
+                      );
+                    },
+                  }}
+                />
               )}
               <DataProductSupportInfo
                 dataProductViewerState={productViewerState}

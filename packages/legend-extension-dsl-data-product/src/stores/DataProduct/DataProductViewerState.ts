@@ -68,7 +68,9 @@ export class DataProductViewerState extends BaseViewerState<
   readonly userSearchService: UserSearchService | undefined;
   readonly dataProductConfig: DataProductConfig | undefined;
   readonly projectGAV: ProjectGAVCoordinates | undefined;
-  readonly modelsDocumentationState: DataProductViewerModelsDocumentationState;
+  readonly modelsDocumentationState:
+    | DataProductViewerModelsDocumentationState
+    | undefined;
   readonly diagramViewerState: DataProductViewerDiagramViewerState;
   dataProductArtifact: V1_DataProductArtifact | undefined;
 
@@ -118,8 +120,10 @@ export class DataProductViewerState extends BaseViewerState<
     this.openPowerBi = actions.openPowerBi;
     this.openDataCube = actions.openDataCube;
 
-    this.modelsDocumentationState =
-      new DataProductViewerModelsDocumentationState(this);
+    if (this.getModelAccessPointGroup()) {
+      this.modelsDocumentationState =
+        new DataProductViewerModelsDocumentationState(this);
+    }
   }
 
   protected getValidSections(): string[] {
