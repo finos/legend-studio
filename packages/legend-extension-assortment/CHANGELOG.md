@@ -1,5 +1,7 @@
 # @finos/legend-extension-assortment
 
+## 0.0.390
+
 ## 0.0.389
 
 ### Patch Changes

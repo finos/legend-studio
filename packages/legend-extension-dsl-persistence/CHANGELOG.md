@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-persistence
 
+## 5.0.413
+
 ## 5.0.412
 
 ### Patch Changes

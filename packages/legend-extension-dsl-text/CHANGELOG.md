@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-text
 
+## 6.0.412
+
 ## 6.0.411
 
 ### Patch Changes
