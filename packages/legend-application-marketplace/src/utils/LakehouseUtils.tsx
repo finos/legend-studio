@@ -47,9 +47,9 @@ export const buildGraphForDataProduct = async (
     entitlementsDataProductDetails.origin instanceof
     V1_AdHocDeploymentDataProductOrigin
   ) {
-    const entities: Entity[] = (await graphManager.pureCodeToEntities(
+    const entities: Entity[] = await graphManager.pureCodeToEntities(
       entitlementsDataProductDetails.origin.definition,
-    )) as Entity[];
+    );
     await graphManager.buildGraph(
       graphManagerState.graph,
       entities,
