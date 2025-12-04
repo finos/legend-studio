@@ -151,14 +151,11 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           </MenuItem>
           <MenuContentDivider />
           {adjacentEnvState && adjacentUrl && (
-            <>
-              <MenuItem component="a" target="_blank" href={adjacentUrl}>
-                {`${adjacentEnvState.label} Env`}
-              </MenuItem>
-
-              <MenuContentDivider />
-            </>
+            <MenuItem component="a" target="_blank" href={adjacentUrl}>
+              {`${adjacentEnvState.label} Env`}
+            </MenuItem>
           )}
+          {adjacentEnvState && adjacentUrl && <MenuContentDivider />}
           <MenuItem
             component="a"
             href={applicationStore.navigationService.navigator.generateAddress(
@@ -197,20 +194,18 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   const CartIconRenderer = () => {
     const cartStore = marketplaceStore.cartStore;
     return (
-      <>
-        <IconButton
-          className="legend-marketplace-header__menu__icon"
-          onClick={() => {
-            // eslint-disable-next-line no-void
-            void cartStore.initialize();
-            cartStore.setOpen(true);
-          }}
-        >
-          <CartBadge cartStore={cartStore}>
-            <ShoppingCartOutlineIcon />
-          </CartBadge>
-        </IconButton>
-      </>
+      <IconButton
+        className="legend-marketplace-header__menu__icon"
+        onClick={() => {
+          // eslint-disable-next-line no-void
+          void cartStore.initialize();
+          cartStore.setOpen(true);
+        }}
+      >
+        <CartBadge cartStore={cartStore}>
+          <ShoppingCartOutlineIcon />
+        </CartBadge>
+      </IconButton>
     );
   };
 
@@ -245,13 +240,11 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             About
           </MenuItem>
           {adjacentEnvState && adjacentUrl && (
-            <>
-              <MenuItem component="a" target="_blank" href={adjacentUrl}>
-                {`${adjacentEnvState.label} Env`}
-              </MenuItem>
-              <MenuContentDivider />
-            </>
+            <MenuItem component="a" target="_blank" href={adjacentUrl}>
+              {`${adjacentEnvState.label} Env`}
+            </MenuItem>
           )}
+          {adjacentEnvState && adjacentUrl && <MenuContentDivider />}
           <MenuItem
             component="a"
             href={applicationStore.navigationService.navigator.generateAddress(
