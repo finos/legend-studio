@@ -1186,3 +1186,206 @@ test(
     expect(nodeIds.some((id) => id.includes('com.other:safe-lib'))).toBe(true);
   },
 );
+
+test(
+  unitTest(
+    'Exclusion validation rejects invalid exclusions that would cause compilation errors',
+  ),
+  async () => {
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfig = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 11, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.legend',
+      artifactId: 'my-project',
+      projectDependencies: [],
+      metamodelDependencies: [],
+      runDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfig,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    await editorStore.graphManagerState.graphManager.initialize({
+      env: 'test',
+      tabSize: 2,
+      clientConfig: {},
+    });
+    await editorStore.graphManagerState.initializeSystem();
+
+    const compileEntitiesSpy = createSpy(
+      editorStore.graphManagerState.graphManager,
+      'compileEntities',
+    );
+    compileEntitiesSpy.mockRejectedValue(
+      new Error("Can't find type 'model::RequiredClass'"),
+    );
+
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'collectDependencyEntities',
+    ).mockResolvedValue([]);
+
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'analyzeDependencyTree',
+    ).mockResolvedValue({
+      graph: {
+        rootIds: [],
+        nodes: {},
+      },
+      conflicts: [],
+    });
+
+    const exclusionCoordinate = 'org.finos.legend:some-lib';
+    const validationResult = await flowResult(
+      dependencyEditorState.validateExclusion(exclusionCoordinate),
+    );
+
+    expect(validationResult.isValid).toBe(false);
+    expect(validationResult.compilationErrors.length).toBeGreaterThan(0);
+  },
+);
+
+test(
+  unitTest(
+    'Exclusion validation allows valid exclusions that do not break compilation',
+  ),
+  async () => {
+    const dependencyWithUnusedEntities = [
+      {
+        groupId: 'org.finos.legend',
+        artifactId: 'unused-lib',
+        versionId: '1.0.0',
+        versionedEntity: false,
+        entities: [
+          {
+            path: 'model::UnusedClass',
+            content: {
+              _type: 'class',
+              name: 'UnusedClass',
+              package: 'model',
+              properties: [],
+            },
+            classifierPath: 'meta::pure::metamodel::type::Class',
+          },
+        ],
+      },
+    ];
+
+    const projectEntities: Entity[] = [
+      {
+        path: 'model::MyClass',
+        content: {
+          _type: 'class',
+          name: 'MyClass',
+          package: 'model',
+          properties: [
+            {
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              name: 'name',
+              type: 'String',
+            },
+          ],
+        },
+        classifierPath: 'meta::pure::metamodel::type::Class',
+      },
+    ];
+
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfig = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 11, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.legend',
+      artifactId: 'my-project',
+      projectDependencies: [
+        {
+          projectId: 'org.finos.legend:unused-lib',
+          versionId: '1.0.0',
+        },
+      ],
+      metamodelDependencies: [],
+      runDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfig,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'collectDependencyEntities',
+    ).mockResolvedValue(dependencyWithUnusedEntities);
+
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'analyzeDependencyTree',
+    ).mockResolvedValue({
+      graph: {
+        rootIds: ['org.finos.legend:unused-lib:1.0.0'],
+        nodes: {
+          'org.finos.legend:unused-lib:1.0.0': {
+            data: {
+              groupId: 'org.finos.legend',
+              artifactId: 'unused-lib',
+              versionId: '1.0.0',
+            },
+            parentIds: [],
+            childIds: [],
+          },
+        },
+      },
+      conflicts: [],
+    });
+
+    await editorStore.graphManagerState.graphManager.initialize({
+      env: 'test',
+      tabSize: 2,
+      clientConfig: {},
+    });
+    await editorStore.graphManagerState.initializeSystem();
+
+    const dependencyManager = new DependencyManager([]);
+    editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
+
+    const dependencyEntitiesIndex =
+      await editorStore.graphState.getIndexedDependencyEntities();
+    await editorStore.graphManagerState.graphManager.buildDependencies(
+      editorStore.graphManagerState.coreModel,
+      editorStore.graphManagerState.systemModel,
+      dependencyManager,
+      dependencyEntitiesIndex,
+      editorStore.graphManagerState.dependenciesBuildState,
+    );
+
+    await editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      projectEntities,
+      editorStore.graphManagerState.graphBuildState,
+    );
+
+    const compileEntitiesSpy = createSpy(
+      editorStore.graphManagerState.graphManager,
+      'compileEntities',
+    );
+    compileEntitiesSpy.mockResolvedValue(undefined);
+
+    const exclusionCoordinate = 'org.finos.legend:unused-lib';
+    const validationResult = await flowResult(
+      dependencyEditorState.validateExclusion(exclusionCoordinate),
+    );
+
+    expect(validationResult.isValid).toBe(true);
+    expect(validationResult.compilationErrors.length).toBe(0);
+  },
+);

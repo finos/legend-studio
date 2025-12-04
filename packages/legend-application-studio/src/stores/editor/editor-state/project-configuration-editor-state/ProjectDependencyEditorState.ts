@@ -27,6 +27,7 @@ import {
   guaranteeNonNullable,
   uuid,
 } from '@finos/legend-shared';
+import { EngineError } from '@finos/legend-graph';
 import {
   type ProjectDependencyGraphReport,
   type ProjectDependencyVersionNode,
@@ -44,7 +45,10 @@ import {
   ProjectDependencyExclusion,
   type ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
-import { generateGAVCoordinates } from '@finos/legend-storage';
+import {
+  generateGAVCoordinates,
+  type EntitiesWithOrigin,
+} from '@finos/legend-storage';
 
 export abstract class ProjectDependencyConflictTreeNodeData
   implements TreeNodeData
@@ -343,6 +347,7 @@ export class ProjectDependencyEditorState {
       getExclusionCoordinates: action,
       syncExclusionsToProjectDependency: action,
       fetchDependencyReport: flow,
+      validateExclusion: flow,
     });
     this.configState = configState;
     this.editorStore = editorStore;
@@ -610,6 +615,12 @@ export class ProjectDependencyEditorState {
     this.selectedDependencyForExclusions = undefined;
   }
 
+  syncAllExclusionsToProjectDependencies(): void {
+    Object.keys(this.dependencyExclusions).forEach((dependencyId) => {
+      this.syncExclusionsToProjectDependency(dependencyId);
+    });
+  }
+
   syncExclusionsToProjectDependency(dependencyId: string): void {
     const projectDependency =
       this.projectConfiguration?.projectDependencies.find(
@@ -618,6 +629,96 @@ export class ProjectDependencyEditorState {
     if (projectDependency) {
       const exclusions = this.getExclusions(dependencyId);
       projectDependency.setExclusions(exclusions);
+    }
+  }
+
+  /**
+   * Validates if excluding a dependency would break the graph by compiling with the engine.
+   * Returns compilation errors if the exclusion causes issues.
+   */
+  *validateExclusion(
+    exclusionCoordinate: string,
+  ): GeneratorFn<{ isValid: boolean; compilationErrors: string[] }> {
+    try {
+      const currentConfig = this.projectConfiguration;
+      if (!currentConfig) {
+        return { isValid: true, compilationErrors: [] };
+      }
+
+      // Parse the exclusion coordinate
+      const parts = exclusionCoordinate.split(':');
+      if (parts.length < 2) {
+        return { isValid: true, compilationErrors: [] };
+      }
+
+      const originalExclusions = new Map<
+        string,
+        ProjectDependencyExclusion[] | undefined
+      >();
+
+      currentConfig.projectDependencies.forEach((dep) => {
+        originalExclusions.set(dep.projectId, dep.exclusions);
+        const newExclusions = [
+          ...(dep.exclusions ?? []),
+          new ProjectDependencyExclusion(exclusionCoordinate),
+        ];
+        dep.setExclusions(newExclusions);
+      });
+
+      try {
+        const dependencyEntitiesIndex =
+          (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
+            string,
+            EntitiesWithOrigin
+          >;
+
+        const dependencyEntities = Array.from(
+          dependencyEntitiesIndex.values(),
+        ).flatMap((entitiesWithOrigin) => entitiesWithOrigin.entities);
+
+        const projectElements =
+          this.editorStore.graphManagerState.graph.allOwnElements;
+        const projectEntities = projectElements.map((element) =>
+          this.editorStore.graphManagerState.graphManager.elementToEntity(
+            element,
+          ),
+        );
+
+        const allEntities = [...dependencyEntities, ...projectEntities];
+
+        try {
+          yield this.editorStore.graphManagerState.graphManager.compileEntities(
+            allEntities,
+          );
+          return { isValid: true, compilationErrors: [] };
+        } catch (error) {
+          assertErrorThrown(error);
+          if (error instanceof EngineError) {
+            const errors = error.message
+              .split('\n')
+              .filter((line) => line.trim().length > 0)
+              .slice(0, 10);
+            return { isValid: false, compilationErrors: errors };
+          }
+          return {
+            isValid: false,
+            compilationErrors: [error.message || 'Compilation failed'],
+          };
+        }
+      } finally {
+        // Restore original exclusions
+        currentConfig.projectDependencies.forEach((dep) => {
+          const original = originalExclusions.get(dep.projectId);
+          dep.setExclusions(original ?? []);
+        });
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        error,
+      );
+      return { isValid: true, compilationErrors: [] };
     }
   }
 }
