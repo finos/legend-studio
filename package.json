@@ -94,6 +94,9 @@
     "last 2 Chrome versions"
   ],
   "resolutions": {
+    "@mui/system": "7.3.6",
+    "@mui/types": "7.4.9",
+    "@mui/utils": "7.3.6",
     "@types/react": "19.0.10",
     "glob-parent": "^6.0.1",
     "whatwg-url": "^14.0.0"
