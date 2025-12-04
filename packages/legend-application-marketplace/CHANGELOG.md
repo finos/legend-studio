@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.46
+
+### Patch Changes
+
+- [#4684](https://github.com/finos/legend-studio/pull/4684) [`8dc3a37`](https://github.com/finos/legend-studio/commit/8dc3a37fb653af43adc425d306f9863f9b50d363) ([@travisstebbins](https://github.com/travisstebbins)) - Fix model documentation state creation
+
 ## 0.1.45
 
 ### Patch Changes

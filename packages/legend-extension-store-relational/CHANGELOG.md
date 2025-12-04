@@ -1,5 +1,7 @@
 # @finos/legend-extension-store-relational
 
+## 0.0.484
+
 ## 0.0.483
 
 ### Patch Changes

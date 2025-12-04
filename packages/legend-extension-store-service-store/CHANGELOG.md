@@ -1,5 +1,7 @@
 # @finos/legend-extension-store-service-store
 
+## 2.0.412
+
 ## 2.0.411
 
 ### Patch Changes
