@@ -30,7 +30,6 @@
 '@finos/legend-extension-store-relational': patch
 '@finos/legend-extension-store-service-store': patch
 '@finos/legend-lego': patch
-'@finos/legend-manual-tests': patch
 '@finos/legend-query-builder': patch
 '@finos/legend-vscode-extension-dependencies': patch
 ---
