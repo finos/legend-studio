@@ -42,7 +42,7 @@
     "@finos/legend-application-repl": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@types/react": "19.0.10",
-    "react": "19.0.0"
+    "react": "19.0.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
