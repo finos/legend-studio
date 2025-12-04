@@ -53,12 +53,16 @@ import {
   V1_DataProductArtifact,
   V1_dataProductModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_ModelAccessPointGroup,
   V1_PureGraphManager,
   V1_SdlcDeploymentDataProductOrigin,
   V1_TerminalModelSchema,
 } from '@finos/legend-graph';
 import type { AuthContextProps } from 'react-oidc-context';
-import { getDataProductFromDetails } from '../../utils/LakehouseUtils.js';
+import {
+  buildGraphForDataProduct,
+  getDataProductFromDetails,
+} from '../../utils/LakehouseUtils.js';
 import {
   type Entity,
   type StoredFileGeneration,
@@ -265,13 +269,11 @@ export class LegendMarketplaceProductViewerStore {
         entitlementsDataProductDetails.origin instanceof
         V1_AdHocDeploymentDataProductOrigin
       ) {
-        const entities: Entity[] = (yield graphManager.pureCodeToEntities(
-          entitlementsDataProductDetails.origin.definition,
-        )) as Entity[];
-        yield graphManager.buildGraph(
-          graphManagerState.graph,
-          entities,
-          ActionState.create(),
+        yield buildGraphForDataProduct(
+          entitlementsDataProductDetails,
+          graphManagerState,
+          graphManager,
+          this.marketplaceBaseStore,
         );
       }
 
@@ -284,6 +286,24 @@ export class LegendMarketplaceProductViewerStore {
         V1_DataProduct,
         `Unable to get V1_DataProduct from details for id: ${entitlementsDataProductDetails.id}`,
       );
+
+      // If the data product has a model access point group, we need to build the graph so that
+      // we can build the model documentation. (NOTE: if we already build the graph because the
+      // data product is AdHoc, we skip this step)
+      if (
+        entitlementsDataProductDetails.origin instanceof
+          V1_SdlcDeploymentDataProductOrigin &&
+        v1DataProduct.accessPointGroups.some(
+          (apg) => apg instanceof V1_ModelAccessPointGroup,
+        )
+      ) {
+        yield buildGraphForDataProduct(
+          entitlementsDataProductDetails,
+          graphManagerState,
+          graphManager,
+          this.marketplaceBaseStore,
+        );
+      }
 
       const projectGAV =
         entitlementsDataProductDetails.origin instanceof
