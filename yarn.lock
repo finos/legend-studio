@@ -2367,7 +2367,8 @@ __metadata:
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     typescript: "npm:5.8.2"
@@ -2423,15 +2424,15 @@ __metadata:
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
     oidc-client-ts: "npm:^3.2.0"
-    react: "npm:19.0.0"
-    react-dom: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     react-oidc-context: "npm:^3.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -2512,9 +2513,9 @@ __metadata:
     node-diff3: "npm:3.1.2"
     npm-run-all: "npm:4.1.5"
     oidc-client-ts: "npm:^3.2.0"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
     react-dnd: "npm:16.0.1"
-    react-dom: "npm:19.0.0"
+    react-dom: "npm:19.0.1"
     react-oidc-context: "npm:^3.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.0"
@@ -2523,7 +2524,7 @@ __metadata:
     typescript: "npm:5.7.3"
     yaml: "npm:2.7.0"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -2541,7 +2542,8 @@ __metadata:
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     typescript: "npm:5.8.2"
     webpack: "npm:5.98.0"
@@ -2608,7 +2610,8 @@ __metadata:
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     typescript: "npm:5.8.2"
@@ -2662,15 +2665,15 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
-    react-dom: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     reactflow: "npm:11.11.4"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -2754,7 +2757,8 @@ __metadata:
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     typescript: "npm:5.8.2"
@@ -2817,9 +2821,9 @@ __metadata:
     node-diff3: "npm:3.1.2"
     npm-run-all: "npm:4.1.5"
     oidc-client-ts: "npm:^3.2.0"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
     react-dnd: "npm:16.0.1"
-    react-dom: "npm:19.0.0"
+    react-dom: "npm:19.0.1"
     react-oidc-context: "npm:^3.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
@@ -2827,7 +2831,7 @@ __metadata:
     typescript: "npm:5.8.2"
     yaml: "npm:2.7.0"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -2849,10 +2853,10 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
     react-dnd: "npm:16.0.1"
     react-dnd-html5-backend: "npm:16.0.1"
-    react-dom: "npm:19.0.0"
+    react-dom: "npm:19.0.1"
     react-router: "npm:7.3.0"
     react-router-dom: "npm:7.3.0"
     rimraf: "npm:6.0.1"
@@ -2865,7 +2869,7 @@ __metadata:
     xterm-addon-unicode11: "npm:0.6.0"
     xterm-addon-webgl: "npm:0.16.0"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -2900,11 +2904,11 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
     react-colorful: "npm:5.6.1"
     react-dnd: "npm:16.0.1"
     react-dnd-html5-backend: "npm:16.0.1"
-    react-dom: "npm:19.0.0"
+    react-dom: "npm:19.0.1"
     react-draggable: "npm:4.4.6"
     react-icons: "npm:5.5.0"
     react-markdown: "npm:10.1.0"
@@ -2919,7 +2923,7 @@ __metadata:
     tailwind-merge: "npm:2.6.0"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -2968,14 +2972,14 @@ __metadata:
     mobx-react-lite: "npm:4.1.0"
     monaco-editor: "npm:0.52.2"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
-    react-dom: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3082,13 +3086,14 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3330,13 +3335,14 @@ __metadata:
     jest: "npm:29.7.0"
     mobx: "npm:6.13.6"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3365,14 +3371,14 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
-    react-dom: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3397,13 +3403,14 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3426,13 +3433,14 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3448,20 +3456,21 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": "npm:29.7.0"
-    "@types/react": "npm:19.0.10"
+    "@types/react": "npm:19.0.1"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     jest: "npm:29.7.0"
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3486,13 +3495,14 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3588,14 +3598,14 @@ __metadata:
     mobx-react-lite: "npm:4.1.0"
     monaco-editor: "npm:0.52.2"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
     react-dnd: "npm:16.0.1"
-    react-dom: "npm:19.0.0"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3625,8 +3635,8 @@ __metadata:
     eslint: "npm:9.22.0"
     jest: "npm:29.7.0"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
-    react-dom: "npm:19.0.0"
+    react: "npm:^19.0.1"
+    react-dom: "npm:^19.0.1"
     rimraf: "npm:6.0.1"
     typescript: "npm:5.8.2"
   languageName: unknown
@@ -3660,9 +3670,9 @@ __metadata:
     mobx-react-lite: "npm:4.1.0"
     monaco-editor: "npm:0.52.2"
     npm-run-all: "npm:4.1.5"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
     react-dnd: "npm:16.0.1"
-    react-dom: "npm:19.0.0"
+    react-dom: "npm:19.0.1"
     reactflow: "npm:11.11.4"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
@@ -3670,7 +3680,7 @@ __metadata:
     sql-formatter: "npm:15.4.11"
     typescript: "npm:5.8.2"
   peerDependencies:
-    react: ^19.0.0
+    react: ^19.0.1
   languageName: unknown
   linkType: soft
 
@@ -3876,7 +3886,8 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     postcss: "npm:8.5.3"
     postcss-url: "npm:10.1.3"
-    react: "npm:19.0.0"
+    react: "npm:19.0.1"
+    react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     rollup: "npm:4.35.0"
     rollup-plugin-flow: "npm:1.1.1"
@@ -17967,6 +17978,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-dom@npm:19.0.1":
+  version: 19.0.1
+  resolution: "react-dom@npm:19.0.1"
+  dependencies:
+    scheduler: "npm:^0.25.0"
+  peerDependencies:
+    react: ^19.0.1
+  checksum: 10/4cd463d0cad6a73e59f5b7746ad7d51b7c0d9db8816d8943201aab2741f20964015bec085801a7751ae35908326ae654e46d529b765604a677a3113d9aa71328
+  languageName: node
+  linkType: hard
+
+"react-dom@npm:^19.0.1":
+  version: 19.2.1
+  resolution: "react-dom@npm:19.2.1"
+  dependencies:
+    scheduler: "npm:^0.27.0"
+  peerDependencies:
+    react: ^19.2.1
+  checksum: 10/cceea7104bd3ad52e2f6377f47c4b346244c1263917fd95745e31647ff8ab23b16f719c2bfc8bcf2a6c802ecb9c9e81f08b09e3447e1f49bc27368283ed299ba
+  languageName: node
+  linkType: hard
+
 "react-draggable@npm:4.4.6":
   version: 4.4.6
   resolution: "react-draggable@npm:4.4.6"
@@ -18206,6 +18239,20 @@ __metadata:
   version: 19.0.0
   resolution: "react@npm:19.0.0"
   checksum: 10/2490969c503f644703c88990d20e4011fa6119ddeca451e9de48f6d7ab058d670d2852a5fcd3aa3cd90a923ab2815d532637bd4a814add402ae5c0d4f129ee71
+  languageName: node
+  linkType: hard
+
+"react@npm:19.0.1":
+  version: 19.0.1
+  resolution: "react@npm:19.0.1"
+  checksum: 10/ad00f67ee44018e560b2577a107967b2fd7f63816425b6970c0849b3e2ae3caba6b141e9d4e2980f74a1a7621045b58f6d6e93a8af8d1048e423e1e602e92432
+  languageName: node
+  linkType: hard
+
+"react@npm:^19.0.1":
+  version: 19.2.1
+  resolution: "react@npm:19.2.1"
+  checksum: 10/7c7ab0f40b98e87e1466bea8c28564c5f3c384506cbda93d24788d32b40bf6059c991687c7e90a396b11f09223a779a81b1188af9acd839aaa0a672987c13107
   languageName: node
   linkType: hard
 
@@ -19016,6 +19063,13 @@ __metadata:
   version: 0.25.0
   resolution: "scheduler@npm:0.25.0"
   checksum: 10/e661e38503ab29a153429a99203fefa764f28b35c079719eb5efdd2c1c1086522f6653d8ffce388209682c23891a6d1d32fa6badf53c35fb5b9cd0c55ace42de
+  languageName: node
+  linkType: hard
+
+"scheduler@npm:^0.27.0":
+  version: 0.27.0
+  resolution: "scheduler@npm:0.27.0"
+  checksum: 10/eab3c3a8373195173e59c147224fc30dabe6dd453f248f5e610e8458512a5a2ee3a06465dc400ebfe6d35c9f5b7f3bb6b2e41c88c86fd177c25a73e7286a1e06
   languageName: node
   linkType: hard
 
