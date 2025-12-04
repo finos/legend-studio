@@ -120,9 +120,11 @@ export class DataProductViewerState extends BaseViewerState<
     this.openPowerBi = actions.openPowerBi;
     this.openDataCube = actions.openDataCube;
 
-    if (this.getModelAccessPointGroup()) {
+    try {
       this.modelsDocumentationState =
         new DataProductViewerModelsDocumentationState(this);
+    } catch {
+      this.modelsDocumentationState = undefined;
     }
   }
 
