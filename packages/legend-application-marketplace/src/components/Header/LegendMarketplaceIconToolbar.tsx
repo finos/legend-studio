@@ -35,8 +35,9 @@ import { useLegendMarketplaceBaseStore } from '../../application/providers/Legen
 import { CartDrawer } from '../AddToCart/CartDrawer.js';
 import { CartBadge } from './CartBadge.js';
 import { useAuth } from 'react-oidc-context';
-import type { V1_UserPendingContractsResponse } from '@finos/legend-graph';
+import { V1_pendingTasksResponseModelSchema } from '@finos/legend-graph';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
+import { deserialize } from 'serializr';
 
 export const LegendMarketplaceIconToolbar = observer(() => {
   const marketplaceStore = useLegendMarketplaceBaseStore();
@@ -44,7 +45,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   const auth = useAuth();
   const userId = applicationStore.identityService.currentUser;
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
-  const [pendingContractsCount, setPendingContractsCount] = useState<number>(0);
+  const [pendingTasksCount, setPendingTasksCount] = useState<number>(0);
   const showDevFeatures = applicationStore.config.options.showDevFeatures;
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {
@@ -63,21 +64,27 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     };
     // eslint-disable-next-line no-void
     void fetchUserData();
-    const fetchPendingContracts = async (): Promise<void> => {
+    const fetchPendingTasks = async (): Promise<void> => {
       if (userId) {
         try {
-          const pendingContracts =
-            (await marketplaceStore.lakehouseContractServerClient.getPendingContracts(
+          const pendingTasks =
+            await marketplaceStore.lakehouseContractServerClient.getPendingTasks(
               userId,
               auth.user?.access_token,
-            )) as V1_UserPendingContractsResponse;
-          const count = pendingContracts.records?.length ?? 0;
-          setPendingContractsCount(count);
+            );
+          const tasks = deserialize(
+            V1_pendingTasksResponseModelSchema,
+            pendingTasks,
+          );
+          const privilegeManagerCount = tasks.privilegeManager.length;
+          const dataOwnerCount = tasks.dataOwner.length;
+          const totalPendingTasksCount = privilegeManagerCount + dataOwnerCount;
+          setPendingTasksCount(totalPendingTasksCount);
         } catch (error) {
           assertErrorThrown(error);
           applicationStore.logService.error(
             LogEvent.create(
-              LEGEND_MARKETPLACE_APP_EVENT.FETCH_PENDING_CONTRACT,
+              LEGEND_MARKETPLACE_APP_EVENT.FETCH_PENDING_TASKS_FAILURE,
             ),
             error,
           );
@@ -85,7 +92,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
       }
     };
     // eslint-disable-next-line no-void
-    void fetchPendingContracts();
+    void fetchPendingTasks();
   }, [
     userId,
     applicationStore.notificationService,
@@ -119,7 +126,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           onClick={(event) => setAnchorEl(event.currentTarget)}
           className="legend-marketplace-header__menu__icon"
         >
-          <div className="legend-marketplace-header__contract__count">
+          <div className="legend-marketplace-header__task__count">
             {imgSrc ? (
               <Avatar
                 className="legend-user-display__avatar legend-user-display__avatar--image"
@@ -129,9 +136,9 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             ) : (
               <UserCircleIcon />
             )}
-            {pendingContractsCount > 0 && (
-              <span className="legend-marketplace-header__contract__badge__avatar">
-                {pendingContractsCount}
+            {pendingTasksCount > 0 && (
+              <span className="legend-marketplace-header__task__badge__avatar">
+                {pendingTasksCount}
               </span>
             )}
           </div>
@@ -180,9 +187,9 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             )}
           >
             <span>View Lakehouse Entitlements</span>
-            {pendingContractsCount > 0 && (
-              <span className="legend-marketplace-header__contract__badge__menu__item">
-                {pendingContractsCount}
+            {pendingTasksCount > 0 && (
+              <span className="legend-marketplace-header__task__badge__menu__item">
+                {pendingTasksCount}
               </span>
             )}
           </MenuItem>
