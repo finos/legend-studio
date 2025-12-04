@@ -54,7 +54,6 @@
     "@types/react": "19.0.10",
     "mobx": "6.13.6",
     "react": "19.0.1",
-    "react-dom": "19.0.1",
     "serializr": "3.0.3"
   },
   "devDependencies": {
