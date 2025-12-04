@@ -263,26 +263,23 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           >
             Admin
           </MenuItem>
-          {additionalHelpMenuItems.length > 0 && (
-            <>
-              <MenuContentDivider />
-              {additionalHelpMenuItems.map((item) => (
-                <MenuItem
-                  key={item.label}
-                  onClick={() => {
-                    setAnchorEl(null);
-                    item.onClick?.();
-                  }}
-                  component={item.href ? 'a' : 'li'}
-                  href={item.href}
-                  target={item.href ? '_blank' : undefined}
-                  rel={item.href ? 'noopener noreferrer' : undefined}
-                >
-                  {item.label}
-                </MenuItem>
-              ))}
-            </>
-          )}
+          {additionalHelpMenuItems.length > 0 && <MenuContentDivider />}
+          {additionalHelpMenuItems.length > 0 &&
+            additionalHelpMenuItems.map((item) => (
+              <MenuItem
+                key={item.label}
+                onClick={() => {
+                  setAnchorEl(null);
+                  item.onClick?.();
+                }}
+                component={item.href ? 'a' : 'li'}
+                href={item.href}
+                target={item.href ? '_blank' : undefined}
+                rel={item.href ? 'noopener noreferrer' : undefined}
+              >
+                {item.label}
+              </MenuItem>
+            ))}
         </Menu>
         <LegendMarketplaceAppInfo
           open={openAppInfo}
