@@ -151,14 +151,11 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           </MenuItem>
           <MenuContentDivider />
           {adjacentEnvState && adjacentUrl && (
-            <>
-              <MenuItem component="a" target="_blank" href={adjacentUrl}>
-                {`${adjacentEnvState.label} Env`}
-              </MenuItem>
-
-              <MenuContentDivider />
-            </>
+            <MenuItem component="a" target="_blank" href={adjacentUrl}>
+              {`${adjacentEnvState.label} Env`}
+            </MenuItem>
           )}
+          {adjacentEnvState && adjacentUrl && <MenuContentDivider />}
           <MenuItem
             component="a"
             href={applicationStore.navigationService.navigator.generateAddress(
@@ -197,20 +194,18 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   const CartIconRenderer = () => {
     const cartStore = marketplaceStore.cartStore;
     return (
-      <>
-        <IconButton
-          className="legend-marketplace-header__menu__icon"
-          onClick={() => {
-            // eslint-disable-next-line no-void
-            void cartStore.initialize();
-            cartStore.setOpen(true);
-          }}
-        >
-          <CartBadge cartStore={cartStore}>
-            <ShoppingCartOutlineIcon />
-          </CartBadge>
-        </IconButton>
-      </>
+      <IconButton
+        className="legend-marketplace-header__menu__icon"
+        onClick={() => {
+          // eslint-disable-next-line no-void
+          void cartStore.initialize();
+          cartStore.setOpen(true);
+        }}
+      >
+        <CartBadge cartStore={cartStore}>
+          <ShoppingCartOutlineIcon />
+        </CartBadge>
+      </IconButton>
     );
   };
 
@@ -245,13 +240,11 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             About
           </MenuItem>
           {adjacentEnvState && adjacentUrl && (
-            <>
-              <MenuItem component="a" target="_blank" href={adjacentUrl}>
-                {`${adjacentEnvState.label} Env`}
-              </MenuItem>
-              <MenuContentDivider />
-            </>
+            <MenuItem component="a" target="_blank" href={adjacentUrl}>
+              {`${adjacentEnvState.label} Env`}
+            </MenuItem>
           )}
+          {adjacentEnvState && adjacentUrl && <MenuContentDivider />}
           <MenuItem
             component="a"
             href={applicationStore.navigationService.navigator.generateAddress(
@@ -263,26 +256,23 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           >
             Admin
           </MenuItem>
-          {additionalHelpMenuItems.length > 0 && (
-            <>
-              <MenuContentDivider />
-              {additionalHelpMenuItems.map((item) => (
-                <MenuItem
-                  key={item.label}
-                  onClick={() => {
-                    setAnchorEl(null);
-                    item.onClick?.();
-                  }}
-                  component={item.href ? 'a' : 'li'}
-                  href={item.href}
-                  target={item.href ? '_blank' : undefined}
-                  rel={item.href ? 'noopener noreferrer' : undefined}
-                >
-                  {item.label}
-                </MenuItem>
-              ))}
-            </>
-          )}
+          {additionalHelpMenuItems.length > 0 && <MenuContentDivider />}
+          {additionalHelpMenuItems.length > 0 &&
+            additionalHelpMenuItems.map((item) => (
+              <MenuItem
+                key={item.label}
+                onClick={() => {
+                  setAnchorEl(null);
+                  item.onClick?.();
+                }}
+                component={item.href ? 'a' : 'li'}
+                href={item.href}
+                target={item.href ? '_blank' : undefined}
+                rel={item.href ? 'noopener noreferrer' : undefined}
+              >
+                {item.label}
+              </MenuItem>
+            ))}
         </Menu>
         <LegendMarketplaceAppInfo
           open={openAppInfo}
