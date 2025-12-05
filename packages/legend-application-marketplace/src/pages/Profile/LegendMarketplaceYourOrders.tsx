@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   Box,
@@ -24,218 +24,229 @@ import {
   Chip,
   CircularProgress,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Collapse,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Stack,
+  Tooltip,
 } from '@mui/material';
 import { flowResult } from 'mobx';
 import {
-  RefreshIcon,
   ShoppingCartIcon,
-  ClockIcon,
-  CheckCircleIcon,
   ChevronDownIcon,
-  ChevronRightIcon,
+  TimesCircleIcon,
 } from '@finos/legend-art';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   type TerminalProductOrder,
-  OrderCategory,
   OrderStatus,
 } from '@finos/legend-server-marketplace';
-import { assertErrorThrown } from '@finos/legend-shared';
+import { assertErrorThrown, isNullable } from '@finos/legend-shared';
 import {
   useLegendMarketplaceOrdersStore,
   withLegendMarketplaceOrdersStore,
 } from '../../application/providers/LegendMarketplaceYourOrdersStoreProvider.js';
+import { ProgressTracker } from '../../components/orders/ProgressTracker.js';
+import { CancelOrderDialog } from '../../components/orders/CancelOrderDialog.js';
+import {
+  formatOrderDate,
+  canCancelOrder,
+} from '../../stores/orders/OrderHelpers.js';
 
-const OrderStatusChip: React.FC<{ status: OrderStatus | undefined }> = ({
-  status,
-}) => {
-  switch (status) {
-    case OrderStatus.IN_PROGRESS:
-      return (
-        <Chip
-          icon={<ClockIcon />}
-          label={status.toString()}
-          variant="filled"
-          size="small"
-          className={'order-status-chip--open'}
-        />
-      );
-    case OrderStatus.OPEN:
-      return (
-        <Chip
-          icon={<ClockIcon />}
-          label={status.toString()}
-          variant="filled"
-          size="small"
-          className={'order-status-chip--open'}
-        />
-      );
-    case OrderStatus.COMPLETED:
-      return (
-        <Chip
-          icon={<CheckCircleIcon />}
-          label={status.toString()}
-          variant="filled"
-          size="small"
-          className={'order-status-chip--closed'}
-        />
-      );
-    default:
-      return (
-        <Chip
-          icon={<CheckCircleIcon />}
-          label={OrderStatus.IN_PROGRESS.toString()}
-          variant="filled"
-          size="small"
-          className={'order-status-chip--open'}
-        />
-      );
-  }
-};
+const OrderAccordion: React.FC<{
+  order: TerminalProductOrder;
+  isOpenOrder: boolean;
+}> = observer(({ order, isOpenOrder }) => {
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const ordersStore = useLegendMarketplaceOrdersStore();
 
-const StageChip: React.FC<{ stage: string | null }> = ({ stage }) => {
-  if (!stage) {
-    return <Typography className="order-row__stage">Pending</Typography>;
-  }
+  const isCancellable = canCancelOrder(order);
 
-  return <Typography className="order-row__stage">{stage}</Typography>;
-};
+  const handleCancelClick = (): void => {
+    setCancelDialogOpen(true);
+  };
 
-const OrderTableRow: React.FC<{ order: TerminalProductOrder }> = observer(
-  ({ order }) => {
-    const [expanded, setExpanded] = React.useState(false);
+  const formatCurrency = (
+    amount: number | string | null | undefined,
+  ): string => {
+    const numAmount =
+      isNullable(amount) || amount === 'null'
+        ? 0
+        : typeof amount === 'string'
+          ? parseFloat(amount)
+          : amount;
+    return numAmount.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    });
+  };
 
-    return (
-      <>
-        <TableRow onClick={() => setExpanded(!expanded)}>
-          <TableCell>
-            <Box className="order-row__id-cell">
-              <IconButton size="small" className="expand-button">
-                {expanded ? (
-                  <ChevronDownIcon size={16} />
-                ) : (
-                  <ChevronRightIcon size={16} />
-                )}
-              </IconButton>
-              <Typography className="order-id">#{order.order_id}</Typography>
+  return (
+    <>
+      <Accordion
+        defaultExpanded={true}
+        sx={{ '&:before': { display: 'none' }, mb: 2 }}
+      >
+        <AccordionSummary
+          expandIcon={<ChevronDownIcon />}
+          aria-controls={`${order.order_id}-content`}
+          id={`${order.order_id}-header`}
+          className="legend-marketplace-order-accordion__summary"
+        >
+          <Box className="legend-marketplace-order-accordion__summary-content">
+            <Box className="legend-marketplace-order-accordion__summary-field">
+              <Typography
+                variant="caption"
+                className="legend-marketplace-order-accordion__summary-label"
+              >
+                Order Placed
+              </Typography>
+              <Typography
+                variant="body2"
+                className="legend-marketplace-order-accordion__summary-value"
+              >
+                {formatOrderDate(order.created_at)}
+              </Typography>
             </Box>
-          </TableCell>
 
-          <TableCell>
-            <OrderStatusChip status={order.workflow_details?.workflow_status} />
-          </TableCell>
+            <Box className="legend-marketplace-order-accordion__summary-field">
+              <Typography
+                variant="caption"
+                className="legend-marketplace-order-accordion__summary-label"
+              >
+                Total
+              </Typography>
+              <Typography
+                variant="body2"
+                className="legend-marketplace-order-accordion__summary-value"
+              >
+                {formatCurrency(order.order_cost)}
+              </Typography>
+            </Box>
 
-          <TableCell>
-            <Typography className="order-row__date">
-              {order.created_at.split('T')[0]}
-            </Typography>
-          </TableCell>
+            <Box className="legend-marketplace-order-accordion__summary-field">
+              <Typography
+                variant="caption"
+                className="legend-marketplace-order-accordion__summary-label"
+              >
+                Order #
+              </Typography>
+              <Typography
+                variant="body2"
+                className="legend-marketplace-order-accordion__summary-value"
+              >
+                {order.order_id}
+              </Typography>
+            </Box>
 
-          <TableCell align="center">
-            <Typography className="order-row__items-count">
-              {order.service_pricing_items.length}
-            </Typography>
-          </TableCell>
-
-          <TableCell align="right">
-            <Typography className="order-row__total-cost">
-              {order.order_cost}
-            </Typography>
-          </TableCell>
-
-          <TableCell align="center">
-            <StageChip stage={order.workflow_details?.current_stage ?? null} />
-          </TableCell>
-        </TableRow>
-
-        <TableRow>
-          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
-            <Collapse in={expanded} timeout="auto" unmountOnExit={true}>
-              <Box className="order-details">
-                <Typography className="order-details__title">
-                  Order Items ({order.service_pricing_items.length})
-                </Typography>
-                <Box className="order-details__items-table">
-                  <Table size="medium">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell align="left">
-                          <Typography>Product</Typography>
-                        </TableCell>
-                        <TableCell align="left">
-                          <Typography>Provider</Typography>
-                        </TableCell>
-                        <TableCell align="left">
-                          <Typography>Category</Typography>
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {order.order_category === OrderCategory.TERMINAL ? (
-                        <TableRow key={`${order.vendor_profile_id}`}>
-                          <TableCell align="left">
-                            <Typography className="order-details__product-name">
-                              {order.vendor_profile_name}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="left">
-                            <Typography className="order-details__provider-name">
-                              {order.vendor_name}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="left">
-                            <Typography className="order-details__category-name">
-                              {'Terminal'}
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        order.service_pricing_items.map((item, index) => (
-                          <TableRow
-                            key={`${item.service_pricing_id || `item-${item.service_pricing_name}`}-${order.order_id}`}
-                          >
-                            <TableCell align="left">
-                              <Typography className="order-details__product-name">
-                                {item.service_pricing_name}
-                              </Typography>
-                            </TableCell>
-                            <TableCell align="left">
-                              <Typography className="order-details__provider-name">
-                                {order.vendor_name}
-                              </Typography>
-                            </TableCell>
-                            <TableCell align="left">
-                              <Typography className="order-details__category-name">
-                                {item.service_pricing_id ===
-                                order.vendor_profile_id
-                                  ? 'Terminal'
-                                  : 'Add-on'}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </Box>
+            {isOpenOrder && (
+              <Box className="legend-marketplace-order-accordion__summary-actions">
+                <Tooltip
+                  title={
+                    !isCancellable
+                      ? 'Order cancellation is only available during approval stages'
+                      : ''
+                  }
+                  arrow={true}
+                >
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<TimesCircleIcon />}
+                    disabled={!isCancellable}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCancelClick();
+                    }}
+                    className="legend-marketplace-order-accordion__cancel-button"
+                  >
+                    Cancel Order
+                  </Button>
+                </Tooltip>
               </Box>
-            </Collapse>
-          </TableCell>
-        </TableRow>
-      </>
-    );
-  },
-);
+            )}
+          </Box>
+        </AccordionSummary>
+
+        <AccordionDetails className="legend-marketplace-order-accordion__details">
+          <Box className="legend-marketplace-order-accordion__details-container">
+            <Box className="legend-marketplace-order-accordion__items-section">
+              <Stack spacing={2}>
+                {order.service_pricing_items.map((item, index) => (
+                  <Box
+                    key={item.entity_id}
+                    className="legend-marketplace-order-accordion__item"
+                  >
+                    <Box className="legend-marketplace-order-accordion__vendor-chips-row">
+                      <Typography
+                        variant="caption"
+                        className="legend-marketplace-order-accordion__vendor-name"
+                      >
+                        {order.vendor_name}
+                      </Typography>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        className="legend-marketplace-order-accordion__chips-container"
+                      >
+                        <Chip
+                          label={item.entity_type}
+                          size="small"
+                          className={
+                            item.entity_id === order.vendor_profile_id
+                              ? 'legend-marketplace-order-accordion__chip-terminal'
+                              : 'legend-marketplace-order-accordion__chip-addon'
+                          }
+                        />
+                        <Chip
+                          label={item.entity_category}
+                          size="small"
+                          className="legend-marketplace-order-accordion__chip-category"
+                        />
+                        <Chip
+                          label={`${formatCurrency(item.entity_cost)} per month`}
+                          size="small"
+                          className="legend-marketplace-order-accordion__chip-price"
+                        />
+                      </Stack>
+                    </Box>
+                    <Typography
+                      variant="h6"
+                      className="legend-marketplace-order-accordion__product-name"
+                    >
+                      {item.entity_name}
+                    </Typography>
+                    {index === order.service_pricing_items.length - 1 &&
+                      order.business_justification && (
+                        <Typography
+                          variant="body2"
+                          className="legend-marketplace-order-accordion__business-justification"
+                        >
+                          Business Justification: {order.business_justification}
+                        </Typography>
+                      )}
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+
+            <Box className="legend-marketplace-order-accordion__progress-tracker-section">
+              {order.workflow_details && <ProgressTracker order={order} />}
+            </Box>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      <CancelOrderDialog
+        open={cancelDialogOpen}
+        onClose={() => setCancelDialogOpen(false)}
+        order={order}
+        orderStore={ordersStore}
+      />
+    </>
+  );
+});
 
 export const LegendMarketplaceYourOrders: React.FC =
   withLegendMarketplaceOrdersStore(
@@ -243,7 +254,6 @@ export const LegendMarketplaceYourOrders: React.FC =
       const baseStore = useLegendMarketplaceBaseStore();
       const ordersStore = useLegendMarketplaceOrdersStore();
 
-      // Helper function to safely execute flow operations
       const executeFlowSafely = useCallback(
         (flowFn: () => Generator<Promise<unknown>, void, unknown>) => {
           flowResult(flowFn()).catch((error) => {
@@ -272,12 +282,7 @@ export const LegendMarketplaceYourOrders: React.FC =
         [ordersStore, executeFlowSafely],
       );
 
-      const handleRefresh = useCallback(() => {
-        executeFlowSafely(() => ordersStore.refreshCurrentOrders());
-      }, [ordersStore, executeFlowSafely]);
-
       useEffect(() => {
-        // Load open orders by default
         if (ordersStore.openOrders.length === 0) {
           executeFlowSafely(() => ordersStore.fetchOpenOrders());
         }
@@ -291,20 +296,9 @@ export const LegendMarketplaceYourOrders: React.FC =
           <Box className="legend-marketplace-your-orders__content">
             <Box className="legend-marketplace-your-orders__header-section">
               <Typography variant="h1">Your Orders</Typography>
-              <Button
-                variant="outlined"
-                startIcon={
-                  isLoading ? <CircularProgress size={25} /> : <RefreshIcon />
-                }
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className="legend-marketplace-your-orders__refresh-button"
-              >
-                {isLoading ? 'Refreshing...' : 'Refresh'}
-              </Button>
             </Box>
 
-            <Box className="orders-tabs">
+            <Box className="legend-marketplace-your-orders__tabs">
               <Tabs
                 value={ordersStore.selectedTab}
                 onChange={handleTabChange}
@@ -322,49 +316,52 @@ export const LegendMarketplaceYourOrders: React.FC =
             </Box>
 
             {isLoading ? (
-              <Box className="orders-loading">
+              <Box className="legend-marketplace-your-orders__loading">
                 <CircularProgress size={40} />
-                <Typography className="loading-text">
+                <Typography className="legend-marketplace-your-orders__loading-text">
                   Loading your orders...
                 </Typography>
               </Box>
             ) : currentOrders.length === 0 ? (
-              <Box className="orders-empty">
-                <ShoppingCartIcon size={48} className="empty-icon" />
-                <Typography className="empty-title">
+              <Box className="legend-marketplace-your-orders__empty">
+                <ShoppingCartIcon
+                  size={48}
+                  className="legend-marketplace-your-orders__empty-icon"
+                />
+                <Typography
+                  variant="h3"
+                  className="legend-marketplace-your-orders__empty-title"
+                >
                   No{' '}
                   {ordersStore.selectedTab === 'open' ? 'active' : 'completed'}{' '}
                   orders found
                 </Typography>
-                <Typography className="empty-description">
+                <Typography className="legend-marketplace-your-orders__empty-description">
                   {ordersStore.selectedTab === 'open'
                     ? "You don't have any orders in progress. Start shopping to place your first order!"
                     : "You don't have any completed orders yet. Your completed orders will appear here."}
                 </Typography>
               </Box>
             ) : (
-              <TableContainer
-                component={Paper}
-                className="orders-table-container"
+              <Stack
+                spacing={2}
+                className="legend-marketplace-your-orders__orders-list"
               >
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Order ID</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Order Date</TableCell>
-                      <TableCell align="center">Items</TableCell>
-                      <TableCell align="right">Total Cost</TableCell>
-                      <TableCell align="center">Stage</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {currentOrders.map((order) => (
-                      <OrderTableRow key={order.order_id} order={order} />
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                {currentOrders.map((order) => {
+                  const isOpenOrder =
+                    order.workflow_details?.workflow_status ===
+                      OrderStatus.IN_PROGRESS ||
+                    order.workflow_details?.workflow_status ===
+                      OrderStatus.OPEN;
+                  return (
+                    <OrderAccordion
+                      key={order.order_id}
+                      order={order}
+                      isOpenOrder={isOpenOrder}
+                    />
+                  );
+                })}
+              </Stack>
             )}
           </Box>
         </LegendMarketplacePage>

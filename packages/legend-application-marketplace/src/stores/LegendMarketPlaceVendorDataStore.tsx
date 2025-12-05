@@ -18,14 +18,19 @@ import {
   TerminalResult,
   type Filter,
   type MarketplaceServerClient,
+  type TerminalServicesResponse,
+  ProductType,
 } from '@finos/legend-server-marketplace';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from './LegendMarketplaceBaseStore.js';
-import { ActionState, type GeneratorFn } from '@finos/legend-shared';
-import { toastManager } from '../components/Toast/CartToast.js';
+import {
+  ActionState,
+  type GeneratorFn,
+  assertErrorThrown,
+} from '@finos/legend-shared';
 
 export enum VendorDataProviderType {
   ALL = 'All',
@@ -33,21 +38,51 @@ export enum VendorDataProviderType {
   ADD_ONS = 'Add-Ons',
 }
 
+export class FetchProductsParams {
+  kerberos: string;
+  product_type: ProductType;
+  preferred_products: boolean;
+  page_size: number;
+  search: string;
+  page_number: number | undefined;
+
+  constructor(
+    kerberos: string,
+    productType: ProductType,
+    preferredProducts: boolean,
+    pageSize: number,
+    search: string,
+    pageNumber?: number,
+  ) {
+    this.kerberos = kerberos;
+    this.product_type = productType;
+    this.preferred_products = preferredProducts;
+    this.page_size = pageSize;
+    this.search = search;
+    this.page_number = pageNumber;
+  }
+}
+
 export class LegendMarketPlaceVendorDataStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly store: LegendMarketplaceBaseStore;
   marketplaceServerClient: MarketplaceServerClient;
 
-  responseLimit = 6;
-
   currentUser = '';
 
   readonly fetchingProvidersState = ActionState.create();
 
-  //Vendor Data Page
   terminalProviders: TerminalResult[] = [];
   addOnProviders: TerminalResult[] = [];
   providers: TerminalResult[] = [];
+
+  page = 1;
+  itemsPerPage = 24;
+  totalTerminalItems = 0;
+  totalAddOnItems = 0;
+  totalItems = 0;
+
+  searchTerm = '';
 
   providersFilters: Filter[] = [];
 
@@ -60,14 +95,22 @@ export class LegendMarketPlaceVendorDataStore {
     makeObservable(this, {
       terminalProviders: observable,
       addOnProviders: observable,
-      populateProviders: action,
-      providerDisplayState: observable,
-      setProviderDisplayState: action,
       providers: observable,
-      setProviders: action,
-      init: flow,
+      page: observable,
+      itemsPerPage: observable,
+      totalTerminalItems: observable,
+      totalAddOnItems: observable,
+      totalItems: observable,
+      searchTerm: observable,
+      providerDisplayState: observable,
       providersFilters: observable,
+      setProviderDisplayState: action,
       setProvidersFilters: action,
+      setPage: action,
+      setItemsPerPage: action,
+      setSearchTerm: action,
+      init: flow,
+      populateProviders: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -85,101 +128,112 @@ export class LegendMarketPlaceVendorDataStore {
     }
 
     try {
-      yield this.populateProviders();
+      yield flowResult(this.populateProviders());
     } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
-        `Failed to initialize vendors: ${error}`,
+        `Failed to initialize vendors: ${error.message}`,
       );
     }
   }
 
   setProviderDisplayState(value: VendorDataProviderType): void {
     this.providerDisplayState = value;
+    this.page = 1;
   }
 
   setProvidersFilters(value: Filter[]): void {
     this.providersFilters = value;
-    this.populateData();
+    this.page = 1;
   }
 
-  populateData(): void {
-    this.populateProviders()
-      .then(() =>
-        this.applicationStore.notificationService.notifySuccess(
-          'Data populated successfully.',
-        ),
-      )
-      .catch((error: Error) =>
-        this.applicationStore.notificationService.notifyError(
-          `Failed to populate Data: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ),
-      );
+  setPage(value: number): void {
+    this.page = value;
   }
 
-  async populateProviders(): Promise<void> {
+  setItemsPerPage(value: number): void {
+    this.itemsPerPage = value;
+    this.page = 1;
+  }
+
+  setSearchTerm(value: string): void {
+    this.searchTerm = value;
+    this.page = 1;
+  }
+
+  *populateProviders(): GeneratorFn<void> {
     try {
-      const filters: string = this.providersFilters
-        .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
-        .join('');
-
       this.fetchingProvidersState.inProgress();
 
-      this.terminalProviders = (
-        await this.marketplaceServerClient.getVendorsByCategory(
+      if (this.providerDisplayState === VendorDataProviderType.ALL) {
+        const params = new FetchProductsParams(
           this.currentUser,
-          encodeURIComponent('desktop'),
-          'landing',
-          filters,
-          this.responseLimit,
-        )
-      ).map((json) => {
-        return TerminalResult.serialization.fromJson(json);
-      });
+          ProductType.ALL,
+          true,
+          this.itemsPerPage,
+          this.searchTerm,
+        );
+        const response = (yield this.marketplaceServerClient.fetchProducts(
+          params,
+        )) as TerminalServicesResponse;
 
-      this.addOnProviders = (
-        await this.marketplaceServerClient.getVendorsByCategory(
+        this.terminalProviders = (response.vendor_profiles ?? []).map((json) =>
+          TerminalResult.serialization.fromJson(json),
+        );
+
+        this.addOnProviders = (response.service_pricing ?? []).map((json) =>
+          TerminalResult.serialization.fromJson(json),
+        );
+
+        this.totalTerminalItems = response.vendor_profiles_total_count ?? 0;
+        this.totalAddOnItems = response.service_pricing_total_count ?? 0;
+      } else if (
+        this.providerDisplayState === VendorDataProviderType.TERMINAL_LICENSE
+      ) {
+        const params = new FetchProductsParams(
           this.currentUser,
-          encodeURIComponent('addon'),
-          'landing',
-          filters,
-          this.responseLimit,
-        )
-      ).map((json) => TerminalResult.serialization.fromJson(json));
-    } catch (error) {
-      this.applicationStore.notificationService.notifyError(
-        `Failed to fetch vendors: ${error}`,
-      );
-    } finally {
+          ProductType.VENDOR_PROFILE,
+          false,
+          this.itemsPerPage,
+          this.searchTerm,
+          this.page,
+        );
+        const response = (yield this.marketplaceServerClient.fetchProducts(
+          params,
+        )) as TerminalServicesResponse;
+
+        this.providers = (response.vendor_profiles ?? []).map((json) =>
+          TerminalResult.serialization.fromJson(json),
+        );
+
+        this.totalItems = response.total_count ?? 0;
+      } else {
+        const params = new FetchProductsParams(
+          this.currentUser,
+          ProductType.SERVICE_PRICING,
+          false,
+          this.itemsPerPage,
+          this.searchTerm,
+          this.page,
+        );
+        const response = (yield this.marketplaceServerClient.fetchProducts(
+          params,
+        )) as TerminalServicesResponse;
+
+        this.providers = (response.service_pricing ?? []).map((json) =>
+          TerminalResult.serialization.fromJson(json),
+        );
+
+        this.totalItems = response.total_count ?? 0;
+      }
+
       this.fetchingProvidersState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Failed to fetch vendors: ${error.message}`,
+      );
+      this.fetchingProvidersState.fail();
     }
-  }
-
-  setProviders(category: string): void {
-    this.providers = [];
-    const filters: string = this.providersFilters
-      .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
-      .join('');
-
-    this.fetchingProvidersState.inProgress();
-    this.marketplaceServerClient
-      .getVendorsByCategory(
-        this.currentUser,
-        encodeURIComponent(category),
-        'list',
-        filters,
-        this.responseLimit,
-      )
-      .then((response) => {
-        this.providers = response.map((json) => {
-          return TerminalResult.serialization.fromJson(json);
-        });
-        this.fetchingProvidersState.complete();
-      })
-      .catch((error) => {
-        toastManager.error(`Failed to fetch vendors: ${error.message}`);
-        this.fetchingProvidersState.fail();
-      });
   }
 }

@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-import { SerializationFactory } from '@finos/legend-shared';
-import { createModelSchema, primitive } from 'serializr';
+import { SerializationFactory, type PlainObject } from '@finos/legend-shared';
+import { createModelSchema, optional, primitive } from 'serializr';
 
 export interface LightProvider {
   description: string;
   provider: string;
   type: string;
+}
+
+export enum ProductType {
+  ALL = 'ALL',
+  VENDOR_PROFILE = 'VENDOR_PROFILE',
+  SERVICE_PRICING = 'SERVICE_PRICING',
 }
 
 export enum TerminalItemType {
@@ -36,6 +42,8 @@ export class TerminalResult {
   description!: string;
   price!: number;
   phystr!: string;
+  model!: string | null;
+  skipWorkflow?: boolean;
   isOwned?: boolean;
   vendorProfileId?: number;
 
@@ -48,6 +56,8 @@ export class TerminalResult {
       description: primitive(),
       price: primitive(),
       phystr: primitive(),
+      model: primitive(),
+      skipWorkflow: optional(primitive()),
       isOwned: primitive(),
       vendorProfileId: primitive(),
     }),
@@ -63,4 +73,13 @@ export class TerminalResult {
 export interface Filter {
   label: string;
   value: string;
+}
+
+export interface TerminalServicesResponse {
+  hrid: string;
+  vendor_profiles?: PlainObject<TerminalResult>[];
+  service_pricing?: PlainObject<TerminalResult>[];
+  vendor_profiles_total_count?: number;
+  service_pricing_total_count?: number;
+  total_count?: number;
 }

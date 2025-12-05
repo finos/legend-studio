@@ -145,7 +145,8 @@ export class CartStore {
       price: provider.price,
       description: provider.description,
       isOwned: provider.isOwned ? 'true' : 'false',
-      vendorProfileId: provider.vendorProfileId ?? provider.id,
+      model: provider.model ?? provider.productName,
+      skipWorkflow: provider.skipWorkflow ?? false,
     };
   }
 
