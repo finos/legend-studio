@@ -58,7 +58,10 @@ import {
   V1_TerminalModelSchema,
 } from '@finos/legend-graph';
 import type { AuthContextProps } from 'react-oidc-context';
-import { getDataProductFromDetails } from '../../utils/LakehouseUtils.js';
+import {
+  buildGraphForDataProduct,
+  getDataProductFromDetails,
+} from '../../utils/LakehouseUtils.js';
 import {
   type Entity,
   type StoredFileGeneration,
@@ -265,13 +268,11 @@ export class LegendMarketplaceProductViewerStore {
         entitlementsDataProductDetails.origin instanceof
         V1_AdHocDeploymentDataProductOrigin
       ) {
-        const entities: Entity[] = (yield graphManager.pureCodeToEntities(
-          entitlementsDataProductDetails.origin.definition,
-        )) as Entity[];
-        yield graphManager.buildGraph(
-          graphManagerState.graph,
-          entities,
-          ActionState.create(),
+        yield buildGraphForDataProduct(
+          entitlementsDataProductDetails,
+          graphManagerState,
+          graphManager,
+          this.marketplaceBaseStore,
         );
       }
 

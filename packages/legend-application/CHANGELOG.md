@@ -1,5 +1,14 @@
 # @finos/legend-application
 
+## 16.0.83
+
+### Patch Changes
+
+- [#4679](https://github.com/finos/legend-studio/pull/4679) [`66859fa`](https://github.com/finos/legend-studio/commit/66859fa3ac8cd6378b6cffcb1f82a9452abc454a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix critical security vulnerability in React Server Components (CVE-2025-55182) by upgrading React from 19.0.0 to 19.0.1.
+
+  See: https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components
+  CVE: https://www.cve.org/CVERecord?id=CVE-2025-55182
+
 ## 16.0.82
 
 ## 16.0.81

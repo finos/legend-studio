@@ -32,12 +32,12 @@
     }
   }
 
-  &__contract__count {
+  &__task__count {
     position: relative;
     display: inline-block;
   }
 
-  @mixin contract__badge__base {
+  @mixin task__badge__base {
     background: var(--color-red-180) !important;
     color: var(--color-white) !important;
     min-width: 1.5rem;
@@ -52,8 +52,8 @@
     box-shadow: 0 0 0.125rem rgba(0 0 0/30%);
   }
 
-  &__contract__badge__avatar {
-    @include contract__badge__base;
+  &__task__badge__avatar {
+    @include task__badge__base;
 
     position: absolute;
     top: 0;
@@ -61,8 +61,8 @@
     transform: translate(40%, -40%);
   }
 
-  &__contract__badge__menu__item {
-    @include contract__badge__base;
+  &__task__badge__menu__item {
+    @include task__badge__base;
 
     margin-left: 0.5rem;
   }

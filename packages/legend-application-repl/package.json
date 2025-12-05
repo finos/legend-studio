@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-repl",
-  "version": "1.1.113",
+  "version": "1.1.114",
   "description": "Legend REPL Grid client application core",
   "keywords": [
     "legend",
@@ -52,8 +52,8 @@
     "@types/react-dom": "19.0.4",
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
+    "react": "19.0.1",
+    "react-dom": "19.0.1",
     "serializr": "3.0.3"
   },
   "devDependencies": {
@@ -68,7 +68,7 @@
     "typescript": "5.8.2"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.1"
   },
   "publishConfig": {
     "directory": "build/publishContent"
