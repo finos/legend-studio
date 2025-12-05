@@ -49,13 +49,28 @@ export interface TerminalProductOrder {
 }
 
 export interface ServicePricingItems {
-  service_pricing_id: number;
-  service_pricing_name: string;
+  entity_id: number;
+  entity_name: string;
+  entity_category: string;
+  entity_type: string;
+  entity_cost: number;
 }
 
 export interface WorkflowDetails {
-  current_stage: string;
+  manager_process_id: string | null;
+  manager_actioned_by: string | null;
+  manager_actioned_timestamp: string | null;
+  manager_comment: string | null;
+  manager_action: string | null;
+  bbg_approval_process_id: string | null;
+  bbg_approval_actioned_by: string | null;
+  bbg_approval_actioned_timestamp: string | null;
+  bbg_approval_comment: string | null;
+  bbg_approval_action: string | null;
+  rpm_ticket_id: string | null;
+  current_stage: string | null;
   workflow_status: OrderStatus;
+  rpm_action: string | null;
 }
 
 export interface TerminalProductOrderResponse {

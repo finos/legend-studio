@@ -30,3 +30,4 @@ export * from './application/LegendMarketplaceApplicationPlugin.js';
 export { LegendMarketplaceProductViewerStore } from './stores/lakehouse/LegendMarketplaceProductViewerStore.js';
 export { LegendMarketplaceSearchResultsStore } from './stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 export { ProductCardState } from './stores/lakehouse/dataProducts/ProductCardState.js';
+export type { FetchProductsParams } from './stores/LegendMarketPlaceVendorDataStore.js';

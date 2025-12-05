@@ -25,7 +25,8 @@ export interface CartItemRequest {
   model?: string;
   description: string;
   isOwned: string;
-  vendorProfileId?: number;
+  skipWorkflow?: boolean;
+  cartId?: number;
 }
 
 export interface CartItem extends CartItemRequest {
