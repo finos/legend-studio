@@ -42,7 +42,11 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
 import { MODEL_IMPORT_NATIVE_INPUT_TYPE } from './editor-state/ModelImporterState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
-import { type Entity, EntitiesWithOrigin } from '@finos/legend-storage';
+import {
+  type Entity,
+  EntitiesWithOrigin,
+  generateGAVCoordinates,
+} from '@finos/legend-storage';
 import {
   type EntityChange,
   type ProjectDependency,
@@ -683,6 +687,7 @@ export class EditorGraphState {
         .currentProjectConfiguration;
     try {
       if (currentConfiguration.projectDependencies.length) {
+        this.editorStore.projectConfigurationEditorState.syncExclusionsToProjectDependencies();
         const dependencyCoordinates =
           await this.buildProjectDependencyCoordinates(
             currentConfiguration.projectDependencies,
@@ -700,8 +705,213 @@ export class EditorGraphState {
         const dependencyEntities = dependencyEntitiesJson.map((e) =>
           ProjectVersionEntities.serialization.fromJson(e),
         );
+
+        const exclusionsByParent = new Map<string, Set<string>>();
+        dependencyCoordinates.forEach((coord) => {
+          const parentId = generateGAVCoordinates(
+            coord.groupId,
+            coord.artifactId,
+            undefined,
+          );
+          if (coord.exclusions && coord.exclusions.length > 0) {
+            const exclusions = new Set<string>();
+            coord.exclusions.forEach((exclusion) => {
+              exclusions.add(
+                generateGAVCoordinates(
+                  exclusion.groupId,
+                  exclusion.artifactId,
+                  undefined,
+                ),
+              );
+            });
+            exclusionsByParent.set(parentId, exclusions);
+          }
+        });
+
+        const nodesToExclude = new Set<string>();
+
+        if (exclusionsByParent.size > 0) {
+          try {
+            const dependencyTree =
+              await this.editorStore.depotServerClient.analyzeDependencyTree(
+                dependencyCoordinates.map((e) =>
+                  ProjectDependencyCoordinates.serialization.toJson(e),
+                ),
+              );
+            const rawReport =
+              RawProjectDependencyReport.serialization.fromJson(dependencyTree);
+
+            const graph = rawReport.graph;
+            const nodes = graph.nodes;
+
+            exclusionsByParent.forEach((exclusions, parentArtifactId) => {
+              const parentNodes: string[] = [];
+              nodes.forEach((node, nodeId) => {
+                const nodeArtifactId = `${node.groupId}:${node.artifactId}`;
+                if (nodeArtifactId === parentArtifactId) {
+                  parentNodes.push(nodeId);
+                }
+              });
+
+              parentNodes.forEach((parentNodeId) => {
+                const parentNode = nodes.get(parentNodeId);
+                if (!parentNode) {
+                  return;
+                }
+
+                const queue: string[] = [...parentNode.forwardEdges];
+                const visited = new Set<string>();
+
+                while (queue.length > 0) {
+                  const nodeId = queue.shift();
+                  if (!nodeId || visited.has(nodeId)) {
+                    continue;
+                  }
+                  visited.add(nodeId);
+
+                  const node = nodes.get(nodeId);
+                  if (!node) {
+                    continue;
+                  }
+
+                  const nodeArtifactId = `${node.groupId}:${node.artifactId}`;
+
+                  if (exclusions.has(nodeArtifactId)) {
+                    nodesToExclude.add(nodeId);
+
+                    const excludeTransitives = (excludedNodeId: string) => {
+                      const excludedNode = nodes.get(excludedNodeId);
+                      if (!excludedNode) {
+                        return;
+                      }
+
+                      excludedNode.forwardEdges.forEach((childId) => {
+                        if (!nodesToExclude.has(childId)) {
+                          nodesToExclude.add(childId);
+                          excludeTransitives(childId);
+                        }
+                      });
+                    };
+
+                    excludeTransitives(nodeId);
+                  } else {
+                    node.forwardEdges.forEach((childId) => {
+                      queue.push(childId);
+                    });
+                  }
+                }
+              });
+            });
+          } catch (error) {
+            assertErrorThrown(error);
+            const allExclusions = new Set<string>();
+            exclusionsByParent.forEach((exclusions) => {
+              exclusions.forEach((exc) => allExclusions.add(exc));
+            });
+            dependencyEntities.forEach((depInfo) => {
+              const depArtifactId = `${depInfo.groupId}:${depInfo.artifactId}`;
+              if (allExclusions.has(depArtifactId)) {
+                nodesToExclude.add(
+                  `${depInfo.groupId}:${depInfo.artifactId}:${depInfo.versionId}`,
+                );
+              }
+            });
+          }
+        }
+
+        const filteredDependencyEntities = dependencyEntities;
+
+        const versionsByProject = new Map<string, ProjectVersionEntities[]>();
+
+        filteredDependencyEntities.forEach((depInfo) => {
+          const projectId = generateGAVCoordinates(
+            depInfo.groupId,
+            depInfo.artifactId,
+            undefined,
+          );
+          if (!versionsByProject.has(projectId)) {
+            versionsByProject.set(projectId, []);
+          }
+          const versions = versionsByProject.get(projectId);
+          if (versions) {
+            versions.push(depInfo);
+          }
+        });
+
+        const deduplicatedDependencies = new Map<
+          string,
+          ProjectVersionEntities
+        >();
+
+        versionsByProject.forEach((versions, projectId) => {
+          if (versions.length === 1) {
+            const version = versions[0];
+            if (version) {
+              deduplicatedDependencies.set(projectId, version);
+            }
+          } else {
+            const sortedVersions = versions.sort((a, b) => {
+              const aNodeId = generateGAVCoordinates(
+                a.groupId,
+                a.artifactId,
+                a.versionId,
+              );
+              const bNodeId = generateGAVCoordinates(
+                b.groupId,
+                b.artifactId,
+                b.versionId,
+              );
+              const aExcluded = nodesToExclude.has(aNodeId);
+              const bExcluded = nodesToExclude.has(bNodeId);
+
+              if (!aExcluded && bExcluded) {
+                return -1;
+              }
+              if (aExcluded && !bExcluded) {
+                return 1;
+              }
+
+              return b.versionId.localeCompare(a.versionId);
+            });
+
+            const preferredVersion = sortedVersions[0];
+            if (!preferredVersion) {
+              return;
+            }
+            const otherVersions = sortedVersions.slice(1);
+
+            const mergedEntities = [...preferredVersion.entities];
+            const entityPaths = new Set(
+              preferredVersion.entities.map((e) => e.path),
+            );
+
+            otherVersions.forEach((otherVersion) => {
+              otherVersion.entities.forEach((entity) => {
+                if (!entityPaths.has(entity.path)) {
+                  mergedEntities.push(entity);
+                  entityPaths.add(entity.path);
+                }
+              });
+            });
+
+            const merged: ProjectVersionEntities = {
+              id: preferredVersion.id,
+              groupId: preferredVersion.groupId,
+              artifactId: preferredVersion.artifactId,
+              versionId: preferredVersion.versionId,
+              entities: mergedEntities,
+            };
+
+            deduplicatedDependencies.set(projectId, merged);
+          }
+        });
+
+        const finalDependencyEntities = Array.from(
+          deduplicatedDependencies.values(),
+        );
+
         const dependencyProjects = new Map<string, Set<string>>();
-        dependencyEntities.forEach((dependencyInfo) => {
+        finalDependencyEntities.forEach((dependencyInfo) => {
           const projectId = dependencyInfo.id;
           // There are a few validations that must be done:
           // 1. Unlike above, if in the depdendency graph, we have both A@v1 and A@v2

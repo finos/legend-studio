@@ -1020,6 +1020,7 @@ const ProjectDependencyInlineExclusionsSelector = observer(
       useState<TransitiveDependencyOption | null>(null);
     const [transitiveDependencyOptions, setTransitiveDependencyOptions] =
       useState<TransitiveDependencyOption[]>([]);
+    const [isValidating, setIsValidating] = useState(false);
 
     const getTransitiveDependencies =
       useCallback((): TransitiveDependencyOption[] => {
@@ -1119,32 +1120,63 @@ const ProjectDependencyInlineExclusionsSelector = observer(
     const addExclusionFromDropdown = (
       option: TransitiveDependencyOption | null,
     ): void => {
-      if (!option) {
+      if (!option || isValidating) {
         return;
       }
 
-      try {
-        dependencyEditorState.addExclusionByCoordinate(
-          projectDependency.projectId,
-          option.value,
-        );
-        setSelectedTransitiveDependency(null);
-        setTransitiveDependencyOptions(getTransitiveDependencies());
-        flowResult(dependencyEditorState.fetchDependencyReport())
-          .then(() => {
-            setTransitiveDependencyOptions(getTransitiveDependencies());
-          })
-          .catch(applicationStore.alertUnhandledError);
+      setIsValidating(true);
 
-        applicationStore.notificationService.notifySuccess(
-          `Exclusion added: ${option.value}`,
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        applicationStore.notificationService.notifyError(
-          `Failed to add exclusion: ${error.message}`,
-        );
-      }
+      // Validate the exclusion first
+      flowResult(dependencyEditorState.validateExclusion(option.value))
+        .then((validationResult) => {
+          setIsValidating(false);
+
+          if (!validationResult.isValid) {
+            // Block the exclusion and show error
+            const errorsPreview = validationResult.compilationErrors
+              .slice(0, 3)
+              .join('; ');
+            const moreCount = validationResult.compilationErrors.length - 3;
+            const errorMessage =
+              validationResult.compilationErrors.length <= 3
+                ? `Cannot exclude '${option.value}': compilation errors would occur: ${errorsPreview}`
+                : `Cannot exclude '${option.value}': compilation errors would occur: ${errorsPreview} and ${moreCount} more`;
+
+            applicationStore.notificationService.notifyError(errorMessage);
+            setSelectedTransitiveDependency(null);
+            return;
+          }
+
+          try {
+            dependencyEditorState.addExclusionByCoordinate(
+              projectDependency.projectId,
+              option.value,
+            );
+            setSelectedTransitiveDependency(null);
+            setTransitiveDependencyOptions(getTransitiveDependencies());
+            flowResult(dependencyEditorState.fetchDependencyReport())
+              .then(() => {
+                setTransitiveDependencyOptions(getTransitiveDependencies());
+              })
+              .catch(applicationStore.alertUnhandledError);
+
+            applicationStore.notificationService.notifySuccess(
+              `Exclusion added: ${option.value}`,
+            );
+          } catch (error) {
+            assertErrorThrown(error);
+            applicationStore.notificationService.notifyError(
+              `Failed to add exclusion: ${error.message}`,
+            );
+          }
+        })
+        .catch((error) => {
+          setIsValidating(false);
+          assertErrorThrown(error);
+          applicationStore.notificationService.notifyError(
+            `Failed to validate exclusion: ${error.message}`,
+          );
+        });
     };
 
     if (isReadOnly) {
@@ -1155,13 +1187,15 @@ const ProjectDependencyInlineExclusionsSelector = observer(
       <div className="project-dependency-exclusions-selector">
         <CustomSelectorInput
           className="project-dependency-exclusions-selector__dropdown"
-          placeholder="Add exclusion..."
+          placeholder={
+            isValidating ? 'Validating exclusion...' : 'Add exclusion...'
+          }
           options={transitiveDependencyOptions}
           onChange={addExclusionFromDropdown}
           value={selectedTransitiveDependency}
           isClearable={true}
           escapeClearsValue={true}
-          disabled={transitiveDependencyOptions.length === 0}
+          disabled={transitiveDependencyOptions.length === 0 || isValidating}
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }

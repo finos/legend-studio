@@ -208,6 +208,12 @@ export class ProjectConfigurationEditorState extends EditorState {
       if (dep.exclusions && dep.exclusions.length > 0) {
         this.projectDependencyEditorState.dependencyExclusions[dep.projectId] =
           [...dep.exclusions];
+        // Debug: Log loaded exclusions
+        this.editorStore.applicationStore.logService.info(
+          LogEvent.create('LOADING_EXCLUSIONS'),
+          `Loaded ${dep.exclusions.length} exclusions for dependency ${dep.projectId}:`,
+          dep.exclusions.map((ex) => `${ex.groupId}:${ex.artifactId}`),
+        );
       }
     });
   }
