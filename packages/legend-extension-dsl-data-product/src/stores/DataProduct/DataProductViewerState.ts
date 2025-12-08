@@ -50,6 +50,7 @@ import {
   resolveVersion,
   StoreProjectData,
 } from '@finos/legend-server-depot';
+import { DataProductSqlPlaygroundPanelState } from './DataProductSqlPlaygroundPanelState.js';
 import { DataProductViewerModelsDocumentationState } from './DataProductModelsDocumentationState.js';
 import {
   getDiagram,
@@ -68,6 +69,7 @@ export class DataProductViewerState extends BaseViewerState<
   readonly userSearchService: UserSearchService | undefined;
   readonly dataProductConfig: DataProductConfig | undefined;
   readonly projectGAV: ProjectGAVCoordinates | undefined;
+  readonly dataProductSqlPlaygroundState: DataProductSqlPlaygroundPanelState;
   readonly modelsDocumentationState: DataProductViewerModelsDocumentationState;
   readonly diagramViewerState: DataProductViewerDiagramViewerState;
   dataProductArtifact: V1_DataProductArtifact | undefined;
@@ -103,6 +105,9 @@ export class DataProductViewerState extends BaseViewerState<
 
     this.apgStates = this.product.accessPointGroups.map(
       (e) => new DataProductAPGState(e, this),
+    );
+    this.dataProductSqlPlaygroundState = new DataProductSqlPlaygroundPanelState(
+      this,
     );
     this.engineServerClient = engineServerClient;
     this.depotServerClient = depotServerClient;
