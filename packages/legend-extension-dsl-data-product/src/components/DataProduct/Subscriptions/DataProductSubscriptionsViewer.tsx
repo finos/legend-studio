@@ -535,13 +535,13 @@ export const DataProductSubscriptionViewer = observer(
           hide: true,
         },
         {
-          minWidth: 50,
+          minWidth: 275,
           sortable: true,
           resizable: true,
           headerName: 'Contract ID',
           valueGetter: (p) => p.data?.dataContractId,
           flex: 1,
-          hide: true,
+          hide: false,
         },
       ],
       [
