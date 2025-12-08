@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.47
+
+### Patch Changes
+
+- [#4687](https://github.com/finos/legend-studio/pull/4687) [`2cfd73c`](https://github.com/finos/legend-studio/commit/2cfd73cd866d1f0eb1c98d0c579a4d562dcdf10b) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fetching pending tasks instead of pending contracts.
+
 ## 0.1.46
 
 ### Patch Changes

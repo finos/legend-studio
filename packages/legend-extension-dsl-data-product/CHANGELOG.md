@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.32
+
+### Patch Changes
+
+- [#4695](https://github.com/finos/legend-studio/pull/4695) [`ec8e75e`](https://github.com/finos/legend-studio/commit/ec8e75ed8d2d23d2412bf25635b57f04a8df82b1) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with handleIsValidChange for producer contracts
+
 ## 0.0.31
 
 ### Patch Changes

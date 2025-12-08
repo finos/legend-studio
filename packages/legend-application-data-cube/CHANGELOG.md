@@ -1,5 +1,7 @@
 # @finos/legend-application-data-cube
 
+## 0.7.26
+
 ## 0.7.25
 
 ### Patch Changes
