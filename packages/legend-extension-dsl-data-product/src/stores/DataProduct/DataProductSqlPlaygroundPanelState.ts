@@ -49,7 +49,7 @@ export class DataProductSqlPlaygroundPanelState
       isFetchingSchema: observable,
       executeRawSQL: flow,
     });
-    this.sqlEditorTextModel.setValue(DEFAULT_SQL_TEXT);
+    this.sqlEditorTextModel?.setValue(DEFAULT_SQL_TEXT);
     this.dataProductViewerState = dataProductViewerState;
     this.applicationStore = this.dataProductViewerState.applicationStore;
   }

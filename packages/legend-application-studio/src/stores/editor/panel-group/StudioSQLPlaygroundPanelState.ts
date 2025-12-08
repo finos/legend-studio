@@ -68,7 +68,7 @@ export class StudioSQLPlaygroundPanelState
       setDataBaseSchema: action,
       executeRawSQL: flow,
     });
-    this.sqlEditorTextModel.setValue(DEFAULT_SQL_TEXT);
+    this.sqlEditorTextModel?.setValue(DEFAULT_SQL_TEXT);
     this.editorStore = editorStore;
     this.databaseSchema = [];
   }
@@ -86,7 +86,7 @@ export class StudioSQLPlaygroundPanelState
       this.database = undefined;
       this.schemaExplorerState = undefined;
     }
-    this.sqlEditorTextModel.setValue(DEFAULT_SQL_TEXT);
+    this.sqlEditorTextModel?.setValue(DEFAULT_SQL_TEXT);
   }
 
   setDataBaseSchema(val: monacoLanguagesAPI.CompletionItem[]): void {
