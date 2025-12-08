@@ -15,6 +15,7 @@
  */
 
 import {
+  type GraphManagerState,
   type V1_EntitlementsDataProductDetails,
   type V1_PureGraphManager,
   type V1_DataProduct,
@@ -23,11 +24,59 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
   CORE_PURE_PATH,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { resolveVersion } from '@finos/legend-server-depot';
+import {
+  ActionState,
+  guaranteeNonNullable,
+  type PlainObject,
+} from '@finos/legend-shared';
+import {
+  type ProjectVersionEntities,
+  resolveVersion,
+} from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
+
+export const buildGraphForDataProduct = async (
+  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
+  graphManagerState: GraphManagerState,
+  graphManager: V1_PureGraphManager,
+  marketplaceBaseStore: LegendMarketplaceBaseStore,
+): Promise<void> => {
+  if (
+    entitlementsDataProductDetails.origin instanceof
+    V1_AdHocDeploymentDataProductOrigin
+  ) {
+    const entities: Entity[] = await graphManager.pureCodeToEntities(
+      entitlementsDataProductDetails.origin.definition,
+    );
+    await graphManager.buildGraph(
+      graphManagerState.graph,
+      entities,
+      ActionState.create(),
+    );
+  } else if (
+    entitlementsDataProductDetails.origin instanceof
+    V1_SdlcDeploymentDataProductOrigin
+  ) {
+    const entitiesResponse: PlainObject<ProjectVersionEntities>[] =
+      await marketplaceBaseStore.depotServerClient.getDependencyEntities(
+        entitlementsDataProductDetails.origin.group,
+        entitlementsDataProductDetails.origin.artifact,
+        resolveVersion(entitlementsDataProductDetails.origin.version),
+        true,
+        true,
+      );
+    const entities = entitiesResponse.flatMap(
+      (versionEntity) => versionEntity.entities as Entity[],
+    );
+    await graphManager.buildGraph(
+      graphManagerState.graph,
+      entities,
+      ActionState.create(),
+    );
+  }
+};
 
 export const getDataProductFromDetails = async (
   details: V1_EntitlementsDataProductDetails,

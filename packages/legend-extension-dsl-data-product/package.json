@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-data-product",
-  "version": "0.0.29",
+  "version": "0.0.31",
   "description": "Legend data product viewer core",
   "keywords": [
     "legend",
@@ -66,9 +66,9 @@
     "mobx-utils": "6.1.0",
     "node-diff3": "3.1.2",
     "oidc-client-ts": "^3.2.0",
-    "react": "19.0.0",
+    "react": "19.0.1",
     "react-dnd": "16.0.1",
-    "react-dom": "19.0.0",
+    "react-dom": "19.0.1",
     "react-oidc-context": "^3.3.0",
     "serializr": "3.0.3",
     "yaml": "2.7.0"
@@ -85,7 +85,7 @@
     "typescript": "5.7.3"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.1"
   },
   "publishConfig": {
     "directory": "build/publishContent"

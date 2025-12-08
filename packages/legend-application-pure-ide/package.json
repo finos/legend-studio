@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-pure-ide",
-  "version": "8.0.414",
+  "version": "8.0.415",
   "description": "Legend Pure IDE application core",
   "keywords": [
     "legend",
@@ -55,9 +55,9 @@
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
     "monaco-editor": "0.52.2",
-    "react": "19.0.0",
+    "react": "19.0.1",
     "react-dnd": "16.0.1",
-    "react-dom": "19.0.0",
+    "react-dom": "19.0.1",
     "serializr": "3.0.3"
   },
   "devDependencies": {
@@ -72,7 +72,7 @@
     "typescript": "5.8.2"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.1"
   },
   "publishConfig": {
     "directory": "build/publishContent"

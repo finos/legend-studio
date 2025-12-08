@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-query",
-  "version": "13.7.176",
+  "version": "13.7.177",
   "description": "Legend Query application core",
   "keywords": [
     "legend",
@@ -61,8 +61,8 @@
     "@types/react-dom": "19.0.4",
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
+    "react": "19.0.1",
+    "react-dom": "19.0.1",
     "reactflow": "11.11.4",
     "serializr": "3.0.3"
   },
@@ -78,7 +78,7 @@
     "typescript": "5.8.2"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.1"
   },
   "publishConfig": {
     "directory": "build/publishContent"

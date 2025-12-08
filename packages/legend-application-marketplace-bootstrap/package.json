@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-marketplace-bootstrap",
-  "version": "13.165.0",
+  "version": "13.167.0",
   "description": "Legend Marketplace application bootstrap",
   "keywords": [
     "legend",
@@ -53,7 +53,7 @@
     "@finos/legend-query-builder": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "19.0.10",
-    "react": "19.0.0"
+    "react": "19.0.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

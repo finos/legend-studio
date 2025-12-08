@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-studio",
-  "version": "28.19.71",
+  "version": "28.19.73",
   "description": "Legend Studio application core",
   "keywords": [
     "legend",
@@ -71,9 +71,9 @@
     "monaco-editor": "0.52.2",
     "node-diff3": "3.1.2",
     "oidc-client-ts": "^3.2.0",
-    "react": "19.0.0",
+    "react": "19.0.1",
     "react-dnd": "16.0.1",
-    "react-dom": "19.0.0",
+    "react-dom": "19.0.1",
     "react-oidc-context": "^3.3.0",
     "serializr": "3.0.3",
     "yaml": "2.7.0"
@@ -90,7 +90,7 @@
     "typescript": "5.8.2"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.1"
   },
   "publishConfig": {
     "directory": "build/publishContent"

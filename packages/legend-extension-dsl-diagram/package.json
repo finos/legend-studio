@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-diagram",
-  "version": "8.1.196",
+  "version": "8.1.197",
   "description": "Legend extension for Diagram DSL",
   "keywords": [
     "legend",
@@ -55,9 +55,9 @@
     "@types/react": "19.0.10",
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
-    "react": "19.0.0",
+    "react": "19.0.1",
     "react-dnd": "16.0.1",
-    "react-dom": "19.0.0",
+    "react-dom": "19.0.1",
     "serializr": "3.0.3"
   },
   "devDependencies": {
@@ -74,7 +74,7 @@
     "typescript": "5.8.2"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.1"
   },
   "publishConfig": {
     "directory": "build/publishContent"
