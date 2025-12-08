@@ -61,10 +61,7 @@ import {
   type StoreProjectData,
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
-import {
-  type ProjectDependency,
-  type ProjectDependencyExclusion,
-} from '@finos/legend-server-sdlc';
+import type { ProjectDependency } from '@finos/legend-server-sdlc';
 import {
   ActionState,
   assertErrorThrown,
@@ -77,7 +74,7 @@ import {
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { ProjectConfigurationEditorState } from '../../../../stores/editor/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
   type ProjectDependencyConflictTreeNodeData,
@@ -253,117 +250,9 @@ const DependencyTreeNodeContainer: React.FC<
   >
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect } = props;
-  const editorStore = useEditorStore();
-  const dependencyEditorState =
-    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
-
   const isExpandable = Boolean(node.childrenIds?.length);
   const selectNode = (): void => onNodeSelect?.(node);
   const value = node.value;
-
-  const isExcluded = (): boolean => {
-    const coordinate = generateGAVCoordinates(
-      value.groupId,
-      value.artifactId,
-      undefined,
-    );
-
-    const treeData = dependencyEditorState.dependencyTreeData;
-    if (!treeData) {
-      return false;
-    }
-
-    const findRootNodeForCurrentNode = (nodeId: string): string | null => {
-      if (treeData.rootIds.indexOf(nodeId) !== -1) {
-        return nodeId;
-      }
-
-      const findInSubtree = (rootId: string, searchId: string): boolean => {
-        const rootNode = treeData.nodes.get(rootId);
-        if (!rootNode) {
-          return false;
-        }
-        const visited: { [key: string]: boolean } = {};
-        const queue = [rootId];
-
-        while (queue.length > 0) {
-          const currentId = queue.shift();
-          if (!currentId || visited[currentId]) {
-            continue;
-          }
-
-          visited[currentId] = true;
-
-          if (currentId === searchId) {
-            return true;
-          }
-
-          const currentNode = treeData.nodes.get(currentId);
-          if (currentNode?.childrenIds) {
-            for (let i = 0; i < currentNode.childrenIds.length; i++) {
-              queue.push(guaranteeNonNullable(currentNode.childrenIds[i]));
-            }
-          }
-        }
-        return false;
-      };
-
-      for (let i = 0; i < treeData.rootIds.length; i++) {
-        const rootId = guaranteeNonNullable(treeData.rootIds[i]);
-        if (findInSubtree(rootId, nodeId)) {
-          return rootId;
-        }
-      }
-
-      return null;
-    };
-
-    const rootNodeId = findRootNodeForCurrentNode(node.id);
-    if (!rootNodeId) {
-      return false;
-    }
-
-    const rootNode = treeData.nodes.get(rootNodeId);
-    if (!rootNode) {
-      return false;
-    }
-
-    const currentProjectConfiguration =
-      editorStore.projectConfigurationEditorState.currentProjectConfiguration;
-    const rootCoordinate = `${rootNode.value.groupId}:${rootNode.value.artifactId}`;
-
-    for (
-      let i = 0;
-      i < currentProjectConfiguration.projectDependencies.length;
-      i++
-    ) {
-      const projectDep = guaranteeNonNullable(
-        currentProjectConfiguration.projectDependencies[i],
-      );
-      const projectDepCoordinate = generateGAVCoordinates(
-        guaranteeNonNullable(projectDep.groupId),
-        guaranteeNonNullable(projectDep.artifactId),
-        undefined,
-      );
-
-      if (projectDepCoordinate === rootCoordinate) {
-        const exclusions = dependencyEditorState.getExclusions(
-          projectDep.projectId,
-        );
-
-        for (let j = 0; j < exclusions.length; j++) {
-          if (guaranteeNonNullable(exclusions[j]).coordinate === coordinate) {
-            return true;
-          }
-        }
-        break;
-      }
-    }
-
-    return false;
-  };
-
-  const nodeIsExcluded = isExcluded();
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (
       <ChevronDownIcon />
@@ -388,10 +277,6 @@ const DependencyTreeNodeContainer: React.FC<
             'project-dependency-explorer-tree__node__container--selected':
               node.isSelected,
           },
-          {
-            'project-dependency-explorer-tree__node__container--excluded':
-              nodeIsExcluded,
-          },
         )}
         style={{
           paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1)}rem`,
@@ -404,27 +289,15 @@ const DependencyTreeNodeContainer: React.FC<
           </div>
         </div>
         <button
-          className={clsx(
-            'tree-view__node__label project-dependency-explorer-tree__node__label',
-            {
-              'project-dependency-explorer-tree__node__label--excluded':
-                nodeIsExcluded,
-            },
-          )}
+          className="tree-view__node__label project-dependency-explorer-tree__node__label"
           tabIndex={-1}
-          title={nodeIsExcluded ? `${value.id} (EXCLUDED)` : value.id}
+          title={value.id}
         >
           {value.artifactId}
         </button>
         <div className="project-dependency-explorer-tree__node__version">
           <button
-            className={clsx(
-              'project-dependency-explorer-tree__node__version-btn',
-              {
-                'project-dependency-explorer-tree__node__version-btn--excluded':
-                  nodeIsExcluded,
-              },
-            )}
+            className="project-dependency-explorer-tree__node__version-btn"
             title={value.versionId}
             tabIndex={-1}
           >
@@ -491,114 +364,8 @@ const ConflictTreeNodeContainer: React.FC<
   >
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect } = props;
-  const editorStore = useEditorStore();
-  const dependencyEditorState =
-    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
-
   const isExpandable = Boolean(node.childrenIds?.length);
   const selectNode = (): void => onNodeSelect?.(node);
-
-  const isExcluded = (): boolean => {
-    if (!(node instanceof ProjectDependencyTreeNodeData)) {
-      return false;
-    }
-
-    const value = node.value;
-    const coordinate = `${value.groupId}:${value.artifactId}`;
-
-    const treeData = dependencyEditorState.dependencyTreeData;
-    if (!treeData) {
-      return false;
-    }
-
-    const findRootNodeForCurrentNode = (nodeId: string): string | null => {
-      if (treeData.rootIds.indexOf(nodeId) !== -1) {
-        return nodeId;
-      }
-
-      const findInSubtree = (rootId: string, searchId: string): boolean => {
-        const rootNode = treeData.nodes.get(rootId);
-        if (!rootNode) {
-          return false;
-        }
-        const visited: { [key: string]: boolean } = {};
-        const queue = [rootId];
-
-        while (queue.length > 0) {
-          const currentId = queue.shift();
-          if (!currentId || visited[currentId]) {
-            continue;
-          }
-          visited[currentId] = true;
-
-          if (currentId === searchId) {
-            return true;
-          }
-
-          const currentNode = treeData.nodes.get(currentId);
-          if (currentNode?.childrenIds) {
-            for (let i = 0; i < currentNode.childrenIds.length; i++) {
-              queue.push(guaranteeNonNullable(currentNode.childrenIds[i]));
-            }
-          }
-        }
-        return false;
-      };
-
-      for (let i = 0; i < treeData.rootIds.length; i++) {
-        const rootId = guaranteeNonNullable(treeData.rootIds[i]);
-        if (findInSubtree(rootId, nodeId)) {
-          return rootId;
-        }
-      }
-
-      return null;
-    };
-
-    const rootNodeId = findRootNodeForCurrentNode(node.id);
-    if (!rootNodeId) {
-      return false;
-    }
-
-    const rootNode = treeData.nodes.get(rootNodeId);
-    if (!rootNode) {
-      return false;
-    }
-
-    const currentProjectConfiguration =
-      editorStore.projectConfigurationEditorState.currentProjectConfiguration;
-    const rootCoordinate = `${rootNode.value.groupId}:${rootNode.value.artifactId}`;
-
-    for (
-      let i = 0;
-      i < currentProjectConfiguration.projectDependencies.length;
-      i++
-    ) {
-      const projectDep = guaranteeNonNullable(
-        currentProjectConfiguration.projectDependencies[i],
-      );
-      const projectDepCoordinate = generateGAVCoordinates(
-        guaranteeNonNullable(projectDep.groupId),
-        guaranteeNonNullable(projectDep.artifactId),
-        undefined,
-      );
-
-      if (projectDepCoordinate === rootCoordinate) {
-        const exclusions = dependencyEditorState.getExclusions(
-          projectDep.projectId,
-        );
-
-        for (let j = 0; j < exclusions.length; j++) {
-          if (guaranteeNonNullable(exclusions[j]).coordinate === coordinate) {
-            return true;
-          }
-        }
-        break;
-      }
-    }
-
-    return false;
-  };
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (
       <ChevronDownIcon />
@@ -622,10 +389,6 @@ const ConflictTreeNodeContainer: React.FC<
           {
             'project-dependency-explorer-tree__node__container--selected':
               node.isSelected,
-          },
-          {
-            'project-dependency-explorer-tree__node__container--excluded':
-              isExcluded(),
           },
         )}
         style={{
@@ -658,35 +421,17 @@ const ConflictTreeNodeContainer: React.FC<
           )}
         </div>
         <button
-          className={clsx(
-            'tree-view__node__label project-dependency-explorer-tree__node__label',
-            {
-              'project-dependency-explorer-tree__node__label--excluded':
-                isExcluded(),
-            },
-          )}
+          className="tree-view__node__label project-dependency-explorer-tree__node__label"
           tabIndex={-1}
-          title={
-            isExcluded() ? `${node.description} (EXCLUDED)` : node.description
-          }
+          title={node.description}
         >
           {node.label}
         </button>
         {node instanceof ProjectDependencyTreeNodeData && (
           <div className="project-dependency-explorer-tree__node__version">
             <button
-              className={clsx(
-                'project-dependency-explorer-tree__node__version-btn',
-                {
-                  'project-dependency-explorer-tree__node__version-btn--excluded':
-                    isExcluded(),
-                },
-              )}
-              title={
-                isExcluded()
-                  ? `${node.value.versionId} (EXCLUDED)`
-                  : node.value.versionId
-              }
+              className="project-dependency-explorer-tree__node__version-btn"
+              title={node.value.versionId}
               tabIndex={-1}
             >
               {node.value.versionId}
@@ -1002,267 +747,6 @@ const ProjectDependencyReportModal = observer(
   },
 );
 
-interface TransitiveDependencyOption {
-  label: string;
-  value: string;
-  groupId: string;
-  artifactId: string;
-}
-
-const ProjectDependencyInlineExclusionsSelector = observer(
-  (props: { projectDependency: ProjectDependency; isReadOnly: boolean }) => {
-    const { projectDependency, isReadOnly } = props;
-    const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    const dependencyEditorState =
-      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
-    const [selectedTransitiveDependency, setSelectedTransitiveDependency] =
-      useState<TransitiveDependencyOption | null>(null);
-    const [transitiveDependencyOptions, setTransitiveDependencyOptions] =
-      useState<TransitiveDependencyOption[]>([]);
-
-    const getTransitiveDependencies =
-      useCallback((): TransitiveDependencyOption[] => {
-        const dependencyReport = dependencyEditorState.dependencyReport;
-        if (!dependencyReport?.graph) {
-          return [];
-        }
-
-        const transitiveDeps: { [key: string]: TransitiveDependencyOption } =
-          {};
-        const existingExclusionCoordinates =
-          dependencyEditorState.getExclusionCoordinates(
-            projectDependency.projectId,
-          );
-
-        const visitedNodes: { [key: string]: boolean } = {};
-        const traverseNode = (nodeId: string) => {
-          if (visitedNodes[nodeId]) {
-            return;
-          }
-          visitedNodes[nodeId] = true;
-
-          const node = dependencyReport.graph.nodes.get(nodeId);
-          if (node?.dependencies) {
-            for (let i = 0; i < node.dependencies.length; i++) {
-              const dep = node.dependencies[i];
-              if (!dep?.groupId || !dep.artifactId) {
-                continue;
-              }
-              const coordinate = generateGAVCoordinates(
-                dep.groupId,
-                dep.artifactId,
-                undefined,
-              );
-
-              if (
-                existingExclusionCoordinates.indexOf(coordinate) === -1 &&
-                coordinate !==
-                  `${projectDependency.groupId}:${projectDependency.artifactId}`
-              ) {
-                transitiveDeps[coordinate] = {
-                  label: generateGAVCoordinates(
-                    dep.groupId,
-                    dep.artifactId,
-                    undefined,
-                  ),
-                  value: coordinate,
-                  groupId: dep.groupId,
-                  artifactId: dep.artifactId,
-                };
-              }
-
-              traverseNode(dep.id);
-            }
-          }
-        };
-
-        const rootNodeId = generateGAVCoordinates(
-          guaranteeNonNullable(projectDependency.groupId),
-          guaranteeNonNullable(projectDependency.artifactId),
-          guaranteeNonNullable(projectDependency.versionId),
-        );
-        traverseNode(rootNodeId);
-
-        const transitiveDepsArray: TransitiveDependencyOption[] = [];
-        for (const coordinate in transitiveDeps) {
-          if (
-            Object.prototype.hasOwnProperty.call(transitiveDeps, coordinate)
-          ) {
-            if (!transitiveDeps[coordinate]) {
-              continue;
-            } else {
-              transitiveDepsArray.push(transitiveDeps[coordinate]);
-            }
-          }
-        }
-
-        return transitiveDepsArray.sort((a, b) =>
-          a.label.localeCompare(b.label),
-        );
-      }, [
-        dependencyEditorState,
-        projectDependency.projectId,
-        projectDependency.groupId,
-        projectDependency.artifactId,
-        projectDependency.versionId,
-      ]);
-
-    useEffect(() => {
-      setTransitiveDependencyOptions(getTransitiveDependencies());
-    }, [
-      dependencyEditorState.dependencyReport,
-      projectDependency.projectId,
-      getTransitiveDependencies,
-    ]);
-
-    const addExclusionFromDropdown = (
-      option: TransitiveDependencyOption | null,
-    ): void => {
-      if (!option) {
-        return;
-      }
-
-      try {
-        dependencyEditorState.addExclusionByCoordinate(
-          projectDependency.projectId,
-          option.value,
-        );
-        setSelectedTransitiveDependency(null);
-        setTransitiveDependencyOptions(getTransitiveDependencies());
-        flowResult(dependencyEditorState.fetchDependencyReport())
-          .then(() => {
-            setTransitiveDependencyOptions(getTransitiveDependencies());
-          })
-          .catch(applicationStore.alertUnhandledError);
-
-        applicationStore.notificationService.notifySuccess(
-          `Exclusion added: ${option.value}`,
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        applicationStore.notificationService.notifyError(
-          `Failed to add exclusion: ${error.message}`,
-        );
-      }
-    };
-
-    if (isReadOnly) {
-      return null;
-    }
-
-    return (
-      <div className="project-dependency-exclusions-selector">
-        <CustomSelectorInput
-          className="project-dependency-exclusions-selector__dropdown"
-          placeholder="Add exclusion..."
-          options={transitiveDependencyOptions}
-          onChange={addExclusionFromDropdown}
-          value={selectedTransitiveDependency}
-          isClearable={true}
-          escapeClearsValue={true}
-          disabled={transitiveDependencyOptions.length === 0}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-        />
-      </div>
-    );
-  },
-);
-
-const ProjectDependencyExclusionsList = observer(
-  (props: { projectDependency: ProjectDependency; isReadOnly: boolean }) => {
-    const { projectDependency, isReadOnly } = props;
-    const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    const dependencyEditorState =
-      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
-    const [, setForceUpdate] = useState(0);
-    const exclusions = dependencyEditorState.getExclusions(
-      projectDependency.projectId,
-    );
-
-    useEffect(() => {
-      setForceUpdate((prev) => prev + 1);
-    }, [
-      dependencyEditorState.dependencyReport,
-      projectDependency.projectId,
-      dependencyEditorState,
-    ]);
-
-    useEffect(() => {
-      const interval = setInterval(() => {
-        const currentExclusions = dependencyEditorState.getExclusions(
-          projectDependency.projectId,
-        );
-        if (currentExclusions.length !== exclusions.length) {
-          setForceUpdate((prev) => prev + 1);
-        }
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }, [exclusions.length, dependencyEditorState, projectDependency.projectId]);
-
-    const removeExclusion = (exclusion: ProjectDependencyExclusion): void => {
-      try {
-        dependencyEditorState.removeExclusion(
-          projectDependency.projectId,
-          exclusion,
-        );
-
-        flowResult(dependencyEditorState.fetchDependencyReport()).catch(
-          applicationStore.alertUnhandledError,
-        );
-
-        applicationStore.notificationService.notifySuccess(
-          `Exclusion removed: ${exclusion.coordinate}`,
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        applicationStore.notificationService.notifyError(
-          `Failed to remove exclusion: ${error.message}`,
-        );
-      }
-    };
-
-    if (exclusions.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="project-dependency-exclusions-list">
-        <div className="project-dependency-exclusions-list__header">
-          <div className="project-dependency-exclusions-list__title">
-            Exclusions ({exclusions.length})
-          </div>
-        </div>
-        <div className="project-dependency-exclusions-list__items">
-          {exclusions.map((exclusion) => (
-            <div
-              key={exclusion.coordinate}
-              className="project-dependency-exclusions-list__item"
-            >
-              <div className="project-dependency-exclusions-list__item__coordinate">
-                {exclusion.coordinate}
-              </div>
-              {!isReadOnly && (
-                <button
-                  className="project-dependency-exclusions-list__item__remove-btn btn--dark btn--caution"
-                  onClick={() => removeExclusion(exclusion)}
-                  title="Remove exclusion"
-                >
-                  <TimesIcon />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  },
-);
-
 const ProjectVersionDependencyEditor = observer(
   (props: {
     projectDependency: ProjectDependency;
@@ -1270,6 +754,7 @@ const ProjectVersionDependencyEditor = observer(
     isReadOnly: boolean;
     projects: Map<string, StoreProjectData>;
   }) => {
+    // init
     const { projectDependency, deleteValue, isReadOnly, projects } = props;
     const projectDependencyData = projects.get(projectDependency.projectId);
     const editorStore = useEditorStore();
@@ -1291,14 +776,12 @@ const ProjectVersionDependencyEditor = observer(
     const projectDisabled =
       !configState.associatedProjectsAndVersionsFetched ||
       configState.isReadOnly;
-    const projectsArray: StoreProjectData[] = [];
-    configState.projects.forEach((project: StoreProjectData) => {
-      projectsArray.push(project);
-    });
-    const projectsOptions = projectsArray
+    const projectsOptions = Array.from(configState.projects.values())
       .map(buildProjectOption)
       .sort(compareLabelFn);
-    const onProjectSelectionChange = (val: ProjectOption | null): void => {
+    const onProjectSelectionChange = async (
+      val: ProjectOption | null,
+    ): Promise<void> => {
       if (
         (val !== null || selectedProjectOption !== null) &&
         (!val ||
@@ -1310,36 +793,26 @@ const ProjectVersionDependencyEditor = observer(
         if (val) {
           try {
             fetchSelectedProjectVersionsStatus.inProgress();
-            editorStore.depotServerClient
-              .getVersions(
-                guaranteeNonNullable(projectDependency.groupId),
-                guaranteeNonNullable(projectDependency.artifactId),
-                true,
-              )
-              .then((_versions) => {
-                configState.versions.set(val.value.coordinates, _versions);
-                if (_versions.length) {
-                  projectDependency.setVersionId(
-                    guaranteeNonNullable(_versions[_versions.length - 1]),
-                  );
-                  flowResult(
-                    dependencyEditorState.fetchDependencyReport(),
-                  ).catch(applicationStore.alertUnhandledError);
-                } else {
-                  projectDependency.setVersionId('');
-                }
-                fetchSelectedProjectVersionsStatus.reset();
-              })
-              .catch((error) => {
-                assertErrorThrown(error);
-                editorStore.applicationStore.notificationService.notifyError(
-                  error,
-                );
-                fetchSelectedProjectVersionsStatus.reset();
-              });
+            const _versions = await editorStore.depotServerClient.getVersions(
+              guaranteeNonNullable(projectDependency.groupId),
+              guaranteeNonNullable(projectDependency.artifactId),
+              true,
+            );
+            configState.versions.set(val.value.coordinates, _versions);
+            if (_versions.length) {
+              projectDependency.setVersionId(
+                guaranteeNonNullable(_versions[_versions.length - 1]),
+              );
+              flowResult(dependencyEditorState.fetchDependencyReport()).catch(
+                applicationStore.alertUnhandledError,
+              );
+            } else {
+              projectDependency.setVersionId('');
+            }
           } catch (error) {
             assertErrorThrown(error);
             editorStore.applicationStore.notificationService.notifyError(error);
+          } finally {
             fetchSelectedProjectVersionsStatus.reset();
           }
         }
@@ -1347,26 +820,19 @@ const ProjectVersionDependencyEditor = observer(
     };
     // version
     const version = projectDependency.versionId;
-    const sortedVersions = versions
-      .slice()
-      .sort((v1, v2) => compareSemVerVersions(v2, v1));
-    const versionOptions = sortedVersions.map((v) => {
-      if (v === MASTER_SNAPSHOT_ALIAS) {
-        return { value: v, label: SNAPSHOT_VERSION_ALIAS };
-      }
-      return { value: v, label: v };
-    });
-    let selectedVersionOption: VersionOption | null = null;
-    for (let i = 0; i < versionOptions.length; i++) {
-      if (guaranteeNonNullable(versionOptions[i]).value === version) {
-        selectedVersionOption = guaranteeNonNullable(versionOptions[i]);
-        break;
-      }
-    }
+    const versionOptions = versions
+      .toSorted((v1, v2) => compareSemVerVersions(v2, v1))
+      .map((v) => {
+        if (v === MASTER_SNAPSHOT_ALIAS) {
+          return { value: v, label: SNAPSHOT_VERSION_ALIAS };
+        }
+        return { value: v, label: v };
+      });
+    const selectedVersionOption: VersionOption | null =
+      versionOptions.find((v) => v.value === version) ?? null;
     const versionDisabled =
-      !guaranteeNonNullable(versions.length) ||
-      !guaranteeNonNullable(projectDependency.projectId.length) ||
-      !guaranteeNonNullable(configState.associatedProjectsAndVersionsFetched) ||
+      Boolean(!versions.length || !projectDependency.projectId.length) ||
+      !configState.associatedProjectsAndVersionsFetched ||
       isReadOnly;
 
     const onVersionSelectionChange = (val: VersionOption | null): void => {
@@ -1435,7 +901,9 @@ const ProjectVersionDependencyEditor = observer(
           isClearable={true}
           escapeClearsValue={true}
           onChange={(val: ProjectOption | null) => {
-            onProjectSelectionChange(val);
+            onProjectSelectionChange(val).catch(
+              applicationStore.alertUnhandledError,
+            );
           }}
           value={selectedProjectOption}
           isLoading={configState.fetchingProjectVersionsState.isInProgress}
@@ -1467,13 +935,6 @@ const ProjectVersionDependencyEditor = observer(
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
         />
-        {selectedProject && selectedVersionOption && (
-          <ProjectDependencyInlineExclusionsSelector
-            projectDependency={projectDependency}
-            isReadOnly={isReadOnly}
-          />
-        )}
-
         <ControlledDropdownMenu
           className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--medium"
           content={
@@ -1552,20 +1013,13 @@ export const ProjectDependencyEditor = observer(() => {
       <ProjectDependencyActions dependencyEditorState={dependencyEditorState} />
       {currentProjectConfiguration.projectDependencies.map(
         (projectDependency) => (
-          <div key={projectDependency._UUID}>
-            <ProjectVersionDependencyEditor
-              projectDependency={projectDependency}
-              deleteValue={deleteProjectDependency(projectDependency)}
-              isReadOnly={isReadOnly}
-              projects={configState.projects}
-            />
-            {/* Indented exclusions list */}
-            <ProjectDependencyExclusionsList
-              key={`${projectDependency.projectId}-exclusions`}
-              projectDependency={projectDependency}
-              isReadOnly={isReadOnly}
-            />
-          </div>
+          <ProjectVersionDependencyEditor
+            key={projectDependency._UUID}
+            projectDependency={projectDependency}
+            deleteValue={deleteProjectDependency(projectDependency)}
+            isReadOnly={isReadOnly}
+            projects={configState.projects}
+          />
         ),
       )}
       {dependencyEditorState.reportTab && (
