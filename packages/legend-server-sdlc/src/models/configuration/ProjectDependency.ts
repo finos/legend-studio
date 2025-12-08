@@ -14,53 +14,39 @@
  * limitations under the License.
  */
 
-import { createModelSchema, list, optional, primitive } from 'serializr';
+import { createModelSchema, primitive } from 'serializr';
 import {
   type Hashable,
   hashArray,
   uuid,
   SerializationFactory,
-  usingModelSchema,
 } from '@finos/legend-shared';
 import { observable, action, computed, makeObservable } from 'mobx';
 import { GAV_DELIMITER } from '@finos/legend-storage';
 import { SDLC_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
-import { ProjectDependencyExclusion } from './ProjectDependencyExclusion.js';
 
 export class ProjectDependency implements Hashable {
   readonly _UUID = uuid();
   projectId: string;
   versionId: string;
-  exclusions: ProjectDependencyExclusion[] | undefined;
 
-  constructor(
-    projectId: string,
-    versionId?: string,
-    exclusions?: ProjectDependencyExclusion[],
-  ) {
+  constructor(projectId: string, versionId?: string) {
     makeObservable(this, {
       projectId: observable,
       versionId: observable,
-      exclusions: observable,
       setProjectId: action,
       setVersionId: action,
-      setExclusions: action,
       hashCode: computed,
     });
 
     this.projectId = projectId;
     this.versionId = versionId ?? '0.0.0';
-    this.exclusions =
-      exclusions && exclusions.length > 0 ? exclusions : undefined;
   }
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(ProjectDependency, {
       projectId: primitive(),
       versionId: primitive(),
-      exclusions: optional(
-        list(usingModelSchema(ProjectDependencyExclusion.serialization.schema)),
-      ),
     }),
   );
 
@@ -72,10 +58,6 @@ export class ProjectDependency implements Hashable {
     this.versionId = id;
   }
 
-  setExclusions(exclusions: ProjectDependencyExclusion[]): void {
-    this.exclusions = exclusions.length > 0 ? exclusions : undefined;
-  }
-
   get groupId(): string | undefined {
     return this.projectId.split(GAV_DELIMITER)[0];
   }
@@ -84,16 +66,11 @@ export class ProjectDependency implements Hashable {
     return this.projectId.split(GAV_DELIMITER)[1];
   }
 
-  get exclusionsList(): ProjectDependencyExclusion[] | undefined {
-    return this.exclusions;
-  }
-
   get hashCode(): string {
     return hashArray([
       SDLC_HASH_STRUCTURE.PROJECT_DEPENDENCY,
       this.projectId,
       this.versionId,
-      hashArray(this.exclusions ?? []),
     ]);
   }
 }

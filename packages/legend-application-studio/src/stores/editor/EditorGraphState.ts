@@ -799,22 +799,15 @@ export class EditorGraphState {
     projectDependencies: ProjectDependency[],
   ): Promise<ProjectDependencyCoordinates[]> {
     return Promise.all(
-      projectDependencies.map(async (dep) => {
-        const exclusionCoordinates = (dep.exclusions ?? []).map(
-          (exclusion) => ({
-            groupId: guaranteeNonNullable(exclusion.groupId),
-            artifactId: guaranteeNonNullable(exclusion.artifactId),
-          }),
-        );
-        return Promise.resolve(
+      projectDependencies.map(async (dep) =>
+        Promise.resolve(
           new ProjectDependencyCoordinates(
             guaranteeNonNullable(dep.groupId),
             guaranteeNonNullable(dep.artifactId),
             dep.versionId,
-            exclusionCoordinates.length > 0 ? exclusionCoordinates : undefined,
           ),
-        );
-      }),
+        ),
+      ),
     );
   }
 

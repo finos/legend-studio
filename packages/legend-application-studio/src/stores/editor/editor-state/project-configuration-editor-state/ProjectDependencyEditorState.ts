@@ -24,7 +24,6 @@ import {
   assertErrorThrown,
   LogEvent,
   isNonNullable,
-  guaranteeNonNullable,
   uuid,
 } from '@finos/legend-shared';
 import {
@@ -40,11 +39,7 @@ import {
 } from '@finos/legend-server-depot';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
-import {
-  ProjectDependencyExclusion,
-  type ProjectConfiguration,
-} from '@finos/legend-server-sdlc';
-import { generateGAVCoordinates } from '@finos/legend-storage';
+import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
 
 export abstract class ProjectDependencyConflictTreeNodeData
   implements TreeNodeData
@@ -304,12 +299,6 @@ export class ProjectDependencyEditorState {
   expandConflictsState = ActionState.create();
   buildConflictPathState = ActionState.create();
 
-  // Exclusions management
-  selectedDependencyForExclusions: ProjectDependencyVersionNode | undefined;
-  dependencyExclusions: {
-    [dependencyId: string]: ProjectDependencyExclusion[];
-  } = {};
-
   constructor(
     configState: ProjectConfigurationEditorState,
     editorStore: EditorStore,
@@ -323,8 +312,6 @@ export class ProjectDependencyEditorState {
       reportTab: observable,
       expandConflictsState: observable,
       buildConflictPathState: observable,
-      selectedDependencyForExclusions: observable,
-      dependencyExclusions: observable,
       setReportTab: action,
       expandAllConflicts: action,
       setFlattenDependencyTreeData: action,
@@ -333,15 +320,6 @@ export class ProjectDependencyEditorState {
       setDependencyTreeData: action,
       buildConflictPaths: action,
       setConflictStates: action,
-      setSelectedDependencyForExclusions: action,
-      addExclusion: action,
-      addExclusionByCoordinate: action,
-      removeExclusion: action,
-      removeExclusionByCoordinate: action,
-      clearExclusions: action,
-      getExclusions: action,
-      getExclusionCoordinates: action,
-      syncExclusionsToProjectDependency: action,
       fetchDependencyReport: flow,
     });
     this.configState = configState;
@@ -396,149 +374,6 @@ export class ProjectDependencyEditorState {
 
   get projectConfiguration(): ProjectConfiguration | undefined {
     return this.configState.projectConfiguration;
-  }
-
-  setSelectedDependencyForExclusions(
-    dependency: ProjectDependencyVersionNode | undefined,
-  ): void {
-    this.selectedDependencyForExclusions = dependency;
-  }
-
-  addExclusion(
-    dependencyId: string,
-    exclusion: ProjectDependencyExclusion,
-  ): void {
-    if (!this.dependencyExclusions[dependencyId]) {
-      this.dependencyExclusions[dependencyId] = [];
-    }
-    const existingExclusion = this.findExistingExclusion(
-      dependencyId,
-      generateGAVCoordinates(
-        guaranteeNonNullable(exclusion.groupId),
-        guaranteeNonNullable(exclusion.artifactId),
-        undefined,
-      ),
-    );
-    if (!existingExclusion) {
-      this.dependencyExclusions[dependencyId].push(exclusion);
-      this.syncExclusionsToProjectDependency(dependencyId);
-    }
-  }
-
-  addExclusionByCoordinate(
-    dependencyId: string,
-    exclusionCoordinate: string,
-  ): void {
-    const exclusion =
-      ProjectDependencyExclusion.fromCoordinate(exclusionCoordinate);
-    this.addExclusion(dependencyId, exclusion);
-  }
-
-  removeExclusion(
-    dependencyId: string,
-    exclusion: ProjectDependencyExclusion,
-  ): void {
-    if (this.dependencyExclusions[dependencyId]) {
-      const coordinate = generateGAVCoordinates(
-        guaranteeNonNullable(exclusion.groupId),
-        guaranteeNonNullable(exclusion.artifactId),
-        undefined,
-      );
-      const index = this.findExclusionIndex(dependencyId, coordinate);
-      if (index > -1) {
-        this.dependencyExclusions[dependencyId].splice(index, 1);
-      }
-      if (this.dependencyExclusions[dependencyId].length === 0) {
-        delete this.dependencyExclusions[dependencyId];
-      }
-      this.syncExclusionsToProjectDependency(dependencyId);
-    }
-  }
-
-  removeExclusionByCoordinate(
-    dependencyId: string,
-    exclusionCoordinate: string,
-  ): void {
-    if (this.dependencyExclusions[dependencyId]) {
-      const index = this.findExclusionIndex(dependencyId, exclusionCoordinate);
-      if (index > -1) {
-        this.dependencyExclusions[dependencyId].splice(index, 1);
-      }
-      if (this.dependencyExclusions[dependencyId].length === 0) {
-        delete this.dependencyExclusions[dependencyId];
-      }
-      this.syncExclusionsToProjectDependency(dependencyId);
-    }
-  }
-
-  clearExclusions(dependencyId?: string): void {
-    if (dependencyId) {
-      delete this.dependencyExclusions[dependencyId];
-      this.syncExclusionsToProjectDependency(dependencyId);
-    } else {
-      this.dependencyExclusions = {};
-      this.projectConfiguration?.projectDependencies.forEach((dep) => {
-        this.syncExclusionsToProjectDependency(dep.projectId);
-      });
-    }
-  }
-
-  getExclusions(dependencyId: string): ProjectDependencyExclusion[] {
-    return this.dependencyExclusions[dependencyId] ?? [];
-  }
-
-  getExclusionCoordinates(dependencyId: string): string[] {
-    const exclusions = this.getExclusions(dependencyId);
-    return exclusions.map((e) =>
-      generateGAVCoordinates(
-        guaranteeNonNullable(e.groupId),
-        guaranteeNonNullable(e.artifactId),
-        undefined,
-      ),
-    );
-  }
-
-  private findExistingExclusion(
-    dependencyId: string,
-    coordinate: string,
-  ): ProjectDependencyExclusion | undefined {
-    if (!this.dependencyExclusions[dependencyId]) {
-      return undefined;
-    }
-    for (let i = 0; i < this.dependencyExclusions[dependencyId].length; i++) {
-      const exclusion = guaranteeNonNullable(
-        this.dependencyExclusions[dependencyId][i],
-      );
-      const exclusionCoordinate = generateGAVCoordinates(
-        guaranteeNonNullable(exclusion.groupId),
-        guaranteeNonNullable(exclusion.artifactId),
-        undefined,
-      );
-      if (exclusionCoordinate === coordinate) {
-        return this.dependencyExclusions[dependencyId][i];
-      }
-    }
-    return undefined;
-  }
-
-  private findExclusionIndex(dependencyId: string, coordinate: string): number {
-    if (!this.dependencyExclusions[dependencyId]) {
-      return -1;
-    }
-    for (let i = 0; i < this.dependencyExclusions[dependencyId].length; i++) {
-      const exclusion = guaranteeNonNullable(
-        this.dependencyExclusions[dependencyId][i],
-      );
-      const exclusionCoordinate = generateGAVCoordinates(
-        guaranteeNonNullable(exclusion.groupId),
-        guaranteeNonNullable(exclusion.artifactId),
-        undefined,
-      );
-      if (exclusionCoordinate === coordinate) {
-        return i;
-      }
-    }
-    return -1;
   }
 
   *fetchDependencyReport(): GeneratorFn<void> {
@@ -607,17 +442,5 @@ export class ProjectDependencyEditorState {
   clearTrees(): void {
     this.flattenDependencyTreeData = undefined;
     this.dependencyTreeData = undefined;
-    this.selectedDependencyForExclusions = undefined;
-  }
-
-  syncExclusionsToProjectDependency(dependencyId: string): void {
-    const projectDependency =
-      this.projectConfiguration?.projectDependencies.find(
-        (dep) => dep.projectId === dependencyId,
-      );
-    if (projectDependency) {
-      const exclusions = this.getExclusions(dependencyId);
-      projectDependency.setExclusions(exclusions);
-    }
   }
 }
