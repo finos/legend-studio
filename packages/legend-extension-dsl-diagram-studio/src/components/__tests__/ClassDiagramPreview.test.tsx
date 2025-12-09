@@ -26,6 +26,7 @@ import {
 import { DSL_DIAGRAM_TEST_ID } from '../../__lib__/DSL_Diagram_LegendStudioTesting.js';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSL_Diagram_LegendStudioApplicationPlugin } from '../DSL_Diagram_LegendStudioApplicationPlugin.js';
+import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 
 const TEST_DATA__dummyModel = [
   {
@@ -61,6 +62,9 @@ pluginManager
   .install();
 
 test(integrationTest('Class diagram preview shows up properly'), async () => {
+  MockedMonacoEditorAPI.createModel.mockReturnValue({
+    setValue(): void {},
+  });
   const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
   const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
     MOCK__editorStore,
