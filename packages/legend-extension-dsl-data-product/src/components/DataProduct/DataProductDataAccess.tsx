@@ -305,6 +305,20 @@ const AccessPointTable = observer(
       setSelectedTab(newValue);
     };
 
+    useEffect(() => {
+      if (dataAccessState?.resolvedUserEnv) {
+        accessPointState
+          .fetchSampleDataFromEngine(
+            guaranteeNonNullable(
+              getIngestDeploymentServerConfigName(
+                dataAccessState.resolvedUserEnv,
+              ),
+            ),
+          )
+          .catch((error) => {});
+      }
+    }, [accessPointState, dataAccessState]);
+
     const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
       [
         {

@@ -26,15 +26,29 @@ import {
   V1_Protocol,
   V1_PureGraphManager,
   V1_PureModelContextPointer,
-  type V1_RelationElement,
+  V1_RelationElement,
   V1_RelationType,
   V1_relationTypeModelSchema,
   V1_RenderStyle,
   V1_SdlcDeploymentDataProductOrigin,
   V1_serializeRawValueSpecification,
+  V1_LakehouseRuntime,
+  V1_PackageableRuntime,
+  V1_PureModelContextData,
+  V1_PureModelContextCombination,
+  V1_deserializeRawValueSpecification,
+  V1_ExecuteInput,
+  V1_deserializeExecutionResult,
+  V1_buildExecutionResult,
+  V1_RelationRowTestData,
+  type V1_EntitlementsDataProductOrigin,
+  type V1_RawLambda,
+  type V1_ExecutionResult,
+  type TDSExecutionResult,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -44,6 +58,7 @@ import { makeAutoObservable, observable, flow } from 'mobx';
 import { deserialize } from 'serializr';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { resolveVersion } from '@finos/legend-server-depot';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 
 export class DataProductAccessPointState {
   readonly apgState: DataProductAPGState;
@@ -51,6 +66,9 @@ export class DataProductAccessPointState {
   relationType: V1_RelationType | undefined;
   relationElement: V1_RelationElement | undefined;
   grammar: string | undefined;
+  entitlementsDataProductDetails?:
+    | V1_EntitlementsDataProductDetails
+    | undefined;
 
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingRelationElement = ActionState.create();
@@ -73,6 +91,7 @@ export class DataProductAccessPointState {
       | V1_EntitlementsDataProductDetails
       | undefined,
   ): GeneratorFn<void> {
+    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
     yield Promise.all([
       this.fetchRelationType(
         dataProductArtifactPromise,
@@ -131,43 +150,7 @@ export class DataProductAccessPointState {
     if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
       const projectGAV = this.apgState.dataProductViewerState.projectGAV;
       const entitlementsOrigin = entitlementsDataProductDetails?.origin;
-      const model =
-        projectGAV !== undefined
-          ? new V1_PureModelContextPointer(
-              // TODO: remove as backend should handle undefined protocol input
-              new V1_Protocol(
-                V1_PureGraphManager.PURE_PROTOCOL_NAME,
-                PureClientVersion.VX_X_X,
-              ),
-              new V1_LegendSDLC(
-                projectGAV.groupId,
-                projectGAV.artifactId,
-                resolveVersion(projectGAV.versionId),
-              ),
-            )
-          : entitlementsOrigin instanceof V1_AdHocDeploymentDataProductOrigin ||
-              entitlementsOrigin === undefined
-            ? guaranteeType(
-                this.apgState.dataProductViewerState.graphManagerState
-                  .graphManager,
-                V1_PureGraphManager,
-              ).getFullGraphModelData(
-                this.apgState.dataProductViewerState.graphManagerState.graph,
-              )
-            : entitlementsOrigin instanceof V1_SdlcDeploymentDataProductOrigin
-              ? new V1_PureModelContextPointer(
-                  // TODO: remove as backend should handle undefined protocol input
-                  new V1_Protocol(
-                    V1_PureGraphManager.PURE_PROTOCOL_NAME,
-                    PureClientVersion.VX_X_X,
-                  ),
-                  new V1_LegendSDLC(
-                    entitlementsOrigin.group,
-                    entitlementsOrigin.artifact,
-                    resolveVersion(entitlementsOrigin.version),
-                  ),
-                )
-              : undefined;
+      const model = this.getAccessPointModel(projectGAV, entitlementsOrigin);
       const relationTypeInput = new V1_LambdaReturnTypeInput(
         guaranteeNonNullable(
           model,
@@ -189,6 +172,47 @@ export class DataProductAccessPointState {
     throw new Error(
       `Access point '${this.accessPoint.id}' is not a Lakehouse access point, cannot fetch relation type from engine`,
     );
+  }
+
+  private getAccessPointModel(
+    projectGAV: ProjectGAVCoordinates | undefined,
+    entitlementsOrigin: V1_EntitlementsDataProductOrigin | null | undefined,
+  ) {
+    return projectGAV !== undefined
+      ? new V1_PureModelContextPointer(
+          // TODO: remove as backend should handle undefined protocol input
+          new V1_Protocol(
+            V1_PureGraphManager.PURE_PROTOCOL_NAME,
+            PureClientVersion.VX_X_X,
+          ),
+          new V1_LegendSDLC(
+            projectGAV.groupId,
+            projectGAV.artifactId,
+            resolveVersion(projectGAV.versionId),
+          ),
+        )
+      : entitlementsOrigin instanceof V1_AdHocDeploymentDataProductOrigin ||
+          entitlementsOrigin === undefined
+        ? guaranteeType(
+            this.apgState.dataProductViewerState.graphManagerState.graphManager,
+            V1_PureGraphManager,
+          ).getFullGraphModelData(
+            this.apgState.dataProductViewerState.graphManagerState.graph,
+          )
+        : entitlementsOrigin instanceof V1_SdlcDeploymentDataProductOrigin
+          ? new V1_PureModelContextPointer(
+              // TODO: remove as backend should handle undefined protocol input
+              new V1_Protocol(
+                V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                PureClientVersion.VX_X_X,
+              ),
+              new V1_LegendSDLC(
+                entitlementsOrigin.group,
+                entitlementsOrigin.artifact,
+                resolveVersion(entitlementsOrigin.version),
+              ),
+            )
+          : undefined;
   }
 
   async fetchRelationType(
@@ -245,6 +269,69 @@ export class DataProductAccessPointState {
       );
     } finally {
       this.fetchingGrammarState.complete();
+    }
+  }
+
+  async fetchSampleDataFromEngine(resolvedUserEnv: string): Promise<void> {
+    try {
+      if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
+        const runtime = new V1_LakehouseRuntime();
+        runtime.warehouse = `LAKEHOUSE_CONSUMER_DEFAULT_WH`;
+        runtime.environment = resolvedUserEnv;
+
+        const packageableRuntime = new V1_PackageableRuntime();
+        packageableRuntime.runtimeValue = runtime;
+        packageableRuntime.name = 'lakehouseConsumer';
+        packageableRuntime.package = 'runtime';
+
+        const query = `${this.grammar}->take(5)->from(${packageableRuntime.path})`;
+
+        const model = guaranteeNonNullable(
+          this.getAccessPointModel(
+            this.apgState.dataProductViewerState.projectGAV,
+            this.entitlementsDataProductDetails?.origin,
+          ),
+        );
+        const data = new V1_PureModelContextData();
+        data.elements.push(packageableRuntime);
+        const contextModel = new V1_PureModelContextCombination([model, data]);
+
+        const rawLambda = V1_deserializeRawValueSpecification(
+          await this.apgState.dataProductViewerState.engineServerClient.grammarToJSON_lambda(
+            query,
+          ),
+        ) as V1_RawLambda;
+        const executionInput = new V1_ExecuteInput();
+        executionInput.model = contextModel;
+        executionInput.function = rawLambda;
+        executionInput.clientVersion = PureClientVersion.VX_X_X;
+
+        const result = V1_buildExecutionResult(
+          V1_deserializeExecutionResult(
+            (await this.apgState.dataProductViewerState.engineServerClient.runQuery(
+              V1_ExecuteInput.serialization.toJson(executionInput),
+            )) as PlainObject<V1_ExecutionResult>,
+          ),
+        ) as TDSExecutionResult;
+
+        const relEle = new V1_RelationElement();
+        relEle.paths = [this.accessPoint.id];
+        relEle.columns = result.builder.columns.map((col) => col.name);
+        relEle.rows = result.result.rows.map((row, rowIndex) => {
+          const relRow = new V1_RelationRowTestData();
+
+          relRow.values = row.values.map((value, colIndex) => {
+            return String(value); // Ensure consistent string type
+          });
+
+          return relRow;
+        });
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.apgState.applicationStore.notificationService.notifyError(
+        `Error fetching access point sample data from engine: ${error.message}`,
+      );
     }
   }
 }

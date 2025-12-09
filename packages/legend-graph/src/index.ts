@@ -801,6 +801,7 @@ export {
 export {
   V1_EmbeddedData,
   V1_RelationElement,
+  V1_RelationRowTestData,
   V1_DataElementReference,
   V1_ExternalFormatData,
   type V1_EmbeddedDataVisitor,
