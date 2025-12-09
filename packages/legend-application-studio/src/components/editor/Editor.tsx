@@ -95,7 +95,6 @@ export const Editor = withEditorStore(
       .map((config) => (
         <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
       ));
-
     // layout
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
     // These create snapping effect on panel resizing

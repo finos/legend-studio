@@ -83,3 +83,57 @@
     border-radius: 0 0 0.2rem 0.2rem;
   }
 }
+
+.light-mode {
+  .query-builder__result {
+    &__advanced__mode {
+      @include flexVCenter;
+
+      height: 100%;
+      padding: 0.5rem;
+
+      &__label {
+        @include flexCenter;
+
+        background: var(--color-light-grey-400);
+        padding: 0 1rem;
+        height: 2.2rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+        font-size: 1.2rem;
+        user-select: none;
+      }
+
+      &__toggler__btn {
+        @include flexVCenter;
+
+        background: var(--color-light-grey-400);
+        padding: 0 0.5rem 0 0;
+        height: 2.2rem;
+
+        svg {
+          font-size: 2rem;
+          color: var(--color-light-grey-100);
+        }
+
+        &[disabled] svg,
+        &[disabled]:hover svg {
+          cursor: not-allowed;
+          color: var(--color-light-grey-100);
+        }
+      }
+
+      &__toggler__btn--toggled {
+        svg {
+          font-size: 2rem;
+          color: var(--color-blue-150);
+        }
+
+        &[disabled] svg,
+        &[disabled]:hover svg {
+          cursor: not-allowed;
+          color: var(--color-dark-grey-100);
+        }
+      }
+    }
+  }
+}

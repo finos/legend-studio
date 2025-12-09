@@ -109,7 +109,7 @@ import { GraphEditFormModeState } from './GraphEditFormModeState.js';
 import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
-import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.js';
+import { StudioSQLPlaygroundPanelState } from './panel-group/StudioSQLPlaygroundPanelState.js';
 import type { QuickInputState } from './QuickInputState.js';
 import { GlobalEndToEndWorkflowState } from './sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
 import {
@@ -183,7 +183,7 @@ export class EditorStore implements CommandRegistrar {
   globalEndToEndWorkflowState: GlobalEndToEndWorkflowState;
   devToolState: DevToolPanelState;
   devMetadataState: DevMetadataState;
-  sqlPlaygroundState: SQLPlaygroundPanelState;
+  studioSqlPlaygroundState: StudioSQLPlaygroundPanelState;
 
   modelImporterState: ModelImporterState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
@@ -280,7 +280,7 @@ export class EditorStore implements CommandRegistrar {
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolPanelState(this);
     this.devMetadataState = new DevMetadataState(this);
-    this.sqlPlaygroundState = new SQLPlaygroundPanelState(this);
+    this.studioSqlPlaygroundState = new StudioSQLPlaygroundPanelState(this);
     this.embeddedQueryBuilderState = new EmbeddedQueryBuilderState(this);
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);

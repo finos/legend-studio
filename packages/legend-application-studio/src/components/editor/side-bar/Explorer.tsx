@@ -618,7 +618,7 @@ const ExplorerContextMenu = observer(
       if (isRelationalDatabaseConnection(node?.packageableElement)) {
         editorStore.panelGroupDisplayState.open();
         editorStore.setActivePanelMode(PANEL_MODE.SQL_PLAYGROUND);
-        editorStore.sqlPlaygroundState.setConnection(
+        editorStore.studioSqlPlaygroundState.setConnection(
           guaranteeType(node?.packageableElement, PackageableConnection),
         );
       }

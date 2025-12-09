@@ -19,9 +19,10 @@ import {
   assertErrorThrown,
   LogEvent,
   ActionState,
+  uniqBy,
 } from '@finos/legend-shared';
 import { observable, makeObservable, flow, flowResult, action } from 'mobx';
-import { editor as monacoEditorAPI } from 'monaco-editor';
+import { languages as monacoLanguagesAPI } from 'monaco-editor';
 import {
   type Database,
   type PackageableConnection,
@@ -29,14 +30,12 @@ import {
   GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  moveCursorToPosition,
-} from '@finos/legend-code-editor';
+
 import type { CommandRegistrar } from '@finos/legend-application';
 import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY } from '../../../__lib__/STO_Relational_LegendStudioCommand.js';
 import { PANEL_MODE } from '../EditorConfig.js';
 import { DatabaseSchemaExplorerState } from '../editor-state/element-editor-state/connection/DatabaseBuilderState.js';
+import { AbstractSQLPlaygroundState } from '@finos/legend-lego/sql-playground';
 
 const DEFAULT_SQL_TEXT = `--Start building your SQL. Note that you can also drag-and-drop nodes from schema explorer\n`;
 
@@ -45,50 +44,32 @@ export interface SQL_ExecutionResult {
   sqlDuration: number;
 }
 
-export class SQLPlaygroundPanelState implements CommandRegistrar {
+export class StudioSQLPlaygroundPanelState
+  extends AbstractSQLPlaygroundState
+  implements CommandRegistrar
+{
   readonly editorStore: EditorStore;
 
   isFetchingSchema = ActionState.create();
-  executeRawSQLState = ActionState.create();
-
   connection?: PackageableConnection | undefined;
   database?: Database | undefined;
   schemaExplorerState?: DatabaseSchemaExplorerState | undefined;
-
-  readonly sqlEditorTextModel: monacoEditorAPI.ITextModel;
-  sqlEditor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
-  sqlEditorViewState?: monacoEditorAPI.ICodeEditorViewState | undefined;
-  sqlText = DEFAULT_SQL_TEXT;
-  sqlExecutionResult?: SQL_ExecutionResult | undefined;
-
-  isLocalModeEnabled = false;
+  databaseSchema: monacoLanguagesAPI.CompletionItem[];
 
   constructor(editorStore: EditorStore) {
+    super();
     makeObservable(this, {
       isFetchingSchema: observable,
-      executeRawSQLState: observable,
       connection: observable,
       database: observable,
       schemaExplorerState: observable,
-      sqlText: observable,
-      isLocalModeEnabled: observable,
-      sqlExecutionResult: observable,
-      sqlEditor: observable.ref,
-      sqlEditorViewState: observable.ref,
-      stopExecuteSQL: action,
-      toggleIsLocalModeEnabled: action,
+      databaseSchema: observable,
       setConnection: action,
-      setSQLEditor: action,
-      setSQLEditorViewState: action,
-      setSQLText: action,
+      setDataBaseSchema: action,
       executeRawSQL: flow,
     });
-
     this.editorStore = editorStore;
-    this.sqlEditorTextModel = monacoEditorAPI.createModel(
-      this.sqlText,
-      CODE_EDITOR_LANGUAGE.SQL,
-    );
+    this.databaseSchema = [];
   }
 
   setConnection(val: PackageableConnection | undefined): void {
@@ -107,32 +88,42 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
     this.sqlEditorTextModel.setValue(DEFAULT_SQL_TEXT);
   }
 
-  setSQLText(val: string): void {
-    this.sqlText = val;
+  setDataBaseSchema(val: monacoLanguagesAPI.CompletionItem[]): void {
+    this.databaseSchema = val;
   }
 
-  setSQLEditor(val: monacoEditorAPI.IStandaloneCodeEditor | undefined): void {
-    this.sqlEditor = val;
-    if (val) {
-      const lines = this.sqlText.split('\n');
-      moveCursorToPosition(val, {
-        lineNumber: lines.length,
-        column: lines.at(-1)?.length ?? 0,
-      });
+  fetchSchemaMetaData(): GeneratorFn<void> | undefined {
+    return this.schemaExplorerState?.fetchDatabaseMetadata();
+  }
+  override getCodeCompletionSuggestions(): string[] {
+    const base = super.getCodeCompletionSuggestions();
+    if (this.schemaExplorerState?.treeData) {
+      const dbLabelText = uniqBy(
+        Array.from(this.schemaExplorerState.treeData.nodes.values()).map(
+          (value) => value.label,
+        ),
+        (label) => label,
+      );
+      const dbLabelsCompletionItem = uniqBy(
+        dbLabelText.map(
+          (value) =>
+            ({
+              label: value,
+              kind: monacoLanguagesAPI.CompletionItemKind.Field,
+              insertTextRules:
+                monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertText: `${value} `,
+            }) as monacoLanguagesAPI.CompletionItem,
+        ),
+        (val) => val.label,
+      );
+      this.setDataBaseSchema(dbLabelsCompletionItem);
+      return base.concat(dbLabelText);
     }
+    return base;
   }
 
-  stopExecuteSQL(): void {
-    this.sqlExecutionResult = undefined;
-  }
-
-  setSQLEditorViewState(
-    val: monacoEditorAPI.ICodeEditorViewState | undefined,
-  ): void {
-    this.sqlEditorViewState = val;
-  }
-
-  registerCommands(): void {
+  override registerCommands(): void {
     this.editorStore.applicationStore.commandService.registerCommand({
       key: STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY.SQL_PLAYGROUND_EXECUTE,
       trigger: () =>
@@ -148,19 +139,14 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
     });
   }
 
-  deregisterCommands(): void {
+  override deregisterCommands(): void {
     [STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY.SQL_PLAYGROUND_EXECUTE].forEach(
       (key) =>
         this.editorStore.applicationStore.commandService.deregisterCommand(key),
     );
   }
 
-  toggleIsLocalModeEnabled(): void {
-    this.isLocalModeEnabled = !this.isLocalModeEnabled;
-    this.sqlExecutionResult = undefined;
-  }
-
-  *executeRawSQL(): GeneratorFn<void> {
+  override *executeRawSQL(): GeneratorFn<void> {
     if (!this.connection || this.executeRawSQLState.isInProgress) {
       return;
     }
