@@ -68,7 +68,6 @@ export class StudioSQLPlaygroundPanelState
       setDataBaseSchema: action,
       executeRawSQL: flow,
     });
-    this.sqlEditorTextModel.setValue(DEFAULT_SQL_TEXT);
     this.editorStore = editorStore;
     this.databaseSchema = [];
   }

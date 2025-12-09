@@ -67,23 +67,20 @@ const SQL_KEYWORDS = [
 ];
 
 export abstract class AbstractSQLPlaygroundState implements CommandRegistrar {
-  theme: SQLPlaygroundTheme;
   sqlText = '';
-  executeRawSQLState: ActionState;
   sqlExecutionResult?: SQL_ExecutionResult | undefined;
   sqlEditorViewState: monaco.editor.ICodeEditorViewState | undefined;
   sqlEditorTextModel: monaco.editor.ITextModel;
   sqlEditor?: monaco.editor.IStandaloneCodeEditor | undefined;
-  isLocalModeEnabled: boolean;
+  theme: SQLPlaygroundTheme = 'light';
+  executeRawSQLState = ActionState.create();
+  isLocalModeEnabled = false;
 
   constructor() {
     this.sqlEditorTextModel = monaco.editor.createModel(
       this.sqlText,
       CODE_EDITOR_LANGUAGE.SQL,
     );
-    this.isLocalModeEnabled = false;
-    this.executeRawSQLState = ActionState.create();
-    this.theme = 'light';
     makeObservable(this, {
       sqlExecutionResult: observable,
       isLocalModeEnabled: observable,
