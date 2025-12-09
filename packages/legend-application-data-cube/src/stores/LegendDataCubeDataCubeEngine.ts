@@ -19,7 +19,6 @@ import {
   type V1_ValueSpecification,
   type V1_EngineServerClient,
   V1_PureGraphManager,
-  type V1_PureModelContext,
   type ExecutionResult,
   type V1_ExecutionResult,
   RelationalExecutionActivities,
@@ -95,6 +94,8 @@ import {
   V1_DataProductOriginType,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_AdHocDeploymentDataProductOrigin,
+  V1_PureModelContextCombination,
+  type V1_PureModelContext,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -1950,15 +1951,31 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     rawSource: RawLakehouseConsumerDataCubeSource,
     source: LakehouseConsumerDataCubeSource,
   ) {
-    let pmcd: PlainObject<V1_PureModelContextData> | undefined;
+    let pmcd: V1_PureModelContext | undefined;
+
+    const runtime = new V1_LakehouseRuntime();
+    runtime.warehouse = rawSource.warehouse;
+    runtime.environment = rawSource.environment;
+
+    const packageableRuntime = new V1_PackageableRuntime();
+    packageableRuntime.runtimeValue = runtime;
+    packageableRuntime.name = 'lakehouseConsumer';
+    packageableRuntime.package = 'runtime';
+    source.runtime = packageableRuntime.path;
+
     if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
       const coordinates = guaranteeNonNullable(rawSource.origin.dpCoordinates);
-      pmcd = await this._depotServerClient.getPureModelContextData(
-        coordinates.groupId,
-        coordinates.artifactId,
-        coordinates.versionId,
-        true,
+      const pointer = new V1_PureModelContextPointer(
+        undefined,
+        new V1_LegendSDLC(
+          coordinates.groupId,
+          coordinates.artifactId,
+          coordinates.versionId,
+        ),
       );
+      const data = new V1_PureModelContextData();
+      data.elements.push(packageableRuntime);
+      pmcd = new V1_PureModelContextCombination([pointer, data]);
     } else {
       const dataProducts = rawSource.paths[0]
         ? V1_entitlementsDataProductDetailsResponseToDataProductDetails(
@@ -1984,26 +2001,17 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           .origin,
         V1_AdHocDeploymentDataProductOrigin,
       ).definition;
-      pmcd = await this.parseCompatibleModel(
+      const model = await this.parseCompatibleModel(
         guaranteeNonNullable(fullGraphGrammar),
       );
+      const data = guaranteeType(
+        V1_deserializePureModelContext(model),
+        V1_PureModelContextData,
+      );
+      data.elements.push(packageableRuntime);
+      pmcd = data;
     }
 
-    const deserializedPMCD = guaranteeType(
-      V1_deserializePureModelContext(pmcd),
-      V1_PureModelContextData,
-    );
-    const runtime = new V1_LakehouseRuntime();
-    runtime.warehouse = rawSource.warehouse;
-    runtime.environment = rawSource.environment;
-
-    const packageableRuntime = new V1_PackageableRuntime();
-    packageableRuntime.runtimeValue = runtime;
-    packageableRuntime.name = 'lakehouseConsumer';
-    packageableRuntime.package = 'runtime';
-    source.runtime = packageableRuntime.path;
-
-    deserializedPMCD.elements.push(packageableRuntime);
     const dataProduct = guaranteeNonNullable(
       rawSource.paths[0],
       'Data Product expected as first path in lakehouse consumer source',
@@ -2027,7 +2035,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       source.query = query;
     }
 
-    return V1_serializePureModelContext(deserializedPMCD);
+    return V1_serializePureModelContext(pmcd);
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

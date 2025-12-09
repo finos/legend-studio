@@ -33,6 +33,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   type DataGridColumnDefinition,
   DataGrid,
+  type DataGridApi,
 } from '@finos/legend-lego/data-grid';
 import {
   type V1_RelationTypeColumn,
@@ -77,6 +78,7 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
   isNonEmptyString,
+  LogEvent,
 } from '@finos/legend-shared';
 import { type DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
@@ -311,6 +313,8 @@ const AccessPointTable = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }): React.ReactNode => {
     const { accessPointState, dataAccessState } = props;
+    const [gridApi, setGridApi] =
+      useState<DataGridApi<V1_RelationTypeColumn> | null>(null);
 
     const enum DataProductTabs {
       COLUMNS = 'Columns',
@@ -326,6 +330,33 @@ const AccessPointTable = observer(
     ) => {
       setSelectedTab(newValue);
     };
+
+    const userEnv = dataAccessState?.resolvedUserEnv;
+
+    useEffect(() => {
+      if (
+        userEnv &&
+        !accessPointState.relationElement &&
+        accessPointState.apgState.access === AccessPointGroupAccess.ENTERPRISE
+      ) {
+        accessPointState
+          .fetchSampleDataFromEngine(
+            guaranteeNonNullable(getIngestDeploymentServerConfigName(userEnv)),
+          )
+          .catch((error) => {
+            accessPointState.apgState.applicationStore.logService.error(
+              LogEvent.create(`error fetching sample data`),
+              `Error fetching access point: ${accessPointState.accessPoint.id} sample data from engine: ${error.message}`,
+            );
+          });
+      }
+    }, [accessPointState, userEnv]);
+
+    useEffect(() => {
+      if (gridApi) {
+        gridApi.refreshCells({ force: true });
+      }
+    }, [gridApi, accessPointState.relationElement]);
 
     const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
       [
@@ -511,6 +542,7 @@ const AccessPointTable = observer(
                   <DataGrid
                     rowData={accessPointState.relationType?.columns ?? []}
                     columnDefs={relationColumnDefs}
+                    onGridReady={(params) => setGridApi(params.api)}
                     domLayout={
                       (accessPointState.relationType?.columns.length ?? 0) >
                       MAX_GRID_AUTO_HEIGHT_ROWS
