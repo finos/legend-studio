@@ -78,6 +78,7 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
   isNonEmptyString,
+  LogEvent,
 } from '@finos/legend-shared';
 import { type DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
@@ -311,14 +312,19 @@ const AccessPointTable = observer(
     const userEnv = dataAccessState?.resolvedUserEnv;
 
     useEffect(() => {
-      if (userEnv) {
+      if (
+        userEnv &&
+        !accessPointState.relationElement &&
+        accessPointState.apgState.access === AccessPointGroupAccess.ENTERPRISE
+      ) {
         accessPointState
           .fetchSampleDataFromEngine(
             guaranteeNonNullable(getIngestDeploymentServerConfigName(userEnv)),
           )
           .catch((error) => {
-            accessPointState.apgState.applicationStore.notificationService.notifyWarning(
-              `Error fetching access point sample data from engine: ${error.message}`,
+            accessPointState.apgState.applicationStore.logService.error(
+              LogEvent.create(`error fetching sample data`),
+              `Error fetching access point: ${accessPointState.accessPoint.id} sample data from engine: ${error.message}`,
             );
           });
       }
