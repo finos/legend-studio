@@ -51,6 +51,7 @@ import type {
   ClassifierPathMappingMap,
   SubtypeInfo,
 } from '../../../../../action/protocol/ProtocolInfo.js';
+import { V1_PureModelContextCombination } from '../../model/context/V1_PureModelContextCombination.js';
 
 enum V1_SDLCType {
   ALLOY = 'alloy',
@@ -61,6 +62,7 @@ export enum V1_PureModelContextType {
   POINTER = 'pointer',
   COMPOSITE = 'composite',
   TEXT = 'text',
+  COMBINATION = 'combination',
 }
 
 export const V1_entitiesToPureModelContextData = async (
@@ -173,6 +175,24 @@ const V1_pureModelContextCompositeModelSchema = createModelSchema(
   },
 );
 
+const V1_pureModelContextCombinationModelSchema = createModelSchema(
+  V1_PureModelContextCombination,
+  {
+    _type: usingConstantValueSchema(V1_PureModelContextType.COMBINATION),
+    serializer: usingModelSchema(V1_Protocol.serialization.schema),
+    contexts: list(
+      custom(
+        (element: V1_PureModelContext) =>
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          V1_serializePureModelContext(element),
+        (element: PlainObject<V1_PureModelContext>) =>
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          V1_deserializePureModelContext(element),
+      ),
+    ),
+  },
+);
+
 export const V1_setupPureModelContextDataSerialization = (
   plugins: PureProtocolProcessorPlugin[],
   subtypeInfo?: SubtypeInfo | undefined,
@@ -227,6 +247,11 @@ export const V1_serializePureModelContext = (
     return serialize(V1_pureModelContextCompositeModelSchema, pureModelContext);
   } else if (pureModelContext instanceof V1_PureModelContextText) {
     return serialize(V1_pureModelContextTextSchema, pureModelContext);
+  } else if (pureModelContext instanceof V1_PureModelContextCombination) {
+    return serialize(
+      V1_pureModelContextCombinationModelSchema,
+      pureModelContext,
+    );
   }
   throw new UnsupportedOperationError(
     `Can't serialize Pure model context`,
@@ -246,6 +271,8 @@ export const V1_deserializePureModelContext = (
       return deserialize(V1_pureModelContextCompositeModelSchema, json);
     case V1_PureModelContextType.TEXT:
       return deserialize(V1_pureModelContextTextSchema, json);
+    case V1_PureModelContextType.COMBINATION:
+      return deserialize(V1_pureModelContextCombinationModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize Pure model context`,

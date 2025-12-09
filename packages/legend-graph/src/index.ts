@@ -609,6 +609,7 @@ export { V1_PureModelContextData } from './graph-manager/protocol/pure/v1/model/
 export { V1_PureModelContext } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContext.js';
 export { V1_PureModelContextText } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContextText.js';
 export { V1_PureModelContextComposite } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContextComposite.js';
+export { V1_PureModelContextCombination } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContextCombination.js';
 export {
   V1_SDLC,
   V1_LegendSDLC,
@@ -800,6 +801,7 @@ export {
 export {
   V1_EmbeddedData,
   V1_RelationElement,
+  V1_RelationRowTestData,
   V1_DataElementReference,
   V1_ExternalFormatData,
   type V1_EmbeddedDataVisitor,
