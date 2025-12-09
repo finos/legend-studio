@@ -21,6 +21,7 @@
   "exports": {
     "./application": "./lib/application/index.js",
     "./code-editor": "./lib/code-editor/index.js",
+    "./sql-playground": "./lib/sql-playground/index.js",
     "./code-editor/test": "./lib/code-editor/__test__.js",
     "./code-editor/test/MockedMonacoEditor.js": "./lib/code-editor/__test-utils__/MockedMonacoEditor.js",
     "./data-grid": "./lib/data-grid/index.js",

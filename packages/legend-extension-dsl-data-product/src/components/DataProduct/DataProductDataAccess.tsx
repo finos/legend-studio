@@ -99,6 +99,10 @@ import {
   type IngestDeploymentServerConfig,
   type IngestDeploymentServerConfigOption,
 } from '@finos/legend-server-lakehouse';
+import {
+  SQLPlaygroundEditorResultPanel,
+  type AbstractSQLPlaygroundState,
+} from '@finos/legend-lego/sql-playground';
 import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
@@ -127,7 +131,7 @@ export const TabMessageScreen = observer((props: { message: string }) => {
 
   return (
     <Box className="data-product__viewer__tab-screen">
-      <span>{message}</span>
+      <span className="message-text">{message}</span>
     </Box>
   );
 });
@@ -168,6 +172,24 @@ export const PowerBiScreen = observer(
         >
           Open in Power BI
         </button>
+      </div>
+    );
+  },
+);
+
+export const SqlPlaygroundScreen = observer(
+  (props: {
+    playgroundState: AbstractSQLPlaygroundState;
+    advancedMode: boolean;
+  }) => {
+    const { playgroundState, advancedMode } = props;
+    return (
+      <div className="data-product__viewer__tab-screen">
+        <SQLPlaygroundEditorResultPanel
+          playgroundState={playgroundState}
+          advancedMode={advancedMode}
+          disableDragDrop={true}
+        />
       </div>
     );
   },

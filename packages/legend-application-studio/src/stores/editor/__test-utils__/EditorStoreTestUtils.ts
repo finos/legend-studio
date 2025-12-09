@@ -20,6 +20,7 @@ import { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import { ApplicationStore } from '@finos/legend-application';
 import { TEST__getLegendStudioApplicationConfig } from '../../__test-utils__/LegendStudioApplicationTestUtils.js';
+import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 
 export const TEST__getTestEditorStore = (
   pluginManager = LegendStudioPluginManager.create(),
@@ -28,7 +29,9 @@ export const TEST__getTestEditorStore = (
     TEST__getLegendStudioApplicationConfig(),
     pluginManager,
   );
-
+  MockedMonacoEditorAPI.createModel.mockReturnValue({
+    setValue(): void {},
+  });
   return new EditorStore(
     applicationStore,
     new SDLCServerClient({
