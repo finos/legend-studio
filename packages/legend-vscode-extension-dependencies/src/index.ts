@@ -318,6 +318,7 @@ export {
   DataCube,
   DataCubeEngine,
   DataCubeFunction,
-  DataCubeSpecification,
   DataCubeSource,
+  DataCubeSpecification,
+  UnsupportedDataCubeSourceTypeError,
 } from '@finos/legend-data-cube';

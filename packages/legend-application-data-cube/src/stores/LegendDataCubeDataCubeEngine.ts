@@ -120,6 +120,7 @@ import {
   isPrimitiveType,
   _property,
   DataCubeGridClientExportFormat,
+  UnsupportedDataCubeSourceTypeError,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -503,379 +504,372 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   }
 
   override async processSource(value: PlainObject): Promise<DataCubeSource> {
-    switch (value._type) {
-      case FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE: {
-        const rawSource =
-          RawFreeformTDSExpressionDataCubeSource.serialization.fromJson(value);
-        const source = new FreeformTDSExpressionDataCubeSource();
-        if (rawSource.mapping) {
-          source.mapping = rawSource.mapping;
-        }
-        source.runtime = rawSource.runtime;
-        source.model = rawSource.model;
-        source.query = await this.parseValueSpecification(
-          rawSource.query,
-          false,
-        );
-        try {
-          source.columns = (
-            await this._getLambdaRelationType(
-              this.serializeValueSpecification(_lambda([], [source.query])),
-              source.model,
-            )
-          ).columns;
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
-          );
-        }
-        return source;
-      }
-      case LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE: {
-        const rawSource =
-          RawLocalFileQueryDataCubeSource.serialization.fromJson(value);
-        const source = new LocalFileDataCubeSource();
-        source.fileName = rawSource.fileName;
-        source.fileFormat = rawSource.fileFormat;
+    try {
+      return super.processSource(value);
+    } catch (typeError) {
+      assertErrorThrown(typeError);
+      if (typeError instanceof UnsupportedDataCubeSourceTypeError) {
+        switch (value._type) {
+          case LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE: {
+            const rawSource =
+              RawLocalFileQueryDataCubeSource.serialization.fromJson(value);
+            const source = new LocalFileDataCubeSource();
+            source.fileName = rawSource.fileName;
+            source.fileFormat = rawSource.fileFormat;
 
-        const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
-          rawSource._ref,
-        );
-
-        const { model, database, schema, table, runtime } =
-          this._synthesizeMinimalModelContext({
-            schemaName: tableCatalog.schemaName,
-            tableName: tableCatalog.tableName,
-            tableColumns: tableCatalog.columns.map((col) => {
-              const column = new V1_Column();
-              column.name = col[0] as string;
-              // TODO: confirm this is in accordance to engine
-              // check if we have a duckdb enum mapping
-              // See https://duckdb.org/docs/sql/data_types/overview.html
-              this._getColumnType(col, column);
-              return column;
-            }),
-          });
-
-        source.db = database.path;
-        source.model = model;
-        source.table = table.name;
-        source.schema = schema.name;
-        source.runtime = runtime.path;
-
-        const query = new V1_ClassInstance();
-        query.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
-        const storeAccessor = new V1_RelationStoreAccessor();
-        storeAccessor.path = [source.db, source.schema, source.table];
-        query.value = storeAccessor;
-        source.query = query;
-
-        try {
-          source.columns = (
-            await this._getLambdaRelationType(
-              this.serializeValueSpecification(_lambda([], [source.query])),
-              source.model,
-            )
-          ).columns;
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
-          );
-        }
-        return source;
-      }
-      case USER_FUNCTION_DATA_CUBE_SOURCE_TYPE: {
-        const rawSource =
-          RawUserDefinedFunctionDataCubeSource.serialization.fromJson(value);
-        const deserializedModel = V1_deserializePureModelContext(
-          rawSource.model,
-        );
-
-        if (
-          rawSource.runtime === undefined ||
-          !(deserializedModel instanceof V1_PureModelContextPointer)
-        ) {
-          throw new Error(
-            `Unsupported user defined function source. Runtime is needed and model must be a pointer.`,
-          );
-        }
-
-        const source = new UserDefinedFunctionDataCubeSource();
-        source.functionPath = rawSource.functionPath;
-        source.runtime = rawSource.runtime;
-        source.model = rawSource.model;
-        if (deserializedModel.sdlcInfo instanceof V1_LegendSDLC) {
-          const sdlcInfo = deserializedModel.sdlcInfo;
-          const fetchedFunction =
-            await this._depotServerClient.getVersionEntity(
-              sdlcInfo.groupId,
-              sdlcInfo.artifactId,
-              sdlcInfo.version,
-              rawSource.functionPath,
+            const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
+              rawSource._ref,
             );
-          const functionContent =
-            fetchedFunction.content as V1_ConcreteFunctionDefinition;
 
-          //TODO add support for parameters
-          if (functionContent.body.length > 1) {
-            throw new Error(
-              `Unsupported user defined function source. Functions with parameters are not yet supported.`,
-            );
+            const { model, database, schema, table, runtime } =
+              this._synthesizeMinimalModelContext({
+                schemaName: tableCatalog.schemaName,
+                tableName: tableCatalog.tableName,
+                tableColumns: tableCatalog.columns.map((col) => {
+                  const column = new V1_Column();
+                  column.name = col[0] as string;
+                  // TODO: confirm this is in accordance to engine
+                  // check if we have a duckdb enum mapping
+                  // See https://duckdb.org/docs/sql/data_types/overview.html
+                  this._getColumnType(col, column);
+                  return column;
+                }),
+              });
+
+            source.db = database.path;
+            source.model = model;
+            source.table = table.name;
+            source.schema = schema.name;
+            source.runtime = runtime.path;
+
+            const query = new V1_ClassInstance();
+            query.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
+            const storeAccessor = new V1_RelationStoreAccessor();
+            storeAccessor.path = [source.db, source.schema, source.table];
+            query.value = storeAccessor;
+            source.query = query;
+
+            try {
+              source.columns = (
+                await this._getLambdaRelationType(
+                  this.serializeValueSpecification(_lambda([], [source.query])),
+                  source.model,
+                )
+              ).columns;
+            } catch (error) {
+              assertErrorThrown(error);
+              throw new Error(
+                `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+              );
+            }
+            return source;
           }
 
-          source.query = V1_deserializeValueSpecification(
-            functionContent.body[0] as PlainObject,
-            this._application.pluginManager.getPureProtocolProcessorPlugins(),
-          );
-          source.columns = (
-            await this._getLambdaRelationType(
-              this.serializeValueSpecification(_lambda([], [source.query])),
-              source.model,
-            )
-          ).columns;
-        }
-        return source;
-      }
-      case LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE: {
-        const rawSource =
-          RawLegendQueryDataCubeSource.serialization.fromJson(value);
-        const queryInfo = await this._graphManager.getQueryInfo(
-          rawSource.queryId,
-        );
-        const executionContext =
-          await this._graphManager.resolveQueryInfoExecutionContext(
-            queryInfo,
-            () =>
-              this._depotServerClient.getVersionEntities(
-                queryInfo.groupId,
-                queryInfo.artifactId,
-                queryInfo.versionId,
-              ),
-          );
-        const source = new LegendQueryDataCubeSource();
-        source.info = queryInfo;
+          case USER_FUNCTION_DATA_CUBE_SOURCE_TYPE: {
+            const rawSource =
+              RawUserDefinedFunctionDataCubeSource.serialization.fromJson(
+                value,
+              );
+            const deserializedModel = V1_deserializePureModelContext(
+              rawSource.model,
+            );
 
-        source.lambda = guaranteeType(
-          this.deserializeValueSpecification(
-            await this._engineServerClient.grammarToJSON_lambda(
-              queryInfo.content,
-              '',
-              undefined,
-              undefined,
-              false,
-            ),
-          ),
-          V1_Lambda,
-        );
-        source.mapping = executionContext.mapping;
-        source.runtime = executionContext.runtime;
-        source.model = V1_serializePureModelContext(
-          new V1_PureModelContextPointer(
-            // TODO: remove as backend should handle undefined protocol input
-            new V1_Protocol(
-              V1_PureGraphManager.PURE_PROTOCOL_NAME,
-              PureClientVersion.VX_X_X,
-            ),
-            new V1_LegendSDLC(
-              queryInfo.groupId,
-              queryInfo.artifactId,
-              resolveVersion(queryInfo.versionId),
-            ),
-          ),
-        );
+            if (
+              rawSource.runtime === undefined ||
+              !(deserializedModel instanceof V1_PureModelContextPointer)
+            ) {
+              throw new Error(
+                `Unsupported user defined function source. Runtime is needed and model must be a pointer.`,
+              );
+            }
 
-        // Check return type of lambda. If it is a TDS type, convert it to
-        // the new relation protocol.
-        const returnType = await this._getLambdaReturnType(
-          this.serializeValueSpecification(source.lambda),
-          source.model,
-        );
-        if (returnType === QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET) {
-          try {
-            const transformedLambda = guaranteeType(
+            const source = new UserDefinedFunctionDataCubeSource();
+            source.functionPath = rawSource.functionPath;
+            source.runtime = rawSource.runtime;
+            source.model = rawSource.model;
+            if (deserializedModel.sdlcInfo instanceof V1_LegendSDLC) {
+              const sdlcInfo = deserializedModel.sdlcInfo;
+              const fetchedFunction =
+                await this._depotServerClient.getVersionEntity(
+                  sdlcInfo.groupId,
+                  sdlcInfo.artifactId,
+                  sdlcInfo.version,
+                  rawSource.functionPath,
+                );
+              const functionContent =
+                fetchedFunction.content as V1_ConcreteFunctionDefinition;
+
+              //TODO add support for parameters
+              if (functionContent.body.length > 1) {
+                throw new Error(
+                  `Unsupported user defined function source. Functions with parameters are not yet supported.`,
+                );
+              }
+
+              source.query = V1_deserializeValueSpecification(
+                functionContent.body[0] as PlainObject,
+                this._application.pluginManager.getPureProtocolProcessorPlugins(),
+              );
+              source.columns = (
+                await this._getLambdaRelationType(
+                  this.serializeValueSpecification(_lambda([], [source.query])),
+                  source.model,
+                )
+              ).columns;
+            }
+            return source;
+          }
+          case LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE: {
+            const rawSource =
+              RawLegendQueryDataCubeSource.serialization.fromJson(value);
+            const queryInfo = await this._graphManager.getQueryInfo(
+              rawSource.queryId,
+            );
+            const executionContext =
+              await this._graphManager.resolveQueryInfoExecutionContext(
+                queryInfo,
+                () =>
+                  this._depotServerClient.getVersionEntities(
+                    queryInfo.groupId,
+                    queryInfo.artifactId,
+                    queryInfo.versionId,
+                  ),
+              );
+            const source = new LegendQueryDataCubeSource();
+            source.info = queryInfo;
+
+            source.lambda = guaranteeType(
               this.deserializeValueSpecification(
-                await this._engineServerClient.transformTdsToRelation_lambda({
-                  model: source.model,
-                  lambda: source.lambda,
-                }),
+                await this._engineServerClient.grammarToJSON_lambda(
+                  queryInfo.content,
+                  '',
+                  undefined,
+                  undefined,
+                  false,
+                ),
               ),
               V1_Lambda,
             );
-            source.lambda = transformedLambda;
-          } catch (e) {
-            assertErrorThrown(e);
-            throw new Error(
-              `Error transforming TDS protocol to relation protocol:\n${e.message}`,
+            source.mapping = executionContext.mapping;
+            source.runtime = executionContext.runtime;
+            source.model = V1_serializePureModelContext(
+              new V1_PureModelContextPointer(
+                // TODO: remove as backend should handle undefined protocol input
+                new V1_Protocol(
+                  V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                  PureClientVersion.VX_X_X,
+                ),
+                new V1_LegendSDLC(
+                  queryInfo.groupId,
+                  queryInfo.artifactId,
+                  resolveVersion(queryInfo.versionId),
+                ),
+              ),
             );
-          }
-        }
 
-        // If the lambda has multiple expressions, the source query should only be the final
-        // expression of the lambda. All previous expressions should be left untouched and will
-        // be prepended to the transformed query when it is executed.
-        source.query = at(source.lambda.body, source.lambda.body.length - 1);
-
-        try {
-          source.columns = (
-            await this._getLambdaRelationType(
+            // Check return type of lambda. If it is a TDS type, convert it to
+            // the new relation protocol.
+            const returnType = await this._getLambdaReturnType(
               this.serializeValueSpecification(source.lambda),
               source.model,
-            )
-          ).columns;
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
-          );
-        }
-
-        source.parameterValues = await this._getQueryParameterValues(
-          rawSource,
-          source.lambda,
-          queryInfo,
-        );
-        return source;
-      }
-      case LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE: {
-        const rawSource =
-          RawLakehouseProducerDataCubeSource.serialization.fromJson(value);
-
-        if (rawSource.icebergConfig?.catalogUrl) {
-          const source = new LakehouseProducerIcebergCachedDataCubeSource();
-          const refId = await this._duckDBEngine.ingestIcebergTable(
-            rawSource.warehouse,
-            rawSource.paths,
-            rawSource.icebergConfig.catalogUrl,
-            await this.secondaryOauthClient.getToken(),
-          );
-          const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
-            refId.dbReference,
-          );
-          source.paths = rawSource.paths;
-          source.deploymentId = rawSource.deploymentId;
-
-          const { model, database, schema, table, runtime } =
-            this._synthesizeMinimalModelContext({
-              schemaName: tableCatalog.schemaName,
-              tableName: tableCatalog.tableName,
-              tableColumns: tableCatalog.columns.map((col) => {
-                const column = new V1_Column();
-                column.name = col[0] as string;
-                // TODO: confirm this is in accordance to engine
-                // check if we have a duckdb enum mapping
-                // See https://duckdb.org/docs/sql/data_types/overview.html
-                this._getColumnType(col, column);
-                return column;
-              }),
-            });
-
-          source.db = database.path;
-          source.model = model;
-          source.table = table.name;
-          source.schema = schema.name;
-          source.runtime = runtime.path;
-
-          const query = new V1_ClassInstance();
-          query.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
-          const storeAccessor = new V1_RelationStoreAccessor();
-          storeAccessor.path = [source.db, source.schema, source.table];
-          query.value = storeAccessor;
-          source.query = query;
-          try {
-            source.columns = (
-              await this._getLambdaRelationType(
-                this.serializeValueSpecification(_lambda([], [source.query])),
-                source.model,
-              )
-            ).columns;
-          } catch (error) {
-            assertErrorThrown(error);
-            throw new Error(
-              `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
             );
-          }
-          return source;
-        } else {
-          const source = new LakehouseProducerDataCubeSource();
-          source.warehouse = rawSource.warehouse;
-          source.paths = rawSource.paths;
-          source.deploymentId = rawSource.deploymentId;
+            if (returnType === QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET) {
+              try {
+                const transformedLambda = guaranteeType(
+                  this.deserializeValueSpecification(
+                    await this._engineServerClient.transformTdsToRelation_lambda(
+                      {
+                        model: source.model,
+                        lambda: source.lambda,
+                      },
+                    ),
+                  ),
+                  V1_Lambda,
+                );
+                source.lambda = transformedLambda;
+              } catch (e) {
+                assertErrorThrown(e);
+                throw new Error(
+                  `Error transforming TDS protocol to relation protocol:\n${e.message}`,
+                );
+              }
+            }
 
-          if (rawSource.query) {
-            source.query = await this.parseValueSpecification(
-              guaranteeNonNullable(rawSource.query),
-              false,
+            // If the lambda has multiple expressions, the source query should only be the final
+            // expression of the lambda. All previous expressions should be left untouched and will
+            // be prepended to the transformed query when it is executed.
+            source.query = at(
+              source.lambda.body,
+              source.lambda.body.length - 1,
             );
-          } else {
-            const query = new V1_ClassInstance();
-            query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
-            const ingestAccesor = new V1_RelationStoreAccessor();
-            ingestAccesor.path = rawSource.paths;
-            ingestAccesor.metadata = false;
-            query.value = ingestAccesor;
-            source.query = query;
-          }
 
-          const model = await this._synthesizeLakehouseProducerPMCD(
-            rawSource,
-            source,
-          );
-          source.model = V1_serializePureModelContextData(model);
-          try {
-            source.columns = (
-              await this._getLambdaRelationType(
-                this.serializeValueSpecification(_lambda([], [source.query])),
-                source.model,
-              )
-            ).columns;
-          } catch (error) {
-            assertErrorThrown(error);
-            throw new Error(
-              `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+            try {
+              source.columns = (
+                await this._getLambdaRelationType(
+                  this.serializeValueSpecification(source.lambda),
+                  source.model,
+                )
+              ).columns;
+            } catch (error) {
+              assertErrorThrown(error);
+              throw new Error(
+                `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
+              );
+            }
+
+            source.parameterValues = await this._getQueryParameterValues(
+              rawSource,
+              source.lambda,
+              queryInfo,
             );
+            return source;
           }
-          return source;
-        }
-      }
-      case LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE: {
-        const rawSource =
-          RawLakehouseConsumerDataCubeSource.serialization.fromJson(value);
+          case LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE: {
+            const rawSource =
+              RawLakehouseProducerDataCubeSource.serialization.fromJson(value);
 
-        const source = new LakehouseConsumerDataCubeSource();
-        source.model = await this._synthesizeLakehouseConsumerPMCD(
-          rawSource,
-          source,
-        );
-        source.environment = rawSource.environment;
-        source.paths = rawSource.paths;
-        source.warehouse = rawSource.warehouse;
-        source.deploymentId = rawSource.deploymentId;
-        if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
-          source.dpCoordinates = rawSource.origin.dpCoordinates;
-        }
+            if (rawSource.icebergConfig?.catalogUrl) {
+              const source = new LakehouseProducerIcebergCachedDataCubeSource();
+              const refId = await this._duckDBEngine.ingestIcebergTable(
+                rawSource.warehouse,
+                rawSource.paths,
+                rawSource.icebergConfig.catalogUrl,
+                await this.secondaryOauthClient.getToken(),
+              );
+              const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
+                refId.dbReference,
+              );
+              source.paths = rawSource.paths;
+              source.deploymentId = rawSource.deploymentId;
 
-        //TODO: add support for parameters
-        try {
-          source.columns = (
-            await this._getLambdaRelationType(
-              this.serializeValueSpecification(_lambda([], [source.query])),
-              source.model,
-            )
-          ).columns;
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
-          );
+              const { model, database, schema, table, runtime } =
+                this._synthesizeMinimalModelContext({
+                  schemaName: tableCatalog.schemaName,
+                  tableName: tableCatalog.tableName,
+                  tableColumns: tableCatalog.columns.map((col) => {
+                    const column = new V1_Column();
+                    column.name = col[0] as string;
+                    // TODO: confirm this is in accordance to engine
+                    // check if we have a duckdb enum mapping
+                    // See https://duckdb.org/docs/sql/data_types/overview.html
+                    this._getColumnType(col, column);
+                    return column;
+                  }),
+                });
+
+              source.db = database.path;
+              source.model = model;
+              source.table = table.name;
+              source.schema = schema.name;
+              source.runtime = runtime.path;
+
+              const query = new V1_ClassInstance();
+              query.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
+              const storeAccessor = new V1_RelationStoreAccessor();
+              storeAccessor.path = [source.db, source.schema, source.table];
+              query.value = storeAccessor;
+              source.query = query;
+              try {
+                source.columns = (
+                  await this._getLambdaRelationType(
+                    this.serializeValueSpecification(
+                      _lambda([], [source.query]),
+                    ),
+                    source.model,
+                  )
+                ).columns;
+              } catch (error) {
+                assertErrorThrown(error);
+                throw new Error(
+                  `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+                );
+              }
+              return source;
+            } else {
+              const source = new LakehouseProducerDataCubeSource();
+              source.warehouse = rawSource.warehouse;
+              source.paths = rawSource.paths;
+              source.deploymentId = rawSource.deploymentId;
+
+              if (rawSource.query) {
+                source.query = await this.parseValueSpecification(
+                  guaranteeNonNullable(rawSource.query),
+                  false,
+                );
+              } else {
+                const query = new V1_ClassInstance();
+                query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
+                const ingestAccesor = new V1_RelationStoreAccessor();
+                ingestAccesor.path = rawSource.paths;
+                ingestAccesor.metadata = false;
+                query.value = ingestAccesor;
+                source.query = query;
+              }
+
+              const model = await this._synthesizeLakehouseProducerPMCD(
+                rawSource,
+                source,
+              );
+              source.model = V1_serializePureModelContextData(model);
+              try {
+                source.columns = (
+                  await this._getLambdaRelationType(
+                    this.serializeValueSpecification(
+                      _lambda([], [source.query]),
+                    ),
+                    source.model,
+                  )
+                ).columns;
+              } catch (error) {
+                assertErrorThrown(error);
+                throw new Error(
+                  `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+                );
+              }
+              return source;
+            }
+          }
+          case LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE: {
+            const rawSource =
+              RawLakehouseConsumerDataCubeSource.serialization.fromJson(value);
+
+            const source = new LakehouseConsumerDataCubeSource();
+            source.model = await this._synthesizeLakehouseConsumerPMCD(
+              rawSource,
+              source,
+            );
+            source.environment = rawSource.environment;
+            source.paths = rawSource.paths;
+            source.warehouse = rawSource.warehouse;
+            source.deploymentId = rawSource.deploymentId;
+            if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
+              source.dpCoordinates = rawSource.origin.dpCoordinates;
+            }
+
+            //TODO: add support for parameters
+            try {
+              source.columns = (
+                await this._getLambdaRelationType(
+                  this.serializeValueSpecification(_lambda([], [source.query])),
+                  source.model,
+                )
+              ).columns;
+            } catch (error) {
+              assertErrorThrown(error);
+              throw new Error(
+                `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+              );
+            }
+            return source;
+          }
+          default:
+            throw new UnsupportedDataCubeSourceTypeError(
+              `Can't process query source of type '${value._type}'`,
+            );
         }
-        return source;
+      } else {
+        throw typeError;
       }
-      default:
-        throw new UnsupportedOperationError(
-          `Can't process query source of type '${value._type}'`,
-        );
     }
   }
 
@@ -1566,7 +1560,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     ).returnType;
   }
 
-  async _getLambdaRelationType(
+  override async _getLambdaRelationType(
     lambda: PlainObject<V1_Lambda>,
     model: PlainObject<V1_PureModelContext>,
   ) {
