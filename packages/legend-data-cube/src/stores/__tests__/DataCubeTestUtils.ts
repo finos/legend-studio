@@ -15,15 +15,14 @@
  */
 
 import {
-  type V1_AppliedFunction,
-  type V1_Lambda,
-  type V1_PureModelContext,
   type V1_ValueSpecification,
-  V1_buildEngineError,
-  V1_buildParserError,
-  V1_EngineError,
-  V1_getGenericTypeFullPath,
+  type V1_Lambda,
+  type V1_AppliedFunction,
   V1_relationTypeModelSchema,
+  V1_getGenericTypeFullPath,
+  V1_buildEngineError,
+  V1_EngineError,
+  V1_buildParserError,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -49,13 +48,6 @@ import {
 import { deserialize } from 'serializr';
 
 export class TEST__DataCubeEngine extends DataCubeEngine {
-  override _getLambdaRelationType(
-    lambda: PlainObject<V1_Lambda>,
-    model: PlainObject<V1_PureModelContext>,
-  ): Promise<{ columns: { name: string; type: string }[] }> {
-    throw new Error('Method not implemented.');
-  }
-
   override getDataFromSource(source?: DataCubeSource): PlainObject {
     throw new Error('Method not implemented.');
   }

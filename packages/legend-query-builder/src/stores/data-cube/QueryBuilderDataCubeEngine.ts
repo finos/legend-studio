@@ -88,17 +88,6 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     this.letFuncsRawLambda = letFuncsRawLambda;
   }
 
-  override async _getLambdaRelationType(lambdaObject: PlainObject<V1_Lambda>) {
-    const lambda = guaranteeType(
-      V1_deserializeValueSpecification(
-        lambdaObject,
-        this.graphState.pluginManager.getPureProtocolProcessorPlugins(),
-      ),
-      V1_Lambda,
-    );
-    return this.getRelationType(this.buildRawLambdaFromValueSpec(lambda));
-  }
-
   override finalizeTimingRecord(
     stopWatch: StopWatch,
     timings?: TimingsRecord,

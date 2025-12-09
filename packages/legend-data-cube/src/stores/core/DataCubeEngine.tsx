@@ -23,7 +23,6 @@ import {
   V1_serializeValueSpecification,
   type V1_ExecuteInput,
   type V1_PureModelContextData,
-  type V1_PureModelContext,
 } from '@finos/legend-graph';
 import {
   getFilterOperation,
@@ -77,7 +76,6 @@ import {
   INTERNAL__DataCubeSource,
 } from './model/DataCubeSource.js';
 import {
-  _lambda,
   _primitiveValue,
   _selectFunction,
 } from './DataCubeQueryBuilderUtils.js';
@@ -87,18 +85,11 @@ import {
   type PlainObject,
   type TimingsRecord,
   type StopWatch,
-  assertErrorThrown,
 } from '@finos/legend-shared';
 import type { CachedDataCubeSource } from './model/CachedDataCubeSource.js';
 import { DataCubeSpecification } from './model/DataCubeSpecification.js';
 import { newConfiguration } from './DataCubeConfigurationBuilder.js';
 import type { DataCubeGridClientExportFormat } from '../view/grid/DataCubeGridClientEngine.js';
-import {
-  FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE,
-  FreeformTDSExpressionDataCubeSource,
-  RawFreeformTDSExpressionDataCubeSource,
-} from './model/FreeformTDSExpressionDataCubeSource.js';
-import { UnsupportedDataCubeSourceTypeError } from '../../__lib__/DataCubeErrorUtils.js';
 
 export type CompletionItem = {
   completion: string;
@@ -207,11 +198,6 @@ export abstract class DataCubeEngine {
     return V1_serializeValueSpecification(protocol, []);
   }
 
-  abstract _getLambdaRelationType(
-    lambda: PlainObject<V1_Lambda>,
-    model: PlainObject<V1_PureModelContext>,
-  ): Promise<{ columns: { name: string; type: string }[] }>;
-
   /**
    * By default, for a function chain, Pure grammar composer will extract the first parameter of the first function
    * and render it as the caller of that function rather than a parameter
@@ -257,42 +243,7 @@ export abstract class DataCubeEngine {
 
   // ---------------------------------- PROCESSOR ----------------------------------
 
-  async processSource(value: PlainObject): Promise<DataCubeSource> {
-    switch (value._type) {
-      case FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE: {
-        const rawSource =
-          RawFreeformTDSExpressionDataCubeSource.serialization.fromJson(value);
-        const source = new FreeformTDSExpressionDataCubeSource();
-        if (rawSource.mapping) {
-          source.mapping = rawSource.mapping;
-        }
-        source.runtime = rawSource.runtime;
-        source.model = rawSource.model;
-        source.query = await this.parseValueSpecification(
-          rawSource.query,
-          false,
-        );
-        try {
-          source.columns = (
-            await this._getLambdaRelationType(
-              this.serializeValueSpecification(_lambda([], [source.query])),
-              source.model,
-            )
-          ).columns;
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
-          );
-        }
-        return source;
-      }
-      default:
-        throw new UnsupportedDataCubeSourceTypeError(
-          `Can't process query source of type '${value._type}'`,
-        );
-    }
-  }
+  abstract processSource(sourceData: PlainObject): Promise<DataCubeSource>;
 
   abstract getDataFromSource(source?: DataCubeSource): PlainObject;
 

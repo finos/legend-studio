@@ -25,17 +25,15 @@ import {
   type DataCubeExecutionOptions,
 } from '@finos/legend-data-cube';
 import {
-  type V1_AppliedFunction,
-  type V1_PureModelContext,
-  type V1_ValueSpecification,
   TDSExecutionResult,
-  V1_buildEngineError,
+  type V1_AppliedFunction,
   V1_buildExecutionResult,
   V1_deserializeExecutionResult,
-  V1_deserializeValueSpecification,
+  type V1_Lambda,
+  type V1_ValueSpecification,
+  V1_buildEngineError,
   V1_EngineError,
   V1_getGenericTypeFullPath,
-  V1_Lambda,
   V1_relationTypeModelSchema,
 } from '@finos/legend-graph';
 import {
@@ -74,17 +72,6 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   }
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
-
-  override _getLambdaRelationType(
-    lambdaObject: PlainObject<V1_Lambda>,
-    model: PlainObject<V1_PureModelContext>,
-  ): Promise<{ columns: { name: string; type: string }[] }> {
-    const lambda = guaranteeType(
-      V1_deserializeValueSpecification(lambdaObject, []),
-      V1_Lambda,
-    );
-    return this._getQueryRelationType(lambda);
-  }
 
   override async processSource(sourceData: PlainObject) {
     switch (sourceData._type) {
