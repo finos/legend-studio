@@ -30,6 +30,7 @@ import {
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
 import { createSpy } from '@finos/legend-shared/test';
 import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
+import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -116,6 +117,9 @@ const setupLakehouseDataProductTest = async (
 describe('LakehouseDataProduct', () => {
   describe('Basic rendering', () => {
     test('Loads LakehouseDataProduct with SDLC Data Product and displays title, description, and access point groups', async () => {
+      MockedMonacoEditorAPI.createModel.mockReturnValue({
+        setValue(): void {},
+      });
       await setupLakehouseDataProductTest(
         MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
         11111,
@@ -132,6 +136,9 @@ describe('LakehouseDataProduct', () => {
     });
 
     test('Loads LakehouseDataProduct with Ad-Hoc Data Product and displays title, description, and access point groups', async () => {
+      MockedMonacoEditorAPI.createModel.mockReturnValue({
+        setValue(): void {},
+      });
       await setupLakehouseDataProductTest(
         MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT,
         2222,
