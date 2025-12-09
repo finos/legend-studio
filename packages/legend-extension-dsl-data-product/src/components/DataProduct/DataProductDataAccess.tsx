@@ -317,7 +317,7 @@ const AccessPointTable = observer(
             guaranteeNonNullable(getIngestDeploymentServerConfigName(userEnv)),
           )
           .catch((error) => {
-            accessPointState.apgState.applicationStore.notificationService.notifyError(
+            accessPointState.apgState.applicationStore.notificationService.notifyWarning(
               `Error fetching access point sample data from engine: ${error.message}`,
             );
           });
@@ -485,8 +485,7 @@ const AccessPointTable = observer(
           {selectedTab === DataProductTabs.COLUMNS && (
             <>
               {accessPointState.fetchingRelationTypeState.isInProgress ||
-              accessPointState.fetchingRelationElement.isInProgress ||
-              !accessPointState.relationElement ? (
+              accessPointState.fetchingRelationElement.isInProgress ? (
                 <Box className="data-product__viewer__more-info__loading-indicator">
                   <CubesLoadingIndicator isLoading={true}>
                     <CubesLoadingIndicatorIcon />
