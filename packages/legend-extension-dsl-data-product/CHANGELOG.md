@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.33
+
+### Patch Changes
+
+- [#4691](https://github.com/finos/legend-studio/pull/4691) [`590c24d`](https://github.com/finos/legend-studio/commit/590c24d92886138a1a90b144b51d6f09f729e8e1) ([@gs-gunjan](https://github.com/gs-gunjan)) - marketplace: adding support for querying sample data
+
 ## 0.0.32
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.3.19
+
+### Patch Changes
+
+- [#4691](https://github.com/finos/legend-studio/pull/4691) [`590c24d`](https://github.com/finos/legend-studio/commit/590c24d92886138a1a90b144b51d6f09f729e8e1) ([@gs-gunjan](https://github.com/gs-gunjan)) - introduce pure model context combination
+
+- [#4691](https://github.com/finos/legend-studio/pull/4691) [`590c24d`](https://github.com/finos/legend-studio/commit/590c24d92886138a1a90b144b51d6f09f729e8e1) ([@gs-gunjan](https://github.com/gs-gunjan)) - marketplace: adding support for querying sample data
+
 ## 32.3.18
 
 ### Patch Changes
