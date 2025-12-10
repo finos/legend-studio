@@ -104,6 +104,7 @@ export interface SDLCServerClientConfig {
   env: string;
   serverUrl: string;
   baseHeaders?: RequestHeaders | undefined;
+  client?: string | undefined;
 }
 
 export class SDLCServerClient extends AbstractServerClient {
@@ -112,6 +113,7 @@ export class SDLCServerClient extends AbstractServerClient {
   private _platformDependencyConfiguration?: Platform[] | undefined;
 
   private env: string;
+  private client?: string | undefined;
 
   constructor(config: SDLCServerClientConfig) {
     super({
@@ -119,6 +121,7 @@ export class SDLCServerClient extends AbstractServerClient {
       baseHeaders: config.baseHeaders,
     });
     this.env = config.env;
+    this.client = config.client;
   }
 
   setCurrentUser = (value: User): void => {
@@ -179,8 +182,11 @@ export class SDLCServerClient extends AbstractServerClient {
   static authorizeCallbackUrl = (
     authenticationServerUrl: string,
     callbackURI: string,
-  ): string =>
-    `${authenticationServerUrl}/auth/authorize?redirect_uri=${callbackURI}`;
+    client?: string,
+  ): string => {
+    const clientParam = client ? `&client_name=${encodeURIComponent(client)}` : '';
+    return `${authenticationServerUrl}/auth/authorize?redirect_uri=${callbackURI}${clientParam}`;
+  };
 
   private _auth = (): string => `${this.baseUrl}/auth`;
   isAuthorized = (): Promise<boolean> => this.get(`${this._auth()}/authorized`);
