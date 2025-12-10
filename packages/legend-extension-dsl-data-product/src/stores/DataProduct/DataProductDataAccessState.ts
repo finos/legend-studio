@@ -252,10 +252,14 @@ export class DataProductDataAccessState {
     }
 
     this.ingestEnvironmentFetchState.inProgress();
+await Promise.all([
+  (async () => {
     await this.fetchLakehouseIngestEnvironmentSummaries(token);
     await this.fetchLakehouseIngestEnvironmentDetails(token);
-    await this.fetchLakehouseIngestEnv(token);
-    await this.fetchEntitlementsEnvs(token);
+  })(),
+ this.fetchLakehouseIngestEnv(token),
+ this.fetchEntitlementsEnvs(token),
+]);
     this.ingestEnvironmentFetchState.complete();
   }
 
