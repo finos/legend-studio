@@ -22,6 +22,7 @@ import { InheritanceDiagramRenderer } from './InheritanceDiagramRenderer.js';
 import { DSL_DIAGRAM_TEST_ID } from '../__lib__/DSL_Diagram_LegendStudioTesting.js';
 import { useResizeDetector } from '@finos/legend-art';
 import { type DiagramRendererCallbacks } from '@finos/legend-extension-dsl-diagram';
+import { positionedRectangle_setRectangle } from '../stores/DSL_Diagram_GraphModifierHelper.js';
 
 export const ClassDiagramPreview = observer((props: { _class: Class }) => {
   const { _class } = props;
@@ -56,7 +57,7 @@ export const ClassDiagramPreview = observer((props: { _class: Class }) => {
       if (!currentRenderer) {
         const callbacks: DiagramRendererCallbacks = {
           onPositionedRectangle_setRectangle: (positionedRect, rectangle) => {
-            positionedRect.rectangle = rectangle;
+            positionedRectangle_setRectangle(positionedRect, rectangle);
           },
         };
         const newRender = new InheritanceDiagramRenderer(
