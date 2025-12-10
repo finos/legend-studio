@@ -73,7 +73,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
-  generateLakehouseTaskPath,
+  generateContractPagePath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import {
   DataSpaceViewerState,
@@ -418,9 +418,9 @@ export class LegendMarketplaceProductViewerStore {
         this.marketplaceBaseStore.lakehouseIngestServerClient,
         this.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
         {
-          getContractTaskUrl: (taskId: string) =>
+          getContractTaskUrl: (contractId: string, taskId: string) =>
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-              generateLakehouseTaskPath(taskId),
+              generateContractPagePath(contractId, taskId),
             ),
           getDataProductUrl: (_dataProductId: string, _deploymentId: number) =>
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(

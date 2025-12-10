@@ -264,24 +264,22 @@ const ContractEscalationModal = (props: {
   );
 };
 
-export const EntitlementsDataContractViewer = observer(
+export const EntitlementsDataContractContent = observer(
   (props: {
-    open: boolean;
-    onClose: () => void;
     currentViewer: EntitlementsDataContractViewerState;
-    getContractTaskUrl: (taskId: string) => string;
+    getContractTaskUrl: (contractId: string, taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
     initialSelectedUser?: string | undefined;
     onRefresh?: (() => void) | (() => Promise<void>);
+    isReadOnly?: boolean | undefined;
   }) => {
     const {
-      open,
       currentViewer,
       getContractTaskUrl,
       getDataProductUrl,
-      onClose,
       initialSelectedUser,
       onRefresh,
+      isReadOnly,
     } = props;
     const auth = useAuth();
     const consumer = currentViewer.liteContract.consumer;
@@ -339,7 +337,8 @@ export const EntitlementsDataContractViewer = observer(
 
     const [selectedTargetUser, setSelectedTargetUser] = useState<
       string | undefined
-    >(initialSelectedUser ?? targetUsers?.[0]);
+    >(undefined);
+
     const [isLoading, setIsLoading] = useState(false);
     const [showEscalationModal, setShowEscalationModal] = useState(false);
 
@@ -359,10 +358,20 @@ export const EntitlementsDataContractViewer = observer(
     ]);
 
     useEffect(() => {
-      if (selectedTargetUser === undefined) {
-        setSelectedTargetUser(initialSelectedUser ?? targetUsers?.[0]);
+      if (selectedTargetUser === undefined && targetUsers?.[0]) {
+        setSelectedTargetUser(targetUsers[0]);
       }
-    }, [initialSelectedUser, selectedTargetUser, targetUsers]);
+    }, [selectedTargetUser, targetUsers]);
+
+    useEffect(() => {
+      if (
+        initialSelectedUser !== undefined &&
+        targetUsers?.includes(initialSelectedUser) &&
+        selectedTargetUser !== initialSelectedUser
+      ) {
+        setSelectedTargetUser(initialSelectedUser);
+      }
+    }, [initialSelectedUser, targetUsers, selectedTargetUser]);
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
@@ -382,10 +391,6 @@ export const EntitlementsDataContractViewer = observer(
         task.rec.consumer === selectedTargetUser &&
         task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
     );
-    const isContractInProgressForUser =
-      privilegeManagerApprovalTask?.rec.status ===
-        V1_UserApprovalStatus.PENDING ||
-      dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING;
     const showEscalationButton =
       selectedTargetUser ===
         currentViewer.applicationStore.identityService.currentUser ||
@@ -492,10 +497,10 @@ export const EntitlementsDataContractViewer = observer(
           </b>
           {!(consumer instanceof V1_ProducerScope) &&
           targetUsers !== undefined ? (
-            targetUsers.length === 1 ? (
+            isReadOnly || targetUsers.length === 1 ? (
               <UserRenderer
-                key={targetUsers[0]}
-                userId={targetUsers[0]}
+                key={selectedTargetUser ?? targetUsers[0]}
+                userId={selectedTargetUser ?? targetUsers[0]}
                 applicationStore={currentViewer.applicationStore}
                 userSearchService={currentViewer.userSearchService}
               />
@@ -542,6 +547,7 @@ export const EntitlementsDataContractViewer = observer(
             >
               <Link
                 href={getContractTaskUrl(
+                  currentViewer.liteContract.guid,
                   privilegeManagerApprovalTask.rec.taskId,
                 )}
                 target="_blank"
@@ -552,7 +558,10 @@ export const EntitlementsDataContractViewer = observer(
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    getContractTaskUrl(privilegeManagerApprovalTask.rec.taskId),
+                    getContractTaskUrl(
+                      currentViewer.liteContract.guid,
+                      privilegeManagerApprovalTask.rec.taskId,
+                    ),
                   )
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
@@ -624,7 +633,10 @@ export const EntitlementsDataContractViewer = observer(
               }}
             >
               <Link
-                href={getContractTaskUrl(dataOwnerApprovalTask.rec.taskId)}
+                href={getContractTaskUrl(
+                  currentViewer.liteContract.guid,
+                  dataOwnerApprovalTask.rec.taskId,
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -633,7 +645,10 @@ export const EntitlementsDataContractViewer = observer(
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    getContractTaskUrl(dataOwnerApprovalTask.rec.taskId),
+                    getContractTaskUrl(
+                      currentViewer.liteContract.guid,
+                      dataOwnerApprovalTask.rec.taskId,
+                    ),
                   )
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
@@ -714,21 +729,10 @@ export const EntitlementsDataContractViewer = observer(
 
     return (
       <>
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
-          <DialogTitle>
-            {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
-          </DialogTitle>
-          <IconButton
-            onClick={onClose}
-            className="marketplace-dialog-close-btn"
-          >
-            <CloseIcon />
-          </IconButton>
-          <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-            <CubesLoadingIndicator isLoading={isLoading}>
-              <CubesLoadingIndicatorIcon />
-            </CubesLoadingIndicator>
-            {!isLoading && (
+        <CubesLoadingIndicator isLoading={isLoading}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+        {!isLoading && (
               <>
                 <div>
                   Access request for{' '}
@@ -768,6 +772,7 @@ export const EntitlementsDataContractViewer = observer(
                 {contractTimelineSection}
               </>
             )}
+
             <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
               {currentViewer.subscription !== undefined && (
                 <Alert
@@ -814,8 +819,7 @@ export const EntitlementsDataContractViewer = observer(
                 </span>
               </Box>
             </Box>
-          </DialogContent>
-        </Dialog>
+
         <ContractEscalationModal
           open={showEscalationModal && canEscalateContract}
           onClose={() => setShowEscalationModal(false)}
@@ -824,6 +828,43 @@ export const EntitlementsDataContractViewer = observer(
           refresh={refresh}
         />
       </>
+    );
+  },
+);
+
+export const EntitlementsDataContractViewer = observer(
+  (props: {
+    open: boolean;
+    onClose: () => void;
+    currentViewer: EntitlementsDataContractViewerState;
+    getContractTaskUrl: (contractId: string, taskId: string) => string;
+    getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
+    initialSelectedUser?: string | undefined;
+    onRefresh?: (() => void) | (() => Promise<void>);
+    isReadOnly?: boolean | undefined;
+  }) => {
+    const { open, onClose, currentViewer, ...contentProps } = props;
+
+    const isContractInProgressForUser =
+      currentViewer.associatedTasks?.some(
+        (task) => task.rec.status === V1_UserApprovalStatus.PENDING,
+      ) ?? false;
+
+    return (
+      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
+        <DialogTitle>
+          {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
+        </DialogTitle>
+        <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
+          <CloseIcon />
+        </IconButton>
+        <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
+          <EntitlementsDataContractContent
+            currentViewer={currentViewer}
+            {...contentProps}
+          />
+        </DialogContent>
+      </Dialog>
     );
   },
 );

@@ -79,6 +79,13 @@ const LakehouseEntitlements = React.lazy(() =>
     }),
   ),
 );
+const LakehouseDataContractTask = React.lazy(() =>
+  import('../pages/Lakehouse/entitlements/LakehouseDataContract.js').then(
+    (module) => ({
+      default: module.LakehouseDataContractTask,
+    }),
+  ),
+);
 const LakehouseAdmin = React.lazy(() =>
   import('../pages/Lakehouse/admin/LakehouseAdmin.js').then((module) => ({
     default: module.LakehouseAdmin,
@@ -308,6 +315,14 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LEGACY_DATA_PRODUCT}
               element={<LegacyDataProduct />}
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACT_TASK
+              }
+              element={React.createElement(
+                useProtectedPage(LakehouseDataContractTask),
+              )}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}
