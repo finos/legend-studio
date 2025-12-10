@@ -541,7 +541,6 @@ export const DataProductSubscriptionViewer = observer(
           headerName: 'Contract ID',
           valueGetter: (p) => p.data?.dataContractId,
           flex: 1,
-          hide: false,
         },
       ],
       [
