@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.27
+
+### Patch Changes
+
+- [#4691](https://github.com/finos/legend-studio/pull/4691) [`590c24d`](https://github.com/finos/legend-studio/commit/590c24d92886138a1a90b144b51d6f09f729e8e1) ([@gs-gunjan](https://github.com/gs-gunjan)) - introduce pure model context combination
+
 ## 0.7.26
 
 ## 0.7.25

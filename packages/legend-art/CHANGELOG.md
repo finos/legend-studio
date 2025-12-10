@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.134
+
+### Patch Changes
+
+- [#4696](https://github.com/finos/legend-studio/pull/4696) [`a066d37`](https://github.com/finos/legend-studio/commit/a066d37b8264613f7c399ec11a2832ee3e8d9e41) ([@TharunRajeev](https://github.com/TharunRajeev)) - Disbabled props added to PanelDropZone.
+
 ## 7.1.133
 
 ### Patch Changes
