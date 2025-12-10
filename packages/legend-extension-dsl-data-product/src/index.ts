@@ -27,11 +27,13 @@ export * from './stores/DataProduct/DataProductAPGState.js';
 export * from './stores/DataProduct/DataProductConfig.js';
 export * from './stores/DataProduct/DataProductDataAccessState.js';
 export * from './stores/DataProduct/DataProductViewerState.js';
+export * from './stores/DataProduct/DataProductAccessPointState.js';
 export * from './stores/DataProduct/EntitlementsDataContractViewerState.js';
 export * from './stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 export * from './stores/TerminalProduct/TerminalProductViewerState.js';
 export * from './stores/TerminalProduct/TerminalProductDataAccessState.js';
 export * from './components/DataProduct/DataContract/EntitlementsDataContractViewer.js';
+export { TabMessageScreen } from './components/DataProduct/DataProductDataAccess.js';
 
 export * from './utils/DataContractUtils.js';
 export * from './utils/LakehouseUtils.js';

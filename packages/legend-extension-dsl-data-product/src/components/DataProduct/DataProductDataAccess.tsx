@@ -29,7 +29,7 @@ import {
   PowerBiIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   type DataGridColumnDefinition,
   DataGrid,
@@ -78,9 +78,13 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
   isNonEmptyString,
+  isNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { type DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
+import {
+  type DataProductAccessPointCodeConfiguration,
+  type DataProductDataAccessState,
+} from '../../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
   generateAnchorForSection,
@@ -108,6 +112,7 @@ import {
 import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
+const NOT_SUPPORTED = 'Not Supported';
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
@@ -138,7 +143,7 @@ export const TabMessageScreen = observer((props: { message: string }) => {
   );
 });
 
-export const PowerBiScreen = observer(
+const PowerBiScreen = observer(
   (props: {
     accessPointState: DataProductAccessPointState;
     dataAccessState: DataProductDataAccessState | undefined;
@@ -197,7 +202,7 @@ export const SqlPlaygroundScreen = observer(
   },
 );
 
-export const DataCubeScreen = observer(
+const DataCubeScreen = observer(
   (props: {
     accessPointState: DataProductAccessPointState;
     dataAccessState: DataProductDataAccessState | undefined;
@@ -205,9 +210,12 @@ export const DataCubeScreen = observer(
     const { accessPointState, dataAccessState } = props;
     const openDataCube =
       accessPointState.apgState.dataProductViewerState.openDataCube;
+    if (!dataAccessState) {
+      return <TabMessageScreen message={NOT_SUPPORTED} />;
+    }
     const dataProductOrigin =
-      dataAccessState?.entitlementsDataProductDetails.origin;
-    if (!dataAccessState || !dataProductOrigin || !openDataCube) {
+      dataAccessState.entitlementsDataProductDetails.origin;
+    if (!dataProductOrigin || !openDataCube) {
       return <TabMessageScreen message={WORK_IN_PROGRESS} />;
     }
     const envs = dataAccessState.filteredDataProductQueryEnvs;
@@ -307,6 +315,14 @@ export const DataCubeScreen = observer(
   },
 );
 
+const enum DataProductAccessPointTabs {
+  COLUMNS = 'Columns',
+  GRAMMAR = 'Grammar',
+  DATACUBE = 'Datacube',
+  POWER_BI = 'Power BI',
+  SQL = 'SQL',
+}
+
 const AccessPointTable = observer(
   (props: {
     accessPointState: DataProductAccessPointState;
@@ -315,23 +331,26 @@ const AccessPointTable = observer(
     const { accessPointState, dataAccessState } = props;
     const [gridApi, setGridApi] =
       useState<DataGridApi<V1_RelationTypeColumn> | null>(null);
-
-    const enum DataProductTabs {
-      COLUMNS = 'Columns',
-      GRAMMAR = 'Grammar',
-      DATACUBE = 'Datacube',
-      POWER_BI = 'Power BI',
-      SQL = 'SQL',
-    }
-    const [selectedTab, setSelectedTab] = useState(DataProductTabs.COLUMNS);
+    const [selectedTab, setSelectedTab] = useState<
+      DataProductAccessPointTabs | string
+    >(DataProductAccessPointTabs.COLUMNS);
     const handleTabChange = (
       _: React.SyntheticEvent,
-      newValue: DataProductTabs,
+      newValue: DataProductAccessPointTabs | string,
     ) => {
       setSelectedTab(newValue);
     };
-
     const userEnv = dataAccessState?.resolvedUserEnv;
+    const codeExtensions: DataProductAccessPointCodeConfiguration[] = useMemo(
+      () =>
+        dataAccessState?.dataAccessPlugins
+          .map((plugin) =>
+            plugin.getExtraDataProductAccessPointCodeConfiguration?.(),
+          )
+          .flat()
+          .filter(isNonNullable) ?? [],
+      [dataAccessState?.dataAccessPlugins],
+    );
 
     useEffect(() => {
       if (
@@ -427,90 +446,12 @@ const AccessPointTable = observer(
           },
         },
       ];
-
-    return (
-      <div>
-        <div className="data-product__viewer__tabs-bar">
-          <Tabs
-            value={selectedTab}
-            onChange={handleTabChange}
-            className="data-product__viewer__tabs"
-          >
-            <Tab
-              className={clsx('data-product__viewer__tab', {
-                'data-product__viewer__tab--selected':
-                  selectedTab === DataProductTabs.COLUMNS,
-              })}
-              label={<span>Column Specifications</span>}
-              value={DataProductTabs.COLUMNS}
-            />
-            <Tab
-              className={clsx('data-product__viewer__tab', {
-                'data-product__viewer__tab--selected':
-                  selectedTab === DataProductTabs.GRAMMAR,
-              })}
-              label={<span>Grammar</span>}
-              value={DataProductTabs.GRAMMAR}
-            />
-            <Tab
-              className={clsx('data-product__viewer__tab', {
-                'data-product__viewer__tab--selected':
-                  selectedTab === DataProductTabs.DATACUBE,
-              })}
-              label={
-                <span className="label-container">
-                  <DataCubeIcon.Cube
-                    className={clsx('data-product__viewer__tab-icon', {
-                      'data-product__viewer__tab-icon--selected':
-                        selectedTab === DataProductTabs.DATACUBE,
-                    })}
-                  />
-                  <span>Datacube</span>
-                </span>
-              }
-              value={DataProductTabs.DATACUBE}
-            />
-            <Tab
-              className={clsx('data-product__viewer__tab', {
-                'data-product__viewer__tab--selected':
-                  selectedTab === DataProductTabs.POWER_BI,
-              })}
-              label={
-                <span className="label-container">
-                  <PowerBiIcon
-                    className={clsx('data-product__viewer__tab-icon', {
-                      'data-product__viewer__tab-icon--selected':
-                        selectedTab === DataProductTabs.POWER_BI,
-                    })}
-                  />
-                  <span>Power BI</span>
-                </span>
-              }
-              value={DataProductTabs.POWER_BI}
-            />
-            <Tab
-              className={clsx('data-product__viewer__tab', {
-                'data-product__viewer__tab--selected':
-                  selectedTab === DataProductTabs.SQL,
-              })}
-              label={
-                <span className="label-container">
-                  <SQLIcon
-                    className={clsx('data-product__viewer__tab-icon', {
-                      'data-product__viewer__tab-icon--selected':
-                        selectedTab === DataProductTabs.SQL,
-                    })}
-                  />
-                  <span>SQL</span>
-                </span>
-              }
-              value={DataProductTabs.SQL}
-            />
-          </Tabs>
-        </div>
-        <div className="access_group_gap" />
-        <Box className="data-product__viewer__more-info__container">
-          {selectedTab === DataProductTabs.COLUMNS && (
+    const renderTab = (
+      _selectedTab: DataProductAccessPointTabs | string,
+    ): React.ReactNode => {
+      switch (_selectedTab) {
+        case DataProductAccessPointTabs.COLUMNS:
+          return (
             <>
               {accessPointState.fetchingRelationTypeState.isInProgress ||
               accessPointState.fetchingRelationElement.isInProgress ? (
@@ -555,8 +496,9 @@ const AccessPointTable = observer(
                 <TabMessageScreen message="Unable to fetch access point columns" />
               )}
             </>
-          )}
-          {selectedTab === DataProductTabs.GRAMMAR && (
+          );
+        case DataProductAccessPointTabs.GRAMMAR:
+          return (
             <>
               {accessPointState.fetchingGrammarState.isInProgress ? (
                 <Box className="data-product__viewer__more-info__loading-indicator">
@@ -586,22 +528,109 @@ const AccessPointTable = observer(
                 <TabMessageScreen message="Unable to fetch access point grammar" />
               )}
             </>
-          )}
-          {selectedTab === DataProductTabs.DATACUBE && (
+          );
+        case DataProductAccessPointTabs.DATACUBE:
+          return (
             <DataCubeScreen
               accessPointState={accessPointState}
               dataAccessState={dataAccessState}
             />
-          )}
-          {selectedTab === DataProductTabs.POWER_BI && (
+          );
+        case DataProductAccessPointTabs.POWER_BI:
+          return (
             <PowerBiScreen
               accessPointState={accessPointState}
               dataAccessState={dataAccessState}
             />
-          )}
-          {selectedTab === DataProductTabs.SQL && (
-            <TabMessageScreen message={WORK_IN_PROGRESS} />
-          )}
+          );
+        case DataProductAccessPointTabs.SQL:
+          return <TabMessageScreen message={WORK_IN_PROGRESS} />;
+        default:
+          const ext = codeExtensions.find((e) => e.key === _selectedTab);
+          return ext ? ext.renderer(accessPointState, dataAccessState) : null;
+      }
+    };
+
+    const tabs = [
+      {
+        key: DataProductAccessPointTabs.COLUMNS,
+        label: 'Column Specifications',
+        icon: null,
+      },
+      {
+        key: DataProductAccessPointTabs.GRAMMAR,
+        label: 'Grammar',
+        icon: null,
+      },
+      {
+        key: DataProductAccessPointTabs.DATACUBE,
+        label: 'Datacube',
+        icon: <DataCubeIcon.Cube />,
+      },
+      {
+        key: DataProductAccessPointTabs.POWER_BI,
+        label: 'Power BI',
+        icon: <PowerBiIcon />,
+      },
+      {
+        key: DataProductAccessPointTabs.SQL,
+        label: 'SQL',
+        icon: <SQLIcon />,
+      },
+    ];
+    return (
+      <div>
+        <div className="data-product__viewer__tabs-bar">
+          <Tabs
+            value={selectedTab}
+            onChange={handleTabChange}
+            className="data-product__viewer__tabs"
+          >
+            {tabs.map((tab) => (
+              <Tab
+                key={tab.key}
+                className={clsx('data-product__viewer__tab', {
+                  'data-product__viewer__tab--selected':
+                    selectedTab === tab.key,
+                })}
+                value={tab.key}
+                label={
+                  !tab.icon ? (
+                    <span>{tab.label}</span>
+                  ) : (
+                    <span className="label-container">
+                      {tab.icon}
+                      <span>{tab.label}</span>
+                    </span>
+                  )
+                }
+              />
+            ))}
+            {codeExtensions.map((ext) => (
+              <Tab
+                key={ext.key}
+                className={clsx('data-product__viewer__tab', {
+                  'data-product__viewer__tab--selected':
+                    selectedTab === ext.key,
+                })}
+                value={ext.key}
+                label={
+                  !ext.icon ? (
+                    <span>{ext.label}</span>
+                  ) : (
+                    <span className="label-container">
+                      {ext.icon}
+                      <span>{ext.label}</span>
+                    </span>
+                  )
+                }
+              />
+            ))}
+          </Tabs>
+        </div>
+        <div className="access_group_gap" />
+        <Box className="data-product__viewer__more-info__container">
+          {renderTab(selectedTab)}
         </Box>
       </div>
     );

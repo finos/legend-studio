@@ -15,7 +15,10 @@
  */
 
 import type { LegendApplicationPlugin } from '@finos/legend-application';
-import type { ContractConsumerTypeRendererConfig } from './DataProduct/DataProductDataAccessState.js';
+import type {
+  ContractConsumerTypeRendererConfig,
+  DataProductAccessPointCodeConfiguration,
+} from './DataProduct/DataProductDataAccessState.js';
 import type { AccessPointGroupAccess } from './DataProduct/DataProductAPGState.js';
 
 export interface DataProductDataAccess_LegendApplicationPlugin_Extension
@@ -35,4 +38,9 @@ export interface DataProductDataAccess_LegendApplicationPlugin_Extension
   getExtraAccessPointGroupAccessInfo?(
     access: AccessPointGroupAccess,
   ): string | undefined;
+
+  /**
+   * Config to add extra data product access point code for other code types
+   */
+  getExtraDataProductAccessPointCodeConfiguration?(): DataProductAccessPointCodeConfiguration[];
 }
