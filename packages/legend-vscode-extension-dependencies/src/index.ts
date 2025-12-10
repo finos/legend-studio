@@ -324,7 +324,4 @@ export {
   DataCubeFunction,
   DataCubeSource,
   DataCubeSpecification,
-  FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE,
-  FreeformTDSExpressionDataCubeSource,
-  RawFreeformTDSExpressionDataCubeSource,
 } from '@finos/legend-data-cube';
