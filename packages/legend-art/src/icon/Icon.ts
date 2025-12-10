@@ -482,6 +482,7 @@ import {
   FaPython,
   FaStackOverflow,
   FaGitlab,
+  FaCopy,
 } from 'react-icons/fa';
 
 export const ArchiveIcon = FaArchive;
@@ -628,6 +629,7 @@ export const WrenchIcon = FaWrench;
 export const PythonIcon = FaPython;
 export const StackOverflowIcon = FaStackOverflow;
 export const GitlabIcon = FaGitlab;
+export const CopyFilledIcon = FaCopy;
 
 //======================================================= fa6 ======================================================
 
