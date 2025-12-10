@@ -62,6 +62,7 @@ import {
 } from '../../__lib__/DSL_DataProduct_Event.js';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
+import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
 
 export type ContractConsumerTypeRendererConfig = {
   type: string;
@@ -83,6 +84,16 @@ export type ContractConsumerTypeRendererConfig = {
 export type DataProductDataAccessStateActions = {
   getContractTaskUrl: (taskId: string) => string;
   getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
+};
+
+export type DataProductAccessPointCodeConfiguration = {
+  key: string;
+  label: string;
+  icon: React.ReactNode | null;
+  renderer: (
+    accessPointState: DataProductAccessPointState,
+    dataAccessState: DataProductDataAccessState | undefined,
+  ) => React.ReactNode;
 };
 
 export class DataProductDataAccessState {
@@ -110,6 +121,7 @@ export class DataProductDataAccessState {
     | V1_DataContractSubscriptions
     | undefined = undefined;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
+  lakehouseIngestEnv: IngestDeploymentServerConfig | undefined;
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
   userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined;
 
@@ -141,6 +153,7 @@ export class DataProductDataAccessState {
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
       setEntitlementsEnv: action,
+      setLakehouseIngestEnv: action,
       createContract: flow,
       fetchContracts: action,
       fetchIngestEnvironmentDetails: action,
@@ -216,6 +229,10 @@ export class DataProductDataAccessState {
     this.lakehouseIngestEnvironmentSummaries = summaries;
   }
 
+  setLakehouseIngestEnv(env: IngestDeploymentServerConfig | undefined): void {
+    this.lakehouseIngestEnv = env;
+  }
+
   setLakehouseIngestEnvironmentDetails(details: V1_IngestEnvironment[]): void {
     this.lakehouseIngestEnvironmentDetails = details;
   }
@@ -237,6 +254,7 @@ export class DataProductDataAccessState {
     this.ingestEnvironmentFetchState.inProgress();
     await this.fetchLakehouseIngestEnvironmentSummaries(token);
     await this.fetchLakehouseIngestEnvironmentDetails(token);
+    await this.fetchLakehouseIngestEnv(token);
     await this.fetchEntitlementsEnvs(token);
     this.ingestEnvironmentFetchState.complete();
   }
@@ -408,6 +426,27 @@ export class DataProductDataAccessState {
       this.applicationStore.logService.warn(
         LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load lakehouse environment summaries: ${error.message}`,
+      );
+    }
+  }
+
+  async fetchLakehouseIngestEnv(token: string | undefined): Promise<void> {
+    try {
+      const did = this.entitlementsDataProductDetails.deploymentId;
+      const ingestEnv =
+        await this.lakehousePlatformServerClient.findProducerServer(
+          did,
+          undefined,
+          token,
+        );
+      const ingestServerUrl =
+        IngestDeploymentServerConfig.serialization.fromJson(ingestEnv);
+      this.setLakehouseIngestEnv(ingestServerUrl);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
+        `Unable to find lakehouse ingest env with did: ${this.entitlementsDataProductDetails.deploymentId}, error: ${error.message}`,
       );
     }
   }

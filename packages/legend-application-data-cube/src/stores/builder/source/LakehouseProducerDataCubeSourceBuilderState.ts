@@ -150,7 +150,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       const producerServer =
         await this._platformServerClient.findProducerServer(
           guaranteeNonNullable(this.deploymentId),
-          'DEPLOYMENT',
+          undefined,
           access_token,
         );
       const ingestServerUrl =

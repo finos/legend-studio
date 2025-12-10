@@ -1992,6 +1992,27 @@
   }
 }
 
+.data-product__viewer__tab-code {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+
+  &__content {
+    height: calc(100% - 3.8rem);
+    border: 0.1rem solid var(--color-dark-grey-200);
+    position: relative;
+  }
+
+  &__actions {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    gap: 0.5rem;
+    min-height: 3.8rem;
+  }
+}
+
 .data-product__viewer__tab {
   min-height: 3rem;
   padding: 0 1rem;
