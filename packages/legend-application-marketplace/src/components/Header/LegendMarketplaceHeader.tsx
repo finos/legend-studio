@@ -87,6 +87,9 @@ const LegendMarketplaceBaseHeader = observer(
     const applicationStore = useApplicationStore();
     const auth = useAuth();
 
+    const isDarkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
+
     const [headerBackdropOpacity, setHeaderBackdropOpacity] = useState(1);
     const [headerBlurOpacity, setHeaderBlurOpacity] = useState(0);
 
@@ -155,10 +158,13 @@ const LegendMarketplaceBaseHeader = observer(
               onClick={() => navigateToHome()}
             >
               <img
-                src="/assets/legendmarketplacehomelogo.png"
-                alt="Legend Logo"
+                src={
+                  isDarkMode
+                    ? '/assets/headerLogoDark.svg'
+                    : '/assets/headerLogoLight.svg'
+                }
+                alt="Goldman Sachs Logo"
                 className="legend-marketplace-header__logo"
-                style={{ height: 35 }}
               />
             </div>
             <LegendMarketPlaceHeaderTabs pages={pages} />

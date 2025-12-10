@@ -23,8 +23,6 @@
   }
 
   &__content {
-    background: var(--color-dark-grey-200);
-    color: var(--color-light-grey-150);
     border-radius: 0.3rem;
     align-items: flex-start;
   }
@@ -33,10 +31,6 @@
     display: flex;
     align-items: flex-start;
     cursor: pointer;
-
-    &:active {
-      background: var(--color-dark-grey-100);
-    }
   }
 
   &__message__content__icon {

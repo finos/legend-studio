@@ -21,10 +21,7 @@ import {
   CubesLoadingIndicatorIcon,
   GhostIcon,
 } from '@finos/legend-art';
-import {
-  LEGEND_APPLICATION_COLOR_THEME,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   BrowserEnvironmentProvider,
   Outlet,
@@ -137,15 +134,6 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
       );
     }
   }, [applicationStore.alertUnhandledError, marketplaceBaseStore]);
-
-  useEffect(() => {
-    applicationStore.layoutService.setColorTheme(
-      LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
-      {
-        persist: true,
-      },
-    );
-  }, [applicationStore]);
 
   const ProtectedYourOrders = withAuthenticationRequired(
     LegendMarketplaceYourOrders,

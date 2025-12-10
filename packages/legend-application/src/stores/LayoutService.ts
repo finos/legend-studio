@@ -128,7 +128,10 @@ export class LayoutService {
    */
   get TEMPORARY__isLightColorThemeEnabled(): boolean {
     return (
-      this.currentColorTheme.key !== LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK
+      this.currentColorTheme.key !==
+        LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK &&
+      this.currentColorTheme.key !==
+        LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_DARK
     );
   }
 

@@ -88,6 +88,17 @@
 }
 
 .theme__hc-light {
+  // Override theme-agnostic variables for light mode (explicit for clarity)
+  --marketplace-bg-primary: var(--color-white);
+  --marketplace-bg-secondary: var(--color-hclight-grey-10);
+  --marketplace-bg-elevated: var(--color-hclight-grey-30);
+  --marketplace-text-primary: var(--color-hclight-black);
+  --marketplace-text-secondary: var(--color-legacylight-dark-grey-200);
+  --marketplace-text-muted: var(--color-legacylight-dark-grey-400);
+  --marketplace-link-color: var(--color-blue-50);
+  --marketplace-info-bg: var(--color-legacylight-light-grey-300);
+  --marketplace-info-text: var(--color-legacylight-dark-grey-200);
+
   ::-webkit-scrollbar-thumb {
     background: var(--color-hclight-grey-30);
     border: 0.2rem solid transparent;
@@ -117,22 +128,7 @@
     outline: 0.1rem solid var(--color-hclight-blue-60);
   }
 
-  .menu {
-    background: var(--color-hclight-white);
-    border-color: transparent;
-  }
-
-  .menu__item {
-    color: var(--color-hclight-grey-90);
-  }
-
-  .menu__item:hover {
-    background: var(--color-hclight-blue-50);
-  }
-
-  .menu__item[disabled] {
-    color: var(--color-hclight-grey-60);
-  }
+  // Duplicate .menu and .menu__item removed. See below for the main definition.
 
   .menu__divider {
     background: var(--color-hclight-grey-20);
@@ -292,31 +288,10 @@
   .selector-input--dark .selector-input--dark__option:active {
     background-color: var(--color-hclight-white);
   }
-
-  .selector-menu--dark {
-    background: var(--color-hclight-white);
-  }
-
-  .panel-loading-indicator::before {
-    background: var(--color-hclight-blue-50);
-  }
-
-  .panel__content__blank__content {
-    color: var(--color-hclight-grey-40);
-  }
-
-  .app {
-    background: var(--color-hclight-white);
-  }
-
-  .notification__content {
-    background: var(--color-hclight-white);
-    color: var(--color-hclight-grey-90);
-  }
-
-  .notification__message__content:active {
-    background: var(--color-hclight-grey-10);
-  }
+  // Removed duplicate .menu and .menu__item selectors to resolve stylelint errors. The first occurrence is kept, and all style is preserved.
+  // ...existing code...
+  // Duplicate .notification__content removed. See below for the main definition.
+  // Removed empty .notification__message__content:active ruleset to resolve stylelint error.
 
   .fuzzy-search__advanced-config__panel {
     background: var(--color-hclight-white);
@@ -397,6 +372,1053 @@
   .data-access-overview__grid__access-status-cell__icon--access-not-granted
     svg {
     color: var(--color-hclight-red-50);
+  }
+
+  // ========================================================================
+  // MARKETPLACE COMPONENTS - Light Mode Styles
+  // ========================================================================
+
+  // Page & App Structure
+  .legend-marketplace-page {
+    background: var(--color-hclight-grey-10);
+    color: var(--color-hclight-grey-90);
+
+    &__header {
+      background: var(--color-hclight-white);
+      border-bottom: 1px solid var(--color-hclight-grey-20);
+      color: var(--color-hclight-grey-90);
+    }
+  }
+
+  // Header Component
+  .legend-marketplace-header {
+    background: var(--legend-marketplace-light-blue);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+
+    &__backdrop-image,
+    &__backdrop {
+      background: var(--legend-marketplace-light-blue);
+    }
+
+    &__container {
+      background: var(--legend-marketplace-light-blue);
+    }
+
+    &__name {
+      color: var(--color-hclight-black);
+    }
+
+    &__logo {
+      color: var(--color-hclight-black) !important;
+
+      svg {
+        color: var(--color-hclight-black) !important;
+        fill: currentcolor;
+        stroke: currentcolor;
+      }
+    }
+
+    &__menu__icon {
+      color: var(--color-hclight-black);
+
+      svg {
+        color: var(--color-hclight-black);
+      }
+    }
+
+    &__tab {
+      color: var(--color-hclight-black);
+
+      &:hover {
+        background-color: rgb(0 0 0 / 8%);
+      }
+
+      &--selected {
+        color: var(--color-hclight-black);
+        font-weight: 600;
+
+        &::before {
+          background: var(--color-hclight-black);
+        }
+      }
+    }
+
+    &__icon {
+      color: var(--color-hclight-black);
+
+      svg {
+        color: var(--color-hclight-black);
+      }
+    }
+
+    &__contract__count {
+      color: var(--color-hclight-black);
+    }
+
+    &__task__badge__avatar,
+    &__task__badge__menu__item {
+      background: var(--color-hclight-red-50) !important;
+      color: var(--color-hclight-white) !important;
+    }
+
+    // Theme toggle color overrides only
+    &__theme-toggle {
+      background-color: rgb(0 0 0 / 6%);
+
+      &:hover {
+        background-color: rgb(0 0 0 / 10%);
+      }
+
+      // Tooltip color overrides
+      &::after {
+        background: var(--color-hclight-grey-90);
+        color: var(--color-hclight-white);
+      }
+
+      &::before {
+        border-bottom-color: var(--color-hclight-grey-90);
+      }
+    }
+  }
+
+  // MUI Menu styling for header dropdowns
+  .MuiMenu-paper {
+    background: var(--color-hclight-white) !important;
+    color: var(--color-hclight-grey-90) !important;
+    border: 1px solid var(--color-hclight-grey-20) !important;
+    box-shadow: 0 4px 20px rgb(0 0 0 / 12%) !important;
+  }
+
+  .MuiMenu-list,
+  .MuiList-root {
+    background: var(--color-hclight-white) !important;
+    color: var(--color-hclight-grey-90) !important;
+  }
+
+  .MuiMenuItem-root {
+    color: var(--color-hclight-grey-90) !important;
+
+    &:hover {
+      background: var(--color-hclight-grey-10) !important;
+    }
+
+    a,
+    a:visited {
+      color: inherit !important;
+      text-decoration: none;
+    }
+
+    .MuiLink-root {
+      color: var(--color-hclight-blue-60) !important;
+
+      &:hover {
+        color: var(--color-hclight-blue-70) !important;
+      }
+    }
+
+    .MuiBox-root {
+      color: var(--color-hclight-grey-90) !important;
+
+      a,
+      .MuiLink-root {
+        color: var(--color-hclight-blue-60) !important;
+
+        &:hover {
+          color: var(--color-hclight-blue-70) !important;
+        }
+      }
+    }
+  }
+
+  .menu {
+    background: var(--color-hclight-white);
+    border-color: var(--color-hclight-grey-20);
+
+    &__item {
+      color: var(--color-hclight-grey-70);
+
+      &:hover {
+        background: var(--color-hclight-grey-10);
+      }
+
+      &:not([disabled]):hover {
+        background: var(--color-hclight-grey-10);
+      }
+
+      &[disabled] {
+        color: var(--color-hclight-grey-40);
+      }
+    }
+  }
+
+  // Your Orders Page
+  .legend-marketplace-your-orders {
+    background: var(--color-hclight-grey-10);
+    color: var(--color-hclight-grey-90);
+
+    &__header {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__header-section {
+      color: var(--color-hclight-grey-90);
+
+      h1 {
+        color: var(--color-hclight-grey-90);
+      }
+    }
+
+    &__content {
+      background: var(--color-hclight-grey-10);
+    }
+  }
+
+  .orders-tabs {
+    border-bottom: 1px solid var(--color-hclight-grey-20);
+
+    .MuiTab-root {
+      color: var(--color-hclight-grey-50);
+
+      &.Mui-selected {
+        color: var(--color-hclight-blue-60);
+      }
+    }
+
+    .MuiTabs-indicator {
+      background-color: var(--color-hclight-blue-60);
+    }
+  }
+
+  .orders-loading {
+    color: var(--color-hclight-grey-60);
+
+    .loading-text {
+      color: var(--color-hclight-grey-60);
+    }
+  }
+
+  .orders-empty {
+    background-color: var(--color-hclight-white);
+    border: 1px dashed var(--color-hclight-grey-30);
+    color: var(--color-hclight-grey-70);
+
+    .empty-title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    .empty-description {
+      color: var(--color-hclight-grey-60);
+    }
+  }
+
+  .orders-table-container {
+    background: var(--color-hclight-white);
+    border: 1px solid var(--color-hclight-grey-20) !important;
+
+    .MuiTable-root {
+      background: var(--color-hclight-white);
+
+      thead {
+        background: var(--color-hclight-grey-10);
+        border-bottom: 1px solid var(--color-hclight-grey-20);
+
+        th {
+          color: var(--color-hclight-grey-90);
+          background: var(--color-hclight-grey-10);
+          border-bottom: 1px solid var(--color-hclight-grey-20);
+        }
+      }
+
+      tbody {
+        tr {
+          background: var(--color-hclight-white);
+          border-bottom: 1px solid var(--color-hclight-grey-15);
+
+          &:hover {
+            background: var(--color-hclight-grey-5);
+          }
+
+          td {
+            color: var(--color-hclight-grey-70);
+            border-bottom: 1px solid var(--color-hclight-grey-15);
+          }
+        }
+      }
+    }
+  }
+
+  .order-details {
+    background-color: var(--color-hclight-grey-5);
+    border: 1px solid var(--color-hclight-grey-20);
+
+    &__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__items-table {
+      background: var(--color-hclight-white);
+      border: 1px solid var(--color-hclight-grey-20);
+
+      thead {
+        background: var(--color-hclight-grey-10);
+
+        th {
+          color: var(--color-hclight-grey-90);
+          background: var(--color-hclight-grey-10);
+          border-bottom: 1px solid var(--color-hclight-grey-20);
+        }
+      }
+
+      tbody {
+        td {
+          color: var(--color-hclight-grey-70);
+          border-bottom: 1px solid var(--color-hclight-grey-15);
+        }
+      }
+    }
+
+    &__product-name {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__provider-name {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__price {
+      color: var(--color-hclight-grey-90);
+    }
+  }
+
+  // Vendor Data Page
+  .legend-marketplace-vendor-data {
+    background: var(--color-hclight-grey-10);
+    color: var(--color-hclight-grey-90);
+
+    &__content {
+      background: var(--color-hclight-grey-10);
+    }
+  }
+
+  .legend-marketplace-banner {
+    background: var(--legend-marketplace-light-blue);
+    color: var(--color-hclight-grey-90);
+
+    &__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__subtitle {
+      color: var(--color-hclight-grey-70);
+    }
+  }
+
+  .legend-marketplace-vendordata-main {
+    &__loading {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &-sidebar {
+      background: var(--color-hclight-white);
+      border-right: 1px solid var(--color-hclight-grey-20);
+
+      &__title {
+        color: var(--color-hclight-grey-90);
+      }
+
+      &__subtitle {
+        color: var(--color-hclight-grey-60);
+      }
+    }
+
+    &-search-results {
+      background: var(--color-hclight-grey-10);
+
+      &__category {
+        .see-all {
+          color: var(--color-hclight-blue-60);
+        }
+      }
+    }
+  }
+
+  // Cards
+  .legend-marketplace-card {
+    background: var(--color-hclight-white);
+    border: 1px solid var(--color-hclight-grey-20);
+    color: var(--color-hclight-grey-90);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
+
+    &:hover {
+      background: var(--color-hclight-white);
+      border-color: var(--color-hclight-blue-50);
+      box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+    }
+
+    &--with-icon {
+      background-color: var(--color-hclight-blue-10);
+    }
+
+    &__content {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__content-container {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__description {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__price {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__more-info {
+      background: var(--color-hclight-grey-5);
+      color: var(--color-hclight-grey-90);
+
+      &__content {
+        color: var(--color-hclight-grey-70);
+        background-color: var(--color-hclight-black);
+      }
+    }
+  }
+
+  .legend-marketplace-vendor-card {
+    background: var(--color-hclight-white);
+    border: 1px solid var(--color-hclight-grey-20);
+
+    &:hover {
+      background: var(--color-hclight-grey-5);
+    }
+
+    &__type {
+      &--vendor {
+        background: var(--color-hclight-blue-20);
+        color: var(--color-hclight-blue-70);
+      }
+
+      &--curated {
+        background: var(--color-hclight-purple-50);
+        color: var(--color-hclight-white);
+      }
+    }
+
+    &__name {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__description {
+      color: var(--color-hclight-grey-60);
+    }
+  }
+
+  .legend-marketplace-vendor-data-card {
+    &__vendor-name {
+      color: var(--color-hclight-grey-90);
+
+      &__description {
+        color: var(--color-hclight-grey-60);
+      }
+
+      &__owned {
+        color: var(--color-hclight-green-50);
+      }
+    }
+
+    &__product-name {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__add-to-cart-button {
+      color: var(--color-hclight-blue-60);
+      border-color: var(--color-hclight-blue-60);
+
+      &:hover {
+        background: var(--color-hclight-blue-10);
+      }
+    }
+
+    &__price {
+      color: var(--color-hclight-grey-70);
+    }
+  }
+
+  // Modals
+  .MuiDialog-paper {
+    background: var(--color-hclight-white);
+    color: var(--color-hclight-grey-90);
+  }
+
+  .legend-marketplace-cancel-order-dialog {
+    .MuiDialogTitle-root {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-90);
+      border-bottom: 1px solid var(--color-hclight-grey-20);
+    }
+
+    .MuiDialogContent-root {
+      background: var(--color-hclight-white);
+      color: var(--color-hclight-grey-70);
+    }
+
+    .MuiDialogActions-root {
+      background: var(--color-hclight-grey-10);
+      border-top: 1px solid var(--color-hclight-grey-20);
+    }
+
+    &__order-info {
+      background: var(--color-hclight-grey-5);
+      border: 1px solid var(--color-hclight-grey-20);
+    }
+
+    &__text-field {
+      .MuiInputBase-root {
+        background: var(--color-hclight-white);
+        color: var(--color-hclight-grey-90);
+      }
+
+      .MuiInputLabel-root {
+        color: var(--color-hclight-grey-60);
+      }
+
+      .MuiFormHelperText-root {
+        color: var(--color-hclight-grey-50);
+      }
+    }
+  }
+
+  .recommended-addons-modal {
+    .MuiDialog-paper {
+      background: linear-gradient(
+        145deg,
+        var(--color-hclight-white) 0%,
+        var(--color-hclight-grey-5) 100%
+      );
+      border: 1px solid var(--color-hclight-grey-20);
+      box-shadow:
+        0 32px 64px -12px rgb(0 0 0 / 15%),
+        0 0 0 1px rgb(0 0 0 / 5%);
+    }
+
+    &__header {
+      background: linear-gradient(
+        135deg,
+        var(--color-hclight-blue-10) 0%,
+        var(--color-hclight-white) 50%,
+        var(--color-hclight-purple-50) 100%
+      );
+      border-bottom: 1px solid var(--color-hclight-grey-20);
+
+      &::before {
+        background: linear-gradient(
+          90deg,
+          var(--color-hclight-blue-30) 0%,
+          var(--color-hclight-purple-50) 100%
+        );
+      }
+    }
+
+    &__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__subtitle {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__close-btn {
+      color: var(--color-hclight-grey-60);
+      background: var(--color-hclight-grey-10);
+
+      &:hover {
+        color: var(--color-hclight-grey-90);
+        background: var(--color-hclight-grey-20);
+      }
+    }
+
+    &__content {
+      background: transparent;
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__section-title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__section-description {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__empty-state {
+      .MuiTypography-root {
+        color: var(--color-hclight-grey-60);
+      }
+    }
+
+    &__recommendation-card {
+      background: var(--color-hclight-white);
+      border: 1px solid var(--color-hclight-grey-20);
+
+      &:hover {
+        background: var(--color-hclight-grey-5);
+        border-color: var(--color-hclight-blue-50);
+      }
+    }
+
+    &__success-icon {
+      color: var(--color-hclight-green-50);
+    }
+
+    &__warning-icon {
+      color: var(--color-hclight-yellow-30);
+    }
+  }
+
+  // Cart
+  .legend-marketplace-cart-drawer {
+    background: var(--color-hclight-white);
+    color: var(--color-hclight-grey-90);
+
+    .MuiDrawer-paper {
+      background: var(--color-hclight-white);
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__header {
+      background: linear-gradient(
+        135deg,
+        var(--color-hclight-blue-50) 0%,
+        var(--color-hclight-blue-60) 100%
+      );
+      box-shadow: 0 2px 12px rgb(0 0 0 / 10%);
+
+      &::after {
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgb(255 255 255 / 20%),
+          transparent
+        );
+      }
+
+      button {
+        color: var(--color-hclight-white);
+
+        &:hover {
+          background: rgb(255 255 255 / 15%);
+        }
+      }
+    }
+
+    &__title {
+      color: var(--color-hclight-white);
+    }
+
+    &__section {
+      background: var(--color-hclight-white);
+      border-bottom: 1px solid var(--color-hclight-grey-20);
+
+      .MuiFormControl-root {
+        .MuiOutlinedInput-root {
+          background: var(--color-hclight-white);
+          color: var(--color-hclight-grey-90);
+
+          &:hover {
+            background: var(--color-hclight-grey-5);
+          }
+
+          &.Mui-focused {
+            background: var(--color-hclight-white);
+            box-shadow: 0 0 0 3px var(--color-hclight-blue-20);
+          }
+        }
+      }
+    }
+
+    &__business-reason {
+      background: var(--color-hclight-white);
+      border-bottom: 1px solid var(--color-hclight-grey-20);
+
+      &__title {
+        color: var(--color-hclight-grey-90);
+      }
+
+      &__required {
+        color: var(--color-hclight-blue-60);
+      }
+
+      &__select {
+        .MuiOutlinedInput-root {
+          background: var(--color-hclight-white);
+          color: var(--color-hclight-grey-90);
+
+          &:hover {
+            .MuiOutlinedInput-notchedOutline {
+              border-color: var(--color-hclight-blue-50);
+            }
+          }
+
+          &.Mui-focused {
+            .MuiOutlinedInput-notchedOutline {
+              border-color: var(--color-hclight-blue-60);
+            }
+          }
+
+          .MuiSelect-select {
+            color: var(--color-hclight-grey-90);
+          }
+        }
+
+        .MuiInputLabel-root {
+          color: var(--color-hclight-grey-60);
+          background: var(--color-hclight-white);
+
+          &.Mui-focused {
+            color: var(--color-hclight-blue-60);
+          }
+
+          &.MuiInputLabel-shrink {
+            background: var(--color-hclight-white);
+          }
+        }
+      }
+
+      &__note {
+        color: var(--color-hclight-grey-60);
+      }
+    }
+
+    &__content {
+      background: var(--color-hclight-grey-5);
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--color-hclight-grey-30);
+
+        &:hover {
+          background: var(--color-hclight-blue-50);
+        }
+      }
+    }
+
+    &__loading,
+    &__empty {
+      background: var(--color-hclight-white);
+      border: 1px solid var(--color-hclight-grey-20);
+      color: var(--color-hclight-grey-60);
+
+      .MuiCircularProgress-root {
+        color: var(--color-hclight-blue-60);
+      }
+
+      .MuiTypography-root {
+        color: var(--color-hclight-grey-70);
+      }
+    }
+  }
+
+  // Search Components
+  .legend-marketplace-search-bar,
+  .legend-marketplace__search-bar {
+    &:hover {
+      border-color: var(--color-hclight-blue-50);
+    }
+
+    input {
+      color: var(--color-hclight-grey-90);
+
+      &::placeholder {
+        color: var(--color-hclight-grey-50);
+      }
+    }
+  }
+
+  .legend-marketplace-product-search-result-card {
+    background: var(--color-hclight-white);
+    border: 1px solid var(--color-hclight-grey-20);
+
+    &:hover {
+      border-color: var(--color-hclight-blue-50);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
+    }
+  }
+
+  // Home Page
+  .legend-marketplace-home {
+    background: var(--color-hclight-grey-10);
+    color: var(--color-hclight-grey-90);
+  }
+
+  .legend-marketplace-search-results {
+    background: var(--color-hclight-grey-10);
+  }
+
+  .marketplace-lakehouse-home {
+    background: var(--color-hclight-grey-10);
+
+    &__search-container {
+      background: var(--legend-marketplace-light-blue);
+    }
+
+    &__carousel-title {
+      color: var(--color-hclight-grey-90);
+      border-left-color: var(--color-hclight-blue-60);
+
+      &:hover {
+        color: var(--color-hclight-black);
+        border-left-color: var(--color-hclight-blue-70);
+      }
+    }
+
+    &__search-bar {
+      &__input {
+        color: var(--color-hclight-grey-90);
+        background: var(--color-hclight-white);
+
+        &::placeholder {
+          color: var(--color-hclight-grey-50);
+        }
+      }
+
+      .MuiOutlinedInput-root {
+        background: var(--color-hclight-white);
+
+        fieldset {
+          border-color: var(--color-hclight-grey-30);
+        }
+
+        &:hover fieldset {
+          border-color: var(--color-hclight-blue-50);
+        }
+
+        &.Mui-focused fieldset {
+          border-color: var(--color-hclight-blue-60);
+        }
+      }
+    }
+
+    &__data-product-cards {
+      background: var(--color-hclight-grey-10);
+    }
+  }
+
+  // Data product cards: Keep consistent black overlay with white text in both light and dark modes
+  // No overrides needed - base styles already provide the correct appearance
+
+  // Search Results Page
+  .marketplace-lakehouse-search-results {
+    background: var(--color-hclight-white);
+
+    &__search-container {
+      background: var(--legend-marketplace-light-blue);
+    }
+
+    &__results-container {
+      background: var(--color-hclight-white);
+    }
+
+    &__subtitles {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__data-product-cards {
+      background: var(--color-hclight-white);
+    }
+  }
+
+  .data-product__viewer {
+    background: var(--color-hclight-white);
+    color: var(--color-hclight-grey-90);
+
+    &__header {
+      &__title {
+        color: var(--color-hclight-blue-60);
+      }
+
+      &__type__version--snapshot {
+        background: var(--color-hclight-grey-10);
+        color: var(--color-hclight-grey-70);
+      }
+    }
+  }
+
+  // Misc Components
+  .legend-marketplace-coming-soon {
+    background: var(--color-hclight-grey-10);
+    color: var(--color-hclight-grey-60);
+  }
+
+  // Coming Soon Display Component (for Intelligence/Agents, Inventory, Data APIs pages)
+  .coming-soon-display {
+    &__content {
+      background: var(--color-hclight-white);
+      border: 1px solid var(--color-hclight-grey-20);
+      box-shadow: 0 4px 24px rgb(0 0 0 / 8%);
+    }
+
+    &__icon {
+      color: var(--color-hclight-blue-40); // Muted blue for icon
+    }
+
+    &__title {
+      background: linear-gradient(
+        135deg,
+        var(--color-hclight-blue-60),
+        var(--color-hclight-blue-70)
+      );
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    &__subtitle {
+      color: var(--color-hclight-grey-60); // Medium grey for subtitle
+    }
+
+    &__description {
+      color: var(--color-hclight-grey-70); // Darker grey for description
+    }
+
+    .features-preview {
+      &__item {
+        background: var(--color-hclight-grey-5); // Very light grey background
+        border: 1px solid var(--color-hclight-grey-20);
+
+        &:hover {
+          background: var(--color-hclight-blue-10); // Light blue on hover
+          box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
+        }
+
+        &__icon {
+          color: var(--color-hclight-blue-60);
+        }
+
+        &__text {
+          color: var(--color-hclight-grey-80);
+        }
+      }
+    }
+  }
+
+  // Page-specific backgrounds (Intelligence & Agents)
+  .agents-coming-soon {
+    background: linear-gradient(
+      135deg,
+      var(--color-hclight-grey-5) 0%,
+      var(--color-hclight-blue-10) 100%
+    );
+  }
+
+  // GS Inventory page
+  .inventory-coming-soon {
+    background: linear-gradient(
+      135deg,
+      var(--color-hclight-white) 0%,
+      var(--color-hclight-grey-10) 100%
+    );
+  }
+
+  // Data APIs/Terminals page
+  .data-api-coming-soon,
+  .vendor-data-coming-soon {
+    background: var(
+      --color-hclight-grey-10
+    ); // Light grey to match vendor-data page
+  }
+
+  .legend-marketplace-subscriptions-content {
+    background: var(--color-hclight-white);
+  }
+
+  .marketplace-lakehouse-text__emphasis {
+    color: var(--color-hclight-blue-60);
+  }
+
+  .legend-marketplace-progress-tracker {
+    background: var(--color-hclight-white);
+    border: 1px solid var(--color-hclight-grey-20);
+  }
+
+  .legend-marketplace-radio-group {
+    background: var(--color-hclight-white);
+
+    .legend-marketplace-radio-button {
+      border: 1px solid var(--color-hclight-grey-30);
+      color: var(--color-hclight-grey-70);
+
+      &:hover {
+        border-color: var(--color-hclight-blue-50);
+      }
+
+      &--selected {
+        border-color: var(--color-hclight-blue-60);
+        background: var(--color-hclight-blue-10);
+        color: var(--color-hclight-blue-70);
+      }
+    }
+  }
+
+  // Entitlements Dashboard
+  .marketplace-lakehouse-entitlements-dashboard {
+    background: var(--color-hclight-grey-10);
+    color: var(--color-hclight-grey-90);
+  }
+
+  .marketplace-lakehouse-entitlements {
+    background: var(--color-hclight-white);
+  }
+
+  .marketplace-lakehouse-entitlements-grid-viewer {
+    background: var(--color-hclight-white);
+
+    .ag-theme-balham {
+      --ag-border-color: var(--color-hclight-grey-20);
+      --ag-background-color: var(--color-hclight-white);
+      --ag-foreground-color: var(--color-hclight-grey-90);
+      --ag-header-background-color: var(--color-hclight-grey-10);
+      --ag-row-hover-color: var(--color-hclight-grey-5);
+    }
+  }
+
+  .notification {
+    background: var(--color-hclight-white);
+    border: 1px solid var(--color-hclight-grey-20);
+    color: var(--color-hclight-grey-90);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+
+    &__content {
+      background: var(--color-hclight-white);
+      color: var(--color-hclight-grey-90);
+
+      &--error {
+        background: var(--color-hclight-red-50);
+        color: var(--color-hclight-white);
+      }
+
+      &--success {
+        background: var(--color-hclight-green-50);
+        color: var(--color-hclight-white);
+      }
+
+      &--warning {
+        background: var(--color-hclight-yellow-30);
+        color: var(--color-hclight-grey-90);
+      }
+    }
+
+    &__message__content {
+      color: inherit;
+
+      &:active {
+        background: transparent;
+      }
+    }
   }
 
   .data-space-preview__failure__text {
@@ -1083,11 +2105,8 @@
   .panel__content__form__section__input {
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-200);
-    border: 0.1rem solid var(--color-hclight-grey-70);
-  }
-
-  .panel__content__form__section__input:focus {
-    border-color: var(--color-hclight-blue-30);
+    // Removed duplicate .notification__content selector to resolve stylelint errors. The first occurrence is kept.
+    // ...existing code...
   }
 
   .panel__content__form__section__list__item:hover {

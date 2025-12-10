@@ -16,13 +16,80 @@
 
 @use 'mixins' as *;
 
+.legend-marketplace-header__theme-toggle {
+  position: relative;
+  transition: all 0.2s ease;
+  border-radius: 50%;
+
+  /* Default background, will be overridden by theme */
+  background-color: rgb(0 0 0 / 6%);
+
+  &:hover {
+    background-color: rgb(0 0 0 / 10%);
+    transform: scale(1.05);
+  }
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -3.5rem;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    padding: 0.8rem 1.2rem;
+    border-radius: 0.6rem;
+    font-size: 1.4rem;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 60%);
+    border: 1px solid var(--color-dark-grey-280);
+    z-index: 1000;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -0.8rem;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    border: 0.5rem solid transparent;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 1001;
+  }
+
+  &:hover::after,
+  &:hover::before {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
 .legend-marketplace-header {
   @include flexVCenter;
 
   height: var(--legend-marketplace-header-height);
   box-shadow: none;
-  background: var(--legend-marketplace-light-blue);
   width: 100% !important;
+  position: relative;
+
+  &__backdrop-image,
+  &__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  &__backdrop {
+    backdrop-filter: blur(8px);
+  }
 
   &__menu__icon {
     color: var(--color-black);
@@ -84,8 +151,11 @@
   }
 
   &__logo {
-    display: block;
-    object-fit: contain;
+    display: inline-block;
+    vertical-align: top;
+    height: fit-content;
+    margin: -2rem 0;
+    padding: 0;
   }
 
   &__tabs {

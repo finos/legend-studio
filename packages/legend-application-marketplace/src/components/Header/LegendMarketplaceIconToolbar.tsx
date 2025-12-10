@@ -17,7 +17,9 @@
 import {
   HelpOutlineIcon,
   MenuContentDivider,
+  MoonIcon,
   ShoppingCartOutlineIcon,
+  SunFilledIcon,
   UserCircleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
@@ -29,6 +31,7 @@ import {
   LegendUser,
   LogEvent,
 } from '@finos/legend-shared';
+import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
@@ -47,6 +50,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
   const [pendingTasksCount, setPendingTasksCount] = useState<number>(0);
   const showDevFeatures = applicationStore.config.options.showDevFeatures;
+
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {
       if (userId) {
@@ -289,7 +293,36 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     );
   };
 
+  const layoutService = applicationStore.layoutService;
+  const isDarkMode = !layoutService.TEMPORARY__isLightColorThemeEnabled;
+
+  const handleThemeToggle = () => {
+    const newTheme = isDarkMode
+      ? LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT
+      : LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_DARK;
+
+    layoutService.setColorTheme(newTheme, { persist: true });
+  };
+
+  const renderThemeToggle = () => {
+    return (
+      <IconButton
+        onClick={handleThemeToggle}
+        className="legend-marketplace-header__menu__icon legend-marketplace-header__theme-toggle"
+        data-tooltip={
+          isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'
+        }
+      >
+        {isDarkMode ? <MoonIcon /> : <SunFilledIcon />}
+      </IconButton>
+    );
+  };
+
   const toolbarIcons = [
+    {
+      title: 'Theme',
+      renderer: renderThemeToggle,
+    },
     {
       title: 'Profile',
       renderer: UserIconRenderer,
