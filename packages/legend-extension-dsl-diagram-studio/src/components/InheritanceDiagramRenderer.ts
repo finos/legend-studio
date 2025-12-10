@@ -23,11 +23,16 @@ import {
   DiagramRenderer,
   Diagram,
   ClassView,
+  type DiagramRendererCallbacks,
 } from '@finos/legend-extension-dsl-diagram';
 
 export class InheritanceDiagramRenderer extends DiagramRenderer {
-  constructor(div: HTMLDivElement, _class: Class) {
-    super(div, new Diagram(''));
+  constructor(
+    div: HTMLDivElement,
+    _class: Class,
+    callbacks?: DiagramRendererCallbacks,
+  ) {
+    super(div, new Diagram(''), callbacks);
     this.loadClass(_class);
   }
 
