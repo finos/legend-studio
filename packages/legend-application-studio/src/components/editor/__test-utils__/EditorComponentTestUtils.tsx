@@ -67,7 +67,6 @@ import { type LegendStudioApplicationStore } from '../../../stores/LegendStudioB
 import { TEST__getLegendStudioApplicationConfig } from '../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
 import { Route, Routes } from '@finos/legend-application/browser';
 import { ProjectViewer } from '../../project-view/ProjectViewer.js';
-import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 
 export const TEST_DATA__DefaultSDLCInfo = {
   project: {
@@ -146,9 +145,6 @@ export const TEST__provideMockedEditorStore = (customization?: {
       TEST__getLegendStudioApplicationConfig(),
       pluginManager,
     );
-  MockedMonacoEditorAPI.createModel.mockReturnValue({
-    setValue(): void {},
-  });
   const value =
     customization?.mock ??
     new EditorStore(

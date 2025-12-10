@@ -55,8 +55,10 @@ const setupLakehouseDataProductTest = async (
   dataProductId: MOCK_DataProductId,
   deploymentId: number,
 ) => {
+  MockedMonacoEditorAPI.createModel.mockReturnValue({
+    setValue(): void {},
+  });
   const mockedStore = await TEST__provideMockLegendMarketplaceBaseStore();
-
   createSpy(
     mockedStore.lakehouseContractServerClient,
     'getDataProductByIdAndDID',
@@ -117,9 +119,6 @@ const setupLakehouseDataProductTest = async (
 describe('LakehouseDataProduct', () => {
   describe('Basic rendering', () => {
     test('Loads LakehouseDataProduct with SDLC Data Product and displays title, description, and access point groups', async () => {
-      MockedMonacoEditorAPI.createModel.mockReturnValue({
-        setValue(): void {},
-      });
       await setupLakehouseDataProductTest(
         MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
         11111,
@@ -136,9 +135,6 @@ describe('LakehouseDataProduct', () => {
     });
 
     test('Loads LakehouseDataProduct with Ad-Hoc Data Product and displays title, description, and access point groups', async () => {
-      MockedMonacoEditorAPI.createModel.mockReturnValue({
-        setValue(): void {},
-      });
       await setupLakehouseDataProductTest(
         MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT,
         2222,
