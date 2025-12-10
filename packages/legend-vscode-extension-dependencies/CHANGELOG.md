@@ -1,5 +1,7 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.218
+
 ## 4.0.217
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.28
+
+### Patch Changes
+
+- [#4707](https://github.com/finos/legend-studio/pull/4707) [`84e50cb`](https://github.com/finos/legend-studio/commit/84e50cb42fcd513f915ea774de317c1a26e2c362) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Provide default level for `findProducerServer`.
+
 ## 0.7.27
 
 ### Patch Changes

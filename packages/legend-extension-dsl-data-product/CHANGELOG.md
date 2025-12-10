@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.34
+
+### Patch Changes
+
+- [#4707](https://github.com/finos/legend-studio/pull/4707) [`84e50cb`](https://github.com/finos/legend-studio/commit/84e50cb42fcd513f915ea774de317c1a26e2c362) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Clean up data product access point tabs + add extension mechanism.
+
 ## 0.0.33
 
 ### Patch Changes
