@@ -58,6 +58,7 @@
   --color-pink-380: #c5375f;
   --color-pink-400: #b33659;
   --color-pink-500: #af2a5b;
+  --color-red-0: #ffe6e3;
   --color-red-50: #ff958c;
   --color-red-100: #f5584b;
   --color-red-150: #f95252;
@@ -218,6 +219,16 @@
   --color-modal-purple-light: #a855f7;
   --color-modal-category-bg: #99f6e4;
   --color-modal-category-text: #0d9488;
+
+  // Orders page colors
+  --color-order-chip-terminal-bg: #e1e6fd;
+  --color-order-chip-terminal-text: #0019f7;
+  --color-order-chip-addon-bg: #d0e8f7;
+  --color-order-chip-addon-text: #015383;
+  --color-order-chip-category-bg: #ebe5f4;
+  --color-order-chip-category-text: #3d0098;
+  --color-order-chip-price-bg: #dcfce7;
+  --color-order-chip-price-text: #166534;
 
   // font
   --font-entity-label: 'Roboto Condensed';

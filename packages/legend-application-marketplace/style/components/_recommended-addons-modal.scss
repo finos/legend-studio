@@ -129,6 +129,83 @@
     font-weight: 400;
   }
 
+  &__filter-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  &__search-field {
+    flex: 1;
+    max-width: 40rem;
+
+    .MuiOutlinedInput-root {
+      border-radius: 1.2rem;
+      background: var(--color-hclight-grey-5);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: var(--color-hclight-grey-10);
+      }
+
+      &.Mui-focused {
+        background: rgb(255 255 255 / 100%);
+        box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
+      }
+    }
+
+    .MuiInputBase-input {
+      font-size: 1.4rem;
+      padding: 1.2rem 1.6rem;
+    }
+  }
+
+  &__sort-buttons {
+    border-radius: 1.2rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+
+    .MuiToggleButton-root {
+      border: 1px solid var(--color-hclight-grey-20);
+      padding: 1rem 1.6rem;
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--color-hclight-grey-70);
+      background: var(--color-hclight-grey-5);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: var(--color-hclight-grey-10);
+      }
+
+      &.Mui-selected {
+        background: linear-gradient(
+          135deg,
+          rgb(59 130 246 / 12%) 0%,
+          rgb(99 102 241 / 12%) 100%
+        );
+        color: var(--color-primary);
+        font-weight: 600;
+        border-color: rgb(59 130 246 / 30%);
+
+        &:hover {
+          background: linear-gradient(
+            135deg,
+            rgb(59 130 246 / 18%) 0%,
+            rgb(99 102 241 / 18%) 100%
+          );
+        }
+      }
+
+      svg {
+        width: 1.6rem;
+        height: 1.6rem;
+      }
+    }
+  }
+
   &__empty-state {
     display: flex;
     flex-direction: column;
@@ -149,194 +226,96 @@
     }
   }
 
-  &__addon-card {
-    height: 100%;
+  &__list {
     display: flex;
     flex-direction: column;
-    background: rgb(255 255 255 / 70%);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgb(226 232 240 / 80%);
-    overflow: hidden;
-    position: relative;
+    gap: 0;
+  }
 
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        var(--color-modal-blue-focus) 50%,
-        transparent 100%
-      );
+  &__list-header {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1.5fr;
+    gap: 2rem;
+    padding: 1.2rem 2rem;
+    background: var(--color-hclight-grey-10);
+    border-radius: 0.8rem;
+    margin-bottom: 1rem;
+
+    .MuiTypography-root {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--color-hclight-grey-70);
+      text-transform: uppercase;
+      letter-spacing: 0.05rem;
     }
+  }
+
+  &__header-name,
+  &__header-provider,
+  &__header-price {
+    display: flex;
+    align-items: center;
+  }
+
+  &__header-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__list-item {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1.5fr;
+    gap: 2rem;
+    padding: 1.8rem 2rem;
+    align-items: center;
+    transition: background-color 0.2s ease;
 
     &:hover {
-      border-color: var(--color-modal-blue-light);
-      box-shadow: 0 4px 8px rgb(147 197 253 / 15%);
+      background: var(--color-hclight-grey-5);
     }
   }
 
-  &__card-content {
-    flex: 1;
-    padding: 2rem;
-  }
-
-  &__card-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  &__product-name {
-    font-size: 1.6rem;
-    font-weight: 700;
-    flex: 1;
-    line-height: 1.3;
-    color: var(--color-modal-text-primary);
-    margin: 0;
-  }
-
-  &__provider-chip {
-    background: linear-gradient(
-      135deg,
-      var(--color-modal-background-medium),
-      var(--color-modal-border-light)
-    );
-    color: var(--color-modal-text-muted);
-    font-size: 1.1rem;
+  &__item-name {
+    font-size: 1.5rem;
     font-weight: 600;
-    height: auto;
-    padding: 0.4rem 1rem;
-    border-radius: 12px;
-    border: 1px solid rgb(148 163 184 / 20%);
+    color: var(--color-hclight-black);
+    line-height: 1.4;
   }
 
-  &__description {
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
-    color: var(--color-modal-text-secondary);
-    font-size: 1.3rem;
-    font-weight: 400;
+  &__item-provider {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--color-hclight-blue-60);
   }
 
-  &__card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-  }
-
-  &__category-chip {
-    background: linear-gradient(
-      135deg,
-      rgb(99 102 241 / 10%),
-      rgb(168 85 247 / 10%)
-    );
-    color: var(--color-modal-purple-secondary);
-    font-size: 1.1rem;
+  &__item-price {
+    font-size: 1.4rem;
     font-weight: 600;
-    height: auto;
-    padding: 0.5rem 1.2rem;
-    border-radius: 16px;
-    border: 1px solid rgb(99 102 241 / 20%);
+    color: var(--color-hclight-green-50);
   }
 
-  &__price {
-    font-size: 1.8rem;
-    font-weight: 800;
-    background: linear-gradient(
-      135deg,
-      var(--color-modal-blue-focus),
-      var(--color-modal-purple-primary)
-    );
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    &__free {
-      background: linear-gradient(
-        135deg,
-        var(--color-modal-success-primary),
-        var(--color-modal-success-secondary)
-      );
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-  }
-
-  &__card-actions {
-    padding: 0 2rem 2rem;
+  &__item-action {
+    display: flex;
+    justify-content: center;
   }
 
   &__add-btn {
-    background: linear-gradient(
-      135deg,
-      var(--color-modal-blue-primary),
-      var(--color-modal-blue-secondary)
-    );
-    color: var(--color-white);
-    text-transform: none;
-    font-weight: 600;
     font-size: 1.3rem;
-    padding: 1rem 2rem;
-    border-radius: 16px;
-    border: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
+    font-weight: 600;
+    padding: 0.8rem 1.6rem;
+    border-radius: 0.6rem;
+    text-transform: none;
+    transition: all 0.2s ease;
 
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgb(255 255 255 / 20%) 50%,
-        transparent 100%
-      );
-      transition: left 0.6s ease;
-    }
+    &--added {
+      background: var(--color-hclight-green-50);
+      color: var(--color-white);
+      border-color: var(--color-hclight-green-50);
 
-    &:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 24px -6px rgb(59 130 246 / 40%);
-
-      &::before {
-        left: 100%;
-      }
-    }
-
-    &__added {
-      background: linear-gradient(
-        135deg,
-        rgb(34 197 94 / 10%),
-        rgb(22 163 74 / 10%)
-      );
-      border: 2px solid var(--color-modal-success-primary);
-      color: var(--color-modal-success-secondary);
-
-      &:hover:not(:disabled) {
-        background: linear-gradient(
-          135deg,
-          rgb(34 197 94 / 15%),
-          rgb(22 163 74 / 15%)
-        );
-        transform: none;
-        box-shadow: none;
-      }
-
-      &:disabled {
-        border-color: var(--color-modal-success-primary);
-        color: var(--color-modal-success-secondary);
-        opacity: 0.8;
+      &:hover {
+        background: var(--color-hclight-green-60);
+        border-color: var(--color-hclight-green-60);
       }
     }
   }
@@ -480,26 +459,6 @@
       &__view-cart-button {
         order: 1;
       }
-    }
-
-    &__card-content {
-      padding: 1.5rem;
-    }
-
-    &__card-actions {
-      padding: 0 1.5rem 1.5rem;
-    }
-
-    &__product-name {
-      font-size: 1.4rem;
-    }
-
-    &__description {
-      font-size: 1.2rem;
-    }
-
-    &__price {
-      font-size: 1.6rem;
     }
   }
 }

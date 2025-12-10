@@ -27,15 +27,20 @@ import {
   List,
   ListItem,
   CircularProgress,
+  Pagination,
+  Box,
+  Select,
+  MenuItem,
+  type SelectChangeEvent,
 } from '@mui/material';
-import type { Filter, TerminalResult } from '@finos/legend-server-marketplace';
+import type { TerminalResult } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceTerminalCard } from '../../components/ProviderCard/LegendMarketplaceTerminalCard.js';
 import {
   type LegendMarketPlaceVendorDataStore,
   VendorDataProviderType,
 } from '../../stores/LegendMarketPlaceVendorDataStore.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import {
   useLegendMarketPlaceVendorDataStore,
   withLegendMarketplaceVendorDataStore,
@@ -49,6 +54,7 @@ import {
   SparkleStarsIcon,
 } from '@finos/legend-art';
 import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
+import { flowResult } from 'mobx';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -59,14 +65,15 @@ export const RefinedVendorRadioSelector = observer(
       VendorDataProviderType.ADD_ONS,
     ];
 
-    const onRadioChange = (value: VendorDataProviderType) => {
-      vendorDataState.setProviderDisplayState(value);
-      if (value === VendorDataProviderType.TERMINAL_LICENSE) {
-        vendorDataState.setProviders('desktop');
-      } else {
-        vendorDataState.setProviders('addon');
-      }
-    };
+    const onRadioChange = useCallback(
+      (value: VendorDataProviderType) => {
+        vendorDataState.setProviderDisplayState(value);
+        flowResult(vendorDataState.populateProviders()).catch(
+          vendorDataState.applicationStore.alertUnhandledError,
+        );
+      },
+      [vendorDataState],
+    );
 
     return (
       <ButtonGroup variant="outlined">
@@ -142,6 +149,95 @@ const SearchResultsRenderer = observer(
   },
 );
 
+const PaginationControls = observer(
+  (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
+    const { vendorDataState } = props;
+
+    const totalPages = Math.ceil(
+      vendorDataState.totalItems / vendorDataState.itemsPerPage,
+    );
+
+    const handlePageChange = useCallback(
+      (_event: React.ChangeEvent<unknown>, page: number) => {
+        vendorDataState.setPage(page);
+        flowResult(vendorDataState.populateProviders()).catch(
+          vendorDataState.applicationStore.alertUnhandledError,
+        );
+      },
+      [vendorDataState],
+    );
+
+    const handleItemsPerPageChange = useCallback(
+      (event: SelectChangeEvent<number>) => {
+        vendorDataState.setItemsPerPage(Number(event.target.value));
+        flowResult(vendorDataState.populateProviders()).catch(
+          vendorDataState.applicationStore.alertUnhandledError,
+        );
+      },
+      [vendorDataState],
+    );
+
+    if (vendorDataState.providers.length === 0) {
+      return null;
+    }
+
+    return (
+      <Box className="legend-marketplace-pagination-container">
+        <Box className="legend-marketplace-pagination-page-size">
+          <Typography variant="body2" sx={{ fontSize: '2rem' }}>
+            Items per page:
+          </Typography>
+          <Select
+            value={vendorDataState.itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            size="medium"
+          >
+            <MenuItem value={12}>12</MenuItem>
+            <MenuItem value={24}>24</MenuItem>
+            <MenuItem value={36}>36</MenuItem>
+            <MenuItem value={48}>48</MenuItem>
+          </Select>
+        </Box>
+        <Box className="legend-marketplace-pagination-info">
+          <Typography variant="body2">
+            Showing{' '}
+            <strong>
+              {(vendorDataState.page - 1) * vendorDataState.itemsPerPage + 1}
+            </strong>{' '}
+            to{' '}
+            <strong>
+              {Math.min(
+                vendorDataState.page * vendorDataState.itemsPerPage,
+                vendorDataState.totalItems,
+              )}
+            </strong>{' '}
+            of <strong>{vendorDataState.totalItems}</strong> results
+          </Typography>
+        </Box>
+
+        <Box className="legend-marketplace-pagination-controls">
+          <Pagination
+            count={totalPages}
+            page={vendorDataState.page}
+            onChange={handlePageChange}
+            color="primary"
+            showFirstButton={true}
+            showLastButton={true}
+            siblingCount={1}
+            boundaryCount={2}
+            size="large"
+            sx={{
+              '& .MuiPaginationItem-root': {
+                fontSize: '1.5rem',
+              },
+            }}
+          />
+        </Box>
+      </Box>
+    );
+  },
+);
+
 export const VendorDataMainContent = observer(
   (props: { marketPlaceVendorDataState: LegendMarketPlaceVendorDataStore }) => {
     const { marketPlaceVendorDataState } = props;
@@ -157,7 +253,7 @@ export const VendorDataMainContent = observer(
           </div>
         ) : (
           <>
-            <div className="legend-marketplace-vendordata-main-sidebar">
+            <div className="legend-marketplace-vendordata-main-sidebar legend-marketplace-vendordata-main-sidebar--hidden">
               <div className="legend-marketplace-vendordata-main-sidebar__title">
                 Filters
               </div>
@@ -225,6 +321,14 @@ export const VendorDataMainContent = observer(
                 />
               )}
             </div>
+            {(marketPlaceVendorDataState.providerDisplayState ===
+              VendorDataProviderType.TERMINAL_LICENSE ||
+              marketPlaceVendorDataState.providerDisplayState ===
+                VendorDataProviderType.ADD_ONS) && (
+              <PaginationControls
+                vendorDataState={marketPlaceVendorDataState}
+              />
+            )}
           </>
         )}
       </div>
@@ -236,11 +340,27 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
   observer(() => {
     const marketPlaceVendorDataStore = useLegendMarketPlaceVendorDataStore();
 
-    const onChange = (query: string | undefined) => {
-      marketPlaceVendorDataStore.setProvidersFilters([
-        { label: 'query', value: query },
-      ] as Filter[]);
-    };
+    const handleSearch = useCallback(
+      (query: string | undefined) => {
+        marketPlaceVendorDataStore.setSearchTerm(query ?? '');
+        flowResult(marketPlaceVendorDataStore.populateProviders()).catch(
+          marketPlaceVendorDataStore.applicationStore.alertUnhandledError,
+        );
+      },
+      [marketPlaceVendorDataStore],
+    );
+
+    const handleSearchChange = useCallback(
+      (query: string) => {
+        if (query === '') {
+          marketPlaceVendorDataStore.setSearchTerm('');
+          flowResult(marketPlaceVendorDataStore.populateProviders()).catch(
+            marketPlaceVendorDataStore.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+      [marketPlaceVendorDataStore],
+    );
 
     useEffect(() => {
       marketPlaceVendorDataStore.init();
@@ -250,7 +370,10 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
       <LegendMarketplacePage className="legend-marketplace-vendor-data">
         <div className="legend-marketplace-banner">
           <div className="legend-marketplace-banner__search-bar">
-            <LegendMarketplaceSearchBar onSearch={onChange} />
+            <LegendMarketplaceSearchBar
+              onSearch={handleSearch}
+              onChange={handleSearchChange}
+            />
           </div>
         </div>
 

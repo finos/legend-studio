@@ -16,16 +16,7 @@
 
 import { clsx, PlusIcon } from '@finos/legend-art';
 import type { TerminalResult } from '@finos/legend-server-marketplace';
-import {
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Typography,
-} from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { flowResult } from 'mobx';
 import { useState } from 'react';
 import { assertErrorThrown } from '@finos/legend-shared';
@@ -33,12 +24,11 @@ import { toastManager } from '../Toast/CartToast.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 
 interface RecommendedItemsCardProps {
-  vendorProfileId?: number;
   recommendedItem: TerminalResult;
 }
 
 export const RecommendedItemsCard = (props: RecommendedItemsCardProps) => {
-  const { vendorProfileId, recommendedItem } = props;
+  const { recommendedItem } = props;
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [inCart, setInCart] = useState(false);
@@ -47,9 +37,6 @@ export const RecommendedItemsCard = (props: RecommendedItemsCardProps) => {
     setIsAddingToCart(true);
     const cartItemRequest =
       legendMarketplaceBaseStore.cartStore.providerToCartRequest(addon);
-    if (vendorProfileId) {
-      cartItemRequest.vendorProfileId = vendorProfileId;
-    }
 
     flowResult(
       legendMarketplaceBaseStore.cartStore.addToCartWithAPI(cartItemRequest),
@@ -70,62 +57,45 @@ export const RecommendedItemsCard = (props: RecommendedItemsCardProps) => {
   };
 
   return (
-    <Card className="recommended-addons-modal__addon-card">
-      <CardContent className="recommended-addons-modal__card-content">
-        <Box className="recommended-addons-modal__card-header">
-          <Typography
-            variant="subtitle1"
-            className="recommended-addons-modal__product-name"
-          >
-            {recommendedItem.productName}
-          </Typography>
-          <Chip
-            label={recommendedItem.providerName}
-            size="small"
-            className="recommended-addons-modal__provider-chip"
-          />
-        </Box>
-
-        <Typography
-          variant="body2"
-          className="recommended-addons-modal__description"
-        >
-          {recommendedItem.description || 'No description available'}
-        </Typography>
-
-        <Box className="recommended-addons-modal__card-footer">
-          <Typography
-            variant="body2"
-            className={clsx('recommended-addons-modal__price', {
-              'recommended-addons-modal__price__free':
-                recommendedItem.price === 0,
+    <Box className="recommended-addons-modal__list-item">
+      <Typography
+        variant="body1"
+        className="recommended-addons-modal__item-name"
+      >
+        {recommendedItem.productName}
+      </Typography>
+      <Typography
+        variant="body2"
+        className="recommended-addons-modal__item-provider"
+      >
+        {recommendedItem.providerName}
+      </Typography>
+      <Typography
+        variant="body2"
+        className="recommended-addons-modal__item-price"
+      >
+        {recommendedItem.price === 0
+          ? 'Free'
+          : recommendedItem.price.toLocaleString('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              maximumFractionDigits: 2,
             })}
-          >
-            {recommendedItem.price === 0
-              ? 'Free'
-              : recommendedItem.price.toLocaleString('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                  maximumFractionDigits: 2,
-                })}
-          </Typography>
-        </Box>
-      </CardContent>
-
-      <CardActions className="recommended-addons-modal__card-actions">
+      </Typography>
+      <Box className="recommended-addons-modal__item-action">
         <Button
           variant={inCart ? 'outlined' : 'contained'}
           onClick={() => handleAddAddonToCart(recommendedItem)}
           disabled={inCart || isAddingToCart}
-          fullWidth={true}
+          size="small"
           className={clsx('recommended-addons-modal__add-btn', {
-            'recommended-addons-modal__add-btn__added': inCart,
+            'recommended-addons-modal__add-btn--added': inCart,
           })}
         >
           {isAddingToCart ? (
             <>
               Adding... &nbsp;
-              <CircularProgress size={16} />
+              <CircularProgress size={14} />
             </>
           ) : inCart ? (
             'Added to Cart'
@@ -136,7 +106,7 @@ export const RecommendedItemsCard = (props: RecommendedItemsCardProps) => {
             </>
           )}
         </Button>
-      </CardActions>
-    </Card>
+      </Box>
+    </Box>
   );
 };

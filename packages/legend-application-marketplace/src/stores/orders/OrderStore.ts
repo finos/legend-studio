@@ -22,6 +22,7 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '@finos/legend-application';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import {
   OrderStatusCategory,
@@ -38,6 +39,7 @@ export class OrdersStore {
   totalClosed = 0;
   readonly fetchOpenOrdersState = ActionState.create();
   readonly fetchClosedOrdersState = ActionState.create();
+  readonly cancelOrderState = ActionState.create();
   selectedTab: 'open' | 'closed' = 'open';
 
   constructor(baseStore: LegendMarketplaceBaseStore) {
@@ -50,6 +52,7 @@ export class OrdersStore {
       setSelectedTab: action,
       fetchOpenOrders: flow,
       fetchClosedOrders: flow,
+      cancelOrder: flow,
       currentOrders: computed,
       currentFetchState: computed,
     });
@@ -137,6 +140,54 @@ export class OrdersStore {
       yield* this.fetchOpenOrders();
     } else {
       yield* this.fetchClosedOrders();
+    }
+  }
+
+  *cancelOrder(
+    orderId: string,
+    processInstanceId: string,
+    comments?: string,
+  ): GeneratorFn<boolean> {
+    const user = this.baseStore.applicationStore.identityService.currentUser;
+
+    if (!user) {
+      this.baseStore.applicationStore.notificationService.notifyError(
+        'User not authenticated',
+      );
+      return false;
+    }
+
+    this.cancelOrderState.inProgress();
+    try {
+      yield this.baseStore.marketplaceServerClient.cancelOrder({
+        order_id: orderId,
+        kerberos: user,
+        comments: comments ?? '',
+        process_instance_id: processInstanceId,
+      });
+
+      this.baseStore.applicationStore.notificationService.notifySuccess(
+        `Order #${orderId} cancelled successfully`,
+      );
+      this.cancelOrderState.complete();
+
+      // Refresh orders after successful cancellation
+      yield* this.refreshCurrentOrders();
+
+      return true;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.baseStore.applicationStore.logService.error(
+        LogEvent.create(
+          LEGEND_MARKETPLACE_APP_EVENT.ORDER_CANCELLATION_FAILURE,
+        ),
+        `Failed to cancel order: ${error.message}`,
+      );
+      this.baseStore.applicationStore.notificationService.notifyError(
+        `Failed to cancel order: ${error.message}`,
+      );
+      this.cancelOrderState.fail();
+      return false;
     }
   }
 }

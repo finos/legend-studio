@@ -30,4 +30,5 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   CLICK_SUBSCRIBE_TO_NEWSLETTER = 'marketplace.click.subscribe.to.newsletter',
   OPEN_INTEGRATED_PRODUCT = 'marketplace.open.integrated.product',
   FETCH_PENDING_TASKS_FAILURE = 'marketplace.fetch.pending-tasks.failure',
+  ORDER_CANCELLATION_FAILURE = 'marketplace.order.cancellation.failure',
 }

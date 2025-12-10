@@ -195,7 +195,7 @@
   &__content {
     position: absolute;
     bottom: 0;
-    height: 55%;
+    height: 45%;
     background-color: rgb(11 11 11 / 70%);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -204,17 +204,26 @@
     padding: 0.5rem 1.2rem;
   }
 
-  &__title {
-    font-size: 3rem;
-    font-family: 'GS Sans Condensed', 'Trebuchet MS', sans-serif;
-    margin-bottom: 0.5rem;
-    word-wrap: break-word;
+  &__provider {
+    font:
+      500 1.8rem / 1.8rem 'GS Sans Condensed',
+      'Trebuchet MS',
+      sans-serif;
     color: var(--color-white);
+    margin-bottom: 1rem;
+    word-wrap: break-word;
     opacity: 0.95;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
   }
 
-  &__description {
-    font-size: 1.6rem;
+  &__title {
+    font:
+      2.75rem / 2.75rem 'GS Sans Condensed',
+      'Trebuchet MS',
+      sans-serif;
+    margin-bottom: 0.5rem;
+    word-wrap: break-word;
     color: var(--color-white);
     opacity: 0.95;
   }
@@ -261,5 +270,17 @@
     &:hover {
       background-color: var(--color-blue-400);
     }
+  }
+
+  &__category-chip {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1;
+    background-color: var(--color-dark-grey-100);
+    color: var(--color-white);
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: 1px solid var(--color-white);
   }
 }
