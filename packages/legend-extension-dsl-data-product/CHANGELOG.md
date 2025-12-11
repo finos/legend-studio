@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.36
+
+### Patch Changes
+
+- [#4711](https://github.com/finos/legend-studio/pull/4711) [`69b20fe`](https://github.com/finos/legend-studio/commit/69b20feebb4a2a32f85423fe31aa4b32f14f0b5b) ([@jackp5150](https://github.com/jackp5150)) - Show contract id in subscription viewer
+
 ## 0.0.35
 
 ### Patch Changes
