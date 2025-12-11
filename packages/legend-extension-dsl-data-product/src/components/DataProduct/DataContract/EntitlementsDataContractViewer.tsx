@@ -66,6 +66,7 @@ import { useAuth } from 'react-oidc-context';
 import {
   ArrowUpFromBracketIcon,
   CloseIcon,
+  CopyFilledIcon,
   CopyIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -524,7 +525,13 @@ export const EntitlementsDataContractViewer = observer(
         label:
           privilegeManagerApprovalTask?.rec.status ===
           V1_UserApprovalStatus.PENDING ? (
-            <>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+              }}
+            >
               <Link
                 href={getContractTaskUrl(
                   privilegeManagerApprovalTask.rec.taskId,
@@ -540,8 +547,12 @@ export const EntitlementsDataContractViewer = observer(
                     getContractTaskUrl(privilegeManagerApprovalTask.rec.taskId),
                   )
                 }
+                className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
               >
-                <CopyIcon />
+                <CopyFilledIcon />
+                <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
+                  Copy
+                </div>
               </IconButton>
               {showEscalationButton && (
                 <span
@@ -556,12 +567,16 @@ export const EntitlementsDataContractViewer = observer(
                   <IconButton
                     onClick={() => setShowEscalationModal(true)}
                     disabled={!canEscalateContract}
+                    className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
                   >
                     <ArrowUpFromBracketIcon />
+                    <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
+                      Escalate
+                    </div>
                   </IconButton>
                 </span>
               )}
-            </>
+            </Box>
           ) : (
             <>Privilege Manager Approval</>
           ),
@@ -592,7 +607,13 @@ export const EntitlementsDataContractViewer = observer(
         label:
           dataOwnerApprovalTask?.rec.status ===
           V1_UserApprovalStatus.PENDING ? (
-            <>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+              }}
+            >
               <Link
                 href={getContractTaskUrl(dataOwnerApprovalTask.rec.taskId)}
                 target="_blank"
@@ -606,10 +627,14 @@ export const EntitlementsDataContractViewer = observer(
                     getContractTaskUrl(dataOwnerApprovalTask.rec.taskId),
                   )
                 }
+                className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
               >
-                <CopyIcon />
+                <CopyFilledIcon />
+                <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
+                  Copy
+                </div>
               </IconButton>
-            </>
+            </Box>
           ) : (
             <>Data Producer Approval</>
           ),

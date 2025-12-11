@@ -20,8 +20,6 @@
   height: 100%;
   width: 100%;
   position: relative;
-  background: var(--color-dark-grey-80);
-  color: var(--color-light-grey-200);
   font-family: Roboto, sans-serif;
   overflow: auto;
 
@@ -444,7 +442,6 @@
 
   &__empty-cell {
     font-size: 1.2rem;
-    color: var(--color-dark-grey-280);
   }
 
   &__header-cell {
@@ -806,7 +803,6 @@
 
 .data-product__viewer__markdown-text-viewer {
   color: var(--color-light-grey-200);
-  padding: 0;
 }
 
 .data-product__viewer__terminal__description-div {
@@ -1956,7 +1952,7 @@
   justify-content: center;
   height: 30rem;
 
-  span {
+  .message-text {
     color: var(--color-light-grey-400);
   }
 
@@ -1989,6 +1985,27 @@
 
   .MuiTabs-indicator {
     display: none;
+  }
+}
+
+.data-product__viewer__tab-code {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+
+  &__content {
+    height: calc(100% - 3.8rem);
+    border: 0.1rem solid var(--color-dark-grey-200);
+    position: relative;
+  }
+
+  &__actions {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    gap: 0.5rem;
+    min-height: 3.8rem;
   }
 }
 

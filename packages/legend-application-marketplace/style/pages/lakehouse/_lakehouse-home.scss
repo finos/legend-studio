@@ -25,32 +25,11 @@
     max-width: 100%;
     width: 100%;
     gap: 3rem;
-    background: var(--legend-marketplace-light-blue);
 
     &__logo {
-      margin-bottom: -6rem;
-
       img {
         max-height: 22rem;
       }
-    }
-
-    &__title_marketplace {
-      color: var(--color-black);
-      font-size: 3.8rem;
-      font-weight: bold;
-      letter-spacing: 0.125rem;
-      text-transform: uppercase;
-      margin-top: -4.2rem;
-    }
-
-    &__title_legend {
-      color: var(--color-black);
-      font-size: 1.8rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      margin-right: 21rem;
-      text-align: left;
     }
   }
 

@@ -1,5 +1,19 @@
 # @finos/legend-art
 
+## 7.1.135
+
+### Patch Changes
+
+- [#4712](https://github.com/finos/legend-studio/pull/4712) [`8d905ce`](https://github.com/finos/legend-studio/commit/8d905ce72a29c190cb495425957d7c4b40eaa067) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented dark theme and light theme with toggle throughout marketplace app
+
+- [#4713](https://github.com/finos/legend-studio/pull/4713) [`20c88d0`](https://github.com/finos/legend-studio/commit/20c88d010d4192af3ce9234b7b10e496490555d7) ([@kelly-thai](https://github.com/kelly-thai)) - Add new Copy icon
+
+## 7.1.134
+
+### Patch Changes
+
+- [#4696](https://github.com/finos/legend-studio/pull/4696) [`a066d37`](https://github.com/finos/legend-studio/commit/a066d37b8264613f7c399ec11a2832ee3e8d9e41) ([@TharunRajeev](https://github.com/TharunRajeev)) - Disbabled props added to PanelDropZone.
+
 ## 7.1.133
 
 ### Patch Changes

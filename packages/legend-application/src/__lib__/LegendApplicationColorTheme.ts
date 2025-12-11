@@ -20,6 +20,7 @@ export enum LEGEND_APPLICATION_COLOR_THEME {
   DEFAULT_DARK = 'default-dark',
   LEGACY_LIGHT = 'legacy-light',
   HIGH_CONTRAST_LIGHT = 'hc-light',
+  HIGH_CONTRAST_DARK = 'hc-dark',
 }
 
 export const DEFAULT_DARK_COLOR_THEME: ColorTheme = {
@@ -51,5 +52,18 @@ export const HIGH_CONTRAST_LIGHT_COLOR_THEME: ColorTheme = {
     'data-access-overview.chart.access-requested': '#f5c518',
     'data-access-overview.chart.access-not-granted': '#fa5343',
     'data-access-overview.chart.unsupported-access': '#e1e7ea',
+  },
+};
+
+export const HIGH_CONTRAST_DARK_COLOR_THEME: ColorTheme = {
+  name: 'High-Contrast Dark',
+  key: LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_DARK,
+  TEMPORARY__globalCSSClassName: 'theme__hc-dark',
+  colors: {
+    'data-access-overview.chart.access-granted': '#6a9955',
+    'data-access-overview.chart.access-approved': '#7399c6',
+    'data-access-overview.chart.access-requested': '#fbbc05',
+    'data-access-overview.chart.access-not-granted': '#ea4646',
+    'data-access-overview.chart.unsupported-access': '#2a2a2a',
   },
 };

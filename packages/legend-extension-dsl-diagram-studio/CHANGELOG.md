@@ -1,5 +1,19 @@
 # @finos/legend-extension-dsl-diagram-studio
 
+## 0.0.9
+
+## 0.0.8
+
+## 0.0.7
+
+### Patch Changes
+
+- [#4709](https://github.com/finos/legend-studio/pull/4709) [`c38ec1f`](https://github.com/finos/legend-studio/commit/c38ec1ff4c61503a0b6bda36c7ae32b6a001e8bf) ([@jackp5150](https://github.com/jackp5150)) - Fixed class preview by adding callbacks
+
+## 0.0.6
+
+## 0.0.5
+
 ## 0.0.4
 
 ## 0.0.3

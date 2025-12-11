@@ -19,6 +19,17 @@
 :root {
   --legend-marketplace-header-height: 64px;
   --legend-marketplace-light-blue: #7297c5;
+
+  // Theme-agnostic color variables (defaults to light theme)
+  --marketplace-bg-primary: var(--color-white);
+  --marketplace-bg-secondary: var(--color-hclight-grey-10);
+  --marketplace-bg-elevated: var(--color-hclight-grey-30);
+  --marketplace-text-primary: var(--color-hclight-black);
+  --marketplace-text-secondary: var(--color-legacylight-dark-grey-200);
+  --marketplace-text-muted: var(--color-legacylight-dark-grey-400);
+  --marketplace-link-color: var(--color-blue-50);
+  --marketplace-info-bg: var(--color-legacylight-light-grey-300);
+  --marketplace-info-text: var(--color-legacylight-dark-grey-200);
 }
 
 html * {
@@ -28,8 +39,9 @@ html * {
 .app {
   width: 100%;
   height: 100%;
-  background: var(--color-white);
   overflow: auto;
+  background: var(--marketplace-bg-primary);
+  color: var(--marketplace-text-primary);
 
   &__page {
     @include flexVCenter;
@@ -37,14 +49,14 @@ html * {
     flex-direction: column;
     width: 100%;
     height: calc(100% - var(--legend-marketplace-header-height));
-    background: var(--color-white);
+    background: var(--marketplace-bg-primary);
   }
 
   &__info {
     &__group {
       margin-top: 1rem;
-      color: var(--color-legacylight-dark-grey-200);
-      background: var(--color-legacylight-light-grey-300);
+      color: var(--marketplace-info-text);
+      background: var(--marketplace-info-bg);
       padding: 1.5rem;
       border-radius: 0.2rem;
     }
@@ -57,16 +69,16 @@ html * {
 
       &__title {
         margin-right: 0.5rem;
-        color: var(--color-legacylight-dark-grey-400);
+        color: var(--marketplace-text-muted);
       }
 
       &__value {
-        color: var(--color-legacylight-dark-grey-200);
+        color: var(--marketplace-text-secondary);
 
         a {
           text-decoration: none;
           font-weight: 700;
-          color: var(--color-blue-50);
+          color: var(--marketplace-link-color);
         }
       }
     }

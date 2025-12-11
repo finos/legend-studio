@@ -1,5 +1,37 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.36
+
+### Patch Changes
+
+- [#4711](https://github.com/finos/legend-studio/pull/4711) [`69b20fe`](https://github.com/finos/legend-studio/commit/69b20feebb4a2a32f85423fe31aa4b32f14f0b5b) ([@jackp5150](https://github.com/jackp5150)) - Show contract id in subscription viewer
+
+## 0.0.35
+
+### Patch Changes
+
+- [#4712](https://github.com/finos/legend-studio/pull/4712) [`8d905ce`](https://github.com/finos/legend-studio/commit/8d905ce72a29c190cb495425957d7c4b40eaa067) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented dark theme and light theme with toggle throughout marketplace app
+
+- [#4713](https://github.com/finos/legend-studio/pull/4713) [`20c88d0`](https://github.com/finos/legend-studio/commit/20c88d010d4192af3ce9234b7b10e496490555d7) ([@kelly-thai](https://github.com/kelly-thai)) - Add labels for 'Copy' and 'Escalate' icons
+
+## 0.0.34
+
+### Patch Changes
+
+- [#4707](https://github.com/finos/legend-studio/pull/4707) [`84e50cb`](https://github.com/finos/legend-studio/commit/84e50cb42fcd513f915ea774de317c1a26e2c362) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Clean up data product access point tabs + add extension mechanism.
+
+## 0.0.33
+
+### Patch Changes
+
+- [#4691](https://github.com/finos/legend-studio/pull/4691) [`590c24d`](https://github.com/finos/legend-studio/commit/590c24d92886138a1a90b144b51d6f09f729e8e1) ([@gs-gunjan](https://github.com/gs-gunjan)) - marketplace: adding support for querying sample data
+
+## 0.0.32
+
+### Patch Changes
+
+- [#4695](https://github.com/finos/legend-studio/pull/4695) [`ec8e75e`](https://github.com/finos/legend-studio/commit/ec8e75ed8d2d23d2412bf25635b57f04a8df82b1) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with handleIsValidChange for producer contracts
+
 ## 0.0.31
 
 ### Patch Changes

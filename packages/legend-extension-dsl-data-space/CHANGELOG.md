@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.177
+
+### Patch Changes
+
+- [#4712](https://github.com/finos/legend-studio/pull/4712) [`8d905ce`](https://github.com/finos/legend-studio/commit/8d905ce72a29c190cb495425957d7c4b40eaa067) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented dark theme and light theme with toggle throughout marketplace app
+
+## 10.4.176
+
+## 10.4.175
+
 ## 10.4.174
 
 ### Patch Changes

@@ -18,6 +18,7 @@ import packageJson from '../../package.json' with { type: 'json' };
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import { LEGEND_APPLICATION_SETTING_CONFIG } from '../__lib__/LegendApplicationSetting.js';
 import {
+  HIGH_CONTRAST_DARK_COLOR_THEME,
   HIGH_CONTRAST_LIGHT_COLOR_THEME,
   LEGACY_LIGHT_COLOR_THEME,
 } from '../__lib__/LegendApplicationColorTheme.js';
@@ -55,7 +56,11 @@ export class Core_LegendApplicationPlugin extends LegendApplicationPlugin {
   }
 
   override getExtraColorThemes(): ColorTheme[] {
-    return [LEGACY_LIGHT_COLOR_THEME, HIGH_CONTRAST_LIGHT_COLOR_THEME];
+    return [
+      LEGACY_LIGHT_COLOR_THEME,
+      HIGH_CONTRAST_LIGHT_COLOR_THEME,
+      HIGH_CONTRAST_DARK_COLOR_THEME,
+    ];
   }
 
   override getExtraSettingConfigurationEntries(): SettingConfigurationEntry[] {

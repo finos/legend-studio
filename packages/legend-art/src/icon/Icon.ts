@@ -134,6 +134,7 @@ import {
   MdOutlineExplore,
   MdOutlineAccountTree,
   MdGroup,
+  MdLightMode,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -329,6 +330,7 @@ export const CloudDownloadIcon = IoCloudDownloadOutline;
 export const CloudUploadIcon = IoCloudUploadOutline;
 export const QuestionThinIcon = IoHelp;
 export const SunIcon = IoSunnyOutline;
+export const SunFilledIcon = MdLightMode;
 export const MoonIcon = IoMoon;
 
 //======================================================= PI =======================================================
@@ -482,6 +484,7 @@ import {
   FaPython,
   FaStackOverflow,
   FaGitlab,
+  FaCopy,
 } from 'react-icons/fa';
 
 export const ArchiveIcon = FaArchive;
@@ -628,6 +631,7 @@ export const WrenchIcon = FaWrench;
 export const PythonIcon = FaPython;
 export const StackOverflowIcon = FaStackOverflow;
 export const GitlabIcon = FaGitlab;
+export const CopyFilledIcon = FaCopy;
 
 //======================================================= fa6 ======================================================
 
