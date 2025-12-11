@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.50
+
+### Patch Changes
+
+- [#4712](https://github.com/finos/legend-studio/pull/4712) [`8d905ce`](https://github.com/finos/legend-studio/commit/8d905ce72a29c190cb495425957d7c4b40eaa067) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented dark theme and light theme with toggle throughout marketplace app
+
+- [#4713](https://github.com/finos/legend-studio/pull/4713) [`20c88d0`](https://github.com/finos/legend-studio/commit/20c88d010d4192af3ce9234b7b10e496490555d7) ([@kelly-thai](https://github.com/kelly-thai)) - Add labels for 'Copy' and 'Escalate' icons
+
 ## 0.1.49
 
 ## 0.1.48
