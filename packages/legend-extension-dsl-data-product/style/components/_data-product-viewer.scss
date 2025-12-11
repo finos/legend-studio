@@ -20,8 +20,6 @@
   height: 100%;
   width: 100%;
   position: relative;
-  background: var(--color-dark-grey-80);
-  color: var(--color-light-grey-200);
   font-family: Roboto, sans-serif;
   overflow: auto;
 
@@ -444,7 +442,6 @@
 
   &__empty-cell {
     font-size: 1.2rem;
-    color: var(--color-dark-grey-280);
   }
 
   &__header-cell {
@@ -806,7 +803,6 @@
 
 .data-product__viewer__markdown-text-viewer {
   color: var(--color-light-grey-200);
-  padding: 0;
 }
 
 .data-product__viewer__terminal__description-div {

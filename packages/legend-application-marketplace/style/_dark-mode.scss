@@ -1,0 +1,3033 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.theme__hc-dark {
+  // Override theme-agnostic variables for dark mode
+  --marketplace-bg-primary: var(--color-dark-theme-bg-primary);
+  --marketplace-bg-secondary: var(--color-dark-theme-bg-secondary);
+  --marketplace-bg-elevated: var(--color-dark-theme-bg-elevated);
+  --marketplace-text-primary: var(--color-dark-theme-text-primary);
+  --marketplace-text-secondary: var(--color-dark-theme-text-secondary);
+  --marketplace-text-muted: var(--color-dark-theme-text-muted);
+  --marketplace-link-color: var(--color-dark-theme-blue-primary);
+  --marketplace-info-bg: var(--color-dark-theme-bg-elevated);
+  --marketplace-info-text: var(--color-dark-theme-text-primary);
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-dark-theme-border-light);
+    border: 0.2rem solid transparent;
+    background-clip: content-box;
+    border-radius: 0.4rem;
+  }
+
+  ::-webkit-scrollbar-track-piece {
+    background: var(--color-dark-theme-bg-secondary);
+  }
+
+  .btn--dark {
+    background: var(--color-dark-theme-bg-elevated);
+    color: var(--color-dark-theme-text-primary);
+  }
+
+  .btn--dark:hover {
+    background: var(--color-dark-theme-border-light);
+  }
+
+  // Header
+  .legend-marketplace-page {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__header {
+      background: var(--color-dark-theme-bg-secondary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  .legend-marketplace-header {
+    background: var(--color-dark-theme-bg-secondary);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 40%);
+
+    &__container {
+      background: var(--color-dark-theme-bg-secondary);
+    }
+
+    &__name {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__menu__icon {
+      color: var(--color-dark-theme-text-primary);
+
+      svg {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__tab {
+      color: var(--color-dark-theme-text-secondary);
+
+      &:hover {
+        background-color: rgb(255 255 255 / 10%);
+      }
+
+      &--selected {
+        color: var(--color-dark-theme-text-primary);
+
+        &::before {
+          background: var(--color-dark-theme-blue-primary);
+        }
+      }
+    }
+
+    &__icon {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__contract__count {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__task__badge__avatar,
+    &__task__badge__menu__item {
+      background: var(--color-red-180) !important;
+      color: var(--color-dark-theme-text-primary) !important;
+    }
+
+    // Theme toggle color overrides only
+    &__theme-toggle {
+      background-color: rgb(255 255 255 / 10%);
+
+      &:hover {
+        background-color: rgb(255 255 255 / 15%);
+      }
+
+      // Tooltip color overrides
+      &::after {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-primary);
+        border-color: var(--color-dark-theme-border-light);
+      }
+
+      &::before {
+        border-bottom-color: var(--color-dark-theme-bg-elevated);
+      }
+    }
+  }
+
+  // MUI Menu styling for header dropdowns
+  .MuiMenu-paper {
+    background: var(--color-dark-theme-bg-elevated) !important;
+    color: var(--color-dark-theme-text-primary) !important;
+    border: 1px solid var(--color-dark-theme-border) !important;
+    box-shadow: 0 4px 20px rgb(0 0 0 / 60%) !important;
+  }
+
+  .MuiMenu-list,
+  .MuiList-root {
+    background: var(--color-dark-theme-bg-elevated) !important;
+    color: var(--color-dark-theme-text-primary) !important;
+  }
+
+  .MuiMenuItem-root {
+    color: var(--color-dark-theme-text-primary) !important;
+
+    &:hover {
+      background: var(--color-dark-theme-bg-tertiary) !important;
+    }
+
+    a,
+    a:visited {
+      color: inherit !important;
+      text-decoration: none;
+    }
+
+    .MuiLink-root {
+      color: var(--color-dark-theme-blue-primary) !important;
+
+      &:hover {
+        color: var(--color-dark-theme-blue-accent) !important;
+      }
+    }
+
+    .MuiBox-root {
+      color: var(--color-dark-theme-text-primary) !important;
+
+      a,
+      .MuiLink-root {
+        color: var(--color-dark-theme-blue-primary) !important;
+
+        &:hover {
+          color: var(--color-dark-theme-blue-accent) !important;
+        }
+      }
+    }
+  }
+
+  .menu {
+    background: var(--color-dark-theme-bg-secondary);
+    border-color: var(--color-dark-theme-border);
+
+    &__item {
+      color: var(--color-dark-theme-text-secondary);
+
+      &:hover {
+        background: var(--color-dark-theme-bg-tertiary);
+      }
+
+      &:not([disabled]):hover {
+        background: var(--color-dark-theme-bg-tertiary);
+      }
+
+      &[disabled] {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+  }
+
+  // Your Orders Page
+  .legend-marketplace-your-orders {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__header {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__header-section {
+      color: var(--color-dark-theme-text-primary);
+
+      h1 {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__content {
+      background: var(--color-dark-theme-bg-primary);
+    }
+  }
+
+  .orders-tabs {
+    border-bottom: 1px solid var(--color-dark-theme-border);
+
+    .MuiTab-root {
+      color: var(--color-dark-theme-text-muted);
+
+      &.Mui-selected {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    .MuiTabs-indicator {
+      background-color: var(--color-dark-theme-blue-primary);
+    }
+  }
+
+  .orders-loading {
+    color: var(--color-dark-theme-text-secondary);
+
+    .loading-text {
+      color: var(--color-dark-theme-text-secondary);
+    }
+  }
+
+  .orders-empty {
+    background-color: var(--color-dark-theme-bg-secondary);
+    border: 1px dashed var(--color-dark-theme-border);
+    color: var(--color-dark-theme-text-primary);
+
+    .empty-title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    .empty-description {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
+
+  .orders-table-container {
+    background: var(--color-dark-theme-bg-secondary);
+    border: 1px solid var(--color-dark-theme-border) !important;
+
+    .MuiTable-root {
+      background: var(--color-dark-theme-bg-secondary);
+
+      thead {
+        background: var(--color-dark-theme-bg-tertiary);
+        border-bottom: 1px solid var(--color-dark-theme-border);
+
+        th {
+          color: var(--color-dark-theme-text-primary);
+          background: var(--color-dark-theme-bg-tertiary);
+          border-bottom: 1px solid var(--color-dark-theme-border);
+        }
+      }
+
+      tbody {
+        tr {
+          background: var(--color-dark-theme-bg-secondary);
+          border-bottom: 1px solid var(--color-dark-theme-border);
+
+          &:hover {
+            background: var(--color-dark-theme-bg-tertiary);
+          }
+
+          td {
+            color: var(--color-dark-theme-text-secondary);
+            border-bottom: 1px solid var(--color-dark-theme-border);
+          }
+        }
+      }
+    }
+  }
+
+  .order-details {
+    background-color: var(--color-dark-theme-bg-tertiary);
+    border: 1px solid var(--color-dark-theme-border);
+
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__items-table {
+      background: var(--color-dark-theme-bg-secondary);
+      border: 1px solid var(--color-dark-theme-border);
+
+      thead {
+        background: var(--color-dark-theme-bg-elevated);
+
+        th {
+          color: var(--color-dark-theme-text-primary);
+          background: var(--color-dark-theme-bg-elevated);
+          border-bottom: 1px solid var(--color-dark-theme-border);
+        }
+      }
+
+      tbody {
+        td {
+          color: var(--color-dark-theme-text-secondary);
+          border-bottom: 1px solid var(--color-dark-theme-border);
+        }
+      }
+    }
+
+    &__product-name {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__provider-name {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__price {
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  // Vendor Data Page
+  .legend-marketplace-vendor-data {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__content {
+      background: var(--color-dark-theme-bg-primary);
+    }
+  }
+
+  .legend-marketplace-banner {
+    background: var(--color-dark-theme-bg-secondary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__subtitle {
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  .legend-marketplace-vendordata-main {
+    &__loading {
+      background: var(--color-dark-theme-bg-primary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &-sidebar {
+      background: var(--color-dark-theme-bg-secondary);
+      border-right: 1px solid var(--color-dark-theme-border);
+
+      &__title {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__subtitle {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &-search-results {
+      background: var(--color-dark-theme-bg-primary);
+
+      &__category {
+        .see-all {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+    }
+  }
+
+  // Cards
+  .legend-marketplace-card {
+    background: var(--color-dark-theme-bg-secondary);
+    border: 1px solid var(--color-dark-theme-border);
+    color: var(--color-dark-theme-text-primary);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
+
+    &:hover {
+      background: var(--color-dark-theme-bg-tertiary);
+      border-color: var(--color-dark-theme-blue-primary);
+      box-shadow: 0 8px 20px rgb(0 0 0 / 60%);
+    }
+
+    &--with-icon {
+      background-color: var(--color-dark-theme-blue-secondary);
+    }
+
+    &__content {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__content-container {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__description {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__price {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__more-info {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+
+      &__content {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+  }
+
+  .legend-marketplace-vendor-card {
+    background: var(--color-dark-theme-bg-secondary);
+    border: 1px solid var(--color-dark-theme-border);
+
+    &:hover {
+      background: var(--color-dark-theme-bg-tertiary);
+    }
+
+    &__type {
+      &--vendor {
+        background: rgb(115 153 198 / 20%);
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &--curated {
+        background: rgb(168 85 247 / 20%);
+        color: var(--color-modal-purple-light);
+      }
+    }
+
+    &__name {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__description {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
+
+  .legend-marketplace-vendor-data-card {
+    &__vendor-name {
+      color: var(--color-dark-theme-text-primary);
+
+      &__description {
+        color: var(--color-dark-theme-text-secondary);
+      }
+
+      &__owned {
+        color: var(--color-dark-green-50);
+      }
+    }
+
+    &__product-name {
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__add-to-cart-button {
+      color: var(--color-dark-theme-blue-primary);
+      border-color: var(--color-dark-theme-blue-primary);
+
+      &:hover {
+        background: rgb(115 153 198 / 10%);
+      }
+    }
+
+    &__price {
+      color: var(--color-dark-theme-text-secondary);
+    }
+  }
+
+  // Modals
+  .MuiDialog-paper {
+    background: var(--color-dark-theme-bg-secondary);
+    color: var(--color-dark-theme-text-primary);
+  }
+
+  .legend-marketplace-cancel-order-dialog {
+    .MuiDialogTitle-root {
+      background: var(--color-dark-theme-bg-tertiary);
+      color: var(--color-dark-theme-text-primary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+    }
+
+    .MuiDialogContent-root {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    .MuiDialogActions-root {
+      background: var(--color-dark-theme-bg-tertiary);
+      border-top: 1px solid var(--color-dark-theme-border);
+    }
+
+    &__order-info {
+      background: var(--color-dark-theme-bg-tertiary);
+      border: 1px solid var(--color-dark-theme-border);
+    }
+
+    &__text-field {
+      .MuiInputBase-root {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      .MuiInputLabel-root {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      .MuiFormHelperText-root {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+  }
+
+  .recommended-addons-modal {
+    .MuiDialog-paper {
+      background: linear-gradient(
+        145deg,
+        var(--color-dark-theme-bg-secondary) 0%,
+        var(--color-dark-theme-bg-tertiary) 100%
+      );
+      border: 1px solid var(--color-dark-theme-border);
+      box-shadow:
+        0 32px 64px -12px rgb(0 0 0 / 60%),
+        0 0 0 1px rgb(255 255 255 / 5%);
+    }
+
+    &__header {
+      background: linear-gradient(
+        135deg,
+        rgb(34 197 94 / 8%) 0%,
+        rgb(115 153 198 / 12%) 50%,
+        rgb(168 85 247 / 8%) 100%
+      );
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      &::before {
+        background: linear-gradient(
+          90deg,
+          rgb(115 153 198 / 40%) 0%,
+          rgb(168 85 247 / 40%) 100%
+        );
+      }
+    }
+
+    &__title {
+      background: linear-gradient(
+        135deg,
+        var(--color-dark-theme-text-primary) 0%,
+        var(--color-dark-theme-text-secondary) 100%
+      );
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    &__subtitle {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__close-btn {
+      color: var(--color-dark-theme-text-muted);
+      background: rgb(148 163 184 / 10%);
+
+      &:hover {
+        color: var(--color-dark-theme-text-primary);
+        background: rgb(148 163 184 / 20%);
+      }
+    }
+
+    &__content {
+      background: transparent;
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__section-title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__section-description {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__empty-state {
+      .MuiTypography-root {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__recommendation-card {
+      background: var(--color-dark-theme-bg-elevated);
+      border: 1px solid var(--color-dark-theme-border);
+
+      &:hover {
+        background: var(--color-dark-theme-bg-tertiary);
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    &__success-icon {
+      color: var(--color-dark-green-50);
+    }
+
+    &__warning-icon {
+      color: var(--color-dark-yellow-40);
+    }
+  }
+
+  // Cart
+  .legend-marketplace-cart-drawer {
+    background: var(--color-dark-theme-bg-secondary);
+    color: var(--color-dark-theme-text-primary);
+
+    .MuiDrawer-paper {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__header {
+      background: linear-gradient(
+        135deg,
+        var(--color-dark-theme-blue-accent) 0%,
+        var(--color-dark-theme-blue-secondary) 100%
+      );
+      box-shadow: 0 4px 20px rgb(0 0 0 / 40%);
+
+      &::after {
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgb(255 255 255 / 10%),
+          transparent
+        );
+      }
+
+      button {
+        color: var(--color-dark-theme-text-primary);
+
+        &:hover {
+          background: rgb(255 255 255 / 10%);
+        }
+      }
+    }
+
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__section {
+      background: var(--color-dark-theme-bg-secondary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      .MuiFormControl-root {
+        .MuiOutlinedInput-root {
+          background: var(--color-dark-theme-bg-elevated);
+          color: var(--color-dark-theme-text-primary);
+
+          &:hover {
+            background: var(--color-dark-theme-bg-tertiary);
+          }
+
+          &.Mui-focused {
+            background: var(--color-dark-theme-bg-secondary);
+            box-shadow: 0 0 0 3px rgb(115 153 198 / 20%);
+          }
+        }
+      }
+    }
+
+    &__business-reason {
+      background: var(--color-dark-theme-bg-secondary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      &__title {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__required {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__select {
+        .MuiOutlinedInput-root {
+          background: var(--color-dark-theme-bg-elevated);
+          color: var(--color-dark-theme-text-primary);
+
+          &:hover {
+            .MuiOutlinedInput-notchedOutline {
+              border-color: var(--color-dark-theme-blue-primary);
+            }
+          }
+
+          &.Mui-focused {
+            .MuiOutlinedInput-notchedOutline {
+              border-color: var(--color-dark-theme-blue-primary);
+            }
+          }
+
+          .MuiSelect-select {
+            color: var(--color-dark-theme-text-primary);
+          }
+        }
+
+        .MuiInputLabel-root {
+          color: var(--color-dark-theme-text-muted);
+          background: var(--color-dark-theme-bg-elevated);
+
+          &.Mui-focused {
+            color: var(--color-dark-theme-blue-primary);
+          }
+
+          &.MuiInputLabel-shrink {
+            background: var(--color-dark-theme-bg-elevated);
+          }
+        }
+      }
+
+      &__note {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__content {
+      background: var(--color-dark-theme-bg-primary);
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--color-dark-theme-border-light);
+
+        &:hover {
+          background: var(--color-dark-theme-blue-secondary);
+        }
+      }
+    }
+
+    &__loading,
+    &__empty {
+      background: var(--color-dark-theme-bg-secondary);
+      border: 1px solid var(--color-dark-theme-border);
+      color: var(--color-dark-theme-text-muted);
+
+      .MuiCircularProgress-root {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      .MuiTypography-root {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__items {
+      background: transparent;
+    }
+
+    &__item-card {
+      background: var(--color-dark-theme-bg-secondary);
+      border: 1px solid var(--color-dark-theme-border);
+      box-shadow: 0 2px 16px rgb(0 0 0 / 40%);
+
+      &:hover {
+        border-color: var(--color-dark-theme-blue-primary);
+        box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+      }
+
+      &__header {
+        background: linear-gradient(
+          135deg,
+          var(--color-dark-theme-bg-tertiary) 0%,
+          var(--color-dark-theme-bg-elevated) 100%
+        );
+        border-bottom: 1px solid var(--color-dark-theme-border);
+      }
+
+      &__name {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__provider {
+        background: linear-gradient(
+          135deg,
+          var(--color-dark-theme-blue-accent) 0%,
+          var(--color-dark-theme-blue-primary) 100%
+        );
+        color: var(--color-dark-theme-text-primary);
+        box-shadow: 0 2px 8px rgb(115 153 198 / 40%);
+      }
+
+      &__remove-btn {
+        background: rgb(239 68 68 / 20%);
+        color: var(--color-dark-red-50);
+
+        &:hover {
+          background: rgb(239 68 68 / 30%);
+        }
+      }
+
+      &__content {
+        background: var(--color-dark-theme-bg-secondary);
+      }
+
+      &__price {
+        color: var(--color-dark-theme-blue-primary);
+        background: linear-gradient(
+          135deg,
+          var(--color-dark-theme-blue-primary) 0%,
+          var(--color-dark-theme-blue-accent) 100%
+        );
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      &__price-suffix {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__category {
+        background: linear-gradient(
+          135deg,
+          var(--color-dark-theme-bg-elevated) 0%,
+          var(--color-dark-theme-bg-tertiary) 100%
+        );
+
+        span {
+          color: var(--color-dark-theme-text-secondary);
+        }
+      }
+    }
+
+    &__footer {
+      background: var(--color-dark-theme-bg-secondary);
+      border-top: 1px solid var(--color-dark-theme-border);
+      box-shadow: 0 -4px 20px rgb(0 0 0 / 40%);
+    }
+
+    &__clear-button {
+      background: linear-gradient(
+        135deg,
+        var(--color-dark-theme-bg-tertiary) 0%,
+        var(--color-dark-theme-bg-elevated) 100%
+      );
+      color: var(--color-dark-theme-text-primary);
+      border: 2px solid var(--color-dark-theme-border);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(
+          135deg,
+          var(--color-dark-theme-bg-elevated) 0%,
+          var(--color-dark-theme-border-light) 100%
+        );
+        border-color: var(--color-dark-theme-blue-primary);
+        box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
+      }
+    }
+
+    &__order-button {
+      background: linear-gradient(
+        135deg,
+        var(--color-dark-theme-blue-primary) 0%,
+        var(--color-dark-theme-blue-secondary) 100%
+      );
+      color: var(--color-dark-theme-text-primary);
+      box-shadow: 0 4px 16px rgb(115 153 198 / 40%);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(
+          135deg,
+          var(--color-dark-theme-blue-secondary) 0%,
+          var(--color-dark-theme-blue-primary) 100%
+        );
+        box-shadow: 0 8px 24px rgb(115 153 198 / 50%);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+      }
+    }
+  }
+
+  // Search
+  .legend-marketplace-search-bar,
+  .legend-marketplace__search-bar {
+    .MuiInputBase-root {
+      color: var(--color-dark-theme-text-primary);
+      border: 1px solid var(--color-dark-theme-text-primary);
+
+      &:hover {
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    &__input {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    input {
+      color: var(--color-dark-theme-text-primary);
+
+      &::placeholder {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    // Search icon and settings icon
+    .MuiIconButton-root {
+      color: var(--color-dark-theme-text-primary);
+
+      svg {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &:hover {
+        color: var(--color-dark-theme-blue-primary);
+
+        svg {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+    }
+
+    // Input label
+    .MuiInputLabel-root {
+      color: var(--color-dark-theme-text-primary);
+
+      &.Mui-focused {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  // Product Search Cards
+  .product-search-card,
+  .legend-marketplace-product-search-result-card {
+    background: var(--color-dark-theme-bg-secondary);
+    border: 1px solid var(--color-dark-theme-border);
+
+    &:hover {
+      background: var(--color-dark-theme-bg-tertiary);
+      border-color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__description {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__data-product-name {
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__data-product-description {
+      color: var(--color-dark-theme-text-secondary);
+    }
+  }
+
+  .lakehouse-data-product-card,
+  .marketplace-lakehouse-data-product-card {
+    background: var(--color-dark-theme-bg-secondary);
+    border: 1px solid var(--color-dark-theme-border);
+
+    &:hover {
+      background: var(--color-dark-theme-bg-tertiary);
+    }
+
+    &__name {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__description {
+      color: var(--color-dark-theme-text-muted);
+
+      &__markdown {
+        background: transparent;
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__lakehouse {
+      color: var(--color-dark-green-50);
+      background: rgb(106 153 85 / 20%);
+    }
+
+    &__version {
+      &--snapshot {
+        color: var(--color-dark-theme-blue-primary);
+        background: rgb(115 153 198 / 20%);
+      }
+
+      &--release {
+        color: var(--color-dark-green-50);
+        background: rgb(106 153 85 / 20%);
+      }
+    }
+
+    &__environment-classification {
+      &--unknown {
+        color: var(--color-dark-theme-text-muted);
+        background: var(--color-dark-theme-bg-elevated);
+      }
+
+      &--dev {
+        color: var(--color-dark-yellow-40);
+        background: rgb(251 188 5 / 20%);
+      }
+
+      &--prod-parallel {
+        color: var(--color-dark-theme-blue-primary);
+        background: rgb(115 153 198 / 20%);
+      }
+
+      &--prod {
+        color: var(--color-dark-green-50);
+        background: rgb(106 153 85 / 20%);
+      }
+    }
+
+    &__more-info-btn {
+      color: var(--color-dark-theme-text-primary);
+
+      &:hover,
+      &--selected {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      svg {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__popover {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+
+      &__name {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__content {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__section-header {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__section-content__markdown {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__table {
+        td {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      &__project-link {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  // Coming Soon
+  .legend-marketplace-coming-soon {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__content {
+      background: var(--color-dark-theme-bg-primary);
+    }
+
+    &__feature-item {
+      background: var(--color-dark-theme-bg-secondary);
+      border: 1px solid var(--color-dark-theme-border);
+
+      &:hover {
+        background: var(--color-dark-theme-bg-tertiary);
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  .coming-soon-display {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__content {
+      background: rgb(26 26 26 / 95%);
+      backdrop-filter: blur(2rem);
+      border: 1px solid var(--color-dark-theme-border);
+      box-shadow: 0 2rem 4rem rgb(0 0 0 / 60%);
+    }
+
+    &__icon {
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__title {
+      background: linear-gradient(
+        135deg,
+        var(--color-dark-theme-blue-primary),
+        var(--color-dark-theme-blue-accent)
+      );
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    &__subtitle {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__description {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    .features-preview {
+      &__item {
+        background: rgb(115 153 198 / 10%);
+        border: 1px solid rgb(115 153 198 / 20%);
+
+        &:hover {
+          background: rgb(115 153 198 / 15%);
+          box-shadow: 0 0.8rem 2rem rgb(115 153 198 / 30%);
+        }
+
+        &__icon {
+          color: var(--color-dark-theme-blue-primary);
+        }
+
+        &__title {
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &__text {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+    }
+  }
+
+  // Home
+  .legend-marketplace-home {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__landing {
+      color: var(--color-dark-theme-text-primary);
+
+      &__title {
+        background: linear-gradient(
+          135deg,
+          var(--color-dark-theme-blue-primary),
+          var(--color-dark-theme-blue-accent)
+        );
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      &__description {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__button {
+      background: transparent;
+      color: var(--color-dark-theme-text-primary);
+      border: 1px solid var(--color-dark-theme-border);
+
+      &:hover {
+        background: linear-gradient(
+          90deg,
+          rgb(115 153 198 / 80%) 0%,
+          rgb(91 127 163 / 80%) 100%
+        );
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__icon {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__vendors {
+      &-title {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &-cards {
+        background: var(--color-dark-theme-bg-primary);
+      }
+    }
+  }
+
+  // Search Results
+  .legend-marketplace-search-results {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__content {
+      background: var(--color-dark-theme-bg-primary);
+    }
+
+    &__search-bar {
+      background: var(--color-dark-theme-bg-primary);
+    }
+
+    &__results {
+      &__cards {
+        background: var(--color-dark-theme-bg-primary);
+      }
+    }
+
+    &__sort-bar {
+      background-color: var(--color-dark-theme-bg-secondary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      &__container {
+        background-color: var(--color-dark-theme-bg-secondary);
+        color: var(--color-dark-theme-text-primary);
+
+        // Sort button/select styling
+        .MuiFormControl-root {
+          .MuiSelect-select {
+            color: var(--color-dark-theme-text-primary);
+            background: transparent;
+            border-color: var(--color-dark-theme-text-primary);
+
+            &:hover {
+              background: var(--color-dark-theme-text-primary);
+              color: var(--color-dark-theme-bg-secondary);
+            }
+          }
+
+          .MuiOutlinedInput-notchedOutline {
+            border-color: var(--color-dark-theme-text-primary);
+          }
+
+          .MuiOutlinedInput-root {
+            &:hover {
+              .MuiOutlinedInput-notchedOutline {
+                border-color: var(--color-dark-theme-text-primary);
+              }
+
+              background: var(--color-dark-theme-text-primary);
+
+              .MuiSelect-select {
+                color: var(--color-dark-theme-bg-secondary);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    &__drawer {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+
+      &__vendor-name {
+        color: var(--color-dark-theme-text-secondary);
+      }
+
+      &__data-product-name {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__data-product-description {
+        color: var(--color-dark-theme-text-secondary);
+      }
+
+      &__table-card {
+        background: var(--color-dark-theme-bg-tertiary);
+        border: 1px solid var(--color-dark-theme-border);
+
+        &__content {
+          background: var(--color-dark-theme-bg-tertiary);
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+    }
+  }
+
+  .lakehouse-search-results {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+  }
+
+  // Lakehouse Home
+  .marketplace-lakehouse-home {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__search-container {
+      background: var(--color-dark-theme-bg-primary);
+    }
+
+    &__carousel-title {
+      color: var(--color-dark-theme-text-primary);
+      border-left-color: var(--color-dark-theme-blue-primary);
+
+      &:hover {
+        color: var(--color-dark-theme-text-primary);
+        border-left-color: var(--color-dark-theme-blue-accent);
+      }
+    }
+
+    &__search-bar {
+      &__input {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+  }
+
+  .legend-marketplace-subscriptions-content {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__search-section {
+      background: var(--color-dark-theme-bg-primary);
+    }
+
+    &__user-search {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__subscription-grid {
+      background: var(--color-dark-theme-bg-primary);
+    }
+  }
+
+  // Not Found
+  .not-found-screen {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__message {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
+
+  // MUI Overrides
+  .MuiButton-outlined {
+    border-color: var(--color-dark-theme-border);
+
+    &:hover {
+      border-color: var(--color-dark-theme-blue-primary);
+      background: var(--color-dark-theme-bg-tertiary);
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  .MuiButton-contained {
+    background: var(--color-dark-theme-blue-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &:hover {
+      background: var(--color-dark-theme-blue-accent);
+    }
+  }
+
+  .MuiChip-root {
+    background: var(--color-dark-theme-bg-elevated);
+    color: var(--color-dark-theme-text-primary);
+    border-color: var(--color-dark-theme-border);
+  }
+
+  .MuiAccordion-root {
+    background: var(--color-dark-theme-bg-secondary);
+    border: 1px solid var(--color-dark-theme-border);
+    color: var(--color-dark-theme-text-primary);
+
+    &::before {
+      background-color: var(--color-dark-theme-border);
+    }
+  }
+
+  .MuiAccordionSummary-root {
+    background: var(--color-dark-theme-bg-secondary);
+
+    &:hover {
+      background: var(--color-dark-theme-bg-tertiary);
+    }
+  }
+
+  .MuiAccordionDetails-root {
+    background: var(--color-dark-theme-bg-secondary);
+    border-top: 1px solid var(--color-dark-theme-border);
+  }
+
+  .MuiTextField-root {
+    .MuiInputBase-root {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+      border: 2px solid var(--color-dark-theme-text-primary);
+
+      &:hover {
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+
+      &.Mui-focused {
+        border-color: var(--color-dark-theme-blue-primary);
+        box-shadow: 0 0 0 3px rgb(115 153 198 / 20%);
+      }
+    }
+
+    input {
+      color: var(--color-dark-theme-text-primary);
+
+      &::placeholder {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    .MuiInputLabel-root {
+      color: var(--color-dark-theme-text-primary);
+
+      &.Mui-focused {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &.MuiInputLabel-shrink {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    .MuiOutlinedInput-notchedOutline {
+      border-color: var(--color-dark-theme-border);
+    }
+
+    .MuiOutlinedInput-root {
+      &:hover .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+
+      &.Mui-focused .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  .MuiTooltip-tooltip {
+    background: var(--color-dark-theme-bg-elevated);
+    color: var(--color-dark-theme-text-primary);
+    border: 1px solid var(--color-dark-theme-border);
+  }
+
+  // Marketplace specific emphasis
+  .marketplace-lakehouse-text__emphasis {
+    color: var(--color-dark-theme-blue-primary);
+  }
+
+  // Progress Tracker
+  .legend-marketplace-progress-tracker {
+    background: var(--color-dark-theme-bg-secondary);
+
+    &__step-label {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__step-details {
+      background: var(--color-dark-theme-bg-tertiary);
+      border: 1px solid var(--color-dark-theme-border);
+    }
+
+    &__step-detail {
+      color: var(--color-dark-theme-text-secondary);
+    }
+  }
+
+  // Notification
+  .notification {
+    &__content {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__message__content {
+      &:active {
+        background: var(--color-dark-theme-bg-tertiary);
+      }
+    }
+
+    &__message__content__icon {
+      &--info {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &--error {
+        color: var(--color-dark-red-50);
+      }
+
+      &--warning {
+        color: var(--color-dark-yellow-40);
+      }
+
+      &--success {
+        color: var(--color-dark-green-50);
+      }
+    }
+
+    &__action {
+      color: var(--color-dark-theme-text-muted);
+
+      &:hover {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+  }
+
+  // Radio Selector
+  .legend-marketplace-radio-group {
+    .legend-marketplace-radio-button {
+      color: var(--color-dark-theme-text-primary);
+      background-color: var(--color-dark-theme-bg-secondary);
+      border: 1px solid var(--color-dark-theme-border);
+
+      &:hover {
+        background-color: var(--color-dark-theme-bg-tertiary);
+      }
+
+      &__selected {
+        background-color: var(--color-dark-theme-blue-primary);
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+  }
+
+  // Data Product Viewer
+  .data-product__viewer {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__header {
+      &__title {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__type__version--snapshot {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__content {
+      &__terminal {
+        &__access-section {
+          span {
+            color: var(--color-dark-theme-text-primary);
+          }
+        }
+
+        &__access-table {
+          &--cell {
+            color: var(--color-dark-theme-text-primary);
+
+            &--entity {
+              color: var(--color-dark-theme-blue-primary);
+            }
+          }
+
+          &--row {
+            background-color: var(--color-dark-theme-bg-secondary);
+            border-bottom: 1px solid var(--color-dark-theme-border);
+
+            &:hover {
+              background-color: var(--color-dark-theme-bg-tertiary);
+            }
+          }
+        }
+      }
+    }
+
+    &__panel {
+      &__header {
+        border-bottom-color: var(--color-dark-theme-blue-primary);
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    &__wiki {
+      &__section {
+        &__header {
+          color: var(--color-dark-theme-blue-primary);
+          border-bottom-color: var(--color-dark-theme-blue-primary);
+
+          &__subtitle {
+            color: var(--color-dark-theme-blue-primary);
+          }
+        }
+      }
+
+      &__expert-contact {
+        &__info {
+          &__id {
+            color: var(--color-dark-theme-blue-primary);
+          }
+        }
+      }
+    }
+
+    &__wiki__terminal__section__pricing {
+      border-color: var(--color-dark-theme-blue-primary);
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__tabs-bar {
+      background: var(--color-dark-theme-bg-secondary);
+      border-top-color: var(--color-dark-theme-border);
+    }
+
+    &__tabs {
+      background: var(--color-dark-theme-bg-secondary);
+      border-bottom-color: var(--color-dark-theme-border);
+
+      .MuiTabs-indicator {
+        background-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    &__tab {
+      border-right-color: var(--color-dark-theme-border);
+      color: var(--color-dark-theme-text-muted);
+
+      &--selected {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    // Access Group Item Styles
+    &__access-group {
+      &__item {
+        &__header {
+          &__title {
+            color: var(--color-dark-theme-text-secondary);
+          }
+
+          &__type {
+            background: var(--color-dark-theme-bg-elevated);
+            color: var(--color-dark-theme-text-primary);
+          }
+        }
+
+        &__description {
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &__content {
+          &__tab__header {
+            border-bottom-color: var(--color-dark-theme-border);
+            border-top-color: var(--color-dark-theme-border);
+          }
+
+          &__tab {
+            color: var(--color-dark-theme-text-muted);
+
+            &:hover {
+              color: var(--color-dark-theme-text-secondary);
+
+              .data-product__viewer__access-group__item__content__tab__icon
+                svg {
+                color: var(--color-dark-theme-text-secondary);
+              }
+            }
+
+            &--active {
+              color: var(--color-dark-theme-blue-primary);
+
+              .data-product__viewer__access-group__item__content__tab__label {
+                color: var(--color-dark-theme-blue-primary);
+              }
+
+              .data-product__viewer__access-group__item__content__tab__icon
+                svg {
+                color: var(--color-dark-theme-blue-primary);
+              }
+            }
+
+            & + & {
+              border-left-color: var(--color-dark-theme-border);
+            }
+
+            &__icon svg {
+              color: var(--color-dark-theme-text-muted);
+            }
+
+            &__label {
+              color: var(--color-dark-theme-text-muted);
+            }
+          }
+
+          &__action-tab-group {
+            border-left-color: var(--color-dark-theme-border);
+          }
+
+          &__tab__content {
+            background: var(--color-dark-theme-bg-primary);
+            color: var(--color-dark-theme-text-primary);
+          }
+        }
+      }
+    }
+
+    // Access Point Styles
+    &__access-point {
+      &__name {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__description {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    // More Info Section
+    &__more-info {
+      &__columns-grid {
+        background: var(--color-dark-theme-bg-primary);
+
+        // ag-Grid dark theme overrides
+        &.ag-theme-balham,
+        &.ag-theme-balham-dark {
+          --ag-background-color: var(--color-dark-theme-bg-secondary);
+          --ag-foreground-color: var(--color-dark-theme-text-primary);
+          --ag-header-background-color: var(--color-dark-theme-bg-elevated);
+          --ag-header-foreground-color: var(--color-dark-theme-text-primary);
+          --ag-border-color: var(--color-dark-theme-border);
+          --ag-row-hover-color: var(--color-dark-theme-bg-tertiary);
+
+          .ag-root-wrapper {
+            background: var(--color-dark-theme-bg-secondary);
+            color: var(--color-dark-theme-text-primary);
+            border-color: var(--color-dark-theme-border);
+          }
+
+          .ag-header {
+            background: var(--color-dark-theme-bg-elevated);
+            color: var(--color-dark-theme-text-primary);
+            border-bottom-color: var(--color-dark-theme-border);
+          }
+
+          .ag-header-cell {
+            background: var(--color-dark-theme-bg-elevated);
+            color: var(--color-dark-theme-text-primary);
+          }
+
+          .ag-row {
+            background: var(--color-dark-theme-bg-secondary);
+            color: var(--color-dark-theme-text-primary);
+            border-bottom-color: var(--color-dark-theme-border);
+          }
+
+          .ag-row-hover {
+            background: var(--color-dark-theme-bg-tertiary);
+          }
+
+          .ag-cell {
+            color: var(--color-dark-theme-text-primary);
+          }
+        }
+      }
+
+      &__grammar {
+        background: var(--color-dark-theme-bg-secondary);
+
+        // CodeEditor dark theme
+        .monaco-editor,
+        .monaco-editor .monaco-editor-background,
+        .monaco-editor .inputarea.ime-input {
+          background: var(--color-dark-theme-bg-secondary) !important;
+          color: var(--color-dark-theme-text-primary) !important;
+        }
+
+        .monaco-editor .view-lines {
+          color: var(--color-dark-theme-text-primary) !important;
+        }
+
+        .monaco-editor .line-numbers {
+          color: var(--color-dark-theme-text-muted) !important;
+        }
+
+        .mtk1 {
+          color: var(--color-dark-theme-text-primary) !important;
+        }
+
+        .monaco-scrollable-element > .scrollbar > .slider {
+          background: var(--color-dark-theme-border-light) !important;
+        }
+      }
+    }
+
+    // Grid styles
+    &__grid {
+      &.ag-theme-balham,
+      &.ag-theme-balham-dark {
+        --ag-background-color: var(--color-dark-theme-bg-secondary);
+        --ag-foreground-color: var(--color-dark-theme-text-primary);
+        --ag-header-background-color: var(--color-dark-theme-bg-elevated);
+        --ag-header-foreground-color: var(--color-dark-theme-text-primary);
+        --ag-border-color: var(--color-dark-theme-border);
+        --ag-row-hover-color: var(--color-dark-theme-bg-tertiary);
+
+        background: var(--color-dark-theme-bg-secondary);
+
+        .ag-root-wrapper {
+          background: var(--color-dark-theme-bg-secondary);
+          color: var(--color-dark-theme-text-primary);
+          border-color: var(--color-dark-theme-border);
+        }
+
+        .ag-header {
+          background: var(--color-dark-theme-bg-elevated);
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        .ag-row {
+          background: var(--color-dark-theme-bg-secondary);
+          color: var(--color-dark-theme-text-primary);
+          border-bottom-color: var(--color-dark-theme-border);
+        }
+
+        .ag-cell {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      &--empty {
+        background: var(--color-dark-theme-bg-secondary);
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__empty-cell {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    // TDS Query styles
+    &__tds__query {
+      border-color: var(--color-dark-theme-border);
+      background: var(--color-dark-theme-bg-secondary);
+    }
+
+    &__tds__placeholder-panel {
+      border-color: var(--color-dark-theme-border);
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__tds__query-text {
+      background: var(--color-dark-theme-bg-secondary);
+
+      &__content {
+        .monaco-editor,
+        .monaco-editor .monaco-editor-background {
+          background: var(--color-dark-theme-bg-secondary) !important;
+        }
+
+        .monaco-editor .view-lines {
+          color: var(--color-dark-theme-text-primary) !important;
+        }
+      }
+
+      &__action {
+        svg {
+          color: var(--color-dark-theme-text-muted);
+        }
+
+        &:hover svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+    }
+  }
+
+  .product-header-tabs {
+    &__tab {
+      color: var(--color-dark-theme-text-muted);
+
+      &:hover {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &--active {
+        color: var(--color-dark-theme-blue-primary);
+        border-bottom-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  .data-space__terminal__header__product-name {
+    color: var(--color-dark-theme-blue-primary);
+  }
+
+  .data-space__divider {
+    border-color: var(--color-dark-theme-border);
+    background-color: var(--color-dark-theme-border);
+  }
+
+  // Models Documentation Viewer
+  .models-documentation__viewer__wiki {
+    &__section {
+      &__header {
+        border-bottom-color: var(--color-dark-theme-blue-primary);
+        color: var(--color-dark-theme-blue-primary);
+
+        &__anchor {
+          svg {
+            color: var(--color-dark-theme-text-muted);
+          }
+
+          &:hover svg {
+            color: var(--color-dark-theme-text-secondary);
+          }
+        }
+
+        &__documentation {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+    }
+
+    &__placeholder {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
+
+  .models-documentation__viewer__grid {
+    &--empty {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__empty-cell {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    // Override ag-Grid row hover color for models documentation
+    &.ag-theme-balham-dark {
+      --ag-row-hover-color: var(--color-dark-theme-bg-tertiary);
+    }
+  }
+
+  .models-documentation__grid {
+    &__cell {
+      &__label__icon {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__label__derived-property-badge {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__label__milestoning-badge {
+        svg {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+
+      &__action {
+        color: var(--color-dark-theme-text-muted);
+
+        &:hover {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+    }
+
+    &__element-row {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+
+      // Override yellow hover color with light grey
+      --ag-row-hover-color: var(--color-dark-theme-bg-tertiary);
+    }
+  }
+
+  .models-documentation__filter {
+    &__toggler {
+      border-color: var(--color-dark-theme-border);
+      color: var(--color-dark-theme-text-muted);
+
+      &:hover {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__icon {
+        border-left-color: var(--color-dark-theme-border);
+      }
+    }
+
+    &__panel {
+      border-color: var(--color-dark-theme-border);
+      color: var(--color-dark-theme-text-primary);
+      background: var(--color-dark-theme-bg-secondary);
+    }
+
+    &__group {
+      & + & {
+        border-top-color: var(--color-dark-theme-border);
+      }
+    }
+
+    &__group__header__label {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__group__header__reset {
+      color: var(--color-dark-theme-blue-primary);
+
+      &:hover {
+        color: var(--color-dark-theme-blue-secondary);
+      }
+
+      &[disabled],
+      &[disabled]:hover {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+  }
+
+  .models-documentation__filter__tree {
+    &__node__container {
+      &:hover {
+        background: var(--color-dark-theme-bg-tertiary);
+      }
+    }
+
+    &__node__type-icon {
+      color: var(--color-dark-theme-text-primary);
+
+      &--package {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__node__checker {
+      svg {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__node__expand-icon {
+      svg {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__node__label {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__node__count {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  .models-documentation__search {
+    &__input {
+      border-color: var(--color-dark-theme-border);
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+
+      &__search__icon {
+        svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      &__clear-btn {
+        svg {
+          color: var(--color-dark-theme-text-muted);
+        }
+
+        &:hover svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      &__config__trigger {
+        svg {
+          color: var(--color-dark-theme-text-muted);
+        }
+
+        &--toggled svg,
+        &:hover svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &--active svg,
+        &--active:hover svg {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+    }
+  }
+
+  .models-documentation__tooltip {
+    background: var(--color-dark-theme-bg-elevated) !important;
+
+    &__item__label {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__item__value {
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  // Data Space Viewer
+  .data-space__viewer {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__header {
+      &__title {
+        background: var(--color-dark-theme-blue-primary);
+
+        &__label {
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &__verified-badge {
+          svg {
+            color: var(--color-dark-theme-text-primary);
+          }
+        }
+      }
+
+      &__actions {
+        background: var(--color-dark-theme-bg-secondary);
+        border-color: var(--color-dark-theme-border);
+      }
+
+      &__execution-context-selector {
+        &__trigger {
+          &__icon {
+            border-right-color: var(--color-dark-theme-border);
+
+            svg {
+              color: var(--color-dark-theme-text-muted);
+            }
+          }
+
+          &__label {
+            color: var(--color-dark-theme-text-primary);
+          }
+
+          &__dropdown-icon {
+            svg {
+              color: var(--color-dark-theme-text-muted);
+            }
+          }
+        }
+
+        &__option--active {
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+
+      &__actions-selector {
+        border-left-color: var(--color-dark-theme-border);
+
+        svg {
+          color: var(--color-dark-theme-text-muted);
+        }
+
+        &:hover svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+    }
+  }
+
+  .data-space__viewer__panel {
+    &__header {
+      border-bottom-color: var(--color-dark-theme-blue-primary);
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__content__placeholder {
+      color: var(--color-dark-theme-text-muted);
+
+      svg {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  .data-space__viewer__grid {
+    &--empty {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__empty-cell {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
+
+  .data-space__viewer__scroller {
+    background: var(--color-dark-theme-blue-primary);
+
+    &__percentage {
+      background: var(--color-dark-theme-blue-secondary);
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  .data-space__viewer__activity-bar {
+    background: var(--color-dark-theme-bg-secondary);
+
+    &__menu {
+      border-bottom-color: var(--color-dark-theme-border);
+    }
+
+    &__menu-item {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__item {
+      color: var(--color-dark-theme-text-muted);
+
+      &:hover {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &--active {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__divider {
+      background: var(--color-dark-theme-border);
+    }
+  }
+
+  .data-space__viewer__wiki {
+    &__section {
+      &__header {
+        border-bottom-color: var(--color-dark-theme-blue-primary);
+        color: var(--color-dark-theme-blue-primary);
+
+        &__anchor {
+          svg {
+            color: var(--color-dark-theme-text-muted);
+          }
+
+          &:hover svg {
+            color: var(--color-dark-theme-text-secondary);
+          }
+        }
+
+        &__documentation {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+    }
+
+    &__placeholder {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
+
+  .data-space__viewer__diagram-viewer {
+    &__header__navigation__pager {
+      border-left-color: var(--color-dark-theme-border);
+    }
+
+    &__header__group {
+      &__separator {
+        border-color: var(--color-dark-theme-border);
+      }
+    }
+
+    &__header__dropdown {
+      border-color: var(--color-dark-theme-border);
+
+      &__label {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__trigger {
+        svg {
+          color: var(--color-dark-theme-text-muted);
+        }
+      }
+    }
+
+    &__header__tool {
+      &--active {
+        background: var(--color-dark-theme-bg-elevated);
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+
+      &:hover {
+        svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      svg {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__description {
+      background: var(--color-dark-theme-bg-secondary);
+
+      &__close-btn,
+      &__expand-btn {
+        svg {
+          color: var(--color-dark-theme-text-muted);
+        }
+
+        &:hover svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      &__title {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__content__placeholder {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__carousel {
+      .diagram-canvas {
+        border-color: var(--color-dark-theme-border);
+      }
+
+      &__frame {
+        &__navigator {
+          svg {
+            color: var(--color-dark-theme-text-primary);
+          }
+
+          &:hover svg {
+            color: var(--color-dark-theme-text-primary);
+          }
+
+          &[disabled] {
+            svg,
+            &:hover svg {
+              color: var(--color-dark-theme-text-muted);
+            }
+          }
+        }
+
+        &__indicators {
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &__indicators__notch {
+          background: var(--color-dark-theme-bg-secondary);
+        }
+
+        &__indicator {
+          svg {
+            color: var(--color-dark-theme-text-muted);
+          }
+        }
+
+        &__indicator--active svg {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+    }
+  }
+
+  .data-space__viewer__quickstart {
+    &__item__header__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__item__header__type {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__item__header__anchor {
+      svg {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__item__content {
+      &__tab__header {
+        border-bottom-color: var(--color-dark-theme-border);
+        border-top-color: var(--color-dark-theme-border);
+      }
+
+      &__tab {
+        color: var(--color-dark-theme-text-muted);
+
+        & + & {
+          border-left-color: var(--color-dark-theme-border);
+        }
+
+        &__label {
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &:hover &__tab__label {
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &:hover &__tab__icon {
+          svg {
+            color: var(--color-dark-theme-text-primary);
+          }
+        }
+
+        &--active:hover &__tab__label,
+        &--active &__tab__label {
+          color: var(--color-dark-theme-blue-primary);
+        }
+
+        &--active:hover &__tab__icon,
+        &--active &__tab__icon {
+          svg {
+            color: var(--color-dark-theme-blue-primary);
+          }
+        }
+      }
+
+      &__action-tab-group {
+        border-left-color: var(--color-dark-theme-border);
+      }
+    }
+
+    &__tds__query {
+      border-color: var(--color-dark-theme-border);
+    }
+
+    &__tds__placeholder-panel {
+      border-color: var(--color-dark-theme-border);
+    }
+
+    &__tds__query-text {
+      &__action {
+        svg {
+          color: var(--color-dark-theme-text-muted);
+        }
+
+        &:hover svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+    }
+  }
+
+  .data-space__viewer__execution-context {
+    &__context-icon {
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__entry {
+      &__icon {
+        background: var(--color-dark-theme-bg-elevated);
+
+        svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      &__content {
+        border-color: var(--color-dark-theme-border);
+        color: var(--color-dark-theme-text-primary);
+        background: var(--color-dark-theme-bg-elevated);
+        border-left-color: var(--color-dark-theme-border);
+
+        &__dropdown {
+          &__option__tag {
+            background: var(--color-dark-theme-blue-primary);
+            color: var(--color-dark-theme-text-primary);
+          }
+        }
+
+        .selector-input--dark__control,
+        .selector-input--dark__control:hover {
+          border-color: var(--color-dark-theme-border);
+        }
+      }
+    }
+  }
+
+  .data-space__viewer__info {
+    &__project-info__label {
+      background: var(--color-dark-theme-blue-primary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__project-info__value {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__project-info__link {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+      border-left-color: var(--color-dark-theme-border);
+    }
+
+    &__section__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__tagged-value__tag {
+      background: var(--color-dark-theme-blue-primary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__tagged-value__value {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__steoreotype {
+      background: var(--color-dark-theme-blue-primary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__section__placeholder {
+      color: var(--color-dark-theme-text-muted);
+      border-color: var(--color-dark-theme-border);
+    }
+  }
+
+  .data-space__viewer__support {
+    &__entry {
+      &__icon {
+        background: var(--color-dark-theme-bg-elevated);
+
+        svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      &__content {
+        border-color: var(--color-dark-theme-border);
+        color: var(--color-dark-theme-text-primary);
+        background: var(--color-dark-theme-bg-elevated);
+        border-left-color: var(--color-dark-theme-border);
+      }
+    }
+  }
+
+  .data-space__viewer__tooltip {
+    background: var(--color-dark-theme-bg-elevated) !important;
+
+    &__item__label {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__item__value {
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  // Lakehouse Entitlements
+  .marketplace-lakehouse-entitlements-dashboard {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    .MuiTabs-root {
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      .MuiTabs-indicator {
+        background-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    .MuiTab-root {
+      color: var(--color-dark-theme-text-muted);
+
+      &.Mui-selected {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      .MuiTypography-root {
+        color: inherit;
+      }
+    }
+  }
+
+  .marketplace-lakehouse-entitlements {
+    &__pending-tasks,
+    &__pending-contracts,
+    &__completed-contracts {
+      background: var(--color-dark-theme-bg-primary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__grid {
+      &__taskid-cell {
+        color: var(--color-dark-theme-blue-primary);
+        text-decoration: underline;
+
+        &:hover {
+          color: var(--color-dark-theme-blue-accent);
+        }
+      }
+    }
+  }
+
+  .marketplace-lakehouse-entitlements-grid-viewer {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__item-clickable-text {
+      color: var(--color-dark-theme-blue-primary);
+      text-decoration: underline;
+
+      &:hover {
+        color: var(--color-dark-theme-blue-accent);
+      }
+    }
+
+    &__status--success {
+      color: var(--color-dark-green-50);
+    }
+
+    &__status--in-progress {
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__status--error {
+      color: var(--color-dark-red-50);
+    }
+  }
+
+  .marketplace-lakehouse-entitlements__data-contract-creator {
+    &__enterprise-apg-notice {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
+
+  .marketplace-lakehouse-entitlements__data-contract-viewer {
+    &__content {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__metadata {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__user-list {
+      background: var(--color-dark-theme-bg-elevated);
+
+      &__container {
+        background: var(--color-dark-theme-bg-secondary);
+      }
+    }
+
+    &__task-approval-view {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+
+      &__timestamp {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__timeline {
+      &__content {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      // MUI Timeline icons
+      .MuiTimelineDot-root {
+        svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      .MuiTimelineConnector-root {
+        background-color: var(--color-dark-theme-border);
+      }
+
+      // IconButtons inside timeline (copy, share, escalate buttons)
+      .MuiIconButton-root {
+        color: var(--color-dark-theme-text-primary) !important;
+
+        svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &:hover {
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+    }
+
+    &__footer {
+      color: var(--color-dark-theme-text-muted);
+
+      // Copy button in footer
+      .MuiIconButton-root {
+        color: var(--color-dark-theme-text-primary) !important;
+
+        svg {
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &:hover {
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+    }
+  }
+
+  // Close/Cancel button at top-right of data contract dialog
+  .marketplace-dialog-close-btn {
+    color: var(--color-dark-theme-text-primary) !important;
+
+    svg {
+      color: var(--color-dark-theme-text-primary) !important;
+    }
+
+    &:hover {
+      background: var(--color-dark-theme-bg-tertiary);
+    }
+  }
+
+  // Target the specific MUI IconButton class
+  .MuiButtonBase-root.MuiIconButton-root {
+    &.marketplace-dialog-close-btn {
+      color: var(--color-dark-theme-text-primary) !important;
+
+      svg {
+        color: var(--color-dark-theme-text-primary) !important;
+      }
+    }
+  }
+
+  .marketplace-lakehouse-entitlements__data-contract-approval {
+    &__success {
+      background: rgb(106 153 85 / 20%);
+      color: var(--color-dark-green-50);
+      border: 1px solid var(--color-dark-green-50);
+    }
+
+    &__error {
+      background: rgb(250 83 67 / 20%);
+      color: var(--color-dark-red-50);
+      border: 1px solid var(--color-dark-red-50);
+
+      &__content {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+  }
+
+  // Subscriptions Viewer ag-Grid
+  .marketplace-lakehouse-subscriptions__subscriptions-viewer__grid {
+    &.ag-theme-balham,
+    &.ag-theme-balham-dark {
+      --ag-background-color: var(--color-dark-theme-bg-secondary);
+      --ag-foreground-color: var(--color-dark-theme-text-primary);
+      --ag-header-background-color: var(--color-dark-theme-bg-elevated);
+      --ag-header-foreground-color: var(--color-dark-theme-text-primary);
+      --ag-border-color: var(--color-dark-theme-border);
+      --ag-row-hover-color: var(--color-dark-theme-bg-tertiary);
+
+      background: var(--color-dark-theme-bg-secondary);
+
+      .ag-root-wrapper {
+        background: var(--color-dark-theme-bg-secondary);
+        color: var(--color-dark-theme-text-primary);
+        border-color: var(--color-dark-theme-border);
+      }
+
+      .ag-header {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-primary);
+        border-bottom-color: var(--color-dark-theme-border);
+      }
+
+      .ag-header-cell {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-primary);
+        border-right-color: var(--color-dark-theme-border);
+      }
+
+      .ag-row {
+        background: var(--color-dark-theme-bg-secondary);
+        color: var(--color-dark-theme-text-primary);
+        border-bottom-color: var(--color-dark-theme-border);
+      }
+
+      .ag-row-hover {
+        background: var(--color-dark-theme-bg-tertiary);
+      }
+
+      .ag-cell {
+        color: var(--color-dark-theme-text-primary);
+        border-right-color: var(--color-dark-theme-border);
+      }
+
+      .ag-paging-panel {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-primary);
+        border-top-color: var(--color-dark-theme-border);
+      }
+    }
+  }
+
+  // Global ag-Grid dark theme (catches any remaining ag-theme-balham instances)
+  .ag-theme-balham,
+  .ag-theme-balham-dark {
+    --ag-background-color: var(--color-dark-theme-bg-secondary);
+    --ag-foreground-color: var(--color-dark-theme-text-primary);
+    --ag-header-background-color: var(--color-dark-theme-bg-elevated);
+    --ag-header-foreground-color: var(--color-dark-theme-text-primary);
+    --ag-border-color: var(--color-dark-theme-border);
+    --ag-row-hover-color: var(--color-dark-theme-bg-tertiary);
+    --ag-selected-row-background-color: var(--color-dark-theme-bg-tertiary);
+
+    background: var(--color-dark-theme-bg-secondary);
+    color: var(--color-dark-theme-text-primary);
+
+    .ag-root-wrapper {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+      border-color: var(--color-dark-theme-border);
+    }
+
+    .ag-header {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+      border-bottom-color: var(--color-dark-theme-border);
+    }
+
+    .ag-header-cell {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+      border-right-color: var(--color-dark-theme-border);
+    }
+
+    .ag-row {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+      border-bottom-color: var(--color-dark-theme-border);
+    }
+
+    .ag-row-odd {
+      background: var(--color-dark-theme-bg-secondary);
+    }
+
+    .ag-row-hover {
+      background: var(--color-dark-theme-bg-tertiary) !important;
+    }
+
+    .ag-cell {
+      color: var(--color-dark-theme-text-primary);
+      border-right-color: var(--color-dark-theme-border);
+    }
+
+    .ag-paging-panel {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-primary);
+      border-top-color: var(--color-dark-theme-border);
+    }
+
+    .ag-paging-button {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    .ag-paging-description {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    .ag-icon {
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  // Global Monaco Editor dark mode styling
+  .monaco-editor {
+    background: var(--color-dark-theme-bg-secondary) !important;
+    color: var(--color-dark-theme-text-primary) !important;
+
+    .monaco-editor-background {
+      background: var(--color-dark-theme-bg-secondary) !important;
+    }
+
+    .inputarea.ime-input {
+      background: var(--color-dark-theme-bg-secondary) !important;
+      color: var(--color-dark-theme-text-primary) !important;
+    }
+
+    // Main editing area
+    .view-lines {
+      color: var(--color-dark-theme-text-primary) !important;
+    }
+
+    .view-line {
+      color: var(--color-dark-theme-text-primary) !important;
+    }
+
+    // Line numbers
+    .line-numbers {
+      color: var(--color-dark-theme-text-muted) !important;
+    }
+
+    .margin,
+    .margin-view-overlays {
+      background: var(--color-dark-theme-bg-secondary) !important;
+    }
+
+    // Gutter and decorations
+    .glyph-margin {
+      background: var(--color-dark-theme-bg-secondary) !important;
+    }
+
+    // Scrollbars
+    .monaco-scrollable-element > .scrollbar {
+      background: transparent !important;
+
+      > .slider {
+        background: var(--color-dark-theme-border-light) !important;
+
+        &:hover {
+          background: var(--color-dark-theme-border) !important;
+        }
+      }
+    }
+
+    // Overflow guard (main container)
+    .overflow-guard {
+      background: var(--color-dark-theme-bg-secondary) !important;
+    }
+
+    // Minimap
+    .minimap {
+      background: var(--color-dark-theme-bg-secondary) !important;
+    }
+
+    .minimap-slider {
+      background: rgb(255 255 255 / 10%) !important;
+    }
+
+    // Overview ruler
+    .decorationsOverviewRuler {
+      background: var(--color-dark-theme-bg-secondary) !important;
+    }
+
+    // Lines content
+    .lines-content {
+      background: var(--color-dark-theme-bg-secondary) !important;
+    }
+
+    // View overlays
+    .view-overlays {
+      background: transparent !important;
+    }
+
+    // Tokens
+    .mtk1 {
+      color: var(--color-dark-theme-text-primary) !important;
+    }
+
+    // Current line highlight
+    .current-line {
+      background: rgb(255 255 255 / 5%) !important;
+      border: none !important;
+    }
+
+    // Selection
+    .selected-text {
+      background: rgb(115 153 198 / 30%) !important;
+    }
+
+    // Cursors
+    .cursor {
+      background: var(--color-dark-theme-text-primary) !important;
+      border-color: var(--color-dark-theme-text-primary) !important;
+    }
+  }
+}

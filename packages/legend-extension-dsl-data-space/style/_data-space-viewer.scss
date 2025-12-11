@@ -20,8 +20,6 @@
   height: 100%;
   width: 100%;
   position: relative;
-  background: var(--color-dark-grey-80);
-  color: var(--color-light-grey-200);
   font-family: Roboto, sans-serif;
 
   &__header {
@@ -246,7 +244,6 @@
 
   &__empty-cell {
     font-size: 1.2rem;
-    color: var(--color-dark-grey-280);
   }
 
   &__header-cell {

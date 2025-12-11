@@ -20,6 +20,7 @@ import {
   Core_LegendApplicationPlugin,
   LEGEND_APPLICATION_COLOR_THEME,
   LEGEND_APPLICATION_SETTING_KEY,
+  type LegendApplicationSetup,
 } from '@finos/legend-application';
 
 export const LEGEND_QUERY_APPLICATION_SETTING_CONFIG = {
@@ -30,6 +31,30 @@ export const LEGEND_QUERY_APPLICATION_SETTING_CONFIG = {
 };
 
 export class Core_LegendMarketplace_LegendApplicationPlugin extends Core_LegendApplicationPlugin {
+  override getExtraApplicationSetups(): LegendApplicationSetup[] {
+    return [
+      async (applicationStore) => {
+        /**
+         * MARKETPLACE THEME MIGRATION:
+         * Marketplace only supports HIGH_CONTRAST_LIGHT and HIGH_CONTRAST_DARK themes.
+         * This migration handles users with legacy DEFAULT_DARK theme by upgrading them
+         * to HIGH_CONTRAST_LIGHT (one-time migration). User preferences for HIGH_CONTRAST_DARK
+         * are always respected and never overridden.
+         */
+        const currentTheme =
+          applicationStore.layoutService.currentColorTheme.key;
+
+        // Migrate deprecated DEFAULT_DARK to HIGH_CONTRAST_LIGHT
+        if (currentTheme === LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK) {
+          applicationStore.layoutService.setColorTheme(
+            LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
+            { persist: true },
+          );
+        }
+      },
+    ];
+  }
+
   override getExtraSettingConfigurationEntries(): SettingConfigurationEntry[] {
     return collectSettingConfigurationEntriesFromConfig(
       LEGEND_QUERY_APPLICATION_SETTING_CONFIG,

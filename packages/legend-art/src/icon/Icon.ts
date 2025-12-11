@@ -134,6 +134,7 @@ import {
   MdOutlineExplore,
   MdOutlineAccountTree,
   MdGroup,
+  MdLightMode,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -329,6 +330,7 @@ export const CloudDownloadIcon = IoCloudDownloadOutline;
 export const CloudUploadIcon = IoCloudUploadOutline;
 export const QuestionThinIcon = IoHelp;
 export const SunIcon = IoSunnyOutline;
+export const SunFilledIcon = MdLightMode;
 export const MoonIcon = IoMoon;
 
 //======================================================= PI =======================================================

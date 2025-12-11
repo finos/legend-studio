@@ -55,6 +55,9 @@ export const MarketplaceLakehouseHome = observer(() => {
   const adjacentUrl = applicationStore.config.adjacentEnvUrl;
   const adjacentEnvState = legendMarketplaceBaseStore.adjacentEnvState;
 
+  const isDarkMode =
+    !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
+
   const [highlightedDataProducts, setHighlightedDataProducts] = useState<
     ProductCardState[]
   >([]);
@@ -190,13 +193,14 @@ export const MarketplaceLakehouseHome = observer(() => {
       </div>
       <Container className="marketplace-lakehouse-home__search-container">
         <Box className="marketplace-lakehouse-home__search-container__logo">
-          <img src="/assets/legendmarketplacehomelogo.png" alt="Legend Logo" />
-        </Box>
-        <Box className="marketplace-lakehouse-home__search-container__title_legend">
-          Legend
-        </Box>
-        <Box className="marketplace-lakehouse-home__search-container__title_marketplace">
-          Marketplace
+          <img
+            src={
+              isDarkMode
+                ? '/assets/legendmarketplacehomelogodark.png'
+                : '/assets/legendmarketplacehomelogolight.png'
+            }
+            alt="Legend Marketplace Logo"
+          />
         </Box>
         <LegendMarketplaceSearchBar
           showSettings={true}
