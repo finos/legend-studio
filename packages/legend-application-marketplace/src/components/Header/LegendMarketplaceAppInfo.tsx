@@ -26,10 +26,10 @@ import {
   ModalHeader,
   ModalHeaderActions,
   ModalTitle,
-  PanelFormTextField,
   TimesIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
+import { TextField } from '@mui/material';
 
 export const LegendMarketplaceAppInfo: React.FC<{
   open: boolean;
@@ -39,16 +39,57 @@ export const LegendMarketplaceAppInfo: React.FC<{
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = legendMarketplaceBaseStore.applicationStore;
   const config = applicationStore.config;
+
+  const configData: {
+    label: string;
+    value: string | undefined;
+  }[] = [
+    {
+      label: 'Environment',
+      value: config.env,
+    },
+    {
+      label: 'Version',
+      value: config.appVersion,
+    },
+    {
+      label: 'Revision',
+      value: config.appVersionCommitId,
+    },
+    {
+      label: 'Build Time',
+      value: config.appVersionBuildTime,
+    },
+  ];
+
+  const serverData: {
+    label: string;
+    value: string | undefined;
+    setter?: (val: string | undefined) => void;
+  }[] = [
+    {
+      label: 'Engine Server',
+      value: config.engineServerUrl,
+    },
+    {
+      label: 'Depot Server',
+      value: config.depotServerUrl,
+    },
+    {
+      label: 'Marketplace Server',
+      value: legendMarketplaceBaseStore.marketplaceServerClient.baseUrl,
+      setter: (val: string | undefined): void =>
+        legendMarketplaceBaseStore.marketplaceServerClient.setBaseUrl(val),
+    },
+  ];
+
   const copyInfo = (): void => {
     applicationStore.clipboardService
       .copyTextToClipboard(
         [
-          `Environment: ${config.env}`,
-          `Version: ${config.appVersion}`,
-          `Revision: ${config.appVersionCommitId}`,
-          `Build Time: ${config.appVersionBuildTime}`,
-          `Engine Server: ${config.engineServerUrl}`,
-          `Depot Server: ${config.depotServerUrl}`,
+          [...configData, ...serverData].map(
+            (data) => `${data.label}: ${data.value}`,
+          ),
         ]
           .filter(isNonNullable)
           .join('\n'),
@@ -95,26 +136,12 @@ export const LegendMarketplaceAppInfo: React.FC<{
           </ModalHeaderActions>
         </ModalHeader>
         <ModalBody>
-          <div className="app__info__entry">
-            <div className="app__info__entry__title">Environment:</div>
-            <div className="app__info__entry__value">{config.env}</div>
-          </div>
-          <div className="app__info__entry">
-            <div className="app__info__entry__title">Version:</div>
-            <div className="app__info__entry__value">{config.appVersion}</div>
-          </div>
-          <div className="app__info__entry">
-            <div className="app__info__entry__title">Revision:</div>
-            <div className="app__info__entry__value">
-              {config.appVersionCommitId}
+          {configData.map((data) => (
+            <div key={data.label} className="app__info__entry">
+              <div className="app__info__entry__title">{data.label}:</div>
+              <div className="app__info__entry__value">{data.value}</div>
             </div>
-          </div>
-          <div className="app__info__entry">
-            <div className="app__info__entry__title">Build Time:</div>
-            <div className="app__info__entry__value">
-              {config.appVersionBuildTime}
-            </div>
-          </div>
+          ))}
           <div className="app__info__entry">
             <div
               onClick={goToReleaseLog}
@@ -124,49 +151,34 @@ export const LegendMarketplaceAppInfo: React.FC<{
             </div>
           </div>
           <div className="app__info__group">
-            <div className="app__info__entry">
-              <div className="app__info__entry__title">Engine Server:</div>
-              <div className="app__info__entry__value">
-                <a
-                  href={config.engineServerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {config.engineServerUrl}
-                </a>
+            {serverData.map((data) => (
+              <div key={data.label} className="app__info__entry">
+                <div className="app__info__entry__title">{data.label}:</div>
+                <div className="app__info__entry__value">
+                  {data.setter === undefined ? (
+                    <a
+                      href={data.value}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {data.value}
+                    </a>
+                  ) : (
+                    <TextField
+                      value={data.value}
+                      spellCheck={false}
+                      onChange={(event) => {
+                        const stringValue = event.target.value;
+                        data.setter?.(stringValue ? stringValue : undefined);
+                      }}
+                      placeholder={`${data.label} client base URL`}
+                      error={!isValidUrl(data.value ?? '')}
+                      helperText={'Invalid URL'}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="app__info__entry">
-              <div className="app__info__entry__title">Depot Server:</div>
-              <div className="app__info__entry__value">
-                <a
-                  href={config.depotServerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {config.depotServerUrl}
-                </a>
-              </div>
-            </div>
-            <PanelFormTextField
-              name="Marketplace client base URL"
-              value={
-                legendMarketplaceBaseStore.marketplaceServerClient.baseUrl ?? ''
-              }
-              update={(value: string | undefined): void =>
-                legendMarketplaceBaseStore.marketplaceServerClient.setBaseUrl(
-                  value === '' ? undefined : value,
-                )
-              }
-              errorMessage={
-                !isValidUrl(
-                  legendMarketplaceBaseStore.marketplaceServerClient.baseUrl ??
-                    '',
-                )
-                  ? 'Invalid URL'
-                  : ''
-              }
-            />
+            ))}
           </div>
         </ModalBody>
       </Modal>
