@@ -21,6 +21,7 @@ import type {
   ContractConsumerTypeRendererConfig,
   DataProductDataAccess_LegendApplicationPlugin_Extension,
   AccessPointGroupAccess,
+  DataProductAccessPointCodeConfiguration,
 } from '@finos/legend-extension-dsl-data-product';
 import type { ProductCardState } from '../stores/lakehouse/dataProducts/ProductCardState.js';
 import type React from 'react';
@@ -76,6 +77,11 @@ export abstract class LegendMarketplaceApplicationPlugin
    * - Organizational scope type details renderer
    */
   getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
+
+  /**
+   * Config to add extra data product access point code for other code types
+   */
+  getExtraDataProductAccessPointCodeConfiguration?(): DataProductAccessPointCodeConfiguration[];
 
   /**
    * Config to allow adding arbitrary additional pages to the marketplace application.
