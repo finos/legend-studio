@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.136
+
+### Patch Changes
+
+- [#4706](https://github.com/finos/legend-studio/pull/4706) [`fc24976`](https://github.com/finos/legend-studio/commit/fc24976c3d93cd8bc95febe5ebb1ab6219d6181c) ([@bojja-gs](https://github.com/bojja-gs)) - added style variables for terminals and addons
+
 ## 7.1.135
 
 ### Patch Changes
