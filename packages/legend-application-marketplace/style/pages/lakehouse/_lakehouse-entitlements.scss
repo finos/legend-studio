@@ -241,6 +241,17 @@
     }
   }
 
+  &__icon-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  &__icon-label {
+    font-size: 0.8rem;
+  }
+
   &__refresh-btn {
     align-self: end;
   }
