@@ -15,8 +15,8 @@
  */
 
 import type React from 'react';
-import { useLegendMarketplaceApplicationStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import { isNonNullable } from '@finos/legend-shared';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import { isNonNullable, isValidUrl } from '@finos/legend-shared';
 import {
   CopyIcon,
   Dialog,
@@ -26,6 +26,7 @@ import {
   ModalHeader,
   ModalHeaderActions,
   ModalTitle,
+  PanelFormTextField,
   TimesIcon,
 } from '@finos/legend-art';
 
@@ -34,7 +35,8 @@ export const LegendMarketplaceAppInfo: React.FC<{
   closeModal: () => void;
 }> = (props) => {
   const { open, closeModal } = props;
-  const applicationStore = useLegendMarketplaceApplicationStore();
+  const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
+  const applicationStore = legendMarketplaceBaseStore.applicationStore;
   const config = applicationStore.config;
   const copyInfo = (): void => {
     applicationStore.clipboardService
@@ -145,6 +147,25 @@ export const LegendMarketplaceAppInfo: React.FC<{
                 </a>
               </div>
             </div>
+            <PanelFormTextField
+              name="Marketplace client base URL"
+              value={
+                legendMarketplaceBaseStore.marketplaceServerClient.baseUrl ?? ''
+              }
+              update={(value: string | undefined): void =>
+                legendMarketplaceBaseStore.marketplaceServerClient.setBaseUrl(
+                  value === '' ? undefined : value,
+                )
+              }
+              errorMessage={
+                !isValidUrl(
+                  legendMarketplaceBaseStore.marketplaceServerClient.baseUrl ??
+                    '',
+                )
+                  ? 'Invalid URL'
+                  : ''
+              }
+            />
           </div>
         </ModalBody>
       </Modal>
