@@ -62,6 +62,7 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
       DataCubeColumnDataType.NUMBER,
       DataCubeColumnDataType.DATE,
       DataCubeColumnDataType.TIME,
+      DataCubeColumnDataType.BOOLEAN,
     ]);
   }
 
@@ -74,6 +75,7 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
         DataCubeColumnDataType.NUMBER,
         DataCubeColumnDataType.DATE,
         DataCubeColumnDataType.TIME,
+        DataCubeColumnDataType.BOOLEAN,
       ]) &&
       !Array.isArray(value.value)
     );

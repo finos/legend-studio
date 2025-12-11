@@ -103,6 +103,10 @@ function toFilterValue(
       val = value; // TODO?: make sure this is a parsable date string
       break;
     }
+    case PRIMITIVE_TYPE.BOOLEAN: {
+      val = value;
+      break;
+    }
     default: {
       throw new UnsupportedOperationError(
         `Can't filter on column with unsupported type '${columnConfiguration.type}'`,

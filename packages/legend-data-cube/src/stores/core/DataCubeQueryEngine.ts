@@ -268,6 +268,7 @@ export enum DataCubeColumnDataType {
   TEXT = 'Text',
   DATE = 'Date',
   TIME = 'Time',
+  BOOLEAN = 'Boolean',
 }
 
 export enum DataCubeGridMode {
@@ -439,6 +440,8 @@ export function getDataType(type: string): DataCubeColumnDataType {
     case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
     case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
       return DataCubeColumnDataType.TIME;
+    case PRIMITIVE_TYPE.BOOLEAN:
+      return DataCubeColumnDataType.BOOLEAN;
     case PRIMITIVE_TYPE.STRING:
     case PRECISE_PRIMITIVE_TYPE.VARCHAR:
     default:
