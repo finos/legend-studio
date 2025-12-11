@@ -174,6 +174,9 @@ export const LegendMarketplaceAppInfo: React.FC<{
                       placeholder={`${data.label} client base URL`}
                       error={!isValidUrl(data.value ?? '')}
                       helperText={'Invalid URL'}
+                      variant="outlined"
+                      size="small"
+                      fullWidth={true}
                     />
                   )}
                 </div>
