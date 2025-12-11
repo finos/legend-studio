@@ -15,6 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { useMemo, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -22,15 +23,24 @@ import {
   DialogActions,
   Button,
   Typography,
-  Grid,
   Box,
   IconButton,
+  TextField,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  type SelectChangeEvent,
 } from '@mui/material';
 import {
   CloseIcon,
   CheckCircleIcon,
   ArrowRightIcon,
   WarningIcon,
+  SearchIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
 } from '@finos/legend-art';
 import {
   TerminalItemType,
@@ -58,13 +68,45 @@ export const RecommendedAddOnsModal = observer(
       onViewCart,
     } = props;
 
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | ''>('');
+
+    const filteredAndSortedItems = useMemo(() => {
+      let items = [...recommendedItems];
+
+      if (searchTerm) {
+        const search = searchTerm.toLowerCase();
+        items = items.filter(
+          (item) =>
+            item.productName.toLowerCase().includes(search) ||
+            item.providerName.toLowerCase().includes(search),
+        );
+      }
+
+      if (sortOrder) {
+        items.sort((a, b) =>
+          sortOrder === 'asc' ? a.price - b.price : b.price - a.price,
+        );
+      }
+
+      return items;
+    }, [recommendedItems, searchTerm, sortOrder]);
+
     const closeModal = () => {
       setShowModal(false);
+      setSearchTerm('');
+      setSortOrder('');
     };
 
     const handleViewCart = () => {
       onViewCart?.();
       closeModal();
+    };
+
+    const handleSortChange = (
+      event: SelectChangeEvent<'asc' | 'desc' | ''>,
+    ) => {
+      setSortOrder(event.target.value);
     };
 
     if (!showModal) {
@@ -119,8 +161,10 @@ export const RecommendedAddOnsModal = observer(
               className="recommended-addons-modal__section-title"
             >
               {terminal?.terminalItemType === TerminalItemType.TERMINAL
-                ? 'Recommended Add-Ons'
-                : 'Recommended Terminals'}
+                ? `Recommended Add-Ons for ${terminal.providerName}`
+                : terminal
+                  ? `Recommended Terminals for ${terminal.providerName}`
+                  : ''}
             </Typography>
             <Typography
               variant="body2"
@@ -141,24 +185,108 @@ export const RecommendedAddOnsModal = observer(
               </Typography>
             </Box>
           ) : (
-            <Grid container={true} spacing={2}>
-              {recommendedItems.map((item) => (
-                <Grid size={{ xs: 12, sm: 6 }} key={item.id}>
-                  {terminal ? (
+            <>
+              <Box className="recommended-addons-modal__filter-controls">
+                <TextField
+                  size="medium"
+                  placeholder="Search any service..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="recommended-addons-modal__search-field"
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+                <FormControl
+                  size="medium"
+                  className="recommended-addons-modal__sort-select"
+                  sx={{ minWidth: 180 }}
+                >
+                  <InputLabel
+                    id="recommended-addons-sort-label"
+                    sx={{ fontSize: '1rem' }}
+                  >
+                    Sort by Price
+                  </InputLabel>
+                  <Select
+                    labelId="recommended-addons-sort-label"
+                    value={sortOrder}
+                    label="Sort by Price"
+                    onChange={handleSortChange}
+                    sx={{ fontSize: '1rem' }}
+                  >
+                    <MenuItem value="" sx={{ fontSize: '1rem' }}>
+                      <em>None</em>
+                    </MenuItem>
+                    <MenuItem value="asc" sx={{ fontSize: '1rem' }}>
+                      <Box display="flex" alignItems="center">
+                        <ArrowUpIcon fontSize="small" />
+                        <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
+                          Low to High
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="desc" sx={{ fontSize: '1rem' }}>
+                      <Box display="flex" alignItems="center">
+                        <ArrowDownIcon fontSize="small" />
+                        <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
+                          High to Low
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+
+              {filteredAndSortedItems.length === 0 ? (
+                <Box className="recommended-addons-modal__empty-state">
+                  <Typography variant="body1">
+                    No items match your search criteria.
+                  </Typography>
+                </Box>
+              ) : (
+                <Box className="recommended-addons-modal__list">
+                  <Box className="recommended-addons-modal__list-header">
+                    <Typography
+                      variant="subtitle2"
+                      className="recommended-addons-modal__header-name"
+                    >
+                      Product Name
+                    </Typography>
+                    <Typography
+                      variant="subtitle2"
+                      className="recommended-addons-modal__header-provider"
+                    >
+                      Provider
+                    </Typography>
+                    <Typography
+                      variant="subtitle2"
+                      className="recommended-addons-modal__header-price"
+                    >
+                      Price
+                    </Typography>
+                    <Typography
+                      variant="subtitle2"
+                      className="recommended-addons-modal__header-action"
+                    >
+                      Action
+                    </Typography>
+                  </Box>
+                  {filteredAndSortedItems.map((item) => (
                     <RecommendedItemsCard
                       key={item.id}
-                      vendorProfileId={terminal.id}
                       recommendedItem={item}
                     />
-                  ) : (
-                    <RecommendedItemsCard
-                      key={item.id}
-                      recommendedItem={item}
-                    />
-                  )}
-                </Grid>
-              ))}
-            </Grid>
+                  ))}
+                </Box>
+              )}
+            </>
           )}
         </DialogContent>
 

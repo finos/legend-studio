@@ -15,7 +15,11 @@
  */
 
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
-import type { LightProvider, TerminalResult } from './models/Provider.js';
+import type {
+  LightProvider,
+  TerminalServicesResponse,
+  FetchProductsParams,
+} from './models/Provider.js';
 import type { DataProductSearchResult } from './models/DataProductSearchResult.js';
 import type {
   SubscriptionRequest,
@@ -37,13 +41,6 @@ import {
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
   subscriptionUrl: string;
-}
-
-interface TerminalAddOnServerResponse<T> {
-  hrid: string;
-  desktops?: T;
-  addons?: T;
-  landing_addons?: T;
 }
 
 interface MarketplaceServerResponse<T> {
@@ -75,33 +72,36 @@ export class MarketplaceServerClient extends AbstractServerClient {
   getVendors = (): Promise<PlainObject<LightProvider>[]> =>
     this.get(this._vendors());
 
-  getVendorsByCategory = async (
-    user: string,
-    category: string,
-    viewType: string,
-    filters: string,
-    limit: number,
-  ): Promise<PlainObject<TerminalResult>[]> => {
-    const response = await this.get<
-      TerminalAddOnServerResponse<PlainObject<TerminalResult>[]>
-    >(`${this.baseUrl}/v1/service/${viewType}/${category}?kerberos=${user}`);
-    let result = [];
-    if (viewType === 'landing') {
-      result =
-        category === 'desktop'
-          ? (response.desktops ?? [])
-          : (response.landing_addons ?? []);
-    } else {
-      result =
-        category === 'desktop'
-          ? (response.desktops ?? [])
-          : (response.addons ?? []);
+  private _products = (): string => `${this.baseUrl}/v1/workflow/products`;
+
+  fetchProducts = async (
+    params: FetchProductsParams,
+  ): Promise<PlainObject<TerminalServicesResponse>> => {
+    const queryParams: Record<string, string | number | boolean> = {
+      kerberos: params.kerberos,
+      product_type: params.product_type,
+      preferred_products: params.preferred_products,
+    };
+
+    if (params.page_number !== undefined) {
+      queryParams.page_number = params.page_number;
+    }
+    if (params.page_size !== undefined) {
+      queryParams.page_size = params.page_size;
+    }
+    if (params.search !== undefined && params.search !== '') {
+      queryParams.search = params.search;
     }
 
-    return result;
+    return this.get<PlainObject<TerminalServicesResponse>>(
+      this._products(),
+      undefined,
+      undefined,
+      queryParams,
+    );
   };
 
-  // ------------------------------------------- Search- -------------------------------------------
+  // ------------------------------------------- Search -------------------------------------------
 
   private _search = (): string => `${this.baseUrl}/v1/search`;
 
@@ -182,4 +182,12 @@ export class MarketplaceServerClient extends AbstractServerClient {
         category,
       },
     );
+
+  cancelOrder = async (cancelData: {
+    order_id: string;
+    kerberos: string;
+    comments: string;
+    process_instance_id: string;
+  }): Promise<PlainObject<{ status_code: number; message: string }>> =>
+    this.post(`${this.baseUrl}/v1/workflow/cancel/order`, cancelData);
 }

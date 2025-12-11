@@ -25,6 +25,7 @@ import {
   CardMedia,
   Chip,
   CircularProgress,
+  Typography,
 } from '@mui/material';
 import type { TerminalResult } from '@finos/legend-server-marketplace';
 import { CheckCircleIcon, ShoppingCartIcon } from '@finos/legend-art';
@@ -104,10 +105,25 @@ export const LegendMarketplaceTerminalCard = observer(
             image={getImageUrl()}
             alt="data asset"
           />
+          {terminalResult.category && (
+            <Chip
+              label={terminalResult.category}
+              className="legend-marketplace-terminal-card__category-chip"
+            />
+          )}
           <CardContent className="legend-marketplace-terminal-card__content">
-            <Box className="legend-marketplace-terminal-card__title">
+            <Typography
+              variant="subtitle2"
+              className="legend-marketplace-terminal-card__provider"
+            >
+              {terminalResult.providerName}
+            </Typography>
+            <Typography
+              variant="h6"
+              className="legend-marketplace-terminal-card__title"
+            >
               {terminalResult.productName}
-            </Box>
+            </Typography>
           </CardContent>
         </CardActionArea>
         <CardActions className="legend-marketplace-terminal-card__action-buttons">
