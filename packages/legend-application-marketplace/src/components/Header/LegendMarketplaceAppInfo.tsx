@@ -29,11 +29,12 @@ import {
   PanelFormTextField,
   TimesIcon,
 } from '@finos/legend-art';
+import { observer } from 'mobx-react-lite';
 
 export const LegendMarketplaceAppInfo: React.FC<{
   open: boolean;
   closeModal: () => void;
-}> = (props) => {
+}> = observer((props) => {
   const { open, closeModal } = props;
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = legendMarketplaceBaseStore.applicationStore;
@@ -171,4 +172,4 @@ export const LegendMarketplaceAppInfo: React.FC<{
       </Modal>
     </Dialog>
   );
-};
+});
