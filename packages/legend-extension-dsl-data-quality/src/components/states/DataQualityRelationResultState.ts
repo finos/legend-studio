@@ -159,7 +159,7 @@ export class DataQualityRelationResultState {
     if (parameters.length) {
       this.dataQualityRelationValidationConfigurationState.parametersState.openModal(
         queryLambda,
-        true,
+        () => this.runValidation(),
       );
     } else {
       flowResult(this.runValidation()).catch(
