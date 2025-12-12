@@ -360,6 +360,7 @@ class V1_PackageableElementTransformer
   }
 
   visit_PackageableRuntime(element: PackageableRuntime): V1_PackageableElement {
+    console.log('transform packageable runtime');
     return V1_transformPackageableRuntime(element, this.context);
   }
 

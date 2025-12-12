@@ -179,7 +179,9 @@ export const observe_ModelAccessPointGroup = skipObserved(
       diagrams: observable,
     });
     observe_PackageableElementReference(metamodel.mapping);
-    observe_DataProductRuntimeInfo(metamodel.defaultRuntime);
+    if (metamodel.defaultRuntime) {
+      observe_DataProductRuntimeInfo(metamodel.defaultRuntime);
+    }
     metamodel.compatibleRuntimes.forEach(observe_DataProductRuntimeInfo);
     metamodel.featuredElements.forEach(observe_DataProductElementScope);
     metamodel.diagrams.forEach(observe_DataProductDiagram);

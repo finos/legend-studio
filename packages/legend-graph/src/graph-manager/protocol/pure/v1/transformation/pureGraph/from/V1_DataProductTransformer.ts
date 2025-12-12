@@ -192,7 +192,7 @@ export const V1_transformDataProduct = (
           undefined,
           metamodelGroup.mapping.valueForSerialization ?? '',
         );
-        modelGroup.defaultRuntime = metamodelGroup.defaultRuntime.id;
+        modelGroup.defaultRuntime = metamodelGroup.defaultRuntime?.id;
         modelGroup.compatibleRuntimes = metamodelGroup.compatibleRuntimes.map(
           (rInfo) => {
             const metamodelRuntime = new V1_DataProductRuntimeInfo();

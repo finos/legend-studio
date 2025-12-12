@@ -192,7 +192,7 @@ export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
     compatibleRuntimes: customListWithSchema(
       V1_DataProductRuntimeInfoModelSchema,
     ),
-    defaultRuntime: primitive(),
+    defaultRuntime: optional(primitive()),
     description: optional(primitive()),
     diagrams: customListWithSchema(V1_dataProductDiagramModelSchema),
     featuredElements: customListWithSchema(V1_ElementScopeModelSchema),

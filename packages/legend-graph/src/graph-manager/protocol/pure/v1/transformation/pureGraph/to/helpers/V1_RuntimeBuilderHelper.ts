@@ -42,6 +42,7 @@ export const V1_buildEngineRuntime = (
   context: V1_GraphBuilderContext,
 ): EngineRuntime => {
   let runtimeValue: EngineRuntime;
+  console.log('calling buildengineruntime');
   if (runtime instanceof V1_SingleConnectionEngineRuntime) {
     runtimeValue = new SingleConnectionRuntime();
   } else if (runtime instanceof V1_LakehouseRuntime) {
@@ -58,6 +59,7 @@ export const V1_buildEngineRuntime = (
         `Connection in Connection store expected to be connection pointer`,
       );
     }
+    console.log('creating new lakehouse runtime');
     runtimeValue = new LakehouseRuntime(
       runtime.environment,
       runtime.warehouse,
