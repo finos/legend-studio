@@ -388,4 +388,115 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       true,
     ) as DataQualityRootGraphFetchTree;
   };
+
+  private executeDataProfiling = (
+    input: PlainObject<V1_DQExecuteInput>,
+    options?: {
+      returnAsResponse?: boolean;
+      serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
+    },
+  ): Promise<PlainObject<V1_ExecutionResult> | Response> => {
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+      'executeDataProfiling is only supported by remote engine',
+    ).getEngineServerClient();
+    return engineServerClient.postWithTracing(
+      engineServerClient.getTraceData(DQ_GENERATE_EXECUTION_PLAN),
+      `${engineServerClient._pure()}/dataquality/profile`,
+      input,
+      {},
+      undefined,
+      {
+        serializationFormat: options?.serializationFormat
+          ? V1_getEngineSerializationFormat(options.serializationFormat)
+          : undefined,
+      },
+      { enableCompression: true },
+      {
+        skipProcessing: Boolean(options?.returnAsResponse),
+      },
+    );
+  };
+
+  runDataProfiling = async (
+    graph: PureModel,
+    packagePath: string,
+    options: DQExecuteInputOptions,
+  ): Promise<ExecutionResult> => {
+    const input = this.createExecutionInput(
+      graph,
+      packagePath,
+      new V1_DQExecuteInput(),
+      options,
+    );
+
+    try {
+      const profilingResult = (await this.executeDataProfiling(
+        V1_DQExecuteInput.serialization.toJson(input),
+        {
+          returnAsResponse: true,
+        },
+      )) as Response;
+
+      const profilingResultInText = await profilingResult.text();
+
+      const rawExecutionResult =
+        returnUndefOnError(() =>
+          this.graphManager.engine.parseExecutionResults(
+            profilingResultInText,
+            undefined,
+          ),
+        ) ?? profilingResultInText;
+
+      const v1_executionResult =
+        V1_deserializeExecutionResult(rawExecutionResult);
+      return V1_buildExecutionResult(v1_executionResult);
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        throw V1_buildExecutionError(
+          V1_ExecutionError.serialization.fromJson(
+            error.payload as PlainObject<V1_ExecutionError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  };
+
+  exportDataProfiling = async (
+    graph: PureModel,
+    packagePath: string,
+    options: DQExecuteInputOptions,
+  ): Promise<Response> => {
+    const input = this.createExecutionInput(
+      graph,
+      packagePath,
+      new V1_DQExecuteInput(),
+      options,
+    );
+
+    try {
+      return guaranteeNonNullable(
+        (await this.executeDataProfiling(
+          V1_DQExecuteInput.serialization.toJson(input),
+          {
+            serializationFormat: options.serializationFormat,
+            returnAsResponse: true,
+          },
+        )) as Response,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        throw V1_buildExecutionError(
+          V1_ExecutionError.serialization.fromJson(
+            error.payload as PlainObject<V1_ExecutionError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  };
 }
