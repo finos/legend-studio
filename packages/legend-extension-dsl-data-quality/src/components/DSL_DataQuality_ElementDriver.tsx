@@ -21,7 +21,6 @@ import {
 import {
   DataQualityClassValidationsConfiguration,
   DataQualityRelationQueryLambda,
-  DataQualityRelationValidation,
   DataQualityRelationValidationConfiguration,
   DataQualityServiceValidationConfiguration,
   type DataQualityValidationConfiguration,
@@ -42,7 +41,6 @@ import {
   type Mapping,
   PackageableElementExplicitReference,
   type PackageableRuntime,
-  RawLambda,
 } from '@finos/legend-graph';
 import {
   buildElementOption,
@@ -174,30 +172,6 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
     this.dqValidationElementType = dqValidationElementType;
   }
 
-  createDefaultValidation(): DataQualityRelationValidation[] {
-    const body = [
-      {
-        _type: 'func',
-        function: 'assertRelationNotEmpty',
-        parameters: [
-          {
-            _type: 'var',
-            name: 'rel',
-          },
-        ],
-      },
-    ];
-    const parameters = [
-      {
-        _type: 'var',
-        name: 'rel',
-      },
-    ];
-    const assertion = new RawLambda(parameters, body);
-    const defaultValidation = new DataQualityRelationValidation('', assertion);
-    return [defaultValidation];
-  }
-
   createRelationValidationElement(
     name: string,
   ): DataQualityValidationConfiguration {
@@ -208,8 +182,7 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
     relationValidationConfiguration.query.body =
       this.editorStore.graphManagerState.graphManager.createDefaultBasicRawLambda().body;
     this.editorStore.graphManagerState.graphManager.createDefaultBasicRawLambda();
-    relationValidationConfiguration.validations =
-      this.createDefaultValidation();
+    relationValidationConfiguration.validations = [];
     return relationValidationConfiguration;
   }
 
