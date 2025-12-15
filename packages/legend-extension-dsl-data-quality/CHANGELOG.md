@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.174
+
+### Patch Changes
+
+- [#4722](https://github.com/finos/legend-studio/pull/4722) [`9f69a15`](https://github.com/finos/legend-studio/commit/9f69a150871356b25e003ee75489e7f12426b044) ([@sahil37](https://github.com/sahil37)) - remove default dq relation validation
+
 ## 2.0.173
 
 ## 2.0.172
