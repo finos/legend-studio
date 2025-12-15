@@ -207,7 +207,7 @@ export class V1_DataProductDiagram {
 
 export class V1_ModelAccessPointGroup extends V1_AccessPointGroup {
   mapping!: V1_PackageableElementPointer;
-  defaultRuntime!: string | undefined;
+  defaultRuntime: string | undefined;
   featuredElements: V1_ElementScope[] | undefined;
   compatibleRuntimes: V1_DataProductRuntimeInfo[] = [];
   diagrams: V1_DataProductDiagram[] = [];
