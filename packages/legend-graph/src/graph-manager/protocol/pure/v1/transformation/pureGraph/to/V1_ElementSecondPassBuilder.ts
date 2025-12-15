@@ -686,22 +686,12 @@ export class V1_ElementSecondPassBuilder
   }
 
   visit_PackageableRuntime(element: V1_PackageableRuntime): void {
-    const path = V1_buildFullPath(element.package, element.name);
-    console.log('🏗️ Building PackageableRuntime:', path);
-    console.log(
-      '📋 Protocol runtimeValue type:',
-      element.runtimeValue.constructor.name,
+    const runtime = this.context.currentSubGraph.getOwnRuntime(
+      V1_buildFullPath(element.package, element.name),
     );
-    const runtime = this.context.currentSubGraph.getOwnRuntime(path);
     runtime.runtimeValue = V1_buildEngineRuntime(
       element.runtimeValue,
       this.context,
-    );
-    console.log(
-      '✅ Built PackageableRuntime:',
-      path,
-      'with runtimeValue type:',
-      runtime.runtimeValue.constructor.name,
     );
   }
 
@@ -750,26 +740,16 @@ export class V1_ElementSecondPassBuilder
   }
 
   visit_DataProduct(element: V1_DataProduct): void {
-    const path = V1_buildFullPath(element.package, element.name);
-    console.log('🏗️ Building DataProduct:', path);
-    console.log(
-      '📊 Access point groups count:',
-      element.accessPointGroups.length,
+    const dataProduct = this.context.currentSubGraph.getOwnDataProduct(
+      V1_buildFullPath(element.package, element.name),
     );
-    const dataProduct = this.context.currentSubGraph.getOwnDataProduct(path);
     dataProduct.title = element.title;
     dataProduct.description = element.description;
     if (element.icon) {
       dataProduct.icon = V1_buildDataProductIcon(element.icon);
     }
-    console.log('🔨 About to build access point groups...');
     dataProduct.accessPointGroups = element.accessPointGroups.map((gr) =>
       V1_buildAccessPointGroup(gr, this.context),
-    );
-    console.log(
-      '✅ Built',
-      dataProduct.accessPointGroups.length,
-      'access point groups',
     );
     const protocolSupportInfo = element.supportInfo;
     if (protocolSupportInfo) {

@@ -155,18 +155,7 @@ export const V1_buildAccessPointGroup = (
   elementGroup: V1_AccessPointGroup,
   context: V1_GraphBuilderContext,
 ): AccessPointGroup => {
-  console.log('🏗️ V1_buildAccessPointGroup called');
-  console.log('   - elementGroup type:', elementGroup.constructor.name);
-  console.log('   - elementGroup id:', elementGroup.id);
-  console.log('this is elementGroup:', elementGroup);
-  console.log('Context: ', context);
   if (elementGroup instanceof V1_ModelAccessPointGroup) {
-    console.log('✅ This is a V1_ModelAccessPointGroup');
-    console.log(
-      '   - compatibleRuntimes count:',
-      elementGroup.compatibleRuntimes?.length ?? 0,
-    );
-    console.log('   - mapping path:', elementGroup.mapping?.path);
     const group = new ModelAccessPointGroup();
     group.id = elementGroup.id;
     group.title = elementGroup.title;
@@ -177,81 +166,24 @@ export const V1_buildAccessPointGroup = (
     group.stereotypes = elementGroup.stereotypes
       .map((stereotype) => context.resolveStereotype(stereotype))
       .filter(isNonNullable);
-    console.log('🗺️ About to get mapping:', elementGroup.mapping.path);
     group.mapping = PackageableElementExplicitReference.create(
       context.graph.getMapping(elementGroup.mapping.path),
     );
-    console.log('✅ Got mapping, now processing compatibleRuntimes...');
-    group.compatibleRuntimes = (elementGroup.compatibleRuntimes ?? []).map(
-      (rInfo) => {
-        console.log('🔍 Processing runtime info:', {
-          id: rInfo.id,
-          path: rInfo.runtime.path,
-          description: rInfo.description,
-        });
-        console.log(
-          '📦 Available runtimes in graph:',
-          context.graph.ownRuntimes.map((r) => ({
-            path: r.path,
-            hasRuntimeValue: !!r.runtimeValue,
-            runtimeValueType: r.runtimeValue?.constructor.name,
-          })),
-        );
-
-        const metamodelRuntime = new DataProductRuntimeInfo();
-        try {
-          console.log(
-            '🔎 DataProduct looking for runtime:',
-            rInfo.runtime.path,
-          );
-          console.log('   - In graph:', context.graph.constructor.name);
-          console.log(
-            '   - Total runtimes in graph:',
-            context.graph.ownRuntimes.length,
-          );
-          console.log(
-            '   - Runtime paths:',
-            context.graph.ownRuntimes.map((r) => r.path),
-          );
-          const runtimeElement = context.graph.getRuntime(rInfo.runtime.path);
-          console.log('✅ Found runtime:', runtimeElement.path);
-          console.log('   - Has runtimeValue?', !!runtimeElement.runtimeValue);
-          console.log(
-            '   - RuntimeValue type:',
-            runtimeElement.runtimeValue?.constructor.name,
-          );
-          if (!runtimeElement.runtimeValue) {
-            console.error(
-              '⚠️  WARNING: Runtime exists but runtimeValue is undefined!',
-            );
-            console.error(
-              '   This means DataProducts are being built before runtimes are fully built.',
-            );
-          }
-          metamodelRuntime.runtime =
-            PackageableElementExplicitReference.create(runtimeElement);
-        } catch (error) {
-          console.error('❌ Failed to find runtime:', rInfo.runtime.path);
-          console.error('   Error:', error);
-          throw error;
-        }
-        metamodelRuntime.id = rInfo.id;
-        metamodelRuntime.description = rInfo.description;
-        return metamodelRuntime;
-      },
-    );
-    console.log('compatible runtimes: ', group.compatibleRuntimes);
-    console.log('default runtime: ', elementGroup.defaultRuntime);
-    if (elementGroup.defaultRuntime) {
-      group.defaultRuntime = group.compatibleRuntimes.find(
-        (e) => e.id === elementGroup.defaultRuntime,
+    group.compatibleRuntimes = elementGroup.compatibleRuntimes.map((rInfo) => {
+      const metamodelRuntime = new DataProductRuntimeInfo();
+      metamodelRuntime.runtime = PackageableElementExplicitReference.create(
+        context.graph.getRuntime(rInfo.runtime.path),
       );
-      if (!group.defaultRuntime) {
-        console.warn(
-          `default runtime ${elementGroup.defaultRuntime} not found in data product, but continuing anyway`,
-        );
-      }
-    }
+      metamodelRuntime.id = rInfo.id;
+      metamodelRuntime.description = rInfo.description;
+      return metamodelRuntime;
+    });
+    group.defaultRuntime = guaranteeNonNullable(
+      group.compatibleRuntimes.find(
+        (e) => e.id === elementGroup.defaultRuntime,
+      ),
+      `default runtime ${elementGroup.defaultRuntime} not found in data product`,
+    );
     if (elementGroup.featuredElements) {
       group.featuredElements = elementGroup.featuredElements.map((pointer) => {
         const elementReference = context.resolveElement(

@@ -172,11 +172,9 @@ export const V1_serializeRuntimeValue = (
 export const V1_deserializeRuntimeValue = (
   json: PlainObject<V1_Runtime>,
 ): V1_EngineRuntime => {
-  console.log('🔄 Deserializing Runtime JSON:', JSON.stringify(json, null, 2));
   if (json._type === V1_RuntimeType.SINGLE_ENGINE_RUNTIME) {
     return deserialize(V1_SingleConnectionEngineRuntime, json);
   } else if (json._type === V1_RuntimeType.LAKEHOUSE_RUNTIME) {
-    console.log('🏠 Creating LakehouseRuntime from JSON');
     return deserialize(V1_LakehouseRuntime, json);
   }
   return deserialize(V1_EngineRuntime, json);

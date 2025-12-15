@@ -763,13 +763,8 @@ export class V1_ElementFirstPassBuilder
       element.name,
       `Runtime 'name' field is missing or empty`,
     );
-    const path = V1_buildFullPath(element.package, element.name);
-    console.log('👷 First pass: visiting packageable runtime:', path);
-    console.log(
-      '   - Adding to subgraph:',
-      this.context.currentSubGraph.constructor.name,
-    );
     const runtime = new PackageableRuntime(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
       getOrCreateGraphPackage(
@@ -780,10 +775,6 @@ export class V1_ElementFirstPassBuilder
       runtime,
     );
     this.context.currentSubGraph.setOwnRuntime(path, runtime);
-    console.log(
-      '   ✅ Runtime added to graph. Total runtimes in this subgraph:',
-      this.context.currentSubGraph.ownRuntimes.length,
-    );
     return runtime;
   }
 

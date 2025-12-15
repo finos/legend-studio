@@ -472,12 +472,6 @@ export const V1_indexPureModelContextData = (
     } else if (el instanceof V1_PackageableConnection) {
       index.connections.push(el);
     } else if (el instanceof V1_PackageableRuntime) {
-      console.log(
-        '🏃 Indexing PackageableRuntime:',
-        el.name,
-        'runtimeValue type:',
-        el.runtimeValue?.constructor.name,
-      );
       index.runtimes.push(el);
     } else if (el instanceof V1_Store) {
       index.stores.push(el);
@@ -1586,18 +1580,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    console.log(
-      '🔧 Building runtimes - count:',
-      inputs.flatMap((input) => input.data.runtimes).length,
-    );
-    inputs.forEach((input, idx) => {
-      console.log(
-        `  Input ${idx} has ${input.data.runtimes.length} runtimes:`,
-        input.data.runtimes.map(
-          (r) => `${r.name} (${r.runtimeValue.constructor.name})`,
-        ),
-      );
-    });
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.runtimes.map((element) =>

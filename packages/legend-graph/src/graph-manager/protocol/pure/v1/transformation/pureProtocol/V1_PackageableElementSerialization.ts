@@ -376,7 +376,6 @@ export const V1_deserializePackageableElement = (
       case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_packageableConnectionModelSchema(plugins), json);
       case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:
-        console.log('in packageableelementserialization');
         return deserialize(V1_packageableRuntimeModelSchema, json);
       case V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_fileGenerationModelSchema, json);
