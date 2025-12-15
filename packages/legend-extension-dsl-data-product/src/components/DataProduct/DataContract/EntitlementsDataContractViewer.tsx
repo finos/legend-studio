@@ -73,6 +73,7 @@ import {
   ExpandMoreIcon,
   InfoCircleIcon,
   RefreshIcon,
+  TrashIcon,
 } from '@finos/legend-art';
 import type { EntitlementsDataContractViewerState } from '../../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import {
@@ -416,6 +417,25 @@ export const EntitlementsDataContractViewer = observer(
         .catch(currentViewer.applicationStore.alertUnhandledError);
     };
 
+    const closeContract = (): void => {
+      currentViewer.lakehouseContractServerClient
+        .invalidateContract(
+          currentViewer.liteContract.guid,
+          auth.user?.access_token,
+        )
+        .then(() => {
+          currentViewer.applicationStore.notificationService.notifySuccess(
+            'Contract closed successfully',
+          );
+        })
+        .catch((error) => {
+          assertErrorThrown(error);
+          currentViewer.applicationStore.notificationService.notifyError(
+            `Error closing contract: ${error.message}`,
+          );
+        });
+    };
+
     const contractMetadataSection = (
       <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
         <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
@@ -741,13 +761,21 @@ export const EntitlementsDataContractViewer = observer(
                   .
                 </Alert>
               )}
-              <Box>
-                Contract ID: {currentViewer.liteContract.guid}
+              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details">
+                <Box>
+                  Contract ID: {currentViewer.liteContract.guid}
+                  <IconButton
+                    onClick={() => copyContractId()}
+                    title="Copy Contract ID"
+                  >
+                    <CopyIcon />
+                  </IconButton>
+                </Box>
                 <IconButton
-                  onClick={() => copyContractId()}
-                  title="Copy Contract ID"
+                  onClick={() => closeContract()}
+                  title="Close Contract"
                 >
-                  <CopyIcon />
+                  <TrashIcon />
                 </IconButton>
               </Box>
             </Box>
