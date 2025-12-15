@@ -479,40 +479,7 @@ export const EntitlementsDataContractViewer = observer(
       </Box>
     );
 
-    if (
-      currentViewer.liteContract.resourceType !==
-      V1_ResourceType.ACCESS_POINT_GROUP
-    ) {
-      return (
-        <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
-          <DialogTitle>
-            {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
-          </DialogTitle>
-          <IconButton
-            onClick={onClose}
-            className="marketplace-dialog-close-btn"
-          >
-            <CloseIcon />
-          </IconButton>
-          <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-            {contractMetadataSection}
-            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
-              Unable to display data contract tasks for resource of type{' '}
-              {currentViewer.liteContract.resourceType} on data product{' '}
-              {currentViewer.liteContract.resourceId}.
-            </Box>
-            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
-              Contract ID: {currentViewer.liteContract.guid}
-              <IconButton onClick={() => copyContractId()}>
-                <CopyIcon />
-              </IconButton>
-            </Box>
-          </DialogContent>
-        </Dialog>
-      );
-    }
-
-    const steps: {
+    const contractTimelineSteps: {
       key: string;
       label: React.ReactNode;
       isCompleteOrActive: boolean;
@@ -548,6 +515,7 @@ export const EntitlementsDataContractViewer = observer(
                   )
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
+                title="Copy Task Link"
               >
                 <CopyFilledIcon />
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
@@ -628,6 +596,7 @@ export const EntitlementsDataContractViewer = observer(
                   )
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
+                title="Copy Task Link"
               >
                 <CopyFilledIcon />
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
@@ -667,6 +636,40 @@ export const EntitlementsDataContractViewer = observer(
         label: <>Complete</>,
       },
     ];
+
+    const contractTimelineSection =
+      currentViewer.liteContract.resourceType ===
+      V1_ResourceType.ACCESS_POINT_GROUP ? (
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
+          <Timeline>
+            {contractTimelineSteps.map((step, index) => (
+              <TimelineItem key={step.key}>
+                <TimelineOppositeContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
+                  {step.label}
+                </TimelineOppositeContent>
+                <TimelineSeparator>
+                  <TimelineDot
+                    color={step.isDeniedStep ? 'error' : 'primary'}
+                    variant={step.isCompleteOrActive ? 'filled' : 'outlined'}
+                  />
+                  {index < contractTimelineSteps.length - 1 && (
+                    <TimelineConnector />
+                  )}
+                </TimelineSeparator>
+                <TimelineContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
+                  {step.description}
+                </TimelineContent>
+              </TimelineItem>
+            ))}
+          </Timeline>
+        </Box>
+      ) : (
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
+          Unable to display data contract tasks for resource of type{' '}
+          {currentViewer.liteContract.resourceType} on data product{' '}
+          {currentViewer.liteContract.resourceId}.
+        </Box>
+      );
 
     return (
       <>
@@ -721,29 +724,7 @@ export const EntitlementsDataContractViewer = observer(
                     </Button>
                   </Box>
                 )}
-                <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
-                  <Timeline>
-                    {steps.map((step, index) => (
-                      <TimelineItem key={step.key}>
-                        <TimelineOppositeContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
-                          {step.label}
-                        </TimelineOppositeContent>
-                        <TimelineSeparator>
-                          <TimelineDot
-                            color={step.isDeniedStep ? 'error' : 'primary'}
-                            variant={
-                              step.isCompleteOrActive ? 'filled' : 'outlined'
-                            }
-                          />
-                          {index < steps.length - 1 && <TimelineConnector />}
-                        </TimelineSeparator>
-                        <TimelineContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
-                          {step.description}
-                        </TimelineContent>
-                      </TimelineItem>
-                    ))}
-                  </Timeline>
-                </Box>
+                {contractTimelineSection}
               </>
             )}
             <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
@@ -762,7 +743,10 @@ export const EntitlementsDataContractViewer = observer(
               )}
               <Box>
                 Contract ID: {currentViewer.liteContract.guid}
-                <IconButton onClick={() => copyContractId()}>
+                <IconButton
+                  onClick={() => copyContractId()}
+                  title="Copy Contract ID"
+                >
                   <CopyIcon />
                 </IconButton>
               </Box>
