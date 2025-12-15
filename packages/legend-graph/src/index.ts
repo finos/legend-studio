@@ -307,6 +307,7 @@ export {
   V1_DataContractsResponse,
   V1_DataContractSubscriptions,
   V1_EnrichedUserApprovalStatus,
+  V1_InvalidateDataContractResponse,
   V1_LiteDataContract,
   V1_LiteDataContractsResponse,
   V1_LiteDataContractWithUserStatus,
