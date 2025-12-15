@@ -173,10 +173,24 @@ export const LegendMarketplaceAppInfo: React.FC<{
                       }}
                       placeholder={`${data.label} client base URL`}
                       error={!isValidUrl(data.value ?? '')}
-                      helperText={'Invalid URL'}
+                      helperText={
+                        !isValidUrl(data.value ?? '')
+                          ? 'Invalid URL'
+                          : undefined
+                      }
                       variant="outlined"
                       size="small"
                       fullWidth={true}
+                      className="app__info__entry__value--editable"
+                      slotProps={{
+                        htmlInput: {
+                          className: 'app__info__entry__value--editable__input',
+                        },
+                        formHelperText: {
+                          className:
+                            'app__info__entry__value--editable__helper-text',
+                        },
+                      }}
                     />
                   )}
                 </div>

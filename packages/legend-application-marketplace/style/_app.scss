@@ -62,7 +62,8 @@ html * {
     }
 
     &__entry {
-      display: flex;
+      @include flexVCenter;
+
       cursor: default;
       padding: 0.2rem 0;
       font-family: 'Roboto Mono', monospace;
@@ -73,12 +74,24 @@ html * {
       }
 
       &__value {
+        flex: 1;
         color: var(--marketplace-text-secondary);
 
         a {
           text-decoration: none;
           font-weight: 700;
           color: var(--marketplace-link-color);
+        }
+
+        &--editable {
+          &__input {
+            padding: 2px 5px;
+          }
+
+          &__helper-text {
+            position: absolute;
+            top: 100%;
+          }
         }
       }
     }
