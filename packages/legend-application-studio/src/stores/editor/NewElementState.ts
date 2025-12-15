@@ -89,7 +89,6 @@ import {
   AccessPointGroup,
   ModelAccessPointGroup,
   stub_Mapping,
-  DataProductRuntimeInfo,
   InternalDataProductType,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
@@ -560,7 +559,6 @@ export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct>
       defaultGroup.id = 'default';
       defaultGroup.mapping =
         PackageableElementExplicitReference.create(stub_Mapping());
-      defaultGroup.defaultRuntime = new DataProductRuntimeInfo();
       dataProduct_addAccessPointGroup(dataProduct, defaultGroup);
     }
 

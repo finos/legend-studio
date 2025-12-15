@@ -189,10 +189,6 @@ export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
       V1_serializeAccessPoint,
       V1_deserializeAccessPoint,
     ),
-    compatibleRuntimes: customListWithSchema(
-      V1_DataProductRuntimeInfoModelSchema,
-    ),
-    defaultRuntime: optional(primitive()),
     description: optional(primitive()),
     diagrams: customListWithSchema(V1_dataProductDiagramModelSchema),
     featuredElements: customListWithSchema(V1_ElementScopeModelSchema),

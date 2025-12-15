@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  guaranteeNonNullable,
-  isNonNullable,
-  UnsupportedOperationError,
-} from '@finos/legend-shared';
+import { isNonNullable, UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type AccessPoint,
   type DataProductElement,
@@ -31,7 +27,6 @@ import {
   DataProductLibraryIcon,
   DataProductLink,
   DataProductOperationalMetadata,
-  DataProductRuntimeInfo,
   Expertise,
   FunctionAccessPoint,
   LakehouseAccessPoint,
@@ -168,21 +163,6 @@ export const V1_buildAccessPointGroup = (
       .filter(isNonNullable);
     group.mapping = PackageableElementExplicitReference.create(
       context.graph.getMapping(elementGroup.mapping.path),
-    );
-    group.compatibleRuntimes = elementGroup.compatibleRuntimes.map((rInfo) => {
-      const metamodelRuntime = new DataProductRuntimeInfo();
-      metamodelRuntime.runtime = PackageableElementExplicitReference.create(
-        context.graph.getRuntime(rInfo.runtime.path),
-      );
-      metamodelRuntime.id = rInfo.id;
-      metamodelRuntime.description = rInfo.description;
-      return metamodelRuntime;
-    });
-    group.defaultRuntime = guaranteeNonNullable(
-      group.compatibleRuntimes.find(
-        (e) => e.id === elementGroup.defaultRuntime,
-      ),
-      `default runtime ${elementGroup.defaultRuntime} not found in data product`,
     );
     if (elementGroup.featuredElements) {
       group.featuredElements = elementGroup.featuredElements.map((pointer) => {

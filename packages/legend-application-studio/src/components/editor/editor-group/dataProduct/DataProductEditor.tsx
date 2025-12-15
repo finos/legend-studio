@@ -101,13 +101,11 @@ import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type DataProductElement,
   type DataProductElementScope,
-  type DataProductRuntimeInfo,
   type Expertise,
   type GraphManagerState,
   type LakehouseAccessPoint,
   type Mapping,
   type PackageableElement,
-  type PackageableRuntime,
   type DataProduct,
   type DataProductDiagram,
   DataProductEmbeddedImageIcon,
@@ -139,8 +137,6 @@ import {
   supportInfo_setDocumentationUrl,
   supportInfo_setFaqUrl,
   supportInfo_setLinkLabel,
-  runtimeInfo_setId,
-  runtimeInfo_setDescription,
   supportInfo_setSupportUrl,
   supportInfo_setWebsite,
   dataProduct_setType,
@@ -1266,140 +1262,6 @@ const AccessPointGroupPublicToggle = observer(
   },
 );
 
-export const CompatibleRuntimesEditor = observer(
-  (props: { groupState: ModelAccessPointGroupState }) => {
-    const { groupState } = props;
-    const group = groupState.value;
-
-    const handleSelectRuntime = (runtime: DataProductRuntimeInfo) => {
-      groupState.setDefaultRuntime(runtime);
-    };
-
-    // Event handlers
-    const handleAddRuntime = (option: {
-      label: string;
-      value: PackageableRuntime;
-    }): void => {
-      if (typeof option.value === 'object') {
-        groupState.addCompatibleRuntime(option.value);
-      }
-    };
-
-    const handleRemoveRuntime = (runtime: DataProductRuntimeInfo): void => {
-      groupState.removeCompatibleRuntime(runtime);
-    };
-
-    const handleRuntimeTitleChange = (
-      runtimeInfo: DataProductRuntimeInfo,
-      value: string | undefined,
-    ): void => {
-      runtimeInfo_setId(runtimeInfo, value ?? '');
-    };
-
-    const handleRuntimeDescriptionChange = (
-      runtimeInfo: DataProductRuntimeInfo,
-      value: string | undefined,
-    ): void => {
-      runtimeInfo_setDescription(runtimeInfo, value);
-    };
-
-    // ListEditor component renderers
-    const RuntimeComponent = observer(
-      (runtimeComponentProps: {
-        item: DataProductRuntimeInfo;
-      }): React.ReactElement => {
-        const { item } = runtimeComponentProps;
-
-        return (
-          <>
-            <div className="panel__content__form__section__list__item__content">
-              <div className="panel__content__form__section__header__label">
-                Default?
-              </div>
-              <input
-                type="radio"
-                name="defaultRuntimeRadio"
-                value={item.id}
-                checked={group.defaultRuntime === item}
-                onChange={() => handleSelectRuntime(item)}
-              />
-            </div>
-            <div className="panel__content__form__section__list__item__content">
-              <div className="panel__content__form__section__header__label">
-                Runtime
-              </div>
-              <div className="panel__content__form__section__list__item__content__title">
-                {item.runtime.value.path}
-              </div>
-            </div>
-            <div className="panel__content__form__section__list__item__form">
-              <PanelFormTextField
-                name="Title"
-                value={item.id}
-                update={(value) => handleRuntimeTitleChange(item, value)}
-                placeholder="Enter title"
-                className="dataSpace-editor__general__diagrams__title"
-              />
-              <PanelFormTextField
-                name="Description"
-                value={item.description ?? ''}
-                update={(value) => handleRuntimeDescriptionChange(item, value)}
-                placeholder="Enter description"
-                className="dataSpace-editor__general__diagrams__description"
-              />
-            </div>
-          </>
-        );
-      },
-    );
-
-    const NewRuntimeComponent = observer(
-      (newRuntimeProps: {
-        onFinishEditing: () => void;
-      }): React.ReactElement => {
-        const { onFinishEditing } = newRuntimeProps;
-
-        return (
-          <div className="panel__content__form__section__list__new-item__input">
-            <CustomSelectorInput
-              options={groupState.getCompatibleRuntimeOptions()}
-              onChange={(event: {
-                label: string;
-                value: PackageableRuntime;
-              }) => {
-                onFinishEditing();
-                handleAddRuntime(event);
-              }}
-              placeholder="Select a runtime to add..."
-              darkMode={
-                !groupState.state.editorStore.applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-            />
-          </div>
-        );
-      },
-    );
-
-    return (
-      <ListEditor
-        title="Compatible Runtimes"
-        prompt="Add compatible runtimes to include in this Data Product. Set a title and description for each runtime."
-        items={group.compatibleRuntimes}
-        keySelector={(element: DataProductRuntimeInfo) =>
-          element.runtime.value.path
-        }
-        ItemComponent={RuntimeComponent}
-        NewItemComponent={NewRuntimeComponent}
-        handleRemoveItem={handleRemoveRuntime}
-        isReadOnly={groupState.state.isReadOnly}
-        emptyMessage="No runtimes specified"
-        emptyClassName="data-product-editor__empty-runtime"
-      />
-    );
-  },
-);
-
 export const CompatibleDiagramsEditor = observer(
   (props: { groupState: ModelAccessPointGroupState }) => {
     const { groupState } = props;
@@ -1678,7 +1540,6 @@ const ModelAccessPointGroupEditor = observer(
             <LongArrowRightIcon />
           </button>
         </div>
-        <CompatibleRuntimesEditor groupState={groupState} />
         <CompatibleDiagramsEditor groupState={groupState} />
         <FeaturedElementsEditor
           groupState={groupState}

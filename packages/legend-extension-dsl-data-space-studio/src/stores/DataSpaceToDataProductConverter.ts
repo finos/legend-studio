@@ -16,7 +16,6 @@
 
 import {
   type DataSpace,
-  type DataSpaceExecutionContext,
   DataSpaceSupportEmail,
   DataSpaceSupportCombinedInfo,
   getQueryFromDataspaceExecutable,
@@ -25,7 +24,6 @@ import {
   type GraphManagerState,
   type PackageableElementReference,
   type Mapping,
-  DataProductRuntimeInfo,
   ModelAccessPointGroup,
   DataProduct,
   FunctionAccessPoint,
@@ -36,7 +34,6 @@ import {
   DataProductLink,
   Email,
   observe_DataProduct,
-  observe_DataProductRuntimeInfo,
   observe_ModelAccessPointGroup,
 } from '@finos/legend-graph';
 import { assertTrue, uniq, uuid } from '@finos/legend-shared';
@@ -178,16 +175,6 @@ const convertDataSpaceToSupportInfo = (
   return supportInfo;
 };
 
-const convertExecutionContextToRuntime = (
-  executionContext: DataSpaceExecutionContext,
-): DataProductRuntimeInfo => {
-  const dataProductRuntime = new DataProductRuntimeInfo();
-  dataProductRuntime.id = executionContext.name;
-  dataProductRuntime.runtime = executionContext.defaultRuntime;
-  observe_DataProductRuntimeInfo(dataProductRuntime);
-  return dataProductRuntime;
-};
-
 const convertDataSpaceToModelAccessPointGroup = (
   dataSpace: DataSpace,
   graphManagerState: GraphManagerState,
@@ -203,25 +190,8 @@ const convertDataSpaceToModelAccessPointGroup = (
     graphManagerState,
   );
   modelAccessPointGroup.mapping = convertDataSpaceToMapping(dataSpace);
-  modelAccessPointGroup.defaultRuntime = convertExecutionContextToRuntime(
-    dataSpace.defaultExecutionContext,
-  );
   modelAccessPointGroup.featuredElements =
     convertDataSpaceToFeaturedElements(dataSpace);
-
-  const seenRuntimePaths = new Set<string>();
-  modelAccessPointGroup.compatibleRuntimes = dataSpace.executionContexts
-    .filter((executionContext) => {
-      const runtimePath = executionContext.defaultRuntime.value.path;
-      if (runtimePath && !seenRuntimePaths.has(runtimePath)) {
-        seenRuntimePaths.add(runtimePath);
-        return true;
-      }
-      return false;
-    })
-    .map((executionContext) =>
-      convertExecutionContextToRuntime(executionContext),
-    );
 
   modelAccessPointGroup.diagrams = convertDataSpaceToDiagrams(dataSpace);
   const observeModelAccessPointGroup = observe_ModelAccessPointGroup(

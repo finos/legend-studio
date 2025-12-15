@@ -39,7 +39,6 @@ import {
   V1_DataProductDiagram,
   V1_DataProductEmbeddedImageIcon,
   V1_DataProductLibraryIcon,
-  V1_DataProductRuntimeInfo,
   V1_ElementScope,
   V1_Email,
   V1_LakehouseAccessPoint,
@@ -191,19 +190,6 @@ export const V1_transformDataProduct = (
         modelGroup.mapping = new V1_PackageableElementPointer(
           undefined,
           metamodelGroup.mapping.valueForSerialization ?? '',
-        );
-        modelGroup.defaultRuntime = metamodelGroup.defaultRuntime?.id;
-        modelGroup.compatibleRuntimes = metamodelGroup.compatibleRuntimes.map(
-          (rInfo) => {
-            const metamodelRuntime = new V1_DataProductRuntimeInfo();
-            metamodelRuntime.runtime = new V1_PackageableElementPointer(
-              undefined,
-              rInfo.runtime.valueForSerialization ?? '',
-            );
-            metamodelRuntime.id = rInfo.id;
-            metamodelRuntime.description = rInfo.description;
-            return metamodelRuntime;
-          },
         );
 
         modelGroup.featuredElements = metamodelGroup.featuredElements.map(
