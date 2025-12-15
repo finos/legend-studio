@@ -427,6 +427,7 @@ export const EntitlementsDataContractViewer = observer(
           currentViewer.applicationStore.notificationService.notifySuccess(
             'Contract closed successfully',
           );
+          refresh();
         })
         .catch((error) => {
           assertErrorThrown(error);
