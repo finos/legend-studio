@@ -80,6 +80,7 @@ import {
   GitBranchIcon,
   ListIcon,
   PanelLoadingIndicator,
+  GearSuggestIcon,
 } from '@finos/legend-art';
 import {
   type ChangeEventHandler,
@@ -122,6 +123,8 @@ import {
   ExternalDataProductType,
   DataProductLink,
   observer_DataProductLink,
+  DataProduct_Region,
+  DataProduct_DeliveryFrequency,
 } from '@finos/legend-graph';
 import {
   accessPoint_setClassification,
@@ -149,6 +152,9 @@ import {
   accessPointGroup_setTitle,
   accessPoint_setDescription,
   accessPoint_setTitle,
+  dataProduct_setOperationalMetadataIfAbsent,
+  operationalMetadata_deleteCoverageRegion,
+  operationalMetadata_addCoverageRegion,
   dataProductDiagram_setTitle,
   dataProductDiagram_setDescription,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
@@ -2043,6 +2049,11 @@ const DataProductSidebar = observer(
         icon: <GroupWorkIcon />,
       },
       {
+        label: DATA_PRODUCT_TAB.OPERATIONAL,
+        title: 'Operational Metadata',
+        icon: <GearSuggestIcon />,
+      },
+      {
         label: DATA_PRODUCT_TAB.SUPPORT,
         icon: <QuestionCircleIcon />,
       },
@@ -2067,8 +2078,8 @@ const DataProductSidebar = observer(
               title={activity.title ?? activity.label}
               style={{
                 flexDirection: 'column',
-                fontSize: '12px',
-                margin: '1rem 0rem',
+                fontSize: '10px',
+                margin: '0.5rem 0rem',
               }}
             >
               {activity.icon}
@@ -2887,6 +2898,145 @@ const getDataProductViewerState = (
   return dataProductViewerState;
 };
 
+const OperationalTab = observer(
+  (props: {
+    dataProductEditorState: DataProductEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { dataProductEditorState, isReadOnly } = props;
+    const product = dataProductEditorState.product;
+    const CHOOSE_REGION = 'Add Coverage Region...';
+
+    const getCoverageRegionOptions = () => {
+      const existingRegions =
+        product.operationalMetadata?.coverageRegions ?? [];
+      return Object.values(DataProduct_Region)
+        .filter((region) => !existingRegions.includes(region))
+        .map((region) => ({
+          label: region,
+          value: region,
+        }));
+    };
+
+    const handleAddRegion = (
+      val: { label: string; value: DataProduct_Region } | null,
+    ): void => {
+      dataProduct_setOperationalMetadataIfAbsent(product);
+      if (product.operationalMetadata && val) {
+        operationalMetadata_addCoverageRegion(
+          product.operationalMetadata,
+          val.value,
+        );
+      }
+    };
+
+    const handleRemoveRegion = (region: DataProduct_Region) => {
+      if (product.operationalMetadata) {
+        operationalMetadata_deleteCoverageRegion(
+          product.operationalMetadata,
+          region,
+        );
+      }
+    };
+
+    const handleUpdateFrequencyChange = (
+      val: { label: string; value: DataProduct_DeliveryFrequency } | null,
+    ): void => {
+      dataProduct_setOperationalMetadataIfAbsent(product);
+      if (product.operationalMetadata && val) {
+        product.operationalMetadata.updateFrequency = val.value;
+      }
+    };
+
+    return (
+      <div>
+        <div
+          className="panel__content__form__section__header__label"
+          style={{ paddingLeft: '1rem' }}
+        >
+          Operational Metadata
+        </div>
+        <div
+          className="panel__content__form__section__header__prompt"
+          style={{ paddingLeft: '1rem' }}
+        >
+          Configure operational metadata for this Data Product.
+        </div>
+        <div className="data-product-editor__operational-input">
+          <div
+            className="panel__content__form__section__header__label"
+            style={{ justifyContent: 'space-between', width: '45rem' }}
+          >
+            Coverage Regions
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Select the regions this Data Product covers.
+          </div>
+          <div className="panel__content__form__section__list__id-list">
+            {product.operationalMetadata?.coverageRegions?.map((region) => (
+              <div
+                className="panel__content__form__section__list__item"
+                key={region}
+              >
+                {region}
+                <button
+                  className="panel__content__form__section__list__item__remove-btn"
+                  disabled={dataProductEditorState.isReadOnly}
+                  onClick={() => handleRemoveRegion(region)}
+                  tabIndex={-1}
+                >
+                  <TimesIcon />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="panel__content__form__section__list__new-item__input">
+            <CustomSelectorInput
+              options={getCoverageRegionOptions()}
+              onChange={handleAddRegion}
+              placeholder={CHOOSE_REGION}
+              darkMode={true}
+              disabled={isReadOnly}
+            />
+          </div>
+        </div>
+        <div className="data-product-editor__operational-input">
+          <div
+            className="panel__content__form__section__header__label"
+            style={{ justifyContent: 'space-between', width: '45rem' }}
+          >
+            Update Frequency
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Select the update frequency of this Data Product.
+          </div>
+          <div className="panel__content__form__section__list__new-item__input">
+            <CustomSelectorInput
+              options={Object.values(DataProduct_DeliveryFrequency).map(
+                (region) => ({
+                  label: region,
+                  value: region,
+                }),
+              )}
+              onChange={handleUpdateFrequencyChange}
+              value={
+                product.operationalMetadata?.updateFrequency
+                  ? {
+                      label: product.operationalMetadata.updateFrequency,
+                      value: product.operationalMetadata.updateFrequency,
+                    }
+                  : null
+              }
+              darkMode={true}
+              disabled={isReadOnly}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 export const DataProductEditor = observer(() => {
   const editorStore = useEditorStore();
   const dataProductEditorState =
@@ -2942,6 +3092,13 @@ export const DataProductEditor = observer(() => {
       case DATA_PRODUCT_TAB.APG:
         return (
           <AccessPointGroupTab
+            dataProductEditorState={dataProductEditorState}
+            isReadOnly={isReadOnly}
+          />
+        );
+      case DATA_PRODUCT_TAB.OPERATIONAL:
+        return (
+          <OperationalTab
             dataProductEditorState={dataProductEditorState}
             isReadOnly={isReadOnly}
           />

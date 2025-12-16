@@ -163,6 +163,11 @@
     gap: 1rem;
   }
 
+  &__operational-input {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+  }
+
   &__textbox-error {
     color: var(--color-red-300);
     border-color: var(--color-red-300) !important;
