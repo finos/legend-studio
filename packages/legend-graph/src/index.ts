@@ -776,6 +776,7 @@ export {
   Expertise,
   ExternalDataProductType,
   type DataProductElement,
+  DataProductOperationalMetadata,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
 

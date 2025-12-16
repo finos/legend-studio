@@ -130,6 +130,7 @@ export enum DATA_PRODUCT_TAB {
   HOME = 'Home',
   SUPPORT = 'Support',
   APG = 'APG',
+  OPERATIONAL = 'Operational',
 }
 
 export enum DATA_PRODUCT_TYPE {

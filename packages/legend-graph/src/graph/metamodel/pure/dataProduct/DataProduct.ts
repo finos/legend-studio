@@ -262,16 +262,15 @@ export enum DataProduct_DeliveryFrequency {
   WEEKLY = 'WEEKLY',
   MONTHLY = 'MONTHLY',
   QUARTERLY = 'QUARTERLY',
-  ANNUALLY = 'ANNUALLY',
+  YEARLY = 'YEARLY',
   ON_DEMAND = 'ON_DEMAND',
-  INTRA_DAY = 'INTRA_DAY',
-  OTHER = 'OTHER',
+  INTRA_DAY = 'INTRADAY',
 }
 
 export enum DataProduct_Region {
   APAC = 'APAC',
   EMEA = 'EMEA',
-  LATAM = 'LATAM',
+  LAMR = 'LAMR',
   NAMR = 'NAMR',
 }
 

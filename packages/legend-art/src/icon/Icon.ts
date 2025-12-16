@@ -134,6 +134,7 @@ import {
   MdOutlineExplore,
   MdOutlineAccountTree,
   MdGroup,
+  MdOutlineSettingsSuggest,
   MdLightMode,
 } from 'react-icons/md';
 
@@ -191,6 +192,7 @@ export const LibraryBooksIcon = MdOutlineLibraryBooks;
 export const CompassIcon = MdOutlineExplore;
 export const AccountTreeIcon = MdOutlineAccountTree;
 export const CollaborationIcon = MdGroup;
+export const GearSuggestIcon = MdOutlineSettingsSuggest;
 
 //======================================================= VSC =======================================================
 import {
