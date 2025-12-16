@@ -312,25 +312,4 @@ describe(unitTest('DataSpace to DataProduct Conversion Tests'), () => {
     expect(dataProduct.stereotypes).toEqual(testDataSpace.stereotypes);
     expect(dataProduct.taggedValues).toEqual(testDataSpace.taggedValues);
   });
-
-  test('DataProduct runtime deduplication', () => {
-    const secondExecContext = new DataSpaceExecutionContext();
-    secondExecContext.name = 'second';
-    secondExecContext.mapping = testDataSpace.defaultExecutionContext.mapping;
-    secondExecContext.defaultRuntime =
-      testDataSpace.defaultExecutionContext.defaultRuntime;
-
-    testDataSpace.executionContexts.push(secondExecContext);
-
-    const dataProduct = convertDataSpaceToDataProduct(
-      testDataSpace,
-      graphManagerState,
-    );
-    const accessPointGroup = guaranteeType(
-      dataProduct.accessPointGroups[0],
-      ModelAccessPointGroup,
-    );
-
-    expect(accessPointGroup.compatibleRuntimes).toHaveLength(1);
-  });
 });

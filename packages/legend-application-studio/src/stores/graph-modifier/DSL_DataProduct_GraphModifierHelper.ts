@@ -97,30 +97,12 @@ export const accessPointGroup_setTitle = action(
   },
 );
 
-export const modelAccessPointGroup_setDefaultRuntime = action(
-  (group: ModelAccessPointGroup, runtime: DataProductRuntimeInfo) => {
-    group.defaultRuntime = runtime;
-  },
-);
-
 export const modelAccessPointGroup_setMapping = action(
   (
     group: ModelAccessPointGroup,
     mapping: PackageableElementReference<Mapping>,
   ) => {
     group.mapping = mapping;
-  },
-);
-
-export const modelAccessPointGroup_addCompatibleRuntime = action(
-  (group: ModelAccessPointGroup, runtime: DataProductRuntimeInfo) => {
-    addUniqueEntry(group.compatibleRuntimes, runtime);
-  },
-);
-
-export const modelAccessPointGroup_removeCompatibleRuntime = action(
-  (group: ModelAccessPointGroup, runtime: DataProductRuntimeInfo): void => {
-    deleteEntry(group.compatibleRuntimes, runtime);
   },
 );
 

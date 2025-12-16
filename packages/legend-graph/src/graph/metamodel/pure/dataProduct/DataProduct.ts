@@ -186,9 +186,7 @@ export class ModelAccessPointGroup
   implements Hashable
 {
   mapping!: PackageableElementReference<Mapping>;
-  defaultRuntime!: DataProductRuntimeInfo;
   featuredElements: DataProductElementScope[] = [];
-  compatibleRuntimes: DataProductRuntimeInfo[] = [];
   diagrams: DataProductDiagram[] = [];
 
   override get hashCode(): string {
@@ -196,9 +194,7 @@ export class ModelAccessPointGroup
       super.hashCode,
       CORE_HASH_STRUCTURE.DATA_PRODUCT_MODEL_ACCESS_POINT_GROUP,
       this.mapping.valueForSerialization ?? '',
-      this.defaultRuntime.id,
       hashArray(this.featuredElements),
-      hashArray(this.compatibleRuntimes),
       hashArray(this.diagrams),
     ]);
   }

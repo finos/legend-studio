@@ -33,20 +33,16 @@ import {
   getStereotype,
   type StereotypeReference,
   ModelAccessPointGroup,
-  PackageableRuntime,
   Association,
   Class,
   Enumeration,
   Package,
-  observe_DataProductRuntimeInfo,
   PackageableElementExplicitReference,
-  DataProductRuntimeInfo,
   type DataProductElement,
   type Mapping,
   Expertise,
   observe_DataProductElementScope,
   DataProductElementScope,
-  validate_PureExecutionMapping,
   type V1_RawLineageModel,
   type ArtifactGenerationExtensionResult,
   type V1_DataProductArtifact,
@@ -92,7 +88,6 @@ import {
   uuid,
   swapEntry,
   returnUndefOnError,
-  deepEqual,
 } from '@finos/legend-shared';
 import {
   accessPointGroup_swapAccessPoints,
@@ -104,11 +99,8 @@ import {
   dataProduct_deleteAccessPointGroup,
   modelAccessPointGroup_removeDiagram,
   dataProduct_swapAccessPointGroups,
-  modelAccessPointGroup_addCompatibleRuntime,
   modelAccessPointGroup_addElement,
-  modelAccessPointGroup_removeCompatibleRuntime,
   modelAccessPointGroup_removeElement,
-  modelAccessPointGroup_setDefaultRuntime,
   modelAccessPointGroup_setElementExclude,
   modelAccessPointGroup_setMapping,
   dataProduct_setSupportInfoIfAbsent,
@@ -782,23 +774,6 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
     );
   }
 
-  setDefaultRuntime(runtime: DataProductRuntimeInfo) {
-    modelAccessPointGroup_setDefaultRuntime(this.value, runtime);
-  }
-
-  addCompatibleRuntime(runtime: PackageableRuntime): void {
-    const newRuntime = observe_DataProductRuntimeInfo(
-      new DataProductRuntimeInfo(),
-    );
-    newRuntime.id = runtime.name;
-    newRuntime.runtime = PackageableElementExplicitReference.create(runtime);
-    modelAccessPointGroup_addCompatibleRuntime(this.value, newRuntime);
-
-    if (deepEqual(this.value.defaultRuntime, new DataProductRuntimeInfo())) {
-      this.setDefaultRuntime(newRuntime);
-    }
-  }
-
   getCompatibleDiagramOptions(): {
     label: string;
     value: PackageableElement;
@@ -814,17 +789,6 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
         label: diagram.path,
         value: diagram,
       }));
-  }
-
-  removeCompatibleRuntime(runtime: DataProductRuntimeInfo): void {
-    modelAccessPointGroup_removeCompatibleRuntime(this.value, runtime);
-    if (runtime === this.value.defaultRuntime) {
-      if (!this.value.compatibleRuntimes.length) {
-        this.setDefaultRuntime(new DataProductRuntimeInfo());
-      } else if (this.value.compatibleRuntimes[0]) {
-        this.setDefaultRuntime(this.value.compatibleRuntimes[0]);
-      }
-    }
   }
 
   addDiagram = (option: { label: string; value: PackageableElement }): void => {
@@ -857,33 +821,6 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
     value: boolean,
   ): void {
     modelAccessPointGroup_setElementExclude(element, value);
-  }
-
-  override hasErrors(): boolean {
-    return Boolean(
-      super.hasErrors() ||
-        !validate_PureExecutionMapping(this.value.mapping.value) ||
-        !deepEqual(this.value.defaultRuntime, new DataProductRuntimeInfo()),
-    );
-  }
-
-  getCompatibleRuntimeOptions(): {
-    label: string;
-    value: PackageableRuntime;
-  }[] {
-    const currentRuntimes = this.value.compatibleRuntimes.map(
-      (runtimePointer) => runtimePointer.runtime.value,
-    );
-    return this.state.editorStore.graphManagerState.graph.allOwnElements
-      .filter(
-        (element): element is PackageableRuntime =>
-          element instanceof PackageableRuntime,
-      )
-      .filter((runtime) => !currentRuntimes.includes(runtime))
-      .map((runtime) => ({
-        label: runtime.path,
-        value: runtime,
-      }));
   }
 
   isValidDataProductElement(
