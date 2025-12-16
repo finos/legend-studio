@@ -75,11 +75,11 @@ export const LegendDataCubeCreator = observer(() => {
               <FormDropdownMenu className="w-80" {...sourceTypeDropdownProps}>
                 {[
                   LegendDataCubeSourceBuilderType.LEGEND_QUERY,
+                  LegendDataCubeSourceBuilderType.LAKEHOUSE_CONSUMER,
                   LegendDataCubeSourceBuilderType.USER_DEFINED_FUNCTION,
                   LegendDataCubeSourceBuilderType.FREEFORM_TDS_EXPRESSION,
-                  LegendDataCubeSourceBuilderType.LOCAL_FILE,
                   LegendDataCubeSourceBuilderType.LAKEHOUSE_PRODUCER,
-                  LegendDataCubeSourceBuilderType.LAKEHOUSE_CONSUMER,
+                  LegendDataCubeSourceBuilderType.LOCAL_FILE,
                 ].map((type) => (
                   <FormDropdownMenuItem
                     key={type}

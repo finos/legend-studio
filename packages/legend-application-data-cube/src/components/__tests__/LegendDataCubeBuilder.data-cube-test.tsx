@@ -108,15 +108,18 @@ const serializedConsumerQuery = {
   },
 };
 
-test(
-  integrationTest('Load DataCube window appears on first load'),
-  async () => {
-    const mockedLegendDataCubeBuilderStore =
-      await TEST__provideMockedLegendDataCubeBuilderStore();
-    await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
-    await screen.findByPlaceholderText('Search for DataCube(s) by name or ID');
-  },
-);
+test(integrationTest('New DataCube window appears on first load'), async () => {
+  const mockedLegendDataCubeBuilderStore =
+    await TEST__provideMockedLegendDataCubeBuilderStore();
+  await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+  fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+  fireEvent.click(
+    guaranteeNonNullable(
+      (await screen.findAllByRole('button', { name: 'New DataCube' }))[0],
+    ),
+  );
+  await screen.findByText('Choose Source Type:');
+});
 
 test(
   integrationTest('New DataCube window appears on button click'),
@@ -124,7 +127,6 @@ test(
     const mockedLegendDataCubeBuilderStore =
       await TEST__provideMockedLegendDataCubeBuilderStore();
     await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
-    await screen.findByPlaceholderText('Search for DataCube(s) by name or ID');
     fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
     fireEvent.click(
       guaranteeNonNullable(
