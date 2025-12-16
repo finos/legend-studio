@@ -38,6 +38,7 @@ import {
 } from '../../../stores/core/filter/DataCubeQueryFilterEditorState.js';
 import {
   FormButton,
+  FormCheckbox,
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
@@ -87,6 +88,29 @@ const DataCubeEditorFilterConditionNodeTextValueEditor = observer(
         }}
         onChange={(event) => {
           updateValue(event.target.value);
+        }}
+      />
+    );
+  }),
+);
+
+const DataCubeEditorFilterConditionNodeBooleanValueEditor = observer(
+  forwardRef<
+    HTMLButtonElement,
+    {
+      value: boolean;
+      updateValue: (value: boolean) => void;
+    }
+  >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
+    const { value, updateValue } = props;
+
+    return (
+      <FormCheckbox
+        ref={ref}
+        className="ml-1"
+        checked={value}
+        onChange={() => {
+          updateValue(!value);
         }}
       />
     );
@@ -354,6 +378,14 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
           <DataCubeEditorFilterConditionNodeTextValueEditor
             ref={ref as React.RefObject<HTMLInputElement>}
             value={value.value as string}
+            updateValue={(val) => updateValue(val)}
+          />
+        );
+      case PRIMITIVE_TYPE.BOOLEAN:
+        return (
+          <DataCubeEditorFilterConditionNodeBooleanValueEditor
+            ref={ref as React.RefObject<HTMLButtonElement>}
+            value={value.value as boolean}
             updateValue={(val) => updateValue(val)}
           />
         );

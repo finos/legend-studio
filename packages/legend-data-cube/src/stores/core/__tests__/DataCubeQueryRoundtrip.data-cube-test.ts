@@ -100,6 +100,11 @@ const cases: TestCase[] = [
     columns: ['Age:Integer'],
     validator: _checkFilterOperator(DataCubeQueryFilterOperator.EQUAL),
   }),
+  _case(`Filter: == (Boolean)`, {
+    query: `filter(x|$x.Modified == false)`,
+    columns: ['Modified:Boolean'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.EQUAL),
+  }),
   _case(`Filter: == : NOT`, {
     query: `filter(x|$x.Age != 27)`,
     columns: ['Age:Integer'],
@@ -510,6 +515,11 @@ const cases: TestCase[] = [
   _case(`Filter: !=`, {
     query: `filter(x|$x.Age != 27)`,
     columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL),
+  }),
+  _case(`Filter: != (Boolean)`, {
+    query: `filter(x|$x.Modified != false)`,
+    columns: ['Modified:Boolean'],
     validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL),
   }),
   _case(`Filter: != : NOT`, {
