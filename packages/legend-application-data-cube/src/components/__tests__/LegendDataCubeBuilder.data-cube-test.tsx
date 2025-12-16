@@ -127,7 +127,6 @@ test(
     const mockedLegendDataCubeBuilderStore =
       await TEST__provideMockedLegendDataCubeBuilderStore();
     await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
-    await screen.findByPlaceholderText('Search for DataCube(s) by name or ID');
     fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
     fireEvent.click(
       guaranteeNonNullable(
