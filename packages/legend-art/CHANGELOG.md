@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.137
+
+### Patch Changes
+
+- [#4730](https://github.com/finos/legend-studio/pull/4730) [`517a732`](https://github.com/finos/legend-studio/commit/517a732a5babd906f178c5ba18bda4129a2d4eae) ([@kelly-thai](https://github.com/kelly-thai)) - Add Icon for Operational Metadata
+
 ## 7.1.136
 
 ### Patch Changes
