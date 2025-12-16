@@ -79,6 +79,11 @@ export enum DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB {
   TRIAL_RUN = 'Trial Run',
 }
 
+export enum EXECUTION_TYPE {
+  EXECUTION = 'EXECUTION',
+  PROFILING = 'PROFILING',
+}
+
 export class RelationFunctionDefinitionEditorState extends LambdaEditorState {
   readonly editorStore: EditorStore;
   readonly relationValidationElement: DataQualityRelationValidationConfiguration;
@@ -211,15 +216,11 @@ export class RelationDefinitionParameterState extends LambdaParametersState {
       relationValidationConfigurationState;
   }
 
-  openModal(lambda: RawLambda, runLambdaWithConstraints: boolean): void {
+  openModal(lambda: RawLambda, onSubmit: () => GeneratorFn<void>): void {
     this.parameterStates = this.build(lambda);
     this.parameterValuesEditorState.open(
       (): Promise<void> =>
-        flowResult(
-          runLambdaWithConstraints
-            ? this.relationValidationConfigurationState.resultState.runValidation()
-            : this.relationValidationConfigurationState.runValidation(),
-        ).catch(
+        flowResult(onSubmit()).catch(
           this.relationValidationConfigurationState.editorStore.applicationStore
             .alertUnhandledError,
         ),
@@ -258,10 +259,11 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   readonly exportState = ActionState.create();
   selectedTab: DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB;
 
-  isRunningValidation = false;
+  lastExecutionType: EXECUTION_TYPE | undefined = undefined;
+  currentExecutionType: EXECUTION_TYPE | undefined = undefined;
   isGeneratingPlan = false;
-  validationRunPromise: Promise<ExecutionResult> | undefined = undefined;
-  executionResult?: ExecutionResult | undefined; // NOTE: stored as lossless JSON string
+  runPromise: Promise<ExecutionResult> | undefined = undefined;
+  executionResult?: ExecutionResult | undefined;
   executionPlanState: ExecutionPlanState;
   validationStates: DataQualityRelationValidationState[] = [];
   parametersState: RelationDefinitionParameterState;
@@ -278,14 +280,15 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
 
     makeObservable(this, {
       selectedTab: observable,
-      isRunningValidation: observable,
-      validationRunPromise: observable,
+      currentExecutionType: observable,
+      runPromise: observable,
       executionResult: observable,
       resultState: observable,
       executionDuration: observable,
       latestRunHashCode: observable,
+      lastExecutionType: observable,
       setSelectedTab: action,
-      setValidationRunPromise: action,
+      setRunPromise: action,
       setExecutionResult: action,
       addValidationState: action,
       resetResultState: action,
@@ -293,13 +296,15 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       validationElement: computed,
       relationValidationOptions: computed,
       checkForStaleResults: computed,
-      runValidation: flow,
-      handleRunValidation: flow,
-      convertValidationLambdaObjects: flow,
-      cancelValidationRun: flow,
-      generatePlan: flow,
+      isRunning: computed,
+      run: flow,
+      handleRun: flow,
       exportData: flow,
+      convertValidationLambdaObjects: flow,
+      cancelRun: flow,
+      generatePlan: flow,
     });
+
     assertType(
       element,
       DataQualityRelationValidationConfiguration,
@@ -378,6 +383,10 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     return false;
   }
 
+  get isRunning(): boolean {
+    return this.currentExecutionType !== undefined;
+  }
+
   setExecutionDuration(val: number | undefined): void {
     this.executionDuration = val;
   }
@@ -407,30 +416,32 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     }
   }
 
-  setValidationRunPromise = (
-    promise: Promise<ExecutionResult> | undefined,
-  ): void => {
-    this.validationRunPromise = promise;
+  setRunPromise = (promise: Promise<ExecutionResult> | undefined): void => {
+    this.runPromise = promise;
   };
 
   setSelectedTab(tab: DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB): void {
     this.selectedTab = tab;
   }
 
-  setExecutionResult = (executionResult: ExecutionResult | undefined): void => {
+  setExecutionResult = (
+    executionResult: ExecutionResult | undefined,
+    type: EXECUTION_TYPE,
+  ): void => {
+    this.lastExecutionType = type;
     this.executionResult = executionResult;
   };
 
-  *handleRunValidation(): GeneratorFn<void> {
-    if (this.isRunningValidation) {
+  *handleRun(type: EXECUTION_TYPE): GeneratorFn<void> {
+    if (this.isRunning) {
       return;
     }
     const queryLambda = this.bodyExpressionSequence;
     const parameters = (queryLambda.parameters ?? []) as object[];
     if (parameters.length) {
-      this.parametersState.openModal(queryLambda, false);
+      this.parametersState.openModal(queryLambda, () => this.run(type));
     } else {
-      flowResult(this.runValidation()).catch(
+      flowResult(this.run(type)).catch(
         this.editorStore.applicationStore.alertUnhandledError,
       );
     }
@@ -484,41 +495,45 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     );
   }
 
-  setIsRunningValidation(val: boolean): void {
-    this.isRunningValidation = val;
-  }
-
-  *runValidation(): GeneratorFn<void> {
-    let promise;
+  *run(type: EXECUTION_TYPE): GeneratorFn<void> {
+    let promise: Promise<ExecutionResult> | undefined = undefined;
+    const stopWatch = new StopWatch();
     try {
-      this.setIsRunningValidation(true);
+      this.currentExecutionType = type;
       const currentHashCode = this.hashCode;
       const packagePath = this.validationElement.path;
       const model = this.editorStore.graphManagerState.graph;
-      const stopWatch = new StopWatch();
-
-      promise = getDataQualityPureGraphManagerExtension(
+      const extension = getDataQualityPureGraphManagerExtension(
         this.editorStore.graphManagerState.graphManager,
-      ).execute(model, packagePath, {
-        runQuery: true,
+      );
+
+      const options = {
         lambdaParameterValues: buildExecutionParameterValues(
           this.parametersState.parameterStates,
           this.editorStore.graphManagerState,
         ),
-      });
+      };
 
-      this.setValidationRunPromise(promise);
+      promise =
+        type === EXECUTION_TYPE.PROFILING
+          ? extension.runDataProfiling(model, packagePath, options)
+          : extension.execute(model, packagePath, {
+              ...options,
+              runQuery: true,
+            });
+
+      this.setRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
 
-      if (this.validationRunPromise === promise) {
-        this.setExecutionResult(result);
+      if (this.runPromise === promise) {
+        this.setExecutionResult(result, type);
         this.latestRunHashCode = currentHashCode;
         this.setExecutionDuration(stopWatch.elapsed);
       }
     } catch (error) {
-      if (this.validationRunPromise === promise) {
+      if (this.runPromise === promise) {
         assertErrorThrown(error);
-        this.setExecutionResult(undefined);
+        this.setExecutionResult(undefined, type);
         this.editorStore.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
           error,
@@ -528,13 +543,13 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
         );
       }
     } finally {
-      this.setIsRunningValidation(false);
+      this.currentExecutionType = undefined;
     }
   }
 
-  *cancelValidationRun(): GeneratorFn<void> {
-    this.setIsRunningValidation(false);
-    this.setValidationRunPromise(undefined);
+  *cancelRun(): GeneratorFn<void> {
+    this.currentExecutionType = undefined;
+    this.setRunPromise(undefined);
     try {
       yield this.editorStore.graphManagerState.graphManager.cancelUserExecutions(
         true,
@@ -600,6 +615,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   *exportData(format: string): GeneratorFn<void> {
     try {
       this.exportState.inProgress();
+      const type = this.lastExecutionType;
       const packagePath = this.validationElement.path;
       const model = this.editorStore.graphManagerState.graph;
       this.editorStore.applicationStore.notificationService.notifySuccess(
@@ -608,16 +624,30 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       const exportData = this.resultState.getExportDataInfo(format);
       const contentType = exportData.contentType;
       const serializationFormat = exportData.serializationFormat;
-      const result = (yield getDataQualityPureGraphManagerExtension(
+      const extension = getDataQualityPureGraphManagerExtension(
         this.editorStore.graphManagerState.graphManager,
-      ).exportData(model, packagePath, {
+      );
+
+      const options = {
         serializationFormat,
-        runQuery: true,
         lambdaParameterValues: buildExecutionParameterValues(
           this.parametersState.parameterStates,
           this.editorStore.graphManagerState,
         ),
-      })) as Response;
+      };
+
+      const result =
+        type === EXECUTION_TYPE.PROFILING
+          ? ((yield extension.exportDataProfiling(
+              model,
+              packagePath,
+              options,
+            )) as Response)
+          : ((yield extension.exportData(model, packagePath, {
+              ...options,
+              runQuery: true,
+            })) as Response);
+
       if (result.headers.get(V1_DELEGATED_EXPORT_HEADER) === 'true') {
         if (result.status === 200) {
           this.exportState.pass();
@@ -642,26 +672,6 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.exportState.complete();
-    }
-  }
-
-  handleExport(format: string) {
-    const queryLambda = this.bodyExpressionSequence;
-    const parameters = (queryLambda.parameters ?? []) as object[];
-    if (parameters.length) {
-      this.parametersState.parameterStates =
-        this.parametersState.build(queryLambda);
-      this.parametersState.parameterValuesEditorState.open(
-        (): Promise<void> =>
-          flowResult(this.exportData(format)).catch(
-            this.editorStore.applicationStore.alertUnhandledError,
-          ),
-        PARAMETER_SUBMIT_ACTION.EXPORT,
-      );
-    } else {
-      flowResult(this.exportData(format)).catch(
-        this.editorStore.applicationStore.alertUnhandledError,
-      );
     }
   }
 

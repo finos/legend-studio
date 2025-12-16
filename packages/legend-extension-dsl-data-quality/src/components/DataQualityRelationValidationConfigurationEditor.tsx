@@ -24,6 +24,7 @@ import {
 import {
   DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB,
   DataQualityRelationValidationConfigurationState,
+  EXECUTION_TYPE,
 } from './states/DataQualityRelationValidationConfigurationState.js';
 import React, { useCallback, useEffect, useRef } from 'react';
 import {
@@ -112,11 +113,13 @@ const RelationDefinitionEditor = observer(
       dataQualityRelationValidationConfigurationState.isReadOnly;
 
     const isExportDisabled =
-      dataQualityRelationValidationConfigurationState.isRunningValidation ||
+      dataQualityRelationValidationConfigurationState.lastExecutionType ===
+        undefined ||
+      dataQualityRelationValidationConfigurationState.isRunning ||
       dataQualityRelationValidationConfigurationState.isGeneratingPlan;
 
-    const exportValidationResults = async (format: string): Promise<void> => {
-      dataQualityRelationValidationConfigurationState.handleExport(format);
+    const exportResults = async (format: string): Promise<void> => {
+      dataQualityRelationValidationConfigurationState.exportData(format);
     };
 
     const getResultSetDescription = (
@@ -134,10 +137,18 @@ const RelationDefinitionEditor = observer(
       if (!queryDuration) {
         return undefined;
       }
-      return `lambda ran in ${queryDuration}`;
+      const executionName =
+        dataQualityRelationValidationConfigurationState.lastExecutionType ===
+        EXECUTION_TYPE.EXECUTION
+          ? 'Query'
+          : dataQualityRelationValidationConfigurationState.lastExecutionType ===
+              EXECUTION_TYPE.PROFILING
+            ? 'Data profile'
+            : 'Lambda';
+      return `${executionName} ran in ${queryDuration}`;
     };
     const resultDescription =
-      !dataQualityRelationValidationConfigurationState.isRunningValidation &&
+      !dataQualityRelationValidationConfigurationState.isRunning &&
       lambdaExecutionResult
         ? getResultSetDescription(lambdaExecutionResult)
         : undefined;
@@ -151,7 +162,7 @@ const RelationDefinitionEditor = observer(
             label: 'Accept',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: applicationStore.guardUnhandledError(() =>
-              exportValidationResults(format),
+              exportResults(format),
             ),
           },
           {
@@ -258,7 +269,7 @@ const RelationDefinitionEditor = observer(
         <PanelLoadingIndicator
           isLoading={
             resultState.isGeneratingPlan ||
-            dataQualityRelationValidationConfigurationState.isRunningValidation
+            dataQualityRelationValidationConfigurationState.isRunning
           }
         />
         <div className="relation-validation-config-editor__definition">
@@ -343,11 +354,20 @@ const RelationDefinitionEditor = observer(
                 <div className="relation-validation-config-editor__definition__item__header__title">
                   RESULT
                 </div>
-                {dataQualityRelationValidationConfigurationState.isRunningValidation && (
-                  <div className="panel__header__title__label__status">
-                    Running Validation...
-                  </div>
-                )}
+                {dataQualityRelationValidationConfigurationState.isRunning &&
+                  dataQualityRelationValidationConfigurationState.currentExecutionType ===
+                    EXECUTION_TYPE.EXECUTION && (
+                    <div className="panel__header__title__label__status">
+                      Running Validation...
+                    </div>
+                  )}
+                {dataQualityRelationValidationConfigurationState.isRunning &&
+                  dataQualityRelationValidationConfigurationState.currentExecutionType ===
+                    EXECUTION_TYPE.PROFILING && (
+                    <div className="panel__header__title__label__status">
+                      Running Profiling...
+                    </div>
+                  )}
                 <div
                   data-testid={
                     DATA_QUALITY_VALIDATION_TEST_ID.DATA_QUALITY_VALIDATION_RESULT_ANALYTICS
@@ -435,18 +455,26 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
       dataQualityRelationValidationConfigurationState.setSelectedTab(tab);
 
   const executionIsRunning =
-    dataQualityRelationValidationConfigurationState.isRunningValidation ||
+    dataQualityRelationValidationConfigurationState.isRunning ||
     dataQualityRelationValidationConfigurationState.isGeneratingPlan;
 
-  const cancelValidation = applicationStore.guardUnhandledError(() =>
-    flowResult(
-      dataQualityRelationValidationConfigurationState.cancelValidationRun(),
-    ),
+  const cancelRun = applicationStore.guardUnhandledError(() =>
+    flowResult(dataQualityRelationValidationConfigurationState.cancelRun()),
   );
 
   const runValidation = applicationStore.guardUnhandledError(() =>
     flowResult(
-      dataQualityRelationValidationConfigurationState.handleRunValidation(),
+      dataQualityRelationValidationConfigurationState.handleRun(
+        EXECUTION_TYPE.EXECUTION,
+      ),
+    ),
+  );
+
+  const runDataProfiling = applicationStore.guardUnhandledError(() =>
+    flowResult(
+      dataQualityRelationValidationConfigurationState.handleRun(
+        EXECUTION_TYPE.PROFILING,
+      ),
     ),
   );
 
@@ -513,10 +541,10 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
               DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION && (
               <>
                 <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-                  {dataQualityRelationValidationConfigurationState.isRunningValidation ? (
+                  {dataQualityRelationValidationConfigurationState.isRunning ? (
                     <button
                       className="btn__dropdown-combo__canceler"
-                      onClick={cancelValidation}
+                      onClick={cancelRun}
                       tabIndex={-1}
                     >
                       <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
@@ -556,6 +584,12 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
                               onClick={debugPlanGeneration}
                             >
                               Debug
+                            </MenuContentItem>
+                            <MenuContentItem
+                              className="btn__dropdown-combo__option"
+                              onClick={runDataProfiling}
+                            >
+                              Data Profile
                             </MenuContentItem>
                           </MenuContent>
                         }
