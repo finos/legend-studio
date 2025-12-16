@@ -309,15 +309,6 @@ export const TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS = [
               targetEnvironment: 'Snowflake',
             },
           ],
-          compatibleRuntimes: [
-            {
-              description: 'desc',
-              id: 'runtimeId',
-              runtime: {
-                path: 'model::dummyRuntime',
-              },
-            },
-          ],
           featuredElements: [
             {
               element: {
@@ -337,7 +328,6 @@ export const TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS = [
               },
             },
           ],
-          defaultRuntime: 'runtimeId',
           description: 'des',
           id: 'grp',
           mapping: {
@@ -433,15 +423,6 @@ export const TEST_DATA__DATAPRODUCT__FUNCTION_ACCESS_POINT = [
               },
             },
           ],
-          compatibleRuntimes: [
-            {
-              description: 'desc',
-              id: 'runtimeId',
-              runtime: {
-                path: 'model::dummyRuntime',
-              },
-            },
-          ],
           featuredElements: [
             {
               element: {
@@ -461,7 +442,6 @@ export const TEST_DATA__DATAPRODUCT__FUNCTION_ACCESS_POINT = [
               },
             },
           ],
-          defaultRuntime: 'runtimeId',
           description: 'des',
           id: 'grp',
           mapping: {
@@ -2256,15 +2236,6 @@ export const TEST_DATA__DATAPRODUCT__MAPPING__INCLUDE = [
       accessPointGroups: [
         {
           _type: 'modelAccessPointGroup',
-          compatibleRuntimes: [
-            {
-              id: 'entityRuntime',
-              runtime: {
-                path: 'entity::runtime::LegalEntityRuntime',
-              },
-            },
-          ],
-          defaultRuntime: 'entityRuntime',
           description:
             'Entity Data model access point group for sharing data models with consumers',
           id: 'modelAccessPointGroup',
