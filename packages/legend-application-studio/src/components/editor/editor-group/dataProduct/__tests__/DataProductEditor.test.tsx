@@ -39,7 +39,6 @@ import { LegendStudioPluginManager } from '../../../../../application/LegendStud
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
-  findAllByDisplayValue,
   findByPlaceholderText,
   findByRole,
   getAllByRole,
@@ -288,7 +287,6 @@ test(
 
     //check rendered as mapg editor
     await findByText(editorGroup, 'Mapping');
-    await findByText(editorGroup, 'Compatible Runtimes');
     await findByText(editorGroup, 'Featured Elements');
 
     //make sure there is only one mapg
@@ -313,109 +311,6 @@ test(
     fireEvent.click(dropdownOption as HTMLElement);
 
     await screen.findByText('model::dummyMapping2');
-  },
-);
-
-test(
-  integrationTest('Model Access Point Group compatible runtimes editor'),
-  async () => {
-    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
-    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-      MOCK__editorStore,
-      { entities: TEST_DATA__ModelApgDataProduct },
-    );
-    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
-      readOnly: true,
-    });
-
-    await TEST__openElementFromExplorerTree(
-      'model::animal::AnimalDataProduct',
-      renderResult,
-    );
-
-    const editorGroup = await waitFor(() =>
-      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
-    );
-    fireEvent.click(await findByText(editorGroup, 'APG'));
-
-    //edit title
-    const runtimeElement = await findAllByDisplayValue(
-      editorGroup,
-      'runtimeId',
-    );
-    const runtimeTitleTextbox = guaranteeNonNullable(
-      runtimeElement.find(
-        (el) => el.tagName === 'INPUT' && el.getAttribute('type') !== 'radio',
-      ),
-    );
-    fireEvent.click(runtimeTitleTextbox);
-    fireEvent.change(runtimeTitleTextbox, {
-      target: { value: 'defaultRuntime' },
-    });
-    fireEvent.blur(runtimeTitleTextbox);
-    expect(
-      within(editorGroup).getAllByDisplayValue('defaultRuntime'),
-    ).not.toBeNull();
-
-    //edit description
-    const runtimeDescTextbox = guaranteeNonNullable(
-      runtimeElement.find(
-        (el) => el.tagName === 'INPUT' && el.getAttribute('type') !== 'radio',
-      ),
-    );
-    fireEvent.click(runtimeDescTextbox);
-    fireEvent.change(runtimeDescTextbox, {
-      target: { value: 'new runtime description' },
-    });
-    fireEvent.blur(runtimeDescTextbox);
-    expect(
-      within(editorGroup).getAllByDisplayValue('new runtime description'),
-    ).not.toBeNull();
-
-    //add new element
-    fireEvent.click(
-      guaranteeNonNullable(
-        (
-          await screen.findAllByRole('button', {
-            name: 'Add Value',
-          })
-        )[0],
-      ),
-    );
-    const newRuntimeDropdown = await screen.findByText(
-      'Select a runtime to add...',
-    );
-    fireEvent.mouseDown(newRuntimeDropdown);
-
-    const runtimeOptions = await screen.findAllByRole('option');
-    runtimeOptions.find((opt) => opt.textContent === 'model::dummyRuntime2');
-    const selectRuntime = runtimeOptions.find(
-      (opt) => opt.textContent === 'model::dummyRuntime2',
-    );
-    expect(selectRuntime).not.toBeUndefined();
-    fireEvent.click(selectRuntime as HTMLElement);
-
-    await screen.findByText('model::dummyRuntime2');
-
-    //change default runtime
-    const radio = guaranteeNonNullable(
-      screen.getAllByRole('radio', { name: '' })[1],
-    );
-    fireEvent.click(radio);
-    expect((radio as HTMLInputElement).checked).toBe(true);
-
-    //remove runtime
-    fireEvent.click(
-      guaranteeNonNullable(
-        (
-          await screen.findAllByRole('button', {
-            name: 'Remove item',
-          })
-        )[1],
-      ),
-    );
-    expect(within(editorGroup).queryByText('dummyRuntime2')).toBeNull();
-    expect(screen.getAllByRole('radio', { name: '' })).toHaveLength(1);
   },
 );
 
@@ -448,7 +343,7 @@ test(
           await screen.findAllByRole('button', {
             name: 'Add Value',
           })
-        )[2],
+        )[1],
       ),
     );
     const newElementDropdown = await screen.findByText(
@@ -477,7 +372,7 @@ test(
     // remove element
     fireEvent.click(
       guaranteeNonNullable(
-        (await screen.findAllByRole('button', { name: 'Remove item' }))[1],
+        (await screen.findAllByRole('button', { name: 'Remove item' }))[0],
       ),
     );
     expect(
