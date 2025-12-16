@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { action, makeObservable, observable } from 'mobx';
 import type { PlainObject } from '../CommonUtils.js';
 import { guaranteeNonNullable } from '../error/AssertionUtils.js';
 import {
@@ -72,6 +73,11 @@ export abstract class AbstractServerClient {
   autoReAuthenticateUrl?: string | undefined;
 
   constructor(config: ServerClientConfig) {
+    makeObservable(this, {
+      baseUrl: observable,
+      setBaseUrl: action,
+    });
+
     this.networkClient = new NetworkClient({
       baseUrl: config.baseUrl,
       options: config.networkClientOptions,
@@ -87,7 +93,7 @@ export abstract class AbstractServerClient {
 
   setBaseUrl(val: string | undefined): void {
     this.baseUrl = val;
-    this.networkClient.baseUrl = val;
+    this.networkClient.setBaseUrl(val);
   }
 
   setCompression(val: boolean): void {

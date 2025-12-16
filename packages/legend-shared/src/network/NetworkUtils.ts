@@ -27,6 +27,7 @@ import queryString from 'query-string';
 import { returnUndefOnError } from '../error/ErrorUtils.js';
 import { sanitizeUrl } from '@braintree/sanitize-url';
 import type { PlainObject } from '../CommonUtils.js';
+import { action, makeObservable, observable } from 'mobx';
 
 /**
  * Unlike the download call (GET requests) which is gziped, the upload call send uncompressed data which is in megabytes realms
@@ -334,11 +335,20 @@ export class NetworkClient {
   baseUrl?: string | undefined;
 
   constructor(config?: NetworkClientConfig) {
+    makeObservable(this, {
+      baseUrl: observable,
+      setBaseUrl: action,
+    });
+
     this.baseUrl = config?.baseUrl;
     this.options = {
       ...DEFAULT_CLIENT_REQUEST_OPTIONS,
       ...(config?.options ?? {}),
     };
+  }
+
+  setBaseUrl(val: string | undefined): void {
+    this.baseUrl = val;
   }
 
   async get<T>(
