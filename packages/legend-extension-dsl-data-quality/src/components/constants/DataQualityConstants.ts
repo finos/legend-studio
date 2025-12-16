@@ -25,3 +25,63 @@ export enum DATA_QUALITY_VALIDATION_TEST_ID {
 
 export const USER_ATTESTATION_MESSAGE =
   'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
+
+export enum DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS {
+  ROWS_WITH_EMPTY_COLUMN = 'rowsWithEmptyColumn',
+  ROWS_WITH_NON_EMPTY_COLUMN = 'rowsWithNonEmptyColumn',
+  ROWS_WITH_COLUMN_LONGER_THAN = 'rowsWithColumnLongerThan',
+  ROWS_WITH_NEGATIVE_VALUE = 'rowsWithNegativeValue',
+  ROWS_WITH_COLUMN_DIFFERS_FROM_PATTERN = 'rowsWithColumnDiffersFromPattern',
+  ROWS_WITH_VALUE_OUTSIDE_RANGE = 'rowsWithValueOutsideRange',
+}
+
+export enum DATA_QUALITY_TERMINAL_ASSERTION_HELPER_FUNCTIONS {
+  ASSERT_RELATION_EMPTY = 'assertRelationEmpty',
+}
+
+export const DQ_VALIDATION_HELPER_FUNCTIONS_LABEL = {
+  [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_EMPTY_COLUMN]:
+    'Is Empty',
+  [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_NON_EMPTY_COLUMN]:
+    'Is Not Empty',
+  [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_COLUMN_LONGER_THAN]:
+    'Is Longer Than',
+  [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_NEGATIVE_VALUE]:
+    'Is Negative Value',
+  [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_COLUMN_DIFFERS_FROM_PATTERN]:
+    'Is Different From Pattern',
+  [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_VALUE_OUTSIDE_RANGE]:
+    'Is Outside Range',
+  [DATA_QUALITY_TERMINAL_ASSERTION_HELPER_FUNCTIONS.ASSERT_RELATION_EMPTY]:
+    'Assert Relation Empty',
+};
+
+export enum PARAMETER_COMPONENTS {
+  LIST = 'list',
+  NUMBER = 'number',
+  STRING = 'string',
+  BOOLEAN = 'boolean',
+  DATE = 'date',
+  COLUMN = 'column',
+  COLUMN_LIST = 'column-list',
+  TYPE_SELECTOR = 'type-selector',
+  NONE = 'none',
+}
+
+export enum SUPPORTED_TYPES {
+  STRING = 'string',
+  BOOLEAN = 'boolean',
+  INTEGER = 'integer',
+  FLOAT = 'float',
+  DECIMAL = 'decimal',
+  COL_SPEC = 'colSpec',
+  COL_SPEC_ARRAY = 'colSpecArray',
+  CLASS_INSTANCE = 'classInstance',
+  FUNCTION = 'func',
+  VAR = 'var',
+}
+
+export const DATA_QUALITY_VALIDATION_HELPER_FUNCTIONS = [
+  ...Object.values(DATA_QUALITY_TERMINAL_ASSERTION_HELPER_FUNCTIONS),
+  ...Object.values(DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS),
+];

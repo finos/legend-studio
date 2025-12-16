@@ -17,6 +17,7 @@
 @use 'mixins' as *;
 @forward 'data-quality-validation-builder';
 @forward 'data-quality-relation-validation-builder';
+@forward 'data-quality-validation-gui-editor';
 
 .data-quality-constraints {
   display: flex;

@@ -49,6 +49,7 @@ import {
   observe_ValueSpecification,
   VariableExpression,
   V1_DELEGATED_EXPORT_HEADER,
+  type RelationTypeMetadata,
 } from '@finos/legend-graph';
 import {
   action,
@@ -269,6 +270,9 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   resultState: DataQualityRelationResultState;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
+  relationTypeMetadata: RelationTypeMetadata = {
+    columns: [],
+  };
 
   constructor(
     editorStore: EditorStore,
@@ -299,6 +303,8 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       cancelValidationRun: flow,
       generatePlan: flow,
       exportData: flow,
+      getRelationalColumns: flow,
+      relationTypeMetadata: observable.deep,
     });
     assertType(
       element,
@@ -308,11 +314,17 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     this.relationFunctionDefinitionEditorState =
       new RelationFunctionDefinitionEditorState(element, this.editorStore);
     this.selectedTab = DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION;
+    this.getRelationalColumns();
     this.validationElement.validations.forEach((validation) => {
       this.validationStates.push(
-        new DataQualityRelationValidationState(validation, editorStore),
+        new DataQualityRelationValidationState(
+          validation,
+          editorStore,
+          this.relationTypeMetadata,
+        ),
       );
     });
+
     this.executionPlanState = new ExecutionPlanState(
       this.editorStore.applicationStore,
       this.editorStore.graphManagerState,
@@ -393,7 +405,11 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       )
     ) {
       this.validationStates.push(
-        new DataQualityRelationValidationState(validation, this.editorStore),
+        new DataQualityRelationValidationState(
+          validation,
+          this.editorStore,
+          this.relationTypeMetadata,
+        ),
       );
     }
   }
@@ -663,6 +679,22 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
         this.editorStore.applicationStore.alertUnhandledError,
       );
     }
+  }
+
+  *getRelationalColumns(): GeneratorFn<void> {
+    const lambda = new RawLambda(
+      this.relationFunctionDefinitionEditorState.relationValidationElement.query.parameters,
+      this.relationFunctionDefinitionEditorState.relationValidationElement.query.body,
+    );
+
+    try {
+      this.relationTypeMetadata.columns = (
+        (yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
+          lambda,
+          this.editorStore.graphManagerState.graph,
+        )) as RelationTypeMetadata
+      ).columns;
+    } catch (error) {}
   }
 
   get hashCode(): string {
