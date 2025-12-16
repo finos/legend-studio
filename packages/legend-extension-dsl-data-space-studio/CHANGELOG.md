@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.270
+
+### Patch Changes
+
+- [#4725](https://github.com/finos/legend-studio/pull/4725) [`c4ff034`](https://github.com/finos/legend-studio/commit/c4ff034e7e0e5ba7fac58403b8401d38a4fa22d5) ([@jackp5150](https://github.com/jackp5150)) - Removed runtime references from modelAPGs to reflect alloy-lakehouse model
+
 ## 0.1.269
 
 ## 0.1.268

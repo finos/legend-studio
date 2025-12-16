@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.80
+
+### Patch Changes
+
+- [#4725](https://github.com/finos/legend-studio/pull/4725) [`c4ff034`](https://github.com/finos/legend-studio/commit/c4ff034e7e0e5ba7fac58403b8401d38a4fa22d5) ([@jackp5150](https://github.com/jackp5150)) - Removed runtime references from modelAPGs to reflect alloy-lakehouse model
+
+- [#4730](https://github.com/finos/legend-studio/pull/4730) [`517a732`](https://github.com/finos/legend-studio/commit/517a732a5babd906f178c5ba18bda4129a2d4eae) ([@kelly-thai](https://github.com/kelly-thai)) - Add Operational Metadata to Data Product form on studio
+
 ## 28.19.79
 
 ## 28.19.78

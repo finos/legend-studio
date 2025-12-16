@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.3.54
+
+### Patch Changes
+
+- [#4704](https://github.com/finos/legend-studio/pull/4704) [`d8f01f3`](https://github.com/finos/legend-studio/commit/d8f01f3fef9bdc862c80e99a78d35522c03e3c65) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: adding support for filters on boolean column
+
 ## 0.3.53
 
 ## 0.3.52

@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.31
+
+### Patch Changes
+
+- [#4726](https://github.com/finos/legend-studio/pull/4726) [`8752798`](https://github.com/finos/legend-studio/commit/87527983968e150ca79bb2e9c975d7f362916d51) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: improvements for lakehouse consumer flow
+
 ## 0.7.30
 
 ## 0.7.29

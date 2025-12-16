@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.53
+
+### Patch Changes
+
+- [#4724](https://github.com/finos/legend-studio/pull/4724) [`1e5cad8`](https://github.com/finos/legend-studio/commit/1e5cad831a0a495705f4f6a4634824ca23d46b78) ([@travisstebbins](https://github.com/travisstebbins)) - Allow customizing Marketplace URL
+
 ## 0.1.52
 
 ### Patch Changes

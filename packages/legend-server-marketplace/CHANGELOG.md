@@ -1,5 +1,7 @@
 # @finos/legend-server-marketplace
 
+## 0.1.31
+
 ## 0.1.30
 
 ### Patch Changes

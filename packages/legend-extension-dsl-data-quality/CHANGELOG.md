@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.0
+
+### Minor Changes
+
+- [#4721](https://github.com/finos/legend-studio/pull/4721) [`00cc910`](https://github.com/finos/legend-studio/commit/00cc9109c53c268fcbbdf0502db98f3f5aa411bf) ([@dramala](https://github.com/dramala)) - Added functionality to do data profiling for data quality lambda query.
+
 ## 2.0.174
 
 ### Patch Changes
