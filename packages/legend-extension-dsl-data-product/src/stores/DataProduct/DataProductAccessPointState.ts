@@ -286,7 +286,7 @@ export class DataProductAccessPointState {
         packageableRuntime.name = 'lakehouseConsumer';
         packageableRuntime.package = 'runtime';
 
-        const query = `#P{${this.apgState.dataProductViewerState.product.path}.${this.accessPoint.id}}#->take(1000)->from(${packageableRuntime.path})`;
+        const query = `#P{${this.apgState.dataProductViewerState.product.path}.${this.accessPoint.id}}#->take(200)->from(${packageableRuntime.path})`;
 
         const model = guaranteeNonNullable(
           this.getAccessPointModel(
