@@ -77,6 +77,7 @@ import {
   assertErrorThrown,
   assertNonNullable,
   guaranteeNonNullable,
+  isEmpty,
   isNonEmptyString,
   isNonNullable,
   LogEvent,
@@ -441,7 +442,7 @@ const AccessPointTable = observer(
             }
             const sampleValues = accessPointState.relationElement.rows
               .map((row) => row.values[columnIndex])
-              .filter((value) => value !== undefined);
+              .filter((value) => value !== undefined && !isEmpty(value));
             return sampleValues.join(', ');
           },
         },

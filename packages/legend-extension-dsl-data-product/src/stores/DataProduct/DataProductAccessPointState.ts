@@ -286,7 +286,7 @@ export class DataProductAccessPointState {
         packageableRuntime.name = 'lakehouseConsumer';
         packageableRuntime.package = 'runtime';
 
-        const query = `#P{${this.apgState.dataProductViewerState.product.path}.${this.accessPoint.id}}#->take(5)->from(${packageableRuntime.path})`;
+        const query = `#P{${this.apgState.dataProductViewerState.product.path}.${this.accessPoint.id}}#->take(1000)->from(${packageableRuntime.path})`;
 
         const model = guaranteeNonNullable(
           this.getAccessPointModel(
@@ -317,16 +317,32 @@ export class DataProductAccessPointState {
           ),
         ) as TDSExecutionResult;
 
-        const relEle = new V1_RelationElement();
-        relEle.paths = [this.accessPoint.id];
-        relEle.columns = result.builder.columns.map((col) => col.name);
-        relEle.rows = result.result.rows.map((row, rowIndex) => {
-          const relRow = new V1_RelationRowTestData();
+        const MAX_DISTINCT = 5;
 
-          relRow.values = row.values.map((value, colIndex) => {
-            return String(value); // Ensure consistent string type
+        const columns = result.builder.columns.map((c) => c.name);
+        const valuesPerColumn = columns.map(() => new Set<string>());
+
+        for (const row of result.result.rows) {
+          row.values.forEach((v, i) => {
+            const set = valuesPerColumn[i];
+            if (set && set.size < MAX_DISTINCT) {
+              set.add(String(v));
+            }
           });
 
+          if (valuesPerColumn.every((s) => s.size >= MAX_DISTINCT)) {
+            break;
+          }
+        }
+
+        const relEle = new V1_RelationElement();
+        relEle.paths = [this.accessPoint.id];
+        relEle.columns = columns;
+        const maxRows = Math.max(...valuesPerColumn.map((s) => s.size));
+
+        relEle.rows = Array.from({ length: maxRows }, (_, i) => {
+          const relRow = new V1_RelationRowTestData();
+          relRow.values = valuesPerColumn.map((s) => Array.from(s)[i] ?? '');
           return relRow;
         });
         this.relationElement = relEle;
