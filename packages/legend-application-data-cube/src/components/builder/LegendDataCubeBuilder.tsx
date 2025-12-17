@@ -205,6 +205,7 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
       menuName: menuName,
     });
   };
+  const docLinks = application.documentationService.links;
 
   const menuItems: (DataCubeMenuItem | DataCubeNativeMenuItem)[] = builder
     ? [
@@ -288,19 +289,29 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
     ...(menuItems.length
       ? [...menuItems, DataCubeNativeMenuItem.SEPARATOR]
       : []),
-    {
-      label: DataCubeTitleBarMenuItems.SEE_DOCUMENTATION,
-      action: () => {
-        const url = application.documentationService.url;
-        if (url) {
-          application.navigationService.navigator.visitAddress(
-            application.documentationService.url,
-          );
-        }
-        logMenuItem(DataCubeTitleBarMenuItems.SEE_DOCUMENTATION);
-      },
-      disabled: !application.documentationService.url,
-    },
+    ...(docLinks?.length
+      ? docLinks.map((link) => ({
+          label: link.label,
+          action: () => {
+            application.navigationService.navigator.visitAddress(link.url);
+          },
+          disabled: !link.url,
+        }))
+      : [
+          {
+            label: DataCubeTitleBarMenuItems.SEE_DOCUMENTATION,
+            action: () => {
+              const url = application.documentationService.url;
+              if (url) {
+                application.navigationService.navigator.visitAddress(
+                  application.documentationService.url,
+                );
+              }
+              logMenuItem(DataCubeTitleBarMenuItems.SEE_DOCUMENTATION);
+            },
+            disabled: !application.documentationService.url,
+          },
+        ]),
     {
       label: DataCubeTitleBarMenuItems.ABOUT,
       action: () => {
