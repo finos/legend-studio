@@ -11,6 +11,9 @@
 
 The codebase and home of Legend applications: `Legend Studio`, `Legend Query`, etc.
 
+
+
+
 ## Getting started
 
 Studio relies [Legend SDLC](https://github.com/finos/legend-sdlc) server and [Legend Engine](https://github.com/finos/legend-engine) server. To quickly set these backend servers up, use our development [Docker compose](./fixtures/legend-docker-setup/studio-dev-setup/README.md). If you need to debug and develop the backend, [setup with Maven](https://legend.finos.org/docs/getting-started/installation-guide#maven-install) instead.
