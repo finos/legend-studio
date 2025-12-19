@@ -1,5 +1,7 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.223
+
 ## 4.0.222
 
 ## 4.0.221

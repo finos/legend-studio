@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.32
+
+### Patch Changes
+
+- [#4735](https://github.com/finos/legend-studio/pull/4735) [`6816fe8`](https://github.com/finos/legend-studio/commit/6816fe8fe516159773a3adaba8d91851f35df9c7) ([@kelly-thai](https://github.com/kelly-thai)) - Add documentation links to Data Cube
+
 ## 0.7.31
 
 ### Patch Changes
