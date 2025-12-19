@@ -602,7 +602,6 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
     postProcessors: customList(
       (value: V1_PostProcessor) => V1_serializePostProcessor(value, plugins),
       (value) => V1_deserializePostProcessor(value, plugins),
-      { INTERNAL__forceReturnEmptyInTest: true },
     ),
     postProcessorWithParameter: customEquivalentList({
       INTERNAL__forceReturnEmptyInTest: true,
