@@ -84,7 +84,8 @@ export const SQLPlaygroundEditorResultPanel = observer(
                     )}
 
                     <div className="query-builder__result__analytics">
-                      {resultDescription ?? ''}
+                      {!playgroundState.executeRawSQLState.isInProgress &&
+                        (resultDescription ?? '')}
                     </div>
                   </div>
                   <div className={!enableDarkMode ? 'light-mode' : ''}>

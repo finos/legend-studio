@@ -112,6 +112,10 @@ export abstract class AbstractSQLPlaygroundState implements CommandRegistrar {
     this.sqlExecutionResult = undefined;
   }
 
+  setSqlExecutionResult(val: SQL_ExecutionResult | undefined) {
+    this.sqlExecutionResult = val;
+  }
+
   setSQLText(val: string): void {
     this.sqlText = val;
   }
