@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.39
+
+### Patch Changes
+
+- [#4738](https://github.com/finos/legend-studio/pull/4738) [`bce6f96`](https://github.com/finos/legend-studio/commit/bce6f963cc57633ada56bb03a07e94fc38b6469d) ([@TharunRajeev](https://github.com/TharunRajeev)) - Adding Sql playground to marketplace and creating a util file for executing sql query, fetching sample values.
+
+- [#4734](https://github.com/finos/legend-studio/pull/4734) [`5838cda`](https://github.com/finos/legend-studio/commit/5838cda2521247fd56a6cb1a0433c4ec0206d943) ([@gs-gunjan](https://github.com/gs-gunjan)) - marketplace: limiting result to 200
+
+- [#4733](https://github.com/finos/legend-studio/pull/4733) [`9582fd7`](https://github.com/finos/legend-studio/commit/9582fd783542095facd1a5eed26b73e6a301120e) ([@gs-gunjan](https://github.com/gs-gunjan)) - marketplace: make sure unique sample values are shown in marketplace
+
 ## 0.0.38
 
 ## 0.0.37
