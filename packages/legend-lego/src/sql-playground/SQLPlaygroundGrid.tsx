@@ -112,7 +112,7 @@ export const PlayGroundSQLExecutionResultGrid = observer(
         const localcolDefs = data.columns.map(
           (colName) =>
             ({
-              minWidth: 50,
+              minWidth: 150,
               sortable: true,
               resizable: true,
               field: colName,
@@ -160,7 +160,7 @@ export const PlayGroundSQLExecutionResultGrid = observer(
       const colDefs = data.columns.map(
         (colName) =>
           ({
-            minWidth: 50,
+            minWidth: 150,
             sortable: true,
             resizable: true,
             field: colName,
@@ -231,7 +231,7 @@ export const PlayGroundSQLExecutionResultGrid = observer(
           alwaysShowVerticalScroll={true}
           suppressFieldDotNotation={true}
           columnDefs={data.columns.map((column) => ({
-            minWidth: 50,
+            minWidth: 150,
             sortable: true,
             resizable: true,
             headerName: column,

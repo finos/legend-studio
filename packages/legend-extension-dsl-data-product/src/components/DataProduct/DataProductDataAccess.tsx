@@ -106,11 +106,9 @@ import {
   type IngestDeploymentServerConfig,
   type IngestDeploymentServerConfigOption,
 } from '@finos/legend-server-lakehouse';
-import {
-  SQLPlaygroundEditorResultPanel,
-  type AbstractSQLPlaygroundState,
-} from '@finos/legend-lego/sql-playground';
+import { SQLPlaygroundEditorResultPanel } from '@finos/legend-lego/sql-playground';
 import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
+import { DataProductSqlPlaygroundPanelState } from '../../stores/DataProduct/DataProductSqlPlaygroundPanelState.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -187,10 +185,21 @@ const PowerBiScreen = observer(
 
 export const SqlPlaygroundScreen = observer(
   (props: {
-    playgroundState: AbstractSQLPlaygroundState;
+    playgroundState: DataProductSqlPlaygroundPanelState;
+    dataAccessState: DataProductDataAccessState | undefined;
+    accessPointState: DataProductAccessPointState;
     advancedMode: boolean;
   }) => {
-    const { playgroundState, advancedMode } = props;
+    const { playgroundState, dataAccessState, accessPointState, advancedMode } =
+      props;
+    if (!dataAccessState) {
+      return (
+        <TabMessageScreen message="Sql playground is not supported for this data product or environment." />
+      );
+    }
+    useEffect(() => {
+      playgroundState.init(dataAccessState, accessPointState);
+    }, [playgroundState, accessPointState, dataAccessState]);
     return (
       <div className="data-product__viewer__tab-screen">
         <SQLPlaygroundEditorResultPanel
@@ -335,6 +344,11 @@ const AccessPointTable = observer(
     const [selectedTab, setSelectedTab] = useState<
       DataProductAccessPointTabs | string
     >(DataProductAccessPointTabs.COLUMNS);
+    const playgroundState = useMemo(() => {
+      return new DataProductSqlPlaygroundPanelState(
+        accessPointState.apgState.dataProductViewerState,
+      );
+    }, [accessPointState]);
     const handleTabChange = (
       _: React.SyntheticEvent,
       newValue: DataProductAccessPointTabs | string,
@@ -545,7 +559,16 @@ const AccessPointTable = observer(
             />
           );
         case DataProductAccessPointTabs.SQL:
-          return <TabMessageScreen message={WORK_IN_PROGRESS} />;
+          return (
+            dataAccessState && (
+              <SqlPlaygroundScreen
+                playgroundState={playgroundState}
+                dataAccessState={dataAccessState}
+                accessPointState={accessPointState}
+                advancedMode={true}
+              />
+            )
+          );
         default:
           const ext = codeExtensions.find((e) => e.key === _selectedTab);
           return ext ? ext.renderer(accessPointState, dataAccessState) : null;

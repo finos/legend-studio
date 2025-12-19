@@ -24,9 +24,17 @@ import {
   type V1_EngineServerClient,
   type V1_DataProductDiagram,
   type V1_EntitlementsDataProductDetails,
+  type V1_EntitlementsDataProductOrigin,
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProductArtifact,
   V1_ModelAccessPointGroup,
+  V1_PureModelContextPointer,
+  V1_Protocol,
+  V1_PureGraphManager,
+  PureClientVersion,
+  V1_LegendSDLC,
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import { flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
@@ -35,6 +43,7 @@ import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 import {
   ActionState,
   assertErrorThrown,
+  guaranteeType,
   type GeneratorFn,
   type PlainObject,
   type UserSearchService,
@@ -175,6 +184,45 @@ export class DataProductViewerState extends BaseViewerState<
       );
       return result;
     });
+  }
+
+  getAccessPointModel(
+    projectGAV: ProjectGAVCoordinates | undefined,
+    entitlementsOrigin: V1_EntitlementsDataProductOrigin | null | undefined,
+  ) {
+    return projectGAV !== undefined
+      ? new V1_PureModelContextPointer(
+          // TODO: remove as backend should handle undefined protocol input
+          new V1_Protocol(
+            V1_PureGraphManager.PURE_PROTOCOL_NAME,
+            PureClientVersion.VX_X_X,
+          ),
+          new V1_LegendSDLC(
+            projectGAV.groupId,
+            projectGAV.artifactId,
+            resolveVersion(projectGAV.versionId),
+          ),
+        )
+      : entitlementsOrigin instanceof V1_AdHocDeploymentDataProductOrigin ||
+          entitlementsOrigin === undefined
+        ? guaranteeType(
+            this.graphManagerState.graphManager,
+            V1_PureGraphManager,
+          ).getFullGraphModelData(this.graphManagerState.graph)
+        : entitlementsOrigin instanceof V1_SdlcDeploymentDataProductOrigin
+          ? new V1_PureModelContextPointer(
+              // TODO: remove as backend should handle undefined protocol input
+              new V1_Protocol(
+                V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                PureClientVersion.VX_X_X,
+              ),
+              new V1_LegendSDLC(
+                entitlementsOrigin.group,
+                entitlementsOrigin.artifact,
+                resolveVersion(entitlementsOrigin.version),
+              ),
+            )
+          : undefined;
   }
 
   async fetchDataProductArtifact(): Promise<
