@@ -44,9 +44,9 @@ export class EntitlementsDataContractViewerState {
   readonly graphManagerState: GraphManagerState;
   readonly userSearchService?: UserSearchService | undefined;
   associatedTasks: V1_TaskMetadata[] | undefined;
-  initializationState = ActionState.create();
   contractMembers: V1_ContractUserMembership[] = [];
 
+  readonly initializationState = ActionState.create();
   readonly fetchingMembersState = ActionState.create();
   readonly invalidatingContractState = ActionState.create();
 

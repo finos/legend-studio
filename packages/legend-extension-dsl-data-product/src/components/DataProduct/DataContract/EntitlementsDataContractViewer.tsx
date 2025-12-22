@@ -57,7 +57,6 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   type UserSearchService,
-  ActionState,
   assertErrorThrown,
   formatDate,
   lodashCapitalize,
@@ -355,6 +354,7 @@ export const EntitlementsDataContractViewer = observer(
       auth.user?.access_token,
       currentViewer,
       currentViewer.initializationState,
+      currentViewer.initializationState.hasCompleted,
       currentViewer.applicationStore.alertUnhandledError,
     ]);
 
@@ -366,7 +366,7 @@ export const EntitlementsDataContractViewer = observer(
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
-      currentViewer.initializationState = ActionState.create();
+      currentViewer.initializationState.reset();
       await onRefresh?.();
     };
 
@@ -802,6 +802,7 @@ export const EntitlementsDataContractViewer = observer(
                   <IconButton
                     onClick={() => checkBeforeClosingContract()}
                     disabled={
+                      currentViewer.initializationState.isInProgress ||
                       currentViewer.invalidatingContractState.isInProgress ||
                       currentViewer.liteContract.state ===
                         V1_ContractState.CLOSED
