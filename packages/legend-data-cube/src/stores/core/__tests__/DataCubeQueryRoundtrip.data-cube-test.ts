@@ -224,6 +224,37 @@ const cases: TestCase[] = [
     columns: ['Name:String'],
     error: `Can't process filter condition: no matching operator found`,
   }),
+  // --------------------------------- IN / NOT IN ---------------------------------
+  _case(`Filter: in() with strings`, {
+    query: `filter(x|$x.Name->in(['Asd', 'Qwe']))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IN),
+  }),
+  _case(`Filter: in() with numbers`, {
+    query: `filter(x|$x.Age->in([27, 28]))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IN),
+  }),
+  _case(`Filter: in() with dates`, {
+    query: `filter(x|$x.Dob->in(['2020-01-01']))`,
+    columns: ['Dob:Date'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IN),
+  }),
+  _case(`Filter: !in() with strings`, {
+    query: `filter(x|!$x.Name->in(['Asd', 'Qwe']))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_IN),
+  }),
+  _case(`Filter: !in() with numbers`, {
+    query: `filter(x|!$x.Age->in([27, 28]))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_IN),
+  }),
+  _case(`Filter: !in() with dates`, {
+    query: `filter(x|!$x.Dob->in(['2020-01-01']))`,
+    columns: ['Dob:Date'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_IN),
+  }),
   _case(`Filter: endsWith()`, {
     query: `filter(x|$x.Name->endsWith('asd'))`,
     columns: ['Name:String'],
