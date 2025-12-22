@@ -797,20 +797,24 @@ export const EntitlementsDataContractViewer = observer(
                     <CopyIcon />
                   </IconButton>
                 </Box>
-                <IconButton
-                  onClick={() => checkBeforeClosingContract()}
-                  disabled={
-                    currentViewer.liteContract.state === V1_ContractState.CLOSED
-                  }
+                <span
                   title={
                     currentViewer.liteContract.state === V1_ContractState.CLOSED
                       ? 'Contract is already closed'
                       : 'Close Contract'
                   }
-                  className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
                 >
-                  <TrashIcon />
-                </IconButton>
+                  <IconButton
+                    onClick={() => checkBeforeClosingContract()}
+                    disabled={
+                      currentViewer.liteContract.state ===
+                      V1_ContractState.CLOSED
+                    }
+                    className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
+                  >
+                    <TrashIcon />
+                  </IconButton>
+                </span>
               </Box>
             </Box>
           </DialogContent>
