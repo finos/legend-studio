@@ -83,7 +83,11 @@ import {
 } from '../../../utils/LakehouseUtils.js';
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
 import { isContractInTerminalState } from '../../../utils/DataContractUtils.js';
-import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
 
 const AssigneesList = (props: {
   userIds: string[];
@@ -417,24 +421,41 @@ export const EntitlementsDataContractViewer = observer(
         .catch(currentViewer.applicationStore.alertUnhandledError);
     };
 
-    const closeContract = (): void => {
-      currentViewer.lakehouseContractServerClient
-        .invalidateContract(
-          currentViewer.liteContract.guid,
-          auth.user?.access_token,
-        )
-        .then(() => {
-          currentViewer.applicationStore.notificationService.notifySuccess(
-            'Contract closed successfully',
-          );
-          refresh();
-        })
-        .catch((error) => {
-          assertErrorThrown(error);
-          currentViewer.applicationStore.notificationService.notifyError(
-            `Error closing contract: ${error.message}`,
-          );
-        });
+    const checkBeforeClosingContract = (): void => {
+      currentViewer.applicationStore.alertService.setActionAlertInfo({
+        message: 'Are you sure you want to close this contract?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Close Contract',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: () => {
+              currentViewer.lakehouseContractServerClient
+                .invalidateContract(
+                  currentViewer.liteContract.guid,
+                  auth.user?.access_token,
+                )
+                .then(() => {
+                  currentViewer.applicationStore.notificationService.notifySuccess(
+                    'Contract closed successfully',
+                  );
+                  refresh();
+                })
+                .catch((error) => {
+                  assertErrorThrown(error);
+                  currentViewer.applicationStore.notificationService.notifyError(
+                    `Error closing contract: ${error.message}`,
+                  );
+                });
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
     };
 
     const contractMetadataSection = (
@@ -773,7 +794,7 @@ export const EntitlementsDataContractViewer = observer(
                   </IconButton>
                 </Box>
                 <IconButton
-                  onClick={() => closeContract()}
+                  onClick={() => checkBeforeClosingContract()}
                   title="Close Contract"
                   className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
                 >
