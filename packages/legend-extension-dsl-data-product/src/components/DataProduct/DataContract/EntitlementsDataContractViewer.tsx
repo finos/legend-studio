@@ -433,13 +433,8 @@ export const EntitlementsDataContractViewer = observer(
             handler: () => {
               const invalidateContract = async (): Promise<void> => {
                 try {
-                  await currentViewer.lakehouseContractServerClient.invalidateContract(
-                    currentViewer.liteContract.guid,
-                    auth.user?.access_token,
-                  );
-
-                  currentViewer.applicationStore.notificationService.notifySuccess(
-                    'Contract closed successfully',
+                  await flowResult(
+                    currentViewer.invalidateContract(auth.user?.access_token),
                   );
                   await refresh();
                 } catch (error) {
@@ -807,8 +802,9 @@ export const EntitlementsDataContractViewer = observer(
                   <IconButton
                     onClick={() => checkBeforeClosingContract()}
                     disabled={
+                      currentViewer.invalidatingContractState.isInProgress ||
                       currentViewer.liteContract.state ===
-                      V1_ContractState.CLOSED
+                        V1_ContractState.CLOSED
                     }
                     className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
                   >

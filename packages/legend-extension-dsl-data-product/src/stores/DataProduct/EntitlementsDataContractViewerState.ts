@@ -48,6 +48,7 @@ export class EntitlementsDataContractViewerState {
   contractMembers: V1_ContractUserMembership[] = [];
 
   readonly fetchingMembersState = ActionState.create();
+  readonly invalidatingContractState = ActionState.create();
 
   constructor(
     dataContract: V1_LiteDataContract,
@@ -65,6 +66,7 @@ export class EntitlementsDataContractViewerState {
       setLiteContract: action,
       setContractMembers: action,
       init: flow,
+      invalidateContract: flow,
     });
 
     this.liteContract = V1_observe_LiteDataContract(dataContract);
@@ -142,6 +144,27 @@ export class EntitlementsDataContractViewerState {
       assertErrorThrown(error);
     } finally {
       this.initializationState.complete();
+    }
+  }
+
+  *invalidateContract(token: string | undefined): GeneratorFn<void> {
+    try {
+      this.invalidatingContractState.inProgress();
+      yield this.lakehouseContractServerClient.invalidateContract(
+        this.liteContract.guid,
+        token,
+      );
+
+      this.applicationStore.notificationService.notifySuccess(
+        'Contract closed successfully',
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Error closing contract: ${error.message}`,
+      );
+    } finally {
+      this.invalidatingContractState.complete();
     }
   }
 
