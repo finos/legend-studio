@@ -431,23 +431,26 @@ export const EntitlementsDataContractViewer = observer(
             label: 'Close Contract',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: () => {
-              currentViewer.lakehouseContractServerClient
-                .invalidateContract(
-                  currentViewer.liteContract.guid,
-                  auth.user?.access_token,
-                )
-                .then(() => {
+              const invalidateContract = async (): Promise<void> => {
+                try {
+                  await currentViewer.lakehouseContractServerClient.invalidateContract(
+                    currentViewer.liteContract.guid,
+                    auth.user?.access_token,
+                  );
+
                   currentViewer.applicationStore.notificationService.notifySuccess(
                     'Contract closed successfully',
                   );
-                  refresh();
-                })
-                .catch((error) => {
+                  await refresh();
+                } catch (error) {
                   assertErrorThrown(error);
                   currentViewer.applicationStore.notificationService.notifyError(
                     `Error closing contract: ${error.message}`,
                   );
-                });
+                }
+              };
+              // eslint-disable-next-line no-void
+              void invalidateContract();
             },
           },
           {
