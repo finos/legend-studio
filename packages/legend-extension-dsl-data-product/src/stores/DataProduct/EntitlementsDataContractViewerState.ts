@@ -146,7 +146,7 @@ export class EntitlementsDataContractViewerState {
   }
 
   getContractUserType(userId: string): V1_UserType | undefined {
-    return this.contractMembers?.find((member) => member.user.name === userId)
+    return this.contractMembers.find((member) => member.user.name === userId)
       ?.user.userType;
   }
 }
