@@ -16,15 +16,15 @@
 
 import {
   type GraphManagerState,
-  type V1_DataContract,
+  type V1_ContractUserMembership,
   type V1_DataSubscription,
   type V1_LiteDataContract,
   type V1_TaskMetadata,
   type V1_UserType,
   V1_deserializeDataContractResponse,
   V1_deserializeTaskResponse,
-  V1_observe_DataContract,
   V1_observe_LiteDataContract,
+  V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -37,7 +37,7 @@ import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export class EntitlementsDataContractViewerState {
-  readonly liteContract: V1_LiteDataContract;
+  liteContract: V1_LiteDataContract;
   readonly subscription: V1_DataSubscription | undefined;
   readonly applicationStore: GenericLegendApplicationStore;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
@@ -45,7 +45,7 @@ export class EntitlementsDataContractViewerState {
   readonly userSearchService?: UserSearchService | undefined;
   associatedTasks: V1_TaskMetadata[] | undefined;
   initializationState = ActionState.create();
-  contractWithMembers: V1_DataContract | undefined;
+  contractMembers: V1_ContractUserMembership[] = [];
 
   readonly fetchingMembersState = ActionState.create();
 
@@ -60,9 +60,10 @@ export class EntitlementsDataContractViewerState {
     makeObservable(this, {
       liteContract: observable,
       associatedTasks: observable,
-      contractWithMembers: observable,
+      contractMembers: observable,
       setAssociatedTasks: action,
-      setContractWithMembers: action,
+      setLiteContract: action,
+      setContractMembers: action,
       init: flow,
     });
 
@@ -78,10 +79,14 @@ export class EntitlementsDataContractViewerState {
     this.associatedTasks = associatedTasks;
   }
 
-  setContractWithMembers(
-    contractWithMembers: V1_DataContract | undefined,
+  setLiteContract(liteContract: V1_LiteDataContract): void {
+    this.liteContract = liteContract;
+  }
+
+  setContractMembers(
+    contractMembers: V1_ContractUserMembership[] | undefined,
   ): void {
-    this.contractWithMembers = contractWithMembers;
+    this.contractMembers = contractMembers ?? [];
   }
 
   async fetchTasks(token: string | undefined): Promise<void> {
@@ -108,11 +113,19 @@ export class EntitlementsDataContractViewerState {
         rawContractsAndSubscriptions,
         this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
       );
-      this.setContractWithMembers(
-        contractsAndSubscriptions[0]?.dataContract
-          ? V1_observe_DataContract(contractsAndSubscriptions[0].dataContract)
-          : undefined,
+
+      this.setContractMembers(
+        contractsAndSubscriptions[0]?.dataContract?.members ?? [],
       );
+      if (contractsAndSubscriptions[0]?.dataContract) {
+        this.setLiteContract(
+          V1_observe_LiteDataContract(
+            V1_transformDataContractToLiteDatacontract(
+              contractsAndSubscriptions[0].dataContract,
+            ),
+          ),
+        );
+      }
     } finally {
       this.fetchingMembersState.complete();
     }
@@ -133,8 +146,7 @@ export class EntitlementsDataContractViewerState {
   }
 
   getContractUserType(userId: string): V1_UserType | undefined {
-    return this.contractWithMembers?.members.find(
-      (member) => member.user.name === userId,
-    )?.user.userType;
+    return this.contractMembers?.find((member) => member.user.name === userId)
+      ?.user.userType;
   }
 }
