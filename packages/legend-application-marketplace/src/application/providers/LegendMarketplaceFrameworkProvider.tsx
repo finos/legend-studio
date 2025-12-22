@@ -64,6 +64,7 @@ export const LegendMarketplaceFrameworkProvider: React.FC<{
 }> = ({ children }) => (
   <ApplicationFrameworkProvider
     enableTransitions={true}
+    disableVirtualAssistant={true}
     customFonts={[
       '"GS Sans"',
       'Roboto',
