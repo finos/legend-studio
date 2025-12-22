@@ -45,6 +45,7 @@ import {
   type V1_TaskMetadata,
   V1_AdhocTeam,
   V1_ApprovalType,
+  V1_ContractState,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ProducerScope,
@@ -795,7 +796,14 @@ export const EntitlementsDataContractViewer = observer(
                 </Box>
                 <IconButton
                   onClick={() => checkBeforeClosingContract()}
-                  title="Close Contract"
+                  disabled={
+                    currentViewer.liteContract.state === V1_ContractState.CLOSED
+                  }
+                  title={
+                    currentViewer.liteContract.state === V1_ContractState.CLOSED
+                      ? 'Contract is already closed'
+                      : 'Close Contract'
+                  }
                   className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
                 >
                   <TrashIcon />
