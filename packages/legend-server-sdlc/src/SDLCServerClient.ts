@@ -128,6 +128,10 @@ export class SDLCServerClient extends AbstractServerClient {
     this.currentUser = value;
   };
 
+  get clientName(): string | undefined {
+    return this.client;
+  }
+
   /**
    * NOTE: Should only be used for test
    */
@@ -184,7 +188,9 @@ export class SDLCServerClient extends AbstractServerClient {
     callbackURI: string,
     client?: string,
   ): string => {
-    const clientParam = client ? `&client_name=${encodeURIComponent(client)}` : '';
+    const clientParam = client
+      ? `&client_name=${encodeURIComponent(client)}`
+      : '';
     return `${authenticationServerUrl}/auth/authorize?redirect_uri=${callbackURI}${clientParam}`;
   };
 
