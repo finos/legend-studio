@@ -167,9 +167,6 @@ export abstract class DataCubeEngine {
     new DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn(),
     new DataCubeQueryFilterOperation__GreaterThanColumn(),
     new DataCubeQueryFilterOperation__GreaterThanOrEqualColumn(),
-
-    new DataCubeQueryFilterOperation__In(),
-    new DataCubeQueryFilterOperation__NotIn(),
   ];
   readonly aggregateOperations = [
     new DataCubeQueryAggregateOperation__Sum(),
