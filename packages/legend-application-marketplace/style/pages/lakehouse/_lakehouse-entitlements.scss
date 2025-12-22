@@ -308,6 +308,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+
+      &__close-contract-btn {
+        color: var(--color-red-500);
+      }
     }
   }
 }

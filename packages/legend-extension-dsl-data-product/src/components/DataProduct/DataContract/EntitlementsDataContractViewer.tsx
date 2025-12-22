@@ -775,6 +775,7 @@ export const EntitlementsDataContractViewer = observer(
                 <IconButton
                   onClick={() => closeContract()}
                   title="Close Contract"
+                  className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
                 >
                   <TrashIcon />
                 </IconButton>
