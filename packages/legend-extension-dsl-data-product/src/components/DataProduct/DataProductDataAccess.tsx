@@ -1018,9 +1018,8 @@ export const DataProducteDataAccess = observer(
           sectionRef.current,
         );
       }
-      return () => {
+      return () =>
         dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
-      };
     }, [dataProductViewerState, anchor]);
 
     const seeDocumentation = (): void => {
