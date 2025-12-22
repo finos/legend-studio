@@ -19,9 +19,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import {
   ApplicationFrameworkProvider,
-  BlockingAlert,
   useApplicationStore,
-  NotificationManager,
 } from '@finos/legend-application';
 import {
   type LegendMarketplaceApplicationStore,
@@ -65,7 +63,6 @@ export const LegendMarketplaceFrameworkProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
   <ApplicationFrameworkProvider
-    simple={true}
     enableTransitions={true}
     customFonts={[
       '"GS Sans"',
@@ -76,8 +73,6 @@ export const LegendMarketplaceFrameworkProvider: React.FC<{
       'sans-serif',
     ].join(',')}
   >
-    <BlockingAlert />
-    <NotificationManager />
     <LegendMarketplaceBaseStoreProvider>
       {children}
     </LegendMarketplaceBaseStoreProvider>
