@@ -310,6 +310,7 @@
       justify-content: space-between;
 
       &__close-contract-btn {
+        pointer-events: auto;
         color: var(--color-red-200);
       }
     }
