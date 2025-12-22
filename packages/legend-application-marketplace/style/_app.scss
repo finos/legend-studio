@@ -110,8 +110,10 @@ html * {
   right: 8px;
 }
 
-.btn {
-  font-size: 1.2rem;
-  font-weight: 500;
-  border-radius: 4px;
+.blocking-alert {
+  .btn {
+    font-size: 1.2rem !important;
+    font-weight: 500 !important;
+    border-radius: 4px !important;
+  }
 }
