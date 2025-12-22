@@ -505,11 +505,11 @@ const AccessPointTable = observer(
                         : 'autoHeight'
                     }
                     onGridReady={(params) => {
-  setGridApi(params.api);
-  if (!accessPointState.relationType?.columns.length) {
-    accessPointState.apgState.dataProductViewerState.layoutState.markGridAsRendered();
-  }
-}}
+                      setGridApi(params.api);
+                      if (!accessPointState.relationType?.columns.length) {
+                        accessPointState.apgState.dataProductViewerState.layoutState.markGridAsRendered();
+                      }
+                    }}
                     onFirstDataRendered={() => {
                       if (
                         accessPointState.relationType?.columns.length !==
