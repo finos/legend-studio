@@ -21,19 +21,20 @@ import type {
 import {
   type GraphManagerState,
   type V1_DataProduct,
-  type V1_EngineServerClient,
   type V1_DataProductDiagram,
+  type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsDataProductOrigin,
+  type V1_PureModelContext,
+  PureClientVersion,
+  V1_AdHocDeploymentDataProductOrigin,
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProductArtifact,
+  V1_LegendSDLC,
   V1_ModelAccessPointGroup,
-  V1_PureModelContextPointer,
   V1_Protocol,
   V1_PureGraphManager,
-  PureClientVersion,
-  V1_LegendSDLC,
-  V1_AdHocDeploymentDataProductOrigin,
+  V1_PureModelContextPointer,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import { flow, makeObservable, observable } from 'mobx';
@@ -189,7 +190,7 @@ export class DataProductViewerState extends BaseViewerState<
   getAccessPointModel(
     projectGAV: ProjectGAVCoordinates | undefined,
     entitlementsOrigin: V1_EntitlementsDataProductOrigin | null | undefined,
-  ) {
+  ): V1_PureModelContext | undefined {
     return projectGAV !== undefined
       ? new V1_PureModelContextPointer(
           // TODO: remove as backend should handle undefined protocol input

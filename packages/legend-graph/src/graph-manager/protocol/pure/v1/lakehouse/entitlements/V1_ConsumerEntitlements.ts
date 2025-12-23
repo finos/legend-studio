@@ -65,6 +65,12 @@ export class V1_DataContractsResponse {
   dataContracts?: V1_DataContractSubscriptions[];
 }
 
+export class V1_InvalidateDataContractResponse {
+  contractId!: string;
+  invalidated!: boolean;
+  requestId!: string;
+}
+
 // -------------------------------------- Lite Data Contracts ------------------------------------------
 
 export class V1_LiteDataContract {

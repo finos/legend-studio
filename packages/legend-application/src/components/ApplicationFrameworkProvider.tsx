@@ -29,8 +29,15 @@ export const ApplicationFrameworkProvider = observer(
     simple?: boolean | undefined;
     enableTransitions?: boolean | undefined;
     customFonts?: string | undefined;
+    disableVirtualAssistant?: boolean | undefined;
   }) => {
-    const { children, simple, enableTransitions, customFonts } = props;
+    const {
+      children,
+      simple,
+      enableTransitions,
+      customFonts,
+      disableVirtualAssistant,
+    } = props;
     const platform = useApplicationPlatform();
     const applicationStore = useApplicationStore();
 
@@ -60,6 +67,7 @@ export const ApplicationFrameworkProvider = observer(
       <ApplicationComponentFrameworkProvider
         enableTransitions={enableTransitions}
         customFonts={customFonts}
+        disableVirtualAssistant={disableVirtualAssistant}
       >
         {children}
       </ApplicationComponentFrameworkProvider>

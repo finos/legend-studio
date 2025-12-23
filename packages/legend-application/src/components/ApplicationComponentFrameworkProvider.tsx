@@ -119,8 +119,14 @@ export const ApplicationComponentFrameworkProvider = observer(
     children: React.ReactNode;
     enableTransitions?: boolean | undefined;
     customFonts?: string | undefined;
+    disableVirtualAssistant?: boolean | undefined;
   }) => {
-    const { children, enableTransitions, customFonts } = props;
+    const {
+      children,
+      enableTransitions,
+      customFonts,
+      disableVirtualAssistant,
+    } = props;
     const applicationStore = useApplicationStore();
     const disableContextMenu: React.MouseEventHandler = (event) => {
       event.stopPropagation();
@@ -181,7 +187,7 @@ export const ApplicationComponentFrameworkProvider = observer(
         <BlockingAlert />
         <ActionAlert />
         <NotificationManager />
-        <VirtualAssistant />
+        {!disableVirtualAssistant && <VirtualAssistant />}
         {applicationStore.layoutService.showBackdrop && (
           // We use <Portal> here to insert backdrop into different parts of the app
           // as backdrop relies heavily on z-index mechanism so its location in the DOM

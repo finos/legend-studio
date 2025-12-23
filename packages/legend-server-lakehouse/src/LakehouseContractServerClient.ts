@@ -23,6 +23,7 @@ import type {
   V1_DataSubscriptionResponse,
   V1_EntitlementsDataProductDetailsResponse,
   V1_EntitlementsUserEnvResponse,
+  V1_InvalidateDataContractResponse,
   V1_LiteDataContractsResponse,
   V1_LiteDataContractWithUserStatus,
   V1_PendingTasksResponse,
@@ -149,6 +150,17 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_UserPendingContractsRecord>> =>
     this.post(
       `${this._dataContracts()}/escalate/${encodeURIComponent(contractId)}/user/${encodeURIComponent(user)}?forSystemAccount=${forSystemAccount}`,
+      {},
+      {},
+      this._token(token),
+    );
+
+  invalidateContract = (
+    contractId: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_InvalidateDataContractResponse>> =>
+    this.delete(
+      `${this._dataContracts()}/invalidate/${encodeURIComponent(contractId)}`,
       {},
       {},
       this._token(token),

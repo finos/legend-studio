@@ -303,6 +303,16 @@
       width: 100%;
       font-size: 1.4rem;
     }
+
+    &__contract-details {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &__close-contract-btn {
+        color: var(--color-red-200);
+      }
+    }
   }
 }
 

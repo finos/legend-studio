@@ -19,21 +19,20 @@ import {
   type V1_ContractUserEventPrivilegeManagerPayload,
   type V1_DataContract,
   type V1_DataSubscription,
-  type V1_LiteDataContract,
   type V1_TaskResponse,
+  V1_AccessPointGroupReferenceType,
   V1_ApprovalType,
   V1_ContractEventPayloadType,
   V1_ContractState,
   V1_dataSubscriptionModelSchema,
   V1_OrganizationalScopeType,
-  V1_ResourceType,
   V1_UserApprovalStatus,
   V1_UserType,
 } from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 
-export const mockDataContract: PlainObject<V1_LiteDataContract> = {
+export const mockDataContract: PlainObject<V1_DataContract> = {
   description: 'Test contract creation request',
   guid: 'test-data-contract-id',
   version: 0,
@@ -49,13 +48,22 @@ export const mockDataContract: PlainObject<V1_LiteDataContract> = {
     ],
   },
   createdBy: 'test-requester-user-id',
-  resourceId: 'MOCK_SDLC_DATAPRODUCT',
-  resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-  deploymentId: 11111,
-  accessPointGroup: 'GROUP1',
+  resource: {
+    _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+    dataProduct: {
+      name: 'MOCK_SDLC_DATAPRODUCT',
+      accessPoints: [],
+      V1_AccessPointGroupStereotypeMappings: [],
+      owner: {
+        appDirId: 12345,
+        level: 'DEPLOYMENT',
+      },
+    },
+    accessPointGroup: 'GROUP1',
+  },
 };
 
-export const mockProducerDataContract: PlainObject<V1_LiteDataContract> = {
+export const mockProducerDataContract: PlainObject<V1_DataContract> = {
   description: 'Test contract creation request',
   guid: 'test-data-contract-id',
   version: 0,
@@ -66,38 +74,55 @@ export const mockProducerDataContract: PlainObject<V1_LiteDataContract> = {
     did: 12345,
   },
   createdBy: 'test-requester-user-id',
-  resourceId: 'MOCK_SDLC_DATAPRODUCT',
-  resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-  deploymentId: 11111,
-  accessPointGroup: 'GROUP1',
+  resource: {
+    _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+    dataProduct: {
+      name: 'MOCK_SDLC_DATAPRODUCT',
+      accessPoints: [],
+      V1_AccessPointGroupStereotypeMappings: [],
+      owner: {
+        appDirId: 12345,
+        level: 'DEPLOYMENT',
+      },
+    },
+    accessPointGroup: 'GROUP1',
+  },
 };
 
-export const mockDataContractMultipleConsumers: PlainObject<V1_LiteDataContract> =
-  {
-    description: 'Test contract creation request',
-    guid: 'test-data-contract-id',
-    version: 0,
-    state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
-    members: [],
-    consumer: {
-      _type: V1_OrganizationalScopeType.AdHocTeam,
-      users: [
-        {
-          name: 'test-consumer-user-id-1',
-          type: V1_UserType.WORKFORCE_USER,
-        },
-        {
-          name: 'test-consumer-user-id-2',
-          type: V1_UserType.WORKFORCE_USER,
-        },
-      ],
+export const mockDataContractMultipleConsumers: PlainObject<V1_DataContract> = {
+  description: 'Test contract creation request',
+  guid: 'test-data-contract-id',
+  version: 0,
+  state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+  members: [],
+  consumer: {
+    _type: V1_OrganizationalScopeType.AdHocTeam,
+    users: [
+      {
+        name: 'test-consumer-user-id-1',
+        type: V1_UserType.WORKFORCE_USER,
+      },
+      {
+        name: 'test-consumer-user-id-2',
+        type: V1_UserType.WORKFORCE_USER,
+      },
+    ],
+  },
+  createdBy: 'test-requester-user-id',
+  resource: {
+    _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+    dataProduct: {
+      name: 'MOCK_SDLC_DATAPRODUCT',
+      accessPoints: [],
+      V1_AccessPointGroupStereotypeMappings: [],
+      owner: {
+        appDirId: 12345,
+        level: 'DEPLOYMENT',
+      },
     },
-    createdBy: 'test-requester-user-id',
-    resourceId: 'MOCK_SDLC_DATAPRODUCT',
-    resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-    deploymentId: 11111,
     accessPointGroup: 'GROUP1',
-  };
+  },
+};
 
 export const mockDataContractWithSystemAccountMember: PlainObject<V1_DataContract> =
   {
@@ -106,8 +131,16 @@ export const mockDataContractWithSystemAccountMember: PlainObject<V1_DataContrac
     version: 0,
     state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
     resource: {
-      _type: V1_ResourceType.ACCESS_POINT_GROUP,
-      dataProduct: 'MOCK_SDLC_DATAPRODUCT',
+      _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+      dataProduct: {
+        name: 'MOCK_SDLC_DATAPRODUCT',
+        accessPoints: [],
+        V1_AccessPointGroupStereotypeMappings: [],
+        owner: {
+          appDirId: 12345,
+          level: 'DEPLOYMENT',
+        },
+      },
       accessPointGroup: 'GROUP1',
     },
     members: [
@@ -143,6 +176,37 @@ export const mockDataContractWithSystemAccountMember: PlainObject<V1_DataContrac
     },
     createdBy: 'test-requester-user-id',
   };
+
+export const mockClosedDataContract: PlainObject<V1_DataContract> = {
+  description: 'Test contract creation request',
+  guid: 'test-data-contract-id',
+  version: 1,
+  state: V1_ContractState.CLOSED,
+  members: [],
+  consumer: {
+    _type: V1_OrganizationalScopeType.AdHocTeam,
+    users: [
+      {
+        name: 'test-consumer-user-id',
+        type: V1_UserType.WORKFORCE_USER,
+      },
+    ],
+  },
+  createdBy: 'test-requester-user-id',
+  resource: {
+    _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+    dataProduct: {
+      name: 'MOCK_SDLC_DATAPRODUCT',
+      accessPoints: [],
+      V1_AccessPointGroupStereotypeMappings: [],
+      owner: {
+        appDirId: 12345,
+        level: 'DEPLOYMENT',
+      },
+    },
+    accessPointGroup: 'GROUP1',
+  },
+};
 
 export const getMockPendingManagerApprovalTasksResponse = (
   isEscalated: boolean = false,
@@ -424,3 +488,29 @@ export const mockAutoCreatedSubscription: V1_DataSubscription = deserialize(
     createdBy: 'test-requester-user-id',
   },
 );
+
+export const mockClosedContractTasksResponse: V1_TaskResponse = {
+  tasks: [
+    {
+      assignees: [
+        'test-privilege-manager-user-id',
+        'test-privilege-manager-user-id-2',
+        'test-privilege-manager-user-id-3',
+      ],
+      rec: {
+        consumer: 'test-consumer-user-id',
+        dataContractId: 'test-data-contract-id',
+        eventPayload: {
+          type: V1_ContractEventPayloadType.CLOSED,
+          eventTimestamp: '2025-08-07T11:54:46.069672876Z',
+        },
+        status: V1_UserApprovalStatus.CLOSED,
+        taskId: 'mock-privilege-manager-approval-task-id',
+        type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+        effectiveFrom: '2025-08-07T00:00:00.000Z',
+        effectiveTo: '2026-08-07T00:00:00.000Z',
+        isEscalated: false,
+      },
+    },
+  ],
+};

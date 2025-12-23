@@ -45,6 +45,7 @@ import {
   type V1_TaskMetadata,
   V1_AdhocTeam,
   V1_ApprovalType,
+  V1_ContractState,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ProducerScope,
@@ -56,7 +57,6 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   type UserSearchService,
-  ActionState,
   assertErrorThrown,
   formatDate,
   lodashCapitalize,
@@ -73,6 +73,7 @@ import {
   ExpandMoreIcon,
   InfoCircleIcon,
   RefreshIcon,
+  TrashIcon,
 } from '@finos/legend-art';
 import type { EntitlementsDataContractViewerState } from '../../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import {
@@ -82,7 +83,11 @@ import {
 } from '../../../utils/LakehouseUtils.js';
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
 import { isContractInTerminalState } from '../../../utils/DataContractUtils.js';
-import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
 
 const AssigneesList = (props: {
   userIds: string[];
@@ -349,6 +354,7 @@ export const EntitlementsDataContractViewer = observer(
       auth.user?.access_token,
       currentViewer,
       currentViewer.initializationState,
+      currentViewer.initializationState.hasCompleted,
       currentViewer.applicationStore.alertUnhandledError,
     ]);
 
@@ -360,7 +366,7 @@ export const EntitlementsDataContractViewer = observer(
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
-      currentViewer.initializationState = ActionState.create();
+      currentViewer.initializationState.reset();
       await onRefresh?.();
     };
 
@@ -414,6 +420,41 @@ export const EntitlementsDataContractViewer = observer(
           ),
         )
         .catch(currentViewer.applicationStore.alertUnhandledError);
+    };
+
+    const checkBeforeClosingContract = (): void => {
+      currentViewer.applicationStore.alertService.setActionAlertInfo({
+        message: 'Are you sure you want to close this contract?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Close Contract',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: () => {
+              const invalidateContract = async (): Promise<void> => {
+                try {
+                  await flowResult(
+                    currentViewer.invalidateContract(auth.user?.access_token),
+                  );
+                  await refresh();
+                } catch (error) {
+                  assertErrorThrown(error);
+                  currentViewer.applicationStore.notificationService.notifyError(
+                    `Error closing contract: ${error.message}`,
+                  );
+                }
+              };
+              // eslint-disable-next-line no-void
+              void invalidateContract();
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
     };
 
     const contractMetadataSection = (
@@ -479,40 +520,7 @@ export const EntitlementsDataContractViewer = observer(
       </Box>
     );
 
-    if (
-      currentViewer.liteContract.resourceType !==
-      V1_ResourceType.ACCESS_POINT_GROUP
-    ) {
-      return (
-        <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
-          <DialogTitle>
-            {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
-          </DialogTitle>
-          <IconButton
-            onClick={onClose}
-            className="marketplace-dialog-close-btn"
-          >
-            <CloseIcon />
-          </IconButton>
-          <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-            {contractMetadataSection}
-            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
-              Unable to display data contract tasks for resource of type{' '}
-              {currentViewer.liteContract.resourceType} on data product{' '}
-              {currentViewer.liteContract.resourceId}.
-            </Box>
-            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
-              Contract ID: {currentViewer.liteContract.guid}
-              <IconButton onClick={() => copyContractId()}>
-                <CopyIcon />
-              </IconButton>
-            </Box>
-          </DialogContent>
-        </Dialog>
-      );
-    }
-
-    const steps: {
+    const contractTimelineSteps: {
       key: string;
       label: React.ReactNode;
       isCompleteOrActive: boolean;
@@ -548,6 +556,7 @@ export const EntitlementsDataContractViewer = observer(
                   )
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
+                title="Copy Task Link"
               >
                 <CopyFilledIcon />
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
@@ -628,6 +637,7 @@ export const EntitlementsDataContractViewer = observer(
                   )
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
+                title="Copy Task Link"
               >
                 <CopyFilledIcon />
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
@@ -667,6 +677,40 @@ export const EntitlementsDataContractViewer = observer(
         label: <>Complete</>,
       },
     ];
+
+    const contractTimelineSection =
+      currentViewer.liteContract.resourceType ===
+      V1_ResourceType.ACCESS_POINT_GROUP ? (
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
+          <Timeline>
+            {contractTimelineSteps.map((step, index) => (
+              <TimelineItem key={step.key}>
+                <TimelineOppositeContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
+                  {step.label}
+                </TimelineOppositeContent>
+                <TimelineSeparator>
+                  <TimelineDot
+                    color={step.isDeniedStep ? 'error' : 'primary'}
+                    variant={step.isCompleteOrActive ? 'filled' : 'outlined'}
+                  />
+                  {index < contractTimelineSteps.length - 1 && (
+                    <TimelineConnector />
+                  )}
+                </TimelineSeparator>
+                <TimelineContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
+                  {step.description}
+                </TimelineContent>
+              </TimelineItem>
+            ))}
+          </Timeline>
+        </Box>
+      ) : (
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
+          Unable to display data contract tasks for resource of type{' '}
+          {currentViewer.liteContract.resourceType} on data product{' '}
+          {currentViewer.liteContract.resourceId}.
+        </Box>
+      );
 
     return (
       <>
@@ -721,29 +765,7 @@ export const EntitlementsDataContractViewer = observer(
                     </Button>
                   </Box>
                 )}
-                <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
-                  <Timeline>
-                    {steps.map((step, index) => (
-                      <TimelineItem key={step.key}>
-                        <TimelineOppositeContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
-                          {step.label}
-                        </TimelineOppositeContent>
-                        <TimelineSeparator>
-                          <TimelineDot
-                            color={step.isDeniedStep ? 'error' : 'primary'}
-                            variant={
-                              step.isCompleteOrActive ? 'filled' : 'outlined'
-                            }
-                          />
-                          {index < steps.length - 1 && <TimelineConnector />}
-                        </TimelineSeparator>
-                        <TimelineContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
-                          {step.description}
-                        </TimelineContent>
-                      </TimelineItem>
-                    ))}
-                  </Timeline>
-                </Box>
+                {contractTimelineSection}
               </>
             )}
             <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
@@ -760,11 +782,36 @@ export const EntitlementsDataContractViewer = observer(
                   .
                 </Alert>
               )}
-              <Box>
-                Contract ID: {currentViewer.liteContract.guid}
-                <IconButton onClick={() => copyContractId()}>
-                  <CopyIcon />
-                </IconButton>
+              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details">
+                <Box>
+                  Contract ID: {currentViewer.liteContract.guid}
+                  <IconButton
+                    onClick={() => copyContractId()}
+                    title="Copy Contract ID"
+                  >
+                    <CopyIcon />
+                  </IconButton>
+                </Box>
+                <span
+                  title={
+                    currentViewer.liteContract.state === V1_ContractState.CLOSED
+                      ? 'Contract is already closed'
+                      : 'Close Contract'
+                  }
+                >
+                  <IconButton
+                    onClick={() => checkBeforeClosingContract()}
+                    disabled={
+                      currentViewer.initializationState.isInProgress ||
+                      currentViewer.invalidatingContractState.isInProgress ||
+                      currentViewer.liteContract.state ===
+                        V1_ContractState.CLOSED
+                    }
+                    className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
+                  >
+                    <TrashIcon />
+                  </IconButton>
+                </span>
               </Box>
             </Box>
           </DialogContent>
