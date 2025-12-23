@@ -491,7 +491,9 @@ describe('EntitlementsDataContractViewer', () => {
     );
 
     // Find and click close contract button
-    const closeContractButton = await screen.findByTitle('Close Contract');
+    const closeContractButton = guaranteeNonNullable(
+      (await screen.findByTitle('Close Contract')).firstElementChild,
+    );
     fireEvent.click(closeContractButton);
 
     // Verify confirm modal appears
@@ -514,8 +516,9 @@ describe('EntitlementsDataContractViewer', () => {
     await screen.findByText('Closed');
 
     // Verify close contract button is disabled
-    const closedContractButton = await screen.findByTitle(
-      'Contract is already closed',
+    const closedContractButton = guaranteeNonNullable(
+      (await screen.findByTitle('Contract is already closed'))
+        .firstElementChild,
     );
     expect(closedContractButton.hasAttribute('disabled')).toBe(true);
   });
