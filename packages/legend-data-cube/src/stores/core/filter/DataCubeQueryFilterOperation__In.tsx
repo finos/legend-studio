@@ -61,8 +61,6 @@ export class DataCubeQueryFilterOperation__In extends DataCubeQueryFilterOperati
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
-    // support two representations:
-    // - primitive type with array value: { type: <primitive>, value: [..] }
     // - advanced LIST type: { type: DataCubeOperationAdvancedValueType.LIST, value: [{ type: <primitive>, value: <primitive> }, ...] }
     if (value.value === undefined) {
       return false;
