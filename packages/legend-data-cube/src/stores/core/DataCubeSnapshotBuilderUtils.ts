@@ -233,7 +233,7 @@ export function _operationValue(
   value: V1_ValueSpecification | undefined,
   columnGetter: (name: string) => DataCubeColumn,
   columnChecker?: ((column: DataCubeColumn) => void) | undefined,
-) {
+): DataCubeOperationValue {
   if (value instanceof V1_PrimitiveValueSpecification) {
     return _operationPrimitiveValue(value);
   } else if (value instanceof V1_AppliedProperty) {
@@ -242,6 +242,13 @@ export function _operationValue(
     return {
       value: column.name,
       type: DataCubeOperationAdvancedValueType.COLUMN,
+    };
+  } else if (value instanceof V1_Collection) {
+    return {
+      type: DataCubeOperationAdvancedValueType.LIST,
+      value: value.values.map((val) =>
+        _operationValue(val, columnGetter, columnChecker),
+      ),
     };
   } else if (value === undefined) {
     return {
