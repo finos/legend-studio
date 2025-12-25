@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 5.3.70
+
+### Patch Changes
+
+- [#4739](https://github.com/finos/legend-studio/pull/4739) [`988cb22`](https://github.com/finos/legend-studio/commit/988cb22f6dc4d28e64c6b51d20a769e9ebf62d36) ([@gs-saurabh](https://github.com/gs-saurabh)) - Adding config to bring optional client_name query param for sdlc auth call
+
 ## 5.3.69
 
 ## 5.3.68
