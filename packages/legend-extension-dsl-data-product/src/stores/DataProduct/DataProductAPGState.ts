@@ -78,6 +78,8 @@ export class DataProductAPGState {
   readonly accessPointStates: DataProductAccessPointState[];
   readonly id = uuid();
 
+  isCollapsed: boolean;
+
   subscriptions: V1_DataSubscription[] = [];
 
   apgContracts: V1_DataContract[] = [];
@@ -114,6 +116,8 @@ export class DataProductAPGState {
       init: flow,
       fetchAndSetAssociatedSystemAccountContracts: flow,
       subscriptions: observable,
+      isCollapsed: observable,
+      setIsCollapsed: action,
       fetchingSubscriptionsState: observable,
       creatingSubscriptionState: observable,
       createSubscription: flow,
@@ -129,6 +133,11 @@ export class DataProductAPGState {
     this.accessPointStates = this.apg.accessPoints.map(
       (ap) => new DataProductAccessPointState(this, ap),
     );
+    this.isCollapsed = false;
+  }
+
+  setIsCollapsed(isCollapsed: boolean): void {
+    this.isCollapsed = isCollapsed;
   }
 
   get access(): AccessPointGroupAccess {

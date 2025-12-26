@@ -44,7 +44,7 @@ import {
   type V1_DiagramInfo,
   type V1_PackageableElement,
 } from '@finos/legend-graph';
-import { flow, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
 import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
@@ -140,6 +140,8 @@ export class DataProductViewerState extends BaseViewerState<
       nativeModelAccessDocumentationState: observable,
       nativeModelAccessDiagramViewerState: observable,
       init: flow,
+      isAllApgsCollapsed: computed,
+      toggleAllApgGroupCollapse: action,
     });
 
     this.apgStates = this.product.accessPointGroups.map(
@@ -197,6 +199,20 @@ export class DataProductViewerState extends BaseViewerState<
         (taggedValue) => taggedValue.tag.profile === vendorProfile,
       ),
     );
+  }
+
+  get isAllApgsCollapsed(): boolean {
+    return (
+      this.apgStates.length > 0 &&
+      this.apgStates.every((groupState) => groupState.isCollapsed)
+    );
+  }
+
+  toggleAllApgGroupCollapse(): void {
+    const shouldCollapse = !this.isAllApgsCollapsed;
+    this.apgStates.forEach((groupState) => {
+      groupState.setIsCollapsed(shouldCollapse);
+    });
   }
 
   getModelAccessPointDiagrams(): DiagramAnalysisResult[] {

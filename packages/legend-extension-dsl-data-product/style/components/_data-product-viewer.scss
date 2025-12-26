@@ -699,6 +699,7 @@
 
       &__label {
         @include ellipsisTextOverflow;
+        @include flexVCenter;
 
         font-size: 2.4rem;
         text-transform: uppercase;
@@ -1733,6 +1734,21 @@
     &-main {
       @include flexVCenter;
     }
+
+    &__collapsible-content {
+      animation: slideDown 0.2s ease-out;
+    }
+
+    &__caret {
+      margin-left: 0.5rem;
+      font-size: 2rem;
+      transition: transform 0.2s ease;
+      transform: rotate(-180deg);
+
+      &--collapsed {
+        transform: rotate(0deg);
+      }
+    }
   }
 
   &__item__header__title {
@@ -2096,6 +2112,18 @@
     justify-content: flex-end;
     gap: 0.5rem;
     min-height: 3.8rem;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+
+  to {
+    opacity: 1;
+    max-height: 100%;
   }
 }
 
