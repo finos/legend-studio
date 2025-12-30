@@ -71,6 +71,15 @@ export enum AccessPointGroupAccess {
   ENTERPRISE = 'ENTERPRISE', // Used to indicate that the group is available for all users in the organization
 }
 
+//Todo - 0 priority rankings? - or have a zero priority enum value
+//move this into APG State?
+export enum V1_UserApprovalPriority {
+  NO_PRIORITY = 0,
+  PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL_PRIORITY = 2,
+  PENDING_DATA_OWNER_APPROVAL_PRIORITY = 3,
+  APPROVED_PRIORITY = 4,
+}
+
 export class DataProductAPGState {
   readonly dataProductViewerState: DataProductViewerState;
   readonly applicationStore: GenericLegendApplicationStore;
@@ -273,6 +282,7 @@ export class DataProductAPGState {
           ),
         ),
       );
+
       const accessPointGroupContractsWithMembers =
         rawAccessPointGroupContractsWithMembers.flatMap((_response) =>
           V1_deserializeDataContractResponse(
@@ -298,8 +308,11 @@ export class DataProductAPGState {
       const systemAccountContracts = accessPointGroupContracts.filter(
         contractContainsSystemAccount,
       );
-      // ASSUMPTION: one contract per user per group
-      const userContract = userContracts[0];
+      const userContract = await this.getContractLatestInApprovalProcess(
+        userContracts,
+        lakehouseContractServerClient,
+        token,
+      );
       this.setAssociatedUserContract(
         userContract,
         lakehouseContractServerClient,
@@ -313,6 +326,78 @@ export class DataProductAPGState {
     } finally {
       this.handlingContractsState.complete();
     }
+  }
+
+  async getContractLatestInApprovalProcess(
+    contracts: V1_DataContract[],
+    lakehouseContractServerClient: LakehouseContractServerClient,
+    token: string | undefined,
+  ): Promise<V1_DataContract | undefined> {
+    if (contracts.length === 0) {
+      return undefined;
+    }
+
+    const approvalStagePriority: Record<V1_EnrichedUserApprovalStatus, number> =
+      {
+        [V1_EnrichedUserApprovalStatus.REVOKED]:
+          V1_UserApprovalPriority.NO_PRIORITY,
+        [V1_EnrichedUserApprovalStatus.CLOSED]:
+          V1_UserApprovalPriority.NO_PRIORITY,
+        [V1_EnrichedUserApprovalStatus.DENIED]:
+          V1_UserApprovalPriority.NO_PRIORITY,
+        [V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL]:
+          V1_UserApprovalPriority.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL_PRIORITY,
+        [V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL]:
+          V1_UserApprovalPriority.PENDING_DATA_OWNER_APPROVAL_PRIORITY,
+        [V1_EnrichedUserApprovalStatus.APPROVED]:
+          V1_UserApprovalPriority.APPROVED_PRIORITY,
+      };
+
+    const contractStatusPromises = contracts.map(async (contract) => {
+      try {
+        const rawUserStatus =
+          await lakehouseContractServerClient.getContractUserStatus(
+            contract.guid,
+            this.applicationStore.identityService.currentUser,
+            token,
+          );
+        const userStatus = deserialize(
+          V1_ContractUserStatusResponseModelSchema,
+          rawUserStatus,
+        ).status;
+        const rank = approvalStagePriority[userStatus];
+
+        return { contract, rank };
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.notificationService.notifyWarning(
+          `Could not fetch status for contract ${contract.guid}: ${error.message}`,
+        );
+        return null;
+      }
+    });
+
+    const contractStatuses = (await Promise.all(contractStatusPromises)).filter(
+      isNonNullable,
+    );
+
+    const bestContract = contractStatuses.reduce<
+      | {
+          contract: V1_DataContract;
+          rank: number;
+        }
+      | undefined
+    >((currentBest, currentContract) => {
+      if (!currentBest || currentContract.rank > currentBest.rank) {
+        return {
+          contract: currentContract.contract,
+          rank: currentContract.rank,
+        };
+      }
+      return currentBest;
+    }, undefined);
+
+    return bestContract?.contract;
   }
 
   handleContractClick(dataAccessState: DataProductDataAccessState): void {
