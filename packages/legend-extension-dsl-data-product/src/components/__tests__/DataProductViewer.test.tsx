@@ -43,6 +43,7 @@ import {
   getMockPendingManagerApprovalTasksResponse,
   mockApprovedTasksResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
+import { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import { AuthProvider } from 'react-oidc-context';
 import { ProductViewer } from '../ProductViewer.js';
 import {
@@ -55,6 +56,11 @@ import type {
   ProjectGAVCoordinates,
   StoredFileGeneration,
 } from '@finos/legend-storage';
+import {
+  MockedMonacoEditorAPI,
+  MockedMonacoEditorInstance,
+  MockedMonacoEditorModel,
+} from '@finos/legend-lego/code-editor/test';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -72,6 +78,11 @@ jest.mock('swiper/modules', () => ({
   Navigation: ({}) => <div></div>,
   Pagination: ({}) => <div></div>,
   Autoplay: ({}) => <div></div>,
+}));
+
+jest.mock('react-dnd', () => ({
+  useDrop: () => [{ isOver: false }, jest.fn()],
+  useDrag: () => [{}, jest.fn()],
 }));
 
 (global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
@@ -265,7 +276,7 @@ const setupLakehouseDataProductTest = async (
     await new Promise((resolve) => setTimeout(resolve, 0)); // wait for async state updates
   });
 
-  return { renderResult };
+  return { renderResult, dataProductDataAccessState };
 };
 
 describe('DataProductViewer', () => {
@@ -720,6 +731,59 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Request Access for Others');
       screen.getByText('Manage Subscriptions');
+    });
+
+    test('Access point sql tab has a sql playground editor to run queries.', async () => {
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          [],
+          {
+            groupId: 'test.group',
+            artifactId: 'test-artifact',
+            versionId: '1.0.0',
+          },
+        );
+
+      jest
+        .spyOn(MockedMonacoEditorAPI, 'create')
+        .mockReturnValue(MockedMonacoEditorInstance);
+      jest
+        .spyOn(MockedMonacoEditorAPI, 'createModel')
+        .mockReturnValue(MockedMonacoEditorModel);
+
+      await screen.findByText('Mock SDLC Data Product');
+      await screen.findByText('Customer demographics data access point');
+
+      act(() => {
+        dataProductDataAccessState?.setLakehouseIngestEnvironmentSummaries([
+          IngestDeploymentServerConfig.serialization.fromJson({
+            ingestServerUrl: 'https://dev-test.example.com',
+            ingestEnvironmentUrn: 'urn:dev:test',
+            environmentName: 'Development',
+            environmentClassification: 'FULL',
+          }),
+        ]);
+      });
+
+      const sqlTab = await screen.findByRole('tab', { name: 'SQL' });
+      fireEvent.click(sqlTab);
+      await screen.findByText('result');
+      await screen.findByText('Local Mode');
+      const localToggleMode = document.querySelector(
+        '.query-builder__result__advanced__mode__toggler__btn',
+      ) as HTMLButtonElement;
+      expect(localToggleMode).toBeDefined();
+      fireEvent.click(localToggleMode);
+      expect(localToggleMode.className).toContain(
+        'query-builder__result__advanced__mode__toggler__btn--toggled',
+      );
+      const runQueryBtn = await screen.findByRole('button', {
+        name: 'Run Query',
+      });
+      expect(runQueryBtn).toBeDefined();
+      fireEvent.click(runQueryBtn);
     });
 
     test('displays ENTITLED button for contract in APPROVED status', async () => {
