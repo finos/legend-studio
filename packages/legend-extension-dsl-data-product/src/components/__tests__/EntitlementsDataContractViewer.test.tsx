@@ -26,10 +26,10 @@ import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import {
   type V1_DataContract,
   type V1_DataSubscription,
-  type V1_LiteDataContract,
   type V1_TaskResponse,
   GraphManagerState,
-  V1_liteDataContractModelSchema,
+  V1_dataContractModelSchema,
+  V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
 import { AuthProvider } from 'react-oidc-context';
@@ -52,10 +52,18 @@ import {
   mockPendingManagerApprovalMultipleConsumersTasksResponse,
   mockAutoCreatedSubscription,
   mockProducerDataContract,
+  mockClosedDataContract,
+  mockClosedContractTasksResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
-import { ApplicationStore } from '@finos/legend-application';
+import {
+  ApplicationFrameworkProvider,
+  ApplicationStore,
+  ApplicationStoreProvider,
+} from '@finos/legend-application';
 import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { deserialize } from 'serializr';
+import { Route, Routes } from '@finos/legend-application/browser';
+import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -65,7 +73,7 @@ jest.mock('react-oidc-context', () => {
 });
 
 const setupDataContractViewerTest = async (
-  mockContractObject: PlainObject<V1_LiteDataContract>,
+  mockContractObject: PlainObject<V1_DataContract>,
   mockTasks: V1_TaskResponse,
   initialSelectedUser?: string,
   contractWithMembersObject?: PlainObject<V1_DataContract>,
@@ -91,6 +99,16 @@ const setupDataContractViewerTest = async (
     (location: string) => location,
   );
 
+  const mockContract = deserialize(
+    V1_dataContractModelSchema(
+      MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+    ),
+    mockContractObject,
+  );
+
+  const mockLiteContract =
+    V1_transformDataContractToLiteDatacontract(mockContract);
+
   createSpy(
     lakehouseContractServerClient,
     'getContractTasks',
@@ -100,19 +118,12 @@ const setupDataContractViewerTest = async (
     {
       dataContracts: contractWithMembersObject
         ? [{ dataContract: contractWithMembersObject }]
-        : [],
+        : [{ dataContract: mockContract }],
     },
   );
 
-  const mockContract = deserialize(
-    V1_liteDataContractModelSchema(
-      MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
-    ),
-    mockContractObject,
-  );
-
   const MOCK__contractViewerState = new EntitlementsDataContractViewerState(
-    mockContract,
+    mockLiteContract,
     mockSubscription,
     MOCK__applicationStore,
     lakehouseContractServerClient,
@@ -128,14 +139,28 @@ const setupDataContractViewerTest = async (
   await act(async () => {
     renderResult = render(
       <AuthProvider>
-        <EntitlementsDataContractViewer
-          open={true}
-          onClose={jest.fn()}
-          currentViewer={MOCK__contractViewerState}
-          getContractTaskUrl={() => ''}
-          getDataProductUrl={() => ''}
-          initialSelectedUser={initialSelectedUser}
-        />
+        <ApplicationStoreProvider store={MOCK__applicationStore}>
+          <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
+            <ApplicationFrameworkProvider>
+              <Routes>
+                <Route
+                  path="*"
+                  element={
+                    <EntitlementsDataContractViewer
+                      open={true}
+                      onClose={jest.fn()}
+                      currentViewer={MOCK__contractViewerState}
+                      getContractTaskUrl={() => ''}
+                      getDataProductUrl={() => ''}
+                      initialSelectedUser={initialSelectedUser}
+                    />
+                  }
+                />
+              </Routes>
+            </ApplicationFrameworkProvider>
+          </TEST__BrowserEnvironmentProvider>
+        </ApplicationStoreProvider>
+        ,
       </AuthProvider>,
     );
 
@@ -332,7 +357,7 @@ describe('EntitlementsDataContractViewer', () => {
     expect(screen.queryByTitle('Escalate request')).toBeNull();
   });
 
-  test('Shows escalate button for system accountn task', async () => {
+  test('Shows escalate button for system account task', async () => {
     await setupDataContractViewerTest(
       mockDataContract,
       getMockPendingManagerApprovalTasksResponse(),
@@ -436,5 +461,65 @@ describe('EntitlementsDataContractViewer', () => {
     await screen.findByText(
       `A subscription has been auto-created for you with Snowflake account test-snowflake-account-id.`,
     );
+  });
+
+  test('Close contract button calls invalidate endpoint', async () => {
+    const { MOCK__contractViewerState } = await setupDataContractViewerTest(
+      mockDataContract,
+      getMockPendingManagerApprovalTasksResponse(),
+    );
+
+    const invalidateSpy = createSpy(
+      MOCK__contractViewerState.lakehouseContractServerClient,
+      'invalidateContract',
+    ).mockImplementation(async () => Promise.resolve({}));
+
+    expect(invalidateSpy).toHaveBeenCalledTimes(0);
+
+    // Setup mock for contract and tasks after invalidation
+    createSpy(
+      MOCK__contractViewerState.lakehouseContractServerClient,
+      'getDataContract',
+    ).mockResolvedValue({
+      dataContracts: [{ dataContract: mockClosedDataContract }],
+    });
+    createSpy(
+      MOCK__contractViewerState.lakehouseContractServerClient,
+      'getContractTasks',
+    ).mockResolvedValue(
+      mockClosedContractTasksResponse as unknown as PlainObject<V1_TaskResponse>,
+    );
+
+    // Find and click close contract button
+    const closeContractButton = guaranteeNonNullable(
+      (await screen.findByTitle('Close Contract')).firstElementChild,
+    );
+    fireEvent.click(closeContractButton);
+
+    // Verify confirm modal appears
+    await screen.findByText('Are you sure you want to close this contract?');
+
+    // Click confirm button
+    const confirmButton = await screen.findByRole('button', {
+      name: 'Close Contract',
+    });
+    await act(() => fireEvent.click(confirmButton));
+
+    // Verify invalidate API called
+    expect(invalidateSpy).toHaveBeenCalledTimes(1);
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      mockDataContract.guid,
+      'mock-access-token',
+    );
+
+    // Verify task shows closed
+    await screen.findByText('Closed');
+
+    // Verify close contract button is disabled
+    const closedContractButton = guaranteeNonNullable(
+      (await screen.findByTitle('Contract is already closed'))
+        .firstElementChild,
+    );
+    expect(closedContractButton.hasAttribute('disabled')).toBe(true);
   });
 });

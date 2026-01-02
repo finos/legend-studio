@@ -128,6 +128,15 @@
     outline: 0.1rem solid var(--color-hclight-blue-60);
   }
 
+  .btn--dark.btn--caution {
+    background: var(--color-legacylight-orange-150);
+    color: var(--color-white);
+  }
+
+  .btn--dark.btn--caution:hover {
+    background: var(--color-legacylight-orange-100);
+  }
+
   // Duplicate .menu and .menu__item removed. See below for the main definition.
 
   .menu__divider {
