@@ -56,7 +56,31 @@ export default (env, arg) => {
           monaco: {
             test: /[\\/]node_modules[\\/]monaco-editor[\\/]/,
             name: 'monaco',
-            chunks: 'all',
+            chunks: 'async',
+            priority: 40,
+            enforce: true,
+          },
+          // ag-grid-enterprise - large dependency, separate chunk for better caching
+          agGridEnterprise: {
+            test: /[\\/]node_modules[\\/]ag-grid-enterprise[\\/]/,
+            name: 'ag-grid-enterprise',
+            chunks: 'async',
+            priority: 40,
+            enforce: true,
+          },
+          // ag-grid-community - large dependency, separate chunk for better caching
+          agGridCommunity: {
+            test: /[\\/]node_modules[\\/]ag-grid-community[\\/]/,
+            name: 'ag-grid-community',
+            chunks: 'async',
+            priority: 40,
+            enforce: true,
+          },
+          // mermaid - large dependency, separate chunk for better caching
+          mermaid: {
+            test: /[\\/]node_modules[\\/]mermaid[\\/]/,
+            name: 'mermaid',
+            chunks: 'async',
             priority: 40,
             enforce: true,
           },
