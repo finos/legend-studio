@@ -176,7 +176,10 @@ export const DataProductSupportInfo = observer(
             <button
               className="data-product__viewer__wiki__section__header__anchor"
               tabIndex={-1}
-              onClick={() => dataProductViewerState.changeZone(anchor, true)}
+              onClick={() => {
+                dataProductViewerState.changeZone(anchor, true);
+                dataProductViewerState.copyLinkToClipboard(anchor);
+              }}
             >
               <AnchorLinkIcon />
             </button>

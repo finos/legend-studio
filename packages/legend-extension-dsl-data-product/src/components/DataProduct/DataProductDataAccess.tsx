@@ -498,13 +498,27 @@ const AccessPointTable = observer(
                   <DataGrid
                     rowData={accessPointState.relationType?.columns ?? []}
                     columnDefs={relationColumnDefs}
-                    onGridReady={(params) => setGridApi(params.api)}
                     domLayout={
                       (accessPointState.relationType?.columns.length ?? 0) >
                       MAX_GRID_AUTO_HEIGHT_ROWS
                         ? 'normal'
                         : 'autoHeight'
                     }
+                    onGridReady={(params) => {
+                      setGridApi(params.api);
+                      if (!accessPointState.relationType?.columns.length) {
+                        accessPointState.apgState.dataProductViewerState.layoutState.markGridAsRendered();
+                      }
+                    }}
+                    onFirstDataRendered={() => {
+                      if (
+                        accessPointState.relationType?.columns.length !==
+                          undefined &&
+                        accessPointState.relationType.columns.length > 0
+                      ) {
+                        accessPointState.apgState.dataProductViewerState.layoutState.markGridAsRendered();
+                      }
+                    }}
                   />
                 </Box>
               ) : (
@@ -674,6 +688,19 @@ export const DataProductAccessPointGroupViewer = observer(
     const [isEntitledButtonGroupMenuOpen, setIsEntitledButtonGroupMenuOpen] =
       useState(false);
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const anchor = generateAnchorForSection(`apg-${apgState.apg.id}`);
+
+    useEffect(() => {
+      if (sectionRef.current) {
+        apgState.dataProductViewerState.layoutState.setWikiPageAnchor(
+          anchor,
+          sectionRef.current,
+        );
+      }
+      return () =>
+        apgState.dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
+    }, [apgState, anchor]);
 
     const entitlementsDataContractViewerState = useMemo(() => {
       return dataAccessState?.contractViewerContractAndSubscription &&
@@ -863,7 +890,10 @@ export const DataProductAccessPointGroupViewer = observer(
     };
 
     return (
-      <div className="data-product__viewer__access-group__item">
+      <div
+        ref={sectionRef}
+        className="data-product__viewer__access-group__item"
+      >
         <div className="data-product__viewer__access-group__item__header">
           <div className="data-product__viewer__access-group__item__header-main">
             <div className="data-product__viewer__access-group__item__header__title">
@@ -875,6 +905,10 @@ export const DataProductAccessPointGroupViewer = observer(
             <button
               className="data-product__viewer__access-group__item__header__anchor"
               tabIndex={-1}
+              onClick={() => {
+                apgState.dataProductViewerState.changeZone(anchor, true);
+                apgState.dataProductViewerState.copyLinkToClipboard(anchor);
+              }}
             >
               <AnchorLinkIcon />
             </button>
@@ -1004,7 +1038,10 @@ export const DataProducteDataAccess = observer(
             <button
               className="data-product__viewer__wiki__section__header__anchor"
               tabIndex={-1}
-              onClick={() => dataProductViewerState.changeZone(anchor, true)}
+              onClick={() => {
+                dataProductViewerState.changeZone(anchor, true);
+                dataProductViewerState.copyLinkToClipboard(anchor);
+              }}
             >
               <AnchorLinkIcon />
             </button>

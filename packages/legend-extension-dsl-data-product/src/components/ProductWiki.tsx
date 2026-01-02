@@ -44,6 +44,7 @@ import { V1_ExternalDataProductType } from '@finos/legend-graph';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 import { DiagramViewer } from '@finos/legend-extension-dsl-diagram';
+import { useNavigationZone } from '@finos/legend-application/browser';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
@@ -211,6 +212,14 @@ export const ProductWiki = observer(
       | undefined;
   }) => {
     const { productViewerState, productDataAccessState } = props;
+    const navigationZone = useNavigationZone();
+
+    useEffect(() => {
+      productViewerState.layoutState.setWikiPageAnchorToNavigate({
+        anchor: navigationZone,
+      });
+      productViewerState.changeZone(navigationZone);
+    }, [productViewerState, navigationZone]);
 
     useEffect(() => {
       if (
