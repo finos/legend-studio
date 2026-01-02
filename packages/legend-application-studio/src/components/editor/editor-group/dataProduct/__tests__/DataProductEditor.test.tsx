@@ -428,3 +428,143 @@ test(integrationTest('Preview data product'), async () => {
     timeout: 3000,
   });
 });
+
+test(
+  integrationTest('Editing operational metadata - update frequency'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__LHDataProduct },
+    );
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    await TEST__openElementFromExplorerTree(
+      'model::sampleDataProduct',
+      renderResult,
+    );
+
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+
+    // Navigate to Operational tab
+    fireEvent.click(await findByText(editorGroup, 'Operational'));
+
+    // Check that update frequency section rendered properly
+    await findByText(editorGroup, 'Update Frequency');
+    await findByText(
+      editorGroup,
+      'Select the update frequency of this Data Product.',
+    );
+
+    // Test setting update frequency
+    const frequencySelector = await findByText(
+      editorGroup,
+      'Select update frequency...',
+    );
+    fireEvent.mouseDown(frequencySelector);
+
+    const frequencyOptions = await screen.findAllByRole('option');
+    const dailyOption = frequencyOptions.find(
+      (opt) => opt.textContent === 'DAILY',
+    );
+    expect(dailyOption).not.toBeUndefined();
+    fireEvent.click(dailyOption as HTMLElement);
+
+    // Verify DAILY frequency was selected
+    const updatedFrequencySelector = await findByText(editorGroup, 'DAILY');
+
+    // Change to different frequency
+    fireEvent.mouseDown(updatedFrequencySelector);
+    const newFrequencyOptions = await screen.findAllByRole('option');
+    const weeklyOption = newFrequencyOptions.find(
+      (opt) => opt.textContent === 'WEEKLY',
+    );
+    expect(weeklyOption).not.toBeUndefined();
+    fireEvent.click(weeklyOption as HTMLElement);
+
+    // Verify WEEKLY frequency was selected
+    await findByText(editorGroup, 'WEEKLY');
+  },
+);
+
+test(
+  integrationTest('Editing operational metadata - coverage regions'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__LHDataProduct },
+    );
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    await TEST__openElementFromExplorerTree(
+      'model::sampleDataProduct',
+      renderResult,
+    );
+
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+
+    // Navigate to Operational tab
+    fireEvent.click(await findByText(editorGroup, 'Operational'));
+
+    // Add multiple regions first
+    const regionSelector = await findByText(
+      editorGroup,
+      'Add Coverage Region...',
+    );
+
+    // Add AMERICAS
+    fireEvent.mouseDown(regionSelector);
+    let regionOptions = await screen.findAllByRole('option');
+    fireEvent.click(
+      regionOptions.find((opt) => opt.textContent === 'NAMR') as HTMLElement,
+    );
+    await findByText(editorGroup, 'NAMR');
+
+    // Add EMEA
+    fireEvent.mouseDown(regionSelector);
+    regionOptions = await screen.findAllByRole('option');
+    fireEvent.click(
+      regionOptions.find((opt) => opt.textContent === 'EMEA') as HTMLElement,
+    );
+    await findByText(editorGroup, 'EMEA');
+
+    // Verify both regions exist
+    expect(within(editorGroup).getByText('NAMR')).not.toBeNull();
+    expect(within(editorGroup).getByText('EMEA')).not.toBeNull();
+
+    // Remove NAMR region
+    const removeButtons = await screen.findAllByRole('button', {
+      name: 'Remove Region',
+    });
+    const americasRemoveButton = removeButtons.find((button) =>
+      button.parentElement?.textContent?.includes('NAMR'),
+    );
+    fireEvent.click(americasRemoveButton as HTMLElement);
+
+    // Verify AMERICAS was removed but EMEA remains
+    expect(screen.queryByText('NAMR')).toBeNull();
+    expect(within(editorGroup).getByText('EMEA')).not.toBeNull();
+
+    // Verify AMERICAS is now available in dropdown again
+    fireEvent.mouseDown(regionSelector);
+    const updatedOptions = await screen.findAllByRole('option');
+    expect(
+      updatedOptions.find((opt) => opt.textContent === 'NAMR'),
+    ).not.toBeUndefined();
+    expect(
+      updatedOptions.find((opt) => opt.textContent === 'EMEA'),
+    ).toBeUndefined(); // Still selected
+
+    // Close dropdown
+    fireEvent.keyDown(regionSelector, { key: 'Escape' });
+  },
+);

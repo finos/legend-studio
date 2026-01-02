@@ -157,6 +157,7 @@ import {
   operationalMetadata_addCoverageRegion,
   dataProductDiagram_setTitle,
   dataProductDiagram_setDescription,
+  operationalMetadata_setUpdateFrequency,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -2944,7 +2945,10 @@ const OperationalTab = observer(
     ): void => {
       dataProduct_setOperationalMetadataIfAbsent(product);
       if (product.operationalMetadata && val) {
-        product.operationalMetadata.updateFrequency = val.value;
+        operationalMetadata_setUpdateFrequency(
+          product.operationalMetadata,
+          val.value,
+        );
       }
     };
 
@@ -2984,6 +2988,7 @@ const OperationalTab = observer(
                   disabled={dataProductEditorState.isReadOnly}
                   onClick={() => handleRemoveRegion(region)}
                   tabIndex={-1}
+                  title="Remove Region"
                 >
                   <TimesIcon />
                 </button>
@@ -3027,6 +3032,7 @@ const OperationalTab = observer(
                     }
                   : null
               }
+              placeholder="Select update frequency..."
               darkMode={true}
               disabled={isReadOnly}
             />
