@@ -771,9 +771,9 @@ describe('DataProductViewer', () => {
       fireEvent.click(sqlTab);
       await screen.findByText('result');
       await screen.findByText('Local Mode');
-      const localToggleMode = document.querySelector(
-        '.query-builder__result__advanced__mode__toggler__btn',
-      ) as HTMLButtonElement;
+      const localToggleMode = await screen.findByRole('button', {
+        name: 'local mode',
+      });
       expect(localToggleMode).toBeDefined();
       fireEvent.click(localToggleMode);
       expect(localToggleMode.className).toContain(
