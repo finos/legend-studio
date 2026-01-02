@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.88
+
+### Patch Changes
+
+- [#4741](https://github.com/finos/legend-studio/pull/4741) [`caf4bc6`](https://github.com/finos/legend-studio/commit/caf4bc65a86f9b98cfdadd6973a83124375e0753) ([@travisstebbins](https://github.com/travisstebbins)) - Allow disabling virtual assistant in ApplicationFrameworkProvider
+
 ## 16.0.87
 
 ## 16.0.86
