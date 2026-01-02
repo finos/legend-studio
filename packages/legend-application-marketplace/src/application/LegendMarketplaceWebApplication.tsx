@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   CubesLoadingIndicator,
@@ -35,7 +35,6 @@ import {
   useLegendMarketplaceBaseStore,
 } from './providers/LegendMarketplaceFrameworkProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
-import { MarketplaceLakehouseHome } from '../pages/Lakehouse/MarketplaceLakehouseHome.js';
 import {
   type AuthProviderProps,
   AuthProvider,
@@ -43,27 +42,112 @@ import {
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
-import { LakehouseDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseDataProduct.js';
-import { TerminalProduct } from '../pages/Lakehouse/dataProduct/TerminalProduct.js';
-import { LegendMarketplaceDataAPIs } from '../pages/DataAPIs/LegendMarketplaceDataAPIs.js';
-import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
-import { LakehouseAdmin } from '../pages/Lakehouse/admin/LakehouseAdmin.js';
 import { MarketplaceLakehouseHeader } from '../components/Header/LegendMarketplaceHeader.js';
 import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
-import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js';
-import { LakehouseSDLCDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js';
-import { LegendMarketplaceSearchResults } from '../pages/Lakehouse/searchResults/LegendMarketplaceSearchResults.js';
-import { LegacyDataProduct } from '../pages/Lakehouse/dataProduct/LegacyDataProduct.js';
-import { LegendMarketplaceAgents } from '../pages/Agents/LegendMarketplaceAgents.js';
-import { LegendMarketplaceInventory } from '../pages/Inventory/LegendMarketplaceInventory.js';
-import {
-  LegendMarketplaceTerminalsAddOnsComingSoon,
-  LegendMarketplaceVendorData,
-} from '../pages/TerminalsAddons/LegendMarketplaceTerminalsAddons.js';
 import { CartToast } from '../components/Toast/CartToast.js';
 import { flowResult } from 'mobx';
-import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketplaceSubscriptions.js';
-import { LegendMarketplaceYourOrders } from '../pages/Profile/LegendMarketplaceYourOrders.js';
+
+// Lazy load page components for code splitting
+const MarketplaceLakehouseHome = React.lazy(() =>
+  import('../pages/Lakehouse/MarketplaceLakehouseHome.js').then((module) => ({
+    default: module.MarketplaceLakehouseHome,
+  })),
+);
+const LakehouseDataProduct = React.lazy(() =>
+  import('../pages/Lakehouse/dataProduct/LakehouseDataProduct.js').then(
+    (module) => ({
+      default: module.LakehouseDataProduct,
+    }),
+  ),
+);
+const TerminalProduct = React.lazy(() =>
+  import('../pages/Lakehouse/dataProduct/TerminalProduct.js').then(
+    (module) => ({
+      default: module.TerminalProduct,
+    }),
+  ),
+);
+const LegendMarketplaceDataAPIs = React.lazy(() =>
+  import('../pages/DataAPIs/LegendMarketplaceDataAPIs.js').then((module) => ({
+    default: module.LegendMarketplaceDataAPIs,
+  })),
+);
+const LakehouseEntitlements = React.lazy(() =>
+  import('../pages/Lakehouse/entitlements/LakehouseEntitlements.js').then(
+    (module) => ({
+      default: module.LakehouseEntitlements,
+    }),
+  ),
+);
+const LakehouseAdmin = React.lazy(() =>
+  import('../pages/Lakehouse/admin/LakehouseAdmin.js').then((module) => ({
+    default: module.LakehouseAdmin,
+  })),
+);
+const MarketplaceLakehouseOAuthCallback = React.lazy(() =>
+  import('../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js').then(
+    (module) => ({
+      default: module.MarketplaceLakehouseOAuthCallback,
+    }),
+  ),
+);
+const LakehouseSDLCDataProduct = React.lazy(() =>
+  import('../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js').then(
+    (module) => ({
+      default: module.LakehouseSDLCDataProduct,
+    }),
+  ),
+);
+const LegendMarketplaceSearchResults = React.lazy(() =>
+  import(
+    '../pages/Lakehouse/searchResults/LegendMarketplaceSearchResults.js'
+  ).then((module) => ({
+    default: module.LegendMarketplaceSearchResults,
+  })),
+);
+const LegacyDataProduct = React.lazy(() =>
+  import('../pages/Lakehouse/dataProduct/LegacyDataProduct.js').then(
+    (module) => ({
+      default: module.LegacyDataProduct,
+    }),
+  ),
+);
+const LegendMarketplaceAgents = React.lazy(() =>
+  import('../pages/Agents/LegendMarketplaceAgents.js').then((module) => ({
+    default: module.LegendMarketplaceAgents,
+  })),
+);
+const LegendMarketplaceInventory = React.lazy(() =>
+  import('../pages/Inventory/LegendMarketplaceInventory.js').then((module) => ({
+    default: module.LegendMarketplaceInventory,
+  })),
+);
+const LegendMarketplaceVendorData = React.lazy(() =>
+  import('../pages/TerminalsAddons/LegendMarketplaceTerminalsAddons.js').then(
+    (module) => ({
+      default: module.LegendMarketplaceVendorData,
+    }),
+  ),
+);
+const LegendMarketplaceTerminalsAddOnsComingSoon = React.lazy(() =>
+  import('../pages/TerminalsAddons/LegendMarketplaceTerminalsAddons.js').then(
+    (module) => ({
+      default: module.LegendMarketplaceTerminalsAddOnsComingSoon,
+    }),
+  ),
+);
+const LegendMarketplaceSubscriptions = React.lazy(() =>
+  import('../pages/Profile/LegendMarketplaceSubscriptions.js').then(
+    (module) => ({
+      default: module.LegendMarketplaceSubscriptions,
+    }),
+  ),
+);
+const LegendMarketplaceYourOrders = React.lazy(() =>
+  import('../pages/Profile/LegendMarketplaceYourOrders.js').then((module) => ({
+    default: module.LegendMarketplaceYourOrders,
+  })),
+);
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -149,6 +233,13 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     },
   );
 
+  // Loading fallback for lazy-loaded components
+  const LazyLoadingFallback = (
+    <CubesLoadingIndicator isLoading={true}>
+      <CubesLoadingIndicatorIcon />
+    </CubesLoadingIndicator>
+  );
+
   return (
     <div className="app">
       {marketplaceBaseStore.initState.hasCompleted && (
@@ -158,7 +249,9 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               <>
                 <MarketplaceLakehouseHeader />
                 <CartToast />
-                <Outlet />
+                <Suspense fallback={LazyLoadingFallback}>
+                  <Outlet />
+                </Suspense>
               </>
             }
           >
