@@ -45,6 +45,80 @@ export default (env, arg) => {
       ...baseConfig.devServer,
       ...appConfig.devServerOptions,
     },
+    optimization: {
+      ...baseConfig.optimization,
+      splitChunks: {
+        chunks: 'all',
+        maxInitialRequests: 25,
+        maxAsyncRequests: 25,
+        cacheGroups: {
+          // Monaco editor - large dependency, separate chunk for better caching
+          monaco: {
+            test: /[\\/]node_modules[\\/]monaco-editor[\\/]/,
+            name: 'monaco',
+            chunks: 'all',
+            priority: 40,
+            enforce: true,
+          },
+          // MUI components - separate chunk
+          mui: {
+            test: /[\\/]node_modules[\\/]@mui[\\/]/,
+            name: 'mui',
+            chunks: 'all',
+            priority: 35,
+            enforce: true,
+          },
+          // React and related core libraries
+          react: {
+            test: /[\\/]node_modules[\\/](react|react-dom|react-router|scheduler)[\\/]/,
+            name: 'react',
+            chunks: 'all',
+            priority: 30,
+            enforce: true,
+          },
+          // MobX state management
+          mobx: {
+            test: /[\\/]node_modules[\\/](mobx|mobx-react-lite|mobx-utils)[\\/]/,
+            name: 'mobx',
+            chunks: 'all',
+            priority: 25,
+            enforce: true,
+          },
+          // Create separate chunks for lazy-loaded page components
+          pages: {
+            test: /[\\/]pages[\\/]/,
+            name: 'pages',
+            chunks: 'async',
+            priority: 20,
+            enforce: true,
+          },
+          // Create separate chunks for stores
+          stores: {
+            test: /[\\/]stores[\\/]/,
+            name: 'stores',
+            chunks: 'async',
+            priority: 15,
+            enforce: true,
+          },
+          // Remaining vendor dependencies - only for initial chunks
+          defaultVendors: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendor',
+            chunks: 'initial',
+            priority: -10,
+            enforce: true,
+          },
+          // Async vendor chunks - for dependencies only used in lazy-loaded routes
+          asyncVendors: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'async-vendor',
+            chunks: 'async',
+            priority: -20,
+            minSize: 10000,
+          },
+        },
+      },
+    },
     plugins: [
       ...baseConfig.plugins,
       new DefinePlugin({
