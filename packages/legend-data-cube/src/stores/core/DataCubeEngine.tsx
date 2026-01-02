@@ -60,6 +60,8 @@ import { DataCubeQueryFilterOperation__GreaterThanOrEqualColumn } from './filter
 import { DataCubeQueryFilterOperation__Contain } from './filter/DataCubeQueryFilterOperation__Contain.js';
 import { DataCubeQueryFilterOperation__ContainCaseInsensitive } from './filter/DataCubeQueryFilterOperation__ContainCaseInsensitive.js';
 import { DataCubeQueryFilterOperation__NotContain } from './filter/DataCubeQueryFilterOperation__NotContain.js';
+import { DataCubeQueryFilterOperation__In } from './filter/DataCubeQueryFilterOperation__In.js';
+import { DataCubeQueryFilterOperation__NotIn } from './filter/DataCubeQueryFilterOperation__NotIn.js';
 import { DataCubeQueryFilterOperation__StartWith } from './filter/DataCubeQueryFilterOperation__StartWith.js';
 import { DataCubeQueryFilterOperation__StartWithCaseInsensitive } from './filter/DataCubeQueryFilterOperation__StartWithCaseInsensitive.js';
 import { DataCubeQueryFilterOperation__NotStartWith } from './filter/DataCubeQueryFilterOperation__NotStartWith.js';
@@ -148,6 +150,8 @@ export abstract class DataCubeEngine {
     new DataCubeQueryFilterOperation__Contain(),
     new DataCubeQueryFilterOperation__ContainCaseInsensitive(),
     new DataCubeQueryFilterOperation__NotContain(),
+    new DataCubeQueryFilterOperation__In(),
+    new DataCubeQueryFilterOperation__NotIn(),
     new DataCubeQueryFilterOperation__StartWith(),
     new DataCubeQueryFilterOperation__StartWithCaseInsensitive(),
     new DataCubeQueryFilterOperation__NotStartWith(),

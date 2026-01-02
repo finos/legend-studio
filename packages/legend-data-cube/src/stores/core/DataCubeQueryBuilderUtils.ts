@@ -322,7 +322,7 @@ export function _colSpec(
   return colSpec;
 }
 
-export function _value(value: DataCubeOperationValue) {
+export function _value(value: DataCubeOperationValue): V1_ValueSpecification {
   switch (value.type) {
     case PRIMITIVE_TYPE.STRING:
     case PRECISE_PRIMITIVE_TYPE.VARCHAR:
@@ -361,6 +361,17 @@ export function _value(value: DataCubeOperationValue) {
     }
     case DataCubeOperationAdvancedValueType.COLUMN:
       return _property(guaranteeIsString(value.value));
+    case DataCubeOperationAdvancedValueType.LIST: {
+      // value.value is expected to be an array of DataCubeOperationValue
+      if (!Array.isArray(value.value)) {
+        throw new UnsupportedOperationError(
+          `List value must be an array for type '${DataCubeOperationAdvancedValueType.LIST}'`,
+        );
+      }
+      return _collection(
+        (value.value as DataCubeOperationValue[]).map((val) => _value(val)),
+      );
+    }
     default:
       throw new UnsupportedOperationError(
         `Can't build value instance for unsupported type '${value.type}'`,
