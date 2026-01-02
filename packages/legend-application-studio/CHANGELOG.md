@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.82
+
+### Patch Changes
+
+- [#4739](https://github.com/finos/legend-studio/pull/4739) [`988cb22`](https://github.com/finos/legend-studio/commit/988cb22f6dc4d28e64c6b51d20a769e9ebf62d36) ([@gs-saurabh](https://github.com/gs-saurabh)) - Adding config to bring optional client_name query param for sdlc auth call
+
+- [#4747](https://github.com/finos/legend-studio/pull/4747) [`5dc3e4f`](https://github.com/finos/legend-studio/commit/5dc3e4f655fee9c09b0c9cad9723c9b38fde76dc) ([@kelly-thai](https://github.com/kelly-thai)) - Add tests for Operational Metadata
+
 ## 28.19.81
 
 ## 28.19.80

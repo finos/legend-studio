@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.3.56
+
+### Patch Changes
+
+- [#4742](https://github.com/finos/legend-studio/pull/4742) [`dc912de`](https://github.com/finos/legend-studio/commit/dc912de0d800c19544a0707c00202775cee3974c) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: add in filter operation to the list
+
 ## 0.3.55
 
 ## 0.3.54

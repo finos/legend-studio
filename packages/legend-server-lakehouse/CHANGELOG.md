@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.23
+
+### Patch Changes
+
+- [#4741](https://github.com/finos/legend-studio/pull/4741) [`caf4bc6`](https://github.com/finos/legend-studio/commit/caf4bc65a86f9b98cfdadd6973a83124375e0753) ([@travisstebbins](https://github.com/travisstebbins)) - Add ability to invalidate Marketplace lakehouse contract
+
 ## 0.3.22
 
 ## 0.3.21

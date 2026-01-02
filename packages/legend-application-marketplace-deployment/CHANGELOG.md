@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace-deployment
 
+## 13.176.0
+
+### Patch Changes
+
+- [#4748](https://github.com/finos/legend-studio/pull/4748) [`d59e014`](https://github.com/finos/legend-studio/commit/d59e01425179d9e0a38a3ea05c171ad487846d60) ([@travisstebbins](https://github.com/travisstebbins)) - Reduce bundle size and improve load time performance through lazy loading and vendor chunk splitting
+
+  - Implement lazy loading for page components using React.lazy() with dynamic imports
+  - Split vendor bundle into separate chunks (monaco, mui, react, mobx) for better caching
+  - Reduce initial entrypoint size from 11.4 MiB to 7.28 MiB (36% reduction)
+
 ## 13.175.0
 
 ## 13.174.0
