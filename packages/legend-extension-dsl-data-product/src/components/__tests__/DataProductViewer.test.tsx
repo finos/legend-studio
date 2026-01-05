@@ -55,6 +55,7 @@ import type {
   ProjectGAVCoordinates,
   StoredFileGeneration,
 } from '@finos/legend-storage';
+import { BrowserRouter } from '@finos/legend-application/browser';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -254,12 +255,14 @@ const setupLakehouseDataProductTest = async (
   await act(async () => {
     await flowResult(dataProductDataAccessState?.init(undefined));
     renderResult = render(
-      <AuthProvider>
-        <ProductViewer
-          productViewerState={dataProductViewerState}
-          productDataAccessState={dataProductDataAccessState}
-        />
-      </AuthProvider>,
+      <BrowserRouter>
+        <AuthProvider>
+          <ProductViewer
+            productViewerState={dataProductViewerState}
+            productDataAccessState={dataProductDataAccessState}
+          />
+        </AuthProvider>
+      </BrowserRouter>,
     );
 
     await new Promise((resolve) => setTimeout(resolve, 0)); // wait for async state updates
