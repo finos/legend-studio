@@ -529,16 +529,16 @@ const LakehouseConsumerSourceViewer = observer(
                 </button>
               </div>
             )}
-            {source.environment && (
+            {source.userEnvironment && (
               <div className="mt-2 flex h-6 w-full">
                 <div className="flex h-full w-[calc(100%_-_20px)] items-center border border-r-0 border-neutral-400 px-1.5">
-                  {source.environment}
+                  {source.userEnvironment}
                 </div>
                 <button
                   className="flex aspect-square h-full w-6 items-center justify-center border border-neutral-400 bg-neutral-300 hover:brightness-95"
                   onClick={() => {
                     store.application.clipboardService
-                      .copyTextToClipboard(source.environment)
+                      .copyTextToClipboard(source.userEnvironment)
                       .catch((error) =>
                         store.alertService.alertUnhandledError(error),
                       );
