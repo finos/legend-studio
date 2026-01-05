@@ -733,92 +733,90 @@ export const EntitlementsDataContractContent = observer(
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
         {!isLoading && (
-              <>
-                <div>
-                  Access request for{' '}
-                  <span className="marketplace-lakehouse-text__emphasis">
-                    {accessPointGroup}
-                  </span>{' '}
-                  Access Point Group in{' '}
-                  <Link
-                    className="marketplace-lakehouse-text__emphasis"
-                    href={getDataProductUrl(
-                      dataProduct,
-                      currentViewer.liteContract.deploymentId,
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {dataProduct}
-                  </Link>{' '}
-                  Data Product
-                </div>
-                {contractMetadataSection}
-                {!isContractInTerminalState(currentViewer.liteContract) && (
-                  <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<RefreshIcon />}
-                      onClick={() => {
-                        // eslint-disable-next-line no-void
-                        void refresh();
-                      }}
-                    >
-                      Refresh
-                    </Button>
-                  </Box>
+          <>
+            <div>
+              Access request for{' '}
+              <span className="marketplace-lakehouse-text__emphasis">
+                {accessPointGroup}
+              </span>{' '}
+              Access Point Group in{' '}
+              <Link
+                className="marketplace-lakehouse-text__emphasis"
+                href={getDataProductUrl(
+                  dataProduct,
+                  currentViewer.liteContract.deploymentId,
                 )}
-                {contractTimelineSection}
-              </>
-            )}
-
-            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
-              {currentViewer.subscription !== undefined && (
-                <Alert
-                  severity="info"
-                  className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__subscription-info"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {dataProduct}
+              </Link>{' '}
+              Data Product
+            </div>
+            {contractMetadataSection}
+            {!isContractInTerminalState(currentViewer.liteContract) && (
+              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<RefreshIcon />}
+                  onClick={() => {
+                    // eslint-disable-next-line no-void
+                    void refresh();
+                  }}
                 >
-                  A subscription has been auto-created for you
-                  {currentViewer.subscription.target instanceof
-                  V1_SnowflakeTarget
-                    ? ` with Snowflake account ${currentViewer.subscription.target.snowflakeAccountId}`
-                    : ''}
-                  .
-                </Alert>
-              )}
-              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details">
-                <Box>
-                  Contract ID: {currentViewer.liteContract.guid}
-                  <IconButton
-                    onClick={() => copyContractId()}
-                    title="Copy Contract ID"
-                  >
-                    <CopyIcon />
-                  </IconButton>
-                </Box>
-                <span
-                  title={
-                    currentViewer.liteContract.state === V1_ContractState.CLOSED
-                      ? 'Contract is already closed'
-                      : 'Close Contract'
-                  }
-                >
-                  <IconButton
-                    onClick={() => checkBeforeClosingContract()}
-                    disabled={
-                      currentViewer.initializationState.isInProgress ||
-                      currentViewer.invalidatingContractState.isInProgress ||
-                      currentViewer.liteContract.state ===
-                        V1_ContractState.CLOSED
-                    }
-                    className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
-                  >
-                    <TrashIcon />
-                  </IconButton>
-                </span>
+                  Refresh
+                </Button>
               </Box>
+            )}
+            {contractTimelineSection}
+          </>
+        )}
+
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
+          {currentViewer.subscription !== undefined && (
+            <Alert
+              severity="info"
+              className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__subscription-info"
+            >
+              A subscription has been auto-created for you
+              {currentViewer.subscription.target instanceof V1_SnowflakeTarget
+                ? ` with Snowflake account ${currentViewer.subscription.target.snowflakeAccountId}`
+                : ''}
+              .
+            </Alert>
+          )}
+          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details">
+            <Box>
+              Contract ID: {currentViewer.liteContract.guid}
+              <IconButton
+                onClick={() => copyContractId()}
+                title="Copy Contract ID"
+              >
+                <CopyIcon />
+              </IconButton>
             </Box>
+            <span
+              title={
+                currentViewer.liteContract.state === V1_ContractState.CLOSED
+                  ? 'Contract is already closed'
+                  : 'Close Contract'
+              }
+            >
+              <IconButton
+                onClick={() => checkBeforeClosingContract()}
+                disabled={
+                  currentViewer.initializationState.isInProgress ||
+                  currentViewer.invalidatingContractState.isInProgress ||
+                  currentViewer.liteContract.state === V1_ContractState.CLOSED
+                }
+                className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
+              >
+                <TrashIcon />
+              </IconButton>
+            </span>
+          </Box>
+        </Box>
 
         <ContractEscalationModal
           open={showEscalationModal && canEscalateContract}
