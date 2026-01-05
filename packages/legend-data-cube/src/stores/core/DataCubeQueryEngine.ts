@@ -155,6 +155,7 @@ export enum DataCubeColumnKind {
 
 export enum DataCubeOperationAdvancedValueType {
   COLUMN = 'COLUMN',
+  LIST = 'LIST',
   VOID = 'VOID',
   // PARAMETER
 }
@@ -268,6 +269,7 @@ export enum DataCubeColumnDataType {
   TEXT = 'Text',
   DATE = 'Date',
   TIME = 'Time',
+  BOOLEAN = 'Boolean',
 }
 
 export enum DataCubeGridMode {
@@ -439,6 +441,8 @@ export function getDataType(type: string): DataCubeColumnDataType {
     case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
     case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
       return DataCubeColumnDataType.TIME;
+    case PRIMITIVE_TYPE.BOOLEAN:
+      return DataCubeColumnDataType.BOOLEAN;
     case PRIMITIVE_TYPE.STRING:
     case PRECISE_PRIMITIVE_TYPE.VARCHAR:
     default:
@@ -469,6 +473,22 @@ export function isPrimitiveType(type: string) {
       PRIMITIVE_TYPE.DATETIME,
       PRIMITIVE_TYPE.STRING,
       PRIMITIVE_TYPE.BOOLEAN,
+      PRECISE_PRIMITIVE_TYPE.INT,
+      PRECISE_PRIMITIVE_TYPE.BIG_INT,
+      PRECISE_PRIMITIVE_TYPE.DECIMAL,
+      PRECISE_PRIMITIVE_TYPE.NUMERIC,
+      PRECISE_PRIMITIVE_TYPE.DOUBLE,
+      PRECISE_PRIMITIVE_TYPE.SMALL_INT,
+      PRECISE_PRIMITIVE_TYPE.FLOAT,
+      PRECISE_PRIMITIVE_TYPE.U_INT,
+      PRECISE_PRIMITIVE_TYPE.TINY_INT,
+      PRECISE_PRIMITIVE_TYPE.U_BIG_INT,
+      PRECISE_PRIMITIVE_TYPE.U_SMALL_INT,
+      PRECISE_PRIMITIVE_TYPE.U_TINY_INT,
+      PRECISE_PRIMITIVE_TYPE.STRICTDATE,
+      PRECISE_PRIMITIVE_TYPE.STRICTTIME,
+      PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
+      PRECISE_PRIMITIVE_TYPE.VARCHAR,
     ] as string[]
   ).includes(type);
 }

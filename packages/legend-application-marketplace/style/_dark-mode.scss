@@ -46,6 +46,15 @@
     background: var(--color-dark-theme-border-light);
   }
 
+  .btn--dark.btn--caution {
+    background: var(--color-legacylight-orange-150);
+    color: var(--color-white);
+  }
+
+  .btn--dark.btn--caution:hover {
+    background: var(--color-legacylight-orange-100);
+  }
+
   // Header
   .legend-marketplace-page {
     background: var(--color-dark-theme-bg-primary);

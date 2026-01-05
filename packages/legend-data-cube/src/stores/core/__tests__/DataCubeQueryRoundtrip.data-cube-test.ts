@@ -100,6 +100,11 @@ const cases: TestCase[] = [
     columns: ['Age:Integer'],
     validator: _checkFilterOperator(DataCubeQueryFilterOperator.EQUAL),
   }),
+  _case(`Filter: == (Boolean)`, {
+    query: `filter(x|$x.Modified == false)`,
+    columns: ['Modified:Boolean'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.EQUAL),
+  }),
   _case(`Filter: == : NOT`, {
     query: `filter(x|$x.Age != 27)`,
     columns: ['Age:Integer'],
@@ -218,6 +223,37 @@ const cases: TestCase[] = [
     query: `filter(x|!$x.Name->toOne()->toLower()->contains(toLower(2)))`,
     columns: ['Name:String'],
     error: `Can't process filter condition: no matching operator found`,
+  }),
+  // --------------------------------- IN / NOT IN ---------------------------------
+  _case(`Filter: in() with strings`, {
+    query: `filter(x|$x.Name->in(['Asd', 'Qwe']))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IN),
+  }),
+  _case(`Filter: in() with numbers`, {
+    query: `filter(x|$x.Age->in([27, 28]))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IN),
+  }),
+  _case(`Filter: in() with dates`, {
+    query: `filter(x|$x.Dob->in(['2020-01-01']))`,
+    columns: ['Dob:Date'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IN),
+  }),
+  _case(`Filter: !in() with strings`, {
+    query: `filter(x|!$x.Name->in(['Asd', 'Qwe']))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_IN),
+  }),
+  _case(`Filter: !in() with numbers`, {
+    query: `filter(x|!$x.Age->in([27, 28]))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_IN),
+  }),
+  _case(`Filter: !in() with dates`, {
+    query: `filter(x|!$x.Dob->in(['2020-01-01']))`,
+    columns: ['Dob:Date'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_IN),
   }),
   _case(`Filter: endsWith()`, {
     query: `filter(x|$x.Name->endsWith('asd'))`,
@@ -510,6 +546,11 @@ const cases: TestCase[] = [
   _case(`Filter: !=`, {
     query: `filter(x|$x.Age != 27)`,
     columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL),
+  }),
+  _case(`Filter: != (Boolean)`, {
+    query: `filter(x|$x.Modified != false)`,
+    columns: ['Modified:Boolean'],
     validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL),
   }),
   _case(`Filter: != : NOT`, {

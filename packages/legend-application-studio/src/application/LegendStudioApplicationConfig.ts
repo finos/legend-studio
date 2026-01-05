@@ -182,7 +182,7 @@ class LegendStudioApplicationCoreOptions {
 
 export interface LegendStudioApplicationConfigurationData
   extends LegendApplicationConfigurationData {
-  sdlc: { url: string; baseHeaders?: RequestHeaders };
+  sdlc: { url: string; baseHeaders?: RequestHeaders; client?: string };
   depot: { url: string };
   engine: {
     url: string;
@@ -201,6 +201,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly sdlcServerUrl: string;
   readonly sdlcServerBaseHeaders?: RequestHeaders | undefined;
+  readonly sdlcServerClient?: string | undefined;
   readonly queryApplicationUrl?: string | undefined;
   readonly showcaseServerUrl?: string | undefined;
   readonly pctReportUrl?: string | undefined;
@@ -251,6 +252,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       ),
     );
     this.sdlcServerBaseHeaders = input.configData.sdlc.baseHeaders;
+    this.sdlcServerClient = input.configData.sdlc.client;
 
     // query
     if (input.configData.query?.url) {

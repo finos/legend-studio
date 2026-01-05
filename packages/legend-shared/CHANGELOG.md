@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.22
+
+### Patch Changes
+
+- [#4724](https://github.com/finos/legend-studio/pull/4724) [`1e5cad8`](https://github.com/finos/legend-studio/commit/1e5cad831a0a495705f4f6a4634824ca23d46b78) ([@travisstebbins](https://github.com/travisstebbins)) - Add mobx annotations to baseUrl for AbstractServerClient and NetworkClient
+
 ## 11.0.21
 
 ### Patch Changes

@@ -400,7 +400,7 @@ export class LegendDataCubeBuilderStore {
 
     // When user just starts the application with no DataCube ID, and source data
     if (!dataCubeId && !sourceData && !this.builder && !this.passedFirstLoad) {
-      this.loader.display.open();
+      this.creator.display.open();
     }
     this.passedFirstLoad = true;
 

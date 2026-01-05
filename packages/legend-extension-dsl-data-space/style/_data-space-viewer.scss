@@ -346,7 +346,8 @@
 .data-space__viewer__activity-bar {
   display: flex;
   flex-direction: column;
-  width: 5rem;
+  width: 6.2rem;
+  align-items: center;
   position: absolute;
   left: 2rem;
   top: 11rem;
@@ -390,7 +391,7 @@
     @include flexConstantDimension;
 
     height: 5rem;
-    width: 5rem;
+    width: 6rem;
     color: var(--color-dark-grey-400);
     cursor: pointer;
     position: relative;

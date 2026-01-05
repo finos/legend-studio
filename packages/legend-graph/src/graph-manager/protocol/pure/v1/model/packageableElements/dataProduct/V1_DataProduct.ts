@@ -207,18 +207,14 @@ export class V1_DataProductDiagram {
 
 export class V1_ModelAccessPointGroup extends V1_AccessPointGroup {
   mapping!: V1_PackageableElementPointer;
-  defaultRuntime!: string;
   featuredElements: V1_ElementScope[] | undefined;
-  compatibleRuntimes: V1_DataProductRuntimeInfo[] = [];
   diagrams: V1_DataProductDiagram[] = [];
   override get hashCode(): string {
     return hashArray([
       super.hashCode,
       CORE_HASH_STRUCTURE.DATA_PRODUCT_MODEL_ACCESS_POINT_GROUP,
       this.mapping.path,
-      this.defaultRuntime,
       hashArray(this.featuredElements ?? []),
-      hashArray(this.compatibleRuntimes),
       hashArray(this.diagrams),
     ]);
   }
@@ -229,16 +225,15 @@ export enum V1_DeliveryFrequency {
   WEEKLY = 'WEEKLY',
   MONTHLY = 'MONTHLY',
   QUARTERLY = 'QUARTERLY',
-  ANNUALLY = 'ANNUALLY',
+  YEARLY = 'YEARLY',
   ON_DEMAND = 'ON_DEMAND',
-  INTRA_DAY = 'INTRA_DAY',
-  OTHER = 'OTHER',
+  INTRA_DAY = 'INTRADAY',
 }
 
 export enum V1_DataProductRegion {
   APAC = 'APAC',
   EMEA = 'EMEA',
-  LATAM = 'LATAM',
+  LAMR = 'LAMR',
   NAMR = 'NAMR',
 }
 

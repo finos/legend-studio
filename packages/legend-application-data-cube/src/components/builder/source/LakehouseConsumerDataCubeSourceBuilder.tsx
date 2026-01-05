@@ -78,7 +78,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
           <CustomSelectorInput
             className="query-setup__wizard__selector text-nowrap"
             options={sourceBuilder.dataProducts.map((dataProduct) => ({
-              label: guaranteeNonNullable(dataProduct.fullPath),
+              label: guaranteeNonNullable(dataProduct.id),
               value: guaranteeNonNullable(dataProduct.fullPath),
             }))}
             disabled={

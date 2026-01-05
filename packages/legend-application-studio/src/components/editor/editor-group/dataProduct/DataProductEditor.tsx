@@ -80,6 +80,7 @@ import {
   GitBranchIcon,
   ListIcon,
   PanelLoadingIndicator,
+  GearSuggestIcon,
 } from '@finos/legend-art';
 import {
   type ChangeEventHandler,
@@ -101,13 +102,11 @@ import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type DataProductElement,
   type DataProductElementScope,
-  type DataProductRuntimeInfo,
   type Expertise,
   type GraphManagerState,
   type LakehouseAccessPoint,
   type Mapping,
   type PackageableElement,
-  type PackageableRuntime,
   type DataProduct,
   type DataProductDiagram,
   DataProductEmbeddedImageIcon,
@@ -124,6 +123,8 @@ import {
   ExternalDataProductType,
   DataProductLink,
   observer_DataProductLink,
+  DataProduct_Region,
+  DataProduct_DeliveryFrequency,
 } from '@finos/legend-graph';
 import {
   accessPoint_setClassification,
@@ -139,8 +140,6 @@ import {
   supportInfo_setDocumentationUrl,
   supportInfo_setFaqUrl,
   supportInfo_setLinkLabel,
-  runtimeInfo_setId,
-  runtimeInfo_setDescription,
   supportInfo_setSupportUrl,
   supportInfo_setWebsite,
   dataProduct_setType,
@@ -153,8 +152,12 @@ import {
   accessPointGroup_setTitle,
   accessPoint_setDescription,
   accessPoint_setTitle,
+  dataProduct_setOperationalMetadataIfAbsent,
+  operationalMetadata_deleteCoverageRegion,
+  operationalMetadata_addCoverageRegion,
   dataProductDiagram_setTitle,
   dataProductDiagram_setDescription,
+  operationalMetadata_setUpdateFrequency,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -1266,140 +1269,6 @@ const AccessPointGroupPublicToggle = observer(
   },
 );
 
-export const CompatibleRuntimesEditor = observer(
-  (props: { groupState: ModelAccessPointGroupState }) => {
-    const { groupState } = props;
-    const group = groupState.value;
-
-    const handleSelectRuntime = (runtime: DataProductRuntimeInfo) => {
-      groupState.setDefaultRuntime(runtime);
-    };
-
-    // Event handlers
-    const handleAddRuntime = (option: {
-      label: string;
-      value: PackageableRuntime;
-    }): void => {
-      if (typeof option.value === 'object') {
-        groupState.addCompatibleRuntime(option.value);
-      }
-    };
-
-    const handleRemoveRuntime = (runtime: DataProductRuntimeInfo): void => {
-      groupState.removeCompatibleRuntime(runtime);
-    };
-
-    const handleRuntimeTitleChange = (
-      runtimeInfo: DataProductRuntimeInfo,
-      value: string | undefined,
-    ): void => {
-      runtimeInfo_setId(runtimeInfo, value ?? '');
-    };
-
-    const handleRuntimeDescriptionChange = (
-      runtimeInfo: DataProductRuntimeInfo,
-      value: string | undefined,
-    ): void => {
-      runtimeInfo_setDescription(runtimeInfo, value);
-    };
-
-    // ListEditor component renderers
-    const RuntimeComponent = observer(
-      (runtimeComponentProps: {
-        item: DataProductRuntimeInfo;
-      }): React.ReactElement => {
-        const { item } = runtimeComponentProps;
-
-        return (
-          <>
-            <div className="panel__content__form__section__list__item__content">
-              <div className="panel__content__form__section__header__label">
-                Default?
-              </div>
-              <input
-                type="radio"
-                name="defaultRuntimeRadio"
-                value={item.id}
-                checked={group.defaultRuntime === item}
-                onChange={() => handleSelectRuntime(item)}
-              />
-            </div>
-            <div className="panel__content__form__section__list__item__content">
-              <div className="panel__content__form__section__header__label">
-                Runtime
-              </div>
-              <div className="panel__content__form__section__list__item__content__title">
-                {item.runtime.value.path}
-              </div>
-            </div>
-            <div className="panel__content__form__section__list__item__form">
-              <PanelFormTextField
-                name="Title"
-                value={item.id}
-                update={(value) => handleRuntimeTitleChange(item, value)}
-                placeholder="Enter title"
-                className="dataSpace-editor__general__diagrams__title"
-              />
-              <PanelFormTextField
-                name="Description"
-                value={item.description ?? ''}
-                update={(value) => handleRuntimeDescriptionChange(item, value)}
-                placeholder="Enter description"
-                className="dataSpace-editor__general__diagrams__description"
-              />
-            </div>
-          </>
-        );
-      },
-    );
-
-    const NewRuntimeComponent = observer(
-      (newRuntimeProps: {
-        onFinishEditing: () => void;
-      }): React.ReactElement => {
-        const { onFinishEditing } = newRuntimeProps;
-
-        return (
-          <div className="panel__content__form__section__list__new-item__input">
-            <CustomSelectorInput
-              options={groupState.getCompatibleRuntimeOptions()}
-              onChange={(event: {
-                label: string;
-                value: PackageableRuntime;
-              }) => {
-                onFinishEditing();
-                handleAddRuntime(event);
-              }}
-              placeholder="Select a runtime to add..."
-              darkMode={
-                !groupState.state.editorStore.applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-            />
-          </div>
-        );
-      },
-    );
-
-    return (
-      <ListEditor
-        title="Compatible Runtimes"
-        prompt="Add compatible runtimes to include in this Data Product. Set a title and description for each runtime."
-        items={group.compatibleRuntimes}
-        keySelector={(element: DataProductRuntimeInfo) =>
-          element.runtime.value.path
-        }
-        ItemComponent={RuntimeComponent}
-        NewItemComponent={NewRuntimeComponent}
-        handleRemoveItem={handleRemoveRuntime}
-        isReadOnly={groupState.state.isReadOnly}
-        emptyMessage="No runtimes specified"
-        emptyClassName="data-product-editor__empty-runtime"
-      />
-    );
-  },
-);
-
 export const CompatibleDiagramsEditor = observer(
   (props: { groupState: ModelAccessPointGroupState }) => {
     const { groupState } = props;
@@ -1678,7 +1547,6 @@ const ModelAccessPointGroupEditor = observer(
             <LongArrowRightIcon />
           </button>
         </div>
-        <CompatibleRuntimesEditor groupState={groupState} />
         <CompatibleDiagramsEditor groupState={groupState} />
         <FeaturedElementsEditor
           groupState={groupState}
@@ -2182,6 +2050,11 @@ const DataProductSidebar = observer(
         icon: <GroupWorkIcon />,
       },
       {
+        label: DATA_PRODUCT_TAB.OPERATIONAL,
+        title: 'Operational Metadata',
+        icon: <GearSuggestIcon />,
+      },
+      {
         label: DATA_PRODUCT_TAB.SUPPORT,
         icon: <QuestionCircleIcon />,
       },
@@ -2206,8 +2079,8 @@ const DataProductSidebar = observer(
               title={activity.title ?? activity.label}
               style={{
                 flexDirection: 'column',
-                fontSize: '12px',
-                margin: '1rem 0rem',
+                fontSize: '10px',
+                margin: '0.5rem 0rem',
               }}
             >
               {activity.icon}
@@ -3026,6 +2899,150 @@ const getDataProductViewerState = (
   return dataProductViewerState;
 };
 
+const OperationalTab = observer(
+  (props: {
+    dataProductEditorState: DataProductEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { dataProductEditorState, isReadOnly } = props;
+    const product = dataProductEditorState.product;
+    const CHOOSE_REGION = 'Add Coverage Region...';
+
+    const getCoverageRegionOptions = () => {
+      const existingRegions =
+        product.operationalMetadata?.coverageRegions ?? [];
+      return Object.values(DataProduct_Region)
+        .filter((region) => !existingRegions.includes(region))
+        .map((region) => ({
+          label: region,
+          value: region,
+        }));
+    };
+
+    const handleAddRegion = (
+      val: { label: string; value: DataProduct_Region } | null,
+    ): void => {
+      dataProduct_setOperationalMetadataIfAbsent(product);
+      if (product.operationalMetadata && val) {
+        operationalMetadata_addCoverageRegion(
+          product.operationalMetadata,
+          val.value,
+        );
+      }
+    };
+
+    const handleRemoveRegion = (region: DataProduct_Region) => {
+      if (product.operationalMetadata) {
+        operationalMetadata_deleteCoverageRegion(
+          product.operationalMetadata,
+          region,
+        );
+      }
+    };
+
+    const handleUpdateFrequencyChange = (
+      val: { label: string; value: DataProduct_DeliveryFrequency } | null,
+    ): void => {
+      dataProduct_setOperationalMetadataIfAbsent(product);
+      if (product.operationalMetadata && val) {
+        operationalMetadata_setUpdateFrequency(
+          product.operationalMetadata,
+          val.value,
+        );
+      }
+    };
+
+    return (
+      <div>
+        <div
+          className="panel__content__form__section__header__label"
+          style={{ paddingLeft: '1rem' }}
+        >
+          Operational Metadata
+        </div>
+        <div
+          className="panel__content__form__section__header__prompt"
+          style={{ paddingLeft: '1rem' }}
+        >
+          Configure operational metadata for this Data Product.
+        </div>
+        <div className="data-product-editor__operational-input">
+          <div
+            className="panel__content__form__section__header__label"
+            style={{ justifyContent: 'space-between', width: '45rem' }}
+          >
+            Coverage Regions
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Select the regions this Data Product covers.
+          </div>
+          <div className="panel__content__form__section__list__id-list">
+            {product.operationalMetadata?.coverageRegions?.map((region) => (
+              <div
+                className="panel__content__form__section__list__item"
+                key={region}
+              >
+                {region}
+                <button
+                  className="panel__content__form__section__list__item__remove-btn"
+                  disabled={dataProductEditorState.isReadOnly}
+                  onClick={() => handleRemoveRegion(region)}
+                  tabIndex={-1}
+                  title="Remove Region"
+                >
+                  <TimesIcon />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="panel__content__form__section__list__new-item__input">
+            <CustomSelectorInput
+              options={getCoverageRegionOptions()}
+              onChange={handleAddRegion}
+              placeholder={CHOOSE_REGION}
+              darkMode={true}
+              disabled={isReadOnly}
+            />
+          </div>
+        </div>
+        <div className="data-product-editor__operational-input">
+          <div
+            className="panel__content__form__section__header__label"
+            style={{ justifyContent: 'space-between', width: '45rem' }}
+          >
+            Update Frequency
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Select the update frequency of this Data Product.
+          </div>
+          <div className="panel__content__form__section__list__new-item__input">
+            <CustomSelectorInput
+              options={Object.values(DataProduct_DeliveryFrequency).map(
+                (region) => ({
+                  label: region,
+                  value: region,
+                }),
+              )}
+              onChange={handleUpdateFrequencyChange}
+              value={
+                product.operationalMetadata?.updateFrequency
+                  ? {
+                      label: product.operationalMetadata.updateFrequency,
+                      value: product.operationalMetadata.updateFrequency,
+                    }
+                  : null
+              }
+              placeholder="Select update frequency..."
+              darkMode={true}
+              disabled={isReadOnly}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 export const DataProductEditor = observer(() => {
   const editorStore = useEditorStore();
   const dataProductEditorState =
@@ -3081,6 +3098,13 @@ export const DataProductEditor = observer(() => {
       case DATA_PRODUCT_TAB.APG:
         return (
           <AccessPointGroupTab
+            dataProductEditorState={dataProductEditorState}
+            isReadOnly={isReadOnly}
+          />
+        );
+      case DATA_PRODUCT_TAB.OPERATIONAL:
+        return (
+          <OperationalTab
             dataProductEditorState={dataProductEditorState}
             isReadOnly={isReadOnly}
           />

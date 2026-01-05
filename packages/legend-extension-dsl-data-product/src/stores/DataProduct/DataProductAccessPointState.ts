@@ -18,34 +18,19 @@ import {
   type V1_AccessPoint,
   type V1_DataProductArtifact,
   type V1_EntitlementsDataProductDetails,
-  PureClientVersion,
-  V1_AdHocDeploymentDataProductOrigin,
   V1_LakehouseAccessPoint,
   V1_LambdaReturnTypeInput,
-  V1_LegendSDLC,
-  V1_Protocol,
-  V1_PureGraphManager,
-  V1_PureModelContextPointer,
   V1_RelationElement,
   V1_RelationType,
   V1_relationTypeModelSchema,
   V1_RenderStyle,
-  V1_SdlcDeploymentDataProductOrigin,
   V1_serializeRawValueSpecification,
-  V1_LakehouseRuntime,
-  V1_PackageableRuntime,
-  V1_PureModelContextData,
-  V1_PureModelContextCombination,
-  V1_deserializeRawValueSpecification,
   V1_ExecuteInput,
   V1_deserializeExecutionResult,
   V1_buildExecutionResult,
   V1_RelationRowTestData,
-  type V1_EntitlementsDataProductOrigin,
-  type V1_RawLambda,
   type V1_ExecutionResult,
   type TDSExecutionResult,
-  V1_RawBaseExecutionContext,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -53,13 +38,11 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
-  guaranteeType,
 } from '@finos/legend-shared';
 import { makeAutoObservable, observable, flow } from 'mobx';
 import { deserialize } from 'serializr';
 import type { DataProductAPGState } from './DataProductAPGState.js';
-import { resolveVersion } from '@finos/legend-server-depot';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
 
 export class DataProductAccessPointState {
   readonly apgState: DataProductAPGState;
@@ -152,7 +135,10 @@ export class DataProductAccessPointState {
     if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
       const projectGAV = this.apgState.dataProductViewerState.projectGAV;
       const entitlementsOrigin = entitlementsDataProductDetails?.origin;
-      const model = this.getAccessPointModel(projectGAV, entitlementsOrigin);
+      const model = this.apgState.dataProductViewerState.getAccessPointModel(
+        projectGAV,
+        entitlementsOrigin,
+      );
       const relationTypeInput = new V1_LambdaReturnTypeInput(
         guaranteeNonNullable(
           model,
@@ -174,47 +160,6 @@ export class DataProductAccessPointState {
     throw new Error(
       `Access point '${this.accessPoint.id}' is not a Lakehouse access point, cannot fetch relation type from engine`,
     );
-  }
-
-  private getAccessPointModel(
-    projectGAV: ProjectGAVCoordinates | undefined,
-    entitlementsOrigin: V1_EntitlementsDataProductOrigin | null | undefined,
-  ) {
-    return projectGAV !== undefined
-      ? new V1_PureModelContextPointer(
-          // TODO: remove as backend should handle undefined protocol input
-          new V1_Protocol(
-            V1_PureGraphManager.PURE_PROTOCOL_NAME,
-            PureClientVersion.VX_X_X,
-          ),
-          new V1_LegendSDLC(
-            projectGAV.groupId,
-            projectGAV.artifactId,
-            resolveVersion(projectGAV.versionId),
-          ),
-        )
-      : entitlementsOrigin instanceof V1_AdHocDeploymentDataProductOrigin ||
-          entitlementsOrigin === undefined
-        ? guaranteeType(
-            this.apgState.dataProductViewerState.graphManagerState.graphManager,
-            V1_PureGraphManager,
-          ).getFullGraphModelData(
-            this.apgState.dataProductViewerState.graphManagerState.graph,
-          )
-        : entitlementsOrigin instanceof V1_SdlcDeploymentDataProductOrigin
-          ? new V1_PureModelContextPointer(
-              // TODO: remove as backend should handle undefined protocol input
-              new V1_Protocol(
-                V1_PureGraphManager.PURE_PROTOCOL_NAME,
-                PureClientVersion.VX_X_X,
-              ),
-              new V1_LegendSDLC(
-                entitlementsOrigin.group,
-                entitlementsOrigin.artifact,
-                resolveVersion(entitlementsOrigin.version),
-              ),
-            )
-          : undefined;
   }
 
   async fetchRelationType(
@@ -277,38 +222,13 @@ export class DataProductAccessPointState {
   async fetchSampleDataFromEngine(resolvedUserEnv: string): Promise<void> {
     try {
       if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
-        const runtime = new V1_LakehouseRuntime();
-        runtime.warehouse = `LAKEHOUSE_CONSUMER_DEFAULT_WH`;
-        runtime.environment = resolvedUserEnv;
-
-        const packageableRuntime = new V1_PackageableRuntime();
-        packageableRuntime.runtimeValue = runtime;
-        packageableRuntime.name = 'lakehouseConsumer';
-        packageableRuntime.package = 'runtime';
-
-        const query = `#P{${this.apgState.dataProductViewerState.product.path}.${this.accessPoint.id}}#->take(5)->from(${packageableRuntime.path})`;
-
-        const model = guaranteeNonNullable(
-          this.getAccessPointModel(
-            this.apgState.dataProductViewerState.projectGAV,
-            this.entitlementsDataProductDetails?.origin,
-          ),
+        const query = `#P{${this.apgState.dataProductViewerState.product.path}.${this.accessPoint.id}}#->take(200)`;
+        const executionInput = await createExecuteInput(
+          resolvedUserEnv,
+          query,
+          this.apgState.dataProductViewerState,
+          guaranteeNonNullable(this.entitlementsDataProductDetails),
         );
-        const data = new V1_PureModelContextData();
-        data.elements.push(packageableRuntime);
-        const contextModel = new V1_PureModelContextCombination([model, data]);
-
-        const rawLambda = V1_deserializeRawValueSpecification(
-          await this.apgState.dataProductViewerState.engineServerClient.grammarToJSON_lambda(
-            query,
-          ),
-        ) as V1_RawLambda;
-        const executionInput = new V1_ExecuteInput();
-        executionInput.model = contextModel;
-        executionInput.function = rawLambda;
-        executionInput.clientVersion = PureClientVersion.VX_X_X;
-        executionInput.context = new V1_RawBaseExecutionContext();
-
         const result = V1_buildExecutionResult(
           V1_deserializeExecutionResult(
             (await this.apgState.dataProductViewerState.engineServerClient.runQuery(
@@ -317,16 +237,32 @@ export class DataProductAccessPointState {
           ),
         ) as TDSExecutionResult;
 
-        const relEle = new V1_RelationElement();
-        relEle.paths = [this.accessPoint.id];
-        relEle.columns = result.builder.columns.map((col) => col.name);
-        relEle.rows = result.result.rows.map((row, rowIndex) => {
-          const relRow = new V1_RelationRowTestData();
+        const MAX_DISTINCT = 5;
 
-          relRow.values = row.values.map((value, colIndex) => {
-            return String(value); // Ensure consistent string type
+        const columns = result.builder.columns.map((c) => c.name);
+        const valuesPerColumn = columns.map(() => new Set<string>());
+
+        for (const row of result.result.rows) {
+          row.values.forEach((v, i) => {
+            const set = valuesPerColumn[i];
+            if (set && set.size < MAX_DISTINCT) {
+              set.add(String(v));
+            }
           });
 
+          if (valuesPerColumn.every((s) => s.size >= MAX_DISTINCT)) {
+            break;
+          }
+        }
+
+        const relEle = new V1_RelationElement();
+        relEle.paths = [this.accessPoint.id];
+        relEle.columns = columns;
+        const maxRows = Math.max(...valuesPerColumn.map((s) => s.size));
+
+        relEle.rows = Array.from({ length: maxRows }, (_, i) => {
+          const relRow = new V1_RelationRowTestData();
+          relRow.values = valuesPerColumn.map((s) => Array.from(s)[i] ?? '');
           return relRow;
         });
         this.relationElement = relEle;

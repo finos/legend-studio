@@ -39,6 +39,10 @@ import {
   type ExternalDataProductType,
   observe_Expertise,
   type Expertise,
+  observe_OperationalMetadata,
+  DataProductOperationalMetadata,
+  type DataProduct_DeliveryFrequency,
+  type DataProduct_Region,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, swapEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -97,30 +101,12 @@ export const accessPointGroup_setTitle = action(
   },
 );
 
-export const modelAccessPointGroup_setDefaultRuntime = action(
-  (group: ModelAccessPointGroup, runtime: DataProductRuntimeInfo) => {
-    group.defaultRuntime = runtime;
-  },
-);
-
 export const modelAccessPointGroup_setMapping = action(
   (
     group: ModelAccessPointGroup,
     mapping: PackageableElementReference<Mapping>,
   ) => {
     group.mapping = mapping;
-  },
-);
-
-export const modelAccessPointGroup_addCompatibleRuntime = action(
-  (group: ModelAccessPointGroup, runtime: DataProductRuntimeInfo) => {
-    addUniqueEntry(group.compatibleRuntimes, runtime);
-  },
-);
-
-export const modelAccessPointGroup_removeCompatibleRuntime = action(
-  (group: ModelAccessPointGroup, runtime: DataProductRuntimeInfo): void => {
-    deleteEntry(group.compatibleRuntimes, runtime);
   },
 );
 
@@ -377,6 +363,49 @@ export const supportInfo_deleteEmail = action(
     const index = supportInfo.emails.indexOf(email);
     if (index !== -1) {
       supportInfo.emails.splice(index, 1);
+    }
+  },
+);
+
+export const dataProduct_setOperationalMetadataIfAbsent = action(
+  (product: DataProduct) => {
+    if (!product.operationalMetadata) {
+      product.operationalMetadata = observe_OperationalMetadata(
+        new DataProductOperationalMetadata(),
+      );
+    }
+  },
+);
+
+export const operationalMetadata_setUpdateFrequency = action(
+  (
+    operationalMetadata: DataProductOperationalMetadata,
+    updateFrequency: DataProduct_DeliveryFrequency,
+  ) => {
+    operationalMetadata.updateFrequency = updateFrequency;
+  },
+);
+
+export const operationalMetadata_addCoverageRegion = action(
+  (
+    operationalMetadata: DataProductOperationalMetadata,
+    region: DataProduct_Region,
+  ) => {
+    if (!operationalMetadata.coverageRegions) {
+      operationalMetadata.coverageRegions = [region];
+    } else {
+      addUniqueEntry(operationalMetadata.coverageRegions, region);
+    }
+  },
+);
+
+export const operationalMetadata_deleteCoverageRegion = action(
+  (
+    operationalMetadata: DataProductOperationalMetadata,
+    region: DataProduct_Region,
+  ) => {
+    if (operationalMetadata.coverageRegions) {
+      deleteEntry(operationalMetadata.coverageRegions, region);
     }
   },
 );

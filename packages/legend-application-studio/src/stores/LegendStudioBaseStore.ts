@@ -92,6 +92,7 @@ export class LegendStudioBaseStore {
       env: this.applicationStore.config.env,
       serverUrl: this.applicationStore.config.sdlcServerUrl,
       baseHeaders: this.applicationStore.config.sdlcServerBaseHeaders,
+      client: this.applicationStore.config.sdlcServerClient,
     });
     this.sdlcServerClient.setTracerService(this.applicationStore.tracerService);
   }
@@ -214,6 +215,7 @@ export class LegendStudioBaseStore {
           SDLCServerClient.authorizeCallbackUrl(
             this.applicationStore.config.sdlcServerUrl,
             this.applicationStore.navigationService.navigator.getCurrentAddress(),
+            this.applicationStore.config.sdlcServerClient,
           ),
         );
       } else {

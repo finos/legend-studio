@@ -38,19 +38,32 @@ import {
 } from '../../../stores/core/filter/DataCubeQueryFilterEditorState.js';
 import {
   FormButton,
+  FormCheckbox,
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
 } from '../../core/DataCubeFormUtils.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+} from 'react';
 import {
   DATE_FORMAT,
   PRECISE_PRIMITIVE_TYPE,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 
-import { formatDate, guaranteeIsNumber, parseISO } from '@finos/legend-shared';
+import {
+  formatDate,
+  guaranteeIsNumber,
+  isNullable,
+  parseISO,
+} from '@finos/legend-shared';
 import { evaluate } from 'mathjs';
 import { useDataCube } from '../../DataCubeProvider.js';
 import { _findCol } from '../../../stores/core/model/DataCubeColumn.js';
@@ -87,6 +100,29 @@ const DataCubeEditorFilterConditionNodeTextValueEditor = observer(
         }}
         onChange={(event) => {
           updateValue(event.target.value);
+        }}
+      />
+    );
+  }),
+);
+
+const DataCubeEditorFilterConditionNodeBooleanValueEditor = observer(
+  forwardRef<
+    HTMLButtonElement,
+    {
+      value: boolean;
+      updateValue: (value: boolean) => void;
+    }
+  >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
+    const { value, updateValue } = props;
+
+    return (
+      <FormCheckbox
+        ref={ref}
+        className="ml-1"
+        checked={value}
+        onChange={() => {
+          updateValue(!value);
         }}
       />
     );
@@ -336,6 +372,349 @@ const DataCubeEditorFilterConditionNodeColumnSelector = observer(
   }),
 );
 
+const DataCubeEditorFilterConditionNodeListValueEditor = observer(
+  forwardRef<
+    HTMLElement,
+    {
+      value: DataCubeOperationValue;
+      updateValue: (value: unknown) => void;
+      view: DataCubeViewState;
+    }
+  >(function DataCubeEditorFilterConditionNodeListValueEditor(props, ref) {
+    const { value, updateValue } = props;
+    const items = useMemo(
+      () =>
+        Array.isArray(value.value)
+          ? (value.value as DataCubeOperationValue[])
+          : [],
+      [value.value],
+    );
+    const idSeq = useRef(0);
+    const makeId = () => `${Date.now()}_${idSeq.current++}`;
+    type LocalItem = { id: string; value: DataCubeOperationValue };
+    const [localItems, setLocalItems] = useState<LocalItem[]>(
+      items.map((it) => ({ id: makeId(), value: it })),
+    );
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [newInput, setNewInput] = useState('');
+
+    useEffect(() => {
+      // rebuild local items from incoming value; generate ids locally
+      setLocalItems(items.map((it) => ({ id: makeId(), value: it })));
+    }, [items]);
+
+    const close = () => {
+      // commit normalized list shape when closing
+      updateValue(localItems.map((e) => e.value));
+      setAnchorEl(null);
+    };
+
+    const commit = useCallback((nextItems: LocalItem[]) => {
+      setLocalItems(nextItems);
+    }, []);
+
+    const addItem = useCallback(() => {
+      const trimmed = newInput.trim();
+      // if input provided, try to coerce to column type; else create default typed item
+      let newItem: DataCubeOperationValue;
+      const firstType = localItems[0]?.value.type ?? PRIMITIVE_TYPE.STRING;
+      switch (firstType) {
+        case PRIMITIVE_TYPE.BOOLEAN: {
+          const v = trimmed.toLowerCase();
+          const boolVal = v === 'true' || v === '1';
+          newItem = { type: firstType, value: boolVal };
+          break;
+        }
+        case PRIMITIVE_TYPE.NUMBER:
+        case PRIMITIVE_TYPE.DECIMAL:
+        case PRIMITIVE_TYPE.FLOAT:
+        case PRIMITIVE_TYPE.INTEGER:
+        case PRECISE_PRIMITIVE_TYPE.INT:
+        case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+        case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+        case PRECISE_PRIMITIVE_TYPE.NUMERIC:
+        case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+        case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+        case PRECISE_PRIMITIVE_TYPE.FLOAT:
+        case PRECISE_PRIMITIVE_TYPE.U_INT:
+        case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+        case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+        case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+        case PRECISE_PRIMITIVE_TYPE.U_TINY_INT: {
+          const n = Number(trimmed);
+          newItem = { type: firstType, value: isNaN(n) ? 0 : n };
+          break;
+        }
+        case PRIMITIVE_TYPE.DATE:
+        case PRIMITIVE_TYPE.STRICTDATE:
+        case PRIMITIVE_TYPE.DATETIME:
+        case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
+        case PRECISE_PRIMITIVE_TYPE.DATETIME:
+        case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+        case PRECISE_PRIMITIVE_TYPE.TIMESTAMP: {
+          // try parse ISO, else use formatted now
+          let dateVal = trimmed;
+          try {
+            const d = parseISO(trimmed);
+            dateVal = formatDate(d, DATE_FORMAT);
+          } catch {
+            dateVal = formatDate(new Date(), DATE_FORMAT);
+          }
+          newItem = { type: firstType, value: dateVal };
+          break;
+        }
+        default:
+          newItem = { type: firstType, value: trimmed };
+      }
+      const next = [...localItems, { id: makeId(), value: newItem }];
+      commit(next);
+      setNewInput('');
+      inputRef.current?.focus();
+    }, [localItems, newInput, commit]);
+
+    // When the popover is open, allow pressing Enter (when focus is not in an
+    // input/control) to add a new item. We keep Enter behavior of individual
+    // editors (e.g. number evaluator) intact by ignoring keypress when focus
+    // is on common form controls.
+    useEffect(() => {
+      const handler = (e: KeyboardEvent): void => {
+        if (e.key !== 'Enter') {
+          return;
+        }
+        if (!anchorEl) {
+          return;
+        }
+        const active = document.activeElement as HTMLElement | null;
+        if (!active) {
+          addItem();
+          e.preventDefault();
+          return;
+        }
+        const tag = active.tagName;
+        // if focus is on typical input controls, let their handlers process Enter
+        if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) {
+          return;
+        }
+        // otherwise, treat Enter as add
+        addItem();
+        e.preventDefault();
+      };
+      window.addEventListener('keydown', handler);
+      return () => window.removeEventListener('keydown', handler);
+    }, [anchorEl, addItem]);
+
+    const removeItem = (idx: number) => {
+      const next = localItems.filter((_, i) => i !== idx);
+      commit(next);
+    };
+
+    const summary =
+      localItems.length === 0
+        ? 'Add...'
+        : `${localItems
+            .slice(0, 2)
+            .map((entry) => {
+              const v = entry.value.value;
+              return String(v ?? '');
+            })
+            .join(
+              ', ',
+            )}${localItems.length > 2 ? ` (+${localItems.length - 2})` : ''}`;
+
+    return (
+      <>
+        <button
+          ref={ref as React.RefObject<HTMLButtonElement>}
+          className="relative h-5 w-full border border-neutral-400 px-1 text-left text-sm"
+          onClick={(e) => setAnchorEl(e.currentTarget)}
+        >
+          {summary}
+        </button>
+        <BasePopover
+          open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          onClose={() => close()}
+          classes={{
+            paper: 'shadow-md rounded-none border border-neutral-300 p-2',
+          }}
+        >
+          <div className="w-60">
+            <div className="max-h-40 overflow-auto">
+              {localItems.length === 0 && (
+                <div className="mb-2 text-sm text-neutral-600">
+                  No values added.
+                </div>
+              )}
+              {localItems.map((entry) => {
+                const it = entry.value;
+                const id = entry.id;
+                return (
+                  <div key={id} className="mb-1 flex items-center gap-2">
+                    <div className="flex-1">
+                      {(() => {
+                        switch (it.type) {
+                          case PRIMITIVE_TYPE.BOOLEAN:
+                            return (
+                              <DataCubeEditorFilterConditionNodeBooleanValueEditor
+                                value={Boolean(it.value)}
+                                updateValue={(v: boolean) => {
+                                  const next = localItems.slice();
+                                  const idx = next.findIndex(
+                                    (e) => e.id === id,
+                                  );
+                                  if (idx >= 0) {
+                                    next[idx] = {
+                                      id,
+                                      value: { type: it.type, value: v },
+                                    };
+                                    setLocalItems(next);
+                                  }
+                                }}
+                              />
+                            );
+                          case PRIMITIVE_TYPE.NUMBER:
+                          case PRIMITIVE_TYPE.DECIMAL:
+                          case PRIMITIVE_TYPE.FLOAT:
+                          case PRIMITIVE_TYPE.INTEGER:
+                          case PRECISE_PRIMITIVE_TYPE.INT:
+                          case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+                          case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+                          case PRECISE_PRIMITIVE_TYPE.NUMERIC:
+                          case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+                          case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+                          case PRECISE_PRIMITIVE_TYPE.FLOAT:
+                          case PRECISE_PRIMITIVE_TYPE.U_INT:
+                          case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+                          case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+                          case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+                          case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
+                            return (
+                              <DataCubeEditorFilterConditionNodeNumberValueEditor
+                                value={
+                                  !isNullable(it.value)
+                                    ? (it.value as number)
+                                    : 0
+                                }
+                                updateValue={(v: number) => {
+                                  const next = localItems.slice();
+                                  const idx = next.findIndex(
+                                    (e) => e.id === id,
+                                  );
+                                  if (idx >= 0) {
+                                    next[idx] = {
+                                      id,
+                                      value: { type: it.type, value: v },
+                                    };
+                                    setLocalItems(next);
+                                  }
+                                }}
+                              />
+                            );
+                          case PRIMITIVE_TYPE.DATE:
+                          case PRIMITIVE_TYPE.STRICTDATE:
+                          case PRIMITIVE_TYPE.DATETIME:
+                          case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
+                          case PRECISE_PRIMITIVE_TYPE.DATETIME:
+                          case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+                          case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
+                            return (
+                              <DataCubeEditorFilterConditionNodeDateValueEditor
+                                value={String(
+                                  it.value ??
+                                    formatDate(new Date(), DATE_FORMAT),
+                                )}
+                                updateValue={(v: string) => {
+                                  const next = localItems.slice();
+                                  const idx = next.findIndex(
+                                    (e) => e.id === id,
+                                  );
+                                  if (idx >= 0) {
+                                    next[idx] = {
+                                      id,
+                                      value: { type: it.type, value: v },
+                                    };
+                                    setLocalItems(next);
+                                  }
+                                }}
+                              />
+                            );
+                          default:
+                            return (
+                              <DataCubeEditorFilterConditionNodeTextValueEditor
+                                value={String(it.value ?? '')}
+                                updateValue={(v: string) => {
+                                  const next = localItems.slice();
+                                  const idx = next.findIndex(
+                                    (e) => e.id === id,
+                                  );
+                                  if (idx >= 0) {
+                                    next[idx] = {
+                                      id,
+                                      value: { type: it.type, value: v },
+                                    };
+                                    setLocalItems(next);
+                                  }
+                                }}
+                              />
+                            );
+                        }
+                      })()}
+                    </div>
+                    <button
+                      className="text-sm text-red-600"
+                      onClick={() => {
+                        const idx = localItems.findIndex((e) => e.id === id);
+                        if (idx >= 0) {
+                          removeItem(idx);
+                        }
+                      }}
+                      title="Remove"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                ref={inputRef}
+                className="flex-1 border border-neutral-300 px-1 text-sm"
+                placeholder="Add value"
+                value={newInput}
+                onChange={(e) => setNewInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    addItem();
+                    e.preventDefault();
+                  } else if (e.key === 'Escape') {
+                    close();
+                  }
+                }}
+              />
+              <button className="ml-1" onClick={addItem} title="Add">
+                +
+              </button>
+            </div>
+            <div className="mt-2 flex justify-end">
+              <FormButton
+                onClick={() => {
+                  close();
+                }}
+              >
+                Done
+              </FormButton>
+            </div>
+          </div>
+        </BasePopover>
+      </>
+    );
+  }),
+);
+
 const DataCubeEditorFilterConditionNodeValueEditor = observer(
   forwardRef<
     HTMLElement,
@@ -346,7 +725,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
     }
   >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
     const { value, updateValue, view } = props;
-    // WIP: support collection/column
+    // WIP: support column
     switch (value.type) {
       case PRIMITIVE_TYPE.STRING:
       case PRECISE_PRIMITIVE_TYPE.VARCHAR:
@@ -354,6 +733,14 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
           <DataCubeEditorFilterConditionNodeTextValueEditor
             ref={ref as React.RefObject<HTMLInputElement>}
             value={value.value as string}
+            updateValue={(val) => updateValue(val)}
+          />
+        );
+      case PRIMITIVE_TYPE.BOOLEAN:
+        return (
+          <DataCubeEditorFilterConditionNodeBooleanValueEditor
+            ref={ref as React.RefObject<HTMLButtonElement>}
+            value={value.value as boolean}
             updateValue={(val) => updateValue(val)}
           />
         );
@@ -399,6 +786,15 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
           <DataCubeEditorFilterConditionNodeColumnSelector
             ref={ref as React.RefObject<HTMLButtonElement>}
             value={value.value as string}
+            updateValue={(val) => updateValue(val)}
+            view={view}
+          />
+        );
+      case DataCubeOperationAdvancedValueType.LIST:
+        return (
+          <DataCubeEditorFilterConditionNodeListValueEditor
+            ref={ref}
+            value={value}
             updateValue={(val) => updateValue(val)}
             view={view}
           />

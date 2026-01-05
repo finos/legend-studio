@@ -186,9 +186,7 @@ export class ModelAccessPointGroup
   implements Hashable
 {
   mapping!: PackageableElementReference<Mapping>;
-  defaultRuntime!: DataProductRuntimeInfo;
   featuredElements: DataProductElementScope[] = [];
-  compatibleRuntimes: DataProductRuntimeInfo[] = [];
   diagrams: DataProductDiagram[] = [];
 
   override get hashCode(): string {
@@ -196,9 +194,7 @@ export class ModelAccessPointGroup
       super.hashCode,
       CORE_HASH_STRUCTURE.DATA_PRODUCT_MODEL_ACCESS_POINT_GROUP,
       this.mapping.valueForSerialization ?? '',
-      this.defaultRuntime.id,
       hashArray(this.featuredElements),
-      hashArray(this.compatibleRuntimes),
       hashArray(this.diagrams),
     ]);
   }
@@ -262,16 +258,15 @@ export enum DataProduct_DeliveryFrequency {
   WEEKLY = 'WEEKLY',
   MONTHLY = 'MONTHLY',
   QUARTERLY = 'QUARTERLY',
-  ANNUALLY = 'ANNUALLY',
+  YEARLY = 'YEARLY',
   ON_DEMAND = 'ON_DEMAND',
-  INTRA_DAY = 'INTRA_DAY',
-  OTHER = 'OTHER',
+  INTRA_DAY = 'INTRADAY',
 }
 
 export enum DataProduct_Region {
   APAC = 'APAC',
   EMEA = 'EMEA',
-  LATAM = 'LATAM',
+  LAMR = 'LAMR',
   NAMR = 'NAMR',
 }
 

@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.180
+
+## 10.4.179
+
+### Patch Changes
+
+- [#4730](https://github.com/finos/legend-studio/pull/4730) [`517a732`](https://github.com/finos/legend-studio/commit/517a732a5babd906f178c5ba18bda4129a2d4eae) ([@kelly-thai](https://github.com/kelly-thai)) - Add Operational Metadata to Data Product form on studio
+
+## 10.4.178
+
 ## 10.4.177
 
 ### Patch Changes
