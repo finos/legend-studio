@@ -42,6 +42,7 @@ export interface FunctionSelectProps {
     label: string;
     value: DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS;
   }[];
+  disabled: boolean;
 }
 
 const StringHandler = (props: HandlerProps<string>) => {
@@ -59,9 +60,10 @@ const StringHandler = (props: HandlerProps<string>) => {
 };
 
 const NumberHandler = (props: HandlerProps<number>) => {
-  const { value, onChange } = props;
+  const { value, onChange, ...rest } = props;
   return (
     <input
+      {...rest}
       type="number"
       className="data-quality-validation-gui-editor__function__number-input"
       value={value}
@@ -72,11 +74,12 @@ const NumberHandler = (props: HandlerProps<number>) => {
 };
 
 const ColumnHandler = (props: ColumnHandlerProps<Option>) => {
-  const { value, onChange, options } = props;
+  const { value, onChange, options, ...rest } = props;
   const applicationStore = useApplicationStore();
 
   return (
     <CustomSelectorInput
+      {...rest}
       value={options.find(({ value: v }) => v === value)}
       placeholder="Select column"
       options={options}
@@ -89,12 +92,12 @@ const ColumnHandler = (props: ColumnHandlerProps<Option>) => {
 };
 
 const ColumnListHandler = (props: ColumnHandlerProps<string[]>) => {
-  const { value = [], onChange, options = [], placeholder } = props;
+  const { value = [], onChange, options = [], placeholder, ...rest } = props;
   const applicationStore = useApplicationStore();
 
   const CustomOption = ({
     children,
-    ...rest
+    ...optionProps
   }: {
     children: ReactNode;
     data: Option;
@@ -102,7 +105,7 @@ const ColumnListHandler = (props: ColumnHandlerProps<string[]>) => {
     isFocused: boolean;
     selectOption: (option: Option) => void;
   }) => {
-    const { data, isSelected, selectOption } = rest;
+    const { data, isSelected, selectOption } = optionProps;
 
     const handleClick = (event: unknown) => {
       (event as MouseEvent).preventDefault();
@@ -123,6 +126,7 @@ const ColumnListHandler = (props: ColumnHandlerProps<string[]>) => {
 
   return (
     <CustomSelectorInput
+      {...rest}
       value={options.filter(({ value: v }) => value.includes(v))}
       placeholder={placeholder || 'Select columns'}
       isMulti={true}
@@ -176,6 +180,7 @@ export const FunctionParameterHandler = ({
   onChange: (value: unknown, type: string, index?: number) => void;
   options: unknown[];
   placeholder?: string;
+  disabled: boolean;
 }) => {
   const { type } = parameter;
   const handleChange = (val: unknown) => {
@@ -196,11 +201,12 @@ export const FunctionParameterHandler = ({
 };
 
 export const FunctionSelectionHandler = (props: FunctionSelectProps) => {
-  const { value, onChange, options = [] } = props;
+  const { value, onChange, options = [], ...rest } = props;
   const applicationStore = useApplicationStore();
 
   return (
     <CustomSelectorInput
+      {...rest}
       value={options.find(({ value: v }) => v === value)}
       options={options}
       onChange={(change: FunctionSelectProps['options'][number]) =>

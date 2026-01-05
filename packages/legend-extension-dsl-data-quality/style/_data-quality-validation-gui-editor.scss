@@ -89,6 +89,12 @@
     &__number-input,
     &__string-input {
       height: 100%;
+
+      &:disabled {
+        cursor: not-allowed;
+        border: 0.1rem solid var(--color-dark-grey-100) !important;
+        background: var(--color-dark-grey-100);
+      }
     }
 
     &__number-input {

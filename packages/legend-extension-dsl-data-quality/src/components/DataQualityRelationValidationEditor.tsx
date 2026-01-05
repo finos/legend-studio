@@ -263,6 +263,7 @@ export const DataQualityRelationValidationEditor = observer(
               {validationState.isGUIEditor && (
                 <DataQualityRelationLambdaGUIValidationEditor
                   validationState={validationState}
+                  disabled={isReadOnly}
                 />
               )}
             </div>

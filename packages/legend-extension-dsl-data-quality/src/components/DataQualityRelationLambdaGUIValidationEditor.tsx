@@ -23,8 +23,11 @@ import {
 } from './DataQualityRelationLambdaGUIDataTypeHandlers.js';
 
 export const DataQualityRelationLambdaGUIValidationEditor = observer(
-  (props: { validationState: DataQualityRelationValidationState }) => {
-    const { validationState } = props;
+  (props: {
+    validationState: DataQualityRelationValidationState;
+    disabled: boolean;
+  }) => {
+    const { validationState, disabled } = props;
     const { relationValidationGUIState, columnOptions } = validationState;
     const {
       assertion,
@@ -59,6 +62,7 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
                       );
                     }}
                     options={columnOptions}
+                    disabled={disabled}
                   />
                 </div>
                 <div className="data-quality-validation-gui-editor__function__selector">
@@ -70,6 +74,7 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
                     onChange={(name: string) => {
                       handleRuleChange(name, funcState.id as string);
                     }}
+                    disabled={disabled}
                   />
                 </div>
 
@@ -95,6 +100,7 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
                           );
                         }}
                         options={columnOptions}
+                        disabled={disabled}
                       />
                     </div>
                   ),
@@ -114,6 +120,7 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
             }}
             options={columnOptions}
             placeholder="Columns to persist"
+            disabled={disabled}
           />
         </div>
       </div>

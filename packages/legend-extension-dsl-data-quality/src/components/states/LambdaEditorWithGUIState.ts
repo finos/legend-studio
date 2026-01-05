@@ -170,9 +170,11 @@ export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
       DataQualityValidationHelperUtils.getValidationFunctionsByColumnType('');
     return others
       .concat(
-        DataQualityValidationHelperUtils.getValidationFunctionsByColumnType(
-          type,
-        ),
+        type
+          ? DataQualityValidationHelperUtils.getValidationFunctionsByColumnType(
+              type,
+            )
+          : [],
       )
       .map((func) => ({
         label: DQ_VALIDATION_HELPER_FUNCTIONS_LABEL[func],
