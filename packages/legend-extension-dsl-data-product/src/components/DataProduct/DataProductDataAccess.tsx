@@ -528,7 +528,7 @@ const AccessPointTable = observer(
                       accessPointState.grammar ?? 'Unable to fetch grammar'
                     }
                     isReadOnly={true}
-                    language={CODE_EDITOR_LANGUAGE.TEXT}
+                    language={CODE_EDITOR_LANGUAGE.PURE}
                     hideMinimap={true}
                     hideGutter={true}
                     hideActionBar={true}
