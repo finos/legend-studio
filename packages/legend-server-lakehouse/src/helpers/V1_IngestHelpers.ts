@@ -35,23 +35,42 @@ export enum LakehouseEnvironmentType {
   PRODUCTION_PARALLEL = 'pp',
 }
 
-export const isEnvNameCompatibleWithEntitlementsLakehouseEnvironmentType = (
+export const getEntitlementsLakehouseEnvironmentTypeCompatibleWithEnvName = (
   envName: string,
-  entitlementType: V1_EntitlementsLakehouseEnvironmentType,
-): boolean => {
+): V1_EntitlementsLakehouseEnvironmentType => {
   if (envName.startsWith(`${LakehouseEnvironmentType.DEVELOPMENT}-`)) {
-    return (
-      entitlementType === V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT
-    );
+    return V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT;
   } else if (
     envName.endsWith(`-${LakehouseEnvironmentType.PRODUCTION_PARALLEL}`)
   ) {
-    return (
-      entitlementType ===
-      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
-    );
+    return V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL;
   }
-  return entitlementType === V1_EntitlementsLakehouseEnvironmentType.PRODUCTION;
+  return V1_EntitlementsLakehouseEnvironmentType.PRODUCTION;
+};
+
+export const buildEnvNameCompatibleWithLakehouseEnvironmentType = (
+  envName: string,
+  entitlementType: string,
+): string => {
+  if (entitlementType === V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT) {
+    return `${LakehouseEnvironmentType.DEVELOPMENT}-${envName}`;
+  } else if (
+    entitlementType ===
+    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
+  ) {
+    return `${envName}-${LakehouseEnvironmentType.PRODUCTION_PARALLEL}`;
+  }
+  return envName;
+};
+
+export const isLakehouseEnvironmentType = (envName: string): boolean => {
+  return (
+    envName.startsWith(`${LakehouseEnvironmentType.DEVELOPMENT}-`) ||
+    envName.endsWith(`-${LakehouseEnvironmentType.PRODUCTION_PARALLEL}`) ||
+    !Object.values(V1_EntitlementsLakehouseEnvironmentType).includes(
+      envName as V1_EntitlementsLakehouseEnvironmentType,
+    )
+  );
 };
 
 export type IngestDeploymentServerConfigOption = {

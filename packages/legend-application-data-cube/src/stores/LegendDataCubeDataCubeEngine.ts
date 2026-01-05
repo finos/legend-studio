@@ -171,7 +171,9 @@ import {
   RawLakehouseSdlcOrigin,
 } from './model/LakehouseConsumerDataCubeSource.js';
 import {
-  isEnvNameCompatibleWithEntitlementsLakehouseEnvironmentType,
+  buildEnvNameCompatibleWithLakehouseEnvironmentType,
+  getEntitlementsLakehouseEnvironmentTypeCompatibleWithEnvName,
+  isLakehouseEnvironmentType,
   type LakehouseContractServerClient,
   type LakehouseIngestServerClient,
 } from '@finos/legend-server-lakehouse';
@@ -347,7 +349,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       }
     } else if (source instanceof LakehouseConsumerDataCubeSource) {
       return {
-        environment: source.environment,
+        environment: source.userEnvironment,
         warehouse: source.warehouse,
         deploymentId: source.deploymentId,
         project: source.dpCoordinates
@@ -849,7 +851,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           rawSource,
           source,
         );
-        source.environment = rawSource.environment;
         source.paths = rawSource.paths;
         source.warehouse = rawSource.warehouse;
         source.deploymentId = rawSource.deploymentId;
@@ -1953,9 +1954,49 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   ) {
     let pmcd: V1_PureModelContext | undefined;
 
+    // find user entitled environment
+    const env =
+      await this._lakehouseContractServerClient.getUserEntitlementEnvs(
+        this._application.identityService.currentUser,
+        authStore.getAccessToken(),
+      );
+    const userEnv = guaranteeNonNullable(
+      env.users.map((e) => e.lakehouseEnvironment).at(0),
+    );
+
+    // Backwards-compatible environment handling
+    //
+    // The incoming `rawSource.environment` may be in one of two forms:
+    // 1. An entitlement environment type (the canonical enum used by the entitlements
+    //    service, e.g. PRODUCTION / PRODUCTION_PARALLEL / DEVELOPMENT).
+    // 2. A legacy, user-specific environment name string (used by older queries).
+    //
+    // To make the consumer view robust across both representations, we normalize
+    // the raw environment into a runtime-compatible environment name that is
+    // compatible with the current user's entitled environment (`userEnv`). This
+    // preserves the ability for any user to open the view regardless of how the
+    // environment was stored.
+
+    if (isLakehouseEnvironmentType(rawSource.environment)) {
+      const lakehouseEnv =
+        getEntitlementsLakehouseEnvironmentTypeCompatibleWithEnvName(
+          rawSource.environment,
+        );
+      source.userEnvironment =
+        buildEnvNameCompatibleWithLakehouseEnvironmentType(
+          userEnv,
+          lakehouseEnv,
+        );
+    } else {
+      source.userEnvironment =
+        buildEnvNameCompatibleWithLakehouseEnvironmentType(
+          userEnv,
+          rawSource.environment,
+        );
+    }
     const runtime = new V1_LakehouseRuntime();
     runtime.warehouse = rawSource.warehouse;
-    runtime.environment = rawSource.environment;
+    runtime.environment = source.userEnvironment;
 
     const packageableRuntime = new V1_PackageableRuntime();
     packageableRuntime.runtimeValue = runtime;
@@ -1985,15 +2026,17 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ),
           )
         : [];
-      const selectedEnv = rawSource.environment;
+      const selectedEnv = source.userEnvironment;
       const dataProduct = dataProducts.find((dp) => {
         const envType = dp.lakehouseEnvironment?.type;
         if (!envType) {
           return false;
         }
-        return isEnvNameCompatibleWithEntitlementsLakehouseEnvironmentType(
-          selectedEnv,
-          envType,
+        return (
+          envType ===
+          getEntitlementsLakehouseEnvironmentTypeCompatibleWithEnvName(
+            selectedEnv,
+          )
         );
       });
       const fullGraphGrammar = guaranteeType(

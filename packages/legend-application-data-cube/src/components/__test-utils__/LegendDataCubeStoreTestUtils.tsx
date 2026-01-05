@@ -191,6 +191,15 @@ export const TEST__provideMockedLegendDataCubeEngine = async (customization?: {
     lakehouseIngestServerClient,
     'getIngestDefinitionGrammar',
   ).mockResolvedValue('test-ingest-definition-grammar');
+  createSpy(
+    lakehouseContractServerClient,
+    'getUserEntitlementEnvs',
+  ).mockResolvedValue({
+    total: 1,
+    users: [
+      { name: 'TESTER', userType: 'TEST_USER', lakehouseEnvironment: 'dev' },
+    ],
+  });
 
   const graphManager =
     customization?.graphManager ??
