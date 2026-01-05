@@ -337,7 +337,7 @@ export const EntitlementsDataContractContent = observer(
 
     const [selectedTargetUser, setSelectedTargetUser] = useState<
       string | undefined
-    >(undefined);
+    >(initialSelectedUser);
 
     const [isLoading, setIsLoading] = useState(false);
     const [showEscalationModal, setShowEscalationModal] = useState(false);
@@ -362,16 +362,6 @@ export const EntitlementsDataContractContent = observer(
         setSelectedTargetUser(targetUsers[0]);
       }
     }, [selectedTargetUser, targetUsers]);
-
-    useEffect(() => {
-      if (
-        initialSelectedUser !== undefined &&
-        targetUsers?.includes(initialSelectedUser) &&
-        selectedTargetUser !== initialSelectedUser
-      ) {
-        setSelectedTargetUser(initialSelectedUser);
-      }
-    }, [initialSelectedUser, targetUsers, selectedTargetUser]);
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
