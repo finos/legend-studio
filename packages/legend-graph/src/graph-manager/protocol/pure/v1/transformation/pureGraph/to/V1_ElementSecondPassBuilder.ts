@@ -143,6 +143,7 @@ import {
   V1_buildDataProductIcon,
   V1_buildDataProductLink,
   V1_buildDataProductOperationalMetadata,
+  V1_buildNativeModelAccess,
 } from './helpers/V1_DataProductBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { IncludeStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';
@@ -751,6 +752,12 @@ export class V1_ElementSecondPassBuilder
     dataProduct.accessPointGroups = element.accessPointGroups.map((gr) =>
       V1_buildAccessPointGroup(gr, this.context),
     );
+    if (element.nativeModelAccess) {
+      dataProduct.nativeModelAccess = V1_buildNativeModelAccess(
+        element.nativeModelAccess,
+        this.context,
+      );
+    }
     const protocolSupportInfo = element.supportInfo;
     if (protocolSupportInfo) {
       const supportInfo = new SupportInfo();

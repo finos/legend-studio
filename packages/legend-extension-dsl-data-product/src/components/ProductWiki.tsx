@@ -43,6 +43,7 @@ import { Chip, Stack } from '@mui/material';
 import { V1_ExternalDataProductType } from '@finos/legend-graph';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
+import { DataProductSampleQueries } from './DataProduct/DataProductSampleQueries.js';
 import { DiagramViewer } from '@finos/legend-extension-dsl-diagram';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
@@ -248,16 +249,19 @@ export const ProductWiki = observer(
           (productDataAccessState instanceof DataProductDataAccessState ||
             productDataAccessState === undefined) && (
             <>
-              <DataProducteDataAccess
-                dataProductViewerState={productViewerState}
-                dataProductDataAccessState={productDataAccessState}
-              />
+              {productViewerState.product.accessPointGroups.length > 0 && (
+                <DataProducteDataAccess
+                  dataProductViewerState={productViewerState}
+                  dataProductDataAccessState={productDataAccessState}
+                />
+              )}
               {productViewerState.isVDP && (
                 <ProductVendorInfo productViewerState={productViewerState} />
               )}
               {productViewerState.getModelAccessPointGroup() &&
                 productViewerState.modelsDocumentationState && (
                   <ModelsDocumentation
+                    title={'Model Access Point Group Model Documentation'}
                     modelsDocumentationState={
                       productViewerState.modelsDocumentationState
                     }
@@ -266,8 +270,11 @@ export const ProductWiki = observer(
                 )}
               {productViewerState.getModelAccessPointGroup() && (
                 <DiagramViewer
+                  title={'Model Access Point Group Diagrams'}
                   applicationStore={productViewerState.applicationStore}
-                  diagramViewerState={productViewerState.diagramViewerState}
+                  diagramViewerState={
+                    productViewerState.modelAccessPointGroupDiagramViewerState
+                  }
                   actions={{
                     onViewClassDocumentation: (classPath) =>
                       productViewerState.modelsDocumentationState?.viewClassDocumentation(
@@ -304,6 +311,66 @@ export const ProductWiki = observer(
                     },
                   }}
                 />
+              )}
+              {productViewerState.dataProductArtifact?.nativeModelAccess && (
+                <>
+                  {productViewerState.nativeModelAccessDocumentationState && (
+                    <ModelsDocumentation
+                      title={'Native Model Access Model Documentation'}
+                      modelsDocumentationState={
+                        productViewerState.nativeModelAccessDocumentationState
+                      }
+                      applicationStore={productViewerState.applicationStore}
+                    />
+                  )}
+                  {productViewerState.nativeModelAccessDiagramViewerState && (
+                    <DiagramViewer
+                      title={'Native Model Access Diagrams'}
+                      applicationStore={productViewerState.applicationStore}
+                      diagramViewerState={
+                        productViewerState.nativeModelAccessDiagramViewerState
+                      }
+                      actions={{
+                        onViewClassDocumentation: (classPath) =>
+                          productViewerState.nativeModelAccessDocumentationState?.viewClassDocumentation(
+                            classPath,
+                          ),
+                        hasClassDocumentation: (classPath) =>
+                          productViewerState.nativeModelAccessDocumentationState?.hasClassDocumentation(
+                            classPath,
+                          ) ?? false,
+                        onSyncZoneWithNavigation: (diagram) => {
+                          productViewerState.syncZoneWithNavigation(
+                            generateAnchorForDiagram(diagram),
+                          );
+                        },
+                        onGenerateAnchorForActivity: (activity) => {
+                          return generateAnchorForSection(activity);
+                        },
+                        onChangeZone: (zone, force) => {
+                          productViewerState.changeZone(zone, force);
+                        },
+                        onSetWikiPageAnchor: (
+                          anchorKey: string,
+                          element: HTMLElement,
+                        ) => {
+                          productViewerState.layoutState.setWikiPageAnchor(
+                            anchorKey,
+                            element,
+                          );
+                        },
+                        onUnsetWikiPageAnchor: (anchorKey: string) => {
+                          productViewerState.layoutState.unsetWikiPageAnchor(
+                            anchorKey,
+                          );
+                        },
+                      }}
+                    />
+                  )}
+                  <DataProductSampleQueries
+                    dataProductViewerState={productViewerState}
+                  />
+                </>
               )}
               <DataProductSupportInfo
                 dataProductViewerState={productViewerState}

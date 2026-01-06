@@ -220,6 +220,81 @@ export class V1_ModelAccessPointGroup extends V1_AccessPointGroup {
   }
 }
 
+export class V1_NativeModelExecutionContext {
+  key!: string;
+  mapping!: V1_PackageableElementPointer;
+  runtime: V1_PackageableElementPointer | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_NATIVE_MODEL_ACCESS,
+      this.mapping.path,
+      this.runtime?.path ?? '',
+      this.key,
+    ]);
+  }
+}
+
+export class V1_NativeModelAccess {
+  featuredElements: V1_ElementScope[] | undefined;
+  nativeModelExecutionContexts!: V1_NativeModelExecutionContext[];
+  defaultExecutionContext!: string;
+  diagrams: V1_DataProductDiagram[] | undefined;
+  sampleQueries: V1_SampleQuery[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_NATIVE_MODEL_ACCESS,
+      hashArray(this.nativeModelExecutionContexts),
+      hashArray(this.featuredElements ?? []),
+      hashArray(this.diagrams ?? []),
+      hashArray(this.sampleQueries ?? []),
+      this.defaultExecutionContext,
+    ]);
+  }
+}
+
+export abstract class V1_SampleQuery {
+  id!: string;
+  title!: string;
+  description: string | undefined;
+  executionContextKey: string | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_SAMPLE_QUERY,
+      this.id,
+      this.title,
+      this.description ?? '',
+      this.executionContextKey ?? '',
+    ]);
+  }
+}
+
+export class V1_InLineSampleQuery extends V1_SampleQuery {
+  query!: V1_RawLambda;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_INLINE_SAMPLE_QUERY,
+      super.hashCode,
+      this.query,
+    ]);
+  }
+}
+
+export class V1_PackageableElementSampleQuery extends V1_SampleQuery {
+  query!: V1_PackageableElementPointer;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_PACKAGEABLE_ELEMENT_SAMPLE_QUERY,
+      super.hashCode,
+      this.query.path,
+    ]);
+  }
+}
+
 export enum V1_DeliveryFrequency {
   DAILY = 'DAILY',
   WEEKLY = 'WEEKLY',
@@ -337,6 +412,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   description: string | undefined;
   icon: V1_DataProductIcon | undefined;
   accessPointGroups: V1_AccessPointGroup[] = [];
+  nativeModelAccess: V1_NativeModelAccess | undefined;
   supportInfo: V1_SupportInfo | undefined;
   type: V1_DataProductType | undefined;
   stereotypes: V1_StereotypePtr[] = [];
@@ -351,6 +427,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       this.description ?? '',
       this.icon ?? '',
       hashArray(this.accessPointGroups),
+      this.nativeModelAccess ?? '',
       this.supportInfo ?? '',
       this.type ?? '',
       hashArray(this.stereotypes),

@@ -28,6 +28,7 @@ import {
   type V1_PureModelContext,
   PureClientVersion,
   V1_AdHocDeploymentDataProductOrigin,
+  type V1_NativeModelAccessInfo,
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProductArtifact,
   V1_LegendSDLC,
@@ -36,6 +37,12 @@ import {
   V1_PureGraphManager,
   V1_PureModelContextPointer,
   V1_SdlcDeploymentDataProductOrigin,
+  type V1_SampleQueryInfo,
+  V1_Mapping,
+  V1_PackageableRuntime,
+  resolvePackagePathAndElementName,
+  type V1_DiagramInfo,
+  type V1_PackageableElement,
 } from '@finos/legend-graph';
 import { flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
@@ -48,6 +55,9 @@ import {
   type GeneratorFn,
   type PlainObject,
   type UserSearchService,
+  LogEvent,
+  uniq,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductConfig } from './DataProductConfig.js';
@@ -62,9 +72,11 @@ import {
 } from '@finos/legend-server-depot';
 import { DataProductSqlPlaygroundPanelState } from './DataProductSqlPlaygroundPanelState.js';
 import { DataProductViewerModelsDocumentationState } from './DataProductModelsDocumentationState.js';
+import { DataProductNativeModelAccessDocumentationState } from './DataProductNativeModelAccessDocumentationState.js';
 import {
   getDiagram,
   DiagramAnalysisResult,
+  type Diagram,
 } from '@finos/legend-extension-dsl-diagram';
 import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramViewerState.js';
 
@@ -83,7 +95,13 @@ export class DataProductViewerState extends BaseViewerState<
   readonly modelsDocumentationState:
     | DataProductViewerModelsDocumentationState
     | undefined;
-  readonly diagramViewerState: DataProductViewerDiagramViewerState;
+  nativeModelAccessDocumentationState:
+    | DataProductNativeModelAccessDocumentationState
+    | undefined;
+  readonly modelAccessPointGroupDiagramViewerState: DataProductViewerDiagramViewerState;
+  nativeModelAccessDiagramViewerState:
+    | DataProductViewerDiagramViewerState
+    | undefined;
   dataProductArtifact: V1_DataProductArtifact | undefined;
 
   // actions
@@ -112,6 +130,8 @@ export class DataProductViewerState extends BaseViewerState<
 
     makeObservable(this, {
       dataProductArtifact: observable,
+      nativeModelAccessDocumentationState: observable,
+      nativeModelAccessDiagramViewerState: observable,
       init: flow,
     });
 
@@ -128,7 +148,10 @@ export class DataProductViewerState extends BaseViewerState<
     this.dataProductConfig = dataProductConfig;
     this.projectGAV = projectGAV;
 
-    this.diagramViewerState = new DataProductViewerDiagramViewerState(this);
+    this.modelAccessPointGroupDiagramViewerState =
+      new DataProductViewerDiagramViewerState(
+        this.getModelAccessPointDiagrams(),
+      );
 
     // actions
     this.viewDataProductSource = actions.viewDataProductSource;
@@ -185,6 +208,40 @@ export class DataProductViewerState extends BaseViewerState<
       );
       return result;
     });
+  }
+
+  getNativeModelAccessDiagrams(): DiagramAnalysisResult[] {
+    const nativeModelAccess = this.dataProductArtifact?.nativeModelAccess;
+
+    if (!nativeModelAccess?.diagrams.length) {
+      return [];
+    }
+
+    return nativeModelAccess.diagrams.map((v1Diagram: V1_DiagramInfo) => {
+      const result = new DiagramAnalysisResult();
+      result.title = v1Diagram.title;
+      result.description = v1Diagram.description;
+      try {
+        result.diagram = this.graphManagerState.graph.allOwnElements.find(
+          (element) => element.path === v1Diagram.diagram,
+        ) as Diagram;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.warn(
+          LogEvent.create('data-product.nativeModelAccessDiagram.failure'),
+          `Unable to fetch diagram '${v1Diagram.diagram}': ${error.message}`,
+        );
+        throw error;
+      }
+      return result;
+    });
+  }
+
+  getSampleQueries(): V1_SampleQueryInfo[] {
+    if (!this.dataProductArtifact?.nativeModelAccess?.sampleQueries?.length) {
+      return [];
+    }
+    return this.dataProductArtifact.nativeModelAccess.sampleQueries;
   }
 
   getAccessPointModel(
@@ -266,6 +323,74 @@ export class DataProductViewerState extends BaseViewerState<
     return artifact;
   }
 
+  async buildGraphFromNativeModelAccess(
+    nativeModelAccessInfo: V1_NativeModelAccessInfo,
+  ): Promise<void> {
+    try {
+      const graphManager = guaranteeType(
+        this.graphManagerState.graphManager,
+        V1_PureGraphManager,
+        'GraphManager must be a V1_PureGraphManager',
+      );
+
+      const graph = this.graphManagerState.graph;
+
+      const defaultExecutionContext =
+        nativeModelAccessInfo.nativeModelExecutionContexts.find(
+          (ctx) => ctx.key === nativeModelAccessInfo.defaultExecutionContext,
+        );
+
+      const elements: V1_PackageableElement[] = [];
+
+      if (defaultExecutionContext) {
+        const [mappingPackagePath, mappingName] =
+          resolvePackagePathAndElementName(defaultExecutionContext.mapping);
+        const mappingProtocol = new V1_Mapping();
+        mappingProtocol.package = mappingPackagePath;
+        mappingProtocol.name = mappingName;
+        elements.push(mappingProtocol);
+
+        if (defaultExecutionContext.runtime) {
+          const [runtimePackagePath, runtimeName] =
+            resolvePackagePathAndElementName(
+              defaultExecutionContext.runtime.path,
+            );
+          const runtimeProtocol = new V1_PackageableRuntime();
+          runtimeProtocol.package = runtimePackagePath;
+          runtimeProtocol.name = runtimeName;
+          elements.push(runtimeProtocol);
+        }
+
+        const mappingGeneration = nativeModelAccessInfo.mappingGenerations.get(
+          defaultExecutionContext.mapping,
+        );
+
+        if (mappingGeneration) {
+          elements.concat(mappingGeneration.model.elements);
+        }
+      }
+
+      const combinedElements =
+        nativeModelAccessInfo.model.elements.concat(elements);
+      const allElements = uniq(combinedElements.map((el) => el.path))
+        .map((path) => combinedElements.find((el) => el.path === path))
+        .filter(isNonNullable);
+
+      const graphEntities = allElements
+        .filter((el) => !graph.getNullableElement(el.path, false))
+        .map((el) => graphManager.elementProtocolToEntity(el));
+
+      await graphManager.buildGraph(graph, graphEntities, ActionState.create());
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create('data-product.buildNativeModelAccessGraph.failure'),
+        `Unable to build native model access graph: ${error.message}`,
+      );
+      throw error;
+    }
+  }
+
   *init(
     entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
   ): GeneratorFn<void> {
@@ -276,5 +401,44 @@ export class DataProductViewerState extends BaseViewerState<
     const dataProductArtifact =
       (yield dataProductArtifactPromise) as V1_DataProductArtifact;
     this.dataProductArtifact = dataProductArtifact;
+
+    // Build graph from native model access if present (use first one for now)
+    if (
+      entitlementsDataProductDetails?.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin &&
+      dataProductArtifact.nativeModelAccess
+    ) {
+      try {
+        const nativeModelAccess = dataProductArtifact.nativeModelAccess;
+        yield this.buildGraphFromNativeModelAccess(nativeModelAccess);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.warn(
+          LogEvent.create('data-product.nativeModelAccessGraph.failure'),
+          `Unable to build native model access graph: ${error.message}`,
+        );
+      }
+    }
+
+    if (dataProductArtifact.nativeModelAccess) {
+      try {
+        this.nativeModelAccessDocumentationState =
+          new DataProductNativeModelAccessDocumentationState(this);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.warn(
+          LogEvent.create(
+            'data-product.nativeModelAccessDocumentation.failure',
+          ),
+          `Unable to initialize native model access documentation: ${error.message}`,
+        );
+        this.nativeModelAccessDocumentationState = undefined;
+      }
+
+      this.nativeModelAccessDiagramViewerState =
+        new DataProductViewerDiagramViewerState(
+          this.getNativeModelAccessDiagrams(),
+        );
+    }
   }
 }

@@ -1063,8 +1063,9 @@ export const ModelsDocumentation = observer(
   (props: {
     modelsDocumentationState: ViewerModelsDocumentationState;
     applicationStore: GenericLegendApplicationStore;
+    title?: string | undefined;
   }) => {
-    const { modelsDocumentationState, applicationStore } = props;
+    const { modelsDocumentationState, applicationStore, title } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
     const elementDocs = modelsDocumentationState.elementDocs;
 
@@ -1082,7 +1083,7 @@ export const ModelsDocumentation = observer(
       >
         <div className="models-documentation__viewer__wiki__section__header">
           <div className="models-documentation__viewer__wiki__section__header__label">
-            Models Documentation
+            {title ?? 'Models Documentation'}
             <button
               className="models-documentation__viewer__wiki__section__header__anchor"
               tabIndex={-1}

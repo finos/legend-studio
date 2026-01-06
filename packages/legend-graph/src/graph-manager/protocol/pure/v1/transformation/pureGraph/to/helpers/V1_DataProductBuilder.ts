@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { isNonNullable, UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import {
   type AccessPoint,
   type DataProductElement,
@@ -33,6 +37,12 @@ import {
   ModelAccessPointGroup,
   UnknownAccessPoint,
   UnknownDataProductIcon,
+  NativeModelAccess,
+  type SampleQuery,
+  PackageableElementSampleQuery,
+  InLineSampleQuery,
+  DataProductDiagram,
+  NativeModelExecutionContext,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   type V1_AccessPoint,
@@ -45,9 +55,14 @@ import {
   V1_FunctionAccessPoint,
   V1_LakehouseAccessPoint,
   V1_ModelAccessPointGroup,
+  type V1_NativeModelAccess,
+  type V1_SampleQuery,
   V1_UnknownAccessPoint,
   V1_UnknownDataProductIcon,
   type V1_DataProductOperationalMetadata,
+  V1_PackageableElementSampleQuery,
+  V1_InLineSampleQuery,
+  type V1_NativeModelExecutionContext,
 } from '../../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
@@ -59,6 +74,7 @@ import { Package } from '../../../../../../../../graph/metamodel/pure/packageabl
 import { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import { Enumeration } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
 import { Association } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
+import { generateFunctionPrettyName } from '../../../../../../../../graph/helpers/PureLanguageHelper.js';
 
 export const V1_buildDataProductLink = (
   link: V1_DataProductLink,
@@ -201,4 +217,148 @@ export const V1_buildAccessPointGroup = (
       .filter(isNonNullable);
     return group;
   }
+};
+
+export const V1_buildNativeModelExecutionContext = (
+  nativeModelExecutionContext: V1_NativeModelExecutionContext,
+  context: V1_GraphBuilderContext,
+): NativeModelExecutionContext => {
+  const metamodelNativeModelExecutionContext =
+    new NativeModelExecutionContext();
+  metamodelNativeModelExecutionContext.key = nativeModelExecutionContext.key;
+  metamodelNativeModelExecutionContext.mapping =
+    PackageableElementExplicitReference.create(
+      context.graph.getMapping(nativeModelExecutionContext.mapping.path),
+    );
+  if (nativeModelExecutionContext.runtime) {
+    metamodelNativeModelExecutionContext.runtime =
+      PackageableElementExplicitReference.create(
+        context.graph.getRuntime(nativeModelExecutionContext.runtime.path),
+      );
+  }
+  return metamodelNativeModelExecutionContext;
+};
+
+export const V1_buildSampleQuery = (
+  sampleQuery: V1_SampleQuery,
+  defaultExecutionContext: string,
+  context: V1_GraphBuilderContext,
+): SampleQuery => {
+  if (sampleQuery instanceof V1_PackageableElementSampleQuery) {
+    const metamodelSampleQuery = new PackageableElementSampleQuery();
+    metamodelSampleQuery.id = sampleQuery.id;
+    metamodelSampleQuery.title = sampleQuery.title;
+    metamodelSampleQuery.description = sampleQuery.description;
+    metamodelSampleQuery.executionContextKey =
+      sampleQuery.executionContextKey ?? defaultExecutionContext;
+    try {
+      metamodelSampleQuery.query = context.resolveElement(
+        sampleQuery.query.path,
+        false,
+      );
+    } catch {
+      try {
+        metamodelSampleQuery.query = PackageableElementExplicitReference.create(
+          guaranteeNonNullable(
+            context.graph.functions.find(
+              (fn) =>
+                generateFunctionPrettyName(fn, {
+                  fullPath: true,
+                  spacing: false,
+                  notIncludeParamName: true,
+                }) === sampleQuery.query.path.replaceAll(/\s*/gu, ''),
+            ),
+          ),
+        );
+      } catch {
+        throw new UnsupportedOperationError(
+          `Can't analyze data product executable with element in path: ${sampleQuery.query.path}`,
+          sampleQuery,
+        );
+      }
+    }
+
+    return metamodelSampleQuery;
+  } else if (sampleQuery instanceof V1_InLineSampleQuery) {
+    const metamodelSampleQuery = new InLineSampleQuery();
+    metamodelSampleQuery.id = sampleQuery.id;
+    metamodelSampleQuery.title = sampleQuery.title;
+    metamodelSampleQuery.description = sampleQuery.description;
+    metamodelSampleQuery.executionContextKey =
+      sampleQuery.executionContextKey ?? defaultExecutionContext;
+    metamodelSampleQuery.query = V1_buildRawLambdaWithResolvedPaths(
+      sampleQuery.query.parameters,
+      sampleQuery.query.body,
+      context,
+    );
+    return metamodelSampleQuery;
+  }
+
+  throw new UnsupportedOperationError(
+    `Unsupported data product sample query type`,
+  );
+};
+
+export const V1_buildNativeModelAccess = (
+  nativeModelAccess: V1_NativeModelAccess,
+  context: V1_GraphBuilderContext,
+): NativeModelAccess => {
+  const metamodelNativeModelAccess = new NativeModelAccess();
+  metamodelNativeModelAccess.defaultExecutionContext =
+    nativeModelAccess.defaultExecutionContext;
+  metamodelNativeModelAccess.nativeModelExecutionContexts =
+    nativeModelAccess.nativeModelExecutionContexts.map((executionContext) =>
+      V1_buildNativeModelExecutionContext(executionContext, context),
+    );
+  if (nativeModelAccess.sampleQueries) {
+    metamodelNativeModelAccess.sampleQueries =
+      nativeModelAccess.sampleQueries.map((sampleQuery) =>
+        V1_buildSampleQuery(
+          sampleQuery,
+          nativeModelAccess.defaultExecutionContext,
+          context,
+        ),
+      );
+  }
+  if (!nativeModelAccess.diagrams) {
+    metamodelNativeModelAccess.diagrams = [];
+  } else {
+    metamodelNativeModelAccess.diagrams = nativeModelAccess.diagrams.map(
+      (diagram) => {
+        const metadatamodelDiagram = new DataProductDiagram();
+        metadatamodelDiagram.diagram = context.graph.getElement(
+          diagram.diagram.path,
+        );
+        metadatamodelDiagram.title = diagram.title;
+        metadatamodelDiagram.description = diagram.description;
+        return metadatamodelDiagram;
+      },
+    );
+  }
+  if (nativeModelAccess.featuredElements) {
+    metamodelNativeModelAccess.featuredElements =
+      nativeModelAccess.featuredElements.map((pointer) => {
+        const elementReference = context.resolveElement(
+          pointer.element.path,
+          true,
+        );
+        if (
+          elementReference.value instanceof Package ||
+          elementReference.value instanceof Class ||
+          elementReference.value instanceof Enumeration ||
+          elementReference.value instanceof Association
+        ) {
+          const elementPointer = new DataProductElementScope();
+          elementPointer.element =
+            elementReference as unknown as PackageableElementReference<DataProductElement>;
+          elementPointer.exclude = pointer.exclude;
+          return elementPointer;
+        }
+        throw new UnsupportedOperationError(
+          `Can't find data product element (only allow packages, classes, enumerations, and associations) '${pointer.element.path}'`,
+        );
+      });
+  }
+
+  return metamodelNativeModelAccess;
 };
