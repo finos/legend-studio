@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.40
+
+### Patch Changes
+
+- [#4741](https://github.com/finos/legend-studio/pull/4741) [`caf4bc6`](https://github.com/finos/legend-studio/commit/caf4bc65a86f9b98cfdadd6973a83124375e0753) ([@travisstebbins](https://github.com/travisstebbins)) - Add ability to invalidate Marketplace lakehouse contract
+
+- [#4751](https://github.com/finos/legend-studio/pull/4751) [`e36cc27`](https://github.com/finos/legend-studio/commit/e36cc279eea927f0891475eb892f250f1d4a6845) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added test for Sql playground Tab.
+
+- [#4758](https://github.com/finos/legend-studio/pull/4758) [`28b6fdb`](https://github.com/finos/legend-studio/commit/28b6fdbf5e708d41e43a3b22187ebf128be0275c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added sql playground on a full screen overlay.
+
 ## 0.0.39
 
 ### Patch Changes
