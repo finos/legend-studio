@@ -171,12 +171,4 @@ export class DataProductSqlPlaygroundPanelState
       this.executeRawSQLState.complete();
     }
   }
-  resetForOpen(): void {
-    this.sqlExecutionResult = undefined;
-    const initalSqlText = this.query
-      ? `${DEFAULT_SQL_TEXT}\n${this.query}`
-      : DEFAULT_SQL_TEXT;
-    this.setSQLText(initalSqlText);
-    this.sqlEditorTextModel.setValue(this.sqlText);
-  }
 }

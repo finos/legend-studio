@@ -209,7 +209,6 @@ export const SqlPlaygroundScreen = observer(
     const [isMaximized, setIsMaximized] = useState(true);
     const toggleMaximize = (): void => setIsMaximized(!isMaximized);
     const openSqlModal = (): void => {
-      playgroundState.resetForOpen();
       setIsSqlModalOpen(true);
     };
     const closeSqlModal = (): void => {
@@ -231,58 +230,60 @@ export const SqlPlaygroundScreen = observer(
         >
           Open SQL Playground
         </button>
-        <Dialog
-          open={isSqlModalOpen}
-          onClose={noop}
-          maxWidth={false}
-          classes={{
-            root: 'sql-editor-modal__root-container',
-            container: 'sql-editor-modal__container',
-            paper: clsx(
-              'sql-editor-modal__paper',
-              isMaximized
-                ? 'sql-editor-modal__paper--maximized'
-                : 'sql-editor-modal__paper--windowed',
-            ),
-          }}
-        >
-          <Modal className={'sql-editor-modal'}>
-            <div className="sql-playground-modal-header">
-              <ModalHeader title="SQL PLAYGROUND" />
-              <div className="sql-playground-modal-header-actions">
-                <button
-                  className="sql-playground-modal__action"
-                  tabIndex={-1}
-                  onClick={toggleMaximize}
-                  title={isMaximized ? 'Minimize' : 'Maximize'}
-                >
-                  {isMaximized ? (
-                    <EmptyWindowRestoreIcon />
-                  ) : (
-                    <WindowMaximizeIcon />
-                  )}
-                </button>
-                <button
-                  className="sql-playground-modal__action"
-                  tabIndex={-1}
-                  onClick={closeSqlModal}
-                  title="Close"
-                >
-                  <TimesIcon />
-                </button>
+        {isSqlModalOpen && (
+          <Dialog
+            open={isSqlModalOpen}
+            onClose={noop}
+            maxWidth={false}
+            classes={{
+              root: 'sql-editor-modal__root-container',
+              container: 'sql-editor-modal__container',
+              paper: clsx(
+                'sql-editor-modal__paper',
+                isMaximized
+                  ? 'sql-editor-modal__paper--maximized'
+                  : 'sql-editor-modal__paper--windowed',
+              ),
+            }}
+          >
+            <Modal className={'sql-editor-modal'}>
+              <div className="sql-playground-modal-header">
+                <ModalHeader title="SQL PLAYGROUND" />
+                <div className="sql-playground-modal-header-actions">
+                  <button
+                    className="sql-playground-modal__action"
+                    tabIndex={-1}
+                    onClick={toggleMaximize}
+                    title={isMaximized ? 'Minimize' : 'Maximize'}
+                  >
+                    {isMaximized ? (
+                      <EmptyWindowRestoreIcon />
+                    ) : (
+                      <WindowMaximizeIcon />
+                    )}
+                  </button>
+                  <button
+                    className="sql-playground-modal__action"
+                    tabIndex={-1}
+                    onClick={closeSqlModal}
+                    title="Close"
+                  >
+                    <TimesIcon />
+                  </button>
+                </div>
               </div>
-            </div>
-            <ModalBody>
-              <div className="sql-playground-overlay">
-                <SQLPlaygroundEditorResultPanel
-                  playgroundState={playgroundState}
-                  advancedMode={advancedMode}
-                  disableDragDrop={true}
-                />
-              </div>
-            </ModalBody>
-          </Modal>
-        </Dialog>
+              <ModalBody>
+                <div className="sql-playground-overlay">
+                  <SQLPlaygroundEditorResultPanel
+                    playgroundState={playgroundState}
+                    advancedMode={advancedMode}
+                    disableDragDrop={true}
+                  />
+                </div>
+              </ModalBody>
+            </Modal>
+          </Dialog>
+        )}
       </div>
     );
   },
