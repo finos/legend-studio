@@ -63,6 +63,10 @@ export const MarketplaceLakehouseHome = observer(() => {
   >([]);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    LegendMarketplaceTelemetryHelper.clearSearchSession();
+  }, []);
+
   const [activeIndex, setActiveIndex] = useState(0);
   useEffect(() => {
     const loadDataProducts = async (): Promise<void> => {
