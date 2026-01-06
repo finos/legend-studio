@@ -96,6 +96,7 @@ export const SQLPlaygroundEditorResultPanel = observer(
                             Local Mode
                           </div>
                           <button
+                            aria-label="local mode"
                             className={clsx(
                               'query-builder__result__advanced__mode__toggler__btn',
                               {
