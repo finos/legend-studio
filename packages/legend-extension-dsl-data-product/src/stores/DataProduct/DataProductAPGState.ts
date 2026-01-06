@@ -71,8 +71,6 @@ export enum AccessPointGroupAccess {
   ENTERPRISE = 'ENTERPRISE', // Used to indicate that the group is available for all users in the organization
 }
 
-//Todo - 0 priority rankings? - or have a zero priority enum value
-//move this into APG State?
 export enum V1_UserApprovalPriority {
   NO_PRIORITY = 0,
   PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL_PRIORITY = 2,
@@ -353,33 +351,33 @@ export class DataProductAPGState {
           V1_UserApprovalPriority.APPROVED_PRIORITY,
       };
 
-    const contractStatusPromises = contracts.map(async (contract) => {
-      try {
-        const rawUserStatus =
-          await lakehouseContractServerClient.getContractUserStatus(
-            contract.guid,
-            this.applicationStore.identityService.currentUser,
-            token,
-          );
-        const userStatus = deserialize(
-          V1_ContractUserStatusResponseModelSchema,
-          rawUserStatus,
-        ).status;
-        const rank = approvalStagePriority[userStatus];
+    const contractStatuses = (
+      await Promise.all(
+        contracts.map(async (contract) => {
+          try {
+            const rawUserStatus =
+              await lakehouseContractServerClient.getContractUserStatus(
+                contract.guid,
+                this.applicationStore.identityService.currentUser,
+                token,
+              );
+            const userStatus = deserialize(
+              V1_ContractUserStatusResponseModelSchema,
+              rawUserStatus,
+            ).status;
+            const rank = approvalStagePriority[userStatus];
 
-        return { contract, rank };
-      } catch (error) {
-        assertErrorThrown(error);
-        this.applicationStore.notificationService.notifyWarning(
-          `Could not fetch status for contract ${contract.guid}: ${error.message}`,
-        );
-        return null;
-      }
-    });
-
-    const contractStatuses = (await Promise.all(contractStatusPromises)).filter(
-      isNonNullable,
-    );
+            return { contract, rank };
+          } catch (error) {
+            assertErrorThrown(error);
+            this.applicationStore.notificationService.notifyWarning(
+              `Could not fetch status for contract ${contract.guid}: ${error.message}`,
+            );
+            return null;
+          }
+        }),
+      )
+    ).filter(isNonNullable);
 
     const bestContract = contractStatuses.reduce<
       | {
