@@ -42,6 +42,7 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
   type V1_EntitlementsDataProductLite,
   type V1_EntitlementsDataProductLiteResponse,
+  V1_EntitlementsLakehouseEnvironmentType,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_DataProductOriginType,
   V1_AdHocDeploymentDataProductOrigin,
@@ -55,7 +56,6 @@ import {
   V1_Protocol,
   V1_PureGraphManager,
   PureClientVersion,
-  type V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
 import {
   RawLakehouseAdhocOrigin,
@@ -75,7 +75,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   origin: string | undefined;
   fullGraphGrammar: string | undefined;
   deploymentId: number | undefined;
-  envMode: V1_EntitlementsLakehouseEnvironmentType | undefined;
+  envMode: V1_EntitlementsLakehouseEnvironmentType;
   dataProductDetails: V1_EntitlementsDataProductDetails[] | undefined;
   showQueryEditor = false;
   DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
@@ -122,6 +122,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       undefined,
     );
 
+    this.envMode = V1_EntitlementsLakehouseEnvironmentType.PRODUCTION;
+
     reaction(
       () => this.selectedAccessPoint,
       (accessPoint) => {
@@ -152,16 +154,13 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.selectedAccessPoint = accessPoint;
   }
 
-  setEnvMode(env?: V1_EntitlementsLakehouseEnvironmentType): void {
+  setEnvMode(env: V1_EntitlementsLakehouseEnvironmentType): void {
     this.envMode = env;
   }
 
   get filteredDataProducts(): V1_EntitlementsDataProductLite[] {
     if (!this.dataProducts.length) {
       return [];
-    }
-    if (!this.envMode) {
-      return this.dataProducts;
     }
     return this.dataProducts.filter(
       (dp) => dp.lakehouseEnvironment?.type === this.envMode,
@@ -175,7 +174,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   get selectedDataProductDetail():
     | V1_EntitlementsDataProductDetails
     | undefined {
-    if (this.envMode && this.dataProductDetails?.length) {
+    if (this.dataProductDetails?.length) {
       const details = this.dataProductDetails.filter((dpDetail) => {
         const dpDetailType = dpDetail.lakehouseEnvironment?.type;
         if (!dpDetailType) {

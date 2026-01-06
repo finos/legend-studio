@@ -94,109 +94,99 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                   V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
               },
             ]}
-            onChange={(
-              newVal: {
-                label: string;
-                value: V1_EntitlementsLakehouseEnvironmentType;
-              } | null,
-            ) => {
-              sourceBuilder.setEnvMode(newVal?.value);
+            onChange={(newVal: {
+              label: string;
+              value: V1_EntitlementsLakehouseEnvironmentType;
+            }) => {
+              sourceBuilder.setEnvMode(newVal.value);
               sourceBuilder.setSelectedDataProduct(undefined);
             }}
-            value={
-              sourceBuilder.envMode
-                ? {
-                    label:
-                      sourceBuilder.envMode ===
-                      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
-                        ? 'Production'
-                        : sourceBuilder.envMode ===
-                            V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
-                          ? 'Production (parallel)'
-                          : 'Development',
-                    value: sourceBuilder.envMode,
-                  }
-                : null
-            }
+            value={{
+              label:
+                sourceBuilder.envMode ===
+                V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
+                  ? 'Production'
+                  : sourceBuilder.envMode ===
+                      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
+                    ? 'Production (parallel)'
+                    : 'Development',
+              value: sourceBuilder.envMode,
+            }}
             placeholder="Choose mode"
             isClearable={true}
             escapeClearsValue={true}
           />
         </div>
-        {sourceBuilder.envMode && (
-          <div className="query-setup__wizard__group mt-3">
-            <div className="query-setup__wizard__group__title">
-              Data Product
-            </div>
-            <CustomSelectorInput
-              className="query-setup__wizard__selector text-nowrap"
-              // give the option rows more height to accommodate wrapped titles
-              optionCustomization={{ rowHeight: 56 }}
-              options={sourceBuilder.filteredDataProducts.map((dataProduct) => {
-                const title = dataProduct.title;
-                const id = guaranteeNonNullable(dataProduct.id);
-                return {
-                  label: renderDataProductLabel(dataProduct),
-                  // include a searchable text so react-select filter can match id/title
-                  searchText: `${title} ${id}`.trim(),
-                  value: guaranteeNonNullable(dataProduct),
-                };
-              })}
-              filterOption={(option, rawInput) => {
-                const input = rawInput.toLowerCase();
-                // option.data may contain our custom searchText
-                const data = option.data as { searchText?: string } | undefined;
+        <div className="query-setup__wizard__group mt-3">
+          <div className="query-setup__wizard__group__title">Data Product</div>
+          <CustomSelectorInput
+            className="query-setup__wizard__selector text-nowrap"
+            // give the option rows more height to accommodate wrapped titles
+            optionCustomization={{ rowHeight: 56 }}
+            options={sourceBuilder.filteredDataProducts.map((dataProduct) => {
+              const title = dataProduct.title;
+              const id = guaranteeNonNullable(dataProduct.id);
+              return {
+                label: renderDataProductLabel(dataProduct),
+                // include a searchable text so react-select filter can match id/title
+                searchText: `${title} ${id}`.trim(),
+                value: guaranteeNonNullable(dataProduct),
+              };
+            })}
+            filterOption={(option, rawInput) => {
+              const input = rawInput.toLowerCase();
+              // option.data may contain our custom searchText
+              const data = option.data as { searchText?: string } | undefined;
 
-                // Prefer a non-empty searchText from data when available
-                const searchTextSource =
-                  data?.searchText && data.searchText.trim() !== ''
-                    ? data.searchText.toLowerCase().trim()
-                    : ''.trim();
+              // Prefer a non-empty searchText from data when available
+              const searchTextSource =
+                data?.searchText && data.searchText.trim() !== ''
+                  ? data.searchText.toLowerCase().trim()
+                  : ''.trim();
 
-                // If user hasn't typed anything, show all options
-                if (input === '') {
-                  return true;
-                }
-
-                return searchTextSource.includes(input);
-              }}
-              disabled={
-                sourceBuilder.dataProductLoadingState.isInProgress ||
-                sourceBuilder.dataProductLoadingState.hasFailed
+              // If user hasn't typed anything, show all options
+              if (input === '') {
+                return true;
               }
-              isLoading={sourceBuilder.dataProductLoadingState.isInProgress}
-              onChange={(
-                newValue: {
-                  label: ReactNode;
-                  searchText?: string;
-                  value: V1_EntitlementsDataProductLite;
-                } | null,
-              ) => {
-                sourceBuilder.setSelectedDataProduct(newValue?.value);
-                sourceBuilder
-                  .fetchDataProduct(auth.user?.access_token)
-                  .catch((error) =>
-                    store.alertService.alertUnhandledError(error),
-                  );
-              }}
-              value={
-                sourceBuilder.selectedDataProduct
-                  ? {
-                      label: renderDataProductMainText(
-                        sourceBuilder.selectedDataProduct,
-                      ),
-                      searchText:
-                        `${sourceBuilder.selectedDataProduct.title ?? ''} ${sourceBuilder.selectedDataProduct.id}`.trim(),
-                      value: sourceBuilder.selectedDataProduct,
-                    }
-                  : null
-              }
-              placeholder={`Choose a Data Product`}
-              isClearable={false}
-              escapeClearsValue={true}
-            />
-          </div>
-        )}
+
+              return searchTextSource.includes(input);
+            }}
+            disabled={
+              sourceBuilder.dataProductLoadingState.isInProgress ||
+              sourceBuilder.dataProductLoadingState.hasFailed
+            }
+            isLoading={sourceBuilder.dataProductLoadingState.isInProgress}
+            onChange={(
+              newValue: {
+                label: ReactNode;
+                searchText?: string;
+                value: V1_EntitlementsDataProductLite;
+              } | null,
+            ) => {
+              sourceBuilder.setSelectedDataProduct(newValue?.value);
+              sourceBuilder
+                .fetchDataProduct(auth.user?.access_token)
+                .catch((error) =>
+                  store.alertService.alertUnhandledError(error),
+                );
+            }}
+            value={
+              sourceBuilder.selectedDataProduct
+                ? {
+                    label: renderDataProductMainText(
+                      sourceBuilder.selectedDataProduct,
+                    ),
+                    searchText:
+                      `${sourceBuilder.selectedDataProduct.title ?? ''} ${sourceBuilder.selectedDataProduct.id}`.trim(),
+                    value: sourceBuilder.selectedDataProduct,
+                  }
+                : null
+            }
+            placeholder={`Choose a Data Product`}
+            isClearable={false}
+            escapeClearsValue={true}
+          />
+        </div>
         {sourceBuilder.accessPoints.length > 0 && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">
