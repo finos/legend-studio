@@ -769,6 +769,11 @@ describe('DataProductViewer', () => {
 
       const sqlTab = await screen.findByRole('tab', { name: 'SQL' });
       fireEvent.click(sqlTab);
+      const openSqlPlaygroundBtn = await screen.findByRole('button', {
+        name: 'Open SQL Playground',
+      });
+      expect(openSqlPlaygroundBtn).toBeDefined();
+      fireEvent.click(openSqlPlaygroundBtn);
       await screen.findByText('result');
       await screen.findByText('Local Mode');
       const localToggleMode = await screen.findByRole('button', {
