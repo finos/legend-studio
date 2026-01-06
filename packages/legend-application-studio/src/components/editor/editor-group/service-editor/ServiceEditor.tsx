@@ -728,11 +728,11 @@ const ServiceGeneralEditor = observer(() => {
       <PanelForm>
         <PanelFormValidatedTextField
           ref={patternRef}
-          name="MCP Group"
+          name="MCP Server"
           isReadOnly={isReadOnly}
           className="service-editor__pattern__input"
           errorMessageClassName="service-editor__pattern__input"
-          prompt={<>Specifies the MCP server group of the service</>}
+          prompt={<>Specifies the MCP Server group of the service</>}
           update={(value: string | undefined): void => {
             updateMcpServer(value);
           }}
