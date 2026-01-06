@@ -26,7 +26,14 @@ import {
   CustomSelectorInput,
   DataCubeIcon,
   SQLIcon,
+  Modal,
   PowerBiIcon,
+  ModalHeader,
+  ModalBody,
+  TimesIcon,
+  EmptyWindowRestoreIcon,
+  WindowMaximizeIcon,
+  Dialog,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -81,6 +88,7 @@ import {
   isNonEmptyString,
   isNonNullable,
   LogEvent,
+  noop,
 } from '@finos/legend-shared';
 import {
   type DataProductAccessPointCodeConfiguration,
@@ -197,16 +205,85 @@ export const SqlPlaygroundScreen = observer(
         <TabMessageScreen message="Sql playground is not supported for this data product or environment." />
       );
     }
+    const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
+    const [isMaximized, setIsMaximized] = useState(true);
+    const toggleMaximize = (): void => setIsMaximized(!isMaximized);
+    const openSqlModal = (): void => {
+      setIsSqlModalOpen(true);
+    };
+    const closeSqlModal = (): void => {
+      setIsSqlModalOpen(false);
+    };
+    const loadSqlQuery = (): void => {
+      openSqlModal();
+    };
     useEffect(() => {
       playgroundState.init(dataAccessState, accessPointState);
     }, [playgroundState, accessPointState, dataAccessState]);
     return (
       <div className="data-product__viewer__tab-screen">
-        <SQLPlaygroundEditorResultPanel
-          playgroundState={playgroundState}
-          advancedMode={advancedMode}
-          disableDragDrop={true}
-        />
+        <button
+          onClick={loadSqlQuery}
+          tabIndex={-1}
+          className="data-product__viewer__tab-screen__btn"
+          title="Open SQL Playground"
+        >
+          Open SQL Playground
+        </button>
+        {isSqlModalOpen && (
+          <Dialog
+            open={isSqlModalOpen}
+            onClose={noop}
+            maxWidth={false}
+            classes={{
+              root: 'sql-editor-modal__root-container',
+              container: 'sql-editor-modal__container',
+              paper: clsx(
+                'sql-editor-modal__paper',
+                isMaximized
+                  ? 'sql-editor-modal__paper--maximized'
+                  : 'sql-editor-modal__paper--windowed',
+              ),
+            }}
+          >
+            <Modal className={'sql-editor-modal'}>
+              <div className="sql-playground-modal-header">
+                <ModalHeader title="SQL PLAYGROUND" />
+                <div className="sql-playground-modal-header-actions">
+                  <button
+                    className="sql-playground-modal__action"
+                    tabIndex={-1}
+                    onClick={toggleMaximize}
+                    title={isMaximized ? 'Minimize' : 'Maximize'}
+                  >
+                    {isMaximized ? (
+                      <EmptyWindowRestoreIcon />
+                    ) : (
+                      <WindowMaximizeIcon />
+                    )}
+                  </button>
+                  <button
+                    className="sql-playground-modal__action"
+                    tabIndex={-1}
+                    onClick={closeSqlModal}
+                    title="Close"
+                  >
+                    <TimesIcon />
+                  </button>
+                </div>
+              </div>
+              <ModalBody>
+                <div className="sql-playground-overlay">
+                  <SQLPlaygroundEditorResultPanel
+                    playgroundState={playgroundState}
+                    advancedMode={advancedMode}
+                    disableDragDrop={true}
+                  />
+                </div>
+              </ModalBody>
+            </Modal>
+          </Dialog>
+        )}
       </div>
     );
   },
