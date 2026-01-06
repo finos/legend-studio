@@ -55,6 +55,11 @@ import type {
   ProjectGAVCoordinates,
   StoredFileGeneration,
 } from '@finos/legend-storage';
+import {
+  MockedMonacoEditorAPI,
+  MockedMonacoEditorInstance,
+  MockedMonacoEditorModel,
+} from '@finos/legend-lego/code-editor/test';
 import { BrowserRouter } from '@finos/legend-application/browser';
 
 jest.mock('react-oidc-context', () => {
