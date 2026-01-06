@@ -51,7 +51,6 @@ import {
   TestData,
   observe_TestData,
   observe_Ownership,
-  validate_PureExecutionMapping,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
