@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.138
+
+### Patch Changes
+
+- [#4757](https://github.com/finos/legend-studio/pull/4757) [`7975093`](https://github.com/finos/legend-studio/commit/797509329ac35612ab2ecb12375595ed0af3f1cf) ([@bojja-gs](https://github.com/bojja-gs)) - Fixed header positioning and merge dark mode styling improvements
+
 ## 7.1.137
 
 ### Patch Changes
