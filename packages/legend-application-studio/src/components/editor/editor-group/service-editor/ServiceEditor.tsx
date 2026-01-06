@@ -47,6 +47,7 @@ import {
   service_setAutoActivateUpdates,
   service_setDocumentation,
   service_setPattern,
+  service_setMcpServer,
   service_updateOwner,
   service_deploymentOwnership,
   service_addUserOwnership,
@@ -59,6 +60,7 @@ import {
 } from '@finos/legend-application';
 import {
   validate_ServicePattern,
+  validate_ServiceMcpServer,
   DeploymentOwnership,
   UserListOwnership,
 } from '@finos/legend-graph';
@@ -87,7 +89,9 @@ const ServiceGeneralEditor = observer(() => {
       service_setPattern(service, newPattern);
     }
   };
-  const getValidationMessage = (inputPattern: string): string | undefined => {
+  const getPatternValidationMessage = (
+    inputPattern: string,
+  ): string | undefined => {
     const patternValidationResult = validate_ServicePattern(inputPattern);
     return patternValidationResult
       ? patternValidationResult.messages[0]
@@ -99,6 +103,25 @@ const ServiceGeneralEditor = observer(() => {
       service_removePatternParameter(service, val);
       setPattern(service.pattern);
     };
+
+  //McpServer
+  const [mcpServer, setMcpServer] = useState(service.mcpServer);
+
+  const updateMcpServer = (newMcpServer: string | undefined): void => {
+    if (!isReadOnly) {
+      service_setMcpServer(service, newMcpServer);
+    }
+  };
+
+  const getMcpServerValidationMessage = (
+    inputMcpServer: string | undefined,
+  ): string | undefined => {
+    const mcpServerValidationResult = validate_ServiceMcpServer(inputMcpServer);
+    return mcpServerValidationResult
+      ? mcpServerValidationResult.messages[0]
+      : undefined;
+  };
+
   // Owners
   const owners = service.owners;
   const [showOwnerEditInput, setShowOwnerEditInput] = useState<
@@ -288,7 +311,7 @@ const ServiceGeneralEditor = observer(() => {
           update={(value: string | undefined): void => {
             updatePattern(value ?? '');
           }}
-          validate={getValidationMessage}
+          validate={getPatternValidationMessage}
           value={pattern}
         />
       </PanelForm>
@@ -701,6 +724,21 @@ const ServiceGeneralEditor = observer(() => {
             </div>
           </div>
         )}
+      </PanelForm>
+      <PanelForm>
+        <PanelFormValidatedTextField
+          ref={patternRef}
+          name="MCP Group"
+          isReadOnly={isReadOnly}
+          className="service-editor__pattern__input"
+          errorMessageClassName="service-editor__pattern__input"
+          prompt={<>Specifies the MCP server group of the service</>}
+          update={(value: string | undefined): void => {
+            updateMcpServer(value);
+          }}
+          validate={getMcpServerValidationMessage}
+          value={mcpServer}
+        />
       </PanelForm>
     </PanelContentLists>
   );

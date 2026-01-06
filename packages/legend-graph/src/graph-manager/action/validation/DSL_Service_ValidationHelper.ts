@@ -41,6 +41,25 @@ export const validate_ServicePattern = (
   return errors.length ? createValidationError(errors) : undefined;
 };
 
+export const validate_ServiceMcpServer = (
+  mcpServer: string | undefined,
+): ValidationIssue | undefined => {
+  const errors: string[] = [];
+  if (!mcpServer) {
+    return undefined;
+  } else {
+    // MCP server must be an identifier matching: ^[a-zA-Z_][a-zA-Z0-9_]*$
+    const MCP_SERVER_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    if (!MCP_SERVER_REGEX.test(mcpServer)) {
+      addUniqueEntry(
+        errors,
+        `MCP server must match pattern '^[a-zA-Z_][a-zA-Z0-9_]*$'\n(start with a letter or underscore, followed by letters, digits, or underscores)`,
+      );
+    }
+  }
+  return errors.length ? createValidationError(errors) : undefined;
+};
+
 export const validate_PureExecutionQuery = (
   metamodel: PureExecution,
 ): ValidationIssue | undefined => {
