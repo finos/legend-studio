@@ -74,7 +74,9 @@
   height: var(--legend-marketplace-header-height);
   box-shadow: none;
   width: 100% !important;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 
   &__backdrop-image,
   &__backdrop {
