@@ -51,6 +51,7 @@ import {
   TestData,
   observe_TestData,
   observe_Ownership,
+  validate_PureExecutionMapping,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -190,6 +191,12 @@ export const service_setExecution = action(
 export const service_setPattern = action(
   (service: Service, value: string): void => {
     service.pattern = value;
+  },
+);
+
+export const service_setMcpServer = action(
+  (service: Service, value: string | undefined) => {
+    service.mcpServer = value;
   },
 );
 

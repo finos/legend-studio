@@ -332,6 +332,7 @@ export const V1_transformService = (
   service.stereotypes = element.stereotypes.map(V1_transformStereotype);
   service.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   service.autoActivateUpdates = element.autoActivateUpdates;
+  service.mcpServer = element.mcpServer;
   service.documentation = element.documentation;
   service.execution = transformServiceExecution(element.execution, context);
   if (element.ownership) {

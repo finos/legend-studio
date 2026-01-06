@@ -619,6 +619,7 @@ export class V1_ElementSecondPassBuilder
     service.owners = element.owners.slice();
     service.documentation = element.documentation;
     service.autoActivateUpdates = element.autoActivateUpdates;
+    service.mcpServer = element.mcpServer;
     if (element.ownership) {
       service.ownership = V1_buildServiceOwnership(element.ownership, service);
     }

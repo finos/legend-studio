@@ -35,6 +35,7 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
   owners: string[] = [];
   ownership?: V1_ServiceOwnership | undefined;
   documentation!: string;
+  mcpServer?: string | undefined;
   autoActivateUpdates = true;
   execution!: V1_ServiceExecution;
   test?: V1_DEPRECATED__ServiceTest | undefined;
@@ -51,6 +52,7 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
       hashArray(this.owners),
       this.ownership,
       this.documentation,
+      this.mcpServer ?? '',
       this.autoActivateUpdates.toString(),
       this.execution,
       this.test ?? '',

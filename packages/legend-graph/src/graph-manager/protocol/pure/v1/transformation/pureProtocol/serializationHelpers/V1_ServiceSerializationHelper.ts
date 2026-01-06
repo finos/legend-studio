@@ -383,4 +383,5 @@ export const V1_serviceModelSchema = (
     postValidations: customListWithSchema(V1_servicePostValidationModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
+    mcpServer: optional(primitive()),
   });
