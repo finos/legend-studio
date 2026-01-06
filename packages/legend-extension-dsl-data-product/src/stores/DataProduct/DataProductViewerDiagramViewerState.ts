@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { DataProductViewerState } from './DataProductViewerState.js';
 import { DiagramViewerState } from '@finos/legend-extension-dsl-diagram/application';
 import type { CommandRegistrar } from '@finos/legend-application';
 
@@ -22,10 +21,6 @@ export class DataProductViewerDiagramViewerState
   extends DiagramViewerState
   implements CommandRegistrar
 {
-  constructor(dataProductViewerState: DataProductViewerState) {
-    super(dataProductViewerState.getModelAccessPointDiagrams());
-  }
-
   registerCommands(): void {
     //todo
   }

@@ -48,6 +48,11 @@ import {
   V1_Expertise,
   V1_FunctionAccessPoint,
   V1_DataProductOperationalMetadata,
+  V1_NativeModelAccess,
+  type V1_SampleQuery,
+  V1_PackageableElementSampleQuery,
+  V1_InLineSampleQuery,
+  V1_NativeModelExecutionContext,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   UnsupportedOperationError,
@@ -85,6 +90,11 @@ export enum V1_AccessPointType {
 export enum V1_AccessPointGrouptype {
   DEFAULT_ACCESS_POINT_GROUP = 'defaultAccessPointGroup',
   MODEL_ACCESS_POINT_GROUP = 'modelAccessPointGroup',
+}
+
+export enum V1_SampleQueryType {
+  IN_LINE_SAMPLE_QUERY = 'inLineSampleQuery',
+  PACKAGEABLE_ELEMENT_SAMPLE_QUERY = 'packageableElementSampleQuery',
 }
 
 export enum V1_DataProductIconType {
@@ -196,6 +206,85 @@ export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
     title: optional(primitive()),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
     mapping: usingModelSchema(V1_packageableElementPointerModelSchema),
+  },
+);
+
+export const V1_PackageableElementSampleQueryModelSchema = createModelSchema(
+  V1_PackageableElementSampleQuery,
+  {
+    _type: usingConstantValueSchema(
+      V1_SampleQueryType.PACKAGEABLE_ELEMENT_SAMPLE_QUERY,
+    ),
+    id: primitive(),
+    title: primitive(),
+    description: optional(primitive()),
+    query: usingModelSchema(V1_packageableElementPointerModelSchema),
+    executionContextKey: optional(primitive()),
+  },
+);
+
+export const V1_InLineSampleQueryModelSchema = createModelSchema(
+  V1_InLineSampleQuery,
+  {
+    _type: usingConstantValueSchema(V1_SampleQueryType.IN_LINE_SAMPLE_QUERY),
+    id: primitive(),
+    title: primitive(),
+    description: optional(primitive()),
+    executionContextKey: optional(primitive()),
+    query: usingModelSchema(V1_rawLambdaModelSchema),
+  },
+);
+
+const V1_serializeSampleQuery = (
+  protocol: V1_SampleQuery,
+): PlainObject<V1_SampleQuery> => {
+  if (protocol instanceof V1_InLineSampleQuery) {
+    return serialize(V1_InLineSampleQueryModelSchema, protocol);
+  } else if (protocol instanceof V1_PackageableElementSampleQuery) {
+    return serialize(V1_PackageableElementSampleQueryModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize data product sample query`,
+    protocol,
+  );
+};
+
+export const V1_deserializeSampleQuery = (
+  json: PlainObject<V1_SampleQuery>,
+): V1_SampleQuery => {
+  switch (json._type) {
+    case V1_SampleQueryType.IN_LINE_SAMPLE_QUERY:
+      return deserialize(V1_InLineSampleQueryModelSchema, json);
+    case V1_SampleQueryType.PACKAGEABLE_ELEMENT_SAMPLE_QUERY:
+    default:
+      return deserialize(V1_PackageableElementSampleQueryModelSchema, json);
+  }
+};
+
+export const V1_NativeModelExecutionContextSchema = createModelSchema(
+  V1_NativeModelExecutionContext,
+  {
+    key: primitive(),
+    mapping: usingModelSchema(V1_packageableElementPointerModelSchema),
+    runtime: optionalCustomUsingModelSchema(
+      V1_packageableElementPointerModelSchema,
+    ),
+  },
+);
+
+export const V1_NativeModelAccessModelSchema = createModelSchema(
+  V1_NativeModelAccess,
+  {
+    diagrams: optionalCustomListWithSchema(V1_dataProductDiagramModelSchema),
+    sampleQueries: optionalCustomList(
+      (val: V1_SampleQuery) => V1_serializeSampleQuery(val),
+      (val) => V1_deserializeSampleQuery(val),
+    ),
+    nativeModelExecutionContexts: customListWithSchema(
+      V1_NativeModelExecutionContextSchema,
+    ),
+    featuredElements: optionalCustomListWithSchema(V1_ElementScopeModelSchema),
+    defaultExecutionContext: primitive(),
   },
 );
 
@@ -368,6 +457,9 @@ export const V1_dataProductModelSchema = (
     accessPointGroups: customList(
       V1_serializeAccessPointGroup,
       V1_deserializeAccessPointGroup,
+    ),
+    nativeModelAccess: optionalCustomUsingModelSchema(
+      V1_NativeModelAccessModelSchema,
     ),
     description: optional(primitive()),
     sampleValues: optionalCustomList(

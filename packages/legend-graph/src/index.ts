@@ -399,6 +399,14 @@ export {
   V1_DataProductArtifact,
   V1_AccessPointImplementation,
   V1_AccessPointGroupInfo,
+  V1_SampleQueryInfo,
+  V1_InLineSampleQueryInfo,
+  V1_PackageableElementSampleQueryInfo,
+  V1_NativeModelAccessInfo,
+  V1_DiagramInfo,
+  V1_EnumerationDocumentationEntry,
+  V1_AssociationDocumentationEntry,
+  V1_ClassDocumentationEntry,
 } from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
 export {
   V1_IngestEnvironmentType,

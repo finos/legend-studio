@@ -504,6 +504,7 @@ export const DiagramViewer = observer(
   (props: {
     applicationStore: GenericLegendApplicationStore;
     diagramViewerState: DiagramViewerState;
+    title?: string | undefined;
     actions: {
       onQueryClass?: ((_class: Class) => void) | undefined;
       onViewClassDocumentation: (classPath: string) => void;
@@ -515,7 +516,7 @@ export const DiagramViewer = observer(
       onUnsetWikiPageAnchor: (anchorKey: string) => void;
     };
   }) => {
-    const { diagramViewerState, applicationStore, actions } = props;
+    const { diagramViewerState, applicationStore, title, actions } = props;
     const {
       onSyncZoneWithNavigation,
       onGenerateAnchorForActivity,
@@ -559,7 +560,7 @@ export const DiagramViewer = observer(
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
-            Diagrams
+            {title ?? 'Diagrams'}
             <button
               className="data-space__viewer__wiki__section__header__anchor"
               tabIndex={-1}

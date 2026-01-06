@@ -28,6 +28,8 @@ import {
   UnknownAccessPoint,
   UnknownDataProductIcon,
   FunctionAccessPoint,
+  PackageableElementSampleQuery,
+  InLineSampleQuery,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   type V1_AccessPoint,
@@ -51,6 +53,10 @@ import {
   V1_FunctionAccessPoint,
   type V1_Expertise,
   V1_DataProductOperationalMetadata,
+  V1_NativeModelAccess,
+  V1_PackageableElementSampleQuery,
+  V1_InLineSampleQuery,
+  V1_NativeModelExecutionContext,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
@@ -61,6 +67,8 @@ import {
 } from './V1_DomainTransformer.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
+import { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
+import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 
 const transformAccessPoint = (
   ap: AccessPoint,
@@ -135,6 +143,103 @@ export const V1_transformDataProduct = (
     const dataProductType = new V1_ExternalDataProductType();
     dataProductType.link = element.type.link;
     product.type = dataProductType;
+  }
+
+  if (element.nativeModelAccess) {
+    const nativeModelAccess = new V1_NativeModelAccess();
+    const metamodelNativeModelAccess = element.nativeModelAccess;
+    if (metamodelNativeModelAccess.diagrams.length === 0) {
+      nativeModelAccess.diagrams = undefined;
+    } else {
+      nativeModelAccess.diagrams = metamodelNativeModelAccess.diagrams.map(
+        (diagram) => {
+          const v1Diagram = new V1_DataProductDiagram();
+          v1Diagram.title = diagram.title;
+          v1Diagram.description = diagram.description;
+          v1Diagram.diagram = new V1_PackageableElementPointer(
+            undefined,
+            diagram.diagram.path,
+          );
+          return v1Diagram;
+        },
+      );
+    }
+    nativeModelAccess.defaultExecutionContext =
+      metamodelNativeModelAccess.defaultExecutionContext;
+    nativeModelAccess.nativeModelExecutionContexts =
+      metamodelNativeModelAccess.nativeModelExecutionContexts.map(
+        (executionContext) => {
+          const v1ExecutionContext = new V1_NativeModelExecutionContext();
+          v1ExecutionContext.key = executionContext.key;
+          v1ExecutionContext.mapping = new V1_PackageableElementPointer(
+            undefined,
+            executionContext.mapping.valueForSerialization ?? '',
+          );
+          if (executionContext.runtime) {
+            v1ExecutionContext.runtime = new V1_PackageableElementPointer(
+              undefined,
+              executionContext.runtime.valueForSerialization ?? '',
+            );
+          }
+          return v1ExecutionContext;
+        },
+      );
+    nativeModelAccess.featuredElements =
+      metamodelNativeModelAccess.featuredElements.map((metatamodelScope) => {
+        const scope = new V1_ElementScope();
+        scope.exclude = metatamodelScope.exclude;
+        scope.element = new V1_PackageableElementPointer(
+          undefined,
+          metatamodelScope.element.valueForSerialization ?? '',
+        );
+        return scope;
+      });
+    nativeModelAccess.sampleQueries =
+      metamodelNativeModelAccess.sampleQueries.map((metamodelSampleQuery) => {
+        if (metamodelSampleQuery instanceof PackageableElementSampleQuery) {
+          const sampleQuery = new V1_PackageableElementSampleQuery();
+          sampleQuery.id = metamodelSampleQuery.id;
+          sampleQuery.title = metamodelSampleQuery.title;
+          sampleQuery.description = metamodelSampleQuery.description;
+          sampleQuery.executionContextKey =
+            metamodelSampleQuery.executionContextKey;
+          if (
+            metamodelSampleQuery.query.value instanceof
+            ConcreteFunctionDefinition
+          ) {
+            sampleQuery.query = new V1_PackageableElementPointer(
+              undefined,
+              generateFunctionPrettyName(metamodelSampleQuery.query.value, {
+                fullPath: true,
+                spacing: false,
+                notIncludeParamName: true,
+              }),
+            );
+          } else {
+            sampleQuery.query = new V1_PackageableElementPointer(
+              undefined,
+              metamodelSampleQuery.query.valueForSerialization ?? '',
+            );
+          }
+          return sampleQuery;
+        } else if (metamodelSampleQuery instanceof InLineSampleQuery) {
+          const sampleQuery = new V1_InLineSampleQuery();
+          sampleQuery.id = metamodelSampleQuery.id;
+          sampleQuery.title = metamodelSampleQuery.title;
+          sampleQuery.description = metamodelSampleQuery.description;
+          sampleQuery.executionContextKey =
+            metamodelSampleQuery.executionContextKey;
+          sampleQuery.query = V1_transformRawLambda(
+            metamodelSampleQuery.query,
+            context,
+          );
+          return sampleQuery;
+        }
+        throw new UnsupportedOperationError(
+          `Unable to transform data product sample query`,
+        );
+      });
+    product.nativeModelAccess = nativeModelAccess;
   }
 
   if (!element.icon) {

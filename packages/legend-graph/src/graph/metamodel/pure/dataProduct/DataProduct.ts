@@ -38,6 +38,8 @@ import type { Class } from '../packageableElements/domain/Class.js';
 import type { Enumeration } from '../packageableElements/domain/Enumeration.js';
 import type { Association } from '../packageableElements/domain/Association.js';
 import type { EmbeddedData } from '../data/EmbeddedData.js';
+import { ConcreteFunctionDefinition } from '../packageableElements/function/ConcreteFunctionDefinition.js';
+import { generateFunctionPrettyName } from '../../../helpers/PureLanguageHelper.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
@@ -157,7 +159,7 @@ export class DataProductDiagram implements Hashable {
       CORE_HASH_STRUCTURE.DATA_PRODUCT_DIAGRAM,
       this.title,
       this.description ?? '',
-      this.diagram,
+      this.diagram.path,
     ]);
   }
 }
@@ -196,6 +198,90 @@ export class ModelAccessPointGroup
       this.mapping.valueForSerialization ?? '',
       hashArray(this.featuredElements),
       hashArray(this.diagrams),
+    ]);
+  }
+}
+
+export class NativeModelExecutionContext implements Hashable {
+  key!: string;
+  mapping!: PackageableElementReference<Mapping>;
+  runtime: PackageableElementReference<PackageableRuntime> | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_NATIVE_MODEL_EXECUTION_CONTEXT,
+      this.key,
+      this.mapping.valueForSerialization ?? '',
+      this.runtime?.valueForSerialization ?? '',
+    ]);
+  }
+}
+
+export class NativeModelAccess implements Hashable {
+  featuredElements: DataProductElementScope[] = [];
+  nativeModelExecutionContexts!: NativeModelExecutionContext[];
+  defaultExecutionContext!: string;
+  diagrams: DataProductDiagram[] = [];
+  sampleQueries: SampleQuery[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_NATIVE_MODEL_ACCESS,
+      hashArray(this.featuredElements),
+      hashArray(this.diagrams),
+      hashArray(this.nativeModelExecutionContexts),
+      this.defaultExecutionContext,
+      hashArray(this.sampleQueries),
+    ]);
+  }
+}
+
+export abstract class SampleQuery implements Hashable {
+  id!: string;
+  title!: string;
+  description: string | undefined;
+  executionContextKey!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_SAMPLE_QUERY,
+      this.id,
+      this.title,
+      this.description ?? '',
+      this.executionContextKey,
+    ]);
+  }
+}
+
+export class InLineSampleQuery extends SampleQuery implements Hashable {
+  query!: RawLambda;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_INLINE_SAMPLE_QUERY,
+      super.hashCode,
+      this.query,
+    ]);
+  }
+}
+
+export class PackageableElementSampleQuery
+  extends SampleQuery
+  implements Hashable
+{
+  query!: PackageableElementReference<PackageableElement>;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_PACKAGEABLE_ELEMENT_SAMPLE_QUERY,
+      super.hashCode,
+      this.query.value instanceof ConcreteFunctionDefinition
+        ? generateFunctionPrettyName(this.query.value, {
+            fullPath: true,
+            spacing: false,
+            notIncludeParamName: true,
+          })
+        : (this.query.valueForSerialization ?? ''),
     ]);
   }
 }
@@ -383,6 +469,7 @@ export class DataProduct extends PackageableElement {
   description: string | undefined;
   icon: DataProductIcon | undefined;
   accessPointGroups: AccessPointGroup[] = [];
+  nativeModelAccess: NativeModelAccess | undefined;
   supportInfo: SupportInfo | undefined;
   type: DataProductType | undefined;
   sampleValues: EmbeddedData[] | undefined;
@@ -401,6 +488,7 @@ export class DataProduct extends PackageableElement {
       this.description ?? '',
       this.icon ?? '',
       hashArray(this.accessPointGroups),
+      this.nativeModelAccess ?? '',
       this.supportInfo ?? '',
       this.type ?? '',
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),

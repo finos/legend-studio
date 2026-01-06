@@ -2476,3 +2476,83 @@
     height: 300px;
   }
 }
+
+.data-product__viewer__sample-queries {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.data-product__viewer__sample-query__item {
+  border: 0.1rem solid var(--color-light-grey-200);
+  border-radius: 0.2rem;
+  background: var(--color-white);
+  margin-bottom: 1rem;
+
+  &__header {
+    @include flexVCenter;
+
+    width: 100%;
+    cursor: pointer;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    text-align: left;
+    color: inherit;
+    gap: 1rem;
+
+    &:hover {
+      background: var(--color-light-grey-100);
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      width: 2rem;
+      height: 2rem;
+      flex-shrink: 0;
+
+      svg {
+        font-size: 1.8rem;
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    &__content {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    &__title {
+      font-weight: 500;
+      font-size: 1.4rem;
+      color: var(--color-dark-grey-500);
+    }
+
+    &__description {
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-400);
+      margin-top: 0.3rem;
+    }
+  }
+
+  &__content {
+    padding: 0 1rem 1rem 4rem;
+
+    &__query {
+      height: 20rem;
+      border: 0.1rem solid var(--color-light-grey-200);
+      border-radius: 0.2rem;
+      overflow: hidden;
+    }
+
+    &__info {
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-400);
+      padding: 1rem;
+      font-family: 'Roboto Mono', monospace;
+    }
+  }
+}
