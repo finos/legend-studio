@@ -120,6 +120,7 @@ export class DataProductSqlPlaygroundPanelState
       }
       try {
         const sqlQuery = `#SQL{${sql}}#`;
+
         const start = Date.now();
         const executionInput = (yield createExecuteInput(
           guaranteeNonNullable(
