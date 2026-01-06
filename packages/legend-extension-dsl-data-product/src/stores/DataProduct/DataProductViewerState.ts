@@ -398,15 +398,16 @@ export class DataProductViewerState extends BaseViewerState<
     this.apgStates.map((apgState) =>
       apgState.init(dataProductArtifactPromise, entitlementsDataProductDetails),
     );
-    const dataProductArtifact =
-      (yield dataProductArtifactPromise) as V1_DataProductArtifact;
+    const dataProductArtifact = (yield dataProductArtifactPromise) as
+      | V1_DataProductArtifact
+      | undefined;
     this.dataProductArtifact = dataProductArtifact;
 
     // Build graph from native model access if present (use first one for now)
     if (
       entitlementsDataProductDetails?.origin instanceof
         V1_SdlcDeploymentDataProductOrigin &&
-      dataProductArtifact.nativeModelAccess
+      dataProductArtifact?.nativeModelAccess
     ) {
       try {
         const nativeModelAccess = dataProductArtifact.nativeModelAccess;
@@ -420,7 +421,7 @@ export class DataProductViewerState extends BaseViewerState<
       }
     }
 
-    if (dataProductArtifact.nativeModelAccess) {
+    if (dataProductArtifact?.nativeModelAccess) {
       try {
         this.nativeModelAccessDocumentationState =
           new DataProductNativeModelAccessDocumentationState(this);

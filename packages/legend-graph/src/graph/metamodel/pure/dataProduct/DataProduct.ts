@@ -218,7 +218,6 @@ export class NativeModelExecutionContext implements Hashable {
 }
 
 export class NativeModelAccess implements Hashable {
-  mapping!: PackageableElementReference<Mapping>;
   featuredElements: DataProductElementScope[] = [];
   nativeModelExecutionContexts!: NativeModelExecutionContext[];
   defaultExecutionContext!: string;
@@ -228,7 +227,6 @@ export class NativeModelAccess implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT_NATIVE_MODEL_ACCESS,
-      this.mapping.valueForSerialization ?? '',
       hashArray(this.featuredElements),
       hashArray(this.diagrams),
       hashArray(this.nativeModelExecutionContexts),
