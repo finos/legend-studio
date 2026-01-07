@@ -105,9 +105,7 @@ const ServiceGeneralEditor = observer(() => {
     };
 
   //McpServer
-  const [mcpServer, setMcpServer] = useState(service.mcpServer);
-
-  const updateMcpServer = (newMcpServer: string | undefined): void => {
+ const updateMcpServer = (newMcpServer: string | undefined): void => {
     if (!isReadOnly) {
       service_setMcpServer(service, newMcpServer);
     }
@@ -737,7 +735,7 @@ const ServiceGeneralEditor = observer(() => {
             updateMcpServer(value);
           }}
           validate={getMcpServerValidationMessage}
-          value={mcpServer}
+          value={service.mcpServer}
         />
       </PanelForm>
     </PanelContentLists>
