@@ -24,7 +24,6 @@
     min-height: 60vh;
     max-width: 100%;
     width: 100%;
-    gap: 3rem;
 
     &__logo {
       img {
@@ -38,7 +37,7 @@
 
     width: clamp(32rem, 50vw, 64rem);
     height: 4.9rem;
-    margin-top: -2.5rem;
+    margin-top: -0.8rem;
 
     .legend-marketplace__search-bar {
       flex: 1;
@@ -72,7 +71,6 @@
     font-weight: 500;
     margin-top: 1.5rem;
     margin-bottom: 1.5rem;
-    margin-left: 1rem;
     color: #1a202c;
     letter-spacing: 0.2rem;
     line-height: 1.2;
@@ -100,13 +98,32 @@
 
   &__carousel {
     width: 100%;
+
+    .swiper-pagination-bullet {
+      width: 1rem;
+      height: 1rem;
+      background: var(--color-dark-grey-400);
+      opacity: 0.5;
+      transition: all 0.3s ease;
+
+      &:hover {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
+    }
+
+    .swiper-pagination-bullet-active {
+      background: var(--color-hclight-blue-60);
+      opacity: 1;
+      transform: scale(1.2);
+    }
   }
 
   &__carousel-slide {
     display: flex;
     flex-wrap: nowrap;
     gap: 3rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3.5rem;
   }
 
   &__data-product-cards {
