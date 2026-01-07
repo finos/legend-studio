@@ -732,7 +732,9 @@ const ServiceGeneralEditor = observer(() => {
           isReadOnly={isReadOnly}
           className="service-editor__pattern__input"
           errorMessageClassName="service-editor__pattern__input"
-          prompt={<>To enable MCP access to this service, tag it to an MCP server</>}
+          prompt={
+            <>To enable MCP access to this service, tag it to an MCP server</>
+          }
           update={(value: string | undefined): void => {
             updateMcpServer(value);
           }}
