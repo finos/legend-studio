@@ -50,7 +50,7 @@ jobs:
           node-version: 21
       - name: Run engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
-        run: docker compose --file=grammar-test-setup-docker-compose.yml up --detach
+        run: docker compose --file=grammar-test-setup-docker-compose.yml up
       - name: Install dependencies
         run: yarn
       - name: Build
