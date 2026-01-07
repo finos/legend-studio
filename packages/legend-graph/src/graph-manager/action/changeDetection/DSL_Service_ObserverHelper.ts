@@ -353,6 +353,7 @@ export const observe_Service = skipObservedWithContext(
       ownership: observable,
       documentation: observable,
       autoActivateUpdates: observable,
+      mcpServer: observable,
       execution: observable,
       test: observable,
       tests: observable,

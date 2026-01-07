@@ -35,6 +35,7 @@ export class Service extends PackageableElement implements Hashable, Testable {
   ownership: ServiceOwnership | undefined;
   documentation = '';
   autoActivateUpdates = true;
+  mcpServer?: string | undefined;
   execution!: ServiceExecution;
   test?: DEPRECATED__ServiceTest | undefined;
   tests: ServiceTestSuite[] = [];
@@ -63,6 +64,7 @@ export class Service extends PackageableElement implements Hashable, Testable {
       this.autoActivateUpdates.toString(),
       this.execution,
       this.test ?? '',
+      this.mcpServer ?? '',
       hashArray(this.tests),
       hashArray(this.postValidations),
       hashArray(this.taggedValues),

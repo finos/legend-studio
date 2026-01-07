@@ -193,6 +193,13 @@ export const service_setPattern = action(
   },
 );
 
+export const service_setMcpServer = action(
+  (service: Service, value: string | undefined) => {
+    const newMcpServer = value === '' ? undefined : value;
+    service.mcpServer = newMcpServer;
+  },
+);
+
 export const service_deploymentOwnership = action(
   (deployment: DeploymentOwnership, value: string): void => {
     deployment.identifier = value;
