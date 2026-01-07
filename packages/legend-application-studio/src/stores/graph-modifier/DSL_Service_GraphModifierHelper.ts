@@ -195,7 +195,8 @@ export const service_setPattern = action(
 
 export const service_setMcpServer = action(
   (service: Service, value: string | undefined) => {
-    service.mcpServer = value;
+    const newMcpServer = value === '' ? undefined : value; 
+    service.mcpServer =  newMcpServer;
   },
 );
 
