@@ -73,17 +73,71 @@ type MarketPlaceDataProductIntegration_TemeletryData =
     accessPointPath?: string | undefined;
   };
 
+export type MarketplaceUserSession = {
+  searchEventId: number;
+  searchSessionId: string | undefined;
+};
+
+export const SEARCH_SESSION_KEY = 'marketplace_user_session';
+
 export class LegendMarketplaceTelemetryHelper {
+  private static getSearchSession(): MarketplaceUserSession {
+    const stored = localStorage.getItem(SEARCH_SESSION_KEY);
+
+    if (stored) {
+      const session = JSON.parse(stored) as MarketplaceUserSession;
+      return session;
+    } else {
+      return this.clearSearchSession();
+    }
+  }
+
+  private static createNewSearchSession(
+    searchSessionId: string,
+  ): MarketplaceUserSession {
+    const newSearchSession: MarketplaceUserSession = {
+      searchEventId: 1,
+      searchSessionId: searchSessionId,
+    };
+
+    localStorage.setItem(SEARCH_SESSION_KEY, JSON.stringify(newSearchSession));
+    return newSearchSession;
+  }
+
+  static clearSearchSession(): MarketplaceUserSession {
+    const newSearchSession: MarketplaceUserSession = {
+      searchEventId: 0,
+      searchSessionId: undefined,
+    };
+
+    localStorage.setItem(SEARCH_SESSION_KEY, JSON.stringify(newSearchSession));
+    return newSearchSession;
+  }
+
+  private static updateSearchEventId() {
+    const currentSession = this.getSearchSession();
+    const updatedSession: MarketplaceUserSession = {
+      ...currentSession,
+      searchEventId: currentSession.searchEventId + 1,
+    };
+
+    localStorage.setItem(SEARCH_SESSION_KEY, JSON.stringify(updatedSession));
+    return updatedSession;
+  }
+
   static logEvent_ClickingDataProductCard(
     telemetryService: TelemetryService,
     dataProductData: MarketplaceDataProduct_TelemetryData,
     clickedFrom: LEGEND_MARKETPLACE_PAGE,
   ): void {
+    this.updateSearchEventId();
+    const session = this.getSearchSession();
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.CLICK_DATA_PRODUCT_CARD,
       {
         ...dataProductData,
         clickedFrom: clickedFrom,
+        ...session,
       },
     );
   }
@@ -93,9 +147,12 @@ export class LegendMarketplaceTelemetryHelper {
     query: string | undefined,
     searchedFrom: LEGEND_MARKETPLACE_PAGE,
   ): void {
+    this.createNewSearchSession(telemetryService.applicationStore.uuid);
+    const session = this.getSearchSession();
     telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SEARCH_QUERY, {
       query: query,
       searchedFrom: searchedFrom,
+      ...session,
     });
   }
 
@@ -170,9 +227,15 @@ export class LegendMarketplaceTelemetryHelper {
     intTelemetryData: MarketPlaceDataProductIntegration_TemeletryData,
     error: string | undefined,
   ): void {
+    this.updateSearchEventId();
+    const session = this.getSearchSession();
     const telemetryData =
       error === undefined
-        ? { ...intTelemetryData, status: MARKETPLACE_EVENT_STATUS.SUCCESS }
+        ? {
+            ...intTelemetryData,
+            status: MARKETPLACE_EVENT_STATUS.SUCCESS,
+            ...session,
+          }
         : {
             ...intTelemetryData,
             status: MARKETPLACE_EVENT_STATUS.FAILURE,
@@ -260,5 +323,18 @@ export class LegendMarketplaceTelemetryHelper {
     telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.CLICK_HEADER_TAB, {
       tabTitle: tabTitle,
     });
+  }
+
+  static logEvent_toggleProducerSearch(
+    telemetryService: TelemetryService,
+    isEnabled: boolean,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.PRODUCER_SEARCH_TOGGLE,
+      {
+        isEnabled: isEnabled,
+        toggleAction: isEnabled ? 'enabled' : 'disabled',
+      },
+    );
   }
 }

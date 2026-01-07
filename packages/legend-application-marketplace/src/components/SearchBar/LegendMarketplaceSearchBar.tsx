@@ -27,6 +27,8 @@ import {
 import { clsx, SearchIcon, TuneIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceInfoTooltip } from '../InfoTooltip/LegendMarketplaceInfoTooltip.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 
 export interface Vendor {
   provider: string;
@@ -54,6 +56,7 @@ export const LegendMarketplaceSearchBar = observer(
       initialUseProducerSearch,
     } = props;
 
+    const applicationStore = useLegendMarketplaceBaseStore().applicationStore;
     const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
     const [useProducerSearch, setUseProducerSearch] = useState(
       initialUseProducerSearch ?? false,
@@ -117,6 +120,10 @@ export const LegendMarketplaceSearchBar = observer(
                     checked={useProducerSearch}
                     onChange={(event) => {
                       setUseProducerSearch(event.target.checked);
+                      LegendMarketplaceTelemetryHelper.logEvent_toggleProducerSearch(
+                        applicationStore.telemetryService,
+                        event.target.checked,
+                      );
                     }}
                   />
                 }
