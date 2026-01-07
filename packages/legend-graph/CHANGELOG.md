@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.3.23
+
+### Patch Changes
+
+- [#4755](https://github.com/finos/legend-studio/pull/4755) [`8336e04`](https://github.com/finos/legend-studio/commit/8336e0483fc0fb8e67e34aae06757f7b3840c31c) ([@yash0024](https://github.com/yash0024)) - DataProduct NativeModelAccess in studio graph
+
+- [#4764](https://github.com/finos/legend-studio/pull/4764) [`f4c4141`](https://github.com/finos/legend-studio/commit/f4c41417235ca750373379ad9dda3d0277737168) ([@jackp5150](https://github.com/jackp5150)) - Determines the furthest contract to show in marketplace
+
 ## 32.3.22
 
 ### Patch Changes

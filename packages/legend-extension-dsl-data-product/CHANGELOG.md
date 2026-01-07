@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.41
+
+### Patch Changes
+
+- [#4762](https://github.com/finos/legend-studio/pull/4762) [`3e260c2`](https://github.com/finos/legend-studio/commit/3e260c224fd5ef024c01161d7ecd1de6e254345d) ([@jackp5150](https://github.com/jackp5150)) - Fixed link copying, direction on loading, and added APG anchors
+
+- [#4760](https://github.com/finos/legend-studio/pull/4760) [`6e9b475`](https://github.com/finos/legend-studio/commit/6e9b4757832511890705b3885ae37f951ac69cf9) ([@jackp5150](https://github.com/jackp5150)) - Refactored Entitlements contract viewer to separate modal content from page for individual contract rendering
+
+- [#4764](https://github.com/finos/legend-studio/pull/4764) [`f4c4141`](https://github.com/finos/legend-studio/commit/f4c41417235ca750373379ad9dda3d0277737168) ([@jackp5150](https://github.com/jackp5150)) - Determines the furthest contract to show in marketplace
+
+- [#4755](https://github.com/finos/legend-studio/pull/4755) [`8336e04`](https://github.com/finos/legend-studio/commit/8336e0483fc0fb8e67e34aae06757f7b3840c31c) ([@yash0024](https://github.com/yash0024)) - DataProduct viewer - sampleQueries and model documentation
+
 ## 0.0.40
 
 ### Patch Changes

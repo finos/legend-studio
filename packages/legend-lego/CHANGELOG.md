@@ -1,5 +1,13 @@
 # @finos/legend-lego
 
+## 2.0.158
+
+### Patch Changes
+
+- [#4755](https://github.com/finos/legend-studio/pull/4755) [`8336e04`](https://github.com/finos/legend-studio/commit/8336e0483fc0fb8e67e34aae06757f7b3840c31c) ([@yash0024](https://github.com/yash0024)) - Add optional title to ModelDocumentationViewer
+
+- [#4762](https://github.com/finos/legend-studio/pull/4762) [`3e260c2`](https://github.com/finos/legend-studio/commit/3e260c224fd5ef024c01161d7ecd1de6e254345d) ([@jackp5150](https://github.com/jackp5150)) - DataGrid - allows users to make their own onGridReady callback
+
 ## 2.0.157
 
 ## 2.0.156

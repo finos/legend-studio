@@ -1,5 +1,7 @@
 # @finos/legend-server-marketplace
 
+## 0.1.34
+
 ## 0.1.33
 
 ## 0.1.32

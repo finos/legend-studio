@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-diagram
 
+## 8.1.204
+
+### Patch Changes
+
+- [#4755](https://github.com/finos/legend-studio/pull/4755) [`8336e04`](https://github.com/finos/legend-studio/commit/8336e0483fc0fb8e67e34aae06757f7b3840c31c) ([@yash0024](https://github.com/yash0024)) - Add optional title to DiagramViewer
+
 ## 8.1.203
 
 ## 8.1.202
