@@ -105,9 +105,11 @@ const ServiceGeneralEditor = observer(() => {
     };
 
   //McpServer
+  const [mcpServer, setMcpServer] = useState(service.mcpServer);
   const updateMcpServer = (newMcpServer: string | undefined): void => {
     if (!isReadOnly) {
       service_setMcpServer(service, newMcpServer);
+      setMcpServer(service.mcpServer);
     }
   };
 
@@ -730,12 +732,12 @@ const ServiceGeneralEditor = observer(() => {
           isReadOnly={isReadOnly}
           className="service-editor__pattern__input"
           errorMessageClassName="service-editor__pattern__input"
-          prompt={<>Specifies the MCP server group of the service</>}
+          prompt={<>To enable MCP access to this service, tag it to an MCP server</>}
           update={(value: string | undefined): void => {
             updateMcpServer(value);
           }}
           validate={getMcpServerValidationMessage}
-          value={service.mcpServer}
+          value={mcpServer}
         />
       </PanelForm>
     </PanelContentLists>
