@@ -89,9 +89,7 @@ const ServiceGeneralEditor = observer(() => {
       service_setPattern(service, newPattern);
     }
   };
-  const getPatternValidationMessage = (
-    inputPattern: string,
-  ): string | undefined => {
+  const getPatternValidationMessage = (inputPattern: string): string | undefined => {
     const patternValidationResult = validate_ServicePattern(inputPattern);
     return patternValidationResult
       ? patternValidationResult.messages[0]
@@ -111,9 +109,7 @@ const ServiceGeneralEditor = observer(() => {
     }
   };
 
-  const getMcpServerValidationMessage = (
-    inputMcpServer: string | undefined,
-  ): string | undefined => {
+ const getMcpServerValidationMessage = (inputMcpServer: string | undefined): string | undefined => {
     const mcpServerValidationResult = validate_ServiceMcpServer(inputMcpServer);
     return mcpServerValidationResult
       ? mcpServerValidationResult.messages[0]
