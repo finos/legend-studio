@@ -89,7 +89,9 @@ const ServiceGeneralEditor = observer(() => {
       service_setPattern(service, newPattern);
     }
   };
-  const getPatternValidationMessage = (inputPattern: string): string | undefined => {
+  const getPatternValidationMessage = (
+    inputPattern: string,
+  ): string | undefined => {
     const patternValidationResult = validate_ServicePattern(inputPattern);
     return patternValidationResult
       ? patternValidationResult.messages[0]
@@ -103,13 +105,15 @@ const ServiceGeneralEditor = observer(() => {
     };
 
   //McpServer
- const updateMcpServer = (newMcpServer: string | undefined): void => {
+  const updateMcpServer = (newMcpServer: string | undefined): void => {
     if (!isReadOnly) {
       service_setMcpServer(service, newMcpServer);
     }
   };
 
- const getMcpServerValidationMessage = (inputMcpServer: string | undefined): string | undefined => {
+  const getMcpServerValidationMessage = (
+    inputMcpServer: string | undefined,
+  ): string | undefined => {
     const mcpServerValidationResult = validate_ServiceMcpServer(inputMcpServer);
     return mcpServerValidationResult
       ? mcpServerValidationResult.messages[0]
@@ -726,7 +730,7 @@ const ServiceGeneralEditor = observer(() => {
           isReadOnly={isReadOnly}
           className="service-editor__pattern__input"
           errorMessageClassName="service-editor__pattern__input"
-          prompt={<>Specifies the MCP Server group of the service</>}
+          prompt={<>Specifies the MCP server group of the service</>}
           update={(value: string | undefined): void => {
             updateMcpServer(value);
           }}
