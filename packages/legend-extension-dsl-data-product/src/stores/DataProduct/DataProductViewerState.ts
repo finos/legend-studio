@@ -126,7 +126,14 @@ export class DataProductViewerState extends BaseViewerState<
       openDataCube?: (sourceData: object) => void;
     },
   ) {
-    super(product, applicationStore, new DataProductLayoutState(), actions);
+    super(
+      product,
+      applicationStore,
+      new DataProductLayoutState(product),
+      actions,
+    );
+
+    this.layoutState.setViewerState(this);
 
     makeObservable(this, {
       dataProductArtifact: observable,
@@ -172,6 +179,14 @@ export class DataProductViewerState extends BaseViewerState<
     );
   }
 
+  getModelAccessPointGroup(): V1_ModelAccessPointGroup | undefined {
+    const modelapg = this.product.accessPointGroups.find(
+      (apg): apg is V1_ModelAccessPointGroup =>
+        apg instanceof V1_ModelAccessPointGroup,
+    );
+    return modelapg;
+  }
+
   get isVDP(): boolean {
     const vendorProfile = this.dataProductConfig?.vendorTaggedValue.profile;
     if (!vendorProfile) {
@@ -181,13 +196,6 @@ export class DataProductViewerState extends BaseViewerState<
       this.product.taggedValues.find(
         (taggedValue) => taggedValue.tag.profile === vendorProfile,
       ),
-    );
-  }
-
-  getModelAccessPointGroup(): V1_ModelAccessPointGroup | undefined {
-    return this.product.accessPointGroups.find(
-      (apg): apg is V1_ModelAccessPointGroup =>
-        apg instanceof V1_ModelAccessPointGroup,
     );
   }
 
