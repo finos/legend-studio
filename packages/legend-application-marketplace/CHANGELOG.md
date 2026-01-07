@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace
 
+## 0.1.56
+
+### Patch Changes
+
+- [#4763](https://github.com/finos/legend-studio/pull/4763) [`753bcea`](https://github.com/finos/legend-studio/commit/753bceaa738458eee743654b8adccb2f14686752) ([@kelly-thai](https://github.com/kelly-thai)) - Update Marketplace Logging to track user journey
+
+- [#4760](https://github.com/finos/legend-studio/pull/4760) [`6e9b475`](https://github.com/finos/legend-studio/commit/6e9b4757832511890705b3885ae37f951ac69cf9) ([@jackp5150](https://github.com/jackp5150)) - Added contract page, routing, and page generation callbacks
+
+- [#4768](https://github.com/finos/legend-studio/pull/4768) [`dce0886`](https://github.com/finos/legend-studio/commit/dce08868a19f1654118764e22b8ccb9eb06be7c7) ([@bojja-gs](https://github.com/bojja-gs)) - removed background colors for coming soon pages to support dark and light themes
+
 ## 0.1.55
 
 ### Patch Changes
