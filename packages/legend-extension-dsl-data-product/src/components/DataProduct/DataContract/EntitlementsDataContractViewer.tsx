@@ -264,24 +264,22 @@ const ContractEscalationModal = (props: {
   );
 };
 
-export const EntitlementsDataContractViewer = observer(
+export const EntitlementsDataContractContent = observer(
   (props: {
-    open: boolean;
-    onClose: () => void;
     currentViewer: EntitlementsDataContractViewerState;
-    getContractTaskUrl: (taskId: string) => string;
+    getContractTaskUrl: (contractId: string, taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
     initialSelectedUser?: string | undefined;
     onRefresh?: (() => void) | (() => Promise<void>);
+    isReadOnly?: boolean | undefined;
   }) => {
     const {
-      open,
       currentViewer,
       getContractTaskUrl,
       getDataProductUrl,
-      onClose,
       initialSelectedUser,
       onRefresh,
+      isReadOnly,
     } = props;
     const auth = useAuth();
     const consumer = currentViewer.liteContract.consumer;
@@ -339,7 +337,8 @@ export const EntitlementsDataContractViewer = observer(
 
     const [selectedTargetUser, setSelectedTargetUser] = useState<
       string | undefined
-    >(initialSelectedUser ?? targetUsers?.[0]);
+    >(initialSelectedUser);
+
     const [isLoading, setIsLoading] = useState(false);
     const [showEscalationModal, setShowEscalationModal] = useState(false);
 
@@ -359,10 +358,10 @@ export const EntitlementsDataContractViewer = observer(
     ]);
 
     useEffect(() => {
-      if (selectedTargetUser === undefined) {
-        setSelectedTargetUser(initialSelectedUser ?? targetUsers?.[0]);
+      if (selectedTargetUser === undefined && targetUsers?.[0]) {
+        setSelectedTargetUser(targetUsers[0]);
       }
-    }, [initialSelectedUser, selectedTargetUser, targetUsers]);
+    }, [selectedTargetUser, targetUsers]);
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
@@ -382,10 +381,6 @@ export const EntitlementsDataContractViewer = observer(
         task.rec.consumer === selectedTargetUser &&
         task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
     );
-    const isContractInProgressForUser =
-      privilegeManagerApprovalTask?.rec.status ===
-        V1_UserApprovalStatus.PENDING ||
-      dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING;
     const showEscalationButton =
       selectedTargetUser ===
         currentViewer.applicationStore.identityService.currentUser ||
@@ -492,10 +487,10 @@ export const EntitlementsDataContractViewer = observer(
           </b>
           {!(consumer instanceof V1_ProducerScope) &&
           targetUsers !== undefined ? (
-            targetUsers.length === 1 ? (
+            isReadOnly || targetUsers.length === 1 ? (
               <UserRenderer
-                key={targetUsers[0]}
-                userId={targetUsers[0]}
+                key={selectedTargetUser ?? targetUsers[0]}
+                userId={selectedTargetUser ?? targetUsers[0]}
                 applicationStore={currentViewer.applicationStore}
                 userSearchService={currentViewer.userSearchService}
               />
@@ -542,6 +537,7 @@ export const EntitlementsDataContractViewer = observer(
             >
               <Link
                 href={getContractTaskUrl(
+                  currentViewer.liteContract.guid,
                   privilegeManagerApprovalTask.rec.taskId,
                 )}
                 target="_blank"
@@ -552,7 +548,10 @@ export const EntitlementsDataContractViewer = observer(
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    getContractTaskUrl(privilegeManagerApprovalTask.rec.taskId),
+                    getContractTaskUrl(
+                      currentViewer.liteContract.guid,
+                      privilegeManagerApprovalTask.rec.taskId,
+                    ),
                   )
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
@@ -624,7 +623,10 @@ export const EntitlementsDataContractViewer = observer(
               }}
             >
               <Link
-                href={getContractTaskUrl(dataOwnerApprovalTask.rec.taskId)}
+                href={getContractTaskUrl(
+                  currentViewer.liteContract.guid,
+                  dataOwnerApprovalTask.rec.taskId,
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -633,7 +635,10 @@ export const EntitlementsDataContractViewer = observer(
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    getContractTaskUrl(dataOwnerApprovalTask.rec.taskId),
+                    getContractTaskUrl(
+                      currentViewer.liteContract.guid,
+                      dataOwnerApprovalTask.rec.taskId,
+                    ),
                   )
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
@@ -714,108 +719,95 @@ export const EntitlementsDataContractViewer = observer(
 
     return (
       <>
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
-          <DialogTitle>
-            {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
-          </DialogTitle>
-          <IconButton
-            onClick={onClose}
-            className="marketplace-dialog-close-btn"
-          >
-            <CloseIcon />
-          </IconButton>
-          <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-            <CubesLoadingIndicator isLoading={isLoading}>
-              <CubesLoadingIndicatorIcon />
-            </CubesLoadingIndicator>
-            {!isLoading && (
-              <>
-                <div>
-                  Access request for{' '}
-                  <span className="marketplace-lakehouse-text__emphasis">
-                    {accessPointGroup}
-                  </span>{' '}
-                  Access Point Group in{' '}
-                  <Link
-                    className="marketplace-lakehouse-text__emphasis"
-                    href={getDataProductUrl(
-                      dataProduct,
-                      currentViewer.liteContract.deploymentId,
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {dataProduct}
-                  </Link>{' '}
-                  Data Product
-                </div>
-                {contractMetadataSection}
-                {!isContractInTerminalState(currentViewer.liteContract) && (
-                  <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<RefreshIcon />}
-                      onClick={() => {
-                        // eslint-disable-next-line no-void
-                        void refresh();
-                      }}
-                    >
-                      Refresh
-                    </Button>
-                  </Box>
+        <CubesLoadingIndicator isLoading={isLoading}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+        {!isLoading && (
+          <>
+            <div>
+              Access request for{' '}
+              <span className="marketplace-lakehouse-text__emphasis">
+                {accessPointGroup}
+              </span>{' '}
+              Access Point Group in{' '}
+              <Link
+                className="marketplace-lakehouse-text__emphasis"
+                href={getDataProductUrl(
+                  dataProduct,
+                  currentViewer.liteContract.deploymentId,
                 )}
-                {contractTimelineSection}
-              </>
-            )}
-            <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
-              {currentViewer.subscription !== undefined && (
-                <Alert
-                  severity="info"
-                  className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__subscription-info"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {dataProduct}
+              </Link>{' '}
+              Data Product
+            </div>
+            {contractMetadataSection}
+            {!isContractInTerminalState(currentViewer.liteContract) && (
+              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<RefreshIcon />}
+                  onClick={() => {
+                    // eslint-disable-next-line no-void
+                    void refresh();
+                  }}
                 >
-                  A subscription has been auto-created for you
-                  {currentViewer.subscription.target instanceof
-                  V1_SnowflakeTarget
-                    ? ` with Snowflake account ${currentViewer.subscription.target.snowflakeAccountId}`
-                    : ''}
-                  .
-                </Alert>
-              )}
-              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details">
-                <Box>
-                  Contract ID: {currentViewer.liteContract.guid}
-                  <IconButton
-                    onClick={() => copyContractId()}
-                    title="Copy Contract ID"
-                  >
-                    <CopyIcon />
-                  </IconButton>
-                </Box>
-                <span
-                  title={
-                    currentViewer.liteContract.state === V1_ContractState.CLOSED
-                      ? 'Contract is already closed'
-                      : 'Close Contract'
-                  }
-                >
-                  <IconButton
-                    onClick={() => checkBeforeClosingContract()}
-                    disabled={
-                      currentViewer.initializationState.isInProgress ||
-                      currentViewer.invalidatingContractState.isInProgress ||
-                      currentViewer.liteContract.state ===
-                        V1_ContractState.CLOSED
-                    }
-                    className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
-                  >
-                    <TrashIcon />
-                  </IconButton>
-                </span>
+                  Refresh
+                </Button>
               </Box>
+            )}
+            {contractTimelineSection}
+          </>
+        )}
+
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
+          {currentViewer.subscription !== undefined && (
+            <Alert
+              severity="info"
+              className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__subscription-info"
+            >
+              A subscription has been auto-created for you
+              {currentViewer.subscription.target instanceof V1_SnowflakeTarget
+                ? ` with Snowflake account ${currentViewer.subscription.target.snowflakeAccountId}`
+                : ''}
+              .
+            </Alert>
+          )}
+          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details">
+            <Box>
+              Contract ID: {currentViewer.liteContract.guid}
+              <IconButton
+                onClick={() => copyContractId()}
+                title="Copy Contract ID"
+              >
+                <CopyIcon />
+              </IconButton>
             </Box>
-          </DialogContent>
-        </Dialog>
+            <span
+              title={
+                currentViewer.liteContract.state === V1_ContractState.CLOSED
+                  ? 'Contract is already closed'
+                  : 'Close Contract'
+              }
+            >
+              <IconButton
+                onClick={() => checkBeforeClosingContract()}
+                disabled={
+                  currentViewer.initializationState.isInProgress ||
+                  currentViewer.invalidatingContractState.isInProgress ||
+                  currentViewer.liteContract.state === V1_ContractState.CLOSED
+                }
+                className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
+              >
+                <TrashIcon />
+              </IconButton>
+            </span>
+          </Box>
+        </Box>
+
         <ContractEscalationModal
           open={showEscalationModal && canEscalateContract}
           onClose={() => setShowEscalationModal(false)}
@@ -824,6 +816,43 @@ export const EntitlementsDataContractViewer = observer(
           refresh={refresh}
         />
       </>
+    );
+  },
+);
+
+export const EntitlementsDataContractViewer = observer(
+  (props: {
+    open: boolean;
+    onClose: () => void;
+    currentViewer: EntitlementsDataContractViewerState;
+    getContractTaskUrl: (contractId: string, taskId: string) => string;
+    getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
+    initialSelectedUser?: string | undefined;
+    onRefresh?: (() => void) | (() => Promise<void>);
+    isReadOnly?: boolean | undefined;
+  }) => {
+    const { open, onClose, currentViewer, ...contentProps } = props;
+
+    const isContractInProgressForUser =
+      currentViewer.associatedTasks?.some(
+        (task) => task.rec.status === V1_UserApprovalStatus.PENDING,
+      ) ?? false;
+
+    return (
+      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
+        <DialogTitle>
+          {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
+        </DialogTitle>
+        <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
+          <CloseIcon />
+        </IconButton>
+        <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
+          <EntitlementsDataContractContent
+            currentViewer={currentViewer}
+            {...contentProps}
+          />
+        </DialogContent>
+      </Dialog>
     );
   },
 );

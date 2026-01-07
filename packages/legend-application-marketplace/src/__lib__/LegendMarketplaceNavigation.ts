@@ -28,6 +28,8 @@ export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   DATA_PRODUCT_ID = 'dataProductId',
   DEPLOYMENT_ID = 'deploymentId',
   TERMINAL_ID = 'terminalId',
+  DATA_CONTRACT_ID = 'dataContractId',
+  DATA_CONTRACT_TASK_ID = 'dataContractTaskId',
 }
 
 export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
@@ -46,6 +48,11 @@ export type LegendTerminalProductPathParams = {
 export type LakehouseDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID]: string;
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID]: string;
+};
+
+export type LakehouseDataContractTaskPathParams = {
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_ID]: string;
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_TASK_ID]: string;
 };
 
 export type LakehouseSDLCDataProductPathParams = {
@@ -77,6 +84,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DATA_PRODUCT_SEARCH_RESULTS: '/dataProduct/results',
   // Lakehouse
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
+  LAKEHOUSE_ENTITLEMENTS_CONTRACT_TASK: `/lakehouse/entitlements/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_TASK_ID}`,
   LAKEHOUSE_ADMIN: '/lakehouse/admin',
   // Deprecated
   DEPRECATED_LAKEHOUSE: '/lakehouse',
@@ -94,6 +102,17 @@ export const generateLakehouseDataProductPath = (
     deploymentId: deploymentId.toString(),
   });
 
+export const generateContractPagePath = (
+  dataContractId: string,
+  dataContractTaskId: string,
+): string =>
+  generatePath(
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACT_TASK,
+    {
+      dataContractId,
+      dataContractTaskId,
+    },
+  );
 export const generateLegacyDataProductPath = (
   gav: string,
   path: string,
@@ -102,9 +121,6 @@ export const generateLegacyDataProductPath = (
     gav,
     path,
   });
-
-export const generateLakehouseTaskPath = (taskId: string): string =>
-  `${LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}?selectedTasks=${taskId}`;
 
 export const generateLakehouseSearchResultsRoute = (
   query: string | undefined,

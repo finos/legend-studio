@@ -82,7 +82,7 @@ export type ContractConsumerTypeRendererConfig = {
 };
 
 export type DataProductDataAccessStateActions = {
-  getContractTaskUrl: (taskId: string) => string;
+  getContractTaskUrl: (contractId: string, taskId: string) => string;
   getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
 };
 
@@ -108,7 +108,7 @@ export class DataProductDataAccessState {
   readonly dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[];
 
   // actions/data callbacks
-  readonly getContractTaskUrl: (taskId: string) => string;
+  readonly getContractTaskUrl: (contractId: string, taskId: string) => string;
   readonly getDataProductUrl: (
     dataProductId: string,
     deploymentId: number,

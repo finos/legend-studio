@@ -343,3 +343,26 @@
     }
   }
 }
+
+.marketplace-lakehouse-single-contract-viewer {
+  &__container {
+    padding: 2rem;
+    width: 75%;
+    max-width: 900px;
+  }
+
+  &__action-btns {
+    display: flex;
+    justify-content: end;
+    margin: 1rem;
+    gap: 1rem;
+  }
+
+  &__tooltip__icon {
+    @include hoverableLightTooltipIcon;
+
+    display: inline-block;
+    margin-left: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+}

@@ -55,7 +55,7 @@ import {
   EntitlementsDataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
-  generateLakehouseTaskPath,
+  generateContractPagePath,
   generateLakehouseDataProductPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { LakehouseEntitlementsStore } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
@@ -475,9 +475,9 @@ export const EntitlementsPendingContractsDashboard = observer(
                 ),
               );
             }}
-            getContractTaskUrl={(taskId: string) =>
+            getContractTaskUrl={(contractId: string, taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateLakehouseTaskPath(taskId),
+                generateContractPagePath(contractId, taskId),
               )
             }
             getDataProductUrl={(dataProductId: string, deploymentId: number) =>

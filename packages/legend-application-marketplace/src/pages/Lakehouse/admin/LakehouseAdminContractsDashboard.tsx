@@ -35,8 +35,8 @@ import {
   EntitlementsDataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
+  generateContractPagePath,
   generateLakehouseDataProductPath,
-  generateLakehouseTaskPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 export const LakehouseAdminContractsDashboard = observer(
@@ -143,9 +143,9 @@ export const LakehouseAdminContractsDashboard = observer(
               )
             }
             onRefresh={() => adminStore.refresh()}
-            getContractTaskUrl={(taskId: string) =>
+            getContractTaskUrl={(contractId: string, taskId: string) =>
               adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateLakehouseTaskPath(taskId),
+                generateContractPagePath(contractId, taskId),
               )
             }
             getDataProductUrl={(dataProductId: string, deploymentId: number) =>

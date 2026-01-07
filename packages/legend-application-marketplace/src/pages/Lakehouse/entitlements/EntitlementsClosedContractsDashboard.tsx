@@ -56,8 +56,8 @@ import {
   UserRenderer,
 } from '@finos/legend-extension-dsl-data-product';
 import {
+  generateContractPagePath,
   generateLakehouseDataProductPath,
-  generateLakehouseTaskPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { LakehouseEntitlementsStore } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
 import { flowResult } from 'mobx';
@@ -323,6 +323,25 @@ export const EntitlementsClosedContractsDashboard = observer(
       [myClosedContracts, closedContractsForOthers, showForOthers],
     );
 
+    const getInitialUserForViewer = (): string | undefined => {
+      const currentUser =
+        dashboardState.lakehouseEntitlementsStore.applicationStore
+          .identityService.currentUser;
+      if (selectedContract && myClosedContractIds.has(selectedContract.guid)) {
+        return currentUser;
+      }
+      if (
+        selectedContract &&
+        selectedContract.consumer instanceof V1_AdhocTeam &&
+        selectedContract.consumer.users.some(
+          (user) => user.name === currentUser,
+        )
+      ) {
+        return currentUser;
+      }
+      return undefined;
+    };
+
     return (
       <Box className="marketplace-lakehouse-entitlements__completed-contracts">
         <Box className="marketplace-lakehouse-entitlements__completed-contracts__action-btns">
@@ -375,12 +394,7 @@ export const EntitlementsClosedContractsDashboard = observer(
                 marketplaceBaseStore.userSearchService,
               )
             }
-            initialSelectedUser={
-              myClosedContractIds.has(selectedContract.guid)
-                ? dashboardState.lakehouseEntitlementsStore.applicationStore
-                    .identityService.currentUser
-                : undefined
-            }
+            initialSelectedUser={getInitialUserForViewer()}
             onRefresh={async () => {
               await flowResult(
                 dashboardState.updateContract(
@@ -389,9 +403,9 @@ export const EntitlementsClosedContractsDashboard = observer(
                 ),
               );
             }}
-            getContractTaskUrl={(taskId: string) =>
+            getContractTaskUrl={(contractId: string, taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateLakehouseTaskPath(taskId),
+                generateContractPagePath(contractId, taskId),
               )
             }
             getDataProductUrl={(dataProductId: string, deploymentId: number) =>
