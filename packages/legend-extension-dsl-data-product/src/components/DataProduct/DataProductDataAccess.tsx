@@ -61,6 +61,7 @@ import {
   V1_DataProductOriginType,
   V1_EnumValue,
   V1_getGenericTypeFullPath,
+  V1_LakehouseAccessPoint,
   V1_SdlcDeploymentDataProductOrigin,
   V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
@@ -122,6 +123,7 @@ const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
+const LEGEND_SQL_DOCUMENTATION = 'LEGEND_SQL_DOCUMENTATION';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
@@ -220,6 +222,30 @@ export const SqlPlaygroundScreen = observer(
     useEffect(() => {
       playgroundState.init(dataAccessState, accessPointState);
     }, [playgroundState, accessPointState, dataAccessState]);
+    const resolvedUserEnv = dataAccessState.resolvedUserEnv;
+    const dataProductOrigin =
+      dataAccessState.entitlementsDataProductDetails.origin;
+    const targetEnvironment =
+      accessPointState.accessPoint instanceof V1_LakehouseAccessPoint &&
+      accessPointState.accessPoint.targetEnvironment
+        ? accessPointState.accessPoint.targetEnvironment.toLocaleLowerCase()
+        : undefined;
+    const connectionString =
+      dataProductOrigin instanceof V1_SdlcDeploymentDataProductOrigin &&
+      targetEnvironment
+        ? `${dataAccessState.dataProductViewerState.dataProductConfig?.alloyJdbcLink}${dataProductOrigin.group}:${dataProductOrigin.artifact}:${dataProductOrigin.version}?options='--compute=${targetEnvironment}--environment=${resolvedUserEnv?.environmentName}--warehouse=${DEFAULT_CONSUMER_WAREHOUSE}'`
+        : undefined;
+    const openDocs = (): void => {
+      const docLink =
+        dataAccessState.applicationStore.documentationService.getDocEntry(
+          LEGEND_SQL_DOCUMENTATION,
+        )?.url;
+      if (docLink) {
+        dataAccessState.applicationStore.navigationService.navigator.visitAddress(
+          docLink,
+        );
+      }
+    };
     return (
       <div className="data-product__viewer__tab-screen">
         <button
@@ -229,6 +255,31 @@ export const SqlPlaygroundScreen = observer(
           title="Open SQL Playground"
         >
           Open SQL Playground
+        </button>
+        <button
+          disabled={!connectionString}
+          onClick={() => {
+            if (connectionString) {
+              dataAccessState.applicationStore.clipboardService
+                .copyTextToClipboard(connectionString)
+                .then(() =>
+                  dataAccessState.applicationStore.notificationService.notifySuccess(
+                    'Copied connection string to clipboard',
+                  ),
+                )
+                .catch(dataAccessState.applicationStore.alertUnhandledError);
+            }
+          }}
+          tabIndex={-1}
+          className="data-product__viewer__tab-screen__btn_with_icon"
+          title="Copy Connection String"
+        >
+          Copy Connection String
+          <InfoCircleOutlineIcon
+            className="data-product__viewer__tab-screen__icon"
+            title="See Documentation"
+            onClick={openDocs}
+          />
         </button>
         {isSqlModalOpen && (
           <Dialog
