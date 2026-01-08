@@ -154,6 +154,7 @@
 
   .MuiMenuItem-root {
     color: var(--color-dark-theme-text-primary) !important;
+    font-size: 1.6rem !important;
 
     &:hover {
       background: var(--color-dark-theme-bg-tertiary) !important;
@@ -193,6 +194,7 @@
 
     &__item {
       color: var(--color-dark-theme-text-secondary);
+      font-size: 1.6rem;
 
       &:hover {
         background: var(--color-dark-theme-bg-tertiary);
@@ -1342,6 +1344,18 @@
       &:hover {
         color: var(--color-dark-theme-text-primary);
         border-left-color: var(--color-dark-theme-blue-accent);
+      }
+    }
+
+    &__carousel {
+      .swiper-pagination-bullet {
+        background: var(--color-dark-grey-400);
+        opacity: 0.4;
+      }
+
+      .swiper-pagination-bullet-active {
+        background: var(--color-dark-theme-blue-primary);
+        opacity: 1;
       }
     }
 

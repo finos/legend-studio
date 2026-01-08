@@ -23,8 +23,6 @@ import { useAuth } from 'react-oidc-context';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
-  OpenNewTabIcon,
-  SimpleCalendarIcon,
 } from '@finos/legend-art';
 import { generateLakehouseSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
 import {
@@ -40,7 +38,6 @@ import {
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
-import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 import { generatePathForDataProductSearchResult } from '../../utils/SearchUtils.js';
 import { logClickingDataProductCard } from '../../utils/LogUtils.js';
@@ -50,10 +47,6 @@ export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = legendMarketplaceBaseStore.applicationStore;
   const auth = useAuth();
-  const configOptions = applicationStore.config.options;
-  const showDevFeatures = configOptions.showDevFeatures;
-  const adjacentUrl = applicationStore.config.adjacentEnvUrl;
-  const adjacentEnvState = legendMarketplaceBaseStore.adjacentEnvState;
 
   const isDarkMode =
     !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
@@ -146,55 +139,8 @@ export const MarketplaceLakehouseHome = observer(() => {
     return '';
   };
 
-  const newsletterNavigation = (): void => {
-    applicationStore.navigationService.navigator.visitAddress(
-      applicationStore.config.options.newsletterUrl,
-    );
-    applicationStore.telemetryService.logEvent(
-      LEGEND_MARKETPLACE_APP_EVENT.CLICK_SUBSCRIBE_TO_NEWSLETTER,
-      {},
-    );
-  };
-
-  const visitAdjacentEnv = (): void => {
-    if (adjacentUrl) {
-      applicationStore.navigationService.navigator.visitAddress(adjacentUrl);
-    }
-  };
-
-  const handleShowDemo = (): void => {
-    legendMarketplaceBaseStore.setDemoModal(true);
-  };
-
   return (
     <LegendMarketplacePage className="marketplace-lakehouse-home">
-      <div className="legend-marketplace-home__button-group">
-        {showDevFeatures && (
-          <button
-            onClick={handleShowDemo}
-            className="legend-marketplace-home__button"
-          >
-            <SimpleCalendarIcon className="legend-marketplace-home__button__icon" />
-            Schedule a Demo
-          </button>
-        )}
-        {adjacentUrl && adjacentEnvState && (
-          <button
-            className="legend-marketplace-home__button"
-            onClick={visitAdjacentEnv}
-          >
-            <OpenNewTabIcon className="legend-marketplace-home__button__icon" />
-            {`${adjacentEnvState.label} Env`}
-          </button>
-        )}
-        <button
-          className="legend-marketplace-home__button"
-          onClick={newsletterNavigation}
-        >
-          <OpenNewTabIcon className="legend-marketplace-home__button__icon" />
-          Subscribe to our Newsletter
-        </button>
-      </div>
       <Container className="marketplace-lakehouse-home__search-container">
         <Box className="marketplace-lakehouse-home__search-container__logo">
           <img

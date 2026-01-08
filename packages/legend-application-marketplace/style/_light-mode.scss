@@ -506,6 +506,7 @@
 
   .MuiMenuItem-root {
     color: var(--color-hclight-grey-90) !important;
+    font-size: 1.6rem !important;
 
     &:hover {
       background: var(--color-hclight-grey-10) !important;
@@ -545,6 +546,7 @@
 
     &__item {
       color: var(--color-hclight-grey-70);
+      font-size: 1.6rem;
 
       &:hover {
         background: var(--color-hclight-grey-10);

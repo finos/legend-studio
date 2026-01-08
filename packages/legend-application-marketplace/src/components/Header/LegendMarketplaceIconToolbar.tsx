@@ -18,7 +18,9 @@ import {
   HelpOutlineIcon,
   MenuContentDivider,
   MoonIcon,
+  OpenNewTabIcon,
   ShoppingCartOutlineIcon,
+  SimpleCalendarIcon,
   SunFilledIcon,
   UserCircleIcon,
 } from '@finos/legend-art';
@@ -233,6 +235,22 @@ export const LegendMarketplaceIconToolbar = observer(() => {
       )
       .filter(isNonNullable);
 
+    const handleShowDemo = (): void => {
+      marketplaceStore.setDemoModal(true);
+      setAnchorEl(null);
+    };
+
+    const handleNewsletterClick = (): void => {
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.config.options.newsletterUrl,
+      );
+      applicationStore.telemetryService.logEvent(
+        LEGEND_MARKETPLACE_APP_EVENT.CLICK_SUBSCRIBE_TO_NEWSLETTER,
+        {},
+      );
+      setAnchorEl(null);
+    };
+
     return (
       <>
         <IconButton
@@ -242,6 +260,17 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           <HelpOutlineIcon />
         </IconButton>
         <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
+          {showDevFeatures && (
+            <MenuItem onClick={handleShowDemo}>
+              <SimpleCalendarIcon style={{ marginRight: '8px' }} />
+              Schedule a Demo
+            </MenuItem>
+          )}
+          <MenuItem onClick={handleNewsletterClick}>
+            <OpenNewTabIcon style={{ marginRight: '8px' }} />
+            Subscribe to our Newsletter
+          </MenuItem>
+          <MenuContentDivider />
           <MenuItem
             onClick={() => {
               setOpenAppInfo(true);
