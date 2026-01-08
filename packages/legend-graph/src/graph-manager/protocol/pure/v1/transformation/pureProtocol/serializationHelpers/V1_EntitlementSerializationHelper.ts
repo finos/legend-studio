@@ -249,6 +249,7 @@ export const V1_dataContractModelSchema = (
       (val) => V1_deserializeOrganizationalScope(val, plugins),
     ),
     createdBy: primitive(),
+    createdAt: primitive(),
   });
 
 export const V1_dataContractSubscriptionsModelSchema = (
@@ -276,6 +277,7 @@ export const V1_liteDataContractModelSchema = (
       (val) => V1_serializeOrganizationalScope(val, plugins),
       (val) => V1_deserializeOrganizationalScope(val, plugins),
     ),
+    createdAt: primitive(),
     createdBy: primitive(),
     resourceId: primitive(),
     resourceType: primitive(),

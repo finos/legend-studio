@@ -426,6 +426,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -500,6 +501,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -540,6 +542,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -586,6 +589,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -631,6 +635,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -673,6 +678,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -719,6 +725,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -822,6 +829,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -856,6 +864,7 @@ describe('DataProductViewer', () => {
             _type: 'unknown',
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -896,6 +905,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -942,6 +952,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
@@ -1012,6 +1023,7 @@ describe('DataProductViewer', () => {
             ],
           },
           createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
         },
       ];
 
