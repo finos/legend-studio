@@ -58,16 +58,19 @@ export const onConvertDataSpaceToDataProduct = flow(function* (
   dataSpaceEditorState: DataSpaceEditorState,
 ): GeneratorFn<void> {
   try {
-    const dataProduct = convertDataSpaceToDataProduct(
-      dataSpace,
-      editorStore.graphManagerState,
-    );
+    const dataProduct = convertDataSpaceToDataProduct(dataSpace);
+
+    editorStore.graphManagerState.graph.deleteElement(dataSpace);
 
     editorStore.graphManagerState.graph.addElement(
       dataProduct,
-      dataSpace.package?.path.replace(/dataspace/, 'dataproduct'),
+      dataSpace.package?.path.replace(/dataspace/, 'dataProduct'),
     );
 
+    const dataSpacePackage = dataSpace.package;
+    if (dataSpacePackage && dataSpacePackage.children.length === 0) {
+      editorStore.graphManagerState.graph.deleteElement(dataSpacePackage);
+    }
     const addedElement = editorStore.graphManagerState.graph.getNullableElement(
       dataProduct.path,
     );
@@ -79,12 +82,6 @@ export const onConvertDataSpaceToDataProduct = flow(function* (
       addedElement as DataProduct,
     );
 
-    editorStore.graphManagerState.graph.deleteElement(dataSpace);
-
-    const dataSpacePackage = dataSpace.package;
-    if (dataSpacePackage && dataSpacePackage.children.length === 0) {
-      editorStore.graphManagerState.graph.deleteElement(dataSpacePackage);
-    }
     editorStore.tabManagerState.closeTab(dataSpaceEditorState);
     editorStore.tabManagerState.openTab(dataProductEditorState);
     yield flowResult(editorStore.explorerTreeState.build());

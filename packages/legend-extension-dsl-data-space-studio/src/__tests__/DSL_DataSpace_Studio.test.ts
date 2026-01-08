@@ -28,15 +28,22 @@ import {
   type StereotypeExplicitReference,
   type TagExplicitReference,
   type PackageableRuntime,
+  type PackageableElement,
   Package,
   DataProduct,
   InternalDataProductType,
-  ModelAccessPointGroup,
   TaggedValue,
+  NativeModelAccess,
+  NativeModelExecutionContext,
+  stub_RawLambda,
+  InLineSampleQuery,
+  PackageableElementSampleQuery,
 } from '@finos/legend-graph';
 import {
   DataSpace,
+  DataSpaceExecutableTemplate,
   DataSpaceExecutionContext,
+  DataSpacePackageableElementExecutable,
   DSL_DataSpace_GraphManagerPreset,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { convertDataSpaceToDataProduct } from '../stores/DataSpaceToDataProductConverter.js';
@@ -44,7 +51,7 @@ import { convertDataSpaceToDataProduct } from '../stores/DataSpaceToDataProductC
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager.usePresets([new DSL_DataSpace_GraphManagerPreset()]).install();
 
-const createMockMapping = (name: string, path: string) => ({
+const createMockPackageableElement = (name: string, path: string) => ({
   valueForSerialization: path,
   _UUID: `${name}-uuid`,
   value: {
@@ -68,7 +75,7 @@ const createTestDataSpace = (
   execContext.name = 'default';
   execContext.description = 'Default execution context';
 
-  const mockMapping = createMockMapping(
+  const mockMapping = createMockPackageableElement(
     'TestMapping',
     'test::mapping::TestMapping',
   );
@@ -85,8 +92,30 @@ const createTestDataSpace = (
   execContext.defaultRuntime =
     mockRuntime as PackageableElementReference<PackageableRuntime>;
 
+  const templateExecutable = new DataSpaceExecutableTemplate();
+  templateExecutable.id = 'template1';
+  templateExecutable.title = 'Template Executable ';
+  templateExecutable.description = 'A template executable for testing';
+  templateExecutable.executionContextKey = execContext.name;
+  templateExecutable.query = stub_RawLambda();
+
+  const packageableElementExecutable =
+    new DataSpacePackageableElementExecutable();
+  packageableElementExecutable.id = 'packageable1';
+  packageableElementExecutable.title = 'Packageable Element Executable';
+  packageableElementExecutable.description =
+    'A packageable element executable for testing';
+  packageableElementExecutable.executionContextKey = execContext.name;
+  const mockQuery = createMockPackageableElement(
+    'TestQuery',
+    'test::query::TestQuery',
+  );
+  packageableElementExecutable.executable =
+    mockQuery as PackageableElementReference<PackageableElement>;
+
   dataSpace.executionContexts = [execContext];
   dataSpace.defaultExecutionContext = execContext;
+  dataSpace.executables = [templateExecutable, packageableElementExecutable];
 
   return dataSpace;
 };
@@ -112,10 +141,7 @@ describe(unitTest('DataSpace to DataProduct Conversion Tests'), () => {
   });
 
   test('createDataProductFromDataSpace creates valid DataProduct', () => {
-    const dataProduct = convertDataSpaceToDataProduct(
-      testDataSpace,
-      graphManagerState,
-    );
+    const dataProduct = convertDataSpaceToDataProduct(testDataSpace);
 
     expect(dataProduct).toBeInstanceOf(DataProduct);
     expect(dataProduct.name).toBe('TestDataProduct');
@@ -123,51 +149,114 @@ describe(unitTest('DataSpace to DataProduct Conversion Tests'), () => {
     expect(dataProduct.description).toBe(testDataSpace.description);
     expect(dataProduct.type).toBeInstanceOf(InternalDataProductType);
 
-    expect(dataProduct.package).toBe(testDataSpace.package);
+    expect(dataProduct.accessPointGroups).toHaveLength(0);
+    expect(dataProduct.nativeModelAccess).toBeDefined();
 
-    expect(dataProduct.accessPointGroups).toHaveLength(1);
-    const accessPointGroup = guaranteeType(
-      dataProduct.accessPointGroups[0],
-      ModelAccessPointGroup,
+    const nativeModelAccess = guaranteeType(
+      dataProduct.nativeModelAccess,
+      NativeModelAccess,
     );
-    expect(accessPointGroup.id).toBe('default');
-    expect(accessPointGroup.description).toBe('Default execution context');
+    expect(nativeModelAccess.defaultExecutionContext).toBe(
+      testDataSpace.defaultExecutionContext.name,
+    );
+    expect(nativeModelAccess.featuredElements).toHaveLength(0);
+    expect(nativeModelAccess.nativeModelExecutionContexts).toHaveLength(1);
+
+    const nativeModelExecutionContext = guaranteeType(
+      nativeModelAccess.nativeModelExecutionContexts[0],
+      NativeModelExecutionContext,
+    );
+    const dataSpaceExecContext = guaranteeType(
+      testDataSpace.executionContexts[0],
+      DataSpaceExecutionContext,
+    );
+    expect(nativeModelExecutionContext.mapping).toBe(
+      dataSpaceExecContext.mapping,
+    );
+    expect(nativeModelExecutionContext.runtime).toBe(
+      dataSpaceExecContext.defaultRuntime,
+    );
+    expect(nativeModelExecutionContext.key).toBe(dataSpaceExecContext.name);
+
+    expect(nativeModelAccess.sampleQueries).toHaveLength(2);
+    expect(nativeModelAccess.sampleQueries[0]).toBeInstanceOf(
+      InLineSampleQuery,
+    );
+    expect(nativeModelAccess.sampleQueries[1]).toBeInstanceOf(
+      PackageableElementSampleQuery,
+    );
+
+    const inLineSampleQuery = guaranteeType(
+      nativeModelAccess.sampleQueries[0],
+      InLineSampleQuery,
+    );
+
+    const templateExecutable = guaranteeType(
+      testDataSpace.executables?.[0],
+      DataSpaceExecutableTemplate,
+    );
+    expect(inLineSampleQuery.id).toBe(templateExecutable.id);
+    expect(inLineSampleQuery.title).toBe(templateExecutable.title);
+    expect(inLineSampleQuery.description).toBe(templateExecutable.description);
+    expect(inLineSampleQuery.executionContextKey).toBe(
+      templateExecutable.executionContextKey,
+    );
+    expect(inLineSampleQuery.query).toBe(templateExecutable.query);
+
+    const packageableElementSampleQuery = guaranteeType(
+      nativeModelAccess.sampleQueries[1],
+      PackageableElementSampleQuery,
+    );
+
+    const packageableElementExecutable = guaranteeType(
+      testDataSpace.executables?.[1],
+      DataSpacePackageableElementExecutable,
+    );
+    expect(packageableElementSampleQuery.id).toBe(
+      packageableElementExecutable.id,
+    );
+    expect(packageableElementSampleQuery.title).toBe(
+      packageableElementExecutable.title,
+    );
+    expect(packageableElementSampleQuery.description).toBe(
+      packageableElementExecutable.description,
+    );
+    expect(packageableElementSampleQuery.executionContextKey).toBe(
+      packageableElementExecutable.executionContextKey,
+    );
+    expect(packageableElementSampleQuery.query).toBe(
+      packageableElementExecutable.executable,
+    );
   });
 
   test('DataSpace conversion handles missing diagrams gracefully', () => {
     testDataSpace.diagrams = undefined;
 
-    const dataProduct = convertDataSpaceToDataProduct(
-      testDataSpace,
-      graphManagerState,
-    );
-    const accessPointGroup = guaranteeType(
-      dataProduct.accessPointGroups[0],
-      ModelAccessPointGroup,
+    const dataProduct = convertDataSpaceToDataProduct(testDataSpace);
+    const nativeModelAccess = guaranteeType(
+      dataProduct.nativeModelAccess,
+      NativeModelAccess,
     );
 
-    expect(accessPointGroup.diagrams).toHaveLength(0);
+    expect(nativeModelAccess.diagrams).toHaveLength(0);
   });
 
   test('DataSpace conversion handles missing elements gracefully', () => {
     testDataSpace.elements = undefined;
 
-    const dataProduct = convertDataSpaceToDataProduct(
-      testDataSpace,
-      graphManagerState,
-    );
-    const accessPointGroup = guaranteeType(
-      dataProduct.accessPointGroups[0],
-      ModelAccessPointGroup,
+    const dataProduct = convertDataSpaceToDataProduct(testDataSpace);
+    const nativeModelAccess = guaranteeType(
+      dataProduct.nativeModelAccess,
+      NativeModelAccess,
     );
 
-    expect(accessPointGroup.featuredElements).toHaveLength(0);
+    expect(nativeModelAccess.featuredElements).toHaveLength(0);
   });
 
-  test('DataSpace conversion throws error with multiple unique mappings', () => {
+  test('DataSpace conversion with multiple execution contexts', () => {
     const secondExecContext = new DataSpaceExecutionContext();
     secondExecContext.name = 'second';
-    const secondMapping = createMockMapping(
+    const secondMapping = createMockPackageableElement(
       'SecondMapping',
       'test::mapping::SecondMapping',
     );
@@ -178,9 +267,47 @@ describe(unitTest('DataSpace to DataProduct Conversion Tests'), () => {
 
     testDataSpace.executionContexts.push(secondExecContext);
 
-    expect(() =>
-      convertDataSpaceToDataProduct(testDataSpace, graphManagerState),
-    ).toThrow('DataSpace contains more than one unique mapping');
+    const dataProduct = convertDataSpaceToDataProduct(testDataSpace);
+
+    expect(dataProduct.nativeModelAccess).toBeDefined();
+
+    const nativeModelAccess = guaranteeType(
+      dataProduct.nativeModelAccess,
+      NativeModelAccess,
+    );
+    expect(nativeModelAccess.defaultExecutionContext).toBe(
+      testDataSpace.defaultExecutionContext.name,
+    );
+    expect(nativeModelAccess.featuredElements).toHaveLength(0);
+    expect(nativeModelAccess.nativeModelExecutionContexts).toHaveLength(2);
+
+    const firstNativeModelExecutionContext = guaranteeType(
+      nativeModelAccess.nativeModelExecutionContexts[0],
+      NativeModelExecutionContext,
+    );
+    const firstExecContext = guaranteeType(
+      testDataSpace.executionContexts[0],
+      DataSpaceExecutionContext,
+    );
+    expect(firstNativeModelExecutionContext.mapping).toBe(
+      firstExecContext.mapping,
+    );
+    expect(firstNativeModelExecutionContext.runtime).toBe(
+      firstExecContext.defaultRuntime,
+    );
+    expect(firstNativeModelExecutionContext.key).toBe(firstExecContext.name);
+
+    const secondNativeModelExecutionContext = guaranteeType(
+      nativeModelAccess.nativeModelExecutionContexts[1],
+      NativeModelExecutionContext,
+    );
+    expect(secondNativeModelExecutionContext.mapping).toBe(
+      secondExecContext.mapping,
+    );
+    expect(secondNativeModelExecutionContext.runtime).toBe(
+      secondExecContext.defaultRuntime,
+    );
+    expect(secondNativeModelExecutionContext.key).toBe(secondExecContext.name);
   });
 
   test('convertDataspaceToDataProduct function performs complete conversion flow', async () => {
@@ -202,10 +329,7 @@ describe(unitTest('DataSpace to DataProduct Conversion Tests'), () => {
 
     const convertDataspaceToDataProduct = async () => {
       try {
-        const dataProduct = convertDataSpaceToDataProduct(
-          testDataSpace,
-          graphManagerState,
-        );
+        const dataProduct = convertDataSpaceToDataProduct(testDataSpace);
 
         mockEditorStore.graphManagerState.graph.addElement(
           dataProduct,
@@ -305,10 +429,7 @@ describe(unitTest('DataSpace to DataProduct Conversion Tests'), () => {
     const mockTaggedValue1 = new TaggedValue(mockTag1, 'value1');
     const mockTaggedValue2 = new TaggedValue(mockTag2, 'value2');
     testDataSpace.taggedValues = [mockTaggedValue1, mockTaggedValue2];
-    const dataProduct = convertDataSpaceToDataProduct(
-      testDataSpace,
-      graphManagerState,
-    );
+    const dataProduct = convertDataSpaceToDataProduct(testDataSpace);
     expect(dataProduct.stereotypes).toEqual(testDataSpace.stereotypes);
     expect(dataProduct.taggedValues).toEqual(testDataSpace.taggedValues);
   });

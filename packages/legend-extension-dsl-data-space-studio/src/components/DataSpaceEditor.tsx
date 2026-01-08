@@ -31,7 +31,6 @@ import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor/DataSpaceGenera
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
 import { flowResult } from 'mobx';
 import { isStubbed_PackageableElement } from '@finos/legend-graph';
-import { dataSpaceContainsOneMapping } from '../stores/DataSpaceToDataProductConverter.js';
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -71,10 +70,6 @@ export const DataSpaceEditor = observer(() => {
     ).catch(editorStore.applicationStore.alertUnhandledError);
   };
 
-  const canConvertDataSpace = (): boolean => {
-    return dataSpaceContainsOneMapping(dataSpace);
-  };
-
   return (
     <Panel className="dataSpace-editor">
       <PanelHeader
@@ -91,7 +86,6 @@ export const DataSpaceEditor = observer(() => {
               onClick={convertDataSpace}
               title="Convert Data Product"
               tabIndex={-1}
-              disabled={!canConvertDataSpace}
             >
               <EnvelopeIcon className="btn__dropdown-combo__label__icon" />
               <div className="btn__dropdown-combo__label__title">Convert</div>

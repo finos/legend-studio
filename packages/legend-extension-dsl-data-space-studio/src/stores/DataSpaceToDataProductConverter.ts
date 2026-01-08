@@ -18,15 +18,11 @@ import {
   type DataSpace,
   DataSpaceSupportEmail,
   DataSpaceSupportCombinedInfo,
-  getQueryFromDataspaceExecutable,
+  DataSpacePackageableElementExecutable,
+  DataSpaceExecutableTemplate,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
-  type GraphManagerState,
-  type PackageableElementReference,
-  type Mapping,
-  ModelAccessPointGroup,
   DataProduct,
-  FunctionAccessPoint,
   InternalDataProductType,
   DataProductDiagram,
   DataProductElementScope,
@@ -34,9 +30,13 @@ import {
   DataProductLink,
   Email,
   observe_DataProduct,
-  observe_ModelAccessPointGroup,
+  type SampleQuery,
+  InLineSampleQuery,
+  NativeModelAccess,
+  NativeModelExecutionContext,
+  PackageableElementSampleQuery,
 } from '@finos/legend-graph';
-import { assertTrue, uniq, uuid } from '@finos/legend-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 
 export enum DATA_PRODUCT_SUPPORT_TYPE {
   DOCUMENTATION = 'Documentation',
@@ -44,6 +44,13 @@ export enum DATA_PRODUCT_SUPPORT_TYPE {
   WEBSITE = 'Website',
   FAQ = 'FAQ',
 }
+
+export const DATA_PRODUCT_DEFAULT_TITLE =
+  'DataProduct Auto Generated title: Please update';
+export const DATA_PRODUCT_DEFAULT_DESCRIPTION_PREFIX =
+  'Migrated using studio converter from dataspace: ';
+export const DATA_PRODUCT_NATIVE_MODEL_ACCESS_SAMPLE_QUERY_ID_PREFIX =
+  'DATA_PRODUCT_NATIVE_MODEL_ACCESS_SAMPLE_QUERY_ID';
 
 const convertDataSpaceToDiagrams = (
   dataSpace: DataSpace,
@@ -60,27 +67,6 @@ const convertDataSpaceToDiagrams = (
   });
 };
 
-export const dataSpaceContainsOneMapping = (dataSpace: DataSpace): boolean => {
-  return (
-    uniq(
-      dataSpace.executionContexts.map(
-        (execContext) => execContext.mapping.value,
-      ),
-    ).length === 1
-  );
-};
-
-const convertDataSpaceToMapping = (
-  dataSpace: DataSpace,
-): PackageableElementReference<Mapping> => {
-  assertTrue(
-    dataSpaceContainsOneMapping(dataSpace),
-    'DataSpace contains more than one unique mapping',
-  );
-
-  return dataSpace.defaultExecutionContext.mapping;
-};
-
 const convertDataSpaceToFeaturedElements = (
   dataSpace: DataSpace,
 ): DataProductElementScope[] => {
@@ -94,30 +80,6 @@ const convertDataSpaceToFeaturedElements = (
     return featuredElements;
   }
   return [];
-};
-
-const convertDataSpaceToFunctionAccessPoints = (
-  dataSpace: DataSpace,
-  graphManagerState: GraphManagerState,
-): FunctionAccessPoint[] => {
-  if (!dataSpace.executables) {
-    return [];
-  }
-  return dataSpace.executables.flatMap((executable) => {
-    const query = getQueryFromDataspaceExecutable(
-      executable,
-      graphManagerState,
-    );
-    if (query) {
-      const functionAccessPoint = new FunctionAccessPoint(
-        executable.id ?? uuid(),
-        query,
-      );
-      functionAccessPoint.description = executable.description;
-      return [functionAccessPoint];
-    }
-    return [];
-  });
 };
 
 const convertDataSpaceToSupportInfo = (
@@ -175,47 +137,87 @@ const convertDataSpaceToSupportInfo = (
   return supportInfo;
 };
 
-const convertDataSpaceToModelAccessPointGroup = (
+const convertDataSpaceExecutablesToSampleQueries = (
   dataSpace: DataSpace,
-  graphManagerState: GraphManagerState,
-): ModelAccessPointGroup[] => {
-  const modelAccessPointGroup = new ModelAccessPointGroup();
-  const dataSpaceDefaultExecutionContext = dataSpace.defaultExecutionContext;
+): SampleQuery[] => {
+  if (!dataSpace.executables) {
+    return [];
+  }
 
-  modelAccessPointGroup.id = dataSpaceDefaultExecutionContext.name;
-  modelAccessPointGroup.description =
-    dataSpaceDefaultExecutionContext.description;
-  modelAccessPointGroup.accessPoints = convertDataSpaceToFunctionAccessPoints(
-    dataSpace,
-    graphManagerState,
-  );
-  modelAccessPointGroup.mapping = convertDataSpaceToMapping(dataSpace);
-  modelAccessPointGroup.featuredElements =
+  let idCounter = 0;
+
+  return dataSpace.executables.map((executable) => {
+    let sampleQuery: SampleQuery;
+    if (executable instanceof DataSpacePackageableElementExecutable) {
+      const packageableElementSampleQuery = new PackageableElementSampleQuery();
+      packageableElementSampleQuery.query = executable.executable;
+      sampleQuery = packageableElementSampleQuery;
+    } else if (executable instanceof DataSpaceExecutableTemplate) {
+      const inLineSampleQuery = new InLineSampleQuery();
+      inLineSampleQuery.query = executable.query;
+      sampleQuery = inLineSampleQuery;
+    } else {
+      throw new UnsupportedOperationError(
+        `Can't convert to DataProduct nativeModelAccess sample query: Unsupported DataSpace executable`,
+      );
+    }
+    sampleQuery.description = executable.description;
+    sampleQuery.executionContextKey =
+      executable.executionContextKey ?? dataSpace.defaultExecutionContext.name;
+    sampleQuery.title = executable.title;
+    if (executable.id) {
+      sampleQuery.id = executable.id;
+    } else {
+      sampleQuery.id = `${DATA_PRODUCT_NATIVE_MODEL_ACCESS_SAMPLE_QUERY_ID_PREFIX}_${idCounter}`;
+      idCounter++;
+    }
+    return sampleQuery;
+  });
+};
+
+const convertDataSpaceExecutionContextsToNativeModelExecutionContexts = (
+  dataSpace: DataSpace,
+): NativeModelExecutionContext[] => {
+  return dataSpace.executionContexts.map((context) => {
+    const nativeModelExecutionContext = new NativeModelExecutionContext();
+    nativeModelExecutionContext.key = context.name;
+    nativeModelExecutionContext.mapping = context.mapping;
+    nativeModelExecutionContext.runtime = context.defaultRuntime;
+    return nativeModelExecutionContext;
+  });
+};
+
+const convertDataSpaceToNativeModelAccess = (
+  dataSpace: DataSpace,
+): NativeModelAccess => {
+  const nativeModelAccess = new NativeModelAccess();
+
+  nativeModelAccess.defaultExecutionContext =
+    dataSpace.defaultExecutionContext.name;
+  nativeModelAccess.featuredElements =
     convertDataSpaceToFeaturedElements(dataSpace);
-
-  modelAccessPointGroup.diagrams = convertDataSpaceToDiagrams(dataSpace);
-  const observeModelAccessPointGroup = observe_ModelAccessPointGroup(
-    modelAccessPointGroup,
-  );
-  return [observeModelAccessPointGroup];
+  nativeModelAccess.diagrams = convertDataSpaceToDiagrams(dataSpace);
+  nativeModelAccess.nativeModelExecutionContexts =
+    convertDataSpaceExecutionContextsToNativeModelExecutionContexts(dataSpace);
+  nativeModelAccess.sampleQueries =
+    convertDataSpaceExecutablesToSampleQueries(dataSpace);
+  return nativeModelAccess;
 };
 
 export const convertDataSpaceToDataProduct = (
   dataSpace: DataSpace,
-  graphManagerState: GraphManagerState,
 ): DataProduct => {
   const name = dataSpace.name.replace(/dataspace/i, 'DataProduct');
   const dataProduct = new DataProduct(name);
-  dataProduct.package = dataSpace.package;
   dataProduct.stereotypes = [...dataSpace.stereotypes];
   dataProduct.taggedValues = [...dataSpace.taggedValues];
 
-  dataProduct.title = dataSpace.title;
-  dataProduct.description = dataSpace.description;
-  dataProduct.accessPointGroups = convertDataSpaceToModelAccessPointGroup(
-    dataSpace,
-    graphManagerState,
-  );
+  dataProduct.title = dataSpace.title ?? DATA_PRODUCT_DEFAULT_TITLE;
+  dataProduct.description =
+    dataSpace.description ??
+    `${DATA_PRODUCT_DEFAULT_DESCRIPTION_PREFIX}${dataSpace.path}`;
+  dataProduct.nativeModelAccess =
+    convertDataSpaceToNativeModelAccess(dataSpace);
   dataProduct.supportInfo = convertDataSpaceToSupportInfo(dataSpace);
   dataProduct.type = new InternalDataProductType();
 
