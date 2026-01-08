@@ -34,6 +34,7 @@ import {
   EmptyWindowRestoreIcon,
   WindowMaximizeIcon,
   Dialog,
+  ExpandMoreIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -989,48 +990,66 @@ export const DataProductAccessPointGroupViewer = observer(
             >
               <AnchorLinkIcon />
             </button>
+            <button
+              onClick={() => apgState.setIsCollapsed(!apgState.isCollapsed)}
+              title={apgState.isCollapsed ? 'Expand' : 'Collapse'}
+            >
+              <ExpandMoreIcon
+                className={clsx(
+                  'data-product__viewer__access-group__item__header__caret',
+                  {
+                    'data-product__viewer__access-group__item__header__caret--collapsed':
+                      apgState.isCollapsed,
+                  },
+                )}
+              />
+            </button>
           </div>
           <Box className="data-product__viewer__access-group__item__header__actions">
             {renderAccess(apgState.access)}
           </Box>
         </div>
-        <div className="data-product__viewer__access-group__item__description">
-          <DataProductMarkdownTextViewer
-            value={apgState.apg.description ?? ''}
-          />
-        </div>
-        <div className="data-product__viewer__access-group__item__content">
-          <div className="data-product__viewer__access-group__item__content__tab__content">
-            {accessPointStates.map((accessPointState) => (
-              <div
-                key={accessPointState.accessPoint.id}
-                className="data-product__viewer__access-point-section access_group_gap"
-              >
-                <div className="data-product__viewer__access-point__info">
-                  <div className="data-product__viewer__access-point__name">
-                    <strong>
-                      {accessPointState.accessPoint.title ??
-                        accessPointState.accessPoint.id}
-                    </strong>
+        {!apgState.isCollapsed && (
+          <div className="data-product__viewer__access-group__item__collapsible-content">
+            <div className="data-product__viewer__access-group__item__description">
+              <DataProductMarkdownTextViewer
+                value={apgState.apg.description ?? ''}
+              />
+            </div>
+            <div className="data-product__viewer__access-group__item__content">
+              <div className="data-product__viewer__access-group__item__content__tab__content">
+                {accessPointStates.map((accessPointState) => (
+                  <div
+                    key={accessPointState.accessPoint.id}
+                    className="data-product__viewer__access-point-section access_group_gap"
+                  >
+                    <div className="data-product__viewer__access-point__info">
+                      <div className="data-product__viewer__access-point__name">
+                        <strong>
+                          {accessPointState.accessPoint.title ??
+                            accessPointState.accessPoint.id}
+                        </strong>
+                      </div>
+                      <div className="data-product__viewer__access-point__description">
+                        {accessPointState.accessPoint.description?.trim() ?? (
+                          <span className="data-product__viewer__grid__empty-cell">
+                            No description to provide
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="data-product__viewer__access-point__tabs">
+                      <AccessPointTable
+                        accessPointState={accessPointState}
+                        dataAccessState={dataAccessState}
+                      />
+                    </div>
                   </div>
-                  <div className="data-product__viewer__access-point__description">
-                    {accessPointState.accessPoint.description?.trim() ?? (
-                      <span className="data-product__viewer__grid__empty-cell">
-                        No description to provide
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="data-product__viewer__access-point__tabs">
-                  <AccessPointTable
-                    accessPointState={accessPointState}
-                    dataAccessState={dataAccessState}
-                  />
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        )}
         {dataAccessState?.contractCreatorAPG === apgState.apg && (
           <EntitlementsDataContractCreator
             open={true}
@@ -1080,6 +1099,7 @@ export const DataProducteDataAccess = observer(
     dataProductDataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { dataProductViewerState, dataProductDataAccessState } = props;
+
     const documentationUrl =
       dataProductViewerState.applicationStore.documentationService.getDocEntry(
         DSL_DATA_PRODUCT_DOCUMENTATION_KEY.DATA_ACCESS,
@@ -1121,6 +1141,24 @@ export const DataProducteDataAccess = observer(
               }}
             >
               <AnchorLinkIcon />
+            </button>
+            <button
+              onClick={() => dataProductViewerState.toggleAllApgGroupCollapse()}
+              title={
+                dataProductViewerState.isAllApgsCollapsed
+                  ? 'Expand All'
+                  : 'Collapse All'
+              }
+            >
+              <ExpandMoreIcon
+                className={clsx(
+                  'data-product__viewer__access-group__item__header__caret',
+                  {
+                    'data-product__viewer__access-group__item__header__caret--collapsed':
+                      dataProductViewerState.isAllApgsCollapsed,
+                  },
+                )}
+              />
             </button>
           </div>
           {Boolean(documentationUrl) && (
