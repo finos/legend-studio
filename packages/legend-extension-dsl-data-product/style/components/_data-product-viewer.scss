@@ -2060,6 +2060,30 @@
     border-radius: 5px;
     font-size: 12px;
   }
+
+  &__btn_with_icon {
+    background-color: var(--color-dark-grey-300);
+    height: 28px;
+    color: var(--color-white);
+    padding: 4px 10px;
+    border: 2px;
+    margin-left: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  &__btn-label {
+    flex: 1;
+    text-align: center;
+  }
+
+  &__icon {
+    display: inline-flex;
+  }
 }
 
 .data-product__viewer__tabs-bar {
