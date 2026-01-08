@@ -53,14 +53,14 @@ export class DataProductConfig {
   publicStereotype!: StereotypeConfig;
   vendorTaggedValue!: TaggedValueConfig;
   imageConfig!: DataProductImageConfig;
-  alloyJdbcLink!: string;
+  legendJdbcLink!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductConfig, {
       classifications: list(primitive()),
       publicClassifications: list(primitive()),
       classificationDoc: primitive(),
-      alloyJdbcLink: primitive(),
+      legendJdbcLink: primitive(),
       publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
       vendorTaggedValue: usingModelSchema(
         TaggedValueConfig.serialization.schema,

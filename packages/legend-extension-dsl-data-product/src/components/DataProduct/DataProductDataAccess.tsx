@@ -234,7 +234,7 @@ export const SqlPlaygroundScreen = observer(
     const connectionString =
       dataProductOrigin instanceof V1_SdlcDeploymentDataProductOrigin &&
       targetEnvironment
-        ? `${dataAccessState.dataProductViewerState.dataProductConfig?.alloyJdbcLink}${dataProductOrigin.group}:${dataProductOrigin.artifact}:${dataProductOrigin.version}?options='--compute=${targetEnvironment}--environment=${resolvedUserEnv?.environmentName}--warehouse=${DEFAULT_CONSUMER_WAREHOUSE}'`
+        ? `${dataAccessState.dataProductViewerState.dataProductConfig?.legendJdbcLink}${dataProductOrigin.group}:${dataProductOrigin.artifact}:${dataProductOrigin.version}?options='--compute=${targetEnvironment}--environment=${resolvedUserEnv?.environmentName}--warehouse=${DEFAULT_CONSUMER_WAREHOUSE}'`
         : undefined;
     const openDocs = (): void => {
       const docLink =
