@@ -179,7 +179,6 @@ export const mockDataContractWithSystemAccountMember: PlainObject<V1_DataContrac
     },
     createdBy: 'test-requester-user-id',
     createdAt: '2026-01-09T14:30:41.837Z',
-
   };
 
 export const mockClosedDataContract: PlainObject<V1_DataContract> = {
