@@ -15,7 +15,13 @@
  */
 
 import { describe, expect, jest, test } from '@jest/globals';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { type PlainObject } from '@finos/legend-shared';
 import {
   type V1_DataContract,
@@ -736,7 +742,7 @@ describe('DataProductViewer', () => {
       screen.getByText('Manage Subscriptions');
     });
 
-    test('Access point sql tab has a sql playground editor to run queries.', async () => {
+    test('Access point sql tab has a open sql playground button to open editor to run queries.', async () => {
       const { dataProductDataAccessState } =
         await setupLakehouseDataProductTest(
           mockSDLCDataProduct,
@@ -792,6 +798,73 @@ describe('DataProductViewer', () => {
       });
       expect(runQueryBtn).toBeDefined();
       fireEvent.click(runQueryBtn);
+    });
+
+    test('Access point sql tab has a copy connnection string button.', async () => {
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          [],
+          {
+            groupId: 'test.group',
+            artifactId: 'test-artifact',
+            versionId: '1.0.0',
+          },
+        );
+      const clipboardService =
+        dataProductDataAccessState?.applicationStore.clipboardService;
+      expect(clipboardService).toBeDefined();
+      const clipBoardSpy = jest
+        .spyOn(
+          clipboardService as NonNullable<typeof clipboardService>,
+          'copyTextToClipboard',
+        )
+        .mockResolvedValue(undefined);
+      const notificationService =
+        dataProductDataAccessState?.applicationStore.notificationService;
+      expect(notificationService).toBeDefined();
+      const notifySpy = jest.spyOn(
+        notificationService as NonNullable<typeof notificationService>,
+        'notifySuccess',
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      await screen.findByText('Customer demographics data access point');
+
+      act(() => {
+        dataProductDataAccessState?.setLakehouseIngestEnvironmentSummaries([
+          IngestDeploymentServerConfig.serialization.fromJson({
+            ingestServerUrl: 'https://dev-test.example.com',
+            ingestEnvironmentUrn: 'urn:dev:test',
+            environmentName: 'Development',
+            environmentClassification: 'FULL',
+          }),
+        ]);
+      });
+
+      const sqlTab = await screen.findByRole('tab', { name: 'SQL' });
+      fireEvent.click(sqlTab);
+      const openCopyConnectionString = await screen.findByTitle(
+        'Copy Connection String',
+      );
+      expect(openCopyConnectionString).toBeDefined();
+      expect(openCopyConnectionString.hasAttribute('disabled')).toBe(false);
+      fireEvent.click(openCopyConnectionString);
+      await waitFor(() => {
+        expect(clipBoardSpy).toHaveBeenCalledTimes(1);
+        expect(notifySpy).toHaveBeenCalledWith(
+          'Copied connection string to clipboard',
+        );
+        expect(clipBoardSpy).toHaveBeenCalledWith(
+          expect.stringContaining(
+            `com.example.analytics:customer-analytics:1.2.0?options='--compute=testtargetenvironment--environment=Development--warehouse=LAKEHOUSE_CONSUMER_DEFAULT_WH'`,
+          ),
+        );
+      });
+      const infoIcon = await screen.findByTitle('See Documentation');
+      expect(infoIcon).toBeDefined();
+      fireEvent.click(infoIcon);
     });
 
     test('displays ENTITLED button for contract in APPROVED status', async () => {
