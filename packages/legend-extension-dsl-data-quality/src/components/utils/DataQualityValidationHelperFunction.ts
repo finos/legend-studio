@@ -89,8 +89,7 @@ export class DataQualityValidationHelperFunction {
       return false;
     }
     const actualOtherParams = this.parameters.otherParams.filter(
-      (param) =>
-        param.value !== undefined && param.value !== null && param.value !== '',
+      (param) => param.value !== undefined && param.value !== '',
     );
 
     if (
@@ -137,7 +136,7 @@ export class DataQualityValidationHelperFunction {
 
     const columnName = this.parameters.columns.value;
     this.type =
-      columnOptions.find(({ value }) => value === columnName)?.type || '';
+      columnOptions.find(({ value }) => value === columnName)?.type ?? '';
   }
 
   mergeParameters(
@@ -148,7 +147,7 @@ export class DataQualityValidationHelperFunction {
       columns: source.columns.value ? source.columns : target.columns,
       otherParams:
         source.otherParams.length > 0 ? source.otherParams : target.otherParams,
-      relationalRef: source.relationalRef || target.relationalRef,
+      relationalRef: source.relationalRef ?? target.relationalRef,
     };
   }
 
@@ -196,10 +195,6 @@ export class DataQualityValidationHelperFunction {
   };
 
   private isValidOtherParameterValue(value: string, type: string): boolean {
-    if (value === undefined || value === null) {
-      return false;
-    }
-
     switch (type) {
       case SUPPORTED_TYPES.INTEGER:
         const intValue =

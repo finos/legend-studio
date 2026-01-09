@@ -128,7 +128,7 @@ const ColumnListHandler = (props: ColumnHandlerProps<string[]>) => {
     <CustomSelectorInput
       {...rest}
       value={options.filter(({ value: v }) => value.includes(v))}
-      placeholder={placeholder || 'Select columns'}
+      placeholder={placeholder ?? 'Select columns'}
       isMulti={true}
       options={options}
       hideSelectedOptions={false}
@@ -193,9 +193,9 @@ export const FunctionParameterHandler = ({
     onChange: handleChange,
   };
 
-  const Handler = (PARAMETER_COMPONENT_HANDLERS[
+  const Handler = PARAMETER_COMPONENT_HANDLERS[
     DataQualityValidationHelperUtils.getComponentType(type)
-  ] || NoneHandler) as FC<typeof props>;
+  ] as FC<typeof props>;
 
   return <Handler {...props} />;
 };

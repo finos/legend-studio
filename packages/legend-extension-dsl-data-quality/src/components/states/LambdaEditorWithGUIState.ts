@@ -275,9 +275,7 @@ export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
       }
     };
 
-    if (lambdaBody) {
-      processLambdaBody(lambdaBody);
-    }
+    processLambdaBody(lambdaBody);
   }
 
   convertStubLambdaToFlat() {
@@ -385,30 +383,28 @@ export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
       } as LambdaBody);
     }
 
-    if (columns) {
-      const { value, type } = columns;
+    const { value, type } = columns;
 
-      if (type === SUPPORTED_TYPES.COL_SPEC_ARRAY && Array.isArray(value)) {
-        const columnArray = value;
-        parameters.push({
-          _type: SUPPORTED_TYPES.CLASS_INSTANCE,
-          type: SUPPORTED_TYPES.COL_SPEC_ARRAY,
-          value: {
-            colSpecs: columnArray.map((col: string) => ({
-              name: col,
-            })),
-          },
-        } as LambdaBody);
-      } else {
-        const columnName = value;
-        parameters.push({
-          _type: SUPPORTED_TYPES.CLASS_INSTANCE,
-          type: SUPPORTED_TYPES.COL_SPEC,
-          value: {
-            name: columnName as string,
-          },
-        } as LambdaBody);
-      }
+    if (type === SUPPORTED_TYPES.COL_SPEC_ARRAY && Array.isArray(value)) {
+      const columnArray = value;
+      parameters.push({
+        _type: SUPPORTED_TYPES.CLASS_INSTANCE,
+        type: SUPPORTED_TYPES.COL_SPEC_ARRAY,
+        value: {
+          colSpecs: columnArray.map((col: string) => ({
+            name: col,
+          })),
+        },
+      } as LambdaBody);
+    } else {
+      const columnName = value;
+      parameters.push({
+        _type: SUPPORTED_TYPES.CLASS_INSTANCE,
+        type: SUPPORTED_TYPES.COL_SPEC,
+        value: {
+          name: columnName as string,
+        },
+      } as LambdaBody);
     }
 
     otherParams.forEach((param) => {

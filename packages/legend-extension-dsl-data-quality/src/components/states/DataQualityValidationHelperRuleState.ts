@@ -54,26 +54,27 @@ export class DataQualityValidationHelperRuleState {
 
   get description() {
     const filter = this.filterHelpers[0];
-    const { columns, otherParams = [] } = filter?.parameters || {};
+    if (!filter) {
+      return '';
+    }
+
+    const { columns, otherParams = [] } = filter.parameters;
     const expectedParamsCount =
-      DataQualityValidationHelperUtils.getRequiredOtherParamsCount(
-        filter?.name || '',
-      );
+      DataQualityValidationHelperUtils.getRequiredOtherParamsCount(filter.name);
     let description = '';
-    if (
-      columns?.value &&
-      otherParams.filter(
-        ({ value }) =>
-          String(value) && ![undefined, null].includes(value as undefined),
-      ).length === expectedParamsCount
-    ) {
-      description =
-        filter?.description.replace('[column]', columns.value as string) || '';
+    const actualOtherParamsCount = otherParams.filter(
+      ({ value }) => value !== undefined && value !== '',
+    ).length;
+
+    if (columns.value && actualOtherParamsCount === expectedParamsCount) {
+      description = filter.description;
+
+      description = description.replace('[column]', columns.value as string);
 
       otherParams.forEach(({ value }, index) => {
-        description = description?.replace(
+        description = description.replace(
           `[param-${index + 1}]`,
-          (value as string) || '',
+          String(value ?? ''),
         );
       });
     }
