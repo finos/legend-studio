@@ -73,11 +73,11 @@ export const EntitlementsClosedContractsDashboard = observer(
     );
     const closedContractsForOthers = useMemo(
       () =>
-        allContractsCreatedByUser?.filter(
+        allContractsCreatedByUser.filter(
           (contract) =>
             isContractInTerminalState(contract.contractResultLite) &&
             !myClosedContractIds.has(contract.contractResultLite.guid),
-        ) ?? [],
+        ),
       [allContractsCreatedByUser, myClosedContractIds],
     );
 

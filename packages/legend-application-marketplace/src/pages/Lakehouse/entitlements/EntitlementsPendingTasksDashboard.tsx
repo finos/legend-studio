@@ -352,7 +352,7 @@ export const EntitlementsPendingTasksDashboard = observer(
       event: DataGridCellClickedEvent<V1_ContractUserEventRecord, unknown>,
     ) => {
       if (event.colDef.colId !== 'selection') {
-        const contract = pendingTaskContracts?.find(
+        const contract = pendingTaskContracts.find(
           (c) => c.guid === event.data?.dataContractId,
         );
         setSelectedContract(contract);
@@ -452,7 +452,7 @@ export const EntitlementsPendingTasksDashboard = observer(
             colId: 'dateCreated',
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const createdAt = pendingTaskContracts?.find(
+              const createdAt = pendingTaskContracts.find(
                 (c) => c.guid === contractId,
               )?.createdAt;
               return formatOrderDate(createdAt) ?? 'Unknown';
@@ -462,10 +462,10 @@ export const EntitlementsPendingTasksDashboard = observer(
             comparator: (_, __, val1, val2) => {
               const contractId1 = val1.data?.dataContractId;
               const contractId2 = val2.data?.dataContractId;
-              const createdAt1 = pendingTaskContracts?.find(
+              const createdAt1 = pendingTaskContracts.find(
                 (c) => c.guid === contractId1,
               )?.createdAt;
-              const createdAt2 = pendingTaskContracts?.find(
+              const createdAt2 = pendingTaskContracts.find(
                 (c) => c.guid === contractId2,
               )?.createdAt;
               const dateA = createdAt1 ? new Date(createdAt1).getTime() : 0;
@@ -482,7 +482,7 @@ export const EntitlementsPendingTasksDashboard = observer(
             flex: 1,
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const consumer = pendingTaskContracts?.find(
+              const consumer = pendingTaskContracts.find(
                 (c) => c.guid === contractId,
               )?.consumer;
               const typeName = consumer
@@ -497,7 +497,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
             ) => {
               const contractId = params.data?.dataContractId;
-              const consumer = pendingTaskContracts?.find(
+              const consumer = pendingTaskContracts.find(
                 (c) => c.guid === contractId,
               )?.consumer;
               const typeName = consumer
@@ -560,7 +560,7 @@ export const EntitlementsPendingTasksDashboard = observer(
             flex: 1,
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const requester = pendingTaskContracts?.find(
+              const requester = pendingTaskContracts.find(
                 (c) => c.guid === contractId,
               )?.createdBy;
               return requester ?? 'Unknown';
@@ -569,7 +569,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
             ) => {
               const contractId = params.data?.dataContractId;
-              const requester = pendingTaskContracts?.find(
+              const requester = pendingTaskContracts.find(
                 (c) => c.guid === contractId,
               )?.createdBy;
               return requester ? (
@@ -593,7 +593,7 @@ export const EntitlementsPendingTasksDashboard = observer(
             flex: 1,
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const contract = pendingTaskContracts?.find(
+              const contract = pendingTaskContracts.find(
                 (c) => c.guid === contractId,
               );
               return contract?.resourceId ?? 'Unknown';
@@ -607,7 +607,7 @@ export const EntitlementsPendingTasksDashboard = observer(
             flex: 1,
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const contract = pendingTaskContracts?.find(
+              const contract = pendingTaskContracts.find(
                 (c) => c.guid === contractId,
               );
               const accessPointGroup =
@@ -625,7 +625,7 @@ export const EntitlementsPendingTasksDashboard = observer(
             flex: 2,
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const businessJustification = pendingTaskContracts?.find(
+              const businessJustification = pendingTaskContracts.find(
                 (c) => c.guid === contractId,
               )?.description;
               return businessJustification ?? 'Unknown';

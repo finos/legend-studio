@@ -68,7 +68,7 @@ const AssigneesCellRenderer = (props: {
 
   const assignees =
     (dataContract instanceof V1_LiteDataContractWithUserStatus
-      ? dataContract.pendingTaskWithAssignees?.assignees?.toSorted()
+      ? dataContract.pendingTaskWithAssignees?.assignees.toSorted()
       : dataContract?.sortedAssigneeIds) ?? [];
 
   return (
@@ -104,11 +104,11 @@ export const EntitlementsPendingContractsDashboard = observer(
     );
     const pendingContractsForOthers = useMemo(
       () =>
-        allContractsCreatedByUser?.filter(
+        allContractsCreatedByUser.filter(
           (contract) =>
             !isContractInTerminalState(contract.contractResultLite) &&
             !myPendingContractIds.has(contract.contractResultLite.guid),
-        ) ?? [],
+        ),
       [allContractsCreatedByUser, myPendingContractIds],
     );
 
@@ -168,7 +168,7 @@ export const EntitlementsPendingContractsDashboard = observer(
           valueGetter: (params) => {
             const assignees =
               (params.data instanceof V1_LiteDataContractWithUserStatus
-                ? params.data.pendingTaskWithAssignees?.assignees?.toSorted()
+                ? params.data.pendingTaskWithAssignees?.assignees.toSorted()
                 : params.data?.sortedAssigneeIds) ?? [];
             return assignees.length > 0 ? assignees.join(', ') : 'Unknown';
           },

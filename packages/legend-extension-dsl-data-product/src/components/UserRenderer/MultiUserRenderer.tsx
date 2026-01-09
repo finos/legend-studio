@@ -69,7 +69,9 @@ export const MultiUserRenderer = (props: {
           // doesn't allow us to stop propagation early enough to prevent
           // parent handlers from being invoked.
           ref={(ref) => {
-            if (!ref) return;
+            if (!ref) {
+              return;
+            }
 
             ref.onclick = (e) => {
               e.stopPropagation();
