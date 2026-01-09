@@ -118,7 +118,7 @@ const setupDataContractViewerTest = async (
     {
       dataContracts: contractWithMembersObject
         ? [{ dataContract: contractWithMembersObject }]
-        : [{ dataContract: mockContract }],
+        : [{ dataContract: mockContractObject }],
     },
   );
 
