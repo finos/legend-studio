@@ -159,13 +159,15 @@ export class LegendMarketplaceTelemetryHelper {
   static logEvent_ActionDataContracts(
     telemetryService: TelemetryService,
     selectedContracts: V1_ContractUserEventRecord[],
-    pendingTaskContractMap: Map<string, V1_LiteDataContract> | undefined,
+    pendingTaskContracts: V1_LiteDataContract[] | undefined,
     action: CONTRACT_ACTION,
     actionTakenBy: string,
     errors: string[] | undefined,
   ): void {
     const actionedContractsDetails = selectedContracts.map((contract) => {
-      const dataContract = pendingTaskContractMap?.get(contract.dataContractId);
+      const dataContract = pendingTaskContracts?.find(
+        (c) => c.guid === contract.dataContractId,
+      );
       const accessPointGroup =
         dataContract?.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
           ? dataContract.accessPointGroup

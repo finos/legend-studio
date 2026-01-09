@@ -111,6 +111,7 @@ export class EntitlementsDashboardState {
       allContractsForUser: observable,
       allContractsCreatedByUserMap: observable,
       pendingTaskContractMap: observable,
+      pendingTaskContracts: computed,
       allContractsCreatedByUser: computed,
       init: flow,
       approve: flow,
@@ -121,6 +122,10 @@ export class EntitlementsDashboardState {
       fetchContractsCreatedByUser: flow,
       updateContract: flow,
     });
+  }
+
+  get pendingTaskContracts(): V1_LiteDataContract[] {
+    return Array.from(this.pendingTaskContractMap.values());
   }
 
   get allContractsCreatedByUser(): ContractCreatedByUserDetails[] {
