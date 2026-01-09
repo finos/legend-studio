@@ -78,7 +78,7 @@ export const UserRenderer = (props: {
       <UserDisplay
         user={userData}
         imgSrc={imgSrc}
-        onClick={() => (disableOnClick ? undefined : openUserDirectoryLink())}
+        onClick={disableOnClick ? undefined : () => openUserDirectoryLink()}
         className={className}
       />
     );
