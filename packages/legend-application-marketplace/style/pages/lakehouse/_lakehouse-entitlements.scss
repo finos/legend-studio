@@ -37,6 +37,7 @@
 
     &__action-btn {
       margin-left: 0;
+      width: fit-content;
 
       &--loading {
         @include flexCenter;
