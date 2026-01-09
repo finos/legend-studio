@@ -48,6 +48,7 @@ export const mockDataContract: PlainObject<V1_DataContract> = {
     ],
   },
   createdBy: 'test-requester-user-id',
+  createdAt: '2026-01-09T14:30:41.837Z',
   resource: {
     _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
     dataProduct: {
@@ -74,6 +75,7 @@ export const mockProducerDataContract: PlainObject<V1_DataContract> = {
     did: 12345,
   },
   createdBy: 'test-requester-user-id',
+  createdAt: '2026-01-09T14:30:41.837Z',
   resource: {
     _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
     dataProduct: {
@@ -109,6 +111,7 @@ export const mockDataContractMultipleConsumers: PlainObject<V1_DataContract> = {
     ],
   },
   createdBy: 'test-requester-user-id',
+  createdAt: '2026-01-09T14:30:41.837Z',
   resource: {
     _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
     dataProduct: {
@@ -175,6 +178,7 @@ export const mockDataContractWithSystemAccountMember: PlainObject<V1_DataContrac
       ],
     },
     createdBy: 'test-requester-user-id',
+    createdAt: '2026-01-09T14:30:41.837Z',
   };
 
 export const mockClosedDataContract: PlainObject<V1_DataContract> = {
@@ -193,6 +197,7 @@ export const mockClosedDataContract: PlainObject<V1_DataContract> = {
     ],
   },
   createdBy: 'test-requester-user-id',
+  createdAt: '2026-01-09T14:30:41.837Z',
   resource: {
     _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
     dataProduct: {
@@ -486,6 +491,7 @@ export const mockAutoCreatedSubscription: V1_DataSubscription = deserialize(
       snowflakeNetwork: 'PUBLIC',
     },
     createdBy: 'test-requester-user-id',
+    createdAt: '2026-01-09T14:30:41.837Z',
   },
 );
 

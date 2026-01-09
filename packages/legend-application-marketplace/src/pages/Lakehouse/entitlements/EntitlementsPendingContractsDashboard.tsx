@@ -60,6 +60,7 @@ import {
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { LakehouseEntitlementsStore } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
 import { flowResult } from 'mobx';
+import { formatOrderDate } from '../../../stores/orders/OrderHelpers.js';
 
 const AssigneesCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
@@ -283,6 +284,23 @@ export const EntitlementsPendingContractsDashboard = observer(
 
     const colDefs: DataGridColumnDefinition<V1_LiteDataContract>[] = useMemo(
       () => [
+        {
+          headerName: 'Date Created',
+          colId: 'dateCreated',
+          valueGetter: (params) => {
+            return formatOrderDate(params.data?.createdAt) ?? 'Unknown';
+          },
+          sort: 'desc',
+          comparator: (_, __, val1, val2) => {
+            const dateA = val1.data?.createdAt
+              ? new Date(val1.data.createdAt).getTime()
+              : 0;
+            const dateB = val2.data?.createdAt
+              ? new Date(val2.data.createdAt).getTime()
+              : 0;
+            return dateA - dateB;
+          },
+        },
         {
           colId: 'consumerType',
           headerName: 'Consumer Type',

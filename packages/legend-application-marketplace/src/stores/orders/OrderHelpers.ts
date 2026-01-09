@@ -146,13 +146,14 @@ export const isStageRejected = (
   return false;
 };
 
-export const formatOrderDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+export const formatOrderDate = (dateString?: string): string | undefined => {
+  return dateString
+    ? new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    : undefined;
 };
 
 export const formatTimestamp = (timestamp: string): string => {

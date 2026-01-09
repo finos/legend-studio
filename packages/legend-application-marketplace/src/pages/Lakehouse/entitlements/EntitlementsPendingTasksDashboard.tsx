@@ -76,6 +76,7 @@ import {
   CONTRACT_ACTION,
   LegendMarketplaceTelemetryHelper,
 } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import { formatOrderDate } from '../../../stores/orders/OrderHelpers.js';
 
 const EntitlementsDashboardActionModal = (props: {
   open: boolean;
@@ -451,18 +452,29 @@ export const EntitlementsPendingTasksDashboard = observer(
       useMemo(
         () => [
           {
-            minWidth: 50,
-            sortable: true,
-            resizable: true,
-            headerName: 'Action Date',
-            flex: 1,
+            headerName: 'Date Created',
+            colId: 'dateCreated',
             valueGetter: (params) => {
-              const taskType = params.data?.eventPayload?.type;
-              const timestamp = params.data?.eventPayload?.eventTimestamp;
-              if (taskType === undefined && timestamp === undefined) {
-                return 'Unknown';
-              }
-              return `${taskType}: ${timestamp}`;
+              const contractId = params.data?.dataContractId;
+              const createdAt = allContracts?.find(
+                (contract) => contract.guid === contractId,
+              )?.createdAt;
+              return formatOrderDate(createdAt) ?? 'Unknown';
+            },
+            sortable: true,
+            sort: 'desc',
+            comparator: (_, __, val1, val2) => {
+              const contractId1 = val1.data?.dataContractId;
+              const contractId2 = val2.data?.dataContractId;
+              const createdAt1 = allContracts?.find(
+                (contract) => contract.guid === contractId1,
+              )?.createdAt;
+              const createdAt2 = allContracts?.find(
+                (contract) => contract.guid === contractId2,
+              )?.createdAt;
+              const dateA = createdAt1 ? new Date(createdAt1).getTime() : 0;
+              const dateB = createdAt2 ? new Date(createdAt2).getTime() : 0;
+              return dateA - dateB;
             },
           },
           {

@@ -38,6 +38,7 @@ export const V1_transformDataContractToLiteDatacontract = (
     members: dataContract.members,
     consumer: dataContract.consumer,
     createdBy: dataContract.createdBy,
+    createdAt: dataContract.createdAt,
     resourceId: accessPointGroupReference.dataProduct.name,
     resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
     deploymentId: accessPointGroupReference.dataProduct.owner.appDirId,

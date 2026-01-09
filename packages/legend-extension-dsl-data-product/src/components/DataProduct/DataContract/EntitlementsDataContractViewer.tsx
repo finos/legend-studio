@@ -512,6 +512,13 @@ export const EntitlementsDataContractContent = observer(
           <b>Business Justification: </b>
           {currentViewer.liteContract.description}
         </div>
+        <div>
+          <b>Date Created: </b>
+          {formatDate(
+            new Date(currentViewer.liteContract.createdAt),
+            'MMM d, yyyy',
+          )}
+        </div>
       </Box>
     );
 

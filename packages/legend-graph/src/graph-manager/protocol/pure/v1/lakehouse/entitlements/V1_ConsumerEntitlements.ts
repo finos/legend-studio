@@ -54,6 +54,7 @@ export class V1_DataContract {
   members: V1_ContractUserMembership[] = [];
   consumer!: V1_OrganizationalScope;
   createdBy!: string;
+  createdAt!: string;
 }
 
 export class V1_DataContractSubscriptions {
@@ -81,6 +82,7 @@ export class V1_LiteDataContract {
   members: V1_ContractUserMembership[] = [];
   consumer!: V1_OrganizationalScope;
   createdBy!: string;
+  createdAt!: string;
   resourceId!: string;
   resourceType!: V1_ResourceType;
   deploymentId!: number;
