@@ -64,9 +64,17 @@ export const MultiUserRenderer = (props: {
     return (
       <>
         <Link
-          onClick={(event) => {
-            event.stopPropagation();
-            setAnchorEl(event.currentTarget);
+          // We have to use the underlying ref to stop propagation, because
+          // the default React onClick handler uses React synthetic events, which
+          // doesn't allow us to stop propagation early enough to prevent
+          // parent handlers from being invoked.
+          ref={(ref) => {
+            if (!ref) return;
+
+            ref.onclick = (e) => {
+              e.stopPropagation();
+              setAnchorEl(e.currentTarget as HTMLElement);
+            };
           }}
           className="legend-marketplace-multi-user-cell-renderer__link"
         >
