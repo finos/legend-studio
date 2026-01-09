@@ -17,7 +17,6 @@
 import { describe, expect, test } from '@jest/globals';
 import {
   V1_AccessPointGroup,
-  V1_AccessPointGroupReference,
   V1_DataContract,
   V1_AdhocTeam,
   V1_User,
@@ -25,6 +24,8 @@ import {
   V1_UnknownOrganizationalScopeType,
   V1_ApprovalType,
   V1_UserApprovalStatus,
+  V1_LiteDataContract,
+  V1_ResourceType,
 } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
 import {
@@ -39,11 +40,9 @@ describe('LakehouseUtils', () => {
     const group = new V1_AccessPointGroup();
     group.id = 'group1';
 
-    const contractResource = new V1_AccessPointGroupReference();
-    contractResource.accessPointGroup = 'group1';
-
-    const dataContract = new V1_DataContract();
-    dataContract.resource = contractResource;
+    const dataContract = new V1_LiteDataContract();
+    dataContract.resourceType = V1_ResourceType.ACCESS_POINT_GROUP;
+    dataContract.accessPointGroup = 'group1';
 
     expect(dataContractContainsAccessGroup(group, dataContract)).toBe(true);
   });
@@ -52,11 +51,8 @@ describe('LakehouseUtils', () => {
     const group = new V1_AccessPointGroup();
     group.id = 'group2';
 
-    const contractResource = new V1_AccessPointGroupReference();
-    contractResource.accessPointGroup = 'group1';
-
-    const dataContract = new V1_DataContract();
-    dataContract.resource = contractResource;
+    const dataContract = new V1_LiteDataContract();
+    dataContract.accessPointGroup = 'group1';
 
     expect(dataContractContainsAccessGroup(group, dataContract)).toBe(false);
   });
@@ -262,7 +258,7 @@ describe('LakehouseUtils', () => {
     user1.userType = V1_UserType.SYSTEM_ACCOUNT;
     adhocTeam.users = [user1];
 
-    const dataContract = new V1_DataContract();
+    const dataContract = new V1_LiteDataContract();
     dataContract.consumer = adhocTeam;
 
     expect(contractContainsSystemAccount(dataContract)).toBe(true);
@@ -275,14 +271,14 @@ describe('LakehouseUtils', () => {
     user1.userType = V1_UserType.WORKFORCE_USER;
     adhocTeam.users = [user1];
 
-    const dataContract = new V1_DataContract();
+    const dataContract = new V1_LiteDataContract();
     dataContract.consumer = adhocTeam;
 
     expect(contractContainsSystemAccount(dataContract)).toBe(false);
   });
 
   test('contractContainsSystemAccount should return true if contract members contain a system account user', async () => {
-    const dataContract = new V1_DataContract();
+    const dataContract = new V1_LiteDataContract();
     dataContract.consumer = new V1_UnknownOrganizationalScopeType();
     dataContract.members = [
       {
@@ -299,7 +295,7 @@ describe('LakehouseUtils', () => {
   });
 
   test('contractContainsSystemAccount should return false if contract members do not contain a system account user', async () => {
-    const dataContract = new V1_DataContract();
+    const dataContract = new V1_LiteDataContract();
     dataContract.consumer = new V1_UnknownOrganizationalScopeType();
     dataContract.members = [
       {

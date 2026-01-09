@@ -108,6 +108,19 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     );
   };
 
+  getDataContractsForDataProduct = (
+    resourceType: string,
+    resourceId: string,
+    did: number,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_LiteDataContractsResponse>> => {
+    return this.get(
+      `${this._dataContracts()}/lite/resourceType/${encodeURIComponent(resourceType)}/resourceId/${encodeURIComponent(resourceId)}/did/${encodeURIComponent(did)}`,
+      {},
+      this._token(token),
+    );
+  };
+
   getContractsForUser = (
     user: string,
     token: string | undefined,

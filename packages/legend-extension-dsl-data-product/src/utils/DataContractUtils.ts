@@ -24,6 +24,7 @@ import {
   V1_ContractState,
   V1_deserializeTaskResponse,
   V1_EnrichedUserApprovalStatus,
+  V1_ResourceType,
   V1_UserApprovalStatus,
   V1_UserType,
 } from '@finos/legend-graph';
@@ -65,11 +66,10 @@ export const dataContractContainsDataProduct = (
 // Assume contract already part of data product
 export const dataContractContainsAccessGroup = (
   group: V1_AccessPointGroup,
-  dataContract: V1_DataContract,
+  dataContract: V1_LiteDataContract,
 ): boolean => {
-  const contractResource = dataContract.resource;
-  if (contractResource instanceof V1_AccessPointGroupReference) {
-    return contractResource.accessPointGroup === group.id;
+  if (dataContract.resourceType === V1_ResourceType.ACCESS_POINT_GROUP) {
+    return dataContract.accessPointGroup === group.id;
   }
   return false;
 };
@@ -124,7 +124,7 @@ export const isMemberOfContract = async (
 };
 
 export const contractContainsSystemAccount = (
-  contract: V1_DataContract,
+  contract: V1_LiteDataContract,
 ): boolean => {
   return (
     (contract.consumer instanceof V1_AdhocTeam &&

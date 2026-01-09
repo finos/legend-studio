@@ -18,7 +18,6 @@ import {
   type GraphManagerState,
   type V1_AccessPointGroup,
   type V1_CreateContractPayload,
-  type V1_DataContract,
   type V1_DataContractsResponse,
   type V1_DataContractSubscriptions,
   type V1_DataProduct,
@@ -26,15 +25,16 @@ import {
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsUserEnv,
   type V1_IngestEnvironment,
+  type V1_LiteDataContract,
   type V1_OrganizationalScope,
   V1_AdhocTeam,
   V1_AppDirLevel,
   V1_AppDirNode,
-  V1_AppDirNodeModelSchema,
   V1_createContractPayloadModelSchema,
   V1_deserializeDataContractResponse,
   V1_deserializeIngestEnvironment,
   V1_isIngestEnvsCompatibleWithEntitlements,
+  V1_liteDataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
@@ -48,7 +48,6 @@ import {
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { serialize } from 'serializr';
-import { dataContractContainsDataProduct } from '../../utils/DataContractUtils.js';
 import {
   type LakehouseIngestServerClient,
   type LakehouseContractServerClient,
@@ -115,7 +114,7 @@ export class DataProductDataAccessState {
   ) => string;
 
   // state
-  associatedContracts: V1_DataContract[] | undefined = undefined;
+  associatedContracts: V1_LiteDataContract[] | undefined = undefined;
   contractCreatorAPG: V1_AccessPointGroup | undefined = undefined;
   contractViewerContractAndSubscription:
     | V1_DataContractSubscriptions
@@ -209,7 +208,7 @@ export class DataProductDataAccessState {
     return undefined;
   }
 
-  setAssociatedContracts(val: V1_DataContract[] | undefined): void {
+  setAssociatedContracts(val: V1_LiteDataContract[] | undefined): void {
     this.associatedContracts = val;
   }
 
@@ -271,25 +270,21 @@ export class DataProductDataAccessState {
       const didNode = new V1_AppDirNode();
       didNode.appDirId = this.entitlementsDataProductDetails.deploymentId;
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
+
       const _contracts =
-        await this.lakehouseContractServerClient.getDataContractsFromDID(
-          [serialize(V1_AppDirNodeModelSchema, didNode)],
+        await this.lakehouseContractServerClient.getDataContractsForDataProduct(
+          V1_ResourceType.ACCESS_POINT_GROUP,
+          this.entitlementsDataProductDetails.dataProduct.name,
+          this.entitlementsDataProductDetails.deploymentId,
           token,
         );
-      const dataProductContracts = V1_deserializeDataContractResponse(
-        _contracts,
-        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-      )
-        .filter((_contractAndSubscription) =>
-          dataContractContainsDataProduct(
-            this.product,
-            this.entitlementsDataProductDetails.deploymentId,
-            _contractAndSubscription.dataContract,
-          ),
-        )
-        .map(
-          (_contractAndSubscription) => _contractAndSubscription.dataContract,
+
+      const dataProductContracts =
+        V1_liteDataContractsResponseModelSchemaToContracts(
+          _contracts,
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         );
+
       this.setAssociatedContracts(dataProductContracts);
       this.dataProductViewerState.apgStates.forEach((e) => {
         // eslint-disable-next-line no-void
