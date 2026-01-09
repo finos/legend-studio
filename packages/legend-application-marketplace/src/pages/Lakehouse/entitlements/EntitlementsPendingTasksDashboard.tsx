@@ -349,11 +349,7 @@ export const EntitlementsPendingTasksDashboard = observer(
     const handleCellClicked = (
       event: DataGridCellClickedEvent<V1_ContractUserEventRecord, unknown>,
     ) => {
-      if (
-        event.colDef.colId !== 'selection' &&
-        event.colDef.colId !== 'targetUser' &&
-        event.colDef.colId !== 'requester'
-      ) {
+      if (event.colDef.colId !== 'selection') {
         const contract = pendingTaskContractMap?.get(
           event.data?.dataContractId ?? '',
         );

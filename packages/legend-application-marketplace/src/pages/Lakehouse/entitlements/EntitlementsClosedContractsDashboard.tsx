@@ -93,13 +93,7 @@ export const EntitlementsClosedContractsDashboard = observer(
         V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
       >,
     ) => {
-      if (
-        event.colDef.colId !== 'targetUser' &&
-        event.colDef.colId !== 'requester' &&
-        event.colDef.colId !== 'actioner'
-      ) {
-        setSelectedContract(event.data?.contractResultLite);
-      }
+      setSelectedContract(event.data?.contractResultLite);
     };
 
     const defaultColDef: DataGridColumnDefinition<
