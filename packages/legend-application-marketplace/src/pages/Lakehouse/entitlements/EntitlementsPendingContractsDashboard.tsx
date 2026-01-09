@@ -15,15 +15,11 @@
  */
 
 import {
-  type V1_ContractUserEventRecord,
-  type V1_LiteDataContract,
-  type V1_UserPendingContractsRecord,
   GraphManagerState,
-  V1_AdhocTeam,
   V1_ContractState,
-  V1_deserializeTaskResponse,
+  type V1_LiteDataContract,
+  V1_LiteDataContractWithUserStatus,
   V1_ResourceType,
-  V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -35,14 +31,18 @@ import {
   Box,
   CircularProgress,
   FormControlLabel,
+  FormGroup,
   Switch,
   Tooltip,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
-import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
+import { useMemo, useState } from 'react';
+import type {
+  ContractCreatedByUserDetails,
+  EntitlementsDashboardState,
+} from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { assertErrorThrown, startCase } from '@finos/legend-shared';
+import { startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { InfoCircleIcon } from '@finos/legend-art';
 import {
@@ -53,6 +53,7 @@ import {
   UserRenderer,
   EntitlementsDataContractViewer,
   EntitlementsDataContractViewerState,
+  isApprovalStatusTerminal,
 } from '@finos/legend-extension-dsl-data-product';
 import {
   generateContractPagePath,
@@ -63,74 +64,20 @@ import { flowResult } from 'mobx';
 import { formatOrderDate } from '../../../stores/orders/OrderHelpers.js';
 
 const AssigneesCellRenderer = (props: {
-  dataContract: V1_LiteDataContract | undefined;
-  pendingContractRecords: V1_UserPendingContractsRecord[] | undefined;
+  dataContract:
+    | V1_LiteDataContractWithUserStatus
+    | ContractCreatedByUserDetails
+    | undefined;
   entitlementsStore: LakehouseEntitlementsStore;
-  token: string | undefined;
 }): React.ReactNode => {
-  const { dataContract, pendingContractRecords, entitlementsStore, token } =
-    props;
-  const pendingContractRecord = pendingContractRecords?.find(
-    (record) => record.contractId === dataContract?.guid,
-  );
-  const [assignees, setAssignees] = useState<string[]>(
-    pendingContractRecord?.pendingTaskWithAssignees.assignees ??
-      entitlementsStore.contractIdToAssigneesMap.get(
-        dataContract?.guid ?? '',
-      ) ??
-      [],
-  );
-  const [loading, setLoading] = useState<boolean>(false);
+  const { dataContract, entitlementsStore } = props;
 
-  useEffect(() => {
-    const fetchAssignees = async () => {
-      if (dataContract) {
-        setLoading(true);
-        try {
-          const rawTasks =
-            await entitlementsStore.lakehouseContractServerClient.getContractTasks(
-              dataContract.guid,
-              token,
-            );
-          const tasks = V1_deserializeTaskResponse(rawTasks);
-          const pendingTasks = tasks.filter(
-            (task) => task.rec.status === V1_UserApprovalStatus.PENDING,
-          );
-          const pendingAssignees = Array.from(
-            new Set<string>(pendingTasks.map((task) => task.assignees).flat()),
-          );
-          setAssignees(pendingAssignees);
-          entitlementsStore.contractIdToAssigneesMap.set(
-            dataContract.guid,
-            pendingAssignees,
-          );
-        } catch (error) {
-          assertErrorThrown(error);
-          entitlementsStore.applicationStore.notificationService.notifyError(
-            `Error fetching contract assignees: ${error.message}`,
-          );
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
+  const assignees =
+    (dataContract instanceof V1_LiteDataContractWithUserStatus
+      ? dataContract.pendingTaskWithAssignees?.assignees?.toSorted()
+      : dataContract?.sortedAssigneeIds) ?? [];
 
-    if (assignees.length === 0) {
-      // eslint-disable-next-line no-void
-      void fetchAssignees();
-    }
-  }, [
-    assignees.length,
-    dataContract,
-    entitlementsStore.applicationStore.notificationService,
-    entitlementsStore.contractIdToAssigneesMap,
-    entitlementsStore.lakehouseContractServerClient,
-    token,
-  ]);
-
-  return loading ? (
-    <CircularProgress size={20} />
-  ) : assignees.length > 0 ? (
+  return (
     <MultiUserRenderer
       userIds={assignees}
       applicationStore={entitlementsStore.applicationStore}
@@ -139,81 +86,33 @@ const AssigneesCellRenderer = (props: {
       }
       singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
-  ) : (
-    <>Unknown</>
   );
 };
 
 const TargetUserCellRenderer = observer(
   (props: {
-    dataContract: V1_LiteDataContract | undefined;
+    dataContract:
+      | V1_LiteDataContractWithUserStatus
+      | ContractCreatedByUserDetails
+      | undefined;
     entitlementsStore: LakehouseEntitlementsStore;
-    token: string | undefined;
   }): React.ReactNode => {
-    const { dataContract, entitlementsStore, token } = props;
-    const [targetUsers, setTargetUsers] = useState<string[]>(
-      entitlementsStore.contractIdToTargetUsersMap.get(
-        dataContract?.guid ?? '',
-      ) ?? [],
-    );
-    const [loading, setLoading] = useState<boolean>(false);
+    const { dataContract, entitlementsStore } = props;
 
-    useEffect(() => {
-      const fetchTargetUsers = async () => {
-        if (dataContract) {
-          setLoading(true);
-          try {
-            // We try to get the target users from the associated tasks first, since the
-            // tasks are what drive the timeline view. If there are no associated tasks,
-            // then we use the contract consumer.
-            const rawTasks =
-              await entitlementsStore.lakehouseContractServerClient.getContractTasks(
-                dataContract.guid,
-                token,
-              );
-            const tasks = V1_deserializeTaskResponse(rawTasks);
-            const taskTargetUsers = Array.from(
-              new Set<string>(tasks.map((task) => task.rec.consumer)),
-            );
-            const _targetUsers = taskTargetUsers.length
-              ? taskTargetUsers
-              : dataContract.consumer instanceof V1_AdhocTeam
-                ? dataContract.consumer.users.map((user) => user.name)
-                : [];
-            setTargetUsers(_targetUsers);
-            entitlementsStore.contractIdToTargetUsersMap.set(
-              dataContract.guid,
-              _targetUsers,
-            );
-          } catch (error) {
-            assertErrorThrown(error);
-            entitlementsStore.applicationStore.notificationService.notifyError(
-              `Error fetching contract target users: ${error.message}`,
-            );
-          } finally {
-            setLoading(false);
-          }
-        }
-      };
-      if (targetUsers.length === 0) {
-        // eslint-disable-next-line no-void
-        void fetchTargetUsers();
-      }
-    }, [dataContract, entitlementsStore, targetUsers.length, token]);
+    const userIds =
+      dataContract instanceof V1_LiteDataContractWithUserStatus
+        ? [dataContract.user]
+        : (dataContract?.sortedMemberIds ?? []);
 
-    return loading ? (
-      <CircularProgress size={20} />
-    ) : targetUsers.length > 0 ? (
+    return (
       <MultiUserRenderer
-        userIds={targetUsers}
+        userIds={userIds}
         applicationStore={entitlementsStore.applicationStore}
         userSearchService={
           entitlementsStore.marketplaceBaseStore.userSearchService
         }
         singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
       />
-    ) : (
-      <>Unknown</>
     );
   },
 );
@@ -221,35 +120,29 @@ const TargetUserCellRenderer = observer(
 export const EntitlementsPendingContractsDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
-    const { pendingContracts, allContracts } = dashboardState;
+    const { allContractsForUser, allContractsCreatedByUser } = dashboardState;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
 
     const myPendingContracts = useMemo(
       () =>
-        allContracts?.filter((contract) =>
-          pendingContracts?.some(
-            (pendingContract) => pendingContract.contractId === contract.guid,
-          ),
+        allContractsForUser?.filter(
+          (contract) => !isApprovalStatusTerminal(contract.status),
         ) ?? [],
-      [allContracts, pendingContracts],
+      [allContractsForUser],
+    );
+    const myPendingContractIds = useMemo(
+      () => new Set(myPendingContracts.map((c) => c.contractResultLite.guid)),
+      [myPendingContracts],
     );
     const pendingContractsForOthers = useMemo(
       () =>
-        allContracts?.filter(
+        Array.from(allContractsCreatedByUser.values())?.filter(
           (contract) =>
-            contract.createdBy ===
-              dashboardState.lakehouseEntitlementsStore.applicationStore
-                .identityService.currentUser &&
-            !isContractInTerminalState(contract) &&
-            !myPendingContracts.includes(contract),
+            !isContractInTerminalState(contract.contractResultLite) &&
+            !myPendingContractIds.has(contract.contractResultLite.guid),
         ) ?? [],
-      [
-        allContracts,
-        dashboardState.lakehouseEntitlementsStore.applicationStore
-          .identityService.currentUser,
-        myPendingContracts,
-      ],
+      [allContractsCreatedByUser, myPendingContractIds],
     );
 
     const [selectedContract, setSelectedContract] = useState<
@@ -260,29 +153,34 @@ export const EntitlementsPendingContractsDashboard = observer(
     );
 
     const handleCellClicked = (
-      event: DataGridCellClickedEvent<V1_LiteDataContract>,
+      event: DataGridCellClickedEvent<
+        V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+      >,
     ) => {
       if (
         event.colDef.colId !== 'targetUser' &&
         event.colDef.colId !== 'requester' &&
         event.colDef.colId !== 'assignees'
       ) {
-        setSelectedContract(event.data);
+        setSelectedContract(event.data?.contractResultLite);
       }
     };
 
-    const defaultColDef: DataGridColumnDefinition<V1_LiteDataContract> =
-      useMemo(
-        () => ({
-          minWidth: 50,
-          sortable: true,
-          resizable: true,
-          flex: 1,
-        }),
-        [],
-      );
+    const defaultColDef: DataGridColumnDefinition<
+      V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+    > = useMemo(
+      () => ({
+        minWidth: 50,
+        sortable: true,
+        resizable: true,
+        flex: 1,
+      }),
+      [],
+    );
 
-    const colDefs: DataGridColumnDefinition<V1_LiteDataContract>[] = useMemo(
+    const colDefs: DataGridColumnDefinition<
+      V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+    >[] = useMemo(
       () => [
         {
           headerName: 'Date Created',
@@ -304,10 +202,22 @@ export const EntitlementsPendingContractsDashboard = observer(
         {
           colId: 'consumerType',
           headerName: 'Consumer Type',
+          valueGetter: (params) => {
+            const consumer = params.data?.contractResultLite.consumer;
+            const typeName = consumer
+              ? getOrganizationalScopeTypeName(
+                  consumer,
+                  dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+                )
+              : undefined;
+            return typeName ?? 'Unknown';
+          },
           cellRenderer: (
-            params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+            params: DataGridCellRendererParams<
+              V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+            >,
           ) => {
-            const consumer = params.data?.consumer;
+            const consumer = params.data?.contractResultLite.consumer;
             const typeName = consumer
               ? getOrganizationalScopeTypeName(
                   consumer,
@@ -338,23 +248,35 @@ export const EntitlementsPendingContractsDashboard = observer(
         {
           headerName: 'Target User(s)',
           colId: 'targetUser',
+          valueGetter: (params) => {
+            const userIds =
+              params.data instanceof V1_LiteDataContractWithUserStatus
+                ? [params.data.user]
+                : (params.data?.sortedMemberIds ?? []);
+            return userIds.length > 0 ? userIds.join(', ') : 'Unknown';
+          },
           cellRenderer: (
-            params: DataGridCellRendererParams<V1_LiteDataContract>,
+            params: DataGridCellRendererParams<
+              V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+            >,
           ) => (
             <TargetUserCellRenderer
               dataContract={params.data}
               entitlementsStore={dashboardState.lakehouseEntitlementsStore}
-              token={auth.user?.access_token}
             />
           ),
         },
         {
           headerName: 'Requester',
           colId: 'requester',
+          valueGetter: (params) =>
+            params.data?.contractResultLite.createdBy ?? 'Unknown',
           cellRenderer: (
-            params: DataGridCellRendererParams<V1_LiteDataContract>,
+            params: DataGridCellRendererParams<
+              V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+            >,
           ) => {
-            const requester = params.data?.createdBy;
+            const requester = params.data?.contractResultLite.createdBy;
             return requester ? (
               <UserRenderer
                 userId={requester}
@@ -370,23 +292,24 @@ export const EntitlementsPendingContractsDashboard = observer(
         {
           headerName: 'Target Data Product',
           valueGetter: (params) => {
-            return params.data?.resourceId ?? 'Unknown';
+            return params.data?.contractResultLite.resourceId ?? 'Unknown';
           },
         },
         {
           headerName: 'Target Access Point Group',
           valueGetter: (params) => {
             const accessPointGroup =
-              params.data?.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
-                ? params.data.accessPointGroup
-                : `${params.data?.accessPointGroup ?? 'Unknown'} (${params.data?.resourceType ?? 'Unknown Type'})`;
+              params.data?.contractResultLite.resourceType ===
+              V1_ResourceType.ACCESS_POINT_GROUP
+                ? params.data.contractResultLite.accessPointGroup
+                : `${params.data?.contractResultLite.accessPointGroup ?? 'Unknown'} (${params.data?.contractResultLite.resourceType ?? 'Unknown Type'})`;
             return accessPointGroup ?? 'Unknown';
           },
         },
         {
           headerName: 'State',
           valueGetter: (params) => {
-            const state = params.data?.state;
+            const state = params.data?.contractResultLite.state;
             switch (state) {
               case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
                 return 'Data Owner Approval';
@@ -399,34 +322,39 @@ export const EntitlementsPendingContractsDashboard = observer(
         },
         {
           headerName: 'Business Justification',
-          valueGetter: (p) => p.data?.description,
+          valueGetter: (p) => p.data?.contractResultLite.description,
         },
         {
           headerName: 'Assignees',
           colId: 'assignees',
+          valueGetter: (params) => {
+            const assignees =
+              (params.data instanceof V1_LiteDataContractWithUserStatus
+                ? params.data.pendingTaskWithAssignees?.assignees?.toSorted()
+                : params.data?.sortedAssigneeIds) ?? [];
+            return assignees.length > 0 ? assignees.join(', ') : 'Unknown';
+          },
           cellRenderer: (
-            params: DataGridCellRendererParams<V1_LiteDataContract>,
+            params: DataGridCellRendererParams<
+              V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+            >,
           ) => (
             <AssigneesCellRenderer
               dataContract={params.data}
-              pendingContractRecords={pendingContracts}
               entitlementsStore={dashboardState.lakehouseEntitlementsStore}
-              token={auth.user?.access_token}
             />
           ),
         },
         {
           hide: true,
           headerName: 'Contract ID',
-          valueGetter: (p) => p.data?.guid,
+          valueGetter: (p) => p.data?.contractResultLite.guid,
         },
       ],
       [
-        auth.user?.access_token,
         dashboardState.lakehouseEntitlementsStore,
         marketplaceBaseStore.applicationStore,
         marketplaceBaseStore.userSearchService,
-        pendingContracts,
       ],
     );
 
@@ -440,17 +368,30 @@ export const EntitlementsPendingContractsDashboard = observer(
 
     return (
       <Box className="marketplace-lakehouse-entitlements__pending-contracts">
-        <Box className="marketplace-lakehouse-entitlements__pending-contracts__action-btns">
+        <FormGroup className="marketplace-lakehouse-entitlements__pending-contracts__action-btns">
           <FormControlLabel
             control={
-              <Switch
-                checked={showForOthers}
-                onChange={(event) => setShowForOthers(event.target.checked)}
-              />
+              dashboardState.fetchingContractsByUserState.isInProgress ? (
+                <Box className="marketplace-lakehouse-entitlements__pending-contracts__action-btn--loading">
+                  <CircularProgress size={20} />
+                </Box>
+              ) : (
+                <Switch
+                  checked={showForOthers}
+                  onChange={(event) => setShowForOthers(event.target.checked)}
+                />
+              )
             }
             label="Show my requests for others"
+            title={
+              dashboardState.fetchingContractsByUserState.isInProgress
+                ? 'Loading requests for others'
+                : undefined
+            }
+            disabled={dashboardState.fetchingContractsByUserState.isInProgress}
+            className="marketplace-lakehouse-entitlements__pending-contracts__action-btn"
           />
-        </Box>
+        </FormGroup>
         <Box className="marketplace-lakehouse-entitlements__pending-contracts__grid ag-theme-balham">
           <DataGrid
             rowData={gridRowData}
@@ -464,7 +405,7 @@ export const EntitlementsPendingContractsDashboard = observer(
             defaultColDef={defaultColDef}
             rowHeight={45}
             overlayNoRowsTemplate="You have no pending contracts"
-            loading={dashboardState.initializationState.isInProgress}
+            loading={dashboardState.fetchingContractsForUserState.isInProgress}
             overlayLoadingTemplate="Loading contracts"
           />
         </Box>

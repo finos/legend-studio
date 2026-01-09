@@ -15,12 +15,10 @@
  */
 
 import {
-  type V1_ContractUserEventRecord,
-  type V1_EnrichedUserApprovalStatus,
   type V1_LiteDataContract,
   GraphManagerState,
   V1_AdhocTeam,
-  V1_ContractUserStatusResponseModelSchema,
+  V1_LiteDataContractWithUserStatus,
   V1_ResourceType,
 } from '@finos/legend-graph';
 import {
@@ -33,16 +31,18 @@ import {
   Box,
   CircularProgress,
   FormControlLabel,
+  FormGroup,
   Switch,
   Tooltip,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
-import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
+import { useMemo, useState } from 'react';
+import type {
+  ContractCreatedByUserDetails,
+  EntitlementsDashboardState,
+} from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { assertErrorThrown, lodashCapitalize } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
-import { deserialize } from 'serializr';
 import { InfoCircleIcon } from '@finos/legend-art';
 import {
   EntitlementsDataContractViewer,
@@ -52,7 +52,6 @@ import {
   isApprovalStatusTerminal,
   isContractInTerminalState,
   MultiUserRenderer,
-  stringifyOrganizationalScope,
   UserRenderer,
 } from '@finos/legend-extension-dsl-data-product';
 import {
@@ -63,102 +62,60 @@ import type { LakehouseEntitlementsStore } from '../../../stores/lakehouse/entit
 import { flowResult } from 'mobx';
 import { formatOrderDate } from '../../../stores/orders/OrderHelpers.js';
 
-const UserAccessStatusCellRenderer = (props: {
-  dataContract: V1_LiteDataContract | undefined;
-  entitlementsStore: LakehouseEntitlementsStore;
-  token: string | undefined;
-}): React.ReactNode => {
-  const { dataContract, entitlementsStore, token } = props;
-  const [status, setStatus] = useState<
-    V1_EnrichedUserApprovalStatus | undefined
-  >(
-    dataContract
-      ? entitlementsStore.contractIdToUserStatusMap.get(dataContract.guid)
-      : undefined,
-  );
-  const [loading, setLoading] = useState<boolean>(false);
+const TargetUserCellRenderer = observer(
+  (props: {
+    dataContract:
+      | V1_LiteDataContractWithUserStatus
+      | ContractCreatedByUserDetails
+      | undefined;
+    entitlementsStore: LakehouseEntitlementsStore;
+  }): React.ReactNode => {
+    const { dataContract, entitlementsStore } = props;
 
-  useEffect(() => {
-    const fetchUserStatusByContractId = async (): Promise<void> => {
-      if (dataContract) {
-        setLoading(true);
-        try {
-          const rawUserStatus =
-            await entitlementsStore.lakehouseContractServerClient.getContractUserStatus(
-              dataContract.guid,
-              entitlementsStore.applicationStore.identityService.currentUser,
-              token,
-            );
-          const userStatus = deserialize(
-            V1_ContractUserStatusResponseModelSchema,
-            rawUserStatus,
-          ).status;
-          setStatus(userStatus);
-          entitlementsStore.contractIdToUserStatusMap.set(
-            dataContract.guid,
-            userStatus,
-          );
-        } catch (error) {
-          assertErrorThrown(error);
-          entitlementsStore.applicationStore.notificationService.notifyError(
-            `Error fetching contract user access status: ${error.message}`,
-          );
-        } finally {
-          setLoading(false);
+    const userIds =
+      dataContract instanceof V1_LiteDataContractWithUserStatus
+        ? [dataContract.user]
+        : (dataContract?.sortedMemberIds ?? []);
+
+    return (
+      <MultiUserRenderer
+        userIds={userIds}
+        applicationStore={entitlementsStore.applicationStore}
+        userSearchService={
+          entitlementsStore.marketplaceBaseStore.userSearchService
         }
-      }
-    };
-
-    if (status === undefined) {
-      // eslint-disable-next-line no-void
-      void fetchUserStatusByContractId();
-    }
-  }, [
-    dataContract,
-    entitlementsStore.applicationStore.identityService.currentUser,
-    entitlementsStore.applicationStore.notificationService,
-    entitlementsStore.contractIdToUserStatusMap,
-    entitlementsStore.lakehouseContractServerClient,
-    status,
-    token,
-  ]);
-
-  return loading ? (
-    <CircularProgress size={20} />
-  ) : (
-    lodashCapitalize(status ?? dataContract?.state ?? 'Unknown')
-  );
-};
+        singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
+      />
+    );
+  },
+);
 
 export const EntitlementsClosedContractsDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
-    const { allContracts, myContracts } = dashboardState;
+    const { allContractsForUser, allContractsCreatedByUser } = dashboardState;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
 
     const myClosedContracts = useMemo(
       () =>
-        myContracts
-          ?.filter((contract) => isApprovalStatusTerminal(contract.status))
-          .map((contract) => contract.contractResultLite) ?? [],
-      [myContracts],
+        allContractsForUser?.filter((contract) =>
+          isApprovalStatusTerminal(contract.status),
+        ) ?? [],
+      [allContractsForUser],
     );
     const myClosedContractIds = useMemo(
-      () => new Set(myClosedContracts.map((c) => c.guid)),
+      () => new Set(myClosedContracts.map((c) => c.contractResultLite.guid)),
       [myClosedContracts],
     );
     const closedContractsForOthers = useMemo(
       () =>
-        allContracts?.filter(
+        Array.from(allContractsCreatedByUser.values())?.filter(
           (contract) =>
-            isContractInTerminalState(contract) &&
-            contract.createdBy ===
-              dashboardState.lakehouseEntitlementsStore.applicationStore
-                .identityService.currentUser &&
-            !myClosedContractIds.has(contract.guid),
+            isContractInTerminalState(contract.contractResultLite) &&
+            !myClosedContractIds.has(contract.contractResultLite.guid),
         ) ?? [],
-      [allContracts, myClosedContractIds, dashboardState],
+      [allContractsCreatedByUser, myClosedContractIds],
     );
 
     const [selectedContract, setSelectedContract] = useState<
@@ -169,29 +126,34 @@ export const EntitlementsClosedContractsDashboard = observer(
     );
 
     const handleCellClicked = async (
-      event: DataGridCellClickedEvent<V1_LiteDataContract>,
+      event: DataGridCellClickedEvent<
+        V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+      >,
     ) => {
       if (
         event.colDef.colId !== 'targetUser' &&
         event.colDef.colId !== 'requester' &&
         event.colDef.colId !== 'actioner'
       ) {
-        setSelectedContract(event.data);
+        setSelectedContract(event.data?.contractResultLite);
       }
     };
 
-    const defaultColDef: DataGridColumnDefinition<V1_LiteDataContract> =
-      useMemo(
-        () => ({
-          minWidth: 50,
-          sortable: true,
-          resizable: true,
-          flex: 1,
-        }),
-        [],
-      );
+    const defaultColDef: DataGridColumnDefinition<
+      V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+    > = useMemo(
+      () => ({
+        minWidth: 50,
+        sortable: true,
+        resizable: true,
+        flex: 1,
+      }),
+      [],
+    );
 
-    const colDefs: DataGridColumnDefinition<V1_LiteDataContract>[] = useMemo(
+    const colDefs: DataGridColumnDefinition<
+      V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+    >[] = useMemo(
       () => [
         {
           headerName: 'Date Created',
@@ -213,10 +175,22 @@ export const EntitlementsClosedContractsDashboard = observer(
         {
           colId: 'consumerType',
           headerName: 'Consumer Type',
+          valueGetter: (params) => {
+            const consumer = params.data?.contractResultLite.consumer;
+            const typeName = consumer
+              ? getOrganizationalScopeTypeName(
+                  consumer,
+                  dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+                )
+              : undefined;
+            return typeName ?? 'Unknown';
+          },
           cellRenderer: (
-            params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+            params: DataGridCellRendererParams<
+              V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+            >,
           ) => {
-            const consumer = params.data?.consumer;
+            const consumer = params.data?.contractResultLite.consumer;
             const typeName = consumer
               ? getOrganizationalScopeTypeName(
                   consumer,
@@ -245,36 +219,37 @@ export const EntitlementsClosedContractsDashboard = observer(
           },
         },
         {
-          headerName: 'Target User',
+          headerName: 'Target User(s)',
           colId: 'targetUser',
-          cellRenderer: (
-            params: DataGridCellRendererParams<V1_LiteDataContract>,
-          ) => {
-            const consumer = params.data?.consumer;
-
-            if (consumer instanceof V1_AdhocTeam) {
-              return (
-                <MultiUserRenderer
-                  userIds={consumer.users.map((user) => user.name)}
-                  applicationStore={marketplaceBaseStore.applicationStore}
-                  userSearchService={marketplaceBaseStore.userSearchService}
-                  singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
-                />
-              );
-            } else if (consumer) {
-              return <>{stringifyOrganizationalScope(consumer)}</>;
-            } else {
-              return <>Unknown</>;
-            }
+          valueGetter: (params) => {
+            const userIds =
+              params.data instanceof V1_LiteDataContractWithUserStatus
+                ? [params.data.user]
+                : (params.data?.sortedMemberIds ?? []);
+            return userIds.length > 0 ? userIds.join(', ') : 'Unknown';
           },
+          cellRenderer: (
+            params: DataGridCellRendererParams<
+              V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+            >,
+          ) => (
+            <TargetUserCellRenderer
+              dataContract={params.data}
+              entitlementsStore={dashboardState.lakehouseEntitlementsStore}
+            />
+          ),
         },
         {
           headerName: 'Requester',
           colId: 'requester',
+          valueGetter: (params) =>
+            params.data?.contractResultLite.createdBy ?? 'Unknown',
           cellRenderer: (
-            params: DataGridCellRendererParams<V1_LiteDataContract>,
+            params: DataGridCellRendererParams<
+              V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+            >,
           ) => {
-            const requester = params.data?.createdBy;
+            const requester = params.data?.contractResultLite.createdBy;
             return requester ? (
               <UserRenderer
                 userId={requester}
@@ -290,43 +265,38 @@ export const EntitlementsClosedContractsDashboard = observer(
         {
           headerName: 'Target Data Product',
           valueGetter: (params) => {
-            return params.data?.resourceId ?? 'Unknown';
+            return params.data?.contractResultLite.resourceId ?? 'Unknown';
           },
         },
         {
           headerName: 'Target Access Point Group',
           valueGetter: (params) => {
             const accessPointGroup =
-              params.data?.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
-                ? params.data.accessPointGroup
-                : `${params.data?.accessPointGroup ?? 'Unknown'} (${params.data?.resourceType ?? 'Unknown Type'})`;
+              params.data?.contractResultLite.resourceType ===
+              V1_ResourceType.ACCESS_POINT_GROUP
+                ? params.data.contractResultLite.accessPointGroup
+                : `${params.data?.contractResultLite.accessPointGroup ?? 'Unknown'} (${params.data?.contractResultLite.resourceType ?? 'Unknown Type'})`;
             return accessPointGroup ?? 'Unknown';
           },
         },
         {
           headerName: 'State',
-          cellRenderer: (
-            params: DataGridCellRendererParams<V1_LiteDataContract>,
-          ) => (
-            <UserAccessStatusCellRenderer
-              dataContract={params.data}
-              entitlementsStore={dashboardState.lakehouseEntitlementsStore}
-              token={auth.user?.access_token}
-            />
-          ),
+          valueGetter: (params) =>
+            params.data instanceof V1_LiteDataContractWithUserStatus
+              ? params.data.status
+              : (params.data?.contractResultLite.state ?? 'Unknown'),
         },
         {
           headerName: 'Business Justification',
-          valueGetter: (p) => p.data?.description,
+          valueGetter: (p) => p.data?.contractResultLite.description,
         },
         {
           hide: true,
           headerName: 'Contract ID',
-          valueGetter: (p) => p.data?.guid,
+          valueGetter: (p) => p.data?.contractResultLite.guid,
         },
       ],
       [
-        auth.user?.access_token,
         dashboardState.lakehouseEntitlementsStore,
         marketplaceBaseStore.applicationStore,
         marketplaceBaseStore.userSearchService,
@@ -362,17 +332,30 @@ export const EntitlementsClosedContractsDashboard = observer(
 
     return (
       <Box className="marketplace-lakehouse-entitlements__completed-contracts">
-        <Box className="marketplace-lakehouse-entitlements__completed-contracts__action-btns">
+        <FormGroup className="marketplace-lakehouse-entitlements__completed-contracts__action-btns">
           <FormControlLabel
             control={
-              <Switch
-                checked={showForOthers}
-                onChange={(event) => setShowForOthers(event.target.checked)}
-              />
+              dashboardState.fetchingContractsByUserState.isInProgress ? (
+                <Box className="marketplace-lakehouse-entitlements__pending-contracts__action-btn--loading">
+                  <CircularProgress size={20} />
+                </Box>
+              ) : (
+                <Switch
+                  checked={showForOthers}
+                  onChange={(event) => setShowForOthers(event.target.checked)}
+                />
+              )
             }
             label="Show my requests for others"
+            title={
+              dashboardState.fetchingContractsByUserState.isInProgress
+                ? 'Loading requests for others'
+                : undefined
+            }
+            disabled={dashboardState.fetchingContractsByUserState.isInProgress}
+            className="marketplace-lakehouse-entitlements__completed-contracts__action-btn"
           />
-        </Box>
+        </FormGroup>
         <Box className="marketplace-lakehouse-entitlements__completed-contracts__grid ag-theme-balham">
           <DataGrid
             rowData={gridRowData}
@@ -383,7 +366,9 @@ export const EntitlementsClosedContractsDashboard = observer(
             suppressContextMenu={false}
             columnDefs={colDefs}
             onCellClicked={(
-              event: DataGridCellClickedEvent<V1_LiteDataContract>,
+              event: DataGridCellClickedEvent<
+                V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+              >,
             ) =>
               // eslint-disable-next-line no-void
               void handleCellClicked(event)
@@ -391,7 +376,7 @@ export const EntitlementsClosedContractsDashboard = observer(
             defaultColDef={defaultColDef}
             rowHeight={45}
             overlayNoRowsTemplate="You have no closed contracts"
-            loading={dashboardState.initializationState.isInProgress}
+            loading={dashboardState.fetchingContractsForUserState.isInProgress}
             overlayLoadingTemplate="Loading contracts"
           />
         </Box>

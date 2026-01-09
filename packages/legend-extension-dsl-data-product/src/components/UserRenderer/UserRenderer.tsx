@@ -59,7 +59,11 @@ export const UserRenderer = (props: {
   }, [onFinishedLoadingCallback, userId, userSearchService]);
 
   if (loading) {
-    return <CircularProgress size={20} />;
+    return (
+      <Box>
+        <CircularProgress size={20} />
+      </Box>
+    );
   } else if (userData instanceof LegendUser) {
     const imgSrc = userSearchService?.userProfileImageUrl?.replace(
       '{userId}',

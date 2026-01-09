@@ -23,6 +23,7 @@ import {
   V1_AdhocTeam,
   V1_ContractState,
   V1_deserializeTaskResponse,
+  V1_EnrichedUserApprovalStatus,
   V1_UserApprovalStatus,
   V1_UserType,
 } from '@finos/legend-graph';
@@ -84,13 +85,17 @@ export const isContractInTerminalState = (
 };
 
 export const isApprovalStatusTerminal = (
-  userApprovalStatus: V1_UserApprovalStatus,
+  userApprovalStatus: V1_UserApprovalStatus | V1_EnrichedUserApprovalStatus,
 ): boolean => {
   return [
     V1_UserApprovalStatus.APPROVED,
     V1_UserApprovalStatus.CLOSED,
     V1_UserApprovalStatus.DENIED,
     V1_UserApprovalStatus.REVOKED,
+    V1_EnrichedUserApprovalStatus.APPROVED,
+    V1_EnrichedUserApprovalStatus.CLOSED,
+    V1_EnrichedUserApprovalStatus.DENIED,
+    V1_EnrichedUserApprovalStatus.REVOKED,
   ].includes(userApprovalStatus);
 };
 
