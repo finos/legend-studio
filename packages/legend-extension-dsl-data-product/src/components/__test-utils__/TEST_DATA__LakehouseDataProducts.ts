@@ -79,6 +79,7 @@ export const mockSDLCDataProduct: V1_DataProduct = deserialize(
             id: 'customer_demographics',
             title: 'Customer Demographics',
             description: 'Customer demographics data access point',
+            targetEnvironment: 'testTargetEnvironment',
             func: {
               _type: 'lambda',
               body: [
