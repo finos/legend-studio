@@ -454,8 +454,8 @@ export const EntitlementsPendingTasksDashboard = observer(
             colId: 'dateCreated',
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const createdAt = allContracts?.find(
-                (contract) => contract.guid === contractId,
+              const createdAt = pendingTaskContractMap?.get(
+                contractId ?? '',
               )?.createdAt;
               return formatOrderDate(createdAt) ?? 'Unknown';
             },
@@ -464,11 +464,11 @@ export const EntitlementsPendingTasksDashboard = observer(
             comparator: (_, __, val1, val2) => {
               const contractId1 = val1.data?.dataContractId;
               const contractId2 = val2.data?.dataContractId;
-              const createdAt1 = allContracts?.find(
-                (contract) => contract.guid === contractId1,
+              const createdAt1 = pendingTaskContractMap?.get(
+                contractId1 ?? '',
               )?.createdAt;
-              const createdAt2 = allContracts?.find(
-                (contract) => contract.guid === contractId2,
+              const createdAt2 = pendingTaskContractMap?.get(
+                contractId2 ?? '',
               )?.createdAt;
               const dateA = createdAt1 ? new Date(createdAt1).getTime() : 0;
               const dateB = createdAt2 ? new Date(createdAt2).getTime() : 0;
