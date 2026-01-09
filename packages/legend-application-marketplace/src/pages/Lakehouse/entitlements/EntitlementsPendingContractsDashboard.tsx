@@ -104,7 +104,7 @@ export const EntitlementsPendingContractsDashboard = observer(
     );
     const pendingContractsForOthers = useMemo(
       () =>
-        Array.from(allContractsCreatedByUser.values())?.filter(
+        allContractsCreatedByUser?.filter(
           (contract) =>
             !isContractInTerminalState(contract.contractResultLite) &&
             !myPendingContractIds.has(contract.contractResultLite.guid),

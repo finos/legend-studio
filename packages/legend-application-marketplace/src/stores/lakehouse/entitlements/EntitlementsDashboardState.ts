@@ -94,7 +94,7 @@ export class EntitlementsDashboardState {
   // The contracts createdBy user API returns an entry for each task, not just for each contract.
   // To consolidate this information, we store a map of contract ID to the contract details + the
   // consolidated user information from the tasks.
-  allContractsCreatedByUser: Map<string, ContractCreatedByUserDetails> =
+  allContractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails> =
     new Map();
 
   readonly initializationState = ActionState.create();
@@ -109,8 +109,9 @@ export class EntitlementsDashboardState {
     makeObservable(this, {
       pendingTasks: observable,
       allContractsForUser: observable,
-      allContractsCreatedByUser: observable,
+      allContractsCreatedByUserMap: observable,
       pendingTaskContractMap: observable,
+      allContractsCreatedByUser: computed,
       init: flow,
       approve: flow,
       deny: flow,
@@ -120,6 +121,10 @@ export class EntitlementsDashboardState {
       fetchContractsCreatedByUser: flow,
       updateContract: flow,
     });
+  }
+
+  get allContractsCreatedByUser(): ContractCreatedByUserDetails[] {
+    return Array.from(this.allContractsCreatedByUserMap.values());
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
@@ -240,7 +245,7 @@ export class EntitlementsDashboardState {
   *fetchContractsCreatedByUser(token: string | undefined): GeneratorFn<void> {
     this.fetchingContractsByUserState.inProgress();
     try {
-      this.allContractsCreatedByUser = new Map();
+      this.allContractsCreatedByUserMap = new Map();
       const rawContracts =
         (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getContractsCreatedByUser(
           this.lakehouseEntitlementsStore.applicationStore.identityService
@@ -257,15 +262,19 @@ export class EntitlementsDashboardState {
       );
       contracts.forEach((contract) => {
         if (
-          !this.allContractsCreatedByUser.has(contract.contractResultLite.guid)
+          !this.allContractsCreatedByUserMap.has(
+            contract.contractResultLite.guid,
+          )
         ) {
-          this.allContractsCreatedByUser.set(
+          this.allContractsCreatedByUserMap.set(
             contract.contractResultLite.guid,
             new ContractCreatedByUserDetails(contract.contractResultLite),
           );
         }
         const entry = guaranteeNonNullable(
-          this.allContractsCreatedByUser.get(contract.contractResultLite.guid),
+          this.allContractsCreatedByUserMap.get(
+            contract.contractResultLite.guid,
+          ),
         );
         entry.addAssignees(contract.pendingTaskWithAssignees?.assignees ?? []);
         entry.addMember(contract.user, contract.status);
@@ -334,22 +343,22 @@ export class EntitlementsDashboardState {
       .filter(isNonNullable);
 
     // Update the contract + all related data for contract created by the user
-    this.allContractsCreatedByUser.delete(contractId);
+    this.allContractsCreatedByUserMap.delete(contractId);
     const updatedCreatedByUserContracts = newCreatedByUserContracts.filter(
       (c) => c.contractResultLite.guid === contractId,
     );
 
     updatedCreatedByUserContracts.forEach((contract) => {
       if (
-        !this.allContractsCreatedByUser.has(contract.contractResultLite.guid)
+        !this.allContractsCreatedByUserMap.has(contract.contractResultLite.guid)
       ) {
-        this.allContractsCreatedByUser.set(
+        this.allContractsCreatedByUserMap.set(
           contract.contractResultLite.guid,
           new ContractCreatedByUserDetails(contract.contractResultLite),
         );
       }
       const entry = guaranteeNonNullable(
-        this.allContractsCreatedByUser.get(contract.contractResultLite.guid),
+        this.allContractsCreatedByUserMap.get(contract.contractResultLite.guid),
       );
       entry.addAssignees(contract.pendingTaskWithAssignees?.assignees ?? []);
       entry.addMember(contract.user, contract.status);
