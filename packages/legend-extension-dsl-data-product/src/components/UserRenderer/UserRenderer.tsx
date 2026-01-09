@@ -26,7 +26,7 @@ export const UserRenderer = (props: {
   userSearchService: UserSearchService | undefined;
   className?: string | undefined;
   appendComma?: boolean;
-  disableOnClick?: boolean;
+  disableOnClick?: boolean | undefined;
   onFinishedLoadingCallback?: () => void;
 }): React.ReactNode => {
   const {

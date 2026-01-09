@@ -543,6 +543,7 @@ export const EntitlementsPendingTasksDashboard = observer(
                   userId={params.data?.consumer}
                   applicationStore={marketplaceBaseStore.applicationStore}
                   userSearchService={marketplaceBaseStore.userSearchService}
+                  disableOnClick={true}
                   className="marketplace-lakehouse-entitlements__grid__user-display"
                 />
               );
@@ -574,6 +575,7 @@ export const EntitlementsPendingTasksDashboard = observer(
                   userId={requester}
                   applicationStore={marketplaceBaseStore.applicationStore}
                   userSearchService={marketplaceBaseStore.userSearchService}
+                  disableOnClick={true}
                   className="marketplace-lakehouse-entitlements__grid__user-display"
                 />
               ) : (

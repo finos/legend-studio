@@ -44,6 +44,7 @@ const TargetUserCellRenderer = observer(
         userSearchService={
           entitlementsStore.marketplaceBaseStore.userSearchService
         }
+        disableOnClick={true}
         singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
       />
     );
@@ -162,6 +163,7 @@ export const getCommonEntitlementsColDefs = (
             dashboardState.lakehouseEntitlementsStore.marketplaceBaseStore
               .userSearchService
           }
+          disableOnClick={true}
           className="marketplace-lakehouse-entitlements__grid__user-display"
         />
       ) : (

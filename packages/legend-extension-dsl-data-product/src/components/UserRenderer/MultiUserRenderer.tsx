@@ -24,10 +24,16 @@ export const MultiUserRenderer = (props: {
   userIds: string[];
   applicationStore: GenericLegendApplicationStore;
   userSearchService: UserSearchService | undefined;
+  disableOnClick?: boolean;
   singleUserClassName?: string;
 }): React.ReactNode => {
-  const { userIds, applicationStore, userSearchService, singleUserClassName } =
-    props;
+  const {
+    userIds,
+    applicationStore,
+    userSearchService,
+    disableOnClick,
+    singleUserClassName,
+  } = props;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   // In order to ensure the popover is properly resized after we load
@@ -51,13 +57,17 @@ export const MultiUserRenderer = (props: {
         className={singleUserClassName}
         applicationStore={applicationStore}
         userSearchService={userSearchService}
+        disableOnClick={disableOnClick}
       />
     );
   } else {
     return (
       <>
         <Link
-          onClick={(event) => setAnchorEl(event.currentTarget)}
+          onClick={(event) => {
+            event.stopPropagation();
+            setAnchorEl(event.currentTarget);
+          }}
           className="legend-marketplace-multi-user-cell-renderer__link"
         >
           {userIds.length} Users

@@ -78,6 +78,7 @@ const AssigneesCellRenderer = (props: {
       userSearchService={
         entitlementsStore.marketplaceBaseStore.userSearchService
       }
+      disableOnClick={true}
       singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
   );
