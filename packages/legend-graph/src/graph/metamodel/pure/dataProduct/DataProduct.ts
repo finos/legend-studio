@@ -227,11 +227,11 @@ export class NativeModelAccess implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT_NATIVE_MODEL_ACCESS,
+      hashArray(this.nativeModelExecutionContexts),
       hashArray(this.featuredElements),
       hashArray(this.diagrams),
-      hashArray(this.nativeModelExecutionContexts),
-      this.defaultExecutionContext,
       hashArray(this.sampleQueries),
+      this.defaultExecutionContext,
     ]);
   }
 }

@@ -80,6 +80,7 @@ import {
   TEST_DATA__DATAPRODUCT__INCLUDE,
   TEST_DATA__DATAPRODUCT__MAPPING__INCLUDE,
   TEST_DATA__DATAPRODUCT__FUNCTION_ACCESS_POINT,
+  TEST_DATA__DATAPRODUCT__NATIVE_MODEL_ACCESS,
 } from './roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
 import { TEST_DATA__Function_genericType } from './roundtripTestData/TEST_DATA__Function-generictype.js';
 
@@ -266,6 +267,10 @@ describe(unitTest('DSL Data product'), () => {
     [
       'DSL Data Model Access Groups',
       TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS,
+    ],
+    [
+      'DSL Data Product NativeModelAccess',
+      TEST_DATA__DATAPRODUCT__NATIVE_MODEL_ACCESS,
     ],
     ['DSL Include Data Product', TEST_DATA__DATAPRODUCT__INCLUDE],
     [

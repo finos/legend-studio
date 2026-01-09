@@ -513,6 +513,540 @@ export const TEST_DATA__DATAPRODUCT__FUNCTION_ACCESS_POINT = [
   },
 ];
 
+export const TEST_DATA__DATAPRODUCT__NATIVE_MODEL_ACCESS = [
+  {
+    path: 'model::animal::reptile::Reptile',
+    content: {
+      _type: 'class',
+      name: 'Reptile',
+      package: 'model::animal::reptile',
+      properties: [
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'hasFin',
+        },
+      ],
+      superTypes: [
+        {
+          path: 'model::animal::Animal',
+          type: 'CLASS',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::animal::Animal',
+    content: {
+      _type: 'class',
+      name: 'Animal',
+      package: 'model::animal',
+      properties: [
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Number',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'noOfLegs',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::animal::mammal::Mammal',
+    content: {
+      _type: 'class',
+      name: 'Mammal',
+      package: 'model::animal::mammal',
+      properties: [
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'species',
+        },
+      ],
+      superTypes: [
+        {
+          path: 'model::animal::Animal',
+          type: 'CLASS',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'query::modelQuery__TabularDataSet_1_',
+    content: {
+      _type: 'function',
+      body: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::animal::mammal::Mammal',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'noOfLegs',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'model::animal::mammal::Mammal',
+                        },
+                      },
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'species',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'model::animal::mammal::Mammal',
+                        },
+                      },
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Number of Legs',
+                },
+                {
+                  _type: 'string',
+                  value: 'Species',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      name: 'modelQuery__TabularDataSet_1_',
+      package: 'query',
+      parameters: [],
+      postConstraints: [],
+      preConstraints: [],
+      returnGenericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'meta::pure::tds::TabularDataSet',
+        },
+      },
+      returnMultiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+    },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  },
+  {
+    path: 'model::dummyMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'pureInstance',
+          class: 'model::animal::mammal::Mammal',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'model::animal::mammal::Mammal',
+                property: 'noOfLegs',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'noOfLegs',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'model::animal::mammal::Mammal',
+                property: 'species',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'string',
+                    value: 'Homo Sapiens',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: false,
+          srcClass: 'model::animal::Animal',
+        },
+        {
+          _type: 'pureInstance',
+          class: 'model::animal::reptile::Reptile',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'model::animal::reptile::Reptile',
+                property: 'noOfLegs',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'noOfLegs',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'model::animal::reptile::Reptile',
+                property: 'hasFin',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'boolean',
+                    value: true,
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: false,
+          srcClass: 'model::animal::Animal',
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'dummyMapping',
+      package: 'model',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'model::dummyRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'dummyRuntime',
+      package: 'model',
+      runtimeValue: {
+        _type: 'engineRuntime',
+        connectionStores: [],
+        connections: [],
+        mappings: [
+          {
+            path: 'model::dummyMapping',
+            type: 'MAPPING',
+          },
+        ],
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
+    path: 'model::a',
+    content: {
+      _type: 'dataProduct',
+      description: 'title',
+      name: 'a',
+      nativeModelAccess: {
+        defaultExecutionContext: 'animalContext',
+        featuredElements: [
+          {
+            element: {
+              path: 'model',
+            },
+            exclude: false,
+          },
+          {
+            element: {
+              path: 'model::animal::Animal',
+            },
+            exclude: true,
+          },
+        ],
+        nativeModelExecutionContexts: [
+          {
+            key: 'animalContext',
+            mapping: {
+              path: 'model::dummyMapping',
+            },
+            runtime: {
+              path: 'model::dummyRuntime',
+            },
+          },
+        ],
+        sampleQueries: [
+          {
+            _type: 'packageableElementSampleQuery',
+            description: 'Mammal Query description',
+            executionContextKey: 'animalContext',
+            id: 'mammalQuery',
+            query: {
+              path: 'query::modelQuery():TabularDataSet[1]',
+            },
+            title: 'Mammal Query',
+          },
+          {
+            _type: 'inLineSampleQuery',
+            description: 'Reptile Query description',
+            executionContextKey: 'animalContext',
+            id: 'reptileQuery',
+            query: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'project',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'getAll',
+                      parameters: [
+                        {
+                          _type: 'packageableElementPtr',
+                          fullPath: 'model::animal::reptile::Reptile',
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'collection',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: [
+                        {
+                          _type: 'lambda',
+                          body: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'hasFin',
+                            },
+                          ],
+                          parameters: [
+                            {
+                              _type: 'var',
+                              genericType: {
+                                rawType: {
+                                  _type: 'packageableType',
+                                  fullPath: 'model::animal::reptile::Reptile',
+                                },
+                              },
+                              multiplicity: {
+                                lowerBound: 1,
+                                upperBound: 1,
+                              },
+                              name: 'x',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'collection',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: [
+                        {
+                          _type: 'string',
+                          value: 'Does reptile have fins?',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              parameters: [],
+            },
+            title: 'Reptile Query',
+          },
+        ],
+      },
+      package: 'model',
+      title: 'title',
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          elements: [],
+          imports: [],
+          parserName: 'Pure',
+        },
+        {
+          _type: 'importAware',
+          elements: ['model::a'],
+          imports: [],
+          parserName: 'DataProduct',
+        },
+        {
+          _type: 'importAware',
+          elements: [
+            'model::animal::reptile::Reptile',
+            'model::animal::Animal',
+            'model::animal::mammal::Mammal',
+            'query::modelQuery__TabularDataSet_1_',
+          ],
+          imports: [],
+          parserName: 'Pure',
+        },
+        {
+          _type: 'importAware',
+          elements: ['model::dummyMapping'],
+          imports: [],
+          parserName: 'Mapping',
+        },
+        {
+          _type: 'importAware',
+          elements: ['model::dummyRuntime'],
+          imports: [],
+          parserName: 'Runtime',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];
+
 export const TEST_DATA__DATAPRODUCT__INCLUDE = [
   {
     path: 'model::lakehouse::Firm',

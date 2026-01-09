@@ -215,11 +215,11 @@ export const V1_PackageableElementSampleQueryModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_SampleQueryType.PACKAGEABLE_ELEMENT_SAMPLE_QUERY,
     ),
-    id: primitive(),
-    title: primitive(),
     description: optional(primitive()),
-    query: usingModelSchema(V1_packageableElementPointerModelSchema),
     executionContextKey: optional(primitive()),
+    id: primitive(),
+    query: usingModelSchema(V1_packageableElementPointerModelSchema),
+    title: primitive(),
   },
 );
 
@@ -227,11 +227,11 @@ export const V1_InLineSampleQueryModelSchema = createModelSchema(
   V1_InLineSampleQuery,
   {
     _type: usingConstantValueSchema(V1_SampleQueryType.IN_LINE_SAMPLE_QUERY),
-    id: primitive(),
-    title: primitive(),
     description: optional(primitive()),
     executionContextKey: optional(primitive()),
+    id: primitive(),
     query: usingModelSchema(V1_rawLambdaModelSchema),
+    title: primitive(),
   },
 );
 
@@ -276,15 +276,15 @@ export const V1_NativeModelAccessModelSchema = createModelSchema(
   V1_NativeModelAccess,
   {
     diagrams: optionalCustomListWithSchema(V1_dataProductDiagramModelSchema),
+    defaultExecutionContext: primitive(),
+    featuredElements: optionalCustomListWithSchema(V1_ElementScopeModelSchema),
+    nativeModelExecutionContexts: customListWithSchema(
+      V1_NativeModelExecutionContextSchema,
+    ),
     sampleQueries: optionalCustomList(
       (val: V1_SampleQuery) => V1_serializeSampleQuery(val),
       (val) => V1_deserializeSampleQuery(val),
     ),
-    nativeModelExecutionContexts: customListWithSchema(
-      V1_NativeModelExecutionContextSchema,
-    ),
-    featuredElements: optionalCustomListWithSchema(V1_ElementScopeModelSchema),
-    defaultExecutionContext: primitive(),
   },
 );
 
@@ -458,9 +458,6 @@ export const V1_dataProductModelSchema = (
       V1_serializeAccessPointGroup,
       V1_deserializeAccessPointGroup,
     ),
-    nativeModelAccess: optionalCustomUsingModelSchema(
-      V1_NativeModelAccessModelSchema,
-    ),
     description: optional(primitive()),
     sampleValues: optionalCustomList(
       (data: V1_EmbeddedData) => V1_serializeEmbeddedDataType(data, plugins),
@@ -471,6 +468,9 @@ export const V1_dataProductModelSchema = (
       V1_deserializeDataProductIcon,
     ),
     name: primitive(),
+    nativeModelAccess: optionalCustomUsingModelSchema(
+      V1_NativeModelAccessModelSchema,
+    ),
     operationalMetadata: optionalCustomUsingModelSchema(
       V1_DataProductOperationalMetadataModelSchema,
     ),

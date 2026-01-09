@@ -227,10 +227,10 @@ export class V1_NativeModelExecutionContext {
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DATA_PRODUCT_NATIVE_MODEL_ACCESS,
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_NATIVE_MODEL_EXECUTION_CONTEXT,
+      this.key,
       this.mapping.path,
       this.runtime?.path ?? '',
-      this.key,
     ]);
   }
 }
