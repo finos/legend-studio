@@ -704,6 +704,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
           this.editorStore.graphManagerState.graph,
         )) as RelationTypeMetadata
       ).columns;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   }
 

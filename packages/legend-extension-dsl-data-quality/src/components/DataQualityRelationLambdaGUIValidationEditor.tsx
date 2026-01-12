@@ -45,7 +45,7 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
             const { columns, otherParams } = funcState.parameters;
             return (
               <div
-                key={index}
+                key={funcState.name}
                 className="data-quality-validation-gui-editor__function"
               >
                 <div className="data-quality-validation-gui-editor__function__parameter">
@@ -87,6 +87,7 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
                   ) => (
                     <div
                       className="data-quality-validation-gui-editor__function__parameter"
+                      // eslint-disable-next-line react/no-array-index-key
                       key={idx}
                     >
                       <FunctionParameterHandler
