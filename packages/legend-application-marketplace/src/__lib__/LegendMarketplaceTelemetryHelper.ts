@@ -48,6 +48,11 @@ export enum PRODUCT_INTEGRATION_TYPE {
   POWER_BI = 'powerBI',
 }
 
+export enum ICON_TOOLBAR_TYPE {
+  USER = 'User Icon',
+  HELP = 'Help Icon',
+}
+
 type MarketplaceDataProductOrigin_TelemetryData = {
   type: DATAPRODUCT_TYPE;
   groupId?: string | undefined;
@@ -74,29 +79,35 @@ type MarketPlaceDataProductIntegration_TemeletryData =
   };
 
 export type MarketplaceUserSession = {
-  searchEventId: number;
+  eventId: number;
   searchSessionId: string | undefined;
 };
 
 export const SEARCH_SESSION_KEY = 'marketplace_user_session';
 
 export class LegendMarketplaceTelemetryHelper {
-  private static getSearchSession(): MarketplaceUserSession {
+  private static getOrCreateUserSession(): MarketplaceUserSession {
     const stored = localStorage.getItem(SEARCH_SESSION_KEY);
 
     if (stored) {
       const session = JSON.parse(stored) as MarketplaceUserSession;
       return session;
     } else {
-      return this.clearSearchSession();
+      const initialSession: MarketplaceUserSession = {
+        eventId: 0,
+        searchSessionId: undefined,
+      };
+      localStorage.setItem(SEARCH_SESSION_KEY, JSON.stringify(initialSession));
+      return initialSession;
     }
   }
 
-  private static createNewSearchSession(
+  private static updateSearchSessionId(
     searchSessionId: string,
   ): MarketplaceUserSession {
+    const currentSession = this.getOrCreateUserSession();
     const newSearchSession: MarketplaceUserSession = {
-      searchEventId: 1,
+      ...currentSession,
       searchSessionId: searchSessionId,
     };
 
@@ -104,21 +115,27 @@ export class LegendMarketplaceTelemetryHelper {
     return newSearchSession;
   }
 
-  static clearSearchSession(): MarketplaceUserSession {
+  static clearSearchSessionId(): MarketplaceUserSession {
+    const currentSession = this.getOrCreateUserSession();
     const newSearchSession: MarketplaceUserSession = {
-      searchEventId: 0,
+      ...currentSession,
       searchSessionId: undefined,
     };
 
-    localStorage.setItem(SEARCH_SESSION_KEY, JSON.stringify(newSearchSession));
+    if (currentSession.eventId !== 0) {
+      localStorage.setItem(
+        SEARCH_SESSION_KEY,
+        JSON.stringify(newSearchSession),
+      );
+    }
     return newSearchSession;
   }
 
-  private static updateSearchEventId() {
-    const currentSession = this.getSearchSession();
+  private static updateEventId() {
+    const currentSession = this.getOrCreateUserSession();
     const updatedSession: MarketplaceUserSession = {
       ...currentSession,
-      searchEventId: currentSession.searchEventId + 1,
+      eventId: currentSession.eventId + 1,
     };
 
     localStorage.setItem(SEARCH_SESSION_KEY, JSON.stringify(updatedSession));
@@ -130,8 +147,8 @@ export class LegendMarketplaceTelemetryHelper {
     dataProductData: MarketplaceDataProduct_TelemetryData,
     clickedFrom: LEGEND_MARKETPLACE_PAGE,
   ): void {
-    this.updateSearchEventId();
-    const session = this.getSearchSession();
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.CLICK_DATA_PRODUCT_CARD,
       {
@@ -147,8 +164,9 @@ export class LegendMarketplaceTelemetryHelper {
     query: string | undefined,
     searchedFrom: LEGEND_MARKETPLACE_PAGE,
   ): void {
-    this.createNewSearchSession(telemetryService.applicationStore.uuid);
-    const session = this.getSearchSession();
+    this.updateSearchSessionId(telemetryService.applicationStore.uuid);
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
     telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SEARCH_QUERY, {
       query: query,
       searchedFrom: searchedFrom,
@@ -164,6 +182,8 @@ export class LegendMarketplaceTelemetryHelper {
     actionTakenBy: string,
     errors: string[] | undefined,
   ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
     const actionedContractsDetails = selectedContracts.map((contract) => {
       const dataContract = pendingTaskContracts?.find(
         (c) => c.guid === contract.dataContractId,
@@ -180,6 +200,7 @@ export class LegendMarketplaceTelemetryHelper {
         targetDataProduct: dataContract?.resourceId ?? 'Unknown',
         targetAccessPointGroup: accessPointGroup ?? 'Unknown',
         requester: dataContract?.createdBy,
+        ...session,
       };
     });
     const data =
@@ -227,8 +248,8 @@ export class LegendMarketplaceTelemetryHelper {
     intTelemetryData: MarketPlaceDataProductIntegration_TemeletryData,
     error: string | undefined,
   ): void {
-    this.updateSearchEventId();
-    const session = this.getSearchSession();
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
     const telemetryData =
       error === undefined
         ? {
@@ -240,6 +261,7 @@ export class LegendMarketplaceTelemetryHelper {
             ...intTelemetryData,
             status: MARKETPLACE_EVENT_STATUS.FAILURE,
             error: error,
+            ...session,
           };
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.OPEN_INTEGRATED_PRODUCT,
@@ -320,21 +342,53 @@ export class LegendMarketplaceTelemetryHelper {
     telemetryService: TelemetryService,
     tabTitle: string,
   ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
     telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.CLICK_HEADER_TAB, {
       tabTitle: tabTitle,
+      ...session,
     });
   }
 
-  static logEvent_toggleProducerSearch(
+  static logEvent_ToggleProducerSearch(
     telemetryService: TelemetryService,
     isEnabled: boolean,
   ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.PRODUCER_SEARCH_TOGGLE,
       {
         isEnabled: isEnabled,
         toggleAction: isEnabled ? 'enabled' : 'disabled',
+        ...session,
       },
     );
+  }
+
+  static logEvent_ToggleThemeMode(
+    telemetryService: TelemetryService,
+    isDarkMode: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_THEME_MODE, {
+      currentTheme: isDarkMode ? 'dark' : 'light',
+      ...session,
+    });
+  }
+
+  static logEvent_ClickToolbarMenu(
+    telemetryService: TelemetryService,
+    iconSource: ICON_TOOLBAR_TYPE,
+    menuTitle: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.CLICK_TOOLBAR_MENU, {
+      iconSource: iconSource,
+      menuTitle: menuTitle,
+      ...session,
+    });
   }
 }

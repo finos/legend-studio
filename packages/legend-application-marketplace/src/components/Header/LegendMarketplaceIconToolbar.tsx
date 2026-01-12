@@ -43,6 +43,10 @@ import { useAuth } from 'react-oidc-context';
 import { V1_pendingTasksResponseModelSchema } from '@finos/legend-graph';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import { deserialize } from 'serializr';
+import {
+  ICON_TOOLBAR_TYPE,
+  LegendMarketplaceTelemetryHelper,
+} from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const LegendMarketplaceIconToolbar = observer(() => {
   const marketplaceStore = useLegendMarketplaceBaseStore();
@@ -174,6 +178,13 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             href={applicationStore.navigationService.navigator.generateAddress(
               LEGEND_MARKETPLACE_ROUTE_PATTERN.SUBSCRIPTIONS,
             )}
+            onClick={() => {
+              LegendMarketplaceTelemetryHelper.logEvent_ClickToolbarMenu(
+                applicationStore.telemetryService,
+                ICON_TOOLBAR_TYPE.USER,
+                'View Terminal Subscriptions',
+              );
+            }}
           >
             View Terminal Subscriptions
           </MenuItem>
@@ -182,6 +193,13 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             href={applicationStore.navigationService.navigator.generateAddress(
               LEGEND_MARKETPLACE_ROUTE_PATTERN.ORDERS,
             )}
+            onClick={() => {
+              LegendMarketplaceTelemetryHelper.logEvent_ClickToolbarMenu(
+                applicationStore.telemetryService,
+                ICON_TOOLBAR_TYPE.USER,
+                'View Orders',
+              );
+            }}
           >
             View Orders
           </MenuItem>
@@ -191,6 +209,13 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             href={applicationStore.navigationService.navigator.generateAddress(
               LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
             )}
+            onClick={() => {
+              LegendMarketplaceTelemetryHelper.logEvent_ClickToolbarMenu(
+                applicationStore.telemetryService,
+                ICON_TOOLBAR_TYPE.USER,
+                'View Lakehouse Entitlements',
+              );
+            }}
           >
             <span>View Lakehouse Entitlements</span>
             {pendingTasksCount > 0 && (
@@ -275,12 +300,28 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             onClick={() => {
               setOpenAppInfo(true);
               setAnchorEl(null);
+              LegendMarketplaceTelemetryHelper.logEvent_ClickToolbarMenu(
+                applicationStore.telemetryService,
+                ICON_TOOLBAR_TYPE.HELP,
+                'About',
+              );
             }}
           >
             About
           </MenuItem>
           {adjacentEnvState && adjacentUrl && (
-            <MenuItem component="a" target="_blank" href={adjacentUrl}>
+            <MenuItem
+              component="a"
+              target="_blank"
+              href={adjacentUrl}
+              onClick={() => {
+                LegendMarketplaceTelemetryHelper.logEvent_ClickToolbarMenu(
+                  applicationStore.telemetryService,
+                  ICON_TOOLBAR_TYPE.HELP,
+                  adjacentEnvState.label,
+                );
+              }}
+            >
               {`${adjacentEnvState.label} Env`}
             </MenuItem>
           )}
@@ -292,7 +333,14 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             )}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => setAnchorEl(null)}
+            onClick={() => {
+              setAnchorEl(null);
+              LegendMarketplaceTelemetryHelper.logEvent_ClickToolbarMenu(
+                applicationStore.telemetryService,
+                ICON_TOOLBAR_TYPE.HELP,
+                'Admin',
+              );
+            }}
           >
             Admin
           </MenuItem>
@@ -331,6 +379,10 @@ export const LegendMarketplaceIconToolbar = observer(() => {
       : LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_DARK;
 
     layoutService.setColorTheme(newTheme, { persist: true });
+    LegendMarketplaceTelemetryHelper.logEvent_ToggleThemeMode(
+      applicationStore.telemetryService,
+      newTheme === LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_DARK,
+    );
   };
 
   const renderThemeToggle = () => {

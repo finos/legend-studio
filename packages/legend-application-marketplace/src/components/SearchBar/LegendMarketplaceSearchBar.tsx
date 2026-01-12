@@ -120,7 +120,7 @@ export const LegendMarketplaceSearchBar = observer(
                     checked={useProducerSearch}
                     onChange={(event) => {
                       setUseProducerSearch(event.target.checked);
-                      LegendMarketplaceTelemetryHelper.logEvent_toggleProducerSearch(
+                      LegendMarketplaceTelemetryHelper.logEvent_ToggleProducerSearch(
                         applicationStore.telemetryService,
                         event.target.checked,
                       );

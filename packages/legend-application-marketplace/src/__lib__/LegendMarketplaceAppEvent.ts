@@ -32,4 +32,6 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   PRODUCER_SEARCH_TOGGLE = 'marketplace.producer.search.toggle',
   FETCH_PENDING_TASKS_FAILURE = 'marketplace.fetch.pending-tasks.failure',
   ORDER_CANCELLATION_FAILURE = 'marketplace.order.cancellation.failure',
+  TOGGLE_THEME_MODE = 'marketplace.toggle.theme-mode',
+  CLICK_TOOLBAR_MENU = 'marketplace.click.toolbar.menu',
 }
