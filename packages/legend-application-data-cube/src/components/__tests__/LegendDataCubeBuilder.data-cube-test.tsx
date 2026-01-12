@@ -1516,7 +1516,7 @@ test(
     expect(runtimeElement?.runtimeValue).toBeInstanceOf(V1_LakehouseRuntime);
     const runtimeValue = runtimeElement?.runtimeValue as V1_LakehouseRuntime;
     expect(runtimeValue.warehouse).toBe('TEST_WAREHOUSE');
-    expect(runtimeValue.environment).toBe('dev-testEnv');
+    expect(runtimeValue.environment).toBe('dev-testEnv1');
   },
 );
 

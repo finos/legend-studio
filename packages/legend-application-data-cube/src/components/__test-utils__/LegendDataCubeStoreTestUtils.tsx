@@ -191,6 +191,19 @@ export const TEST__provideMockedLegendDataCubeEngine = async (customization?: {
     lakehouseIngestServerClient,
     'getIngestDefinitionGrammar',
   ).mockResolvedValue('test-ingest-definition-grammar');
+  createSpy(
+    lakehouseContractServerClient,
+    'getUserEntitlementEnvs',
+  ).mockResolvedValue({
+    total: 1,
+    users: [
+      {
+        name: 'TESTER',
+        userType: 'TEST_USER',
+        lakehouseEnvironment: 'testEnv1',
+      },
+    ],
+  });
 
   const graphManager =
     customization?.graphManager ??
@@ -217,6 +230,8 @@ export const TEST__provideMockedLegendDataCubeEngine = async (customization?: {
 export const mockLakehouseConsumerAdHocDataProduct = {
   _type: 'lakehouseConsumer',
   warehouse: 'TEST_WAREHOUSE',
+  // this environment gets overridden as we have runtime calls for fetching user entitlement envs
+  // this makes saving view user agnostic
   environment: 'dev-testEnv',
   paths: ['dataProduct::test_DataProduct', 'test_dataset'],
   origin: {

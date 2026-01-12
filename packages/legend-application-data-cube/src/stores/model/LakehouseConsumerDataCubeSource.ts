@@ -44,7 +44,7 @@ export class LakehouseConsumerDataCubeSource extends DataCubeSource {
   dpCoordinates?: VersionedProjectData;
   runtime!: string;
   warehouse!: string;
-  environment!: string;
+  userEnvironment!: string;
   paths!: string[];
   deploymentId?: number | undefined;
 }

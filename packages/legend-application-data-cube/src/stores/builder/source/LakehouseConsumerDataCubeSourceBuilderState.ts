@@ -30,31 +30,23 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
-  isNonNullable,
-  uniq,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
-import {
-  type LakehousePlatformServerClient,
-  type LakehouseContractServerClient,
-  type IngestDeploymentServerConfig,
-  filterEnvironmentsByEntitlementsEnv,
-  getIngestDeploymentServerConfigName,
-} from '@finos/legend-server-lakehouse';
+import { type LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { VersionedProjectData } from '@finos/legend-server-depot';
 import {
   V1_SdlcDeploymentDataProductOrigin,
   type V1_EntitlementsDataProductLite,
   type V1_EntitlementsDataProductLiteResponse,
+  V1_EntitlementsLakehouseEnvironmentType,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_DataProductOriginType,
   V1_AdHocDeploymentDataProductOrigin,
   type V1_EntitlementsDataProductDetails,
-  V1_isIngestEnvsCompatibleWithEntitlements,
   V1_LegendSDLC,
   V1_serializePureModelContext,
   V1_PureModelContextPointer,
@@ -64,7 +56,6 @@ import {
   V1_Protocol,
   V1_PureGraphManager,
   PureClientVersion,
-  type V1_EntitlementsUserEnvResponse,
 } from '@finos/legend-graph';
 import {
   RawLakehouseAdhocOrigin,
@@ -75,7 +66,7 @@ import { LegendDataCubeCodeEditorState } from '../LegendDataCubeCodeEditorState.
 
 export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   warehouse: string | undefined;
-  selectedDataProduct: string | undefined;
+  selectedDataProduct: V1_EntitlementsDataProductLite | undefined;
   selectedAccessPoint: string | undefined;
   paths: string[] = [];
   dataProducts: V1_EntitlementsDataProductLite[] = [];
@@ -84,17 +75,12 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   origin: string | undefined;
   fullGraphGrammar: string | undefined;
   deploymentId: number | undefined;
-  userEntitlementEnvs: string[] = [];
+  envMode: V1_EntitlementsLakehouseEnvironmentType;
   dataProductDetails: V1_EntitlementsDataProductDetails[] | undefined;
   showQueryEditor = false;
   DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
   codeEditorState: LegendDataCubeCodeEditorState;
 
-  // envs
-  allEnvironments: IngestDeploymentServerConfig[] | undefined;
-  selectedEnvironment: IngestDeploymentServerConfig | undefined;
-
-  private readonly _platformServerClient: LakehousePlatformServerClient;
   private readonly _contractServerClient: LakehouseContractServerClient;
   readonly dataProductLoadingState = ActionState.create();
   readonly ingestEnvLoadingState = ActionState.create();
@@ -102,38 +88,32 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   constructor(
     application: LegendDataCubeApplicationStore,
     engine: LegendDataCubeDataCubeEngine,
-    platformServerClient: LakehousePlatformServerClient,
     contractServerClient: LakehouseContractServerClient,
     alertService: DataCubeAlertService,
   ) {
     super(application, engine, alertService);
-    this._platformServerClient = platformServerClient;
     this._contractServerClient = contractServerClient;
 
     makeObservable(this, {
       warehouse: observable,
       dataProducts: observable,
       selectedDataProduct: observable,
+      envMode: observable,
       accessPoints: observable,
-      allEnvironments: observable,
       dataProductDetails: observable,
-      environments: computed,
+      filteredDataProducts: computed,
       selectedDataProductDetail: computed,
       selectedAccessPoint: observable,
-      selectedEnvironment: observable,
       showQueryEditor: observable,
       setShowQueryEditor: action,
+      setEnvMode: action,
       loadDataProducts: flow,
-      fetchEnvironment: flow,
-      fetchUserEntitlementEnvs: flow,
 
       setWarehouse: action,
       setDataProducts: action,
       setSelectedDataProduct: action,
       setAccessPoints: action,
       setSelectedAccessPoint: action,
-      setSelectedEnvironment: action,
-      setUserEntitlementEnv: action,
     });
 
     this.codeEditorState = new LegendDataCubeCodeEditorState(
@@ -141,6 +121,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       alertService,
       undefined,
     );
+
+    this.envMode = V1_EntitlementsLakehouseEnvironmentType.PRODUCTION;
 
     reaction(
       () => this.selectedAccessPoint,
@@ -158,7 +140,9 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.dataProducts = dataProducts;
   }
 
-  setSelectedDataProduct(dataProduct: string | undefined) {
+  setSelectedDataProduct(
+    dataProduct: V1_EntitlementsDataProductLite | undefined,
+  ) {
     this.selectedDataProduct = dataProduct;
   }
 
@@ -166,68 +150,37 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.accessPoints = accessPoints;
   }
 
-  setAllEnvironments(environments: IngestDeploymentServerConfig[]) {
-    this.allEnvironments = environments;
-  }
-
   setSelectedAccessPoint(accessPoint: string | undefined) {
     this.selectedAccessPoint = accessPoint;
   }
 
-  setSelectedEnvironment(
-    environment: IngestDeploymentServerConfig | undefined,
-  ) {
-    this.selectedEnvironment = environment;
+  setEnvMode(env: V1_EntitlementsLakehouseEnvironmentType): void {
+    this.envMode = env;
   }
 
-  setUserEntitlementEnv(envs: string[]) {
-    this.userEntitlementEnvs = envs;
+  get filteredDataProducts(): V1_EntitlementsDataProductLite[] {
+    if (!this.dataProducts.length) {
+      return [];
+    }
+    return this.dataProducts.filter(
+      (dp) => dp.lakehouseEnvironment?.type === this.envMode,
+    );
   }
 
   setShowQueryEditor(val: boolean): void {
     this.showQueryEditor = val;
   }
 
-  get environments(): IngestDeploymentServerConfig[] {
-    const allEnvironments = this.allEnvironments;
-    if (allEnvironments) {
-      const details = this.dataProductDetails?.map(
-        (detail) => detail.lakehouseEnvironment?.type,
-      );
-      if (details?.length && !details.includes(undefined)) {
-        const entitlementsTypes = uniq(details.filter(isNonNullable));
-        return uniq(
-          entitlementsTypes
-            .map((type) =>
-              filterEnvironmentsByEntitlementsEnv(type, allEnvironments),
-            )
-            .flat()
-            .filter((env) =>
-              this.userEntitlementEnvs.some((userEnv) =>
-                userEnv.includes(env.environmentName),
-              ),
-            ),
-        );
-      }
-      return allEnvironments;
-    }
-    return [];
-  }
-
   get selectedDataProductDetail():
     | V1_EntitlementsDataProductDetails
     | undefined {
-    const selectedEnv = this.selectedEnvironment;
-    if (selectedEnv && this.dataProductDetails?.length) {
+    if (this.dataProductDetails?.length) {
       const details = this.dataProductDetails.filter((dpDetail) => {
         const dpDetailType = dpDetail.lakehouseEnvironment?.type;
         if (!dpDetailType) {
           return false;
         }
-        return V1_isIngestEnvsCompatibleWithEntitlements(
-          selectedEnv.environmentClassification,
-          dpDetailType,
-        );
+        return dpDetailType === this.envMode;
       });
       if (details.length === 1) {
         return guaranteeNonNullable(details[0]);
@@ -259,10 +212,11 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.dataProductDetails =
       V1_entitlementsDataProductDetailsResponseToDataProductDetails(
         await this._contractServerClient.getDataProduct(
-          selectedDp.split('::').pop() ?? '',
+          selectedDp.id,
           access_token,
         ),
       );
+    await this.fetchAccessPoints();
   }
 
   async fetchAccessPoints() {
@@ -324,35 +278,12 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     }
   }
 
-  *fetchEnvironment(access_token: string | undefined): GeneratorFn<void> {
-    this.ingestEnvLoadingState.inProgress();
-    const ingestServerConfigs =
-      (yield this._platformServerClient.getIngestEnvironmentSummaries(
-        access_token,
-      )) as IngestDeploymentServerConfig[];
-    this.setAllEnvironments(ingestServerConfigs);
-    this.ingestEnvLoadingState.complete();
-  }
-
-  *fetchUserEntitlementEnvs(
-    access_token: string | undefined,
-  ): GeneratorFn<void> {
-    const entitledEnvs =
-      (yield this._contractServerClient.getUserEntitlementEnvs(
-        this._application.identityService.currentUser,
-        access_token,
-      )) as V1_EntitlementsUserEnvResponse;
-    this.setUserEntitlementEnv(
-      entitledEnvs.users.map((env) => env.lakehouseEnvironment),
-    );
-  }
-
   async initializeQuery() {
     const query = new V1_ClassInstance();
     query.type = V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR;
     const dataProductAccessor = new V1_DataProductAccessor();
     dataProductAccessor.path = [
-      guaranteeNonNullable(this.selectedDataProduct),
+      guaranteeNonNullable(this.selectedDataProduct?.fullPath),
       guaranteeNonNullable(this.selectedAccessPoint),
     ];
     dataProductAccessor.parameters = [];
@@ -368,7 +299,6 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setSelectedDataProduct(undefined);
     this.setAccessPoints([]);
     this.setSelectedAccessPoint(undefined);
-    this.setSelectedEnvironment(undefined);
     this.dpCoordinates = undefined;
   }
 
@@ -376,7 +306,6 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setWarehouse(undefined);
     this.setAccessPoints([]);
     this.setSelectedAccessPoint(undefined);
-    this.setSelectedEnvironment(undefined);
     this.dpCoordinates = undefined;
   }
 
@@ -396,7 +325,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       Boolean(this.warehouse) &&
       Boolean(this.selectedAccessPoint) &&
       Boolean(this.selectedDataProduct) &&
-      Boolean(this.selectedEnvironment) &&
+      Boolean(this.envMode) &&
       !this.codeEditorState.hasErrors
     );
   }
@@ -406,17 +335,12 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.paths = [];
     this.paths.push(
       ...[
-        guaranteeNonNullable(this.selectedDataProduct),
+        guaranteeNonNullable(this.selectedDataProduct?.fullPath),
         guaranteeNonNullable(this.selectedAccessPoint),
       ],
     );
 
     const rawSource = new RawLakehouseConsumerDataCubeSource();
-    const selectedEnv = guaranteeNonNullable(this.selectedEnvironment);
-    rawSource.environment = guaranteeNonNullable(
-      getIngestDeploymentServerConfigName(selectedEnv),
-      'Unable to resolve env env string',
-    );
     if (this.origin === V1_DataProductOriginType.SDLC_DEPLOYMENT) {
       const lakehouseOrigin = new RawLakehouseSdlcOrigin();
       lakehouseOrigin.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
@@ -425,6 +349,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       rawSource.origin = new RawLakehouseAdhocOrigin();
     }
     rawSource.paths = this.paths;
+    rawSource.environment = guaranteeNonNullable(this.envMode);
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);
     rawSource.deploymentId = this.deploymentId;
     rawSource.query = this.codeEditorState.code;
