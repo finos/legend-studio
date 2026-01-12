@@ -84,7 +84,7 @@ const EntitlementsDashboardActionModal = (props: {
   dashboardState: EntitlementsDashboardState;
   onClose: () => void;
   action: 'approve' | 'deny' | undefined;
-  allContracts: V1_LiteDataContract[];
+  pendingTaskContracts: V1_LiteDataContract[];
   marketplaceBaseStore: LegendMarketplaceBaseStore;
 }) => {
   const {
@@ -93,7 +93,7 @@ const EntitlementsDashboardActionModal = (props: {
     dashboardState,
     onClose,
     action,
-    allContracts,
+    pendingTaskContracts,
     marketplaceBaseStore,
   } = props;
 
@@ -137,7 +137,7 @@ const EntitlementsDashboardActionModal = (props: {
         dashboardState.lakehouseEntitlementsStore.applicationStore
           .telemetryService,
         selectedTasks,
-        allContracts,
+        pendingTaskContracts,
         action === 'approve'
           ? CONTRACT_ACTION.APPROVED
           : CONTRACT_ACTION.DENIED,
@@ -152,7 +152,7 @@ const EntitlementsDashboardActionModal = (props: {
         dashboardState.lakehouseEntitlementsStore.applicationStore
           .telemetryService,
         selectedTasks,
-        allContracts,
+        pendingTaskContracts,
         action === 'approve'
           ? CONTRACT_ACTION.APPROVED
           : CONTRACT_ACTION.DENIED,
@@ -195,8 +195,8 @@ const EntitlementsDashboardActionModal = (props: {
             )}
             {errorMessages.map(([task, errorMessage]) => {
               const contractId = task.dataContractId;
-              const contract = allContracts.find(
-                (_contract) => _contract.guid === contractId,
+              const contract = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
               );
               return (
                 <Box
@@ -258,33 +258,33 @@ export const EntitlementsPendingTasksDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     // State and props
     const { dashboardState } = props;
-    const tasks = dashboardState.pendingTasks;
-    const allContracts = dashboardState.allContracts;
+    const pendingTasks = dashboardState.pendingTasks;
+    const pendingTaskContracts = dashboardState.pendingTaskContracts;
     const privilegeManagerTasks = useMemo(
       () =>
-        tasks?.filter(
+        pendingTasks?.filter(
           (task) =>
             task.type === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
         ) ?? [],
-      [tasks],
+      [pendingTasks],
     );
     const dataOwnerTasks = useMemo(
       () =>
-        tasks?.filter(
+        pendingTasks?.filter(
           (task) => task.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
         ) ?? [],
-      [tasks],
+      [pendingTasks],
     );
     const otherTasks = useMemo(
       () =>
-        tasks?.filter(
+        pendingTasks?.filter(
           (task) =>
             !privilegeManagerTasks.includes(task) &&
             !dataOwnerTasks.includes(task),
         ) ?? [],
-      [dataOwnerTasks, privilegeManagerTasks, tasks],
+      [dataOwnerTasks, privilegeManagerTasks, pendingTasks],
     );
-    const loading = dashboardState.initializationState.isInProgress;
+    const loading = dashboardState.fetchingPendingTasksState.isInProgress;
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -305,17 +305,17 @@ export const EntitlementsPendingTasksDashboard = observer(
     // Effects
 
     useEffect(() => {
-      if (dashboardState.initializationState.hasCompleted) {
+      if (dashboardState.fetchingPendingTasksState.hasCompleted) {
         setSelectedTaskIdsSet((prev) => {
           const selectedArray = Array.from(prev.values());
           return new Set<string>(
             selectedArray.filter((taskId) =>
-              tasks?.map((task) => task.taskId).includes(taskId),
+              pendingTasks?.map((task) => task.taskId).includes(taskId),
             ),
           );
         });
       }
-    }, [dashboardState.initializationState.hasCompleted, tasks]);
+    }, [dashboardState.fetchingPendingTasksState.hasCompleted, pendingTasks]);
 
     useEffect(() => {
       setSearchParams((params) => {
@@ -351,13 +351,9 @@ export const EntitlementsPendingTasksDashboard = observer(
     const handleCellClicked = (
       event: DataGridCellClickedEvent<V1_ContractUserEventRecord, unknown>,
     ) => {
-      if (
-        event.colDef.colId !== 'selection' &&
-        event.colDef.colId !== 'targetUser' &&
-        event.colDef.colId !== 'requester'
-      ) {
-        const contract = allContracts?.find(
-          (_contract) => _contract.guid === event.data?.dataContractId,
+      if (event.colDef.colId !== 'selection') {
+        const contract = pendingTaskContracts.find(
+          (c) => c.guid === event.data?.dataContractId,
         );
         setSelectedContract(contract);
         setSelectedContractTargetUser(event.data?.consumer);
@@ -456,8 +452,8 @@ export const EntitlementsPendingTasksDashboard = observer(
             colId: 'dateCreated',
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const createdAt = allContracts?.find(
-                (contract) => contract.guid === contractId,
+              const createdAt = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
               )?.createdAt;
               return formatOrderDate(createdAt) ?? 'Unknown';
             },
@@ -466,11 +462,11 @@ export const EntitlementsPendingTasksDashboard = observer(
             comparator: (_, __, val1, val2) => {
               const contractId1 = val1.data?.dataContractId;
               const contractId2 = val2.data?.dataContractId;
-              const createdAt1 = allContracts?.find(
-                (contract) => contract.guid === contractId1,
+              const createdAt1 = pendingTaskContracts.find(
+                (c) => c.guid === contractId1,
               )?.createdAt;
-              const createdAt2 = allContracts?.find(
-                (contract) => contract.guid === contractId2,
+              const createdAt2 = pendingTaskContracts.find(
+                (c) => c.guid === contractId2,
               )?.createdAt;
               const dateA = createdAt1 ? new Date(createdAt1).getTime() : 0;
               const dateB = createdAt2 ? new Date(createdAt2).getTime() : 0;
@@ -484,12 +480,25 @@ export const EntitlementsPendingTasksDashboard = observer(
             colId: 'consumerType',
             headerName: 'Consumer Type',
             flex: 1,
+            valueGetter: (params) => {
+              const contractId = params.data?.dataContractId;
+              const consumer = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
+              )?.consumer;
+              const typeName = consumer
+                ? getOrganizationalScopeTypeName(
+                    consumer,
+                    dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+                  )
+                : undefined;
+              return typeName ?? 'Unknown';
+            },
             cellRenderer: (
               params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
             ) => {
               const contractId = params.data?.dataContractId;
-              const consumer = allContracts?.find(
-                (contract) => contract.guid === contractId,
+              const consumer = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
               )?.consumer;
               const typeName = consumer
                 ? getOrganizationalScopeTypeName(
@@ -525,6 +534,9 @@ export const EntitlementsPendingTasksDashboard = observer(
             colId: 'targetUser',
             headerName: 'Target User',
             flex: 1,
+            valueGetter: (params) => {
+              return params.data?.consumer ?? 'Unknown';
+            },
             cellRenderer: (
               params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
             ) => {
@@ -533,6 +545,7 @@ export const EntitlementsPendingTasksDashboard = observer(
                   userId={params.data?.consumer}
                   applicationStore={marketplaceBaseStore.applicationStore}
                   userSearchService={marketplaceBaseStore.userSearchService}
+                  disableOnClick={true}
                   className="marketplace-lakehouse-entitlements__grid__user-display"
                 />
               );
@@ -545,18 +558,26 @@ export const EntitlementsPendingTasksDashboard = observer(
             colId: 'requester',
             headerName: 'Requester',
             flex: 1,
+            valueGetter: (params) => {
+              const contractId = params.data?.dataContractId;
+              const requester = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
+              )?.createdBy;
+              return requester ?? 'Unknown';
+            },
             cellRenderer: (
               params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
             ) => {
               const contractId = params.data?.dataContractId;
-              const requester = allContracts?.find(
-                (contract) => contract.guid === contractId,
+              const requester = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
               )?.createdBy;
               return requester ? (
                 <UserRenderer
                   userId={requester}
                   applicationStore={marketplaceBaseStore.applicationStore}
                   userSearchService={marketplaceBaseStore.userSearchService}
+                  disableOnClick={true}
                   className="marketplace-lakehouse-entitlements__grid__user-display"
                 />
               ) : (
@@ -572,8 +593,8 @@ export const EntitlementsPendingTasksDashboard = observer(
             flex: 1,
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const contract = allContracts?.find(
-                (_contract) => _contract.guid === contractId,
+              const contract = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
               );
               return contract?.resourceId ?? 'Unknown';
             },
@@ -586,8 +607,8 @@ export const EntitlementsPendingTasksDashboard = observer(
             flex: 1,
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const contract = allContracts?.find(
-                (_contract) => _contract.guid === contractId,
+              const contract = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
               );
               const accessPointGroup =
                 contract?.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
@@ -604,8 +625,8 @@ export const EntitlementsPendingTasksDashboard = observer(
             flex: 2,
             valueGetter: (params) => {
               const contractId = params.data?.dataContractId;
-              const businessJustification = allContracts?.find(
-                (contract) => contract.guid === contractId,
+              const businessJustification = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
               )?.description;
               return businessJustification ?? 'Unknown';
             },
@@ -621,11 +642,11 @@ export const EntitlementsPendingTasksDashboard = observer(
           },
         ],
         [
-          allContracts,
           dashboardState.lakehouseEntitlementsStore.applicationStore
             .pluginManager,
           marketplaceBaseStore.applicationStore,
           marketplaceBaseStore.userSearchService,
+          pendingTaskContracts,
         ],
       );
 
@@ -834,12 +855,14 @@ export const EntitlementsPendingTasksDashboard = observer(
         <EntitlementsDashboardActionModal
           open={selectedAction !== undefined}
           selectedTasks={
-            tasks?.filter((task) => selectedTaskIdsSet.has(task.taskId)) ?? []
+            pendingTasks?.filter((task) =>
+              selectedTaskIdsSet.has(task.taskId),
+            ) ?? []
           }
           dashboardState={dashboardState}
           onClose={() => setSelectedAction(undefined)}
           action={selectedAction}
-          allContracts={allContracts ?? []}
+          pendingTaskContracts={pendingTaskContracts}
           marketplaceBaseStore={marketplaceBaseStore}
         />
         {selectedContract !== undefined && (

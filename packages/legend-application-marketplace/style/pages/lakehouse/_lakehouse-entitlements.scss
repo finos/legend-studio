@@ -34,6 +34,18 @@
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-90);
     font-family: Roboto, sans-serif;
+
+    &__action-btn {
+      margin-left: 0;
+      width: fit-content;
+
+      &--loading {
+        @include flexCenter;
+
+        width: 58px;
+        height: 38px;
+      }
+    }
   }
 
   &__pending-tasks {

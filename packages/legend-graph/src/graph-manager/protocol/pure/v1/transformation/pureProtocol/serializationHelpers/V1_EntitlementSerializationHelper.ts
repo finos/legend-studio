@@ -325,6 +325,7 @@ export const V1_liteDataContractWithUserStatusModelSchema = (
     pendingTaskWithAssignees: optional(
       usingModelSchema(V1_pendingTaskWithAssigneesModelSchema),
     ),
+    user: primitive(),
   });
 
 export const V1_contractUserEventPrivilegeManagerPayloadModelSchema =

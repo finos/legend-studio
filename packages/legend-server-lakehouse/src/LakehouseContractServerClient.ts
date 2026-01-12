@@ -119,6 +119,17 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     );
   };
 
+  getContractsCreatedByUser = (
+    user: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_LiteDataContractWithUserStatus>[]> => {
+    return this.get(
+      `${this._dataContracts()}/createdBy/${user}`,
+      {},
+      this._token(token),
+    );
+  };
+
   getPendingContracts = (
     user: string | undefined,
     token: string | undefined,

@@ -26,7 +26,7 @@ export const UserRenderer = (props: {
   userSearchService: UserSearchService | undefined;
   className?: string | undefined;
   appendComma?: boolean;
-  disableOnClick?: boolean;
+  disableOnClick?: boolean | undefined;
   onFinishedLoadingCallback?: () => void;
 }): React.ReactNode => {
   const {
@@ -59,7 +59,11 @@ export const UserRenderer = (props: {
   }, [onFinishedLoadingCallback, userId, userSearchService]);
 
   if (loading) {
-    return <CircularProgress size={20} />;
+    return (
+      <Box>
+        <CircularProgress size={20} />
+      </Box>
+    );
   } else if (userData instanceof LegendUser) {
     const imgSrc = userSearchService?.userProfileImageUrl?.replace(
       '{userId}',
@@ -74,7 +78,7 @@ export const UserRenderer = (props: {
       <UserDisplay
         user={userData}
         imgSrc={imgSrc}
-        onClick={() => (disableOnClick ? undefined : openUserDirectoryLink())}
+        onClick={disableOnClick ? undefined : () => openUserDirectoryLink()}
         className={className}
       />
     );

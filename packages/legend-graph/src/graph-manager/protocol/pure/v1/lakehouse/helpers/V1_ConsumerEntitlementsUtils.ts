@@ -16,20 +16,33 @@
 
 import {
   V1_AccessPointGroupReference,
+  V1_DataBundle,
   V1_ResourceType,
   type V1_DataContract,
   type V1_LiteDataContract,
 } from '../entitlements/V1_ConsumerEntitlements.js';
-import { guaranteeType } from '@finos/legend-shared';
 
 export const V1_transformDataContractToLiteDatacontract = (
   dataContract: V1_DataContract,
 ): V1_LiteDataContract => {
-  const accessPointGroupReference = guaranteeType(
-    dataContract.resource,
-    V1_AccessPointGroupReference,
-    'Only access point group reference is supported',
-  );
+  const dataProductName =
+    dataContract.resource instanceof V1_AccessPointGroupReference
+      ? dataContract.resource.dataProduct.name
+      : 'Unknown';
+  const deploymentId =
+    dataContract.resource instanceof V1_AccessPointGroupReference
+      ? dataContract.resource.dataProduct.owner.appDirId
+      : -1;
+  const accessPointGroup =
+    dataContract.resource instanceof V1_AccessPointGroupReference
+      ? dataContract.resource.accessPointGroup
+      : 'Unknown';
+  const resourceType =
+    dataContract.resource instanceof V1_AccessPointGroupReference
+      ? V1_ResourceType.ACCESS_POINT_GROUP
+      : dataContract.resource instanceof V1_DataBundle
+        ? V1_ResourceType.DATA_BUNDLE
+        : V1_ResourceType.UNKNOWN;
   const liteDataContract: V1_LiteDataContract = {
     description: dataContract.description,
     guid: dataContract.guid,
@@ -38,11 +51,11 @@ export const V1_transformDataContractToLiteDatacontract = (
     members: dataContract.members,
     consumer: dataContract.consumer,
     createdBy: dataContract.createdBy,
+    resourceId: dataProductName,
     createdAt: dataContract.createdAt,
-    resourceId: accessPointGroupReference.dataProduct.name,
-    resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-    deploymentId: accessPointGroupReference.dataProduct.owner.appDirId,
-    accessPointGroup: accessPointGroupReference.accessPointGroup,
+    resourceType,
+    deploymentId,
+    accessPointGroup,
   };
   return liteDataContract;
 };

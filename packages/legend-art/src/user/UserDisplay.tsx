@@ -22,7 +22,7 @@ import { clsx } from '../utils/ComponentUtils.js';
 export const UserDisplay = (props: {
   user: LegendUser;
   imgSrc?: string | undefined;
-  onClick?: () => void;
+  onClick?: (() => void) | undefined;
   className?: string | undefined;
 }) => {
   const { user, imgSrc, onClick, className } = props;

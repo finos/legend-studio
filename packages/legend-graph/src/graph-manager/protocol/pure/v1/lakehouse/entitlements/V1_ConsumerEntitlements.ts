@@ -95,8 +95,9 @@ export class V1_LiteDataContractsResponse {
 
 export class V1_LiteDataContractWithUserStatus {
   contractResultLite!: V1_LiteDataContract;
-  status!: V1_UserApprovalStatus;
+  status!: V1_EnrichedUserApprovalStatus;
   pendingTaskWithAssignees!: V1_PendingTaskWithAssignees | null;
+  user!: string;
 }
 
 // -------------------------------------- Data Contract Approval ---------------------------------------
@@ -132,6 +133,7 @@ export enum V1_ResourceType {
   ACCESS_POINT_GROUP = 'ACCESS_POINT_GROUP',
   DATA_PRODUCT = 'DATA_PRODUCT',
   DATA_BUNDLE = 'DATA_BUNDLE',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export enum V1_ApprovalType {

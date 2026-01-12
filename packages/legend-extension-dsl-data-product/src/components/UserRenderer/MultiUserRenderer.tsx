@@ -24,10 +24,16 @@ export const MultiUserRenderer = (props: {
   userIds: string[];
   applicationStore: GenericLegendApplicationStore;
   userSearchService: UserSearchService | undefined;
+  disableOnClick?: boolean;
   singleUserClassName?: string;
 }): React.ReactNode => {
-  const { userIds, applicationStore, userSearchService, singleUserClassName } =
-    props;
+  const {
+    userIds,
+    applicationStore,
+    userSearchService,
+    disableOnClick,
+    singleUserClassName,
+  } = props;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   // In order to ensure the popover is properly resized after we load
@@ -51,13 +57,27 @@ export const MultiUserRenderer = (props: {
         className={singleUserClassName}
         applicationStore={applicationStore}
         userSearchService={userSearchService}
+        disableOnClick={disableOnClick}
       />
     );
   } else {
     return (
       <>
         <Link
-          onClick={(event) => setAnchorEl(event.currentTarget)}
+          // We have to use the underlying ref to stop propagation, because
+          // the default React onClick handler uses React synthetic events, which
+          // doesn't allow us to stop propagation early enough to prevent
+          // parent handlers from being invoked.
+          ref={(ref) => {
+            if (!ref) {
+              return;
+            }
+
+            ref.onclick = (e) => {
+              e.stopPropagation();
+              setAnchorEl(e.currentTarget as HTMLElement);
+            };
+          }}
           className="legend-marketplace-multi-user-cell-renderer__link"
         >
           {userIds.length} Users
