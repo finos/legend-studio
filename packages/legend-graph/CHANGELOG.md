@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 32.3.24
+
+### Patch Changes
+
+- [#4770](https://github.com/finos/legend-studio/pull/4770) [`2f1e2f8`](https://github.com/finos/legend-studio/commit/2f1e2f8421bfcebb29293518e4781b78c2b2a6df) ([@yash0024](https://github.com/yash0024)) - Convert DataSpace to DataProduct nativeModelAccess
+
+- [#4779](https://github.com/finos/legend-studio/pull/4779) [`4c27da4`](https://github.com/finos/legend-studio/commit/4c27da4433238e3a8d08c51f607eebdc07b06a97) ([@yash0024](https://github.com/yash0024)) - DataProduct nativeModelAccess roundtrip test
+
+- [#4778](https://github.com/finos/legend-studio/pull/4778) [`8cb8c1c`](https://github.com/finos/legend-studio/commit/8cb8c1c28369163c7fb6b1febbb6856ce98a7fa9) ([@jackp5150](https://github.com/jackp5150)) - Added createdAt field to contract metamodel
+
+- [#4750](https://github.com/finos/legend-studio/pull/4750) [`d4177ed`](https://github.com/finos/legend-studio/commit/d4177ede7df4b062cc5ddcc6a1ef60db2bd24b23) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: improving lakehouse consumer flow
+
+- [#4781](https://github.com/finos/legend-studio/pull/4781) [`60406ba`](https://github.com/finos/legend-studio/commit/60406ba88e4328422c0d28e7ec15b67ef0158630) ([@travisstebbins](https://github.com/travisstebbins)) - Use new user contracts apis for Lakehouse Entitlements and improve Entitlements UX
+
 ## 32.3.23
 
 ### Patch Changes

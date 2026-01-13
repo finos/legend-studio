@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.139
+
+### Patch Changes
+
+- [#4781](https://github.com/finos/legend-studio/pull/4781) [`60406ba`](https://github.com/finos/legend-studio/commit/60406ba88e4328422c0d28e7ec15b67ef0158630) ([@travisstebbins](https://github.com/travisstebbins)) - Fix onClick type in UserDisplay
+
 ## 7.1.138
 
 ### Patch Changes
