@@ -1,5 +1,13 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.25
+
+### Patch Changes
+
+- [#4750](https://github.com/finos/legend-studio/pull/4750) [`d4177ed`](https://github.com/finos/legend-studio/commit/d4177ede7df4b062cc5ddcc6a1ef60db2bd24b23) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: adding helper functions for consumer flow backward compatibility
+
+- [#4781](https://github.com/finos/legend-studio/pull/4781) [`60406ba`](https://github.com/finos/legend-studio/commit/60406ba88e4328422c0d28e7ec15b67ef0158630) ([@travisstebbins](https://github.com/travisstebbins)) - Use new user contracts apis for Lakehouse Entitlements and improve Entitlements UX
+
 ## 0.3.24
 
 ## 0.3.23

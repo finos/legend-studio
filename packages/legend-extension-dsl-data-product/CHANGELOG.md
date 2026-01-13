@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.42
+
+### Patch Changes
+
+- [#4773](https://github.com/finos/legend-studio/pull/4773) [`2addf62`](https://github.com/finos/legend-studio/commit/2addf625f4aadafb5ab93b1351fc25c069e4b116) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added button to copy connection string.
+
+- [#4769](https://github.com/finos/legend-studio/pull/4769) [`7775eb5`](https://github.com/finos/legend-studio/commit/7775eb5d1687d5f1ba0b078adc0b03d808c7f11c) ([@jackp5150](https://github.com/jackp5150)) - Collapse all or individual apgs in marketplace
+
+- [#4778](https://github.com/finos/legend-studio/pull/4778) [`8cb8c1c`](https://github.com/finos/legend-studio/commit/8cb8c1c28369163c7fb6b1febbb6856ce98a7fa9) ([@jackp5150](https://github.com/jackp5150)) - Added date created to contract viewer and entitlements page
+
+- [#4781](https://github.com/finos/legend-studio/pull/4781) [`60406ba`](https://github.com/finos/legend-studio/commit/60406ba88e4328422c0d28e7ec15b67ef0158630) ([@travisstebbins](https://github.com/travisstebbins)) - Fix UserRenderer bugs and update isApprovalStatusTerminal to support V1_EnrichedUserApprovalStatus
+
 ## 0.0.41
 
 ### Patch Changes

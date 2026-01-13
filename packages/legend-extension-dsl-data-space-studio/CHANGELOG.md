@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.274
+
+### Patch Changes
+
+- [#4770](https://github.com/finos/legend-studio/pull/4770) [`2f1e2f8`](https://github.com/finos/legend-studio/commit/2f1e2f8421bfcebb29293518e4781b78c2b2a6df) ([@yash0024](https://github.com/yash0024)) - Convert DataSpace to DataProduct nativeModelAccess
+
 ## 0.1.273
 
 ## 0.1.272
