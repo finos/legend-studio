@@ -17,7 +17,7 @@
 import { observable, action, computed, makeObservable, reaction } from 'mobx';
 import { LambdaEditorState } from '@finos/legend-query-builder';
 import {
-  DQ_VALIDATION_HELPER_FUNCTIONS_LABEL,
+  DATA_QUALITY_VALIDATION_HELPER_FUNCTIONS_LABEL,
   SUPPORTED_TYPES,
   DATA_QUALITY_TERMINAL_ASSERTION_HELPER_FUNCTIONS,
   type DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS,
@@ -29,7 +29,7 @@ import {
   PRECISE_PRIMITIVE_TYPE,
   PRIMITIVE_TYPE,
   RawLambda,
-  type RelationTypeMetadata,
+  type RelationTypeColumnMetadata,
 } from '@finos/legend-graph';
 
 import type { DataQualityRelationValidation } from '../../graph-manager/index.js';
@@ -55,7 +55,6 @@ export type ColumnOption = {
 export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
   abstract relationValidation: DataQualityRelationValidation;
   abstract editorStore: EditorStore;
-  abstract relationTypeMetadata: RelationTypeMetadata;
   isGUISupportedLambda = false;
   editorType: LambdaEditorType = 'TEXT';
   isStub = false;
@@ -75,7 +74,7 @@ export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
       toggleEditorMode: action,
       relationValidationGUIState: observable,
       disableEditorToggle: observable,
-      getRelationalColumns: action,
+      getRelationColumns: action,
       columnOptions: observable,
       initializeGUIEditor: action,
       editorType: observable,
@@ -87,9 +86,9 @@ export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
     return this.isGUISupportedLambda && !!this.columnOptions.length;
   }
 
-  initializeGUIEditor() {
+  initializeGUIEditor(columns: RelationTypeColumnMetadata[]) {
     this.checkIfValidationIsEditableInGUI();
-    this.getRelationalColumns();
+    this.getRelationColumns(columns);
 
     if (this.canEditInGUI) {
       if (this.isStub) {
@@ -177,7 +176,7 @@ export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
           : [],
       )
       .map((func) => ({
-        label: DQ_VALIDATION_HELPER_FUNCTIONS_LABEL[func],
+        label: DATA_QUALITY_VALIDATION_HELPER_FUNCTIONS_LABEL[func],
         value: func,
       }));
   }
@@ -297,16 +296,14 @@ export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
     this.convertStubFlatLambdaToString();
   }
 
-  getRelationalColumns() {
-    this.columnOptions = this.relationTypeMetadata.columns.map(
-      ({ name, type }) => {
-        return {
-          value: name,
-          label: name,
-          type: this.getTypeFromPath(type),
-        };
-      },
-    );
+  getRelationColumns(columns: RelationTypeColumnMetadata[]) {
+    this.columnOptions = columns.map(({ name, type }) => {
+      return {
+        value: name,
+        label: name,
+        type: this.getTypeFromPath(type),
+      };
+    });
   }
 
   getTypeFromPath(type: string) {

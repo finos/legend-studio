@@ -18,7 +18,7 @@ import type {
   RelationValidationType,
 } from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import { type EditorStore } from '@finos/legend-application-studio';
-import { action, makeObservable, observable, reaction } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -31,8 +31,8 @@ import {
   GRAPH_MANAGER_EVENT,
   isStubbed_RawLambda,
   ParserError,
-  type RelationTypeMetadata,
   stub_RawLambda,
+  type RelationTypeColumnMetadata,
 } from '@finos/legend-graph';
 import { LambdaEditorWithGUIState } from './LambdaEditorWithGUIState.js';
 import { VALIDATION_SOURCE_ID_LABEL } from './ConstraintState.js';
@@ -47,13 +47,11 @@ export class DataQualityRelationValidationState extends LambdaEditorWithGUIState
   relationValidation: DataQualityRelationValidation;
   editorStore: EditorStore;
   isValidationDialogOpen = false;
-  relationTypeMetadata: RelationTypeMetadata;
   initializedGUIEditor = false;
 
   constructor(
     relationValidation: DataQualityRelationValidation,
     editorStore: EditorStore,
-    relationTypeMetadata: RelationTypeMetadata,
   ) {
     super('true', '');
 
@@ -64,33 +62,18 @@ export class DataQualityRelationValidationState extends LambdaEditorWithGUIState
       setIsValidationDialogOpen: action,
       onValidationTypeChange: action,
       initializedGUIEditor: observable,
+      initializeWithColumns: action,
     });
 
     this.relationValidation = relationValidation;
     this.editorStore = editorStore;
-    this.relationTypeMetadata = relationTypeMetadata;
-
-    this.initialize();
   }
 
-  initialize() {
-    if (this.relationTypeMetadata.columns.length) {
-      this.initializeGUIEditor();
+  initializeWithColumns(columns: RelationTypeColumnMetadata[]): void {
+    if (columns.length) {
+      this.initializeGUIEditor(columns);
       this.initializedGUIEditor = true;
     }
-
-    if (!this.initializedGUIEditor) {
-      this.setupRelationTypeMetadataReaction();
-    }
-  }
-
-  private setupRelationTypeMetadataReaction() {
-    reaction(
-      () => this.relationTypeMetadata.columns,
-      () => {
-        this.initialize();
-      },
-    );
   }
 
   get lambdaId(): string {

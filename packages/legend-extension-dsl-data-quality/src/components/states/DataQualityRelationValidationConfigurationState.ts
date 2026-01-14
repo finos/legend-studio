@@ -49,7 +49,8 @@ import {
   observe_ValueSpecification,
   VariableExpression,
   V1_DELEGATED_EXPORT_HEADER,
-  type RelationTypeMetadata,
+  RelationTypeMetadata,
+  observe_RelationTypeMetadata,
 } from '@finos/legend-graph';
 import {
   action,
@@ -272,9 +273,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   resultState: DataQualityRelationResultState;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
-  relationTypeMetadata: RelationTypeMetadata = {
-    columns: [],
-  };
+  relationTypeMetadata: RelationTypeMetadata = new RelationTypeMetadata();
 
   constructor(
     editorStore: EditorStore,
@@ -304,11 +303,12 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       run: flow,
       handleRun: flow,
       exportData: flow,
-      getRelationalColumns: flow,
-      relationTypeMetadata: observable.deep,
+      getRelationColumns: flow,
+      relationTypeMetadata: observable,
       convertValidationLambdaObjects: flow,
       cancelRun: flow,
       generatePlan: flow,
+      setupValidationStatesWithColumns: flow,
     });
 
     assertType(
@@ -319,14 +319,13 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     this.relationFunctionDefinitionEditorState =
       new RelationFunctionDefinitionEditorState(element, this.editorStore);
     this.selectedTab = DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION;
-    this.getRelationalColumns();
+    this.relationTypeMetadata = observe_RelationTypeMetadata(
+      this.relationTypeMetadata,
+    );
+
     this.validationElement.validations.forEach((validation) => {
       this.validationStates.push(
-        new DataQualityRelationValidationState(
-          validation,
-          editorStore,
-          this.relationTypeMetadata,
-        ),
+        new DataQualityRelationValidationState(validation, editorStore),
       );
     });
 
@@ -336,6 +335,17 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     );
     this.parametersState = new RelationDefinitionParameterState(this);
     this.resultState = new DataQualityRelationResultState(this);
+
+    flowResult(this.setupValidationStatesWithColumns()).catch(
+      this.editorStore.applicationStore.alertUnhandledError,
+    );
+  }
+
+  *setupValidationStatesWithColumns(): GeneratorFn<void> {
+    yield flowResult(this.getRelationColumns());
+    this.validationStates.forEach((validationState) => {
+      validationState.initializeWithColumns(this.relationTypeMetadata.columns);
+    });
   }
 
   reprocess(
@@ -413,13 +423,12 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
         (validationState) => validationState.relationValidation === validation,
       )
     ) {
-      this.validationStates.push(
-        new DataQualityRelationValidationState(
-          validation,
-          this.editorStore,
-          this.relationTypeMetadata,
-        ),
+      const validationState = new DataQualityRelationValidationState(
+        validation,
+        this.editorStore,
       );
+      validationState.initializeWithColumns(this.relationTypeMetadata.columns);
+      this.validationStates.push(validationState);
     }
   }
 
@@ -691,21 +700,25 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     }
   }
 
-  *getRelationalColumns(): GeneratorFn<void> {
+  *getRelationColumns(): GeneratorFn<void> {
     const lambda = new RawLambda(
       this.relationFunctionDefinitionEditorState.relationValidationElement.query.parameters,
       this.relationFunctionDefinitionEditorState.relationValidationElement.query.body,
     );
 
     try {
-      this.relationTypeMetadata.columns = (
-        (yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
+      this.relationTypeMetadata = observe_RelationTypeMetadata(
+        yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
           lambda,
           this.editorStore.graphManagerState.graph,
-        )) as RelationTypeMetadata
-      ).columns;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {}
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Error getting relation type columns: ${error.message}`,
+      );
+    }
   }
 
   get hashCode(): string {
