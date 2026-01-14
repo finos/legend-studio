@@ -66,9 +66,16 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           setUserData(user);
         } catch (error) {
           assertErrorThrown(error);
-          applicationStore.notificationService.notifyError(
-            `Failed to fetch user data: ${error.message}`,
-          );
+          if (applicationStore.config.options.showDevFeatures) {
+            applicationStore.notificationService.notifyError(
+              error,
+              `Failed to fetch user data: ${error.name}\n${error.message}\n${error.cause}\n${error.stack}`,
+            );
+          } else {
+            applicationStore.notificationService.notifyError(
+              `Failed to fetch user data: ${error.message}`,
+            );
+          }
         }
       }
     };
@@ -110,6 +117,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     auth.user?.access_token,
     marketplaceStore.lakehouseContractServerClient,
     applicationStore.logService,
+    applicationStore.config.options.showDevFeatures,
   ]);
 
   const imgSrc =
