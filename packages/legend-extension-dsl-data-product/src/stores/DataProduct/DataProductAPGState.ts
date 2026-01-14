@@ -23,6 +23,7 @@ import {
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
   type V1_EntitlementsDataProductDetails,
+  type V1_LiteDataContract,
   type V1_User,
   V1_ContractUserStatusResponseModelSchema,
   V1_CreateSubscriptionInput,
@@ -89,7 +90,7 @@ export class DataProductAPGState {
 
   subscriptions: V1_DataSubscription[] = [];
 
-  apgContracts: V1_DataContract[] = [];
+  apgContracts: V1_LiteDataContract[] = [];
   // ASSUMPTION: one contract per user per group;
   // false here mentions contracts have not been fetched
   associatedUserContract: V1_DataContract | undefined | false = false;
@@ -191,7 +192,7 @@ export class DataProductAPGState {
     );
   }
 
-  setApgContracts(val: V1_DataContract[]): void {
+  setApgContracts(val: V1_LiteDataContract[]): void {
     this.apgContracts = val;
   }
 
@@ -223,7 +224,7 @@ export class DataProductAPGState {
   }
 
   *fetchAndSetAssociatedSystemAccountContracts(
-    systemAccountContracts: V1_DataContract[],
+    systemAccountContracts: V1_LiteDataContract[],
     lakehouseContractServerClient: LakehouseContractServerClient,
     token: string | undefined,
   ): GeneratorFn<void> {
@@ -267,7 +268,7 @@ export class DataProductAPGState {
   }
 
   async handleDataProductContracts(
-    contracts: V1_DataContract[],
+    contracts: V1_LiteDataContract[],
     lakehouseContractServerClient: LakehouseContractServerClient,
     token: string | undefined,
   ): Promise<void> {
@@ -456,7 +457,7 @@ export class DataProductAPGState {
   }
 
   *fetchSubscriptions(
-    contracts: V1_DataContract[],
+    contracts: V1_LiteDataContract[],
     lakehouseContractServerClient: LakehouseContractServerClient,
     token: string | undefined,
   ): GeneratorFn<void> {
