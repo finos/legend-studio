@@ -57,7 +57,7 @@ export const MarketplaceLakehouseHome = observer(() => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    LegendMarketplaceTelemetryHelper.clearSearchSession();
+    LegendMarketplaceTelemetryHelper.clearSearchSessionId();
   }, []);
 
   const [activeIndex, setActiveIndex] = useState(0);

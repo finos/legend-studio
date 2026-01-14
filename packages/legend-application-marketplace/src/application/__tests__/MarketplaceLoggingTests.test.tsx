@@ -76,7 +76,11 @@ describe('LegendMarketplaceTelemetryHelper Session Management', () => {
 
   describe('Session Initialization', () => {
     test('loads existing session from localStorage', () => {
-      const existingSession = { searchEventId: 5, searchSessionId: 'parent-1' };
+      const existingSession = {
+        eventId: 10,
+        searchEventId: 5,
+        searchSessionId: 'parent-1',
+      };
       mockStorage.setItem(SEARCH_SESSION_KEY, JSON.stringify(existingSession));
 
       const testData = { dataProductId: 'test-dp' };
@@ -95,7 +99,7 @@ describe('LegendMarketplaceTelemetryHelper Session Management', () => {
       ) as MarketplaceUserSession;
 
       expect(existingSessionData).toMatchObject({
-        searchEventId: 6, //incremented from 5
+        eventId: 11,
         searchSessionId: 'parent-1',
       });
     });
@@ -129,16 +133,16 @@ describe('LegendMarketplaceTelemetryHelper Session Management', () => {
 
       const firstClick = JSON.parse(
         sessionCalls[1]?.[1] ?? '{}',
-      ) as MarketplaceUserSession; //NOTE: starting at 1 because first call created a new session
+      ) as MarketplaceUserSession; //NOTE: starting at 2 because first call created a new session
       expect(firstClick).toMatchObject({
-        searchEventId: 1, // First event should have ID 1
+        eventId: 1,
       });
 
       const secondClick = JSON.parse(
         sessionCalls[2]?.[1] ?? '{}',
       ) as MarketplaceUserSession;
       expect(secondClick).toMatchObject({
-        searchEventId: 2, // Second event should have ID 2
+        eventId: 2,
       });
     });
   });
@@ -167,19 +171,18 @@ describe('LegendMarketplaceTelemetryHelper Session Management', () => {
       sessionCalls[sessionCalls.length - 1]?.[1] ?? '{}',
     ) as MarketplaceUserSession;
     expect(savedSessionData).toMatchObject({
-      searchEventId: 1,
+      eventId: 1,
     });
   });
 
   describe('Search Query Session Reset', () => {
-    test('creates new session for search queries', () => {
+    test('Updates searchSessionId for search queries', () => {
       LegendMarketplaceTelemetryHelper.logEvent_ClickingDataProductCard(
         mockTelemetryService,
         { dataProductId: 'existing' },
         LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
       );
 
-      // Perform search - should reset session
       LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
         mockTelemetryService,
         'test query',
@@ -196,7 +199,7 @@ describe('LegendMarketplaceTelemetryHelper Session Management', () => {
         sessionCalls[sessionCalls.length - 1]?.[1] ?? '{}',
       ) as MarketplaceUserSession;
       expect(finalSession).toMatchObject({
-        searchEventId: 1, // Should be 1 after search, click
+        eventId: 2, // Second event after click and search
         searchSessionId: mockTelemetryService.applicationStore.uuid,
       });
     });
@@ -232,7 +235,7 @@ describe('Session Data Structure', () => {
       sessionCalls[sessionCalls.length - 1]?.[1] ?? '{}',
     ) as MarketplaceUserSession;
     expect(savedSessionData).toMatchObject({
-      searchEventId: 1,
+      eventId: 1,
       // no searchSessionId yet since no search occurred
     });
 
@@ -261,7 +264,7 @@ describe('Session Data Structure', () => {
       sessionCalls[sessionCalls.length - 1]?.[1] ?? '{}',
     ) as MarketplaceUserSession;
     expect(savedSessionData).toMatchObject({
-      searchEventId: 1,
+      eventId: 1,
       // No searchSessionId since no search occurred
     });
 
@@ -297,30 +300,32 @@ describe('Session Data Structure', () => {
     );
     expect(sessionCalls.length).toBeGreaterThanOrEqual(3);
 
+    //NOTE: starting at index 2 because first call creates a clear session,
+    // then searching calls setItem twice (updating searchSessionId and eventId)
     // Check initial search session (after search query)
     const searchSession = JSON.parse(
-      sessionCalls[0]?.[1] ?? '{}',
+      sessionCalls[2]?.[1] ?? '{}',
     ) as MarketplaceUserSession;
     expect(searchSession).toMatchObject({
-      searchEventId: 1,
+      eventId: 1,
       searchSessionId: searchSessionId,
     });
 
     // Check session after data product click
     const dataProductSession = JSON.parse(
-      sessionCalls[1]?.[1] ?? '{}',
+      sessionCalls[3]?.[1] ?? '{}',
     ) as MarketplaceUserSession;
     expect(dataProductSession).toMatchObject({
-      searchEventId: 2, // Incremented
+      eventId: 2,
       searchSessionId: searchSessionId, // Same session
     });
 
     // Check final session after integrated product open
     const integratedProductSession = JSON.parse(
-      sessionCalls[2]?.[1] ?? '{}',
+      sessionCalls[4]?.[1] ?? '{}',
     ) as MarketplaceUserSession;
     expect(integratedProductSession).toMatchObject({
-      searchEventId: 3, // Incremented again
+      eventId: 3,
       searchSessionId: searchSessionId, // Same session
     });
 
