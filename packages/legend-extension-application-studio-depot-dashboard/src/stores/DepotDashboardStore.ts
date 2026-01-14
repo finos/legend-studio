@@ -62,27 +62,46 @@ export enum DATA_PRODUCT_DASHBOARD_HEADER {
   DATA_PRODUCT_TITLE = 'Title',
   DATA_PRODUCT_DESCRIPTION = 'Description',
   // access point groups / access points
-  DATA_PRODUCT_APG_Number = 'Access Point Group Number',
+  DATA_PRODUCT_APG_NUMBER = 'Access Point Group Number',
   DATA_PRODUCT_APG_IDS = 'Access Point Group Ids',
   DATA_PRODUCT_APG_TITLE = 'Access Point Group Titles',
   DATA_PRODUCT_APG_DESCRIPTION = 'Access Point Group Descriptionss',
   DATA_PRODUCT_APG_NUMBER_OF_APS = 'Access Point Group AP Number',
   // metadata
-  Data_PRODUCT_TYPE = 'Internal/External',
-  DATA_PRODUCT_HAS_ENTERPRISE_GROUP = 'Enterprise Group (Y/N)',
+  DATA_PRODUCT_TYPE = 'Internal/External',
+  DATA_PRODUCT_HAS_ENTERPRISE_GROUP = 'Is Enterprise',
   DATA_PRODUCT_REGIONS = 'Regions',
   DATA_PRODUCT_DELIVERY_FREQUENCY = 'Delivery Frequency',
   DATA_PRODUCT_HAS_ICON = 'Icon (Y/N)',
   DATA_PRODUCT_HAS_SAMPLE_VALUES = 'Sample Values (Y/N)',
-  DATA_PRODUCT_HAS_EXPERTISE = 'Experise (Y/N)',
   DATA_PRODUCT_STEREOTYPES = 'Stereotypes',
   DATA_PRODUCT_TAGGED_VALUES = 'Tagged Values',
   DATA_PRODUCT_SUPPORT_INFO = 'Support Info (Emails/Doc/FAQ/Support/Website)',
 }
 
+const getHasEnterpriseGroup = (
+  dataProduct: V1_DataProduct,
+  applicationStore: LegendStudioApplicationStore | undefined,
+): string => {
+  const publicStereotype =
+    applicationStore?.config.options.dataProductConfig?.publicStereotype;
+
+  return publicStereotype &&
+    dataProduct.accessPointGroups.some((apg) =>
+      apg.stereotypes.some(
+        (sterootype) =>
+          sterootype.value === publicStereotype.stereotype &&
+          sterootype.profile === publicStereotype.profile,
+      ),
+    )
+    ? 'True'
+    : 'False';
+};
+
 export const getDataProductValue = (
   type: DATA_PRODUCT_DASHBOARD_HEADER,
   dataProduct: V1_DataProduct,
+  applicationStore: LegendStudioApplicationStore | undefined,
 ): string | number | false => {
   switch (type) {
     case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_TITLE:
@@ -90,7 +109,7 @@ export const getDataProductValue = (
     case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_DESCRIPTION:
       return dataProduct.description ?? false;
     // access point groups / access points
-    case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_Number:
+    case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_NUMBER:
       return dataProduct.accessPointGroups.length;
     case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_IDS:
       return dataProduct.accessPointGroups.map((apg) => apg.id).join(',');
@@ -126,21 +145,24 @@ export const getDataProductValue = (
             .map((s) => `${s.tag.profile}.${s.tag}.${s.value}`)
             .join(',')
         : false;
-
+    case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_ENTERPRISE_GROUP:
+      return getHasEnterpriseGroup(dataProduct, applicationStore);
     default:
       throw new Error(
         `Unsupported data product dashboard header type: ${type}`,
       );
   }
 };
+
 export const getDataProductGridValue = (
   dataProduct: V1_DataProduct | undefined,
   header: DATA_PRODUCT_DASHBOARD_HEADER,
+  applicationStore: LegendStudioApplicationStore | undefined,
 ): string | number | false | undefined => {
   if (!dataProduct) {
     return undefined;
   }
-  return getDataProductValue(header, dataProduct);
+  return getDataProductValue(header, dataProduct, applicationStore);
 };
 
 export class DataProductEntityState {

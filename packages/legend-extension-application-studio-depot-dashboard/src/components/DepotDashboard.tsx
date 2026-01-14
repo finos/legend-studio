@@ -239,6 +239,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
           getDataProductGridValue(
             params.data?.dataProduct,
             DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_TITLE,
+            params.data?.store.applicationStore,
           ),
         );
       },
@@ -255,17 +256,19 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
           getDataProductGridValue(
             params.data?.dataProduct,
             DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_DESCRIPTION,
+            params.data?.store.applicationStore,
           ),
         );
       },
       minWidth: 300,
     },
     {
-      headerName: DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_Number,
+      headerName: DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_NUMBER,
       valueGetter: (params: ValueGetterParams<DataProductEntityState>) =>
         getDataProductGridValue(
           params.data?.dataProduct,
-          DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_Number,
+          DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_NUMBER,
+          params.data?.store.applicationStore,
         ),
       minWidth: 150,
     },
@@ -275,6 +278,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
         getDataProductGridValue(
           params.data?.dataProduct,
           DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_IDS,
+          params.data?.store.applicationStore,
         ),
       minWidth: 300,
     },
@@ -284,6 +288,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
         getDataProductGridValue(
           params.data?.dataProduct,
           DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_TITLE,
+          params.data?.store.applicationStore,
         ),
       minWidth: 300,
     },
@@ -293,6 +298,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
         getDataProductGridValue(
           params.data?.dataProduct,
           DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_DESCRIPTION,
+          params.data?.store.applicationStore,
         ),
       minWidth: 300,
     },
@@ -302,10 +308,28 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
         getDataProductGridValue(
           params.data?.dataProduct,
           DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_APG_NUMBER_OF_APS,
+          params.data?.store.applicationStore,
         ),
       minWidth: 200,
     },
-
+    {
+      headerName:
+        DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_ENTERPRISE_GROUP,
+      cellRenderer: (
+        params: DataGridCellRendererParams<DataProductEntityState>,
+      ) => {
+        return DataProductCellRenderer(
+          params,
+          DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_ENTERPRISE_GROUP,
+          getDataProductGridValue(
+            params.data?.dataProduct,
+            DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_ENTERPRISE_GROUP,
+            params.data?.store.applicationStore,
+          ),
+        );
+      },
+      minWidth: 300,
+    },
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_REGIONS,
       cellRenderer: (
@@ -317,6 +341,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
           getDataProductGridValue(
             params.data?.dataProduct,
             DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_REGIONS,
+            params.data?.store.applicationStore,
           ),
         );
       },
@@ -333,6 +358,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
           getDataProductGridValue(
             params.data?.dataProduct,
             DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_DELIVERY_FREQUENCY,
+            params.data?.store.applicationStore,
           ),
         );
       },
@@ -349,6 +375,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
           getDataProductGridValue(
             params.data?.dataProduct,
             DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_ICON,
+            params.data?.store.applicationStore,
           ),
         );
       },
@@ -366,23 +393,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
           getDataProductGridValue(
             params.data?.dataProduct,
             DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_SAMPLE_VALUES,
-          ),
-        );
-      },
-      minWidth: 300,
-    },
-
-    {
-      headerName: DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_EXPERTISE,
-      cellRenderer: (
-        params: DataGridCellRendererParams<DataProductEntityState>,
-      ) => {
-        return DataProductCellRenderer(
-          params,
-          DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_EXPERTISE,
-          getDataProductGridValue(
-            params.data?.dataProduct,
-            DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_EXPERTISE,
+            params.data?.store.applicationStore,
           ),
         );
       },
@@ -400,6 +411,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
           getDataProductGridValue(
             params.data?.dataProduct,
             DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_STEREOTYPES,
+            params.data?.store.applicationStore,
           ),
         );
       },
@@ -417,6 +429,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
           getDataProductGridValue(
             params.data?.dataProduct,
             DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_TAGGED_VALUES,
+            params.data?.store.applicationStore,
           ),
         );
       },
