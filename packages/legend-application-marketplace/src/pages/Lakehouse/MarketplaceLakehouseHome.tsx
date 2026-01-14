@@ -90,9 +90,16 @@ export const MarketplaceLakehouseHome = observer(() => {
         setHighlightedDataProducts(dataProducts);
       } catch (error) {
         assertErrorThrown(error);
-        applicationStore.notificationService.notifyError(
-          `Can't load highlighted data products: ${error.message}`,
-        );
+        if (applicationStore.config.options.showDevFeatures) {
+          applicationStore.notificationService.notifyError(
+            error,
+            `Can't load highlighted data products: ${error.name}\n${error.message}\n${error.cause}\n${error.stack}`,
+          );
+        } else {
+          applicationStore.notificationService.notifyError(
+            `Can't load highlighted data products: ${error.message}`,
+          );
+        }
       } finally {
         setLoading(false);
       }
@@ -108,6 +115,7 @@ export const MarketplaceLakehouseHome = observer(() => {
     applicationStore.notificationService,
     applicationStore.pluginManager,
     legendMarketplaceBaseStore,
+    applicationStore.config.options.showDevFeatures,
   ]);
 
   const handleSearch = (
