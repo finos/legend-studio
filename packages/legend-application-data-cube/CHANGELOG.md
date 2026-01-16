@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.36
+
+### Patch Changes
+
+- [#4789](https://github.com/finos/legend-studio/pull/4789) [`69dcd5f`](https://github.com/finos/legend-studio/commit/69dcd5f8275feeae57ff81b2313f8dea0a542115) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: adding title labels for accesspoints
+
 ## 0.7.35
 
 ### Patch Changes

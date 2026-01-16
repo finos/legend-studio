@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.58
+
+### Patch Changes
+
+- [#4788](https://github.com/finos/legend-studio/pull/4788) [`b93586e`](https://github.com/finos/legend-studio/commit/b93586ef2b3f9824940f7a5ce817a6c3f7127117) ([@travisstebbins](https://github.com/travisstebbins)) - TMP: Add extra request logging for marketplace requests
+
+- [#4783](https://github.com/finos/legend-studio/pull/4783) [`719ae3d`](https://github.com/finos/legend-studio/commit/719ae3d033f5e76d379c7e67a5c63e89ce0d8126) ([@kelly-thai](https://github.com/kelly-thai)) - Update Marketplace telemetry logging (user navigation, light/dark theme toggle)
+
 ## 0.1.57
 
 ### Patch Changes

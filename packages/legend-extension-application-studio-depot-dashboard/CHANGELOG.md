@@ -1,5 +1,11 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.23
+
+### Patch Changes
+
+- [#4787](https://github.com/finos/legend-studio/pull/4787) [`cc95a2a`](https://github.com/finos/legend-studio/commit/cc95a2a0aa719889e707c854a6d2a9016a8733e2) ([@jackp5150](https://github.com/jackp5150)) - Added isEnterprise column to depot dashboard
+
 ## 0.1.22
 
 ## 0.1.21
