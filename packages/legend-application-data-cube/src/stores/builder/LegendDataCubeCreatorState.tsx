@@ -138,6 +138,7 @@ export class LegendDataCubeCreatorState {
         return new LakehouseConsumerDataCubeSourceBuilderState(
           this._application,
           this._engine,
+          this._store.depotServerClient,
           this._store.contractServerClient,
           this._alertService,
         );
