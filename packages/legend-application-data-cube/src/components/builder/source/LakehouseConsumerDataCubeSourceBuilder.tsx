@@ -99,7 +99,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               value: V1_EntitlementsLakehouseEnvironmentType;
             }) => {
               sourceBuilder.setEnvMode(newVal.value);
-              sourceBuilder.setSelectedDataProduct(undefined);
+              sourceBuilder.resetDataProduct();
             }}
             value={{
               label:
@@ -165,7 +165,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             ) => {
               sourceBuilder.setSelectedDataProduct(newValue?.value);
               sourceBuilder
-                .fetchDataProduct(auth.user?.access_token)
+                .fetchAccessPoints()
                 .catch((error) =>
                   store.alertService.alertUnhandledError(error),
                 );
@@ -187,22 +187,25 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {sourceBuilder.accessPoints.length > 0 && (
+        {sourceBuilder.accessPoints.size > 0 && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">
               Access Point
             </div>
             <CustomSelectorInput
               className="query-setup__wizard__selector"
-              options={sourceBuilder.accessPoints.map((accessPoint) => ({
-                label: accessPoint,
-                value: accessPoint,
-              }))}
+              options={Array.from(sourceBuilder.accessPoints.entries()).map(
+                ([id, title]) => ({
+                  label: title?.trim() ? title : id,
+                  value: id,
+                }),
+              )}
               disabled={false}
               isLoading={false}
               onChange={(newValue: { label: string; value: string } | null) => {
-                const accessPoint = newValue?.value ?? '';
-                sourceBuilder.setSelectedAccessPoint(accessPoint);
+                const value = newValue?.value ?? '';
+                const label = newValue?.label ?? '';
+                sourceBuilder.setSelectedAccessPoint([value, label]);
                 sourceBuilder.setWarehouse(
                   sourceBuilder.DEFAULT_CONSUMER_WAREHOUSE,
                 );
@@ -215,8 +218,8 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               value={
                 sourceBuilder.selectedAccessPoint
                   ? {
-                      label: sourceBuilder.selectedAccessPoint,
-                      value: sourceBuilder.selectedAccessPoint,
+                      label: sourceBuilder.selectedAccessPoint[1],
+                      value: sourceBuilder.selectedAccessPoint[0],
                     }
                   : null
               }

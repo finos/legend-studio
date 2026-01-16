@@ -373,6 +373,7 @@ export {
   V1_EntitlementsAccessPointModelSchema,
   V1_EntitlementsDataProductDetailsModelSchema,
   V1_EntitlementsDataProductDetailsResponseModelSchema,
+  V1_EntitlementsDataProductLiteModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsDataProductModelSchema,
   V1_EntitlementsLakehouseEnvironmentModelSchema,
