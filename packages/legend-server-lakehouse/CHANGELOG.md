@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.26
+
+### Patch Changes
+
+- [#4784](https://github.com/finos/legend-studio/pull/4784) [`11521ea`](https://github.com/finos/legend-studio/commit/11521eae2d4eb60634dca69f9d039c8690e2a88d) ([@jackp5150](https://github.com/jackp5150)) - Add API call to optimized contract retrieval endpoint
+
 ## 0.3.25
 
 ### Patch Changes
