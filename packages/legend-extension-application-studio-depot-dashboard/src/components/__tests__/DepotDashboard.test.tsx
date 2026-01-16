@@ -109,7 +109,6 @@ const setupDepotDashboardTest = async (
     serverUrl: 'http://test-depot-server',
   });
 
-  // Mock the Studio hooks to return our test stores
   (useLegendStudioApplicationStore as jest.Mock).mockReturnValue(
     applicationStore,
   );
