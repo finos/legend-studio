@@ -177,9 +177,19 @@ export class LegendMarketplaceSearchResultsStore {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
-        `Error executing search: ${error.message}`,
-      );
+      if (
+        this.marketplaceBaseStore.applicationStore.config.options
+          .showDevFeatures
+      ) {
+        this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
+          error,
+          `Error executing search: ${error.name}\n${error.message}\n${error.cause}\n${error.stack}`,
+        );
+      } else {
+        this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
+          `Error executing search: ${error.message}`,
+        );
+      }
     }
   }
 
