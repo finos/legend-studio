@@ -21,6 +21,7 @@ export { StoredEntity, StoredSummaryEntity } from './models/StoredEntity.js';
 export { DepotScope } from './models/DepotScope.js';
 export * from './models/ProjectDependencyGraph.js';
 export * from './models/RawProjectDependencyReport.js';
+export * from './models/DependencyResolution.js';
 
 export { DepotServerClient } from './DepotServerClient.js';
 

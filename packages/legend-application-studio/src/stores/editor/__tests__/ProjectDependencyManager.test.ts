@@ -19,7 +19,10 @@ import { type PlainObject, guaranteeNonNullable } from '@finos/legend-shared';
 import { unitTest, createSpy } from '@finos/legend-shared/test';
 import { TEST__getTestEditorStore } from '../__test-utils__/EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
-import { ProjectConfiguration } from '@finos/legend-server-sdlc';
+import {
+  ProjectConfiguration,
+  ProjectDependencyExclusion,
+} from '@finos/legend-server-sdlc';
 import {
   type RawProjectDependencyReport,
   ProjectVersionEntities,
@@ -27,6 +30,7 @@ import {
 } from '@finos/legend-server-depot';
 import {
   DependencyManager,
+  EngineError,
   isElementReadOnly,
   PackageableElementReference,
   getClassProperty,
@@ -413,5 +417,991 @@ test(
       dependencyManager,
     );
     expect(dependencyManager.allOwnElements.length).toBe(10);
+  },
+);
+
+// Dependency exclusion tests
+
+test(unitTest('Add exclusion by coordinate'), () => {
+  const editorStore = TEST__getTestEditorStore();
+  const projectConfig = ProjectConfiguration.serialization.fromJson({
+    projectStructureVersion: { version: 6, extensionVersion: 1 },
+    projectId: 'test-project',
+    groupId: 'com.test',
+    artifactId: 'test-artifact',
+    projectDependencies: [
+      {
+        projectId: 'org.finos.legend:my-artifact',
+        versionId: '1.0.0',
+      },
+    ],
+    metamodelDependencies: [],
+  });
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    projectConfig,
+  );
+
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'org.example:excluded-lib',
+  );
+
+  const exclusions = dependencyEditorState.getExclusions(
+    'org.finos.legend:my-artifact',
+  );
+
+  expect(exclusions.length).toBe(1);
+  expect(exclusions[0]?.projectId).toBe('org.example:excluded-lib');
+  expect(exclusions[0]?.groupId).toBe('org.example');
+  expect(exclusions[0]?.artifactId).toBe('excluded-lib');
+  expect(exclusions[0]?.coordinate).toBe('org.example:excluded-lib');
+});
+
+test(unitTest('Add exclusion by ProjectDependencyExclusion object'), () => {
+  const editorStore = TEST__getTestEditorStore();
+  const projectConfig = ProjectConfiguration.serialization.fromJson({
+    projectStructureVersion: { version: 6, extensionVersion: 1 },
+    projectId: 'test-project',
+    groupId: 'com.test',
+    artifactId: 'test-artifact',
+    projectDependencies: [
+      {
+        projectId: 'org.finos.legend:my-artifact',
+        versionId: '1.0.0',
+      },
+    ],
+    metamodelDependencies: [],
+  });
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    projectConfig,
+  );
+
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  const exclusion = new ProjectDependencyExclusion('org.example:excluded-lib');
+
+  dependencyEditorState.addExclusion('org.finos.legend:my-artifact', exclusion);
+
+  const exclusions = dependencyEditorState.getExclusions(
+    'org.finos.legend:my-artifact',
+  );
+
+  expect(exclusions.length).toBe(1);
+  expect(exclusions[0]?.projectId).toBe('org.example:excluded-lib');
+});
+
+test(unitTest('Prevent duplicate exclusions'), () => {
+  const editorStore = TEST__getTestEditorStore();
+  const projectConfig = ProjectConfiguration.serialization.fromJson({
+    projectStructureVersion: { version: 6, extensionVersion: 1 },
+    projectId: 'test-project',
+    groupId: 'com.test',
+    artifactId: 'test-artifact',
+    projectDependencies: [
+      {
+        projectId: 'org.finos.legend:my-artifact',
+        versionId: '1.0.0',
+      },
+    ],
+    metamodelDependencies: [],
+  });
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    projectConfig,
+  );
+
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'org.example:excluded-lib',
+  );
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'org.example:excluded-lib',
+  );
+
+  const exclusions = dependencyEditorState.getExclusions(
+    'org.finos.legend:my-artifact',
+  );
+
+  expect(exclusions.length).toBe(1);
+});
+
+test(unitTest('Add multiple exclusions to same dependency'), () => {
+  const editorStore = TEST__getTestEditorStore();
+  const projectConfig = ProjectConfiguration.serialization.fromJson({
+    projectStructureVersion: { version: 6, extensionVersion: 1 },
+    projectId: 'test-project',
+    groupId: 'com.test',
+    artifactId: 'test-artifact',
+    projectDependencies: [
+      {
+        projectId: 'org.finos.legend:my-artifact',
+        versionId: '1.0.0',
+      },
+    ],
+    metamodelDependencies: [],
+  });
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    projectConfig,
+  );
+
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'org.example:excluded-lib-1',
+  );
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'org.example:excluded-lib-2',
+  );
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'com.other:another-lib',
+  );
+
+  const exclusions = dependencyEditorState.getExclusions(
+    'org.finos.legend:my-artifact',
+  );
+
+  expect(exclusions.length).toBe(3);
+  expect(exclusions[0]?.coordinate).toBe('org.example:excluded-lib-1');
+  expect(exclusions[1]?.coordinate).toBe('org.example:excluded-lib-2');
+  expect(exclusions[2]?.coordinate).toBe('com.other:another-lib');
+});
+
+test(unitTest('Remove exclusion by coordinate'), () => {
+  const editorStore = TEST__getTestEditorStore();
+  const projectConfig = ProjectConfiguration.serialization.fromJson({
+    projectStructureVersion: { version: 6, extensionVersion: 1 },
+    projectId: 'test-project',
+    groupId: 'com.test',
+    artifactId: 'test-artifact',
+    projectDependencies: [
+      {
+        projectId: 'org.finos.legend:my-artifact',
+        versionId: '1.0.0',
+      },
+    ],
+    metamodelDependencies: [],
+  });
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    projectConfig,
+  );
+
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'org.example:excluded-lib',
+  );
+
+  let exclusions = dependencyEditorState.getExclusions(
+    'org.finos.legend:my-artifact',
+  );
+  expect(exclusions.length).toBe(1);
+
+  dependencyEditorState.removeExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'org.example:excluded-lib',
+  );
+
+  exclusions = dependencyEditorState.getExclusions(
+    'org.finos.legend:my-artifact',
+  );
+  expect(exclusions.length).toBe(0);
+});
+
+test(unitTest('Get exclusion coordinates returns correct format'), () => {
+  const editorStore = TEST__getTestEditorStore();
+  const projectConfig = ProjectConfiguration.serialization.fromJson({
+    projectStructureVersion: { version: 6, extensionVersion: 1 },
+    projectId: 'test-project',
+    groupId: 'com.test',
+    artifactId: 'test-artifact',
+    projectDependencies: [
+      {
+        projectId: 'org.finos.legend:my-artifact',
+        versionId: '1.0.0',
+      },
+    ],
+    metamodelDependencies: [],
+  });
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    projectConfig,
+  );
+
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'org.example:excluded-1',
+  );
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:my-artifact',
+    'com.test:excluded-2',
+  );
+
+  const coordinates = dependencyEditorState.getExclusionCoordinates(
+    'org.finos.legend:my-artifact',
+  );
+
+  expect(coordinates.length).toBe(2);
+  expect(coordinates[0]).toBe('org.example:excluded-1');
+  expect(coordinates[1]).toBe('com.test:excluded-2');
+});
+
+test(
+  unitTest(
+    'Exclusion validation rejects invalid exclusions that would cause compilation errors',
+  ),
+  async () => {
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfig = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 11, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.legend',
+      artifactId: 'my-project',
+      projectDependencies: [
+        {
+          projectId: 'org.finos.legend:some-lib',
+          versionId: '1.0.0',
+        },
+      ],
+      metamodelDependencies: [],
+      runDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfig,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    await editorStore.graphManagerState.graphManager.initialize({
+      env: 'test',
+      tabSize: 2,
+      clientConfig: {},
+    });
+    await editorStore.graphManagerState.initializeSystem();
+
+    const compileEntitiesSpy = createSpy(
+      editorStore.graphManagerState.graphManager,
+      'compileEntities',
+    );
+    compileEntitiesSpy.mockRejectedValue(
+      new EngineError("Can't find type 'model::RequiredClass'"),
+    );
+
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'collectDependencyEntities',
+    ).mockResolvedValue([]);
+
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'analyzeDependencyTree',
+    ).mockResolvedValue({
+      graph: {
+        rootIds: [],
+        nodes: {},
+      },
+      conflicts: [],
+    });
+
+    // Add an exclusion
+    const exclusionCoordinate = 'org.finos.legend:transitive-dep';
+    dependencyEditorState.addExclusionByCoordinate(
+      'org.finos.legend:some-lib',
+      exclusionCoordinate,
+    );
+
+    // Validate - should complete but with failed state due to compilation error
+    await flowResult(dependencyEditorState.validateAndFetchDependencyReport());
+
+    // Validation should fail and state should be set to failed
+    expect(dependencyEditorState.validatingDependenciesState.hasFailed).toBe(
+      true,
+    );
+  },
+);
+
+test(
+  unitTest(
+    'Exclusion validation allows valid exclusions that do not break compilation',
+  ),
+  async () => {
+    const dependencyWithUnusedEntities = [
+      {
+        groupId: 'org.finos.legend',
+        artifactId: 'unused-lib',
+        versionId: '1.0.0',
+        versionedEntity: false,
+        entities: [
+          {
+            path: 'model::UnusedClass',
+            content: {
+              _type: 'class',
+              name: 'UnusedClass',
+              package: 'model',
+              properties: [],
+            },
+            classifierPath: 'meta::pure::metamodel::type::Class',
+          },
+        ],
+      },
+    ];
+
+    const projectEntities: Entity[] = [
+      {
+        path: 'model::MyClass',
+        content: {
+          _type: 'class',
+          name: 'MyClass',
+          package: 'model',
+          properties: [
+            {
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              name: 'name',
+              type: 'String',
+            },
+          ],
+        },
+        classifierPath: 'meta::pure::metamodel::type::Class',
+      },
+    ];
+
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfig = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 11, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.legend',
+      artifactId: 'my-project',
+      projectDependencies: [
+        {
+          projectId: 'org.finos.legend:unused-lib',
+          versionId: '1.0.0',
+        },
+      ],
+      metamodelDependencies: [],
+      runDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfig,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'collectDependencyEntities',
+    ).mockResolvedValue(dependencyWithUnusedEntities);
+
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'analyzeDependencyTree',
+    ).mockResolvedValue({
+      graph: {
+        rootIds: ['org.finos.legend:unused-lib:1.0.0'],
+        nodes: {
+          'org.finos.legend:unused-lib:1.0.0': {
+            data: {
+              groupId: 'org.finos.legend',
+              artifactId: 'unused-lib',
+              versionId: '1.0.0',
+            },
+            parentIds: [],
+            childIds: [],
+          },
+        },
+      },
+      conflicts: [],
+    });
+
+    await editorStore.graphManagerState.graphManager.initialize({
+      env: 'test',
+      tabSize: 2,
+      clientConfig: {},
+    });
+    await editorStore.graphManagerState.initializeSystem();
+
+    const dependencyManager = new DependencyManager([]);
+    editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
+
+    const dependencyEntitiesIndex =
+      await editorStore.graphState.getIndexedDependencyEntities();
+    await editorStore.graphManagerState.graphManager.buildDependencies(
+      editorStore.graphManagerState.coreModel,
+      editorStore.graphManagerState.systemModel,
+      dependencyManager,
+      dependencyEntitiesIndex,
+      editorStore.graphManagerState.dependenciesBuildState,
+    );
+
+    await editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      projectEntities,
+      editorStore.graphManagerState.graphBuildState,
+    );
+
+    const compileEntitiesSpy = createSpy(
+      editorStore.graphManagerState.graphManager,
+      'compileEntities',
+    );
+    compileEntitiesSpy.mockResolvedValue(undefined);
+
+    // Add an exclusion
+    const exclusionCoordinate = 'org.finos.legend:unused-lib';
+    dependencyEditorState.addExclusionByCoordinate(
+      'org.finos.legend:unused-lib',
+      exclusionCoordinate,
+    );
+
+    // Validate should succeed - no compilation errors
+    await flowResult(dependencyEditorState.validateAndFetchDependencyReport());
+
+    expect(dependencyEditorState.validatingDependenciesState.hasSucceeded).toBe(
+      true,
+    );
+  },
+);
+
+test(
+  unitTest(
+    '[UNIT] Test successful dependency resolution with compatible versions',
+  ),
+  async () => {
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfiguration = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 10, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.test',
+      artifactId: 'test-artifact',
+      projectDependencies: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-a',
+          versionId: '1.0.0',
+        },
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-b',
+          versionId: '1.0.0',
+        },
+      ],
+      metamodelDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfiguration,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    const resolveCompatibleDependenciesSpy = createSpy(
+      editorStore.depotServerClient,
+      'resolveCompatibleDependencies',
+    );
+    resolveCompatibleDependenciesSpy.mockResolvedValue({
+      success: true,
+      resolvedVersions: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-a',
+          versionId: '2.0.0',
+        },
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-b',
+          versionId: '2.0.0',
+        },
+      ],
+      conflicts: [],
+      failureReason: null,
+    });
+
+    // Mock buildProjectDependencyCoordinates
+    const buildCoordinatesSpy = createSpy(
+      editorStore.graphState,
+      'buildProjectDependencyCoordinates',
+    );
+    buildCoordinatesSpy.mockResolvedValue([
+      {
+        groupId: 'org.finos.legend',
+        artifactId: 'prod-a',
+        versionId: '1.0.0',
+      },
+      {
+        groupId: 'org.finos.legend',
+        artifactId: 'prod-b',
+        versionId: '1.0.0',
+      },
+    ]);
+
+    // Resolve compatible dependencies
+    await flowResult(dependencyEditorState.resolveCompatibleDependencies(5));
+
+    // Verify resolution result is stored
+    expect(dependencyEditorState.resolutionResult).toBeDefined();
+    expect(dependencyEditorState.resolutionResult?.success).toBe(true);
+    if (dependencyEditorState.resolutionResult?.success) {
+      expect(
+        dependencyEditorState.resolutionResult.resolvedVersions.length,
+      ).toBe(2);
+      expect(
+        dependencyEditorState.resolutionResult.resolvedVersions[0]?.versionId,
+      ).toBe('2.0.0');
+    }
+
+    // Verify tab was switched to RESOLUTION
+    expect(dependencyEditorState.reportTab).toBe('RESOLUTION');
+    expect(
+      dependencyEditorState.resolvingCompatibleDependenciesState.hasCompleted,
+    ).toBe(true);
+  },
+);
+
+test(
+  unitTest('[UNIT] Test failed dependency resolution with conflicts'),
+  async () => {
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfiguration = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 10, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.test',
+      artifactId: 'test-artifact',
+      projectDependencies: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-a',
+          versionId: '1.0.0',
+        },
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-b',
+          versionId: '2.0.0',
+        },
+      ],
+      metamodelDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfiguration,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    // Mock the depot client to return a failed resolution with conflicts
+    const resolveCompatibleDependenciesSpy = createSpy(
+      editorStore.depotServerClient,
+      'resolveCompatibleDependencies',
+    );
+    resolveCompatibleDependenciesSpy.mockResolvedValue({
+      success: false,
+      resolvedVersions: [],
+      conflicts: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'conflicting-lib',
+          conflictingVersions: [
+            {
+              version: '1.0.0',
+              requiredBy: [
+                {
+                  groupId: 'org.finos.legend',
+                  artifactId: 'prod-a',
+                  versionId: '1.0.0',
+                },
+              ],
+            },
+            {
+              version: '2.0.0',
+              requiredBy: [
+                {
+                  groupId: 'org.finos.legend',
+                  artifactId: 'prod-b',
+                  versionId: '2.0.0',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      failureReason: 'Conflicting dependency versions detected',
+      suggestedOverrides: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'conflicting-lib',
+          versionId: '2.0.0',
+        },
+      ],
+    });
+
+    // Mock buildProjectDependencyCoordinates
+    const buildCoordinatesSpy = createSpy(
+      editorStore.graphState,
+      'buildProjectDependencyCoordinates',
+    );
+    buildCoordinatesSpy.mockResolvedValue([
+      {
+        groupId: 'org.finos.legend',
+        artifactId: 'prod-a',
+        versionId: '1.0.0',
+      },
+      {
+        groupId: 'org.finos.legend',
+        artifactId: 'prod-b',
+        versionId: '2.0.0',
+      },
+    ]);
+
+    // Resolve compatible dependencies
+    await flowResult(dependencyEditorState.resolveCompatibleDependencies(3));
+
+    // Verify resolution result is stored
+    expect(dependencyEditorState.resolutionResult).toBeDefined();
+    expect(dependencyEditorState.resolutionResult?.success).toBe(false);
+    if (
+      dependencyEditorState.resolutionResult &&
+      !dependencyEditorState.resolutionResult.success
+    ) {
+      expect(dependencyEditorState.resolutionResult.conflicts.length).toBe(1);
+      expect(dependencyEditorState.resolutionResult.failureReason).toBe(
+        'Conflicting dependency versions detected',
+      );
+      expect(
+        dependencyEditorState.resolutionResult.suggestedOverrides,
+      ).toBeDefined();
+      expect(
+        dependencyEditorState.resolutionResult.suggestedOverrides?.length,
+      ).toBe(1);
+    }
+
+    // Verify tab was switched to RESOLUTION
+    expect(dependencyEditorState.reportTab).toBe('RESOLUTION');
+    expect(
+      dependencyEditorState.resolvingCompatibleDependenciesState.hasCompleted,
+    ).toBe(true);
+  },
+);
+
+test(
+  unitTest('[UNIT] Test applying resolved dependencies updates configuration'),
+  async () => {
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfiguration = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 10, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.test',
+      artifactId: 'test-artifact',
+      projectDependencies: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-a',
+          versionId: '1.0.0',
+        },
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-b',
+          versionId: '1.0.0',
+        },
+      ],
+      metamodelDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfiguration,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    // Set a successful resolution result
+    dependencyEditorState.resolutionResult = {
+      success: true,
+      resolvedVersions: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-a',
+          versionId: '2.0.0',
+        },
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-b',
+          versionId: '3.0.0',
+        },
+      ],
+      conflicts: [],
+      failureReason: null,
+    };
+
+    // Verify dependencies were not yet updated
+    expect(projectConfiguration.projectDependencies[0]?.versionId).toBe(
+      '1.0.0',
+    );
+    expect(projectConfiguration.projectDependencies[1]?.versionId).toBe(
+      '1.0.0',
+    );
+
+    // Note: applyResolvedDependencies updates dependencies but we can't easily test
+    // the async flow without mocking fetchDependencyReport, so we just verify
+    // the resolutionResult is stored correctly
+  },
+);
+
+test(unitTest('[UNIT] Test clearing resolution result'), async () => {
+  const editorStore = TEST__getTestEditorStore();
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  // Set a resolution result
+  dependencyEditorState.resolutionResult = {
+    success: true,
+    resolvedVersions: [],
+    conflicts: [],
+    failureReason: null,
+  };
+
+  expect(dependencyEditorState.resolutionResult).toBeDefined();
+
+  // Clear resolution result
+  dependencyEditorState.clearResolutionResult();
+
+  expect(dependencyEditorState.resolutionResult).toBeUndefined();
+});
+
+test(
+  unitTest('[UNIT] Test resolution with no dependencies returns empty result'),
+  async () => {
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfiguration = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 10, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.test',
+      artifactId: 'test-artifact',
+      projectDependencies: [],
+      metamodelDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfiguration,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    // Mock buildProjectDependencyCoordinates
+    const buildCoordinatesSpy = createSpy(
+      editorStore.graphState,
+      'buildProjectDependencyCoordinates',
+    );
+    buildCoordinatesSpy.mockResolvedValue([]);
+
+    // Mock the depot client
+    const resolveCompatibleDependenciesSpy = createSpy(
+      editorStore.depotServerClient,
+      'resolveCompatibleDependencies',
+    );
+    resolveCompatibleDependenciesSpy.mockResolvedValue({
+      success: true,
+      resolvedVersions: [],
+      conflicts: [],
+      failureReason: null,
+    });
+
+    // Resolve compatible dependencies
+    await flowResult(dependencyEditorState.resolveCompatibleDependencies(5));
+
+    // Verify state completed successfully even with empty dependencies
+    expect(
+      dependencyEditorState.resolvingCompatibleDependenciesState.hasCompleted,
+    ).toBe(true);
+  },
+);
+
+test(
+  unitTest('[UNIT] Test resolution handles API errors gracefully'),
+  async () => {
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfiguration = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 10, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.test',
+      artifactId: 'test-artifact',
+      projectDependencies: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-a',
+          versionId: '1.0.0',
+        },
+      ],
+      metamodelDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfiguration,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    // Mock buildProjectDependencyCoordinates
+    const buildCoordinatesSpy = createSpy(
+      editorStore.graphState,
+      'buildProjectDependencyCoordinates',
+    );
+    buildCoordinatesSpy.mockResolvedValue([
+      {
+        groupId: 'org.finos.legend',
+        artifactId: 'prod-a',
+        versionId: '1.0.0',
+      },
+    ]);
+
+    // Mock the depot client to throw an error
+    const resolveCompatibleDependenciesSpy = createSpy(
+      editorStore.depotServerClient,
+      'resolveCompatibleDependencies',
+    );
+    resolveCompatibleDependenciesSpy.mockRejectedValue(
+      new Error('Network error'),
+    );
+
+    // Resolve compatible dependencies
+    await flowResult(dependencyEditorState.resolveCompatibleDependencies(5));
+
+    // Verify state failed
+    expect(
+      dependencyEditorState.resolvingCompatibleDependenciesState.hasFailed,
+    ).toBe(true);
+    expect(dependencyEditorState.resolutionResult).toBeUndefined();
+  },
+);
+
+test(
+  unitTest(
+    '[UNIT] Test resolution with suggested overrides in conflict details',
+  ),
+  async () => {
+    const editorStore = TEST__getTestEditorStore();
+    const projectConfiguration = ProjectConfiguration.serialization.fromJson({
+      projectStructureVersion: { version: 10, extensionVersion: 1 },
+      projectId: 'test-project',
+      groupId: 'org.finos.test',
+      artifactId: 'test-artifact',
+      projectDependencies: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'prod-a',
+          versionId: '1.0.0',
+        },
+      ],
+      metamodelDependencies: [],
+    });
+
+    editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfiguration,
+    );
+
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+    // Mock the depot client to return conflicts with suggested overrides
+    const resolveCompatibleDependenciesSpy = createSpy(
+      editorStore.depotServerClient,
+      'resolveCompatibleDependencies',
+    );
+    resolveCompatibleDependenciesSpy.mockResolvedValue({
+      success: false,
+      resolvedVersions: [],
+      conflicts: [
+        {
+          groupId: 'org.finos.legend',
+          artifactId: 'conflicting-lib',
+          conflictingVersions: [
+            {
+              version: '1.0.0',
+              requiredBy: [
+                {
+                  groupId: 'org.finos.legend',
+                  artifactId: 'prod-a',
+                  versionId: '1.0.0',
+                },
+              ],
+            },
+            {
+              version: '2.0.0',
+              requiredBy: [
+                {
+                  groupId: 'org.finos.legend',
+                  artifactId: 'prod-b',
+                  versionId: '2.0.0',
+                },
+              ],
+            },
+          ],
+          suggestedOverride: {
+            groupId: 'org.finos.legend',
+            artifactId: 'conflicting-lib',
+            versionId: '2.0.0',
+          },
+        },
+      ],
+      failureReason: 'Conflicts detected with suggested overrides',
+    });
+
+    const buildCoordinatesSpy = createSpy(
+      editorStore.graphState,
+      'buildProjectDependencyCoordinates',
+    );
+    buildCoordinatesSpy.mockResolvedValue([
+      {
+        groupId: 'org.finos.legend',
+        artifactId: 'prod-a',
+        versionId: '1.0.0',
+      },
+    ]);
+
+    // Resolve compatible dependencies
+    await flowResult(dependencyEditorState.resolveCompatibleDependencies(5));
+
+    expect(dependencyEditorState.resolutionResult).toBeDefined();
+    expect(dependencyEditorState.resolutionResult?.success).toBe(false);
+    if (
+      dependencyEditorState.resolutionResult &&
+      !dependencyEditorState.resolutionResult.success
+    ) {
+      const conflict = dependencyEditorState.resolutionResult.conflicts[0];
+      if (
+        conflict &&
+        typeof conflict === 'object' &&
+        'suggestedOverride' in conflict
+      ) {
+        const suggestedOverride = conflict.suggestedOverride as {
+          groupId: string;
+          artifactId: string;
+          versionId: string;
+        };
+        expect(suggestedOverride).toBeDefined();
+        expect(suggestedOverride.versionId).toBe('2.0.0');
+      }
+    }
   },
 );

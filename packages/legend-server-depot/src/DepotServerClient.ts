@@ -40,6 +40,7 @@ import type { ProjectVersionPlatformDependency } from './models/ProjectVersionPl
 import type { VersionedProjectData } from './models/VersionedProjectData.js';
 import type { StoreProjectData } from './models/StoreProjectData.js';
 import { resolveVersion } from './DepotVersionAliases.js';
+import type { DependencyResolutionResponse } from './models/DependencyResolution.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -317,7 +318,7 @@ export class DepotServerClient extends AbstractServerClient {
     includeOrigin: boolean,
   ): Promise<PlainObject<ProjectVersionEntities>[]> =>
     this.post(
-      `${this._projects()}/dependencies`,
+      `${this._projects()}/dependenciesFromArtifactDependencies`,
       dependencies,
       undefined,
       undefined,
@@ -334,8 +335,30 @@ export class DepotServerClient extends AbstractServerClient {
      */
     dependencies: PlainObject<ProjectDependencyCoordinates>[],
   ): Promise<PlainObject<RawProjectDependencyReport>> =>
-    this.post(`${this._projects()}/analyzeDependencyTree`, dependencies);
+    this.post(
+      `${this._projects()}/analyzeDependencyTreeFromArtifactDependencies`,
+      dependencies,
+    );
 
+  resolveCompatibleDependencies = (
+    /**
+     * List of (direct) dependencies with potential conflicts.
+     */
+    dependencies: PlainObject<ProjectDependencyCoordinates>[],
+    /**
+     * Number of versions to backtrack from the latest version when checking for compatibility.
+     */
+    backtrackVersions: number,
+  ): Promise<PlainObject<DependencyResolutionResponse>> =>
+    this.post(
+      `${this._projects()}/resolveCompatibleDependencies`,
+      dependencies,
+      undefined,
+      undefined,
+      {
+        backtrackVersions,
+      },
+    );
   // ------------------------------------------- File Generation -------------------------------------------
 
   private _generationContent = (): string =>

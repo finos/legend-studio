@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2026-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,65 +14,40 @@
  * limitations under the License.
  */
 
-import { createModelSchema, list, optional, primitive } from 'serializr';
+import { createModelSchema, primitive } from 'serializr';
 import {
   type Hashable,
   hashArray,
   uuid,
+  guaranteeNonNullable,
   SerializationFactory,
-  usingModelSchema,
 } from '@finos/legend-shared';
 import { observable, action, computed, makeObservable } from 'mobx';
 import { GAV_DELIMITER } from '@finos/legend-storage';
 import { SDLC_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
-import { ProjectDependencyExclusion } from './ProjectDependencyExclusion.js';
 
-export class ProjectDependency implements Hashable {
+export class ProjectDependencyExclusion implements Hashable {
   readonly _UUID = uuid();
   projectId: string;
-  versionId: string;
-  exclusions: ProjectDependencyExclusion[] | undefined;
 
-  constructor(
-    projectId: string,
-    versionId?: string,
-    exclusions?: ProjectDependencyExclusion[],
-  ) {
+  constructor(projectId: string) {
     makeObservable(this, {
       projectId: observable,
-      versionId: observable,
-      exclusions: observable,
       setProjectId: action,
-      setVersionId: action,
-      setExclusions: action,
+      coordinate: computed,
       hashCode: computed,
     });
-
     this.projectId = projectId;
-    this.versionId = versionId ?? '0.0.0';
-    this.exclusions = exclusions?.length ? exclusions : undefined;
   }
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ProjectDependency, {
+    createModelSchema(ProjectDependencyExclusion, {
       projectId: primitive(),
-      versionId: primitive(),
-      exclusions: optional(
-        list(usingModelSchema(ProjectDependencyExclusion.serialization.schema)),
-      ),
     }),
   );
 
   setProjectId(projectId: string): void {
     this.projectId = projectId;
-  }
-
-  setVersionId(id: string): void {
-    this.versionId = id;
-  }
-
-  setExclusions(exclusions: ProjectDependencyExclusion[]): void {
-    this.exclusions = exclusions.length > 0 ? exclusions : undefined;
   }
 
   get groupId(): string | undefined {
@@ -83,16 +58,18 @@ export class ProjectDependency implements Hashable {
     return this.projectId.split(GAV_DELIMITER)[1];
   }
 
-  get exclusionsList(): ProjectDependencyExclusion[] | undefined {
-    return this.exclusions;
+  get coordinate(): string {
+    return this.projectId;
   }
 
   get hashCode(): string {
     return hashArray([
-      SDLC_HASH_STRUCTURE.PROJECT_DEPENDENCY,
+      SDLC_HASH_STRUCTURE.PROJECT_DEPENDENCY_EXCLUSION,
       this.projectId,
-      this.versionId,
-      hashArray(this.exclusions ?? []),
     ]);
+  }
+
+  static fromCoordinate(coordinate: string): ProjectDependencyExclusion {
+    return new ProjectDependencyExclusion(guaranteeNonNullable(coordinate));
   }
 }
