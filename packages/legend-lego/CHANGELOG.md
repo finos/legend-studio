@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 2.0.161
+
+### Patch Changes
+
+- [#4794](https://github.com/finos/legend-studio/pull/4794) [`f7aa5cb`](https://github.com/finos/legend-studio/commit/f7aa5cb737e275b48aeccc408e31c54512ba8663) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added string as acceptable parameter type to support custom language on monaco editor.
+
 ## 2.0.160
 
 ## 2.0.159
