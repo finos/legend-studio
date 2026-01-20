@@ -103,7 +103,7 @@ export const CodeEditor: React.FC<{
   inputValue: string;
   isReadOnly?: boolean | undefined;
   lightTheme?: CODE_EDITOR_THEME;
-  language: CODE_EDITOR_LANGUAGE;
+  language: CODE_EDITOR_LANGUAGE | string;
   hideMinimap?: boolean | undefined;
   hideGutter?: boolean | undefined;
   hidePadding?: boolean | undefined;
