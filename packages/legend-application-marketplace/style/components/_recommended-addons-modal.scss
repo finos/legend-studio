@@ -37,13 +37,8 @@
     align-items: center;
     gap: 1.5rem;
     padding: 2.5rem 3rem 2rem;
-    background: linear-gradient(
-      135deg,
-      rgb(34 197 94 / 8%) 0%,
-      rgb(59 130 246 / 8%) 50%,
-      rgb(168 85 247 / 8%) 100%
-    );
-    border-bottom: 1px solid rgb(226 232 240 / 80%);
+    background: linear-gradient(135deg, #7297c5 0%, #5d80a8 100%);
+    border-bottom: 1px solid rgb(114 151 197 / 30%);
     position: relative;
 
     &::before {
@@ -53,15 +48,22 @@
       left: 0;
       right: 0;
       height: 3px;
+      background: linear-gradient(90deg, #7297c5 0%, #5d80a8 50%, #7297c5 100%);
     }
   }
 
   &__success-icon {
-    color: var(--color-success);
+    color: var(--color-white);
+    background: rgb(255 255 255 / 15%);
+    border-radius: 50%;
+    padding: 0.8rem;
   }
 
   &__warning-icon {
-    color: var(--color-warning);
+    color: var(--color-white);
+    background: rgb(255 255 255 / 15%);
+    border-radius: 50%;
+    padding: 0.8rem;
   }
 
   &__header-content {
@@ -71,34 +73,29 @@
   &__title {
     font-size: 2.4rem;
     font-weight: 700;
-    background: linear-gradient(
-      135deg,
-      var(--color-modal-text-primary) 0%,
-      var(--color-modal-text-muted) 100%
-    );
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--color-white);
     margin: 0 0 0.5rem;
     line-height: 1.2;
+    text-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   }
 
   &__subtitle {
     font-size: 1.4rem;
-    color: var(--color-modal-text-secondary);
+    color: rgb(255 255 255 / 90%);
     margin: 0;
     font-weight: 500;
   }
 
   &__close-btn {
-    color: var(--color-modal-text-secondary);
-    background: rgb(148 163 184 / 10%);
+    color: var(--color-white);
+    background: rgb(255 255 255 / 15%);
     border-radius: 12px;
     padding: 0.75rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-      color: var(--color-modal-text-primary);
-      background: rgb(148 163 184 / 20%);
+      color: var(--color-white);
+      background: rgb(255 255 255 / 25%);
       transform: translateY(-1px);
     }
   }
@@ -106,6 +103,32 @@
   &__content {
     padding: 2rem 3rem;
     background: transparent;
+  }
+
+  &__alert {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    background-color: #f0f9f4;
+    border-left: 4px solid #077d55;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+    margin-top: 1rem;
+
+    svg {
+      color: #077d55;
+      font-size: 2.4rem;
+      flex-shrink: 0;
+    }
+
+    .MuiTypography-root {
+      font-size: 1.8rem;
+    }
+
+    strong {
+      color: #1b5e3f;
+    }
   }
 
   &__content-header {
@@ -135,6 +158,7 @@
     align-items: center;
     gap: 2rem;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
   }
 
   &__search-field {
@@ -159,6 +183,13 @@
     .MuiInputBase-input {
       font-size: 1.4rem;
       padding: 1.2rem 1.6rem;
+    }
+  }
+
+  &__sort-select,
+  &__items-per-page-select {
+    .MuiOutlinedInput-root {
+      font-size: 1.4rem;
     }
   }
 
@@ -226,10 +257,34 @@
     }
   }
 
+  &__list-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.5rem;
+    margin-bottom: 1rem;
+  }
+
   &__list {
     display: flex;
     flex-direction: column;
     gap: 0;
+  }
+
+  &__pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    padding: 1.5rem 0;
+
+    .MuiPagination-root {
+      .MuiPaginationItem-root {
+        font-size: 1.4rem;
+        min-width: 3.6rem;
+        height: 3.6rem;
+        margin: 0 0.4rem;
+      }
+    }
   }
 
   &__list-header {
@@ -255,6 +310,7 @@
   &__header-price {
     display: flex;
     align-items: center;
+    white-space: nowrap;
   }
 
   &__header-action {
@@ -435,6 +491,19 @@
 
     &__content {
       padding: 1.5rem 2rem;
+    }
+
+    &__alert {
+      gap: 1rem;
+      padding: 0.8rem 1rem;
+
+      svg {
+        font-size: 2rem;
+      }
+
+      .MuiTypography-root {
+        font-size: 1.5rem;
+      }
     }
 
     &__section-title {

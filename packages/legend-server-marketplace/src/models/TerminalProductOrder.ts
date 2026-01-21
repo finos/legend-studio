@@ -33,17 +33,22 @@ export enum OrderStatusCategory {
 export interface TerminalProductOrder {
   order_id: string;
   ordered_by: string;
+  ordered_by_name: string;
   ordered_for: string;
+  ordered_for_name: string;
   created_at: string;
   updated_at: string;
   order_cost: number;
   order_category: OrderCategory;
   order_type: string; //enum
+  bbg_terminal_flag: boolean;
   vendor_profile_id: number;
   vendor_profile_name: string;
+  permid: string | null;
   vendor_name: string;
-  status: string;
+  reason_code_id: number;
   business_justification: string;
+  status: string;
   service_pricing_items: ServicePricingItems[];
   workflow_details?: WorkflowDetails;
 }
@@ -57,7 +62,9 @@ export interface ServicePricingItems {
 }
 
 export interface WorkflowDetails {
-  manager_process_id: string | null;
+  url_manager: string;
+  piid_manager: string;
+  taskid_manager: string;
   manager_actioned_by: string | null;
   manager_actioned_timestamp: string | null;
   manager_comment: string | null;

@@ -148,11 +148,22 @@
 }
 
 .legend-marketplace-order-accordion {
+  margin-bottom: 2rem;
+  border: 2px solid var(--color-light-grey-300);
+  border-radius: 12px;
+  padding: 1.2rem;
+  padding-bottom: 2rem;
+  background-color: var(--color-white);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 5%);
+  border-bottom: 3px solid var(--color-black-100);
+  @include transition-smooth;
+
   &__summary {
     background-color: var(--color-light-grey-50);
     border-radius: 8px;
     padding: 1rem;
     min-height: 60px;
+    border: 2px solid var(--color-light-grey-200);
 
     &.Mui-expanded {
       min-height: 60px;
@@ -173,7 +184,7 @@
     flex-wrap: wrap;
     gap: 1.5rem;
     width: 100%;
-    align-items: center;
+    align-items: flex-start;
 
     @media (width <= 768px) {
       gap: 1rem;
@@ -181,13 +192,15 @@
   }
 
   &__summary-field {
-    flex: 1 1 150px;
+    flex: 1 1 180px;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
     gap: 0.25rem;
 
     @media (width <= 768px) {
-      flex: 1 1 120px;
+      flex: 1 1 140px;
     }
   }
 
@@ -196,11 +209,12 @@
     color: var(--color-black);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    white-space: nowrap;
   }
 
   &__summary-value {
     font-size: 1.8rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-dark-grey-100);
   }
 
@@ -208,7 +222,29 @@
     flex: 1 1 auto;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 2rem;
     margin-right: 1.6rem;
+  }
+
+  &__track-button {
+    background-color: var(--color-blue-100);
+    color: var(--color-white);
+    font-weight: 500;
+    font-size: 1.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-transform: none;
+    @include transition-smooth;
+
+    &:hover {
+      background-color: var(--color-blue-200);
+      transform: translateY(-1px);
+    }
+
+    .MuiSvgIcon-root {
+      font-size: 1.125rem;
+    }
   }
 
   &__cancel-button {
@@ -348,6 +384,53 @@
     color: var(--color-dark-grey-400);
     line-height: 1.5;
     margin-top: 0.5rem;
+  }
+
+  &__closure-info {
+    width: 100%;
+    background-color: var(--color-light-grey-50);
+    border: 1px solid var(--color-light-grey-200);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  &__closure-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--color-dark-grey-100);
+    margin-bottom: 1.5rem;
+  }
+
+  &__closure-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__closure-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  &__closure-label {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-dark-grey-200);
+    min-width: 140px;
+    flex-shrink: 0;
+  }
+
+  &__closure-value {
+    font-size: 1.5rem;
+    color: var(--color-dark-grey-100);
+    flex: 1;
+  }
+
+  &__summary-value--status {
+    color: var(--color-red-300);
+    font-weight: 600;
   }
 
   &__progress-tracker-section {
@@ -517,6 +600,21 @@
       &:hover {
         transform: translateY(-1px);
       }
+    }
+  }
+}
+
+// Dark mode support
+.theme__hc-dark {
+  .legend-marketplace-order-accordion {
+    background-color: var(--color-dark-grey-100);
+    border-color: var(--color-dark-grey-250);
+    border-bottom-color: var(--color-dark-grey-350);
+    box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+
+    &:hover {
+      box-shadow: 0 4px 8px rgb(0 0 0 / 30%);
+      border-color: var(--color-dark-grey-300);
     }
   }
 }

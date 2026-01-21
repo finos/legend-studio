@@ -52,6 +52,7 @@ export class TerminalResult {
   price!: number;
   phystr!: string;
   model!: string | null;
+  isMandatory?: boolean;
   skipWorkflow?: boolean;
   isOwned?: boolean;
   vendorProfileId?: number;
@@ -66,6 +67,7 @@ export class TerminalResult {
       price: primitive(),
       phystr: primitive(),
       model: primitive(),
+      isMandatory: optional(primitive()),
       skipWorkflow: optional(primitive()),
       isOwned: primitive(),
       vendorProfileId: primitive(),

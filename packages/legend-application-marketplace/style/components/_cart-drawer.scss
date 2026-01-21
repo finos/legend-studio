@@ -261,6 +261,12 @@
       gap: 1rem;
     }
 
+    &__chips {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
     &__name {
       font-weight: 700;
       font-size: 2rem;
@@ -285,6 +291,23 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       box-shadow: 0 2px 8px rgb(102 126 234 / 30%);
+    }
+
+    &__category {
+      background: linear-gradient(
+        135deg,
+        var(--color-cart-category-start, #10b981) 0%,
+        var(--color-cart-category-end, #059669) 100%
+      );
+      color: var(--color-white);
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-radius: 20px;
+      height: auto;
+      border: none;
+      align-self: flex-start;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgb(16 185 129 / 30%);
     }
 
     &__remove-btn {
@@ -334,26 +357,6 @@
       color: var(--color-cart-text-muted);
       font-weight: 500;
       font-size: 1.4rem;
-    }
-
-    &__category {
-      background: linear-gradient(
-        135deg,
-        var(--color-cart-category-bg-start) 0%,
-        var(--color-cart-category-bg-end) 100%
-      );
-      border-radius: 12px;
-      padding: 0.8rem 1.2rem;
-      display: inline-flex;
-      align-items: center;
-
-      span {
-        color: var(--color-cart-text-category);
-        font-weight: 600;
-        font-size: 1.1rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
     }
   }
 
@@ -548,6 +551,91 @@
       &__order-button {
         font-size: 1.2rem;
         padding: 1.2rem 1.5rem;
+      }
+    }
+  }
+}
+
+// Override the default search-modal styles for alerts in marketplace
+.blocking-alert.search-modal {
+  width: auto;
+  max-width: min(55rem, 90vw);
+  min-width: 40rem;
+
+  .modal__header {
+    padding: 2.4rem 3rem 1.8rem;
+
+    .modal__title {
+      font-size: 2.2rem;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--color-black) !important;
+    }
+  }
+
+  .modal__body {
+    padding: 2rem 3rem 2.5rem;
+  }
+
+  .blocking-alert__summary-text {
+    font-size: 2.2rem !important;
+    line-height: 1.7;
+    color: var(--color-black) !important;
+    margin-bottom: 1.2rem;
+    font-weight: 800 !important;
+    letter-spacing: 0.02rem;
+  }
+
+  .blocking-alert__prompt-text {
+    font-size: 1.6rem;
+    line-height: 1.6;
+    color: var(--color-dark-grey-300) !important;
+    font-weight: 400;
+  }
+
+  .modal__footer {
+    padding: 1.8rem 3rem 2.4rem;
+    gap: 1.4rem;
+
+    .btn {
+      font-size: 1.5rem;
+      padding: 1rem 2.4rem;
+      min-width: 10rem;
+    }
+  }
+
+  // Responsive adjustments
+  @media (width <= 768px) {
+    min-width: 32rem;
+    max-width: 95vw;
+
+    .modal__header {
+      padding: 2rem 2rem 1.5rem;
+
+      .modal__title {
+        font-size: 1.9rem;
+      }
+    }
+
+    .modal__body {
+      padding: 1.5rem 2rem 2rem;
+    }
+
+    .blocking-alert__summary-text {
+      font-size: 1.9rem !important;
+      margin-bottom: 1rem;
+    }
+
+    .blocking-alert__prompt-text {
+      font-size: 1.4rem;
+    }
+
+    .modal__footer {
+      padding: 1.5rem 2rem 2rem;
+
+      .btn {
+        font-size: 1.4rem;
+        padding: 0.9rem 2rem;
       }
     }
   }

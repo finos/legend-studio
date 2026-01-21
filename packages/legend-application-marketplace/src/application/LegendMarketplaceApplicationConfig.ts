@@ -36,6 +36,7 @@ class LegendMarketplaceApplicationCoreOptions {
   dataProductConfig: DataProductConfig | undefined;
 
   newsletterUrl!: string;
+  historicalNewsletterUrl!: string;
 
   /**
    * Used for any features that are still in development
@@ -52,6 +53,7 @@ class LegendMarketplaceApplicationCoreOptions {
       newsletterUrl: primitive(),
       showDevFeatures: optional(primitive()),
       highlightedDataProducts: optional(primitive()),
+      historicalNewsletterUrl: primitive(),
     }),
   );
 

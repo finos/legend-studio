@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeObservable, observable, action, flow } from 'mobx';
+import { makeObservable, observable, action, flow, flowResult } from 'mobx';
 import {
   LogEvent,
   type GeneratorFn,
@@ -45,6 +45,7 @@ export class CartStore {
   readonly baseStore: LegendMarketplaceBaseStore;
 
   items: Record<number, CartItem[]> = {};
+  user = '';
   businessReason: string | undefined = undefined;
   readonly initState = ActionState.create();
   readonly loadingState = ActionState.create();
@@ -63,6 +64,8 @@ export class CartStore {
       open: observable,
       cartSummary: observable,
       setOpen: action,
+      setUser: action,
+      resetUser: action,
       setBusinessReason: action,
       initialize: flow,
       submitOrder: flow,
@@ -76,11 +79,28 @@ export class CartStore {
 
   setOpen(val: boolean): void {
     this.open = val;
-    this.refresh();
+  }
+
+  setUser(val: string): void {
+    this.user = val;
+  }
+
+  resetUser(): void {
+    this.user = this.baseStore.applicationStore.identityService.currentUser;
   }
 
   setBusinessReason(val: string | undefined): void {
     this.businessReason = val;
+  }
+
+  isItemInCart(itemId: number): boolean {
+    for (const vendorProfileId in this.items) {
+      const cartItems = this.items[Number(vendorProfileId)];
+      if (cartItems?.some((item) => item.id === itemId)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   *addToCartWithAPI(cartItemData: CartItemRequest): GeneratorFn<{
@@ -109,7 +129,7 @@ export class CartStore {
           user,
         )) as CartSummary;
 
-      this.refresh();
+      yield flowResult(this.refresh());
 
       const responseMessage: string = response.message;
       if (!/^2\d\d$/.test(String(response.status_code))) {
@@ -120,6 +140,22 @@ export class CartStore {
 
       const recommendations: TerminalResult[] =
         response.marketplace_addons ?? response.marketplace_terminals ?? [];
+
+      // Set vendorProfileId and skipWorkflow on each recommendation
+      const parentVendorId = response.vendor_profile_id;
+      if (parentVendorId && recommendations.length > 0) {
+        recommendations.forEach((item) => {
+          // Only set vendorProfileId if not already set by backend
+          if (!item.vendorProfileId) {
+            item.vendorProfileId = parentVendorId;
+          }
+          // Set skipWorkflow to true if not explicitly set by backend
+          // This allows add-ons to bypass workflow validation when added from modal
+          if (item.skipWorkflow === undefined) {
+            item.skipWorkflow = true;
+          }
+        });
+      }
 
       this.loadingState.complete();
       return {
@@ -147,6 +183,9 @@ export class CartStore {
       isOwned: provider.isOwned ? 'true' : 'false',
       model: provider.model ?? provider.productName,
       skipWorkflow: provider.skipWorkflow ?? false,
+      ...(provider.vendorProfileId !== undefined && {
+        vendorProfileId: provider.vendorProfileId,
+      }),
     };
   }
 
@@ -156,7 +195,7 @@ export class CartStore {
     }
     this.initState.inProgress();
     try {
-      yield* this.refresh();
+      this.refresh();
       this.initState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -170,19 +209,19 @@ export class CartStore {
 
   *refresh(): GeneratorFn<void> {
     const applicationStore = this.baseStore.applicationStore;
-    const user = applicationStore.identityService.currentUser;
-    if (!user) {
+    this.user = applicationStore.identityService.currentUser;
+    if (!this.user) {
       return;
     }
 
     try {
       this.items = (yield this.baseStore.marketplaceServerClient.getCart(
-        user,
+        this.user,
       )) as Record<number, CartItem[]>;
 
       this.cartSummary =
         (yield this.baseStore.marketplaceServerClient.getCartSummary(
-          user,
+          this.user,
         )) as CartSummary;
     } catch (error) {
       assertErrorThrown(error);
@@ -194,15 +233,13 @@ export class CartStore {
   }
 
   *getCartSummary(): GeneratorFn<void> {
-    const applicationStore = this.baseStore.applicationStore;
-    const user = applicationStore.identityService.currentUser;
-    if (!user) {
+    if (!this.user) {
       return;
     }
     try {
       const cartSummary =
         (yield this.baseStore.marketplaceServerClient.getCartSummary(
-          user,
+          this.user,
         )) as CartSummary;
       this.cartSummary = cartSummary;
     } catch (error) {
@@ -220,9 +257,6 @@ export class CartStore {
   }
 
   *submitOrder(): GeneratorFn<void> {
-    const applicationStore = this.baseStore.applicationStore;
-    const user = applicationStore.identityService.currentUser;
-
     if (!this.businessReason) {
       toastManager.warning(
         'Please select a business reason before submitting order',
@@ -233,7 +267,7 @@ export class CartStore {
       toastManager.warning('Cart is empty - nothing to order');
       return;
     }
-    if (!user) {
+    if (!this.user) {
       toastManager.error('User not authenticated');
       return;
     }
@@ -241,15 +275,18 @@ export class CartStore {
     this.submitState.inProgress();
     try {
       const orderData: OrderDetails = {
-        ordered_by: user,
-        kerberos: user,
+        ordered_by: this.baseStore.applicationStore.identityService.currentUser,
+        kerberos: this.user,
         order_items: this.items,
         business_justification: this.businessReason,
       };
 
-      yield this.baseStore.marketplaceServerClient.submitOrder(user, orderData);
+      yield this.baseStore.marketplaceServerClient.submitOrder(
+        this.user,
+        orderData,
+      );
 
-      yield* this.getCartSummary();
+      this.getCartSummary();
 
       toastManager.notify('Order created successfully!', 'success');
 
@@ -266,21 +303,17 @@ export class CartStore {
   }
 
   *clearCart(): GeneratorFn<void> {
-    const applicationStore = this.baseStore.applicationStore;
-    const user = applicationStore.identityService.currentUser;
-
-    if (!user) {
+    if (!this.user) {
       toastManager.error('User not authenticated');
       return;
     }
 
     this.loadingState.inProgress();
     try {
-      yield this.baseStore.marketplaceServerClient.clearCart(user);
+      yield this.baseStore.marketplaceServerClient.clearCart(this.user);
       this.refresh();
-      yield* this.getCartSummary();
+      this.getCartSummary();
       toastManager.success('Cart cleared successfully');
-      this.setOpen(false);
       this.loadingState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -291,19 +324,19 @@ export class CartStore {
   }
 
   *deleteCartItem(cartId: number): GeneratorFn<void> {
-    const applicationStore = this.baseStore.applicationStore;
-    const user = applicationStore.identityService.currentUser;
-
-    if (!user) {
+    if (!this.user) {
       toastManager.error('User not authenticated');
       return;
     }
 
     this.loadingState.inProgress();
     try {
-      yield this.baseStore.marketplaceServerClient.deleteCartItem(user, cartId);
+      yield this.baseStore.marketplaceServerClient.deleteCartItem(
+        this.user,
+        cartId,
+      );
 
-      yield* this.getCartSummary();
+      this.getCartSummary();
       this.refresh();
       toastManager.success('Item removed successfully');
       this.loadingState.complete();

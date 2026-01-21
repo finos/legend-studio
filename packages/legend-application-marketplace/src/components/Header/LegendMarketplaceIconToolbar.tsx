@@ -284,6 +284,13 @@ export const LegendMarketplaceIconToolbar = observer(() => {
       setAnchorEl(null);
     };
 
+    const handleHistoricalNewslettersClick = (): void => {
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.config.options.historicalNewsletterUrl,
+      );
+      setAnchorEl(null);
+    };
+
     return (
       <>
         <IconButton
@@ -302,6 +309,10 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           <MenuItem onClick={handleNewsletterClick}>
             <OpenNewTabIcon style={{ marginRight: '8px' }} />
             Subscribe to our Newsletter
+          </MenuItem>
+          <MenuItem onClick={handleHistoricalNewslettersClick}>
+            <OpenNewTabIcon style={{ marginRight: '8px' }} />
+            Browse Historical Newsletters
           </MenuItem>
           <MenuContentDivider />
           <MenuItem
