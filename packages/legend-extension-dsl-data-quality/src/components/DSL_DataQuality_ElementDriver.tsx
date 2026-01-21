@@ -91,7 +91,8 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
       setDqValidationElementType: action,
       runtimeOptions: computed,
     });
-    this.dqValidationElementType = DQ_VALIDATION_ELEMENT_TYPE.CLASS_VALIDATION;
+    this.dqValidationElementType =
+      DQ_VALIDATION_ELEMENT_TYPE.RELATION_VALIDATION;
     this.dqClassElementCreationBasis =
       CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED;
     this.dataSpaceSelected = this.dataSpaceOptions[0];
