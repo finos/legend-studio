@@ -45,6 +45,7 @@ export abstract class V1_AccessPoint implements Hashable {
   id!: string;
   title: string | undefined;
   description: string | undefined;
+  stereotypes: V1_StereotypePtr[] = [];
 
   get hashCode(): string {
     return hashArray([
@@ -52,6 +53,7 @@ export abstract class V1_AccessPoint implements Hashable {
       this.id,
       this.title ?? '',
       this.description ?? '',
+      hashArray(this.stereotypes),
     ]);
   }
 }
