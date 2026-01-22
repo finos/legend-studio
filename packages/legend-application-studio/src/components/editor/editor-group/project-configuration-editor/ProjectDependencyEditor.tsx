@@ -54,14 +54,20 @@ import {
   PanelHeaderActions,
   PanelHeaderActionItem,
   PanelContentLists,
+  CircleNotchIcon,
 } from '@finos/legend-art';
 import {
   MASTER_SNAPSHOT_ALIAS,
   type ProjectDependencyGraphReport,
   type StoreProjectData,
   SNAPSHOT_VERSION_ALIAS,
+  type ConflictingVersionInfo,
+  type ProjectDependencyCoordinates,
 } from '@finos/legend-server-depot';
-import type { ProjectDependency } from '@finos/legend-server-sdlc';
+import {
+  type ProjectDependency,
+  type ProjectDependencyExclusion,
+} from '@finos/legend-server-sdlc';
 import {
   ActionState,
   assertErrorThrown,
@@ -74,7 +80,7 @@ import {
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { ProjectConfigurationEditorState } from '../../../../stores/editor/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
   type ProjectDependencyConflictTreeNodeData,
@@ -112,8 +118,10 @@ const buildProjectOption = (project: StoreProjectData): ProjectOption => ({
 const ProjectDependencyActions = observer(
   (props: { dependencyEditorState: ProjectDependencyEditorState }) => {
     const { dependencyEditorState: dependencyEditorState } = props;
+    const applicationStore = useApplicationStore();
     const hasConflicts =
       dependencyEditorState.dependencyReport?.conflicts.length;
+    const hasDependencyChanges = dependencyEditorState.hasDependencyChanges;
     const viewTree = (): void => {
       if (dependencyEditorState.dependencyReport) {
         dependencyEditorState.setReportTab(DEPENDENCY_REPORT_TAB.EXPLORER);
@@ -123,6 +131,11 @@ const ProjectDependencyActions = observer(
       if (dependencyEditorState.dependencyReport) {
         dependencyEditorState.setReportTab(DEPENDENCY_REPORT_TAB.CONFLICTS);
       }
+    };
+    const validateDependencies = (): void => {
+      flowResult(
+        dependencyEditorState.validateAndFetchDependencyReport(),
+      ).catch(applicationStore.alertUnhandledError);
     };
     return (
       <div className="project-dependency-editor__info">
@@ -139,6 +152,17 @@ const ProjectDependencyActions = observer(
             onClick={viewConflict}
             disabled={!dependencyEditorState.dependencyReport?.conflicts.length}
             title="View any conflicts in your dependencies"
+          />
+        )}
+        {hasDependencyChanges && (
+          <Button
+            className="project-dependency-editor__validate-btn"
+            text="Validate Dependencies"
+            onClick={validateDependencies}
+            disabled={
+              dependencyEditorState.validatingDependenciesState.isInProgress
+            }
+            title="Validate dependency changes and update dependency tree"
           />
         )}
       </div>
@@ -587,6 +611,260 @@ const ProjectDependencyConflictViewer = observer(
   },
 );
 
+const ProjectDependencyResolutionViewer = observer(
+  (props: { dependencyEditorState: ProjectDependencyEditorState }) => {
+    const { dependencyEditorState } = props;
+    const applicationStore = dependencyEditorState.editorStore.applicationStore;
+    const [versionBacktrackCount, setVersionBacktrackCount] = useState(5);
+    const resolutionResult = dependencyEditorState.resolutionResult;
+
+    const resolveConflicts = (): void => {
+      dependencyEditorState.clearResolutionResult();
+      flowResult(
+        dependencyEditorState.resolveCompatibleDependencies(
+          versionBacktrackCount,
+        ),
+      ).catch(applicationStore.alertUnhandledError);
+    };
+
+    const applyResolution = (): void => {
+      flowResult(dependencyEditorState.applyResolvedDependencies()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+
+    const cancelResolution = (): void => {
+      dependencyEditorState.clearResolutionResult();
+    };
+
+    return (
+      <Panel className="project-dependency-explorer">
+        <PanelHeader title="resolution">
+          <PanelHeaderActions>
+            {!resolutionResult?.success && (
+              <>
+                <div className="project-dependency-editor__resolve-controls">
+                  <div className="project-dependency-editor__backtrack-control">
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={versionBacktrackCount}
+                      onChange={(e) =>
+                        setVersionBacktrackCount(
+                          Math.max(1, parseInt(e.target.value || '1', 10)),
+                        )
+                      }
+                      title="Number of previous versions to check backward from the latest version when searching for compatible dependency versions"
+                      className="input input--dark project-dependency-editor__backtrack-input"
+                      placeholder="Backtrack versions"
+                    />
+                    <div className="project-dependency-editor__backtrack-label">
+                      versions to check
+                    </div>
+                  </div>
+                  <button
+                    className="btn--dark project-dependency-editor__resolve-btn"
+                    onClick={resolveConflicts}
+                    disabled={
+                      dependencyEditorState.resolvingCompatibleDependenciesState
+                        .isInProgress
+                    }
+                    title="Automatically resolve conflicts by finding compatible versions"
+                    tabIndex={-1}
+                  >
+                    {dependencyEditorState.resolvingCompatibleDependenciesState
+                      .isInProgress && (
+                      <CircleNotchIcon className="icon--loading" />
+                    )}
+                    Resolve Compatible Dependencies
+                  </button>
+                </div>
+              </>
+            )}
+          </PanelHeaderActions>
+        </PanelHeader>
+        <div className="project-dependency-explorer__content">
+          {!resolutionResult && (
+            <BlankPanelContent>
+              Click &quot;Resolve Compatible Dependencies&quot; to find
+              compatible versions for conflicting dependencies
+            </BlankPanelContent>
+          )}
+          {resolutionResult && resolutionResult.success && (
+            <div className="project-dependency-resolution">
+              <div className="project-dependency-resolution__header">
+                <div className="project-dependency-resolution__title">
+                  ✓ Compatible Versions Found
+                </div>
+                <div className="project-dependency-resolution__subtitle">
+                  Found compatible versions by checking {versionBacktrackCount}{' '}
+                  versions back. Review and confirm to apply.
+                </div>
+              </div>
+              <div className="project-dependency-resolution__list">
+                {resolutionResult.resolvedVersions.map((dep) => (
+                  <div
+                    key={`${dep.groupId}:${dep.artifactId}`}
+                    className="project-dependency-resolution__item"
+                  >
+                    <div className="project-dependency-resolution__item-name">
+                      {dep.groupId}:{dep.artifactId}
+                    </div>
+                    <div className="project-dependency-resolution__item-version">
+                      → {dep.versionId}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="project-dependency-resolution__actions">
+                <button
+                  className="btn btn--dark project-dependency-resolution__action-btn project-dependency-resolution__action-btn--confirm"
+                  onClick={applyResolution}
+                  title="Apply these resolved versions to your dependencies"
+                >
+                  Confirm & Apply Changes
+                </button>
+                <button
+                  className="btn btn--dark project-dependency-resolution__action-btn"
+                  onClick={cancelResolution}
+                  title="Cancel and keep current versions"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          {resolutionResult && !resolutionResult.success && (
+            <div className="project-dependency-resolution project-dependency-resolution--failure">
+              <div className="project-dependency-resolution__header">
+                <div className="project-dependency-resolution__title project-dependency-resolution__title--error">
+                  ✗ Unable to Resolve Conflicts
+                </div>
+                <div className="project-dependency-resolution__subtitle">
+                  {resolutionResult.failureReason ??
+                    'No compatible versions found'}{' '}
+                  within {versionBacktrackCount} versions.
+                </div>
+                <div className="project-dependency-resolution__tip">
+                  💡 Tip: Try increasing the backtrack version count or manually
+                  adjust your dependency versions.
+                </div>
+              </div>
+              <div className="project-dependency-resolution__conflicts-list">
+                <div className="project-dependency-resolution__conflicts-header">
+                  Conflicting Dependencies ({resolutionResult.conflicts.length})
+                </div>
+                {resolutionResult.conflicts.map((conflict) => {
+                  const suggestedVersionId =
+                    conflict.suggestedOverride?.versionId;
+
+                  return (
+                    <div
+                      key={`${conflict.groupId}:${conflict.artifactId}`}
+                      className="project-dependency-resolution__conflict-item"
+                    >
+                      <div className="project-dependency-resolution__conflict-name">
+                        {conflict.groupId}:{conflict.artifactId}
+                      </div>
+                      {suggestedVersionId && (
+                        <div className="project-dependency-resolution__suggested-version">
+                          💡 Suggested Override: {suggestedVersionId}
+                        </div>
+                      )}
+                      <div className="project-dependency-resolution__conflict-versions">
+                        {conflict.conflictingVersions.map(
+                          (versionInfo: ConflictingVersionInfo) => {
+                            const isSuggestedVersion =
+                              versionInfo.version === suggestedVersionId;
+
+                            return (
+                              <div
+                                key={`${conflict.groupId}:${conflict.artifactId}:${versionInfo.version}`}
+                                className={`project-dependency-resolution__conflict-version${isSuggestedVersion ? 'project-dependency-resolution__conflict-version--suggested' : ''}`}
+                              >
+                                <span className="project-dependency-resolution__version-label">
+                                  {versionInfo.version}
+                                  {isSuggestedVersion && (
+                                    <span className="project-dependency-resolution__suggested-badge">
+                                      {' '}
+                                      [suggested override]
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="project-dependency-resolution__required-by">
+                                  required by:
+                                </span>
+                                <div className="project-dependency-resolution__requirements">
+                                  {versionInfo.requiredBy
+                                    .slice(0, 3)
+                                    .map(
+                                      (dep: ProjectDependencyCoordinates) => (
+                                        <div
+                                          key={`${dep.groupId}:${dep.artifactId}:${dep.versionId}`}
+                                          className="project-dependency-resolution__requirement"
+                                        >
+                                          {dep.groupId}:{dep.artifactId}:
+                                          {dep.versionId}
+                                        </div>
+                                      ),
+                                    )}
+                                  {versionInfo.requiredBy.length > 3 && (
+                                    <div className="project-dependency-resolution__requirement-more">
+                                      ...and {versionInfo.requiredBy.length - 3}{' '}
+                                      more
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {resolutionResult.suggestedOverrides &&
+                resolutionResult.suggestedOverrides.length > 0 && (
+                  <div className="project-dependency-resolution__suggested-overrides">
+                    <div className="project-dependency-resolution__suggested-overrides-header">
+                      <div className="project-dependency-resolution__suggested-overrides-title">
+                        💡 Suggested Version Overrides (
+                        {resolutionResult.suggestedOverrides.length})
+                      </div>
+                      <div className="project-dependency-resolution__suggested-overrides-subtitle">
+                        These versions may help resolve conflicts. Consider
+                        manually updating your dependencies to these versions.
+                      </div>
+                    </div>
+                    <div className="project-dependency-resolution__suggested-overrides-list">
+                      {resolutionResult.suggestedOverrides.map(
+                        (override: ProjectDependencyCoordinates) => (
+                          <div
+                            key={`${override.groupId}:${override.artifactId}:${override.versionId}`}
+                            className="project-dependency-resolution__suggested-override-item"
+                          >
+                            <div className="project-dependency-resolution__suggested-override-name">
+                              {override.groupId}:{override.artifactId}
+                            </div>
+                            <div className="project-dependency-resolution__suggested-override-version">
+                              → {override.versionId}
+                            </div>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )}
+            </div>
+          )}
+        </div>
+      </Panel>
+    );
+  },
+);
+
 const ProjectDependencyReportModal = observer(
   (props: {
     dependencyEditorState: ProjectDependencyEditorState;
@@ -652,9 +930,14 @@ const ProjectDependencyReportModal = observer(
             <div className="panel project-dependency-report">
               <PanelLoadingIndicator
                 isLoading={Boolean(
-                  isExpandingDependencies ||
+                  (isExpandingDependencies ||
                     dependencyEditorState.expandConflictsState.isInProgress ||
-                    dependencyEditorState.buildConflictPathState.isInProgress,
+                    dependencyEditorState.buildConflictPathState
+                      .isInProgress) &&
+                    !dependencyEditorState.validatingDependenciesState
+                      .isInProgress &&
+                    !dependencyEditorState.fetchingDependencyInfoState
+                      .isInProgress,
                 )}
               />
               <div className="panel__header project-dependency-report__tabs__header">
@@ -732,6 +1015,11 @@ const ProjectDependencyReportModal = observer(
                     dependencyEditorState={dependencyEditorState}
                   />
                 )}
+              {reportTab === DEPENDENCY_REPORT_TAB.RESOLUTION && (
+                <ProjectDependencyResolutionViewer
+                  dependencyEditorState={dependencyEditorState}
+                />
+              )}
             </div>
           </ModalBody>
           <ModalFooter>
@@ -747,6 +1035,253 @@ const ProjectDependencyReportModal = observer(
   },
 );
 
+interface TransitiveDependencyOption {
+  label: string;
+  value: string;
+  groupId: string;
+  artifactId: string;
+}
+
+const ProjectDependencyInlineExclusionsSelector = observer(
+  (props: { projectDependency: ProjectDependency; isReadOnly: boolean }) => {
+    const { projectDependency, isReadOnly } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+    const [selectedTransitiveDependency, setSelectedTransitiveDependency] =
+      useState<TransitiveDependencyOption | null>(null);
+    const [transitiveDependencyOptions, setTransitiveDependencyOptions] =
+      useState<TransitiveDependencyOption[]>([]);
+
+    const getTransitiveDependencies =
+      useCallback((): TransitiveDependencyOption[] => {
+        const dependencyReport = dependencyEditorState.dependencyReport;
+        if (!dependencyReport?.graph) {
+          return [];
+        }
+
+        const transitiveDeps = new Map<string, TransitiveDependencyOption>();
+        const existingExclusionCoordinates =
+          dependencyEditorState.getExclusionCoordinates(
+            projectDependency.projectId,
+          );
+
+        const visitedNodes = new Set<string>();
+        const traverseNode = (nodeId: string) => {
+          if (visitedNodes.has(nodeId)) {
+            return;
+          }
+          visitedNodes.add(nodeId);
+
+          const node = dependencyReport.graph.nodes.get(nodeId);
+          if (node?.dependencies) {
+            for (let i = 0; i < node.dependencies.length; i++) {
+              const dep = node.dependencies[i];
+              if (!dep?.groupId || !dep.artifactId) {
+                continue;
+              }
+              const coordinate = generateGAVCoordinates(
+                dep.groupId,
+                dep.artifactId,
+                undefined,
+              );
+
+              if (
+                existingExclusionCoordinates.indexOf(coordinate) === -1 &&
+                coordinate !==
+                  `${projectDependency.groupId}:${projectDependency.artifactId}`
+              ) {
+                transitiveDeps.set(coordinate, {
+                  label: generateGAVCoordinates(
+                    dep.groupId,
+                    dep.artifactId,
+                    undefined,
+                  ),
+                  value: coordinate,
+                  groupId: dep.groupId,
+                  artifactId: dep.artifactId,
+                });
+              }
+
+              traverseNode(dep.id);
+            }
+          }
+        };
+
+        const rootNodeId = generateGAVCoordinates(
+          guaranteeNonNullable(projectDependency.groupId),
+          guaranteeNonNullable(projectDependency.artifactId),
+          guaranteeNonNullable(projectDependency.versionId),
+        );
+        traverseNode(rootNodeId);
+
+        return Array.from(transitiveDeps.values()).sort((a, b) =>
+          a.label.localeCompare(b.label),
+        );
+      }, [
+        dependencyEditorState,
+        projectDependency.projectId,
+        projectDependency.groupId,
+        projectDependency.artifactId,
+        projectDependency.versionId,
+      ]);
+
+    useEffect(() => {
+      setTransitiveDependencyOptions(getTransitiveDependencies());
+    }, [
+      dependencyEditorState.dependencyReport,
+      projectDependency.projectId,
+      getTransitiveDependencies,
+    ]);
+
+    const addExclusionFromDropdown = (
+      option: TransitiveDependencyOption | null,
+    ): void => {
+      if (!option) {
+        return;
+      }
+
+      try {
+        dependencyEditorState.addExclusionByCoordinate(
+          projectDependency.projectId,
+          option.value,
+        );
+        setSelectedTransitiveDependency(null);
+        setTransitiveDependencyOptions(getTransitiveDependencies());
+
+        applicationStore.notificationService.notifySuccess(
+          `Exclusion added: ${option.value}. Click "Validate Dependencies" to apply changes.`,
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        applicationStore.notificationService.notifyError(
+          `Failed to add exclusion: ${error.message}`,
+        );
+      }
+    };
+
+    if (isReadOnly) {
+      return null;
+    }
+
+    return (
+      <div className="project-dependency-exclusions-selector">
+        <CustomSelectorInput
+          className="project-dependency-exclusions-selector__dropdown"
+          placeholder="Add exclusion..."
+          options={transitiveDependencyOptions}
+          onChange={addExclusionFromDropdown}
+          value={selectedTransitiveDependency}
+          isClearable={true}
+          escapeClearsValue={true}
+          disabled={transitiveDependencyOptions.length === 0}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        />
+      </div>
+    );
+  },
+);
+
+const ProjectDependencyExclusionsList = observer(
+  (props: { projectDependency: ProjectDependency; isReadOnly: boolean }) => {
+    const { projectDependency, isReadOnly } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const dependencyEditorState =
+      editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+    const [, setForceUpdate] = useState(0);
+    const exclusions = dependencyEditorState.getExclusions(
+      projectDependency.projectId,
+    );
+
+    useEffect(() => {
+      setForceUpdate((prev) => prev + 1);
+    }, [
+      dependencyEditorState.dependencyReport,
+      projectDependency.projectId,
+      dependencyEditorState,
+    ]);
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        const currentExclusions = dependencyEditorState.getExclusions(
+          projectDependency.projectId,
+        );
+        if (currentExclusions.length !== exclusions.length) {
+          setForceUpdate((prev) => prev + 1);
+        }
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }, [exclusions.length, dependencyEditorState, projectDependency.projectId]);
+
+    const removeExclusion = (exclusion: ProjectDependencyExclusion): void => {
+      try {
+        dependencyEditorState.removeExclusion(
+          projectDependency.projectId,
+          exclusion,
+        );
+
+        if (!dependencyEditorState.hasAnyExclusions) {
+          applicationStore.notificationService.notifySuccess(
+            `Last exclusion removed: ${exclusion.coordinate}. Refreshing dependency tree...`,
+          );
+          flowResult(dependencyEditorState.fetchDependencyReport()).catch(
+            applicationStore.alertUnhandledError,
+          );
+        } else {
+          applicationStore.notificationService.notifySuccess(
+            `Exclusion removed: ${exclusion.coordinate}. Click "Validate Dependencies" to apply changes.`,
+          );
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+        applicationStore.notificationService.notifyError(
+          `Failed to remove exclusion: ${error.message}`,
+        );
+      }
+    };
+
+    if (exclusions.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="project-dependency-exclusions-list">
+        <div className="project-dependency-exclusions-list__header">
+          <div className="project-dependency-exclusions-list__title">
+            Exclusions ({exclusions.length})
+          </div>
+        </div>
+        <div className="project-dependency-exclusions-list__items">
+          {exclusions.map((exclusion) => (
+            <div
+              key={exclusion.coordinate}
+              className="project-dependency-exclusions-list__item"
+            >
+              <div className="project-dependency-exclusions-list__item__coordinate">
+                {exclusion.coordinate}
+              </div>
+              {!isReadOnly && (
+                <button
+                  className="project-dependency-exclusions-list__item__remove-btn btn--dark btn--caution"
+                  onClick={() => removeExclusion(exclusion)}
+                  title="Remove exclusion"
+                >
+                  <TimesIcon />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  },
+);
+
 const ProjectVersionDependencyEditor = observer(
   (props: {
     projectDependency: ProjectDependency;
@@ -754,7 +1289,6 @@ const ProjectVersionDependencyEditor = observer(
     isReadOnly: boolean;
     projects: Map<string, StoreProjectData>;
   }) => {
-    // init
     const { projectDependency, deleteValue, isReadOnly, projects } = props;
     const projectDependencyData = projects.get(projectDependency.projectId);
     const editorStore = useEditorStore();
@@ -809,10 +1343,10 @@ const ProjectVersionDependencyEditor = observer(
             } else {
               projectDependency.setVersionId('');
             }
+            fetchSelectedProjectVersionsStatus.complete();
           } catch (error) {
             assertErrorThrown(error);
             editorStore.applicationStore.notificationService.notifyError(error);
-          } finally {
             fetchSelectedProjectVersionsStatus.reset();
           }
         }
@@ -935,6 +1469,13 @@ const ProjectVersionDependencyEditor = observer(
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
         />
+        {selectedProject && selectedVersionOption && (
+          <ProjectDependencyInlineExclusionsSelector
+            projectDependency={projectDependency}
+            isReadOnly={isReadOnly}
+          />
+        )}
+
         <ControlledDropdownMenu
           className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--medium"
           content={
@@ -997,29 +1538,42 @@ export const ProjectDependencyEditor = observer(() => {
   const isLoading =
     configState.updatingConfigurationState.isInProgress ||
     configState.fetchingProjectVersionsState.isInProgress ||
-    dependencyEditorState.fetchingDependencyInfoState.isInProgress;
+    dependencyEditorState.fetchingDependencyInfoState.isInProgress ||
+    dependencyEditorState.validatingDependenciesState.isInProgress;
 
   return (
     <PanelContentLists>
+      <PanelLoadingIndicator isLoading={isLoading} />
       {isLoading && (
         <div className="project-dependency-editor__progress-msg">
           {configState.updatingConfigurationState.isInProgress
             ? `Updating configuration...`
             : configState.fetchingProjectVersionsState.isInProgress
               ? `Fetching dependency versions`
-              : 'Updating project dependency tree and potential conflicts'}
+              : dependencyEditorState.validatingDependenciesState.isInProgress
+                ? 'Validating dependencies and compiling...'
+                : dependencyEditorState.fetchingDependencyInfoState.isInProgress
+                  ? 'Updating project dependency tree and potential conflicts'
+                  : ''}
         </div>
       )}
       <ProjectDependencyActions dependencyEditorState={dependencyEditorState} />
       {currentProjectConfiguration.projectDependencies.map(
         (projectDependency) => (
-          <ProjectVersionDependencyEditor
-            key={projectDependency._UUID}
-            projectDependency={projectDependency}
-            deleteValue={deleteProjectDependency(projectDependency)}
-            isReadOnly={isReadOnly}
-            projects={configState.projects}
-          />
+          <div key={projectDependency._UUID}>
+            <ProjectVersionDependencyEditor
+              projectDependency={projectDependency}
+              deleteValue={deleteProjectDependency(projectDependency)}
+              isReadOnly={isReadOnly}
+              projects={configState.projects}
+            />
+            {/* Indented exclusions list */}
+            <ProjectDependencyExclusionsList
+              key={`${projectDependency.projectId}-exclusions`}
+              projectDependency={projectDependency}
+              isReadOnly={isReadOnly}
+            />
+          </div>
         ),
       )}
       {dependencyEditorState.reportTab && (

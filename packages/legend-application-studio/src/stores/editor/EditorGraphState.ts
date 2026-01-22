@@ -674,9 +674,9 @@ export class EditorGraphState {
     }
   }
 
-  async getIndexedDependencyEntities(): Promise<
-    Map<string, EntitiesWithOrigin>
-  > {
+  async getIndexedDependencyEntities(
+    dependencyReport?: ProjectDependencyGraphReport | undefined,
+  ): Promise<Map<string, EntitiesWithOrigin>> {
     const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
@@ -734,23 +734,30 @@ export class EditorGraphState {
           ([k, v]) => v.size > 1,
         );
         if (hasConflicts) {
-          let dependencyInfo: ProjectDependencyGraphReport | undefined;
-          try {
-            const dependencyTree =
-              await this.editorStore.depotServerClient.analyzeDependencyTree(
-                dependencyCoordinates.map((e) =>
-                  ProjectDependencyCoordinates.serialization.toJson(e),
-                ),
+          let dependencyInfo: ProjectDependencyGraphReport | undefined =
+            dependencyReport;
+          if (!dependencyInfo) {
+            // No dependency report was provided, need to fetch it
+            try {
+              const dependencyTree =
+                await this.editorStore.depotServerClient.analyzeDependencyTree(
+                  dependencyCoordinates.map((e) =>
+                    ProjectDependencyCoordinates.serialization.toJson(e),
+                  ),
+                );
+              const rawReport =
+                RawProjectDependencyReport.serialization.fromJson(
+                  dependencyTree,
+                );
+              dependencyInfo = buildDependencyReport(rawReport);
+            } catch (error) {
+              assertErrorThrown(error);
+              this.editorStore.applicationStore.logService.error(
+                LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+                error,
               );
-            const rawReport =
-              RawProjectDependencyReport.serialization.fromJson(dependencyTree);
-            dependencyInfo = buildDependencyReport(rawReport);
-          } catch (error) {
-            assertErrorThrown(error);
-            this.editorStore.applicationStore.logService.error(
-              LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
-              error,
-            );
+            }
+          } else {
           }
           const startErrorMessage =
             'Depending on multiple versions of a project is not supported. Found conflicts:\n';
@@ -799,15 +806,22 @@ export class EditorGraphState {
     projectDependencies: ProjectDependency[],
   ): Promise<ProjectDependencyCoordinates[]> {
     return Promise.all(
-      projectDependencies.map(async (dep) =>
-        Promise.resolve(
+      projectDependencies.map(async (dep) => {
+        const exclusionCoordinates = (dep.exclusions ?? []).map(
+          (exclusion) => ({
+            groupId: guaranteeNonNullable(exclusion.groupId),
+            artifactId: guaranteeNonNullable(exclusion.artifactId),
+          }),
+        );
+        return Promise.resolve(
           new ProjectDependencyCoordinates(
             guaranteeNonNullable(dep.groupId),
             guaranteeNonNullable(dep.artifactId),
             dep.versionId,
+            exclusionCoordinates.length > 0 ? exclusionCoordinates : undefined,
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 

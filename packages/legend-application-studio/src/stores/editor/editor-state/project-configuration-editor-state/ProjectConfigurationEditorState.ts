@@ -234,6 +234,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   ): GeneratorFn<void> {
     try {
       this.updatingConfigurationState.inProgress();
+
       yield this.editorStore.sdlcServerClient.updateConfiguration(
         this.editorStore.sdlcState.activeProject.projectId,
         this.editorStore.sdlcState.activeWorkspace,
