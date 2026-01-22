@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 5.3.71
+
+### Patch Changes
+
+- [#4790](https://github.com/finos/legend-studio/pull/4790) [`e07e346`](https://github.com/finos/legend-studio/commit/e07e3469e6de6c8ea85f2b913cbcb5ea3a6cf9e1) ([@lisaknbur](https://github.com/lisaknbur)) - Added exclusions to dependency config and functionality to resolve compatible dependencies from dependency tree viewer
+
 ## 5.3.70
 
 ### Patch Changes

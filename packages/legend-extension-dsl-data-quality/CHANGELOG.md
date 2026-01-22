@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.7
+
+### Patch Changes
+
+- [#4802](https://github.com/finos/legend-studio/pull/4802) [`e7e25c1`](https://github.com/finos/legend-studio/commit/e7e25c1d16f13c5b93c95e137884a8d13769c869) ([@dramala](https://github.com/dramala)) - Data quality validation: Make relation validation default when creating data quality validation
+
 ## 2.1.6
 
 ## 2.1.5

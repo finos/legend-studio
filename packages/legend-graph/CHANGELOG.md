@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.26
+
+### Patch Changes
+
+- [#4805](https://github.com/finos/legend-studio/pull/4805) [`bb54137`](https://github.com/finos/legend-studio/commit/bb5413760c983a8388eb4b4071349456f4219f9d) ([@yash0024](https://github.com/yash0024)) - Update DataProduct in pure graph
+
 ## 32.3.25
 
 ### Patch Changes
