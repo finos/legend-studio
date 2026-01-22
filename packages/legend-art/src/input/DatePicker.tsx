@@ -18,8 +18,10 @@ import { useForkRef } from '@mui/material';
 import {
   DatePicker as BaseDatePicker,
   DateCalendar as BaseDateCalendar,
+  DateTimePicker as BaseDateTimePicker,
   type BaseSingleInputFieldProps,
   type DatePickerProps,
+  type DateTimePickerProps,
   type DateValidationError,
   type FieldSection,
   type UseDateFieldProps,
@@ -39,6 +41,13 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps<Date>>(
     return <BaseDatePicker ref={ref} {...props} />;
   },
 );
+
+export const DateTimePicker = forwardRef<
+  HTMLInputElement,
+  DateTimePickerProps<Date>
+>(function DateTimePicker(props, ref) {
+  return <BaseDateTimePicker ref={ref} {...props} />;
+});
 
 // Make text field work with the browser input
 // See https://mui.com/x/react-date-pickers/custom-field/#using-the-browser-input
