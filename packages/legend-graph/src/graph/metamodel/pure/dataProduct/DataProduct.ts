@@ -40,11 +40,13 @@ import type { Association } from '../packageableElements/domain/Association.js';
 import type { EmbeddedData } from '../data/EmbeddedData.js';
 import { ConcreteFunctionDefinition } from '../packageableElements/function/ConcreteFunctionDefinition.js';
 import { generateFunctionPrettyName } from '../../../helpers/PureLanguageHelper.js';
+import type { StereotypeReference } from '../packageableElements/domain/StereotypeReference.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
   title: string | undefined;
   description: string | undefined;
+  stereotypes: StereotypeReference[] = [];
 
   constructor(id: string) {
     this.id = id;
@@ -56,6 +58,7 @@ export abstract class AccessPoint implements Hashable {
       this.id,
       this.title ?? '',
       this.description ?? '',
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
     ]);
   }
 }

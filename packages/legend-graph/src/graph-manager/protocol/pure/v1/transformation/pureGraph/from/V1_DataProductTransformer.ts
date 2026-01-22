@@ -83,6 +83,7 @@ const transformAccessPoint = (
     lake.reproducible = ap.reproducible;
     lake.description = ap.description;
     lake.title = ap.title;
+    lake.stereotypes = ap.stereotypes.map(V1_transformStereotype);
     return lake;
   } else if (ap instanceof FunctionAccessPoint) {
     const func = new V1_FunctionAccessPoint();
@@ -90,6 +91,7 @@ const transformAccessPoint = (
     func.description = ap.description;
     func.title = func.title;
     func.query = V1_transformRawLambda(ap.query, context);
+    func.stereotypes = ap.stereotypes.map(V1_transformStereotype);
     return func;
   } else if (ap instanceof UnknownAccessPoint) {
     const un = new V1_UnknownAccessPoint();

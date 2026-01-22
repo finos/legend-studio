@@ -115,6 +115,9 @@ export const V1_lakehouseAccessPointModelSchema = createModelSchema(
     func: usingModelSchema(V1_rawLambdaModelSchema),
     id: primitive(),
     reproducible: optional(primitive()),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
     targetEnvironment: primitive(),
     title: optional(primitive()),
   },
@@ -127,6 +130,9 @@ export const V1_functionAccessPointModelSchema = createModelSchema(
     description: optional(primitive()),
     id: primitive(),
     query: usingModelSchema(V1_rawLambdaModelSchema),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
     title: optional(primitive()),
   },
 );
@@ -291,6 +297,9 @@ export const V1_NativeModelAccessModelSchema = createModelSchema(
 export const V1_DefaultAccessPointGroupModelSchema = createModelSchema(
   V1_AccessPointGroup,
   {
+    _type: usingConstantValueSchema(
+      V1_AccessPointGrouptype.DEFAULT_ACCESS_POINT_GROUP,
+    ),
     accessPoints: customList(
       V1_serializeAccessPoint,
       V1_deserializeAccessPoint,
@@ -462,6 +471,7 @@ export const V1_dataProductModelSchema = (
     sampleValues: optionalCustomList(
       (data: V1_EmbeddedData) => V1_serializeEmbeddedDataType(data, plugins),
       (data) => V1_deserializeEmbeddedDataType(data, plugins),
+      { INTERNAL__forceReturnEmptyInTest: true },
     ),
     icon: optionalCustom(
       V1_serializeDataProductIcon,
@@ -479,9 +489,13 @@ export const V1_dataProductModelSchema = (
       V1_serializeDataProductType,
       V1_deserializeDataProductType,
     ),
-    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
     supportInfo: optionalCustomUsingModelSchema(V1_SupportInfoModelSchema),
-    taggedValues: customListWithSchema(V1_taggedValueModelSchema),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
     title: optional(primitive()),
   });
 

@@ -100,6 +100,9 @@ export const V1_buildAccessPoint = (
     lakeAccessPoint.classification = ap.classification;
     lakeAccessPoint.description = ap.description;
     lakeAccessPoint.title = ap.title;
+    lakeAccessPoint.stereotypes = ap.stereotypes
+      .map((stereotype) => context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
     return lakeAccessPoint;
   } else if (ap instanceof V1_FunctionAccessPoint) {
     const functionAccessPoint = new FunctionAccessPoint(
@@ -112,6 +115,9 @@ export const V1_buildAccessPoint = (
     );
     functionAccessPoint.description = ap.description;
     functionAccessPoint.title = ap.title;
+    functionAccessPoint.stereotypes = ap.stereotypes
+      .map((stereotype) => context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
     return functionAccessPoint;
   } else if (ap instanceof V1_UnknownAccessPoint) {
     const unknown = new UnknownAccessPoint(ap.id);
