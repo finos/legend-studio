@@ -23,7 +23,7 @@ import type { SetURLSearchParams } from 'react-router';
  * @param stateVar the state variable to sync
  * @param updateStateVar setter function to update the state variable (should be memoized with useCallback)
  * @param searchParamKey the key of the URL search parameter to sync with
- * @param searchParams the current URL search parameters (i.e., from useSearchParams)
+ * @param searchParamValue the current URL search parameter value (i.e., from useSearchParams)
  * @param setSearchParams function to update the URL search parameters (i.e., from useSearchParams)
  * @param initializedCallback function to check if the underlying state is initialized and ready to sync with URL (should be memoized with useCallback)
  */
