@@ -1003,7 +1003,7 @@ function rearrangePivotResultColumns(
 export function generateColumnDefs(
   snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
-) {
+): Array<ColDef | ColGroupDef> {
   // NOTE: only show columns which are fetched in select() as we
   // can't solely rely on column selection because of certain restrictions
   // from ag-grid, e.g. in the case of row grouping tree column: the columns
@@ -1094,7 +1094,7 @@ export function generateColumnDefs(
 export function generateColumnDefsForDimensions(
   snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
-) {
+): Array<ColDef | ColGroupDef> {
   // NOTE: only show columns which are fetched in select() or are dimensions as we
   // can't solely rely on column selection because of certain restrictions
   // from ag-grid, e.g. in the case of row grouping tree column: the columns

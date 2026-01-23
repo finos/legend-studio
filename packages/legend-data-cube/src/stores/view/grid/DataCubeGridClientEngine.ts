@@ -19,6 +19,8 @@ import type {
   IRowNode,
   IServerSideDatasource,
   IServerSideGetRowsParams,
+  ColDef,
+  ColGroupDef,
 } from 'ag-grid-community';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import {
@@ -86,6 +88,13 @@ type DataCubeGridClientCellValue =
   | undefined;
 type DataCubeGridClientRowData = {
   [key: string]: DataCubeGridClientCellValue;
+};
+
+type DataCubeGridFetchResult = {
+  rowData: DataCubeGridClientRowData[];
+  columnDefs: Array<
+    ColDef<DataCubeGridClientRowData> | ColGroupDef<DataCubeGridClientRowData>
+  >;
 };
 
 export enum DataCubeGridClientExportFormat {
@@ -461,7 +470,7 @@ export async function fetchDimensionalQueryRows(
   snapshot: DataCubeSnapshot,
   view: DataCubeViewState,
   previousTree?: DataCubeDimensionalTree,
-) {
+): Promise<DataCubeGridFetchResult> {
   const task = view.taskService.newTask('Fetching data...');
 
   let rowData: DataCubeGridClientRowData[] = [];

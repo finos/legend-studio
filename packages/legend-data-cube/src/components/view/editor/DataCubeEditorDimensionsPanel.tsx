@@ -1214,7 +1214,6 @@ export const DataCubeEditorDimensionsPanel = observer(
                         autoGroupColumnDef={{
                           headerName: 'Name',
                           field: 'name',
-                          colId: 'name',
                           flex: 1,
                           minWidth: 100,
                           filter: true,
