@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.140
+
+### Patch Changes
+
+- [#4806](https://github.com/finos/legend-studio/pull/4806) [`ec974c1`](https://github.com/finos/legend-studio/commit/ec974c1898649727f1ccffab1c97e620b0036f7c) ([@travisstebbins](https://github.com/travisstebbins)) - Export MUI DateTimePicker
+
 ## 7.1.139
 
 ### Patch Changes

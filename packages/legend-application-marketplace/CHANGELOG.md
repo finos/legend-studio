@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.61
+
+### Patch Changes
+
+- [#4808](https://github.com/finos/legend-studio/pull/4808) [`0da4c97`](https://github.com/finos/legend-studio/commit/0da4c97a834aca9a66f29279037bf749aa11ec73) ([@jackp5150](https://github.com/jackp5150)) - Make individual contract pages handle manager and data owner approvals
+
 ## 0.1.60
 
 ## 0.1.59

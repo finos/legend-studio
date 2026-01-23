@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.3.61
+
+### Patch Changes
+
+- [#4810](https://github.com/finos/legend-studio/pull/4810) [`3483b8a`](https://github.com/finos/legend-studio/commit/3483b8af08786fa1712b90affa0e65e17b77b814) ([@TharunRajeev](https://github.com/TharunRajeev)) - Updated ag-grid version to 35.0.0
+
 ## 0.3.60
 
 ## 0.3.59
