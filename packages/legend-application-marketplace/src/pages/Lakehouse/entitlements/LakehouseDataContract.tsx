@@ -30,10 +30,11 @@ import {
   EntitlementsDataContractContent,
   EntitlementsDataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   GraphManagerState,
+  V1_ApprovalType,
   V1_dataContractsResponseModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
   V1_transformDataContractToLiteDatacontract,
@@ -62,18 +63,64 @@ export const LakehouseDataContractTask =
       const contractId = guaranteeNonNullable(
         params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_ID],
       );
-      const taskId = guaranteeNonNullable(
-        params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_TASK_ID],
+      const [currentTaskId, setCurrentTaskId] = useState<string>(
+        guaranteeNonNullable(
+          params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_TASK_ID],
+        ),
       );
 
       const associatedTask = contractViewerState?.associatedTasks?.find(
-        (task) => task.rec.taskId === taskId,
+        (task) => task.rec.taskId === currentTaskId,
       );
       const isTaskPending =
         associatedTask?.rec.status === V1_UserApprovalStatus.PENDING;
       const userCanApprove =
         isTaskPending && associatedTask.assignees.includes(currentUser);
       const initialUser = associatedTask?.rec.consumer;
+
+      const navigateToNextTaskIfNeeded = useCallback(() => {
+        if (!contractViewerState?.associatedTasks) {
+          return;
+        }
+
+        const consumer = contractViewerState.associatedTasks.find(
+          (task) => task.rec.taskId === currentTaskId,
+        )?.rec.consumer;
+
+        const privilegeManagerTask = contractViewerState.associatedTasks.find(
+          (task) =>
+            task.rec.consumer === consumer &&
+            task.rec.type ===
+              V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+        );
+
+        if (
+          privilegeManagerTask?.rec.status === V1_UserApprovalStatus.APPROVED
+        ) {
+          const dataOwnerTask = contractViewerState.associatedTasks.find(
+            (task) =>
+              task.rec.consumer === consumer &&
+              task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
+          );
+
+          if (dataOwnerTask && dataOwnerTask.rec.taskId !== currentTaskId) {
+            setCurrentTaskId(dataOwnerTask.rec.taskId);
+          }
+        }
+      }, [contractViewerState?.associatedTasks, currentTaskId]);
+
+      useEffect(() => {
+        if (
+          contractViewerState?.associatedTasks &&
+          contractViewerState.initializationState.hasCompleted
+        ) {
+          navigateToNextTaskIfNeeded();
+        }
+      }, [
+        contractViewerState?.associatedTasks,
+        contractViewerState?.initializationState.hasCompleted,
+        navigateToNextTaskIfNeeded,
+      ]);
 
       useEffect(() => {
         const fetchAndInitializeContract = async () => {
@@ -91,7 +138,6 @@ export const LakehouseDataContractTask =
               ),
               rawContract,
             );
-
             const dataContracts = contractResponse.dataContracts;
             if (dataContracts?.[0]?.dataContract) {
               const dataContract = dataContracts[0]?.dataContract;
@@ -132,7 +178,7 @@ export const LakehouseDataContractTask =
       const handleApprove = async () => {
         const response =
           await marketplaceBaseStore.lakehouseContractServerClient.approveTask(
-            taskId,
+            currentTaskId,
             auth.user?.access_token,
           );
         const change = deserialize(
@@ -154,7 +200,7 @@ export const LakehouseDataContractTask =
       const handleDeny = async () => {
         const response =
           await marketplaceBaseStore.lakehouseContractServerClient.denyTask(
-            taskId,
+            currentTaskId,
             auth.user?.access_token,
           );
         const change = deserialize(
@@ -256,9 +302,12 @@ export const LakehouseDataContractTask =
               )}
               <EntitlementsDataContractContent
                 currentViewer={contractViewerState}
-                getContractTaskUrl={() =>
+                getContractTaskUrl={(
+                  contractIdParam: string,
+                  taskIdParam: string,
+                ) =>
                   marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                    generateContractPagePath(contractId, taskId),
+                    generateContractPagePath(contractIdParam, taskIdParam),
                   )
                 }
                 getDataProductUrl={(
