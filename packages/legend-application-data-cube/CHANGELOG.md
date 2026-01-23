@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.39
+
+### Patch Changes
+
+- [#4809](https://github.com/finos/legend-studio/pull/4809) [`ed70850`](https://github.com/finos/legend-studio/commit/ed70850343c7b77fbead93fbda5f39ad133a5ee9) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: guarantee refresh when the user token is expired and stored in session
+
 ## 0.7.38
 
 ## 0.7.37
