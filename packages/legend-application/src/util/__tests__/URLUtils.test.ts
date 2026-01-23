@@ -127,8 +127,8 @@ describe('useSyncStateAndSearchParam', () => {
     const updateSearchParam = jest.fn((setter) => {
       if (typeof setter === 'function') {
         const prev = new URLSearchParams();
-        const result = setter(prev);
-        searchParamValue = result.get?.('testParam') ?? null;
+        const result = setter(prev) as Map<string, string>;
+        searchParamValue = result.get('testParam') ?? null;
       }
     }) as SetURLSearchParams;
     const initializedCallback = () => true;
@@ -174,8 +174,8 @@ describe('useSyncStateAndSearchParam', () => {
     const updateSearchParam = jest.fn((setter) => {
       if (typeof setter === 'function') {
         const prev = new URLSearchParams();
-        const result = setter(prev);
-        searchParamValue = result.get?.('testParam') ?? null;
+        const result = setter(prev) as Map<string, string>;
+        searchParamValue = result.get('testParam') ?? null;
       }
     }) as SetURLSearchParams;
     const initializedCallback = () => true;
