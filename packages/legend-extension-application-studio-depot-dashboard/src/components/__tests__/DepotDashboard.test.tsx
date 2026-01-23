@@ -49,10 +49,10 @@ import {
 import {
   type LegendStudioApplicationStore,
   LegendStudioApplicationConfig,
+  LegendStudioPluginManager,
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
 } from '@finos/legend-application-studio';
-import { TEST__LegendApplicationPluginManager } from './TestUtils.js';
 
 jest.mock('@finos/legend-application-studio', () => {
   const actual = jest.requireActual('@finos/legend-application-studio');
@@ -92,7 +92,7 @@ const setupDepotDashboardTest = async (
     };
   },
 ) => {
-  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  const pluginManager = LegendStudioPluginManager.create();
 
   const config = new LegendStudioApplicationConfig({
     configData: {
