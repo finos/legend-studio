@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { flowResult } from 'mobx';
 import {
   Drawer,

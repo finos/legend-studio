@@ -62,6 +62,7 @@ const OrderAccordion: React.FC<{
 }> = observer(({ order, isOpenOrder }) => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const ordersStore = useLegendMarketplaceOrdersStore();
+  const baseStore = useLegendMarketplaceBaseStore();
 
   const isCancellable = canCancelOrder(order);
 
@@ -210,9 +211,15 @@ const OrderAccordion: React.FC<{
                   variant="contained"
                   size="small"
                   startIcon={<OpenNewTabIcon />}
+                  disabled={!order.workflow_details?.url_manager}
                   onClick={(e) => {
                     e.stopPropagation();
-                    window.open(order.workflow_details?.url_manager, '_blank');
+                    const url = order.workflow_details?.url_manager;
+                    if (url) {
+                      baseStore.applicationStore.navigationService.navigator.visitAddress(
+                        url,
+                      );
+                    }
                   }}
                   className="legend-marketplace-order-accordion__track-button"
                 >

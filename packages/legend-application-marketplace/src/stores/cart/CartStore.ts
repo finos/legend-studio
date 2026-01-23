@@ -95,9 +95,11 @@ export class CartStore {
 
   isItemInCart(itemId: number): boolean {
     for (const vendorProfileId in this.items) {
-      const cartItems = this.items[Number(vendorProfileId)];
-      if (cartItems?.some((item) => item.id === itemId)) {
-        return true;
+      if (Object.prototype.hasOwnProperty.call(this.items, vendorProfileId)) {
+        const cartItems = this.items[Number(vendorProfileId)];
+        if (cartItems?.some((item) => item.id === itemId)) {
+          return true;
+        }
       }
     }
     return false;

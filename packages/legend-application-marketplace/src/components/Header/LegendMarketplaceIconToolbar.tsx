@@ -274,20 +274,31 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     };
 
     const handleNewsletterClick = (): void => {
-      applicationStore.navigationService.navigator.visitAddress(
-        applicationStore.config.options.newsletterUrl,
-      );
-      applicationStore.telemetryService.logEvent(
-        LEGEND_MARKETPLACE_APP_EVENT.CLICK_SUBSCRIBE_TO_NEWSLETTER,
-        {},
-      );
+      const newsletterUrl = applicationStore.config.options.newsletterUrl;
+      if (newsletterUrl) {
+        applicationStore.navigationService.navigator.visitAddress(
+          newsletterUrl,
+        );
+        applicationStore.telemetryService.logEvent(
+          LEGEND_MARKETPLACE_APP_EVENT.CLICK_SUBSCRIBE_TO_NEWSLETTER,
+          {},
+        );
+      }
       setAnchorEl(null);
     };
 
     const handleHistoricalNewslettersClick = (): void => {
-      applicationStore.navigationService.navigator.visitAddress(
-        applicationStore.config.options.historicalNewsletterUrl,
-      );
+      const historicalNewsletterUrl =
+        applicationStore.config.options.historicalNewsletterUrl;
+      if (historicalNewsletterUrl) {
+        applicationStore.navigationService.navigator.visitAddress(
+          historicalNewsletterUrl,
+        );
+        applicationStore.telemetryService.logEvent(
+          LEGEND_MARKETPLACE_APP_EVENT.CLICK_BROWSE_HISTORICAL_NEWSLETTERS,
+          {},
+        );
+      }
       setAnchorEl(null);
     };
 
@@ -306,15 +317,23 @@ export const LegendMarketplaceIconToolbar = observer(() => {
               Schedule a Demo
             </MenuItem>
           )}
-          <MenuItem onClick={handleNewsletterClick}>
-            <OpenNewTabIcon style={{ marginRight: '8px' }} />
-            Subscribe to our Newsletter
-          </MenuItem>
-          <MenuItem onClick={handleHistoricalNewslettersClick}>
-            <OpenNewTabIcon style={{ marginRight: '8px' }} />
-            Browse Historical Newsletters
-          </MenuItem>
-          <MenuContentDivider />
+          {applicationStore.config.options.newsletterUrl && (
+            <MenuItem onClick={handleNewsletterClick}>
+              <OpenNewTabIcon style={{ marginRight: '8px' }} />
+              Subscribe to our Newsletter
+            </MenuItem>
+          )}
+          {applicationStore.config.options.historicalNewsletterUrl && (
+            <MenuItem onClick={handleHistoricalNewslettersClick}>
+              <OpenNewTabIcon style={{ marginRight: '8px' }} />
+              Browse Historical Newsletters
+            </MenuItem>
+          )}
+          {(showDevFeatures ||
+            applicationStore.config.options.newsletterUrl ||
+            applicationStore.config.options.historicalNewsletterUrl) && (
+            <MenuContentDivider />
+          )}
           <MenuItem
             onClick={() => {
               setOpenAppInfo(true);
