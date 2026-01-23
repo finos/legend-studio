@@ -96,13 +96,15 @@ export const LegendMarketplaceSearchResults =
       useSyncStateAndSearchParam(
         marketplaceBaseStore.useProducerSearch,
         useCallback(
-          (val: string | undefined) => {
+          (val: string | null) => {
             marketplaceBaseStore.setUseProducerSearch(val === 'true');
           },
           [marketplaceBaseStore],
         ),
         LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_PRODUCER_SEARCH,
-        searchParams,
+        searchParams.get(
+          LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_PRODUCER_SEARCH,
+        ),
         setSearchParams,
         useCallback(
           () => marketplaceBaseStore.initState.hasCompleted,

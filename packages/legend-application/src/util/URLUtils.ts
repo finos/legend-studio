@@ -23,26 +23,26 @@ import type { SetURLSearchParams } from 'react-router';
  * @param stateVar the state variable to sync
  * @param updateStateVar setter function to update the state variable (should be memoized with useCallback)
  * @param searchParamKey the key of the URL search parameter to sync with
- * @param searchParams the current URL search parameters (i.e., from useSearchParams)
+ * @param searchParamValue the current URL search parameter value (i.e., from useSearchParams)
  * @param setSearchParams function to update the URL search parameters (i.e., from useSearchParams)
  * @param initializedCallback function to check if the underlying state is initialized and ready to sync with URL (should be memoized with useCallback)
  */
 export const useSyncStateAndSearchParam = (
-  stateVar: string | boolean | number | undefined,
-  updateStateVar: (val: string | undefined) => void,
+  stateVar: string | boolean | number | null | undefined,
+  updateStateVar: (val: string | null) => void,
   searchParamKey: string,
-  searchParams: URLSearchParams,
+  searchParamValue: string | null,
   setSearchParams: SetURLSearchParams,
   initializedCallback: () => boolean,
 ): void => {
   // Sync state with URL search param
   useEffect(() => {
     if (initializedCallback()) {
-      // On mount or when searchParams change, update state from URL
-      const urlParamValue = searchParams.get(searchParamKey) ?? undefined;
+      // On mount or when search param value changes, update state from URL
+      const urlParamValue = searchParamValue;
       updateStateVar(urlParamValue);
     }
-  }, [initializedCallback, searchParamKey, searchParams, updateStateVar]);
+  }, [initializedCallback, searchParamKey, searchParamValue, updateStateVar]);
 
   // Sync URL search param with state
   useEffect(() => {
