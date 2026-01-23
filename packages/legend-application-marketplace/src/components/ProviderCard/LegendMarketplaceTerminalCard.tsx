@@ -69,11 +69,7 @@ export const LegendMarketplaceTerminalCard = observer(
             ),
           ),
         );
-        if (
-          result.success &&
-          result.recommendations &&
-          result.recommendations.length > 0
-        ) {
+        if (result.recommendations && result.recommendations.length > 0) {
           setRecommendedItems(result.recommendations);
           setModalMessage(result.message);
           setShowRecommendationsModal(true);
@@ -88,8 +84,9 @@ export const LegendMarketplaceTerminalCard = observer(
       }
     };
 
-    const isInCart = (providerId: number): boolean =>
-      providerId in legendMarketplaceBaseStore.cartStore.items;
+    const isInCart = legendMarketplaceBaseStore.cartStore.isItemInCart(
+      terminalResult.id,
+    );
 
     const handleViewCart = () => {
       legendMarketplaceBaseStore.cartStore.setOpen(true);
@@ -147,14 +144,14 @@ export const LegendMarketplaceTerminalCard = observer(
                 onClick={() => {
                   handleAddToCart().catch(() => {});
                 }}
-                disabled={isAddingToCart || isInCart(terminalResult.id)}
+                disabled={isAddingToCart || isInCart}
               >
                 {isAddingToCart ? (
                   <>
                     Adding... &nbsp;
                     <CircularProgress size={16} />
                   </>
-                ) : isInCart(terminalResult.id) ? (
+                ) : isInCart ? (
                   <>
                     In Cart &nbsp;
                     <Box sx={{ color: '#077D55', display: 'inline-flex' }}>
@@ -176,7 +173,7 @@ export const LegendMarketplaceTerminalCard = observer(
                     roundingIncrement: 1,
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
-                  }).format(terminalResult.price)}/access`}
+                  }).format(terminalResult.price)}/month`}
                   className="legend-marketplace-terminal-card__price"
                   sx={{ color: 'white', backgroundColor: '#077d55' }}
                 />

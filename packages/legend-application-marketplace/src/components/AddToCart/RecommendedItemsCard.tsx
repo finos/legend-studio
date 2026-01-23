@@ -31,7 +31,9 @@ export const RecommendedItemsCard = (props: RecommendedItemsCardProps) => {
   const { recommendedItem } = props;
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [inCart, setInCart] = useState(false);
+  const [inCart, setInCart] = useState(() =>
+    legendMarketplaceBaseStore.cartStore.isItemInCart(recommendedItem.id),
+  );
 
   const handleAddAddonToCart = (addon: TerminalResult) => {
     setIsAddingToCart(true);
@@ -74,13 +76,12 @@ export const RecommendedItemsCard = (props: RecommendedItemsCardProps) => {
         variant="body2"
         className="recommended-addons-modal__item-price"
       >
-        {recommendedItem.price === 0
-          ? 'Free'
-          : recommendedItem.price.toLocaleString('en-US', {
-              style: 'currency',
-              currency: 'USD',
-              maximumFractionDigits: 2,
-            })}
+        {recommendedItem.price.toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
       </Typography>
       <Box className="recommended-addons-modal__item-action">
         <Button

@@ -384,6 +384,11 @@
 
       &__title {
         color: var(--color-dark-theme-text-primary);
+
+        &__count {
+          color: var(--color-dark-theme-blue-primary);
+          background: var(--color-dark-theme-bg-elevated);
+        }
       }
 
       &__subtitle {

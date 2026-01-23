@@ -35,7 +35,8 @@ import { LegendMarketplaceEnv } from '../stores/LegendMarketplaceEnvState.js';
 class LegendMarketplaceApplicationCoreOptions {
   dataProductConfig: DataProductConfig | undefined;
 
-  newsletterUrl!: string;
+  newsletterUrl: string | undefined;
+  historicalNewsletterUrl: string | undefined;
 
   /**
    * Used for any features that are still in development
@@ -49,9 +50,10 @@ class LegendMarketplaceApplicationCoreOptions {
       dataProductConfig: optional(
         usingModelSchema(DataProductConfig.serialization.schema),
       ),
-      newsletterUrl: primitive(),
+      newsletterUrl: optional(primitive()),
       showDevFeatures: optional(primitive()),
       highlightedDataProducts: optional(primitive()),
+      historicalNewsletterUrl: optional(primitive()),
     }),
   );
 

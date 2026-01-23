@@ -15,6 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
+import { flowResult } from 'mobx';
 import {
   Drawer,
   Box,
@@ -32,10 +34,52 @@ import {
 import { CloseIcon, TrashIcon } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { CartStore } from '../../stores/cart/CartStore.js';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 export const CartDrawer = observer((): React.ReactNode => {
   const baseStore = useLegendMarketplaceBaseStore();
+  const applicationStore = useApplicationStore();
   const cart = baseStore.cartStore;
+
+  // Refresh cart when drawer opens
+  useEffect(() => {
+    if (cart.open) {
+      flowResult(cart.refresh()).catch((error) => {
+        baseStore.applicationStore.notificationService.notifyError(
+          `Failed to refresh cart: ${error}`,
+        );
+      });
+    }
+  }, [cart, cart.open, baseStore.applicationStore]);
+
+  const handleClearCartClick = () => {
+    const itemCount = cart.cartSummary.total_items;
+    const itemText = itemCount === 1 ? 'item' : 'items';
+    applicationStore.alertService.setActionAlertInfo({
+      title: `Clear Cart`,
+      message: `Remove ${itemCount} ${itemText}?`,
+      prompt: `This will permanently remove all items from your cart. This action cannot be undone.`,
+      type: ActionAlertType.CAUTION,
+      actions: [
+        {
+          label: 'Clear Cart',
+          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          handler: (): void => {
+            cart.clearCart();
+          },
+        },
+        {
+          label: 'Cancel',
+          type: ActionAlertActionType.PROCEED,
+          default: true,
+        },
+      ],
+    });
+  };
 
   return (
     <Drawer
@@ -135,12 +179,19 @@ export const CartDrawer = observer((): React.ReactNode => {
                   >
                     <Box className="legend-marketplace-cart-drawer__item-card__header">
                       <Box className="legend-marketplace-cart-drawer__item-card__title-section">
-                        <Chip
-                          size="small"
-                          label={item.providerName}
-                          className="legend-marketplace-cart-drawer__item-card__provider"
-                          variant="filled"
-                        />
+                        <Box className="legend-marketplace-cart-drawer__item-card__chips">
+                          <Chip
+                            size="small"
+                            label={item.providerName}
+                            className="legend-marketplace-cart-drawer__item-card__provider"
+                            variant="filled"
+                          />
+                          <Chip
+                            size="small"
+                            label={item.category}
+                            className="legend-marketplace-cart-drawer__item-card__category"
+                          />
+                        </Box>
                         <Typography
                           variant="h6"
                           className="legend-marketplace-cart-drawer__item-card__name"
@@ -173,7 +224,7 @@ export const CartDrawer = observer((): React.ReactNode => {
                           variant="caption"
                           className="legend-marketplace-cart-drawer__item-card__price-suffix"
                         >
-                          /access
+                          /month
                         </Typography>
                       </Box>
                     </Box>
@@ -194,13 +245,11 @@ export const CartDrawer = observer((): React.ReactNode => {
             cart.submitState.isInProgress ||
             cart.loadingState.isInProgress
           }
-          onClick={() => {
-            cart.clearCart();
-          }}
+          onClick={handleClearCartClick}
           size="small"
           className="legend-marketplace-cart-drawer__clear-button"
         >
-          {cart.loadingState.isInProgress ? 'Clearing...' : 'Clear Cart'}
+          Clear Cart
         </Button>
         <Button
           variant="contained"

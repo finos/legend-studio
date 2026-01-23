@@ -31,6 +31,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Pagination,
   type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -57,6 +58,9 @@ interface RecommendedAddOnsModalProps {
   onViewCart?: () => void;
 }
 
+const MAX_DISPLAY_ITEMS_COUNT = 10;
+const ITEMS_PER_PAGE_LIST = [10, 15, 25, 50];
+
 export const RecommendedAddOnsModal = observer(
   (props: RecommendedAddOnsModalProps) => {
     const {
@@ -70,6 +74,12 @@ export const RecommendedAddOnsModal = observer(
 
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | ''>('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(15);
+
+    const isTerminalAdded =
+      terminal && terminal.terminalItemType === TerminalItemType.TERMINAL;
+    const headerName = isTerminalAdded ? 'Add-On Name' : 'Terminal Name';
 
     const filteredAndSortedItems = useMemo(() => {
       let items = [...recommendedItems];
@@ -92,10 +102,25 @@ export const RecommendedAddOnsModal = observer(
       return items;
     }, [recommendedItems, searchTerm, sortOrder]);
 
+    const totalPages = Math.ceil(filteredAndSortedItems.length / itemsPerPage);
+    const mandatoryAddOn: string = useMemo<string>(() => {
+      const mandatory = filteredAndSortedItems.find((i) => i.isMandatory);
+      if (mandatory?.productName) {
+        return `${mandatory.productName} Added To Cart `;
+      }
+      return '';
+    }, [filteredAndSortedItems]);
+    const paginatedItems = useMemo(() => {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      return filteredAndSortedItems.slice(startIndex, endIndex);
+    }, [filteredAndSortedItems, currentPage, itemsPerPage]);
+
     const closeModal = () => {
       setShowModal(false);
       setSearchTerm('');
       setSortOrder('');
+      setCurrentPage(1);
     };
 
     const handleViewCart = () => {
@@ -107,6 +132,19 @@ export const RecommendedAddOnsModal = observer(
       event: SelectChangeEvent<'asc' | 'desc' | ''>,
     ) => {
       setSortOrder(event.target.value);
+      setCurrentPage(1);
+    };
+
+    const handlePageChange = (
+      _event: React.ChangeEvent<unknown>,
+      page: number,
+    ) => {
+      setCurrentPage(page);
+    };
+
+    const handleItemsPerPageChange = (event: SelectChangeEvent<number>) => {
+      setItemsPerPage(Number(event.target.value));
+      setCurrentPage(1);
     };
 
     if (!showModal) {
@@ -155,6 +193,14 @@ export const RecommendedAddOnsModal = observer(
         </DialogTitle>
 
         <DialogContent className="recommended-addons-modal__content">
+          {mandatoryAddOn && (
+            <Box className="recommended-addons-modal__alert">
+              <CheckCircleIcon />
+              <Typography>
+                <strong>Mandatory Add-On Included:</strong> {mandatoryAddOn}
+              </Typography>
+            </Box>
+          )}
           <Box className="recommended-addons-modal__content-header">
             <Typography
               variant="h6"
@@ -171,7 +217,7 @@ export const RecommendedAddOnsModal = observer(
               className="recommended-addons-modal__section-description"
             >
               {terminal?.terminalItemType === TerminalItemType.TERMINAL
-                ? 'Complete your setup with these recommended add-ons'
+                ? 'Enhance your terminal with these add-ons'
                 : 'You must order a terminal license with this add-on'}
             </Typography>
           </Box>
@@ -189,9 +235,16 @@ export const RecommendedAddOnsModal = observer(
               <Box className="recommended-addons-modal__filter-controls">
                 <TextField
                   size="medium"
-                  placeholder="Search any service..."
+                  placeholder={
+                    terminal?.terminalItemType === TerminalItemType.TERMINAL
+                      ? 'Search by Add-On name...'
+                      : 'Search by Terminal name...'
+                  }
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="recommended-addons-modal__search-field"
                   slotProps={{
                     input: {
@@ -242,6 +295,37 @@ export const RecommendedAddOnsModal = observer(
                     </MenuItem>
                   </Select>
                 </FormControl>
+                {filteredAndSortedItems.length > MAX_DISPLAY_ITEMS_COUNT && (
+                  <FormControl
+                    size="medium"
+                    className="recommended-addons-modal__items-per-page-select"
+                    sx={{ minWidth: 120 }}
+                  >
+                    <InputLabel
+                      id="items-per-page-label"
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      Items per page
+                    </InputLabel>
+                    <Select
+                      labelId="items-per-page-label"
+                      value={itemsPerPage}
+                      label="Items per page"
+                      onChange={handleItemsPerPageChange}
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      {ITEMS_PER_PAGE_LIST.map((items) => (
+                        <MenuItem
+                          key={items}
+                          value={items}
+                          sx={{ fontSize: '1rem' }}
+                        >
+                          {items}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
               </Box>
 
               {filteredAndSortedItems.length === 0 ? (
@@ -251,40 +335,73 @@ export const RecommendedAddOnsModal = observer(
                   </Typography>
                 </Box>
               ) : (
-                <Box className="recommended-addons-modal__list">
-                  <Box className="recommended-addons-modal__list-header">
+                <>
+                  <Box className="recommended-addons-modal__list-info">
                     <Typography
-                      variant="subtitle2"
-                      className="recommended-addons-modal__header-name"
+                      variant="body2"
+                      sx={{
+                        fontSize: '1.4rem',
+                        color: 'var(--color-dark-grey-300)',
+                      }}
                     >
-                      Product Name
-                    </Typography>
-                    <Typography
-                      variant="subtitle2"
-                      className="recommended-addons-modal__header-provider"
-                    >
-                      Provider
-                    </Typography>
-                    <Typography
-                      variant="subtitle2"
-                      className="recommended-addons-modal__header-price"
-                    >
-                      Price
-                    </Typography>
-                    <Typography
-                      variant="subtitle2"
-                      className="recommended-addons-modal__header-action"
-                    >
-                      Action
+                      Showing {(currentPage - 1) * itemsPerPage + 1} -{' '}
+                      {Math.min(
+                        currentPage * itemsPerPage,
+                        filteredAndSortedItems.length,
+                      )}{' '}
+                      of {filteredAndSortedItems.length} items
                     </Typography>
                   </Box>
-                  {filteredAndSortedItems.map((item) => (
-                    <RecommendedItemsCard
-                      key={item.id}
-                      recommendedItem={item}
-                    />
-                  ))}
-                </Box>
+                  <Box className="recommended-addons-modal__list">
+                    <Box className="recommended-addons-modal__list-header">
+                      <Typography
+                        variant="subtitle2"
+                        className="recommended-addons-modal__header-name"
+                      >
+                        {headerName}
+                      </Typography>
+                      <Typography
+                        variant="subtitle2"
+                        className="recommended-addons-modal__header-provider"
+                      >
+                        Provider
+                      </Typography>
+                      <Typography
+                        variant="subtitle2"
+                        className="recommended-addons-modal__header-price"
+                      >
+                        Price (monthly)
+                      </Typography>
+                      <Typography
+                        variant="subtitle2"
+                        className="recommended-addons-modal__header-action"
+                      >
+                        Action
+                      </Typography>
+                    </Box>
+                    {paginatedItems
+                      .filter((item) => !item.isMandatory)
+                      .map((item) => (
+                        <RecommendedItemsCard
+                          key={item.id}
+                          recommendedItem={item}
+                        />
+                      ))}
+                  </Box>
+                  {totalPages > 1 && (
+                    <Box className="recommended-addons-modal__pagination">
+                      <Pagination
+                        count={totalPages}
+                        page={currentPage}
+                        onChange={handlePageChange}
+                        color="primary"
+                        size="large"
+                        showFirstButton={true}
+                        showLastButton={true}
+                      />
+                    </Box>
+                  )}
+                </>
               )}
             </>
           )}

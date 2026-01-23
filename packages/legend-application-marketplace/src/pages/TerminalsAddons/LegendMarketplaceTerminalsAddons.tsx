@@ -52,9 +52,12 @@ import {
   DatabaseIcon,
   InfoCircleIcon,
   SparkleStarsIcon,
+  UserSearchInput,
 } from '@finos/legend-art';
 import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
 import { flowResult } from 'mobx';
+import type { LegendUser } from '@finos/legend-shared';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -113,11 +116,18 @@ const SearchResultsRenderer = observer(
     const { vendorDataState, terminalResults, sectionTitle, seeAll, tooltip } =
       props;
 
+    const showCount = vendorDataState.searchTerm.trim().length > 0;
+
     return (
       <div>
         <div className="legend-marketplace-vendordata-main-search-results__category">
           <div className="legend-marketplace-vendordata-main-sidebar__title">
             {sectionTitle}
+            {showCount && (
+              <span className="legend-marketplace-vendordata-main-sidebar__title__count">
+                ({terminalResults.length})
+              </span>
+            )}
           </div>
           {tooltip && (
             <Tooltip title={tooltip} placement={'right'} arrow={true}>
@@ -340,6 +350,9 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
   observer(() => {
     const marketPlaceVendorDataStore = useLegendMarketPlaceVendorDataStore();
 
+    const marketplaceStore = useLegendMarketplaceBaseStore();
+    const cartStore = marketplaceStore.cartStore;
+
     const handleSearch = useCallback(
       (query: string | undefined) => {
         marketPlaceVendorDataStore.setSearchTerm(query ?? '');
@@ -378,10 +391,34 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
         </div>
 
         <div className="legend-marketplace-body__content">
-          <div className="legend-marketplace-body__tab">
-            <RefinedVendorRadioSelector
-              vendorDataState={marketPlaceVendorDataStore}
-            />
+          <div className="legend-marketplace-body__filter-bar">
+            <div className="legend-marketplace-user-search-container">
+              <span className="legend-marketplace-user-search-container__label">
+                Target User:
+              </span>
+              <UserSearchInput
+                className="legend-marketplace__user-input"
+                userValue={marketPlaceVendorDataStore.selectedUser}
+                setUserValue={(_user: LegendUser): void => {
+                  if (!_user.id) {
+                    marketPlaceVendorDataStore.resetSelectedUser();
+                    cartStore.resetUser();
+                  } else {
+                    marketPlaceVendorDataStore.setSelectedUser(_user);
+                    cartStore.setUser(_user.id);
+                  }
+                }}
+                userSearchService={marketplaceStore.userSearchService}
+                label="Search user or kerberos"
+                required={true}
+                variant="outlined"
+              />
+            </div>
+            <div className="legend-marketplace-body__tab">
+              <RefinedVendorRadioSelector
+                vendorDataState={marketPlaceVendorDataStore}
+              />
+            </div>
           </div>
           <VendorDataMainContent
             marketPlaceVendorDataState={marketPlaceVendorDataStore}

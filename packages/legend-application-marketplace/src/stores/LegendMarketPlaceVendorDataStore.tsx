@@ -30,6 +30,7 @@ import type {
 import {
   ActionState,
   type GeneratorFn,
+  LegendUser,
   assertErrorThrown,
 } from '@finos/legend-shared';
 
@@ -44,7 +45,7 @@ export class LegendMarketPlaceVendorDataStore {
   readonly store: LegendMarketplaceBaseStore;
   marketplaceServerClient: MarketplaceServerClient;
 
-  currentUser = '';
+  selectedUser: LegendUser = new LegendUser();
 
   readonly fetchingProvidersState = ActionState.create();
 
@@ -69,6 +70,7 @@ export class LegendMarketPlaceVendorDataStore {
     store: LegendMarketplaceBaseStore,
   ) {
     makeObservable(this, {
+      selectedUser: observable,
       terminalProviders: observable,
       addOnProviders: observable,
       providers: observable,
@@ -85,7 +87,10 @@ export class LegendMarketPlaceVendorDataStore {
       setPage: action,
       setItemsPerPage: action,
       setSearchTerm: action,
+      setSelectedUser: action,
+      resetSelectedUser: action,
       init: flow,
+      refresh: flow,
       populateProviders: flow,
     });
 
@@ -96,13 +101,17 @@ export class LegendMarketPlaceVendorDataStore {
 
   *init(): GeneratorFn<void> {
     try {
-      this.currentUser = this.applicationStore.identityService.currentUser;
+      this.selectedUser = new LegendUser();
+      this.selectedUser.id = this.applicationStore.identityService.currentUser;
     } catch (error) {
       this.applicationStore.notificationService.notifyError(
         `Failed to get current user: ${error}`,
       );
     }
+    this.refresh();
+  }
 
+  *refresh(): GeneratorFn<void> {
     try {
       yield flowResult(this.populateProviders());
     } catch (error) {
@@ -137,13 +146,24 @@ export class LegendMarketPlaceVendorDataStore {
     this.page = 1;
   }
 
+  setSelectedUser(user: LegendUser): void {
+    this.selectedUser = user;
+    this.refresh();
+  }
+
+  resetSelectedUser(): void {
+    this.selectedUser = new LegendUser();
+    this.selectedUser.id = this.applicationStore.identityService.currentUser;
+    this.refresh();
+  }
+
   *populateProviders(): GeneratorFn<void> {
     try {
       this.fetchingProvidersState.inProgress();
 
       if (this.providerDisplayState === VendorDataProviderType.ALL) {
         const params: FetchProductsParams = {
-          kerberos: this.currentUser,
+          kerberos: this.selectedUser.id,
           product_type: ProductType.ALL,
           preferred_products: true,
           page_size: this.itemsPerPage,
@@ -167,7 +187,7 @@ export class LegendMarketPlaceVendorDataStore {
         this.providerDisplayState === VendorDataProviderType.TERMINAL_LICENSE
       ) {
         const params: FetchProductsParams = {
-          kerberos: this.currentUser,
+          kerberos: this.selectedUser.id,
           product_type: ProductType.VENDOR_PROFILE,
           preferred_products: false,
           page_size: this.itemsPerPage,
@@ -185,7 +205,7 @@ export class LegendMarketPlaceVendorDataStore {
         this.totalItems = response.total_count ?? 0;
       } else {
         const params: FetchProductsParams = {
-          kerberos: this.currentUser,
+          kerberos: this.selectedUser.id,
           product_type: ProductType.SERVICE_PRICING,
           preferred_products: false,
           page_size: this.itemsPerPage,

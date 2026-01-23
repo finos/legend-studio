@@ -80,7 +80,7 @@ export const getProcessInstanceId = (
   if (
     order.workflow_details.current_stage === WorkflowCurrentStage.DIRECT_MANAGER
   ) {
-    return order.workflow_details.manager_process_id;
+    return order.workflow_details.piid_manager;
   } else if (
     order.workflow_details.current_stage ===
     WorkflowCurrentStage.BUSINESS_ANALYST

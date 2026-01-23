@@ -26,6 +26,7 @@ export interface CartItemRequest {
   description: string;
   isOwned: string;
   skipWorkflow?: boolean;
+  vendorProfileId?: number;
   cartId?: number;
 }
 
@@ -42,6 +43,13 @@ export interface CartSummary {
 export interface CartItemResponse {
   message: string;
   status_code: number;
+  vendor_profile_id: number;
   marketplace_addons: TerminalResult[] | null;
   marketplace_terminals: TerminalResult[] | null;
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
 }

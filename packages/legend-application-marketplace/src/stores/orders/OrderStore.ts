@@ -52,6 +52,7 @@ export class OrdersStore {
       setSelectedTab: action,
       fetchOpenOrders: flow,
       fetchClosedOrders: flow,
+      refreshCurrentOrders: flow,
       cancelOrder: flow,
       currentOrders: computed,
       currentFetchState: computed,
@@ -136,11 +137,8 @@ export class OrdersStore {
   }
 
   *refreshCurrentOrders(): GeneratorFn<void> {
-    if (this.selectedTab === 'open') {
-      yield* this.fetchOpenOrders();
-    } else {
-      yield* this.fetchClosedOrders();
-    }
+    // Refresh both open and closed orders since cancelled orders move from open to closed
+    yield Promise.all([this.fetchOpenOrders(), this.fetchClosedOrders()]);
   }
 
   *cancelOrder(
@@ -172,7 +170,7 @@ export class OrdersStore {
       this.cancelOrderState.complete();
 
       // Refresh orders after successful cancellation
-      yield* this.refreshCurrentOrders();
+      this.refreshCurrentOrders();
 
       return true;
     } catch (error) {

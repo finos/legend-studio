@@ -35,6 +35,7 @@ import {
   ShoppingCartIcon,
   ChevronDownIcon,
   TimesCircleIcon,
+  OpenNewTabIcon,
 } from '@finos/legend-art';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
@@ -52,6 +53,7 @@ import { CancelOrderDialog } from '../../components/orders/CancelOrderDialog.js'
 import {
   formatOrderDate,
   canCancelOrder,
+  formatTimestamp,
 } from '../../stores/orders/OrderHelpers.js';
 
 const OrderAccordion: React.FC<{
@@ -60,6 +62,7 @@ const OrderAccordion: React.FC<{
 }> = observer(({ order, isOpenOrder }) => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const ordersStore = useLegendMarketplaceOrdersStore();
+  const baseStore = useLegendMarketplaceBaseStore();
 
   const isCancellable = canCancelOrder(order);
 
@@ -100,7 +103,52 @@ const OrderAccordion: React.FC<{
                 variant="caption"
                 className="legend-marketplace-order-accordion__summary-label"
               >
-                Order Placed
+                Order #
+              </Typography>
+              <Typography
+                variant="body2"
+                className="legend-marketplace-order-accordion__summary-value"
+              >
+                {order.order_id}
+              </Typography>
+            </Box>
+
+            <Box className="legend-marketplace-order-accordion__summary-field">
+              <Typography
+                variant="caption"
+                className="legend-marketplace-order-accordion__summary-label"
+              >
+                Ordered By
+              </Typography>
+              <Typography
+                variant="body2"
+                className="legend-marketplace-order-accordion__summary-value"
+              >
+                {order.ordered_by_name || order.ordered_by}
+              </Typography>
+            </Box>
+
+            <Box className="legend-marketplace-order-accordion__summary-field">
+              <Typography
+                variant="caption"
+                className="legend-marketplace-order-accordion__summary-label"
+              >
+                Ordered For
+              </Typography>
+              <Typography
+                variant="body2"
+                className="legend-marketplace-order-accordion__summary-value"
+              >
+                {order.ordered_for_name || order.ordered_for}
+              </Typography>
+            </Box>
+
+            <Box className="legend-marketplace-order-accordion__summary-field">
+              <Typography
+                variant="caption"
+                className="legend-marketplace-order-accordion__summary-label"
+              >
+                Date Ordered
               </Typography>
               <Typography
                 variant="body2"
@@ -115,7 +163,7 @@ const OrderAccordion: React.FC<{
                 variant="caption"
                 className="legend-marketplace-order-accordion__summary-label"
               >
-                Total
+                Total Cost (monthly)
               </Typography>
               <Typography
                 variant="body2"
@@ -130,18 +178,53 @@ const OrderAccordion: React.FC<{
                 variant="caption"
                 className="legend-marketplace-order-accordion__summary-label"
               >
-                Order #
+                Order Type
               </Typography>
               <Typography
                 variant="body2"
                 className="legend-marketplace-order-accordion__summary-value"
               >
-                {order.order_id}
+                {order.order_type}
               </Typography>
             </Box>
 
+            {!isOpenOrder && (
+              <Box className="legend-marketplace-order-accordion__summary-field">
+                <Typography
+                  variant="caption"
+                  className="legend-marketplace-order-accordion__summary-label"
+                >
+                  Status
+                </Typography>
+                <Typography
+                  variant="body2"
+                  className="legend-marketplace-order-accordion__summary-value legend-marketplace-order-accordion__summary-value--status"
+                >
+                  {order.status || 'N/A'}
+                </Typography>
+              </Box>
+            )}
+
             {isOpenOrder && (
               <Box className="legend-marketplace-order-accordion__summary-actions">
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<OpenNewTabIcon />}
+                  disabled={!order.workflow_details?.url_manager}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const url = order.workflow_details?.url_manager;
+                    if (url) {
+                      baseStore.applicationStore.navigationService.navigator.visitAddress(
+                        url,
+                      );
+                    }
+                  }}
+                  className="legend-marketplace-order-accordion__track-button"
+                >
+                  Track Order
+                </Button>
                 <Tooltip
                   title={
                     !isCancellable
@@ -171,6 +254,81 @@ const OrderAccordion: React.FC<{
 
         <AccordionDetails className="legend-marketplace-order-accordion__details">
           <Box className="legend-marketplace-order-accordion__details-container">
+            {!isOpenOrder && order.workflow_details && (
+              <Box className="legend-marketplace-order-accordion__closure-info">
+                <Typography
+                  variant="h6"
+                  className="legend-marketplace-order-accordion__closure-title"
+                >
+                  Closure Information
+                </Typography>
+                <Box className="legend-marketplace-order-accordion__closure-details">
+                  <Box className="legend-marketplace-order-accordion__closure-row">
+                    <Typography
+                      variant="body2"
+                      className="legend-marketplace-order-accordion__closure-label"
+                    >
+                      Closure Reason:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      className="legend-marketplace-order-accordion__closure-value"
+                    >
+                      {order.workflow_details.manager_action ?? 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box className="legend-marketplace-order-accordion__closure-row">
+                    <Typography
+                      variant="body2"
+                      className="legend-marketplace-order-accordion__closure-label"
+                    >
+                      Closed By:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      className="legend-marketplace-order-accordion__closure-value"
+                    >
+                      {order.workflow_details.manager_actioned_by ?? 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box className="legend-marketplace-order-accordion__closure-row">
+                    <Typography
+                      variant="body2"
+                      className="legend-marketplace-order-accordion__closure-label"
+                    >
+                      Closure Date:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      className="legend-marketplace-order-accordion__closure-value"
+                    >
+                      {order.workflow_details.manager_actioned_timestamp
+                        ? formatTimestamp(
+                            order.workflow_details.manager_actioned_timestamp,
+                          )
+                        : 'N/A'}
+                    </Typography>
+                  </Box>
+                  {order.workflow_details.manager_comment && (
+                    <Box className="legend-marketplace-order-accordion__closure-row">
+                      <Typography
+                        variant="body2"
+                        className="legend-marketplace-order-accordion__closure-label"
+                      >
+                        Comment:
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        className="legend-marketplace-order-accordion__closure-value"
+                      >
+                        {order.workflow_details.manager_comment}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            )}
+
             <Box className="legend-marketplace-order-accordion__items-section">
               <Stack spacing={2}>
                 {order.service_pricing_items.map((item, index) => (
@@ -304,14 +462,8 @@ export const LegendMarketplaceYourOrders: React.FC =
                 onChange={handleTabChange}
                 aria-label="order status tabs"
               >
-                <Tab
-                  label={`In Progress (${ordersStore.openOrders.length})`}
-                  value="open"
-                />
-                <Tab
-                  label={`Completed (${ordersStore.closedOrders.length})`}
-                  value="closed"
-                />
+                <Tab label="In Progress" value="open" />
+                <Tab label="Completed" value="closed" />
               </Tabs>
             </Box>
 
