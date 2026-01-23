@@ -42,8 +42,8 @@ export class SecondaryOAuthClient {
       if (Date.now() < exp - 10 * 60 * 1000) {
         return this.user.access_token;
       } else {
-        this.user = guaranteeNonNullable(await this.userManager.signinSilent());
-        return this.user.access_token;
+        await this.userManager.revokeTokens();
+        await this.userManager.removeUser();
       }
     }
     this.user = guaranteeNonNullable(await this.userManager.signinSilent());
