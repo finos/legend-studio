@@ -38,7 +38,7 @@ import type {
 export class LakehouseIngestServerClient extends AbstractServerClient {
   environmentClassification: string | undefined;
 
-  private DATA_PRODUCT_URL = 'data-product';
+  protected DATA_PRODUCT_URL = 'data-product';
   constructor(config: IngestDeploymentServerConfig | undefined) {
     super({});
     if (config) {
@@ -47,27 +47,27 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
     }
   }
 
-  private _token = (token?: string) => ({
+  protected _token = (token?: string) => ({
     Authorization: `Bearer ${token}`,
   });
 
-  private _tokenWithTextPlain = (token?: string) => ({
+  protected _tokenWithTextPlain = (token?: string) => ({
     [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
     Authorization: `Bearer ${token}`,
   });
 
-  private _tokenWithAcceptTextPlain = (token?: string) => ({
+  protected _tokenWithAcceptTextPlain = (token?: string) => ({
     [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
     Authorization: `Bearer ${token}`,
   });
 
-  private _dataProduct = (serverUrl?: string | undefined): string =>
+  protected _dataProduct = (serverUrl?: string | undefined): string =>
     `${serverUrl ?? this.baseUrl}/${this.DATA_PRODUCT_URL}/api/entitlements/sdlc/deploy/definitions`;
 
-  private _ingestDefinitions = (): string =>
+  protected _ingestDefinitions = (): string =>
     `${this.baseUrl}/api/ingest/sdlc/deploy/definitions`;
 
-  private _ingest = (serverUrl?: string | undefined): string =>
+  protected _ingest = (serverUrl?: string | undefined): string =>
     `${serverUrl ?? this.baseUrl}/api/ingest`;
 
   changeServer(serverConfig: IngestDeploymentServerConfig): void {
@@ -78,11 +78,16 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
   validate(
     validateGrammar: string,
     token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<PlainObject<IngestDefinitionValidationResponse>> {
     return this.post(
       `${this._ingestDefinitions()}/validate`,
       validateGrammar,
-      undefined,
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       this._tokenWithTextPlain(token),
     );
   }
@@ -90,20 +95,31 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
   deploy(
     deployGrammar: string,
     token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<IngestDefinitionDeploymentResponse> {
     return this.post(
       `${this._ingestDefinitions()}`,
       deployGrammar,
-      undefined,
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       this._tokenWithTextPlain(token),
     );
   }
 
-  write_location(urn: string, token: string | undefined): Promise<PlainObject> {
+  write_location(
+    urn: string,
+    token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
+  ): Promise<PlainObject> {
     return this.post(
       `${this._ingest()}/${encodeURIComponent(urn)}/write-location`,
       undefined,
-      undefined,
+      { signal: options?.abortController?.signal ?? null },
       this._token(token),
     );
   }
@@ -111,11 +127,14 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
   deployDataProduct(
     fullGrammar: string,
     token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<PlainObject<AdhocDataProductDeployResponse>> {
     return this.post(
       `${this._dataProduct()}`,
       fullGrammar,
-      undefined,
+      { signal: options?.abortController?.signal ?? null },
       this._token(token),
     );
   }
@@ -123,10 +142,15 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
   getIngestEnvironment = (
     ingestServerUrl: string | undefined,
     token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<PlainObject<V1_IngestEnvironment>> =>
     this.get(
       `${this._ingest(ingestServerUrl)}/catalog-state/environment`,
-      {},
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       this._token(token),
     );
 
@@ -134,10 +158,15 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
     deploymentId: number,
     ingestServerUrl: string | undefined,
     token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<PlainObject<ProducerEnvironment>> =>
     this.get(
       `${this._ingest(ingestServerUrl)}/catalog-state/producer-environments/deployments/${deploymentId}`,
-      {},
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       this._token(token),
     );
 
@@ -145,10 +174,15 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
     producerEnvironmentUrn: string,
     ingestServerUrl: string | undefined,
     token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<string[]> =>
     this.get(
       `${this._ingest(ingestServerUrl)}/catalog-state/producer-environments/${producerEnvironmentUrn}/definitions`,
-      {},
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       this._token(token),
     );
 
@@ -156,10 +190,15 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
     producerEnvironmentUrn: string,
     ingestServerUrl: string | undefined,
     token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<PlainObject<V1_ProducerEnvironment>> =>
     this.get(
       `${this._ingest(ingestServerUrl)}/catalog-state/producer-environments/${producerEnvironmentUrn}`,
-      {},
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       this._token(token),
     );
 
@@ -167,10 +206,15 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
     ingestDefinitionUrn: string,
     ingestServerUrl: string | undefined,
     token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<PlainObject<V1_IngestDefinition>> =>
     this.get(
       `${this._ingest(ingestServerUrl)}/catalog-state/definitions/details`,
-      {},
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       this._token(token),
       {
         ingestDefinitionUrn: ingestDefinitionUrn,
@@ -181,10 +225,15 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
     ingestDefinitionUrn: string,
     ingestServerUrl: string | undefined,
     token: string | undefined,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
   ): Promise<string> =>
     this.get(
       `${this._ingest(ingestServerUrl)}/catalog-state/definitions/${ingestDefinitionUrn}`,
-      {},
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       this._tokenWithAcceptTextPlain(token),
     );
 }
