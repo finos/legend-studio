@@ -35,6 +35,7 @@ import {
   WindowMaximizeIcon,
   Dialog,
   ExpandMoreIcon,
+  GitBranchIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -454,9 +455,54 @@ const DataCubeScreen = observer(
   },
 );
 
+const LineageScreen = observer(
+  (props: {
+    accessPointState: DataProductAccessPointState;
+    dataAccessState: DataProductDataAccessState | undefined;
+  }) => {
+    const { accessPointState, dataAccessState } = props;
+    const dataProductName = dataAccessState?.product.name;
+    const accessPointName = accessPointState.accessPoint.id;
+    const openLineageAction =
+      dataAccessState?.dataProductViewerState.openLineage;
+    const validAccessPointLineage =
+      openLineageAction && dataProductName && accessPointName;
+    if (
+      !(
+        dataAccessState?.entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
+      )
+    ) {
+      return (
+        <TabMessageScreen message="Lineage not supported for this Adhoc Data Products" />
+      );
+    } else if (!openLineageAction) {
+      return <TabMessageScreen message="Lineage has not been configured" />;
+    }
+    return (
+      <div className="data-product__viewer__tab-screen">
+        <button
+          onClick={() => {
+            if (validAccessPointLineage) {
+              openLineageAction(dataProductName, accessPointName);
+            }
+          }}
+          tabIndex={-1}
+          disabled={!validAccessPointLineage}
+          className="data-product__viewer__tab-screen__btn"
+          title="Open Lineage Viewer"
+        >
+          Open Lineage Viewer
+        </button>
+      </div>
+    );
+  },
+);
+
 const enum DataProductAccessPointTabs {
   COLUMNS = 'Columns',
   GRAMMAR = 'Grammar',
+  LINEAGE = 'Lineage',
   DATACUBE = 'Datacube',
   POWER_BI = 'Power BI',
   SQL = 'SQL',
@@ -687,6 +733,13 @@ const AccessPointTable = observer(
               )}
             </>
           );
+        case DataProductAccessPointTabs.LINEAGE:
+          return (
+            <LineageScreen
+              accessPointState={accessPointState}
+              dataAccessState={dataAccessState}
+            />
+          );
         case DataProductAccessPointTabs.DATACUBE:
           return (
             <DataCubeScreen
@@ -728,6 +781,11 @@ const AccessPointTable = observer(
         key: DataProductAccessPointTabs.GRAMMAR,
         label: 'Grammar',
         icon: null,
+      },
+      {
+        key: DataProductAccessPointTabs.LINEAGE,
+        label: 'Lineage',
+        icon: <GitBranchIcon />,
       },
       {
         key: DataProductAccessPointTabs.DATACUBE,

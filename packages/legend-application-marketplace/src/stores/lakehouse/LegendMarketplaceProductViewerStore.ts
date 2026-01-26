@@ -19,6 +19,7 @@ import {
   DEFAULT_TAB_SIZE,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateRegistryLineageUrl,
 } from '@finos/legend-application';
 import {
   resolveVersion,
@@ -408,6 +409,47 @@ export class LegendMarketplaceProductViewerStore {
               ),
             );
           },
+          openLineage: this.marketplaceBaseStore.applicationStore.config
+            .registryUrl
+            ? (dataProductName: string, accessPointName: string) => {
+                if (
+                  entitlementsDataProductDetails.origin instanceof
+                    V1_SdlcDeploymentDataProductOrigin &&
+                  this.marketplaceBaseStore.applicationStore.config.registryUrl
+                ) {
+                  const {
+                    group: groupId,
+                    artifact: artifactId,
+                    version: versionId,
+                  } = entitlementsDataProductDetails.origin;
+
+                  LegendMarketplaceTelemetryHelper.logEvent_OpenIntegratedProduct(
+                    this.marketplaceBaseStore.applicationStore.telemetryService,
+                    {
+                      origin: {
+                        type: DATAPRODUCT_TYPE.SDLC,
+                        groupId,
+                        artifactId,
+                        versionId,
+                      },
+                      deploymentId: entitlementsDataProductDetails.deploymentId,
+                      productIntegrationType: PRODUCT_INTEGRATION_TYPE.REGISTRY,
+                      name: entitlementsDataProductDetails.dataProduct.name,
+                    },
+                    undefined,
+                  );
+
+                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                    EXTERNAL_APPLICATION_NAVIGATION__generateRegistryLineageUrl(
+                      this.marketplaceBaseStore.applicationStore.config
+                        .registryUrl,
+                      dataProductName,
+                      accessPointName,
+                    ),
+                  );
+                }
+              }
+            : undefined,
         },
       );
       const dataProductDataAccessState = new DataProductDataAccessState(

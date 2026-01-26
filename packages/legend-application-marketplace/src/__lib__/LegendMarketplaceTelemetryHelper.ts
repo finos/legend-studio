@@ -46,6 +46,7 @@ export enum CONTRACT_ACTION {
 export enum PRODUCT_INTEGRATION_TYPE {
   DATA_CUBE = 'dataCube',
   POWER_BI = 'powerBI',
+  REGISTRY = 'registry',
 }
 
 export enum ICON_TOOLBAR_TYPE {

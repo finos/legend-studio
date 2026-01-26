@@ -108,6 +108,9 @@ export class DataProductViewerState extends BaseViewerState<
   readonly viewDataProductSource?: (() => void) | undefined;
   readonly openPowerBi?: ((apg: string) => void) | undefined;
   readonly openDataCube?: ((sourceData: object) => void) | undefined;
+  readonly openLineage?:
+    | ((dataProductName: string, accessPointName: string) => void)
+    | undefined;
   readonly fetchingDataProductArtifactState = ActionState.create();
 
   constructor(
@@ -124,6 +127,9 @@ export class DataProductViewerState extends BaseViewerState<
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
       openPowerBi?: ((apg: string) => void) | undefined;
       openDataCube?: (sourceData: object) => void;
+      openLineage?:
+        | ((dataProductName: string, accessPointName: string) => void)
+        | undefined;
     },
   ) {
     super(
@@ -166,6 +172,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.viewDataProductSource = actions.viewDataProductSource;
     this.openPowerBi = actions.openPowerBi;
     this.openDataCube = actions.openDataCube;
+    this.openLineage = actions.openLineage;
 
     try {
       this.modelsDocumentationState =
