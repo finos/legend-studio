@@ -119,6 +119,9 @@ export interface LegendMarketplaceApplicationConfigurationData
   datacube: {
     url: string;
   };
+  registry?: {
+    url: string;
+  };
 }
 
 export class LegendLakehouseEntitlementsConfig {
@@ -141,6 +144,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceUserProfileImageUrl?: string | undefined;
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
+  readonly registryUrl: string | undefined;
   readonly datacubeApplicationUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly terminalServerUrl: string;
@@ -355,6 +359,13 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         `Can't configure application: 'powerBi.url' field is missing or empty`,
       ),
     );
+
+    // registry
+    if (input.configData.registry?.url) {
+      this.registryUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.registry.url,
+      );
+    }
 
     // options
     this.options = LegendMarketplaceApplicationCoreOptions.create(

@@ -46,3 +46,13 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl = (
   `${dataCubeApplicationUrl}?sourceData=${encodeURIComponent(
     btoa(JSON.stringify(sourceData)),
   )}`;
+
+/**
+ * @external_application_navigation This depends on Registry routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateRegistryLineageUrl = (
+  registryApplicationUrl: string,
+  dataProductName: string,
+  accessPointName: string,
+): string =>
+  `${registryApplicationUrl}#/lineage/lakehouse/dataProduct/${dataProductName.toUpperCase()}/accessPoint/${accessPointName.toUpperCase()}`;
