@@ -23,7 +23,7 @@ import {
   custom,
   alias,
   optional,
-  SKIP,
+  list,
 } from 'serializr';
 import {
   type PlainObject,
@@ -43,6 +43,8 @@ import type {
 import {
   V1_RawGenericType,
   V1_RawRawType,
+  V1_RawRelationType,
+  V1_RawRelationColumn,
   V1_RawVariable,
 } from '../../../model/rawValueSpecification/V1_RawVariable.js';
 import { V1_multiplicityModelSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
@@ -56,6 +58,11 @@ import { V1_Type_Type } from './V1_TypeSerializationHelper.js';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 import type { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
 import { matchFunctionName } from '../../../../../../../graph/MetaModelUtils.js';
+import {
+  V1_deserializeValueSpecification,
+  V1_serializeValueSpecification,
+} from './V1_ValueSpecificationSerializer.js';
+import type { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification.js';
 
 enum V1_RawExecutionContextType {
   BASE_EXECUTION_CONTEXT = 'BaseExecutionContext',
@@ -82,33 +89,72 @@ const rawRawTypeSchemaModel = createModelSchema(V1_RawRawType, {
   fullPath: primitive(),
 });
 
-const V1_RawGenericTypeSchemaModelInner = createModelSchema(V1_RawGenericType, {
-  multiplicityArguments: customList(
-    (val: V1_Multiplicity) => serialize(V1_multiplicityModelSchema, val),
-    (val) => deserialize(V1_multiplicityModelSchema, val),
-    {
-      INTERNAL__forceReturnEmptyInTest: true,
-    },
-  ),
-  rawType: usingConstantValueSchema(rawRawTypeSchemaModel),
-  typeArguments: optionalCustomList(
-    // To avoid circular dependency, we need to use V1_RawGenericType object model schema
-    // instead of the static V1_RawGenericType model schema
-    (value) => serialize(V1_RawGenericType, value),
-    (value) => deserialize(V1_RawGenericType, value),
-    {
-      INTERNAL__forceReturnEmptyInTest: true,
-    },
-  ),
-  typeVariableValues: optionalCustomList(
-    // TODO
-    (value) => SKIP,
-    (value) => SKIP,
-    {
-      INTERNAL__forceReturnEmptyInTest: true,
-    },
-  ),
-});
+function serializeRawType(val: V1_RawRawType): PlainObject {
+  if (val instanceof V1_RawRelationType) {
+    return serialize(rawRelationTypeSchemaModel(), val);
+  }
+  return serialize(rawRawTypeSchemaModel, val);
+}
+
+function deserializeRawType(val: PlainObject): V1_RawRawType {
+  if (val._type === V1_Type_Type.RELATION_TYPE) {
+    return deserialize(rawRelationTypeSchemaModel(), val) as V1_RawRelationType;
+  }
+  return deserialize(rawRawTypeSchemaModel, val);
+}
+
+function V1_RawGenericTypeSchemaModelInner(): ReturnType<
+  typeof createModelSchema
+> {
+  return createModelSchema(V1_RawGenericType, {
+    multiplicityArguments: customList(
+      (val: V1_Multiplicity) => serialize(V1_multiplicityModelSchema, val),
+      (val) => deserialize(V1_multiplicityModelSchema, val),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
+    rawType: custom(
+      (val) => serializeRawType(val),
+      (val) => deserializeRawType(val),
+    ),
+    typeArguments: optionalCustomList(
+      (value) => serialize(V1_RawGenericType, value),
+      (value) => deserialize(V1_RawGenericType, value),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
+    typeVariableValues: optionalCustomList(
+      (value) =>
+        V1_serializeValueSpecification(value as V1_ValueSpecification, []),
+      (value) => V1_deserializeValueSpecification(value, []),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
+  });
+}
+
+function V1_rawRelationColumnModelSchema(): ReturnType<
+  typeof createModelSchema
+> {
+  return createModelSchema(V1_RawRelationColumn, {
+    name: primitive(),
+    genericType: custom(
+      (val) => serialize(V1_RawGenericTypeSchemaModelInner(), val),
+      (val) => deserialize(V1_RawGenericTypeSchemaModelInner(), val),
+    ),
+    multiplicity: optional(usingModelSchema(V1_multiplicityModelSchema)),
+  });
+}
+
+function rawRelationTypeSchemaModel(): ReturnType<typeof createModelSchema> {
+  return createModelSchema(V1_RawRelationType, {
+    _type: usingConstantValueSchema(V1_Type_Type.RELATION_TYPE),
+    columns: list(usingModelSchema(V1_rawRelationColumnModelSchema())),
+  });
+}
 
 const V1_RawGenericTypeSchemaModel = createModelSchema(V1_RawGenericType, {
   multiplicityArguments: customList(
@@ -120,15 +166,15 @@ const V1_RawGenericTypeSchemaModel = createModelSchema(V1_RawGenericType, {
   ),
   rawType: usingModelSchema(rawRawTypeSchemaModel),
   typeArguments: optionalCustomListWithSchema(
-    V1_RawGenericTypeSchemaModelInner,
+    V1_RawGenericTypeSchemaModelInner(),
     {
       INTERNAL__forceReturnEmptyInTest: true,
     },
   ),
   typeVariableValues: optionalCustomList(
-    // TODO
-    (value) => SKIP,
-    (value) => SKIP,
+    (value) =>
+      V1_serializeValueSpecification(value as V1_ValueSpecification, []),
+    (value) => V1_deserializeValueSpecification(value, []),
     {
       INTERNAL__forceReturnEmptyInTest: true,
     },

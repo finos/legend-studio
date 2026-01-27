@@ -1,0 +1,14 @@
+function domain::testing(sourceData: meta::pure::metamodel::relation::Relation<(ID:Varchar(10)[1], TIME:Double[1], CASHFLOW_AMOUNT:Double[1], RATE:Double[1])>[1]): meta::pure::metamodel::relation::Relation<(ID:Varchar(10)[1], RATE:Double[1], NPV:Double[1])>[1]
+{
+  $sourceData->extend(~[CASHFLOW_NPV:x|$x.CASHFLOW_AMOUNT * exp(-1.0 * $x.RATE * $x.TIME)])->groupBy(~[ID, RATE], ~[NPV:x|$x.CASHFLOW_NPV:y|$y->sum()->cast(@Double)])->project(~[ID:x|$x.ID, RATE:x|$x.RATE->cast(@Double), NPV:x|$x.NPV->cast(@Double)])
+}
+
+function domain::testing2(sourceData: meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]): Integer[1]
+{
+  1
+}
+
+function domain::testing3(): Integer[1]
+{
+  ^meta::pure::metamodel::relation::Relation<Any>()->domain::testing2()
+}

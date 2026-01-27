@@ -23,6 +23,8 @@ import {
   type RawValueSpecificationVisitor,
   RawValueSpecification,
 } from './RawValueSpecification.js';
+import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
+import { RelationType } from '../packageableElements/relation/RelationType.js';
 
 export class RawVariableExpression
   extends RawValueSpecification
@@ -34,15 +36,19 @@ export class RawVariableExpression
   type: PackageableElementReference<Type>;
   multiplicity: Multiplicity;
 
+  typeArguments: GenericTypeReference[] | undefined;
+
   constructor(
     name: string,
     multiplicity: Multiplicity,
     type: PackageableElementReference<Type>,
+    typeArguments?: GenericTypeReference[] | undefined,
   ) {
     super();
     this.name = name;
     this.multiplicity = multiplicity;
     this.type = type;
+    this.typeArguments = typeArguments;
   }
 
   get hashCode(): string {
@@ -51,6 +57,12 @@ export class RawVariableExpression
       this.type.valueForSerialization ?? '',
       this.name,
       this.multiplicity,
+      hashArray(
+        this.typeArguments?.map((t) => {
+          const rawType = t.value.rawType;
+          return rawType instanceof RelationType ? undefined : rawType.path;
+        }) ?? [],
+      ),
     ]);
   }
 

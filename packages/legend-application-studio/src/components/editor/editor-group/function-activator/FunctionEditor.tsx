@@ -265,6 +265,15 @@ const ParameterBasicEditor = observer(
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (val.value !== parameter.type.value) {
         rawVariableExpression_setType(parameter, val.value);
+        if (requireTypeArugments(val.value)) {
+          parameter.typeArguments = [
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                editorStore.graphManagerState.graph.getType(CORE_PURE_PATH.ANY),
+              ),
+            ),
+          ];
+        }
         updateFunctionName(editorStore, applicationStore, _func);
       }
       setIsEditingType(false);

@@ -29,6 +29,7 @@ export const rawVariableExpression_setName = action(
 export const rawVariableExpression_setType = action(
   (target: RawVariableExpression, value: Type): void => {
     target.type.value = observe_Type(value);
+    target.typeArguments = undefined;
   },
 );
 export const rawVariableExpression_setMultiplicity = action(
