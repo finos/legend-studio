@@ -238,6 +238,7 @@ export enum CODE_EDITOR_LANGUAGE {
   XML = 'xml',
   YAML = 'yaml',
   GRAPHQL = 'graphql',
+  PYTHON = 'python',
 }
 
 export type CompletionItem = {
