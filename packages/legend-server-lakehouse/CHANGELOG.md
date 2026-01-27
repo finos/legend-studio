@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.28
+
+### Patch Changes
+
+- [#4816](https://github.com/finos/legend-studio/pull/4816) [`e659bac`](https://github.com/finos/legend-studio/commit/e659bac19667c7b0067ce7eb27428f7f9718c009) ([@travisstebbins](https://github.com/travisstebbins)) - Update LakehouseIngestServerClient to support extension and abort controllers
+
 ## 0.3.27
 
 ## 0.3.26

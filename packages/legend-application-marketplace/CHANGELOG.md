@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace
 
+## 0.1.62
+
+### Patch Changes
+
+- [#4812](https://github.com/finos/legend-studio/pull/4812) [`1019890`](https://github.com/finos/legend-studio/commit/1019890288948fddd2bc3ba7cf8cb9aab7364e80) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug in useSyncStateAndSearchParam
+
+- [#4813](https://github.com/finos/legend-studio/pull/4813) [`b0b19b1`](https://github.com/finos/legend-studio/commit/b0b19b15051bae5025ae88ddaa82adb7b8670944) ([@bojja-gs](https://github.com/bojja-gs)) - New backend response handling for terminal and addons with recommendations and small bug fixes
+
+- [#4818](https://github.com/finos/legend-studio/pull/4818) [`d8706e0`](https://github.com/finos/legend-studio/commit/d8706e0c3cbf9c4e95da2b0c22a3c4482c184405) ([@kelly-thai](https://github.com/kelly-thai)) - Add Registry to config and add openLineage to DataProductViewerState
+
 ## 0.1.61
 
 ### Patch Changes

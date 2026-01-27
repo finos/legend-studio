@@ -1,5 +1,13 @@
 # @finos/legend-application
 
+## 16.0.91
+
+### Patch Changes
+
+- [#4818](https://github.com/finos/legend-studio/pull/4818) [`d8706e0`](https://github.com/finos/legend-studio/commit/d8706e0c3cbf9c4e95da2b0c22a3c4482c184405) ([@kelly-thai](https://github.com/kelly-thai)) - Add external navigation to Registry Lineage
+
+- [#4812](https://github.com/finos/legend-studio/pull/4812) [`1019890`](https://github.com/finos/legend-studio/commit/1019890288948fddd2bc3ba7cf8cb9aab7364e80) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug in useSyncStateAndSearchParam
+
 ## 16.0.90
 
 ## 16.0.89

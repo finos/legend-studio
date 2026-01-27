@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.38
+
+### Patch Changes
+
+- [#4813](https://github.com/finos/legend-studio/pull/4813) [`b0b19b1`](https://github.com/finos/legend-studio/commit/b0b19b15051bae5025ae88ddaa82adb7b8670944) ([@bojja-gs](https://github.com/bojja-gs)) - New backend response handling for terminal and addons with recommendations and small bug fixes
+
 ## 0.1.37
 
 ## 0.1.36

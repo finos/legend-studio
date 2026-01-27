@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.47
+
+### Patch Changes
+
+- [#4818](https://github.com/finos/legend-studio/pull/4818) [`d8706e0`](https://github.com/finos/legend-studio/commit/d8706e0c3cbf9c4e95da2b0c22a3c4482c184405) ([@kelly-thai](https://github.com/kelly-thai)) - Update Access Point viewer with Lineage tab
+
 ## 0.0.46
 
 ## 0.0.45
