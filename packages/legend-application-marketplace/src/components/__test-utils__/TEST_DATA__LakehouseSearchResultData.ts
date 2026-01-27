@@ -26,6 +26,8 @@ export const mockProdSearchResultResponse: PlainObject<DataProductSearchResult>[
       tags2: [],
       tag_score: 0,
       similarity: 0,
+      dataProductSource: 'External',
+      licenseTo: 'Enterprise',
       dataProductDetails: {
         _type: 'lakehouse',
         dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',
@@ -104,6 +106,8 @@ export const mockProdParSearchResultResponse: PlainObject<DataProductSearchResul
       tags2: [],
       tag_score: 0,
       similarity: 0,
+      dataProductSource: 'Internal',
+      licenseTo: 'GBM',
       dataProductDetails: {
         _type: 'lakehouse',
         dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',
@@ -126,6 +130,7 @@ export const mockProdParSearchResultResponse: PlainObject<DataProductSearchResul
       tags2: [],
       tag_score: 0,
       similarity: 0,
+      dataProductSource: 'External',
       dataProductDetails: {
         _type: 'lakehouse',
         dataProductId: 'LAKEHOUSE_ADHOC_DATA_PRODUCT',
@@ -148,6 +153,7 @@ export const mockDevSearchResultResponse: PlainObject<DataProductSearchResult>[]
       tags2: [],
       tag_score: 0,
       similarity: 0,
+      licenseTo: 'Enterprise',
       dataProductDetails: {
         _type: 'lakehouse',
         dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',

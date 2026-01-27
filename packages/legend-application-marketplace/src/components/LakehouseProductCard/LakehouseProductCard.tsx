@@ -383,6 +383,23 @@ export const LakehouseProductCard = observer(
                       )}
                     />
                   )}
+                {productCardState.searchResult.dataProductSource ===
+                  'External' && (
+                  <Chip
+                    size="small"
+                    label={productCardState.searchResult.dataProductSource}
+                    title="Data Product Source"
+                    className="marketplace-lakehouse-data-product-card__data-product-source"
+                  />
+                )}
+                {productCardState.searchResult.licenseTo && (
+                  <Chip
+                    size="small"
+                    label={productCardState.searchResult.licenseTo}
+                    title="License To"
+                    className="marketplace-lakehouse-data-product-card__license-to"
+                  />
+                )}
               </Box>
             )}
             {moreInfoPreview === undefined && (

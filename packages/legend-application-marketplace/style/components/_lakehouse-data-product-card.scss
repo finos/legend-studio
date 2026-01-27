@@ -63,7 +63,7 @@
 
   &__lakehouse {
     align-self: end;
-    font-size: 1rem;
+    font-size: 1.3rem;
     text-transform: none;
     color: var(--tw-color-green-100);
     background: var(--tw-color-green-600);
@@ -71,7 +71,7 @@
 
   &__version {
     align-self: end;
-    font-size: 1rem;
+    font-size: 1.3rem;
     text-transform: none;
 
     &--snapshot {
@@ -87,7 +87,7 @@
 
   &__environment-classification {
     align-self: end;
-    font-size: 1rem;
+    font-size: 1.3rem;
     text-transform: none;
 
     &--unknown {
@@ -109,6 +109,22 @@
       color: var(--tw-color-green-100);
       background: var(--tw-color-green-600);
     }
+  }
+
+  &__data-product-source {
+    align-self: end;
+    font-size: 1.3rem;
+    text-transform: none;
+    background-color: var(--color-search-chip-source-bg);
+    color: var(--color-search-chip-source-text);
+  }
+
+  &__license-to {
+    align-self: end;
+    font-size: 1.3rem;
+    text-transform: none;
+    background-color: var(--color-search-chip-license-bg);
+    color: var(--color-search-chip-license-text);
   }
 
   &__description {

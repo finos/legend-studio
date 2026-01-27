@@ -127,6 +127,8 @@ export class DataProductSearchResult {
   tag_score!: number;
   similarity!: number;
   dataProductDetails!: DataProductSearchResultDetails;
+  dataProductSource!: string | undefined;
+  licenseTo!: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductSearchResult, {
@@ -142,6 +144,8 @@ export class DataProductSearchResult {
         serializeDataProductSearchResultDetails,
         deserializeDataProductSearchResultDetails,
       ),
+      dataProductSource: optional(primitive()),
+      licenseTo: optional(primitive()),
     }),
   );
 }
