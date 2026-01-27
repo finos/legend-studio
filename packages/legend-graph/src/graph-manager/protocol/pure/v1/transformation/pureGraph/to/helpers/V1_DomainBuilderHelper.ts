@@ -140,7 +140,15 @@ export const V1_buildVariable = (
     variable.multiplicity.upperBound,
   );
   const type = context.resolveType(variable.genericType.rawType.fullPath);
-  return new RawVariableExpression(variable.name, multiplicity, type);
+  const typeArguments = variable.genericType.typeArguments.map((g) =>
+    context.resolveRawGenericTypeFromProtocol(g),
+  );
+  return new RawVariableExpression(
+    variable.name,
+    multiplicity,
+    type,
+    typeArguments,
+  );
 };
 
 export const V1_buildUnit = (

@@ -59,6 +59,8 @@ import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1
 import {
   V1_RawGenericType,
   V1_RawRawType,
+  V1_RawRelationColumn,
+  V1_RawRelationType,
   type V1_RawVariable,
 } from '../../../model/rawValueSpecification/V1_RawVariable.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
@@ -145,6 +147,49 @@ export const V1_createRawGenericTypeWithElementPath = (
   genType.rawType = pType;
   return genType;
 };
+
+export function V1_createRawGenericTypeFromPathAndTypeArguments(
+  path: string,
+  typeArgumentsValues: GenericType[],
+): V1_RawGenericType {
+  const genType = V1_createRawGenericTypeWithElementPath(path);
+  genType.typeArguments = typeArgumentsValues.map((t) => {
+    const gType = new V1_RawGenericType();
+    gType.rawType = V1_transformRawGenericType_Type(t.rawType);
+    return gType;
+  });
+  return genType;
+}
+
+export function V1_transformRawGenericType_Type(type: Type): V1_RawRawType {
+  if (type instanceof RelationType) {
+    return V1_transformRawGenericType_RelationType(type);
+  }
+  const pType = new V1_RawRawType();
+  pType.fullPath = type.path;
+  return pType;
+}
+
+export function V1_transformRawGenericType_RelationType(
+  type: RelationType,
+): V1_RawRelationType {
+  const relationType = new V1_RawRelationType();
+  relationType.columns = type.columns.map((col) => {
+    const colType = col.genericType.value;
+    const column = new V1_RawRelationColumn();
+    column.name = col.name;
+    column.genericType = V1_createRawGenericTypeWithElementPath(
+      colType.rawType.path,
+    );
+    column.genericType.typeVariableValues =
+      colType.typeVariableValues?.map((v) =>
+        V1_transformRootValueSpecification(v),
+      ) ?? [];
+    column.multiplicity = V1_transformMultiplicity(col.multiplicity);
+    return column;
+  });
+  return relationType;
+}
 
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();

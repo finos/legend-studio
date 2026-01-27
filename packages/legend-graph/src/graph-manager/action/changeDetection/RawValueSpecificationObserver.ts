@@ -56,6 +56,7 @@ export const observe_RawVariableExpression = skipObserved(
     makeObservable(metamodel, {
       name: observable,
       multiplicity: observable,
+      typeArguments: observable,
       hashCode: computed,
     });
 

@@ -26,6 +26,16 @@ export class V1_RawRawType {
   fullPath!: string;
 }
 
+export class V1_RawRelationType extends V1_RawRawType {
+  columns: V1_RawRelationColumn[] = [];
+}
+
+export class V1_RawRelationColumn {
+  name!: string;
+  genericType!: V1_RawGenericType;
+  multiplicity: V1_Multiplicity | undefined;
+}
+
 export class V1_RawGenericType {
   rawType!: V1_RawRawType;
   multiplicityArguments: V1_Multiplicity[] = [];
@@ -47,6 +57,7 @@ export class V1_RawVariable
       this.genericType.rawType.fullPath,
       this.name,
       this.multiplicity,
+      hashArray(this.genericType.typeArguments.map((t) => t.rawType.fullPath)),
     ]);
   }
 
