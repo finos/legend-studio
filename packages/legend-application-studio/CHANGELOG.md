@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.89
+
+### Patch Changes
+
+- [#4820](https://github.com/finos/legend-studio/pull/4820) [`23a74e8`](https://github.com/finos/legend-studio/commit/23a74e83216d774addcd48932e8457d042351f3b) ([@yash0024](https://github.com/yash0024)) - Reset type arguments on changing param type
+
 ## 28.19.88
 
 ## 28.19.87
