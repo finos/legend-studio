@@ -23,7 +23,7 @@ import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicat
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 import { mockProdSearchResultResponse } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
-import { DataProductSearchResult } from '@finos/legend-server-marketplace';
+import { DataProductSearchResponse } from '@finos/legend-server-marketplace';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { V1_PureGraphManager } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -144,9 +144,11 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
       { engine: marketplaceBaseStore.remoteEngine },
     );
 
-    const searchResult = DataProductSearchResult.serialization.fromJson(
-      guaranteeNonNullable(mockProdSearchResultResponse[0]),
+    const response = DataProductSearchResponse.serialization.fromJson(
+      mockProdSearchResultResponse,
     );
+
+    const searchResult = guaranteeNonNullable(response.results[0]);
     const testImageMap = new Map<string, string>();
     const dataProductState = new ProductCardState(
       marketplaceBaseStore,

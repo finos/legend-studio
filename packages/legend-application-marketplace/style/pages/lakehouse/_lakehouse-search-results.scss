@@ -42,6 +42,13 @@
     }
   }
 
+  &__content-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+  }
+
   &__results-container {
     display: flex;
     padding: 2rem;

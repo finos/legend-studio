@@ -112,7 +112,9 @@ export const TEST__setUpMarketplace = async (
   createSpy(
     MOCK__store.marketplaceServerClient,
     'dataProductSearch',
-  ).mockResolvedValue(searchResults);
+  ).mockResolvedValue({
+    dataProducts: searchResults,
+  });
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__store.applicationStore}>

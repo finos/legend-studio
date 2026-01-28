@@ -239,173 +239,173 @@
       width: 100%;
     }
   }
+}
 
-  .legend-marketplace-pagination-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: nowrap;
-    width: 100%;
-    max-width: 1920px;
-    margin: 3rem auto;
-    gap: 2rem;
-    padding: 2rem;
-  }
+.legend-marketplace-pagination-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  width: 100%;
+  max-width: 1920px;
+  margin: 3rem auto;
+  gap: 2rem;
+  padding: 2rem;
+}
 
-  .legend-marketplace-pagination-info {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    white-space: nowrap;
+.legend-marketplace-pagination-info {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
 
-    .MuiTypography-root {
-      font-weight: 500;
-      color: var(--color-dark-grey-400);
-      font-size: 2rem;
+  .MuiTypography-root {
+    font-weight: 500;
+    color: var(--color-dark-grey-400);
+    font-size: 2rem;
 
-      strong {
-        color: var(--color-blue-100);
-        font-weight: 600;
-      }
-    }
-  }
-
-  .legend-marketplace-pagination-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex: 1;
-    flex-shrink: 1;
-    flex-wrap: wrap;
-
-    .MuiPagination-ul {
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .MuiPaginationItem-root {
-      font-size: 2rem;
-      font-weight: 500;
-      min-width: 56px;
-      height: 56px;
-      border-radius: 8px;
-      border: 1px solid var(--color-light-grey-200);
-      color: var(--color-dark-grey-300);
-      transition: all 0.2s ease;
-
-      &:hover {
-        background-color: var(--color-light-grey-50);
-        border-color: var(--color-blue-100);
-        transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgb(0 122 204 / 15%);
-      }
-    }
-
-    .MuiPaginationItem-page.Mui-selected {
-      background-color: var(--color-blue-100);
-      color: var(--color-white);
-      border-color: var(--color-blue-100);
+    strong {
+      color: var(--color-blue-100);
       font-weight: 600;
-      box-shadow: 0 4px 12px rgb(0 122 204 / 30%);
-
-      &:hover {
-        background-color: var(--color-blue-150);
-        border-color: var(--color-blue-150);
-      }
-    }
-
-    .MuiPaginationItem-previousNext {
-      background-color: var(--color-white);
-      font-weight: 600;
-      min-width: 64px;
-      height: 64px;
-      font-size: 2.2rem;
-
-      &:not(.Mui-disabled) {
-        color: var(--color-blue-100);
-
-        &:hover {
-          background-color: var(--color-blue-100);
-          color: var(--color-white);
-        }
-      }
-
-      &.Mui-disabled {
-        background-color: var(--color-light-grey-50);
-        color: var(--color-light-grey-400);
-        border-color: var(--color-light-grey-200);
-      }
-    }
-
-    .MuiPaginationItem-firstLast {
-      background-color: var(--color-white);
-      font-weight: 600;
-      min-width: 64px;
-      height: 64px;
-      font-size: 2.2rem;
-
-      &:not(.Mui-disabled) {
-        color: var(--color-blue-100);
-
-        &:hover {
-          background-color: var(--color-blue-100);
-          color: var(--color-white);
-        }
-      }
-
-      &.Mui-disabled {
-        background-color: var(--color-light-grey-50);
-        color: var(--color-light-grey-400);
-        border-color: var(--color-light-grey-200);
-      }
-    }
-
-    .MuiPaginationItem-icon {
-      font-size: 2.8rem;
-    }
-
-    .MuiPaginationItem-ellipsis {
-      border: none;
-
-      &:hover {
-        background-color: transparent;
-        transform: none;
-        box-shadow: none;
-      }
     }
   }
+}
 
-  .legend-marketplace-pagination-page-size {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    white-space: nowrap;
+.legend-marketplace-pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  flex-shrink: 1;
+  flex-wrap: wrap;
+
+  .MuiPagination-ul {
     gap: 0.5rem;
+    flex-wrap: wrap;
+  }
 
-    .MuiTypography-root {
-      font-weight: 500;
-      color: var(--color-dark-grey-400);
-      font-size: 2rem;
+  .MuiPaginationItem-root {
+    font-size: 2rem;
+    font-weight: 500;
+    min-width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    border: 1px solid var(--color-light-grey-200);
+    color: var(--color-dark-grey-300);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: var(--color-light-grey-50);
+      border-color: var(--color-blue-100);
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgb(0 122 204 / 15%);
+    }
+  }
+
+  .MuiPaginationItem-page.Mui-selected {
+    background-color: var(--color-blue-100);
+    color: var(--color-white);
+    border-color: var(--color-blue-100);
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgb(0 122 204 / 30%);
+
+    &:hover {
+      background-color: var(--color-blue-150);
+      border-color: var(--color-blue-150);
+    }
+  }
+
+  .MuiPaginationItem-previousNext {
+    background-color: var(--color-white);
+    font-weight: 600;
+    min-width: 64px;
+    height: 64px;
+    font-size: 2.2rem;
+
+    &:not(.Mui-disabled) {
+      color: var(--color-blue-100);
+
+      &:hover {
+        background-color: var(--color-blue-100);
+        color: var(--color-white);
+      }
     }
 
-    .MuiSelect-select {
-      font-size: 2rem;
-      border-radius: 8px;
-      min-height: 1rem;
-    }
-
-    .MuiOutlinedInput-notchedOutline {
+    &.Mui-disabled {
+      background-color: var(--color-light-grey-50);
+      color: var(--color-light-grey-400);
       border-color: var(--color-light-grey-200);
     }
+  }
 
-    .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-      border-color: var(--color-blue-100);
+  .MuiPaginationItem-firstLast {
+    background-color: var(--color-white);
+    font-weight: 600;
+    min-width: 64px;
+    height: 64px;
+    font-size: 2.2rem;
+
+    &:not(.Mui-disabled) {
+      color: var(--color-blue-100);
+
+      &:hover {
+        background-color: var(--color-blue-100);
+        color: var(--color-white);
+      }
     }
 
-    .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-      border-color: var(--color-blue-100);
-      border-width: 2px;
+    &.Mui-disabled {
+      background-color: var(--color-light-grey-50);
+      color: var(--color-light-grey-400);
+      border-color: var(--color-light-grey-200);
     }
+  }
+
+  .MuiPaginationItem-icon {
+    font-size: 2.8rem;
+  }
+
+  .MuiPaginationItem-ellipsis {
+    border: none;
+
+    &:hover {
+      background-color: transparent;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+.legend-marketplace-pagination-page-size {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  gap: 0.5rem;
+
+  .MuiTypography-root {
+    font-weight: 500;
+    color: var(--color-dark-grey-400);
+    font-size: 2rem;
+  }
+
+  .MuiSelect-select {
+    font-size: 2rem;
+    border-radius: 8px;
+    min-height: 1rem;
+  }
+
+  .MuiOutlinedInput-notchedOutline {
+    border-color: var(--color-light-grey-200);
+  }
+
+  .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: var(--color-blue-100);
+  }
+
+  .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: var(--color-blue-100);
+    border-width: 2px;
   }
 }

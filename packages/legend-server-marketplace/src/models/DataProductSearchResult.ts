@@ -16,8 +16,10 @@
 
 import type { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
+  customListWithSchema,
   SerializationFactory,
   usingConstantValueSchema,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -36,6 +38,7 @@ import {
 export enum DataProductSearchResultDetailsType {
   LAKEHOUSE = 'lakehouse',
   LEGACY = 'legacy',
+  ERROR = 'error',
 }
 
 export enum LakehouseDataProductSearchResultOriginType {
@@ -119,6 +122,37 @@ export class LegacyDataProductSearchResultDetails extends DataProductSearchResul
   );
 }
 
+export class ErrorDataProductSearchResultDetails extends DataProductSearchResultDetails {
+  message?: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(ErrorDataProductSearchResultDetails, {
+      _type: usingConstantValueSchema(DataProductSearchResultDetailsType.ERROR),
+      message: optional(primitive()),
+    }),
+  );
+}
+
+export class DataProductSearchResultMetadata {
+  next_page_number!: number | null;
+  num_pages!: number;
+  page_number!: number;
+  page_size!: number;
+  prev_page_number!: number | null;
+  total_count!: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductSearchResultMetadata, {
+      next_page_number: optional(primitive()),
+      num_pages: primitive(),
+      page_number: primitive(),
+      page_size: primitive(),
+      prev_page_number: optional(primitive()),
+      total_count: primitive(),
+    }),
+  );
+}
+
 export class DataProductSearchResult {
   dataProductTitle!: string | null;
   dataProductDescription!: string | null;
@@ -146,6 +180,24 @@ export class DataProductSearchResult {
       ),
       dataProductSource: optional(primitive()),
       licenseTo: optional(primitive()),
+    }),
+  );
+}
+
+export class DataProductSearchResponse {
+  results!: DataProductSearchResult[];
+  as_of_time!: string;
+  metadata!: DataProductSearchResultMetadata;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductSearchResponse, {
+      results: customListWithSchema(
+        DataProductSearchResult.serialization.schema,
+      ),
+      as_of_time: primitive(),
+      metadata: usingModelSchema(
+        DataProductSearchResultMetadata.serialization.schema,
+      ),
     }),
   );
 }

@@ -20,7 +20,7 @@ import type {
   TerminalServicesResponse,
   FetchProductsParams,
 } from './models/Provider.js';
-import type { DataProductSearchResult } from './models/DataProductSearchResult.js';
+import type { DataProductSearchResponse } from './models/DataProductSearchResult.js';
 import type {
   SubscriptionRequest,
   SubscriptionResponse,
@@ -42,12 +42,6 @@ import type { AutosuggestResponse } from './models/AutosuggestResult.js';
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
   subscriptionUrl: string;
-}
-
-interface MarketplaceServerResponse<T> {
-  response_code: string;
-  status: string;
-  results: T;
 }
 
 export class MarketplaceServerClient extends AbstractServerClient {
@@ -112,14 +106,12 @@ export class MarketplaceServerClient extends AbstractServerClient {
     query: string,
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
     searchType: string = 'hybrid',
-  ): Promise<PlainObject<DataProductSearchResult>[]> =>
-    (
-      await this.get<
-        MarketplaceServerResponse<PlainObject<DataProductSearchResult>[]>
-      >(
-        `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}`,
-      )
-    ).results;
+    pageSize: number = 12,
+    pageNumber: number = 1,
+  ): Promise<PlainObject<DataProductSearchResponse>> =>
+    this.get<PlainObject<DataProductSearchResponse>>(
+      `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}&page_size=${pageSize}&page_number=${pageNumber}`,
+    );
 
   getAutosuggestions = async (
     query: string,

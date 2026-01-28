@@ -23,6 +23,7 @@ import {
   type DataProductSearchResultDetails,
   type LakehouseDataProductSearchResultOrigin,
   DataProductSearchResultDetailsType,
+  ErrorDataProductSearchResultDetails,
   LakehouseAdHocDataProductSearchResultOrigin,
   LakehouseDataProductSearchResultDetails,
   LakehouseDataProductSearchResultOriginType,
@@ -90,6 +91,11 @@ export const deserializeDataProductSearchResultDetails = (
         LegacyDataProductSearchResultDetails.serialization.schema,
         json,
       );
+    case DataProductSearchResultDetailsType.ERROR:
+      return deserialize(
+        ErrorDataProductSearchResultDetails.serialization.schema,
+        json,
+      );
     default: {
       throw new UnsupportedOperationError(
         `Cannot deserialize search result details of type '${json._type}'`,
@@ -110,6 +116,12 @@ export const serializeDataProductSearchResultDetails = (
   if (details instanceof LegacyDataProductSearchResultDetails) {
     return serialize(
       LegacyDataProductSearchResultDetails.serialization.schema,
+      details,
+    );
+  }
+  if (details instanceof ErrorDataProductSearchResultDetails) {
+    return serialize(
+      ErrorDataProductSearchResultDetails.serialization.schema,
       details,
     );
   }

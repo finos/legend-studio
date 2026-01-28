@@ -27,11 +27,6 @@ import {
   List,
   ListItem,
   CircularProgress,
-  Pagination,
-  Box,
-  Select,
-  MenuItem,
-  type SelectChangeEvent,
 } from '@mui/material';
 import type { TerminalResult } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceTerminalCard } from '../../components/ProviderCard/LegendMarketplaceTerminalCard.js';
@@ -58,6 +53,7 @@ import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay
 import { flowResult } from 'mobx';
 import type { LegendUser } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -159,101 +155,32 @@ const SearchResultsRenderer = observer(
   },
 );
 
-const PaginationControls = observer(
-  (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
-    const { vendorDataState } = props;
-
-    const totalPages = Math.ceil(
-      vendorDataState.totalItems / vendorDataState.itemsPerPage,
-    );
-
-    const handlePageChange = useCallback(
-      (_event: React.ChangeEvent<unknown>, page: number) => {
-        vendorDataState.setPage(page);
-        flowResult(vendorDataState.populateProviders()).catch(
-          vendorDataState.applicationStore.alertUnhandledError,
-        );
-      },
-      [vendorDataState],
-    );
-
-    const handleItemsPerPageChange = useCallback(
-      (event: SelectChangeEvent<number>) => {
-        vendorDataState.setItemsPerPage(Number(event.target.value));
-        flowResult(vendorDataState.populateProviders()).catch(
-          vendorDataState.applicationStore.alertUnhandledError,
-        );
-      },
-      [vendorDataState],
-    );
-
-    if (vendorDataState.providers.length === 0) {
-      return null;
-    }
-
-    return (
-      <Box className="legend-marketplace-pagination-container">
-        <Box className="legend-marketplace-pagination-page-size">
-          <Typography variant="body2" sx={{ fontSize: '2rem' }}>
-            Items per page:
-          </Typography>
-          <Select
-            value={vendorDataState.itemsPerPage}
-            onChange={handleItemsPerPageChange}
-            size="medium"
-          >
-            <MenuItem value={12}>12</MenuItem>
-            <MenuItem value={24}>24</MenuItem>
-            <MenuItem value={36}>36</MenuItem>
-            <MenuItem value={48}>48</MenuItem>
-          </Select>
-        </Box>
-        <Box className="legend-marketplace-pagination-info">
-          <Typography variant="body2">
-            Showing{' '}
-            <strong>
-              {(vendorDataState.page - 1) * vendorDataState.itemsPerPage + 1}
-            </strong>{' '}
-            to{' '}
-            <strong>
-              {Math.min(
-                vendorDataState.page * vendorDataState.itemsPerPage,
-                vendorDataState.totalItems,
-              )}
-            </strong>{' '}
-            of <strong>{vendorDataState.totalItems}</strong> results
-          </Typography>
-        </Box>
-
-        <Box className="legend-marketplace-pagination-controls">
-          <Pagination
-            count={totalPages}
-            page={vendorDataState.page}
-            onChange={handlePageChange}
-            color="primary"
-            showFirstButton={true}
-            showLastButton={true}
-            siblingCount={1}
-            boundaryCount={2}
-            size="large"
-            sx={{
-              '& .MuiPaginationItem-root': {
-                fontSize: '1.5rem',
-              },
-            }}
-          />
-        </Box>
-      </Box>
-    );
-  },
-);
-
 export const VendorDataMainContent = observer(
   (props: { marketPlaceVendorDataState: LegendMarketPlaceVendorDataStore }) => {
     const { marketPlaceVendorDataState } = props;
 
     const addOnsInfoMessage =
       'Add-ons cannot be ordered standalone. You must order terminal license with them.';
+
+    const handlePageChange = useCallback(
+      (page: number) => {
+        marketPlaceVendorDataState.setPage(page);
+        flowResult(marketPlaceVendorDataState.populateProviders()).catch(
+          marketPlaceVendorDataState.applicationStore.alertUnhandledError,
+        );
+      },
+      [marketPlaceVendorDataState],
+    );
+
+    const handleItemsPerPageChange = useCallback(
+      (itemsPerPage: number) => {
+        marketPlaceVendorDataState.setItemsPerPage(itemsPerPage);
+        flowResult(marketPlaceVendorDataState.populateProviders()).catch(
+          marketPlaceVendorDataState.applicationStore.alertUnhandledError,
+        );
+      },
+      [marketPlaceVendorDataState],
+    );
 
     return (
       <div className="legend-marketplace-vendordata-main">
@@ -336,7 +263,11 @@ export const VendorDataMainContent = observer(
               marketPlaceVendorDataState.providerDisplayState ===
                 VendorDataProviderType.ADD_ONS) && (
               <PaginationControls
-                vendorDataState={marketPlaceVendorDataState}
+                totalItems={marketPlaceVendorDataState.totalItems}
+                itemsPerPage={marketPlaceVendorDataState.itemsPerPage}
+                page={marketPlaceVendorDataState.page}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
               />
             )}
           </>

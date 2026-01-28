@@ -39,6 +39,8 @@ import {
   mockDevSearchResultResponse,
   mockProdParSearchResultResponse,
   mockProdSearchResultResponse,
+  mockPaginatedSearchResultPage1Response,
+  mockPaginatedSearchResultPage2Response,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
 import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 
@@ -627,6 +629,101 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(screen.getAllByText(/Lakehouse/)).toHaveLength(2);
       // Check that legacy data product is rendered
       expect(await screen.findByText('LegacyDataProduct'));
+    });
+  });
+
+  describe('Pagination Controls', () => {
+    test('Navigating to next page shows page 2 results', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockImplementation(async () => mockPaginatedSearchResultPage1Response);
+
+      const searchInput = screen.getByDisplayValue('data');
+      fireEvent.change(searchInput, { target: { value: 'paginated' } });
+
+      await act(async () => {
+        const searchButton = screen.getByTitle('Search');
+        fireEvent.click(searchButton);
+        await flushMicrotasks();
+      });
+
+      await screen.findByText('15 Products');
+      expect(screen.getByText('Paginated Data Product 1')).toBeDefined();
+      expect(screen.getByText('Paginated Data Product 12')).toBeDefined();
+      expect(screen.queryByText('Paginated Data Product 13')).toBeNull();
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockImplementation(async () => mockPaginatedSearchResultPage2Response);
+
+      const nextPageButton = screen.getByLabelText('Go to page 2');
+      await act(async () => {
+        fireEvent.click(nextPageButton);
+        await flushMicrotasks();
+      });
+
+      await screen.findByText('Paginated Data Product 13');
+      expect(screen.getByText('Paginated Data Product 14')).toBeDefined();
+      expect(screen.getByText('Paginated Data Product 15')).toBeDefined();
+      expect(screen.queryByText('Paginated Data Product 1')).toBeNull();
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenLastCalledWith(
+        'paginated',
+        expect.anything(),
+        'hybrid',
+        12,
+        2,
+      );
+    });
+
+    test('Selecting items per page triggers search with updated page size', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+
+      const paginationContainer = screen
+        .getByText('Items per page:')
+        .closest('.legend-marketplace-pagination-page-size');
+      if (!paginationContainer) {
+        throw new Error('Pagination container not found');
+      }
+      const itemsPerPageSelect =
+        paginationContainer.querySelector('[role="combobox"]');
+      if (!itemsPerPageSelect) {
+        throw new Error('Items per page select not found');
+      }
+      fireEvent.mouseDown(itemsPerPageSelect);
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('option', { name: '48' }));
+        await flushMicrotasks();
+      });
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenCalledWith('data', expect.anything(), 'hybrid', 48, 1);
+    });
+
+    test('Pagination controls render for producer search', async () => {
+      await setupTestComponent('data', 'prod', true);
+
+      await screen.findByText('3 Products');
+
+      expect(screen.getByText('Items per page:')).toBeDefined();
+      expect(screen.getByText(/Showing/)).toBeDefined();
     });
   });
 });

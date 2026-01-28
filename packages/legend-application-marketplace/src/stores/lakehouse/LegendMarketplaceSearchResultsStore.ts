@@ -22,10 +22,13 @@ import {
   isNonNullable,
   LogEvent,
   type GeneratorFn,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
   DataProductSearchResult,
   DataProductSearchResultDetailsType,
+  DataProductSearchResponse,
+  ErrorDataProductSearchResultDetails,
   LakehouseAdHocDataProductSearchResultOrigin,
   LakehouseDataProductSearchResultOriginType,
   LakehouseSDLCDataProductSearchResultOrigin,
@@ -67,6 +70,10 @@ export class LegendMarketplaceSearchResultsStore {
   producerSearchLegacyDataProductCardStates: ProductCardState[] = [];
   sort: DataProductSort = DataProductSort.DEFAULT;
 
+  page = 1;
+  itemsPerPage = 12;
+  totalItems = 0;
+
   readonly executingSemanticSearchState = ActionState.create();
   readonly fetchingProducerSearchDataProductsState = ActionState.create();
   readonly fetchingProducerSearchLegacyDataProductsState = ActionState.create();
@@ -84,10 +91,16 @@ export class LegendMarketplaceSearchResultsStore {
       sort: observable,
       setSearchQuery: action,
       setUseProducerSearch: action,
+      page: observable,
+      itemsPerPage: observable,
+      totalItems: observable,
       setSemanticSearchProductCardStates: action,
       setProducerSearchDataProductCardStates: action,
       setProducerSearchLegacyDataProductCardStates: action,
       setSort: action,
+      setPage: action,
+      setItemsPerPage: action,
+      setTotalItems: action,
       filterSortProducts: computed,
       isLoading: computed,
       executeSearch: flow,
@@ -130,8 +143,23 @@ export class LegendMarketplaceSearchResultsStore {
   get isLoading(): boolean {
     return this.useProducerSearch
       ? this.fetchingProducerSearchDataProductsState.isInProgress ||
+          this.fetchingProducerSearchDataProductsState.isInInitialState ||
           this.fetchingProducerSearchLegacyDataProductsState.isInProgress
-      : this.executingSemanticSearchState.isInProgress;
+      : this.executingSemanticSearchState.isInProgress ||
+          this.executingSemanticSearchState.isInInitialState;
+  }
+
+  setPage(value: number): void {
+    this.page = value;
+  }
+
+  setItemsPerPage(value: number): void {
+    this.itemsPerPage = value;
+    this.page = 1;
+  }
+
+  setTotalItems(value: number): void {
+    this.totalItems = value;
   }
 
   setSemanticSearchProductCardStates(
@@ -207,6 +235,41 @@ export class LegendMarketplaceSearchResultsStore {
     }
   }
 
+  private processRawSearchResults(
+    rawResults: PlainObject<DataProductSearchResponse>,
+    graphManager: V1_PureGraphManager,
+    token: string | undefined,
+  ): {
+    productCardStates: ProductCardState[];
+    response: DataProductSearchResponse;
+  } {
+    const response =
+      DataProductSearchResponse.serialization.fromJson(rawResults);
+
+    const validResults = response.results.filter(
+      (result) =>
+        !(
+          result.dataProductDetails instanceof
+          ErrorDataProductSearchResultDetails
+        ),
+    );
+
+    const productCardStates: ProductCardState[] = validResults.map(
+      (result) =>
+        new ProductCardState(
+          this.marketplaceBaseStore,
+          result,
+          graphManager,
+          this.displayImageMap,
+        ),
+    );
+    productCardStates.forEach((dataProductState) =>
+      dataProductState.init(token),
+    );
+
+    return { productCardStates, response };
+  }
+
   private async executeSemanticSearch(
     query: string,
     graphManager: V1_PureGraphManager,
@@ -218,37 +281,19 @@ export class LegendMarketplaceSearchResultsStore {
       const rawResults = await this.marketplaceServerClient.dataProductSearch(
         query,
         this.marketplaceBaseStore.envState.lakehouseEnvironment,
+        'hybrid',
+        this.itemsPerPage,
+        this.page,
       );
-      const results = rawResults
-        .map((result) => {
-          try {
-            return DataProductSearchResult.serialization.fromJson(result);
-          } catch (error) {
-            this.marketplaceBaseStore.applicationStore.logService.error(
-              LogEvent.create(
-                LEGEND_MARKETPLACE_APP_EVENT.DESERIALIZE_DATA_PRODUCT_SEARCH_RESULT_FAILURE,
-              ),
-              `Can't deserialize data product search result: ${error}`,
-            );
-            return undefined;
-          }
-        })
-        .filter(isNonNullable);
 
-      // Create data product card states
-      const dataProductCardStates: ProductCardState[] = results.map(
-        (result) =>
-          new ProductCardState(
-            this.marketplaceBaseStore,
-            result,
-            graphManager,
-            this.displayImageMap,
-          ),
+      const { productCardStates, response } = this.processRawSearchResults(
+        rawResults,
+        graphManager,
+        token,
       );
-      dataProductCardStates.forEach((dataProductState) =>
-        dataProductState.init(token),
-      );
-      this.setSemanticSearchProductCardStates(dataProductCardStates);
+
+      this.setTotalItems(response.metadata.total_count);
+      this.setSemanticSearchProductCardStates(productCardStates);
     } finally {
       this.executingSemanticSearchState.complete();
     }
@@ -263,6 +308,11 @@ export class LegendMarketplaceSearchResultsStore {
       this.fetchDataProducts(query, graphManager, token),
       this.fetchLegacyDataProducts(query, graphManager, token),
     ]);
+
+    this.setTotalItems(
+      this.producerSearchDataProductCardStates.length +
+        this.producerSearchLegacyDataProductCardStates.length,
+    );
   }
 
   private async fetchDataProducts(
