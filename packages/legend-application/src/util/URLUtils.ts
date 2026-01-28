@@ -73,6 +73,8 @@ const queueUpdate = (
 
 /**
  * Util hook to keep a state variable in sync with a URL search parameter.
+ * This hook syncs from URL to state if the state is null/undefined (so
+ * initial value is set from URL) and from state to URL otherwise.
  *
  * This hook properly queues setSearchParams calls to ensure all updates
  * are applied, working around react-router's limitation where multiple
@@ -100,39 +102,19 @@ export const useSyncStateAndSearchParam = (
   const setSearchParamsRef = useRef(setSearchParams);
   setSearchParamsRef.current = setSearchParams;
 
-  const areValuesDifferent = (
-    _stateVar: string | boolean | number | null | undefined,
-    _searchParamValue: string | null,
-  ): boolean => {
-    if (_stateVar === null || _stateVar === undefined) {
-      return _searchParamValue !== null;
-    }
-    return String(_stateVar) !== _searchParamValue;
-  };
-
-  // Sync state with URL search param
+  // Sync state with URL search param if state is null/undefined
   useEffect(() => {
     if (
       initializedCallback() &&
-      areValuesDifferent(stateVar, searchParamValue)
+      (stateVar === null || stateVar === undefined)
     ) {
-      // On mount or when search param value changes, update state from URL
       updateStateVar(searchParamValue);
     }
-  }, [
-    initializedCallback,
-    searchParamKey,
-    searchParamValue,
-    stateVar,
-    updateStateVar,
-  ]);
+  }, [initializedCallback, searchParamValue, stateVar, updateStateVar]);
 
   // Sync URL search param with state
   useEffect(() => {
-    if (
-      initializedCallback() &&
-      areValuesDifferent(stateVar, searchParamValue)
-    ) {
+    if (initializedCallback()) {
       // When state changes, queue URL param update
       // Using the queueing mechanism ensures all updates are applied
       // even when multiple hooks call setSearchParams in the same tick
@@ -146,5 +128,5 @@ export const useSyncStateAndSearchParam = (
         queueUpdate(searchParamKey, null, setSearchParamsRef.current);
       }
     }
-  }, [initializedCallback, searchParamKey, searchParamValue, stateVar]);
+  }, [initializedCallback, searchParamKey, stateVar]);
 };
