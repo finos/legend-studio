@@ -19,6 +19,10 @@ import { renderHook } from '@testing-library/react';
 import { useSyncStateAndSearchParam } from '../URLUtils.js';
 import type { SetURLSearchParams } from 'react-router';
 
+// Helper to wait for microtask queue to flush
+const flushMicrotasks = (): Promise<void> =>
+  new Promise((resolve) => queueMicrotask(resolve));
+
 describe('useSyncStateAndSearchParam', () => {
   let mockSetSearchParams: jest.Mock;
 
@@ -61,7 +65,7 @@ describe('useSyncStateAndSearchParam', () => {
     expect(stateVar).toBe('new-value');
   });
 
-  test('should update URL parameter when state value changes', () => {
+  test('should update URL parameter when state value changes', async () => {
     const updateStateVar = jest.fn();
     const initializedCallback = () => true;
 
@@ -77,6 +81,9 @@ describe('useSyncStateAndSearchParam', () => {
         ),
       {},
     );
+
+    // Wait for microtask queue to flush (queueMicrotask is used for batching)
+    await flushMicrotasks();
 
     // Should call setSearchParams to update the URL
     expect(mockSetSearchParams).toHaveBeenCalledTimes(1);
@@ -118,7 +125,7 @@ describe('useSyncStateAndSearchParam', () => {
     expect(stateVar).toBeUndefined();
   });
 
-  test('should delete URL parameter when state value is set to null', () => {
+  test('should delete URL parameter when state value is set to null', async () => {
     let stateVar: string | null = 'old-value';
     const updateStateVar = jest.fn((val: string | null) => {
       stateVar = val;
@@ -146,6 +153,9 @@ describe('useSyncStateAndSearchParam', () => {
       {},
     );
 
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
+
     // Check that URL param was updated once to expected value
     expect(updateSearchParam).toHaveBeenCalledTimes(1);
     expect(searchParamValue).toBe('old-value');
@@ -154,6 +164,9 @@ describe('useSyncStateAndSearchParam', () => {
     stateVar = null;
 
     rerender();
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
 
     // Should call setSearchParams to delete the URL param
     expect(updateSearchParam).toHaveBeenCalledTimes(2);
@@ -165,7 +178,7 @@ describe('useSyncStateAndSearchParam', () => {
     expect(newParams.has('testParam')).toBe(false);
   });
 
-  test('should delete URL parameter when state value is set to null', () => {
+  test('should delete URL parameter when state value is set to undefined', async () => {
     let stateVar: string | undefined = 'old-value';
     const updateStateVar = jest.fn((val: string | null) => {
       stateVar = val === null ? undefined : val;
@@ -193,6 +206,9 @@ describe('useSyncStateAndSearchParam', () => {
       {},
     );
 
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
+
     // Check that URL param was updated once to expected value
     expect(updateSearchParam).toHaveBeenCalledTimes(1);
     expect(searchParamValue).toBe('old-value');
@@ -201,6 +217,9 @@ describe('useSyncStateAndSearchParam', () => {
     stateVar = undefined;
 
     rerender();
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
 
     // Should call setSearchParams to delete the URL param
     expect(updateSearchParam).toHaveBeenCalledTimes(2);
@@ -212,7 +231,7 @@ describe('useSyncStateAndSearchParam', () => {
     expect(newParams.has('testParam')).toBe(false);
   });
 
-  test('should only update the specific URL parameter while preserving others when multiple params exist', () => {
+  test('should only update the specific URL parameter while preserving others when multiple params exist', async () => {
     const updateStateVar = jest.fn();
     const initializedCallback = () => true;
 
@@ -228,6 +247,9 @@ describe('useSyncStateAndSearchParam', () => {
         ),
       {},
     );
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
 
     // Should call setSearchParams
     expect(mockSetSearchParams).toHaveBeenCalledTimes(1);
@@ -309,7 +331,7 @@ describe('useSyncStateAndSearchParam', () => {
     expect(stateVar2).toBe('initial-value2');
   });
 
-  test('should only delete the specific URL parameter while preserving others when multiple params exist', () => {
+  test('should only delete the specific URL parameter while preserving others when multiple params exist', async () => {
     const updateStateVar = jest.fn();
     const initializedCallback = () => true;
 
@@ -325,6 +347,9 @@ describe('useSyncStateAndSearchParam', () => {
         ),
       {},
     );
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
 
     // Should call setSearchParams
     expect(mockSetSearchParams).toHaveBeenCalledTimes(1);

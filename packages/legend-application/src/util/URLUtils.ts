@@ -14,11 +14,70 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { SetURLSearchParams } from 'react-router';
 
 /**
+ * Module-level queue for pending search param updates.
+ * This ensures all instances of the hook share the same queue,
+ * allowing updates to be batched together and applied in a single
+ * setSearchParams call.
+ *
+ * This is necessary because react-router's setSearchParams does not
+ * support queueing like React's setState does. Multiple calls to
+ * setSearchParams in the same tick will not build on the prior value.
+ * See: https://github.com/remix-run/react-router/issues/9304
+ */
+const pendingUpdates: Map<string, string | null> = new Map();
+let flushScheduled = false;
+let currentSetSearchParams: SetURLSearchParams | null = null;
+
+const flushUpdates = (): void => {
+  if (pendingUpdates.size === 0 || !currentSetSearchParams) {
+    flushScheduled = false;
+    return;
+  }
+
+  const setSearchParams = currentSetSearchParams;
+  const updates = new Map(pendingUpdates);
+  pendingUpdates.clear();
+  flushScheduled = false;
+
+  setSearchParams((params) => {
+    const newParams = new URLSearchParams(params);
+    updates.forEach((value, key) => {
+      if (value !== null) {
+        newParams.set(key, value);
+      } else {
+        newParams.delete(key);
+      }
+    });
+    return newParams;
+  });
+};
+
+const queueUpdate = (
+  key: string,
+  value: string | null,
+  setSearchParams: SetURLSearchParams,
+): void => {
+  pendingUpdates.set(key, value);
+  currentSetSearchParams = setSearchParams;
+
+  if (!flushScheduled) {
+    flushScheduled = true;
+    // Use queueMicrotask to batch updates in the same tick
+    queueMicrotask(flushUpdates);
+  }
+};
+
+/**
  * Util hook to keep a state variable in sync with a URL search parameter.
+ *
+ * This hook properly queues setSearchParams calls to ensure all updates
+ * are applied, working around react-router's limitation where multiple
+ * calls to setSearchParams in the same tick don't build on each other.
+ * See: https://github.com/remix-run/react-router/issues/9304
  *
  * @param stateVar the state variable to sync
  * @param updateStateVar setter function to update the state variable (should be memoized with useCallback)
@@ -35,32 +94,35 @@ export const useSyncStateAndSearchParam = (
   setSearchParams: SetURLSearchParams,
   initializedCallback: () => boolean,
 ): void => {
+  // Use a ref to make setSearchParams stable
+  // react-router's setSearchParams is not stable and changes on every render
+  // See: https://github.com/remix-run/react-router/issues/9304
+  const setSearchParamsRef = useRef(setSearchParams);
+  setSearchParamsRef.current = setSearchParams;
+
   // Sync state with URL search param
   useEffect(() => {
     if (initializedCallback()) {
       // On mount or when search param value changes, update state from URL
-      const urlParamValue = searchParamValue;
-      updateStateVar(urlParamValue);
+      updateStateVar(searchParamValue);
     }
   }, [initializedCallback, searchParamKey, searchParamValue, updateStateVar]);
 
   // Sync URL search param with state
   useEffect(() => {
     if (initializedCallback()) {
-      // When state changes, update URL param
-      if (stateVar) {
-        setSearchParams((params) => {
-          const newParams = new URLSearchParams(params);
-          newParams.set(searchParamKey, String(stateVar));
-          return newParams;
-        });
+      // When state changes, queue URL param update
+      // Using the queueing mechanism ensures all updates are applied
+      // even when multiple hooks call setSearchParams in the same tick
+      if (stateVar !== null && stateVar !== undefined) {
+        queueUpdate(
+          searchParamKey,
+          String(stateVar),
+          setSearchParamsRef.current,
+        );
       } else {
-        setSearchParams((params) => {
-          const newParams = new URLSearchParams(params);
-          newParams.delete(searchParamKey);
-          return newParams;
-        });
+        queueUpdate(searchParamKey, null, setSearchParamsRef.current);
       }
     }
-  }, [initializedCallback, searchParamKey, stateVar, setSearchParams]);
+  }, [initializedCallback, searchParamKey, stateVar]);
 };
