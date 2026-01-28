@@ -26,6 +26,12 @@
   --marketplace-info-bg: var(--color-dark-theme-bg-elevated);
   --marketplace-info-text: var(--color-dark-theme-text-primary);
 
+  // Search chip colors for dark mode
+  --color-search-chip-source-bg: rgb(115 153 198 / 20%);
+  --color-search-chip-source-text: var(--color-dark-theme-blue-primary);
+  --color-search-chip-license-bg: rgb(115 153 198 / 20%);
+  --color-search-chip-license-text: var(--color-dark-theme-blue-primary);
+
   ::-webkit-scrollbar-thumb {
     background: var(--color-dark-theme-border-light);
     border: 0.2rem solid transparent;
@@ -1062,6 +1068,16 @@
         color: var(--color-dark-green-50);
         background: rgb(106 153 85 / 20%);
       }
+    }
+
+    &__data-product-source {
+      color: var(--color-dark-theme-blue-primary);
+      background: rgb(115 153 198 / 20%);
+    }
+
+    &__license-to {
+      color: var(--color-dark-theme-blue-primary);
+      background: rgb(115 153 198 / 20%);
     }
 
     &__more-info-btn {
