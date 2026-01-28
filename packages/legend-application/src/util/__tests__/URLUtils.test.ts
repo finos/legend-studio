@@ -30,15 +30,15 @@ describe('useSyncStateAndSearchParam', () => {
     mockSetSearchParams = jest.fn();
   });
 
-  test('should update state when URL parameter changes', () => {
+  test('should only update state from URL when state is null or undefined', () => {
     let stateVar: string | undefined;
     const updateStateVar = jest.fn((val: string | null) => {
       stateVar = val === null ? undefined : val;
     });
-    let searchParamValue: string | null = 'initial-value';
+    const searchParamValue: string | null = 'initial-value';
     const initializedCallback = () => true;
 
-    const { rerender } = renderHook(() =>
+    renderHook(() =>
       useSyncStateAndSearchParam(
         stateVar,
         updateStateVar,
@@ -52,17 +52,6 @@ describe('useSyncStateAndSearchParam', () => {
     // Initial call should update state with the URL param value
     expect(updateStateVar).toHaveBeenCalledWith('initial-value');
     expect(stateVar).toBe('initial-value');
-
-    // Clear mock to see only new calls
-    updateStateVar.mockClear();
-
-    // Change the URL param value
-    searchParamValue = 'new-value';
-    rerender();
-
-    // Should call updateStateVar with the new URL param value
-    expect(updateStateVar).toHaveBeenCalledWith('new-value');
-    expect(stateVar).toBe('new-value');
   });
 
   test('should update URL parameter when state value changes', async () => {
@@ -93,36 +82,6 @@ describe('useSyncStateAndSearchParam', () => {
     const params = new URLSearchParams();
     const newParams = setParamsFn(params);
     expect(newParams.get('testParam')).toBe('new-state-value');
-  });
-
-  test('should set state to null when URL parameter is deleted', () => {
-    let stateVar: string | undefined = 'some-value';
-    const updateStateVar = jest.fn((val: string | null) => {
-      stateVar = val === null ? undefined : val;
-    });
-    let searchParamValue: string | null = 'some-value';
-    const initializedCallback = () => true;
-
-    const { rerender } = renderHook(() =>
-      useSyncStateAndSearchParam(
-        stateVar,
-        updateStateVar,
-        'testParam',
-        searchParamValue,
-        mockSetSearchParams,
-        initializedCallback,
-      ),
-    );
-
-    updateStateVar.mockClear();
-
-    // Simulate URL param deletion by setting it to null
-    searchParamValue = null;
-    rerender();
-
-    // Should call updateStateVar with null
-    expect(updateStateVar).toHaveBeenCalledWith(null);
-    expect(stateVar).toBeUndefined();
   });
 
   test('should delete URL parameter when state value is set to null', async () => {
@@ -271,7 +230,7 @@ describe('useSyncStateAndSearchParam', () => {
   });
 
   test('should only update the specific state value while preserving others when multiple params exist', () => {
-    let stateVar1: string | null = 'value1';
+    let stateVar1: string | null = null;
     let stateVar2: string | null = 'value2';
     const updateStateVar1 = jest.fn((value: string | null) => {
       stateVar1 = value;
@@ -279,11 +238,11 @@ describe('useSyncStateAndSearchParam', () => {
     const updateStateVar2 = jest.fn((value: string | null) => {
       stateVar2 = value;
     });
-    let searchParamValue1: string | null = 'initial-value1';
+    const searchParamValue1: string | null = 'initial-value1';
     const searchParamValue2: string | null = 'initial-value2';
     const initializedCallback = () => true;
 
-    const { rerender: rerender1 } = renderHook(
+    renderHook(
       () =>
         useSyncStateAndSearchParam(
           stateVar1,
@@ -296,7 +255,7 @@ describe('useSyncStateAndSearchParam', () => {
       {},
     );
 
-    const { rerender: rerender2 } = renderHook(
+    renderHook(
       () =>
         useSyncStateAndSearchParam(
           stateVar2,
@@ -309,26 +268,11 @@ describe('useSyncStateAndSearchParam', () => {
       {},
     );
 
-    // Initial call should update both state values with param values
+    // Initial call should only update null state value
     expect(updateStateVar1).toHaveBeenCalledWith('initial-value1');
     expect(stateVar1).toBe('initial-value1');
-    expect(updateStateVar2).toHaveBeenCalledWith('initial-value2');
-    expect(stateVar2).toBe('initial-value2');
-
-    // Clear mock to see only new calls
-    updateStateVar1.mockClear();
-    updateStateVar2.mockClear();
-
-    // Change only 1 URL param to new value
-    searchParamValue1 = 'new-value1';
-    rerender1();
-    rerender2();
-
-    // Should call updateStateVar with the new URL param value
-    expect(updateStateVar1).toHaveBeenCalledWith('new-value1');
-    expect(stateVar1).toBe('new-value1');
     expect(updateStateVar2).not.toHaveBeenCalled();
-    expect(stateVar2).toBe('initial-value2');
+    expect(stateVar2).toBe('value2');
   });
 
   test('should only delete the specific URL parameter while preserving others when multiple params exist', async () => {
