@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export const t = 'A';
 export const MULTIPLICITY_INFINITE = '*';
 export const ELEMENT_PATH_DELIMITER = '::';
 export const MULTIPLICITY_RANGE_OPERATOR = '..';
