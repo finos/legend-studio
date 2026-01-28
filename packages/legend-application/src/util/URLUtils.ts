@@ -81,6 +81,7 @@ const queueUpdate = (
  *
  * @param stateVar the state variable to sync
  * @param updateStateVar setter function to update the state variable (should be memoized with useCallback)
+ * @param comparator function to compare stateVar and search param value to determine if an update should be made. Should return true if values have changed and false otherwise (should be memoized with useCallback)
  * @param searchParamKey the key of the URL search parameter to sync with
  * @param searchParamValue the current URL search parameter value (i.e., from useSearchParams)
  * @param setSearchParams function to update the URL search parameters (i.e., from useSearchParams)
@@ -89,6 +90,10 @@ const queueUpdate = (
 export const useSyncStateAndSearchParam = (
   stateVar: string | boolean | number | null | undefined,
   updateStateVar: (val: string | null) => void,
+  comparator: (
+    stateVar: string | boolean | number | null | undefined,
+    searchParamValue: string | null,
+  ) => boolean,
   searchParamKey: string,
   searchParamValue: string | null,
   setSearchParams: SetURLSearchParams,
@@ -102,15 +107,22 @@ export const useSyncStateAndSearchParam = (
 
   // Sync state with URL search param
   useEffect(() => {
-    if (initializedCallback()) {
+    if (initializedCallback() && comparator(stateVar, searchParamValue)) {
       // On mount or when search param value changes, update state from URL
       updateStateVar(searchParamValue);
     }
-  }, [initializedCallback, searchParamKey, searchParamValue, updateStateVar]);
+  }, [
+    comparator,
+    initializedCallback,
+    searchParamKey,
+    searchParamValue,
+    stateVar,
+    updateStateVar,
+  ]);
 
   // Sync URL search param with state
   useEffect(() => {
-    if (initializedCallback()) {
+    if (initializedCallback() && comparator(stateVar, searchParamValue)) {
       // When state changes, queue URL param update
       // Using the queueing mechanism ensures all updates are applied
       // even when multiple hooks call setSearchParams in the same tick
@@ -124,5 +136,11 @@ export const useSyncStateAndSearchParam = (
         queueUpdate(searchParamKey, null, setSearchParamsRef.current);
       }
     }
-  }, [initializedCallback, searchParamKey, stateVar]);
+  }, [
+    comparator,
+    initializedCallback,
+    searchParamKey,
+    searchParamValue,
+    stateVar,
+  ]);
 };
