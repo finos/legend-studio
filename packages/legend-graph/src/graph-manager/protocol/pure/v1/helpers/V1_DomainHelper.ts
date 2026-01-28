@@ -32,6 +32,7 @@ import {
 import type { V1_Type } from '../model/packageableElements/type/V1_Type.js';
 import { V1_transformMultiplicity } from '../transformation/pureGraph/from/V1_CoreTransformerHelper.js';
 import type { Multiplicity } from '../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
+import type { V1_ValueSpecification } from '../model/valueSpecification/V1_ValueSpecification.js';
 
 export const V1_getGenericTypeFullPath = (val: V1_GenericType): string => {
   if (val.rawType instanceof V1_PackageableType) {
@@ -137,10 +138,14 @@ export function V1_createRelationType(
 export function V1_createRelationTypeColumn(
   name: string,
   type: string,
+  typeVariableValues?: V1_ValueSpecification[],
 ): V1_RelationTypeColumn {
   const column = new V1_RelationTypeColumn();
   column.name = name;
-  column.genericType = V1_createGenericTypeWithElementPath(type);
+  column.genericType = V1_createGenericTypeWithElementPath(
+    type,
+    typeVariableValues,
+  );
   column.multiplicity = V1_Multiplicity.ZERO_ONE;
   return column;
 }
@@ -159,11 +164,13 @@ export function V1_createRelationTypeColumnWithGenericType(
 
 export function V1_createGenericTypeWithElementPath(
   path: string,
+  typeVariables?: V1_ValueSpecification[],
 ): V1_GenericType {
   const genType = new V1_GenericType();
   const pType = new V1_PackageableType();
   pType.fullPath = path;
   genType.rawType = pType;
+  genType.typeVariableValues = typeVariables ?? [];
   return genType;
 }
 

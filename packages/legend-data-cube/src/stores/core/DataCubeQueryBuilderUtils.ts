@@ -271,6 +271,19 @@ export function _primitiveValue(
   }
 }
 
+// TODO: this is a strategic fix for precise primitives
+// we might want to start capturing type variable values as part of data cube column
+function _generateTypeVariableValues(type: string): V1_ValueSpecification[] {
+  switch (type) {
+    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
+      // this number is as per legend-engine
+      // https://github.com/finos/legend-engine/blob/master/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan/src/main/java/org/finos/legend/engine/plan/execution/stores/relational/exploration/SchemaExportation.java#L105
+      return [_primitiveValue(PRIMITIVE_TYPE.INTEGER, 16777216)];
+    default:
+      return [];
+  }
+}
+
 export function _enumValue(value: string): V1_EnumValue {
   const enumValue = new V1_EnumValue();
   enumValue.value = value;
@@ -553,7 +566,13 @@ export function _castCols(columns: DataCubeColumn[]) {
   genericTypeInstance.genericType.typeArguments = [
     V1_createGenericTypeWithRawType(
       V1_createRelationType(
-        columns.map((col) => V1_createRelationTypeColumn(col.name, col.type)),
+        columns.map((col) =>
+          V1_createRelationTypeColumn(
+            col.name,
+            col.type,
+            _generateTypeVariableValues(col.type),
+          ),
+        ),
       ),
     ),
   ];
