@@ -451,6 +451,7 @@ export class LegendMarketplaceProductViewerStore {
               }
             : undefined,
         },
+        this.marketplaceBaseStore.registryServerClient,
       );
       const dataProductDataAccessState = new DataProductDataAccessState(
         entitlementsDataProductDetails,

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2026-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-export * from './models/DataProductSearchResult.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
-export * from './models/Cart.js';
-export * from './models/Order.js';
-export * from './models/TerminalProductOrder.js';
-export * from './models/Registry.js';
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
-export { TerminalAccessServerClient } from './TerminalAccessServerClient.js';
-export { RegistryServerClient } from './RegistryServerClient.js';
+import { SerializationFactory } from '@finos/legend-shared';
+import { createModelSchema, primitive } from 'serializr';
+
+export class RegistryMetadataResponse {
+  id!: string;
+  ads!: boolean;
+  pde!: boolean;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(RegistryMetadataResponse, {
+      id: primitive(),
+      ads: primitive(),
+      pde: primitive(),
+    }),
+  );
+}
