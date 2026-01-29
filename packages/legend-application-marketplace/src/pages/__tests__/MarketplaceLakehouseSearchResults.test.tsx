@@ -15,7 +15,8 @@
  */
 
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { fireEvent, getByRole, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, getByRole, screen } from '@testing-library/react';
+import { useSearchParams } from '@finos/legend-application/browser';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
@@ -41,6 +42,23 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
+jest.mock('@finos/legend-application/browser', () => {
+  const actualModule = jest.requireActual<Record<string, unknown>>(
+    '@finos/legend-application/browser',
+  );
+  return {
+    ...actualModule,
+    useSearchParams: jest.fn(),
+  };
+});
+
+const mockUseSearchParams = useSearchParams as jest.Mock;
+const mockSetSearchParams = jest.fn();
+
+// Helper to wait for microtask queue to flush
+const flushMicrotasks = (): Promise<void> =>
+  new Promise((resolve) => queueMicrotask(resolve));
+
 const setupTestComponent = async (
   query: string,
   dataProductEnv: 'prod' | 'prod-par' | 'dev',
@@ -49,14 +67,13 @@ const setupTestComponent = async (
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
     dataProductEnv,
   });
-  jest
-    .spyOn(
-      MOCK__baseStore.applicationStore.navigationService.navigator,
-      'getCurrentAddress',
-    )
-    .mockReturnValue(
-      `http://localhost/dataProduct/results?query=${query}${useProducerSearch ? '&useProducerSearch=true' : ''}`,
-    );
+  mockUseSearchParams.mockReturnValue([
+    new URLSearchParams({
+      query,
+      ...(useProducerSearch ? { useProducerSearch: 'true' } : {}),
+    }),
+    mockSetSearchParams,
+  ]);
 
   // Spies for semantic search
   createSpy(
@@ -102,6 +119,8 @@ const setupTestComponent = async (
 
 beforeEach(() => {
   localStorage.clear();
+  mockUseSearchParams.mockReset();
+  mockSetSearchParams.mockReset();
 });
 
 describe('MarketplaceLakehouseSearchResults', () => {
@@ -112,9 +131,14 @@ describe('MarketplaceLakehouseSearchResults', () => {
   });
 
   test('Sets useProducerSearch state based on param', async () => {
-    const { MOCK__baseStore } = await setupTestComponent('data', 'prod', true);
+    await setupTestComponent('data', 'prod', true);
 
-    expect(MOCK__baseStore.useProducerSearch).toBe(true);
+    const searchSettingsButton = screen.getByTitle('Search settings');
+    fireEvent.click(searchSettingsButton);
+    const producerSearchSwitch: HTMLInputElement = screen.getByRole('switch', {
+      name: /Producer Search/,
+    });
+    expect(producerSearchSwitch.checked).toBe(true);
   });
 
   test('Sort dropdown is rendered', async () => {
@@ -128,14 +152,53 @@ describe('MarketplaceLakehouseSearchResults', () => {
     screen.getByText('Name Z-A');
   });
 
-  test('Toggling useProducerSearch and updating search box value, then searching, updates URL', async () => {
-    const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+  test('Updating search box value and clicking search button updates URL', async () => {
+    await setupTestComponent('data', 'prod');
 
-    const searchInput = screen.getByDisplayValue('data');
+    const searchInput = await screen.findByDisplayValue('data');
+
+    // Verify that URL param has initial value
+    expect(mockSetSearchParams).toHaveBeenCalledTimes(1);
+    const setParamsFn1 = mockSetSearchParams.mock.calls[0]?.[0] as (
+      params: URLSearchParams,
+    ) => URLSearchParams;
+    const params1 = new URLSearchParams();
+    const newParams1 = setParamsFn1(params1);
+    expect(newParams1.get('query')).toBe('data');
 
     // Update search input
     fireEvent.change(searchInput, { target: { value: 'new search' } });
     screen.getByDisplayValue('new search');
+
+    await act(async () => {
+      // Click search
+      const searchButton = screen.getByTitle('Search');
+      fireEvent.click(searchButton);
+
+      // Wait for microtask queue to flush to update search params
+      await flushMicrotasks();
+    });
+
+    expect(mockSetSearchParams).toHaveBeenCalledTimes(2);
+    const setParamsFn2 = mockSetSearchParams.mock.calls[1]?.[0] as (
+      params: URLSearchParams,
+    ) => URLSearchParams;
+    const params2 = new URLSearchParams();
+    const newParams2 = setParamsFn2(params2);
+    expect(newParams2.get('query')).toBe('new search');
+  });
+
+  test('Toggling useProducerSearch and clicking search button updates URL', async () => {
+    await setupTestComponent('data', 'prod');
+
+    // Verify that URL param has initial value
+    expect(mockSetSearchParams).toHaveBeenCalledTimes(1);
+    const setParamsFn1 = mockSetSearchParams.mock.calls[0]?.[0] as (
+      params: URLSearchParams,
+    ) => URLSearchParams;
+    const params1 = new URLSearchParams();
+    const newParams1 = setParamsFn1(params1);
+    expect(newParams1.get('useProducerSearch')).toBe('false');
 
     // Turn on producer search
     const searchSettingsButton = screen.getByTitle('Search settings');
@@ -146,20 +209,21 @@ describe('MarketplaceLakehouseSearchResults', () => {
     fireEvent.click(producerSearchSwitch);
     expect(producerSearchSwitch.checked).toBe(true);
 
-    // Click search
-    const searchButton = screen.getByTitle('Search');
+    await act(async () => {
+      // Click search
+      const searchButton = screen.getByTitle('Search');
+      fireEvent.click(searchButton);
 
-    const mockUpdateCurrentLocation = jest.fn();
-    MOCK__baseStore.applicationStore.navigationService.navigator.updateCurrentLocation =
-      mockUpdateCurrentLocation;
-
-    fireEvent.click(searchButton);
-
-    await waitFor(() =>
-      expect(mockUpdateCurrentLocation).toHaveBeenCalledWith(
-        '/dataProduct/results?query=new%20search&useProducerSearch=true',
-      ),
-    );
+      // Wait for microtask queue to flush to update search params
+      await flushMicrotasks();
+      expect(mockSetSearchParams).toHaveBeenCalledTimes(2);
+      const setParamsFn2 = mockSetSearchParams.mock.calls[1]?.[0] as (
+        params: URLSearchParams,
+      ) => URLSearchParams;
+      const params2 = new URLSearchParams();
+      const newParams2 = setParamsFn2(params2);
+      expect(newParams2.get('useProducerSearch')).toBe('true');
+    });
   });
 
   describe('Semantic search', () => {
