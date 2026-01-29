@@ -70,6 +70,7 @@ import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/
 import {
   V1_DataProductAccessor,
   V1_RelationStoreAccessor,
+  V1_SQLAccessor,
 } from '../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 import { V1_multiplicityModelSchema } from './V1_CoreSerializationHelper.js';
 import type {
@@ -129,6 +130,7 @@ export enum V1_ClassInstanceType {
   RELATION_STORE_ACCESSOR = '>',
   INGEST_ACCESSOR = 'I',
   DATA_PRODUCT_ACCESSOR = 'P',
+  SQL_ACCESSOR = 'SQL',
 
   TDS_AGGREGATE_VALUE = 'tdsAggregateValue',
   TDS_COLUMN_INFORMATION = 'tdsColumnInformation',
@@ -779,6 +781,10 @@ const dataProductAccessorModelSchema = createModelSchema(
   },
 );
 
+const sqlAccessorModelSchema = createModelSchema(V1_SQLAccessor, {
+  sql: primitive(),
+});
+
 const colSpecModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_ColSpec> =>
@@ -854,6 +860,8 @@ export function V1_deserializeClassInstanceValue(
       return deserialize(relationStoreAccessorModelSchema, json);
     case V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR:
       return deserialize(dataProductAccessorModelSchema, json);
+    case V1_ClassInstanceType.SQL_ACCESSOR:
+      return deserialize(sqlAccessorModelSchema, json);
     default: {
       const deserializers = plugins.flatMap(
         (plugin) =>
@@ -910,6 +918,8 @@ export function V1_serializeClassInstanceValue(
     return serialize(relationStoreAccessorModelSchema, protocol);
   } else if (protocol instanceof V1_DataProductAccessor) {
     return serialize(dataProductAccessorModelSchema, protocol);
+  } else if (protocol instanceof V1_SQLAccessor) {
+    return serialize(sqlAccessorModelSchema, protocol);
   }
   const serializers = plugins.flatMap(
     (plugin) =>
