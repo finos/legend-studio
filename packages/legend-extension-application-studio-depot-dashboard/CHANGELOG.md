@@ -1,5 +1,11 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.28
+
+### Patch Changes
+
+- [#4823](https://github.com/finos/legend-studio/pull/4823) [`f8847bc`](https://github.com/finos/legend-studio/commit/f8847bc843d88ed2852f6a9a2967b049498203ab) ([@jackp5150](https://github.com/jackp5150)) - Added rendering and grid value tests to depot dashboard
+
 ## 0.1.27
 
 ## 0.1.26

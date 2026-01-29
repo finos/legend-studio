@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.3.63
+
+### Patch Changes
+
+- [#4819](https://github.com/finos/legend-studio/pull/4819) [`a06ea54`](https://github.com/finos/legend-studio/commit/a06ea541ae348a818785354e85133035cb888034) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: strategic fix for type variables values for precise primitives
+
 ## 0.3.62
 
 ## 0.3.61
