@@ -2987,7 +2987,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-dev-utils@npm:2.2.5, @finos/legend-dev-utils@workspace:*, @finos/legend-dev-utils@workspace:packages/legend-dev-utils":
+"@finos/legend-dev-utils@workspace:*, @finos/legend-dev-utils@workspace:packages/legend-dev-utils":
   version: 0.0.0-use.local
   resolution: "@finos/legend-dev-utils@workspace:packages/legend-dev-utils"
   dependencies:
@@ -3044,7 +3044,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "npm:2.2.5"
+    "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
