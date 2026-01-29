@@ -249,12 +249,12 @@ describe('Lakehouse Data Contract', () => {
         'test-privilege-manager-user-id',
       );
 
-      const approveButton = (await screen.findByText('Approve Task')).closest(
-        'button',
-      ) as HTMLButtonElement;
-      const denyButton = (await screen.findByText('Deny Task')).closest(
-        'button',
-      ) as HTMLButtonElement;
+      const approveButton = (await screen.findByRole('button', {
+        name: 'Approve Task',
+      })) as HTMLButtonElement;
+      const denyButton = (await screen.findByRole('button', {
+        name: 'Deny Task',
+      })) as HTMLButtonElement;
 
       expect(approveButton.disabled).toBe(false);
 
@@ -270,12 +270,12 @@ describe('Lakehouse Data Contract', () => {
         'non-assigned-user-id',
       );
 
-      const approveButton = (
-        await screen.findByText('Approve Task', {}, { timeout: 5000 })
-      ).closest('button') as HTMLButtonElement;
-      const denyButton = (
-        await screen.findByText('Deny Task', {}, { timeout: 5000 })
-      ).closest('button') as HTMLButtonElement;
+      const approveButton = (await screen.findByText('Approve Task')).closest(
+        'button',
+      ) as HTMLButtonElement;
+      const denyButton = (await screen.findByText('Deny Task')).closest(
+        'button',
+      ) as HTMLButtonElement;
 
       expect(approveButton.disabled).toBe(true);
       expect(denyButton.disabled).toBe(true);
@@ -290,9 +290,9 @@ describe('Lakehouse Data Contract', () => {
         'test-privilege-manager-user-id',
       );
 
-      const pmApproveButton = (
-        await screen.findByText('Approve Task', {}, { timeout: 5000 })
-      ).closest('button') as HTMLButtonElement;
+      const pmApproveButton = (await screen.findByRole('button', {
+        name: 'Approve Task',
+      })) as HTMLButtonElement;
 
       expect(pmApproveButton.disabled).toBe(false);
 
@@ -314,9 +314,9 @@ describe('Lakehouse Data Contract', () => {
         'test-data-owner-user-id',
       );
 
-      const doApproveButton = (
-        await screen.findByText('Approve Task', {}, { timeout: 5000 })
-      ).closest('button') as HTMLButtonElement;
+      const doApproveButton = (await screen.findByRole('button', {
+        name: 'Approve Task',
+      })) as HTMLButtonElement;
 
       expect(doApproveButton.disabled).toBe(false);
 
@@ -338,12 +338,12 @@ describe('Lakehouse Data Contract', () => {
         'test-data-owner-user-id',
       );
 
-      const approveButton = (
-        await screen.findByText('Approve Task', {}, { timeout: 5000 })
-      ).closest('button') as HTMLButtonElement;
-      const denyButton = (
-        await screen.findByText('Deny Task', {}, { timeout: 5000 })
-      ).closest('button') as HTMLButtonElement;
+      const approveButton = (await screen.findByText('Approve Task')).closest(
+        'button',
+      ) as HTMLButtonElement;
+      const denyButton = (await screen.findByText('Deny Task')).closest(
+        'button',
+      ) as HTMLButtonElement;
 
       expect(approveButton.disabled).toBe(true);
       expect(denyButton.disabled).toBe(true);
