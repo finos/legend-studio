@@ -35,10 +35,10 @@ describe('useSyncStateAndSearchParam', () => {
     const updateStateVar = jest.fn((val: string | null) => {
       stateVar = val === null ? undefined : val;
     });
-    const searchParamValue: string | null = 'initial-value';
+    let searchParamValue: string | null = 'initial-value';
     const initializedCallback = () => true;
 
-    renderHook(() =>
+    const { rerender } = renderHook(() =>
       useSyncStateAndSearchParam(
         stateVar,
         updateStateVar,
@@ -52,6 +52,16 @@ describe('useSyncStateAndSearchParam', () => {
     // Initial call should update state with the URL param value
     expect(updateStateVar).toHaveBeenCalledWith('initial-value');
     expect(stateVar).toBe('initial-value');
+
+    // Clear mock to see only new calls
+    updateStateVar.mockClear();
+
+    // Change the URL param value
+    searchParamValue = 'new-value';
+    rerender();
+
+    // updateSTateVar should not have been called again
+    expect(updateStateVar).not.toHaveBeenCalled();
   });
 
   test('should update URL parameter when state value changes', async () => {
@@ -89,7 +99,7 @@ describe('useSyncStateAndSearchParam', () => {
     const updateStateVar = jest.fn((val: string | null) => {
       stateVar = val;
     });
-    let searchParamValue: string | null = null;
+    let searchParamValue: string | null = 'old-param-value';
     const updateSearchParam = jest.fn((setter) => {
       if (typeof setter === 'function') {
         const prev = new URLSearchParams();
@@ -115,7 +125,7 @@ describe('useSyncStateAndSearchParam', () => {
     // Wait for microtask queue to flush
     await flushMicrotasks();
 
-    // Check that URL param was updated once to expected value
+    // Check that URL param was updated once to expected value from state
     expect(updateSearchParam).toHaveBeenCalledTimes(1);
     expect(searchParamValue).toBe('old-value');
 
@@ -142,7 +152,7 @@ describe('useSyncStateAndSearchParam', () => {
     const updateStateVar = jest.fn((val: string | null) => {
       stateVar = val === null ? undefined : val;
     });
-    let searchParamValue: string | null = null;
+    let searchParamValue: string | null = 'old-param-value';
     const updateSearchParam = jest.fn((setter) => {
       if (typeof setter === 'function') {
         const prev = new URLSearchParams();
@@ -168,7 +178,7 @@ describe('useSyncStateAndSearchParam', () => {
     // Wait for microtask queue to flush
     await flushMicrotasks();
 
-    // Check that URL param was updated once to expected value
+    // Check that URL param was updated once to expected value from state
     expect(updateSearchParam).toHaveBeenCalledTimes(1);
     expect(searchParamValue).toBe('old-value');
 
@@ -242,30 +252,26 @@ describe('useSyncStateAndSearchParam', () => {
     const searchParamValue2: string | null = 'initial-value2';
     const initializedCallback = () => true;
 
-    renderHook(
-      () =>
-        useSyncStateAndSearchParam(
-          stateVar1,
-          updateStateVar1,
-          'testParam1',
-          searchParamValue1,
-          mockSetSearchParams,
-          initializedCallback,
-        ),
-      {},
+    renderHook(() =>
+      useSyncStateAndSearchParam(
+        stateVar1,
+        updateStateVar1,
+        'testParam1',
+        searchParamValue1,
+        mockSetSearchParams,
+        initializedCallback,
+      ),
     );
 
-    renderHook(
-      () =>
-        useSyncStateAndSearchParam(
-          stateVar2,
-          updateStateVar2,
-          'testParam2',
-          searchParamValue2,
-          mockSetSearchParams,
-          initializedCallback,
-        ),
-      {},
+    renderHook(() =>
+      useSyncStateAndSearchParam(
+        stateVar2,
+        updateStateVar2,
+        'testParam2',
+        searchParamValue2,
+        mockSetSearchParams,
+        initializedCallback,
+      ),
     );
 
     // Initial call should only update null state value
@@ -312,6 +318,81 @@ describe('useSyncStateAndSearchParam', () => {
     // Verify other params are preserved
     expect(newParams.get('otherParam')).toBe('other-value');
     expect(newParams.get('anotherParam')).toBe('another-value');
+  });
+
+  test('should queue multiple URL parameter updates in the same tick', async () => {
+    let stateVar1: string | null = 'value1';
+    let stateVar2: string | null = 'value2';
+    const updateStateVar1 = jest.fn((value: string | null) => {
+      stateVar1 = value;
+    });
+    const updateStateVar2 = jest.fn((value: string | null) => {
+      stateVar2 = value;
+    });
+    const initializedCallback = () => true;
+
+    const { rerender: rerender1 } = renderHook(
+      () =>
+        useSyncStateAndSearchParam(
+          stateVar1,
+          updateStateVar1,
+          'testParam1',
+          null,
+          mockSetSearchParams,
+          initializedCallback,
+        ),
+      {},
+    );
+
+    const { rerender: rerender2 } = renderHook(() =>
+      useSyncStateAndSearchParam(
+        stateVar2,
+        updateStateVar2,
+        'testParam2',
+        null,
+        mockSetSearchParams,
+        initializedCallback,
+      ),
+    );
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
+
+    // Should call setSearchParams only once for both updates
+    expect(mockSetSearchParams).toHaveBeenCalledTimes(1);
+    const setParamsFn = mockSetSearchParams.mock.calls[0]?.[0] as (
+      params: URLSearchParams,
+    ) => URLSearchParams;
+
+    const params = new URLSearchParams();
+    const newParams = setParamsFn(params);
+
+    // Verify both params are set correctly
+    expect(newParams.get('testParam1')).toBe('value1');
+    expect(newParams.get('testParam2')).toBe('value2');
+
+    // Update both state values
+    stateVar1 = 'new-value1';
+    stateVar2 = 'new-value2';
+
+    rerender1();
+    rerender2();
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
+
+    // Should call setSearchParams only once for both updates
+    expect(mockSetSearchParams).toHaveBeenCalledTimes(2);
+    const setParamsFn2 = mockSetSearchParams.mock.calls[1]?.[0] as (
+      params: URLSearchParams,
+    ) => URLSearchParams;
+
+    const params2 = new URLSearchParams('testParam1=value1&testParam2=value2');
+    const newParams2 = setParamsFn2(params2);
+
+    // Verify both params are updated correctly
+    expect(newParams2.get('testParam1')).toBe('new-value1');
+    expect(newParams2.get('testParam2')).toBe('new-value2');
   });
 
   test('should not sync when initialized callback returns false', () => {
