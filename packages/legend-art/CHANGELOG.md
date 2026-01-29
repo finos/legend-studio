@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.141
+
+### Patch Changes
+
+- [#4824](https://github.com/finos/legend-studio/pull/4824) [`a2a2053`](https://github.com/finos/legend-studio/commit/a2a2053b8d8a3830edcf8fc497886309d181a0a8) ([@bojja-gs](https://github.com/bojja-gs)) - Added 2 tags in data product cards (license and data product source)
+
 ## 7.1.140
 
 ### Patch Changes
