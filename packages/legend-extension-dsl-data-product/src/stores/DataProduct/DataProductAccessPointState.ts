@@ -38,11 +38,14 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  LogEvent,
 } from '@finos/legend-shared';
 import { makeAutoObservable, observable, flow } from 'mobx';
 import { deserialize } from 'serializr';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
+import { RegistryMetadataResponse } from '@finos/legend-server-marketplace';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 
 export class DataProductAccessPointState {
   readonly apgState: DataProductAPGState;
@@ -57,6 +60,8 @@ export class DataProductAccessPointState {
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingRelationElement = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
+
+  registryMetadata: RegistryMetadataResponse | undefined;
 
   constructor(apgState: DataProductAPGState, accessPoint: V1_AccessPoint) {
     makeAutoObservable(this, {
@@ -84,7 +89,30 @@ export class DataProductAccessPointState {
       ),
       this.fetchSampleDataFromArtifact(dataProductArtifactPromise),
       this.fetchGrammar(),
+      this.fetchRegistryMetadata(),
     ]);
+  }
+
+  async fetchRegistryMetadata(): Promise<void> {
+    const dataProductName =
+      this.apgState.dataProductViewerState.product.name.toUpperCase();
+    const apName = this.accessPoint.id.toUpperCase();
+    const uri = `lakeHouse|v1|${dataProductName}|${apName}`;
+    try {
+      const rawMetadata =
+        (await this.apgState.dataProductViewerState.registryServerClient?.getRegistrationMetadata(
+          uri,
+        )) as PlainObject<RegistryMetadataResponse>;
+      const metadata: RegistryMetadataResponse =
+        RegistryMetadataResponse.serialization.fromJson(rawMetadata);
+      this.registryMetadata = metadata;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.apgState.applicationStore.logService.error(
+        LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+        error,
+      );
+    }
   }
 
   async fetchRelationTypeFromArtifact(

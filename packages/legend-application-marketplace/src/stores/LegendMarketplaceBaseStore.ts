@@ -35,6 +35,7 @@ import {
 } from '@finos/legend-server-depot';
 import {
   MarketplaceServerClient,
+  RegistryServerClient,
   TerminalAccessServerClient,
 } from '@finos/legend-server-marketplace';
 import {
@@ -83,6 +84,7 @@ export class LegendMarketplaceBaseStore {
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   readonly engineServerClient: V1_EngineServerClient;
+  readonly registryServerClient: RegistryServerClient | undefined;
   readonly pluginManager: LegendMarketplacePluginManager;
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
@@ -122,6 +124,16 @@ export class LegendMarketplaceBaseStore {
     this.marketplaceServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
+
+    //registry
+    if (this.applicationStore.config.registryUrl) {
+      this.registryServerClient = new RegistryServerClient({
+        baseUrl: this.applicationStore.config.registryUrl,
+      });
+      this.registryServerClient.setTracerService(
+        this.applicationStore.tracerService,
+      );
+    }
 
     // depot
     this.depotServerClient = new DepotServerClient({

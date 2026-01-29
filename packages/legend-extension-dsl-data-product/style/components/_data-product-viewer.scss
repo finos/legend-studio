@@ -2608,3 +2608,21 @@
     }
   }
 }
+
+.data-product__viewer__access-point {
+  &__info {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  &__details {
+    display: block;
+  }
+
+  &__tags {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+}
