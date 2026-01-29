@@ -76,6 +76,7 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Chip,
   Menu,
   MenuItem,
   Tab,
@@ -474,10 +475,14 @@ const LineageScreen = observer(
       )
     ) {
       return (
-        <TabMessageScreen message="Lineage not supported for this Adhoc Data Products" />
+        <TabMessageScreen message="Lineage not supported for Adhoc Data Products" />
       );
     } else if (!openLineageAction) {
       return <TabMessageScreen message="Lineage has not been configured" />;
+    } else if (!accessPointState.registryMetadata?.id) {
+      return (
+        <TabMessageScreen message="Lineage has not been registered for this access point" />
+      );
     }
     return (
       <div className="data-product__viewer__tab-screen">
@@ -1133,17 +1138,35 @@ export const DataProductAccessPointGroupViewer = observer(
                     className="data-product__viewer__access-point-section access_group_gap"
                   >
                     <div className="data-product__viewer__access-point__info">
-                      <div className="data-product__viewer__access-point__name">
-                        <strong>
-                          {accessPointState.accessPoint.title ??
-                            accessPointState.accessPoint.id}
-                        </strong>
+                      <div className="data-product__viewer__access-point__details">
+                        <div className="data-product__viewer__access-point__name">
+                          <strong>
+                            {accessPointState.accessPoint.title ??
+                              accessPointState.accessPoint.id}
+                          </strong>
+                        </div>
+                        <div className="data-product__viewer__access-point__description">
+                          {accessPointState.accessPoint.description?.trim() ?? (
+                            <span className="data-product__viewer__grid__empty-cell">
+                              No description to provide
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="data-product__viewer__access-point__description">
-                        {accessPointState.accessPoint.description?.trim() ?? (
-                          <span className="data-product__viewer__grid__empty-cell">
-                            No description to provide
-                          </span>
+                      <div className="data-product__viewer__access-point__tags">
+                        {accessPointState.registryMetadata?.ads && (
+                          <Chip
+                            className="data-product__viewer__wiki__tags__chip"
+                            label="ADS"
+                            title="Authorized Data Source"
+                          />
+                        )}
+                        {accessPointState.registryMetadata?.pde && (
+                          <Chip
+                            className="data-product__viewer__wiki__tags__chip"
+                            label="PDE"
+                            title="Point of Data Entry"
+                          />
                         )}
                       </div>
                     </div>

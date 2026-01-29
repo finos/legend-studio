@@ -79,6 +79,7 @@ import {
   type Diagram,
 } from '@finos/legend-extension-dsl-diagram';
 import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramViewerState.js';
+import type { RegistryServerClient } from '@finos/legend-server-marketplace';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
@@ -86,6 +87,7 @@ export class DataProductViewerState extends BaseViewerState<
 > {
   readonly engineServerClient: V1_EngineServerClient;
   readonly depotServerClient: DepotServerClient;
+  readonly registryServerClient?: RegistryServerClient | undefined;
   readonly graphManagerState: GraphManagerState;
   readonly apgStates: DataProductAPGState[];
   readonly userSearchService: UserSearchService | undefined;
@@ -131,6 +133,7 @@ export class DataProductViewerState extends BaseViewerState<
         | ((dataProductName: string, accessPointName: string) => void)
         | undefined;
     },
+    registryServerClient?: RegistryServerClient | undefined,
   ) {
     super(
       product,
@@ -162,6 +165,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.userSearchService = userSearchService;
     this.dataProductConfig = dataProductConfig;
     this.projectGAV = projectGAV;
+    this.registryServerClient = registryServerClient;
 
     this.modelAccessPointGroupDiagramViewerState =
       new DataProductViewerDiagramViewerState(
