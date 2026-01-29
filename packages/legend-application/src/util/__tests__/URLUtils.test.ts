@@ -416,4 +416,96 @@ describe('useSyncStateAndSearchParam', () => {
     expect(updateStateVar).not.toHaveBeenCalled();
     expect(mockSetSearchParams).not.toHaveBeenCalled();
   });
+
+  test('should clear URL parameter on unmount if specified', async () => {
+    const updateStateVar = jest.fn();
+    const initializedCallback = () => true;
+
+    const { unmount } = renderHook(
+      () =>
+        useSyncStateAndSearchParam(
+          'state-value',
+          updateStateVar,
+          'testParam',
+          null,
+          mockSetSearchParams,
+          initializedCallback,
+          true,
+        ),
+      {},
+    );
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
+
+    // Verify search param is set
+    expect(mockSetSearchParams).toHaveBeenCalledTimes(1);
+    const setParamsFn1 = mockSetSearchParams.mock.calls[0]?.[0] as (
+      params: URLSearchParams,
+    ) => URLSearchParams;
+    const params1 = new URLSearchParams();
+    const newParams1 = setParamsFn1(params1);
+    expect(newParams1.get('testParam')).toBe('state-value');
+
+    // Clear mock to see only unmount calls
+    mockSetSearchParams.mockClear();
+
+    // Unmount the hook
+    unmount();
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
+
+    // Should call setSearchParams to delete the URL param
+    expect(mockSetSearchParams).toHaveBeenCalledTimes(1);
+    const setParamsFn2 = mockSetSearchParams.mock.calls[0]?.[0] as (
+      params: URLSearchParams,
+    ) => URLSearchParams;
+    const params2 = new URLSearchParams('testParam=some-value');
+    const newParams2 = setParamsFn2(params2);
+    expect(newParams2.has('testParam')).toBe(false);
+  });
+
+  test('should not clear URL parameter on unmount if specified', async () => {
+    const updateStateVar = jest.fn();
+    const initializedCallback = () => true;
+
+    const { unmount } = renderHook(
+      () =>
+        useSyncStateAndSearchParam(
+          'state-value',
+          updateStateVar,
+          'testParam',
+          null,
+          mockSetSearchParams,
+          initializedCallback,
+          false,
+        ),
+      {},
+    );
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
+
+    // Verify search param is set
+    expect(mockSetSearchParams).toHaveBeenCalledTimes(1);
+    const setParamsFn1 = mockSetSearchParams.mock.calls[0]?.[0] as (
+      params: URLSearchParams,
+    ) => URLSearchParams;
+    const params1 = new URLSearchParams();
+    const newParams1 = setParamsFn1(params1);
+    expect(newParams1.get('testParam')).toBe('state-value');
+
+    // Clear mock to see only unmount calls
+    mockSetSearchParams.mockClear();
+
+    // Unmount the hook
+    unmount();
+
+    // Wait for microtask queue to flush
+    await flushMicrotasks();
+
+    // Should not call setSearchParams on unmount
+    expect(mockSetSearchParams).not.toHaveBeenCalled();
+  });
 });

@@ -95,6 +95,7 @@ export const useSyncStateAndSearchParam = (
   searchParamValue: string | null,
   setSearchParams: SetURLSearchParams,
   initializedCallback: () => boolean,
+  clearParamOnUnmount: boolean = true,
 ): void => {
   // Use a ref to make setSearchParams stable
   // react-router's setSearchParams is not stable and changes on every render
@@ -128,5 +129,11 @@ export const useSyncStateAndSearchParam = (
         queueUpdate(searchParamKey, null, setSearchParamsRef.current);
       }
     }
-  }, [initializedCallback, searchParamKey, stateVar]);
+
+    return () => {
+      if (clearParamOnUnmount) {
+        queueUpdate(searchParamKey, null, setSearchParamsRef.current);
+      }
+    };
+  }, [clearParamOnUnmount, initializedCallback, searchParamKey, stateVar]);
 };
