@@ -249,16 +249,16 @@ describe('Lakehouse Data Contract', () => {
         'test-privilege-manager-user-id',
       );
 
-      const approveButton = (await screen.findByRole('button', {
+      const approveButton = await screen.findByRole('button', {
         name: 'Approve Task',
-      })) as HTMLButtonElement;
-      const denyButton = (await screen.findByRole('button', {
+      });
+      const denyButton = await screen.findByRole('button', {
         name: 'Deny Task',
-      })) as HTMLButtonElement;
+      });
 
-      expect(approveButton.disabled).toBe(false);
+      expect(approveButton.getAttribute('disabled')).toBeNull();
 
-      expect(denyButton.disabled).toBe(false);
+      expect(denyButton.getAttribute('disabled')).toBeNull();
     });
 
     test('disables approve/deny buttons for non-assigned users', async () => {
@@ -272,13 +272,13 @@ describe('Lakehouse Data Contract', () => {
 
       const approveButton = (await screen.findByText('Approve Task')).closest(
         'button',
-      ) as HTMLButtonElement;
+      );
       const denyButton = (await screen.findByText('Deny Task')).closest(
         'button',
-      ) as HTMLButtonElement;
+      );
 
-      expect(approveButton.disabled).toBe(true);
-      expect(denyButton.disabled).toBe(true);
+      expect(approveButton?.getAttribute('disabled')).not.toBeNull();
+      expect(denyButton?.getAttribute('disabled')).not.toBeNull();
     });
 
     test('privilege manager can approve their assigned task', async () => {
@@ -290,11 +290,11 @@ describe('Lakehouse Data Contract', () => {
         'test-privilege-manager-user-id',
       );
 
-      const pmApproveButton = (await screen.findByRole('button', {
+      const pmApproveButton = await screen.findByRole('button', {
         name: 'Approve Task',
-      })) as HTMLButtonElement;
+      });
 
-      expect(pmApproveButton.disabled).toBe(false);
+      expect(pmApproveButton.getAttribute('disabled')).toBeNull();
 
       fireEvent.click(pmApproveButton);
 
@@ -314,11 +314,11 @@ describe('Lakehouse Data Contract', () => {
         'test-data-owner-user-id',
       );
 
-      const doApproveButton = (await screen.findByRole('button', {
+      const doApproveButton = await screen.findByRole('button', {
         name: 'Approve Task',
-      })) as HTMLButtonElement;
+      });
 
-      expect(doApproveButton.disabled).toBe(false);
+      expect(doApproveButton.getAttribute('disabled')).toBeNull();
 
       fireEvent.click(doApproveButton);
 
