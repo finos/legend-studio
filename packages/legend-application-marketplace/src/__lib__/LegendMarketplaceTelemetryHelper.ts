@@ -163,14 +163,16 @@ export class LegendMarketplaceTelemetryHelper {
   static logEvent_SearchQuery(
     telemetryService: TelemetryService,
     query: string | undefined,
+    useProducerSearch: boolean,
     searchedFrom: LEGEND_MARKETPLACE_PAGE,
   ): void {
     this.updateSearchSessionId(telemetryService.applicationStore.uuid);
     this.updateEventId();
     const session = this.getOrCreateUserSession();
     telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SEARCH_QUERY, {
-      query: query,
-      searchedFrom: searchedFrom,
+      query,
+      useProducerSearch,
+      searchedFrom,
       ...session,
     });
   }

@@ -129,6 +129,7 @@ export const MarketplaceLakehouseHome = observer(() => {
       LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
         applicationStore.telemetryService,
         _query,
+        _useProducerSearch,
         LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
       );
     }
@@ -163,9 +164,6 @@ export const MarketplaceLakehouseHome = observer(() => {
         <LegendMarketplaceSearchBar
           showSettings={true}
           onSearch={handleSearch}
-          initialUseProducerSearch={
-            legendMarketplaceBaseStore.useProducerSearch
-          }
           placeholder="Which data can I help you find?"
           className="marketplace-lakehouse-home__search-bar"
         />

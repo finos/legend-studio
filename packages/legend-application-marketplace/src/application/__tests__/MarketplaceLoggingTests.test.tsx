@@ -186,6 +186,7 @@ describe('LegendMarketplaceTelemetryHelper Session Management', () => {
       LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
         mockTelemetryService,
         'test query',
+        false,
         LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
       );
 
@@ -276,6 +277,7 @@ describe('Session Data Structure', () => {
     LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
       mockTelemetryService,
       'power bi dashboard',
+      false,
       LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
     );
 
