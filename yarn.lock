@@ -2522,6 +2522,7 @@ __metadata:
     react-dnd: "npm:16.0.1"
     react-dom: "npm:19.0.1"
     react-oidc-context: "npm:^3.3.0"
+    react-router-dom: "npm:7.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.0"
     serializr: "npm:3.0.3"
