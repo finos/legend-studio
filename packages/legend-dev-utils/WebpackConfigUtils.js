@@ -382,6 +382,7 @@ export const getWebAppBaseWebpackConfig = (
           'yaml',
           'xml',
           'graphql',
+          'python',
         ],
         // Exclude/include features
         // NOTE: the downside to this is that sometimes `monaco-editor` changes their
