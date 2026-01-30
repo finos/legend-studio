@@ -287,6 +287,7 @@ export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/
 export {
   V1_RelationStoreAccessor,
   V1_DataProductAccessor,
+  V1_SQLAccessor,
 } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
 export {
