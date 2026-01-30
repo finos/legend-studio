@@ -1,5 +1,11 @@
 # @finos/legend-dev-utils
 
+## 2.2.6
+
+### Patch Changes
+
+- [#4842](https://github.com/finos/legend-studio/pull/4842) [`f22ec7a`](https://github.com/finos/legend-studio/commit/f22ec7afdac798f32a6fe20af1527f327c609853) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added python language to monaco editor
+
 ## 2.2.5
 
 ### Patch Changes

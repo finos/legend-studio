@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.40
+
+### Patch Changes
+
+- [#4844](https://github.com/finos/legend-studio/pull/4844) [`f2dddfe`](https://github.com/finos/legend-studio/commit/f2dddfeaab5552378900a5231726fa84e5cb9fd7) ([@kelly-thai](https://github.com/kelly-thai)) - Add RegistryServerClient
+
 ## 0.1.39
 
 ### Patch Changes
