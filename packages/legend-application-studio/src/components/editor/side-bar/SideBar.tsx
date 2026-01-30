@@ -38,6 +38,12 @@ import { DevMetadataPanel } from './DevMetadataPanel.js';
 export const SideBar = observer(() => {
   const editorStore = useEditorStore();
 
+  const extraActivityConfigs = editorStore.pluginManager
+    .getApplicationPlugins()
+    .flatMap(
+      (plugin) => plugin.getExtraActivityBarItemConfigurations?.() ?? [],
+    );
+
   const renderSideBar = (): React.ReactNode => {
     switch (editorStore.activeActivity) {
       case ACTIVITY_MODE.EXPLORER:
@@ -82,8 +88,15 @@ export const SideBar = observer(() => {
             }
           />
         );
-      default:
+      default: {
+        const pluginActivity = extraActivityConfigs.find(
+          (config) => config.key === editorStore.activeActivity,
+        );
+        if (pluginActivity) {
+          return pluginActivity.renderer(editorStore);
+        }
         return null;
+      }
     }
   };
 

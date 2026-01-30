@@ -299,6 +299,18 @@ export const ActivityBar = observer(() => {
     ></div>
   );
   const lazyTextModeEnabled = editorStore.mode === EDITOR_MODE.LAZY_TEXT_EDITOR;
+
+  const extraActivities: ActivityBarItemConfig[] = editorStore.pluginManager
+    .getApplicationPlugins()
+    .flatMap((plugin) => plugin.getExtraActivityBarItemConfigurations?.() ?? [])
+    .map((config) => ({
+      mode: config.key,
+      title: config.title,
+      icon: config.icon,
+      disabled: config.disabled?.(editorStore) ?? false,
+    }))
+    .filter((activity) => !activity.disabled);
+
   // tabs
   const activities: ActivityBarItemConfig[] = [
     {
@@ -454,6 +466,22 @@ export const ActivityBar = observer(() => {
         ))}
         {Boolean(userJourneys.length) && <MenuContentDivider />}
         {userJourneys.map((activity) => (
+          <button
+            key={activity.mode}
+            className={clsx('activity-bar__item', {
+              'activity-bar__item--active':
+                editorStore.sideBarDisplayState.isOpen &&
+                editorStore.activeActivity === activity.mode,
+            })}
+            onClick={changeActivity(activity.mode)}
+            tabIndex={-1}
+            title={activity.title}
+          >
+            {activity.icon}
+          </button>
+        ))}
+        {Boolean(extraActivities.length) && <MenuContentDivider />}
+        {extraActivities.map((activity) => (
           <button
             key={activity.mode}
             className={clsx('activity-bar__item', {
