@@ -41,7 +41,7 @@ import {
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
-import { Box, Button, Tooltip } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -260,8 +260,10 @@ export const LakehouseDataContractTask =
             <div className="marketplace-lakehouse-single-contract-viewer__container">
               {associatedTask !== undefined && (
                 <Box className="marketplace-lakehouse-single-contract-viewer__action-btns">
-                  <Tooltip
-                    className="marketplace-lakehouse-single-contract-viewer__tooltip__icon"
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={handleApproveClick}
                     title={
                       !isTaskPending
                         ? 'Task does not require review'
@@ -269,18 +271,14 @@ export const LakehouseDataContractTask =
                           ? ''
                           : 'You are not assigned to review this task'
                     }
+                    disabled={!userCanApprove || isLoading}
                   >
-                    <Button
-                      variant="contained"
-                      color="success"
-                      onClick={handleApproveClick}
-                      disabled={!userCanApprove || isLoading}
-                    >
-                      Approve Task
-                    </Button>
-                  </Tooltip>
-                  <Tooltip
-                    className="marketplace-lakehouse-single-contract-viewer__tooltip__icon"
+                    Approve Task
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={handleDenyClick}
                     title={
                       !isTaskPending
                         ? 'Task does not require review'
@@ -288,16 +286,10 @@ export const LakehouseDataContractTask =
                           ? ''
                           : 'You are not assigned to review this task'
                     }
+                    disabled={!userCanApprove || isLoading}
                   >
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={handleDenyClick}
-                      disabled={!userCanApprove || isLoading}
-                    >
-                      Deny Task
-                    </Button>
-                  </Tooltip>
+                    Deny Task
+                  </Button>
                 </Box>
               )}
               <EntitlementsDataContractContent
