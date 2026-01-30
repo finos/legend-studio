@@ -38,10 +38,25 @@
       padding-right: 0.5rem;
       padding-left: 0.5rem;
       margin-right: 0.5rem;
-      width: 7%;
       color: var(--color-light-grey-100);
       background: var(--color-dark-grey-200);
       font-weight: 500;
+      width: 200px;
+    }
+  }
+
+  &__editor-switch-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-direction: row-reverse;
+
+    & label {
+      width: fit-content;
+      background-color: transparent;
+      font-weight: normal;
+      font-size: 1.2rem;
+      cursor: pointer;
     }
   }
 }
