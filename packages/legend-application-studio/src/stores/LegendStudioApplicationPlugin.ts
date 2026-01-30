@@ -84,6 +84,14 @@ export type TestRunnerViewConfiguration = {
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
 
+export type ActivityBarItemConfiguration = {
+  key: string;
+  title: string;
+  icon: React.ReactElement;
+  disabled?: (editorStore: EditorStore) => boolean;
+  renderer: (editorStore: EditorStore) => React.ReactNode;
+};
+
 export type StudioApplicationPageEntry = ApplicationPageEntry & {
   nonSDLCApp?: boolean | undefined;
 };
@@ -142,6 +150,12 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
    * Get the list of view configurations for test runner.
    */
   getExtraTestRunnerViewConfigurations?(): TestRunnerViewConfiguration[];
+
+  /**
+   * Get the list of extra activity bar item configurations.
+   * These add new activities to the activity bar with corresponding sidebar panels.
+   */
+  getExtraActivityBarItemConfigurations?(): ActivityBarItemConfiguration[];
 }
 
 export type PureGrammarElementLabeler = (
