@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.49
+
+### Patch Changes
+
+- [#4844](https://github.com/finos/legend-studio/pull/4844) [`f2dddfe`](https://github.com/finos/legend-studio/commit/f2dddfeaab5552378900a5231726fa84e5cb9fd7) ([@kelly-thai](https://github.com/kelly-thai)) - Use RegistryServerClient to add ADS/PDE tags to Access Points
+
 ## 0.0.48
 
 ## 0.0.47

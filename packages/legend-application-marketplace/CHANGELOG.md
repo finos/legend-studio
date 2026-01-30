@@ -1,5 +1,17 @@
 # @finos/legend-application-marketplace
 
+## 0.1.64
+
+### Patch Changes
+
+- [#4844](https://github.com/finos/legend-studio/pull/4844) [`f2dddfe`](https://github.com/finos/legend-studio/commit/f2dddfeaab5552378900a5231726fa84e5cb9fd7) ([@kelly-thai](https://github.com/kelly-thai)) - Use RegistryServerClient to add ADS/PDE tags to Access Points
+
+- [#4839](https://github.com/finos/legend-studio/pull/4839) [`f573959`](https://github.com/finos/legend-studio/commit/f573959ff955700ec18aa61496942b93bfb34412) ([@jackp5150](https://github.com/jackp5150)) - Added task approval tests for single contract pages
+
+- [#4845](https://github.com/finos/legend-studio/pull/4845) [`b1ee751`](https://github.com/finos/legend-studio/commit/b1ee751dd3c27eea2f268e04ff8636f27fa92910) ([@jackp5150](https://github.com/jackp5150)) - Fixed approve/deny button colors for contract page
+
+- [#4838](https://github.com/finos/legend-studio/pull/4838) [`47284b1`](https://github.com/finos/legend-studio/commit/47284b16e8b2af8f7c9ad9545c7c33081467a9e3) ([@travisstebbins](https://github.com/travisstebbins)) - Fix useSyncStateAndSearchParam to handle concurrent URL param updates
+
 ## 0.1.63
 
 ### Patch Changes

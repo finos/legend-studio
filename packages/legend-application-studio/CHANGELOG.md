@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.91
+
+### Patch Changes
+
+- [#4846](https://github.com/finos/legend-studio/pull/4846) [`bf65198`](https://github.com/finos/legend-studio/commit/bf65198856e0e15453ca57cbcbb3bc9f1e1bc9f4) ([@jackp5150](https://github.com/jackp5150)) - Added extensions for sidebar/activity bar rendering
+
 ## 28.19.90
 
 ## 28.19.89

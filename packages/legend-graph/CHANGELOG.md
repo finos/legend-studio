@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.29
+
+### Patch Changes
+
+- [#4830](https://github.com/finos/legend-studio/pull/4830) [`26b3fc5`](https://github.com/finos/legend-studio/commit/26b3fc5c58dfb4695242cdffd029b56d81b1ee2b) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding SQL deserializer
+
 ## 32.3.28
 
 ### Patch Changes

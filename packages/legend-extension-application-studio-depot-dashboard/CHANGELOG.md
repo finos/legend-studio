@@ -1,5 +1,11 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.29
+
+### Patch Changes
+
+- [#4829](https://github.com/finos/legend-studio/pull/4829) [`12f4f1f`](https://github.com/finos/legend-studio/commit/12f4f1f4b1e133d9e7580ea29411d667c1bfd882) ([@gs-gunjan](https://github.com/gs-gunjan)) - fixing release builds
+
 ## 0.1.28
 
 ### Patch Changes
