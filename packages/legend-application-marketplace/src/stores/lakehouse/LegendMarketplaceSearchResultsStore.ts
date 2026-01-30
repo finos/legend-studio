@@ -60,6 +60,8 @@ export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly displayImageMap = new Map<string, string>();
+  searchQuery: string | undefined = undefined;
+  useProducerSearch: boolean | undefined = undefined;
   semanticSearchProductCardStates: ProductCardState[] = [];
   producerSearchDataProductCardStates: ProductCardState[] = [];
   producerSearchLegacyDataProductCardStates: ProductCardState[] = [];
@@ -74,10 +76,14 @@ export class LegendMarketplaceSearchResultsStore {
     this.marketplaceServerClient = marketplaceBaseStore.marketplaceServerClient;
 
     makeObservable(this, {
+      searchQuery: observable,
+      useProducerSearch: observable,
       semanticSearchProductCardStates: observable,
       producerSearchDataProductCardStates: observable,
       producerSearchLegacyDataProductCardStates: observable,
       sort: observable,
+      setSearchQuery: action,
+      setUseProducerSearch: action,
       setSemanticSearchProductCardStates: action,
       setProducerSearchDataProductCardStates: action,
       setProducerSearchLegacyDataProductCardStates: action,
@@ -88,8 +94,16 @@ export class LegendMarketplaceSearchResultsStore {
     });
   }
 
+  setSearchQuery(query: string): void {
+    this.searchQuery = query;
+  }
+
+  setUseProducerSearch(value: boolean): void {
+    this.useProducerSearch = value;
+  }
+
   get filterSortProducts(): ProductCardState[] | undefined {
-    const productCardStates = this.marketplaceBaseStore.useProducerSearch
+    const productCardStates = this.useProducerSearch
       ? [
           ...this.producerSearchDataProductCardStates,
           ...this.producerSearchLegacyDataProductCardStates,
@@ -114,7 +128,7 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   get isLoading(): boolean {
-    return this.marketplaceBaseStore.useProducerSearch
+    return this.useProducerSearch
       ? this.fetchingProducerSearchDataProductsState.isInProgress ||
           this.fetchingProducerSearchLegacyDataProductsState.isInProgress
       : this.executingSemanticSearchState.isInProgress;

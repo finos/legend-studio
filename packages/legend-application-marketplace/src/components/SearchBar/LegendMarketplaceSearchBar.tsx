@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type JSX, useState } from 'react';
+import { type JSX, useEffect, useState } from 'react';
 import {
   FormControlLabel,
   IconButton,
@@ -39,32 +39,43 @@ export interface Vendor {
 export const LegendMarketplaceSearchBar = observer(
   (props: {
     onSearch?: (query: string | undefined, useProducerSearch: boolean) => void;
-    initialValue?: string | undefined;
+    stateSearchQuery?: string | undefined;
     placeholder?: string;
     onChange?: (query: string) => void;
     className?: string | undefined;
     showSettings?: boolean;
-    initialUseProducerSearch?: boolean;
+    stateUseProducerSearch?: boolean | undefined;
   }): JSX.Element => {
     const {
       onSearch,
-      initialValue,
+      stateSearchQuery,
       placeholder,
       onChange,
       className,
       showSettings,
-      initialUseProducerSearch,
+      stateUseProducerSearch,
     } = props;
 
     const applicationStore = useLegendMarketplaceBaseStore().applicationStore;
-    const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
+    const [searchQuery, setSearchQuery] = useState<string>(
+      stateSearchQuery ?? '',
+    );
     const [useProducerSearch, setUseProducerSearch] = useState(
-      initialUseProducerSearch ?? false,
+      stateUseProducerSearch ?? false,
     );
     const [searchMenuAnchorEl, setSearchMenuAnchorEl] =
       useState<HTMLElement | null>();
 
     const searchMenuOpen = Boolean(searchMenuAnchorEl);
+
+    // Ensure component's state is in sync with external state
+    useEffect(() => {
+      setSearchQuery(stateSearchQuery ?? '');
+    }, [stateSearchQuery]);
+
+    useEffect(() => {
+      setUseProducerSearch(stateUseProducerSearch ?? false);
+    }, [stateUseProducerSearch]);
 
     return (
       <form

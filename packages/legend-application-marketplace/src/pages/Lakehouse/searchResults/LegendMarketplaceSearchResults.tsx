@@ -34,10 +34,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DataProductSort } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
-import {
-  generateLakehouseSearchResultsRoute,
-  LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
-} from '../../../__lib__/LegendMarketplaceNavigation.js';
+import { LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
@@ -61,55 +58,62 @@ export const LegendMarketplaceSearchResults =
 
       const marketplaceBaseStore = searchResultsStore.marketplaceBaseStore;
       const applicationStore = marketplaceBaseStore.applicationStore;
-      const searchQuery =
-        applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
-          LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
-          {
-            sanitizeParametersInsteadOfUrl: true,
-          },
-        );
-      const useProducerSearch =
-        applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
-          LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_PRODUCER_SEARCH,
-        )
-          ? applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
-              LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_PRODUCER_SEARCH,
-            ) === 'true'
-          : marketplaceBaseStore.useProducerSearch;
 
       // Execute search whenever search query or search mode changes
       useEffect(() => {
-        if (searchQuery) {
+        if (searchResultsStore.searchQuery) {
           searchResultsStore.executeSearch(
-            searchQuery,
-            useProducerSearch,
+            searchResultsStore.searchQuery,
+            searchResultsStore.useProducerSearch ?? false,
             auth.user?.access_token,
+          );
+          LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
+            applicationStore.telemetryService,
+            searchResultsStore.searchQuery,
+            searchResultsStore.useProducerSearch ?? false,
+            LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
           );
         }
       }, [
+        applicationStore.telemetryService,
         auth.user?.access_token,
-        useProducerSearch,
-        searchQuery,
         searchResultsStore,
+        searchResultsStore.searchQuery,
+        searchResultsStore.useProducerSearch,
       ]);
 
       useSyncStateAndSearchParam(
-        marketplaceBaseStore.useProducerSearch,
+        searchResultsStore.useProducerSearch,
         useCallback(
           (val: string | null) => {
-            marketplaceBaseStore.setUseProducerSearch(val === 'true');
+            searchResultsStore.setUseProducerSearch(val === 'true');
           },
-          [marketplaceBaseStore],
+          [searchResultsStore],
         ),
         LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_PRODUCER_SEARCH,
         searchParams.get(
           LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_PRODUCER_SEARCH,
         ),
         setSearchParams,
+        useCallback(() => true, []),
+      );
+
+      useSyncStateAndSearchParam(
+        searchResultsStore.searchQuery,
         useCallback(
-          () => marketplaceBaseStore.initState.hasCompleted,
-          [marketplaceBaseStore],
+          (val: string | null) => {
+            if (val !== null) {
+              searchResultsStore.setSearchQuery(val);
+            }
+          },
+          [searchResultsStore],
         ),
+        LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
+        searchParams.get(
+          LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
+        ),
+        setSearchParams,
+        useCallback(() => true, []),
       );
 
       const isLoadingDataProducts = searchResultsStore.isLoading;
@@ -119,14 +123,8 @@ export const LegendMarketplaceSearchResults =
         _useProducerSearch: boolean,
       ): void => {
         if (isNonEmptyString(_query)) {
-          applicationStore.navigationService.navigator.updateCurrentLocation(
-            generateLakehouseSearchResultsRoute(_query, _useProducerSearch),
-          );
-          LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
-            applicationStore.telemetryService,
-            _query,
-            LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
-          );
+          searchResultsStore.setSearchQuery(_query);
+          searchResultsStore.setUseProducerSearch(_useProducerSearch);
         }
       };
 
@@ -136,10 +134,10 @@ export const LegendMarketplaceSearchResults =
             <LegendMarketplaceSearchBar
               showSettings={true}
               onSearch={handleSearch}
-              initialUseProducerSearch={useProducerSearch}
+              stateSearchQuery={searchResultsStore.searchQuery}
+              stateUseProducerSearch={searchResultsStore.useProducerSearch}
               placeholder="Search Legend Marketplace"
               className="marketplace-lakehouse-search-results__search-bar"
-              initialValue={searchQuery}
             />
           </Container>
           <div className="legend-marketplace-search-results__sort-bar">
