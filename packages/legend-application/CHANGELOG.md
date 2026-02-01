@@ -1,5 +1,13 @@
 # @finos/legend-application
 
+## 16.0.93
+
+### Patch Changes
+
+- [#4838](https://github.com/finos/legend-studio/pull/4838) [`47284b1`](https://github.com/finos/legend-studio/commit/47284b16e8b2af8f7c9ad9545c7c33081467a9e3) ([@travisstebbins](https://github.com/travisstebbins)) - Fix useSyncStateAndSearchParam to handle concurrent URL param updates
+
+- [#4844](https://github.com/finos/legend-studio/pull/4844) [`f2dddfe`](https://github.com/finos/legend-studio/commit/f2dddfeaab5552378900a5231726fa84e5cb9fd7) ([@kelly-thai](https://github.com/kelly-thai)) - Update external navigation lineage URL
+
 ## 16.0.92
 
 ## 16.0.91
