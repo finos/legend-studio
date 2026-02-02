@@ -33,6 +33,7 @@ import {
   TableCell,
   IconButton,
   Chip,
+  Tooltip,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -48,6 +49,7 @@ import {
   DevelopmentLegendMarketplaceEnvState,
   ProdParallelLegendMarketplaceEnvState,
 } from '../../stores/LegendMarketplaceEnvState.js';
+import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -322,15 +324,53 @@ export const LakehouseProductCard = observer(
           <Box className="marketplace-lakehouse-data-product-card__content">
             {!hideTags && (
               <Box className="marketplace-lakehouse-data-product-card__tags">
-                {isLakehouse && (
-                  <Chip
-                    size="small"
-                    label="Lakehouse"
-                    className={clsx(
-                      'marketplace-lakehouse-data-product-card__lakehouse',
-                    )}
-                  />
-                )}
+                {isLakehouse &&
+                  (productCardState.lakehouseOwners.length > 0 ? (
+                    <Tooltip
+                      title={
+                        <Box>
+                          {productCardState.lakehouseOwners.map((owner) => (
+                            <UserRenderer
+                              key={owner}
+                              userId={owner}
+                              applicationStore={
+                                productCardState.marketplaceBaseStore
+                                  .applicationStore
+                              }
+                              userSearchService={
+                                productCardState.marketplaceBaseStore
+                                  .userSearchService
+                              }
+                            />
+                          ))}
+                        </Box>
+                      }
+                    >
+                      <Chip
+                        size="small"
+                        label={`Lakehouse${
+                          productCardState.lakehouseEnvironment
+                            ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
+                            : ''
+                        }`}
+                        className={clsx(
+                          'marketplace-lakehouse-data-product-card__lakehouse',
+                        )}
+                      />
+                    </Tooltip>
+                  ) : (
+                    <Chip
+                      size="small"
+                      label={`Lakehouse${
+                        productCardState.lakehouseEnvironment
+                          ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
+                          : ''
+                      }`}
+                      className={clsx(
+                        'marketplace-lakehouse-data-product-card__lakehouse',
+                      )}
+                    />
+                  ))}
                 {/* We only show version if it's a snapshot, because otherwise it's just the latest prod version */}
                 {isSnapshot && (
                   <Chip

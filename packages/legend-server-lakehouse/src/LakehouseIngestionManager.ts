@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type AppDirNode } from '@finos/legend-graph';
+import { type V1_AppDirLevel, type AppDirNode } from '@finos/legend-graph';
 import {
   NetworkClientError,
   type PlainObject,
@@ -220,7 +220,7 @@ export class LakehouseIngestionManager {
     const serverConfig = IngestDeploymentServerConfig.serialization.fromJson(
       await this.ingestDiscoveryServerClient.findProducerServer(
         appDirNode.appDirId,
-        appDirNode.level,
+        appDirNode.level as V1_AppDirLevel,
         token,
       ),
     );

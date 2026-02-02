@@ -68,6 +68,7 @@ import {
   convertEntitlementsDataProductDetailsToSearchResult,
   convertLegacyDataProductToSearchResult,
 } from '../utils/SearchUtils.js';
+import { LakehousePlatformStore } from './lakehouse/LakehousePlatformStore.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -88,6 +89,7 @@ export class LegendMarketplaceBaseStore {
   readonly pluginManager: LegendMarketplacePluginManager;
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
+  readonly lakehousePlatformStore: LakehousePlatformStore;
   readonly cartStore: CartStore;
   readonly terminalAccessServerClient: TerminalAccessServerClient;
 
@@ -122,7 +124,7 @@ export class LegendMarketplaceBaseStore {
       this.applicationStore.tracerService,
     );
 
-    //registry
+    // registry
     if (this.applicationStore.config.registryUrl) {
       this.registryServerClient = new RegistryServerClient({
         baseUrl: this.applicationStore.config.registryUrl,
@@ -148,7 +150,7 @@ export class LegendMarketplaceBaseStore {
       this.applicationStore.tracerService,
     );
 
-    //terminal
+    // terminal
     this.terminalAccessServerClient = new TerminalAccessServerClient({
       baseUrl: this.applicationStore.config.terminalServerUrl,
     });
@@ -162,6 +164,10 @@ export class LegendMarketplaceBaseStore {
     );
     this.lakehousePlatformServerClient.setTracerService(
       this.applicationStore.tracerService,
+    );
+    this.lakehousePlatformStore = new LakehousePlatformStore(
+      this,
+      this.lakehousePlatformServerClient,
     );
 
     // lakehouse ingest

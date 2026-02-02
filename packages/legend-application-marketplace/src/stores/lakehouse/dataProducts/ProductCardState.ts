@@ -46,6 +46,7 @@ import {
 } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../__lib__/LegendMarketplaceAppEvent.js';
 import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
+import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 
 export class ProductCardState {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
@@ -53,6 +54,8 @@ export class ProductCardState {
   readonly displayImage: string;
   readonly graphManager: V1_PureGraphManager;
   dataProductElement: V1_DataProduct | V1_DataSpace | undefined;
+  lakehouseEnvironment: IngestDeploymentServerConfig | undefined;
+  lakehouseOwners: string[] = [];
 
   readonly initState = ActionState.create();
 
@@ -64,7 +67,11 @@ export class ProductCardState {
   ) {
     makeObservable(this, {
       dataProductElement: observable,
+      lakehouseEnvironment: observable,
+      lakehouseOwners: observable,
       setDataProductElement: action,
+      setLakehouseEnvironment: action,
+      setLakehouseOwners: action,
       init: flow,
     });
 
@@ -127,11 +134,42 @@ export class ProductCardState {
         this.searchResult.dataProductDetails instanceof
         LakehouseDataProductSearchResultDetails
       ) {
-        const dataProduct = (yield this.getLakehouseDataProduct(
-          this.searchResult.dataProductDetails,
-          token,
-        )) as V1_DataProduct | undefined;
-        this.setDataProductElement(dataProduct);
+        yield Promise.all([
+          (async (
+            _dataProductDetails: LakehouseDataProductSearchResultDetails,
+          ) => {
+            const dataProduct = await this.getLakehouseDataProduct(
+              _dataProductDetails,
+              token,
+            );
+            this.setDataProductElement(dataProduct);
+          })(this.searchResult.dataProductDetails),
+          (async (
+            _dataProductDetails: LakehouseDataProductSearchResultDetails,
+          ) => {
+            const lakehouseEnvironment =
+              await this.marketplaceBaseStore.lakehousePlatformStore.getOrFetchEnvironmentForDID(
+                _dataProductDetails.deploymentId,
+                token,
+              );
+            this.setLakehouseEnvironment(lakehouseEnvironment);
+            const rawOwnershipResponse =
+              await this.marketplaceBaseStore.lakehouseContractServerClient.getOwnersForDid(
+                _dataProductDetails.deploymentId,
+                token,
+              );
+            const owners =
+              this.marketplaceBaseStore.applicationStore.pluginManager
+                .getApplicationPlugins()
+                ?.flatMap(
+                  (plugin) =>
+                    plugin.handleDataProductOwnersResponse?.(
+                      rawOwnershipResponse,
+                    ) ?? [],
+                );
+            this.setLakehouseOwners(owners);
+          })(this.searchResult.dataProductDetails),
+        ]);
       } else if (
         this.searchResult.dataProductDetails instanceof
         LegacyDataProductSearchResultDetails
@@ -157,6 +195,16 @@ export class ProductCardState {
 
   setDataProductElement(value: V1_DataProduct | undefined): void {
     this.dataProductElement = value;
+  }
+
+  setLakehouseEnvironment(
+    value: IngestDeploymentServerConfig | undefined,
+  ): void {
+    this.lakehouseEnvironment = value;
+  }
+
+  setLakehouseOwners(value: string[]): void {
+    this.lakehouseOwners = value;
   }
 
   getDataProductImage(productImageMap: Map<string, string>): string {
