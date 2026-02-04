@@ -360,43 +360,48 @@ export const LakehouseProductCard = observer(
               <Box className="marketplace-lakehouse-data-product-card__tags">
                 {isLakehouse &&
                   (productCardState.lakehouseOwners.length > 0 ? (
-                    <ClickAwayListener
-                      onClickAway={() => setIsOwnersTooltipOpen(false)}
+                    <div
+                      onClick={(event) => {
+                        event.stopPropagation();
+                      }}
                     >
-                      <Tooltip
-                        open={isOwnersTooltipOpen}
-                        onClose={() => setIsOwnersTooltipOpen(false)}
-                        disableFocusListener={true}
-                        disableHoverListener={true}
-                        disableTouchListener={true}
-                        title={
-                          <LakehouseDataProductOwnersTooltip
-                            productCardState={productCardState}
-                          />
-                        }
-                        slotProps={{
-                          popper: {
-                            disablePortal: true,
-                          },
-                        }}
+                      <ClickAwayListener
+                        onClickAway={() => setIsOwnersTooltipOpen(false)}
                       >
-                        <Chip
-                          size="small"
-                          label={`Lakehouse${
-                            productCardState.lakehouseEnvironment
-                              ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
-                              : ''
-                          }`}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setIsOwnersTooltipOpen((val) => !val);
+                        <Tooltip
+                          open={isOwnersTooltipOpen}
+                          onClose={() => setIsOwnersTooltipOpen(false)}
+                          disableFocusListener={true}
+                          disableHoverListener={true}
+                          disableTouchListener={true}
+                          title={
+                            <LakehouseDataProductOwnersTooltip
+                              productCardState={productCardState}
+                            />
+                          }
+                          slotProps={{
+                            popper: {
+                              disablePortal: true,
+                            },
                           }}
-                          className={clsx(
-                            'marketplace-lakehouse-data-product-card__lakehouse',
-                          )}
-                        />
-                      </Tooltip>
-                    </ClickAwayListener>
+                        >
+                          <Chip
+                            size="small"
+                            label={`Lakehouse${
+                              productCardState.lakehouseEnvironment
+                                ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
+                                : ''
+                            }`}
+                            onClick={() => {
+                              setIsOwnersTooltipOpen((val) => !val);
+                            }}
+                            className={clsx(
+                              'marketplace-lakehouse-data-product-card__lakehouse',
+                            )}
+                          />
+                        </Tooltip>
+                      </ClickAwayListener>
+                    </div>
                   ) : (
                     <Chip
                       size="small"
