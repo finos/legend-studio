@@ -360,11 +360,7 @@ export const LakehouseProductCard = observer(
               <Box className="marketplace-lakehouse-data-product-card__tags">
                 {isLakehouse &&
                   (productCardState.lakehouseOwners.length > 0 ? (
-                    <div
-                      onClick={(event) => {
-                        event.stopPropagation();
-                      }}
-                    >
+                    <div data-chip-wrapper="true">
                       <ClickAwayListener
                         onClickAway={() => setIsOwnersTooltipOpen(false)}
                       >
@@ -550,7 +546,14 @@ export const LakehouseProductCard = observer(
       <LegendMarketplaceCard
         size="large"
         content={content}
-        onClick={() => onClick(productCardState)}
+        onClick={(event) => {
+          // Check if click is within chip wrapper
+          const target = event.target as HTMLElement;
+          if (target.closest('[data-chip-wrapper="true"]')) {
+            return;
+          }
+          onClick(productCardState);
+        }}
         className="marketplace-lakehouse-data-product-card"
         moreInfo={moreInfoContent}
         moreInfoPreview={moreInfoPreview}

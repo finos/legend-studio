@@ -38,7 +38,7 @@ export const LegendMarketplaceCard = (props: {
   content: JSX.Element;
   size: 'small' | 'large';
   actions?: JSX.Element;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
   moreInfo?: JSX.Element | undefined;
   moreInfoPreview?: 'small' | 'large' | undefined;
   className?: string;
@@ -150,7 +150,7 @@ export const LegendMarketplaceCard = (props: {
       )}
       {onClick ? (
         <CardActionArea
-          onClick={onClick}
+          onClick={(event) => onClick(event)}
           onMouseEnter={
             moreInfoPreview === undefined
               ? () => setIsMouseOver(true)
