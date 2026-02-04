@@ -103,5 +103,5 @@ export abstract class LegendMarketplaceApplicationPlugin
    * Config to allow passing in a response handler for endpoints that return
    * ownership data for a given data product DID
    */
-  handleDataProductOwnersResponse?: (response: PlainObject) => string[];
+  handleDataProductOwnersResponse?(response: PlainObject): string[];
 }
