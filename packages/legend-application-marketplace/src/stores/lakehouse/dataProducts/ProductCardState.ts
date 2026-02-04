@@ -58,6 +58,7 @@ export class ProductCardState {
   lakehouseOwners: string[] = [];
 
   readonly initState = ActionState.create();
+  readonly fetchingOwnersState = ActionState.create();
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
@@ -73,6 +74,7 @@ export class ProductCardState {
       setLakehouseEnvironment: action,
       setLakehouseOwners: action,
       init: flow,
+      fetchOwners: flow,
     });
 
     this.marketplaceBaseStore = marketplaceBaseStore;
@@ -153,21 +155,6 @@ export class ProductCardState {
                 token,
               );
             this.setLakehouseEnvironment(lakehouseEnvironment);
-            const rawOwnershipResponse =
-              await this.marketplaceBaseStore.lakehouseContractServerClient.getOwnersForDid(
-                _dataProductDetails.deploymentId,
-                token,
-              );
-            const owners =
-              this.marketplaceBaseStore.applicationStore.pluginManager
-                .getApplicationPlugins()
-                ?.flatMap(
-                  (plugin) =>
-                    plugin.handleDataProductOwnersResponse?.(
-                      rawOwnershipResponse,
-                    ) ?? [],
-                );
-            this.setLakehouseOwners(owners);
           })(this.searchResult.dataProductDetails),
         ]);
       } else if (
@@ -190,6 +177,37 @@ export class ProductCardState {
       );
     } finally {
       this.initState.complete();
+    }
+  }
+
+  *fetchOwners(token: string | undefined): GeneratorFn<void> {
+    if (
+      this.searchResult.dataProductDetails instanceof
+      LakehouseDataProductSearchResultDetails
+    ) {
+      this.fetchingOwnersState.inProgress();
+      try {
+        const rawOwnershipResponse =
+          yield this.marketplaceBaseStore.lakehouseContractServerClient.getOwnersForDid(
+            this.searchResult.dataProductDetails.deploymentId,
+            token,
+          );
+        const owners = this.marketplaceBaseStore.applicationStore.pluginManager
+          .getApplicationPlugins()
+          ?.flatMap(
+            (plugin) =>
+              plugin.handleDataProductOwnersResponse?.(rawOwnershipResponse) ??
+              [],
+          );
+        this.setLakehouseOwners(owners);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
+          `Failed to fetch owners for data product ${this.dataProductId}: ${error.message}`,
+        );
+      } finally {
+        this.fetchingOwnersState.complete();
+      }
     }
   }
 
