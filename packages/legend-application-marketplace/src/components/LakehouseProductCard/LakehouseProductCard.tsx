@@ -37,6 +37,7 @@ import {
   Chip,
   Tooltip,
   ClickAwayListener,
+  Typography,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -303,6 +304,7 @@ const LakehouseDataProductOwnersTooltip = observer(
 
     return (
       <Box className="marketplace-lakehouse-data-product-card__owners-tooltip">
+        <Typography variant="subtitle2">Owners</Typography>
         {productCardState.fetchingOwnersState.isInInitialState ||
         productCardState.fetchingOwnersState.isInProgress ? (
           <CubesLoadingIndicator isLoading={true}>
@@ -385,11 +387,7 @@ export const LakehouseProductCard = observer(
                           token={auth.user?.access_token}
                         />
                       }
-                      slotProps={{
-                        popper: {
-                          disablePortal: true,
-                        },
-                      }}
+                      className="marketplace-lakehouse-data-product-card__owners-tooltip-wrapper"
                     >
                       <Chip
                         size="small"

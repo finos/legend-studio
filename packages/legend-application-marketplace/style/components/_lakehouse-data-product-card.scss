@@ -160,7 +160,11 @@
 
   &__owners-tooltip {
     padding: 1rem;
-    background-color: var(--color-white);
+    background-color: var(--marketplace-bg-primary);
+
+    &__wrapper {
+      background-color: var(--marketplace-bg-primary);
+    }
   }
 
   &__popover {
