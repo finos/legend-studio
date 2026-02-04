@@ -387,7 +387,10 @@ export const LakehouseProductCard = observer(
                               ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
                               : ''
                           }`}
-                          onClick={() => setIsOwnersTooltipOpen((val) => !val)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setIsOwnersTooltipOpen((val) => !val);
+                          }}
                           className={clsx(
                             'marketplace-lakehouse-data-product-card__lakehouse',
                           )}
