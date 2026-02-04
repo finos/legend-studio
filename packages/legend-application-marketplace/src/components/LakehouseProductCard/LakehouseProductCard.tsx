@@ -358,59 +358,46 @@ export const LakehouseProductCard = observer(
           <Box className="marketplace-lakehouse-data-product-card__content">
             {!hideTags && (
               <Box className="marketplace-lakehouse-data-product-card__tags">
-                {isLakehouse &&
-                  (productCardState.lakehouseOwners.length > 0 ? (
-                    <div data-chip-wrapper="true">
-                      <ClickAwayListener
-                        onClickAway={() => setIsOwnersTooltipOpen(false)}
-                      >
-                        <Tooltip
-                          open={isOwnersTooltipOpen}
-                          onClose={() => setIsOwnersTooltipOpen(false)}
-                          disableFocusListener={true}
-                          disableHoverListener={true}
-                          disableTouchListener={true}
-                          title={
-                            <LakehouseDataProductOwnersTooltip
-                              productCardState={productCardState}
-                            />
-                          }
-                          slotProps={{
-                            popper: {
-                              disablePortal: true,
-                            },
-                          }}
-                        >
-                          <Chip
-                            size="small"
-                            label={`Lakehouse${
-                              productCardState.lakehouseEnvironment
-                                ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
-                                : ''
-                            }`}
-                            onClick={() => {
-                              setIsOwnersTooltipOpen((val) => !val);
-                            }}
-                            className={clsx(
-                              'marketplace-lakehouse-data-product-card__lakehouse',
-                            )}
+                {isLakehouse && (
+                  <div data-chip-wrapper="true">
+                    <ClickAwayListener
+                      onClickAway={() => setIsOwnersTooltipOpen(false)}
+                    >
+                      <Tooltip
+                        open={isOwnersTooltipOpen}
+                        onClose={() => setIsOwnersTooltipOpen(false)}
+                        disableFocusListener={true}
+                        disableHoverListener={true}
+                        disableTouchListener={true}
+                        title={
+                          <LakehouseDataProductOwnersTooltip
+                            productCardState={productCardState}
                           />
-                        </Tooltip>
-                      </ClickAwayListener>
-                    </div>
-                  ) : (
-                    <Chip
-                      size="small"
-                      label={`Lakehouse${
-                        productCardState.lakehouseEnvironment
-                          ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
-                          : ''
-                      }`}
-                      className={clsx(
-                        'marketplace-lakehouse-data-product-card__lakehouse',
-                      )}
-                    />
-                  ))}
+                        }
+                        slotProps={{
+                          popper: {
+                            disablePortal: true,
+                          },
+                        }}
+                      >
+                        <Chip
+                          size="small"
+                          label={`Lakehouse${
+                            productCardState.lakehouseEnvironment
+                              ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
+                              : ''
+                          }`}
+                          onClick={() => {
+                            setIsOwnersTooltipOpen((val) => !val);
+                          }}
+                          className={clsx(
+                            'marketplace-lakehouse-data-product-card__lakehouse',
+                          )}
+                        />
+                      </Tooltip>
+                    </ClickAwayListener>
+                  </div>
+                )}
                 {/* We only show version if it's a snapshot, because otherwise it's just the latest prod version */}
                 {isSnapshot && (
                   <Chip
