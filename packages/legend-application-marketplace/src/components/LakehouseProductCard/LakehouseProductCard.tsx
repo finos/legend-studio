@@ -359,44 +359,43 @@ export const LakehouseProductCard = observer(
             {!hideTags && (
               <Box className="marketplace-lakehouse-data-product-card__tags">
                 {isLakehouse && (
-                  <div data-chip-wrapper="true">
-                    <ClickAwayListener
-                      onClickAway={() => setIsOwnersTooltipOpen(false)}
-                    >
-                      <Tooltip
-                        open={isOwnersTooltipOpen}
-                        onClose={() => setIsOwnersTooltipOpen(false)}
-                        disableFocusListener={true}
-                        disableHoverListener={true}
-                        disableTouchListener={true}
-                        title={
-                          <LakehouseDataProductOwnersTooltip
-                            productCardState={productCardState}
-                          />
-                        }
-                        slotProps={{
-                          popper: {
-                            disablePortal: true,
-                          },
-                        }}
-                      >
-                        <Chip
-                          size="small"
-                          label={`Lakehouse${
-                            productCardState.lakehouseEnvironment
-                              ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
-                              : ''
-                          }`}
-                          onClick={() => {
-                            setIsOwnersTooltipOpen((val) => !val);
-                          }}
-                          className={clsx(
-                            'marketplace-lakehouse-data-product-card__lakehouse',
-                          )}
+                  <ClickAwayListener
+                    onClickAway={() => setIsOwnersTooltipOpen(false)}
+                  >
+                    <Tooltip
+                      open={isOwnersTooltipOpen}
+                      onClose={() => setIsOwnersTooltipOpen(false)}
+                      disableFocusListener={true}
+                      disableHoverListener={true}
+                      disableTouchListener={true}
+                      title={
+                        <LakehouseDataProductOwnersTooltip
+                          productCardState={productCardState}
                         />
-                      </Tooltip>
-                    </ClickAwayListener>
-                  </div>
+                      }
+                      slotProps={{
+                        popper: {
+                          disablePortal: true,
+                        },
+                      }}
+                    >
+                      <Chip
+                        size="small"
+                        label={`Lakehouse${
+                          productCardState.lakehouseEnvironment
+                            ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
+                            : ''
+                        }`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setIsOwnersTooltipOpen((val) => !val);
+                        }}
+                        className={clsx(
+                          'marketplace-lakehouse-data-product-card__lakehouse',
+                        )}
+                      />
+                    </Tooltip>
+                  </ClickAwayListener>
                 )}
                 {/* We only show version if it's a snapshot, because otherwise it's just the latest prod version */}
                 {isSnapshot && (
@@ -533,14 +532,7 @@ export const LakehouseProductCard = observer(
       <LegendMarketplaceCard
         size="large"
         content={content}
-        onClick={(event) => {
-          // Check if click is within chip wrapper
-          const target = event.target as HTMLElement;
-          if (target.closest('[data-chip-wrapper="true"]')) {
-            return;
-          }
-          onClick(productCardState);
-        }}
+        onClick={() => onClick(productCardState)}
         className="marketplace-lakehouse-data-product-card"
         moreInfo={moreInfoContent}
         moreInfoPreview={moreInfoPreview}
