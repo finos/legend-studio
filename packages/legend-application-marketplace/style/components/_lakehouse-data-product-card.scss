@@ -158,6 +158,11 @@
     }
   }
 
+  &__owners-tooltip {
+    padding: 1rem;
+    background-color: var(--color-white);
+  }
+
   &__popover {
     padding: 1rem;
     border-radius: 1rem;

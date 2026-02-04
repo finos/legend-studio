@@ -39,7 +39,7 @@ import {
   ClickAwayListener,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { LegendMarketplaceCard } from '../MarketplaceCard/LegendMarketplaceCard.js';
 import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
@@ -53,6 +53,7 @@ import {
   ProdParallelLegendMarketplaceEnvState,
 } from '../../stores/LegendMarketplaceEnvState.js';
 import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
+import { useAuth } from 'react-oidc-context';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -288,11 +289,20 @@ const LakehouseDataProductCardInfoPopover = observer(
 );
 
 const LakehouseDataProductOwnersTooltip = observer(
-  (props: { productCardState: ProductCardState }) => {
-    const { productCardState } = props;
+  (props: {
+    productCardState: ProductCardState;
+    token: string | undefined;
+  }) => {
+    const { productCardState, token } = props;
+
+    useEffect(() => {
+      if (productCardState.fetchingOwnersState.isInInitialState) {
+        productCardState.fetchOwners(token);
+      }
+    }, [productCardState, token]);
 
     return (
-      <Box>
+      <Box className="marketplace-lakehouse-data-product-card__owners-tooltip">
         {productCardState.fetchingOwnersState.isInInitialState ||
         productCardState.fetchingOwnersState.isInProgress ? (
           <CubesLoadingIndicator isLoading={true}>
@@ -336,6 +346,7 @@ export const LakehouseProductCard = observer(
     const [popoverAnchorEl, setPopoverAnchorEl] =
       useState<HTMLButtonElement | null>(null);
     const [isOwnersTooltipOpen, setIsOwnersTooltipOpen] = useState(false);
+    const auth = useAuth();
 
     const truncatedDescription =
       productCardState.description &&
@@ -371,6 +382,7 @@ export const LakehouseProductCard = observer(
                       title={
                         <LakehouseDataProductOwnersTooltip
                           productCardState={productCardState}
+                          token={auth.user?.access_token}
                         />
                       }
                       slotProps={{
@@ -390,6 +402,7 @@ export const LakehouseProductCard = observer(
                           event.stopPropagation();
                           setIsOwnersTooltipOpen((val) => !val);
                         }}
+                        title="Click to view owners"
                         className={clsx(
                           'marketplace-lakehouse-data-product-card__lakehouse',
                         )}
