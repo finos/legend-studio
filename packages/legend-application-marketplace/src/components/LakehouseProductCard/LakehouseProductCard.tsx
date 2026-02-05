@@ -394,6 +394,28 @@ export const LakehouseProductCard = observer(
                           className:
                             'marketplace-lakehouse-data-product-card__owners-tooltip__wrapper',
                         },
+                        popper: {
+                          modifiers: [
+                            {
+                              name: 'preventOverflow',
+                              options: {
+                                boundary: 'viewport',
+                                padding: 8,
+                              },
+                            },
+                            {
+                              name: 'flip',
+                              options: {
+                                fallbackPlacements: [
+                                  'top',
+                                  'bottom',
+                                  'right',
+                                  'left',
+                                ],
+                              },
+                            },
+                          ],
+                        },
                       }}
                     >
                       <Chip
