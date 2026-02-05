@@ -20,8 +20,6 @@ import {
   clsx,
   InfoCircleIcon,
   MarkdownTextViewer,
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
@@ -37,10 +35,9 @@ import {
   Chip,
   Tooltip,
   ClickAwayListener,
-  Typography,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { type LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { LegendMarketplaceCard } from '../MarketplaceCard/LegendMarketplaceCard.js';
 import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
@@ -53,9 +50,10 @@ import {
   DevelopmentLegendMarketplaceEnvState,
   ProdParallelLegendMarketplaceEnvState,
 } from '../../stores/LegendMarketplaceEnvState.js';
-import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
 import { useAuth } from 'react-oidc-context';
 import { getHumanReadableIngestEnvName } from '../../utils/LakehouseUtils.js';
+import { flowResult } from 'mobx';
+import { LakehouseDataProductOwnersTooltip } from '@finos/legend-extension-dsl-data-product';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -290,68 +288,6 @@ const LakehouseDataProductCardInfoPopover = observer(
   },
 );
 
-const LakehouseDataProductOwnersTooltip = observer(
-  (props: {
-    productCardState: ProductCardState;
-    token: string | undefined;
-  }) => {
-    const { productCardState, token } = props;
-
-    useEffect(() => {
-      if (productCardState.fetchingOwnersState.isInInitialState) {
-        productCardState.fetchOwners(token);
-      }
-    }, [productCardState, token]);
-
-    // In order to ensure the popover is properly resized after we load
-    // all the target user data, track how many users have finished loading
-    // so that we can trigger a window resize event once all the user data is loaded.
-    const [, setNumUsersLoaded] = useState(0);
-    const finishedLoadingUserCallback = useCallback(() => {
-      if (productCardState.fetchingOwnersState.hasCompleted) {
-        setNumUsersLoaded((prev) => {
-          if (prev + 1 === productCardState.lakehouseOwners.length) {
-            // Trigger a window resize event to ensure the Select menu is properly resized
-            window.dispatchEvent(new Event('resize'));
-          }
-          return prev + 1;
-        });
-      }
-    }, [
-      productCardState.fetchingOwnersState.hasCompleted,
-      productCardState.lakehouseOwners.length,
-    ]);
-
-    return (
-      <Box className="marketplace-lakehouse-data-product-card__owners-tooltip">
-        <Typography variant="h5" gutterBottom={true}>
-          Owners
-        </Typography>
-        {productCardState.fetchingOwnersState.isInInitialState ||
-        productCardState.fetchingOwnersState.isInProgress ? (
-          <CubesLoadingIndicator isLoading={true}>
-            <CubesLoadingIndicatorIcon />
-          </CubesLoadingIndicator>
-        ) : (
-          productCardState.lakehouseOwners.map((owner) => (
-            <UserRenderer
-              key={owner}
-              userId={owner}
-              applicationStore={
-                productCardState.marketplaceBaseStore.applicationStore
-              }
-              userSearchService={
-                productCardState.marketplaceBaseStore.userSearchService
-              }
-              onFinishedLoadingCallback={finishedLoadingUserCallback}
-            />
-          ))
-        )}
-      </Box>
-    );
-  },
-);
-
 export const LakehouseProductCard = observer(
   (props: {
     productCardState: ProductCardState;
@@ -407,8 +343,25 @@ export const LakehouseProductCard = observer(
                       disableTouchListener={true}
                       title={
                         <LakehouseDataProductOwnersTooltip
-                          productCardState={productCardState}
-                          token={auth.user?.access_token}
+                          owners={productCardState.lakehouseOwners}
+                          fetchingOwnersState={
+                            productCardState.fetchingOwnersState
+                          }
+                          fetchOwners={async () => {
+                            await flowResult(
+                              productCardState.fetchOwners(
+                                auth.user?.access_token,
+                              ),
+                            );
+                          }}
+                          applicationStore={
+                            productCardState.marketplaceBaseStore
+                              .applicationStore
+                          }
+                          userSearchService={
+                            productCardState.marketplaceBaseStore
+                              .userSearchService
+                          }
                         />
                       }
                       slotProps={{

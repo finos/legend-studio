@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { CaretUpIcon, clsx, OpenIcon } from '@finos/legend-art';
-import { Button } from '@mui/material';
+import { Button, ClickAwayListener, Tooltip } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
   type V1_Terminal,
@@ -36,6 +36,8 @@ import { ProductWiki } from './ProductWiki.js';
 import { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
 import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
 import type { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
+import { getHumanReadableIngestEnvName } from '../utils/LakehouseUtils.js';
+import { LakehouseDataProductOwnersTooltip } from './DataProduct/LakehouseDataProductOwnersTooltip.js';
 
 export const isDataProductViewerState = (
   state: BaseViewerState<SupportedProducts, SupportedLayoutStates>,
@@ -101,7 +103,11 @@ const DataProductEnvironmentLabel = observer(
 
     const environmentClassification =
       dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment?.type;
+    const environmentName =
+      dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment
+        ?.producerEnvironmentName;
     const origin = dataAccessState.entitlementsDataProductDetails.origin;
+    const [isOwnersTooltipOpen, setIsOwnersTooltipOpen] = useState(false);
 
     return (
       <div className="data-product__viewer__header__type">
@@ -139,6 +145,45 @@ const DataProductEnvironmentLabel = observer(
             Version: {origin.version}
             <OpenIcon />
           </Button>
+        )}
+        {environmentName !== undefined && (
+          <ClickAwayListener onClickAway={() => setIsOwnersTooltipOpen(false)}>
+            <Tooltip
+              open={isOwnersTooltipOpen}
+              onClose={() => setIsOwnersTooltipOpen(false)}
+              placement="bottom"
+              disableFocusListener={true}
+              disableHoverListener={true}
+              disableTouchListener={true}
+              title={
+                <LakehouseDataProductOwnersTooltip
+                  owners={dataAccessState.dataProductOwners}
+                  fetchingOwnersState={
+                    dataAccessState.fetchingDataProductOwnersState
+                  }
+                  applicationStore={dataAccessState.applicationStore}
+                  userSearchService={
+                    dataAccessState.dataProductViewerState.userSearchService
+                  }
+                />
+              }
+              slotProps={{
+                tooltip: {
+                  className:
+                    'marketplace-lakehouse-data-product-card__owners-tooltip__wrapper',
+                },
+              }}
+            >
+              <Button
+                onClick={() => {
+                  setIsOwnersTooltipOpen((val) => !val);
+                }}
+                title="Click to view owners"
+              >
+                {`Lakehouse - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}`}
+              </Button>
+            </Tooltip>
+          </ClickAwayListener>
         )}
       </div>
     );
