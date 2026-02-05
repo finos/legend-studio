@@ -400,6 +400,7 @@ export const LakehouseProductCard = observer(
                     <Tooltip
                       open={isOwnersTooltipOpen}
                       onClose={() => setIsOwnersTooltipOpen(false)}
+                      placement="bottom"
                       disableFocusListener={true}
                       disableHoverListener={true}
                       disableTouchListener={true}
