@@ -144,28 +144,30 @@ const DataProductEnvironmentLabel = observer(
             <OpenIcon />
           </Button>
         )}
-        {environmentName !== undefined && (
-          <LakehouseDataProductOwnersTooltip
-            open={isOwnersTooltipOpen}
-            setIsOpen={setIsOwnersTooltipOpen}
-            owners={dataAccessState.dataProductOwners}
-            fetchingOwnersState={dataAccessState.fetchingDataProductOwnersState}
-            applicationStore={dataAccessState.applicationStore}
-            userSearchService={
-              dataAccessState.dataProductViewerState.userSearchService
+        <LakehouseDataProductOwnersTooltip
+          open={isOwnersTooltipOpen}
+          setIsOpen={setIsOwnersTooltipOpen}
+          owners={dataAccessState.dataProductOwners}
+          fetchingOwnersState={dataAccessState.fetchingDataProductOwnersState}
+          applicationStore={dataAccessState.applicationStore}
+          userSearchService={
+            dataAccessState.dataProductViewerState.userSearchService
+          }
+        >
+          <Button
+            onClick={() => {
+              setIsOwnersTooltipOpen((val) => !val);
+            }}
+            title="Click to view owners"
+            variant="outlined"
+            loading={
+              dataAccessState.fetchingDataProductOwnersState.isInInitialState ||
+              dataAccessState.fetchingDataProductOwnersState.isInProgress
             }
           >
-            <Button
-              onClick={() => {
-                setIsOwnersTooltipOpen((val) => !val);
-              }}
-              title="Click to view owners"
-              className="data-product__viewer__header__type__lakehouse-env"
-            >
-              {`Lakehouse - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}`}
-            </Button>
-          </LakehouseDataProductOwnersTooltip>
-        )}
+            {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
+          </Button>
+        </LakehouseDataProductOwnersTooltip>
       </div>
     );
   },
