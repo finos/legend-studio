@@ -18,18 +18,18 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { Box, Typography } from '@mui/material';
+import { Box, ClickAwayListener, Tooltip, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState, useCallback } from 'react';
 import type { ActionState, UserSearchService } from '@finos/legend-shared';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import { UserRenderer } from '../UserRenderer/UserRenderer.js';
 
-export const LakehouseDataProductOwnersTooltip = observer(
+const TooltipContent = observer(
   (props: {
     owners: string[];
     fetchingOwnersState: ActionState;
-    fetchOwners?: () => Promise<void>;
+    fetchOwners?: (() => Promise<void>) | undefined;
     applicationStore: GenericLegendApplicationStore;
     userSearchService: UserSearchService | undefined;
   }) => {
@@ -85,6 +85,59 @@ export const LakehouseDataProductOwnersTooltip = observer(
           ))
         )}
       </Box>
+    );
+  },
+);
+
+export const LakehouseDataProductOwnersTooltip = observer(
+  (props: {
+    open: boolean;
+    setIsOpen: (val: boolean) => void;
+    owners: string[];
+    fetchingOwnersState: ActionState;
+    fetchOwners?: () => Promise<void>;
+    applicationStore: GenericLegendApplicationStore;
+    userSearchService: UserSearchService | undefined;
+    children: React.ReactElement;
+  }) => {
+    const {
+      open,
+      setIsOpen,
+      owners,
+      fetchingOwnersState,
+      fetchOwners,
+      applicationStore,
+      userSearchService,
+      children,
+    } = props;
+
+    return (
+      <ClickAwayListener onClickAway={() => setIsOpen(false)}>
+        <Tooltip
+          open={open}
+          onClose={() => setIsOpen(false)}
+          placement="bottom"
+          disableFocusListener={true}
+          disableHoverListener={true}
+          disableTouchListener={true}
+          title={
+            <TooltipContent
+              owners={owners}
+              fetchingOwnersState={fetchingOwnersState}
+              fetchOwners={fetchOwners}
+              applicationStore={applicationStore}
+              userSearchService={userSearchService}
+            />
+          }
+          slotProps={{
+            tooltip: {
+              className: 'lakehouse-data-product-owners-tooltip__wrapper',
+            },
+          }}
+        >
+          {children}
+        </Tooltip>
+      </ClickAwayListener>
     );
   },
 );

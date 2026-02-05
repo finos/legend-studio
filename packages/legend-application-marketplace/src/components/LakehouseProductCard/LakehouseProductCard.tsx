@@ -33,8 +33,6 @@ import {
   TableCell,
   IconButton,
   Chip,
-  Tooltip,
-  ClickAwayListener,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -331,64 +329,40 @@ export const LakehouseProductCard = observer(
             {!hideTags && (
               <Box className="marketplace-lakehouse-data-product-card__tags">
                 {isLakehouse && (
-                  <ClickAwayListener
-                    onClickAway={() => setIsOwnersTooltipOpen(false)}
+                  <LakehouseDataProductOwnersTooltip
+                    open={isOwnersTooltipOpen}
+                    setIsOpen={setIsOwnersTooltipOpen}
+                    owners={productCardState.lakehouseOwners}
+                    fetchingOwnersState={productCardState.fetchingOwnersState}
+                    fetchOwners={async () => {
+                      await flowResult(
+                        productCardState.fetchOwners(auth.user?.access_token),
+                      );
+                    }}
+                    applicationStore={
+                      productCardState.marketplaceBaseStore.applicationStore
+                    }
+                    userSearchService={
+                      productCardState.marketplaceBaseStore.userSearchService
+                    }
                   >
-                    <Tooltip
-                      open={isOwnersTooltipOpen}
-                      onClose={() => setIsOwnersTooltipOpen(false)}
-                      placement="bottom"
-                      disableFocusListener={true}
-                      disableHoverListener={true}
-                      disableTouchListener={true}
-                      title={
-                        <LakehouseDataProductOwnersTooltip
-                          owners={productCardState.lakehouseOwners}
-                          fetchingOwnersState={
-                            productCardState.fetchingOwnersState
-                          }
-                          fetchOwners={async () => {
-                            await flowResult(
-                              productCardState.fetchOwners(
-                                auth.user?.access_token,
-                              ),
-                            );
-                          }}
-                          applicationStore={
-                            productCardState.marketplaceBaseStore
-                              .applicationStore
-                          }
-                          userSearchService={
-                            productCardState.marketplaceBaseStore
-                              .userSearchService
-                          }
-                        />
-                      }
-                      slotProps={{
-                        tooltip: {
-                          className:
-                            'marketplace-lakehouse-data-product-card__owners-tooltip__wrapper',
-                        },
+                    <Chip
+                      size="small"
+                      label={`Lakehouse${
+                        productCardState.lakehouseEnvironment
+                          ? ` - ${getHumanReadableIngestEnvName(productCardState.lakehouseEnvironment.environmentName, productCardState.marketplaceBaseStore)}`
+                          : ''
+                      }`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setIsOwnersTooltipOpen((val) => !val);
                       }}
-                    >
-                      <Chip
-                        size="small"
-                        label={`Lakehouse${
-                          productCardState.lakehouseEnvironment
-                            ? ` - ${getHumanReadableIngestEnvName(productCardState.lakehouseEnvironment.environmentName, productCardState.marketplaceBaseStore)}`
-                            : ''
-                        }`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setIsOwnersTooltipOpen((val) => !val);
-                        }}
-                        title="Click to view owners"
-                        className={clsx(
-                          'marketplace-lakehouse-data-product-card__lakehouse-env-chip',
-                        )}
-                      />
-                    </Tooltip>
-                  </ClickAwayListener>
+                      title="Click to view owners"
+                      className={clsx(
+                        'marketplace-lakehouse-data-product-card__lakehouse-env-chip',
+                      )}
+                    />
+                  </LakehouseDataProductOwnersTooltip>
                 )}
                 {/* We only show version if it's a snapshot, because otherwise it's just the latest prod version */}
                 {isSnapshot && (

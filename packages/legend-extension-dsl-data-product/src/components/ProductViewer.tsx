@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { CaretUpIcon, clsx, OpenIcon } from '@finos/legend-art';
-import { Button, ClickAwayListener, Tooltip } from '@mui/material';
+import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
   type V1_Terminal,
@@ -145,44 +145,26 @@ const DataProductEnvironmentLabel = observer(
           </Button>
         )}
         {environmentName !== undefined && (
-          <ClickAwayListener onClickAway={() => setIsOwnersTooltipOpen(false)}>
-            <Tooltip
-              open={isOwnersTooltipOpen}
-              onClose={() => setIsOwnersTooltipOpen(false)}
-              placement="bottom"
-              disableFocusListener={true}
-              disableHoverListener={true}
-              disableTouchListener={true}
-              title={
-                <LakehouseDataProductOwnersTooltip
-                  owners={dataAccessState.dataProductOwners}
-                  fetchingOwnersState={
-                    dataAccessState.fetchingDataProductOwnersState
-                  }
-                  applicationStore={dataAccessState.applicationStore}
-                  userSearchService={
-                    dataAccessState.dataProductViewerState.userSearchService
-                  }
-                />
-              }
-              slotProps={{
-                tooltip: {
-                  className:
-                    'marketplace-lakehouse-data-product-card__owners-tooltip__wrapper',
-                },
+          <LakehouseDataProductOwnersTooltip
+            open={isOwnersTooltipOpen}
+            setIsOpen={setIsOwnersTooltipOpen}
+            owners={dataAccessState.dataProductOwners}
+            fetchingOwnersState={dataAccessState.fetchingDataProductOwnersState}
+            applicationStore={dataAccessState.applicationStore}
+            userSearchService={
+              dataAccessState.dataProductViewerState.userSearchService
+            }
+          >
+            <Button
+              onClick={() => {
+                setIsOwnersTooltipOpen((val) => !val);
               }}
+              title="Click to view owners"
+              variant="contained"
             >
-              <Button
-                onClick={() => {
-                  setIsOwnersTooltipOpen((val) => !val);
-                }}
-                title="Click to view owners"
-                variant="contained"
-              >
-                {`Lakehouse - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}`}
-              </Button>
-            </Tooltip>
-          </ClickAwayListener>
+              {`Lakehouse - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}`}
+            </Button>
+          </LakehouseDataProductOwnersTooltip>
         )}
       </div>
     );
