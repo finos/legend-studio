@@ -188,13 +188,13 @@ export class ProductCardState {
       this.fetchingOwnersState.inProgress();
       try {
         const rawOwnershipResponse =
-          yield this.marketplaceBaseStore.lakehouseContractServerClient.getOwnersForDid(
+          (yield this.marketplaceBaseStore.lakehouseContractServerClient.getOwnersForDid(
             this.searchResult.dataProductDetails.deploymentId,
             token,
-          );
+          )) as PlainObject;
         const owners = this.marketplaceBaseStore.applicationStore.pluginManager
           .getApplicationPlugins()
-          ?.flatMap(
+          .flatMap(
             (plugin) =>
               plugin.handleDataProductOwnersResponse?.(rawOwnershipResponse) ??
               [],

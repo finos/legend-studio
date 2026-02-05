@@ -43,7 +43,8 @@ const TooltipContent = observer(
 
     useEffect(() => {
       if (fetchingOwnersState.isInInitialState) {
-        fetchOwners?.();
+        // eslint-disable-next-line no-void
+        void fetchOwners?.();
       }
     }, [fetchOwners, fetchingOwnersState.isInInitialState]);
 

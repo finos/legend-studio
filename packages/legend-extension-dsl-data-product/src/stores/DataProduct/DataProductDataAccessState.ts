@@ -519,7 +519,7 @@ export class DataProductDataAccessState {
           this.entitlementsDataProductDetails.deploymentId,
           token,
         );
-      const owners = this.dataAccessPlugins?.flatMap(
+      const owners = this.dataAccessPlugins.flatMap(
         (plugin) =>
           plugin.handleDataProductOwnersResponse?.(rawOwnershipResponse) ?? [],
       );

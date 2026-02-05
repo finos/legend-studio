@@ -73,12 +73,8 @@ export class LakehousePlatformStore {
 
     const environment = guaranteeNonNullable(await this.requestMap.get(did));
     this.requestMap.delete(did);
-    if (environment) {
-      this.setEnvironment(did, environment);
-      return environment;
-    } else {
-      return undefined;
-    }
+    this.setEnvironment(did, environment);
+    return environment;
   }
 
   setEnvironment(did: number, environment: IngestDeploymentServerConfig): void {

@@ -148,16 +148,3 @@ export const getDataProductFromDetails = async (
     return undefined;
   }
 };
-
-export const getHumanReadableIngestEnvName = (
-  ingestEnvName: string,
-  marketplaceBaseStore: LegendMarketplaceBaseStore,
-): string => {
-  const pluginProvidedName = marketplaceBaseStore.applicationStore.pluginManager
-    .getApplicationPlugins()
-    .flatMap(
-      (plugin) => plugin.getHumanReadableIngestEnvName?.(ingestEnvName) ?? [],
-    )
-    .find((name) => name !== undefined);
-  return pluginProvidedName ?? ingestEnvName;
-};
