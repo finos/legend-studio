@@ -409,7 +409,7 @@ export const LakehouseProductCard = observer(
                         }}
                         title="Click to view owners"
                         className={clsx(
-                          'marketplace-lakehouse-data-product-card__lakehouse',
+                          'marketplace-lakehouse-data-product-card__lakehouse-env-chip',
                         )}
                       />
                     </Tooltip>
