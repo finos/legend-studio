@@ -100,6 +100,13 @@ export abstract class LegendMarketplaceApplicationPlugin
   ): AdditionalMarketplaceHelpMenuItemConfig[];
 
   /**
+   * Config to allow mapping ingest environment name to a human-readable name
+   *
+   * @param ingestEnvName the name of the ingest environment
+   */
+  getHumanReadableIngestEnvName?(ingestEnvName: string): string | undefined;
+
+  /**
    * Config to allow passing in a response handler for endpoints that return
    * ownership data for a given data product DID
    */

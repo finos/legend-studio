@@ -55,6 +55,7 @@ import {
 } from '../../stores/LegendMarketplaceEnvState.js';
 import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
 import { useAuth } from 'react-oidc-context';
+import { getHumanReadableIngestEnvName } from '../../utils/LakehouseUtils.js';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -421,7 +422,7 @@ export const LakehouseProductCard = observer(
                         size="small"
                         label={`Lakehouse${
                           productCardState.lakehouseEnvironment
-                            ? ` - ${productCardState.lakehouseEnvironment.environmentName}`
+                            ? ` - ${getHumanReadableIngestEnvName(productCardState.lakehouseEnvironment.environmentName, productCardState.marketplaceBaseStore)}`
                             : ''
                         }`}
                         onClick={(event) => {
