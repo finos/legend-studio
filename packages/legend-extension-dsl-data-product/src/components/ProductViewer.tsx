@@ -103,9 +103,7 @@ const DataProductEnvironmentLabel = observer(
 
     const environmentClassification =
       dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment?.type;
-    const environmentName =
-      dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment
-        ?.producerEnvironmentName;
+    const environmentName = dataAccessState.lakehouseIngestEnv?.environmentName;
     const origin = dataAccessState.entitlementsDataProductDetails.origin;
     const [isOwnersTooltipOpen, setIsOwnersTooltipOpen] = useState(false);
 
