@@ -160,7 +160,7 @@ const DataProductEnvironmentLabel = observer(
                 setIsOwnersTooltipOpen((val) => !val);
               }}
               title="Click to view owners"
-              variant="contained"
+              className="data-product__viewer__header__type__lakehouse-env"
             >
               {`Lakehouse - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}`}
             </Button>
