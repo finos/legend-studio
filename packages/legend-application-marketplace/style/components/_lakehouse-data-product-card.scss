@@ -61,12 +61,16 @@
     overflow-wrap: anywhere;
   }
 
-  &__lakehouse {
+  &__lakehouse-env-chip {
     align-self: end;
     font-size: 1.3rem;
     text-transform: none;
     color: var(--tw-color-green-100);
     background: var(--tw-color-green-600);
+
+    &:hover {
+      background: var(--tw-color-green-500);
+    }
   }
 
   &__version {
