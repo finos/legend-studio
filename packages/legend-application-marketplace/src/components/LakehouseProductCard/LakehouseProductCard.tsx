@@ -304,7 +304,9 @@ const LakehouseDataProductOwnersTooltip = observer(
 
     return (
       <Box className="marketplace-lakehouse-data-product-card__owners-tooltip">
-        <Typography variant="subtitle2">Owners</Typography>
+        <Typography variant="h5" gutterBottom={true}>
+          Owners
+        </Typography>
         {productCardState.fetchingOwnersState.isInInitialState ||
         productCardState.fetchingOwnersState.isInProgress ? (
           <CubesLoadingIndicator isLoading={true}>
@@ -387,7 +389,12 @@ export const LakehouseProductCard = observer(
                           token={auth.user?.access_token}
                         />
                       }
-                      className="marketplace-lakehouse-data-product-card__owners-tooltip-wrapper"
+                      slotProps={{
+                        tooltip: {
+                          className:
+                            'marketplace-lakehouse-data-product-card__owners-tooltip__wrapper',
+                        },
+                      }}
                     >
                       <Chip
                         size="small"
