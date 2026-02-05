@@ -40,7 +40,7 @@ import {
   Typography,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { type LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { LegendMarketplaceCard } from '../MarketplaceCard/LegendMarketplaceCard.js';
 import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
@@ -302,6 +302,25 @@ const LakehouseDataProductOwnersTooltip = observer(
       }
     }, [productCardState, token]);
 
+    // In order to ensure the popover is properly resized after we load
+    // all the target user data, track how many users have finished loading
+    // so that we can trigger a window resize event once all the user data is loaded.
+    const [, setNumUsersLoaded] = useState(0);
+    const finishedLoadingUserCallback = useCallback(() => {
+      if (productCardState.fetchingOwnersState.hasCompleted) {
+        setNumUsersLoaded((prev) => {
+          if (prev + 1 === productCardState.lakehouseOwners.length) {
+            // Trigger a window resize event to ensure the Select menu is properly resized
+            window.dispatchEvent(new Event('resize'));
+          }
+          return prev + 1;
+        });
+      }
+    }, [
+      productCardState.fetchingOwnersState.hasCompleted,
+      productCardState.lakehouseOwners.length,
+    ]);
+
     return (
       <Box className="marketplace-lakehouse-data-product-card__owners-tooltip">
         <Typography variant="h5" gutterBottom={true}>
@@ -323,6 +342,7 @@ const LakehouseDataProductOwnersTooltip = observer(
               userSearchService={
                 productCardState.marketplaceBaseStore.userSearchService
               }
+              onFinishedLoadingCallback={finishedLoadingUserCallback}
             />
           ))
         )}
@@ -393,28 +413,6 @@ export const LakehouseProductCard = observer(
                         tooltip: {
                           className:
                             'marketplace-lakehouse-data-product-card__owners-tooltip__wrapper',
-                        },
-                        popper: {
-                          modifiers: [
-                            {
-                              name: 'preventOverflow',
-                              options: {
-                                boundary: 'viewport',
-                                padding: 8,
-                              },
-                            },
-                            {
-                              name: 'flip',
-                              options: {
-                                fallbackPlacements: [
-                                  'top',
-                                  'bottom',
-                                  'right',
-                                  'left',
-                                ],
-                              },
-                            },
-                          ],
                         },
                       }}
                     >
