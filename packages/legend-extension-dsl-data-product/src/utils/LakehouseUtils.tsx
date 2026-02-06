@@ -112,9 +112,7 @@ export const getHumanReadableIngestEnvName = (
   plugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
 ): string => {
   const pluginProvidedName = plugins
-    .flatMap(
-      (plugin) => plugin.getHumanReadableIngestEnvName?.(ingestEnvName) ?? [],
-    )
+    .flatMap((plugin) => plugin.getHumanReadableIngestEnvName?.(ingestEnvName))
     .find((name) => name !== undefined);
   return pluginProvidedName ?? ingestEnvName;
 };
