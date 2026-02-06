@@ -15,7 +15,13 @@
  */
 
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { act, fireEvent, getByRole, screen } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  getByRole,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { useSearchParams } from '@finos/legend-application/browser';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
@@ -23,7 +29,10 @@ import {
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
-import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
+import {
+  type V1_IngestEnvironmentClassification,
+  V1_EntitlementsLakehouseEnvironmentType,
+} from '@finos/legend-graph';
 import {
   mockDataProductsResponse,
   mockLegacyDataProductSummaryEntity,
@@ -34,6 +43,7 @@ import {
   mockProdParSearchResultResponse,
   mockProdSearchResultResponse,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
+import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -108,6 +118,37 @@ const setupTestComponent = async (
   ).mockResolvedValue([
     mockLegacyDataProductSummaryEntity,
   ] as unknown as PlainObject<StoredSummaryEntity>[]);
+
+  // Mock environment API call
+  const mockEnvironment: IngestDeploymentServerConfig = {
+    ingestEnvironmentUrn: 'production-analytics',
+    environmentClassification: 'prod' as V1_IngestEnvironmentClassification,
+    ingestServerUrl: 'https://test-prod-ingest-server.com',
+    environmentName: 'production-analytics',
+  };
+  createSpy(
+    MOCK__baseStore.lakehousePlatformStore,
+    'getOrFetchEnvironmentForDID',
+  ).mockResolvedValue(mockEnvironment);
+
+  // Mock owners API call
+  const mockOwnersResponse = {
+    owners: ['owner1@example.com', 'owner2@example.com'],
+  };
+  createSpy(
+    MOCK__baseStore.lakehouseContractServerClient,
+    'getOwnersForDid',
+  ).mockResolvedValue(mockOwnersResponse);
+
+  // Mock the plugin's handleDataProductOwnersResponse
+  const mockPlugin =
+    MOCK__baseStore.applicationStore.pluginManager.getApplicationPlugins()[0];
+  if (mockPlugin) {
+    mockPlugin.handleDataProductOwnersResponse = jest.fn(() => [
+      'owner1@example.com',
+      'owner2@example.com',
+    ]);
+  }
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     MOCK__baseStore,
@@ -363,15 +404,44 @@ describe('MarketplaceLakehouseSearchResults', () => {
       );
     });
 
-    test('Lakehouse data products show Lakehouse chip', async () => {
+    test('Lakehouse data products show ingest environment name in chip', async () => {
       await setupTestComponent('data', 'prod');
 
-      expect(await screen.findByText('4 Products'));
+      await screen.findByText('4 Products');
 
-      // Check for 2 lakehouse chips
-      expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
+      // Wait for the environment to be fetched and displayed
+      await waitFor(() => {
+        const lakehouseChips = screen.getAllByText(
+          /Lakehouse - production-analytics/,
+        );
+        expect(lakehouseChips.length).toBe(2);
+      });
+
       // Check that legacy data product is rendered
       expect(await screen.findByText('Legacy Data Product'));
+    });
+
+    test('Clicking on ingest environment chip displays tooltip with owners', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      // Wait for the environment to be fetched and displayed
+      const lakehouseChips = await waitFor(() =>
+        screen.getAllByText(/Lakehouse - production-analytics/),
+      );
+
+      // Click on the first Lakehouse chip to open the tooltip
+      await act(async () => {
+        fireEvent.click(lakehouseChips[0]!);
+        await flushMicrotasks();
+      });
+
+      // Wait for the tooltip to appear with owners
+      await waitFor(() => {
+        expect(screen.getByText('owner1@example.com')).toBeDefined();
+        expect(screen.getByText('owner2@example.com')).toBeDefined();
+      });
     });
   });
 
@@ -557,8 +627,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       expect(await screen.findByText('3 Products'));
 
-      // Check for 2 lakehouse chips
-      expect(screen.getAllByText('Lakehouse')).toHaveLength(2);
+      // Check for 2 lakehouse chips (text may include environment name)
+      expect(screen.getAllByText(/Lakehouse/)).toHaveLength(2);
       // Check that legacy data product is rendered
       expect(await screen.findByText('LegacyDataProduct'));
     });
