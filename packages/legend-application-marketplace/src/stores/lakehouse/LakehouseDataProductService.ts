@@ -15,35 +15,51 @@
  */
 
 import {
-  IngestDeploymentServerConfig,
+  type LakehouseContractServerClient,
   type LakehousePlatformServerClient,
+  IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { V1_AppDirLevel } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
 
-export class LakehousePlatformStore {
+export class LakehouseDataProductService {
   readonly legendMarketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
-  readonly requestMap = new Map<
+  readonly lakehouseContractServerClient: LakehouseContractServerClient;
+  readonly didToEnvironmentRequestMap = new Map<
     number,
     Promise<IngestDeploymentServerConfig>
   >();
+  readonly didToOwnersRequestMap = new Map<number, Promise<string[]>>();
   readonly didToEnvironmentMap: Map<number, IngestDeploymentServerConfig> =
     new Map();
+  readonly didToOwnersMap: Map<number, string[]> = new Map();
 
   constructor(
     legendMarketplaceBaseStore: LegendMarketplaceBaseStore,
     lakehousePlatformServerClient: LakehousePlatformServerClient,
+    lakehouseContractServerClient: LakehouseContractServerClient,
   ) {
     this.legendMarketplaceBaseStore = legendMarketplaceBaseStore;
     this.lakehousePlatformServerClient = lakehousePlatformServerClient;
+    this.lakehouseContractServerClient = lakehouseContractServerClient;
 
     makeObservable(this, {
       didToEnvironmentMap: observable,
+      didToOwnersMap: observable,
       setEnvironment: action,
+      setOwners: action,
     });
+  }
+
+  setEnvironment(did: number, environment: IngestDeploymentServerConfig): void {
+    this.didToEnvironmentMap.set(did, environment);
+  }
+
+  setOwners(did: number, owners: string[]): void {
+    this.didToOwnersMap.set(did, owners);
   }
 
   private async fetchEnvironmentForDID(
@@ -67,17 +83,53 @@ export class LakehousePlatformStore {
       return guaranteeNonNullable(this.didToEnvironmentMap.get(did));
     }
 
-    if (!this.requestMap.has(did)) {
-      this.requestMap.set(did, this.fetchEnvironmentForDID(did, token));
+    if (!this.didToEnvironmentRequestMap.has(did)) {
+      this.didToEnvironmentRequestMap.set(
+        did,
+        this.fetchEnvironmentForDID(did, token),
+      );
     }
 
-    const environment = guaranteeNonNullable(await this.requestMap.get(did));
-    this.requestMap.delete(did);
+    const environment = guaranteeNonNullable(
+      await this.didToEnvironmentRequestMap.get(did),
+    );
+    this.didToEnvironmentRequestMap.delete(did);
     this.setEnvironment(did, environment);
     return environment;
   }
 
-  setEnvironment(did: number, environment: IngestDeploymentServerConfig): void {
-    this.didToEnvironmentMap.set(did, environment);
+  private async fetchOwnersForDID(
+    did: number,
+    token: string | undefined,
+  ): Promise<string[]> {
+    const rawResult = await this.lakehouseContractServerClient.getOwnersForDid(
+      did,
+      token,
+    );
+    return this.legendMarketplaceBaseStore.applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) => plugin.handleDataProductOwnersResponse?.(rawResult) ?? [],
+      );
+  }
+
+  async getOrFetchOwnersForDID(
+    did: number,
+    token: string | undefined,
+  ): Promise<string[]> {
+    if (this.didToOwnersMap.has(did)) {
+      return guaranteeNonNullable(this.didToOwnersMap.get(did));
+    }
+
+    if (!this.didToOwnersRequestMap.has(did)) {
+      this.didToOwnersRequestMap.set(did, this.fetchOwnersForDID(did, token));
+    }
+
+    const owners = guaranteeNonNullable(
+      await this.didToOwnersRequestMap.get(did),
+    );
+    this.didToOwnersRequestMap.delete(did);
+    this.setOwners(did, owners);
+    return owners;
   }
 }

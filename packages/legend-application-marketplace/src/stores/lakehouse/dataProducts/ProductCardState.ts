@@ -150,7 +150,7 @@ export class ProductCardState {
             _dataProductDetails: LakehouseDataProductSearchResultDetails,
           ) => {
             const lakehouseEnvironment =
-              await this.marketplaceBaseStore.lakehousePlatformStore.getOrFetchEnvironmentForDID(
+              await this.marketplaceBaseStore.lakehouseDataProductService.getOrFetchEnvironmentForDID(
                 _dataProductDetails.deploymentId,
                 token,
               );
@@ -187,18 +187,11 @@ export class ProductCardState {
     ) {
       this.fetchingOwnersState.inProgress();
       try {
-        const rawOwnershipResponse =
-          (yield this.marketplaceBaseStore.lakehouseContractServerClient.getOwnersForDid(
+        const owners =
+          (yield this.marketplaceBaseStore.lakehouseDataProductService.getOrFetchOwnersForDID(
             this.searchResult.dataProductDetails.deploymentId,
             token,
-          )) as PlainObject;
-        const owners = this.marketplaceBaseStore.applicationStore.pluginManager
-          .getApplicationPlugins()
-          .flatMap(
-            (plugin) =>
-              plugin.handleDataProductOwnersResponse?.(rawOwnershipResponse) ??
-              [],
-          );
+          )) as string[];
         this.setLakehouseOwners(owners);
       } catch (error) {
         assertErrorThrown(error);
