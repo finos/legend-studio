@@ -220,6 +220,7 @@ export class V1_LightQuery {
   lastUpdatedAt?: number | undefined;
   createdAt?: number | undefined;
   lastOpenAt?: number | undefined;
+  description?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
@@ -233,6 +234,7 @@ export class V1_LightQuery {
       owner: optional(primitive()),
       versionId: primitive(),
       originalVersionId: optional(primitive()),
+      description: optional(primitive()),
     }),
     {
       deserializeNullAsUndefined: true,

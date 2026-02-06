@@ -43,6 +43,8 @@ import {
   PencilIcon,
   MoonIcon,
   SunIcon,
+  InfoCircleOutlineIcon,
+  WarningIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -238,7 +240,11 @@ const SaveQueryDialog = observer(
     const saveQuery = applicationStore.guardUnhandledError(
       async (): Promise<void> => {
         flowResult(
-          existingEditorStore.updateState.updateQuery(undefined, undefined),
+          existingEditorStore.updateState.updateQuery(
+            undefined,
+            undefined,
+            undefined,
+          ),
         ).catch(applicationStore.alertUnhandledError);
       },
     );
@@ -305,10 +311,17 @@ export const QueryEditorExistingQueryHeader = observer(
     const { existingEditorStore } = props;
     const updateState = existingEditorStore.updateState;
     const isRenaming = updateState.queryRenamer;
-    const applicationStore = existingEditorStore.applicationStore;
+    const isEditingDescription = updateState.descriptionEditor;
+    const applicationStore = useApplicationStore();
+    const isLightMode =
+      applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
     const renameRef = useRef<HTMLInputElement>(null);
     const [queryRenameName, setQueryRenameName] = useState<string>(
       existingEditorStore.lightQuery.name,
+    );
+
+    const [descriptionValue, setDescriptionValue] = useState<string>(
+      existingEditorStore.lightQuery.description ?? '',
     );
 
     const enableRename = (): void => {
@@ -317,15 +330,31 @@ export const QueryEditorExistingQueryHeader = observer(
     };
     const renameQuery = (val: string): void => {
       if (queryRenameName !== existingEditorStore.lightQuery.name) {
-        flowResult(updateState.updateQuery(val, undefined)).catch(
+        flowResult(updateState.updateQuery(val, undefined, undefined)).catch(
           applicationStore.alertUnhandledError,
         );
       }
     };
 
+    const enableDescriptionUpdate = (): void => {
+      setDescriptionValue(existingEditorStore.lightQuery.description ?? '');
+      updateState.showDescriptionEditor(true);
+    };
+
+    const updateDescription = (val: string): void => {
+      if (val !== existingEditorStore.lightQuery.description) {
+        flowResult(updateState.updateQuery(undefined, undefined, val)).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
+    };
     const changeQueryName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => setQueryRenameName(event.target.value);
+
+    const handleChangeDescription: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => setDescriptionValue(event.target.value);
 
     const debouncedLoadQueries = useMemo(
       () =>
@@ -427,15 +456,121 @@ export const QueryEditorExistingQueryHeader = observer(
             className="query-editor__header__content__main query-editor__header__content__title"
             title="Double-click to rename query"
           >
-            <div className="query-editor__header__content__title__text">
-              {existingEditorStore.lightQuery.name}
-            </div>
-            <button
-              className="query-editor__header__conten__title__btn panel__content__form__section__list__item__edit-btn"
-              onClick={enableRename}
-            >
-              <PencilIcon />
-            </button>
+            {isEditingDescription ? (
+              <div className="query-editor__header__content__main query-editor__header__content__title">
+                <PanelListItem>
+                  <div className="input--with-validation">
+                    <input
+                      className="input input--dark query-editor__rename__input"
+                      value={descriptionValue}
+                      onChange={handleChangeDescription}
+                      placeholder="Add description"
+                      autoFocus={true}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.stopPropagation();
+                          updateState.showDescriptionEditor(false);
+                          updateDescription(descriptionValue);
+                        } else if (event.key === 'Escape') {
+                          event.stopPropagation();
+                          updateState.showDescriptionEditor(false);
+                          setDescriptionValue(
+                            existingEditorStore.lightQuery.description ?? '',
+                          );
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="query-editor__header__content__title__actions">
+                    <button
+                      className="query-editor__header__content__title__actions__action"
+                      tabIndex={-1}
+                      onClick={() => {
+                        updateState.showDescriptionEditor(false);
+                        updateDescription(descriptionValue);
+                      }}
+                    >
+                      <CheckIcon />
+                    </button>
+                    <button
+                      className="query-editor__header__content__title__actions__action"
+                      tabIndex={-1}
+                      onClick={() => {
+                        updateState.showDescriptionEditor(false);
+                        setDescriptionValue(
+                          existingEditorStore.lightQuery.description ?? '',
+                        );
+                      }}
+                    >
+                      <TimesIcon />
+                    </button>
+                  </div>
+                </PanelListItem>
+              </div>
+            ) : existingEditorStore.lightQuery.description ? (
+              <>
+                <div
+                  className={clsx('query-editor__header__content__title__text')}
+                >
+                  {existingEditorStore.lightQuery.name}
+                </div>
+                <button
+                  className="query-editor__header__conten__title__btn panel__content__form__section__list__item__edit-btn"
+                  style={{ marginRight: '0.8rem', marginLeft: '0.5rem' }}
+                  title={existingEditorStore.lightQuery.description}
+                  onClick={enableDescriptionUpdate}
+                >
+                  <InfoCircleOutlineIcon />
+                </button>
+                <button
+                  className="query-editor__header__conten__title__btn panel__content__form__section__list__item__edit-btn"
+                  onClick={enableRename}
+                  title="Rename Query"
+                >
+                  <PencilIcon />
+                </button>
+              </>
+            ) : (
+              <>
+                <div
+                  className={clsx(
+                    'query-editor__header__content__title__text',
+                    'query-editor__header__content__title__text--glow-yellow',
+
+                    {
+                      'query-editor__header__content__title__text--light-mode':
+                        isLightMode,
+                      'query-editor__header__content__title__text--dark-mode':
+                        !isLightMode,
+                    },
+                  )}
+                >
+                  <button
+                    className="query-editor__header__conten__title__btn panel__content__form__section__list__item__edit-btn"
+                    title="No description, Click to add one"
+                    onClick={enableDescriptionUpdate}
+                  >
+                    <WarningIcon
+                      style={{
+                        fontSize: '1.8rem',
+                        width: '2.2rem',
+                        height: '2.2rem',
+                        color: isLightMode ? '#f68f1e' : '#ffd600',
+                        fill: isLightMode ? '#f68f1e' : '#ffd600',
+                      }}
+                    />
+                  </button>
+                  {existingEditorStore.lightQuery.name}
+                </div>
+                <button
+                  className="query-editor__header__conten__title__btn panel__content__form__section__list__item__edit-btn"
+                  onClick={enableRename}
+                  title="Rename Query"
+                >
+                  <PencilIcon />
+                </button>
+              </>
+            )}
           </div>
         )}
         {existingEditorStore.updateState.saveModal && (
@@ -464,6 +599,7 @@ const QueryEditorExistingQueryInfoModal = observer(
           existingEditorStore.updateState.updateQuery(
             undefined,
             updateState.queryVersionId,
+            undefined,
           ),
         )
           .then(() =>
