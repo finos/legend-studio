@@ -434,7 +434,6 @@ describe('MarketplaceLakehouseSearchResults', () => {
       // Click on the first Lakehouse chip to open the tooltip
       await act(async () => {
         fireEvent.click(lakehouseChips[0]!);
-        await flushMicrotasks();
       });
 
       // Wait for the tooltip to appear with owners

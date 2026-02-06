@@ -154,19 +154,22 @@ const DataProductEnvironmentLabel = observer(
             dataAccessState.dataProductViewerState.userSearchService
           }
         >
-          <Button
-            onClick={() => {
-              setIsOwnersTooltipOpen((val) => !val);
-            }}
-            title="Click to view owners"
-            variant="outlined"
-            loading={
-              dataAccessState.fetchingDataProductOwnersState.isInInitialState ||
-              dataAccessState.fetchingDataProductOwnersState.isInProgress
-            }
-          >
-            {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
-          </Button>
+          <div>
+            <Button
+              onClick={() => {
+                setIsOwnersTooltipOpen((val) => !val);
+              }}
+              title="Click to view owners"
+              variant="outlined"
+              loading={
+                dataAccessState.fetchingDataProductOwnersState
+                  .isInInitialState ||
+                dataAccessState.fetchingDataProductOwnersState.isInProgress
+              }
+            >
+              {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
+            </Button>
+          </div>
         </LakehouseDataProductOwnersTooltip>
       </div>
     );

@@ -149,6 +149,41 @@ const setupLakehouseDataProductTest = async (
       };
     });
 
+    // Mock environment API call
+    const mockEnvironment = {
+      ingestEnvironmentUrn: 'test-production-env',
+      environmentClassification: 'prod',
+      ingestServerUrl: 'https://test-prod-ingest-server.com',
+      environmentName: 'test-production-env',
+    };
+    createSpy(
+      dataProductDataAccessState.lakehousePlatformServerClient,
+      'findProducerServer',
+    ).mockResolvedValue(mockEnvironment);
+
+    // Mock owners API call
+    const mockOwnersResponse = {
+      owners: [
+        'owner1@example.com',
+        'owner2@example.com',
+        'owner3@example.com',
+      ],
+    };
+    createSpy(
+      dataProductDataAccessState.lakehouseContractServerClient,
+      'getOwnersForDid',
+    ).mockResolvedValue(mockOwnersResponse);
+
+    // Mock the plugin's handleDataProductOwnersResponse
+    const mockPlugin = dataProductDataAccessState.dataAccessPlugins[0];
+    if (mockPlugin) {
+      mockPlugin.handleDataProductOwnersResponse = jest.fn(() => [
+        'owner1@example.com',
+        'owner2@example.com',
+        'owner3@example.com',
+      ]);
+    }
+
     createSpy(
       dataProductDataAccessState.lakehouseContractServerClient,
       'getContractUserStatus',
@@ -398,6 +433,48 @@ describe('DataProductViewer', () => {
       screen.getByText('Varchar(32)');
       screen.getByText('int_val');
       screen.getByText('Int');
+    });
+
+    test('Renders button with Lakehouse environment name', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+
+      // Wait for the environment to be fetched and displayed
+      await screen.findByText(/Lakehouse - test-production-env/);
+    });
+
+    test('Clicking Lakehouse environment button displays tooltip with owners', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+
+      // Wait for the environment button to be rendered
+      const lakehouseButton = await screen.findByText(
+        /Lakehouse - test-production-env/,
+      );
+
+      // Click on the Lakehouse button to open the tooltip
+      await act(async () => {
+        fireEvent.click(lakehouseButton);
+      });
+
+      // Wait for the tooltip to appear with owners
+      await waitFor(() => {
+        expect(screen.getByText('owner1@example.com')).toBeDefined();
+        expect(screen.getByText('owner2@example.com')).toBeDefined();
+        expect(screen.getByText('owner3@example.com')).toBeDefined();
+      });
     });
   });
 
