@@ -216,14 +216,21 @@ test(
     fireEvent.doubleClick(
       getByTitle(queryActionsPanel, 'Double-click to rename query'),
     );
+
+    // Rename query now opens a modal dialog
+    const renameQueryModal = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
     const cancelRenamedQueryTitle = getByDisplayValue(
-      queryActionsPanel,
+      renameQueryModal,
       TEST_QUERY_NAME,
     );
     fireEvent.change(cancelRenamedQueryTitle, {
       target: { value: 'MyTestQueryRenamed' },
     });
-    fireEvent.keyDown(cancelRenamedQueryTitle, { code: 'Escape' });
+    // Click Cancel button to close the modal
+    const cancelButton = getByText(renameQueryModal, 'Cancel');
+    fireEvent.click(cancelButton);
     expect(
       await waitFor(() => getByText(queryActionsPanel, TEST_QUERY_NAME)),
     ).not.toBeNull();

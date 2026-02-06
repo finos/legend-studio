@@ -1186,6 +1186,7 @@ export class ExistingQueryUpdateState {
   *updateQuery(
     queryName: string | undefined,
     queryVersionId: string | undefined,
+    queryDescription?: string | undefined,
   ): GeneratorFn<void> {
     try {
       this.updateQueryState.inProgress();
@@ -1209,7 +1210,9 @@ export class ExistingQueryUpdateState {
       query.versionId = queryVersionId ?? query.versionId;
 
       query.description =
-        this.editorStore.query?.description ?? query.description;
+        queryDescription ??
+        this.editorStore.query?.description ??
+        query.description;
       const updatedQuery =
         (yield this.editorStore.graphManagerState.graphManager.updateQuery(
           query,
