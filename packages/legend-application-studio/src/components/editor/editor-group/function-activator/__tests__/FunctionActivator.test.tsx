@@ -126,3 +126,63 @@ test(integrationTest('Test Function Activator '), async () => {
   fireEvent.click(closeArtifactButton);
   expect(queryByRole(editorGroupContent, 'dialog')).toBeNull();
 });
+
+test(integrationTest('Test change detection in function editor'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore();
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    {
+      entities: TEST_DATA__SimpleRelationalModel,
+    },
+  );
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
+  MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+    readOnly: true,
+  });
+
+  const explorerTree = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+  );
+
+  const functionPackageName = 'model';
+  const functionName = 'Simple():String[1]';
+  const functionPath = 'model::Simple__String_1_';
+
+  const functionElement =
+    MOCK__editorStore.graphManagerState.graph.getFunction(functionPath);
+
+  fireEvent.click(getByText(explorerTree, functionPackageName));
+  fireEvent.click(getByText(explorerTree, functionName));
+
+  const functionEditor = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.FUNCTION_EDITOR),
+  );
+
+  fireEvent.click(getByText(functionEditor, 'Test Suites'));
+
+  const hashAfterAddingSuite = functionElement.hashCode;
+
+  const testSuitesPanel = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT),
+  );
+
+  expect(testSuitesPanel).toBeDefined();
+
+  const assertionEditor = getByDisplayValue(testSuitesPanel, 'Hello World!');
+  fireEvent.change(assertionEditor, {
+    target: { value: 'Hi World!' },
+  });
+
+  const hashAfterModifyingAssertion = functionElement.hashCode;
+  expect(hashAfterModifyingAssertion).not.toBe(hashAfterAddingSuite);
+
+  const changes =
+    MOCK__editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+      .changes;
+
+  const functionChange = changes.find(
+    (diff) => diff.entityPath === functionPath,
+  );
+
+  expect(functionChange).toBeDefined();
+});
