@@ -217,7 +217,6 @@ test(
       getByTitle(queryActionsPanel, 'Double-click to rename query'),
     );
 
-    // Rename query now opens a modal dialog
     const renameQueryModal = await waitFor(() =>
       renderResult.getByRole('dialog'),
     );
@@ -228,7 +227,7 @@ test(
     fireEvent.change(cancelRenamedQueryTitle, {
       target: { value: 'MyTestQueryRenamed' },
     });
-    // Click Cancel button to close the modal
+
     const cancelButton = getByText(renameQueryModal, 'Cancel');
     fireEvent.click(cancelButton);
     expect(
