@@ -194,7 +194,7 @@ const FunctionTestSuiteItem = observer(
         onOpen={onContextMenuOpen}
         onClose={onContextMenuClose}
       >
-        <button
+        <div
           className={clsx('testable-test-explorer__item__label')}
           onClick={openSuite}
           tabIndex={-1}
@@ -216,7 +216,7 @@ const FunctionTestSuiteItem = observer(
               {<PlayIcon />}
             </button>
           </div>
-        </button>
+        </div>
       </ContextMenu>
     );
   },
@@ -770,7 +770,7 @@ const FunctionTestItem = observer(
         onOpen={onContextMenuOpen}
         onClose={onContextMenuClose}
       >
-        <button
+        <div
           className={clsx('testable-test-explorer__item__label')}
           onClick={openTest}
           tabIndex={-1}
@@ -792,7 +792,7 @@ const FunctionTestItem = observer(
               {<PlayIcon />}
             </button>
           </div>
-        </button>
+        </div>
       </ContextMenu>
     );
   },
@@ -1042,7 +1042,7 @@ const CreateFucntionTestSuiteModal = observer(
           }
         >
           <ModalHeader>
-            <ModalTitle title="Create Mapping Test Suite" />
+            <ModalTitle title="Create Function Test Suite" />
           </ModalHeader>
           <ModalBody>
             <PanelFormTextField
