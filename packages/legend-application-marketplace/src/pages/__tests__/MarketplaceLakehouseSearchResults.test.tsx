@@ -144,10 +144,10 @@ const setupTestComponent = async (
   const mockPlugin =
     MOCK__baseStore.applicationStore.pluginManager.getApplicationPlugins()[0];
   if (mockPlugin) {
-    mockPlugin.handleDataProductOwnersResponse = jest.fn(() => [
-      'owner1@example.com',
-      'owner2@example.com',
-    ]);
+    mockPlugin.handleDataProductOwnersResponse = jest.fn(
+      (response: PlainObject<{ owners: string[] }>) =>
+        response.owners as string[],
+    );
   }
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(

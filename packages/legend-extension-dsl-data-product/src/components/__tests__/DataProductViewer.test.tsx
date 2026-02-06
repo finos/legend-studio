@@ -150,7 +150,7 @@ const setupLakehouseDataProductTest = async (
     });
 
     // Mock environment API call
-    const mockEnvironment = {
+    const mockEnvironment: PlainObject<IngestDeploymentServerConfig> = {
       ingestEnvironmentUrn: 'test-production-env',
       environmentClassification: 'prod',
       ingestServerUrl: 'https://test-prod-ingest-server.com',
@@ -177,11 +177,10 @@ const setupLakehouseDataProductTest = async (
     // Mock the plugin's handleDataProductOwnersResponse
     const mockPlugin = dataProductDataAccessState.dataAccessPlugins[0];
     if (mockPlugin) {
-      mockPlugin.handleDataProductOwnersResponse = jest.fn(() => [
-        'owner1@example.com',
-        'owner2@example.com',
-        'owner3@example.com',
-      ]);
+      mockPlugin.handleDataProductOwnersResponse = jest.fn(
+        (response: PlainObject<{ owners: string[] }>) =>
+          response.owners as string[],
+      );
     }
 
     createSpy(
