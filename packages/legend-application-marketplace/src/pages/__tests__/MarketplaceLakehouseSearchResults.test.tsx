@@ -29,10 +29,7 @@ import {
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
-import {
-  type V1_IngestEnvironmentClassification,
-  V1_EntitlementsLakehouseEnvironmentType,
-} from '@finos/legend-graph';
+import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
   mockDataProductsResponse,
   mockLegacyDataProductSummaryEntity,
@@ -120,15 +117,15 @@ const setupTestComponent = async (
   ] as unknown as PlainObject<StoredSummaryEntity>[]);
 
   // Mock environment API call
-  const mockEnvironment: IngestDeploymentServerConfig = {
+  const mockEnvironment: PlainObject<IngestDeploymentServerConfig> = {
     ingestEnvironmentUrn: 'production-analytics',
-    environmentClassification: 'prod' as V1_IngestEnvironmentClassification,
+    environmentClassification: 'prod',
     ingestServerUrl: 'https://test-prod-ingest-server.com',
     environmentName: 'production-analytics',
   };
   createSpy(
-    MOCK__baseStore.lakehousePlatformStore,
-    'getOrFetchEnvironmentForDID',
+    MOCK__baseStore.lakehousePlatformServerClient,
+    'findProducerServer',
   ).mockResolvedValue(mockEnvironment);
 
   // Mock owners API call
