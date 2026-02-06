@@ -348,22 +348,24 @@ export const LakehouseProductCard = observer(
                       productCardState.marketplaceBaseStore.userSearchService
                     }
                   >
-                    <Chip
-                      size="small"
-                      label={`Lakehouse${
-                        productCardState.lakehouseEnvironment
-                          ? ` - ${getHumanReadableIngestEnvName(productCardState.lakehouseEnvironment.environmentName, productCardState.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins())}`
-                          : ''
-                      }`}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setIsOwnersTooltipOpen((val) => !val);
-                      }}
-                      title="Click to view owners"
-                      className={clsx(
-                        'marketplace-lakehouse-data-product-card__lakehouse-env-chip',
-                      )}
-                    />
+                    <div>
+                      <Chip
+                        size="small"
+                        label={`Lakehouse${
+                          productCardState.lakehouseEnvironment
+                            ? ` - ${getHumanReadableIngestEnvName(productCardState.lakehouseEnvironment.environmentName, productCardState.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins())}`
+                            : ''
+                        }`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setIsOwnersTooltipOpen((val) => !val);
+                        }}
+                        title="Click to view owners"
+                        className={clsx(
+                          'marketplace-lakehouse-data-product-card__lakehouse-env-chip',
+                        )}
+                      />
+                    </div>
                   </LakehouseDataProductOwnersTooltip>
                 )}
                 {/* We only show version if it's a snapshot, because otherwise it's just the latest prod version */}
