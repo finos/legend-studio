@@ -20,6 +20,7 @@ export { EntitlementsDataContractViewer } from './components/DataProduct/DataCon
 export * from './components/ProductViewer.js';
 export { MultiUserRenderer } from './components/UserRenderer/MultiUserRenderer.js';
 export { UserRenderer } from './components/UserRenderer/UserRenderer.js';
+export { LakehouseDataProductOwnersTooltip } from './components/DataProduct/LakehouseDataProductOwnersTooltip.js';
 
 export * from './stores/BaseLayoutState.js';
 export * from './stores/BaseViewerState.js';

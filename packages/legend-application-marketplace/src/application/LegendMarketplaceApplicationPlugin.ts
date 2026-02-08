@@ -25,6 +25,7 @@ import type {
 } from '@finos/legend-extension-dsl-data-product';
 import type { ProductCardState } from '../stores/lakehouse/dataProducts/ProductCardState.js';
 import type React from 'react';
+import type { PlainObject } from '@finos/legend-shared';
 
 export interface AdditionalMarketplacePageConfig {
   path: string;
@@ -97,4 +98,17 @@ export abstract class LegendMarketplaceApplicationPlugin
   getAdditionalHelpMenuItemConfigs?(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
   ): AdditionalMarketplaceHelpMenuItemConfig[];
+
+  /**
+   * Config to allow mapping ingest environment name to a human-readable name
+   *
+   * @param ingestEnvName the name of the ingest environment
+   */
+  getHumanReadableIngestEnvName?(ingestEnvName: string): string | undefined;
+
+  /**
+   * Config to allow passing in a response handler for endpoints that return
+   * ownership data for a given data product DID
+   */
+  handleDataProductOwnersResponse?(response: PlainObject): string[];
 }

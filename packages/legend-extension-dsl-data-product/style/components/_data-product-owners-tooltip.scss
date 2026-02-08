@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-@forward 'components/data-product-owners-tooltip';
-@forward 'components/data-product-viewer';
+.lakehouse-data-product-owners-tooltip {
+  padding: 1rem;
+  color: var(--marketplace-text-primary);
+  background-color: var(--marketplace-bg-primary);
 
-@forward 'light-mode';
+  &__wrapper {
+    background-color: var(--marketplace-bg-primary);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  }
+}

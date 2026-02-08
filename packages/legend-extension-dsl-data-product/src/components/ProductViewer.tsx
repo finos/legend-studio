@@ -36,6 +36,8 @@ import { ProductWiki } from './ProductWiki.js';
 import { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
 import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
 import type { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
+import { getHumanReadableIngestEnvName } from '../utils/LakehouseUtils.js';
+import { LakehouseDataProductOwnersTooltip } from './DataProduct/LakehouseDataProductOwnersTooltip.js';
 
 export const isDataProductViewerState = (
   state: BaseViewerState<SupportedProducts, SupportedLayoutStates>,
@@ -101,7 +103,9 @@ const DataProductEnvironmentLabel = observer(
 
     const environmentClassification =
       dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment?.type;
+    const environmentName = dataAccessState.lakehouseIngestEnv?.environmentName;
     const origin = dataAccessState.entitlementsDataProductDetails.origin;
+    const [isOwnersTooltipOpen, setIsOwnersTooltipOpen] = useState(false);
 
     return (
       <div className="data-product__viewer__header__type">
@@ -140,6 +144,33 @@ const DataProductEnvironmentLabel = observer(
             <OpenIcon />
           </Button>
         )}
+        <LakehouseDataProductOwnersTooltip
+          open={isOwnersTooltipOpen}
+          setIsOpen={setIsOwnersTooltipOpen}
+          owners={dataAccessState.dataProductOwners}
+          fetchingOwnersState={dataAccessState.fetchingDataProductOwnersState}
+          applicationStore={dataAccessState.applicationStore}
+          userSearchService={
+            dataAccessState.dataProductViewerState.userSearchService
+          }
+        >
+          <div>
+            <Button
+              onClick={() => {
+                setIsOwnersTooltipOpen((val) => !val);
+              }}
+              title="Click to view owners"
+              variant="outlined"
+              loading={
+                dataAccessState.fetchingDataProductOwnersState
+                  .isInInitialState ||
+                dataAccessState.fetchingDataProductOwnersState.isInProgress
+              }
+            >
+              {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
+            </Button>
+          </div>
+        </LakehouseDataProductOwnersTooltip>
       </div>
     );
   },

@@ -106,3 +106,13 @@ export const stringifyOrganizationalScope = (
   }
   return JSON.stringify(scope);
 };
+
+export const getHumanReadableIngestEnvName = (
+  ingestEnvName: string,
+  plugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
+): string => {
+  const pluginProvidedName = plugins
+    .flatMap((plugin) => plugin.getHumanReadableIngestEnvName?.(ingestEnvName))
+    .find((name) => name !== undefined);
+  return pluginProvidedName ?? ingestEnvName;
+};

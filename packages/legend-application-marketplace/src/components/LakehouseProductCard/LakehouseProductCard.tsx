@@ -48,6 +48,12 @@ import {
   DevelopmentLegendMarketplaceEnvState,
   ProdParallelLegendMarketplaceEnvState,
 } from '../../stores/LegendMarketplaceEnvState.js';
+import { useAuth } from 'react-oidc-context';
+import { flowResult } from 'mobx';
+import {
+  getHumanReadableIngestEnvName,
+  LakehouseDataProductOwnersTooltip,
+} from '@finos/legend-extension-dsl-data-product';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -300,6 +306,8 @@ export const LakehouseProductCard = observer(
 
     const [popoverAnchorEl, setPopoverAnchorEl] =
       useState<HTMLButtonElement | null>(null);
+    const [isOwnersTooltipOpen, setIsOwnersTooltipOpen] = useState(false);
+    const auth = useAuth();
 
     const truncatedDescription =
       productCardState.description &&
@@ -323,13 +331,42 @@ export const LakehouseProductCard = observer(
             {!hideTags && (
               <Box className="marketplace-lakehouse-data-product-card__tags">
                 {isLakehouse && (
-                  <Chip
-                    size="small"
-                    label="Lakehouse"
-                    className={clsx(
-                      'marketplace-lakehouse-data-product-card__lakehouse',
-                    )}
-                  />
+                  <LakehouseDataProductOwnersTooltip
+                    open={isOwnersTooltipOpen}
+                    setIsOpen={setIsOwnersTooltipOpen}
+                    owners={productCardState.lakehouseOwners}
+                    fetchingOwnersState={productCardState.fetchingOwnersState}
+                    fetchOwners={async () => {
+                      await flowResult(
+                        productCardState.fetchOwners(auth.user?.access_token),
+                      );
+                    }}
+                    applicationStore={
+                      productCardState.marketplaceBaseStore.applicationStore
+                    }
+                    userSearchService={
+                      productCardState.marketplaceBaseStore.userSearchService
+                    }
+                  >
+                    <div>
+                      <Chip
+                        size="small"
+                        label={`Lakehouse${
+                          productCardState.lakehouseEnvironment
+                            ? ` - ${getHumanReadableIngestEnvName(productCardState.lakehouseEnvironment.environmentName, productCardState.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins())}`
+                            : ''
+                        }`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setIsOwnersTooltipOpen((val) => !val);
+                        }}
+                        title="Click to view owners"
+                        className={clsx(
+                          'marketplace-lakehouse-data-product-card__lakehouse-env-chip',
+                        )}
+                      />
+                    </div>
+                  </LakehouseDataProductOwnersTooltip>
                 )}
                 {/* We only show version if it's a snapshot, because otherwise it's just the latest prod version */}
                 {isSnapshot && (

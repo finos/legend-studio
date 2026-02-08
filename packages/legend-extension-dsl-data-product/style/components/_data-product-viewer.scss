@@ -59,6 +59,8 @@
     &__type {
       @include flexVCenter;
 
+      gap: 0.5rem;
+
       button {
         display: flex;
         gap: 0.5rem;
