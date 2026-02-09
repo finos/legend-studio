@@ -1100,7 +1100,7 @@ export class ExistingQueryUpdateState {
   readonly editorStore: ExistingQueryEditorStore;
   readonly updateQueryState = ActionState.create();
   fetchProjectVersionState = ActionState.create();
-  queryRenamer = false;
+  isQueryRenameDialogOpen = false;
   saveModal = false;
   showQueryInfo = false;
   queryVersionId: string | undefined;
@@ -1111,7 +1111,7 @@ export class ExistingQueryUpdateState {
     this.editorStore = editorState;
 
     makeObservable(this, {
-      queryRenamer: observable,
+      isQueryRenameDialogOpen: observable,
       saveModal: observable,
       showQueryInfo: observable,
       queryVersionId: observable,
@@ -1124,7 +1124,7 @@ export class ExistingQueryUpdateState {
       setProjectVersions: action,
       setQueryVersionId: action,
       closeSaveModal: action,
-      setQueryRenamer: action,
+      setIsQueryRenameDialogOpen: action,
       updateQuery: flow,
       fetchProjectVersions: flow,
       updateQueryVersionId: flow,
@@ -1132,8 +1132,8 @@ export class ExistingQueryUpdateState {
     this.queryVersionId = this.editorStore.query?.versionId;
   }
 
-  setQueryRenamer(val: boolean): void {
-    this.queryRenamer = val;
+  setIsQueryRenameDialogOpen(val: boolean): void {
+    this.isQueryRenameDialogOpen = val;
   }
 
   setShowQueryInfo(val: boolean): void {

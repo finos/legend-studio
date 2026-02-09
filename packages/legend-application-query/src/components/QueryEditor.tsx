@@ -301,17 +301,17 @@ const RenameQueryDialog = observer(
     const { existingEditorStore } = props;
     const updateState = existingEditorStore.updateState;
     const applicationStore = existingEditorStore.applicationStore;
-    const close = (): void => updateState.setQueryRenamer(false);
+    const handleClose = (): void =>
+      updateState.setIsQueryRenameDialogOpen(false);
 
     const [queryRenameName, setQueryRenameName] = useState<string>(
       existingEditorStore.lightQuery.name,
     );
     const [queryDescription, setQueryDescription] = useState<string>(
-      existingEditorStore.query?.description ?? '',
+      existingEditorStore.lightQuery.description ?? '',
     );
 
     const nameInputRef = useRef<HTMLInputElement>(null);
-    const descriptionInputRef = useRef<HTMLInputElement>(null);
 
     const isEmptyName = !queryRenameName;
     const isExistingQueryName =
@@ -342,7 +342,7 @@ const RenameQueryDialog = observer(
       const nameChanged =
         queryRenameName !== existingEditorStore.lightQuery.name;
       const descriptionChanged =
-        queryDescription !== (existingEditorStore.query?.description ?? '');
+        queryDescription !== (existingEditorStore.lightQuery.description ?? '');
       if (nameChanged || descriptionChanged) {
         flowResult(
           updateState.updateQuery(
@@ -352,7 +352,7 @@ const RenameQueryDialog = observer(
           ),
         ).catch(applicationStore.alertUnhandledError);
       }
-      close();
+      handleClose();
     };
 
     useEffect(() => {
@@ -368,8 +368,8 @@ const RenameQueryDialog = observer(
 
     return (
       <Dialog
-        open={updateState.queryRenamer}
-        onClose={close}
+        open={updateState.isQueryRenameDialogOpen}
+        onClose={handleClose}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -388,7 +388,7 @@ const RenameQueryDialog = observer(
               isLoading={updateState.updateQueryState.isInProgress}
             />
             <div className="input-section">
-              <div className="input-label">Rename Query Name</div>
+              <div className="input-label">Update Query Name</div>
               <div className="input--with-validation">
                 <input
                   ref={nameInputRef}
@@ -412,10 +412,9 @@ const RenameQueryDialog = observer(
               </div>
             </div>
             <div className="input-section" style={{ marginTop: '1rem' }}>
-              <div className="input-label">Rename Query Description</div>
+              <div className="input-label">Update Query Description</div>
               <div className="input--with-validation">
                 <input
-                  ref={descriptionInputRef}
                   className="input input--dark"
                   spellCheck={true}
                   value={queryDescription}
@@ -437,7 +436,11 @@ const RenameQueryDialog = observer(
               }
               onClick={renameQuery}
             />
-            <ModalFooterButton text="Cancel" onClick={close} type="secondary" />
+            <ModalFooterButton
+              text="Cancel"
+              onClick={handleClose}
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -454,7 +457,7 @@ export const QueryEditorExistingQueryHeader = observer(
     const updateState = existingEditorStore.updateState;
 
     const enableRename = (): void => {
-      existingEditorStore.updateState.setQueryRenamer(true);
+      existingEditorStore.updateState.setIsQueryRenameDialogOpen(true);
     };
 
     return (
@@ -474,7 +477,7 @@ export const QueryEditorExistingQueryHeader = observer(
             <PencilIcon />
           </button>
         </div>
-        {updateState.queryRenamer && (
+        {updateState.isQueryRenameDialogOpen && (
           <RenameQueryDialog existingEditorStore={existingEditorStore} />
         )}
         {existingEditorStore.updateState.saveModal && (

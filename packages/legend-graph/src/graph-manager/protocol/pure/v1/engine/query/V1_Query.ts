@@ -217,6 +217,7 @@ export class V1_LightQuery {
   artifactId!: string;
   versionId!: string;
   originalVersionId?: string | undefined;
+  description?: string | undefined;
   lastUpdatedAt?: number | undefined;
   createdAt?: number | undefined;
   lastOpenAt?: number | undefined;
@@ -231,6 +232,7 @@ export class V1_LightQuery {
       lastOpenAt: optional(primitive()),
       name: primitive(),
       owner: optional(primitive()),
+      description: optional(primitive()),
       versionId: primitive(),
       originalVersionId: optional(primitive()),
     }),

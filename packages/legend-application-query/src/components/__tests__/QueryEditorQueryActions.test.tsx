@@ -224,9 +224,20 @@ test(
       renameQueryModal,
       TEST_QUERY_NAME,
     );
+
+    fireEvent.change(cancelRenamedQueryTitle, {
+      target: { value: '' },
+    });
+    expect(
+      getByText(renameQueryModal, 'Update Query').hasAttribute('disabled'),
+    ).toBe(true);
+
     fireEvent.change(cancelRenamedQueryTitle, {
       target: { value: 'MyTestQueryRenamed' },
     });
+    expect(
+      getByText(renameQueryModal, 'Update Query').hasAttribute('disabled'),
+    ).toBe(false);
 
     const cancelButton = getByText(renameQueryModal, 'Cancel');
     fireEvent.click(cancelButton);
