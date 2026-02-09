@@ -77,6 +77,7 @@ import {
   Button,
   ButtonGroup,
   Chip,
+  CircularProgress,
   Menu,
   MenuItem,
   Tab,
@@ -976,9 +977,14 @@ export const DataProductAccessPointGroupViewer = observer(
           buttonColor = 'warning';
           break;
         case AccessPointGroupAccess.APPROVED:
-          buttonLabel = 'ENTITLED';
-          onClick = handleContractsClick;
-          buttonColor = 'success';
+          if (apgState.isEntitlementsSyncing) {
+            buttonLabel = 'ENTITLEMENTS SYNCING';
+            buttonColor = 'success';
+          } else {
+            buttonLabel = 'ENTITLED';
+            onClick = handleContractsClick;
+            buttonColor = 'success';
+          }
           break;
         case AccessPointGroupAccess.ENTERPRISE:
           buttonLabel = 'ENTERPRISE ACCESS';
@@ -1018,6 +1024,12 @@ export const DataProductAccessPointGroupViewer = observer(
               sx={{ cursor: onClick === undefined ? 'default' : 'pointer' }}
             >
               {buttonLabel}
+              {apgState.isEntitlementsSyncing && (
+                <CircularProgress
+                  size={16}
+                  sx={{ marginLeft: 1, color: 'inherit' }}
+                />
+              )}
               {tooltipText !== undefined && (
                 <Tooltip
                   className="data-product__viewer__access-group__item__access__tooltip__icon"
