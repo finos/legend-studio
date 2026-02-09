@@ -28,7 +28,7 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   DataSpaceQueryBuilderState,
-  type DataSpaceInfo,
+  type ResolvedDataSpaceEntityWithOrigin,
 } from '@finos/legend-extension-dsl-data-space/application';
 import {
   QueryBuilderActionConfig,
@@ -60,7 +60,7 @@ export const queryDataSpace = async (
           dataSpace.defaultExecutionContext,
           false,
           undefined,
-          async (dataSpaceInfo: DataSpaceInfo) => {
+          async (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) => {
             queryBuilderState.dataSpace = guaranteeType(
               queryBuilderState.graphManagerState.graph.getElement(
                 dataSpaceInfo.path,

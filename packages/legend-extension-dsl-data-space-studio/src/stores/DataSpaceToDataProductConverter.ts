@@ -36,7 +36,10 @@ import {
   NativeModelExecutionContext,
   PackageableElementSampleQuery,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 
 export enum DATA_PRODUCT_SUPPORT_TYPE {
   DOCUMENTATION = 'Documentation',
@@ -192,13 +195,17 @@ const convertDataSpaceToNativeModelAccess = (
 ): NativeModelAccess => {
   const nativeModelAccess = new NativeModelAccess();
 
-  nativeModelAccess.defaultExecutionContext =
-    dataSpace.defaultExecutionContext.name;
   nativeModelAccess.featuredElements =
     convertDataSpaceToFeaturedElements(dataSpace);
   nativeModelAccess.diagrams = convertDataSpaceToDiagrams(dataSpace);
   nativeModelAccess.nativeModelExecutionContexts =
     convertDataSpaceExecutionContextsToNativeModelExecutionContexts(dataSpace);
+  nativeModelAccess.defaultExecutionContext = guaranteeNonNullable(
+    nativeModelAccess.nativeModelExecutionContexts.find(
+      (e) => e.key === dataSpace.defaultExecutionContext.name,
+    ),
+    `Unable to resolve default execution context '${dataSpace.defaultExecutionContext.name}' from nativeModelExecutionContexts`,
+  );
   nativeModelAccess.sampleQueries =
     convertDataSpaceExecutablesToSampleQueries(dataSpace);
   return nativeModelAccess;

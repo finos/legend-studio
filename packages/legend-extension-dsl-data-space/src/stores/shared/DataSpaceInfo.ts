@@ -19,39 +19,52 @@ import {
   type StoredEntity,
 } from '@finos/legend-server-depot';
 import { isString } from '@finos/legend-shared';
-import { extractEntityNameFromPath } from '@finos/legend-storage';
+import {
+  DepotEntityWithOrigin,
+  extractEntityNameFromPath,
+  type ProjectGAVCoordinates,
+} from '@finos/legend-storage';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 
-export interface DataSpaceInfo {
-  groupId: string | undefined;
-  artifactId: string | undefined;
-  versionId: string | undefined;
+export class ResolvedDataSpaceEntityWithOrigin extends DepotEntityWithOrigin {
   title: string | undefined;
-  name: string;
-  path: string;
   /**
    * NOTE: technically, this should be always available, but we must not
-   * assume that no data product is marlformed, so we leave it as optional
+   * assume that no data product is malformed, so we leave it as optional
    */
   defaultExecutionContext: string | undefined;
+
+  constructor(
+    origin: ProjectGAVCoordinates | undefined,
+    title: string | undefined,
+    name: string,
+    path: string,
+    defaultExecutionContext: string | undefined,
+  ) {
+    super(origin, name, path, DATA_SPACE_ELEMENT_CLASSIFIER_PATH);
+    this.title = title;
+    this.defaultExecutionContext = defaultExecutionContext;
+  }
 }
 
 export const extractDataSpaceInfo = (
   storedEntity: StoredEntity,
   isSnapshot: boolean,
-): DataSpaceInfo => ({
-  groupId: storedEntity.groupId,
-  artifactId: storedEntity.artifactId,
-  versionId: isSnapshot ? SNAPSHOT_VERSION_ALIAS : storedEntity.versionId,
-  path: storedEntity.entity.path,
-  name: extractEntityNameFromPath(storedEntity.entity.path),
-  title: isString(storedEntity.entity.content.title)
-    ? storedEntity.entity.content.title
-    : undefined,
-  // NOTE: we don't want to assert the existence of this field even when it
-  // is required in the specification of data product, so we don't throw error here
-  defaultExecutionContext: isString(
-    storedEntity.entity.content.defaultExecutionContext,
-  )
-    ? storedEntity.entity.content.defaultExecutionContext
-    : undefined,
-});
+): ResolvedDataSpaceEntityWithOrigin =>
+  new ResolvedDataSpaceEntityWithOrigin(
+    {
+      groupId: storedEntity.groupId,
+      artifactId: storedEntity.artifactId,
+      versionId: isSnapshot ? SNAPSHOT_VERSION_ALIAS : storedEntity.versionId,
+    },
+    isString(storedEntity.entity.content.title)
+      ? storedEntity.entity.content.title
+      : undefined,
+    extractEntityNameFromPath(storedEntity.entity.path),
+    storedEntity.entity.path,
+    // NOTE: we don't want to assert the existence of this field even when it
+    // is required in the specification of data product, so we don't throw error here
+    isString(storedEntity.entity.content.defaultExecutionContext)
+      ? storedEntity.entity.content.defaultExecutionContext
+      : undefined,
+  );

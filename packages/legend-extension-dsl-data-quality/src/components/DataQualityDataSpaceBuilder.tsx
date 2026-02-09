@@ -39,13 +39,15 @@ import {
   MenuContentItem,
   PURE_RuntimeIcon,
 } from '@finos/legend-art';
-import { resolveUsableDataSpaceClasses } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  buildDataSpaceOption,
+  resolveUsableDataSpaceClasses,
+} from '@finos/legend-extension-dsl-data-space/graph';
 import type { DataQualityClassValidationState } from './states/DataQualityClassValidationState.js';
 import { DataSpaceIcon } from '@finos/legend-extension-dsl-data-space/application';
 import {
   type DataSpaceOption,
   type ExecutionContextOption,
-  buildDataSpaceOption,
   buildExecutionContextOption,
   formatDataSpaceOptionLabel,
 } from '@finos/legend-extension-dsl-data-space/application-query';

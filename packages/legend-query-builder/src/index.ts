@@ -36,7 +36,10 @@ export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderCom
 export {
   type QueryableSourceInfo as QuerySDLC,
   type QueryBuilderExtraFunctionAnalysisInfo,
+  type EntityWithOriginOption,
   QueryBuilderState,
+  ExtraOptionsConfig,
+  BaseQueryBuilderState,
   QUERY_BUILDER_LAMBDA_WRITER_MODE,
   INTERNAL__BasicQueryBuilderState,
 } from './stores/QueryBuilderState.js';
@@ -58,6 +61,7 @@ export {
 } from './components/QueryBuilderSideBar.js';
 export { ClassQueryBuilderState } from './stores/workflows/ClassQueryBuilderState.js';
 export { FunctionQueryBuilderState } from './stores/workflows/FunctionQueryBuilderState.js';
+export { DataProductQueryBuilderState } from './stores/workflows/dataProduct/DataProductQueryBuilderState.js';
 export { MappingQueryBuilderState } from './stores/workflows/MappingQueryBuilderState.js';
 export {
   type ServiceExecutionContext,

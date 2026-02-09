@@ -17,6 +17,7 @@
 export * from './Entity.js';
 export * from './EntityUtils.js';
 export * from './EntitiesWithOrigin.js';
+export * from './DepotEntityWithOrigin.js';
 export * from './DependencyUtils.js';
 export * from './DepotGeneration.js';
 export * from './StoredFileGeneration.js';

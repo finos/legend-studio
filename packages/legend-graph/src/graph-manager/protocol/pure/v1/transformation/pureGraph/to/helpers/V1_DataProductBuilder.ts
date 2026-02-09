@@ -310,12 +310,16 @@ export const V1_buildNativeModelAccess = (
   context: V1_GraphBuilderContext,
 ): NativeModelAccess => {
   const metamodelNativeModelAccess = new NativeModelAccess();
-  metamodelNativeModelAccess.defaultExecutionContext =
-    nativeModelAccess.defaultExecutionContext;
   metamodelNativeModelAccess.nativeModelExecutionContexts =
     nativeModelAccess.nativeModelExecutionContexts.map((executionContext) =>
       V1_buildNativeModelExecutionContext(executionContext, context),
     );
+  metamodelNativeModelAccess.defaultExecutionContext = guaranteeNonNullable(
+    metamodelNativeModelAccess.nativeModelExecutionContexts.find(
+      (e) => e.key === nativeModelAccess.defaultExecutionContext,
+    ),
+    `Default execution context ${nativeModelAccess.defaultExecutionContext} not found among native model execution contexts`,
+  );
   if (nativeModelAccess.sampleQueries) {
     metamodelNativeModelAccess.sampleQueries =
       nativeModelAccess.sampleQueries.map((sampleQuery) =>

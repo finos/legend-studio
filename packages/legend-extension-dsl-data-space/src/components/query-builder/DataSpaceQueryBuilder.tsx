@@ -36,12 +36,12 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   type DataSpaceQueryBuilderState,
   resolveUsableDataSpaceClasses,
-  DataSpacesDepotRepository,
 } from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
 import {
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
   QueryBuilderClassSelector,
+  type EntityWithOriginOption,
 } from '@finos/legend-query-builder';
 import {
   type Runtime,
@@ -50,36 +50,33 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
-import type { DataSpaceInfo } from '../../stores/shared/DataSpaceInfo.js';
-import { generateGAVCoordinates } from '@finos/legend-storage';
+import { ResolvedDataSpaceEntityWithOrigin } from '../../stores/shared/DataSpaceInfo.js';
+import {
+  DepotEntityWithOrigin,
+  generateGAVCoordinates,
+} from '@finos/legend-storage';
 import { useEffect } from 'react';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { type DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
-import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/to-delete/DSL_DataSpace_LegendQueryNavigation_to_delete.js';
 
 export type DataSpaceOption = {
   label: string;
-  value: DataSpaceInfo;
+  value: ResolvedDataSpaceEntityWithOrigin;
 };
-export const buildDataSpaceOption = (
-  value: DataSpaceInfo,
-): DataSpaceOption => ({
-  label: value.title ?? value.name,
-  value,
-});
+
 export const formatDataSpaceOptionLabel = (
-  option: DataSpaceOption,
+  option: EntityWithOriginOption,
 ): React.ReactNode => (
   <div
     className="query-builder__setup__data-space__option"
     title={`${option.label} - ${option.value.path} - ${
-      option.value.groupId && option.value.artifactId && option.value.versionId
+      option.value.origin
         ? generateGAVCoordinates(
-            option.value.groupId,
-            option.value.artifactId,
-            option.value.versionId,
+            option.value.origin.groupId,
+            option.value.origin.artifactId,
+            option.value.origin.versionId,
           )
         : ''
     }`}
@@ -134,53 +131,37 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
   (props: { queryBuilderState: DataSpaceQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const repo = queryBuilderState.dataSpaceRepo;
-    const depotRepo =
-      repo instanceof DataSpacesDepotRepository ? repo : undefined;
-    const project = depotRepo?.project;
 
     // data product
-    const prioritizeDataSpaceFunc =
-      queryBuilderState.dataSpaceRepo.prioritizeDataSpaceFunc;
-    const sortedAllOptions = (queryBuilderState.dataSpaceRepo.dataSpaces ?? [])
-      .map(buildDataSpaceOption)
-      .sort(compareLabelFn);
+    const dataSpaceOptions = queryBuilderState.dataSpaceOptions;
+    const allOptions = [
+      ...dataSpaceOptions,
+      ...(queryBuilderState.extraOptionsConfig?.options ?? []),
+    ];
 
-    const dataSpaceOptions = prioritizeDataSpaceFunc
-      ? [
-          ...sortedAllOptions.filter((val) =>
-            prioritizeDataSpaceFunc(val.value),
-          ),
-          ...sortedAllOptions.filter(
-            (val) => !prioritizeDataSpaceFunc(val.value),
-          ),
-        ]
-      : sortedAllOptions;
-
-    const selectedDataSpaceOption: DataSpaceOption = {
-      label:
-        queryBuilderState.dataSpace.title ?? queryBuilderState.dataSpace.name,
-      value: {
-        groupId: project?.groupId,
-        artifactId: project?.artifactId,
-        versionId: project?.versionId,
-        title: queryBuilderState.dataSpace.title,
-        name: queryBuilderState.dataSpace.name,
-        path: queryBuilderState.dataSpace.path,
-        defaultExecutionContext:
-          queryBuilderState.dataSpace.defaultExecutionContext.name,
-      },
-    };
-    const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
-      queryBuilderState.queryChatState?.abort();
-      queryBuilderState
-        .onDataSpaceChange(option.value)
-        .catch(queryBuilderState.applicationStore.alertUnhandledError);
+    const selectedDataSpaceOption: EntityWithOriginOption =
+      queryBuilderState.selectedDataSpaceOption;
+    const onDataSpaceOptionChange = (
+      option: EntityWithOriginOption | null,
+    ): void => {
+      const value = option?.value;
+      if (value instanceof ResolvedDataSpaceEntityWithOrigin) {
+        queryBuilderState.queryChatState?.abort();
+        queryBuilderState
+          .onDataSpaceChange(value)
+          .catch(queryBuilderState.applicationStore.alertUnhandledError);
+      } else if (
+        value instanceof DepotEntityWithOrigin &&
+        queryBuilderState.extraOptionsConfig
+      ) {
+        queryBuilderState.queryChatState?.abort();
+        queryBuilderState.extraOptionsConfig.onChange(value);
+      }
     };
 
     const openDataSpaceAdvancedSearch = (): void => {
-      if (repo.isAdvancedDataSpaceSearchEnabled && depotRepo) {
-        depotRepo.showAdvancedSearchPanel(queryBuilderState.dataSpace);
+      if (queryBuilderState.isAdvancedDataSpaceSearchEnabled) {
+        queryBuilderState.showAdvancedSearchPanel(queryBuilderState.dataSpace);
       }
     };
 
@@ -255,48 +236,15 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     );
 
     useEffect(() => {
-      flowResult(queryBuilderState.dataSpaceRepo.loadDataSpaces()).catch(
+      flowResult(queryBuilderState.loadEntities()).catch(
         applicationStore.alertUnhandledError,
       );
     }, [queryBuilderState, applicationStore]);
 
     const copyDataSpaceLinkToClipboard = (): void => {
-      const nonNullableProject = guaranteeNonNullable(
-        project,
-        'Unable to copy data product query set up link to clipboard because project is null',
-      );
-      const dataSpace = queryBuilderState.dataSpace;
-      const executionContext = queryBuilderState.executionContext;
-      const runtimePath =
-        queryBuilderState.executionContextState.runtimeValue instanceof
-        RuntimePointer
-          ? queryBuilderState.executionContextState.runtimeValue
-              .packageableRuntime.value.path
-          : undefined;
-      const route =
-        applicationStore.navigationService.navigator.generateAddress(
-          generateDataSpaceQueryCreatorRoute(
-            nonNullableProject.groupId,
-            nonNullableProject.artifactId,
-            nonNullableProject.versionId,
-            dataSpace.path,
-            executionContext.name,
-            runtimePath,
-            queryBuilderState.class?.path,
-          ),
-        );
-
-      navigator.clipboard
-        .writeText(route)
-        .catch(() =>
-          applicationStore.notificationService.notifyError(
-            'Error copying data product query set up link to clipboard',
-          ),
-        );
-
-      applicationStore.notificationService.notifySuccess(
-        'Copied data product query set up link to clipboard',
-      );
+      if (queryBuilderState.isDataSpaceLinkable) {
+        queryBuilderState.copyDataSpaceLinkToClipboard();
+      }
     };
 
     return (
@@ -306,6 +254,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
             <PanelHeaderActionItem
               title="copy data product query set up link to clipboard"
               onClick={copyDataSpaceLinkToClipboard}
+              disabled={!queryBuilderState.isDataSpaceLinkable}
             >
               <AnchorLinkIcon />
             </PanelHeaderActionItem>
@@ -353,10 +302,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
             <CustomSelectorInput
               inputId="query-builder__setup__data-space-selector"
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-              options={dataSpaceOptions}
-              isLoading={
-                queryBuilderState.dataSpaceRepo.loadDataSpacesState.isInProgress
-              }
+              options={allOptions}
+              isLoading={queryBuilderState.loadEntitiesState.isInProgress}
               onChange={onDataSpaceOptionChange}
               value={selectedDataSpaceOption}
               placeholder="Search for data product..."
@@ -367,7 +314,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               }
               formatOptionLabel={formatDataSpaceOptionLabel}
             />
-            {depotRepo && (
+            {queryBuilderState.isAdvancedDataSpaceSearchEnabled && (
               <>
                 <button
                   tabIndex={-1}
@@ -377,10 +324,10 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 >
                   <SearchIcon />
                 </button>
-                {depotRepo.advancedSearchState && (
+                {queryBuilderState.advancedSearchState && (
                   <DataSpaceAdvancedSearchModal
-                    searchState={depotRepo.advancedSearchState}
-                    onClose={() => depotRepo.hideAdvancedSearchPanel()}
+                    searchState={queryBuilderState.advancedSearchState}
+                    onClose={() => queryBuilderState.hideAdvancedSearchPanel()}
                   />
                 )}
               </>

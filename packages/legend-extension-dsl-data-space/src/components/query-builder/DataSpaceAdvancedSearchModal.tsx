@@ -36,12 +36,17 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 import { DataSpaceViewer } from '../DataSpaceViewer.js';
-import type { DataSpaceInfo } from '../../stores/shared/DataSpaceInfo.js';
+import type { ResolvedDataSpaceEntityWithOrigin } from '../../stores/shared/DataSpaceInfo.js';
 import type { DataSpaceAdvancedSearchState } from '../../stores/query/DataSpaceAdvancedSearchState.js';
 import { formatDataSpaceOptionLabel } from './DataSpaceQueryBuilder.js';
 
-type DataSpaceOption = { label: string; value: DataSpaceInfo };
-const buildDataSpaceOption = (value: DataSpaceInfo): DataSpaceOption => ({
+type DataSpaceOption = {
+  label: string;
+  value: ResolvedDataSpaceEntityWithOrigin;
+};
+const buildDataSpaceOption = (
+  value: ResolvedDataSpaceEntityWithOrigin,
+): DataSpaceOption => ({
   label: value.title ?? value.name,
   value,
 });

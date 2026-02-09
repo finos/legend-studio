@@ -119,10 +119,7 @@ import {
 } from '@finos/legend-query-builder';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
-import {
-  DataSpaceQueryBuilderState,
-  type DataSpaceInfo,
-} from '@finos/legend-extension-dsl-data-space/application';
+import { type ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 import {
   type DataSpace,
   type DataSpaceExecutionContext,
@@ -135,7 +132,7 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { hasDataSpaceInfoBeenVisited } from '../__lib__/LegendQueryUserDataSpaceHelper.js';
-import { createDataSpaceDepoRepo } from './data-space/DataSpaceQueryBuilderHelper.js';
+import { LegendQueryDataSpaceQueryBuilderState } from './data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 
 export interface QueryPersistConfiguration {
   defaultName?: string | undefined;
@@ -1515,92 +1512,101 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
             this.applicationStore.userDataService,
           );
-        const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
-          this.applicationStore,
-          this.graphManagerState,
-          QueryBuilderDataBrowserWorkflow.INSTANCE,
-          new QueryBuilderActionConfig_QueryApplication(this),
-          dataSpace,
-          matchingExecutionContext,
-          isLightGraphEnabled,
-          createDataSpaceDepoRepo(
-            this,
-            queryInfo.groupId,
-            queryInfo.artifactId,
-            queryInfo.versionId,
-            (dataSpaceInfo: DataSpaceInfo) =>
+        const dataSpaceQueryBuilderState =
+          new LegendQueryDataSpaceQueryBuilderState(
+            this.applicationStore,
+            this.graphManagerState,
+            QueryBuilderDataBrowserWorkflow.INSTANCE,
+            new QueryBuilderActionConfig_QueryApplication(this),
+            dataSpace,
+            matchingExecutionContext,
+            isLightGraphEnabled,
+            this.depotServerClient,
+            {
+              groupId: queryInfo.groupId,
+              artifactId: queryInfo.artifactId,
+              versionId: queryInfo.versionId,
+            },
+            (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) =>
               hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
-          ),
-          async (dataSpaceInfo: DataSpaceInfo) => {
-            if (dataSpaceInfo.defaultExecutionContext) {
-              const proceed = (): void =>
-                this.applicationStore.navigationService.navigator.goToLocation(
-                  generateDataSpaceQueryCreatorRoute(
-                    guaranteeNonNullable(dataSpaceInfo.groupId),
-                    guaranteeNonNullable(dataSpaceInfo.artifactId),
-                    LATEST_VERSION_ALIAS, //always default to latest
-                    dataSpaceInfo.path,
-                    guaranteeNonNullable(dataSpaceInfo.defaultExecutionContext),
-                    undefined,
-                    undefined,
-                  ),
-                );
-              const updateQueryAndProceed = async (): Promise<void> => {
-                try {
-                  await flowResult(
-                    this.updateState.updateQuery(undefined, undefined),
-                  );
-                  proceed();
-                } catch (error) {
-                  assertErrorThrown(error);
-                  this.applicationStore.logService.error(
-                    LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
-                    error,
-                  );
-                  this.applicationStore.notificationService.notifyError(error);
-                }
-              };
+            async (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) => {
               if (
-                !queryInfo.isCurrentUserQuery ||
-                !this.queryBuilderState?.changeDetectionState.hasChanged
+                dataSpaceInfo.defaultExecutionContext &&
+                dataSpaceInfo.origin
               ) {
-                proceed();
-              } else {
-                this.applicationStore.alertService.setActionAlertInfo({
-                  message: `To change the data product, you need to save the current query
+                const origin = dataSpaceInfo.origin;
+                const proceed = (): void =>
+                  this.applicationStore.navigationService.navigator.goToLocation(
+                    generateDataSpaceQueryCreatorRoute(
+                      origin.groupId,
+                      origin.artifactId,
+                      LATEST_VERSION_ALIAS, //always default to latest
+                      dataSpaceInfo.path,
+                      guaranteeNonNullable(
+                        dataSpaceInfo.defaultExecutionContext,
+                      ),
+                      undefined,
+                      undefined,
+                    ),
+                  );
+                const updateQueryAndProceed = async (): Promise<void> => {
+                  try {
+                    await flowResult(
+                      this.updateState.updateQuery(undefined, undefined),
+                    );
+                    proceed();
+                  } catch (error) {
+                    assertErrorThrown(error);
+                    this.applicationStore.logService.error(
+                      LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+                      error,
+                    );
+                    this.applicationStore.notificationService.notifyError(
+                      error,
+                    );
+                  }
+                };
+                if (
+                  !queryInfo.isCurrentUserQuery ||
+                  !this.queryBuilderState?.changeDetectionState.hasChanged
+                ) {
+                  proceed();
+                } else {
+                  this.applicationStore.alertService.setActionAlertInfo({
+                    message: `To change the data product, you need to save the current query
                      to proceed`,
-                  type: ActionAlertType.CAUTION,
-                  actions: [
-                    {
-                      label: 'Save query and Proceed',
-                      type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                      handler: () => {
-                        updateQueryAndProceed().catch(
-                          this.applicationStore.alertUnhandledError,
-                        );
+                    type: ActionAlertType.CAUTION,
+                    actions: [
+                      {
+                        label: 'Save query and Proceed',
+                        type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                        handler: () => {
+                          updateQueryAndProceed().catch(
+                            this.applicationStore.alertUnhandledError,
+                          );
+                        },
                       },
-                    },
-                    {
-                      label: 'Abort',
-                      type: ActionAlertActionType.PROCEED,
-                      default: true,
-                    },
-                  ],
-                });
+                      {
+                        label: 'Abort',
+                        type: ActionAlertActionType.PROCEED,
+                        default: true,
+                      },
+                    ],
+                  });
+                }
+              } else {
+                this.applicationStore.notificationService.notifyWarning(
+                  `Can't switch data product: default execution context not specified`,
+                );
               }
-            } else {
-              this.applicationStore.notificationService.notifyWarning(
-                `Can't switch data product: default execution context not specified`,
-              );
-            }
-          },
-          dataSpaceAnalysisResult,
-          undefined,
-          undefined,
-          undefined,
-          this.applicationStore.config.options.queryBuilderConfig,
-          sourceInfo,
-        );
+            },
+            dataSpaceAnalysisResult,
+            undefined,
+            undefined,
+            undefined,
+            this.applicationStore.config.options.queryBuilderConfig,
+            sourceInfo,
+          );
         const mappingModelCoverageAnalysisResult =
           dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
             matchingExecutionContext.mapping.value.path,

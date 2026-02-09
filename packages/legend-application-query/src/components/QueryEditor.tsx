@@ -57,7 +57,6 @@ import {
 } from '../__lib__/LegendQueryNavigation.js';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
-import { DataSpaceQuerySetupState } from './../stores/data-space/DataSpaceQuerySetupState.js';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   ReleaseLogManager,
@@ -97,6 +96,7 @@ import {
 import { LegendQueryInfo } from './LegendQueryAppInfo.js';
 import { QueryEditorDataspaceInfoModal } from './data-space/DataSpaceInfo.js';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
+import { LegendQueryBareQueryBuilderState } from '../stores/data-space/LegendQueryBareQueryBuilderState.js';
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
@@ -774,7 +774,7 @@ export const QueryEditor = observer(() => {
             (editorStore.queryBuilderState instanceof
               DataSpaceQueryBuilderState ||
               editorStore.queryBuilderState instanceof
-                DataSpaceQuerySetupState) &&
+                LegendQueryBareQueryBuilderState) &&
             editorStore.queryBuilderState.canBuildQuery && (
               <button
                 title="Open Query Chat."

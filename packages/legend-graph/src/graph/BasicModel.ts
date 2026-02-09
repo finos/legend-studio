@@ -247,7 +247,7 @@ export abstract class BasicModel {
   get ownFileGenerations(): FileGenerationSpecification[] {
     return Array.from(this.fileGenerationsIndex.values());
   }
-  get ownProducts(): DataProduct[] {
+  get ownDataProducts(): DataProduct[] {
     return Array.from(this.productsIndex.values());
   }
   get ownDataElements(): DataElement[] {
@@ -592,7 +592,7 @@ export abstract class BasicModel {
       ...this.ownConnections,
       ...this.ownGenerationSpecifications,
       ...this.ownFileGenerations,
-      ...this.ownProducts,
+      ...this.ownDataProducts,
       ...this.ownDataElements,
       ...this.ownExecutionEnvironments,
       ...Array.from(this.INTERNAL__unknownElementsIndex.values()),
