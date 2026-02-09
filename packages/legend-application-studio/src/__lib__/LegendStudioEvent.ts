@@ -80,4 +80,9 @@ export enum LEGEND_STUDIO_APP_EVENT {
 
   // Ingestion
   INGESTION_DEPLOY_SUCCESS_URN = 'editor.ingestion.deployment.success.urn',
+  INGESTION_DEPLOY_FAILURE = 'editor.ingestion.deployment.failure',
+
+  // data product
+  DATA_PRODUCT_DEPLOY_SUCCESS = 'editor.data-product.deployment.success',
+  DATA_PRODUCT_DEPLOY_FAILURE = 'editor.data-product.deployment.failure',
 }

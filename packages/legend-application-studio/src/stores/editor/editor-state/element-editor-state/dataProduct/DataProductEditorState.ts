@@ -117,6 +117,7 @@ import type {
 } from '@finos/legend-server-lakehouse';
 import { deserialize } from 'serializr';
 import { Diagram } from '@finos/legend-extension-dsl-diagram';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 
 export enum DATA_PRODUCT_TAB {
   HOME = 'Home',
@@ -1099,11 +1100,21 @@ export class DataProductEditorState extends ElementEditorState {
           }),
         token,
       )) as unknown as AdhocDataProductDeployResponse;
+      this.editorStore.applicationStore.logService.info(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_DEPLOY_SUCCESS),
+        Object.assign({}, this.editorStore.editorMode.getSourceInfo(), {
+          dataProductPath: this.product.path,
+        }),
+      );
       this.setDeployResponse(response);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(
         `Ingest definition failed to deploy: ${error.message}`,
+      );
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_DEPLOY_FAILURE),
+        error,
       );
     } finally {
       this.deploymentState.complete();
