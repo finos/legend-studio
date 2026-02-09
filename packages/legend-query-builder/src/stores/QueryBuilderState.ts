@@ -116,6 +116,7 @@ import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuil
 import { createDataCubeViewerStateFromQueryBuilder } from './data-cube/QueryBuilderDataCubeHelper.js';
 import type { QueryBuilderDataCubeViewerState } from './data-cube/QueryBuilderDataCubeViewerState.js';
 import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
+import type { DepotEntityWithOrigin } from '@finos/legend-storage';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface QueryableSourceInfo {}
@@ -134,6 +135,52 @@ export type QueryBuilderExtraFunctionAnalysisInfo = {
 export enum QUERY_BUILDER_LAMBDA_WRITER_MODE {
   STANDARD = 'STANDARD',
   TYPED_FETCH_STRUCTURE = 'TYPED_FETCH_STRUCTURE',
+}
+
+export type EntityWithOriginOption = {
+  label: string;
+  value: DepotEntityWithOrigin;
+};
+
+export class ExtraOptionsConfig<T> {
+  label: string;
+  type: string;
+  options:
+    | {
+        label: string;
+        value: T;
+      }[]
+    | undefined;
+  selectedValue: T | undefined;
+  onChange: (val: T) => void;
+  placeholder?: string | undefined;
+  disabled?: boolean | undefined;
+
+  constructor(
+    label: string,
+    type: string,
+    options: { label: string; value: T }[] | undefined,
+    selectedValue: T | undefined,
+    onChange: (val: T) => void,
+    placeholder?: string | undefined,
+    disabled?: boolean | undefined,
+  ) {
+    this.label = label;
+    this.type = type;
+    this.options = options;
+    this.selectedValue = selectedValue;
+    this.onChange = onChange;
+    this.placeholder = placeholder;
+    this.disabled = disabled;
+
+    makeObservable(this, {
+      options: observable,
+    });
+  }
+
+  setOptions(options: { label: string; value: T }[] | undefined): void {
+    this.options = options;
+  }
 }
 
 export abstract class QueryBuilderState implements CommandRegistrar {
@@ -957,6 +1004,17 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.checkEntitlementsState,
       this.fetchStructureState.implementation,
     ]);
+  }
+}
+
+/**
+ * Base query builder state with result panel hidden.
+ * This is useful for scenarios where the query builder is used
+ * only for query construction without execution/result display.
+ */
+export abstract class BaseQueryBuilderState extends QueryBuilderState {
+  override get isResultPanelHidden(): boolean {
+    return true;
   }
 }
 

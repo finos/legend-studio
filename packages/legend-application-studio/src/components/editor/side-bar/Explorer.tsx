@@ -114,6 +114,7 @@ import {
   Service,
   isRelationalDatabaseConnection,
   LegendSDLC,
+  DataProduct,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -149,6 +150,7 @@ import {
   isElementSupportedByDataCube,
   openDataCube,
 } from '../../../stores/editor/data-cube/LegendStudioDataCubeHelper.js';
+import { queryDataProduct } from '../editor-group/dataProduct/DataProductQueryBuilderHelper.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -533,6 +535,13 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+
+    const buildDataProductQuery =
+      editorStore.applicationStore.guardUnhandledError(async () => {
+        if (node?.packageableElement instanceof DataProduct) {
+          await queryDataProduct(node.packageableElement, editorStore);
+        }
+      });
     const buildServiceQuery = editorStore.applicationStore.guardUnhandledError(
       async () => {
         if (node?.packageableElement instanceof Service) {
@@ -844,6 +853,14 @@ const ExplorerContextMenu = observer(
     }
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+        {node.packageableElement instanceof DataProduct && (
+          <>
+            <MenuContentItem onClick={buildDataProductQuery}>
+              Query...
+            </MenuContentItem>
+            <MenuContentDivider />
+          </>
+        )}
         {node.packageableElement instanceof Class && (
           <>
             <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>

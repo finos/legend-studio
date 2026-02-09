@@ -399,6 +399,7 @@ export {
 } from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
 export {
   V1_DataProductArtifact,
+  V1_NativeModelExecutionContextInfo,
   V1_AccessPointImplementation,
   V1_AccessPointGroupInfo,
   V1_SampleQueryInfo,
@@ -781,8 +782,6 @@ export {
   SupportInfo,
   ModelAccessPointGroup,
   InLineSampleQuery,
-  NativeModelAccess,
-  NativeModelExecutionContext,
   PackageableElementSampleQuery,
   SampleQuery,
   DataProductRuntimeInfo,
@@ -794,6 +793,8 @@ export {
   Expertise,
   ExternalDataProductType,
   type DataProductElement,
+  NativeModelAccess,
+  NativeModelExecutionContext,
   DataProductOperationalMetadata,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
@@ -972,6 +973,7 @@ export {
   DatasetEntitlementAccessApprovedReport,
   DatasetEntitlementUnsupportedReport,
 } from './graph-manager/action/analytics/StoreEntitlementAnalysis.js';
+export * from './graph-manager/helpers/DataProductHelper.js';
 export {
   FunctionAnalysisInfo,
   FunctionAnalysisParameterInfo,

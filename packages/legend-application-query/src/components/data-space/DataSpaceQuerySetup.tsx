@@ -17,7 +17,6 @@
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEffect, useRef } from 'react';
-import { flowResult } from 'mobx';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import {
   CustomSelectorInput,
@@ -26,13 +25,43 @@ import {
   compareLabelFn,
   type SelectComponent,
 } from '@finos/legend-art';
-import { type DataSpaceQuerySetupState } from '../../stores/data-space/DataSpaceQuerySetupState.js';
 import {
   DataSpaceAdvancedSearchModal,
-  buildDataSpaceOption,
   formatDataSpaceOptionLabel,
   type DataSpaceOption,
 } from '@finos/legend-extension-dsl-data-space/application-query';
+import { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/graph';
+import type { LegendQueryBareQueryBuilderState } from '../../stores/data-space/LegendQueryBareQueryBuilderState.js';
+import type {
+  DataProductOption,
+  DataProductWithLegacyOption,
+} from '../../stores/data-space/DataSpaceQueryCreatorStore.js';
+import { flowResult } from 'mobx';
+
+// Custom format function to handle both DataSpace and DataProduct options
+const formatDataSpaceOrProductOptionLabel = (
+  option: DataProductWithLegacyOption,
+): React.ReactNode => {
+  // If it's a DataSpace (ResolvedDataSpaceEntityWithOrigin), use the standard formatter
+  if (option.value instanceof ResolvedDataSpaceEntityWithOrigin) {
+    return formatDataSpaceOptionLabel(option as DataSpaceOption);
+  }
+  // For DataProduct (DepotEntityWithOrigin), render a simpler label
+  return (
+    <div
+      className="query-builder__setup__data-space__option"
+      title={`${option.label} - ${option.value.path} - ${
+        option.value.origin
+          ? `${option.value.origin.groupId}:${option.value.origin.artifactId}:${option.value.origin.versionId}`
+          : ''
+      }`}
+    >
+      <div className="query-builder__setup__data-space__option__label">
+        {option.label}
+      </div>
+    </div>
+  );
+};
 
 /**
  * This setup panel supports cascading in order: Data-space -> Execution context (-> Runtime) -> Class
@@ -41,33 +70,41 @@ import {
  * - For runtime selector: the list of compatible runtimes with the selected execution context mapping
  * - For class selector: the list of compatible class with the selected execution context mapping
  *
- * See details on propagation/cascading in {@link DataSpaceQuerySetupState}
+ * See details on propagation/cascading in {@link LegendQueryBareQueryBuilderState}
  */
-const DataSpaceQuerySetupSetupPanelContent = observer(
-  (props: { queryBuilderState: DataSpaceQuerySetupState }) => {
+const DataProductQuerySetupSetupPanelContent = observer(
+  (props: { queryBuilderState: LegendQueryBareQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
-    // data product
-    const dataSpaceOptions = queryBuilderState.dataSpaces
-      .map(buildDataSpaceOption)
-      .sort(compareLabelFn);
+    // Combine data spaces and data products
+    const dataProductOptions =
+      queryBuilderState.productSelectorState.dataProductOptions.sort(
+        compareLabelFn,
+      );
     const selectedDataSpaceOption = null;
-    const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
+    const onDataSpaceOptionChange = (
+      option: DataSpaceOption | DataProductOption,
+    ): void => {
       queryBuilderState.queryChatState?.abort();
-      queryBuilderState.onDataSpaceChange(option.value);
+      const value = option.value;
+      if (value instanceof ResolvedDataSpaceEntityWithOrigin) {
+        queryBuilderState.changeHandlers.onDataSpaceChange(value);
+      } else {
+        queryBuilderState.changeHandlers.onDataProductChange(value);
+      }
     };
 
     const openDataSpaceAdvancedSearch = (): void =>
       queryBuilderState.showAdvancedSearchPanel();
 
+    useEffect(() => dataSpaceSearchRef.current?.focus());
+
     useEffect(() => {
-      flowResult(queryBuilderState.initializeDataSpaceSetup()).catch(
+      flowResult(queryBuilderState.productSelectorState.loadProducts()).catch(
         applicationStore.alertUnhandledError,
       );
     }, [queryBuilderState, applicationStore]);
-
-    useEffect(() => dataSpaceSearchRef.current?.focus());
 
     return (
       <div className="query-builder__setup__config-group">
@@ -85,8 +122,11 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
               inputId="query-builder__setup__data-space-selector"
               inputRef={dataSpaceSearchRef}
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-              options={dataSpaceOptions}
-              isLoading={queryBuilderState.loadDataSpacesState.isInProgress}
+              options={dataProductOptions}
+              isLoading={
+                queryBuilderState.productSelectorState.loadProductsState
+                  .isInProgress
+              }
               onChange={onDataSpaceOptionChange}
               value={selectedDataSpaceOption}
               placeholder="Search for data product..."
@@ -95,7 +135,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
                 !applicationStore.layoutService
                   .TEMPORARY__isLightColorThemeEnabled
               }
-              formatOptionLabel={formatDataSpaceOptionLabel}
+              formatOptionLabel={formatDataSpaceOrProductOptionLabel}
             />
             <button
               tabIndex={-1}
@@ -126,7 +166,9 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
 );
 
 export const renderDataSpaceQuerySetupSetupPanelContent = (
-  queryBuilderState: DataSpaceQuerySetupState,
+  queryBuilderState: LegendQueryBareQueryBuilderState,
 ): React.ReactNode => (
-  <DataSpaceQuerySetupSetupPanelContent queryBuilderState={queryBuilderState} />
+  <DataProductQuerySetupSetupPanelContent
+    queryBuilderState={queryBuilderState}
+  />
 );

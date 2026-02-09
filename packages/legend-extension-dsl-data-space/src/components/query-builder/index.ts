@@ -18,7 +18,6 @@ export {
   type DataSpaceOption,
   type ExecutionContextOption,
   buildExecutionContextOption,
-  buildDataSpaceOption,
   formatDataSpaceOptionLabel,
 } from './DataSpaceQueryBuilder.js';
 export { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';

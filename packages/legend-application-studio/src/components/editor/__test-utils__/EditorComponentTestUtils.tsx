@@ -203,6 +203,18 @@ export const TEST__openElementFromExplorerTree = async (
   fireEvent.click(getByText(packageExplorer, elementName));
 };
 
+export const TEST__rightClickElementFromExplorerTree = async (
+  path: string,
+  renderResult: RenderResult,
+): Promise<void> => {
+  const packageExplorer = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+  );
+  await TEST__openAndAssertPathWithElement(path, renderResult, false);
+  const elementName = path.split(ELEMENT_PATH_DELIMITER).pop() as string;
+  fireEvent.contextMenu(getByText(packageExplorer, elementName));
+};
+
 /**
  * Setup the editor for testing, takes in a mocked editor store and data for initialization.
  * This methods helps mock certain feature initialization of the editor as well as to ensure to return

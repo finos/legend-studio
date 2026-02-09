@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  APPLICATION_EVENT,
-  type GenericLegendApplicationStore,
-} from '@finos/legend-application';
+import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type QueryBuilderConfig,
   type QuerySDLC,
@@ -26,6 +23,7 @@ import {
   QueryBuilderState,
   type QueryBuilderExtraFunctionAnalysisInfo,
   QUERY_BUILDER_LAMBDA_WRITER_MODE,
+  type ExtraOptionsConfig,
 } from '@finos/legend-query-builder';
 import {
   type Class,
@@ -34,51 +32,37 @@ import {
   type Runtime,
   type Mapping,
   type FunctionAnalysisInfo,
-  type GraphData,
   getMappingCompatibleClasses,
   Package,
   QueryDataSpaceExecutionContext,
   elementBelongsToPackage,
-  GraphDataWithOrigin,
-  LegendSDLC,
-  InMemoryGraphData,
 } from '@finos/legend-graph';
-import {
-  type DepotServerClient,
-  type StoredEntity,
-  DepotScope,
-  resolveVersion,
-  SNAPSHOT_VERSION_ALIAS,
-} from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
   ActionState,
-  assertErrorThrown,
   filterByType,
-  LogEvent,
   uniq,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
-import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query-builder/DataSpaceQueryBuilder.js';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
+import {
+  renderDataSpaceQueryBuilderSetupPanelContent,
+  type DataSpaceOption,
+} from '../../components/query-builder/DataSpaceQueryBuilder.js';
 import {
   type DataSpaceElement,
   type DataSpaceExecutionContext,
   DataSpace,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
-import { DataSpaceAdvancedSearchState } from '../query/DataSpaceAdvancedSearchState.js';
+import type { DataSpaceAdvancedSearchState } from '../query/DataSpaceAdvancedSearchState.js';
 import {
   type DataSpaceAnalysisResult,
   type DataSpaceExecutableAnalysisResult,
-  DataSpaceServiceExecutableInfo,
 } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
-import {
-  type DataSpaceInfo,
-  extractDataSpaceInfo,
-} from '../shared/DataSpaceInfo.js';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
-import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/to-delete/DSL_DataSpace_LegendQueryNavigation_to_delete.js';
+import { ResolvedDataSpaceEntityWithOrigin } from '../shared/DataSpaceInfo.js';
+import type { DepotEntityWithOrigin } from '@finos/legend-storage';
 import { buildDataSpaceExecutableAnalysisResultFromExecutable } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
+import { compareLabelFn } from '@finos/legend-art';
 
 const matchesDataElement = (
   _class: Class,
@@ -149,235 +133,27 @@ export interface DataSpaceQuerySDLC extends QuerySDLC {
   dataSpace: string;
 }
 
-// could be abstracted for element
-export abstract class DataSpacesBuilderRepoistory {
-  readonly applicationStore: GenericLegendApplicationStore;
-  readonly graphManagerState: GraphManagerState;
-  readonly loadDataSpacesState = ActionState.create();
-  dataSpaces: DataSpaceInfo[] | undefined;
-  prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined;
-
-  constructor(
-    applicatonstore: GenericLegendApplicationStore,
-    graphManagerState: GraphManagerState,
-    prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined,
-  ) {
-    this.applicationStore = applicatonstore;
-    this.graphManagerState = graphManagerState;
-    this.prioritizeDataSpaceFunc = prioritizeDataSpaceFunc;
-  }
-
-  get isAdvancedDataSpaceSearchEnabled(): boolean {
-    return false;
-  }
-
-  get canVisitTemplateQuery(): boolean {
-    return false;
-  }
-
-  abstract loadDataSpaces(): GeneratorFn<void>;
-  abstract visitTemplateQuery(
-    dataSpace: DataSpace,
-    template: DataSpaceExecutableAnalysisResult,
-  ): void;
-
-  configureDataSpaceOptions(val: DataSpaceInfo[]): void {
-    this.dataSpaces = val;
-  }
-}
-
-export class DataSpacesGraphRepoistory extends DataSpacesBuilderRepoistory {
-  constructor(
-    applicatonstore: GenericLegendApplicationStore,
-    graphManagerState: GraphManagerState,
-    prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined,
-  ) {
-    super(applicatonstore, graphManagerState, prioritizeDataSpaceFunc);
-    makeObservable(this, {
-      dataSpaces: observable,
-      loadDataSpaces: flow,
-      configureDataSpaceOptions: action,
-    });
-  }
-
-  *loadDataSpaces(): GeneratorFn<void> {
-    this.dataSpaces = this.graphManagerState.graph.allOwnElements
-      .filter(filterByType(DataSpace))
-      .map(
-        (e) =>
-          ({
-            groupId: undefined,
-            artifactId: undefined,
-            versionId: undefined,
-            path: e.path,
-            name: e.name,
-            title: e.title,
-            defaultExecutionContext: e.defaultExecutionContext.title,
-          }) as DataSpaceInfo,
-      );
-  }
-
-  override visitTemplateQuery(
-    dataSpace: DataSpace,
-    template: DataSpaceExecutableAnalysisResult,
-  ): void {
-    throw new Error('Method not implemented.');
-  }
-}
-
-export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
-  readonly depotServerClient: DepotServerClient;
-  readonly project: ProjectGAVCoordinates;
-  readonly viewProject: (
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    entityPath: string | undefined,
-  ) => void;
-  readonly viewSDLCProject: (
-    groupId: string,
-    artifactId: string,
-    entityPath: string | undefined,
-  ) => Promise<void>;
-  advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
-
-  constructor(
-    depotServerClient: DepotServerClient,
-    applicatonstore: GenericLegendApplicationStore,
-    graphManagerState: GraphManagerState,
-    project: ProjectGAVCoordinates,
-    viewProject: (
-      groupId: string,
-      artifactId: string,
-      versionId: string,
-      entityPath: string | undefined,
-    ) => void,
-    viewSDLCProject: (
-      groupId: string,
-      artifactId: string,
-      entityPath: string | undefined,
-    ) => Promise<void>,
-    prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined,
-  ) {
-    super(applicatonstore, graphManagerState, prioritizeDataSpaceFunc);
-    makeObservable(this, {
-      advancedSearchState: observable,
-      dataSpaces: observable,
-      showAdvancedSearchPanel: action,
-      hideAdvancedSearchPanel: action,
-      visitTemplateQuery: action,
-      configureDataSpaceOptions: action,
-      loadDataSpaces: flow,
-    });
-    this.depotServerClient = depotServerClient;
-    this.project = project;
-    this.viewProject = viewProject;
-    this.viewSDLCProject = viewSDLCProject;
-  }
-
-  override get isAdvancedDataSpaceSearchEnabled(): boolean {
-    return true;
-  }
-
-  override get canVisitTemplateQuery(): boolean {
-    return true;
-  }
-
-  override visitTemplateQuery(
-    dataSpace: DataSpace,
-    template: DataSpaceExecutableAnalysisResult,
-  ): void {
-    let templateId;
-    if (template.info) {
-      if (template.info.id) {
-        templateId = template.info.id;
-      } else if (template.info instanceof DataSpaceServiceExecutableInfo) {
-        templateId = template.executable ?? template.info.pattern;
-      }
-    }
-    if (!templateId) {
-      this.applicationStore.notificationService.notifyWarning(
-        `Can't visit tempalte query without a Id`,
-      );
-    } else {
-      this.applicationStore.navigationService.navigator.visitAddress(
-        this.applicationStore.navigationService.navigator.generateAddress(
-          generateDataSpaceTemplateQueryCreatorRoute(
-            this.project.groupId,
-            this.project.artifactId,
-            this.project.versionId,
-            dataSpace.path,
-            templateId,
-          ),
-        ),
-      );
-    }
-  }
-
-  showAdvancedSearchPanel(dataSpace: DataSpace): void {
-    this.advancedSearchState = new DataSpaceAdvancedSearchState(
-      this.applicationStore,
-      this.graphManagerState,
-      this.depotServerClient,
-      {
-        viewProject: this.viewProject,
-        viewSDLCProject: this.viewSDLCProject,
-      },
-      {
-        groupId: this.project.groupId,
-        artifactId: this.project.artifactId,
-        versionId: this.project.versionId,
-        title: dataSpace.title,
-        name: dataSpace.name,
-        path: dataSpace.path,
-        defaultExecutionContext: dataSpace.defaultExecutionContext.name,
-      },
-      this.project.versionId === SNAPSHOT_VERSION_ALIAS,
-    );
-  }
-
-  hideAdvancedSearchPanel(): void {
-    this.advancedSearchState = undefined;
-  }
-
-  *loadDataSpaces(): GeneratorFn<void> {
-    if (this.dataSpaces === undefined) {
-      this.loadDataSpacesState.inProgress();
-      const toGetSnapShot = this.project.versionId === SNAPSHOT_VERSION_ALIAS;
-      try {
-        this.dataSpaces = (
-          (yield this.depotServerClient.getEntitiesByClassifier(
-            DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-            {
-              scope: toGetSnapShot ? DepotScope.SNAPSHOT : DepotScope.RELEASES,
-            },
-          )) as StoredEntity[]
-        ).map((storedEntity) =>
-          extractDataSpaceInfo(storedEntity, toGetSnapShot),
-        );
-        this.loadDataSpacesState.pass();
-      } catch (error) {
-        assertErrorThrown(error);
-        this.loadDataSpacesState.fail();
-        this.applicationStore.notificationService.notifyError(error);
-        this.applicationStore.logService.error(
-          LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
-          error,
-        );
-      }
-    }
-  }
-}
+export const buildDataSpaceOption = (
+  value: ResolvedDataSpaceEntityWithOrigin,
+): DataSpaceOption => ({
+  label: value.title ?? value.name,
+  value,
+});
 
 export class DataSpaceQueryBuilderState extends QueryBuilderState {
-  readonly onDataSpaceChange: (val: DataSpaceInfo) => Promise<void>;
+  readonly onDataSpaceChange: (
+    val: ResolvedDataSpaceEntityWithOrigin,
+  ) => Promise<void>;
   readonly onExecutionContextChange?:
     | ((val: DataSpaceExecutionContext) => void)
     | undefined;
   readonly onRuntimeChange?: ((val: Runtime) => void) | undefined;
   readonly onClassChange?: ((val: Class) => void) | undefined;
   readonly dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined;
-  readonly dataSpaceRepo: DataSpacesBuilderRepoistory;
+  readonly extraOptionsConfig?:
+    | ExtraOptionsConfig<DepotEntityWithOrigin>
+    | undefined;
+  entities: ResolvedDataSpaceEntityWithOrigin[] | undefined;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQueryBuilderSetupPanelContent(this);
@@ -388,6 +164,11 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   isTemplateQueryDialogOpen = false;
   isLightGraphEnabled!: boolean;
   displayedTemplateQueries: DataSpaceExecutableAnalysisResult[] | undefined;
+  advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
+  loadEntitiesState = ActionState.create();
+  prioritizeEntityFunc?:
+    | ((val: ResolvedDataSpaceEntityWithOrigin) => boolean)
+    | undefined;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -397,8 +178,12 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     dataSpace: DataSpace,
     executionContext: DataSpaceExecutionContext,
     isLightGraphEnabled: boolean,
-    dataSpaceRepo: DataSpacesBuilderRepoistory | undefined,
-    onDataSpaceChange: (val: DataSpaceInfo) => Promise<void>,
+    prioritizeEntityFunc:
+      | ((val: ResolvedDataSpaceEntityWithOrigin) => boolean)
+      | undefined,
+    onDataSpaceChange: (
+      val: ResolvedDataSpaceEntityWithOrigin,
+    ) => Promise<void>,
     dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined,
     onExecutionContextChange?:
       | ((val: DataSpaceExecutionContext) => void)
@@ -407,6 +192,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     onClassChange?: ((val: Class) => void) | undefined,
     config?: QueryBuilderConfig | undefined,
     sourceInfo?: QuerySDLC | undefined,
+    extraOptionsConfig?: ExtraOptionsConfig<DepotEntityWithOrigin> | undefined,
   ) {
     super(applicationStore, graphManagerState, workflow, config, sourceInfo);
 
@@ -416,11 +202,14 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       isTemplateQueryDialogOpen: observable,
       isLightGraphEnabled: observable,
       displayedTemplateQueries: observable,
+      advancedSearchState: observable,
+      selectedDataSpaceOption: computed,
       setExecutionContext: action,
       setShowRuntimeSelector: action,
       setTemplateQueryDialogOpen: action,
       setIsLightGraphEnabled: action,
       intialize: flow,
+      loadEntities: flow,
     });
 
     this.dataSpace = dataSpace;
@@ -429,20 +218,33 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.onExecutionContextChange = onExecutionContextChange;
     this.onRuntimeChange = onRuntimeChange;
     this.onClassChange = onClassChange;
-    this.dataSpaceRepo =
-      dataSpaceRepo ??
-      new DataSpacesGraphRepoistory(
-        this.applicationStore,
-        this.graphManagerState,
-      );
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.workflowState.updateActionConfig(actionConfig);
     this.isLightGraphEnabled = isLightGraphEnabled;
+    this.prioritizeEntityFunc = prioritizeEntityFunc;
+    this.extraOptionsConfig = extraOptionsConfig;
     if (dataSpaceAnalysisResult?.__INTERNAL__useRelationTDS) {
       this.setLambdaWriteMode(
         QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
       );
     }
+  }
+
+  get dataSpaceOptions(): DataSpaceOption[] {
+    const sortedAllOptions = (this.entities ?? [])
+      .map(buildDataSpaceOption)
+      .sort(compareLabelFn);
+
+    return this.prioritizeEntityFunc
+      ? [
+          ...sortedAllOptions.filter((val) =>
+            this.prioritizeEntityFunc?.(val.value),
+          ),
+          ...sortedAllOptions.filter(
+            (val) => !this.prioritizeEntityFunc?.(val.value),
+          ),
+        ]
+      : sortedAllOptions;
   }
 
   override get sideBarClassName(): string | undefined {
@@ -456,6 +258,62 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     queryExeContext.dataSpacePath = this.dataSpace.path;
     queryExeContext.executionKey = this.executionContext.name;
     return queryExeContext;
+  }
+
+  get isAdvancedDataSpaceSearchEnabled(): boolean {
+    return false;
+  }
+
+  get isDataSpaceLinkable(): boolean {
+    return false;
+  }
+
+  copyDataSpaceLinkToClipboard(): void {
+    if (!this.isDataSpaceLinkable) {
+      this.applicationStore.notificationService.notifyError(
+        'Data space link is not available.',
+      );
+    }
+  }
+
+  get selectedDataSpaceOption(): DataSpaceOption {
+    return {
+      label: this.dataSpace.title ?? this.dataSpace.name,
+      value: {
+        origin: undefined,
+        title: this.dataSpace.title,
+        name: this.dataSpace.name,
+        path: this.dataSpace.path,
+        classifierPath: DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+        defaultExecutionContext: this.dataSpace.defaultExecutionContext.name,
+      },
+    };
+  }
+
+  get canVisitTemplateQuery(): boolean {
+    return false;
+  }
+
+  protected getElementType(): typeof DataSpace {
+    return DataSpace;
+  }
+
+  *loadEntities(): GeneratorFn<void> {
+    this.entities = this.graphManagerState.graph.allOwnElements
+      .filter(filterByType(this.getElementType()))
+      .map((element) => this.transformElement(element));
+  }
+
+  protected transformElement(
+    element: DataSpace,
+  ): ResolvedDataSpaceEntityWithOrigin {
+    return new ResolvedDataSpaceEntityWithOrigin(
+      undefined,
+      element.title,
+      element.name,
+      element.path,
+      element.defaultExecutionContext.title,
+    );
   }
 
   setTemplateQueryDialogOpen(val: boolean): void {
@@ -500,18 +358,6 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     };
   }
 
-  override getGraphData(): GraphData {
-    if (this.dataSpaceRepo instanceof DataSpacesDepotRepository) {
-      const option = new LegendSDLC(
-        this.dataSpaceRepo.project.groupId,
-        this.dataSpaceRepo.project.artifactId,
-        resolveVersion(this.dataSpaceRepo.project.versionId),
-      );
-      return new GraphDataWithOrigin(option);
-    }
-    return new InMemoryGraphData(this.graphManagerState.graph);
-  }
-
   *intialize(): GeneratorFn<void> {
     this.displayedTemplateQueries =
       this.dataSpace.executables && this.dataSpace.executables.length > 0
@@ -523,5 +369,20 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
         : this.dataSpaceAnalysisResult?.executables.filter(
             (ex) => ex.info !== undefined,
           );
+  }
+
+  visitTemplateQuery(
+    dataSpace: DataSpace,
+    template: DataSpaceExecutableAnalysisResult,
+  ): void {
+    throw new Error('Method not implemented.');
+  }
+
+  hideAdvancedSearchPanel(): void {
+    this.advancedSearchState = undefined;
+  }
+
+  showAdvancedSearchPanel(dataSpace: DataSpace): void {
+    // initialize advanced search state if not present
   }
 }
