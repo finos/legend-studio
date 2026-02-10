@@ -325,7 +325,7 @@ const setupLakehouseDataProductTest = async (
   let renderResult;
 
   await act(async () => {
-    await flowResult(dataProductDataAccessState?.init(undefined));
+    await flowResult(dataProductDataAccessState?.init(() => undefined));
     renderResult = render(
       <BrowserRouter>
         <AuthProvider>
@@ -1514,7 +1514,7 @@ describe('DataProductViewer', () => {
 
       // Re-fetch to trigger the new mock
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(undefined);
+        await dataProductDataAccessState!.fetchContracts(() => undefined);
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
@@ -1602,7 +1602,7 @@ describe('DataProductViewer', () => {
 
       // Re-fetch to trigger the new mock
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(undefined);
+        await dataProductDataAccessState!.fetchContracts(() => undefined);
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
@@ -1703,7 +1703,7 @@ describe('DataProductViewer', () => {
 
       // Re-fetch to trigger the new mock (with real timers)
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(undefined);
+        await dataProductDataAccessState!.fetchContracts(() => undefined);
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
@@ -1723,7 +1723,7 @@ describe('DataProductViewer', () => {
             s.pollConsumerGrant(
               'test-approved-contract-id',
               dataProductDataAccessState!.lakehouseContractServerClient,
-              undefined,
+              () => undefined,
             ),
           ),
         );
@@ -1823,7 +1823,7 @@ describe('DataProductViewer', () => {
 
       // Re-fetch to trigger the new mock
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(undefined);
+        await dataProductDataAccessState!.fetchContracts(() => undefined);
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
@@ -1908,7 +1908,7 @@ describe('DataProductViewer', () => {
 
       // Re-fetch to trigger the new mock
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(undefined);
+        await dataProductDataAccessState!.fetchContracts(() => undefined);
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 

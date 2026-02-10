@@ -215,7 +215,7 @@ export class DataProductAPGState {
   setAssociatedUserContract(
     val: V1_DataContract | undefined,
     lakehouseContractServerClient: LakehouseContractServerClient,
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): void {
     this.associatedUserContract = val;
 
@@ -223,7 +223,7 @@ export class DataProductAPGState {
       this.fetchUserAccessStatus(
         this.associatedUserContract.guid,
         lakehouseContractServerClient,
-        token,
+        tokenProvider,
       );
     }
   }
@@ -316,7 +316,7 @@ export class DataProductAPGState {
   *pollConsumerGrant(
     contractId: string,
     lakehouseContractServerClient: LakehouseContractServerClient,
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): GeneratorFn<void> {
     this.stopPollingConsumerGrant();
     this.pollingConsumerGrantState.inProgress();
@@ -325,7 +325,7 @@ export class DataProductAPGState {
         const rawResponse =
           await lakehouseContractServerClient.getConsumerGrantsByContractId(
             contractId,
-            token,
+            tokenProvider(),
           );
         const response =
           LakehouseConsumerGrantResponse.serialization.fromJson(rawResponse);
@@ -368,7 +368,7 @@ export class DataProductAPGState {
   async handleDataProductContracts(
     contracts: V1_LiteDataContract[],
     lakehouseContractServerClient: LakehouseContractServerClient,
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): Promise<void> {
     try {
       this.handlingContractsState.inProgress();
@@ -384,7 +384,7 @@ export class DataProductAPGState {
           lakehouseContractServerClient.getDataContract(
             _contract.guid,
             true,
-            token,
+            tokenProvider(),
           ),
         ),
       );
@@ -405,7 +405,7 @@ export class DataProductAPGState {
               this.applicationStore.identityService.currentUser,
               _contract,
               lakehouseContractServerClient,
-              token,
+              tokenProvider(),
             );
             return isMember ? _contract : undefined;
           }),
@@ -417,17 +417,17 @@ export class DataProductAPGState {
       const userContract = await this.getContractLatestInApprovalProcess(
         userContracts,
         lakehouseContractServerClient,
-        token,
+        tokenProvider(),
       );
       this.setAssociatedUserContract(
         userContract,
         lakehouseContractServerClient,
-        token,
+        tokenProvider,
       );
       this.fetchAndSetAssociatedSystemAccountContracts(
         systemAccountContracts,
         lakehouseContractServerClient,
-        token,
+        tokenProvider(),
       );
     } finally {
       this.handlingContractsState.complete();
@@ -529,7 +529,7 @@ export class DataProductAPGState {
   *fetchUserAccessStatus(
     contractId: string,
     lakehouseContractServerClient: LakehouseContractServerClient,
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): GeneratorFn<void> {
     try {
       this.fetchingUserAccessState.inProgress();
@@ -537,7 +537,7 @@ export class DataProductAPGState {
         (yield lakehouseContractServerClient.getContractUserStatus(
           contractId,
           this.applicationStore.identityService.currentUser,
-          token,
+          tokenProvider(),
         )) as PlainObject<V1_ContractUserStatusResponse>;
       const userStatus = deserialize(
         V1_ContractUserStatusResponseModelSchema,
@@ -548,7 +548,7 @@ export class DataProductAPGState {
         this.pollConsumerGrant(
           contractId,
           lakehouseContractServerClient,
-          token,
+          tokenProvider,
         );
       }
     } catch (error) {
