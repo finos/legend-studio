@@ -1679,17 +1679,11 @@ describe('DataProductViewer', () => {
           mockDataContracts,
         );
 
-      // First two calls return empty users (syncing): one from fetchUserAccessStatus,
-      // one from pollConsumerGrant's initial poll(). Third call returns the user.
+      // First call return empty users (syncing). Second call returns the user.
       createSpy(
         dataProductDataAccessState!.lakehouseContractServerClient,
         'getConsumerGrantsByContractId',
       )
-        .mockResolvedValueOnce({
-          contractId: 'test-approved-contract-id',
-          accessPointGroups: [],
-          users: [],
-        })
         .mockResolvedValueOnce({
           contractId: 'test-approved-contract-id',
           accessPointGroups: [],
@@ -1722,7 +1716,7 @@ describe('DataProductViewer', () => {
       );
 
       // Directly trigger a poll on each APG state to simulate the next poll cycle.
-      // The third mock response (with user) will be consumed.
+      // The second mock response (with user) will be consumed.
       await act(async () => {
         await Promise.all(
           dataProductViewerState.apgStates.map((s) =>
