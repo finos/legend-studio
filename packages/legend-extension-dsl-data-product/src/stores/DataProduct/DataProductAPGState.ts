@@ -42,6 +42,8 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
+  NetworkClientError,
+  HttpStatus,
   uuid,
 } from '@finos/legend-shared';
 import { makeAutoObservable, action, observable, flow, computed } from 'mobx';
@@ -99,6 +101,7 @@ export class DataProductAPGState {
   associatedUserContract: V1_DataContract | undefined | false = false;
   userAccessStatus: V1_EnrichedUserApprovalStatus | undefined = undefined;
   consumerGrant: LakehouseConsumerGrantResponse | undefined = undefined;
+  consumerGrantNotFound = false;
   private consumerGrantPollingTimer: ReturnType<typeof setTimeout> | undefined =
     undefined;
 
@@ -141,7 +144,9 @@ export class DataProductAPGState {
       setUserAccessStatus: action,
       canCreateSubscription: computed,
       consumerGrant: observable,
+      consumerGrantNotFound: observable,
       setConsumerGrant: action,
+      setConsumerGrantNotFound: action,
       pollConsumerGrant: flow,
       isEntitlementsSyncing: computed,
     });
@@ -278,8 +283,15 @@ export class DataProductAPGState {
     this.consumerGrant = val;
   }
 
+  setConsumerGrantNotFound(val: boolean): void {
+    this.consumerGrantNotFound = val;
+  }
+
   get isEntitlementsSyncing(): boolean {
     if (this.userAccessStatus !== V1_EnrichedUserApprovalStatus.APPROVED) {
+      return false;
+    }
+    if (this.consumerGrantNotFound) {
       return false;
     }
     if (!this.consumerGrant) {
@@ -333,9 +345,16 @@ export class DataProductAPGState {
         }
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.notificationService.notifyError(
-          `Error polling consumer grants: ${error.message}`,
-        );
+        if (
+          error instanceof NetworkClientError &&
+          error.response.status === HttpStatus.NOT_FOUND
+        ) {
+          this.setConsumerGrantNotFound(true);
+        } else {
+          this.applicationStore.notificationService.notifyError(
+            `Error polling consumer grants: ${error.message}`,
+          );
+        }
         this.pollingConsumerGrantState.complete();
       }
     };
@@ -552,9 +571,16 @@ export class DataProductAPGState {
           }
         } catch (error) {
           assertErrorThrown(error);
-          this.applicationStore.notificationService.notifyError(
-            `Error fetching consumer grants: ${(error as Error).message}`,
-          );
+          if (
+            error instanceof NetworkClientError &&
+            error.response.status === HttpStatus.NOT_FOUND
+          ) {
+            this.setConsumerGrantNotFound(true);
+          } else {
+            this.applicationStore.notificationService.notifyError(
+              `Error fetching consumer grants: ${(error as Error).message}`,
+            );
+          }
         }
       }
     } catch (error) {
