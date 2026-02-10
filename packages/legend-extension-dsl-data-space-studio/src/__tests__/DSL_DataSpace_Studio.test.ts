@@ -156,7 +156,7 @@ describe(unitTest('DataSpace to DataProduct Conversion Tests'), () => {
       dataProduct.nativeModelAccess,
       NativeModelAccess,
     );
-    expect(nativeModelAccess.defaultExecutionContext).toBe(
+    expect(nativeModelAccess.defaultExecutionContext.key).toBe(
       testDataSpace.defaultExecutionContext.name,
     );
     expect(nativeModelAccess.featuredElements).toHaveLength(0);
@@ -275,7 +275,7 @@ describe(unitTest('DataSpace to DataProduct Conversion Tests'), () => {
       dataProduct.nativeModelAccess,
       NativeModelAccess,
     );
-    expect(nativeModelAccess.defaultExecutionContext).toBe(
+    expect(nativeModelAccess.defaultExecutionContext.key).toBe(
       testDataSpace.defaultExecutionContext.name,
     );
     expect(nativeModelAccess.featuredElements).toHaveLength(0);

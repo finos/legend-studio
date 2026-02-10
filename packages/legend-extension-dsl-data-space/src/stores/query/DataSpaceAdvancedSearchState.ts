@@ -40,7 +40,7 @@ import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/prot
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import {
-  type DataSpaceInfo,
+  type ResolvedDataSpaceEntityWithOrigin,
   extractDataSpaceInfo,
 } from '../shared/DataSpaceInfo.js';
 import {
@@ -70,10 +70,10 @@ export class DataSpaceAdvancedSearchState {
     entityPath: string | undefined,
   ) => Promise<void>;
 
-  dataSpaces: DataSpaceInfo[] = [];
+  dataSpaces: ResolvedDataSpaceEntityWithOrigin[] = [];
   readonly loadDataSpacesState = ActionState.create();
   readonly loadDataSpaceState = ActionState.create();
-  currentDataSpace?: DataSpaceInfo | undefined;
+  currentDataSpace?: ResolvedDataSpaceEntityWithOrigin | undefined;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
   toGetSnapShot = false;
 
@@ -94,7 +94,7 @@ export class DataSpaceAdvancedSearchState {
         entityPath: string | undefined,
       ) => Promise<void>;
     },
-    currentDataSpace?: DataSpaceInfo | undefined,
+    currentDataSpace?: ResolvedDataSpaceEntityWithOrigin | undefined,
     toGetSnapshot?: boolean | undefined,
   ) {
     makeObservable(this, {
@@ -121,7 +121,9 @@ export class DataSpaceAdvancedSearchState {
     }
   }
 
-  setCurrentDataSpace(val: DataSpaceInfo | undefined): void {
+  setCurrentDataSpace(
+    val: ResolvedDataSpaceEntityWithOrigin | undefined,
+  ): void {
     this.currentDataSpace = val;
   }
 
@@ -160,13 +162,16 @@ export class DataSpaceAdvancedSearchState {
     }
   }
 
-  *loadDataSpace(dataSpace: DataSpaceInfo): GeneratorFn<void> {
+  *loadDataSpace(
+    dataSpace: ResolvedDataSpaceEntityWithOrigin,
+  ): GeneratorFn<void> {
     this.loadDataSpaceState.inProgress();
     this.loadDataSpaceState.setMessage(`Initializing...`);
     try {
-      const groupId = guaranteeNonNullable(dataSpace.groupId);
-      const artifactId = guaranteeNonNullable(dataSpace.artifactId);
-      const versionId = guaranteeNonNullable(dataSpace.versionId);
+      const origin = guaranteeNonNullable(dataSpace.origin);
+      const groupId = origin.groupId;
+      const artifactId = origin.artifactId;
+      const versionId = origin.versionId;
       // fetch project
       this.loadDataSpaceState.setMessage(`Fetching project...`);
       const project = StoreProjectData.serialization.fromJson(

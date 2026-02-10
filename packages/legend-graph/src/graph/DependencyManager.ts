@@ -47,6 +47,7 @@ import type { FunctionActivator } from './metamodel/pure/packageableElements/fun
 import type { PureGraphPlugin } from './PureGraphPlugin.js';
 import type { Testable } from './metamodel/pure/test/Testable.js';
 import type { IngestDefinition } from './metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import type { DataProduct } from './metamodel/pure/dataProduct/DataProduct.js';
 
 export const DEPENDENCY_ROOT_PACKAGE_PREFIX = '@dependency__';
 export const generateDependencyRootPackageName = (
@@ -317,6 +318,10 @@ export class DependencyManager {
   }
   get ingests(): IngestDefinition[] {
     return this.dependencyGraphs.flatMap((dep) => dep.ownIngests);
+  }
+
+  get dataProducts(): DataProduct[] {
+    return this.dependencyGraphs.flatMap((dep) => dep.ownDataProducts);
   }
 
   getExtensionElements<T extends PackageableElement>(

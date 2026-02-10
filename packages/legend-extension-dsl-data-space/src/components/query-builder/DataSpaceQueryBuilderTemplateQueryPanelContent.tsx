@@ -111,8 +111,8 @@ const DataSpaceTemplateQueryDialog = observer(
     const visitTemplateQuery = (
       template: DataSpaceExecutableAnalysisResult,
     ): void => {
-      if (queryBuilderState.dataSpaceRepo.canVisitTemplateQuery) {
-        queryBuilderState.dataSpaceRepo.visitTemplateQuery(
+      if (queryBuilderState.canVisitTemplateQuery) {
+        queryBuilderState.visitTemplateQuery(
           queryBuilderState.dataSpace,
           template,
         );
@@ -179,9 +179,7 @@ const DataSpaceTemplateQueryDialog = observer(
                   <button
                     className="query-builder__data-space__template-query-panel__query__share"
                     title="Visit..."
-                    disabled={
-                      !queryBuilderState.dataSpaceRepo.canVisitTemplateQuery
-                    }
+                    disabled={!queryBuilderState.canVisitTemplateQuery}
                     onClick={() => visitTemplateQuery(query)}
                   >
                     <ShareIcon />

@@ -32,6 +32,7 @@ import {
   type QueryExecutionContextInfo,
   QueryExplicitExecutionContextInfo,
   QueryDataSpaceExecutionContextInfo,
+  QueryDataProductExecutionContext,
 } from '../../../../../graph-manager/action/query/Query.js';
 import {
   type V1_LightQuery,
@@ -40,6 +41,7 @@ import {
   V1_QueryExplicitExecutionContext,
   V1_QueryDataSpaceExecutionContext,
   type V1_QueryExecutionContext,
+  V1_QueryDataProductExecutionContext,
 } from './query/V1_Query.js';
 import type { PureModel } from '../../../../../graph/PureModel.js';
 import { DEPRECATED__ServiceTestResult } from '../../../../../graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
@@ -335,6 +337,11 @@ export const V1_transformQueryExecutionContext = (
   } else if (execContext instanceof QueryDataSpaceExecutionContext) {
     const protocol = new V1_QueryDataSpaceExecutionContext();
     protocol.dataSpacePath = execContext.dataSpacePath;
+    protocol.executionKey = execContext.executionKey;
+    return protocol;
+  } else if (execContext instanceof QueryDataProductExecutionContext) {
+    const protocol = new V1_QueryDataProductExecutionContext();
+    protocol.dataProductPath = execContext.dataProductPath;
     protocol.executionKey = execContext.executionKey;
     return protocol;
   }

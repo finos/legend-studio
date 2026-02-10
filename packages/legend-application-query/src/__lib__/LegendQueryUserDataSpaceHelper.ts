@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { DataSpaceInfo } from '@finos/legend-extension-dsl-data-space/application';
+import type { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 import { GAV_DELIMITER, generateGAVCoordinates } from '@finos/legend-storage';
 
-export interface VisitedDataspace {
+export interface VisitedDataProduct {
   id: string;
   groupId: string;
   artifactId: string;
@@ -26,7 +26,7 @@ export interface VisitedDataspace {
   execContext?: string | undefined;
 }
 
-export type SavedVisitedDataSpaces = VisitedDataspace[];
+export type SavedVisitedDataProducts = VisitedDataProduct[];
 
 export const createVisitedDataSpaceId = (
   groupId: string,
@@ -39,10 +39,10 @@ export const createVisitedDataSpaceId = (
   dataSpace;
 
 export const createIdFromDataSpaceInfo = (
-  info: DataSpaceInfo,
+  info: ResolvedDataSpaceEntityWithOrigin,
 ): string | undefined => {
-  const groupId = info.groupId;
-  const artifactId = info.artifactId;
+  const groupId = info.origin?.groupId;
+  const artifactId = info.origin?.artifactId;
   if (groupId && artifactId) {
     return createVisitedDataSpaceId(groupId, artifactId, info.path);
   }
@@ -55,7 +55,7 @@ export const createSimpleVisitedDataspace = (
   versionId: string | undefined,
   path: string,
   exec: string | undefined,
-): VisitedDataspace => ({
+): VisitedDataProduct => ({
   id: createVisitedDataSpaceId(groupId, artifactId, path),
   groupId,
   artifactId,
@@ -65,12 +65,12 @@ export const createSimpleVisitedDataspace = (
 });
 
 export const createVisitedDataspaceFromInfo = (
-  info: DataSpaceInfo,
+  info: ResolvedDataSpaceEntityWithOrigin,
   execContext: string | undefined,
-): VisitedDataspace | undefined => {
-  const groupId = info.groupId;
-  const artifactId = info.artifactId;
-  const versionId = info.versionId;
+): VisitedDataProduct | undefined => {
+  const groupId = info.origin?.groupId;
+  const artifactId = info.origin?.artifactId;
+  const versionId = info.origin?.versionId;
   const path = info.path;
   if (groupId && artifactId) {
     return createSimpleVisitedDataspace(
@@ -85,8 +85,8 @@ export const createVisitedDataspaceFromInfo = (
 };
 
 export const hasDataSpaceInfoBeenVisited = (
-  val: DataSpaceInfo,
-  visited: SavedVisitedDataSpaces,
+  val: ResolvedDataSpaceEntityWithOrigin,
+  visited: VisitedDataProduct[],
 ): boolean =>
   Boolean(
     visited.find((_visit) => {

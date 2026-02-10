@@ -86,13 +86,11 @@ import {
 } from '../stores/QueryEditorStore.js';
 import {
   DataSpaceQueryBuilderState,
-  DataSpacesDepotRepository,
   generateDataSpaceTemplateQueryPromotionRoute,
 } from '@finos/legend-extension-dsl-data-space/application';
 import {
   createGraphBuilderReport,
   GRAPH_MANAGER_EVENT,
-  LegendSDLC,
   PackageableElementPointerType,
   resolvePackagePathAndElementName,
   RuntimePointer,
@@ -103,7 +101,7 @@ import {
   V1_PureGraphManager,
 } from '@finos/legend-graph';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
-import { resolveVersion, StoreProjectData } from '@finos/legend-server-depot';
+import { StoreProjectData } from '@finos/legend-server-depot';
 import {
   ActionState,
   assertErrorThrown,
@@ -133,6 +131,7 @@ import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
 import { observer } from 'mobx-react-lite';
 import { useQueryEditorStore } from './QueryEditorStoreProvider.js';
 import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
+import { LegendQueryDataSpaceQueryBuilderState } from '../stores/data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 
 export const QUERY_DATACUBE_USAGE_TITLE = 'Legend DataCube';
 const QUERY_DATACUBE_SOURCE_TYPE = 'legendQuery';
@@ -1051,17 +1050,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                     );
                   let option;
                   if (
-                    dataSpaceQueryBuilderState.dataSpaceRepo instanceof
-                    DataSpacesDepotRepository
+                    dataSpaceQueryBuilderState instanceof
+                    LegendQueryDataSpaceQueryBuilderState
                   ) {
-                    option = new LegendSDLC(
-                      dataSpaceQueryBuilderState.dataSpaceRepo.project.groupId,
-                      dataSpaceQueryBuilderState.dataSpaceRepo.project.artifactId,
-                      resolveVersion(
-                        dataSpaceQueryBuilderState.dataSpaceRepo.project
-                          .versionId,
-                      ),
-                    );
+                    option = dataSpaceQueryBuilderState.sdlc;
                   }
                   await dataSpaceQueryBuilderState.graphManagerState.graphManager.buildGraph(
                     graph,

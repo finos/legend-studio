@@ -65,6 +65,7 @@ export class V1_QueryExecutionContext {}
 export enum V1_QueryExecutionContextType {
   QUERY_EXPLICIT_EXECUTION_CONTEXT = 'explicitExecutionContext',
   QUERY_DATASAPCE_EXECUTION_CONTEXT = 'dataSpaceExecutionContext',
+  QUERY_DATAPRODUCT_EXECUTION_CONTEXT = 'dataProductExecutionContext',
 }
 
 export class V1_QueryExplicitExecutionContext extends V1_QueryExecutionContext {
@@ -103,6 +104,24 @@ export class V1_QueryDataSpaceExecutionContext extends V1_QueryExecutionContext 
   );
 }
 
+export class V1_QueryDataProductExecutionContext extends V1_QueryExecutionContext {
+  dataProductPath!: string;
+  executionKey: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_QueryDataProductExecutionContext, {
+      _type: usingConstantValueSchema(
+        V1_QueryExecutionContextType.QUERY_DATAPRODUCT_EXECUTION_CONTEXT,
+      ),
+      dataProductPath: primitive(),
+      executionKey: optional(primitive()),
+    }),
+    {
+      deserializeNullAsUndefined: true,
+    },
+  );
+}
+
 export const V1_deserializeQueryExecutionContext = (
   json: PlainObject<V1_QueryExecutionContext>,
 ): V1_QueryExecutionContext => {
@@ -115,6 +134,11 @@ export const V1_deserializeQueryExecutionContext = (
     case V1_QueryExecutionContextType.QUERY_DATASAPCE_EXECUTION_CONTEXT:
       return deserialize(
         V1_QueryDataSpaceExecutionContext.serialization.schema,
+        json,
+      );
+    case V1_QueryExecutionContextType.QUERY_DATAPRODUCT_EXECUTION_CONTEXT:
+      return deserialize(
+        V1_QueryDataProductExecutionContext.serialization.schema,
         json,
       );
     default: {
@@ -136,6 +160,11 @@ export const V1_serializeQueryExecutionContext = (
   } else if (protocol instanceof V1_QueryDataSpaceExecutionContext) {
     return serialize(
       V1_QueryDataSpaceExecutionContext.serialization.schema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_QueryDataProductExecutionContext) {
+    return serialize(
+      V1_QueryDataProductExecutionContext.serialization.schema,
       protocol,
     );
   }

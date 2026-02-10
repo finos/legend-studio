@@ -24,7 +24,7 @@ import {
 } from '../LegendQueryFrameworkProvider.js';
 import {
   DataSpaceQueryCreatorStore,
-  type QueryableDataSpace,
+  type QueryableDataProduct,
 } from '../../stores/data-space/DataSpaceQueryCreatorStore.js';
 import { QueryEditorStoreContext } from '../QueryEditorStoreProvider.js';
 import {
@@ -35,6 +35,7 @@ import {
 import { QueryEditor } from '../QueryEditor.js';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../__lib__/LegendQueryNavigation.js';
 import { useEffect } from 'react';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '@finos/legend-extension-dsl-data-space/graph';
 
 const DataSpaceQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -51,7 +52,7 @@ const DataSpaceQueryCreatorStoreProvider: React.FC<{
   runtimePath,
   classPath,
 }) => {
-  let queryableDataSpace: QueryableDataSpace | undefined = undefined;
+  let queryableDataSpace: QueryableDataProduct | undefined = undefined;
   if (gav && dataSpacePath && executionContext) {
     const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
     queryableDataSpace = {
@@ -62,6 +63,7 @@ const DataSpaceQueryCreatorStoreProvider: React.FC<{
       executionContext,
       runtimePath,
       classPath,
+      classifier: DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
     };
   }
   const applicationStore = useLegendQueryApplicationStore();

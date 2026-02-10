@@ -21,11 +21,6 @@ import {
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendQueryNavigation.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import { parseProjectIdentifier } from '@finos/legend-storage';
-import type { QueryEditorStore } from '../QueryEditorStore.js';
-import {
-  DataSpacesDepotRepository,
-  type DataSpaceInfo,
-} from '@finos/legend-extension-dsl-data-space/application';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@finos/legend-application';
 
 export const createViewProjectHandler =
@@ -80,27 +75,3 @@ export const createViewSDLCProjectHandler =
       );
     }
   };
-
-export const createDataSpaceDepoRepo = (
-  editorStore: QueryEditorStore,
-  groupId: string,
-  artifactId: string,
-  versionId: string,
-  prioritizeDataSpaceFunc: ((val: DataSpaceInfo) => boolean) | undefined,
-): DataSpacesDepotRepository =>
-  new DataSpacesDepotRepository(
-    editorStore.depotServerClient,
-    editorStore.applicationStore,
-    editorStore.graphManagerState,
-    {
-      groupId,
-      artifactId,
-      versionId,
-    },
-    createViewProjectHandler(editorStore.applicationStore),
-    createViewSDLCProjectHandler(
-      editorStore.applicationStore,
-      editorStore.depotServerClient,
-    ),
-    prioritizeDataSpaceFunc,
-  );

@@ -15,12 +15,21 @@
  */
 
 import { StoreProjectData } from './models/StoreProjectData.js';
-import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
+import {
+  DepotEntityWithOrigin,
+  extractEntityNameFromPath,
+  type EntitiesWithOrigin,
+  type Entity,
+} from '@finos/legend-storage';
 import type { DepotServerClient } from './DepotServerClient.js';
 import type { PlainObject } from '@finos/legend-shared';
 import type { ProjectVersionEntities } from './models/ProjectVersionEntities.js';
-import { LATEST_VERSION_ALIAS } from './DepotVersionAliases.js';
+import {
+  LATEST_VERSION_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from './DepotVersionAliases.js';
 import { VersionedProjectData } from './models/VersionedProjectData.js';
+import type { StoredSummaryEntity } from './models/StoredEntity.js';
 
 export const retrieveProjectEntitiesWithDependencies = async (
   project: StoreProjectData,
@@ -85,3 +94,22 @@ export const projectIdHandlerFunc = async (
       : _versionId;
   projectHandler(project.projectId, versionId);
 };
+
+/**
+ * Extract generic depot entity info (e.g., for DataProducts)
+ * This preserves the actual classifierPath from the stored entity
+ */
+export const extractDepotEntityInfo = (
+  storedEntity: StoredSummaryEntity,
+  isSnapshot: boolean,
+): DepotEntityWithOrigin =>
+  new DepotEntityWithOrigin(
+    {
+      groupId: storedEntity.groupId,
+      artifactId: storedEntity.artifactId,
+      versionId: isSnapshot ? SNAPSHOT_VERSION_ALIAS : storedEntity.versionId,
+    },
+    extractEntityNameFromPath(storedEntity.path),
+    storedEntity.path,
+    storedEntity.classifierPath,
+  );

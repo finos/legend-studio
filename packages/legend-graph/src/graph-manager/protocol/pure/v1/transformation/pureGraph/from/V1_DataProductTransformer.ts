@@ -167,7 +167,7 @@ export const V1_transformDataProduct = (
       );
     }
     nativeModelAccess.defaultExecutionContext =
-      metamodelNativeModelAccess.defaultExecutionContext;
+      metamodelNativeModelAccess.defaultExecutionContext.key;
     nativeModelAccess.nativeModelExecutionContexts =
       metamodelNativeModelAccess.nativeModelExecutionContexts.map(
         (executionContext) => {

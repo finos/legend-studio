@@ -86,7 +86,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     ownFunctions: computed,
     ownFunctionActivators: computed,
     ownStores: computed,
-    ownProducts: computed,
+    ownDataProducts: computed,
     ownIngests: computed,
     ownFlatDatas: computed,
     ownDatabases: computed,

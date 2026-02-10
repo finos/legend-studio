@@ -22,12 +22,19 @@ import {
   RuntimePointer,
   PackageableElementExplicitReference,
   QueryProjectCoordinates,
+  CORE_PURE_PATH,
+  type V1_DataProduct,
 } from '@finos/legend-graph';
 import {
+  DepotScope,
   type DepotServerClient,
+  extractDepotEntityInfo,
   LATEST_VERSION_ALIAS,
+  type StoredEntity,
+  type StoredSummaryEntity,
 } from '@finos/legend-server-depot';
 import {
+  ActionState,
   LogEvent,
   assertErrorThrown,
   assertTrue,
@@ -44,10 +51,14 @@ import {
   parseGACoordinates,
   type Entity,
   type ProjectGAVCoordinates,
+  type DepotEntityWithOrigin,
 } from '@finos/legend-storage';
 import {
+  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   type DataSpaceExecutionContext,
+  extractDataSpaceInfo,
   getDataSpace,
+  type V1_DataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   QueryBuilderActionConfig_QueryApplication,
@@ -56,14 +67,14 @@ import {
 } from '../QueryEditorStore.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import {
-  type DataSpaceInfo,
-  DataSpaceQueryBuilderState,
+  type DataSpaceQueryBuilderState,
+  ResolvedDataSpaceEntityWithOrigin,
   createQueryClassTaggedValue,
   createQueryDataSpaceTaggedValue,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 import {
-  type VisitedDataspace,
+  type VisitedDataProduct,
   createVisitedDataSpaceId,
   hasDataSpaceInfoBeenVisited,
   createSimpleVisitedDataspace,
@@ -77,15 +88,18 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { DataSpaceQuerySetupState } from './DataSpaceQuerySetupState.js';
 import {
-  createDataSpaceDepoRepo,
-  createViewProjectHandler,
-  createViewSDLCProjectHandler,
-} from './DataSpaceQueryBuilderHelper.js';
-import { APPLICATION_EVENT } from '@finos/legend-application';
+  APPLICATION_EVENT,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
+import { LegendQueryBareQueryBuilderState } from './LegendQueryBareQueryBuilderState.js';
+import type { DataSpaceOption } from '@finos/legend-extension-dsl-data-space/application-query';
+import { LegendQueryDataSpaceQueryBuilderState } from './query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 
-export type QueryableDataSpace = {
+export type QueryableDataProduct = {
+  classifier:
+    | typeof DATA_SPACE_ELEMENT_CLASSIFIER_PATH
+    | CORE_PURE_PATH.DATA_PRODUCT;
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -96,30 +110,156 @@ export type QueryableDataSpace = {
 };
 
 type DataSpaceVisitedEntity = {
-  visited: VisitedDataspace;
+  visited: VisitedDataProduct;
+  defaultExecKey: string;
   entity: Entity;
+  classifier:
+    | CORE_PURE_PATH.DATA_PRODUCT
+    | typeof DATA_SPACE_ELEMENT_CLASSIFIER_PATH;
 };
 
+export type DataProductOption = {
+  label: string;
+  value: DepotEntityWithOrigin;
+};
+
+export type DataProductWithLegacyOption = DataSpaceOption | DataProductOption;
+
+// Helper function to build option for both DataSpace and DataProduct
+const buildDataSpaceOrProductOption = (
+  value: ResolvedDataSpaceEntityWithOrigin | DepotEntityWithOrigin,
+): DataProductWithLegacyOption => {
+  // For ResolvedDataSpaceEntityWithOrigin, use title if available, otherwise name
+  // For DepotEntityWithOrigin, just use name
+  const label =
+    value instanceof ResolvedDataSpaceEntityWithOrigin
+      ? (value.title ?? value.name)
+      : value.name;
+  return {
+    label,
+    value: value,
+  };
+};
+
+export class DataProductSelectorState {
+  legacyDataProducts: ResolvedDataSpaceEntityWithOrigin[] | undefined;
+  dataProducts: DepotEntityWithOrigin[] | undefined;
+  readonly loadProductsState = ActionState.create();
+  readonly depotServerClient: DepotServerClient;
+  readonly applicationStore: GenericLegendApplicationStore;
+  disableDataProducts = true;
+
+  constructor(
+    depotServerClient: DepotServerClient,
+    applicationStore: GenericLegendApplicationStore,
+  ) {
+    makeObservable(this, {
+      legacyDataProducts: observable,
+      dataProducts: observable,
+      loadProductsState: observable,
+      loadProducts: flow,
+      setLegacyDataProducts: action,
+      setDataProducts: action,
+      clearProducts: action,
+    });
+    this.applicationStore = applicationStore;
+    this.depotServerClient = depotServerClient;
+  }
+
+  setLegacyDataProducts(val: ResolvedDataSpaceEntityWithOrigin[]): void {
+    this.legacyDataProducts = val;
+  }
+
+  setDataProducts(val: DepotEntityWithOrigin[]): void {
+    this.dataProducts = val;
+  }
+
+  clearProducts(): void {
+    this.legacyDataProducts = undefined;
+    this.dataProducts = undefined;
+  }
+
+  get isFetchingProducts(): boolean {
+    return this.loadProductsState.isInProgress;
+  }
+
+  get isCompletelyLoaded(): boolean {
+    return Boolean(this.legacyDataProducts) && Boolean(this.dataProducts);
+  }
+
+  *loadProducts(): GeneratorFn<void> {
+    this.loadProductsState.inProgress();
+    try {
+      // Load DataSpaces
+      const dataSpaces = (
+        (yield this.depotServerClient.getEntitiesByClassifier(
+          DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+          {
+            scope: DepotScope.RELEASES,
+          },
+        )) as StoredEntity[]
+      ).map((storedEntity) => {
+        return extractDataSpaceInfo(storedEntity, false);
+      });
+      const dataProducts = this.disableDataProducts
+        ? []
+        : (
+            (yield this.depotServerClient.getEntitiesSummaryByClassifier(
+              CORE_PURE_PATH.DATA_PRODUCT,
+              {
+                scope: DepotScope.RELEASES,
+                summary: true,
+              },
+            )) as StoredSummaryEntity[]
+          ).map((storedEntity) => {
+            return extractDepotEntityInfo(storedEntity, false);
+          });
+      // Set both lists separately
+      this.legacyDataProducts = dataSpaces;
+      this.dataProducts = dataProducts;
+      this.loadProductsState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.loadProductsState.fail();
+      this.applicationStore.notificationService.notifyError(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+        error,
+      );
+    }
+  }
+
+  get dataProductOptions(): DataProductWithLegacyOption[] {
+    return [
+      ...(this.legacyDataProducts?.map(buildDataSpaceOrProductOption) ?? []),
+      ...(this.dataProducts?.map(buildDataSpaceOrProductOption) ?? []),
+    ];
+  }
+}
+
 export class DataSpaceQueryCreatorStore extends QueryEditorStore {
-  queryableDataSpace: QueryableDataSpace | undefined;
-  dataSpaceCache: DataSpaceInfo[] | undefined;
+  queryableDataSpace: QueryableDataProduct | undefined;
+  productSelectorState: DataProductSelectorState;
   declare queryBuilderState?: DataSpaceQueryBuilderState | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    queryableDataSpace: QueryableDataSpace | undefined,
+    queryableDataSpace: QueryableDataProduct | undefined,
   ) {
     super(applicationStore, depotServerClient);
     makeObservable(this, {
       changeDataSpace: flow,
-      dataSpaceCache: observable,
+      productSelectorState: observable,
       queryableDataSpace: observable,
-      setDataSpaceCache: action,
       setQueryableDataSpace: action,
       canPersistToSavedQuery: computed,
     });
     this.queryableDataSpace = queryableDataSpace;
+    this.productSelectorState = new DataProductSelectorState(
+      depotServerClient,
+      applicationStore,
+    );
   }
 
   override get canPersistToSavedQuery(): boolean {
@@ -134,27 +274,36 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     return this.queryableDataSpace;
   }
 
-  setDataSpaceCache(val: DataSpaceInfo[]): void {
-    this.dataSpaceCache = val;
-  }
-
-  setQueryableDataSpace(val: QueryableDataSpace | undefined): void {
+  setQueryableDataSpace(val: QueryableDataProduct | undefined): void {
     this.queryableDataSpace = val;
   }
 
-  reConfigureWithDataSpaceInfo(info: DataSpaceInfo): boolean {
-    if (
-      info.groupId &&
-      info.artifactId &&
-      info.versionId &&
-      info.defaultExecutionContext
-    ) {
+  reConfigureWithDataSpaceInfo(
+    info: ResolvedDataSpaceEntityWithOrigin,
+  ): boolean {
+    if (info.origin && info.defaultExecutionContext) {
       this.queryableDataSpace = {
-        groupId: info.groupId,
-        artifactId: info.artifactId,
+        groupId: info.origin.groupId,
+        artifactId: info.origin.artifactId,
         versionId: LATEST_VERSION_ALIAS,
         dataSpacePath: info.path,
         executionContext: info.defaultExecutionContext,
+        classifier: DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+      };
+      return true;
+    }
+    return false;
+  }
+
+  reConfigureWithDataProductInfo(info: DepotEntityWithOrigin): boolean {
+    if (info.origin) {
+      this.queryableDataSpace = {
+        groupId: info.origin.groupId,
+        artifactId: info.origin.artifactId,
+        versionId: LATEST_VERSION_ALIAS,
+        dataSpacePath: info.path,
+        executionContext: '',
+        classifier: CORE_PURE_PATH.DATA_PRODUCT,
       };
       return true;
     }
@@ -172,8 +321,8 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           artifactId: hydrated.visited.artifactId,
           versionId: hydrated.visited.versionId ?? LATEST_VERSION_ALIAS,
           dataSpacePath: hydrated.visited.path,
-          executionContext: hydrated.entity.content
-            .defaultExecutionContext as string,
+          executionContext: hydrated.defaultExecKey,
+          classifier: hydrated.classifier,
         });
       }
     }
@@ -186,30 +335,33 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         this.queryableDataSpace,
       );
     } else {
-      const queryBuilderState = new DataSpaceQuerySetupState(
+      const queryBuilderState = new LegendQueryBareQueryBuilderState(
         this,
         this.applicationStore,
         this.graphManagerState,
         this.depotServerClient,
-        (dataSpaceInfo: DataSpaceInfo) => {
-          if (dataSpaceInfo.defaultExecutionContext) {
-            this.changeDataSpace(dataSpaceInfo);
-          } else {
+        {
+          onDataSpaceChange: (
+            dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin,
+          ) => {
+            if (dataSpaceInfo.defaultExecutionContext) {
+              this.changeDataSpace(dataSpaceInfo);
+            } else {
+              this.applicationStore.notificationService.notifyWarning(
+                `Can't switch data product: default execution context not specified`,
+              );
+            }
+          },
+          onDataProductChange: (dataProductInfo: DepotEntityWithOrigin) => {
+            // TODO: Implement data product change logic
             this.applicationStore.notificationService.notifyWarning(
-              `Can't switch data product: default execution context not specified`,
+              `Data product change not yet implemented`,
             );
-          }
+          },
         },
-        createViewProjectHandler(this.applicationStore),
-        createViewSDLCProjectHandler(
-          this.applicationStore,
-          this.depotServerClient,
-        ),
         this.applicationStore.config.options.queryBuilderConfig,
+        this.productSelectorState,
       );
-      if (this.dataSpaceCache?.length) {
-        queryBuilderState.configureDataSpaceOptions(this.dataSpaceCache);
-      }
       return queryBuilderState;
     }
   }
@@ -219,22 +371,19 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
         this.applicationStore.userDataService,
       );
-    let redirect: DataSpaceVisitedEntity | undefined = undefined;
-    for (let i = 0; i < visitedQueries.length; i++) {
-      const visited = visitedQueries[i];
-      if (visited) {
-        const hydrated = await this.hyrdateVisitedDataSpace(visited);
-        if (hydrated) {
-          redirect = hydrated;
-          break;
-        }
+
+    for (const visited of visitedQueries) {
+      const hydrated = await this.verifyDataSpaceExists(visited);
+      if (hydrated) {
+        return hydrated;
       }
     }
-    return redirect;
+
+    return undefined;
   }
 
-  async hyrdateVisitedDataSpace(
-    visited: VisitedDataspace,
+  async verifyDataSpaceExists(
+    visited: VisitedDataProduct,
   ): Promise<DataSpaceVisitedEntity | undefined> {
     try {
       const entity = (await this.depotServerClient.getVersionEntity(
@@ -243,37 +392,61 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         visited.versionId ?? LATEST_VERSION_ALIAS,
         visited.path,
       )) as unknown as Entity;
-      const content = entity.content as {
-        executionContexts: { name: string }[];
-      };
-      if (visited.execContext) {
-        const found = content.executionContexts.find(
-          (e) => e.name === visited.execContext,
-        );
-        if (!found) {
-          visited.execContext = undefined;
-          return {
-            visited,
-            entity,
-          };
+      const classifierPath = entity.classifierPath;
+      if (classifierPath === CORE_PURE_PATH.DATA_PRODUCT) {
+        const entityContent = entity.content as unknown as V1_DataProduct;
+        const native = guaranteeNonNullable(entityContent.nativeModelAccess);
+        if (visited.execContext) {
+          const executionContextExists =
+            native.nativeModelExecutionContexts.some(
+              (context) => context.key === visited.execContext,
+            );
+
+          // If execution context no longer exists, clear it but still return the entity
+          if (!executionContextExists) {
+            visited.execContext = undefined;
+          }
         }
+        return {
+          defaultExecKey: native.defaultExecutionContext,
+          visited,
+          entity,
+          classifier: CORE_PURE_PATH.DATA_PRODUCT,
+        };
+      } else {
+        const entityContent = entity.content as unknown as V1_DataSpace;
+
+        // Verify the execution context still exists
+        if (visited.execContext) {
+          const executionContextExists = entityContent.executionContexts.some(
+            (context) => context.name === visited.execContext,
+          );
+
+          // If execution context no longer exists, clear it but still return the entity
+          if (!executionContextExists) {
+            visited.execContext = undefined;
+          }
+        }
+        return {
+          defaultExecKey: entityContent.defaultExecutionContext,
+          visited,
+          entity,
+          classifier: DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+        };
       }
-      return {
-        visited,
-        entity,
-      };
     } catch (error) {
       assertErrorThrown(error);
+      // If the data space no longer exists, remove it from visited list
       LegendQueryUserDataHelper.removeRecentlyViewedDataSpace(
         this.applicationStore.userDataService,
         visited.id,
       );
+      return undefined;
     }
-    return undefined;
   }
 
   async initializeQueryBuilderStateWithQueryableDataSpace(
-    queryableDataSpace: QueryableDataSpace,
+    queryableDataSpace: QueryableDataProduct,
   ): Promise<QueryBuilderState> {
     const { dataSpaceAnalysisResult, isLightGraphEnabled } =
       await this.buildGraphAndDataspaceAnalyticsResult(
@@ -303,7 +476,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
         this.applicationStore.userDataService,
       );
-    const queryBuilderState = new DataSpaceQueryBuilderState(
+    const queryBuilderState = new LegendQueryDataSpaceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
       QueryBuilderDataBrowserWorkflow.INSTANCE,
@@ -311,15 +484,15 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       dataSpace,
       executionContext,
       isLightGraphEnabled,
-      createDataSpaceDepoRepo(
-        this,
-        queryableDataSpace.groupId,
-        queryableDataSpace.artifactId,
-        queryableDataSpace.versionId,
-        (dataSpaceInfo: DataSpaceInfo) =>
-          hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
-      ),
-      async (dataSpaceInfo: DataSpaceInfo) => {
+      this.depotServerClient,
+      {
+        groupId: queryableDataSpace.groupId,
+        artifactId: queryableDataSpace.artifactId,
+        versionId: queryableDataSpace.versionId,
+      },
+      (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) =>
+        hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
+      async (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) => {
         flowResult(this.changeDataSpace(dataSpaceInfo)).catch(
           this.applicationStore.alertUnhandledError,
         );
@@ -340,12 +513,10 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       undefined,
       this.applicationStore.config.options.queryBuilderConfig,
       sourceInfo,
+    ).withOptions(
+      this.productSelectorState.legacyDataProducts,
+      this.productSelectorState.dataProducts,
     );
-    if (this.dataSpaceCache?.length) {
-      queryBuilderState.dataSpaceRepo.configureDataSpaceOptions(
-        this.dataSpaceCache,
-      );
-    }
     queryBuilderState.setExecutionContext(executionContext);
     await queryBuilderState.propagateExecutionContextChange(true);
 
@@ -374,19 +545,40 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  *changeDataSpace(val: DataSpaceInfo): GeneratorFn<void> {
+  *changeDataSpace(val: ResolvedDataSpaceEntityWithOrigin): GeneratorFn<void> {
     try {
       assertTrue(
         this.reConfigureWithDataSpaceInfo(val),
         'Data product selected does not contain valid inputs, groupId, artifactId, and version',
       );
       this.initState.inProgress();
-      if (
-        this.queryBuilderState instanceof DataSpaceQueryBuilderState &&
-        this.queryBuilderState.dataSpaceRepo.dataSpaces?.length
-      ) {
-        this.setDataSpaceCache(this.queryBuilderState.dataSpaceRepo.dataSpaces);
-      }
+      this.graphManagerState.resetGraph();
+      yield flowResult(this.buildGraph());
+      this.queryBuilderState =
+        (yield this.initializeQueryBuilderState()) as DataSpaceQueryBuilderState;
+      this.queryLoaderState.initialize(this.queryBuilderState);
+      this.initState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notify(
+        `Can't to change data product: ${error.message}`,
+      );
+      this.applicationStore.logService.error(
+        LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+        error,
+      );
+      this.onInitializeFailure();
+      this.initState.fail();
+    }
+  }
+
+  *changeDataProduct(val: DepotEntityWithOrigin): GeneratorFn<void> {
+    try {
+      assertTrue(
+        this.reConfigureWithDataProductInfo(val),
+        'Data product selected does not contain valid inputs, groupId, artifactId, and version',
+      );
+      this.initState.inProgress();
       this.graphManagerState.resetGraph();
       yield flowResult(this.buildGraph());
       this.queryBuilderState =
@@ -411,7 +603,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     // do nothing
   }
 
-  addVisitedDataSpace(queryableDataSpace: QueryableDataSpace): void {
+  addVisitedDataSpace(queryableDataSpace: QueryableDataProduct): void {
     try {
       LegendQueryUserDataHelper.addVisitedDatspace(
         this.applicationStore.userDataService,
