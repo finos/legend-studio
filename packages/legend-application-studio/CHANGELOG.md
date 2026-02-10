@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.92
+
+### Patch Changes
+
+- [#4855](https://github.com/finos/legend-studio/pull/4855) [`e6ee632`](https://github.com/finos/legend-studio/commit/e6ee6323bba3caf59c9edff18fa696070e71ca7e) ([@kelly-thai](https://github.com/kelly-thai)) - Update FunctionTest hashCode to include assertions
+
+- [#4859](https://github.com/finos/legend-studio/pull/4859) [`ba317df`](https://github.com/finos/legend-studio/commit/ba317dfe334ba1f5073e831fb1e4ea4e6ee0f03b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add DataProductQueryBuilderState and support querying native access points within studio. Disable fetching data products for now in Legend Query.
+
 ## 28.19.91
 
 ### Patch Changes

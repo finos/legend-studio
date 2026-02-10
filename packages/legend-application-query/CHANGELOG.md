@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.194
+
+### Patch Changes
+
+- [#4859](https://github.com/finos/legend-studio/pull/4859) [`ba317df`](https://github.com/finos/legend-studio/commit/ba317dfe334ba1f5073e831fb1e4ea4e6ee0f03b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add DataProductQueryBuilderState and support querying native access points within studio. Disable fetching data products for now in Legend Query.
+
 ## 13.7.193
 
 ## 13.7.192
