@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.65
+
+### Patch Changes
+
+- [#4856](https://github.com/finos/legend-studio/pull/4856) [`1f9a666`](https://github.com/finos/legend-studio/commit/1f9a666208a439073a9201fc220f633efd804d87) ([@travisstebbins](https://github.com/travisstebbins)) - Show Lakehouse env and owners on DataProduct search result cards and DataProduct viewer
+
 ## 0.1.64
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.1.8
+
+### Patch Changes
+
+- [#4859](https://github.com/finos/legend-studio/pull/4859) [`ba317df`](https://github.com/finos/legend-studio/commit/ba317dfe334ba1f5073e831fb1e4ea4e6ee0f03b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add DepotEntityWithOrigin for entities being fetched from metadata server
+
 ## 6.1.7
 
 ### Patch Changes
