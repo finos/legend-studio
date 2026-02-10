@@ -17,7 +17,6 @@
 import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type QueryBuilderConfig,
-  type QuerySDLC,
   type QueryBuilderWorkflowState,
   type QueryBuilderActionConfig,
   QueryBuilderState,
@@ -59,7 +58,10 @@ import {
   type DataSpaceExecutableAnalysisResult,
 } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { ResolvedDataSpaceEntityWithOrigin } from '../shared/DataSpaceInfo.js';
-import type { DepotEntityWithOrigin } from '@finos/legend-storage';
+import type {
+  DepotEntityWithOrigin,
+  QueryableSourceInfo,
+} from '@finos/legend-storage';
 import { buildDataSpaceExecutableAnalysisResultFromExecutable } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import { compareLabelFn } from '@finos/legend-art';
 
@@ -125,7 +127,7 @@ export const resolveUsableDataSpaceClasses = (
   return compatibleClasses;
 };
 
-export interface DataSpaceQuerySDLC extends QuerySDLC {
+export interface DataSpaceQuerySDLC extends QueryableSourceInfo {
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -190,7 +192,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     onRuntimeChange?: ((val: Runtime) => void) | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
     config?: QueryBuilderConfig | undefined,
-    sourceInfo?: QuerySDLC | undefined,
+    sourceInfo?: QueryableSourceInfo | undefined,
     extraOptionsConfig?: ExtraOptionsConfig<DepotEntityWithOrigin> | undefined,
   ) {
     super(applicationStore, graphManagerState, workflow, config, sourceInfo);

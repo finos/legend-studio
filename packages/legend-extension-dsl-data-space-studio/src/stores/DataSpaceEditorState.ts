@@ -51,6 +51,7 @@ import {
 } from '@finos/legend-shared';
 import { DataSpaceExecutionContextState } from './DataSpaceExecutionContextState.js';
 import { convertDataSpaceToDataProduct } from '../stores/DataSpaceToDataProductConverter.js';
+import { DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_LOGGING_CONTEXT_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
 
 export const onConvertDataSpaceToDataProduct = flow(function* (
   dataSpace: DataSpace,
@@ -85,6 +86,14 @@ export const onConvertDataSpaceToDataProduct = flow(function* (
     editorStore.tabManagerState.closeTab(dataSpaceEditorState);
     editorStore.tabManagerState.openTab(dataProductEditorState);
     yield flowResult(editorStore.explorerTreeState.build());
+    editorStore.applicationStore.telemetryService.logEvent(
+      DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_LOGGING_CONTEXT_KEY.CONVERT_DATA_SPACE_TO_DATA_PRODUCT,
+      {
+        sourceInfo: editorStore.editorMode.getSourceInfo(),
+        dataSpacePath: dataSpace.path,
+        dataProductPath: dataProduct.path,
+      },
+    );
 
     editorStore.applicationStore.notificationService.notifySuccess(
       `Successfully converted DataSpace ${dataSpace.name} to Data Product`,

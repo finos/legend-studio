@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-import type { QuerySDLC } from '@finos/legend-query-builder';
+import type { LegendSourceInfo } from '@finos/legend-storage';
 import type { ProjectDependency } from '@finos/legend-server-sdlc';
+
+export enum LegendStudioSourceType {
+  SHOWCASE = 'legend-source-studio-showcase',
+  PROJECT_WORKSPACE = 'legend-source-studio-project-workspace',
+}
 
 export abstract class EditorMode {
   /**
@@ -36,7 +41,7 @@ export abstract class EditorMode {
   /**
    * Using information about the current project to generate source information
    */
-  abstract getSourceInfo(): QuerySDLC | undefined;
+  abstract getSourceInfo(): LegendSourceInfo | undefined;
 
   get supportSdlcOperations(): boolean {
     return true;

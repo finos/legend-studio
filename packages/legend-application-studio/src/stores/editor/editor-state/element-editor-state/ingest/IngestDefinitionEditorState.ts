@@ -53,8 +53,8 @@ import {
 } from '../ElementEditorInitialConfiguration.js';
 import type { AuthContextProps } from 'react-oidc-context';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import { LineageState } from '@finos/legend-query-builder';
+import { LegendStudioTelemetryHelper } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 const createEditorInitialConfiguration = (): EditorInitialConfiguration => {
   const config = new EditorInitialConfiguration();
@@ -181,13 +181,11 @@ export class IngestDefinitionEditorState extends ElementEditorState {
         undefined,
       );
       if (response.deploymentResponse) {
-        this.editorStore.applicationStore.logService.info(
-          LogEvent.create(LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_SUCCESS_URN),
-          Object.assign({}, this.editorStore.editorMode.getSourceInfo(), {
-            ingestDefinitionUrn:
-              response.deploymentResponse.ingestDefinitionUrn,
-            ingestionPath: this.ingest.path,
-          }),
+        LegendStudioTelemetryHelper.logEvent_LakehouseDeployIngest(
+          this.editorStore.applicationStore.telemetryService,
+          this.editorStore.editorMode.getSourceInfo(),
+          response.deploymentResponse.ingestDefinitionUrn,
+          this.ingest.path,
         );
       }
       this.setValidateAndDeployResponse(response);
@@ -196,9 +194,11 @@ export class IngestDefinitionEditorState extends ElementEditorState {
         undefined,
       );
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_FAILURE),
-        error,
+      LegendStudioTelemetryHelper.logEvent_LakehouseDeployIngestFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        this.ingest.path,
+        error.message,
       );
       this.editorStore.applicationStore.notificationService.notifyError(
         `Ingest definition failed to deploy: ${error.message}`,

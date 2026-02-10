@@ -59,7 +59,6 @@ import {
   type QueryBuilderActionConfig,
   type QueryBuilderConfig,
   type QueryBuilderWorkflowState,
-  type QuerySDLC,
 } from '@finos/legend-query-builder';
 import type { LegendQueryApplicationStore } from '../../LegendQueryBaseStore.js';
 import {
@@ -74,6 +73,7 @@ import {
 import type {
   DepotEntityWithOrigin,
   ProjectGAVCoordinates,
+  QueryableSourceInfo,
 } from '@finos/legend-storage';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 
@@ -110,7 +110,7 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
     onRuntimeChange?: ((val: Runtime) => void) | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
     config?: QueryBuilderConfig | undefined,
-    sourceInfo?: QuerySDLC | undefined,
+    sourceInfo?: QueryableSourceInfo | undefined,
   ) {
     super(
       applicationStore,

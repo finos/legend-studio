@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface QueryableSourceInfo {}
 
-export enum DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY {
-  GRAMMAR_PARSER = 'dsl-dataspace.grammar.parser',
-  CONCEPT_ELEMENT_DATA_SPACE = 'dsl-dataspace.concept.element.data-space',
-  CURATED_TEMPLATE_QUERY = 'dsl-dataspace.curated-template-query',
+export type LegendSourceInfo = QueryableSourceInfo & {
+  sourceType: string;
+};
+
+export enum LegendSourceType {
+  PROJECT_GAV = 'legend-source-project-gav',
+  PROJECT_PROJECTID = 'legend-source-project-projectId',
 }
 
-export enum DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
-  DATA_SPACE_EDITOR = 'studio.editor.data-space-editor',
-}
+export type LegendGAVSourceInfo = LegendSourceInfo & {
+  type: LegendSourceType.PROJECT_GAV;
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+};
 
-export enum DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_LOGGING_CONTEXT_KEY {
-  CONVERT_DATA_SPACE_TO_DATA_PRODUCT = 'studio.editor.data-space-editor.convert-data-space-to-data-product',
-}
+export type LegendProjectIdSourceInfo = LegendSourceInfo & {
+  type: LegendSourceType.PROJECT_PROJECTID;
+  projectId: string;
+};

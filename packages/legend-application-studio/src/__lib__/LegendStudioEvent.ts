@@ -85,4 +85,7 @@ export enum LEGEND_STUDIO_APP_EVENT {
   // data product
   DATA_PRODUCT_DEPLOY_SUCCESS = 'editor.data-product.deployment.success',
   DATA_PRODUCT_DEPLOY_FAILURE = 'editor.data-product.deployment.failure',
+
+  // push to dev
+  METADATA_PUSH_TO_METADATA = 'editor.metadata.push-to-metadata',
 }
