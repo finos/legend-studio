@@ -352,7 +352,7 @@ export class DataProductAPGState {
           this.setConsumerGrantNotFound(true);
         } else {
           this.applicationStore.notificationService.notifyError(
-            `Error polling consumer grants: ${error.message}`,
+            `Error fetching consumer grants: ${error.message}`,
           );
         }
         this.pollingConsumerGrantState.complete();
@@ -545,43 +545,11 @@ export class DataProductAPGState {
       ).status;
       this.setUserAccessStatus(userStatus);
       if (userStatus === V1_EnrichedUserApprovalStatus.APPROVED) {
-        try {
-          const rawGrantResponse =
-            (yield lakehouseContractServerClient.getConsumerGrantsByContractId(
-              contractId,
-              token,
-            )) as PlainObject<LakehouseConsumerGrantResponse>;
-          const grantResponse =
-            LakehouseConsumerGrantResponse.serialization.fromJson(
-              rawGrantResponse as Record<PropertyKey, unknown>,
-            );
-          this.setConsumerGrant(grantResponse);
-          const currentUser =
-            this.applicationStore.identityService.currentUser.toLowerCase();
-          const userFound =
-            grantResponse.users?.some(
-              (user) => user.username.toLowerCase() === currentUser,
-            ) ?? false;
-          if (!userFound) {
-            this.pollConsumerGrant(
-              contractId,
-              lakehouseContractServerClient,
-              token,
-            );
-          }
-        } catch (error) {
-          assertErrorThrown(error);
-          if (
-            error instanceof NetworkClientError &&
-            error.response.status === HttpStatus.NOT_FOUND
-          ) {
-            this.setConsumerGrantNotFound(true);
-          } else {
-            this.applicationStore.notificationService.notifyError(
-              `Error fetching consumer grants: ${(error as Error).message}`,
-            );
-          }
-        }
+        this.pollConsumerGrant(
+          contractId,
+          lakehouseContractServerClient,
+          token,
+        );
       }
     } catch (error) {
       assertErrorThrown(error);
