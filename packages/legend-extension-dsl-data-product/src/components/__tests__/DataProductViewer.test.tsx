@@ -22,7 +22,11 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { type PlainObject } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  NetworkClientError,
+  HttpStatus,
+} from '@finos/legend-shared';
 import {
   type V1_DataContract,
   type V1_DataProduct,
@@ -1830,6 +1834,91 @@ describe('DataProductViewer', () => {
       });
 
       // Should show ENTITLED because case-insensitive match finds the user
+      await screen.findByRole('button', { name: 'ENTITLED' });
+    });
+
+    test('displays ENTITLED button when getConsumerGrantsByContractId returns 404', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      // Override to return a 404 error for consumer grants
+      const notFoundError = new NetworkClientError(
+        { status: HttpStatus.NOT_FOUND, statusText: 'Not Found' } as Response,
+        undefined,
+      );
+      createSpy(
+        dataProductDataAccessState!.lakehouseContractServerClient,
+        'getConsumerGrantsByContractId',
+      ).mockRejectedValue(notFoundError);
+
+      // Re-fetch to trigger the new mock
+      await act(async () => {
+        await dataProductDataAccessState!.fetchContracts(undefined);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      // Should show ENTITLED (not ENTITLEMENTS SYNCING) because 404 means grants endpoint is not available
       await screen.findByRole('button', { name: 'ENTITLED' });
     });
 
