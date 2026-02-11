@@ -21,6 +21,7 @@ import {
 } from '@finos/legend-graph';
 import type { TelemetryService } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioEvent.js';
+import type { LegendSourceInfo } from '@finos/legend-storage';
 
 type Compilation_TelemetryData = GraphManagerOperationReport & {
   dependenciesCount: number;
@@ -37,6 +38,12 @@ export type ShowcaseMetadata_TelemetryData = {
 
 export type ShowcaseProject_TelemetryData = {
   showcasePath: string;
+};
+
+export type IngestDefinitionDeployment_TelemetryData = {
+  sourceInfo: LegendSourceInfo | undefined;
+  ingestUrn: string;
+  ingestDefinitionPath: string;
 };
 
 export class LegendStudioTelemetryHelper {
@@ -110,5 +117,101 @@ export class LegendStudioTelemetryHelper {
     data: ShowcaseProject_TelemetryData,
   ): void {
     service.logEvent(LEGEND_STUDIO_APP_EVENT.SHOWCASE_VIEWER_LAUNCH, data);
+  }
+
+  // Lakehouse
+  static logEvent_LakehouseDeployIngest(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    ingestUrn: string,
+    ingestDefinitionPath: string,
+  ): void {
+    const eventData: IngestDefinitionDeployment_TelemetryData = {
+      sourceInfo,
+      ingestUrn,
+      ingestDefinitionPath,
+    };
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_SUCCESS_URN,
+      eventData,
+    );
+  }
+
+  static logEvent_LakehouseDeployIngestFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    ingestDefinitionPath: string,
+    errorMessage: string,
+  ): void {
+    const eventData = {
+      sourceInfo,
+      ingestDefinitionPath,
+      errorMessage,
+    };
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_FAILURE,
+      eventData,
+    );
+  }
+
+  static logEvent_LakehouseDeployDataProduct(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    dataProductPath: string,
+  ): void {
+    const eventData = {
+      sourceInfo,
+      dataProductPath,
+    };
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_DEPLOY_SUCCESS,
+      eventData,
+    );
+  }
+
+  static logEvent_LakehouseDeployDataProductFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    dataProductPath: string,
+    errorMessage: string,
+  ): void {
+    const eventData = {
+      sourceInfo,
+      dataProductPath,
+      errorMessage,
+    };
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_DEPLOY_FAILURE,
+      eventData,
+    );
+  }
+
+  // Push to Dev Metadata
+  static logEvent_DevMetadataPushLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    groupId: string,
+    artifactId: string,
+    versionId: string | undefined,
+    status: string,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.METADATA_PUSH_TO_METADATA, {
+      sourceInfo,
+      groupId,
+      artifactId,
+      versionId,
+      status,
+    });
+  }
+
+  static logEvent_DevMetadataPushFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    errorMessage: string,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.METADATA_PUSH_TO_METADATA, {
+      sourceInfo,
+      errorMessage,
+    });
   }
 }

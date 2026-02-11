@@ -116,10 +116,10 @@ import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuil
 import { createDataCubeViewerStateFromQueryBuilder } from './data-cube/QueryBuilderDataCubeHelper.js';
 import type { QueryBuilderDataCubeViewerState } from './data-cube/QueryBuilderDataCubeViewerState.js';
 import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
-import type { DepotEntityWithOrigin } from '@finos/legend-storage';
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface QueryableSourceInfo {}
+import type {
+  DepotEntityWithOrigin,
+  QueryableSourceInfo,
+} from '@finos/legend-storage';
 
 export type QueryableClassMappingRuntimeInfo = QueryableSourceInfo & {
   class: string;
@@ -329,7 +329,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
     this.changeHistoryState = new QueryBuilderChangeHistoryState(this);
     this.config = config;
-
     this.workflowState = workflowState;
     this.sourceInfo = sourceInfo;
     this.isQueryChatOpened =

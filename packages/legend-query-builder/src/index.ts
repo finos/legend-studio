@@ -34,7 +34,6 @@ export { QueryDataCubeViewer } from './components/data-cube/QueryBuilderDataCube
 export { QueryBuilder } from './components/QueryBuilder.js';
 export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderComponentElement.js';
 export {
-  type QueryableSourceInfo as QuerySDLC,
   type QueryBuilderExtraFunctionAnalysisInfo,
   type EntityWithOriginOption,
   QueryBuilderState,

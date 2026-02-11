@@ -15,13 +15,14 @@
  */
 
 import type { ProjectDependency } from '@finos/legend-server-sdlc';
-import { EditorMode } from '../editor/EditorMode.js';
+import { EditorMode, LegendStudioSourceType } from '../editor/EditorMode.js';
 import type { ShowcaseViewerStore } from './ShowcaseViewerStore.js';
 import { generateShowcasePath } from '../../__lib__/LegendStudioNavigation.js';
-import type { QuerySDLC } from '@finos/legend-query-builder';
 import { returnUndefOnError } from '@finos/legend-shared';
+import type { LegendSourceInfo } from '@finos/legend-storage';
 
-export interface ShowcaseViewerQuerySDLC extends QuerySDLC {
+export interface ShowcaseViewerQuerySDLC extends LegendSourceInfo {
+  sourceType: LegendStudioSourceType.SHOWCASE;
   showcasePath: string;
 }
 
@@ -59,6 +60,7 @@ export class ShowcaseViewerEditorMode extends EditorMode {
     return returnUndefOnError(
       () =>
         ({
+          sourceType: LegendStudioSourceType.SHOWCASE,
           showcasePath: this.showcaseViewerStore.showcase.path,
         }) as ShowcaseViewerQuerySDLC,
     );

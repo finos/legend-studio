@@ -20,7 +20,6 @@ import {
   type QueryBuilderConfig,
   type QueryBuilderWorkflowState,
   type ExtraOptionsConfig,
-  type QuerySDLC,
 } from '@finos/legend-query-builder';
 import type { LegendQueryApplicationStore } from '../../LegendQueryBaseStore.js';
 import {
@@ -30,6 +29,7 @@ import {
 import type {
   DepotEntityWithOrigin,
   ProjectGAVCoordinates,
+  QueryableSourceInfo,
 } from '@finos/legend-storage';
 import {
   LegendSDLC,
@@ -69,7 +69,7 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
       | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
     config?: QueryBuilderConfig | undefined,
-    sourceInfo?: QuerySDLC | undefined,
+    sourceInfo?: QueryableSourceInfo | undefined,
   ) {
     super(
       applicationStore,

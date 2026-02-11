@@ -25,10 +25,11 @@ import {
   generateEditorRoute,
   generateViewProjectByGAVRoute,
 } from '../../__lib__/LegendStudioNavigation.js';
-import { EditorMode } from './EditorMode.js';
-import type { QuerySDLC } from '@finos/legend-query-builder';
+import { EditorMode, type LegendStudioSourceType } from './EditorMode.js';
+import type { LegendSourceInfo } from '@finos/legend-storage';
 
-export interface WorkspaceProjectQuerySDLC extends QuerySDLC {
+export interface WorkspaceProjectQuerySDLC extends LegendSourceInfo {
+  sourceType: LegendStudioSourceType.PROJECT_WORKSPACE;
   projectId: string;
   workspaceId: string;
   WorkspaceType: string;
@@ -75,7 +76,7 @@ export class StandardEditorMode extends EditorMode {
     );
   }
 
-  getSourceInfo(): QuerySDLC | undefined {
+  getSourceInfo(): LegendSourceInfo | undefined {
     if (this.isInitialized) {
       const workspace = guaranteeNonNullable(
         this.editorStore.sdlcState.currentWorkspace,

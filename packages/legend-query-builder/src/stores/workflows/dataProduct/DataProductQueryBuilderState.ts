@@ -25,10 +25,7 @@ import {
   type NativeModelAccess,
   resolveUsableDataProductClasses,
 } from '@finos/legend-graph';
-import {
-  QueryBuilderState,
-  type QueryableSourceInfo,
-} from '../../QueryBuilderState.js';
+import { QueryBuilderState } from '../../QueryBuilderState.js';
 import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import type {
   QueryBuilderActionConfig,
@@ -42,7 +39,10 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
-import { DepotEntityWithOrigin } from '@finos/legend-storage';
+import {
+  DepotEntityWithOrigin,
+  type QueryableSourceInfo,
+} from '@finos/legend-storage';
 import { compareLabelFn } from '@finos/legend-art';
 
 export type DataProductOption = {

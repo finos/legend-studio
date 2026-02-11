@@ -28,17 +28,12 @@ import {
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { QuerySDLC } from '@finos/legend-query-builder';
-
-export interface ProjectQuerySDLC extends QuerySDLC {
-  projectId: string;
-}
-
-export interface ProjectGAVQuerySDLC extends QuerySDLC {
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-}
+import {
+  LegendSourceType,
+  type LegendGAVSourceInfo,
+  type LegendProjectIdSourceInfo,
+  type LegendSourceInfo,
+} from '@finos/legend-storage';
 
 export class ProjectViewerEditorMode extends EditorMode {
   viewerStore: ProjectViewerStore;
@@ -105,18 +100,20 @@ export class ProjectViewerEditorMode extends EditorMode {
     return !this.viewerStore.projectGAVCoordinates;
   }
 
-  getSourceInfo(): QuerySDLC | undefined {
+  getSourceInfo(): LegendSourceInfo | undefined {
     if (this.viewerStore.editorStore.sdlcState.currentProject) {
       return {
+        sourceType: LegendSourceType.PROJECT_PROJECTID,
         projectId:
           this.viewerStore.editorStore.sdlcState.currentProject.projectId,
-      } as ProjectQuerySDLC;
+      } as LegendProjectIdSourceInfo;
     } else if (this.viewerStore.projectGAVCoordinates) {
       return {
+        sourceType: LegendSourceType.PROJECT_GAV,
         groupId: this.viewerStore.projectGAVCoordinates.groupId,
         artifactId: this.viewerStore.projectGAVCoordinates.artifactId,
         versionId: this.viewerStore.projectGAVCoordinates.versionId,
-      } as ProjectGAVQuerySDLC;
+      } as LegendGAVSourceInfo;
     } else {
       return undefined;
     }

@@ -48,7 +48,10 @@ import {
   DataSpace,
   observe_DataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
+import {
+  DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY,
+  DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY,
+} from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from '../__lib__/DSL_DataSpace_LegendStudioCodeSnippet.js';
 import {
@@ -135,6 +138,12 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         key: 'data-space-preview',
         renderer: (editorStore) => <DataSpacePreviewDialog />,
       },
+    ];
+  }
+
+  override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
+    return [
+      DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATA_SPACE_EDITOR,
     ];
   }
 
