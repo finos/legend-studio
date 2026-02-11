@@ -216,14 +216,31 @@ test(
     fireEvent.doubleClick(
       getByTitle(queryActionsPanel, 'Double-click to rename query'),
     );
+
+    const renameQueryModal = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
     const cancelRenamedQueryTitle = getByDisplayValue(
-      queryActionsPanel,
+      renameQueryModal,
       TEST_QUERY_NAME,
     );
+
+    fireEvent.change(cancelRenamedQueryTitle, {
+      target: { value: '' },
+    });
+    expect(
+      getByText(renameQueryModal, 'Update Query').hasAttribute('disabled'),
+    ).toBe(true);
+
     fireEvent.change(cancelRenamedQueryTitle, {
       target: { value: 'MyTestQueryRenamed' },
     });
-    fireEvent.keyDown(cancelRenamedQueryTitle, { code: 'Escape' });
+    expect(
+      getByText(renameQueryModal, 'Update Query').hasAttribute('disabled'),
+    ).toBe(false);
+
+    const cancelButton = getByText(renameQueryModal, 'Cancel');
+    fireEvent.click(cancelButton);
     expect(
       await waitFor(() => getByText(queryActionsPanel, TEST_QUERY_NAME)),
     ).not.toBeNull();

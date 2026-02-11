@@ -33,7 +33,6 @@ import {
   ModalTitle,
   ModalFooterButton,
   ExclamationTriangleIcon,
-  PanelListItem,
   clsx,
   ModalHeaderActions,
   TimesIcon,
@@ -297,35 +296,27 @@ const SaveQueryDialog = observer(
   },
 );
 
-export const QueryEditorExistingQueryHeader = observer(
-  (props: {
-    queryBuilderState: QueryBuilderState;
-    existingEditorStore: ExistingQueryEditorStore;
-  }) => {
+const RenameQueryDialog = observer(
+  (props: { existingEditorStore: ExistingQueryEditorStore }) => {
     const { existingEditorStore } = props;
     const updateState = existingEditorStore.updateState;
-    const isRenaming = updateState.queryRenamer;
     const applicationStore = existingEditorStore.applicationStore;
-    const renameRef = useRef<HTMLInputElement>(null);
+    const handleClose = (): void =>
+      updateState.setIsQueryRenameDialogOpen(false);
+
     const [queryRenameName, setQueryRenameName] = useState<string>(
       existingEditorStore.lightQuery.name,
     );
+    const [queryDescription, setQueryDescription] = useState<string>(
+      existingEditorStore.lightQuery.description ?? '',
+    );
 
-    const enableRename = (): void => {
-      setQueryRenameName(existingEditorStore.lightQuery.name);
-      existingEditorStore.updateState.setQueryRenamer(true);
-    };
-    const renameQuery = (val: string): void => {
-      if (queryRenameName !== existingEditorStore.lightQuery.name) {
-        flowResult(updateState.updateQuery(val, undefined)).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }
-    };
+    const nameInputRef = useRef<HTMLInputElement>(null);
 
-    const changeQueryName: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => setQueryRenameName(event.target.value);
+    const isEmptyName = !queryRenameName;
+    const isExistingQueryName =
+      existingEditorStore.existingQueryName &&
+      queryRenameName !== existingEditorStore.lightQuery.name;
 
     const debouncedLoadQueries = useMemo(
       () =>
@@ -337,106 +328,157 @@ export const QueryEditorExistingQueryHeader = observer(
       [applicationStore.alertUnhandledError, existingEditorStore],
     );
 
-    useEffect(() => {
-      if (isRenaming) {
-        existingEditorStore.setExistingQueryName(undefined);
+    const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      setQueryRenameName(event.target.value);
+    };
+
+    const changeDescription: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setQueryDescription(event.target.value);
+    };
+
+    const renameQuery = (): void => {
+      const nameChanged =
+        queryRenameName !== existingEditorStore.lightQuery.name;
+      const descriptionChanged =
+        queryDescription !== (existingEditorStore.lightQuery.description ?? '');
+      if (nameChanged || descriptionChanged) {
+        flowResult(
+          updateState.updateQuery(
+            nameChanged ? queryRenameName : undefined,
+            undefined,
+            descriptionChanged ? queryDescription : undefined,
+          ),
+        ).catch(applicationStore.alertUnhandledError);
       }
+      handleClose();
+    };
+
+    useEffect(() => {
+      nameInputRef.current?.focus();
+    }, []);
+
+    useEffect(() => {
+      existingEditorStore.setExistingQueryName(undefined);
       const searchText = queryRenameName;
       debouncedLoadQueries.cancel();
       debouncedLoadQueries(searchText);
-    }, [
-      queryRenameName,
-      debouncedLoadQueries,
-      isRenaming,
-      existingEditorStore,
-    ]);
-
-    const isExistingQueryName =
-      existingEditorStore.existingQueryName &&
-      queryRenameName !== existingEditorStore.lightQuery.name;
+    }, [queryRenameName, debouncedLoadQueries, existingEditorStore]);
 
     return (
-      <>
-        {isRenaming ? (
-          <div className="query-editor__header__content__main query-editor__header__content__title">
-            <PanelListItem>
+      <Dialog
+        open={updateState.isQueryRenameDialogOpen}
+        onClose={handleClose}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="query-export"
+        >
+          <ModalHeader title="Rename Query" />
+          <ModalBody>
+            <PanelLoadingIndicator
+              isLoading={updateState.updateQueryState.isInProgress}
+            />
+            <div className="input-section">
+              <div className="input-label">Update Query Name</div>
               <div className="input--with-validation">
                 <input
-                  ref={renameRef}
-                  className={clsx(
-                    'input input--dark query-editor__rename__input',
-                    {
-                      'input--caution': isExistingQueryName,
-                    },
-                  )}
-                  onChange={changeQueryName}
-                  onKeyDown={(event) => {
-                    if (
-                      event.code === 'Enter' ||
-                      event.code === 'NumpadEnter'
-                    ) {
-                      event.stopPropagation();
-                      updateState.setQueryRenamer(false);
-                      existingEditorStore.setExistingQueryName(undefined);
-                      renameQuery(queryRenameName);
-                    } else if (event.code === 'Escape') {
-                      event.stopPropagation();
-                      updateState.setQueryRenamer(false);
-                      existingEditorStore.setExistingQueryName(undefined);
-                    }
-                  }}
+                  ref={nameInputRef}
+                  className={clsx('input input--dark', {
+                    'input--caution': isExistingQueryName,
+                  })}
+                  spellCheck={false}
                   value={queryRenameName}
+                  onChange={changeName}
+                  title="Query Name"
+                  placeholder='(e.g. "MyQuery")'
                 />
                 {isExistingQueryName && (
                   <div
                     className="input--with-validation__caution"
-                    title={`Query with name '${queryRenameName}' already exists`}
+                    title={`Query named '${queryRenameName}' already exists`}
                   >
                     <ExclamationTriangleIcon className="input--with-validation__caution__indicator" />
                   </div>
                 )}
               </div>
-              <div className="query-editor__header__content__title__actions">
-                <button
-                  className="query-editor__header__content__title__actions__action"
-                  tabIndex={-1}
-                  onClick={() => {
-                    updateState.setQueryRenamer(false);
-                    existingEditorStore.setExistingQueryName(undefined);
-                    renameQuery(queryRenameName);
-                  }}
-                >
-                  <CheckIcon />
-                </button>
-                <button
-                  className="query-editor__header__content__title__actions__action"
-                  tabIndex={-1}
-                  onClick={() => {
-                    updateState.setQueryRenamer(false);
-                    existingEditorStore.setExistingQueryName(undefined);
-                  }}
-                >
-                  <TimesIcon />
-                </button>
-              </div>
-            </PanelListItem>
-          </div>
-        ) : (
-          <div
-            onDoubleClick={enableRename}
-            className="query-editor__header__content__main query-editor__header__content__title"
-            title="Double-click to rename query"
-          >
-            <div className="query-editor__header__content__title__text">
-              {existingEditorStore.lightQuery.name}
             </div>
-            <button
-              className="query-editor__header__conten__title__btn panel__content__form__section__list__item__edit-btn"
-              onClick={enableRename}
-            >
-              <PencilIcon />
-            </button>
+            <div className="input-section" style={{ marginTop: '1rem' }}>
+              <div className="input-label">Update Query Description</div>
+              <div className="input--with-validation">
+                <input
+                  className="input input--dark"
+                  spellCheck={true}
+                  value={queryDescription}
+                  onChange={changeDescription}
+                  title="Query Description"
+                  placeholder="Add details about what this query retrieves"
+                />
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              text="Update Query"
+              title="Update query name and description"
+              disabled={
+                existingEditorStore.isPerformingBlockingAction ||
+                Boolean(isExistingQueryName) ||
+                isEmptyName
+              }
+              onClick={renameQuery}
+            />
+            <ModalFooterButton
+              text="Cancel"
+              onClick={handleClose}
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
+export const QueryEditorExistingQueryHeader = observer(
+  (props: {
+    queryBuilderState: QueryBuilderState;
+    existingEditorStore: ExistingQueryEditorStore;
+  }) => {
+    const { existingEditorStore } = props;
+    const updateState = existingEditorStore.updateState;
+
+    const enableRename = (): void => {
+      existingEditorStore.updateState.setIsQueryRenameDialogOpen(true);
+    };
+
+    return (
+      <>
+        <div
+          onDoubleClick={enableRename}
+          className="query-editor__header__content__main query-editor__header__content__title"
+          title="Double-click to rename query"
+        >
+          <div className="query-editor__header__content__title__text">
+            {existingEditorStore.lightQuery.name}
           </div>
+          <button
+            className="query-editor__header__conten__title__btn panel__content__form__section__list__item__edit-btn"
+            onClick={enableRename}
+          >
+            <PencilIcon />
+          </button>
+        </div>
+        {updateState.isQueryRenameDialogOpen && (
+          <RenameQueryDialog existingEditorStore={existingEditorStore} />
         )}
         {existingEditorStore.updateState.saveModal && (
           <SaveQueryDialog existingEditorStore={existingEditorStore} />
