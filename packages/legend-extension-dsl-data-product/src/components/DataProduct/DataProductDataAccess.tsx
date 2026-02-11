@@ -979,6 +979,7 @@ export const DataProductAccessPointGroupViewer = observer(
         case AccessPointGroupAccess.APPROVED:
           if (apgState.isEntitlementsSyncing) {
             buttonLabel = 'ENTITLEMENTS SYNCING';
+            onClick = handleContractsClick;
             buttonColor = 'success';
           } else {
             buttonLabel = 'ENTITLED';
