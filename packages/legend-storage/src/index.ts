@@ -21,3 +21,4 @@ export * from './DepotEntityWithOrigin.js';
 export * from './DependencyUtils.js';
 export * from './DepotGeneration.js';
 export * from './StoredFileGeneration.js';
+export * from './LegendSourceInfo.js';

@@ -27,6 +27,7 @@ import {
   type DeployProjectResponse,
   MetadataRequestOptions,
 } from '@finos/legend-graph';
+import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export class DevMetadataState {
   readonly editorStore: EditorStore;
@@ -88,11 +89,24 @@ export class DevMetadataState {
           this.editorStore.graphManagerState.graph,
         )) as DeployProjectResponse;
       this.result = result;
+      LegendStudioTelemetryHelper.logEvent_DevMetadataPushLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        currentProjectConfiguration.groupId,
+        currentProjectConfiguration.artifactId,
+        undefined,
+        result.finalStatus,
+      );
       this.pushState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(
         `Error pushing to dev metadata: ${error.message}`,
+      );
+      LegendStudioTelemetryHelper.logEvent_DevMetadataPushFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        error.message,
       );
       this.pushState.fail();
     }

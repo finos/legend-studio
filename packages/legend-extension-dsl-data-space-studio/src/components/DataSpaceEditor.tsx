@@ -31,6 +31,8 @@ import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor/DataSpaceGenera
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
 import { flowResult } from 'mobx';
 import { isStubbed_PackageableElement } from '@finos/legend-graph';
+import { DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -69,6 +71,10 @@ export const DataSpaceEditor = observer(() => {
       onConvertDataSpaceToDataProduct(dataSpace, editorStore, dataSpaceState),
     ).catch(editorStore.applicationStore.alertUnhandledError);
   };
+
+  useApplicationNavigationContext(
+    DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATA_SPACE_EDITOR,
+  );
 
   return (
     <Panel className="dataSpace-editor">
