@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.195
+
+### Patch Changes
+
+- [#4861](https://github.com/finos/legend-studio/pull/4861) [`69ad67b`](https://github.com/finos/legend-studio/commit/69ad67b922fb88504afa105767f3acc2f850cd59) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - Allow users to edit query description
+
 ## 13.7.194
 
 ### Patch Changes
