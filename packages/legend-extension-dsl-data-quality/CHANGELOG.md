@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.13
+
 ## 2.1.12
 
 ### Patch Changes
