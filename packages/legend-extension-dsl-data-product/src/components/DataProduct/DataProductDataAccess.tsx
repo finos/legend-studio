@@ -998,9 +998,15 @@ export const DataProductAccessPointGroupViewer = observer(
       if (buttonLabel === undefined) {
         return null;
       }
-      const tooltipText = dataAccessState?.dataAccessPlugins
-        .flatMap((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
-        .filter(isNonEmptyString)[0];
+      const tooltipText =
+        val === AccessPointGroupAccess.APPROVED &&
+        apgState.isEntitlementsSyncing
+          ? 'Your contract has been approved but your entitlements are still syncing. The status will refresh automatically once your entitlements have synced.'
+          : dataAccessState?.dataAccessPlugins
+              .flatMap((plugin) =>
+                plugin.getExtraAccessPointGroupAccessInfo?.(val),
+              )
+              .filter(isNonEmptyString)[0];
 
       return (
         <>
@@ -1024,13 +1030,13 @@ export const DataProductAccessPointGroupViewer = observer(
               }
               sx={{ cursor: onClick === undefined ? 'default' : 'pointer' }}
             >
-              {buttonLabel}
               {apgState.isEntitlementsSyncing && (
                 <CircularProgress
                   size={16}
                   sx={{ marginLeft: 1, color: 'inherit' }}
                 />
               )}
+              {buttonLabel}
               {tooltipText !== undefined && (
                 <Tooltip
                   className="data-product__viewer__access-group__item__access__tooltip__icon"
