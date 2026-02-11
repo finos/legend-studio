@@ -26,6 +26,7 @@ import {
   type PlainObject,
   NetworkClientError,
   HttpStatus,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
   type V1_DataContract,
@@ -1504,7 +1505,8 @@ describe('DataProductViewer', () => {
 
       // Override the default consumer grants mock to return empty users
       createSpy(
-        dataProductDataAccessState!.lakehouseContractServerClient,
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
         'getConsumerGrantsByContractId',
       ).mockResolvedValue({
         contractId: 'test-approved-contract-id',
@@ -1514,7 +1516,9 @@ describe('DataProductViewer', () => {
 
       // Re-fetch to trigger the new mock
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(() => undefined);
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
@@ -1593,7 +1597,8 @@ describe('DataProductViewer', () => {
 
       // Override to return response with no users array
       createSpy(
-        dataProductDataAccessState!.lakehouseContractServerClient,
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
         'getConsumerGrantsByContractId',
       ).mockResolvedValue({
         contractId: 'test-approved-contract-id',
@@ -1602,7 +1607,9 @@ describe('DataProductViewer', () => {
 
       // Re-fetch to trigger the new mock
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(() => undefined);
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
@@ -1681,7 +1688,8 @@ describe('DataProductViewer', () => {
 
       // First call return empty users (syncing). Second call returns the user.
       createSpy(
-        dataProductDataAccessState!.lakehouseContractServerClient,
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
         'getConsumerGrantsByContractId',
       )
         .mockResolvedValueOnce({
@@ -1703,7 +1711,9 @@ describe('DataProductViewer', () => {
 
       // Re-fetch to trigger the new mock (with real timers)
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(() => undefined);
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
@@ -1722,7 +1732,8 @@ describe('DataProductViewer', () => {
           dataProductViewerState.apgStates.map((s) =>
             s.pollConsumerGrant(
               'test-approved-contract-id',
-              dataProductDataAccessState!.lakehouseContractServerClient,
+              guaranteeNonNullable(dataProductDataAccessState)
+                .lakehouseContractServerClient,
               () => undefined,
             ),
           ),
@@ -1807,7 +1818,8 @@ describe('DataProductViewer', () => {
 
       // Override to return user with different casing - should match case-insensitively
       createSpy(
-        dataProductDataAccessState!.lakehouseContractServerClient,
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
         'getConsumerGrantsByContractId',
       ).mockResolvedValue({
         contractId: 'test-approved-contract-id',
@@ -1823,7 +1835,9 @@ describe('DataProductViewer', () => {
 
       // Re-fetch to trigger the new mock
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(() => undefined);
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
@@ -1902,13 +1916,16 @@ describe('DataProductViewer', () => {
         undefined,
       );
       createSpy(
-        dataProductDataAccessState!.lakehouseContractServerClient,
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
         'getConsumerGrantsByContractId',
       ).mockRejectedValue(notFoundError);
 
       // Re-fetch to trigger the new mock
       await act(async () => {
-        await dataProductDataAccessState!.fetchContracts(() => undefined);
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
