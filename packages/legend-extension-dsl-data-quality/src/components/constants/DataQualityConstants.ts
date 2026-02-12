@@ -25,3 +25,66 @@ export enum DATA_QUALITY_VALIDATION_TEST_ID {
 
 export const USER_ATTESTATION_MESSAGE =
   'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
+
+export enum DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS {
+  ROWS_WITH_EMPTY_COLUMN = 'rowsWithEmptyColumn',
+  ROWS_WITH_NON_EMPTY_COLUMN = 'rowsWithNonEmptyColumn',
+  ROWS_WITH_COLUMN_LONGER_THAN = 'rowsWithColumnLongerThan',
+  ROWS_WITH_NEGATIVE_VALUE = 'rowsWithNegativeValue',
+  ROWS_WITH_COLUMN_DIFFERS_FROM_PATTERN = 'rowsWithColumnDiffersFromPattern',
+  ROWS_WITH_VALUE_OUTSIDE_RANGE = 'rowsWithValueOutsideRange',
+}
+
+export enum DATA_QUALITY_TERMINAL_ASSERTION_HELPER_FUNCTIONS {
+  ASSERT_RELATION_EMPTY = 'assertRelationEmpty',
+}
+
+export enum DATA_QUALITY_VALIDATION_PURE_FUNCTIONS {
+  CONTAINS = 'contains',
+  STARTS_WITH = 'startsWith',
+  ENDS_WITH = 'endsWith',
+  MATCHES = 'matches',
+  EQUAL = 'equal',
+  GREATER_THAN = 'greaterThan',
+  GREATER_THAN_EQUAL = 'greaterThanEqual',
+  LESS_THAN = 'lessThan',
+  LESS_THAN_EQUAL = 'lessThanEqual',
+  IN = 'in',
+  IS_EMPTY = 'isEmpty',
+  IS_NOT_EMPTY = 'isNotEmpty',
+  FILTER = 'filter',
+}
+
+export enum DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS {
+  OR = 'or',
+  AND = 'and',
+}
+
+export enum PARAMETER_COMPONENTS {
+  LIST = 'list',
+  NUMBER = 'number',
+  STRING = 'string',
+  BOOLEAN = 'boolean',
+  DATE = 'date',
+  COLUMN = 'column',
+  COLUMN_LIST = 'column-list',
+  TYPE_SELECTOR = 'type-selector',
+  NONE = 'none',
+}
+
+export enum SUPPORTED_TYPES {
+  STRING = 'string',
+  BOOLEAN = 'boolean',
+  INTEGER = 'integer',
+  FLOAT = 'float',
+  DECIMAL = 'decimal',
+  COL_SPEC = 'colSpec',
+  COL_SPEC_ARRAY = 'colSpecArray',
+  CLASS_INSTANCE = 'classInstance',
+  FUNCTION = 'func',
+  VAR = 'var',
+  LAMBDA = 'lambda',
+  COLLECTION = 'collection',
+  PROPERTY = 'property',
+  NUMBER = 'number',
+}

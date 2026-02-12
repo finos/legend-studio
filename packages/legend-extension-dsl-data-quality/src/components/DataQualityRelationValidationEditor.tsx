@@ -17,13 +17,14 @@
 import { useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  clsx,
   FilledWindowMaximizeIcon,
   PanelDnDEntry,
   PanelEntryDragHandle,
   RocketIcon,
+  Switch,
   TimesIcon,
   useDragPreviewLayer,
-  clsx,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { PrimitiveType } from '@finos/legend-graph';
@@ -45,6 +46,7 @@ import {
 import { DataQualityValidationDetailPanel } from './DataQualityValidationDetailPanel.js';
 import { useDrag, useDrop } from 'react-dnd';
 import { DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/studio/DSL_DataQuality_LegendStudioApplicationNavigationContext.js';
+import { DataQualityRelationLambdaGUIValidationEditor } from './DataQualityRelationLambdaGUIValidationEditor.js';
 
 export type RelationValidationDragSource = {
   validation: DataQualityRelationValidation;
@@ -75,8 +77,10 @@ export const DataQualityRelationValidationEditor = observer(
     const validationState =
       relationValidationConfigurationState.getValidationState(validation);
 
-    const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       dataQualityRelationValidation_setName(validation, event.target.value);
+      validationState.isCurrentNameSameAsComputed = !event.target.value.trim();
+    };
 
     const changeDescription: React.ChangeEventHandler<HTMLInputElement> = (
       event,
@@ -193,6 +197,23 @@ export const DataQualityRelationValidationEditor = observer(
               onChange={changeName}
               placeholder="Validation name"
             />
+            {validationState.canEditInGUI && (
+              <div className="data-quality-uml-element-editor__editor-switch-container">
+                <Switch
+                  checked={validationState.isTextEditor}
+                  size="small"
+                  id={`code-editor-switch-${validation._UUID}`}
+                  onChange={() => validationState.toggleEditorMode()}
+                  disabled={validationState.disableEditorToggle}
+                />
+                <label
+                  className="data-quality-uml-element-editor__lambda__label"
+                  htmlFor={`code-editor-switch-${validation._UUID}`}
+                >
+                  {'</> Code'}
+                </label>
+              </div>
+            )}
             {!isReadOnly && (
               <button
                 className="uml-element-editor__remove-btn"
@@ -226,19 +247,41 @@ export const DataQualityRelationValidationEditor = observer(
               Assertion
             </div>
             <div className="data-quality-uml-element-editor__lambda__value">
-              <InlineLambdaEditor
-                disabled={
-                  relationValidationConfigurationState.isConvertingValidationLambdaObjects ||
-                  isReadOnly
-                }
-                lambdaEditorState={validationState}
-                forceBackdrop={hasParserError}
-                expectedType={PrimitiveType.BOOLEAN}
-                onEditorFocus={() => onLambdaEditorFocus(true)}
-                disablePopUp={true}
-                className="relation-validation__lambda"
-              />
+              {validationState.isTextEditor && (
+                <InlineLambdaEditor
+                  disabled={
+                    relationValidationConfigurationState.isConvertingValidationLambdaObjects ||
+                    isReadOnly
+                  }
+                  lambdaEditorState={validationState}
+                  forceBackdrop={hasParserError}
+                  expectedType={PrimitiveType.BOOLEAN}
+                  onEditorFocus={() => onLambdaEditorFocus(true)}
+                  disablePopUp={true}
+                  className="relation-validation__lambda"
+                />
+              )}
+
+              {validationState.isGUIEditor && (
+                <DataQualityRelationLambdaGUIValidationEditor
+                  validationState={validationState}
+                  disabled={isReadOnly}
+                />
+              )}
             </div>
+          </div>
+          <div className="relation-validation-editor__content">
+            <div className="data-quality-uml-element-editor__lambda__label">
+              Description
+            </div>
+            <input
+              className="relation-validation-editor__content__name"
+              spellCheck={false}
+              disabled={isReadOnly || validationState.isGUIEditor}
+              value={validation.description}
+              onChange={changeDescription}
+              placeholder="Enter the description"
+            />
           </div>
         </div>
         {validationState.isValidationDialogOpen && (

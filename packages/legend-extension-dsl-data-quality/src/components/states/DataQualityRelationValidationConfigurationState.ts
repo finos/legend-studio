@@ -49,6 +49,8 @@ import {
   observe_ValueSpecification,
   VariableExpression,
   V1_DELEGATED_EXPORT_HEADER,
+  RelationTypeMetadata,
+  observe_RelationTypeMetadata,
 } from '@finos/legend-graph';
 import {
   action,
@@ -271,6 +273,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   resultState: DataQualityRelationResultState;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
+  relationTypeMetadata: RelationTypeMetadata = new RelationTypeMetadata();
 
   constructor(
     editorStore: EditorStore,
@@ -300,9 +303,12 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       run: flow,
       handleRun: flow,
       exportData: flow,
+      getRelationColumns: flow,
+      relationTypeMetadata: observable,
       convertValidationLambdaObjects: flow,
       cancelRun: flow,
       generatePlan: flow,
+      setupValidationStatesWithColumns: flow,
     });
 
     assertType(
@@ -313,17 +319,33 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     this.relationFunctionDefinitionEditorState =
       new RelationFunctionDefinitionEditorState(element, this.editorStore);
     this.selectedTab = DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION;
+    this.relationTypeMetadata = observe_RelationTypeMetadata(
+      this.relationTypeMetadata,
+    );
+
     this.validationElement.validations.forEach((validation) => {
       this.validationStates.push(
         new DataQualityRelationValidationState(validation, editorStore),
       );
     });
+
     this.executionPlanState = new ExecutionPlanState(
       this.editorStore.applicationStore,
       this.editorStore.graphManagerState,
     );
     this.parametersState = new RelationDefinitionParameterState(this);
     this.resultState = new DataQualityRelationResultState(this);
+
+    flowResult(this.setupValidationStatesWithColumns()).catch(
+      this.editorStore.applicationStore.alertUnhandledError,
+    );
+  }
+
+  *setupValidationStatesWithColumns(): GeneratorFn<void> {
+    yield flowResult(this.getRelationColumns());
+    this.validationStates.forEach((validationState) => {
+      validationState.initializeWithColumns(this.relationTypeMetadata.columns);
+    });
   }
 
   reprocess(
@@ -401,9 +423,12 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
         (validationState) => validationState.relationValidation === validation,
       )
     ) {
-      this.validationStates.push(
-        new DataQualityRelationValidationState(validation, this.editorStore),
+      const validationState = new DataQualityRelationValidationState(
+        validation,
+        this.editorStore,
       );
+      validationState.initializeWithColumns(this.relationTypeMetadata.columns);
+      this.validationStates.push(validationState);
     }
   }
 
@@ -672,6 +697,27 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.exportState.complete();
+    }
+  }
+
+  *getRelationColumns(): GeneratorFn<void> {
+    const lambda = new RawLambda(
+      this.relationFunctionDefinitionEditorState.relationValidationElement.query.parameters,
+      this.relationFunctionDefinitionEditorState.relationValidationElement.query.body,
+    );
+
+    try {
+      this.relationTypeMetadata = observe_RelationTypeMetadata(
+        yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
+          lambda,
+          this.editorStore.graphManagerState.graph,
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Error getting relation type columns: ${error.message}`,
+      );
     }
   }
 
