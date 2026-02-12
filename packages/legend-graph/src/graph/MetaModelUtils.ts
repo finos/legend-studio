@@ -27,6 +27,8 @@ import type { PackageableElement } from './metamodel/pure/packageableElements/Pa
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
+  PRECISE_PRIMITIVE_TYPE,
+  PRIMITIVE_TYPE,
   SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX,
 } from './MetaModelConst.js';
 import {
@@ -132,4 +134,32 @@ export const TYPE_ARGUMENTS_TYPES: string[] = [CORE_PURE_PATH.RELATION];
 
 export const requireTypeArugments = (type: PackageableElement): boolean => {
   return TYPE_ARGUMENTS_TYPES.includes(type.path);
+};
+
+export const getPrimitiveTypeEnumFromPrecisePrimitiveTypeEnum = (
+  type: PRECISE_PRIMITIVE_TYPE,
+): PRIMITIVE_TYPE | 'Unknown' => {
+  switch (type) {
+    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
+      return PRIMITIVE_TYPE.STRING;
+    case PRECISE_PRIMITIVE_TYPE.INT:
+    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
+    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.FLOAT:
+    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+    case PRECISE_PRIMITIVE_TYPE.NUMERIC:
+      return PRIMITIVE_TYPE.NUMBER;
+    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
+    case PRECISE_PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
+      return PRIMITIVE_TYPE.DATE;
+    default:
+      return 'Unknown';
+  }
 };
