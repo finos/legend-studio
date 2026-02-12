@@ -18,8 +18,6 @@ export {
   graph_addElement,
   graph_deleteElement,
   graph_deleteOwnElement,
-  graph_dispose,
-  graph_renameElement,
 } from '../stores/graph-modifier/GraphModifierHelper.js';
 
 export {
