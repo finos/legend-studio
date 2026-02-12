@@ -1,0 +1,290 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.data-quality-validation-gui-editor {
+  gap: 4rem;
+  height: 100%;
+  width: 100%;
+  padding-left: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr minmax(400px, 1fr);
+
+  &__functions-list {
+    @include flexVCenter;
+
+    height: 100%;
+    width: 100%;
+    border-right: 1px solid var(--color-grey-200);
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  &__function {
+    @include flexVCenter;
+
+    height: auto;
+    gap: 0.8rem;
+    flex-grow: 1;
+    align-items: center;
+
+    &__parameter {
+      height: 2.8rem;
+
+      @include flexVCenter;
+
+      gap: 0.8rem;
+      width: auto;
+      align-items: center;
+
+      &--value {
+        flex: 1;
+      }
+
+      input {
+        background: var(--color-dark-grey-100);
+        color: var(--color-light-grey-200);
+        padding: 0 1rem;
+        border-radius: 0.2rem;
+        font-weight: 500;
+        border: 0.1rem solid var(--color-dark-grey-300);
+
+        &::placeholder {
+          color: var(--color-dark-grey-500);
+        }
+      }
+
+      &--number {
+        width: 150px;
+      }
+    }
+
+    &__selector {
+      min-width: fit-content;
+    }
+
+    & .value-spec-editor__editable__display,
+    & .value-spec-editor__list-editor__preview {
+      display: flex;
+      align-items: center;
+      min-width: 100px;
+      width: 10rem;
+      flex: 1;
+      height: 100%;
+      color: var(--color-dark-grey-500);
+      background: var(--color-dark-grey-100);
+      padding-left: 0.5rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      & * {
+        min-width: 50px;
+      }
+    }
+
+    & .value-spec-editor {
+      & .value-spec-editor__list-editor__edit-icon,
+      & .value-spec-editor__list-editor__save-button,
+      & .value-spec-editor__reset-btn {
+        border-radius: 0;
+      }
+
+      & .value-spec-editor__list-editor__preview {
+        background-color: var(--color-dark-grey-100);
+      }
+    }
+
+    &
+      .selector-input__value-container.selector-input__value-container--is-multi {
+      flex-wrap: nowrap;
+      gap: 1rem;
+
+      & .selector-input__multi-value {
+        width: fit-content;
+      }
+    }
+
+    &__number-input,
+    &__string-input {
+      height: 100%;
+
+      &:disabled {
+        cursor: not-allowed;
+        border: 0.1rem solid var(--color-dark-grey-100) !important;
+        background: var(--color-dark-grey-100);
+      }
+    }
+
+    &__number-input {
+      width: 130px;
+    }
+  }
+
+  &__function--assert-helper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    flex: 2;
+    gap: 0.3rem;
+
+    & > * {
+      width: 100%;
+    }
+
+    & .selector-input--dark__value-container {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+
+      &::-webkit-scrollbar {
+        height: 1px;
+      }
+    }
+
+    &--description {
+      background-color: transparent;
+      font-size: 1rem;
+    }
+  }
+
+  &__column-list-item {
+    color: var(--color-light-grey-300);
+    font-weight: 500;
+    font-size: 1.2rem;
+
+    &:not(:nth-last-child(-n + 2)) {
+      &::after {
+        content: ', ';
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  &__filter-validation {
+    @include flexVCenter;
+
+    gap: 0.4rem;
+    height: auto;
+    align-items: stretch;
+
+    &__add-condition {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 2rem 0 0;
+      height: 2.8rem;
+      color: var(--color-light-grey-0);
+      background: var(--color-dark-grey-300);
+      border-radius: 0.2rem;
+      cursor: pointer;
+    }
+
+    &__delete {
+      @include flexCenter;
+
+      width: 2.8rem;
+      height: 2.8rem;
+      color: var(--color-light-grey-0);
+      background: var(--color-dark-grey-300);
+      border-radius: 0.2rem;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-red-200);
+      }
+    }
+
+    &__body {
+      width: 100%;
+    }
+  }
+
+  &__logical-group {
+    & .data-quality-validation-gui-editor__filter-validation {
+      padding: 0;
+      margin: 0;
+    }
+
+    &__header {
+      @include flexVCenter;
+
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    &__operator {
+      display: inline-block;
+      font-weight: 700;
+      color: var(--color-blue-200);
+      font-size: 1rem;
+      padding: 0.2rem 0.8rem;
+      background: var(--color-dark-grey-200);
+      border-radius: 0.2rem;
+    }
+
+    &__branch {
+      position: relative;
+      margin-left: 1rem;
+      padding-left: 1rem;
+      border-left: 0.1rem dashed var(--color-dark-grey-400);
+
+      &:not(:last-child) {
+        margin-bottom: 0.2rem;
+      }
+
+      &:last-child {
+        margin-top: 0.2rem;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 1.4rem;
+        width: 0.8rem;
+        height: 0.1rem;
+        background: var(--color-dark-grey-400);
+      }
+    }
+  }
+
+  &__filter-condition {
+    @include flexVCenter;
+
+    gap: 0.4rem;
+    background: var(--color-dark-grey-50);
+    padding: 0.8rem;
+    border-radius: 0.2rem;
+
+    &__add-operator {
+      @include flexCenter;
+
+      flex: 0 0 2.8rem;
+      height: 2.8rem;
+      color: var(--color-light-grey-0);
+      background: var(--color-dark-grey-300);
+      border-radius: 0.2rem;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-green-200);
+      }
+    }
+  }
+}

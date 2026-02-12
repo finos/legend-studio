@@ -494,6 +494,7 @@ export const BooleanPrimitiveInstanceValueEditor = observer(
 interface NumberPrimitiveInstanceValueEditorProps<T>
   extends PrimitiveInstanceValueEditorProps<T, number | null> {
   isInteger: boolean;
+  enableExpressionCalculation?: boolean | undefined;
 }
 
 // eslint-disable-next-line comma-spacing
@@ -512,6 +513,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
     className,
     isInteger,
     readOnly,
+    enableExpressionCalculation = true,
   } = props;
   const [value, setValue] = useState(
     valueSelector(valueSpecification)?.toString() ?? '',
@@ -637,17 +639,19 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
           name={inputName}
           disabled={readOnly}
         />
-        <div className="value-spec-editor__number__actions">
-          <button
-            className="value-spec-editor__number__action"
-            title="Evaluate Expression (Enter)"
-            name={calculateButtonName}
-            onClick={calculateExpression}
-            disabled={readOnly}
-          >
-            <CalculateIcon />
-          </button>
-        </div>
+        {enableExpressionCalculation && (
+          <div className="value-spec-editor__number__actions">
+            <button
+              className="value-spec-editor__number__action"
+              title="Evaluate Expression (Enter)"
+              name={calculateButtonName}
+              onClick={calculateExpression}
+              disabled={readOnly}
+            >
+              <CalculateIcon />
+            </button>
+          </div>
+        )}
       </div>
       <button
         className="value-spec-editor__reset-btn"
@@ -1553,6 +1557,7 @@ export const BasicValueSpecificationEditor = forwardRef<
       | undefined;
     displayDateEditorAsEditableValue?: boolean | undefined;
     readOnly?: boolean | undefined;
+    enableExpressionCalculation?: boolean | undefined;
   }
 >(function BasicValueSpecificationEditorInner(props, ref) {
   const {
@@ -1570,6 +1575,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     handleKeyDown,
     displayDateEditorAsEditableValue,
     readOnly,
+    enableExpressionCalculation,
   } = props;
 
   const applicationStore = useApplicationStore();
@@ -1712,6 +1718,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
             readOnly={readOnly}
+            enableExpressionCalculation={enableExpressionCalculation}
           />
         );
       case PRIMITIVE_TYPE.DATE:
@@ -1993,6 +2000,8 @@ export const EditableBasicValueSpecificationEditor = observer(
     isConstant?: boolean;
     initializeAsEditable?: boolean;
     readOnly?: boolean;
+    enableExpressionCalculation?: boolean | undefined;
+    displayAsString?: boolean | undefined;
   }) => {
     const {
       valueSpecification,
@@ -2006,6 +2015,8 @@ export const EditableBasicValueSpecificationEditor = observer(
       isConstant,
       initializeAsEditable,
       readOnly,
+      enableExpressionCalculation = true,
+      displayAsString = true,
     } = props;
     const applicationStore = useApplicationStore();
 
@@ -2060,6 +2071,7 @@ export const EditableBasicValueSpecificationEditor = observer(
         }}
         displayDateEditorAsEditableValue={true}
         readOnly={readOnly}
+        enableExpressionCalculation={enableExpressionCalculation}
       />
     ) : (
       <div className="value-spec-editor__editable__display">
@@ -2081,7 +2093,9 @@ export const EditableBasicValueSpecificationEditor = observer(
           }
           style={{ cursor: readOnly ? 'not-allowed' : '' }}
         >
-          {`"${valueSpecStringValue !== undefined ? valueSpecStringValue : ''}"`}
+          {displayAsString
+            ? `"${valueSpecStringValue !== undefined ? valueSpecStringValue : ''}"`
+            : valueSpecStringValue}
         </span>
       </div>
     );

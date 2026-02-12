@@ -32,8 +32,9 @@ import {
   isStubbed_RawLambda,
   ParserError,
   stub_RawLambda,
+  type RelationTypeColumnMetadata,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-query-builder';
+import { LambdaEditorWithGUIState } from './LambdaEditorWithGUIState.js';
 import { VALIDATION_SOURCE_ID_LABEL } from './ConstraintState.js';
 import {
   dataQualityRelationValidation_setAssertion,
@@ -42,10 +43,12 @@ import {
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../graph/metamodel/DSL_DataQuality_HashUtils.js';
 import type { SelectOption } from '@finos/legend-art';
 
-export class DataQualityRelationValidationState extends LambdaEditorState {
+export class DataQualityRelationValidationState extends LambdaEditorWithGUIState {
   relationValidation: DataQualityRelationValidation;
   editorStore: EditorStore;
   isValidationDialogOpen = false;
+  initializedGUIEditor = false;
+
   constructor(
     relationValidation: DataQualityRelationValidation,
     editorStore: EditorStore,
@@ -58,10 +61,19 @@ export class DataQualityRelationValidationState extends LambdaEditorState {
       isValidationDialogOpen: observable,
       setIsValidationDialogOpen: action,
       onValidationTypeChange: action,
+      initializedGUIEditor: observable,
+      initializeWithColumns: action,
     });
 
     this.relationValidation = relationValidation;
     this.editorStore = editorStore;
+  }
+
+  initializeWithColumns(columns: RelationTypeColumnMetadata[]): void {
+    if (columns.length) {
+      this.initializeGUIEditor(columns);
+      this.initializedGUIEditor = true;
+    }
   }
 
   get lambdaId(): string {
@@ -87,6 +99,7 @@ export class DataQualityRelationValidationState extends LambdaEditorState {
     const emptyFunctionDefinition = stub_RawLambda();
     if (this.lambdaString) {
       try {
+        this.disableEditorToggle = true;
         const lambda =
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
@@ -97,6 +110,8 @@ export class DataQualityRelationValidationState extends LambdaEditorState {
           this.relationValidation,
           lambda,
         );
+        this.tryParsingPureLambdaToGUIFormat();
+        this.disableEditorToggle = false;
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {

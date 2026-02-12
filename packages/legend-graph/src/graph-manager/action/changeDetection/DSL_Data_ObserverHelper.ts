@@ -44,6 +44,10 @@ import {
   observe_TaggedValue,
 } from './DomainObserverHelper.js';
 import { INTERNAL__UnknownEmbeddedData } from '../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
+import type {
+  RelationTypeColumnMetadata,
+  RelationTypeMetadata,
+} from '../relation/RelationTypeMetadata.js';
 
 export const observe_ExternalFormatData = skipObserved(
   (metamodel: ExternalFormatData): ExternalFormatData => {
@@ -232,5 +236,24 @@ export const observe_DataElement = skipObservedWithContext(
     metamodel.taggedValues.forEach(observe_TaggedValue);
     observe_EmbeddedData(metamodel.data, context);
     return metamodel;
+  },
+);
+
+export const observe_RelationTypeColumnMetadata = skipObserved(
+  (column: RelationTypeColumnMetadata): RelationTypeColumnMetadata =>
+    makeObservable(column, {
+      type: observable,
+      name: observable,
+    }),
+);
+
+export const observe_RelationTypeMetadata = skipObserved(
+  (relationTypeMetadata: RelationTypeMetadata): RelationTypeMetadata => {
+    makeObservable(relationTypeMetadata, {
+      columns: observable,
+    });
+
+    relationTypeMetadata.columns.forEach(observe_RelationTypeColumnMetadata);
+    return relationTypeMetadata;
   },
 );

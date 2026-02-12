@@ -63,6 +63,10 @@ import {
   V1_buildFullPath,
   V1_ElementBuilder,
   PureProtocolProcessorPlugin,
+  type V1_FunctionExpressionBuilder,
+  type V1_ValueSpecification,
+  type V1_ProcessingContext,
+  type SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import { V1_DataQualityPropertyGraphFetchTree } from './v1/model/graphFetch/V1_DataQualityPropertyGraphFetchTree.js';
 import { deserialize, serialize } from 'serializr';
@@ -72,6 +76,7 @@ import {
   V1_propertyGraphFetchTreeModelSchema,
   V1_rootGraphFetchTreeModelSchema,
 } from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationSerializer.js';
+import { V1_buildValidationFunctionExpression } from './v1/V1_DataQualityValidationFunctionExpression.js';
 
 const DATA_QUALITY_CLASSIFIER_PATH = 'meta::external::dataquality::DataQuality';
 const DATA_QUALITY_RELATION_VALIDATION_CLASSIFIER_PATH =
@@ -323,6 +328,25 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
           );
         }
         return undefined;
+      },
+    ];
+  }
+  override V1_getExtraFunctionExpressionBuilders(): V1_FunctionExpressionBuilder[] {
+    return [
+      (
+        functionName: string,
+        parameters: V1_ValueSpecification[],
+        openVariables: string[],
+        compileContext: V1_GraphBuilderContext,
+        processingContext: V1_ProcessingContext,
+      ): SimpleFunctionExpression | undefined => {
+        return V1_buildValidationFunctionExpression(
+          functionName,
+          parameters,
+          openVariables,
+          compileContext,
+          processingContext,
+        );
       },
     ];
   }
