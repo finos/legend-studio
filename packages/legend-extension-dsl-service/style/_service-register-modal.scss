@@ -75,7 +75,7 @@
     &__label {
       @include flexVCenter;
 
-      min-width: 12rem;
+      width: 12rem;
       background: var(--color-dark-grey-200);
       font-family: 'Roboto Mono', monospace;
       font-size: 1.3rem;
