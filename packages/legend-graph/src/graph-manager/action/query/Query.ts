@@ -46,6 +46,11 @@ export class QueryDataSpaceExecutionContext extends QueryExecutionContext {
   executionKey: string | undefined;
 }
 
+export class QueryDataProductExecutionContext extends QueryExecutionContext {
+  dataProductPath!: string;
+  executionKey: string | undefined;
+}
+
 export interface QueryGridConfig {
   columns: object[];
   isPivotModeEnabled: boolean | undefined;
@@ -154,6 +159,12 @@ export class QueryDataSpaceExecutionContextInfo extends QueryExecutionContextInf
   dataSpacePath!: string;
   executionKey: string | undefined;
 }
+
+export class QueryDataProductNativeExecutionContextInfo extends QueryExecutionContextInfo {
+  dataProductPath!: string;
+  executionKey: string | undefined;
+}
+
 export interface QueryInfo {
   name: string;
   id: string;

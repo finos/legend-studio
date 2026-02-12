@@ -35,7 +35,7 @@ import {
 } from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import { DataQualityState } from './DataQualityState.js';
 import {
-  type DataSpaceInfo,
+  ResolvedDataSpaceEntityWithOrigin,
   type DataSpaceExecutionContext,
   DataSpace,
   resolveUsableDataSpaceClasses,
@@ -60,7 +60,7 @@ import { DataQualityResultState } from './DataQualityResultState.js';
 
 export class DataQualityClassValidationState extends DataQualityState {
   dataSpace?: DataSpace | undefined;
-  dataSpaces: DataSpaceInfo[] = [];
+  dataSpaces: ResolvedDataSpaceEntityWithOrigin[] = [];
   validationElementCreationBasis: CLASS_ELEMENT_CREATION_BASIS =
     CLASS_ELEMENT_CREATION_BASIS.MAPPING_RUNTIME_BASED;
 
@@ -268,7 +268,7 @@ export class DataQualityClassValidationState extends DataQualityState {
     }
   }
 
-  onDataSpaceChange(dataSpaceInfo: DataSpaceInfo) {
+  onDataSpaceChange(dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) {
     this.dataSpace = guaranteeType(
       this.graphManagerState.graph.getElement(dataSpaceInfo.path),
       DataSpace,
@@ -299,15 +299,13 @@ export class DataQualityClassValidationState extends DataQualityState {
       .filter(filterByType(DataSpace))
       .map(
         (e) =>
-          ({
-            groupId: undefined,
-            artifactId: undefined,
-            versionId: undefined,
-            path: e.path,
-            name: e.name,
-            title: e.title,
-            defaultExecutionContext: e.defaultExecutionContext.name,
-          }) as DataSpaceInfo,
+          new ResolvedDataSpaceEntityWithOrigin(
+            undefined,
+            e.title,
+            e.name,
+            e.path,
+            e.defaultExecutionContext.name,
+          ),
       );
   }
 }

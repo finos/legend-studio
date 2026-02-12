@@ -239,6 +239,110 @@
     "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
   },
   {
+    "path": "model::Simple__String_1_",
+    "content": {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "plus",
+          "parameters": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "sourceInformation": {
+                "endColumn": 20,
+                "endLine": 1,
+                "sourceId": "model::Simple__String_1_",
+                "startColumn": 10,
+                "startLine": 1
+              },
+              "values": [
+                {
+                  "_type": "string",
+                  "sourceInformation": {
+                    "endColumn": 8,
+                    "endLine": 1,
+                    "sourceId": "model::Simple__String_1_",
+                    "startColumn": 2,
+                    "startLine": 1
+                  },
+                  "value": "Hello"
+                },
+                {
+                  "_type": "string",
+                  "sourceInformation": {
+                    "endColumn": 20,
+                    "endLine": 1,
+                    "sourceId": "model::Simple__String_1_",
+                    "startColumn": 12,
+                    "startLine": 1
+                  },
+                  "value": " World!"
+                }
+              ]
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 1,
+            "sourceId": "model::Simple__String_1_",
+            "startColumn": 10,
+            "startLine": 1
+          }
+        }
+      ],
+      "name": "Simple__String_1_",
+      "package": "model",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String"
+        }
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "tests": [
+        {
+          "_type": "functionTestSuite",
+          "id": "default",
+          "tests": [
+            {
+              "_type": "functionTest",
+              "assertions": [
+                {
+                  "_type": "equalTo",
+                  "expected": {
+                    "_type": "string",
+                    "sourceInformation": {
+                      "endColumn": 39,
+                      "endLine": 93,
+                      "sourceId": "",
+                      "startColumn": 26,
+                      "startLine": 93
+                    },
+                    "value": "Hello World!"
+                  },
+                  "id": "default"
+                }
+              ],
+              "id": "testPass"
+            }
+          ]
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
+  },
+  {
     "path": "store::TestDB",
     "content": {
       "_type": "relational",

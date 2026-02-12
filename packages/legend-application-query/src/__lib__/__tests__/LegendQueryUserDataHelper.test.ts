@@ -21,7 +21,7 @@ import {
   USER_DATA_QUERY_DATASPACE_LIMIT,
   USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT,
 } from '../LegendQueryUserDataHelper.js';
-import type { DataSpaceInfo } from '@finos/legend-extension-dsl-data-space/application';
+import { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 import {
   createIdFromDataSpaceInfo,
   hasDataSpaceInfoBeenVisited,
@@ -250,55 +250,49 @@ describe('LegendQueryUserDataHelper', () => {
     });
 
     it('should retrieve the most recent queried dataspace and disregard version when replacing', () => {
-      const dataSpaceInfo1: DataSpaceInfo = {
-        groupId: 'my-group',
-        artifactId: 'artifact',
-        versionId: 'latest',
-        title: undefined,
-        name: 'MyDataSpace',
-        path: 'model::MyDataSpace',
-        defaultExecutionContext: undefined,
-      };
+      const dataSpaceInfo1 = new ResolvedDataSpaceEntityWithOrigin(
+        {
+          groupId: 'my-group',
+          artifactId: 'artifact',
+          versionId: 'latest',
+        },
+        undefined,
+        'MyDataSpace',
+        'model::MyDataSpace',
+        undefined,
+      );
 
-      const dataSpaceInfo2 = {
-        groupId: undefined,
-        artifactId: undefined,
-        versionId: undefined,
-        title: undefined,
-        name: 'MyDataSpace',
-        path: 'model::MyDataSpace',
-        defaultExecutionContext: undefined,
-      };
+      const dataSpaceInfo2 = new ResolvedDataSpaceEntityWithOrigin(
+        undefined,
+        undefined,
+        'MyDataSpace',
+        'model::MyDataSpace',
+        undefined,
+      );
 
-      const dataSpaceInfo3 = {
-        groupId: 'my-group',
-        artifactId: 'artifact',
-        versionId: '3.0.0',
-        title: undefined,
-        name: 'MyDataSpace',
-        path: 'model::MyDataSpace',
-        defaultExecutionContext: undefined,
-      };
+      const dataSpaceInfo3 = new ResolvedDataSpaceEntityWithOrigin(
+        { groupId: 'my-group', artifactId: 'artifact', versionId: '3.0.0' },
+        undefined,
+        'MyDataSpace',
+        'model::MyDataSpace',
+        undefined,
+      );
 
-      const dataSpaceInfo4 = {
-        groupId: 'my-group',
-        artifactId: 'artifact',
-        versionId: '3.0.0',
-        title: undefined,
-        name: 'MyDataSpace',
-        path: 'model::MyDataSpace2',
-        defaultExecutionContext: undefined,
-      };
+      const dataSpaceInfo4 = new ResolvedDataSpaceEntityWithOrigin(
+        { groupId: 'my-group', artifactId: 'artifact', versionId: '3.0.0' },
+        undefined,
+        'MyDataSpace',
+        'model::MyDataSpace2',
+        undefined,
+      );
 
-      const dataSpaceInfo5: DataSpaceInfo = {
-        groupId: 'my-group',
-        artifactId: 'artifactMore',
-        versionId: '3.0.0',
-        title: undefined,
-        name: 'MyDataSpace',
-        path: 'model::MyDataSpace2',
-        defaultExecutionContext: undefined,
-      };
+      const dataSpaceInfo5 = new ResolvedDataSpaceEntityWithOrigin(
+        { groupId: 'my-group', artifactId: 'artifactMore', versionId: '3.0.0' },
+        undefined,
+        'MyDataSpace',
+        'model::MyDataSpace2',
+        undefined,
+      );
 
       const userDataService = getService();
       LegendQueryUserDataHelper.addRecentlyVistedDatspace(
@@ -406,6 +400,110 @@ describe('LegendQueryUserDataHelper', () => {
           guaranteeNonNullable(createIdFromDataSpaceInfo(dataSpaceInfo5)),
         );
       expect(visitedExec?.execContext).toBe('new context');
+    });
+
+    it('should handle entities with undefined origin correctly', () => {
+      const dataSpaceWithoutOrigin = new ResolvedDataSpaceEntityWithOrigin(
+        undefined,
+        'Title',
+        'MyDataSpace',
+        'model::MyDataSpace',
+        'default',
+      );
+
+      const userDataService = getService();
+
+      // Should not create an ID for entities without origin
+      const id = createIdFromDataSpaceInfo(dataSpaceWithoutOrigin);
+      expect(id).toBeUndefined();
+
+      // Should not add to visited dataspaces without origin
+      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+        userDataService,
+        dataSpaceWithoutOrigin,
+        undefined,
+      );
+
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(0);
+    });
+
+    it('should correctly identify visited dataspaces using origin', () => {
+      const origin = {
+        groupId: 'my-group',
+        artifactId: 'my-artifact',
+        versionId: '1.0.0',
+      };
+      const dataSpaceInfo = new ResolvedDataSpaceEntityWithOrigin(
+        origin,
+        'Title',
+        'MyDataSpace',
+        'model::MyDataSpace',
+        'default',
+      );
+
+      const userDataService = getService();
+      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+        userDataService,
+        dataSpaceInfo,
+        'prod-context',
+      );
+
+      expect(
+        hasDataSpaceInfoBeenVisited(
+          dataSpaceInfo,
+          LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
+            userDataService,
+          ),
+        ),
+      ).toBe(true);
+
+      // Different version should still be considered visited (same groupId/artifactId)
+      const differentVersion = new ResolvedDataSpaceEntityWithOrigin(
+        { groupId: 'my-group', artifactId: 'my-artifact', versionId: '2.0.0' },
+        'Title',
+        'MyDataSpace',
+        'model::MyDataSpace',
+        'default',
+      );
+
+      expect(
+        hasDataSpaceInfoBeenVisited(
+          differentVersion,
+          LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
+            userDataService,
+          ),
+        ),
+      ).toBe(true);
+    });
+
+    it('should handle origin property access safely', () => {
+      const withOrigin = new ResolvedDataSpaceEntityWithOrigin(
+        { groupId: 'group', artifactId: 'artifact', versionId: 'version' },
+        undefined,
+        'Name',
+        'path',
+        undefined,
+      );
+
+      const withoutOrigin = new ResolvedDataSpaceEntityWithOrigin(
+        undefined,
+        undefined,
+        'Name',
+        'path',
+        undefined,
+      );
+
+      // Should safely access origin properties
+      expect(withOrigin.origin?.groupId).toBe('group');
+      expect(withOrigin.origin?.artifactId).toBe('artifact');
+      expect(withOrigin.origin?.versionId).toBe('version');
+
+      // Should safely handle undefined origin
+      expect(withoutOrigin.origin?.groupId).toBeUndefined();
+      expect(withoutOrigin.origin?.artifactId).toBeUndefined();
+      expect(withoutOrigin.origin?.versionId).toBeUndefined();
     });
   });
 });

@@ -302,6 +302,15 @@ export class PureModel extends BasicModel {
       ...this.generationModel.ownFunctions,
     ];
   }
+  get dataProducts(): DataProduct[] {
+    return [
+      ...this.coreModel.ownDataProducts,
+      ...this.systemModel.ownDataProducts,
+      ...this.dependencyManager.dataProducts,
+      ...this.ownDataProducts,
+      ...this.generationModel.ownDataProducts,
+    ];
+  }
   get functionActivators(): FunctionActivator[] {
     return [
       ...this.coreModel.ownFunctionActivators,

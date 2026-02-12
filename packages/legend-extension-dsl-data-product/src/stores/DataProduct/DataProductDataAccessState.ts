@@ -123,9 +123,11 @@ export class DataProductDataAccessState {
   lakehouseIngestEnv: IngestDeploymentServerConfig | undefined;
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
   userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined;
+  dataProductOwners: string[] = [];
 
   readonly creatingContractState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
+  readonly fetchingDataProductOwnersState = ActionState.create();
 
   constructor(
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
@@ -140,10 +142,11 @@ export class DataProductDataAccessState {
       associatedContracts: observable,
       contractCreatorAPG: observable,
       contractViewerContractAndSubscription: observable,
-      creatingContractState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
+      lakehouseIngestEnv: observable,
       lakehouseIngestEnvironmentDetails: observable,
       userEntitlementsEnv: observable,
+      dataProductOwners: observable,
       setContractViewerContractAndSubscription: action,
       setAssociatedContracts: action,
       filteredDataProductQueryEnvs: computed,
@@ -156,6 +159,7 @@ export class DataProductDataAccessState {
       createContract: flow,
       fetchContracts: action,
       fetchIngestEnvironmentDetails: action,
+      setDataProductOwners: action,
       init: flow,
     });
 
@@ -240,6 +244,10 @@ export class DataProductDataAccessState {
     this.userEntitlementsEnv = envs;
   }
 
+  setDataProductOwners(owners: string[]): void {
+    this.dataProductOwners = owners;
+  }
+
   async fetchIngestEnvironmentDetails(
     token: string | undefined,
   ): Promise<void> {
@@ -308,6 +316,7 @@ export class DataProductDataAccessState {
     yield Promise.all([
       this.fetchContracts(token),
       this.fetchIngestEnvironmentDetails(token),
+      this.fetchDataProductOwners(token),
     ]);
   }
 
@@ -499,6 +508,30 @@ export class DataProductDataAccessState {
         LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load entitlements envs: ${error.message}`,
       );
+    }
+  }
+
+  async fetchDataProductOwners(token: string | undefined): Promise<void> {
+    this.fetchingDataProductOwnersState.inProgress();
+    try {
+      const rawOwnershipResponse =
+        await this.lakehouseContractServerClient.getOwnersForDid(
+          this.entitlementsDataProductDetails.deploymentId,
+          token,
+        );
+      const owners = this.dataAccessPlugins.flatMap(
+        (plugin) =>
+          plugin.handleDataProductOwnersResponse?.(rawOwnershipResponse) ?? [],
+      );
+      this.setDataProductOwners(owners);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create('data-product.fetchDataProductOwners.failure'),
+        `Unable to fetch data product owners: ${error.message}`,
+      );
+    } finally {
+      this.fetchingDataProductOwnersState.complete();
     }
   }
 }

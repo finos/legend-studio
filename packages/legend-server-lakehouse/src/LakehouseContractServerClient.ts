@@ -325,4 +325,16 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       {},
       this._token(token),
     );
+
+  // ------------------------------------------- Ref Data -------------------------------------------
+
+  getOwnersForDid = (
+    deploymentId: number,
+    token: string | undefined,
+  ): Promise<PlainObject> =>
+    this.get(
+      `${this.baseUrl}/refData/dataOwner/deploymentId/${deploymentId}`,
+      {},
+      this._token(token),
+    );
 }

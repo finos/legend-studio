@@ -16,8 +16,7 @@
 
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 import type { IngestDeploymentServerConfig } from './models/IngestDeploymentServerConfig.js';
-
-const DEFAULT_DID_LEVEL = 'DEPLOYMENT';
+import { V1_AppDirLevel } from '@finos/legend-graph';
 
 export class LakehousePlatformServerClient extends AbstractServerClient {
   constructor(url: string) {
@@ -42,7 +41,7 @@ export class LakehousePlatformServerClient extends AbstractServerClient {
 
   findProducerServer(
     id: number,
-    level: string | undefined = DEFAULT_DID_LEVEL,
+    level: V1_AppDirLevel | undefined = V1_AppDirLevel.DEPLOYMENT,
     token?: string | undefined,
   ): Promise<PlainObject<IngestDeploymentServerConfig>> {
     return this.get(

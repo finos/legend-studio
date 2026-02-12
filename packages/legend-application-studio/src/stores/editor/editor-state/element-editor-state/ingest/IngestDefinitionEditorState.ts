@@ -183,7 +183,11 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       if (response.deploymentResponse) {
         this.editorStore.applicationStore.logService.info(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_SUCCESS_URN),
-          response.deploymentResponse.ingestDefinitionUrn,
+          Object.assign({}, this.editorStore.editorMode.getSourceInfo(), {
+            ingestDefinitionUrn:
+              response.deploymentResponse.ingestDefinitionUrn,
+            ingestionPath: this.ingest.path,
+          }),
         );
       }
       this.setValidateAndDeployResponse(response);
@@ -192,6 +196,10 @@ export class IngestDefinitionEditorState extends ElementEditorState {
         undefined,
       );
       assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_FAILURE),
+        error,
+      );
       this.editorStore.applicationStore.notificationService.notifyError(
         `Ingest definition failed to deploy: ${error.message}`,
       );

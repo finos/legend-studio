@@ -48,6 +48,7 @@ export class V1_FunctionTest extends V1_AtomicTest {
       this.id,
       this.doc ?? '',
       this.parameters ? hashArray(this.parameters) : '',
+      hashArray(this.assertions),
     ]);
   }
 }

@@ -22,14 +22,9 @@ export { DSL_DataSpace_LegendApplicationPlugin } from './DSL_DataSpace_LegendApp
 export { DataSpaceViewer } from './DataSpaceViewer.js';
 export * from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 export { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+export { DataSpaceQueryBuilderState } from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 export {
-  DataSpaceQueryBuilderState,
-  DataSpacesDepotRepository,
-  DataSpacesBuilderRepoistory,
-  DataSpacesGraphRepoistory,
-} from '../stores/query-builder/DataSpaceQueryBuilderState.js';
-export {
-  type DataSpaceInfo,
+  ResolvedDataSpaceEntityWithOrigin,
   extractDataSpaceInfo,
 } from '../stores/shared/DataSpaceInfo.js';
 

@@ -48,12 +48,11 @@ import {
   getQueryFromDataspaceExecutable,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
-  type DataSpaceInfo,
-  DataSpaceQueryBuilderState,
+  type ResolvedDataSpaceEntityWithOrigin,
   createQueryClassTaggedValue,
   createQueryDataSpaceTaggedValue,
 } from '@finos/legend-extension-dsl-data-space/application';
-import { createDataSpaceDepoRepo } from './DataSpaceQueryBuilderHelper.js';
+import { LegendQueryDataSpaceQueryBuilderState } from './query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 
 export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;
@@ -174,7 +173,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       versionId: this.versionId,
       dataSpace: dataSpace.path,
     };
-    const queryBuilderState = new DataSpaceQueryBuilderState(
+    const queryBuilderState = new LegendQueryDataSpaceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
       QueryBuilderDataBrowserWorkflow.INSTANCE,
@@ -182,14 +181,14 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       dataSpace,
       executionContext,
       isLightGraphEnabled,
-      createDataSpaceDepoRepo(
-        this,
-        this.groupId,
-        this.artifactId,
-        this.versionId,
-        undefined,
-      ),
-      async (dataSpaceInfo: DataSpaceInfo) => {
+      this.depotServerClient,
+      {
+        groupId: this.groupId,
+        artifactId: this.artifactId,
+        versionId: this.versionId,
+      },
+      undefined,
+      async (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) => {
         this.applicationStore.notificationService.notifyWarning(
           `Can't switch data product to visit current template query`,
         );

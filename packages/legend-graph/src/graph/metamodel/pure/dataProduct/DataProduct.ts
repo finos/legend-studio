@@ -139,6 +139,11 @@ export class DataProductRuntimeInfo {
 
 export type DataProductElement = Package | Class | Enumeration | Association;
 
+export interface ElementScope {
+  element: PackageableElementReference<DataProductElement>;
+  exclude?: boolean | undefined;
+}
+
 export class DataProductElementScope implements Hashable {
   exclude: boolean | undefined;
   element!: PackageableElementReference<DataProductElement>;
@@ -222,8 +227,8 @@ export class NativeModelExecutionContext implements Hashable {
 
 export class NativeModelAccess implements Hashable {
   featuredElements: DataProductElementScope[] = [];
-  nativeModelExecutionContexts!: NativeModelExecutionContext[];
-  defaultExecutionContext!: string;
+  nativeModelExecutionContexts: NativeModelExecutionContext[] = [];
+  defaultExecutionContext!: NativeModelExecutionContext;
   diagrams: DataProductDiagram[] = [];
   sampleQueries: SampleQuery[] = [];
 
@@ -234,7 +239,7 @@ export class NativeModelAccess implements Hashable {
       hashArray(this.featuredElements),
       hashArray(this.diagrams),
       hashArray(this.sampleQueries),
-      this.defaultExecutionContext,
+      this.defaultExecutionContext.key,
     ]);
   }
 }

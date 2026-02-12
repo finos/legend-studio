@@ -27,10 +27,9 @@ import {
   createVisitedDataspaceFromInfo,
   createIdFromDataSpaceInfo,
   createVisitedDataSpaceId,
-  type SavedVisitedDataSpaces,
-  type VisitedDataspace,
+  type VisitedDataProduct,
 } from './LegendQueryUserDataSpaceHelper.js';
-import type { DataSpaceInfo } from '@finos/legend-extension-dsl-data-space/application';
+import type { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 
 export enum LEGEND_QUERY_USER_DATA_KEY {
   RECENTLY_VIEWED_QUERIES = 'query-editor.recent-queries',
@@ -133,7 +132,7 @@ export class LegendQueryUserDataHelper {
   // DataSpaces
   static getRecentlyVisitedDataSpaces(
     service: UserDataService,
-  ): SavedVisitedDataSpaces {
+  ): VisitedDataProduct[] {
     const data = service.getObjectValue(
       LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATASPACES,
     );
@@ -150,7 +149,7 @@ export class LegendQueryUserDataHelper {
               {
                 data,
               },
-            ) as { data: SavedVisitedDataSpaces }
+            ) as { data: VisitedDataProduct[] }
           ).data,
       ) ?? []
     );
@@ -159,7 +158,7 @@ export class LegendQueryUserDataHelper {
   static findRecentlyVisitedDataSpace(
     service: UserDataService,
     id: string,
-  ): VisitedDataspace | undefined {
+  ): VisitedDataProduct | undefined {
     return LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service).find(
       (v) => v.id === id,
     );
@@ -167,14 +166,14 @@ export class LegendQueryUserDataHelper {
 
   static getRecentlyVisitedDataSpace(
     service: UserDataService,
-  ): VisitedDataspace | undefined {
+  ): VisitedDataProduct | undefined {
     return LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service)[0];
   }
 
   static persistVisitedDataspace(
     service: UserDataService,
-    value: VisitedDataspace,
-    persistedData: SavedVisitedDataSpaces,
+    value: VisitedDataProduct,
+    persistedData: VisitedDataProduct[],
     limit = USER_DATA_QUERY_DATASPACE_LIMIT,
   ): void {
     const key = LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATASPACES;
@@ -217,7 +216,10 @@ export class LegendQueryUserDataHelper {
     );
   }
 
-  static removeDataSpace(service: UserDataService, info: DataSpaceInfo): void {
+  static removeDataSpace(
+    service: UserDataService,
+    info: ResolvedDataSpaceEntityWithOrigin,
+  ): void {
     const id = createIdFromDataSpaceInfo(info);
     if (id) {
       LegendQueryUserDataHelper.removeRecentlyViewedDataSpace(service, id);
@@ -226,7 +228,7 @@ export class LegendQueryUserDataHelper {
 
   static addRecentlyVistedDatspace(
     service: UserDataService,
-    info: DataSpaceInfo,
+    info: ResolvedDataSpaceEntityWithOrigin,
     execContext: string | undefined,
   ): void {
     const visited = createVisitedDataspaceFromInfo(info, execContext);
@@ -242,7 +244,7 @@ export class LegendQueryUserDataHelper {
   }
   static addVisitedDatspace(
     service: UserDataService,
-    visited: VisitedDataspace,
+    visited: VisitedDataProduct,
   ): void {
     const dataspaces =
       LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service);

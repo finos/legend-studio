@@ -47,6 +47,7 @@ export class FunctionTest extends AtomicTest implements Hashable {
       this.id,
       this.doc ?? '',
       this.parameters ? hashArray(this.parameters) : '',
+      hashArray(this.assertions),
     ]);
   }
 }
