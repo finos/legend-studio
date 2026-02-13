@@ -95,6 +95,7 @@ export const ServiceRegisterModal = observer(
     const [serviceMcpServer, setServiceMcpServer] = useState<
       string | undefined
     >(undefined);
+    const [enableMcp, setEnableMcp] = useState(false);
     const [isServiceUrlPatternValid, setIsServiceUrlPatternValid] =
       useState(true);
     const [isServiceMcpServerValid, setIsServiceMcpServerValid] =
@@ -116,7 +117,7 @@ export const ServiceRegisterModal = observer(
     };
 
     const onChangeServiceDocumentation: React.ChangeEventHandler<
-      HTMLInputElement
+      HTMLTextAreaElement
     > = (event) => {
       setServiceDocumentation(event.target.value);
     };
@@ -124,12 +125,22 @@ export const ServiceRegisterModal = observer(
     const onChangeServiceMcpServer: React.ChangeEventHandler<
       HTMLInputElement
     > = (event) => {
-      event.target.value === ''
-        ? setServiceMcpServer(undefined)
-        : setServiceMcpServer(event.target.value);
+      if (event.target.value === '') {
+        setServiceMcpServer(undefined);
+      } else {
+        setServiceMcpServer(event.target.value);
+      }
       setIsServiceMcpServerValid(
         !validate_ServiceMcpServer(event.target.value),
       );
+    };
+
+    const toggleEnableMcp = (): void => {
+      setEnableMcp(!enableMcp);
+      if (enableMcp) {
+        setServiceMcpServer(undefined);
+        setIsServiceMcpServerValid(true);
+      }
     };
 
     const serverRegistrationOptions =
@@ -344,8 +355,8 @@ export const ServiceRegisterModal = observer(
                     Documentation
                   </div>
                   <div className="input-group service-register-modal__input__input">
-                    <input
-                      className="input input--dark input-group__input"
+                    <textarea
+                      className={`input ${darkMode ? 'input--dark' : ''} input-group__input__documentation`}
                       spellCheck={false}
                       placeholder=""
                       value={serviceDocumentation}
@@ -353,7 +364,29 @@ export const ServiceRegisterModal = observer(
                     />
                   </div>
                 </div>
-                <div className="service-register-modal__input">
+                <div
+                  className="service-register-modal__auto-activation__toggler"
+                  onClick={toggleEnableMcp}
+                >
+                  <div className="panel__content__form__section__toggler">
+                    <button
+                      className={clsx(
+                        'panel__content__form__section__toggler__btn',
+                        {
+                          'panel__content__form__section__toggler__btn--toggled':
+                            enableMcp,
+                        },
+                      )}
+                      tabIndex={-1}
+                    >
+                      {enableMcp ? <CheckSquareIcon /> : <SquareIcon />}
+                    </button>
+                    <div className="panel__content__form__section__toggler__prompt">
+                      Enable MCP
+                    </div>
+                  </div>
+                </div>
+                {enableMcp && (<div className="service-register-modal__input">
                   <div className="service-register-modal__input__label">
                     MCP Server
                   </div>
@@ -371,14 +404,14 @@ export const ServiceRegisterModal = observer(
                     />
                     {!isServiceMcpServerValid && (
                       <div className="input-group__error-message">
-                        MCP server must match pattern '^[a-zA-Z_][a-zA-Z0-9_]*$'
+                        MCP server must match pattern &apos;^[a-zA-Z_][a-zA-Z0-9_]*$&apos;
                         <br />
                         (start with a letter or underscore, followed by letters,
                         digits, or underscores)
                       </div>
                     )}
                   </div>
-                </div>
+                </div>)}
                 <div
                   className="service-register-modal__auto-activation__toggler"
                   onClick={toggleActivateService}
