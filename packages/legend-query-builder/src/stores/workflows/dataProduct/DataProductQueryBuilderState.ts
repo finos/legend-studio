@@ -60,6 +60,7 @@ import {
   type QueryableSourceInfo,
 } from '@finos/legend-storage';
 import { compareLabelFn } from '@finos/legend-art';
+import { QueryBuilderEmbeddedFromExecutionContextState } from '../../QueryBuilderExecutionContextState.js';
 
 export type DataProductOption = {
   label: string;
@@ -233,8 +234,9 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     makeObservable(this, {
       dataProduct: observable,
       executionState: observable,
-      setExecutionState: action,
+      initWithDataProduct: action,
       handleDataProductChange: action,
+      setExecutionState: action,
       selectedDataProductOption: computed,
       isProductLinkable: computed,
       modelAccessPointGroups: computed,
@@ -245,6 +247,9 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       loadEntities: flow,
       entities: observable,
     });
+    // for queries against data product, we always want to default to from
+    this.executionContextState =
+      new QueryBuilderEmbeddedFromExecutionContextState(this);
     this.workflowState.updateActionConfig(actionConfig);
     this.dataProduct = dataProduct;
     this.dataProductArtifact = artifact;
@@ -277,24 +282,25 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
 
   initWithDataProduct(dataProduct: DataProduct): void {
     try {
-      const execState = resolveDataProductExecutionState(dataProduct);
+      const execValue = resolveDataProductExecutionState(dataProduct);
       this.dataProduct = dataProduct;
       this.executionState =
-        execState instanceof NativeModelExecutionContext
-          ? new NativeModelDataProductExecutionState(execState, this)
-          : new ModelAccessPointDataProductExecutionState(execState, this);
+        execValue instanceof NativeModelExecutionContext
+          ? new NativeModelDataProductExecutionState(execValue, this)
+          : new ModelAccessPointDataProductExecutionState(execValue, this);
       this.changeMapping(this.executionState.mapping);
-      if (execState instanceof NativeModelDataProductExecutionState) {
+      if (this.executionState instanceof NativeModelDataProductExecutionState) {
         const runtime = guaranteeNonNullable(
-          execState.exectionValue.runtime,
+          this.executionState.exectionValue.runtime,
           'runtime unable to be resolved',
         );
         this.changeRuntime(new RuntimePointer(runtime));
       } else if (
-        execState instanceof ModelAccessPointDataProductExecutionState &&
-        execState.selectedRuntime instanceof PackageableRuntime
+        this.executionState instanceof
+          ModelAccessPointDataProductExecutionState &&
+        this.executionState.selectedRuntime instanceof PackageableRuntime
       ) {
-        this.changeRuntime(execState.selectedRuntime);
+        this.changeRuntime(this.executionState.selectedRuntime);
       }
       const compatibleClasses = resolveUsableDataProductClasses(
         this.activeFeaturedElements,
