@@ -228,6 +228,7 @@ export const V1_buildAccessPointGroup = (
 export const V1_buildNativeModelExecutionContext = (
   nativeModelExecutionContext: V1_NativeModelExecutionContext,
   context: V1_GraphBuilderContext,
+  owner: NativeModelAccess,
 ): NativeModelExecutionContext => {
   const metamodelNativeModelExecutionContext =
     new NativeModelExecutionContext();
@@ -242,6 +243,7 @@ export const V1_buildNativeModelExecutionContext = (
         context.graph.getRuntime(nativeModelExecutionContext.runtime.path),
       );
   }
+  metamodelNativeModelExecutionContext.__owner = owner;
   return metamodelNativeModelExecutionContext;
 };
 
@@ -312,7 +314,11 @@ export const V1_buildNativeModelAccess = (
   const metamodelNativeModelAccess = new NativeModelAccess();
   metamodelNativeModelAccess.nativeModelExecutionContexts =
     nativeModelAccess.nativeModelExecutionContexts.map((executionContext) =>
-      V1_buildNativeModelExecutionContext(executionContext, context),
+      V1_buildNativeModelExecutionContext(
+        executionContext,
+        context,
+        metamodelNativeModelAccess,
+      ),
     );
   metamodelNativeModelAccess.defaultExecutionContext = guaranteeNonNullable(
     metamodelNativeModelAccess.nativeModelExecutionContexts.find(

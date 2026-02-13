@@ -214,6 +214,7 @@ export class NativeModelExecutionContext implements Hashable {
   key!: string;
   mapping!: PackageableElementReference<Mapping>;
   runtime: PackageableElementReference<PackageableRuntime> | undefined;
+  __owner!: NativeModelAccess;
 
   get hashCode(): string {
     return hashArray([
