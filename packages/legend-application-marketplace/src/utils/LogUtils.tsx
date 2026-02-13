@@ -17,12 +17,12 @@
 import { LakehouseDataProductSearchResultDetails } from '@finos/legend-server-marketplace';
 import {
   type LEGEND_MARKETPLACE_PAGE,
-  DATAPRODUCT_TYPE,
   LegendMarketplaceTelemetryHelper,
 } from '../__lib__/LegendMarketplaceTelemetryHelper.js';
 import type { ProductCardState } from '../stores/lakehouse/dataProducts/ProductCardState.js';
 import { getSearchResultProjectGAV } from './SearchUtils.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import { DATAPRODUCT_TYPE } from '@finos/legend-extension-dsl-data-product';
 
 export const logClickingDataProductCard = (
   productCardState: ProductCardState,
