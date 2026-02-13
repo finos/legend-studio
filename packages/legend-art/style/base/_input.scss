@@ -98,6 +98,13 @@
   &__input {
     height: 2.8rem;
     width: 100%;
+
+    &__documentation {
+      height: 35rem;
+      vertical-align: top;
+      resize: vertical;
+      padding: 0.5rem;
+    }
   }
 
   &__error-message {
