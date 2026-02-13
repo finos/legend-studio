@@ -52,6 +52,7 @@ import {
   RuntimePointer,
   ServiceExecutionMode,
   validate_ServicePattern,
+  validate_ServiceMcpServer,
 } from '@finos/legend-graph';
 import { type QueryEditorStore } from '@finos/legend-application-query';
 import type { UserOption } from '../studio/QueryProductionizer.js';
@@ -90,7 +91,14 @@ export const ServiceRegisterModal = observer(
       ),
     );
     const [owners, setOwners] = useState<UserOption[]>([]);
+    const [serviceDocumentation, setServiceDocumentation] = useState('');
+    const [serviceMcpServer, setServiceMcpServer] = useState<
+      string | undefined
+    >(undefined);
+    const [enableMcp, setEnableMcp] = useState(false);
     const [isServiceUrlPatternValid, setIsServiceUrlPatternValid] =
+      useState(true);
+    const [isServiceMcpServerValid, setIsServiceMcpServerValid] =
       useState(true);
     const onTextChange = (value: string): void => {
       if (value !== text) {
@@ -107,6 +115,34 @@ export const ServiceRegisterModal = observer(
       setServicePattern(event.target.value);
       setIsServiceUrlPatternValid(!validate_ServicePattern(event.target.value));
     };
+
+    const onChangeServiceDocumentation: React.ChangeEventHandler<
+      HTMLTextAreaElement
+    > = (event) => {
+      setServiceDocumentation(event.target.value);
+    };
+
+    const onChangeServiceMcpServer: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => {
+      if (event.target.value === '') {
+        setServiceMcpServer(undefined);
+      } else {
+        setServiceMcpServer(event.target.value);
+      }
+      setIsServiceMcpServerValid(
+        !validate_ServiceMcpServer(event.target.value),
+      );
+    };
+
+    const toggleEnableMcp = (): void => {
+      setEnableMcp(!enableMcp);
+      if (enableMcp) {
+        setServiceMcpServer(undefined);
+        setIsServiceMcpServerValid(true);
+      }
+    };
+
     const serverRegistrationOptions =
       editorStore.applicationStore.config.options
         .TEMPORARY__serviceRegistrationConfig;
@@ -166,6 +202,8 @@ export const ServiceRegisterModal = observer(
           const service = await createServiceElement(
             'model::QueryService',
             servicePattern,
+            serviceDocumentation,
+            serviceMcpServer,
             owners.map((o) => o.value),
             queryBuilderState.buildQuery(),
             queryBuilderState.executionContextState.mapping.path,
@@ -312,6 +350,74 @@ export const ServiceRegisterModal = observer(
                     />
                   </div>
                 </div>
+                <div className="service-register-modal__input">
+                  <div className="service-register-modal__input__label">
+                    Documentation
+                  </div>
+                  <div className="input-group service-register-modal__input__input">
+                    <textarea
+                      className={`input ${darkMode ? 'input--dark' : ''} input-group__input__documentation`}
+                      spellCheck={false}
+                      placeholder=""
+                      value={serviceDocumentation}
+                      onChange={onChangeServiceDocumentation}
+                    />
+                  </div>
+                </div>
+                <div
+                  className="service-register-modal__auto-activation__toggler"
+                  onClick={toggleEnableMcp}
+                >
+                  <div className="panel__content__form__section__toggler">
+                    <button
+                      className={clsx(
+                        'panel__content__form__section__toggler__btn',
+                        {
+                          'panel__content__form__section__toggler__btn--toggled':
+                            enableMcp,
+                        },
+                      )}
+                      tabIndex={-1}
+                    >
+                      {enableMcp ? <CheckSquareIcon /> : <SquareIcon />}
+                    </button>
+                    <div className="panel__content__form__section__toggler__prompt">
+                      Enable MCP
+                    </div>
+                  </div>
+                </div>
+                {enableMcp && (
+                  <div className="service-register-modal__input">
+                    <div className="service-register-modal__input__label">
+                      MCP Server
+                    </div>
+                    <div className="input-group service-register-modal__input__input">
+                      <input
+                        className={clsx(
+                          'input input--dark input-group__input',
+                          {
+                            'input-group__input--error': Boolean(
+                              !isServiceMcpServerValid,
+                            ),
+                          },
+                        )}
+                        spellCheck={false}
+                        placeholder=""
+                        value={serviceMcpServer ?? ''}
+                        onChange={onChangeServiceMcpServer}
+                      />
+                      {!isServiceMcpServerValid && (
+                        <div className="input-group__error-message">
+                          MCP server must match pattern
+                          &apos;^[a-zA-Z_][a-zA-Z0-9_]*$&apos;
+                          <br />
+                          (start with a letter or underscore, followed by
+                          letters, digits, or underscores)
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div
                   className="service-register-modal__auto-activation__toggler"
                   onClick={toggleActivateService}
