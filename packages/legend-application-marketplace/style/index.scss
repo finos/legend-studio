@@ -16,6 +16,7 @@
 
 @forward 'mui';
 @forward 'app';
+@use 'theme';
 
 @forward 'components/cart-drawer';
 @forward 'components/coming-soon-display';
