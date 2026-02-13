@@ -17,15 +17,24 @@
 import { useApplicationStore } from '@finos/legend-application';
 import {
   buildExecOptions,
+  buildModelAccessPointGroupOption,
   type DataProductOption,
   type DataProductQueryBuilderState,
+  type ModelAccessPointGroupOption,
+  NativeModelDataProductExecutionState,
+  ModelAccessPointDataProductExecutionState,
 } from '../../stores/workflows/dataProduct/DataProductQueryBuilderState.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { QueryBuilderClassSelector } from '../QueryBuilderSideBar.js';
 import { observer } from 'mobx-react-lite';
 import {
   resolveUsableDataProductClasses,
   type NativeModelExecutionContext,
+  type PackageableRuntime,
 } from '@finos/legend-graph';
 import type { DepotEntityWithOrigin } from '@finos/legend-storage';
 import { useEffect } from 'react';
@@ -65,9 +74,9 @@ const DataProductQueryBuilderSetupPanelContent = observer(
   (props: { queryBuilderState: DataProductQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
+    const executionState = queryBuilderState.executionState;
+
     // data product
-    const nativeAccessGroup = queryBuilderState.nativeModelAccess;
-    const selectedExecContext = queryBuilderState.selectedExecContext;
     const dataProductOptions = queryBuilderState.dataProductOptions;
     const selectedDataProductOption =
       queryBuilderState.selectedDataProductOption;
@@ -75,22 +84,73 @@ const DataProductQueryBuilderSetupPanelContent = observer(
       option: DataProductOption | null,
     ): void => {
       if (option?.value) {
-        queryBuilderState
-          .onDataProductChange?.(option.value)
-          .catch(queryBuilderState.applicationStore.alertUnhandledError);
+        queryBuilderState.handleDataProductChange(option.value);
       }
     };
-    // execution context
+
+    const isNativeMode =
+      executionState instanceof NativeModelDataProductExecutionState;
+    const isModelAccessPointGroupMode =
+      executionState instanceof ModelAccessPointDataProductExecutionState;
+
+    // native execution context options
     const executionContextOptions = queryBuilderState.execOptions;
-    const showExecutionContextOptions = executionContextOptions.length > 1;
-    const selectedExecOptions = buildExecOptions(selectedExecContext);
-    // class
-    const classes = resolveUsableDataProductClasses(
-      nativeAccessGroup.featuredElements,
-      selectedExecContext.mapping.value,
-      queryBuilderState.graphManagerState,
-      undefined,
-    );
+    const showExecutionContextOptions =
+      isNativeMode && executionContextOptions.length > 1;
+    const selectedExecOption =
+      executionState instanceof NativeModelDataProductExecutionState
+        ? buildExecOptions(executionState.exectionValue)
+        : undefined;
+
+    // model access point group options
+    const modelAccessPointGroupOptions =
+      queryBuilderState.modelAccessPointGroupOptions;
+    const showModelAccessPointGroupSelector =
+      isModelAccessPointGroupMode && modelAccessPointGroupOptions.length > 1;
+    const selectedModelAccessPointGroupOption =
+      executionState instanceof ModelAccessPointDataProductExecutionState
+        ? buildModelAccessPointGroupOption(executionState.exectionValue)
+        : undefined;
+
+    // runtime options (only for model access point group)
+    const showRuntimeSelector =
+      executionState instanceof ModelAccessPointDataProductExecutionState &&
+      executionState.showRuntimeOptions;
+    const runtimeOptions =
+      executionState instanceof ModelAccessPointDataProductExecutionState
+        ? executionState.compatibleRuntimes.map(buildElementOption)
+        : [];
+    const selectedRuntimeOption =
+      executionState instanceof ModelAccessPointDataProductExecutionState &&
+      executionState.selectedRuntime
+        ? buildElementOption(executionState.selectedRuntime)
+        : null;
+
+    const onRuntimeOptionChange = (
+      option: PackageableElementOption<PackageableRuntime>,
+    ): void => {
+      if (
+        executionState instanceof ModelAccessPointDataProductExecutionState &&
+        option.value === executionState.selectedRuntime
+      ) {
+        return;
+      }
+      if (executionState instanceof ModelAccessPointDataProductExecutionState) {
+        executionState.changeSelectedRuntime(option.value);
+      }
+    };
+
+    // class — resolve from the active mapping and featured elements
+    const activeMapping = queryBuilderState.activeMapping;
+    const activeFeaturedElements = queryBuilderState.activeFeaturedElements;
+    const classes = activeMapping
+      ? resolveUsableDataProductClasses(
+          activeFeaturedElements,
+          activeMapping,
+          queryBuilderState.graphManagerState,
+          undefined,
+        )
+      : [];
 
     useEffect(() => {
       flowResult(queryBuilderState.loadEntities()).catch(
@@ -101,15 +161,11 @@ const DataProductQueryBuilderSetupPanelContent = observer(
     const onExecutionContextOptionChange = async (
       option: NativeExecutionContextOption,
     ): Promise<void> => {
-      if (option.value === queryBuilderState.selectedExecContext) {
+      if (isNativeMode && option.value === executionState.exectionValue) {
         return;
       }
-      const currentMapping =
-        queryBuilderState.selectedExecContext.mapping.value.path;
-      queryBuilderState.setExecOptions(option.value);
-      await queryBuilderState.propagateExecutionContextChange(
-        currentMapping === option.value.mapping.value.path,
-      );
+      queryBuilderState.setExecutionState(option.value);
+      await queryBuilderState.propagateExecutionContextChange();
       queryBuilderState.onExecutionContextChange?.(option.value);
     };
 
@@ -117,6 +173,25 @@ const DataProductQueryBuilderSetupPanelContent = observer(
       option: NativeExecutionContextOption,
     ): void => {
       flowResult(onExecutionContextOptionChange(option));
+    };
+
+    const onModelAccessPointGroupOptionChange = async (
+      option: ModelAccessPointGroupOption,
+    ): Promise<void> => {
+      if (
+        isModelAccessPointGroupMode &&
+        option.value === executionState.exectionValue
+      ) {
+        return;
+      }
+      queryBuilderState.setExecutionState(option.value);
+      await queryBuilderState.propagateExecutionContextChange();
+    };
+
+    const handleModelAccessPointGroupOptionChange = (
+      option: ModelAccessPointGroupOption,
+    ): void => {
+      flowResult(onModelAccessPointGroupOptionChange(option));
     };
 
     return (
@@ -164,10 +239,58 @@ const DataProductQueryBuilderSetupPanelContent = observer(
                 disabled={
                   executionContextOptions.length < 1 ||
                   (executionContextOptions.length === 1 &&
-                    Boolean(selectedExecOptions))
+                    Boolean(selectedExecOption))
                 }
                 onChange={handleExecutionContextOptionChange}
-                value={selectedExecOptions}
+                value={selectedExecOption}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+              />
+            </div>
+          )}
+          {Boolean(showModelAccessPointGroupSelector) && (
+            <div className="query-builder__setup__config-group__item">
+              <label
+                className="btn--sm query-builder__setup__config-group__item__label"
+                title="access point group"
+                htmlFor="query-builder__setup__access-point-group-selector"
+              >
+                Access Point Group
+              </label>
+              <CustomSelectorInput
+                inputId="query-builder__setup__access-point-group-selector"
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                placeholder="Choose an access point group..."
+                options={modelAccessPointGroupOptions}
+                disabled={modelAccessPointGroupOptions.length < 1}
+                onChange={handleModelAccessPointGroupOptionChange}
+                value={selectedModelAccessPointGroupOption}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+              />
+            </div>
+          )}
+          {Boolean(showRuntimeSelector) && (
+            <div className="query-builder__setup__config-group__item">
+              <label
+                className="btn--sm query-builder__setup__config-group__item__label"
+                title="runtime"
+                htmlFor="query-builder__setup__runtime-selector"
+              >
+                Runtime
+              </label>
+              <CustomSelectorInput
+                inputId="query-builder__setup__runtime-selector"
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                placeholder="Choose a runtime..."
+                options={runtimeOptions}
+                disabled={runtimeOptions.length < 1}
+                onChange={onRuntimeOptionChange}
+                value={selectedRuntimeOption}
                 darkMode={
                   !applicationStore.layoutService
                     .TEMPORARY__isLightColorThemeEnabled

@@ -16,6 +16,7 @@
 
 import {
   DataProductQueryBuilderState,
+  NativeModelDataProductExecutionState,
   type QueryBuilderActionConfig,
   type QueryBuilderConfig,
   type QueryBuilderWorkflowState,
@@ -36,7 +37,7 @@ import {
   type Class,
   type DataProduct,
   type GraphManagerState,
-  type NativeModelAccess,
+  type ModelAccessPointGroup,
   type NativeModelExecutionContext,
   type V1_DataProductArtifact,
 } from '@finos/legend-graph';
@@ -58,8 +59,7 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     actionConfig: QueryBuilderActionConfig,
     dataProduct: DataProduct,
     artifact: V1_DataProductArtifact | undefined,
-    nativeNativeModelAccess: NativeModelAccess,
-    nativeModelExecContext: NativeModelExecutionContext,
+    executionState: NativeModelExecutionContext | ModelAccessPointGroup,
     isLightGraphEnabled: boolean,
     depotServerClient: DepotServerClient,
     project: ProjectGAVCoordinates,
@@ -78,8 +78,7 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
       dataProduct,
       artifact,
       actionConfig,
-      nativeNativeModelAccess,
-      nativeModelExecContext,
+      executionState,
       undefined,
       onDataProductChange,
       onExecutionContextChange,
@@ -101,7 +100,14 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
 
   override copyDataProductLinkToClipBoard(): void {
     const dataSpace = this.dataProduct;
-    const executionContext = this.selectedExecContext;
+    const execState = this.executionState;
+    if (!(execState instanceof NativeModelDataProductExecutionState)) {
+      this.applicationStore.notificationService.notifyError(
+        'Data Product link is not available for this access type.',
+      );
+      return;
+    }
+    const executionContext = execState.exectionValue;
     const route =
       this.applicationStore.navigationService.navigator.generateAddress(
         generateDataProductRoute(

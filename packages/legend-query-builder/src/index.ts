@@ -60,7 +60,13 @@ export {
 } from './components/QueryBuilderSideBar.js';
 export { ClassQueryBuilderState } from './stores/workflows/ClassQueryBuilderState.js';
 export { FunctionQueryBuilderState } from './stores/workflows/FunctionQueryBuilderState.js';
-export { DataProductQueryBuilderState } from './stores/workflows/dataProduct/DataProductQueryBuilderState.js';
+export {
+  DataProductQueryBuilderState,
+  type ModelAccessPointGroupOption,
+  buildModelAccessPointGroupOption,
+  NativeModelDataProductExecutionState,
+  ModelAccessPointDataProductExecutionState,
+} from './stores/workflows/dataProduct/DataProductQueryBuilderState.js';
 export { MappingQueryBuilderState } from './stores/workflows/MappingQueryBuilderState.js';
 export {
   type ServiceExecutionContext,

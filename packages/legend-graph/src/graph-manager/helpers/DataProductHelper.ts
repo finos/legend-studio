@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-import { assertTrue, uniq, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertTrue,
+  uniq,
+  guaranteeNonNullable,
+  filterByType,
+} from '@finos/legend-shared';
 import {
   ModelAccessPointGroup,
   type NativeModelAccess,
   type DataProduct,
   type DataProductElement,
   type ElementScope,
+  type NativeModelExecutionContext,
 } from '../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import type { Mapping } from '../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { GraphManagerState } from '../GraphManagerState.js';
@@ -110,4 +116,21 @@ export const resolveUsableDataProductClasses = (
     });
   }
   return compatibleClasses;
+};
+
+export const resolveDataProductExecutionState = (
+  dataProduct: DataProduct,
+): NativeModelExecutionContext | ModelAccessPointGroup => {
+  if (isDataProductNative(dataProduct)) {
+    return getModelGroupFromNativeDataProduct(dataProduct)
+      .defaultExecutionContext;
+  } else {
+    const modelAccessGroup = dataProduct.accessPointGroups.filter(
+      filterByType(ModelAccessPointGroup),
+    )[0];
+    return guaranteeNonNullable(
+      modelAccessGroup,
+      'No native model access group or model access group on data product',
+    );
+  }
 };
