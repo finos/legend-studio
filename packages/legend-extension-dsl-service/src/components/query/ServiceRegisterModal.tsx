@@ -386,32 +386,38 @@ export const ServiceRegisterModal = observer(
                     </div>
                   </div>
                 </div>
-                {enableMcp && (<div className="service-register-modal__input">
-                  <div className="service-register-modal__input__label">
-                    MCP Server
+                {enableMcp && (
+                  <div className="service-register-modal__input">
+                    <div className="service-register-modal__input__label">
+                      MCP Server
+                    </div>
+                    <div className="input-group service-register-modal__input__input">
+                      <input
+                        className={clsx(
+                          'input input--dark input-group__input',
+                          {
+                            'input-group__input--error': Boolean(
+                              !isServiceMcpServerValid,
+                            ),
+                          },
+                        )}
+                        spellCheck={false}
+                        placeholder=""
+                        value={serviceMcpServer ?? ''}
+                        onChange={onChangeServiceMcpServer}
+                      />
+                      {!isServiceMcpServerValid && (
+                        <div className="input-group__error-message">
+                          MCP server must match pattern
+                          &apos;^[a-zA-Z_][a-zA-Z0-9_]*$&apos;
+                          <br />
+                          (start with a letter or underscore, followed by
+                          letters, digits, or underscores)
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="input-group service-register-modal__input__input">
-                    <input
-                      className={clsx('input input--dark input-group__input', {
-                        'input-group__input--error': Boolean(
-                          !isServiceMcpServerValid,
-                        ),
-                      })}
-                      spellCheck={false}
-                      placeholder=""
-                      value={serviceMcpServer ?? ''}
-                      onChange={onChangeServiceMcpServer}
-                    />
-                    {!isServiceMcpServerValid && (
-                      <div className="input-group__error-message">
-                        MCP server must match pattern &apos;^[a-zA-Z_][a-zA-Z0-9_]*$&apos;
-                        <br />
-                        (start with a letter or underscore, followed by letters,
-                        digits, or underscores)
-                      </div>
-                    )}
-                  </div>
-                </div>)}
+                )}
                 <div
                   className="service-register-modal__auto-activation__toggler"
                   onClick={toggleActivateService}
