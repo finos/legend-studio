@@ -52,6 +52,7 @@ import {
   RuntimePointer,
   ServiceExecutionMode,
   validate_ServicePattern,
+  validate_ServiceMcpServer,
 } from '@finos/legend-graph';
 import { type QueryEditorStore } from '@finos/legend-application-query';
 import type { UserOption } from '../studio/QueryProductionizer.js';
@@ -90,7 +91,13 @@ export const ServiceRegisterModal = observer(
       ),
     );
     const [owners, setOwners] = useState<UserOption[]>([]);
+    const [serviceDocumentation, setServiceDocumentation] = useState('');
+    const [serviceMcpServer, setServiceMcpServer] = useState<
+      string | undefined
+    >(undefined);
     const [isServiceUrlPatternValid, setIsServiceUrlPatternValid] =
+      useState(true);
+    const [isServiceMcpServerValid, setIsServiceMcpServerValid] =
       useState(true);
     const onTextChange = (value: string): void => {
       if (value !== text) {
@@ -107,6 +114,24 @@ export const ServiceRegisterModal = observer(
       setServicePattern(event.target.value);
       setIsServiceUrlPatternValid(!validate_ServicePattern(event.target.value));
     };
+
+    const onChangeServiceDocumentation: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => {
+      setServiceDocumentation(event.target.value);
+    };
+
+    const onChangeServiceMcpServer: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => {
+      event.target.value === ''
+        ? setServiceMcpServer(undefined)
+        : setServiceMcpServer(event.target.value);
+      setIsServiceMcpServerValid(
+        !validate_ServiceMcpServer(event.target.value),
+      );
+    };
+
     const serverRegistrationOptions =
       editorStore.applicationStore.config.options
         .TEMPORARY__serviceRegistrationConfig;
@@ -166,6 +191,8 @@ export const ServiceRegisterModal = observer(
           const service = await createServiceElement(
             'model::QueryService',
             servicePattern,
+            serviceDocumentation,
+            serviceMcpServer,
             owners.map((o) => o.value),
             queryBuilderState.buildQuery(),
             queryBuilderState.executionContextState.mapping.path,
@@ -310,6 +337,46 @@ export const ServiceRegisterModal = observer(
                       value={selectedEnvOption}
                       darkMode={darkMode}
                     />
+                  </div>
+                </div>
+                <div className="service-register-modal__input">
+                  <div className="service-register-modal__input__label">
+                    Documentation
+                  </div>
+                  <div className="input-group service-register-modal__input__input">
+                    <input
+                      className="input input--dark input-group__input"
+                      spellCheck={false}
+                      placeholder=""
+                      value={serviceDocumentation}
+                      onChange={onChangeServiceDocumentation}
+                    />
+                  </div>
+                </div>
+                <div className="service-register-modal__input">
+                  <div className="service-register-modal__input__label">
+                    MCP Server
+                  </div>
+                  <div className="input-group service-register-modal__input__input">
+                    <input
+                      className={clsx('input input--dark input-group__input', {
+                        'input-group__input--error': Boolean(
+                          !isServiceMcpServerValid,
+                        ),
+                      })}
+                      spellCheck={false}
+                      placeholder=""
+                      value={serviceMcpServer ?? ''}
+                      onChange={onChangeServiceMcpServer}
+                    />
+                    {!isServiceMcpServerValid && (
+                      <div className="input-group__error-message">
+                        MCP server must match pattern '^[a-zA-Z_][a-zA-Z0-9_]*$'
+                        <br />
+                        (start with a letter or underscore, followed by letters,
+                        digits, or underscores)
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div

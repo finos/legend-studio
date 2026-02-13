@@ -98,6 +98,8 @@ const projectDependencyToProjectCoordinates = (
 export const createServiceElement = async (
   servicePath: string,
   servicePattern: string,
+  serviceDocumentation: string,
+  serviceMcpServer: string | undefined,
   serviceOwners: string[],
   queryContent: string | RawLambda,
   mappingPath: string,
@@ -111,6 +113,8 @@ export const createServiceElement = async (
     servicePackagePath,
   );
   service.pattern = servicePattern;
+  service.documentation = serviceDocumentation;
+  service.mcpServer = serviceMcpServer;
   service.owners = serviceOwners;
   const [mappingPackagePath, mappingName] =
     resolvePackagePathAndElementName(mappingPath);
