@@ -75,8 +75,12 @@ import {
   attachFromQuery,
   PackageableElementExplicitReference,
   InMemoryGraphData,
+  type LambdaFunction,
 } from '@finos/legend-graph';
-import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
+import {
+  buildLambdaFunction,
+  buildExecutionContextState,
+} from './QueryBuilderValueSpecificationBuilder.js';
 import type {
   CommandRegistrar,
   GenericLegendApplicationStore,
@@ -734,6 +738,19 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       runtimePointer.value,
     );
     return buildRawLambdaFromLambdaFunction(fromQuery, this.graphManagerState);
+  }
+
+  /**
+   * Builds the execution context expression (e.g. from()) for the lambda function.
+   * Subclasses can override this to customize the execution context building.
+   */
+  buildExecutionContextExpression(
+    lambdaFunction: LambdaFunction,
+  ): LambdaFunction {
+    return buildExecutionContextState(
+      this.executionContextState,
+      lambdaFunction,
+    );
   }
 
   getQueryReturnType(): Type {

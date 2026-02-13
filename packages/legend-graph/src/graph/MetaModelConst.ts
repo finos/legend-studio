@@ -200,6 +200,7 @@ export enum SUPPORTED_FUNCTIONS {
   NEW = 'meta::pure::functions::meta::new',
   // from
   FROM = 'meta::pure::mapping::from',
+  WITH = 'meta::pure::mapping::with',
 }
 
 export const DATE_TIME_FORMAT_WITH_MILLISECONDS =

@@ -101,7 +101,7 @@ const buildGetAllVersionsFunction = (
   return _func;
 };
 
-const buildExecutionContextState = (
+export const buildExecutionContextState = (
   executionState: QueryBuilderExecutionContextState,
   lambdaFunction: LambdaFunction,
 ): LambdaFunction => {
@@ -246,10 +246,7 @@ export const buildLambdaFunction = (
     options,
   );
   // build execution-state
-  buildExecutionContextState(
-    queryBuilderState.executionContextState,
-    lambdaFunction,
-  );
+  queryBuilderState.buildExecutionContextExpression(lambdaFunction);
 
   // build variable expressions
   if (queryBuilderState.constantState.constants.length) {
