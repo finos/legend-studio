@@ -24,6 +24,7 @@
   "exports": {
     ".": "./lib/index.js",
     "./test": "./lib/__test__.js",
+    "./graph-modifier": "./lib/__lib__/graph-modifier.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",
