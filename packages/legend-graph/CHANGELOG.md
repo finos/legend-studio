@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.32
+
+### Patch Changes
+
+- [#4870](https://github.com/finos/legend-studio/pull/4870) [`53dc394`](https://github.com/finos/legend-studio/commit/53dc394b673c91aa895f71422744de5a498f236b) ([@codrex](https://github.com/codrex)) - Add DQ validations form
+
 ## 32.3.31
 
 ### Patch Changes
