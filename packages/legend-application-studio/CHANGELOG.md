@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.94
+
+### Patch Changes
+
+- [#4874](https://github.com/finos/legend-studio/pull/4874) [`8b17ebd`](https://github.com/finos/legend-studio/commit/8b17ebd9891ae6f6e798d374f92cf041ab154569) ([@jackp5150](https://github.com/jackp5150)) - Added exports for usage for test/graph utils
+
 ## 28.19.93
 
 ## 28.19.92
