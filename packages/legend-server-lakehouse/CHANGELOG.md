@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.34
+
+### Patch Changes
+
+- [#4868](https://github.com/finos/legend-studio/pull/4868) [`f4d6050`](https://github.com/finos/legend-studio/commit/f4d6050830222ac60eef3191c00fa22dc96ea02a) ([@travisstebbins](https://github.com/travisstebbins)) - Show entitlements sync status in DataProductDataAccess
+
 ## 0.3.33
 
 ## 0.3.32

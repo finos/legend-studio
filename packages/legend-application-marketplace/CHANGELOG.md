@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.68
+
+### Patch Changes
+
+- [#4868](https://github.com/finos/legend-studio/pull/4868) [`f4d6050`](https://github.com/finos/legend-studio/commit/f4d6050830222ac60eef3191c00fa22dc96ea02a) ([@travisstebbins](https://github.com/travisstebbins)) - Show entitlements sync status in DataProductDataAccess
+
+- [#4879](https://github.com/finos/legend-studio/pull/4879) [`4e25d13`](https://github.com/finos/legend-studio/commit/4e25d13badd23c8b460ad03bb8f59a9aabadc42f) ([@kelly-thai](https://github.com/kelly-thai)) - Refactor LegendMarketplaceTelemetryHelper and update search logging to only track on user action (not refreshes)
+
 ## 0.1.67
 
 ## 0.1.66
