@@ -249,7 +249,7 @@ export class DataProductDataAccessState {
   }
 
   async fetchIngestEnvironmentDetails(
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): Promise<void> {
     if (!this.ingestEnvironmentFetchState.isInInitialState) {
       this.applicationStore.notificationService.notifyIllegalState(
@@ -261,16 +261,16 @@ export class DataProductDataAccessState {
     this.ingestEnvironmentFetchState.inProgress();
     await Promise.all([
       (async () => {
-        await this.fetchLakehouseIngestEnvironmentSummaries(token);
-        await this.fetchLakehouseIngestEnvironmentDetails(token);
+        await this.fetchLakehouseIngestEnvironmentSummaries(tokenProvider);
+        await this.fetchLakehouseIngestEnvironmentDetails(tokenProvider);
       })(),
-      this.fetchLakehouseIngestEnv(token),
-      this.fetchEntitlementsEnvs(token),
+      this.fetchLakehouseIngestEnv(tokenProvider),
+      this.fetchEntitlementsEnvs(tokenProvider),
     ]);
     this.ingestEnvironmentFetchState.complete();
   }
 
-  async fetchContracts(token: string | undefined): Promise<void> {
+  async fetchContracts(tokenProvider: () => string | undefined): Promise<void> {
     try {
       this.dataProductViewerState.apgStates.forEach((e) =>
         e.fetchingAccessState.inProgress(),
@@ -284,7 +284,7 @@ export class DataProductDataAccessState {
           V1_ResourceType.ACCESS_POINT_GROUP,
           this.entitlementsDataProductDetails.dataProduct.name,
           this.entitlementsDataProductDetails.deploymentId,
-          token,
+          tokenProvider(),
         );
 
       const dataProductContracts =
@@ -299,7 +299,7 @@ export class DataProductDataAccessState {
         void e.handleDataProductContracts(
           dataProductContracts,
           this.lakehouseContractServerClient,
-          token,
+          tokenProvider,
         );
       });
     } catch (error) {
@@ -312,11 +312,11 @@ export class DataProductDataAccessState {
     }
   }
 
-  *init(token: string | undefined): GeneratorFn<void> {
+  *init(tokenProvider: () => string | undefined): GeneratorFn<void> {
     yield Promise.all([
-      this.fetchContracts(token),
-      this.fetchIngestEnvironmentDetails(token),
-      this.fetchDataProductOwners(token),
+      this.fetchContracts(tokenProvider),
+      this.fetchIngestEnvironmentDetails(tokenProvider),
+      this.fetchDataProductOwners(tokenProvider),
     ]);
   }
 
@@ -348,7 +348,7 @@ export class DataProductDataAccessState {
     consumer: V1_OrganizationalScope,
     description: string,
     group: V1_AccessPointGroup,
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
     consumerType: string,
   ): GeneratorFn<void> {
     try {
@@ -370,7 +370,7 @@ export class DataProductDataAccessState {
         const contractsAndSubscriptions = V1_deserializeDataContractResponse(
           (yield this.lakehouseContractServerClient.createContract(
             request,
-            token,
+            tokenProvider(),
           )) as PlainObject<V1_DataContractsResponse>,
           this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         );
@@ -389,7 +389,7 @@ export class DataProductDataAccessState {
           apgState?.setAssociatedUserContract(
             associatedContractAndSubscription.dataContract,
             this.lakehouseContractServerClient,
-            token,
+            tokenProvider,
           );
         }
 
@@ -401,7 +401,7 @@ export class DataProductDataAccessState {
           `Contract created, please go to contract view for pending tasks`,
         );
         this.logCreatingContract(request, consumerType, undefined);
-        yield this.fetchContracts(token);
+        yield this.fetchContracts(tokenProvider);
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.notificationService.notifyError(
@@ -418,12 +418,12 @@ export class DataProductDataAccessState {
   }
 
   async fetchLakehouseIngestEnvironmentSummaries(
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): Promise<void> {
     try {
       const discoveryEnvironments = (
         await this.lakehousePlatformServerClient.getIngestEnvironmentSummaries(
-          token,
+          tokenProvider(),
         )
       ).map((e: PlainObject<IngestDeploymentServerConfig>) =>
         IngestDeploymentServerConfig.serialization.fromJson(e),
@@ -438,14 +438,16 @@ export class DataProductDataAccessState {
     }
   }
 
-  async fetchLakehouseIngestEnv(token: string | undefined): Promise<void> {
+  async fetchLakehouseIngestEnv(
+    tokenProvider: () => string | undefined,
+  ): Promise<void> {
     try {
       const did = this.entitlementsDataProductDetails.deploymentId;
       const ingestEnv =
         await this.lakehousePlatformServerClient.findProducerServer(
           did,
           undefined,
-          token,
+          tokenProvider(),
         );
       const ingestServerUrl =
         IngestDeploymentServerConfig.serialization.fromJson(ingestEnv);
@@ -460,7 +462,7 @@ export class DataProductDataAccessState {
   }
 
   async fetchLakehouseIngestEnvironmentDetails(
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): Promise<void> {
     try {
       const ingestEnvironments: V1_IngestEnvironment[] = (
@@ -470,7 +472,7 @@ export class DataProductDataAccessState {
               const env =
                 await this.lakehouseIngestServerClient.getIngestEnvironment(
                   discoveryEnv.ingestServerUrl,
-                  token,
+                  tokenProvider(),
                 );
               return V1_deserializeIngestEnvironment(env);
             } catch (error) {
@@ -494,12 +496,14 @@ export class DataProductDataAccessState {
     }
   }
 
-  async fetchEntitlementsEnvs(token: string | undefined): Promise<void> {
+  async fetchEntitlementsEnvs(
+    tokenProvider: () => string | undefined,
+  ): Promise<void> {
     try {
       const envs =
         await this.lakehouseContractServerClient.getUserEntitlementEnvs(
           this.applicationStore.identityService.currentUser,
-          token,
+          tokenProvider(),
         );
       this.setEntitlementsEnv(envs.users);
     } catch (error) {
@@ -511,13 +515,15 @@ export class DataProductDataAccessState {
     }
   }
 
-  async fetchDataProductOwners(token: string | undefined): Promise<void> {
+  async fetchDataProductOwners(
+    tokenProvider: () => string | undefined,
+  ): Promise<void> {
     this.fetchingDataProductOwnersState.inProgress();
     try {
       const rawOwnershipResponse =
         await this.lakehouseContractServerClient.getOwnersForDid(
           this.entitlementsDataProductDetails.deploymentId,
-          token,
+          tokenProvider(),
         );
       const owners = this.dataAccessPlugins.flatMap(
         (plugin) =>

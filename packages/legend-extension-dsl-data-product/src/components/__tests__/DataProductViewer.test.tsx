@@ -22,7 +22,12 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { type PlainObject } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  NetworkClientError,
+  HttpStatus,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import {
   type V1_DataContract,
   type V1_DataProduct,
@@ -219,6 +224,22 @@ const setupLakehouseDataProductTest = async (
       }
       return getMockPendingManagerApprovalTasksResponse() as unknown as PlainObject<V1_TaskResponse>;
     });
+
+    // Default mock for consumer grants - returns the current user as approved
+    createSpy(
+      dataProductDataAccessState.lakehouseContractServerClient,
+      'getConsumerGrantsByContractId',
+    ).mockResolvedValue({
+      contractId: 'test-approved-contract-id',
+      accessPointGroups: [],
+      users: [
+        {
+          username: 'test-consumer-user-id',
+          contractId: 'test-approved-contract-id',
+          targetAccount: 'test-account',
+        },
+      ],
+    });
   }
 
   // engineServerClient spies
@@ -305,7 +326,7 @@ const setupLakehouseDataProductTest = async (
   let renderResult;
 
   await act(async () => {
-    await flowResult(dataProductDataAccessState?.init(undefined));
+    await flowResult(dataProductDataAccessState?.init(() => undefined));
     renderResult = render(
       <BrowserRouter>
         <AuthProvider>
@@ -320,7 +341,7 @@ const setupLakehouseDataProductTest = async (
     await new Promise((resolve) => setTimeout(resolve, 0)); // wait for async state updates
   });
 
-  return { renderResult, dataProductDataAccessState };
+  return { renderResult, dataProductDataAccessState, dataProductViewerState };
 };
 
 describe('DataProductViewer', () => {
@@ -1415,6 +1436,501 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Request Access for Others');
       screen.getByText('Manage Subscriptions');
+    });
+
+    test('displays ENTITLEMENTS SYNCING button when user is approved but not yet in consumer grants', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState, dataProductViewerState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      // Override the default consumer grants mock to return empty users
+      createSpy(
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
+        'getConsumerGrantsByContractId',
+      ).mockResolvedValue({
+        contractId: 'test-approved-contract-id',
+        accessPointGroups: [],
+        users: [],
+      });
+
+      // Re-fetch to trigger the new mock
+      await act(async () => {
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      await screen.findByRole('button', { name: /ENTITLEMENTS SYNCING/ });
+
+      // Cleanup: stop polling to prevent timer leaks
+      dataProductViewerState.apgStates.forEach((s) =>
+        s.stopPollingConsumerGrant(),
+      );
+    });
+
+    test('displays ENTITLEMENTS SYNCING button when consumer grants response has no users array', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState, dataProductViewerState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      // Override to return response with no users array
+      createSpy(
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
+        'getConsumerGrantsByContractId',
+      ).mockResolvedValue({
+        contractId: 'test-approved-contract-id',
+        accessPointGroups: [],
+      });
+
+      // Re-fetch to trigger the new mock
+      await act(async () => {
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      await screen.findByRole('button', { name: /ENTITLEMENTS SYNCING/ });
+
+      // Cleanup: stop polling to prevent timer leaks
+      dataProductViewerState.apgStates.forEach((s) =>
+        s.stopPollingConsumerGrant(),
+      );
+    });
+
+    test('transitions from ENTITLEMENTS SYNCING to ENTITLED when polling returns user in consumer grants', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState, dataProductViewerState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      // First call return empty users (syncing). Second call returns the user.
+      createSpy(
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
+        'getConsumerGrantsByContractId',
+      )
+        .mockResolvedValueOnce({
+          contractId: 'test-approved-contract-id',
+          accessPointGroups: [],
+          users: [],
+        })
+        .mockResolvedValueOnce({
+          contractId: 'test-approved-contract-id',
+          accessPointGroups: [],
+          users: [
+            {
+              username: 'test-consumer-user-id',
+              contractId: 'test-approved-contract-id',
+              targetAccount: 'test-account',
+            },
+          ],
+        });
+
+      // Re-fetch to trigger the new mock (with real timers)
+      await act(async () => {
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      // Should show ENTITLEMENTS SYNCING initially
+      await screen.findByRole('button', { name: /ENTITLEMENTS SYNCING/ });
+
+      // Stop the existing polling timer (which uses a 5s real setTimeout)
+      dataProductViewerState.apgStates.forEach((s) =>
+        s.stopPollingConsumerGrant(),
+      );
+
+      // Directly trigger a poll on each APG state to simulate the next poll cycle.
+      // The second mock response (with user) will be consumed.
+      await act(async () => {
+        await Promise.all(
+          dataProductViewerState.apgStates.map((s) =>
+            s.pollConsumerGrant(
+              'test-approved-contract-id',
+              guaranteeNonNullable(dataProductDataAccessState)
+                .lakehouseContractServerClient,
+              () => undefined,
+            ),
+          ),
+        );
+      });
+
+      // After polling returns the user, should show ENTITLED
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'ENTITLED' })).toBeDefined();
+      });
+
+      // Cleanup: stop polling to prevent timer leaks
+      dataProductViewerState.apgStates.forEach((s) =>
+        s.stopPollingConsumerGrant(),
+      );
+    });
+
+    test('displays ENTITLED with case-insensitive user matching', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      // Override to return user with different casing - should match case-insensitively
+      createSpy(
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
+        'getConsumerGrantsByContractId',
+      ).mockResolvedValue({
+        contractId: 'test-approved-contract-id',
+        accessPointGroups: [],
+        users: [
+          {
+            username: 'TEST-CONSUMER-USER-ID',
+            contractId: 'test-approved-contract-id',
+            targetAccount: 'test-account',
+          },
+        ],
+      });
+
+      // Re-fetch to trigger the new mock
+      await act(async () => {
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      // Should show ENTITLED because case-insensitive match finds the user
+      await screen.findByRole('button', { name: 'ENTITLED' });
+    });
+
+    test('displays ENTITLED button when getConsumerGrantsByContractId returns 404', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      // Override to return a 404 error for consumer grants
+      const notFoundError = new NetworkClientError(
+        { status: HttpStatus.NOT_FOUND, statusText: 'Not Found' } as Response,
+        undefined,
+      );
+      createSpy(
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
+        'getConsumerGrantsByContractId',
+      ).mockRejectedValue(notFoundError);
+
+      // Re-fetch to trigger the new mock
+      await act(async () => {
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      // Should show ENTITLED (not ENTITLEMENTS SYNCING) because 404 means grants endpoint is not available
+      await screen.findByRole('button', { name: 'ENTITLED' });
     });
 
     test('displays ENTERPRISE ACCESS for Access Point Group marked as Enterprise', async () => {

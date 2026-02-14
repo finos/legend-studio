@@ -33,6 +33,7 @@ import type {
   V1_UserPendingContractsResponse,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
+import type { LakehouseConsumerGrantResponse } from './models/ConsumerGrants.js';
 
 export interface LakehouseContractServerClientConfig {
   baseUrl: string;
@@ -322,6 +323,21 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   ): Promise<V1_EntitlementsUserEnvResponse> =>
     this.get(
       `${this._orgResolver()}/${userId}/lakehouse/environment`,
+      {},
+      this._token(token),
+    );
+
+  // ------------------------------------- Consumer Entitlements-------------------------------------
+
+  private _consumerEntitlements = (): string =>
+    `${this.baseUrl}/entitle/consumer`;
+
+  getConsumerGrantsByContractId = (
+    contractId: string,
+    token: string | undefined,
+  ): Promise<PlainObject<LakehouseConsumerGrantResponse>> =>
+    this.get(
+      `${this._consumerEntitlements()}/sync/audit/grants/contracts/${contractId}`,
       {},
       this._token(token),
     );

@@ -77,6 +77,7 @@ import {
   Button,
   ButtonGroup,
   Chip,
+  CircularProgress,
   Menu,
   MenuItem,
   Tab,
@@ -976,9 +977,15 @@ export const DataProductAccessPointGroupViewer = observer(
           buttonColor = 'warning';
           break;
         case AccessPointGroupAccess.APPROVED:
-          buttonLabel = 'ENTITLED';
-          onClick = handleContractsClick;
-          buttonColor = 'success';
+          if (apgState.isEntitlementsSyncing) {
+            buttonLabel = 'ENTITLEMENTS SYNCING';
+            onClick = handleContractsClick;
+            buttonColor = 'success';
+          } else {
+            buttonLabel = 'ENTITLED';
+            onClick = handleContractsClick;
+            buttonColor = 'success';
+          }
           break;
         case AccessPointGroupAccess.ENTERPRISE:
           buttonLabel = 'ENTERPRISE ACCESS';
@@ -991,9 +998,15 @@ export const DataProductAccessPointGroupViewer = observer(
       if (buttonLabel === undefined) {
         return null;
       }
-      const tooltipText = dataAccessState?.dataAccessPlugins
-        .flatMap((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
-        .filter(isNonEmptyString)[0];
+      const tooltipText =
+        val === AccessPointGroupAccess.APPROVED &&
+        apgState.isEntitlementsSyncing
+          ? 'Your contract has been approved but your entitlements are still syncing. The status will refresh automatically once your entitlements have synced.'
+          : dataAccessState?.dataAccessPlugins
+              .flatMap((plugin) =>
+                plugin.getExtraAccessPointGroupAccessInfo?.(val),
+              )
+              .filter(isNonEmptyString)[0];
 
       return (
         <>
@@ -1017,6 +1030,12 @@ export const DataProductAccessPointGroupViewer = observer(
               }
               sx={{ cursor: onClick === undefined ? 'default' : 'pointer' }}
             >
+              {apgState.isEntitlementsSyncing && (
+                <CircularProgress
+                  size={16}
+                  sx={{ marginLeft: 1, color: 'inherit' }}
+                />
+              )}
               {buttonLabel}
               {tooltipText !== undefined && (
                 <Tooltip
@@ -1188,7 +1207,7 @@ export const DataProductAccessPointGroupViewer = observer(
             onClose={() => dataAccessState.setContractCreatorAPG(undefined)}
             apgState={apgState}
             dataAccessState={dataAccessState}
-            token={auth.user?.access_token}
+            tokenProvider={() => auth.user?.access_token}
           />
         )}
         {entitlementsDataContractViewerState && dataAccessState && (
@@ -1205,7 +1224,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 apgState.fetchUserAccessStatus(
                   apgState.associatedUserContract.guid,
                   dataAccessState.lakehouseContractServerClient,
-                  auth.user?.access_token,
+                  () => auth.user?.access_token,
                 );
               }
             }}

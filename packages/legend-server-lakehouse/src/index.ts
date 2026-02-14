@@ -17,6 +17,7 @@
 export * from './models/IngestDeploymentServerConfig.js';
 export * from './models/LakehouseIngestionDeploymentResponse.js';
 export * from './models/AdhocDataProductDeployResponse.js';
+export * from './models/ConsumerGrants.js';
 export * from './LakehouseIngestServerClient.js';
 export * from './LakehousePlatformServerClient.js';
 export * from './LakehouseIngestionManager.js';

@@ -42,6 +42,8 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
+  NetworkClientError,
+  HttpStatus,
   uuid,
 } from '@finos/legend-shared';
 import { makeAutoObservable, action, observable, flow, computed } from 'mobx';
@@ -53,7 +55,10 @@ import {
 } from '../../utils/DataContractUtils.js';
 import type { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import type { DataProductViewerState } from './DataProductViewerState.js';
-import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import {
+  type LakehouseContractServerClient,
+  LakehouseConsumerGrantResponse,
+} from '@finos/legend-server-lakehouse';
 import {
   DSL_DATAPRODUCT_EVENT,
   DSL_DATAPRODUCT_EVENT_STATUS,
@@ -95,18 +100,23 @@ export class DataProductAPGState {
   // false here mentions contracts have not been fetched
   associatedUserContract: V1_DataContract | undefined | false = false;
   userAccessStatus: V1_EnrichedUserApprovalStatus | undefined = undefined;
+  consumerGrant: LakehouseConsumerGrantResponse | undefined = undefined;
+  consumerGrantNotFound = false;
+  private consumerGrantPollingTimer: ReturnType<typeof setTimeout> | undefined =
+    undefined;
 
   associatedSystemAccountContractsAndApprovedUsers: {
     contract: V1_DataContract;
     approvedUsers: V1_User[];
   }[] = [];
 
-  fetchingAccessState = ActionState.create();
-  handlingContractsState = ActionState.create();
-  fetchingUserAccessState = ActionState.create();
-  fetchingApprovedContractsState = ActionState.create();
-  fetchingSubscriptionsState = ActionState.create();
-  creatingSubscriptionState = ActionState.create();
+  readonly fetchingAccessState = ActionState.create();
+  readonly pollingConsumerGrantState = ActionState.create();
+  readonly handlingContractsState = ActionState.create();
+  readonly fetchingUserAccessState = ActionState.create();
+  readonly fetchingApprovedContractsState = ActionState.create();
+  readonly fetchingSubscriptionsState = ActionState.create();
+  readonly creatingSubscriptionState = ActionState.create();
 
   constructor(
     group: V1_AccessPointGroup,
@@ -133,6 +143,12 @@ export class DataProductAPGState {
       fetchUserAccessStatus: flow,
       setUserAccessStatus: action,
       canCreateSubscription: computed,
+      consumerGrant: observable,
+      consumerGrantNotFound: observable,
+      setConsumerGrant: action,
+      setConsumerGrantNotFound: action,
+      pollConsumerGrant: flow,
+      isEntitlementsSyncing: computed,
     });
 
     this.apg = group;
@@ -199,7 +215,7 @@ export class DataProductAPGState {
   setAssociatedUserContract(
     val: V1_DataContract | undefined,
     lakehouseContractServerClient: LakehouseContractServerClient,
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): void {
     this.associatedUserContract = val;
 
@@ -207,7 +223,7 @@ export class DataProductAPGState {
       this.fetchUserAccessStatus(
         this.associatedUserContract.guid,
         lakehouseContractServerClient,
-        token,
+        tokenProvider,
       );
     }
   }
@@ -263,6 +279,88 @@ export class DataProductAPGState {
     this.userAccessStatus = val;
   }
 
+  setConsumerGrant(val: LakehouseConsumerGrantResponse | undefined): void {
+    this.consumerGrant = val;
+  }
+
+  setConsumerGrantNotFound(val: boolean): void {
+    this.consumerGrantNotFound = val;
+  }
+
+  get isEntitlementsSyncing(): boolean {
+    if (this.userAccessStatus !== V1_EnrichedUserApprovalStatus.APPROVED) {
+      return false;
+    }
+    if (this.consumerGrantNotFound) {
+      return false;
+    }
+    if (!this.consumerGrant) {
+      return true;
+    }
+    const currentUser =
+      this.applicationStore.identityService.currentUser.toLowerCase();
+    return !(
+      this.consumerGrant.users?.some(
+        (user) => user.username.toLowerCase() === currentUser,
+      ) ?? false
+    );
+  }
+
+  stopPollingConsumerGrant(): void {
+    if (this.consumerGrantPollingTimer) {
+      clearTimeout(this.consumerGrantPollingTimer);
+      this.consumerGrantPollingTimer = undefined;
+    }
+  }
+
+  *pollConsumerGrant(
+    contractId: string,
+    lakehouseContractServerClient: LakehouseContractServerClient,
+    tokenProvider: () => string | undefined,
+  ): GeneratorFn<void> {
+    this.stopPollingConsumerGrant();
+    this.pollingConsumerGrantState.inProgress();
+    const poll = async (): Promise<void> => {
+      try {
+        const rawResponse =
+          await lakehouseContractServerClient.getConsumerGrantsByContractId(
+            contractId,
+            tokenProvider(),
+          );
+        const response =
+          LakehouseConsumerGrantResponse.serialization.fromJson(rawResponse);
+        this.setConsumerGrant(response);
+        const currentUser =
+          this.applicationStore.identityService.currentUser.toLowerCase();
+        const userFound =
+          response.users?.some(
+            (user) => user.username.toLowerCase() === currentUser,
+          ) ?? false;
+        if (!userFound) {
+          this.consumerGrantPollingTimer = setTimeout(() => {
+            poll().catch(() => {});
+          }, 5000);
+        } else {
+          this.pollingConsumerGrantState.complete();
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+        if (
+          error instanceof NetworkClientError &&
+          error.response.status === HttpStatus.NOT_FOUND
+        ) {
+          this.setConsumerGrantNotFound(true);
+        } else {
+          this.applicationStore.notificationService.notifyError(
+            `Error fetching consumer grants: ${error.message}`,
+          );
+        }
+        this.pollingConsumerGrantState.complete();
+      }
+    };
+    yield poll();
+  }
+
   setSubscriptions(val: V1_DataSubscription[]): void {
     this.subscriptions = val;
   }
@@ -270,7 +368,7 @@ export class DataProductAPGState {
   async handleDataProductContracts(
     contracts: V1_LiteDataContract[],
     lakehouseContractServerClient: LakehouseContractServerClient,
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): Promise<void> {
     try {
       this.handlingContractsState.inProgress();
@@ -286,7 +384,7 @@ export class DataProductAPGState {
           lakehouseContractServerClient.getDataContract(
             _contract.guid,
             true,
-            token,
+            tokenProvider(),
           ),
         ),
       );
@@ -307,7 +405,7 @@ export class DataProductAPGState {
               this.applicationStore.identityService.currentUser,
               _contract,
               lakehouseContractServerClient,
-              token,
+              tokenProvider(),
             );
             return isMember ? _contract : undefined;
           }),
@@ -319,17 +417,17 @@ export class DataProductAPGState {
       const userContract = await this.getContractLatestInApprovalProcess(
         userContracts,
         lakehouseContractServerClient,
-        token,
+        tokenProvider(),
       );
       this.setAssociatedUserContract(
         userContract,
         lakehouseContractServerClient,
-        token,
+        tokenProvider,
       );
       this.fetchAndSetAssociatedSystemAccountContracts(
         systemAccountContracts,
         lakehouseContractServerClient,
-        token,
+        tokenProvider(),
       );
     } finally {
       this.handlingContractsState.complete();
@@ -431,7 +529,7 @@ export class DataProductAPGState {
   *fetchUserAccessStatus(
     contractId: string,
     lakehouseContractServerClient: LakehouseContractServerClient,
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): GeneratorFn<void> {
     try {
       this.fetchingUserAccessState.inProgress();
@@ -439,13 +537,20 @@ export class DataProductAPGState {
         (yield lakehouseContractServerClient.getContractUserStatus(
           contractId,
           this.applicationStore.identityService.currentUser,
-          token,
+          tokenProvider(),
         )) as PlainObject<V1_ContractUserStatusResponse>;
       const userStatus = deserialize(
         V1_ContractUserStatusResponseModelSchema,
         rawUserStatus,
       ).status;
       this.setUserAccessStatus(userStatus);
+      if (userStatus === V1_EnrichedUserApprovalStatus.APPROVED) {
+        this.pollConsumerGrant(
+          contractId,
+          lakehouseContractServerClient,
+          tokenProvider,
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(

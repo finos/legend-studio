@@ -50,7 +50,11 @@ export const LakehouseDataProduct = withLegendMarketplaceProductViewerStore(
 
     useEffect(() => {
       if (!productViewerStore.loadingProductState.hasCompleted) {
-        productViewerStore.initWithProduct(dataProductId, deploymentId, auth);
+        productViewerStore.initWithProduct(
+          dataProductId,
+          deploymentId,
+          () => auth.user?.access_token,
+        );
       }
     }, [auth, dataProductId, productViewerStore, deploymentId]);
 
