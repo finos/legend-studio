@@ -58,7 +58,6 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
   V1_TerminalModelSchema,
 } from '@finos/legend-graph';
-import type { AuthContextProps } from 'react-oidc-context';
 import {
   buildGraphForDataProduct,
   getDataProductFromDetails,
@@ -211,7 +210,7 @@ export class LegendMarketplaceProductViewerStore {
   *initWithProduct(
     dataProductId: string,
     deploymentId: number,
-    auth: AuthContextProps,
+    tokenProvider: () => string | undefined,
   ): GeneratorFn<void> {
     try {
       this.loadingProductState.inProgress();
@@ -220,7 +219,7 @@ export class LegendMarketplaceProductViewerStore {
         (yield this.marketplaceBaseStore.lakehouseContractServerClient.getDataProductByIdAndDID(
           dataProductId,
           deploymentId,
-          auth.user?.access_token,
+          tokenProvider(),
         )) as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
       const fetchedDataProductDetails =
         V1_entitlementsDataProductDetailsResponseToDataProductDetails(
@@ -474,7 +473,7 @@ export class LegendMarketplaceProductViewerStore {
       this.setDataProductViewer(dataProductViewerState);
       this.setDataProductDataAccess(dataProductDataAccessState);
       dataProductViewerState.init(entitlementsDataProductDetails);
-      dataProductDataAccessState.init(auth.user?.access_token);
+      dataProductDataAccessState.init(tokenProvider);
       this.loadingProductState.complete();
       const origin =
         entitlementsDataProductDetails.origin instanceof

@@ -47,11 +47,11 @@ export const EntitlementsDataContractCreator = observer(
   (props: {
     open: boolean;
     onClose: () => void;
-    token: string | undefined;
+    tokenProvider: () => string | undefined;
     apgState: DataProductAPGState;
     dataAccessState: DataProductDataAccessState;
   }) => {
-    const { open, onClose, token, apgState, dataAccessState } = props;
+    const { open, onClose, tokenProvider, apgState, dataAccessState } = props;
     const viewerState = dataAccessState.dataProductViewerState;
     const accessPointGroup = guaranteeNonNullable(
       dataAccessState.contractCreatorAPG,
@@ -100,7 +100,7 @@ export const EntitlementsDataContractCreator = observer(
             consumer,
             description,
             accessPointGroup,
-            token,
+            tokenProvider,
             selectedConsumerType,
           ),
         ).catch(viewerState.applicationStore.alertUnhandledError);
