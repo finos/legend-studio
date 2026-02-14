@@ -180,12 +180,14 @@ const convertDataSpaceExecutablesToSampleQueries = (
 
 const convertDataSpaceExecutionContextsToNativeModelExecutionContexts = (
   dataSpace: DataSpace,
+  owner: NativeModelAccess,
 ): NativeModelExecutionContext[] => {
   return dataSpace.executionContexts.map((context) => {
     const nativeModelExecutionContext = new NativeModelExecutionContext();
     nativeModelExecutionContext.key = context.name;
     nativeModelExecutionContext.mapping = context.mapping;
     nativeModelExecutionContext.runtime = context.defaultRuntime;
+    nativeModelExecutionContext.__owner = owner;
     return nativeModelExecutionContext;
   });
 };
@@ -199,7 +201,10 @@ const convertDataSpaceToNativeModelAccess = (
     convertDataSpaceToFeaturedElements(dataSpace);
   nativeModelAccess.diagrams = convertDataSpaceToDiagrams(dataSpace);
   nativeModelAccess.nativeModelExecutionContexts =
-    convertDataSpaceExecutionContextsToNativeModelExecutionContexts(dataSpace);
+    convertDataSpaceExecutionContextsToNativeModelExecutionContexts(
+      dataSpace,
+      nativeModelAccess,
+    );
   nativeModelAccess.defaultExecutionContext = guaranteeNonNullable(
     nativeModelAccess.nativeModelExecutionContexts.find(
       (e) => e.key === dataSpace.defaultExecutionContext.name,
