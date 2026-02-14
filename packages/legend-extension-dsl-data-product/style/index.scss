@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+@use 'theme';
+
 @forward 'components/data-product-owners-tooltip';
 @forward 'components/data-product-viewer';
 
-@forward 'light-mode';
+@forward 'components';

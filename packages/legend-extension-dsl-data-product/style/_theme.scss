@@ -1,0 +1,58 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:root {
+  // Default (Light) Theme Semantic Variables
+  --data-product-bg-primary: var(--color-white);
+  --data-product-bg-secondary: var(--color-hclight-grey-10);
+  --data-product-bg-tertiary: var(--color-hclight-grey-20);
+  --data-product-bg-elevated: var(--color-hclight-grey-30);
+  --data-product-text-primary: var(--color-hclight-black);
+  --data-product-text-secondary: var(--color-legacylight-dark-grey-200);
+  --data-product-text-muted: var(--color-legacylight-dark-grey-400);
+  --data-product-border-color: var(--color-hclight-grey-20);
+  --data-product-border-light-color: var(--color-hclight-grey-10);
+  --data-product-accent-color: var(--color-blue-50);
+  --data-product-accent-hover-color: var(--color-blue-60);
+}
+
+.theme__hc-light {
+  --data-product-bg-primary: var(--color-white);
+  --data-product-bg-secondary: var(--color-hclight-grey-10);
+  --data-product-bg-tertiary: var(--color-hclight-grey-20);
+  --data-product-bg-elevated: var(--color-hclight-grey-30);
+  --data-product-text-primary: var(--color-hclight-black);
+  --data-product-text-secondary: var(--color-legacylight-dark-grey-200);
+  --data-product-text-muted: var(--color-legacylight-dark-grey-400);
+  --data-product-border-color: var(--color-hclight-grey-20);
+  --data-product-border-light-color: var(--color-hclight-grey-10);
+  --data-product-accent-color: var(--color-blue-50);
+  --data-product-accent-hover-color: var(--color-blue-60);
+}
+
+.theme__hc-dark {
+  --data-product-bg-primary: var(--color-dark-theme-bg-primary);
+  --data-product-bg-secondary: var(--color-dark-theme-bg-secondary);
+  --data-product-bg-tertiary: var(--color-dark-theme-bg-tertiary);
+  --data-product-bg-elevated: var(--color-dark-theme-bg-elevated);
+  --data-product-text-primary: var(--color-dark-theme-text-primary);
+  --data-product-text-secondary: var(--color-dark-theme-text-secondary);
+  --data-product-text-muted: var(--color-dark-theme-text-muted);
+  --data-product-border-color: var(--color-dark-theme-border);
+  --data-product-border-light-color: var(--color-dark-theme-border-light);
+  --data-product-accent-color: var(--color-dark-theme-blue-primary);
+  --data-product-accent-hover-color: var(--color-dark-theme-blue-accent);
+}

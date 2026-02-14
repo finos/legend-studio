@@ -1,0 +1,670 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.data-product__viewer {
+  background: var(--data-product-bg-primary);
+  color: var(--data-product-text-primary);
+
+  &__header--floating {
+    background: var(--data-product-bg-primary);
+  }
+
+  &__header__title {
+    background: var(--data-product-accent-hover-color);
+  }
+
+  &__header__title__label {
+    color: var(--data-product-bg-primary);
+  }
+
+  &__header__title__verified-badge {
+    color: var(--data-product-bg-primary);
+  }
+
+  &__header__actions {
+    background: var(--data-product-bg-primary);
+    border-color: var(--data-product-accent-color);
+  }
+
+  &__header__execution-context-selector__trigger__icon {
+    border-right-color: var(--data-product-accent-color);
+  }
+
+  &__header__execution-context-selector__trigger__icon svg {
+    color: var(--data-product-accent-color);
+  }
+
+  &__header__execution-context-selector__trigger__label {
+    color: var(--data-product-accent-color);
+  }
+
+  &__header__execution-context-selector__trigger__dropdown-icon svg {
+    color: var(--data-product-accent-color);
+  }
+
+  &__header__execution-context-selector__option--active {
+    background: var(--data-product-accent-color);
+  }
+
+  &__header__actions-selector {
+    border-left-color: var(--data-product-accent-color);
+  }
+
+  &__header__actions-selector svg {
+    color: var(--data-product-accent-color);
+  }
+
+  &__header__actions-selector:hover svg {
+    color: var(--data-product-accent-hover-color);
+  }
+
+  &__frame {
+    background: var(--data-product-bg-secondary);
+  }
+
+  &__content {
+    background: var(--data-product-bg-primary);
+  }
+
+  &__grid {
+    --ag-border-color: var(--data-product-bg-elevated);
+    --ag-background-color: var(--data-product-bg-primary);
+    --ag-foreground-color: var(--data-product-text-primary);
+    --ag-header-background-color: var(--data-product-bg-secondary);
+    --ag-header-foreground-color: var(--data-product-text-primary);
+    --ag-balham-active-color: transparent;
+    --ag-odd-row-background-color: var(--data-product-bg-primary);
+    --ag-even-row-background-color: var(--data-product-bg-primary);
+    --ag-row-hover-color: var(--data-product-bg-secondary);
+    --ag-row-border-color: var(--data-product-bg-elevated);
+  }
+
+  &__grid--empty {
+    background: var(--data-product-bg-primary);
+    color: var(--data-product-text-muted);
+  }
+
+  &__grid__empty-cell {
+    color: var(--data-product-bg-elevated);
+  }
+
+  &__grid .ag-center-cols-viewport {
+    background: repeating-linear-gradient(
+      135deg,
+      var(--data-product-bg-primary),
+      var(--data-product-bg-primary) 0.5rem,
+      var(--data-product-bg-secondary) 0.5rem,
+      var(--data-product-bg-secondary) 1rem
+    );
+  }
+
+  &__grid ::-webkit-scrollbar-thumb {
+    background: var(--data-product-border-light-color);
+    border: 0.1rem solid transparent;
+    background-clip: content-box;
+    border-radius: 0.4rem;
+  }
+
+  &__grid ::-webkit-scrollbar-track-piece {
+    background: transparent;
+  }
+
+  &__scroller {
+    background: var(--data-product-accent-hover-color);
+  }
+
+  &__scroller__btn:focus {
+    outline: none;
+  }
+
+  &__scroller__percentage {
+    background: var(--data-product-accent-hover-color);
+    color: var(--data-product-bg-primary);
+  }
+
+  &__activity-bar {
+    background: var(--data-product-bg-tertiary);
+  }
+
+  &__activity-bar ::-webkit-scrollbar-thumb {
+    background: var(--data-product-bg-elevated);
+  }
+
+  &__activity-bar ::-webkit-scrollbar-track-piece {
+    background: transparent;
+  }
+
+  &__activity-bar__menu {
+    border-color: var(--data-product-bg-elevated);
+  }
+
+  &__activity-bar__menu-item {
+    color: var(--color-hclight-aqua-90);
+  }
+
+  &__activity-bar__item {
+    color: var(--data-product-text-muted);
+  }
+
+  &__activity-bar__item:hover,
+  &__activity-bar__item--active {
+    color: var(--color-hclight-aqua-90);
+  }
+
+  &__activity-bar__divider {
+    background: var(--data-product-bg-elevated);
+  }
+
+  &__activity-bar__item__experimental-badge {
+    background: var(--data-product-accent-color);
+    border-color: var(--data-product-bg-tertiary);
+  }
+
+  &__activity-bar__item__experimental-badge svg {
+    color: var(--data-product-bg-tertiary);
+  }
+
+  &__panel__header {
+    color: var(--data-product-accent-hover-color);
+    border-bottom-color: var(--data-product-accent-hover-color);
+  }
+
+  &__panel__content__placeholder {
+    color: var(--data-product-text-muted);
+  }
+
+  &__panel__content__placeholder svg {
+    color: var(--data-product-accent-color);
+  }
+
+  &__wiki__placeholder {
+    color: var(--data-product-text-muted);
+  }
+
+  &__wiki__section__header {
+    color: var(--data-product-accent-hover-color);
+    border-bottom-color: var(--data-product-accent-hover-color);
+  }
+
+  &__wiki__section__header__anchor {
+    color: var(--data-product-accent-hover-color);
+    border-bottom-color: var(--data-product-accent-hover-color);
+  }
+
+  &__wiki__section__header__anchor svg {
+    color: var(--data-product-bg-elevated);
+  }
+
+  &__wiki__section__header__anchor:hover svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__wiki__section__header__documentation {
+    color: var(--data-product-accent-hover-color);
+  }
+
+  &__markdown-text-viewer.markdown-content {
+    background: var(--data-product-bg-primary);
+    color: var(--data-product-text-primary);
+  }
+
+  &__markdown-text-viewer.markdown-content a {
+    color: var(--data-product-accent-color);
+  }
+
+  &__markdown-text-viewer.markdown-content pre {
+    background: var(--data-product-text-primary);
+  }
+
+  &__markdown-text-viewer.markdown-content pre code {
+    color: var(--data-product-bg-primary);
+  }
+
+  &__diagram-viewer__carousel__frame__indicator--active svg {
+    color: var(--data-product-accent-hover-color);
+  }
+
+  &__diagram-viewer .diagram-canvas {
+    border-color: var(--data-product-text-muted);
+  }
+
+  &__diagram-viewer__header__navigation__pager {
+    border-left-color: var(--data-product-bg-tertiary);
+  }
+
+  &__diagram-viewer__header__navigation__selector__icon {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__diagram-viewer__header__group__separator {
+    border-color: var(--data-product-bg-tertiary);
+  }
+
+  &__diagram-viewer__header__dropdown {
+    border-color: var(--data-product-bg-tertiary);
+  }
+
+  &__diagram-viewer__header__dropdown__label {
+    color: var(--data-product-text-primary);
+  }
+
+  &__diagram-viewer__header__dropdown__trigger svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__diagram-viewer__header__tool:hover svg {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__diagram-viewer__header__tool:hover[disabled] svg,
+  &__diagram-viewer__header__tool[disabled] svg {
+    color: var(--data-product-bg-tertiary);
+  }
+
+  &__diagram-viewer__header__tool svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__diagram-viewer__header__tool--active:hover,
+  &__diagram-viewer__header__tool--active {
+    background: var(--data-product-bg-secondary);
+    border-color: var(--data-product-accent-color);
+  }
+
+  &__diagram-viewer__header__tool--active:hover svg,
+  &__diagram-viewer__header__tool--active svg {
+    color: var(--data-product-accent-color);
+  }
+
+  &__diagram-viewer__description {
+    background: var(--color-hclight-grey-shade-60);
+  }
+
+  &__diagram-viewer__description__title {
+    color: var(--data-product-bg-primary);
+  }
+
+  &__diagram-viewer__description__content
+    .data-space__viewer__markdown-text-viewer {
+    background: transparent;
+    color: var(--data-product-bg-primary);
+  }
+
+  &__diagram-viewer__description__content__placeholder {
+    color: var(--data-product-bg-tertiary);
+  }
+
+  &__diagram-viewer__description ::-webkit-scrollbar-thumb {
+    background: var(--data-product-bg-elevated);
+    border: 0.2rem solid transparent;
+    background-clip: content-box;
+    border-radius: 0.4rem;
+  }
+
+  &__diagram-viewer__description ::-webkit-scrollbar-track-piece {
+    background: transparent;
+  }
+
+  &__diagram-viewer__description__close-btn svg {
+    color: var(--data-product-bg-elevated);
+  }
+
+  &__diagram-viewer__description__close-btn:hover svg {
+    color: var(--data-product-bg-tertiary);
+  }
+
+  &__diagram-viewer__description__expand-btn svg {
+    color: var(--data-product-bg-elevated);
+  }
+
+  &__diagram-viewer__description__expand-btn:hover svg {
+    color: var(--data-product-bg-tertiary);
+  }
+
+  &__models-documentation__search__input-group__icon svg {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__models-documentation__grid__cell__label__icon {
+    color: var(--data-product-bg-primary);
+  }
+
+  &__models-documentation__grid__cell__label__icon--class {
+    background: var(--color-hclight-purple-60);
+  }
+
+  &__models-documentation__grid__cell__label__icon--enumeration {
+    background: var(--color-hclight-pink-50);
+  }
+
+  &__models-documentation__grid__cell__label__icon--association {
+    background: var(--color-hclight-green-40);
+  }
+
+  &__models-documentation__grid__cell__label__icon--property {
+    background: var(--data-product-accent-color);
+  }
+
+  &__models-documentation__grid__cell__label__icon--enum {
+    background: var(--color-hclight-orange-40);
+  }
+
+  &__models-documentation__grid__cell__label__derived-property-badge {
+    background: var(--data-product-bg-secondary);
+    color: var(--data-product-accent-color);
+  }
+
+  &__models-documentation__grid__cell__label__milestoning-badge svg {
+    color: var(--data-product-accent-color);
+  }
+
+  &__models-documentation__grid__cell__action {
+    color: var(--data-product-bg-elevated);
+  }
+
+  &__models-documentation__grid__cell__action:hover {
+    color: var(--data-product-text-muted);
+  }
+
+  &__models-documentation__grid__element-row {
+    background: var(--color-hclight-yellow-5);
+    color: var(--data-product-text-primary);
+
+    --ag-row-hover-color: var(--color-hclight-yellow-15);
+  }
+
+  &__models-documentation__filter__toggler {
+    border-color: var(--data-product-bg-tertiary);
+    color: var(--data-product-text-muted);
+  }
+
+  &__models-documentation__filter__toggler:hover {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__models-documentation__filter__toggler__icon {
+    border-color: var(--data-product-bg-elevated);
+  }
+
+  &__models-documentation__filter__panel {
+    background: var(--data-product-bg-primary);
+    border-color: var(--data-product-bg-tertiary);
+    color: var(--data-product-text-secondary);
+  }
+
+  &__models-documentation__filter__group {
+    border-color: var(--data-product-bg-tertiary);
+  }
+
+  &__models-documentation__filter__group__header__reset {
+    color: var(--data-product-accent-color);
+  }
+
+  &__models-documentation__filter__group__header__reset:hover {
+    color: var(--data-product-accent-hover-color);
+  }
+
+  &__models-documentation__filter__group__header__reset[disabled],
+  &__models-documentation__filter__group__header__reset[disabled]:hover {
+    color: var(--data-product-text-muted);
+  }
+
+  &__models-documentation__filter__tree__node__container:hover {
+    background: var(--color-hclight-blue-shade-10);
+  }
+
+  &__models-documentation__filter__tree__node__type-icon {
+    color: var(--data-product-bg-primary);
+  }
+
+  &__models-documentation__filter__tree__node__type-icon--class {
+    background: var(--color-hclight-purple-60);
+  }
+
+  &__models-documentation__filter__tree__node__type-icon--enumeration {
+    background: var(--color-hclight-pink-50);
+  }
+
+  &__models-documentation__filter__tree__node__type-icon--association {
+    background: var(--color-hclight-green-40);
+  }
+
+  &__models-documentation__filter__tree__node__type-icon--package {
+    color: var(--data-product-bg-elevated);
+  }
+
+  &__models-documentation__filter__tree__node__checker svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__models-documentation__filter__tree__node__checker:hover svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__models-documentation__filter__tree__node__expand-icon svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__models-documentation__filter__tree__node__label {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__models-documentation__filter__tree__node__count {
+    background: var(--data-product-border-light-color);
+    color: var(--data-product-text-muted);
+  }
+
+  &__models-documentation__search__input {
+    background: var(--data-product-bg-primary);
+    border-color: var(--data-product-bg-tertiary);
+    color: var(--data-product-text-primary);
+  }
+
+  &__models-documentation__search__input:focus {
+    border-color: var(--data-product-bg-elevated);
+  }
+
+  &__models-documentation__search__input__search__icon svg {
+    color: var(--data-product-bg-elevated);
+  }
+
+  &__models-documentation__search__input__clear-btn svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__models-documentation__search__input__clear-btn:hover svg {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__models-documentation__search__input__config__trigger svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__models-documentation__search__input__config__trigger--toggled svg,
+  &__models-documentation__search__input__config__trigger:hover svg {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__models-documentation__search__input__config__trigger--active svg,
+  &__models-documentation__search__input__config__trigger--active:hover svg {
+    color: var(--data-product-accent-color);
+  }
+
+  &__execution-context__entry__icon {
+    background: var(--data-product-bg-secondary);
+  }
+
+  &__execution-context__entry__content {
+    border-color: var(--data-product-bg-secondary);
+    color: var(--data-product-text-secondary);
+    background: var(--data-product-bg-secondary);
+    border-left-color: var(--data-product-bg-elevated);
+  }
+
+  &__execution-context__entry__content__dropdown__option__tag {
+    background: var(--data-product-accent-hover-color);
+    color: var(--data-product-bg-primary);
+  }
+
+  &__execution-context__entry__content .selector-input__control,
+  &__execution-context__entry__content .selector-input__control:hover {
+    border-color: var(--data-product-bg-tertiary);
+  }
+
+  &__info__project-info__label {
+    background: var(--data-product-accent-color);
+    color: var(--data-product-bg-primary);
+  }
+
+  &__info__project-info__value {
+    background: var(--data-product-bg-secondary);
+    color: var(--data-product-text-secondary);
+  }
+
+  &__info__project-info__link {
+    background: var(--data-product-bg-secondary);
+    color: var(--data-product-text-muted);
+    border-color: var(--data-product-bg-elevated);
+  }
+
+  &__info__section__title {
+    color: var(--data-product-text-primary);
+  }
+
+  &__info__tagged-value__tag {
+    background: var(--color-hclight-orange-50);
+    color: var(--data-product-bg-primary);
+  }
+
+  &__info__tagged-value__value {
+    background: var(--data-product-bg-secondary);
+    color: var(--data-product-text-secondary);
+  }
+
+  &__info__steoreotype {
+    background: var(--color-hclight-orange-50);
+    color: var(--data-product-bg-primary);
+  }
+
+  &__info__section__placeholder {
+    color: var(--data-product-bg-elevated);
+    border-color: var(--data-product-bg-elevated);
+  }
+
+  &__support__entry__icon {
+    background: var(--data-product-bg-secondary);
+  }
+
+  &__support__entry__icon svg {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__support__entry__content {
+    border-color: transparent;
+    color: var(--data-product-text-secondary);
+    background: var(--data-product-bg-secondary);
+    border-left-color: var(--data-product-bg-elevated);
+  }
+
+  &__access-group__item__header__title {
+    color: var(--color-hclight-aqua-90);
+  }
+
+  &__access-group__item__header__anchor {
+    color: var(--data-product-accent-hover-color);
+  }
+
+  &__access-group__item__header__anchor svg {
+    color: var(--data-product-bg-elevated);
+  }
+
+  &__access-group__item__header__anchor:hover svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__access-group__item__content__tab__header {
+    border-bottom-color: var(--data-product-border-light-color);
+    border-top-color: var(--data-product-border-light-color);
+  }
+
+  &__access-group__item__content__tab {
+    color: var(--data-product-text-muted);
+    border-left-color: var(--data-product-border-light-color);
+  }
+
+  &__access-group__item__content__tab:hover
+    &__access-group__item__content__tab__label {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__access-group__item__content__tab:hover
+    &__access-group__item__content__tab__icon
+    svg {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__access-group__item__content__tab--active:hover
+    &__access-group__item__content__tab__label,
+  &__access-group__item__content__tab--active
+    &__access-group__item__content__tab__label {
+    color: var(--data-product-accent-hover-color);
+  }
+
+  &__access-group__item__content__tab--active:hover
+    &__access-group__item__content__tab__icon
+    svg,
+  &__access-group__item__content__tab--active
+    &__access-group__item__content__tab__icon
+    svg {
+    color: var(--data-product-accent-hover-color);
+  }
+
+  &__access-group__item__content__action-tab-group {
+    border-left-color: var(--data-product-border-light-color);
+  }
+
+  &__access-group__tds__query {
+    border-color: var(--data-product-bg-elevated);
+  }
+
+  &__access-group__tds__placeholder-panel {
+    border-color: var(--data-product-bg-elevated);
+  }
+
+  &__access-group__tds__query-text__action svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__access-group__tds__query-text__action:hover svg {
+    color: var(--data-product-text-secondary);
+  }
+
+  &__access-group__tds__code-action {
+    border-color: var(--data-product-bg-elevated);
+  }
+
+  &__access-group__tds__code-action__content {
+    border-color: var(--data-product-bg-elevated);
+  }
+
+  &__access-group__tds__code-action__action svg {
+    color: var(--data-product-text-muted);
+  }
+
+  &__access-group__tds__code-action__action:hover svg {
+    color: var(--data-product-text-secondary);
+  }
+}

@@ -1,0 +1,87 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:root {
+  // Default (Light) Theme Semantic Variables
+  --marketplace-bg-primary: var(--color-white);
+  --marketplace-bg-secondary: var(--color-hclight-grey-10);
+  --marketplace-bg-tertiary: var(
+    --color-hclight-grey-20
+  ); // Guessing tertiary for light mode based on usage, verifying later
+
+  --marketplace-bg-elevated: var(--color-hclight-grey-30);
+  --marketplace-text-primary: var(--color-hclight-black);
+  --marketplace-text-secondary: var(--color-legacylight-dark-grey-200);
+  --marketplace-text-muted: var(--color-legacylight-dark-grey-400);
+  --marketplace-link-color: var(--color-blue-50);
+  --marketplace-link-hover-color: var(
+    --color-blue-60
+  ); // Assuming a hover state
+
+  --marketplace-border-color: var(--color-hclight-grey-20);
+  --marketplace-border-light-color: var(--color-hclight-grey-10);
+
+  // Brand/Accents
+  --marketplace-brand-color: var(--color-blue-50);
+  --marketplace-brand-secondary-color: var(
+    --color-blue-40
+  ); // Placeholder for light mode accent
+
+  // Components
+  --marketplace-info-bg: var(--color-legacylight-light-grey-300);
+  --marketplace-info-text: var(--color-legacylight-dark-grey-200);
+}
+
+.theme__hc-light {
+  // Explicit Light Theme Overrides (if needed for forcing light mode in a subtree)
+  --marketplace-bg-primary: var(--color-white);
+  --marketplace-bg-secondary: var(--color-hclight-grey-10);
+  --marketplace-bg-tertiary: var(--color-hclight-grey-20);
+  --marketplace-bg-elevated: var(--color-hclight-grey-30);
+  --marketplace-text-primary: var(--color-hclight-black);
+  --marketplace-text-secondary: var(--color-legacylight-dark-grey-200);
+  --marketplace-text-muted: var(--color-legacylight-dark-grey-400);
+  --marketplace-link-color: var(--color-blue-50);
+  --marketplace-link-hover-color: var(--color-blue-60);
+  --marketplace-border-color: var(--color-hclight-grey-20);
+  --marketplace-border-light-color: var(--color-hclight-grey-10);
+  --marketplace-brand-color: var(--color-blue-50);
+  --marketplace-brand-secondary-color: var(--color-blue-40);
+  --marketplace-info-bg: var(--color-legacylight-light-grey-300);
+  --marketplace-info-text: var(--color-legacylight-dark-grey-200);
+}
+
+.theme__hc-dark {
+  // Dark Theme Semantic Variables
+  --marketplace-bg-primary: var(--color-dark-theme-bg-primary);
+  --marketplace-bg-secondary: var(--color-dark-theme-bg-secondary);
+  --marketplace-bg-tertiary: var(--color-dark-theme-bg-tertiary);
+  --marketplace-bg-elevated: var(--color-dark-theme-bg-elevated);
+  --marketplace-text-primary: var(--color-dark-theme-text-primary);
+  --marketplace-text-secondary: var(--color-dark-theme-text-secondary);
+  --marketplace-text-muted: var(--color-dark-theme-text-muted);
+  --marketplace-link-color: var(--color-dark-theme-blue-primary);
+  --marketplace-link-hover-color: var(
+    --color-dark-theme-blue-accent
+  ); // Assuming accent is hover
+
+  --marketplace-border-color: var(--color-dark-theme-border);
+  --marketplace-border-light-color: var(--color-dark-theme-border-light);
+  --marketplace-brand-color: var(--color-dark-theme-blue-primary);
+  --marketplace-brand-secondary-color: var(--color-dark-theme-blue-secondary);
+  --marketplace-info-bg: var(--color-dark-theme-bg-elevated);
+  --marketplace-info-text: var(--color-dark-theme-text-primary);
+}
