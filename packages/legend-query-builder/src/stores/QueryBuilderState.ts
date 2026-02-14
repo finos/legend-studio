@@ -302,6 +302,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       resetQueryContent: action,
       changeClass: action,
       changeMapping: action,
+      changeRuntime: action,
       setExecutionContextState: action,
       setQueryChatState: action,
 
