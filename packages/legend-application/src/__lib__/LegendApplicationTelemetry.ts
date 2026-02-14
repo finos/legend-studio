@@ -44,6 +44,12 @@ export class LegendApplicationTelemetryHelper {
         height: window.screen.height,
         width: window.screen.width,
       },
+      userSettings: {
+        theme: applicationStore.layoutService
+          .TEMPORARY__isLightColorThemeEnabled
+          ? 'light'
+          : 'dark',
+      },
     });
   }
 

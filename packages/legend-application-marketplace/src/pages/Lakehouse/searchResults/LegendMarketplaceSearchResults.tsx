@@ -67,12 +67,6 @@ export const LegendMarketplaceSearchResults =
             searchResultsStore.useProducerSearch ?? false,
             auth.user?.access_token,
           );
-          LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
-            applicationStore.telemetryService,
-            searchResultsStore.searchQuery,
-            searchResultsStore.useProducerSearch ?? false,
-            LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
-          );
         }
       }, [
         applicationStore.telemetryService,
@@ -125,6 +119,12 @@ export const LegendMarketplaceSearchResults =
         if (isNonEmptyString(_query)) {
           searchResultsStore.setSearchQuery(_query);
           searchResultsStore.setUseProducerSearch(_useProducerSearch);
+          LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
+            applicationStore.telemetryService,
+            searchResultsStore.searchQuery,
+            searchResultsStore.useProducerSearch ?? false,
+            LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
+          );
         }
       };
 

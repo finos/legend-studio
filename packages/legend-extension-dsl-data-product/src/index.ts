@@ -38,3 +38,5 @@ export { TabMessageScreen } from './components/DataProduct/DataProductDataAccess
 
 export * from './utils/DataContractUtils.js';
 export * from './utils/LakehouseUtils.js';
+
+export * from './__lib__/DataProductTelemetryHelper.js';
