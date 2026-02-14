@@ -123,6 +123,11 @@ import { SQLPlaygroundEditorResultPanel } from '@finos/legend-lego/sql-playgroun
 import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
 import { DataProductSqlPlaygroundPanelState } from '../../stores/DataProduct/DataProductSqlPlaygroundPanelState.js';
 import { flowResult } from 'mobx';
+import {
+  DATAPRODUCT_TYPE,
+  DataProductTelemetryHelper,
+  PRODUCT_INTEGRATION_TYPE,
+} from '../../__lib__/DataProductTelemetryHelper.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -179,6 +184,38 @@ const PowerBiScreen = observer(
     const loadPowerBi = (): void => {
       if (dataAccessState.dataProductViewerState.openPowerBi) {
         const apg = accessPointState.apgState.apg.id;
+        if (
+          dataAccessState.entitlementsDataProductDetails.origin instanceof
+          V1_SdlcDeploymentDataProductOrigin
+        ) {
+          const {
+            group: groupId,
+            artifact: artifactId,
+            version: versionId,
+          } = dataAccessState.entitlementsDataProductDetails.origin;
+
+          DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
+            dataAccessState.applicationStore.telemetryService,
+            {
+              origin: {
+                type: DATAPRODUCT_TYPE.SDLC,
+                groupId,
+                artifactId,
+                versionId,
+              },
+              deploymentId:
+                dataAccessState.entitlementsDataProductDetails.deploymentId,
+              productIntegrationType: PRODUCT_INTEGRATION_TYPE.POWER_BI,
+              name: dataAccessState.entitlementsDataProductDetails.dataProduct
+                .name,
+              accessPointGroup: apg,
+              environmentClassification:
+                dataAccessState.entitlementsDataProductDetails
+                  .lakehouseEnvironment?.type,
+            },
+            undefined,
+          );
+        }
         dataAccessState.dataProductViewerState.openPowerBi(apg);
       }
     };
@@ -222,6 +259,40 @@ export const SqlPlaygroundScreen = observer(
       setIsSqlModalOpen(false);
     };
     const loadSqlQuery = (): void => {
+      const accessPointGroup = accessPointState.apgState.apg.id;
+      const accessPointName = accessPointState.accessPoint.id;
+      DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
+        dataAccessState.applicationStore.telemetryService,
+        {
+          origin:
+            dataAccessState.entitlementsDataProductDetails.origin instanceof
+            V1_SdlcDeploymentDataProductOrigin
+              ? {
+                  type: DATAPRODUCT_TYPE.SDLC,
+                  groupId:
+                    dataAccessState.entitlementsDataProductDetails.origin.group,
+                  artifactId:
+                    dataAccessState.entitlementsDataProductDetails.origin
+                      .artifact,
+                  versionId:
+                    dataAccessState.entitlementsDataProductDetails.origin
+                      .version,
+                }
+              : {
+                  type: DATAPRODUCT_TYPE.ADHOC,
+                },
+          deploymentId:
+            dataAccessState.entitlementsDataProductDetails.deploymentId,
+          name: dataAccessState.entitlementsDataProductDetails.dataProduct.name,
+          productIntegrationType: PRODUCT_INTEGRATION_TYPE.SQL,
+          environmentClassification:
+            dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment
+              ?.type,
+          accessPointGroup: accessPointGroup,
+          accessPointPath: accessPointName,
+        },
+        undefined,
+      );
       openSqlModal();
     };
     const resolvedUserEnv = dataAccessState.resolvedUserEnv;
@@ -370,14 +441,57 @@ const DataCubeScreen = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { accessPointState, dataAccessState } = props;
-    const openDataCube =
-      accessPointState.apgState.dataProductViewerState.openDataCube;
+    const openDataCube = (sourceData: object) => {
+      if (dataAccessState) {
+        DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
+          dataAccessState.applicationStore.telemetryService,
+          {
+            origin:
+              dataAccessState.entitlementsDataProductDetails.origin instanceof
+              V1_SdlcDeploymentDataProductOrigin
+                ? {
+                    type: DATAPRODUCT_TYPE.SDLC,
+                    groupId:
+                      dataAccessState.entitlementsDataProductDetails.origin
+                        .group,
+                    artifactId:
+                      dataAccessState.entitlementsDataProductDetails.origin
+                        .artifact,
+                    versionId:
+                      dataAccessState.entitlementsDataProductDetails.origin
+                        .version,
+                  }
+                : {
+                    type: DATAPRODUCT_TYPE.ADHOC,
+                  },
+            deploymentId:
+              dataAccessState.entitlementsDataProductDetails.deploymentId,
+            name: dataAccessState.entitlementsDataProductDetails.dataProduct
+              .name,
+            productIntegrationType: PRODUCT_INTEGRATION_TYPE.DATA_CUBE,
+            accessPointPath: (
+              (sourceData as Record<string, unknown>).paths as string[]
+            ).at(1),
+            environmentClassification:
+              dataAccessState.entitlementsDataProductDetails
+                .lakehouseEnvironment?.type,
+          },
+          undefined,
+        );
+      }
+      accessPointState.apgState.dataProductViewerState.openDataCube?.(
+        sourceData,
+      );
+    };
     if (!dataAccessState) {
       return <TabMessageScreen message={NOT_SUPPORTED} />;
     }
     const dataProductOrigin =
       dataAccessState.entitlementsDataProductDetails.origin;
-    if (!dataProductOrigin || !openDataCube) {
+    if (
+      !dataProductOrigin ||
+      !accessPointState.apgState.dataProductViewerState.openDataCube
+    ) {
       return <TabMessageScreen message={WORK_IN_PROGRESS} />;
     }
     const envs = dataAccessState.filteredDataProductQueryEnvs;
@@ -485,10 +599,48 @@ const LineageScreen = observer(
     const { accessPointState, dataAccessState } = props;
     const dataProductName = dataAccessState?.product.name;
     const accessPointName = accessPointState.accessPoint.id;
-    const openLineageAction =
-      dataAccessState?.dataProductViewerState.openLineage;
+    const openLineageAction = (
+      dataProduct: string,
+      accessPointGroup: string,
+    ) => {
+      if (
+        dataAccessState?.entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
+      ) {
+        const {
+          group: groupId,
+          artifact: artifactId,
+          version: versionId,
+        } = dataAccessState.entitlementsDataProductDetails.origin;
+
+        DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
+          dataAccessState.applicationStore.telemetryService,
+          {
+            origin: {
+              type: DATAPRODUCT_TYPE.SDLC,
+              groupId,
+              artifactId,
+              versionId,
+            },
+            deploymentId:
+              dataAccessState.entitlementsDataProductDetails.deploymentId,
+            productIntegrationType: PRODUCT_INTEGRATION_TYPE.REGISTRY,
+            name: dataAccessState.entitlementsDataProductDetails.dataProduct
+              .name,
+          },
+          undefined,
+        );
+      }
+      dataAccessState?.dataProductViewerState.openLineage?.(
+        dataProduct,
+        accessPointGroup,
+      );
+    };
+
     const validAccessPointLineage =
-      openLineageAction && dataProductName && accessPointName;
+      dataAccessState?.dataProductViewerState.openLineage &&
+      dataProductName &&
+      accessPointName;
     if (
       !(
         dataAccessState?.entitlementsDataProductDetails.origin instanceof
@@ -498,7 +650,7 @@ const LineageScreen = observer(
       return (
         <TabMessageScreen message="Lineage not supported for Adhoc Data Products" />
       );
-    } else if (!openLineageAction) {
+    } else if (!dataAccessState.dataProductViewerState.openLineage) {
       return <TabMessageScreen message="Lineage has not been configured" />;
     } else if (!accessPointState.registryMetadata?.id) {
       return (
@@ -963,6 +1115,14 @@ export const DataProductAccessPointGroupViewer = observer(
 
     const handleContractsClick = (): void => {
       if (dataAccessState) {
+        const dataProductPath =
+          dataAccessState.dataProductViewerState.product.path;
+        const accessPointGroup = apgState.apg.id;
+        DataProductTelemetryHelper.logEvent_requestContract(
+          dataAccessState.applicationStore.telemetryService,
+          dataProductPath,
+          accessPointGroup,
+        );
         apgState.handleContractClick(dataAccessState);
       }
     };

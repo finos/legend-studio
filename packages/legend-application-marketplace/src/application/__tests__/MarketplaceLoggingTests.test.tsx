@@ -17,9 +17,6 @@ import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
-  PRODUCT_INTEGRATION_TYPE,
-  SEARCH_SESSION_KEY,
-  type MarketplaceUserSession,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import {
   ApplicationStore,
@@ -27,6 +24,12 @@ import {
 } from '@finos/legend-application';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import { LegendMarketplacePluginManager } from '../LegendMarketplacePluginManager.js';
+import {
+  SEARCH_SESSION_KEY,
+  type MarketplaceUserSession,
+  PRODUCT_INTEGRATION_TYPE,
+  DataProductTelemetryHelper,
+} from '@finos/legend-extension-dsl-data-product';
 
 // Mock localStorage implementation
 const createMockStorage = () => {
@@ -153,7 +156,7 @@ describe('LegendMarketplaceTelemetryHelper Session Management', () => {
       productIntegrationType: PRODUCT_INTEGRATION_TYPE.DATA_CUBE,
     };
 
-    LegendMarketplaceTelemetryHelper.logEvent_OpenIntegratedProduct(
+    DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
       mockTelemetryService,
       testData,
       undefined,
@@ -199,10 +202,11 @@ describe('LegendMarketplaceTelemetryHelper Session Management', () => {
       const finalSession = JSON.parse(
         sessionCalls[sessionCalls.length - 1]?.[1] ?? '{}',
       ) as MarketplaceUserSession;
-      expect(finalSession).toMatchObject({
-        eventId: 2, // Second event after click and search
-        searchSessionId: mockTelemetryService.applicationStore.uuid,
-      });
+      expect(finalSession.eventId).toBe(2);
+      expect(typeof finalSession.searchSessionId).toBe('string');
+      expect(finalSession.searchSessionId).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      );
     });
   });
 });
@@ -249,7 +253,7 @@ describe('Session Data Structure', () => {
       productIntegrationType: PRODUCT_INTEGRATION_TYPE.POWER_BI,
     };
 
-    LegendMarketplaceTelemetryHelper.logEvent_OpenIntegratedProduct(
+    DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
       mockTelemetryService,
       testData,
       undefined,
@@ -273,7 +277,6 @@ describe('Session Data Structure', () => {
   });
 
   test('Complete user journey: search query, data product click, integrated product click', () => {
-    const searchSessionId = mockTelemetryService.applicationStore.uuid;
     LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
       mockTelemetryService,
       'power bi dashboard',
@@ -281,13 +284,20 @@ describe('Session Data Structure', () => {
       LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
     );
 
+    const userSearchSession = JSON.parse(
+      mockStorage.getItem(SEARCH_SESSION_KEY) as string,
+    ) as MarketplaceUserSession;
+    expect(userSearchSession).toBeDefined();
+    expect(typeof userSearchSession.searchSessionId).toBe('string');
+    const searchSessionId = userSearchSession.searchSessionId;
+
     LegendMarketplaceTelemetryHelper.logEvent_ClickingDataProductCard(
       mockTelemetryService,
       { dataProductId: 'sales-dashboard' },
       LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
     );
 
-    LegendMarketplaceTelemetryHelper.logEvent_OpenIntegratedProduct(
+    DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
       mockTelemetryService,
       {
         dataProductId: 'sales-dashboard',
@@ -333,10 +343,10 @@ describe('Session Data Structure', () => {
 
     // Verify all session IDs are consistent (same search session throughout)
     expect(dataProductSession.searchSessionId).toBe(
-      searchSession.searchSessionId,
+      userSearchSession.searchSessionId,
     );
     expect(integratedProductSession.searchSessionId).toBe(
-      searchSession.searchSessionId,
+      userSearchSession.searchSessionId,
     );
   });
 });

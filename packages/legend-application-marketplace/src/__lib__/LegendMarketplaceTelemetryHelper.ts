@@ -22,31 +22,22 @@ import {
   type V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
 import { LEGEND_MARKETPLACE_APP_EVENT } from './LegendMarketplaceAppEvent.js';
+import { uuid } from '@finos/legend-shared';
+import {
+  SEARCH_SESSION_KEY,
+  TELEMETRY_EVENT_STATUS,
+  type DATAPRODUCT_TYPE,
+  type MarketplaceUserSession,
+} from '@finos/legend-extension-dsl-data-product';
 
 export enum LEGEND_MARKETPLACE_PAGE {
   HOME_PAGE = 'Home Page',
   SEARCH_RESULTS_PAGE = 'Search Results Page',
 }
 
-export enum MARKETPLACE_EVENT_STATUS {
-  SUCCESS = 'success',
-  FAILURE = 'failure',
-}
-
-export enum DATAPRODUCT_TYPE {
-  ADHOC = 'adhoc',
-  SDLC = 'sdlc',
-}
-
 export enum CONTRACT_ACTION {
   APPROVED = 'approved',
   DENIED = 'denied',
-}
-
-export enum PRODUCT_INTEGRATION_TYPE {
-  DATA_CUBE = 'dataCube',
-  POWER_BI = 'powerBI',
-  REGISTRY = 'registry',
 }
 
 export enum ICON_TOOLBAR_TYPE {
@@ -71,20 +62,6 @@ type MarketplaceDataProduct_TelemetryData = {
     | V1_EntitlementsLakehouseEnvironmentType
     | undefined;
 };
-
-type MarketPlaceDataProductIntegration_TemeletryData =
-  MarketplaceDataProduct_TelemetryData & {
-    productIntegrationType?: PRODUCT_INTEGRATION_TYPE | undefined;
-    accessPointGroup?: string | undefined;
-    accessPointPath?: string | undefined;
-  };
-
-export type MarketplaceUserSession = {
-  eventId: number;
-  searchSessionId: string | undefined;
-};
-
-export const SEARCH_SESSION_KEY = 'marketplace_user_session';
 
 export class LegendMarketplaceTelemetryHelper {
   private static getOrCreateUserSession(): MarketplaceUserSession {
@@ -166,7 +143,7 @@ export class LegendMarketplaceTelemetryHelper {
     useProducerSearch: boolean,
     searchedFrom: LEGEND_MARKETPLACE_PAGE,
   ): void {
-    this.updateSearchSessionId(telemetryService.applicationStore.uuid);
+    this.updateSearchSessionId(uuid());
     this.updateEventId();
     const session = this.getOrCreateUserSession();
     telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SEARCH_QUERY, {
@@ -212,13 +189,13 @@ export class LegendMarketplaceTelemetryHelper {
             actionedContractsDetails: actionedContractsDetails,
             action: action,
             actionTakenBy: actionTakenBy,
-            status: MARKETPLACE_EVENT_STATUS.SUCCESS,
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
           }
         : {
             actionedContractsDetails: actionedContractsDetails,
             action: action,
             actionTakenBy: actionTakenBy,
-            status: MARKETPLACE_EVENT_STATUS.FAILURE,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
             errors: errors,
           };
     telemetryService.logEvent(
@@ -234,40 +211,14 @@ export class LegendMarketplaceTelemetryHelper {
   ): void {
     const telemetryData =
       error === undefined
-        ? { ...dataProductData, status: MARKETPLACE_EVENT_STATUS.SUCCESS }
+        ? { ...dataProductData, status: TELEMETRY_EVENT_STATUS.SUCCESS }
         : {
             ...dataProductData,
-            status: MARKETPLACE_EVENT_STATUS.FAILURE,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
             error: error,
           };
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.LOAD_DATA_PRODUCT,
-      telemetryData,
-    );
-  }
-
-  static logEvent_OpenIntegratedProduct(
-    telemetryService: TelemetryService,
-    intTelemetryData: MarketPlaceDataProductIntegration_TemeletryData,
-    error: string | undefined,
-  ): void {
-    this.updateEventId();
-    const session = this.getOrCreateUserSession();
-    const telemetryData =
-      error === undefined
-        ? {
-            ...intTelemetryData,
-            status: MARKETPLACE_EVENT_STATUS.SUCCESS,
-            ...session,
-          }
-        : {
-            ...intTelemetryData,
-            status: MARKETPLACE_EVENT_STATUS.FAILURE,
-            error: error,
-            ...session,
-          };
-    telemetryService.logEvent(
-      LEGEND_MARKETPLACE_APP_EVENT.OPEN_INTEGRATED_PRODUCT,
       telemetryData,
     );
   }
@@ -279,10 +230,10 @@ export class LegendMarketplaceTelemetryHelper {
   ): void {
     const telemetryData =
       error === undefined
-        ? { ...dataProductData, status: MARKETPLACE_EVENT_STATUS.SUCCESS }
+        ? { ...dataProductData, status: TELEMETRY_EVENT_STATUS.SUCCESS }
         : {
             ...dataProductData,
-            status: MARKETPLACE_EVENT_STATUS.FAILURE,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
             error: error,
           };
     telemetryService.logEvent(
@@ -298,10 +249,10 @@ export class LegendMarketplaceTelemetryHelper {
   ): void {
     const telemetryData =
       error === undefined
-        ? { terminalId: terminalId, status: MARKETPLACE_EVENT_STATUS.SUCCESS }
+        ? { terminalId: terminalId, status: TELEMETRY_EVENT_STATUS.SUCCESS }
         : {
             terminalId: terminalId,
-            status: MARKETPLACE_EVENT_STATUS.FAILURE,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
             error: error,
           };
     telemetryService.logEvent(
@@ -325,14 +276,14 @@ export class LegendMarketplaceTelemetryHelper {
             artifactId: artifactId,
             versionId: versionId,
             path: path,
-            status: MARKETPLACE_EVENT_STATUS.SUCCESS,
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
           }
         : {
             groupId: groupId,
             artifactId: artifactId,
             versionId: versionId,
             path: path,
-            status: MARKETPLACE_EVENT_STATUS.FAILURE,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
             error: error,
           };
     telemetryService.logEvent(
