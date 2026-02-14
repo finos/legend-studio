@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.97
+
+### Patch Changes
+
+- [#4879](https://github.com/finos/legend-studio/pull/4879) [`4e25d13`](https://github.com/finos/legend-studio/commit/4e25d13badd23c8b460ad03bb8f59a9aabadc42f) ([@kelly-thai](https://github.com/kelly-thai)) - Log theme mode on successful application load
+
 ## 16.0.96
 
 ## 16.0.95

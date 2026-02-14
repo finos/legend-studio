@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.3.33
+
+### Patch Changes
+
+- [#4880](https://github.com/finos/legend-studio/pull/4880) [`f10a917`](https://github.com/finos/legend-studio/commit/f10a917b0c87f34b7e02679b27aba67dd5cc99ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable querying on MAPG in data product in legend-studio
+
+- [#4884](https://github.com/finos/legend-studio/pull/4884) [`e279026`](https://github.com/finos/legend-studio/commit/e2790265904cda04e0c6a254e61913b8b006cd2c) ([@yash0024](https://github.com/yash0024)) - Add modelAPG diagram protocol to metamodel conversion
+
 ## 32.3.32
 
 ### Patch Changes

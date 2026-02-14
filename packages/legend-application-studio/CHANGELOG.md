@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.95
+
+### Patch Changes
+
+- [#4880](https://github.com/finos/legend-studio/pull/4880) [`f10a917`](https://github.com/finos/legend-studio/commit/f10a917b0c87f34b7e02679b27aba67dd5cc99ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable querying on MAPG in data product in legend-studio
+
 ## 28.19.94
 
 ### Patch Changes
