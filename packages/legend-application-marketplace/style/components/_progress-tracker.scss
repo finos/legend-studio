@@ -14,39 +14,29 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
-
-.legend-marketplace-coming-soon {
-  background: var(--marketplace-bg-secondary); // Default
-  color: var(--marketplace-text-primary);
-
-  &__content {
-    @include flexCenter;
-
-    height: 100%;
-    flex-direction: column;
-    background: var(--marketplace-bg-secondary);
-
-    .theme__hc-dark & {
-      background: var(--marketplace-bg-primary);
-    }
-  }
+.legend-marketplace-progress-tracker {
+  background: var(--marketplace-bg-primary);
+  border: 1px solid var(--color-hclight-grey-20);
 
   .theme__hc-dark & {
-    background: var(--marketplace-bg-primary);
+    background: var(--marketplace-bg-secondary);
+  }
+
+  &__step-label {
     color: var(--marketplace-text-primary);
   }
 
-  &__feature-item {
-    // ...
-    .theme__hc-dark & {
-      background: var(--marketplace-bg-secondary);
-      border: 1px solid var(--marketplace-border-color);
+  &__step-details {
+    background: var(--marketplace-bg-secondary);
+    border: 1px solid var(--marketplace-border-color);
 
-      &:hover {
-        background: var(--marketplace-bg-tertiary);
-        border-color: var(--marketplace-link-color);
-      }
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-tertiary);
+      border: 1px solid var(--marketplace-border-color);
     }
+  }
+
+  &__step-detail {
+    color: var(--marketplace-text-secondary);
   }
 }

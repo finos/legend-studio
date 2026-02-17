@@ -17,10 +17,25 @@
 @use 'mixins' as *;
 
 .legend-marketplace-product-search-result-card {
+  background: var(--marketplace-card-bg);
+  border: 1px solid var(--marketplace-border-color);
+  transition: all 0.2s ease;
+  width: 100%; // Ensure it takes full width if needed or check original usage
+
+  &:hover {
+    background: var(--marketplace-card-hover-bg);
+    border-color: var(--marketplace-link-color);
+  }
+
   .legend-marketplace-card__content {
     justify-content: start;
     align-items: start;
     overflow: auto;
+    color: var(--marketplace-text-primary);
+  }
+
+  &__title {
+    color: var(--marketplace-text-primary);
   }
 
   &__data-product-name {
@@ -28,10 +43,15 @@
     font-weight: 500;
     margin-top: 1rem;
     margin-bottom: 1rem;
-    color: var(--color-blue-100);
+    color: var(--marketplace-link-color);
   }
 
   &__data-product-description {
     font-size: 1.6rem;
+    color: var(--marketplace-text-secondary);
+  }
+
+  &__description {
+    color: var(--marketplace-text-muted);
   }
 }

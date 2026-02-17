@@ -22,6 +22,36 @@
   flex: 1;
   flex-direction: column;
   padding: 1rem 2rem 2rem;
+  background: var(--marketplace-bg-primary);
+
+  .theme__hc-dark & {
+    background: var(--marketplace-bg-secondary);
+    color: var(--marketplace-text-primary);
+  }
+
+  .MuiTabs-root {
+    .theme__hc-dark & {
+      border-bottom: 1px solid var(--marketplace-border-color);
+
+      .MuiTabs-indicator {
+        background-color: var(--marketplace-link-color);
+      }
+    }
+  }
+
+  .MuiTab-root {
+    .theme__hc-dark & {
+      color: var(--marketplace-text-muted);
+
+      &.Mui-selected {
+        color: var(--marketplace-link-color);
+      }
+
+      .MuiTypography-root {
+        color: inherit;
+      }
+    }
+  }
 }
 
 .marketplace-lakehouse-entitlements {
@@ -34,6 +64,11 @@
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-90);
     font-family: Roboto, sans-serif;
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-primary);
+      color: var(--marketplace-text-primary);
+    }
 
     &__action-btn {
       margin-left: 0;
@@ -113,6 +148,14 @@
       color: blue;
       text-decoration: underline;
       cursor: pointer;
+
+      .theme__hc-dark & {
+        color: var(--marketplace-link-color);
+
+        &:hover {
+          color: var(--marketplace-link-hover-color);
+        }
+      }
     }
 
     &__user-display {
@@ -138,6 +181,11 @@
   color: var(--color-hclight-grey-90);
   font-family: Roboto, sans-serif;
 
+  .theme__hc-dark & {
+    background: var(--marketplace-bg-primary);
+    color: var(--marketplace-text-primary);
+  }
+
   &__action-header {
     padding-bottom: 1rem;
   }
@@ -158,200 +206,40 @@
     &:hover {
       color: darkblue;
     }
+
+    .theme__hc-dark & {
+      color: var(--marketplace-link-color);
+
+      &:hover {
+        color: var(--marketplace-link-hover-color);
+      }
+    }
   }
 
   &__status--success {
     color: green;
     font-weight: bold;
+
+    .theme__hc-dark & {
+      color: var(--color-dark-green-50);
+    }
   }
 
   &__status--in-progress {
     color: blue;
     font-weight: bold;
+
+    .theme__hc-dark & {
+      color: var(--marketplace-link-color);
+    }
   }
 
   &__status--error {
     color: red;
     font-weight: bold;
-  }
-}
 
-.marketplace-lakehouse-entitlements__data-contract-creator {
-  &__content {
-    @include flexVCenter;
-
-    flex-direction: column;
-    min-height: 400px;
-  }
-
-  &__consumer-type-btn-group {
-    margin: 2rem 0;
-  }
-
-  &__enterprise-apg-notice {
-    color: var(--color-light-grey-300);
-    font-style: italic;
-  }
-
-  &__user-input,
-  &__producer-input,
-  &__business-justification-input {
-    max-width: 70rem;
-    margin: 2rem 0;
-  }
-}
-
-.marketplace-lakehouse-entitlements__data-contract-viewer {
-  &__content {
-    @include flexVCenter;
-
-    flex-direction: column;
-    min-height: 40rem;
-  }
-
-  &__close {
-    position: absolute;
-    right: 8px;
-    top: 8px;
-  }
-
-  &__metadata {
-    width: 100%;
-    background: var(--color-light-grey-300);
-    padding: 1rem;
-    margin: 1rem 0;
-
-    > div {
-      margin: 1rem 0;
-    }
-
-    &__ordered-by,
-    &__ordered-for {
-      @include flexVCenter;
-    }
-
-    .legend-user-display {
-      margin-left: 1rem;
-    }
-
-    &__ordered-for {
-      &__select {
-        margin-left: 1rem;
-
-        .legend-user-display {
-          margin-left: unset;
-        }
-      }
-
-      &__tooltip__icon {
-        @include hoverableLightTooltipIcon;
-
-        display: inline-block;
-        margin-left: 0.5rem;
-        margin-bottom: 0.5rem;
-      }
-    }
-  }
-
-  &__icon-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
-  }
-
-  &__icon-label {
-    font-size: 0.8rem;
-  }
-
-  &__refresh-btn {
-    align-self: end;
-  }
-
-  &__timeline {
-    width: 100%;
-
-    &__content {
-      font-size: 1.4rem;
-    }
-  }
-
-  &__user-list {
-    max-height: 20rem;
-    overflow: auto;
-    background: var(--color-light-grey-300);
-
-    &__container {
-      margin-top: -12px !important;
-      background: var(--color-light-grey-150);
-    }
-  }
-
-  &__task-approval-view {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background: var(--color-light-grey-150);
-
-    .legend-user-display {
-      margin: 0.5rem 0;
-    }
-
-    &__timestamp {
-      color: var(--color-dark-grey-300);
-      font-style: italic;
-    }
-  }
-
-  &__footer {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-self: start;
-    margin-top: auto;
-    width: 100%;
-    color: var(--color-light-grey-300);
-
-    &__subscription-info {
-      width: 100%;
-      font-size: 1.4rem;
-    }
-
-    &__contract-details {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      &__close-contract-btn {
-        color: var(--color-red-200);
-      }
-    }
-  }
-}
-
-.marketplace-lakehouse-entitlements__data-contract-approval {
-  &__success,
-  &__error {
-    padding: 1rem;
-    margin: 1rem;
-  }
-
-  &__success {
-    background: var(--tw-color-green-200);
-  }
-
-  &__error {
-    background: var(--tw-color-red-300);
-
-    &__content {
-      line-height: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    &__user {
-      width: fit-content;
-      display: inline-block;
-      position: relative;
-      bottom: -10px;
+    .theme__hc-dark & {
+      color: var(--color-dark-red-50);
     }
   }
 }

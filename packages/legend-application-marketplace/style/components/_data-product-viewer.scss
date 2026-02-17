@@ -1,0 +1,309 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.data-product__viewer {
+  background: var(--marketplace-bg-primary);
+  color: var(--marketplace-text-primary);
+
+  &__header {
+    &__title {
+      color: var(--color-hclight-blue-60);
+
+      .theme__hc-dark & {
+        color: var(--marketplace-link-color);
+      }
+    }
+
+    &__type__version--snapshot {
+      background: var(--marketplace-bg-secondary);
+      color: var(--color-hclight-grey-70);
+
+      .theme__hc-dark & {
+        background: var(--marketplace-bg-elevated);
+        color: var(--marketplace-text-primary);
+      }
+    }
+  }
+
+  &__content {
+    &__terminal {
+      &__access-section {
+        span {
+          .theme__hc-dark & {
+            color: var(--marketplace-text-primary);
+          }
+        }
+      }
+
+      &__access-table {
+        &--cell {
+          .theme__hc-dark & {
+            color: var(--marketplace-text-primary);
+          }
+
+          &--entity {
+            .theme__hc-dark & {
+              color: var(--marketplace-link-color);
+            }
+          }
+        }
+
+        &--row {
+          .theme__hc-dark & {
+            background-color: var(--marketplace-bg-secondary);
+            border-bottom: 1px solid var(--marketplace-border-color);
+
+            &:hover {
+              background-color: var(--marketplace-bg-tertiary);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &__panel {
+    &__header {
+      .theme__hc-dark & {
+        border-bottom-color: var(--marketplace-link-color);
+        color: var(--marketplace-link-color);
+      }
+    }
+  }
+
+  &__wiki {
+    &__section {
+      &__header {
+        .theme__hc-dark & {
+          color: var(--marketplace-link-color);
+          border-bottom-color: var(--marketplace-link-color);
+        }
+
+        &__subtitle {
+          .theme__hc-dark & {
+            color: var(--marketplace-link-color);
+          }
+        }
+      }
+    }
+
+    &__expert-contact {
+      &__info {
+        &__id {
+          .theme__hc-dark & {
+            color: var(--marketplace-link-color);
+          }
+        }
+      }
+    }
+  }
+
+  &__wiki__terminal__section__pricing {
+    .theme__hc-dark & {
+      border-color: var(--marketplace-link-color);
+      color: var(--marketplace-link-color);
+    }
+  }
+
+  &__tabs-bar {
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-secondary);
+      border-top-color: var(--marketplace-border-color);
+    }
+  }
+
+  &__tabs {
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-secondary);
+      border-bottom-color: var(--marketplace-border-color);
+
+      .MuiTabs-indicator {
+        background-color: var(--marketplace-link-color);
+      }
+    }
+  }
+
+  &__tab {
+    .theme__hc-dark & {
+      border-right-color: var(--marketplace-border-color);
+      color: var(--marketplace-text-muted);
+
+      &--selected {
+        color: var(--marketplace-link-color);
+      }
+    }
+  }
+
+  // Access Group Item Styles
+  &__access-group {
+    &__item {
+      &__header {
+        &__title {
+          .theme__hc-dark & {
+            color: var(--marketplace-text-secondary);
+          }
+        }
+
+        &__type {
+          .theme__hc-dark & {
+            background: var(--marketplace-bg-elevated);
+            color: var(--marketplace-text-primary);
+          }
+        }
+      }
+
+      &__description {
+        .theme__hc-dark & {
+          color: var(--marketplace-text-primary);
+        }
+      }
+
+      &__content {
+        &__tab__header {
+          .theme__hc-dark & {
+            border-bottom-color: var(--marketplace-border-color);
+            border-top-color: var(--marketplace-border-color);
+          }
+        }
+
+        &__tab {
+          .theme__hc-dark & {
+            color: var(--marketplace-text-muted);
+
+            &:hover {
+              color: var(--marketplace-text-secondary);
+
+              .data-product__viewer__access-group__item__content__tab__icon
+                svg {
+                color: var(--marketplace-text-secondary);
+              }
+            }
+
+            &--active {
+              color: var(--marketplace-link-color);
+
+              .data-product__viewer__access-group__item__content__tab__label {
+                color: var(--marketplace-link-color);
+              }
+
+              .data-product__viewer__access-group__item__content__tab__icon
+                svg {
+                color: var(--marketplace-link-color);
+              }
+            }
+
+            & + & {
+              border-left-color: var(--marketplace-border-color);
+            }
+
+            &__icon svg {
+              color: var(--marketplace-text-muted);
+            }
+
+            &__label {
+              color: var(--marketplace-text-muted);
+            }
+          }
+        }
+
+        &__action-tab-group {
+          .theme__hc-dark & {
+            border-left-color: var(--marketplace-border-color);
+          }
+        }
+
+        &__tab__content {
+          .theme__hc-dark & {
+            background: var(--marketplace-bg-primary);
+            color: var(--marketplace-text-primary);
+          }
+        }
+      }
+    }
+  }
+
+  // Access Point Styles
+  &__access-point {
+    &__name {
+      .theme__hc-dark & {
+        color: var(--marketplace-text-primary);
+      }
+    }
+
+    &__description {
+      .theme__hc-dark & {
+        color: var(--marketplace-text-secondary);
+      }
+    }
+  }
+
+  // More Info Section
+  &__more-info {
+    &__columns-grid {
+      .theme__hc-dark & {
+        background: var(--marketplace-bg-primary);
+
+        // ag-Grid dark theme overrides
+        &.ag-theme-balham,
+        &.ag-theme-balham-dark {
+          --ag-background-color: var(--marketplace-bg-secondary);
+          --ag-foreground-color: var(--marketplace-text-primary);
+          --ag-header-background-color: var(--marketplace-bg-elevated);
+          --ag-header-foreground-color: var(--marketplace-text-primary);
+          --ag-border-color: var(--marketplace-border-color);
+          --ag-row-hover-color: var(--marketplace-bg-tertiary);
+
+          .ag-root-wrapper {
+            background: var(--marketplace-bg-secondary);
+            color: var(--marketplace-text-primary);
+            border-color: var(--marketplace-border-color);
+          }
+
+          .ag-header {
+            background: var(--marketplace-bg-elevated);
+            color: var(--marketplace-text-primary);
+            border-bottom-color: var(--marketplace-border-color);
+          }
+
+          .ag-header-cell {
+            background: var(--marketplace-bg-elevated);
+            color: var(--marketplace-text-primary);
+          }
+
+          .ag-row {
+            background: var(--marketplace-bg-secondary);
+            color: var(--marketplace-text-primary);
+            border-bottom-color: var(--marketplace-border-color);
+          }
+
+          .ag-row-hover {
+            background: var(--marketplace-bg-tertiary);
+          }
+
+          .ag-cell {
+            color: var(--marketplace-text-primary);
+          }
+        }
+      }
+    }
+
+    &__grammar {
+      .theme__hc-dark & {
+        background: var(--marketplace-bg-secondary);
+      }
+    }
+  }
+}

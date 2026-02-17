@@ -16,6 +16,7 @@
 
 @use 'mixins' as *;
 
+.legend-marketplace-search-bar,
 .legend-marketplace__search-bar {
   @include flexVCenter;
 
@@ -24,21 +25,69 @@
 
   &__text-field {
     height: 100%;
+    width: 100%;
 
     .MuiInputBase-root {
       height: 100%;
+      color: var(--marketplace-text-primary);
+      border: 1px solid var(--marketplace-border-color);
+      border-radius: 3rem;
+      background: var(--marketplace-bg-primary); // Input background
+      padding-right: 1rem; // spacing for icon
+
+      &:hover {
+        border-color: var(--marketplace-link-color);
+      }
+
+      &.Mui-focused {
+        border-color: var(--marketplace-link-color);
+        border-width: 2px;
+      }
+    }
+
+    // Input label
+    .MuiInputLabel-root {
+      color: var(--marketplace-text-muted);
+
+      &.Mui-focused {
+        color: var(--marketplace-link-color);
+      }
     }
   }
 
   &__input {
     padding: 0 2rem;
     font-size: 1.6rem;
-    background: var(--color-white);
-    border-radius: 3rem;
+    // background: var(--color-white); // Removed hardcoded white
+    // border-radius: 3rem; // Moved to MuiInputBase
+    color: var(--marketplace-text-primary);
   }
 
   input {
     height: 100%;
     padding: 0;
+    color: var(--marketplace-text-primary);
+
+    &::placeholder {
+      color: var(--marketplace-text-muted);
+    }
+  }
+
+  // Search icon and settings icon
+  .MuiIconButton-root {
+    color: var(--marketplace-text-secondary);
+
+    svg {
+      color: var(--marketplace-text-secondary);
+    }
+
+    &:hover {
+      color: var(--marketplace-link-color);
+      background: rgb(115 153 198 / 10%);
+
+      svg {
+        color: var(--marketplace-link-color);
+      }
+    }
   }
 }

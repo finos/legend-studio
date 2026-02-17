@@ -1,0 +1,74 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.data-access-overview__grid {
+  --ag-border-color: var(--marketplace-bg-elevated);
+  --ag-background-color: var(--marketplace-bg-primary);
+  --ag-foreground-color: var(--marketplace-text-primary);
+  --ag-header-background-color: var(--marketplace-bg-secondary);
+  --ag-header-foreground-color: var(--marketplace-text-primary);
+  --ag-balham-active-color: transparent;
+  --ag-odd-row-background-color: var(--marketplace-bg-primary);
+  --ag-even-row-background-color: var(--marketplace-bg-primary);
+  --ag-row-hover-color: var(--color-hclight-grey-5);
+  --ag-row-border-color: var(--marketplace-bg-elevated);
+
+  &--empty {
+    background: var(--marketplace-bg-primary);
+    color: var(--color-hclight-grey-60);
+  }
+
+  &__empty-cell {
+    color: var(--marketplace-bg-elevated);
+  }
+
+  .ag-center-cols-viewport {
+    background: repeating-linear-gradient(
+      135deg,
+      var(--marketplace-bg-primary),
+      var(--marketplace-bg-primary) 0.5rem,
+      var(--color-hclight-grey-5) 0.5rem,
+      var(--color-hclight-grey-5) 1rem
+    );
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-hclight-grey-15);
+    border: 0.1rem solid transparent;
+    background-clip: content-box;
+    border-radius: 0.4rem;
+  }
+
+  ::-webkit-scrollbar-track-piece {
+    background: transparent;
+  }
+
+  &__access-status-cell__icon--access-granted svg {
+    color: var(--color-hclight-lime-50);
+  }
+
+  &__access-status-cell__icon--access-approved svg {
+    color: var(--color-hclight-blue-50);
+  }
+
+  &__access-status-cell__icon--access-requested svg {
+    color: var(--color-hclight-yellow-30);
+  }
+
+  &__access-status-cell__icon--access-not-granted svg {
+    color: var(--color-hclight-red-50);
+  }
+}

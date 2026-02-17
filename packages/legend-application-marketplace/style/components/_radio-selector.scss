@@ -21,22 +21,45 @@
   align-items: center;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
+  background: var(--marketplace-bg-primary); // Light default
+
+  .theme__hc-dark & {
+    // No specific override in dark mode file, usually inherited or transparent
+  }
 
   .legend-marketplace-radio-button {
-    color: black;
-    background-color: white;
+    color: var(--marketplace-text-primary);
+    background-color: var(--marketplace-bg-secondary);
     padding: 0.5em;
     margin: 0;
     border-left: 1em;
     border-right: 1em;
+    border: 1px solid var(--marketplace-bg-elevated); // Light default
+
+    .theme__hc-dark & {
+      color: var(--marketplace-text-primary);
+      background-color: var(--marketplace-bg-secondary);
+      border: 1px solid var(--marketplace-border-color);
+    }
 
     &:hover {
       cursor: pointer;
+      border-color: var(--color-hclight-blue-50); // Light hover
+
+      .theme__hc-dark & {
+        background-color: var(--marketplace-bg-tertiary);
+      }
     }
 
     &__selected {
-      background-color: #3c68f8;
-      color: white;
+      border-color: var(--color-hclight-blue-60);
+      background: var(--color-hclight-blue-10);
+      color: var(--color-hclight-blue-70);
+
+      .theme__hc-dark & {
+        background-color: var(--marketplace-link-color);
+        color: var(--marketplace-text-primary);
+      }
     }
   }
 }

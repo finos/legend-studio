@@ -44,7 +44,9 @@
     opacity: 0;
     transition: all 0.2s ease;
     box-shadow: 0 4px 16px rgb(0 0 0 / 60%);
-    border: 1px solid var(--color-dark-grey-280);
+    background: var(--marketplace-bg-elevated);
+    color: var(--marketplace-text-primary);
+    border: 1px solid var(--marketplace-border-light-color);
     z-index: 1000;
   }
 
@@ -55,6 +57,7 @@
     left: 50%;
     transform: translateX(-50%) scale(0);
     border: 0.5rem solid transparent;
+    border-bottom-color: var(--marketplace-bg-elevated);
     pointer-events: none;
     opacity: 0;
     transition: all 0.2s ease;
@@ -68,11 +71,23 @@
   }
 }
 
+.legend-marketplace-page {
+  background: var(--marketplace-page-bg);
+  color: var(--marketplace-text-primary);
+
+  &__header {
+    background: var(--marketplace-header-bg);
+    border-bottom: 1px solid var(--marketplace-border-color);
+    color: var(--marketplace-text-primary);
+  }
+}
+
 .legend-marketplace-header {
   @include flexVCenter;
 
+  background: var(--marketplace-header-bg);
   height: var(--legend-marketplace-header-height);
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%); // Using light mode shadow as default, maybe assume dark mode override if needed or generic
   width: 100% !important;
   position: sticky;
   top: 0;
@@ -87,18 +102,115 @@
     bottom: 0;
     z-index: -1;
     pointer-events: none;
+    background: var(--marketplace-header-bg);
   }
 
   &__backdrop {
     backdrop-filter: blur(8px);
   }
 
+  &__container {
+    margin: 0;
+    width: 100% !important;
+    background: var(--marketplace-header-bg);
+  }
+
+  &__name {
+    @include flexVCenter;
+
+    color: var(--marketplace-text-primary);
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin: 1rem;
+    cursor: pointer;
+    gap: 0.5rem;
+  }
+
+  &__logo {
+    display: inline-block;
+    vertical-align: top;
+    height: fit-content;
+    margin: -2rem 0;
+    padding: 0;
+    color: var(--marketplace-text-primary) !important;
+
+    svg {
+      color: var(--marketplace-text-primary) !important;
+      fill: currentcolor;
+      stroke: currentcolor;
+    }
+  }
+
   &__menu__icon {
-    color: var(--color-black);
+    color: var(--marketplace-text-primary);
 
     svg {
       font-size: 2.7rem;
+      color: var(--marketplace-text-primary);
     }
+  }
+
+  &__tabs {
+    display: flex;
+    flex-grow: 1;
+    align-self: stretch;
+    padding: 0 12px;
+  }
+
+  &__tab {
+    @include flexVCenter;
+
+    color: var(--marketplace-text-secondary);
+    font-size: 1.5rem;
+    padding: 10px 12px;
+    text-transform: unset;
+    border-radius: unset;
+    cursor: pointer;
+    position: relative;
+
+    &:hover {
+      background-color: var(--marketplace-bg-secondary); // simplified
+    }
+
+    &--selected {
+      color: var(--marketplace-text-primary);
+
+      &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        background: var(--marketplace-link-color);
+        left: 0;
+        right: 0;
+        margin: auto;
+        height: 3px;
+        bottom: 0;
+        width: calc(100% - 24px);
+      }
+    }
+  }
+
+  &__icons {
+    display: flex;
+    flex-grow: 0;
+    gap: 2rem;
+  }
+
+  &__icon {
+    @include flexCenter;
+
+    color: var(--marketplace-text-primary);
+    width: 3rem;
+    font-size: 2rem;
+    cursor: pointer;
+
+    svg {
+      color: var(--marketplace-text-primary);
+    }
+  }
+
+  &__contract__count {
+    color: var(--marketplace-text-primary);
   }
 
   &__task__count {
@@ -107,7 +219,7 @@
   }
 
   @mixin task__badge__base {
-    background: var(--color-red-180) !important;
+    background: var(--color-red-180) !important; // Leaving as alert color
     color: var(--color-white) !important;
     min-width: 1.5rem;
     height: 1.5rem;
@@ -135,103 +247,4 @@
 
     margin-left: 0.5rem;
   }
-
-  &__container {
-    margin: 0;
-    width: 100% !important;
-  }
-
-  &__name {
-    @include flexVCenter;
-
-    color: var(--color-black);
-    font-size: 2.4rem;
-    font-weight: 700;
-    margin: 1rem;
-    cursor: pointer;
-    gap: 0.5rem;
-  }
-
-  &__logo {
-    display: inline-block;
-    vertical-align: top;
-    height: fit-content;
-    margin: -2rem 0;
-    padding: 0;
-  }
-
-  &__tabs {
-    display: flex;
-    flex-grow: 1;
-    align-self: stretch;
-    padding: 0 12px;
-  }
-
-  &__tab {
-    @include flexVCenter;
-
-    color: var(--color-black);
-    font-size: 1.5rem;
-    padding: 10px 12px;
-    text-transform: unset;
-    border-radius: unset;
-    cursor: pointer;
-    position: relative;
-
-    &:hover {
-      background-color: var(--color-light-shade-50);
-    }
-
-    &--selected::before {
-      content: '';
-      display: block;
-      position: absolute;
-      background: var(--color-hclight-blue-60);
-      left: 0;
-      right: 0;
-      margin: auto;
-      height: 3px;
-      bottom: 0;
-      width: calc(100% - 24px);
-    }
-  }
-
-  &__icons {
-    display: flex;
-    flex-grow: 0;
-    gap: 2rem;
-  }
-
-  &__icon {
-    @include flexCenter;
-
-    color: white;
-    width: 3rem;
-    font-size: 2rem;
-    cursor: pointer;
-  }
-}
-
-// ---------------------------- Menu -------------------------------
-
-.menu {
-  background: var(--color-white);
-  border-color: var(--color-light-grey-400);
-}
-
-.menu__item {
-  color: var(--color-dark-grey-300);
-  font-size: 1.6rem;
-
-  &:hover {
-    background: var(--color-light-grey-100);
-  }
-
-  &:not([disabled]):hover {
-    background: var(--color-light-grey-100);
-  }
-}
-
-.menu__item[disabled] {
-  color: var(--color-light-grey-300);
 }

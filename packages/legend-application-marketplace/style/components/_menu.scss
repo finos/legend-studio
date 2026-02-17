@@ -1,0 +1,90 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.MuiMenu-paper {
+  background: var(--marketplace-bg-elevated) !important;
+  color: var(--marketplace-text-primary) !important;
+  border: 1px solid var(--marketplace-border-color) !important;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 60%) !important;
+}
+
+.MuiMenu-list,
+.MuiList-root {
+  background: var(--marketplace-bg-elevated) !important;
+  color: var(--marketplace-text-primary) !important;
+}
+
+.MuiMenuItem-root {
+  color: var(--marketplace-text-primary) !important;
+  font-size: 1.6rem !important;
+
+  &:hover {
+    background: var(--marketplace-bg-tertiary) !important;
+  }
+
+  a,
+  a:visited {
+    color: inherit !important;
+    text-decoration: none;
+  }
+
+  .MuiLink-root {
+    color: var(--marketplace-link-color) !important;
+
+    &:hover {
+      color: var(--marketplace-link-hover-color) !important;
+    }
+  }
+
+  .MuiBox-root {
+    color: var(--marketplace-text-primary) !important;
+
+    a,
+    .MuiLink-root {
+      color: var(--marketplace-link-color) !important;
+
+      &:hover {
+        color: var(--marketplace-link-hover-color) !important;
+      }
+    }
+  }
+}
+
+.menu {
+  background: var(--marketplace-bg-secondary);
+  border-color: var(--marketplace-border-color);
+
+  &__item {
+    color: var(--marketplace-text-secondary);
+    font-size: 1.6rem;
+
+    &:hover {
+      background: var(--marketplace-bg-tertiary);
+    }
+
+    &:not([disabled]):hover {
+      background: var(--marketplace-bg-tertiary);
+    }
+
+    &[disabled] {
+      color: var(--marketplace-text-muted);
+    }
+  }
+
+  &__divider {
+    background: var(--marketplace-border-color);
+  }
+}

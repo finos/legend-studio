@@ -1,0 +1,252 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.marketplace-lakehouse-entitlements__data-contract-viewer {
+  &__content {
+    @include flexVCenter;
+
+    flex-direction: column;
+    min-height: 40rem;
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-secondary);
+      color: var(--marketplace-text-primary);
+    }
+  }
+
+  &__close {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+  }
+
+  &__metadata {
+    width: 100%;
+    background: var(--color-light-grey-300);
+    padding: 1rem;
+    margin: 1rem 0;
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-elevated);
+      color: var(--marketplace-text-primary);
+    }
+
+    > div {
+      margin: 1rem 0;
+    }
+
+    &__ordered-by,
+    &__ordered-for {
+      @include flexVCenter;
+    }
+
+    .legend-user-display {
+      margin-left: 1rem;
+    }
+
+    &__ordered-for {
+      &__select {
+        margin-left: 1rem;
+
+        .legend-user-display {
+          margin-left: unset;
+        }
+      }
+
+      &__tooltip__icon {
+        @include hoverableLightTooltipIcon;
+
+        display: inline-block;
+        margin-left: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
+
+  &__icon-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  &__icon-label {
+    font-size: 0.8rem;
+  }
+
+  &__refresh-btn {
+    align-self: end;
+  }
+
+  &__timeline {
+    width: 100%;
+
+    &__content {
+      font-size: 1.4rem;
+
+      .theme__hc-dark & {
+        color: var(--marketplace-text-primary);
+      }
+    }
+
+    // MUI Timeline icons
+    .MuiTimelineDot-root {
+      .theme__hc-dark & {
+        svg {
+          color: var(--marketplace-text-primary);
+        }
+      }
+    }
+
+    .MuiTimelineConnector-root {
+      .theme__hc-dark & {
+        background-color: var(--marketplace-border-color);
+      }
+    }
+
+    // IconButtons inside timeline (copy, share, escalate buttons)
+    .MuiIconButton-root {
+      .theme__hc-dark & {
+        color: var(--marketplace-text-primary) !important;
+
+        svg {
+          color: var(--marketplace-text-primary);
+        }
+
+        &:hover {
+          background: var(--marketplace-bg-tertiary);
+        }
+      }
+    }
+  }
+
+  &__user-list {
+    max-height: 20rem;
+    overflow: auto;
+    background: var(--color-light-grey-300);
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-elevated);
+    }
+
+    &__container {
+      margin-top: -12px !important;
+      background: var(--color-light-grey-150);
+
+      .theme__hc-dark & {
+        background: var(--marketplace-bg-secondary);
+      }
+    }
+  }
+
+  &__task-approval-view {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--color-light-grey-150);
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-secondary);
+      color: var(--marketplace-text-primary);
+    }
+
+    .legend-user-display {
+      margin: 0.5rem 0;
+    }
+
+    &__timestamp {
+      color: var(--color-dark-grey-300);
+      font-style: italic;
+
+      .theme__hc-dark & {
+        color: var(--marketplace-text-muted);
+      }
+    }
+  }
+
+  &__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-self: start;
+    margin-top: auto;
+    width: 100%;
+    color: var(--color-light-grey-300);
+
+    .theme__hc-dark & {
+      color: var(--marketplace-text-muted);
+    }
+
+    // Copy button in footer
+    .MuiIconButton-root {
+      .theme__hc-dark & {
+        color: var(--marketplace-text-primary) !important;
+
+        svg {
+          color: var(--marketplace-text-primary);
+        }
+
+        &:hover {
+          background: var(--marketplace-bg-tertiary);
+        }
+      }
+    }
+
+    &__subscription-info {
+      width: 100%;
+      font-size: 1.4rem;
+    }
+
+    &__contract-details {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &__close-contract-btn {
+        color: var(--color-red-200);
+      }
+    }
+  }
+}
+
+// Close/Cancel button at top-right of data contract dialog
+.marketplace-dialog-close-btn {
+  .theme__hc-dark & {
+    color: var(--marketplace-text-primary) !important;
+
+    svg {
+      color: var(--marketplace-text-primary) !important;
+    }
+
+    &:hover {
+      background: var(--marketplace-bg-tertiary);
+    }
+  }
+}
+
+// Target the specific MUI IconButton class
+.MuiButtonBase-root.MuiIconButton-root {
+  &.marketplace-dialog-close-btn {
+    .theme__hc-dark & {
+      color: var(--marketplace-text-primary) !important;
+
+      svg {
+        color: var(--marketplace-text-primary) !important;
+      }
+    }
+  }
+}

@@ -19,8 +19,14 @@
   max-width: 90vw;
   display: flex;
   flex-direction: column;
-  background: var(--color-white);
+  background: var(--marketplace-bg-secondary);
+  color: var(--marketplace-text-primary);
   padding: 0;
+
+  .MuiDrawer-paper {
+    background: var(--marketplace-bg-secondary);
+    color: var(--marketplace-text-primary);
+  }
 
   &__header {
     display: flex;
@@ -28,11 +34,7 @@
     justify-content: space-between;
     padding: 2rem 2.4rem;
     gap: 1rem;
-    background: linear-gradient(
-      135deg,
-      var(--color-cart-blue-primary) 0%,
-      var(--color-cart-blue-secondary) 100%
-    );
+    background: var(--marketplace-cart-header-bg);
     color: var(--color-white);
     box-shadow: 0 4px 20px rgb(102 126 234 / 25%);
     position: relative;
@@ -74,20 +76,20 @@
 
   &__section {
     padding: 2rem 2.4rem;
-    background: var(--color-white);
-    border-bottom: 1px solid var(--color-cart-border-light);
+    background: var(--marketplace-bg-secondary);
+    border-bottom: 1px solid var(--marketplace-border-color);
 
     .MuiFormControl-root {
       .MuiOutlinedInput-root {
         border-radius: 12px;
-        background: var(--color-cart-background-light);
+        background: var(--marketplace-bg-elevated);
 
         &:hover {
-          background: var(--color-cart-background-section);
+          background: var(--marketplace-bg-tertiary);
         }
 
         &.Mui-focused {
-          background: var(--color-white);
+          background: var(--marketplace-bg-primary);
           box-shadow: 0 0 0 3px rgb(102 126 234 / 10%);
         }
       }
@@ -96,13 +98,13 @@
 
   &__business-reason {
     padding: 2rem 2.4rem;
-    background: var(--color-cart-background-light);
-    border-bottom: 1px solid var(--color-cart-border-medium);
+    background: var(--marketplace-bg-secondary);
+    border-bottom: 1px solid var(--marketplace-border-color);
 
     &__title {
       font-weight: 600;
       font-size: 1.5rem;
-      color: var(--color-cart-text-primary);
+      color: var(--marketplace-text-primary);
       margin: 0 0 1.5rem;
     }
 
@@ -116,39 +118,40 @@
 
       .MuiOutlinedInput-root {
         border-radius: 8px;
-        background: var(--color-white);
+        background: var(--marketplace-bg-elevated);
 
         &:hover {
           .MuiOutlinedInput-notchedOutline {
-            border-color: var(--color-cart-text-secondary);
+            border-color: var(--marketplace-text-secondary);
           }
         }
 
         &.Mui-focused {
           .MuiOutlinedInput-notchedOutline {
-            border-color: var(--color-cart-blue-focus);
+            border-color: var(--marketplace-link-color);
           }
         }
 
         .MuiSelect-select {
           padding: 1.2rem 1.4rem;
           font-size: 1.4rem;
+          color: var(--marketplace-text-primary);
         }
       }
 
       .MuiInputLabel-root {
         font-size: 1.4rem;
-        color: var(--color-cart-text-secondary);
-        background: var(--color-white);
+        color: var(--marketplace-text-secondary);
+        background: var(--marketplace-bg-elevated);
         padding: 0 0.6rem;
         margin-left: -0.6rem;
 
         &.Mui-focused {
-          color: var(--color-cart-blue-focus);
+          color: var(--marketplace-link-color);
         }
 
         &.MuiInputLabel-shrink {
-          background: var(--color-white);
+          background: var(--marketplace-bg-elevated);
           padding: 0 0.8rem;
           margin-left: -0.4rem;
         }
@@ -164,7 +167,7 @@
     }
 
     &__note {
-      color: var(--color-cart-text-secondary);
+      color: var(--marketplace-text-muted);
       font-size: 1.1rem;
     }
   }
@@ -173,7 +176,7 @@
     flex: 1;
     overflow: auto;
     padding: 1rem 0;
-    background: var(--color-cart-background-lighter);
+    background: var(--marketplace-bg-primary);
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -184,11 +187,11 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background: var(--color-cart-scrollbar);
+      background: var(--marketplace-border-color);
       border-radius: 10px;
 
       &:hover {
-        background: var(--color-cart-scrollbar-hover);
+        background: var(--marketplace-text-secondary);
       }
     }
   }
@@ -201,15 +204,15 @@
     justify-content: center;
     padding: 4rem 2rem;
     text-align: center;
-    color: var(--color-cart-text-secondary);
-    background: var(--color-white);
+    color: var(--marketplace-text-muted);
+    background: var(--marketplace-bg-secondary);
     margin: 1rem 2.4rem;
     border-radius: 16px;
     box-shadow: 0 2px 12px rgb(0 0 0 / 4%);
-    border: 1px solid var(--color-cart-background-section);
+    border: 1px solid var(--marketplace-border-color);
 
     .MuiCircularProgress-root {
-      color: var(--color-cart-blue-focus);
+      color: var(--marketplace-link-color);
       margin-bottom: 1rem;
     }
 
@@ -224,13 +227,14 @@
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
+    background: transparent;
   }
 
   &__item-card {
-    background: var(--color-white);
+    background: var(--marketplace-bg-secondary);
     border-radius: 16px;
-    box-shadow: 0 2px 16px rgb(0 0 0 / 8%);
-    border: 1px solid var(--color-cart-border-light);
+    box-shadow: var(--marketplace-card-shadow);
+    border: 1px solid var(--marketplace-border-color);
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -238,7 +242,7 @@
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 32px rgb(0 0 0 / 12%);
-      border-color: var(--color-cart-blue-focus);
+      border-color: var(--marketplace-link-color);
     }
 
     &__header {
@@ -248,10 +252,10 @@
       padding: 2rem 2rem 1rem;
       background: linear-gradient(
         135deg,
-        var(--color-cart-card-header-start) 0%,
-        var(--color-cart-card-header-end) 100%
+        var(--marketplace-bg-tertiary) 0%,
+        var(--marketplace-bg-elevated) 100%
       );
-      border-bottom: 1px solid var(--color-cart-border-light);
+      border-bottom: 1px solid var(--marketplace-border-color);
     }
 
     &__title-section {
@@ -270,7 +274,7 @@
     &__name {
       font-weight: 700;
       font-size: 2rem;
-      color: var(--color-cart-text-dark);
+      color: var(--marketplace-text-primary);
       margin: 0;
       line-height: 1.3;
     }
@@ -278,8 +282,8 @@
     &__provider {
       background: linear-gradient(
         135deg,
-        var(--color-cart-provider-start) 0%,
-        var(--color-cart-provider-end) 100%
+        var(--marketplace-link-hover-color) 0%,
+        var(--marketplace-link-color) 100%
       );
       color: var(--color-white);
       font-size: 1.2rem;
@@ -296,10 +300,10 @@
     &__category {
       background: linear-gradient(
         135deg,
-        var(--color-cart-category-start, #10b981) 0%,
-        var(--color-cart-category-end, #059669) 100%
+        var(--marketplace-bg-elevated) 0%,
+        var(--marketplace-bg-tertiary) 100%
       );
-      color: var(--color-white);
+      color: var(--marketplace-text-primary);
       font-size: 1.2rem;
       font-weight: 600;
       border-radius: 20px;
@@ -307,12 +311,12 @@
       border: none;
       align-self: flex-start;
       letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgb(16 185 129 / 30%);
+      box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
     }
 
     &__remove-btn {
       background: rgb(239 68 68 / 10%);
-      color: var(--color-cart-remove-bg);
+      color: var(--color-dark-red-50);
       border-radius: 10px;
       padding: 1rem;
       transition: all 0.2s ease;
@@ -330,6 +334,7 @@
 
     &__content {
       padding: 1.5rem 2rem 2rem;
+      background: var(--marketplace-bg-secondary);
     }
 
     &__price-section {
@@ -342,19 +347,19 @@
     &__price {
       font-weight: 800;
       font-size: 2.4rem;
-      color: var(--color-cart-price-green);
+      color: var(--marketplace-link-color);
       margin: 0;
       background: linear-gradient(
         135deg,
-        var(--color-cart-price-green) 0%,
-        var(--color-cart-price-green-end) 100%
+        var(--marketplace-link-color) 0%,
+        var(--marketplace-link-hover-color) 100%
       );
       background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     &__price-suffix {
-      color: var(--color-cart-text-muted);
+      color: var(--marketplace-text-muted);
       font-weight: 500;
       font-size: 1.4rem;
     }
@@ -364,8 +369,8 @@
     display: flex;
     gap: 1.5rem;
     padding: 2.4rem;
-    background: var(--color-white);
-    border-top: 1px solid var(--color-cart-border-light);
+    background: var(--marketplace-bg-secondary);
+    border-top: 1px solid var(--marketplace-border-color);
     box-shadow: 0 -4px 20px rgb(0 0 0 / 8%);
   }
 
@@ -407,21 +412,21 @@
     font-weight: 500;
     background: linear-gradient(
       135deg,
-      var(--color-cart-clear-bg-start) 0%,
-      var(--color-cart-clear-bg-end) 100%
+      var(--marketplace-bg-tertiary) 0%,
+      var(--marketplace-bg-elevated) 100%
     );
-    color: var(--color-cart-clear-text);
-    border: 2px solid var(--color-cart-clear-border);
+    color: var(--marketplace-text-primary);
+    border: 2px solid var(--marketplace-border-color);
 
     &:hover:not(:disabled) {
       background: linear-gradient(
         135deg,
-        var(--color-cart-clear-bg-end) 0%,
-        var(--color-cart-clear-border) 100%
+        var(--marketplace-bg-elevated) 0%,
+        var(--marketplace-border-light-color) 100%
       );
-      border-color: var(--color-cart-clear-border-hover);
+      border-color: var(--marketplace-link-color);
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px var(--color-cart-clear-shadow);
+      box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
     }
 
     &:active {
@@ -434,8 +439,8 @@
     font-weight: 500;
     background: linear-gradient(
       135deg,
-      var(--color-cart-blue-primary) 0%,
-      var(--color-cart-blue-secondary) 100%
+      var(--marketplace-link-color) 0%,
+      var(--marketplace-brand-secondary-color) 100%
     );
     color: var(--color-white);
     border: none;
@@ -444,8 +449,8 @@
     &:hover:not(:disabled) {
       background: linear-gradient(
         135deg,
-        var(--color-cart-blue-secondary) 0%,
-        var(--color-cart-blue-primary) 100%
+        var(--marketplace-brand-secondary-color) 0%,
+        var(--marketplace-link-color) 100%
       );
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgb(102 126 234 / 35%);
@@ -498,12 +503,12 @@
 
         .MuiInputLabel-root {
           font-size: 1.3rem;
-          background: white;
+          background: var(--marketplace-bg-elevated);
           padding: 0 0.5rem;
           margin-left: -0.5rem;
 
           &.MuiInputLabel-shrink {
-            background: white;
+            background: var(--marketplace-bg-elevated);
             padding: 0 0.6rem;
             margin-left: -0.3rem;
           }
@@ -551,91 +556,6 @@
       &__order-button {
         font-size: 1.2rem;
         padding: 1.2rem 1.5rem;
-      }
-    }
-  }
-}
-
-// Override the default search-modal styles for alerts in marketplace
-.blocking-alert.search-modal {
-  width: auto;
-  max-width: min(55rem, 90vw);
-  min-width: 40rem;
-
-  .modal__header {
-    padding: 2.4rem 3rem 1.8rem;
-
-    .modal__title {
-      font-size: 2.2rem;
-      font-weight: 600;
-      line-height: 1.4;
-      color: var(--color-black) !important;
-    }
-  }
-
-  .modal__body {
-    padding: 2rem 3rem 2.5rem;
-  }
-
-  .blocking-alert__summary-text {
-    font-size: 2.2rem !important;
-    line-height: 1.7;
-    color: var(--color-black) !important;
-    margin-bottom: 1.2rem;
-    font-weight: 800 !important;
-    letter-spacing: 0.02rem;
-  }
-
-  .blocking-alert__prompt-text {
-    font-size: 1.6rem;
-    line-height: 1.6;
-    color: var(--color-dark-grey-300) !important;
-    font-weight: 400;
-  }
-
-  .modal__footer {
-    padding: 1.8rem 3rem 2.4rem;
-    gap: 1.4rem;
-
-    .btn {
-      font-size: 1.5rem;
-      padding: 1rem 2.4rem;
-      min-width: 10rem;
-    }
-  }
-
-  // Responsive adjustments
-  @media (width <= 768px) {
-    min-width: 32rem;
-    max-width: 95vw;
-
-    .modal__header {
-      padding: 2rem 2rem 1.5rem;
-
-      .modal__title {
-        font-size: 1.9rem;
-      }
-    }
-
-    .modal__body {
-      padding: 1.5rem 2rem 2rem;
-    }
-
-    .blocking-alert__summary-text {
-      font-size: 1.9rem !important;
-      margin-bottom: 1rem;
-    }
-
-    .blocking-alert__prompt-text {
-      font-size: 1.4rem;
-    }
-
-    .modal__footer {
-      padding: 1.5rem 2rem 2rem;
-
-      .btn {
-        font-size: 1.4rem;
-        padding: 0.9rem 2rem;
       }
     }
   }

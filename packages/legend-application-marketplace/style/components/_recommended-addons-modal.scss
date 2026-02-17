@@ -23,13 +23,10 @@
       0 32px 64px -12px rgb(0 0 0 / 25%),
       0 0 0 1px rgb(255 255 255 / 5%);
     backdrop-filter: blur(16px);
-    background: linear-gradient(
-      145deg,
-      rgb(255 255 255 / 95%) 0%,
-      rgb(248 250 252 / 98%) 100%
-    );
-    border: 1px solid rgb(255 255 255 / 20%);
+    background: var(--marketplace-modal-bg);
+    border: 1px solid var(--marketplace-border-color);
     overflow: hidden;
+    color: var(--marketplace-text-primary);
   }
 
   &__header {
@@ -37,8 +34,8 @@
     align-items: center;
     gap: 1.5rem;
     padding: 2.5rem 3rem 2rem;
-    background: linear-gradient(135deg, #7297c5 0%, #5d80a8 100%);
-    border-bottom: 1px solid rgb(114 151 197 / 30%);
+    background: var(--marketplace-modal-header-bg);
+    border-bottom: 1px solid var(--marketplace-border-color);
     position: relative;
 
     &::before {
@@ -48,7 +45,14 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(90deg, #7297c5 0%, #5d80a8 50%, #7297c5 100%);
+      background: linear-gradient(
+        90deg,
+        rgb(114 151 197 / 100%) 0%,
+        rgb(93 128 168 / 100%) 50%,
+        rgb(114 151 197 / 100%) 100%
+      ); // Keeping header line specific or could make variable if needed
+
+      opacity: 0.5;
     }
   }
 
@@ -73,7 +77,29 @@
   &__title {
     font-size: 2.4rem;
     font-weight: 700;
-    color: var(--color-white);
+    // Overriding text color in header to be white/compatible with header bg?
+    // In Light mode header is blueish, so white text is good (existing).
+    // In Dark mode header is dark gradient, text primary is white.
+    // BUT in Light mode text primary is black.
+    // The original file had color: var(--color-white).
+    // Dark mode overrides might have changed it?
+    // Let's check _dark-mode.scss: __title background clip text transparent...
+    // So in Dark mode it uses gradient text.
+    // In Light mode it uses white text on blue header.
+    // This is a divergence.
+    // I can stick to var(--color-white) if I assume header is always dark/colored.
+    // OR use specific variable --marketplace-modal-title-color.
+    // For now, I'll keep existing behavior via variables if possible or just use white for light mode and override for dark?
+    // Since I am merging, I should probably standardise.
+    // If I use `--marketplace-text-primary` it will be black in light mode, which might be bad on blue header.
+    // EXCEPT if I change the header background in light mode to be light? No, it's blue.
+    // So color should be white in light mode.
+    // In Dark mode, header is dark gradient. color text primary (white).
+    // So `var(--color-white)` works for both?
+    // Wait, Dark mode had `background-clip: text; fill-color: transparent`. That's fancy.
+    // If I want to keep that, I need to put it here or use a variable that holds `transparent` and `background-image`.
+    // Simplify: Use `var(--color-white)` (or text-primary which is white in dark).
+    color: var(--color-white); // Safe bet for colored headers
     margin: 0 0 0.5rem;
     line-height: 1.2;
     text-shadow: 0 2px 4px rgb(0 0 0 / 10%);
@@ -81,7 +107,7 @@
 
   &__subtitle {
     font-size: 1.4rem;
-    color: rgb(255 255 255 / 90%);
+    color: rgb(255 255 255 / 90%); // Keep for light mode blue header
     margin: 0;
     font-weight: 500;
   }
@@ -103,6 +129,7 @@
   &__content {
     padding: 2rem 3rem;
     background: transparent;
+    color: var(--marketplace-text-primary);
   }
 
   &__alert {
@@ -110,24 +137,27 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem 1.2rem;
-    background-color: #f0f9f4;
-    border-left: 4px solid #077d55;
+    background-color: var(--marketplace-bg-secondary); // Was hex
+    border-left: 4px solid var(--marketplace-brand-color); // Was hex
     border-radius: 4px;
     margin-bottom: 2rem;
     margin-top: 1rem;
+    color: var(--marketplace-text-primary);
 
     svg {
-      color: #077d55;
+      color: var(--marketplace-brand-color);
       font-size: 2.4rem;
       flex-shrink: 0;
     }
 
     .MuiTypography-root {
       font-size: 1.8rem;
+      color: var(--marketplace-text-primary);
     }
 
     strong {
-      color: #1b5e3f;
+      color: var(--marketplace-text-primary);
+      font-weight: 600;
     }
   }
 
@@ -142,13 +172,13 @@
   &__section-title {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--color-modal-text-primary);
+    color: var(--marketplace-text-primary);
     position: relative;
   }
 
   &__section-description {
     font-size: 1.4rem;
-    color: var(--color-modal-text-secondary);
+    color: var(--marketplace-text-secondary);
     font-weight: 400;
   }
 
@@ -167,22 +197,25 @@
 
     .MuiOutlinedInput-root {
       border-radius: 1.2rem;
-      background: var(--color-hclight-grey-5);
+      background: var(--marketplace-bg-secondary);
       transition: all 0.3s ease;
+      color: var(--marketplace-text-primary);
 
       &:hover {
-        background: var(--color-hclight-grey-10);
+        background: var(--marketplace-bg-elevated);
       }
 
       &.Mui-focused {
-        background: rgb(255 255 255 / 100%);
+        background: var(--marketplace-bg-primary);
         box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
+        border-color: var(--marketplace-link-color);
       }
     }
 
     .MuiInputBase-input {
       font-size: 1.4rem;
       padding: 1.2rem 1.6rem;
+      color: var(--marketplace-text-primary);
     }
   }
 
@@ -190,6 +223,8 @@
   &__items-per-page-select {
     .MuiOutlinedInput-root {
       font-size: 1.4rem;
+      color: var(--marketplace-text-primary);
+      background: var(--marketplace-bg-secondary);
     }
   }
 
@@ -199,16 +234,16 @@
     box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
 
     .MuiToggleButton-root {
-      border: 1px solid var(--color-hclight-grey-20);
+      border: 1px solid var(--marketplace-border-color);
       padding: 1rem 1.6rem;
       font-size: 1.3rem;
       font-weight: 500;
-      color: var(--color-hclight-grey-70);
-      background: var(--color-hclight-grey-5);
+      color: var(--marketplace-text-secondary);
+      background: var(--marketplace-bg-secondary);
       transition: all 0.3s ease;
 
       &:hover {
-        background: var(--color-hclight-grey-10);
+        background: var(--marketplace-bg-elevated);
       }
 
       &.Mui-selected {
@@ -217,9 +252,9 @@
           rgb(59 130 246 / 12%) 0%,
           rgb(99 102 241 / 12%) 100%
         );
-        color: var(--color-primary);
+        color: var(--marketplace-link-color);
         font-weight: 600;
-        border-color: rgb(59 130 246 / 30%);
+        border-color: var(--marketplace-link-color);
 
         &:hover {
           background: linear-gradient(
@@ -245,7 +280,7 @@
     text-align: center;
 
     .MuiTypography-root {
-      color: var(--color-modal-text-secondary);
+      color: var(--marketplace-text-muted);
       font-size: 1.4rem;
       font-weight: 500;
     }
@@ -263,6 +298,7 @@
     align-items: center;
     padding: 0 0.5rem;
     margin-bottom: 1rem;
+    color: var(--marketplace-text-secondary);
   }
 
   &__list {
@@ -283,6 +319,13 @@
         min-width: 3.6rem;
         height: 3.6rem;
         margin: 0 0.4rem;
+        color: var(--marketplace-text-primary);
+        border-color: var(--marketplace-border-color);
+
+        &.Mui-selected {
+          background-color: var(--marketplace-link-color);
+          color: var(--color-white);
+        }
       }
     }
   }
@@ -292,14 +335,14 @@
     grid-template-columns: 2fr 1.5fr 1fr 1.5fr;
     gap: 2rem;
     padding: 1.2rem 2rem;
-    background: var(--color-hclight-grey-10);
+    background: var(--marketplace-bg-secondary);
     border-radius: 0.8rem;
     margin-bottom: 1rem;
 
     .MuiTypography-root {
       font-size: 1.3rem;
       font-weight: 600;
-      color: var(--color-hclight-grey-70);
+      color: var(--marketplace-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05rem;
     }
@@ -326,29 +369,32 @@
     padding: 1.8rem 2rem;
     align-items: center;
     transition: background-color 0.2s ease;
+    border-bottom: 1px solid var(--marketplace-border-light-color);
 
     &:hover {
-      background: var(--color-hclight-grey-5);
+      background: var(--marketplace-bg-tertiary);
     }
   }
 
   &__item-name {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--color-hclight-black);
+    color: var(--marketplace-text-primary);
     line-height: 1.4;
   }
 
   &__item-provider {
     font-size: 1.4rem;
     font-weight: 500;
-    color: var(--color-hclight-blue-60);
+    color: var(--marketplace-link-color);
   }
 
   &__item-price {
     font-size: 1.4rem;
     font-weight: 600;
-    color: var(--color-hclight-green-50);
+    color: var(
+      --color-dark-green-50
+    ); // Use semantic success color if available
   }
 
   &__item-action {
@@ -363,6 +409,12 @@
     border-radius: 0.6rem;
     text-transform: none;
     transition: all 0.2s ease;
+    color: var(--marketplace-link-color);
+    border: 1px solid var(--marketplace-link-color);
+
+    &:hover {
+      background: var(--marketplace-bg-elevated);
+    }
 
     &--added {
       background: var(--color-hclight-green-50);
@@ -378,12 +430,8 @@
 
   &__footer {
     padding: 2.5rem 3rem;
-    border-top: 1px solid rgb(226 232 240 / 80%);
-    background: linear-gradient(
-      135deg,
-      rgb(248 250 252 / 80%) 0%,
-      rgb(241 245 249 / 90%) 100%
-    );
+    border-top: 1px solid var(--marketplace-border-color);
+    background: var(--marketplace-bg-secondary);
     gap: 1.5rem;
     backdrop-filter: blur(8px);
   }
@@ -393,18 +441,18 @@
     font-weight: 600;
     min-width: 120px;
     padding: 1rem 2rem;
-    border: 2px solid var(--color-modal-border-light);
-    color: var(--color-modal-text-secondary);
+    border: 2px solid var(--marketplace-border-color);
+    color: var(--marketplace-text-secondary);
     text-transform: none;
     border-radius: 16px;
-    background: rgb(255 255 255 / 50%);
+    background: var(--marketplace-bg-elevated);
     backdrop-filter: blur(4px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-      border-color: var(--color-modal-border-medium);
-      color: var(--color-modal-text-muted);
-      background: rgb(255 255 255 / 80%);
+      border-color: var(--marketplace-text-muted);
+      color: var(--marketplace-text-primary);
+      background: var(--marketplace-bg-primary);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px -2px rgb(148 163 184 / 20%);
     }
@@ -416,8 +464,8 @@
     padding: 1rem 2.5rem;
     background: linear-gradient(
       135deg,
-      var(--color-modal-blue-primary),
-      var(--color-modal-blue-secondary)
+      var(--marketplace-link-color),
+      var(--marketplace-link-hover-color)
     );
     text-transform: none;
     border-radius: 16px;

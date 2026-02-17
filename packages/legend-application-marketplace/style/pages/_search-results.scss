@@ -20,6 +20,12 @@
   width: 100%;
   height: 100%;
   overflow: auto;
+  background: var(--marketplace-bg-secondary);
+
+  .theme__hc-dark & {
+    background: var(--marketplace-bg-primary);
+    color: var(--marketplace-text-primary);
+  }
 
   &__content {
     @include flexVCenter;
@@ -28,6 +34,10 @@
     height: calc(100% - var(--legend-marketplace-header-height));
     width: 100%;
     padding: 2rem;
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-primary);
+    }
   }
 
   &__search-bar {
@@ -35,6 +45,10 @@
     margin-bottom: 4rem;
     width: 60%;
     max-width: 60rem;
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-primary);
+    }
   }
 
   &__results {
@@ -42,14 +56,22 @@
       width: 100%;
       max-width: 300rem;
       padding: 2rem;
+
+      .theme__hc-dark & {
+        background: var(--marketplace-bg-primary);
+      }
     }
   }
 }
 
 .legend-marketplace-search-results__sort-bar {
   width: 100%;
-  background-color: #f2f2f2;
-  border-bottom: 1px solid #d1d9e6;
+  background-color: var(--marketplace-bg-secondary);
+  border-bottom: 1px solid var(--marketplace-border-color);
+
+  .theme__hc-dark & {
+    background-color: var(--marketplace-bg-secondary);
+  }
 
   &__container {
     width: 100%;
@@ -57,19 +79,66 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    background-color: #f2f2f2;
+    background-color: var(--marketplace-bg-secondary);
     max-width: 226rem;
     margin: 0 auto;
     box-sizing: border-box;
     padding: 0.5rem;
+
+    .theme__hc-dark & {
+      background-color: var(--marketplace-bg-secondary);
+      color: var(--marketplace-text-primary);
+    }
+
+    // Sort button/select styling overrides for dark mode
+    .theme__hc-dark & .MuiFormControl-root {
+      .MuiSelect-select {
+        color: var(--marketplace-text-primary);
+        background: transparent;
+        border-color: var(--marketplace-text-primary);
+
+        &:hover {
+          background: var(--marketplace-text-primary);
+          color: var(--marketplace-bg-secondary);
+        }
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--marketplace-text-primary);
+      }
+
+      .MuiOutlinedInput-root {
+        &:hover {
+          .MuiOutlinedInput-notchedOutline {
+            border-color: var(--marketplace-text-primary);
+          }
+
+          background: var(--marketplace-text-primary);
+
+          .MuiSelect-select {
+            color: var(--marketplace-bg-secondary);
+          }
+        }
+      }
+    }
   }
 }
 
 .legend-marketplace-search-results__drawer {
   padding: 2rem;
 
+  .theme__hc-dark & {
+    background: var(--marketplace-bg-secondary);
+    color: var(--marketplace-text-primary);
+  }
+
   &__vendor-name {
     font-weight: 500;
+    color: var(--marketplace-text-primary);
+
+    .theme__hc-dark & {
+      color: var(--marketplace-text-secondary);
+    }
   }
 
   &__data-product-name {
@@ -77,12 +146,16 @@
     font-weight: 500;
     margin-top: 1rem;
     margin-bottom: 1rem;
-    color: var(--color-blue-100);
+    color: var(--marketplace-link-color);
   }
 
   &__data-product-description {
     font-size: 1.6rem;
     margin-bottom: 1rem;
+
+    .theme__hc-dark & {
+      color: var(--marketplace-text-secondary);
+    }
   }
 
   &__tables {
@@ -93,10 +166,21 @@
     margin-top: 2rem;
     box-shadow: 5px 5px 5px rgb(0 0 0 / 10%);
     border-radius: 2rem;
+    background: var(--marketplace-bg-primary);
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-tertiary);
+      border: 1px solid var(--marketplace-border-color);
+    }
 
     &__content {
       margin-left: 0;
       padding: 2rem;
+
+      .theme__hc-dark & {
+        background: var(--marketplace-bg-tertiary);
+        color: var(--marketplace-text-primary);
+      }
     }
 
     &__name {
@@ -114,7 +198,7 @@
       table,
       th,
       td {
-        border: 1px solid var(--color-dark-grey-500);
+        border: 1px solid var(--marketplace-border-color);
         padding: 1rem;
         font-size: 1.4rem;
       }

@@ -18,6 +18,7 @@
 @forward 'app';
 @use 'theme';
 
+@forward 'components/button';
 @forward 'components/cart-drawer';
 @forward 'components/coming-soon-display';
 @forward 'components/dataContract-creator';
@@ -25,6 +26,7 @@
 @forward 'components/homebuttons';
 @forward 'components/info-tooltip';
 @forward 'components/lakehouse-data-product-card';
+@forward 'components/menu';
 @forward 'components/legend-marketplace-card';
 @forward 'components/multi-user-cell-renderer';
 @forward 'components/notification';
@@ -33,7 +35,13 @@
 @forward 'components/recommended-addons-modal';
 @forward 'components/release-notes';
 @forward 'components/search-bar';
+@forward 'components/data-access-overview';
+@forward 'components/data-product-viewer';
+@forward 'components/data-space-viewer';
+@forward 'components/fuzzy-search';
 @forward 'components/vendor-card';
+@forward 'components/progress-tracker';
+@forward 'components/data-contract-viewer';
 
 @forward 'pages/coming-soon';
 @forward 'pages/home';

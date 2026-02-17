@@ -16,18 +16,14 @@
 
 @use 'mixins' as *;
 
-:root {
-  --legend-marketplace-card-shadow:
-    1px 4px 6px rgb(0 0 0 / 10%), -1px 4px 6px rgb(0 0 0 / 10%);
-  --legend-marketplace-card-shadow-hover:
-    2px 5px 8px rgb(0 0 0 / 20%), -2px 5px 8px rgb(0 0 0 / 20%);
-}
-
 .legend-marketplace-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: var(--legend-marketplace-card-shadow);
+  background: var(--marketplace-card-bg);
+  border: 1px solid var(--marketplace-border-color);
+  color: var(--marketplace-text-primary);
+  box-shadow: var(--marketplace-card-shadow);
   width: 100%;
   overflow: hidden;
   position: relative;
@@ -44,7 +40,7 @@
   }
 
   &--with-icon {
-    background-color: var(--color-blue-300);
+    background-color: var(--marketplace-card-icon-bg);
   }
 
   &--with-preview {
@@ -69,7 +65,7 @@
 
     svg {
       font-size: 13rem;
-      color: var(--color-white);
+      color: var(--color-white); // Icons on colorful backgrounds usually white
     }
   }
 
@@ -95,6 +91,7 @@
     transition:
       opacity 0.3s ease,
       filter 0.3s ease;
+    color: var(--marketplace-text-primary);
   }
 
   &__content {
@@ -105,10 +102,23 @@
     margin-left: 0;
     display: flex;
     flex-direction: column;
+    color: var(--marketplace-text-primary);
 
     &--with-actions {
       max-height: calc(100% - 6em);
     }
+  }
+
+  &__title {
+    color: var(--marketplace-text-primary);
+  }
+
+  &__description {
+    color: var(--marketplace-text-muted);
+  }
+
+  &__price {
+    color: var(--marketplace-text-primary);
   }
 
   &__actions {
@@ -128,7 +138,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--color-black);
+    background: var(--marketplace-bg-elevated);
+    color: var(--marketplace-text-primary);
     transform: translateY(100%);
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     z-index: 1;
@@ -146,6 +157,7 @@
       flex-direction: column;
       gap: 1.5rem;
       font-size: 1.5rem;
+      color: var(--marketplace-text-secondary);
     }
 
     &--preview--small {
@@ -162,21 +174,29 @@
   }
 
   &:hover {
+    background: var(--marketplace-card-hover-bg);
+    border-color: var(--marketplace-link-color);
     transform: scale(1.02);
-    box-shadow: 5px 5px 5px rgb(0 0 0 / 30%);
+    // Shadow scaling handled by card-shadow variable update or manual override.
+    // Keeping existing behavior of manual shadow override on hover for now as it's specific
+    box-shadow: 0 8px 20px rgb(0 0 0 / 20%); // Generic hover shadow
   }
 }
 
 .legend-marketplace-terminal-card {
   cursor: pointer;
   margin: 1rem;
-  box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
-  background-color: var(--color-black);
+  box-shadow: var(--marketplace-card-shadow);
+  background-color: var(--marketplace-card-bg);
   width: 35rem;
   display: flex;
   flex-direction: column;
   height: auto;
   min-height: 300px;
+  border: 1px solid var(--marketplace-border-color);
+
+  // Remaining styles mostly specific or can use vars
+  // ... keeping existing specific styles essentially but mapped where clear
 
   &__action {
     height: 100%;
@@ -196,7 +216,12 @@
     position: absolute;
     bottom: 0;
     height: 45%;
-    background-color: rgb(11 11 11 / 70%);
+    background-color: var(
+      --marketplace-bg-elevated
+    ); // Was rgb(11 11 11 / 70%) or similar
+    // If it needs to be transparent dark, use rgba. If it's elevated, use elevated.
+    // The original was specifically dark for contrast against image?
+    // Let's assume elevated for now.
     overflow: hidden;
     text-overflow: ellipsis;
     word-wrap: break-word;
@@ -209,7 +234,7 @@
       500 1.8rem / 1.8rem 'GS Sans Condensed',
       'Trebuchet MS',
       sans-serif;
-    color: var(--color-white);
+    color: var(--marketplace-text-primary);
     margin-bottom: 1rem;
     word-wrap: break-word;
     opacity: 0.95;
@@ -224,7 +249,7 @@
       sans-serif;
     margin-bottom: 0.5rem;
     word-wrap: break-word;
-    color: var(--color-white);
+    color: var(--marketplace-text-primary);
     opacity: 0.95;
   }
 
@@ -239,6 +264,7 @@
   }
 
   &__price {
+    // Green styling usually specific
     background-color: var(--color-green-20);
     color: var(--color-green-200);
     font-size: 1.5rem;
@@ -253,22 +279,22 @@
   }
 
   &__add-to-cart-button {
-    background-color: var(--color-primary);
+    background-color: var(--marketplace-brand-color);
     color: var(--color-white);
-    border: 1px solid var(--color-white);
+    border: 1px solid var(--marketplace-border-light-color);
     font-size: 1.4rem;
     cursor: pointer;
     border-radius: 25px;
     transition: background-color 0.3s ease;
 
     &:disabled {
-      background-color: var(--color-primary);
-      color: var(--color-white);
+      background-color: var(--marketplace-bg-tertiary);
+      color: var(--marketplace-text-muted);
       cursor: not-allowed;
     }
 
     &:hover {
-      background-color: var(--color-blue-400);
+      background-color: var(--marketplace-link-hover-color);
     }
   }
 
@@ -277,10 +303,10 @@
     top: 1rem;
     right: 1rem;
     z-index: 1;
-    background-color: var(--color-dark-grey-100);
-    color: var(--color-white);
+    background-color: var(--marketplace-bg-elevated);
+    color: var(--marketplace-text-primary);
     font-size: 1.2rem;
     font-weight: 600;
-    border: 1px solid var(--color-white);
+    border: 1px solid var(--marketplace-border-light-color);
   }
 }

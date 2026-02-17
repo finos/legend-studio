@@ -17,6 +17,11 @@
 @use 'mixins' as *;
 
 .legend-marketplace-home {
+  .theme__hc-dark & {
+    background: var(--marketplace-bg-primary);
+    color: var(--marketplace-text-primary);
+  }
+
   &__landing {
     @include flexCenter;
 
@@ -26,15 +31,33 @@
     height: 60vh;
     color: var(--color-white);
 
+    .theme__hc-dark & {
+      color: var(--marketplace-text-primary);
+    }
+
     &__title {
       font-size: 5.6rem;
       letter-spacing: 0.5rem;
+
+      .theme__hc-dark & {
+        background: linear-gradient(
+          135deg,
+          var(--marketplace-link-color),
+          var(--marketplace-link-hover-color)
+        );
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
     }
 
     &__description {
       font-size: 1.8rem;
       margin-top: 2rem;
       margin-bottom: 4rem;
+
+      .theme__hc-dark & {
+        color: var(--marketplace-text-secondary);
+      }
     }
 
     &__search-bar {
@@ -68,6 +91,11 @@
     min-width: 14rem;
     justify-content: center;
 
+    .theme__hc-dark & {
+      color: var(--marketplace-text-primary);
+      border: 1px solid var(--marketplace-border-color);
+    }
+
     &:hover {
       background: linear-gradient(
         90deg,
@@ -75,6 +103,15 @@
         rgb(102 126 234 / 100%) 100%
       );
       color: #000;
+
+      .theme__hc-dark & {
+        background: linear-gradient(
+          90deg,
+          rgb(115 153 198 / 80%) 0%,
+          rgb(91 127 163 / 80%) 100%
+        );
+        color: var(--marketplace-text-primary);
+      }
     }
 
     &__icon {

@@ -19,20 +19,26 @@
 .legend-marketplace-vendor-data {
   width: 100%;
   height: auto;
+  background: var(--marketplace-page-bg);
+  color: var(--marketplace-text-primary);
 
   &__content {
     flex-direction: column;
     height: 100%;
     width: 100%;
     padding: 2rem;
+    background: var(--marketplace-page-bg);
   }
 
   .legend-marketplace-banner {
-    background: var(--legend-marketplace-light-blue);
+    background: var(--marketplace-banner-bg);
     width: 100%;
     height: 195px;
     padding: 20px;
-    color: var(--color-white);
+    color: var(
+      --color-white
+    ); // Keep white text on banner as it's likely dark/colored background
+
     display: flex;
     justify-content: center;
     align-items: center;
@@ -41,12 +47,14 @@
       font-size: 32px;
       font-weight: bold;
       margin-top: 2rem;
+      color: var(--color-white);
     }
 
     &__subtitle {
       font-size: 30px;
       margin-top: 2rem;
       margin-bottom: 4rem;
+      color: var(--color-white); // Subtitle also white on banner
     }
 
     &__search-bar {
@@ -74,7 +82,7 @@
       padding: 1.5rem 2rem;
       background: var(--marketplace-bg-secondary);
       border-radius: 0.8rem;
-      border: 1px solid var(--color-light-grey-200);
+      border: 1px solid var(--marketplace-border-color);
       position: relative;
     }
 
@@ -105,16 +113,24 @@
       max-width: 35rem;
 
       .MuiOutlinedInput-root {
-        background: var(--marketplace-bg-primary);
+        background: var(
+          --marketplace-bg-primary
+        ); // Input bg usually primary/elevated relative to container
+
         border-radius: 0.6rem;
         font-size: 1.4rem;
+        color: var(--marketplace-text-primary);
+
+        .MuiOutlinedInput-notchedOutline {
+          border-color: var(--marketplace-border-light-color);
+        }
 
         &:hover .MuiOutlinedInput-notchedOutline {
-          border-color: var(--color-blue-100);
+          border-color: var(--marketplace-link-color);
         }
 
         &.Mui-focused .MuiOutlinedInput-notchedOutline {
-          border-color: var(--color-blue-100);
+          border-color: var(--marketplace-link-color);
           border-width: 2px;
         }
       }
@@ -124,7 +140,7 @@
         color: var(--marketplace-text-muted);
 
         &.Mui-focused {
-          color: var(--color-blue-100);
+          color: var(--marketplace-link-color);
         }
       }
     }
@@ -145,6 +161,8 @@
     height: 60vh;
     flex-direction: column;
     gap: 2rem;
+    background: var(--marketplace-page-bg);
+    color: var(--marketplace-text-muted);
   }
 
   &__content-wrapper {
@@ -157,6 +175,8 @@
     width: 10%;
     padding: 20px;
     margin-right: 20px;
+    background: var(--marketplace-card-bg);
+    border-right: 1px solid var(--marketplace-border-color);
 
     &--hidden {
       display: none;
@@ -173,12 +193,15 @@
       display: flex;
       align-items: center;
       gap: 0.8rem;
+      color: var(--marketplace-text-primary);
 
       &__count {
         font-size: 2rem;
         font-weight: 500;
-        color: var(--color-blue-100);
-        background: var(--color-light-grey-100);
+        color: var(--marketplace-link-color);
+        background: var(--marketplace-bg-elevated);
+        padding: 0 0.5rem;
+        border-radius: 4px;
       }
     }
 
@@ -188,6 +211,7 @@
       margin-block-end: 1.33em;
       font-weight: bold;
       display: block;
+      color: var(--marketplace-text-secondary);
     }
 
     &__checkbox-filter-group {
@@ -212,6 +236,7 @@
     padding-bottom: 50px;
     margin-left: 25rem;
     flex: 1;
+    background: var(--marketplace-page-bg);
 
     &__category {
       display: flex;
@@ -224,7 +249,7 @@
 
       .see-all {
         text-decoration: none;
-        color: var(--color-blue-50);
+        color: var(--marketplace-link-color);
         align-items: center;
         margin-top: 1.1rem;
       }
@@ -261,11 +286,11 @@
 
     .MuiTypography-root {
       font-weight: 500;
-      color: var(--color-dark-grey-400);
+      color: var(--marketplace-text-secondary);
       font-size: 2rem;
 
       strong {
-        color: var(--color-blue-100);
+        color: var(--marketplace-link-color);
         font-weight: 600;
       }
     }
@@ -290,74 +315,76 @@
       min-width: 56px;
       height: 56px;
       border-radius: 8px;
-      border: 1px solid var(--color-light-grey-200);
-      color: var(--color-dark-grey-300);
+      border: 1px solid var(--marketplace-border-color);
+      color: var(--marketplace-text-secondary);
       transition: all 0.2s ease;
+      background: var(--marketplace-card-bg);
 
       &:hover {
-        background-color: var(--color-light-grey-50);
-        border-color: var(--color-blue-100);
+        background-color: var(--marketplace-bg-secondary);
+        border-color: var(--marketplace-link-color);
         transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgb(0 122 204 / 15%);
+        box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+        color: var(--marketplace-text-primary);
       }
     }
 
     .MuiPaginationItem-page.Mui-selected {
-      background-color: var(--color-blue-100);
+      background-color: var(--marketplace-link-color);
       color: var(--color-white);
-      border-color: var(--color-blue-100);
+      border-color: var(--marketplace-link-color);
       font-weight: 600;
-      box-shadow: 0 4px 12px rgb(0 122 204 / 30%);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
 
       &:hover {
-        background-color: var(--color-blue-150);
-        border-color: var(--color-blue-150);
+        background-color: var(--marketplace-link-hover-color);
+        border-color: var(--marketplace-link-hover-color);
       }
     }
 
     .MuiPaginationItem-previousNext {
-      background-color: var(--color-white);
+      background-color: var(--marketplace-card-bg);
       font-weight: 600;
       min-width: 64px;
       height: 64px;
       font-size: 2.2rem;
 
       &:not(.Mui-disabled) {
-        color: var(--color-blue-100);
+        color: var(--marketplace-link-color);
 
         &:hover {
-          background-color: var(--color-blue-100);
+          background-color: var(--marketplace-link-color);
           color: var(--color-white);
         }
       }
 
       &.Mui-disabled {
-        background-color: var(--color-light-grey-50);
-        color: var(--color-light-grey-400);
-        border-color: var(--color-light-grey-200);
+        background-color: var(--marketplace-bg-secondary);
+        color: var(--marketplace-text-muted);
+        border-color: var(--marketplace-border-color);
       }
     }
 
     .MuiPaginationItem-firstLast {
-      background-color: var(--color-white);
+      background-color: var(--marketplace-card-bg);
       font-weight: 600;
       min-width: 64px;
       height: 64px;
       font-size: 2.2rem;
 
       &:not(.Mui-disabled) {
-        color: var(--color-blue-100);
+        color: var(--marketplace-link-color);
 
         &:hover {
-          background-color: var(--color-blue-100);
+          background-color: var(--marketplace-link-color);
           color: var(--color-white);
         }
       }
 
       &.Mui-disabled {
-        background-color: var(--color-light-grey-50);
-        color: var(--color-light-grey-400);
-        border-color: var(--color-light-grey-200);
+        background-color: var(--marketplace-bg-secondary);
+        color: var(--marketplace-text-muted);
+        border-color: var(--marketplace-border-color);
       }
     }
 
@@ -385,7 +412,7 @@
 
     .MuiTypography-root {
       font-weight: 500;
-      color: var(--color-dark-grey-400);
+      color: var(--marketplace-text-secondary);
       font-size: 2rem;
     }
 
@@ -393,19 +420,24 @@
       font-size: 2rem;
       border-radius: 8px;
       min-height: 1rem;
+      color: var(--marketplace-text-primary);
     }
 
     .MuiOutlinedInput-notchedOutline {
-      border-color: var(--color-light-grey-200);
+      border-color: var(--marketplace-border-color);
     }
 
     .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-      border-color: var(--color-blue-100);
+      border-color: var(--marketplace-link-color);
     }
 
     .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-      border-color: var(--color-blue-100);
+      border-color: var(--marketplace-link-color);
       border-width: 2px;
+    }
+
+    .MuiSvgIcon-root {
+      color: var(--marketplace-text-secondary);
     }
   }
 }

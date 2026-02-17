@@ -28,26 +28,27 @@
 
   &__vendor-name {
     font-size: 16px;
+    color: var(--marketplace-text-primary);
 
     &__description {
-      color: #1c2b36;
+      color: var(--marketplace-text-secondary);
     }
 
     &__owned {
-      color: #077d55;
+      color: var(--color-green-100); // Or semantic success color
       display: flex;
     }
   }
 
   &__product-name {
     font-size: 24px;
-    color: #186ade;
+    color: var(--marketplace-link-color);
     font-weight: bold;
   }
 
   &__add-to-cart-button {
     border-radius: 999px;
-    color: #186ade;
+    color: var(--marketplace-link-color);
     font-size: 12px;
     padding: 9px 11px;
     position: unset;
@@ -55,10 +56,20 @@
 
   &__price {
     font-size: 12px;
+    color: var(--marketplace-text-primary);
   }
 }
 
 .legend-marketplace-vendor-card {
+  background: var(--marketplace-card-bg);
+  border: 1px solid var(--marketplace-border-color);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--marketplace-card-hover-bg);
+    border-color: var(--marketplace-link-color);
+  }
+
   &__type {
     width: fit-content;
     font-size: 2rem;
@@ -81,10 +92,12 @@
     word-break: break-all;
     white-space: pre-wrap;
     text-align: center;
+    color: var(--marketplace-text-primary);
   }
 
   &__description {
     font-size: 2rem;
     font-weight: 200;
+    color: var(--marketplace-text-secondary);
   }
 }

@@ -17,6 +17,19 @@
 @use 'mixins' as *;
 
 .notification {
+  // Light mode default (from light-mode.scss logic, but defined here)
+  background: var(--marketplace-bg-primary);
+  border: 1px solid var(--color-hclight-grey-20);
+  color: var(--marketplace-text-primary);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+
+  .theme__hc-dark & {
+    background: var(--marketplace-bg-elevated); // Dark mode
+    border: 1px solid var(--marketplace-border-color); // Dark mode
+    color: var(--marketplace-text-primary);
+    box-shadow: none; // Adjust if needed
+  }
+
   &__position {
     bottom: 3rem;
     right: 1rem;
@@ -25,12 +38,43 @@
   &__content {
     border-radius: 0.3rem;
     align-items: flex-start;
+    background: var(--marketplace-bg-primary);
+    color: var(--marketplace-text-primary);
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-elevated);
+      color: var(--marketplace-text-primary);
+    }
+
+    &--error {
+      background: var(--color-hclight-red-50);
+      color: var(--marketplace-bg-primary);
+    }
+
+    &--success {
+      background: var(--color-hclight-green-50);
+      color: var(--marketplace-bg-primary);
+    }
+
+    &--warning {
+      background: var(--color-hclight-yellow-30);
+      color: var(--marketplace-text-primary);
+    }
   }
 
   &__message__content {
     display: flex;
     align-items: flex-start;
     cursor: pointer;
+    color: inherit;
+
+    &:active {
+      background: transparent;
+
+      .theme__hc-dark & {
+        background: var(--marketplace-bg-tertiary);
+      }
+    }
   }
 
   &__message__content__icon {
@@ -44,18 +88,34 @@
 
   &__message__content__icon--info {
     color: var(--color-light-grey-200);
+
+    .theme__hc-dark & {
+      color: var(--marketplace-link-color);
+    }
   }
 
   &__message__content__icon--error {
     color: var(--color-red-100);
+
+    .theme__hc-dark & {
+      color: var(--color-dark-red-50);
+    }
   }
 
   &__message__content__icon--warning {
     color: var(--color-yellow-200);
+
+    .theme__hc-dark & {
+      color: var(--color-dark-yellow-40);
+    }
   }
 
   &__message__content__icon--success {
     color: var(--color-green-100);
+
+    .theme__hc-dark & {
+      color: var(--color-dark-green-50);
+    }
   }
 
   &__message__content__text {
@@ -83,9 +143,17 @@
 
     width: 2rem;
     color: var(--color-dark-grey-400);
+
+    .theme__hc-dark & {
+      color: var(--marketplace-text-muted);
+    }
   }
 
   &__action:hover {
     color: var(--color-light-grey-400);
+
+    .theme__hc-dark & {
+      color: var(--marketplace-text-primary);
+    }
   }
 }

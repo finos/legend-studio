@@ -45,6 +45,60 @@
     &__user-display {
       height: 100%;
     }
+
+    // ag-Grid overrides for dark mode
+    &.ag-theme-balham,
+    &.ag-theme-balham-dark {
+      .theme__hc-dark & {
+        --ag-background-color: var(--marketplace-bg-secondary);
+        --ag-foreground-color: var(--marketplace-text-primary);
+        --ag-header-background-color: var(--marketplace-bg-elevated);
+        --ag-header-foreground-color: var(--marketplace-text-primary);
+        --ag-border-color: var(--marketplace-border-color);
+        --ag-row-hover-color: var(--marketplace-bg-tertiary);
+
+        background: var(--marketplace-bg-secondary);
+
+        .ag-root-wrapper {
+          background: var(--marketplace-bg-secondary);
+          color: var(--marketplace-text-primary);
+          border-color: var(--marketplace-border-color);
+        }
+
+        .ag-header {
+          background: var(--marketplace-bg-elevated);
+          color: var(--marketplace-text-primary);
+          border-bottom-color: var(--marketplace-border-color);
+        }
+
+        .ag-header-cell {
+          background: var(--marketplace-bg-elevated);
+          color: var(--marketplace-text-primary);
+          border-right-color: var(--marketplace-border-color);
+        }
+
+        .ag-row {
+          background: var(--marketplace-bg-secondary);
+          color: var(--marketplace-text-primary);
+          border-bottom-color: var(--marketplace-border-color);
+        }
+
+        .ag-row-hover {
+          background: var(--marketplace-bg-tertiary);
+        }
+
+        .ag-cell {
+          color: var(--marketplace-text-primary);
+          border-right-color: var(--marketplace-border-color);
+        }
+
+        .ag-paging-panel {
+          background: var(--marketplace-bg-elevated);
+          color: var(--marketplace-text-primary);
+          border-top-color: var(--marketplace-border-color);
+        }
+      }
+    }
   }
 }
 

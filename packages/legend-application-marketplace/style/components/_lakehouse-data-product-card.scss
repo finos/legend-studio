@@ -17,10 +17,20 @@
 @use 'mixins' as *;
 
 .marketplace-lakehouse-data-product-card {
+  background: var(--marketplace-card-bg);
+  border: 1px solid var(--marketplace-border-color);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--marketplace-card-hover-bg);
+    transform: unset;
+  }
+
   .legend-marketplace-card__content {
     display: unset;
     width: 100%;
     height: 100%;
+    color: var(--marketplace-text-primary);
   }
 
   &__container {
@@ -57,7 +67,7 @@
     font-size: 2.8rem;
     font-weight: 400;
     letter-spacing: 0;
-    color: white;
+    color: var(--marketplace-text-primary); // Moved from white to semantic
     overflow-wrap: anywhere;
   }
 
@@ -79,13 +89,13 @@
     text-transform: none;
 
     &--snapshot {
-      color: var(--tw-color-blue-100);
-      background: var(--tw-color-blue-600);
+      color: var(--marketplace-link-color);
+      background: var(--marketplace-chip-bg);
     }
 
     &--release {
-      color: var(--tw-color-green-100);
-      background: var(--tw-color-green-600);
+      color: var(--color-dark-green-50);
+      background: rgb(106 153 85 / 20%); // Needs generic success bg?
     }
   }
 
@@ -95,23 +105,23 @@
     text-transform: none;
 
     &--unknown {
-      color: var(--tw-color-gray-100);
-      background: var(--tw-color-gray-600);
+      color: var(--marketplace-text-muted);
+      background: var(--marketplace-bg-elevated);
     }
 
     &--dev {
-      color: var(--tw-color-amber-100);
-      background: var(--tw-color-amber-600);
+      color: var(--color-dark-yellow-40);
+      background: rgb(251 188 5 / 20%);
     }
 
     &--prod-parallel {
-      color: var(--tw-color-blue-100);
-      background: var(--tw-color-blue-600);
+      color: var(--marketplace-link-color);
+      background: var(--marketplace-chip-bg);
     }
 
     &--prod {
-      color: var(--tw-color-green-100);
-      background: var(--tw-color-green-600);
+      color: var(--color-dark-green-50);
+      background: rgb(106 153 85 / 20%);
     }
   }
 
@@ -119,27 +129,27 @@
     align-self: end;
     font-size: 1.3rem;
     text-transform: none;
-    background-color: var(--color-search-chip-source-bg);
-    color: var(--color-search-chip-source-text);
+    background-color: var(--marketplace-chip-bg);
+    color: var(--marketplace-chip-text);
   }
 
   &__license-to {
     align-self: end;
     font-size: 1.3rem;
     text-transform: none;
-    background-color: var(--color-search-chip-license-bg);
-    color: var(--color-search-chip-license-text);
+    background-color: var(--marketplace-chip-bg);
+    color: var(--marketplace-chip-text);
   }
 
   &__description {
     font-size: 1.8rem;
     flex: 1;
     width: 100%;
-    color: var(--color-light-grey-180);
+    color: var(--marketplace-text-muted);
 
     &__markdown {
       background: unset;
-      color: unset;
+      color: var(--marketplace-text-primary);
       padding: unset;
     }
   }
@@ -149,16 +159,18 @@
     right: 10px;
     bottom: 10px;
     opacity: 0.5;
+    color: var(--marketplace-text-primary);
 
     &:hover,
     &--selected {
       opacity: 1;
+      color: var(--marketplace-link-color);
     }
 
     svg {
       width: 20px;
       height: 20px;
-      color: white;
+      color: currentcolor;
     }
   }
 
@@ -167,6 +179,8 @@
     border-radius: 1rem;
     font-size: 1.6rem;
     min-width: 40rem;
+    background: var(--marketplace-bg-elevated);
+    color: var(--marketplace-text-primary);
 
     &__name {
       @include flexVCenter;
@@ -176,43 +190,42 @@
       font-weight: 400;
       letter-spacing: 0;
       margin-bottom: 1rem;
-      color: var(--color-blue-100);
+      color: var(--marketplace-text-primary);
     }
 
     &__content {
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      color: var(--marketplace-text-primary);
     }
 
     hr {
       margin: 1rem 0;
+      border-color: var(--marketplace-border-color);
     }
 
     &__section-header {
       @include flexVCenter;
 
       font-style: italic;
-      color: var(--color-dark-grey-400);
+      color: var(--marketplace-text-muted);
     }
 
     &__section-content__markdown {
       background: unset;
-      color: unset;
+      color: var(--marketplace-text-primary);
       padding: 0;
     }
 
     &__table td {
       font-size: 1.6rem;
+      color: var(--marketplace-text-primary);
     }
 
     &__project-link {
-      color: var(--color-blue-100);
+      color: var(--marketplace-link-color);
       margin-left: 0.5rem;
     }
-  }
-
-  &:hover {
-    transform: unset;
   }
 }

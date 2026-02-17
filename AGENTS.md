@@ -57,7 +57,28 @@ Some tests require a running Engine Server. You can start it using Docker:
 ## Key Conventions
 
 - **Language**: TypeScript is used throughout the project.
-- **Versioning**: We use [Changesets](https://github.com/atlassian/changesets) for versioning. Run `yarn changeset` to generate a changeset for your changes.
+- **Versioning**: We use [Changesets](https://github.com/atlassian/changesets) for versioning.
+
+  To create a changeset:
+
+  1.  Run `yarn changeset -v latest -m "message about the changed packages"`.
+  2.  This will create a new file in the `.changeset` directory.
+  3.  Open the file and populate the top section with the packages that were changed and their change type (usually `patch`).
+
+  Example changeset file content:
+
+  ```markdown
+  ---
+  '@finos/legend-extension-dsl-data-product': patch
+  '@finos/legend-application-marketplace': patch
+  '@finos/legend-server-lakehouse': patch
+  ---
+
+  Show Lakehouse env and owners on DataProduct search result cards and DataProduct viewer
+  ```
+
+  If you are making multiple different types of changes, create multiple changeset files where each explains the changes made to the packages it references.
+
 - **Commit Messages**: Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
   - `feat: ...`
   - `fix: ...`

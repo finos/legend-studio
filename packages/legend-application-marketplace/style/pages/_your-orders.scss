@@ -21,17 +21,19 @@
 }
 
 .legend-marketplace-your-orders {
-  background-color: var(--color-white);
+  background-color: var(--marketplace-page-bg);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: var(--marketplace-text-primary);
 
   &__header {
     width: 100%;
     max-width: 1920px;
     padding: 1.5rem 2rem 1rem;
     margin-bottom: 1.5rem;
+    color: var(--marketplace-text-primary);
 
     @media (width <= 768px) {
       padding: 1.5rem 1rem 1rem;
@@ -42,7 +44,7 @@
     width: 100%;
     max-width: 1920px;
     padding: 0 2rem 2rem;
-    background: var(--color-white);
+    background: var(--marketplace-page-bg);
 
     @media (width <= 768px) {
       padding: 0 1rem 1.5rem;
@@ -56,6 +58,7 @@
     margin-top: 1.5rem;
     margin-bottom: 2rem;
     gap: 1rem;
+    color: var(--marketplace-text-primary);
 
     @media (width <= 768px) {
       flex-direction: column;
@@ -66,12 +69,12 @@
     h1 {
       font-size: 2.75rem;
       font-weight: 600;
-      color: var(--color-dark-grey-100);
+      color: var(--marketplace-text-primary);
     }
   }
 
   &__tabs {
-    border-bottom: 2px solid var(--color-light-grey-200);
+    border-bottom: 2px solid var(--marketplace-border-color);
     margin-bottom: 2rem;
 
     .MuiTab-root {
@@ -80,22 +83,22 @@
       font-weight: 500;
       min-height: 56px;
       padding: 12px 24px;
-      color: var(--color-dark-grey-300);
+      color: var(--marketplace-text-muted);
       @include transition-smooth;
 
       &:hover {
-        color: var(--color-dark-grey-400);
+        color: var(--marketplace-text-secondary);
       }
 
       &.Mui-selected {
-        color: var(--color-blue-100);
+        color: var(--marketplace-link-color);
         font-weight: 600;
       }
     }
 
     .MuiTabs-indicator {
       height: 3px;
-      background-color: var(--color-blue-100);
+      background-color: var(--marketplace-link-color);
     }
   }
 
@@ -110,11 +113,12 @@
     justify-content: center;
     gap: 1.5rem;
     padding: 4rem 2rem;
-    color: var(--color-dark-grey-300);
+    color: var(--marketplace-text-muted);
   }
 
   &__loading-text {
     font-size: 1.5rem;
+    color: var(--marketplace-text-muted);
   }
 
   &__empty {
@@ -123,47 +127,56 @@
     align-items: center;
     justify-content: center;
     padding: 4rem 2rem;
-    color: var(--color-dark-grey-300);
+    color: var(--marketplace-text-muted);
     text-align: center;
     gap: 1rem;
+    background-color: var(--marketplace-card-bg);
+    border: 1px dashed var(--marketplace-border-color);
   }
 
   &__empty-icon {
     font-size: 4rem;
-    color: var(--color-light-grey-400);
+    color: var(--marketplace-text-muted);
     margin-bottom: 1rem;
   }
 
   &__empty-title {
     font-size: 2rem;
     font-weight: 600;
-    color: var(--color-dark-grey-200);
+    color: var(--marketplace-text-primary);
     margin-bottom: 0.5rem;
   }
 
   &__empty-description {
     font-size: 1.5rem;
-    color: var(--color-dark-grey-300);
+    color: var(--marketplace-text-muted);
   }
 }
 
 .legend-marketplace-order-accordion {
   margin-bottom: 2rem;
-  border: 2px solid var(--color-light-grey-300);
+  border: 1px solid var(--marketplace-border-color); // Changed from 2px to 1px for consistency usually, but keeping roughly same
   border-radius: 12px;
   padding: 1.2rem;
   padding-bottom: 2rem;
-  background-color: var(--color-white);
+  background-color: var(--marketplace-card-bg);
   box-shadow: 0 2px 4px rgb(0 0 0 / 5%);
-  border-bottom: 3px solid var(--color-black-100);
+  // border-bottom: 3px solid var(--color-black-100); // This looks like a specific style, keeping semantic if possible?
+  // Replacing black-100 with border-color or similar
+  border-bottom: 3px solid var(--marketplace-text-primary);
   @include transition-smooth;
 
+  &:hover {
+    box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
+    border-color: var(--marketplace-link-hover-color);
+  }
+
   &__summary {
-    background-color: var(--color-light-grey-50);
+    background-color: var(--marketplace-bg-secondary);
     border-radius: 8px;
     padding: 1rem;
     min-height: 60px;
-    border: 2px solid var(--color-light-grey-200);
+    border: 1px solid var(--marketplace-border-color);
 
     &.Mui-expanded {
       min-height: 60px;
@@ -206,7 +219,7 @@
 
   &__summary-label {
     font-size: 1.5rem;
-    color: var(--color-black);
+    color: var(--marketplace-text-primary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     white-space: nowrap;
@@ -215,7 +228,7 @@
   &__summary-value {
     font-size: 1.8rem;
     font-weight: 500;
-    color: var(--color-dark-grey-100);
+    color: var(--marketplace-text-secondary);
   }
 
   &__summary-actions {
@@ -228,8 +241,8 @@
   }
 
   &__track-button {
-    background-color: var(--color-blue-100);
-    color: var(--color-white);
+    background-color: var(--marketplace-link-color);
+    color: var(--marketplace-bg-primary); // Button text on primary color
     font-weight: 500;
     font-size: 1.5rem;
     padding: 0.5rem 1rem;
@@ -238,7 +251,7 @@
     @include transition-smooth;
 
     &:hover {
-      background-color: var(--color-blue-200);
+      background-color: var(--marketplace-link-hover-color);
       transform: translateY(-1px);
     }
 
@@ -248,7 +261,7 @@
   }
 
   &__cancel-button {
-    border: 1px solid var(--color-red-300);
+    border: 1px solid var(--color-red-300); // Keep semantic red if available or use generic
     color: var(--color-red-300);
     font-weight: 500;
     font-size: 1.5rem;
@@ -258,7 +271,10 @@
     @include transition-smooth;
 
     &:hover:not(:disabled) {
-      background-color: var(--color-red-0);
+      background-color: var(
+        --color-red-0
+      ); // hardcoded for now or define semantic alert bg
+
       border-color: var(--color-red-300);
       transform: translateY(-1px);
     }
@@ -266,8 +282,8 @@
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
-      border-color: var(--color-light-grey-300);
-      color: var(--color-dark-grey-500);
+      border-color: var(--marketplace-border-color);
+      color: var(--marketplace-text-muted);
     }
 
     .MuiSvgIcon-root {
@@ -277,7 +293,7 @@
 
   &__details {
     padding: 1.5rem;
-    background-color: var(--color-white);
+    background-color: var(--marketplace-card-bg);
   }
 
   &__details-container {
@@ -300,7 +316,7 @@
   &__item {
     padding-bottom: 1.5rem;
     margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--color-light-grey-200);
+    border-bottom: 1px solid var(--marketplace-border-light-color);
 
     &:last-child {
       border-bottom: none;
@@ -318,7 +334,7 @@
 
   &__vendor-name {
     font-size: 1.5rem;
-    color: var(--color-dark-grey-100);
+    color: var(--marketplace-text-primary);
     font-weight: 500;
   }
 
@@ -368,7 +384,7 @@
   &__product-name {
     font-size: 2.3rem;
     font-weight: 600;
-    color: var(--color-blue-100);
+    color: var(--marketplace-link-color);
     text-decoration: none;
     display: block;
     margin-bottom: 0.75rem;
@@ -381,15 +397,15 @@
 
   &__business-justification {
     font-size: 1.75rem;
-    color: var(--color-dark-grey-400);
+    color: var(--marketplace-text-secondary);
     line-height: 1.5;
     margin-top: 0.5rem;
   }
 
   &__closure-info {
     width: 100%;
-    background-color: var(--color-light-grey-50);
-    border: 1px solid var(--color-light-grey-200);
+    background-color: var(--marketplace-bg-secondary);
+    border: 1px solid var(--marketplace-border-color);
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 2rem;
@@ -398,7 +414,7 @@
   &__closure-title {
     font-size: 1.8rem;
     font-weight: 600;
-    color: var(--color-dark-grey-100);
+    color: var(--marketplace-text-primary);
     margin-bottom: 1.5rem;
   }
 
@@ -417,14 +433,14 @@
   &__closure-label {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--color-dark-grey-200);
+    color: var(--marketplace-text-secondary);
     min-width: 140px;
     flex-shrink: 0;
   }
 
   &__closure-value {
     font-size: 1.5rem;
-    color: var(--color-dark-grey-100);
+    color: var(--marketplace-text-primary);
     flex: 1;
   }
 
@@ -453,7 +469,7 @@
   &__step-label {
     font-size: 1.8rem;
     font-weight: 600;
-    color: var(--color-dark-grey-100);
+    color: var(--marketplace-text-primary);
     margin-top: 0.5rem;
   }
 
@@ -465,7 +481,7 @@
 
   &__step-detail {
     font-size: 1rem;
-    color: var(--color-dark-grey-400);
+    color: var(--marketplace-text-muted);
     margin-bottom: 0.25rem;
     line-height: 1.5;
 
@@ -475,23 +491,23 @@
 
     strong {
       font-weight: 600;
-      color: var(--color-dark-grey-100);
+      color: var(--marketplace-text-primary);
     }
   }
 
   &__step-icon {
     &--completed {
-      color: var(--color-blue-100);
+      color: var(--marketplace-link-color);
       font-size: 2.3rem;
     }
 
     &--active {
-      color: var(--color-blue-100);
+      color: var(--marketplace-link-color);
       font-size: 2.3rem;
     }
 
     &--pending {
-      color: var(--color-light-grey-400);
+      color: var(--marketplace-text-muted);
       font-size: 2.3rem;
     }
 
@@ -506,6 +522,8 @@
   .MuiPaper-root {
     border-radius: 1rem;
     padding: 0.5rem;
+    background: var(--marketplace-card-bg);
+    color: var(--marketplace-text-primary);
   }
 
   &__title {
@@ -521,7 +539,7 @@
   }
 
   &__warning-icon {
-    color: var(--color-yellow-400);
+    color: var(--color-yellow-400); // hardcode or semantic warning
     font-size: 2.5rem;
   }
 
@@ -532,20 +550,20 @@
 
   &__message {
     font-size: 1.8rem;
-    color: var(--color-black);
+    color: var(--marketplace-text-primary);
     margin-bottom: 1.5rem;
   }
 
   &__order-info {
     padding: 1rem;
-    background-color: var(--color-light-grey-50);
+    background-color: var(--marketplace-bg-secondary);
     border-radius: 0.5rem;
-    border: 1px solid var(--color-light-grey-200);
+    border: 1px solid var(--marketplace-border-color);
     margin-bottom: 1.5rem;
 
     .MuiTypography-root {
       font-size: 1.5rem;
-      color: var(--color-dark-grey-400);
+      color: var(--marketplace-text-secondary);
       margin-bottom: 0.5rem;
 
       &:last-child {
@@ -554,7 +572,7 @@
 
       strong {
         font-weight: 600;
-        color: var(--color-dark-grey-100);
+        color: var(--marketplace-text-primary);
       }
     }
   }
@@ -563,18 +581,24 @@
     .MuiInputLabel-root {
       font-weight: 500;
       font-size: 1.5rem;
+      color: var(--marketplace-text-secondary);
     }
 
     .MuiOutlinedInput-root {
       border-radius: 0.5rem;
       font-size: 1.5rem;
+      color: var(--marketplace-text-primary);
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--marketplace-border-color);
+      }
 
       &:hover .MuiOutlinedInput-notchedOutline {
-        border-color: var(--color-blue-100);
+        border-color: var(--marketplace-link-color);
       }
 
       &.Mui-focused .MuiOutlinedInput-notchedOutline {
-        border-color: var(--color-blue-100);
+        border-color: var(--marketplace-link-color);
         border-width: 2px;
       }
     }
@@ -582,6 +606,7 @@
     .MuiFormHelperText-root {
       font-size: 1.25rem;
       margin-top: 0.5rem;
+      color: var(--marketplace-text-muted);
     }
   }
 
@@ -600,21 +625,6 @@
       &:hover {
         transform: translateY(-1px);
       }
-    }
-  }
-}
-
-// Dark mode support
-.theme__hc-dark {
-  .legend-marketplace-order-accordion {
-    background-color: var(--color-dark-grey-100);
-    border-color: var(--color-dark-grey-250);
-    border-bottom-color: var(--color-dark-grey-350);
-    box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
-
-    &:hover {
-      box-shadow: 0 4px 8px rgb(0 0 0 / 30%);
-      border-color: var(--color-dark-grey-300);
     }
   }
 }

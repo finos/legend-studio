@@ -15,3 +15,76 @@
  */
 
 @use 'mixins' as *;
+
+.marketplace-lakehouse-entitlements__data-contract-creator {
+  &__content {
+    @include flexVCenter;
+
+    flex-direction: column;
+    min-height: 400px;
+  }
+
+  &__consumer-type-btn-group {
+    margin: 2rem 0;
+  }
+
+  &__enterprise-apg-notice {
+    color: var(--color-light-grey-300);
+    font-style: italic;
+
+    .theme__hc-dark & {
+      color: var(--marketplace-text-muted);
+    }
+  }
+
+  &__user-input,
+  &__producer-input,
+  &__business-justification-input {
+    max-width: 70rem;
+    margin: 2rem 0;
+  }
+}
+
+.marketplace-lakehouse-entitlements__data-contract-approval {
+  &__success,
+  &__error {
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  &__success {
+    background: var(--tw-color-green-200);
+
+    .theme__hc-dark & {
+      background: rgb(106 153 85 / 20%);
+      color: var(--color-dark-green-50);
+      border: 1px solid var(--color-dark-green-50);
+    }
+  }
+
+  &__error {
+    background: var(--tw-color-red-300);
+
+    .theme__hc-dark & {
+      background: rgb(250 83 67 / 20%);
+      color: var(--color-dark-red-50);
+      border: 1px solid var(--color-dark-red-50);
+    }
+
+    &__content {
+      line-height: 3rem;
+      margin-bottom: 1rem;
+
+      .theme__hc-dark & {
+        color: var(--marketplace-text-primary);
+      }
+    }
+
+    &__user {
+      width: fit-content;
+      display: inline-block;
+      position: relative;
+      bottom: -10px;
+    }
+  }
+}
