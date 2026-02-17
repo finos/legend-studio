@@ -763,7 +763,7 @@
 
     &:hover {
       background: var(--color-hclight-white);
-      border-color: var(--color-hclight-blue-50);
+      border-color: var(--legend-marketplace-light-blue);
       box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
     }
 
@@ -862,6 +862,12 @@
     }
   }
 
+  .legend-marketplace-terminal-card {
+    &:hover {
+      border-color: var(--legend-marketplace-light-blue);
+    }
+  }
+
   // Modals
   .MuiDialog-paper {
     background: var(--color-hclight-white);
@@ -922,42 +928,63 @@
     &__header {
       background: linear-gradient(
         135deg,
-        var(--color-hclight-blue-10) 0%,
-        var(--color-hclight-white) 50%,
-        var(--color-hclight-purple-50) 100%
+        var(--legend-marketplace-light-blue) 0%,
+        var(--color-legacylight-light-blue-200) 100%
       );
       border-bottom: 1px solid var(--color-hclight-grey-20);
 
       &::before {
         background: linear-gradient(
           90deg,
-          var(--color-hclight-blue-30) 0%,
-          var(--color-hclight-purple-50) 100%
+          var(--legend-marketplace-light-blue) 0%,
+          var(--color-legacylight-light-blue-300) 100%
         );
       }
     }
 
     &__title {
-      color: var(--color-hclight-grey-90);
+      color: var(--color-hclight-white);
     }
 
     &__subtitle {
-      color: var(--color-hclight-grey-60);
+      color: rgb(255 255 255 / 90%);
     }
 
     &__close-btn {
-      color: var(--color-hclight-grey-60);
-      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-white);
+      background: rgb(255 255 255 / 15%);
 
       &:hover {
-        color: var(--color-hclight-grey-90);
-        background: var(--color-hclight-grey-20);
+        color: var(--color-hclight-white);
+        background: rgb(255 255 255 / 25%);
       }
+    }
+
+    &__success-icon {
+      color: var(--color-hclight-green-50);
+    }
+
+    &__warning-icon {
+      color: var(--color-hclight-white);
+      background: rgb(255 255 255 / 15%);
     }
 
     &__content {
       background: transparent;
       color: var(--color-hclight-grey-90);
+    }
+
+    &__alert {
+      background-color: var(--color-hclight-green-10, #e8f5e9);
+      border-left-color: var(--color-hclight-green-50);
+
+      svg {
+        color: var(--color-hclight-green-50);
+      }
+
+      strong {
+        color: var(--color-hclight-green-60, #2e7d32);
+      }
     }
 
     &__section-title {
@@ -968,9 +995,143 @@
       color: var(--color-hclight-grey-60);
     }
 
+    &__search-field {
+      .MuiOutlinedInput-root {
+        background: var(--color-hclight-grey-5);
+
+        &:hover {
+          background: var(--color-hclight-grey-10);
+        }
+
+        &.Mui-focused {
+          background: var(--color-hclight-white);
+          box-shadow: 0 0 0 3px var(--color-hclight-blue-20);
+        }
+      }
+
+      .MuiInputBase-input {
+        color: var(--color-hclight-grey-90);
+      }
+    }
+
+    &__sort-buttons {
+      .MuiToggleButton-root {
+        border-color: var(--color-hclight-grey-20);
+        color: var(--color-hclight-grey-70);
+        background: var(--color-hclight-grey-5);
+
+        &:hover {
+          background: var(--color-hclight-grey-10);
+        }
+
+        &.Mui-selected {
+          background: var(--color-hclight-blue-10);
+          color: var(--color-hclight-blue-60);
+          border-color: var(--color-hclight-blue-30);
+
+          &:hover {
+            background: var(--color-hclight-blue-20);
+          }
+        }
+      }
+    }
+
+    &__list-header {
+      background: var(--color-hclight-grey-10);
+
+      .MuiTypography-root {
+        color: var(--color-hclight-grey-70);
+      }
+    }
+
+    &__list-item {
+      &:hover {
+        background: var(--color-hclight-grey-5);
+      }
+    }
+
+    &__item-name {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__item-provider {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__item-price {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__add-btn {
+      background: var(--legend-marketplace-light-blue);
+      color: var(--color-hclight-white);
+      border-color: var(--legend-marketplace-light-blue);
+
+      &:hover {
+        background: var(--color-legacylight-light-blue-200);
+        border-color: var(--color-legacylight-light-blue-200);
+      }
+
+      &--added {
+        background: var(--color-hclight-green-50);
+        color: var(--color-hclight-white);
+        border-color: var(--color-hclight-green-50);
+
+        &:hover {
+          background: var(--color-hclight-green-60);
+          border-color: var(--color-hclight-green-60);
+        }
+      }
+    }
+
     &__empty-state {
       .MuiTypography-root {
         color: var(--color-hclight-grey-60);
+      }
+    }
+
+    &__pagination {
+      .MuiPaginationItem-root {
+        color: var(--color-hclight-grey-70);
+
+        &.Mui-selected {
+          background: var(--color-hclight-blue-60);
+          color: var(--color-hclight-white);
+        }
+      }
+    }
+
+    &__footer {
+      border-top-color: var(--color-hclight-grey-20);
+      background: linear-gradient(
+        135deg,
+        var(--color-hclight-grey-5) 0%,
+        var(--color-hclight-grey-10) 100%
+      );
+    }
+
+    &__close-button {
+      border-color: var(--color-hclight-grey-30);
+      color: var(--color-hclight-grey-70);
+      background: var(--color-hclight-white);
+
+      &:hover {
+        border-color: var(--color-hclight-blue-50);
+        color: var(--color-hclight-grey-90);
+        background: var(--color-hclight-grey-5);
+      }
+    }
+
+    &__view-cart-button {
+      background: linear-gradient(
+        135deg,
+        var(--legend-marketplace-light-blue) 0%,
+        var(--color-legacylight-light-blue-200) 100%
+      );
+      color: var(--color-hclight-white);
+
+      &:hover {
+        box-shadow: 0 12px 24px -6px rgb(114 151 197 / 40%);
       }
     }
 
@@ -982,14 +1143,6 @@
         background: var(--color-hclight-grey-5);
         border-color: var(--color-hclight-blue-50);
       }
-    }
-
-    &__success-icon {
-      color: var(--color-hclight-green-50);
-    }
-
-    &__warning-icon {
-      color: var(--color-hclight-yellow-30);
     }
   }
 
@@ -1006,8 +1159,8 @@
     &__header {
       background: linear-gradient(
         135deg,
-        var(--color-hclight-blue-50) 0%,
-        var(--color-hclight-blue-60) 100%
+        var(--legend-marketplace-light-blue) 0%,
+        var(--color-legacylight-light-blue-200) 100%
       );
       box-shadow: 0 2px 12px rgb(0 0 0 / 10%);
 
@@ -1132,6 +1285,149 @@
       .MuiTypography-root {
         color: var(--color-hclight-grey-70);
       }
+    }
+  }
+
+  // Vendor Data Page - User Search, Filter Bar & Pagination
+  .legend-marketplace-body {
+    &__filter-bar {
+      background: var(--color-hclight-white);
+      border: 1px solid var(--color-hclight-grey-20);
+
+      .MuiButtonGroup-root {
+        .MuiButton-root {
+          color: var(--color-hclight-grey-70);
+          border-color: var(--color-hclight-grey-20);
+
+          &.MuiButton-contained {
+            background: var(--color-hclight-blue-60);
+            color: var(--color-hclight-white);
+            border-color: var(--color-hclight-blue-60);
+          }
+
+          &.MuiButton-outlined {
+            background: var(--color-hclight-white);
+
+            &:hover {
+              background: var(--color-hclight-grey-5);
+              color: var(--color-hclight-blue-60);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .legend-marketplace-user-search-container {
+    &__label {
+      color: var(--color-hclight-grey-90);
+    }
+
+    .legend-marketplace__user-input {
+      .MuiOutlinedInput-root {
+        background: var(--color-hclight-white);
+        color: var(--color-hclight-grey-90);
+
+        &:hover .MuiOutlinedInput-notchedOutline {
+          border-color: var(--color-hclight-blue-50);
+        }
+
+        &.Mui-focused .MuiOutlinedInput-notchedOutline {
+          border-color: var(--color-hclight-blue-60);
+        }
+      }
+
+      .MuiInputLabel-root {
+        color: var(--color-hclight-grey-60);
+
+        &.Mui-focused {
+          color: var(--color-hclight-blue-60);
+        }
+      }
+    }
+  }
+
+  .legend-marketplace-pagination-container {
+    color: var(--color-hclight-grey-90);
+  }
+
+  .legend-marketplace-pagination-info {
+    .MuiTypography-root {
+      color: var(--color-hclight-grey-70);
+
+      strong {
+        color: var(--color-hclight-blue-60);
+      }
+    }
+  }
+
+  .legend-marketplace-pagination-page-size {
+    .MuiTypography-root {
+      color: var(--color-hclight-grey-70);
+    }
+
+    .MuiSelect-select {
+      color: var(--color-hclight-grey-90);
+    }
+
+    .MuiOutlinedInput-notchedOutline {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    .MuiOutlinedInput-root {
+      &:hover .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-hclight-blue-50);
+      }
+
+      &.Mui-focused .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-hclight-blue-60);
+      }
+    }
+  }
+
+  .legend-marketplace-pagination-controls {
+    .MuiPaginationItem-root {
+      color: var(--color-hclight-grey-70);
+      border-color: var(--color-hclight-grey-20);
+
+      &:hover {
+        background-color: var(--color-hclight-grey-5);
+        border-color: var(--color-hclight-blue-50);
+      }
+    }
+
+    .MuiPaginationItem-page.Mui-selected {
+      background-color: var(--color-hclight-blue-60);
+      color: var(--color-hclight-white);
+      border-color: var(--color-hclight-blue-60);
+
+      &:hover {
+        background-color: var(--color-hclight-blue-70);
+        border-color: var(--color-hclight-blue-70);
+      }
+    }
+
+    .MuiPaginationItem-previousNext,
+    .MuiPaginationItem-firstLast {
+      background-color: var(--color-hclight-white);
+
+      &:not(.Mui-disabled) {
+        color: var(--color-hclight-blue-60);
+
+        &:hover {
+          background-color: var(--color-hclight-grey-5);
+        }
+      }
+
+      &.Mui-disabled {
+        background-color: var(--color-hclight-grey-5);
+        color: var(--color-hclight-grey-40);
+      }
+    }
+
+    .MuiPaginationItem-ellipsis {
+      color: var(--color-hclight-grey-50);
+      border: none;
     }
   }
 

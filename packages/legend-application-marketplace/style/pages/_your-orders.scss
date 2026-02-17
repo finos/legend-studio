@@ -603,18 +603,3 @@
     }
   }
 }
-
-// Dark mode support
-.theme__hc-dark {
-  .legend-marketplace-order-accordion {
-    background-color: var(--color-dark-grey-100);
-    border-color: var(--color-dark-grey-250);
-    border-bottom-color: var(--color-dark-grey-350);
-    box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
-
-    &:hover {
-      box-shadow: 0 4px 8px rgb(0 0 0 / 30%);
-      border-color: var(--color-dark-grey-300);
-    }
-  }
-}
