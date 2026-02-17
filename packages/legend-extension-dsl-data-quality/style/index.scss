@@ -17,6 +17,7 @@
 @use 'mixins' as *;
 @forward 'data-quality-validation-builder';
 @forward 'data-quality-relation-validation-builder';
+@forward 'data-quality-relation-validation-suggestion-panel';
 @forward 'data-quality-validation-gui-editor';
 @forward 'data-quality-custom-selector';
 

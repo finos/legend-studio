@@ -67,6 +67,12 @@ export abstract class DSL_DataQuality_PureGraphManagerExtension extends Abstract
     packagePath: string,
     options: DQExecuteInputOptions,
   ): Promise<RootGraphFetchTree>;
+
+  abstract fetchValidationSuggestions(
+    graph: PureModel,
+    packagePath: string,
+    options: DQExecuteInputOptions,
+  ): Promise<any>;
 }
 
 export const getDataQualityPureGraphManagerExtension = (

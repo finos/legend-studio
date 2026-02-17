@@ -93,6 +93,7 @@ import {
   DATA_QUALITY_VALIDATION_TEST_ID,
   USER_ATTESTATION_MESSAGE,
 } from './constants/DataQualityConstants.js';
+import { DataQualityRelationValidationContainer } from './DataQualityRelationValidationContainer.js';
 
 const RelationDefinitionEditor = observer(
   (props: {
@@ -261,7 +262,7 @@ const RelationDefinitionEditor = observer(
           />
         );
       }
-      return <BlankPanelContent>Lambda Did Not Run</BlankPanelContent>;
+      return <BlankPanelContent>No Data to Display</BlankPanelContent>;
     };
 
     return (
@@ -323,7 +324,7 @@ const RelationDefinitionEditor = observer(
           <div className="relation-validation-config-editor__definition__item">
             <div className="relation-validation-config-editor__definition__item__header">
               <div className="relation-validation-config-editor__definition__item__header__title">
-                LAMBDA
+                QUERY
               </div>
             </div>
             <div
@@ -358,14 +359,14 @@ const RelationDefinitionEditor = observer(
                   dataQualityRelationValidationConfigurationState.currentExecutionType ===
                     EXECUTION_TYPE.EXECUTION && (
                     <div className="panel__header__title__label__status">
-                      Running Validation...
+                      Running Query...
                     </div>
                   )}
                 {dataQualityRelationValidationConfigurationState.isRunning &&
                   dataQualityRelationValidationConfigurationState.currentExecutionType ===
                     EXECUTION_TYPE.PROFILING && (
                     <div className="panel__header__title__label__status">
-                      Running Profiling...
+                      Running Data Profile...
                     </div>
                   )}
                 <div
@@ -454,7 +455,7 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
     (): void =>
       dataQualityRelationValidationConfigurationState.setSelectedTab(tab);
 
-  const executionIsRunning =
+  const isRunning =
     dataQualityRelationValidationConfigurationState.isRunning ||
     dataQualityRelationValidationConfigurationState.isGeneratingPlan;
 
@@ -508,7 +509,7 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
 
   return (
     <div className="relation-validation-config-editor uml-editor uml-editor--dark">
-      <Panel>
+      <Panel className="relation-validation-config-editor__panel">
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">
@@ -536,83 +537,95 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
               ),
             )}
           </div>
-          <div className="panel__header__actions">
-            {selectedTab ===
-              DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION && (
-              <>
-                <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-                  {dataQualityRelationValidationConfigurationState.isRunning ? (
+        </div>
+        {selectedTab ===
+          DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION && (
+          <div className="relation-validation-config-editor__actions-bar">
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              {dataQualityRelationValidationConfigurationState.isRunning ? (
+                <button
+                  className="btn__dropdown-combo__canceler relation-validation-config-editor__actions-bar__cancel-btn"
+                  onClick={cancelRun}
+                  tabIndex={-1}
+                >
+                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label relation-validation-config-editor__actions-bar__cancel-label">
+                    <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
+                    <div className="btn__dropdown-combo__canceler__label__title">
+                      Stop
+                    </div>
+                  </div>
+                </button>
+              ) : (
+                <div className="relation-validation-config-editor__actions-bar__run-group">
+                  <button
+                    className="btn__dropdown-combo__label relation-validation-config-editor__actions-bar__run-btn"
+                    onClick={runDataProfiling}
+                    title="Data profile"
+                    disabled={isRunning}
+                    tabIndex={-1}
+                  >
+                    <PlayIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Data Profile
+                    </div>
+                  </button>
+                  <div className="relation-validation-config-editor__actions-bar__run-btn-group">
                     <button
-                      className="btn__dropdown-combo__canceler"
-                      onClick={cancelRun}
+                      className="btn__dropdown-combo__label relation-validation-config-editor__actions-bar__run-btn"
+                      onClick={runValidation}
+                      title="Run Function"
+                      disabled={isRunning}
                       tabIndex={-1}
                     >
-                      <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
-                        <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
-                        <div className="btn__dropdown-combo__canceler__label__title">
-                          Stop
-                        </div>
+                      <PlayIcon className="btn__dropdown-combo__label__icon" />
+                      <div className="btn__dropdown-combo__label__title">
+                        Run
                       </div>
                     </button>
-                  ) : (
-                    <>
-                      <button
-                        className="btn__dropdown-combo__label"
-                        onClick={runValidation}
-                        title="Run Function"
-                        disabled={executionIsRunning}
-                        tabIndex={-1}
-                      >
-                        <PlayIcon className="btn__dropdown-combo__label__icon" />
-                        <div className="btn__dropdown-combo__label__title">
-                          Run
-                        </div>
-                      </button>
-                      <ControlledDropdownMenu
-                        className="btn__dropdown-combo__dropdown-btn"
-                        disabled={executionIsRunning}
-                        content={
-                          <MenuContent>
-                            <MenuContentItem
-                              className="btn__dropdown-combo__option"
-                              onClick={generatePlan}
-                            >
-                              Generate Plan
-                            </MenuContentItem>
-                            <MenuContentItem
-                              className="btn__dropdown-combo__option"
-                              onClick={debugPlanGeneration}
-                            >
-                              Debug
-                            </MenuContentItem>
-                            <MenuContentItem
-                              className="btn__dropdown-combo__option"
-                              onClick={runDataProfiling}
-                            >
-                              Data Profile
-                            </MenuContentItem>
-                          </MenuContent>
-                        }
-                        menuProps={{
-                          anchorOrigin: {
-                            vertical: 'bottom',
-                            horizontal: 'right',
-                          },
-                          transformOrigin: {
-                            vertical: 'top',
-                            horizontal: 'right',
-                          },
-                        }}
-                      >
-                        <CaretDownIcon />
-                      </ControlledDropdownMenu>
-                    </>
-                  )}
+                    <ControlledDropdownMenu
+                      className="btn__dropdown-combo__dropdown-btn relation-validation-config-editor__actions-bar__dropdown-btn"
+                      disabled={isRunning}
+                      content={
+                        <MenuContent>
+                          <MenuContentItem
+                            className="btn__dropdown-combo__option"
+                            onClick={generatePlan}
+                          >
+                            Generate Plan
+                          </MenuContentItem>
+                          <MenuContentItem
+                            className="btn__dropdown-combo__option"
+                            onClick={debugPlanGeneration}
+                          >
+                            Debug
+                          </MenuContentItem>
+                          <MenuContentItem
+                            className="btn__dropdown-combo__option"
+                            onClick={runDataProfiling}
+                          >
+                            Data Profile
+                          </MenuContentItem>
+                        </MenuContent>
+                      }
+                      menuProps={{
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'right',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'right',
+                        },
+                      }}
+                    >
+                      <CaretDownIcon />
+                    </ControlledDropdownMenu>
+                  </div>
                 </div>
-              </>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <PanelContent>
           {selectedTab ===
             DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION && (
@@ -632,7 +645,7 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
           )}
           {selectedTab ===
             DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.VALIDATIONS && (
-            <DataQualityRelationValidationsEditor
+            <DataQualityRelationValidationContainer
               dataQualityRelationValidationConfigurationState={
                 dataQualityRelationValidationConfigurationState
               }

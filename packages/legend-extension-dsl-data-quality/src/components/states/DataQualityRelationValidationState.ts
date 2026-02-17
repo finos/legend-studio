@@ -18,7 +18,7 @@ import type {
   RelationValidationType,
 } from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import { type EditorStore } from '@finos/legend-application-studio';
-import { action, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -48,6 +48,8 @@ export class DataQualityRelationValidationState extends LambdaEditorWithGUIState
   editorStore: EditorStore;
   isValidationDialogOpen = false;
   initializedGUIEditor = false;
+  // only used for validation suggestions
+  isSelected = false;
 
   constructor(
     relationValidation: DataQualityRelationValidation,
@@ -59,6 +61,9 @@ export class DataQualityRelationValidationState extends LambdaEditorWithGUIState
       relationValidation: observable,
       editorStore: observable,
       isValidationDialogOpen: observable,
+      isSelected: observable,
+      hashCode: computed,
+      setIsSelected: action,
       setIsValidationDialogOpen: action,
       onValidationTypeChange: action,
       initializedGUIEditor: observable,
@@ -82,6 +87,10 @@ export class DataQualityRelationValidationState extends LambdaEditorWithGUIState
       this.relationValidation.name,
       this.uuid, // in case of duplications
     ]);
+  }
+
+  setIsSelected(b: boolean) {
+    this.isSelected = b;
   }
 
   setIsValidationDialogOpen(isValidationDialogOpen: boolean): void {
