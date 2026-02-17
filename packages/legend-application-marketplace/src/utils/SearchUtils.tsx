@@ -20,6 +20,8 @@ import {
   LakehouseDataProductSearchResultDetails,
   LakehouseSDLCDataProductSearchResultOrigin,
   LegacyDataProductSearchResultDetails,
+  DataProductDetailsType,
+  type AutosuggestResult,
 } from '@finos/legend-server-marketplace';
 import {
   generateGAVCoordinates,
@@ -31,6 +33,7 @@ import {
 } from '../__lib__/LegendMarketplaceNavigation.js';
 import {
   type V1_EntitlementsDataProductDetails,
+  type V1_EntitlementsLakehouseEnvironmentType,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import type { V1_DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
@@ -141,6 +144,53 @@ export const convertLegacyDataProductToSearchResult = (
   details.path = legacyDataProduct.path;
 
   searchResult.dataProductDetails = details;
+
+  return searchResult;
+};
+
+export const convertAutosuggestResultToSearchResult = (
+  autosuggestResult: AutosuggestResult,
+): DataProductSearchResult => {
+  const searchResult = new DataProductSearchResult();
+  searchResult.dataProductTitle = autosuggestResult.dataProductName;
+  searchResult.dataProductDescription =
+    autosuggestResult.dataProductDescription;
+
+  const details = autosuggestResult.dataProductDetails;
+
+  if (details._type === DataProductDetailsType.LAKEHOUSE) {
+    const lakehouseDetails = new LakehouseDataProductSearchResultDetails();
+    lakehouseDetails.dataProductId = details.dataProductId ?? '';
+    lakehouseDetails.deploymentId = details.deploymentId ?? 0;
+    lakehouseDetails.producerEnvironmentName =
+      details.producerEnvironmentName ?? '';
+    lakehouseDetails.producerEnvironmentType =
+      details.producerEnvironmentType as
+        | V1_EntitlementsLakehouseEnvironmentType
+        | undefined;
+
+    // Set origin based on whether origin data exists
+    if (details.origin) {
+      const sdlcOrigin = new LakehouseSDLCDataProductSearchResultOrigin();
+      sdlcOrigin.groupId = details.origin.groupId;
+      sdlcOrigin.artifactId = details.origin.artifactId;
+      sdlcOrigin.versionId = details.origin.versionId;
+      sdlcOrigin.path = details.origin.path;
+      lakehouseDetails.origin = sdlcOrigin;
+    } else {
+      lakehouseDetails.origin =
+        new LakehouseAdHocDataProductSearchResultOrigin();
+    }
+
+    searchResult.dataProductDetails = lakehouseDetails;
+  } else if (details._type === DataProductDetailsType.LEGACY) {
+    const legacyDetails = new LegacyDataProductSearchResultDetails();
+    legacyDetails.groupId = details.groupId;
+    legacyDetails.artifactId = details.artifactId;
+    legacyDetails.versionId = details.versionId;
+    legacyDetails.path = details.path;
+    searchResult.dataProductDetails = legacyDetails;
+  }
 
   return searchResult;
 };

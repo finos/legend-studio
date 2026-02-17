@@ -15,6 +15,7 @@
  */
 
 export * from './models/DataProductSearchResult.js';
+export * from './models/AutosuggestResult.js';
 export * from './models/Provider.js';
 export * from './models/Subscription.js';
 export * from './models/Cart.js';

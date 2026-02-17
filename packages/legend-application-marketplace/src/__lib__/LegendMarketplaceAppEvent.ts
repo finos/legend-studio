@@ -35,4 +35,5 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   ORDER_CANCELLATION_FAILURE = 'marketplace.order.cancellation.failure',
   TOGGLE_THEME_MODE = 'marketplace.toggle.theme-mode',
   CLICK_TOOLBAR_MENU = 'marketplace.click.toolbar.menu',
+  SEARCH_AUTOSUGGEST_SELECTION = 'marketplace.search.autosuggest.selection',
 }
