@@ -240,8 +240,202 @@
     &__content {
       background: var(--color-dark-theme-bg-primary);
     }
+
+    &__tabs {
+      border-bottom: 2px solid var(--color-dark-theme-border);
+
+      .MuiTab-root {
+        color: var(--color-dark-theme-text-muted);
+
+        &:hover {
+          color: var(--color-dark-theme-text-secondary);
+        }
+
+        &.Mui-selected {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+
+      .MuiTabs-indicator {
+        background-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    &__loading {
+      color: var(--color-dark-theme-text-secondary);
+
+      .MuiCircularProgress-root {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    &__loading-text {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__empty {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__empty-icon {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__empty-title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__empty-description {
+      color: var(--color-dark-theme-text-secondary);
+    }
   }
 
+  .legend-marketplace-order-accordion {
+    background-color: var(--color-dark-theme-bg-secondary);
+    border: 2px solid var(--color-dark-theme-border);
+    border-bottom: 3px solid var(--color-dark-theme-border);
+    box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+
+    &__summary {
+      background-color: var(--color-dark-theme-bg-tertiary);
+      border: 2px solid var(--color-dark-theme-border);
+
+      .MuiAccordionSummary-expandIconWrapper {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__summary-label {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__summary-value {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__summary-value--status {
+      color: var(--color-hclight-red-50);
+    }
+
+    &__track-button {
+      background-color: var(--color-dark-theme-blue-primary);
+      color: var(--color-white);
+
+      &:hover {
+        background-color: var(--color-dark-theme-blue-accent);
+      }
+    }
+
+    &__cancel-button {
+      border-color: var(--color-hclight-red-50);
+      color: var(--color-hclight-red-50);
+
+      &:hover:not(:disabled) {
+        background-color: rgb(250 83 67 / 10%);
+        border-color: var(--color-hclight-red-50);
+      }
+
+      &:disabled {
+        border-color: var(--color-dark-theme-border);
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__details {
+      background-color: var(--color-dark-theme-bg-secondary);
+    }
+
+    &__item {
+      border-bottom: 1px solid var(--color-dark-theme-border);
+    }
+
+    &__vendor-name {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__chip-terminal {
+      background-color: rgb(115 153 198 / 20%);
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__chip-addon {
+      background-color: rgb(168 85 247 / 15%);
+      color: var(--color-modal-purple-light);
+    }
+
+    &__chip-category {
+      background-color: rgb(115 153 198 / 15%);
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__chip-price {
+      background-color: rgb(22 161 99 / 15%);
+      color: var(--color-dark-green-50);
+    }
+
+    &__product-name {
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__business-justification {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__closure-info {
+      background-color: var(--color-dark-theme-bg-tertiary);
+      border: 1px solid var(--color-dark-theme-border);
+    }
+
+    &__closure-title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__closure-label {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__closure-value {
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
+
+  .legend-marketplace-progress-tracker {
+    &__step-label {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__step-detail {
+      color: var(--color-dark-theme-text-muted);
+
+      strong {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__step-icon {
+      &--completed {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &--active {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &--pending {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &--rejected {
+        color: var(--color-hclight-red-50);
+      }
+    }
+
+    .MuiStepConnector-line {
+      border-color: var(--color-dark-theme-border);
+    }
+  }
+
+  // Legacy order class overrides (kept for backward compatibility)
   .orders-tabs {
     border-bottom: 1px solid var(--color-dark-theme-border);
 
@@ -426,7 +620,7 @@
 
     &:hover {
       background: var(--color-dark-theme-bg-tertiary);
-      border-color: var(--color-dark-theme-blue-primary);
+      border-color: var(--legend-marketplace-light-blue);
       box-shadow: 0 8px 20px rgb(0 0 0 / 60%);
     }
 
@@ -524,6 +718,12 @@
     }
   }
 
+  .legend-marketplace-terminal-card {
+    &:hover {
+      border-color: var(--legend-marketplace-light-blue);
+    }
+  }
+
   // Modals
   .MuiDialog-paper {
     background: var(--color-dark-theme-bg-secondary);
@@ -531,10 +731,21 @@
   }
 
   .legend-marketplace-cancel-order-dialog {
+    .MuiPaper-root {
+      background: var(--color-dark-theme-bg-secondary);
+      border: 1px solid var(--color-dark-theme-border);
+    }
+
     .MuiDialogTitle-root {
       background: var(--color-dark-theme-bg-tertiary);
       color: var(--color-dark-theme-text-primary);
       border-bottom: 1px solid var(--color-dark-theme-border);
+    }
+
+    &__title {
+      .MuiTypography-root {
+        color: var(--color-dark-theme-text-primary);
+      }
     }
 
     .MuiDialogContent-root {
@@ -542,14 +753,21 @@
       color: var(--color-dark-theme-text-secondary);
     }
 
-    .MuiDialogActions-root {
-      background: var(--color-dark-theme-bg-tertiary);
-      border-top: 1px solid var(--color-dark-theme-border);
+    &__message {
+      color: var(--color-dark-theme-text-primary);
     }
 
     &__order-info {
       background: var(--color-dark-theme-bg-tertiary);
       border: 1px solid var(--color-dark-theme-border);
+
+      .MuiTypography-root {
+        color: var(--color-dark-theme-text-secondary);
+
+        strong {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
     }
 
     &__text-field {
@@ -562,8 +780,40 @@
         color: var(--color-dark-theme-text-muted);
       }
 
+      .MuiOutlinedInput-root {
+        &:hover .MuiOutlinedInput-notchedOutline {
+          border-color: var(--color-dark-theme-blue-primary);
+        }
+
+        &.Mui-focused .MuiOutlinedInput-notchedOutline {
+          border-color: var(--color-dark-theme-blue-primary);
+        }
+
+        .MuiOutlinedInput-notchedOutline {
+          border-color: var(--color-dark-theme-border);
+        }
+      }
+
       .MuiFormHelperText-root {
         color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    .MuiDialogActions-root {
+      background: var(--color-dark-theme-bg-tertiary);
+      border-top: 1px solid var(--color-dark-theme-border);
+    }
+
+    &__actions {
+      .MuiButton-root {
+        &[color='inherit'] {
+          color: var(--color-dark-theme-text-secondary);
+
+          &:hover {
+            background: var(--color-dark-theme-bg-elevated);
+            color: var(--color-dark-theme-text-primary);
+          }
+        }
       }
     }
   }
@@ -584,48 +834,70 @@
     &__header {
       background: linear-gradient(
         135deg,
-        rgb(34 197 94 / 8%) 0%,
-        rgb(115 153 198 / 12%) 50%,
-        rgb(168 85 247 / 8%) 100%
+        var(--color-dark-theme-blue-accent) 0%,
+        var(--color-dark-theme-blue-secondary) 100%
       );
       border-bottom: 1px solid var(--color-dark-theme-border);
 
       &::before {
         background: linear-gradient(
           90deg,
-          rgb(115 153 198 / 40%) 0%,
-          rgb(168 85 247 / 40%) 100%
+          var(--color-dark-theme-blue-primary) 0%,
+          var(--color-dark-theme-blue-accent) 100%
         );
       }
     }
 
     &__title {
-      background: linear-gradient(
-        135deg,
-        var(--color-dark-theme-text-primary) 0%,
-        var(--color-dark-theme-text-secondary) 100%
-      );
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--color-dark-theme-text-primary);
+      -webkit-text-fill-color: unset;
+      background: none;
     }
 
     &__subtitle {
-      color: var(--color-dark-theme-text-muted);
+      color: rgb(255 255 255 / 80%);
+    }
+
+    &__success-icon {
+      color: var(--color-dark-green-50);
+      background: rgb(255 255 255 / 15%);
+    }
+
+    &__warning-icon {
+      color: var(--color-dark-theme-text-primary);
+      background: rgb(255 255 255 / 15%);
     }
 
     &__close-btn {
-      color: var(--color-dark-theme-text-muted);
-      background: rgb(148 163 184 / 10%);
+      color: var(--color-dark-theme-text-primary);
+      background: rgb(255 255 255 / 10%);
 
       &:hover {
         color: var(--color-dark-theme-text-primary);
-        background: rgb(148 163 184 / 20%);
+        background: rgb(255 255 255 / 20%);
       }
     }
 
     &__content {
       background: transparent;
       color: var(--color-dark-theme-text-primary);
+    }
+
+    &__alert {
+      background-color: rgb(76 175 80 / 10%);
+      border-left-color: var(--color-dark-green-50);
+
+      svg {
+        color: var(--color-dark-green-50);
+      }
+
+      .MuiTypography-root {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      strong {
+        color: var(--color-dark-green-50);
+      }
     }
 
     &__section-title {
@@ -636,9 +908,167 @@
       color: var(--color-dark-theme-text-muted);
     }
 
+    &__search-field {
+      .MuiOutlinedInput-root {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-primary);
+
+        &:hover {
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+
+        &.Mui-focused {
+          background: var(--color-dark-theme-bg-secondary);
+          box-shadow: 0 0 0 3px rgb(115 153 198 / 20%);
+        }
+      }
+
+      .MuiInputBase-input {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__filter-controls {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__sort-buttons {
+      box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+
+      .MuiToggleButton-root {
+        border-color: var(--color-dark-theme-border);
+        color: var(--color-dark-theme-text-secondary);
+        background: var(--color-dark-theme-bg-elevated);
+
+        &:hover {
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+
+        &.Mui-selected {
+          background: rgb(115 153 198 / 15%);
+          color: var(--color-dark-theme-blue-primary);
+          border-color: rgb(115 153 198 / 30%);
+
+          &:hover {
+            background: rgb(115 153 198 / 25%);
+          }
+        }
+      }
+    }
+
+    &__list-header {
+      background: var(--color-dark-theme-bg-elevated);
+
+      .MuiTypography-root {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__list-item {
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      &:hover {
+        background: var(--color-dark-theme-bg-tertiary);
+      }
+    }
+
+    &__item-name {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__item-provider {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__item-price {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__add-btn {
+      color: var(--color-dark-theme-blue-primary);
+      border-color: var(--color-dark-theme-blue-primary);
+
+      &:hover {
+        background: rgb(115 153 198 / 10%);
+      }
+
+      &--added {
+        background: var(--color-dark-green-50);
+        color: var(--color-dark-theme-text-primary);
+        border-color: var(--color-dark-green-50);
+
+        &:hover {
+          background: var(--color-dark-green-50);
+          border-color: var(--color-dark-green-50);
+          opacity: 0.85;
+        }
+      }
+    }
+
     &__empty-state {
       .MuiTypography-root {
         color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__list-info {
+      color: var(--color-dark-theme-text-secondary);
+
+      .MuiTypography-root {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__pagination {
+      .MuiPaginationItem-root {
+        color: var(--color-dark-theme-text-secondary);
+        border-color: var(--color-dark-theme-border);
+
+        &:hover {
+          background: var(--color-dark-theme-bg-tertiary);
+          border-color: var(--color-dark-theme-blue-primary);
+        }
+
+        &.Mui-selected {
+          background: var(--color-dark-theme-blue-primary);
+          color: var(--color-dark-theme-text-primary);
+          border-color: var(--color-dark-theme-blue-primary);
+        }
+      }
+    }
+
+    &__footer {
+      border-top: 1px solid var(--color-dark-theme-border);
+      background: linear-gradient(
+        135deg,
+        var(--color-dark-theme-bg-secondary) 0%,
+        var(--color-dark-theme-bg-tertiary) 100%
+      );
+      backdrop-filter: blur(8px);
+    }
+
+    &__close-button {
+      border-color: var(--color-dark-theme-border);
+      color: var(--color-dark-theme-text-secondary);
+      background: var(--color-dark-theme-bg-elevated);
+
+      &:hover {
+        border-color: var(--color-dark-theme-blue-primary);
+        color: var(--color-dark-theme-text-primary);
+        background: var(--color-dark-theme-bg-tertiary);
+      }
+    }
+
+    &__view-cart-button {
+      background: linear-gradient(
+        135deg,
+        var(--color-dark-theme-blue-primary) 0%,
+        var(--color-dark-theme-blue-secondary) 100%
+      );
+      color: var(--color-dark-theme-text-primary);
+
+      &:hover {
+        box-shadow: 0 12px 24px -6px rgb(115 153 198 / 40%);
       }
     }
 
@@ -650,14 +1080,6 @@
         background: var(--color-dark-theme-bg-tertiary);
         border-color: var(--color-dark-theme-blue-primary);
       }
-    }
-
-    &__success-icon {
-      color: var(--color-dark-green-50);
-    }
-
-    &__warning-icon {
-      color: var(--color-dark-yellow-40);
     }
   }
 
@@ -674,8 +1096,8 @@
     &__header {
       background: linear-gradient(
         135deg,
-        var(--color-dark-theme-blue-accent) 0%,
-        var(--color-dark-theme-blue-secondary) 100%
+        var(--legend-marketplace-light-blue) 0%,
+        var(--color-legacylight-light-blue-200) 100%
       );
       box-shadow: 0 4px 20px rgb(0 0 0 / 40%);
 
@@ -752,6 +1174,10 @@
           }
 
           .MuiSelect-select {
+            color: var(--color-dark-theme-text-primary);
+          }
+
+          .MuiSelect-icon {
             color: var(--color-dark-theme-text-primary);
           }
         }
@@ -927,6 +1353,192 @@
       &:disabled {
         opacity: 0.5;
       }
+    }
+  }
+
+  // Order Confirmation Alert Modal
+  .blocking-alert.search-modal {
+    background: var(--color-dark-theme-bg-secondary);
+    border: 1px solid var(--color-dark-theme-border);
+
+    .modal__header {
+      background: var(--color-dark-theme-bg-tertiary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      .modal__title {
+        color: var(--color-dark-theme-text-primary) !important;
+      }
+    }
+
+    .modal__body {
+      background: var(--color-dark-theme-bg-secondary);
+    }
+
+    .blocking-alert__summary-text {
+      color: var(--color-dark-theme-text-primary) !important;
+    }
+
+    .blocking-alert__prompt-text {
+      color: var(--color-dark-theme-text-secondary) !important;
+    }
+
+    .modal__footer {
+      background: var(--color-dark-theme-bg-tertiary);
+      border-top: 1px solid var(--color-dark-theme-border);
+
+      .btn {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+  }
+
+  // Vendor Data Page - User Search, Filter Bar & Pagination
+  .legend-marketplace-body {
+    &__filter-bar {
+      background: var(--color-dark-theme-bg-secondary);
+      border: 1px solid var(--color-dark-theme-border);
+
+      .MuiButtonGroup-root {
+        .MuiButton-root {
+          color: var(--color-dark-theme-text-secondary);
+          border-color: var(--color-dark-theme-border);
+
+          &.MuiButton-contained {
+            background: var(--color-dark-theme-blue-primary);
+            color: var(--color-dark-theme-text-primary);
+            border-color: var(--color-dark-theme-blue-primary);
+          }
+
+          &.MuiButton-outlined {
+            background: var(--color-dark-theme-bg-elevated);
+
+            &:hover {
+              background: var(--color-dark-theme-bg-tertiary);
+              color: var(--color-dark-theme-text-primary);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .legend-marketplace-user-search-container {
+    &__label {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    .legend-marketplace__user-input {
+      .MuiOutlinedInput-root {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-primary);
+
+        &:hover .MuiOutlinedInput-notchedOutline {
+          border-color: var(--color-dark-theme-blue-primary);
+        }
+
+        &.Mui-focused .MuiOutlinedInput-notchedOutline {
+          border-color: var(--color-dark-theme-blue-primary);
+        }
+      }
+
+      .MuiInputLabel-root {
+        color: var(--color-dark-theme-text-muted);
+
+        &.Mui-focused {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+
+      .MuiAutocomplete-endAdornment {
+        .MuiIconButton-root {
+          color: var(--color-dark-theme-text-secondary);
+        }
+      }
+    }
+  }
+
+  .legend-marketplace-pagination-container {
+    color: var(--color-dark-theme-text-primary);
+  }
+
+  .legend-marketplace-pagination-info {
+    .MuiTypography-root {
+      color: var(--color-dark-theme-text-secondary);
+
+      strong {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  .legend-marketplace-pagination-page-size {
+    .MuiTypography-root {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    .MuiSelect-select {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    .MuiOutlinedInput-notchedOutline {
+      border-color: var(--color-dark-theme-border);
+    }
+
+    .MuiOutlinedInput-root {
+      &:hover .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+
+      &.Mui-focused .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  .legend-marketplace-pagination-controls {
+    .MuiPaginationItem-root {
+      color: var(--color-dark-theme-text-secondary);
+      border-color: var(--color-dark-theme-border);
+
+      &:hover {
+        background-color: var(--color-dark-theme-bg-tertiary);
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    .MuiPaginationItem-page.Mui-selected {
+      background-color: var(--color-dark-theme-blue-primary);
+      color: var(--color-dark-theme-text-primary);
+      border-color: var(--color-dark-theme-blue-primary);
+
+      &:hover {
+        background-color: var(--color-dark-theme-blue-accent);
+        border-color: var(--color-dark-theme-blue-accent);
+      }
+    }
+
+    .MuiPaginationItem-previousNext,
+    .MuiPaginationItem-firstLast {
+      background-color: var(--color-dark-theme-bg-elevated);
+
+      &:not(.Mui-disabled) {
+        color: var(--color-dark-theme-blue-primary);
+
+        &:hover {
+          background-color: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+
+      &.Mui-disabled {
+        background-color: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-muted);
+        opacity: 0.5;
+      }
+    }
+
+    .MuiPaginationItem-ellipsis {
+      color: var(--color-dark-theme-text-muted);
+      border: none;
     }
   }
 
@@ -1572,24 +2184,6 @@
   // Marketplace specific emphasis
   .marketplace-lakehouse-text__emphasis {
     color: var(--color-dark-theme-blue-primary);
-  }
-
-  // Progress Tracker
-  .legend-marketplace-progress-tracker {
-    background: var(--color-dark-theme-bg-secondary);
-
-    &__step-label {
-      color: var(--color-dark-theme-text-primary);
-    }
-
-    &__step-details {
-      background: var(--color-dark-theme-bg-tertiary);
-      border: 1px solid var(--color-dark-theme-border);
-    }
-
-    &__step-detail {
-      color: var(--color-dark-theme-text-secondary);
-    }
   }
 
   // Notification

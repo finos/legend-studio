@@ -211,7 +211,9 @@ export class CartStore {
 
   *refresh(): GeneratorFn<void> {
     const applicationStore = this.baseStore.applicationStore;
-    this.user = applicationStore.identityService.currentUser;
+    if (!this.user) {
+      this.user = applicationStore.identityService.currentUser;
+    }
     if (!this.user) {
       return;
     }
