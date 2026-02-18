@@ -86,6 +86,13 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
         },
       },
       showDevFeatures: true,
+      defaultSearchSuggestions: [
+        'Find analytics data',
+        'Show me sales performance metrics',
+        'What dataproducts are available?',
+        'Search for product catalog information',
+        'Display user activity datasets',
+      ],
     },
   },
   assets: {

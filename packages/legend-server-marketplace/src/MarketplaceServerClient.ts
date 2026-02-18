@@ -37,6 +37,7 @@ import {
   type TerminalProductOrderResponse,
   OrderStatusCategory,
 } from './models/TerminalProductOrder.js';
+import type { AutosuggestResponse } from './models/AutosuggestResult.js';
 
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
@@ -105,6 +106,8 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   private _search = (): string => `${this.baseUrl}/v1/search`;
 
+  private _autosuggest = (): string => `${this.baseUrl}/v1/autosuggest`;
+
   dataProductSearch = async (
     query: string,
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
@@ -117,6 +120,19 @@ export class MarketplaceServerClient extends AbstractServerClient {
         `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}`,
       )
     ).results;
+
+  getAutosuggestions = async (
+    query: string,
+    environment: string,
+    limit: number = 5,
+    signal?: AbortSignal,
+  ): Promise<AutosuggestResponse> =>
+    this.get<AutosuggestResponse>(
+      `${this._autosuggest()}/dataProducts/${environment}`,
+      signal ? { signal } : {},
+      undefined,
+      { query, limit },
+    );
 
   // ------------------------------------------- Subscriptions -----------------------------------------
 

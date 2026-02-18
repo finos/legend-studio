@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createModelSchema, optional, primitive } from 'serializr';
+import { createModelSchema, list, optional, primitive } from 'serializr';
 import {
   type PlainObject,
   assertNonNullable,
@@ -45,6 +45,11 @@ class LegendMarketplaceApplicationCoreOptions {
 
   highlightedDataProducts: string | undefined;
 
+  /**
+   * Default search suggestions to show when the search bar is empty or has no autosuggest results
+   */
+  defaultSearchSuggestions: string[] | undefined;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendMarketplaceApplicationCoreOptions, {
       dataProductConfig: optional(
@@ -54,6 +59,7 @@ class LegendMarketplaceApplicationCoreOptions {
       showDevFeatures: optional(primitive()),
       highlightedDataProducts: optional(primitive()),
       historicalNewsletterUrl: optional(primitive()),
+      defaultSearchSuggestions: optional(list(primitive())),
     }),
   );
 

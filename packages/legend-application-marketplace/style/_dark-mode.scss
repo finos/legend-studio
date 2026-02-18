@@ -26,6 +26,10 @@
   --marketplace-info-bg: var(--color-dark-theme-bg-elevated);
   --marketplace-info-text: var(--color-dark-theme-text-primary);
 
+  // Dropdown specific colors for dark mode
+  --marketplace-dropdown-bg: var(--color-dark-theme-dropdown-bg);
+  --marketplace-dropdown-hover-bg: var(--color-dark-theme-dropdown-hover-bg);
+
   // Search chip colors for dark mode
   --color-search-chip-source-bg: rgb(115 153 198 / 20%);
   --color-search-chip-source-text: var(--color-dark-theme-blue-primary);
@@ -974,6 +978,46 @@
       &.Mui-focused {
         color: var(--color-dark-theme-blue-primary);
       }
+    }
+
+    // Autocomplete dropdown - better contrast and border
+    &__dropdown {
+      .MuiAutocomplete-popper {
+        .MuiPaper-root {
+          background-color: var(--marketplace-dropdown-bg);
+        }
+
+        .MuiAutocomplete-listbox {
+          background-color: var(--marketplace-dropdown-bg);
+        }
+      }
+    }
+
+    &__section-divider {
+      background-color: var(--color-light-grey-50);
+    }
+
+    &__autocomplete-group-header {
+      color: var(--color-light-grey-250);
+    }
+
+    &__autocomplete-option {
+      background-color: var(--marketplace-dropdown-bg);
+
+      &:hover {
+        background-color: var(--marketplace-dropdown-hover-bg);
+      }
+    }
+  }
+
+  // Override section for search bar dropdown with !important
+  .legend-marketplace__search-bar__dropdown.MuiAutocomplete-popper {
+    .MuiPaper-root {
+      background-color: var(--marketplace-dropdown-bg) !important;
+    }
+
+    .MuiAutocomplete-listbox {
+      background-color: var(--marketplace-dropdown-bg) !important;
     }
   }
 

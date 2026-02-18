@@ -386,6 +386,7 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
             <LegendMarketplaceSearchBar
               onSearch={handleSearch}
               onChange={handleSearchChange}
+              enableAutosuggest={false}
             />
           </div>
         </div>

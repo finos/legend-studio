@@ -22,23 +22,182 @@
   height: 6rem;
   width: 100%;
 
+  .MuiAutocomplete-root {
+    width: 100%;
+  }
+
   &__text-field {
     height: 100%;
+    width: 100%;
 
     .MuiInputBase-root {
       height: 100%;
+      width: 100%;
     }
   }
 
   &__input {
     padding: 0 2rem;
     font-size: 1.6rem;
-    background: var(--color-white);
+    background: var(--marketplace-bg-primary);
     border-radius: 3rem;
+    width: 100%;
   }
 
   input {
     height: 100%;
     padding: 0;
+  }
+
+  .MuiIconButton-root {
+    svg {
+      font-size: 2rem;
+      color: var(--marketplace-text-primary);
+    }
+
+    &:hover {
+      background-color: var(--marketplace-bg-secondary);
+    }
+  }
+
+  &__dropdown {
+    .MuiAutocomplete-popper {
+      .MuiPaper-root {
+        width: 100%;
+        overflow: hidden;
+        box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 15%);
+      }
+
+      .MuiAutocomplete-listbox {
+        width: 100%;
+        padding: 0.8rem 0;
+      }
+    }
+  }
+
+  &__section-divider {
+    height: 0.1rem;
+    background-color: var(--color-dark-grey-500);
+    opacity: 0.5;
+    margin: 0;
+  }
+
+  &__autocomplete-group-header {
+    padding: 0.6rem 2rem 0.2rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    color: var(--color-dark-grey-300);
+    border-bottom: none;
+    font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+  }
+
+  &__autocomplete-option {
+    padding: 1rem 2rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    background-color: var(--marketplace-bg-primary);
+    border-bottom: none;
+    min-height: 6rem;
+
+    &:hover {
+      background-color: var(--marketplace-bg-secondary);
+    }
+
+    &__search-query {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    &__search-icon {
+      font-size: 2rem;
+      color: var(--marketplace-text-secondary);
+      flex-shrink: 0;
+    }
+
+    &__loading {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    &--loading {
+      pointer-events: none;
+
+      &:hover {
+        background-color: var(--marketplace-bg-primary) !important;
+      }
+    }
+
+    &__data-product {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      width: 100%;
+    }
+
+    &__content {
+      width: 100%;
+      font-size: 1.8rem;
+      line-height: 1.6;
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
+      overflow-wrap: break-word;
+      max-height: 5.76rem;
+    }
+
+    &__text {
+      font-size: 1.8rem;
+      color: var(--marketplace-text-primary);
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    &__name {
+      font-size: 1.8rem;
+      font-weight: 500;
+      color: var(--marketplace-link-color);
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__separator {
+      color: var(--marketplace-text-secondary);
+    }
+
+    &__description {
+      font-size: 1.4rem;
+      color: var(--marketplace-text-secondary);
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.legend-marketplace__search-bar__dropdown.MuiAutocomplete-popper {
+  border-radius: 3rem !important;
+  margin-top: 0.3rem !important;
+
+  .MuiPaper-root {
+    border-radius: 3rem !important;
+  }
+
+  .MuiAutocomplete-listbox {
+    padding: 0.8rem 0 !important;
   }
 }
