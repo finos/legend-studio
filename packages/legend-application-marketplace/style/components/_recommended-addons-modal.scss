@@ -37,7 +37,11 @@
     align-items: center;
     gap: 1.5rem;
     padding: 2.5rem 3rem 2rem;
-    background: linear-gradient(135deg, #7297c5 0%, #5d80a8 100%);
+    background: linear-gradient(
+      135deg,
+      var(--legend-marketplace-light-blue) 0%,
+      var(--color-legacylight-light-blue-200) 100%
+    );
     border-bottom: 1px solid rgb(114 151 197 / 30%);
     position: relative;
 
@@ -48,15 +52,20 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(90deg, #7297c5 0%, #5d80a8 50%, #7297c5 100%);
+      background: linear-gradient(
+        90deg,
+        var(--legend-marketplace-light-blue) 0%,
+        var(--color-legacylight-light-blue-300) 50%,
+        var(--legend-marketplace-light-blue) 100%
+      );
     }
   }
 
   &__success-icon {
-    color: var(--color-white);
-    background: rgb(255 255 255 / 15%);
+    color: var(--color-hclight-green-50);
+    background: rgb(255 255 255 / 25%);
     border-radius: 50%;
-    padding: 0.8rem;
+    font-size: 3rem;
   }
 
   &__warning-icon {
@@ -110,14 +119,14 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem 1.2rem;
-    background-color: #f0f9f4;
-    border-left: 4px solid #077d55;
+    background-color: var(--color-hclight-green-10, #e8f5e9);
+    border-left: 4px solid var(--color-hclight-green-50);
     border-radius: 4px;
     margin-bottom: 2rem;
     margin-top: 1rem;
 
     svg {
-      color: #077d55;
+      color: var(--color-hclight-green-50);
       font-size: 2.4rem;
       flex-shrink: 0;
     }
@@ -127,7 +136,7 @@
     }
 
     strong {
-      color: #1b5e3f;
+      color: var(--color-hclight-green-60, #2e7d32);
     }
   }
 
@@ -363,6 +372,14 @@
     border-radius: 0.6rem;
     text-transform: none;
     transition: all 0.2s ease;
+    background: var(--legend-marketplace-light-blue);
+    color: var(--color-white);
+    border-color: var(--legend-marketplace-light-blue);
+
+    &:hover {
+      background: var(--color-legacylight-light-blue-200);
+      border-color: var(--color-legacylight-light-blue-200);
+    }
 
     &--added {
       background: var(--color-hclight-green-50);
