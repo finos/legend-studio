@@ -15,6 +15,8 @@
  */
 
 export * from './store/AbstractSQLPlaygroundState.js';
+export * from './store/SqlPlaygroundDataProductExplorerState.js';
 export * from './SQLPlaygroundPanel.js';
 export * from './SQLPlaygroundGrid.js';
 export * from './SQLPlaygroundEditor.js';
+export * from './SQLDataProductExplorer.js';

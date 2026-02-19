@@ -1963,13 +1963,70 @@
   }
 }
 
+.sql-playground {
+  height: 100%;
+  width: 100%;
+
+  &__config__schema-explorer {
+    height: calc(100% - 9rem);
+    padding: 1rem 0;
+    overflow: auto;
+  }
+
+  &__code-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-100);
+      justify-content: flex-end;
+
+      &__actions {
+        display: flex;
+      }
+
+      &__action {
+        @include flexCenter;
+
+        height: 2.8rem;
+        width: 2.8rem;
+
+        svg {
+          color: var(--color-dark-grey-400);
+        }
+
+        &:hover svg {
+          color: var(--color-light-grey-400);
+        }
+      }
+    }
+
+    &__content {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
+      overflow: hidden;
+    }
+  }
+}
+
 .sql-playground-overlay {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+}
+
+.sql-playground__layout {
   height: 100%;
+  display: flex;
+  min-height: 0;
 }
 
 .sql-playground-modal-header {

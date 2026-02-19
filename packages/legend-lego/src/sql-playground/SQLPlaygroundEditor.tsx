@@ -31,12 +31,18 @@ import {
 import { useDrop } from 'react-dnd';
 import { isString } from '@finos/legend-shared';
 import type { AbstractSQLPlaygroundState } from './store/AbstractSQLPlaygroundState.js';
+import type { SQLPlaygroundDataProductExplorerState } from './store/SqlPlaygroundDataProductExplorerState.js';
+
+type SqlEditorNodeDragType = { text: string };
+const SQL_DROP_NODE_DND_TYPE = 'SQL_DROP_NODE_DND_TYPE';
 
 export interface SQLPlaygroundPanelProps {
   playgroundState: AbstractSQLPlaygroundState;
   advancedMode: boolean;
   disableDragDrop?: boolean;
   enableDarkMode?: boolean;
+  schemaExplorerState?: SQLPlaygroundDataProductExplorerState;
+  showSchemaExplorer?: boolean;
 }
 
 const toCompletionItems = (
@@ -132,10 +138,8 @@ export const PlaygroundSQLCodeEditor = observer(
       [playgroundState, editor],
     );
 
-    type DatabaseNodeDragType = { text: string };
-    const DATABASE_NODE_DND_TYPE = 'DATABASE_NODE_DND_TYPE';
-    const handleDatabaseNodeDrop = useCallback(
-      (item: DatabaseNodeDragType): void => {
+    const handleSqlEditorNodeDrop = useCallback(
+      (item: SqlEditorNodeDragType): void => {
         if (isString(item.text)) {
           if (playgroundState.sqlEditor) {
             const currentValue = playgroundState.sqlEditorTextModel.getValue();
@@ -165,18 +169,18 @@ export const PlaygroundSQLCodeEditor = observer(
       [playgroundState],
     );
     const [{ isDatabaseNodeDragOver }, dropConnector] = useDrop<
-      DatabaseNodeDragType,
+      SqlEditorNodeDragType,
       void,
       { isDatabaseNodeDragOver: boolean }
     >(
       () => ({
-        accept: DATABASE_NODE_DND_TYPE,
-        drop: (item): void => handleDatabaseNodeDrop(item),
+        accept: [SQL_DROP_NODE_DND_TYPE],
+        drop: (item): void => handleSqlEditorNodeDrop(item),
         collect: (monitor) => ({
           isDatabaseNodeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
-      [handleDatabaseNodeDrop],
+      [handleSqlEditorNodeDrop],
     );
 
     return (
