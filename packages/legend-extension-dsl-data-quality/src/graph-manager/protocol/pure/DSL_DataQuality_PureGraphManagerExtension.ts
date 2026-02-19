@@ -23,7 +23,10 @@ import {
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { DQExecuteInputOptions } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
+import type {
+  DataQualityRelationValidation,
+  DQExecuteInputOptions,
+} from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export abstract class DSL_DataQuality_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract generatePlan(
@@ -72,7 +75,7 @@ export abstract class DSL_DataQuality_PureGraphManagerExtension extends Abstract
     graph: PureModel,
     packagePath: string,
     options: DQExecuteInputOptions,
-  ): Promise<any>;
+  ): Promise<DataQualityRelationValidation>;
 }
 
 export const getDataQualityPureGraphManagerExtension = (

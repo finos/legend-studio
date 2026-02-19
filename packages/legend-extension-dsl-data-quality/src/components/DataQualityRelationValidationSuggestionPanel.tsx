@@ -15,26 +15,10 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { flowResult, runInAction } from 'mobx';
-import {
-  Badge,
-  Checkbox,
-  clsx,
-  CustomSelectorInput,
-  PlusIcon,
-  Switch,
-  XIcon,
-} from '@finos/legend-art';
-import { PrimitiveType, RawLambda } from '@finos/legend-graph';
-import { InlineLambdaEditor } from '@finos/legend-query-builder';
-import { DataQualityRelationValidationState } from './states/DataQualityRelationValidationState.js';
+import { runInAction } from 'mobx';
+import { CustomSelectorInput, XIcon } from '@finos/legend-art';
 import type { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
-import { DataQualityRelationLambdaGUIValidationEditor } from './DataQualityRelationLambdaGUIValidationEditor.js';
-import { DataQualityRelationValidation } from '../graph-manager/index.js';
-import {
-  SuggestedValidationsFilter,
-  SuggestionType,
-} from './states/DataQualityRelationValidationSuggestedValidationState.js';
+import { SuggestedValidationsFilter } from './states/DataQualityRelationValidationSuggestedValidationState.js';
 import { DataQualityRelationValidationSuggestionItem } from './DataQualityReltionValidationSuggestionItem.js';
 
 type FilterOption = { label: string; value: SuggestedValidationsFilter };
@@ -70,7 +54,7 @@ export const DataQualityRelationValidationSuggestionPanel = observer(
     };
 
     const addSelectedValidations = (): void => {
-      if (selectedSuggestions.length == 0) {
+      if (selectedSuggestions.length === 0) {
         return;
       }
       runInAction(() => {
@@ -91,9 +75,7 @@ export const DataQualityRelationValidationSuggestionPanel = observer(
               className="rule-suggestion-panel__header__filter"
               options={filterOptions}
               onChange={(option: FilterOption): void => {
-                if (option) {
-                  suggestionsState.onFilterChange(option.value);
-                }
+                suggestionsState.onFilterChange(option.value);
               }}
               value={filterOptions.find(
                 (option) => option.value === suggestionsState.filter,

@@ -94,7 +94,12 @@ export const DataQualityRelationValidationsEditor = observer(
             <button
               className="relation-validation-config-editor__definition__item__header__add-btn btn--dark"
               disabled={isReadOnly}
-              onClick={addRelationValidation}
+              onClick={() => {
+                addRelationValidation().catch(
+                  dataQualityRelationValidationConfigurationState.editorStore
+                    .applicationStore.alertUnhandledError,
+                );
+              }}
               tabIndex={-1}
               title="Add Relation Validation"
             >

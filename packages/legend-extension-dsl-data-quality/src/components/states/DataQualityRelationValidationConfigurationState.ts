@@ -71,7 +71,7 @@ import {
 import { DataQualityRelationValidationState } from './DataQualityRelationValidationState.js';
 import { DataQualityRelationResultState } from './DataQualityRelationResultState.js';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../graph/metamodel/DSL_DataQuality_HashUtils.js';
-import { PanelDisplayState, type SelectOption } from '@finos/legend-art';
+import { type SelectOption } from '@finos/legend-art';
 import { getDataQualityPureGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataQuality_PureGraphManagerExtension.js';
 import { downloadStream } from '@finos/legend-application';
 import {
@@ -734,7 +734,9 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     const { body, parameters } =
       this.relationFunctionDefinitionEditorState.relationValidationElement
         .query;
-    if (!body || (Array.isArray(body) && body.length === 0)) return;
+    if (!body || (Array.isArray(body) && body.length === 0)) {
+      return;
+    }
 
     const lambda = new RawLambda(parameters, body);
 

@@ -85,7 +85,6 @@ import {
   FUNCTION_PARAMETER_DND_TYPE,
 } from './DataQualityValidationParametersEditor.js';
 import { useDrop } from 'react-dnd';
-import { DataQualityRelationValidationsEditor } from './DataQualityRelationValidationsEditor.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { DataQualityRelationGridResult } from './DataQualityRelationGridResult.js';

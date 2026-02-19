@@ -64,6 +64,7 @@ import {
 } from './transformation/V1_DSL_DataQuality_ValueSpecificationBuilderHelper.js';
 import type { DataQualityRootGraphFetchTree } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
 import type {
+  DataQualityRelationValidation,
   DQExecuteInputOptions,
   DQValidationSuggestionInputOptions,
 } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
@@ -492,16 +493,16 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     options: DQExecuteInputOptions,
   ): Promise<Response> => {
     const input = new V1_DQRuleSuggestionInput();
-    (input.packagePath = packagePath),
-      (input.clientVersion =
-        options.clientVersion ||
-        V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION),
-      (input.model = graph.origin
-        ? this.buildPureModelSDLCPointer(graph.origin, undefined)
-        : this.graphManager.getFullGraphModelData(graph)),
-      (input.lambdaParameterValues = options.lambdaParameterValues
-        ? options.lambdaParameterValues.map(V1_transformParameterValue)
-        : []);
+    input.packagePath = packagePath;
+    input.clientVersion =
+      options.clientVersion ??
+      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION;
+    input.model = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+      : this.graphManager.getFullGraphModelData(graph);
+    input.lambdaParameterValues = options.lambdaParameterValues
+      ? options.lambdaParameterValues.map(V1_transformParameterValue)
+      : [];
 
     try {
       return guaranteeNonNullable(
@@ -530,25 +531,25 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     graph: PureModel,
     packagePath: string,
     options: DQValidationSuggestionInputOptions,
-  ): Promise<any> => {
+  ): Promise<DataQualityRelationValidation> => {
     const input = new V1_DQRuleSuggestionInput();
-    (input.packagePath = packagePath),
-      (input.clientVersion =
-        options.clientVersion ||
-        V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION),
-      (input.model = graph.origin
-        ? this.buildPureModelSDLCPointer(graph.origin, undefined)
-        : this.graphManager.getFullGraphModelData(graph)),
-      (input.lambdaParameterValues = options.lambdaParameterValues
-        ? options.lambdaParameterValues.map(V1_transformParameterValue)
-        : []);
+    input.packagePath = packagePath;
+    input.clientVersion =
+      options.clientVersion ??
+      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION;
+    input.model = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+      : this.graphManager.getFullGraphModelData(graph);
+    input.lambdaParameterValues = options.lambdaParameterValues
+      ? options.lambdaParameterValues.map(V1_transformParameterValue)
+      : [];
     const engineServerClient = guaranteeType(
       this.graphManager.engine,
       V1_RemoteEngine,
       'executeValidation is only supported by remote engine',
     ).getEngineServerClient();
 
-    const res = engineServerClient.postWithTracing(
+    return engineServerClient.postWithTracing(
       engineServerClient.getTraceData(DQ_FETCH_RULE_SUGGESTIONS),
       `${engineServerClient._pure()}/dataquality/ruleSuggestions`,
       V1_DQExecuteInput.serialization.toJson(input),
@@ -558,7 +559,5 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       { enableCompression: true },
       {},
     );
-
-    return res;
   };
 }

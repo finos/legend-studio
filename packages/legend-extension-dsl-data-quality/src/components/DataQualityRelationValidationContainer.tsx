@@ -23,32 +23,10 @@ import {
   ResizablePanelSplitterLine,
   getCollapsiblePanelGroupProps,
   type ResizablePanelHandlerProps,
-  PanelHeader,
-  PanelHeaderActions,
-  PanelHeaderActionItem,
-  XIcon,
-  PanelContent,
-  Checkbox,
-  CustomSelectorInput,
 } from '@finos/legend-art';
 import { DataQualityRelationValidationsEditor } from './DataQualityRelationValidationsEditor.js';
 import type { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
-import { InlineLambdaEditor } from '@finos/legend-query-builder';
-import { PrimitiveType, RawLambda } from '@finos/legend-graph';
-import { uuid } from '@finos/legend-shared';
-import {
-  dataQualityRelationValidation_addValidation,
-  dataQualityRelationValidation_setAssertion,
-} from '../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
-import { flowResult, runInAction } from 'mobx';
-import { DataQualityRelationValidationSuggestionItem } from './DataQualityReltionValidationSuggestionItem.js';
-import { DataQualityRelationValidation } from '../graph-manager/index.js';
-import type { SuggestedValidationsFilter } from './states/DataQualityRelationValidationSuggestedValidationState.js';
-import { SuggestionType } from './states/DataQualityRelationValidationSuggestedValidationState.js';
-import type { DataQualityRelationValidationState } from './states/DataQualityRelationValidationState.js';
 import { DataQualityRelationValidationSuggestionPanel } from './DataQualityRelationValidationSuggestionPanel.js';
-
-type FilterOption = { label: string; value: SuggestedValidationsFilter };
 
 export const DataQualityRelationValidationContainer = observer(
   (props: {

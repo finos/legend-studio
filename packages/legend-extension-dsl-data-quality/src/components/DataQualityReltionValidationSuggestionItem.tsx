@@ -15,14 +15,12 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { flowResult, runInAction } from 'mobx';
 import { Badge, Checkbox, clsx, PlusIcon, Switch } from '@finos/legend-art';
-import { PrimitiveType, RawLambda } from '@finos/legend-graph';
+import { PrimitiveType } from '@finos/legend-graph';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
 import type { DataQualityRelationValidationState } from './states/DataQualityRelationValidationState.js';
 import type { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
 import { DataQualityRelationLambdaGUIValidationEditor } from './DataQualityRelationLambdaGUIValidationEditor.js';
-import { DataQualityRelationValidation } from '../graph-manager/index.js';
 import { SuggestionType } from './states/DataQualityRelationValidationSuggestedValidationState.js';
 
 export const DataQualityRelationValidationSuggestionItem = observer(
@@ -135,7 +133,7 @@ export const DataQualityRelationValidationSuggestionItem = observer(
               className="relation-validation-editor__content__name"
               spellCheck={false}
               disabled={true}
-              value={validation.description || ''}
+              value={validation.description ?? ''}
               placeholder="Enter the description"
             />
           </div>
