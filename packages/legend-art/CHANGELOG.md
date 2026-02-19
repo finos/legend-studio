@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.143
+
+### Patch Changes
+
+- [#4889](https://github.com/finos/legend-studio/pull/4889) [`2b95518`](https://github.com/finos/legend-studio/commit/2b95518660e13a5b6e5f3a092355e1972e0d9091) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented autosuggestion feature for marketplace
+
 ## 7.1.142
 
 ## 7.1.141

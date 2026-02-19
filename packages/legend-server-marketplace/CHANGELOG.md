@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.45
+
+### Patch Changes
+
+- [#4889](https://github.com/finos/legend-studio/pull/4889) [`2b95518`](https://github.com/finos/legend-studio/commit/2b95518660e13a5b6e5f3a092355e1972e0d9091) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented autosuggestion feature for marketplace
+
 ## 0.1.44
 
 ## 0.1.43
