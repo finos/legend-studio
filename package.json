@@ -114,7 +114,7 @@
     "chalk": "5.4.1",
     "cross-env": "7.0.3",
     "envinfo": "7.14.0",
-    "eslint": "9.22.0",
+    "eslint": "9.26.0",
     "fs-extra": "11.3.0",
     "husky": "9.1.7",
     "inquirer": "12.4.3",
