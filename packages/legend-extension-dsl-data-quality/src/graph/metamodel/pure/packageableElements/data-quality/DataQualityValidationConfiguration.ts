@@ -46,6 +46,11 @@ export interface DQExecuteInputOptions {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
+export interface DQValidationSuggestionInputOptions {
+  clientVersion?: string | undefined;
+  lambdaParameterValues?: ParameterValue[];
+}
+
 export abstract class DataQualityExecutionContext implements Hashable {
   abstract get hashCode(): string;
 }

@@ -168,7 +168,9 @@ export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
         this.isGUISupportedLambda = true;
         return true;
       } else {
-        throw Error('No column available');
+        throw Error(
+          'Could not initiate graphical validation editor, no columns found. Please make sure query is running properly',
+        );
       }
     } catch (error) {
       assertErrorThrown(error);

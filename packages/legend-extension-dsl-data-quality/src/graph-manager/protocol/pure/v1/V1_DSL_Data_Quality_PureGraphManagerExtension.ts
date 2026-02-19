@@ -63,10 +63,16 @@ import {
   V1_transformRootGraphFetchTreeToDataQualityRootGraphFetchTree,
 } from './transformation/V1_DSL_DataQuality_ValueSpecificationBuilderHelper.js';
 import type { DataQualityRootGraphFetchTree } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
-import type { DQExecuteInputOptions } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
+import type {
+  DataQualityRelationValidation,
+  DQExecuteInputOptions,
+  DQValidationSuggestionInputOptions,
+} from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 const DQ_GENERATE_EXECUTION_PLAN = 'generate execution plan';
 const DQ_EXECUTE_PLAN = 'execute plan';
+const DQ_EXECUTE_DATA_PROFILING = 'execute data profiling';
+const DQ_FETCH_RULE_SUGGESTIONS = 'fetch rule suggestions';
 const DQ_DEBUG_EXECUTION_PLAN = 'debug execution plan';
 const DQ_FETCH_PROPERTY_PATH_TREE = 'dq fetch property path tree';
 
@@ -89,6 +95,22 @@ export class V1_DQExecuteInput {
       defectsLimit: optional(primitive()),
       validationName: optional(primitive()),
       runQuery: optional(primitive()),
+    }),
+  );
+}
+
+export class V1_DQRuleSuggestionInput {
+  clientVersion: string | undefined;
+  model!: V1_PureModelContext;
+  lambdaParameterValues: V1_ParameterValue[] = [];
+  packagePath!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DQRuleSuggestionInput, {
+      clientVersion: optional(primitive()),
+      model: V1_pureModelContextPropSchema,
+      lambdaParameterValues: customListWithSchema(V1_parameterValueModelSchema),
+      packagePath: primitive(),
     }),
   );
 }
@@ -402,7 +424,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       'executeDataProfiling is only supported by remote engine',
     ).getEngineServerClient();
     return engineServerClient.postWithTracing(
-      engineServerClient.getTraceData(DQ_GENERATE_EXECUTION_PLAN),
+      engineServerClient.getTraceData(DQ_EXECUTE_DATA_PROFILING),
       `${engineServerClient._pure()}/dataquality/profile`,
       input,
       {},
@@ -470,12 +492,17 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     packagePath: string,
     options: DQExecuteInputOptions,
   ): Promise<Response> => {
-    const input = this.createExecutionInput(
-      graph,
-      packagePath,
-      new V1_DQExecuteInput(),
-      options,
-    );
+    const input = new V1_DQRuleSuggestionInput();
+    input.packagePath = packagePath;
+    input.clientVersion =
+      options.clientVersion ??
+      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION;
+    input.model = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+      : this.graphManager.getFullGraphModelData(graph);
+    input.lambdaParameterValues = options.lambdaParameterValues
+      ? options.lambdaParameterValues.map(V1_transformParameterValue)
+      : [];
 
     try {
       return guaranteeNonNullable(
@@ -498,5 +525,39 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       }
       throw error;
     }
+  };
+
+  fetchValidationSuggestions = async (
+    graph: PureModel,
+    packagePath: string,
+    options: DQValidationSuggestionInputOptions,
+  ): Promise<DataQualityRelationValidation> => {
+    const input = new V1_DQRuleSuggestionInput();
+    input.packagePath = packagePath;
+    input.clientVersion =
+      options.clientVersion ??
+      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION;
+    input.model = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+      : this.graphManager.getFullGraphModelData(graph);
+    input.lambdaParameterValues = options.lambdaParameterValues
+      ? options.lambdaParameterValues.map(V1_transformParameterValue)
+      : [];
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+      'executeValidation is only supported by remote engine',
+    ).getEngineServerClient();
+
+    return engineServerClient.postWithTracing(
+      engineServerClient.getTraceData(DQ_FETCH_RULE_SUGGESTIONS),
+      `${engineServerClient._pure()}/dataquality/ruleSuggestions`,
+      V1_DQExecuteInput.serialization.toJson(input),
+      {},
+      undefined,
+      {},
+      { enableCompression: true },
+      {},
+    );
   };
 }

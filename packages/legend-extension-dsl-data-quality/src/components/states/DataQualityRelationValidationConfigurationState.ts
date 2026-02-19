@@ -19,7 +19,7 @@ import {
   ElementEditorState,
 } from '@finos/legend-application-studio';
 import {
-  type DataQualityRelationValidation,
+  DataQualityRelationValidation,
   DataQualityRelationValidationConfiguration,
   RelationValidationType,
 } from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
@@ -71,9 +71,17 @@ import {
 import { DataQualityRelationValidationState } from './DataQualityRelationValidationState.js';
 import { DataQualityRelationResultState } from './DataQualityRelationResultState.js';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../graph/metamodel/DSL_DataQuality_HashUtils.js';
-import type { SelectOption } from '@finos/legend-art';
+import { type SelectOption } from '@finos/legend-art';
 import { getDataQualityPureGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataQuality_PureGraphManagerExtension.js';
 import { downloadStream } from '@finos/legend-application';
+import {
+  SuggestedValidationsState,
+  SuggestionType,
+} from './DataQualityRelationValidationSuggestedValidationState.js';
+import {
+  dataQualityRelationValidation_addValidation,
+  dataQualityRelationValidation_setAssertion,
+} from '../../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
 
 export enum DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB {
   DEFINITION = 'Definition',
@@ -89,12 +97,14 @@ export enum EXECUTION_TYPE {
 export class RelationFunctionDefinitionEditorState extends LambdaEditorState {
   readonly editorStore: EditorStore;
   readonly relationValidationElement: DataQualityRelationValidationConfiguration;
+  readonly configurationState: DataQualityRelationValidationConfigurationState;
 
   isConvertingFunctionBodyToString = false;
 
   constructor(
     relationValidationElement: DataQualityRelationValidationConfiguration,
     editorStore: EditorStore,
+    configurationState: DataQualityRelationValidationConfigurationState,
   ) {
     super('', '|');
 
@@ -105,6 +115,7 @@ export class RelationFunctionDefinitionEditorState extends LambdaEditorState {
 
     this.relationValidationElement = relationValidationElement;
     this.editorStore = editorStore;
+    this.configurationState = configurationState;
   }
 
   get lambdaId(): string {
@@ -123,6 +134,10 @@ export class RelationFunctionDefinitionEditorState extends LambdaEditorState {
           )) as RawLambda;
         this.setParserError(undefined);
         this.relationValidationElement.query.body = lambda.body;
+        // Refresh relation columns after successful query update
+        yield flowResult(
+          this.configurationState.setupValidationStatesWithColumns(),
+        );
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -268,12 +283,15 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   executionResult?: ExecutionResult | undefined;
   executionPlanState: ExecutionPlanState;
   validationStates: DataQualityRelationValidationState[] = [];
+  suggestedValidationsState: SuggestedValidationsState;
   parametersState: RelationDefinitionParameterState;
   isConvertingValidationLambdaObjects = false;
   resultState: DataQualityRelationResultState;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
+  isSuggestionPanelOpen = false;
   relationTypeMetadata: RelationTypeMetadata = new RelationTypeMetadata();
+  lastRelationColumnsQueryHash: string | undefined = undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -290,12 +308,18 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       executionDuration: observable,
       latestRunHashCode: observable,
       lastExecutionType: observable,
+      isSuggestionPanelOpen: observable,
+      validationStates: observable,
       setSelectedTab: action,
       setRunPromise: action,
       setExecutionResult: action,
       addValidationState: action,
       resetResultState: action,
       setExecutionDuration: action,
+      applyOrModifySuggestion: action,
+      applySuggestion: action,
+      modifyExistingSuggestion: action,
+      deleteValidationState: action,
       validationElement: computed,
       relationValidationOptions: computed,
       checkForStaleResults: computed,
@@ -317,7 +341,11 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       'Element inside data quality relation validation editor state must be a data quality relation validation element',
     );
     this.relationFunctionDefinitionEditorState =
-      new RelationFunctionDefinitionEditorState(element, this.editorStore);
+      new RelationFunctionDefinitionEditorState(
+        element,
+        this.editorStore,
+        this,
+      );
     this.selectedTab = DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION;
     this.relationTypeMetadata = observe_RelationTypeMetadata(
       this.relationTypeMetadata,
@@ -335,6 +363,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     );
     this.parametersState = new RelationDefinitionParameterState(this);
     this.resultState = new DataQualityRelationResultState(this);
+    this.suggestedValidationsState = new SuggestedValidationsState(this);
 
     flowResult(this.setupValidationStatesWithColumns()).catch(
       this.editorStore.applicationStore.alertUnhandledError,
@@ -701,10 +730,22 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   }
 
   *getRelationColumns(): GeneratorFn<void> {
-    const lambda = new RawLambda(
-      this.relationFunctionDefinitionEditorState.relationValidationElement.query.parameters,
-      this.relationFunctionDefinitionEditorState.relationValidationElement.query.body,
-    );
+    // skip if the query body is not defined
+    const { body, parameters } =
+      this.relationFunctionDefinitionEditorState.relationValidationElement
+        .query;
+    if (!body || (Array.isArray(body) && body.length === 0)) {
+      return;
+    }
+
+    const lambda = new RawLambda(parameters, body);
+
+    // this is to avoid unecessary calls, we only care if the actual lambda has changed, otherwise we don't want to updated column metadata
+    const currentQueryHash =
+      this.relationFunctionDefinitionEditorState.hashCode;
+    if (currentQueryHash === this.lastRelationColumnsQueryHash) {
+      return;
+    }
 
     try {
       this.relationTypeMetadata = observe_RelationTypeMetadata(
@@ -713,11 +754,83 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
           this.editorStore.graphManagerState.graph,
         ),
       );
+      this.lastRelationColumnsQueryHash = currentQueryHash;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(
         `Error getting relation type columns: ${error.message}`,
       );
+    }
+  }
+
+  applySuggestion(validationState: DataQualityRelationValidationState): void {
+    const relationValidation = validationState.relationValidation;
+    // Create a NEW validation instance
+    const newValidation = new DataQualityRelationValidation(
+      relationValidation.name,
+      new RawLambda(
+        relationValidation.assertion.parameters,
+        relationValidation.assertion.body,
+      ),
+    );
+    if (relationValidation.type) {
+      newValidation.type = relationValidation.type;
+    }
+    newValidation.description = relationValidation.description;
+
+    // Add to model (this modifies the graph)
+    dataQualityRelationValidation_addValidation(
+      this.validationElement,
+      newValidation,
+    );
+
+    this.addValidationState(newValidation);
+    const newValidationState = this.getValidationState(newValidation);
+    newValidationState.setLambdaString(validationState.lambdaString);
+    // Force proper GUI editor initialization if needed
+    if (newValidationState.isGUIEditor) {
+      newValidationState.initializeWithColumns(
+        this.relationTypeMetadata.columns,
+      );
+    }
+  }
+
+  modifyExistingSuggestion(
+    validation: DataQualityRelationValidationState,
+  ): void {
+    const existingValidation = this.validationElement.validations.find(
+      (v) => v.name === validation.relationValidation.name,
+    );
+    if (existingValidation) {
+      dataQualityRelationValidation_setAssertion(
+        existingValidation,
+        new RawLambda(
+          validation.relationValidation.assertion.parameters,
+          validation.relationValidation.assertion.body,
+        ),
+      );
+      const existingValidationState =
+        this.getValidationState(existingValidation);
+      existingValidationState.setLambdaString(validation.lambdaString);
+
+      if (existingValidationState.isGUIEditor) {
+        existingValidationState.initializeWithColumns(
+          this.relationTypeMetadata.columns,
+        );
+      }
+    }
+  }
+
+  applyOrModifySuggestion(
+    validationState: DataQualityRelationValidationState,
+  ): void {
+    const suggestionType =
+      this.suggestedValidationsState.getSuggestionType(validationState);
+
+    if (suggestionType === SuggestionType.NEW) {
+      this.applySuggestion(validationState);
+    } else if (suggestionType === SuggestionType.EDIT) {
+      this.modifyExistingSuggestion(validationState);
     }
   }
 

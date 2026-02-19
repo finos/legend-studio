@@ -61,11 +61,6 @@
   }
 }
 
-.relation-config-validations {
-  margin-left: 1rem;
-  margin-right: 1rem;
-}
-
 .relation-validation-config-editor {
   height: 100%;
   width: 100%;
@@ -73,6 +68,7 @@
   .panel {
     height: 100%;
     width: 100%;
+    background: var(--color-dark-grey-50);
 
     &__header {
       padding-left: 0.5rem;
@@ -192,6 +188,7 @@
   }
 
   &__definition {
+    background-color: var(--color-dark-grey-50);
     height: 100%;
     width: 100%;
     padding: 1rem;
@@ -222,19 +219,54 @@
       }
 
       &__header-right {
-        padding-left: 1rem;
-        padding-right: 2rem;
+        padding-right: 1rem;
         display: flex;
+        gap: 1rem;
         justify-content: end;
 
         @include flexVCenter;
       }
 
+      &__validations-header {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 1.25rem;
+        padding-right: 1rem;
+      }
+
+      &__validations-label {
+        display: flex;
+        margin-left: 1rem;
+        height: 2.8rem;
+        width: fit-content;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.2rem;
+        background: var(--color-dark-grey-200);
+        padding-left: 1rem;
+        padding-right: 1rem;
+        font-weight: 500;
+        color: var(--color-light-grey-100);
+      }
+
       &__header__add-btn {
         @include flexCenter;
 
+        padding-left: 1rem;
+        padding-right: 1rem;
+        gap: 1rem;
         height: 2.8rem;
-        width: 2.8rem;
+      }
+
+      &__header__suggest-btn {
+        @include flexCenter;
+
+        background: var(--color-blue-200);
+        color: var(--color-light-grey-50);
+        padding-left: 2rem;
+        padding-right: 2rem;
+        gap: 1rem;
+        height: 2.8rem;
       }
 
       &__header__title {
@@ -288,6 +320,42 @@
   &__activator-builder {
     height: 100%;
     width: 100%;
+  }
+
+  &__actions-bar {
+    display: flex;
+    justify-content: end;
+    background: var(--color-dark-grey-50);
+    margin-top: 2rem;
+    height: 4rem;
+    padding-top: 0.5rem;
+
+    &__cancel-btn {
+      padding-right: 2rem;
+    }
+
+    &__cancel-label {
+      height: 2.8rem;
+    }
+
+    &__run-group {
+      display: flex;
+      gap: 0.6rem;
+      padding-right: 2rem;
+    }
+
+    &__run-btn {
+      height: 2.8rem;
+      white-space: nowrap;
+    }
+
+    &__run-btn-group {
+      display: flex;
+    }
+
+    &__dropdown-btn {
+      height: 2.8rem;
+    }
   }
 }
 
@@ -450,6 +518,7 @@
 
   &__content {
     display: flex;
+    align-items: center;
     margin-bottom: 0.5rem;
 
     &__lock {
