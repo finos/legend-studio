@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.69
+
+### Patch Changes
+
+- [#4889](https://github.com/finos/legend-studio/pull/4889) [`2b95518`](https://github.com/finos/legend-studio/commit/2b95518660e13a5b6e5f3a092355e1972e0d9091) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented autosuggestion feature for marketplace
+
+- [#4890](https://github.com/finos/legend-studio/pull/4890) [`8180b9b`](https://github.com/finos/legend-studio/commit/8180b9b8cbc9808d8a48cccc5080c48c09f9a2d4) ([@bojja-gs](https://github.com/bojja-gs)) - darkmode support for terminals and addons, cart view and your orders view
+
 ## 0.1.68
 
 ### Patch Changes
