@@ -59,17 +59,17 @@ import {
 } from '../editor-group/connection-editor/RelationalDatabaseConnectionEditor.js';
 import { SQLPlaygroundEditorResultPanel } from '@finos/legend-lego/sql-playground';
 
-const DATABASE_NODE_DND_TYPE = 'DATABASE_NODE_DND_TYPE';
-type DatabaseNodeDragType = { text: string };
+const SQL_DROP_NODE_DND_TYPE = 'SQL_DROP_NODE_DND_TYPE';
+type SqlEditorNodeDragType = { text: string };
 
 const SQLPlaygroundDatabaseSchemaExplorerTreeNodeContainer = observer(
   (props: DatabaseSchemaExplorerTreeNodeContainerProps) => {
     const { node } = props;
     const ref = useRef(null);
 
-    const [, dragConnector] = useDrag<DatabaseNodeDragType>(
+    const [, dragConnector] = useDrag<SqlEditorNodeDragType>(
       () => ({
-        type: DATABASE_NODE_DND_TYPE,
+        type: SQL_DROP_NODE_DND_TYPE,
         item: {
           text:
             node instanceof DatabaseSchemaExplorerTreeTableNodeData

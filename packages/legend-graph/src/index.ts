@@ -93,7 +93,10 @@ export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/func
 export { SnowflakeM2MUdf } from './graph/metamodel/pure/packageableElements/function/SnowflakeM2MUdf.js';
 export { SnowflakeM2MUdfDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeM2MUdfDeploymentConfiguration.js';
 export { INTERNAL__UnknownElement } from './graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
-export { V1_IngestDefinition } from './graph-manager/protocol/pure/v1/model/packageableElements/ingest/V1_IngestDefinition.js';
+export {
+  V1_IngestDefinition,
+  type V1_IngestDataset,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/ingest/V1_IngestDefinition.js';
 export {
   Ownership,
   DeploymentOwner,
@@ -400,6 +403,7 @@ export {
 export {
   V1_DataProductArtifact,
   V1_NativeModelExecutionContextInfo,
+  V1_DataProductInfo,
   V1_AccessPointImplementation,
   V1_AccessPointGroupInfo,
   V1_SampleQueryInfo,
@@ -715,7 +719,10 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/seri
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_ExternalFormat_GraphBuilderHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper.js';
-export { V1_setupDatabaseSerialization } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper.js';
+export {
+  V1_setupDatabaseSerialization,
+  V1_RelationalDataTypeType,
+} from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';
 
 // --------------------------------------------- TESTING --------------------------------------------------
