@@ -2526,7 +2526,7 @@ __metadata:
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.0"
     serializr: "npm:3.0.3"
-    swiper: "npm:^12.0.2"
+    swiper: "npm:^12.1.2"
     typescript: "npm:5.7.3"
     yaml: "npm:2.7.0"
   peerDependencies:
@@ -20183,10 +20183,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swiper@npm:^12.0.2":
-  version: 12.0.3
-  resolution: "swiper@npm:12.0.3"
-  checksum: 10/1a0f6e10e8245a27b270c31cb01c520b307efa7ccf835164dd03ee34937b844b183df07d84fe6d9a1d07f81b26bfa3f0f123e48b28b4596b8804fd4f3d61d77d
+"swiper@npm:^12.1.2":
+  version: 12.1.2
+  resolution: "swiper@npm:12.1.2"
+  checksum: 10/3e8fc6f39eba2475cddeed8f49ba37e5fe9c55f92b280eca26e164d1b052a6ed6d3f491840b54c79148cc70b7b15f226fa9a421c1c4e49caeab8be04d689dafe
   languageName: node
   linkType: hard
 
