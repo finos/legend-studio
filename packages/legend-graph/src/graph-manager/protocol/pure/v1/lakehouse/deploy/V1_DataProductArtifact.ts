@@ -501,6 +501,10 @@ function V1_deserializeModelDocumentationEntry(
   }
 }
 
+export enum V1_AccessPointGroupInfoType {
+  MODEL = 'modelAccessPointGroup',
+}
+
 export class V1_AccessPointGroupInfo {
   id!: string;
   description: string | undefined;
@@ -517,6 +521,45 @@ export class V1_AccessPointGroupInfo {
   );
 }
 
+export class V1_ModelAccessPointGroupInfo extends V1_AccessPointGroupInfo {
+  mappingGeneration!: V1_MappingGenerationInfo;
+  diagrams: V1_DiagramInfo[] = [];
+  model!: V1_PureModelContextData;
+  elements: string[] = [];
+  elementDocs: V1_ModelDocumentationEntry[] = [];
+
+  static override readonly serialization = new SerializationFactory(
+    createModelSchema(V1_ModelAccessPointGroupInfo, {
+      _type: usingConstantValueSchema(V1_AccessPointGroupInfoType.MODEL),
+      id: primitive(),
+      description: optional(primitive()),
+      accessPointImplementations: list(
+        usingModelSchema(V1_AccessPointImplementation.serialization.schema),
+      ),
+      mappingGeneration: usingModelSchema(
+        V1_MappingGenerationInfo.serialization.schema,
+      ),
+      diagrams: list(usingModelSchema(V1_DiagramInfo.serialization.schema)),
+      model: V1_pureModelContextDataPropSchema,
+      elements: list(primitive()),
+      elementDocs: list(
+        custom(() => SKIP, V1_deserializeModelDocumentationEntry),
+      ),
+    }),
+  );
+}
+
+function V1_deserializeAccessPointGroupInfo(
+  json: PlainObject<V1_AccessPointGroupInfo>,
+): V1_AccessPointGroupInfo {
+  switch (json._type) {
+    case V1_AccessPointGroupInfoType.MODEL:
+      return V1_ModelAccessPointGroupInfo.serialization.fromJson(json);
+    default:
+      return V1_AccessPointGroupInfo.serialization.fromJson(json);
+  }
+}
+
 export class V1_DataProductArtifact {
   dataProduct!: V1_DataProductInfo;
   accessPointGroups: V1_AccessPointGroupInfo[] = [];
@@ -526,7 +569,11 @@ export class V1_DataProductArtifact {
     createModelSchema(V1_DataProductArtifact, {
       dataProduct: usingModelSchema(V1_DataProductInfo.serialization.schema),
       accessPointGroups: list(
-        usingModelSchema(V1_AccessPointGroupInfo.serialization.schema),
+        custom(
+          () => SKIP,
+          (val: PlainObject<V1_AccessPointGroupInfo>) =>
+            V1_deserializeAccessPointGroupInfo(val),
+        ),
       ),
       nativeModelAccess: optionalCustomUsingModelSchema(
         V1_NativeModelAccessInfo.serialization.schema,

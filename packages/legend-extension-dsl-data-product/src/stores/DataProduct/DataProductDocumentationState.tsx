@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025-present, Goldman Sachs
+ * Copyright (c) 2026-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { type DataProductViewerState } from './DataProductViewerState.js';
 import type { CommandRegistrar } from '@finos/legend-application';
 import {
+  type GraphManagerState,
+  type V1_ModelDocumentationEntry,
   V1_ClassDocumentationEntry,
   V1_EnumerationDocumentationEntry,
   V1_AssociationDocumentationEntry,
@@ -31,37 +32,34 @@ import {
   ViewerModelsDocumentationState,
 } from '@finos/legend-lego/model-documentation';
 
-export class DataProductNativeModelAccessDocumentationState
+export class DataProductDocumentationState
   extends ViewerModelsDocumentationState
   implements CommandRegistrar
 {
-  readonly dataProductViewerState: DataProductViewerState;
-
-  constructor(dataProductViewerState: DataProductViewerState) {
+  constructor(
+    elementDocs: V1_ModelDocumentationEntry[],
+    graphManagerState: GraphManagerState,
+  ) {
     super(
-      DataProductNativeModelAccessDocumentationState.fromNativeModelAccess(
-        dataProductViewerState,
+      DataProductDocumentationState.fromElementDocs(
+        elementDocs,
+        graphManagerState,
       ),
     );
-    this.dataProductViewerState = dataProductViewerState;
   }
 
-  private static fromNativeModelAccess(
-    dataProductViewerState: DataProductViewerState,
+  private static fromElementDocs(
+    elementDocs: V1_ModelDocumentationEntry[],
+    graphManagerState: GraphManagerState,
   ): NormalizedDocumentationEntry[] {
-    const artifact = dataProductViewerState.dataProductArtifact;
-    if (!artifact?.nativeModelAccess) {
-      return [];
-    }
-    const nativeModelAccess = artifact.nativeModelAccess;
-    if (!nativeModelAccess.elementDocs.length) {
+    if (!elementDocs.length) {
       return [];
     }
 
-    const graph = dataProductViewerState.graphManagerState.graph;
-
+    const graph = graphManagerState.graph;
     const entries: NormalizedDocumentationEntry[] = [];
-    nativeModelAccess.elementDocs.forEach((docEntry) => {
+
+    elementDocs.forEach((docEntry) => {
       if (docEntry instanceof V1_ClassDocumentationEntry) {
         const classData = new ClassDocumentationEntry();
         classData.name = docEntry.name;

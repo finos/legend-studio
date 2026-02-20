@@ -267,17 +267,16 @@ export const ProductWiki = observer(
               {productViewerState.isVDP && (
                 <ProductVendorInfo productViewerState={productViewerState} />
               )}
-              {productViewerState.getModelAccessPointGroup() &&
-                productViewerState.modelsDocumentationState && (
-                  <ModelsDocumentation
-                    title={'Model Access Point Group Model Documentation'}
-                    modelsDocumentationState={
-                      productViewerState.modelsDocumentationState
-                    }
-                    applicationStore={productViewerState.applicationStore}
-                  />
-                )}
-              {productViewerState.getModelAccessPointGroup() && (
+              {productViewerState.modelsDocumentationState && (
+                <ModelsDocumentation
+                  title={'Model Access Point Group Model Documentation'}
+                  modelsDocumentationState={
+                    productViewerState.modelsDocumentationState
+                  }
+                  applicationStore={productViewerState.applicationStore}
+                />
+              )}
+              {productViewerState.modelAccessPointGroupDiagramViewerState && (
                 <DiagramViewer
                   title={'Model Access Point Group Diagrams'}
                   applicationStore={productViewerState.applicationStore}
