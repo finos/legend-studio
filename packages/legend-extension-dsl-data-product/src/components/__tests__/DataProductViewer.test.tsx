@@ -99,6 +99,13 @@ jest.mock('react-dnd', () => ({
   useDrag: () => [{}, jest.fn()],
 }));
 
+jest.mock('@finos/legend-application', () => ({
+  ...jest.requireActual<typeof import('@finos/legend-application')>(
+    '@finos/legend-application',
+  ),
+  useApplicationStore: jest.fn(),
+}));
+
 (global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
   jest.fn().mockImplementation(() => ({
     observe: jest.fn(),
@@ -320,6 +327,17 @@ const setupLakehouseDataProductTest = async (
       ? (mockGenerationFiles as unknown as PlainObject<StoredFileGeneration>[])
       : [],
   );
+
+  createSpy(
+    dataProductViewerState.depotServerClient,
+    'getVersionEntities',
+  ).mockResolvedValue([
+    {
+      path: dataProduct.path,
+      content: dataProduct,
+      classifierPath: 'meta::pure::metamodel::dataproduct::DataProduct',
+    },
+  ]);
 
   dataProductViewerState.init(entitlementsDataProductDetails);
 
@@ -1056,6 +1074,7 @@ describe('DataProductViewer', () => {
             artifactId: 'test-artifact',
             versionId: '1.0.0',
           },
+          getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
         );
 
       jest
