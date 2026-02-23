@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.55
+
+### Patch Changes
+
+- [#4900](https://github.com/finos/legend-studio/pull/4900) [`82a6050`](https://github.com/finos/legend-studio/commit/82a60502a471a17b94177cefd2dc380d213c7db9) ([@kelly-thai](https://github.com/kelly-thai)) - Add tests for UI display after fetching from registry server client
+
 ## 0.0.54
 
 ## 0.0.53
