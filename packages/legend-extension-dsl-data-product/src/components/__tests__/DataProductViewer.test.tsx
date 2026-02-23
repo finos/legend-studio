@@ -2136,4 +2136,213 @@ describe('DataProductViewer', () => {
       await screen.findByText('(support information not specified)');
     });
   });
+
+  describe('Registry metadata (ADS/PDE tags)', () => {
+    test('Displays ADS tag when access point has ads=true in registry metadata', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      if (dataProductViewerState.registryServerClient) {
+        createSpy(
+          dataProductViewerState.registryServerClient,
+          'getRegistrationMetadata',
+        ).mockResolvedValue({
+          id: 'test-registry-id',
+          ads: true,
+          pde: false,
+        });
+      }
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      const adsChip = await screen.findByTitle('Authorized Data Source');
+      expect(adsChip.textContent).toBe('ADS');
+    });
+
+    test('Displays PDE tag when access point has pde=true in registry metadata', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      if (dataProductViewerState.registryServerClient) {
+        createSpy(
+          dataProductViewerState.registryServerClient,
+          'getRegistrationMetadata',
+        ).mockResolvedValue({
+          id: 'test-registry-id',
+          ads: false,
+          pde: true,
+        });
+      }
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      const pdeChip = await screen.findByTitle('Point of Data Entry');
+      expect(pdeChip.textContent).toBe('PDE');
+    });
+
+    test('Displays both ADS and PDE tags when access point has both in registry metadata', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      if (dataProductViewerState.registryServerClient) {
+        createSpy(
+          dataProductViewerState.registryServerClient,
+          'getRegistrationMetadata',
+        ).mockResolvedValue({
+          id: 'test-registry-id',
+          ads: true,
+          pde: true,
+        });
+      }
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      const adsChip = await screen.findByTitle('Authorized Data Source');
+      expect(adsChip.textContent).toBe('ADS');
+      const pdeChip = screen.getByTitle('Point of Data Entry');
+      expect(pdeChip.textContent).toBe('PDE');
+    });
+
+    test('Does not display tags when access point has ads=false and pde=false in registry metadata', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Customer Demographics');
+      expect(screen.queryByTitle('Authorized Data Source')).toBeNull();
+      expect(screen.queryByTitle('Point of Data Entry')).toBeNull();
+    });
+
+    test('Does not display tags when registry metadata fetch fails', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      if (dataProductViewerState.registryServerClient) {
+        createSpy(
+          dataProductViewerState.registryServerClient,
+          'getRegistrationMetadata',
+        ).mockRejectedValue(new Error('Registry fetch failed'));
+      }
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      expect(screen.queryByTitle('Authorized Data Source')).toBeNull();
+      expect(screen.queryByTitle('Point of Data Entry')).toBeNull();
+    });
+
+    test('Handles registry server client being undefined gracefully', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      (
+        dataProductViewerState as { registryServerClient?: unknown }
+      ).registryServerClient = undefined;
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      expect(screen.queryByTitle('Authorized Data Source')).toBeNull();
+      expect(screen.queryByTitle('Point of Data Entry')).toBeNull();
+    });
+  });
+
+  describe('Lineage with registry metadata', () => {
+    test('Shows lineage tab message when registry metadata id is missing', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        {
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '1.0.0',
+        },
+      );
+
+      if (dataProductViewerState.registryServerClient) {
+        createSpy(
+          dataProductViewerState.registryServerClient,
+          'getRegistrationMetadata',
+        ).mockResolvedValue({
+          id: undefined,
+          ads: false,
+          pde: false,
+        });
+      }
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      const lineageTab = await screen.findByRole('tab', { name: 'Lineage' });
+      fireEvent.click(lineageTab);
+      await screen.findByText(
+        'Lineage has not been registered for this access point',
+      );
+    });
+
+    test('Shows lineage tab message when registry metadata is not fetched', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        {
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '1.0.0',
+        },
+      );
+
+      if (dataProductViewerState.registryServerClient) {
+        createSpy(
+          dataProductViewerState.registryServerClient,
+          'getRegistrationMetadata',
+        ).mockRejectedValue(new Error('Failed to fetch'));
+      }
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      const lineageTab = await screen.findByRole('tab', { name: 'Lineage' });
+      fireEvent.click(lineageTab);
+      await screen.findByText(
+        'Lineage has not been registered for this access point',
+      );
+    });
+  });
 });

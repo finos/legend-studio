@@ -51,6 +51,7 @@ import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import { createSpy } from '@finos/legend-shared/test';
 import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
+import { RegistryServerClient } from '@finos/legend-server-marketplace';
 
 export class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -135,6 +136,9 @@ export const TEST__getDataProductViewerState = async (
   const depotServerClient = new DepotServerClient({
     serverUrl: 'http://testDepotServerClientUrl',
   });
+  const registryServerClient = new RegistryServerClient({
+    baseUrl: 'http://testRegistryServerClientUrl',
+  });
   const graphManagerState = TEST__getTestGraphManagerState(
     guaranteeType(
       MOCK__applicationStore.pluginManager,
@@ -191,7 +195,9 @@ export const TEST__getDataProductViewerState = async (
     projectGAVCoordinates,
     {
       viewDataProductSource: jest.fn(),
+      openLineage: jest.fn(),
     },
+    registryServerClient,
   );
 };
 
