@@ -1062,6 +1062,7 @@ export {
   type V1_TextCompilationResult,
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationResult.js';
 export { V1_CompilationWarning } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationWarning.js';
+export { V1_Defect } from './graph-manager/protocol/pure/v1/engine/compilation/V1_Defect.js';
 export { V1_CompilationError } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationError.js';
 export {
   type V1_LambdaReturnTypeResult,

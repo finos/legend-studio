@@ -112,7 +112,11 @@ import type {
   V1_CompilationResult,
   V1_TextCompilationResult,
 } from './compilation/V1_CompilationResult.js';
-import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
+import {
+  V1_CompilationWarning,
+  V1_PURE_WARNING_DEFECT_TYPE_ID,
+} from './compilation/V1_CompilationWarning.js';
+import { V1_Defect } from './compilation/V1_Defect.js';
 import { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
 import type { GraphManagerOperationReport } from '../../../../GraphManagerStatistics.js';
 import {
@@ -609,13 +613,17 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       const compilationResult = await this.engineServerClient.compile(
         this.serializePureModelContext(model),
       );
+      const defects = (
+        compilationResult.defects as PlainObject<V1_Defect>[] | undefined
+      )?.map((defect) =>
+        (defect as { defectTypeId?: string }).defectTypeId ===
+        V1_PURE_WARNING_DEFECT_TYPE_ID
+          ? V1_CompilationWarning.serialization.fromJson(defect)
+          : V1_Defect.serialization.fromJson(defect),
+      );
       return {
-        warnings: (
-          compilationResult.warnings as
-            | PlainObject<V1_CompilationWarning>[]
-            | undefined
-        )?.map((warning) =>
-          V1_CompilationWarning.serialization.fromJson(warning),
+        warnings: defects?.filter(
+          (d): d is V1_CompilationWarning => d instanceof V1_CompilationWarning,
         ),
       };
     } catch (error) {
@@ -663,14 +671,18 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       ] = stopWatch.elapsed;
 
       const model = V1_deserializePureModelContextData(mainGraph);
+      const defects = (
+        compilationResult.defects as PlainObject<V1_Defect>[] | undefined
+      )?.map((defect) =>
+        (defect as { defectTypeId?: string }).defectTypeId ===
+        V1_PURE_WARNING_DEFECT_TYPE_ID
+          ? V1_CompilationWarning.serialization.fromJson(defect)
+          : V1_Defect.serialization.fromJson(defect),
+      );
       return {
         model,
-        warnings: (
-          compilationResult.warnings as
-            | PlainObject<V1_CompilationWarning>[]
-            | undefined
-        )?.map((warning) =>
-          V1_CompilationWarning.serialization.fromJson(warning),
+        warnings: defects?.filter(
+          (d): d is V1_CompilationWarning => d instanceof V1_CompilationWarning,
         ),
         sourceInformationIndex:
           this.extractElementSourceInformationIndexFromPureModelContextDataJSON(

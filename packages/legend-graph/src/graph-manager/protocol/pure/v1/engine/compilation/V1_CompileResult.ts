@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { V1_CompilationWarning } from './V1_CompilationWarning.js';
+import type { V1_Defect } from './V1_Defect.js';
 
 /**
  * NOTE: technically, this endpoint should be returning 204 (No Content), and 400 (Bad Request) when there are
@@ -26,5 +26,5 @@ import type { V1_CompilationWarning } from './V1_CompilationWarning.js';
  */
 export type V1_CompileResult = {
   message: string;
-  warnings?: V1_CompilationWarning[] | undefined;
+  defects?: V1_Defect[] | undefined;
 };
