@@ -23,6 +23,7 @@
   --color-legacylight-dark-grey-400: #4e5364;
   --color-legacylight-light-blue-50: #def3ff;
   --color-legacylight-light-blue-100: #7399c6;
+  --color-legacylight-light-blue-150: #638dc1;
   --color-legacylight-light-blue-200: #6a8db6;
   --color-legacylight-light-blue-250: #687b93;
   --color-legacylight-light-blue-270: #597089;
@@ -415,16 +416,6 @@
 
     &__name {
       color: var(--color-hclight-black);
-    }
-
-    &__logo {
-      color: var(--color-hclight-black) !important;
-
-      svg {
-        color: var(--color-hclight-black) !important;
-        fill: currentcolor;
-        stroke: currentcolor;
-      }
     }
 
     &__menu__icon {
@@ -1513,6 +1504,30 @@
 
     &__data-product-cards {
       background: var(--color-hclight-grey-10);
+    }
+
+    &__banner {
+      color: var(--color-hclight-black);
+      border-bottom: 1px solid rgb(255 255 255 / 15%);
+
+      &__link {
+        color: var(--color-hclight-blue-80);
+        text-decoration-color: var(--color-hclight-blue-80);
+
+        &:hover {
+          color: var(--color-hclight-blue-90);
+          text-decoration-color: var(--color-hclight-blue-90);
+        }
+      }
+
+      &__close {
+        color: var(--color-hclight-black);
+
+        &:hover {
+          color: var(--color-hclight-black);
+          background: rgb(0 0 0 / 10%);
+        }
+      }
     }
   }
 

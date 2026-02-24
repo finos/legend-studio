@@ -350,3 +350,50 @@ describe('Session Data Structure', () => {
     );
   });
 });
+
+describe('Home Page Banner Telemetry', () => {
+  let mockTelemetryService: ReturnType<typeof createMockTelemetryService>;
+
+  beforeEach(() => {
+    mockStorage.clear();
+    jest.clearAllMocks();
+    mockStorage.getItem.mockClear();
+    mockStorage.setItem.mockClear();
+    mockStorage.removeItem.mockClear();
+    mockTelemetryService = createMockTelemetryService();
+  });
+
+  test('logs home page banner dismiss event with bannerId', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_DismissHomePageBanner(
+      mockTelemetryService,
+      'test-banner-id',
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as unknown[])[0]).toBe(
+      'marketplace.dismiss.home-page.banner',
+    );
+    expect((calls[0] as unknown[])[1]).toMatchObject({
+      bannerId: 'test-banner-id',
+      eventId: 1,
+    });
+  });
+
+  test('increments event ID across banner dismiss interactions', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_DismissHomePageBanner(
+      mockTelemetryService,
+      'banner-1',
+    );
+
+    LegendMarketplaceTelemetryHelper.logEvent_DismissHomePageBanner(
+      mockTelemetryService,
+      'banner-2',
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(2);
+    expect((calls[0] as unknown[])[1]).toMatchObject({ eventId: 1 });
+    expect((calls[1] as unknown[])[1]).toMatchObject({ eventId: 2 });
+  });
+});

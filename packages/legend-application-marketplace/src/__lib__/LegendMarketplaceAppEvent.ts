@@ -35,4 +35,5 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   TOGGLE_THEME_MODE = 'marketplace.toggle.theme-mode',
   CLICK_TOOLBAR_MENU = 'marketplace.click.toolbar.menu',
   SEARCH_AUTOSUGGEST_SELECTION = 'marketplace.search.autosuggest.selection',
+  DISMISS_HOME_PAGE_BANNER = 'marketplace.dismiss.home-page.banner',
 }

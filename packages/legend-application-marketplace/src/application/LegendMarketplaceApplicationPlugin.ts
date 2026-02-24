@@ -33,6 +33,13 @@ export interface AdditionalMarketplacePageConfig {
   protected: boolean;
 }
 
+export interface HomePageBannerConfig {
+  /** Unique identifier for this banner, used for dismiss tracking */
+  id: string;
+  /** Inner content of the banner rendered by the plugin */
+  content: React.ReactNode;
+}
+
 export interface AdditionalMarketplaceHelpMenuItemConfig {
   label: string;
   onClick?: () => void;
@@ -111,4 +118,12 @@ export abstract class LegendMarketplaceApplicationPlugin
    * ownership data for a given data product DID
    */
   handleDataProductOwnersResponse?(response: PlainObject): string[];
+
+  /**
+   * Returns banner configurations to display at the top of the marketplace home page.
+   * Each banner is rendered in a dismissible container managed by the host.
+   */
+  getExtraHomePageBannerConfigs?(
+    marketplaceBaseStore: LegendMarketplaceBaseStore,
+  ): HomePageBannerConfig[];
 }

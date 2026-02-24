@@ -2041,6 +2041,29 @@
         color: var(--color-dark-theme-text-primary);
       }
     }
+
+    &__banner {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      &__link {
+        color: var(--color-dark-theme-blue-primary);
+
+        &:hover {
+          color: var(--color-dark-theme-blue-accent);
+        }
+      }
+
+      &__close {
+        color: var(--color-dark-theme-text-primary);
+
+        &:hover {
+          color: var(--color-dark-theme-text-primary);
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+    }
   }
 
   .legend-marketplace-subscriptions-content {

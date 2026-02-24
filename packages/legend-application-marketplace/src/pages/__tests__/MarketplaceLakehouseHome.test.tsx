@@ -21,6 +21,7 @@ import {
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { TestLegendMarketplaceApplicationPlugin } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
+import type { HomePageBannerConfig } from '../../application/LegendMarketplaceApplicationPlugin.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -144,4 +145,40 @@ test('navigates to search results page with producer search if search box contai
       '/dataProduct/results?query=data&useProducerSearch=true',
     ),
   );
+});
+
+test('does not render banners when no plugins provide banner configs', async () => {
+  await setupTestComponent();
+  expect(screen.queryByTitle('Dismiss banner')).toBeNull();
+});
+
+class TestBannerPlugin extends TestLegendMarketplaceApplicationPlugin {
+  override getExtraHomePageBannerConfigs(): HomePageBannerConfig[] {
+    return [
+      {
+        id: 'test-banner',
+        content: <span>Test banner content</span>,
+      },
+    ];
+  }
+}
+
+test('renders banner from plugin and dismisses on close click', async () => {
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
+    extraPlugins: [new TestBannerPlugin()],
+  });
+  await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
+
+  // Banner content should be visible
+  expect(screen.getByText('Test banner content')).toBeDefined();
+
+  // Click dismiss button
+  const dismissButton = screen.getByTitle('Dismiss banner');
+  fireEvent.click(dismissButton);
+
+  // Banner should no longer be visible
+  await waitFor(() => {
+    expect(screen.queryByText('Test banner content')).toBeNull();
+    expect(screen.queryByTitle('Dismiss banner')).toBeNull();
+  });
 });

@@ -362,4 +362,19 @@ export class LegendMarketplaceTelemetryHelper {
       },
     );
   }
+
+  static logEvent_DismissHomePageBanner(
+    telemetryService: TelemetryService,
+    bannerId: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.DISMISS_HOME_PAGE_BANNER,
+      {
+        bannerId: bannerId,
+        ...session,
+      },
+    );
+  }
 }

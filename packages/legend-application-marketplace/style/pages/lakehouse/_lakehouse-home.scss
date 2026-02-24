@@ -141,4 +141,50 @@
       position: relative;
     }
   }
+
+  &__banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 0;
+    width: 100%;
+    font-size: 2rem;
+    position: relative;
+
+    &__content {
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__link {
+      text-decoration: underline;
+      font-weight: 600;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+
+    &__close {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.3rem;
+      border-radius: 50%;
+
+      svg {
+        width: 2rem;
+        height: 2rem;
+      }
+    }
+  }
 }

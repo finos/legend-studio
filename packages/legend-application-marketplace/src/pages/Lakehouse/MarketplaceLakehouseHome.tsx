@@ -15,12 +15,13 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Box, Container } from '@mui/material';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
 import {
+  CloseIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
@@ -42,6 +43,7 @@ import type { ProductCardState } from '../../stores/lakehouse/dataProducts/Produ
 import { generatePathForDataProductSearchResult } from '../../utils/SearchUtils.js';
 import { logClickingDataProductCard } from '../../utils/LogUtils.js';
 import { LakehouseProductCard } from '../../components/LakehouseProductCard/LakehouseProductCard.js';
+import type { HomePageBannerConfig } from '../../application/LegendMarketplaceApplicationPlugin.js';
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -55,6 +57,34 @@ export const MarketplaceLakehouseHome = observer(() => {
     ProductCardState[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [dismissedBannerIds, setDismissedBannerIds] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const bannerConfigs: HomePageBannerConfig[] = useMemo(
+    () =>
+      applicationStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            plugin.getExtraHomePageBannerConfigs?.(
+              legendMarketplaceBaseStore,
+            ) ?? [],
+        ),
+    [applicationStore.pluginManager, legendMarketplaceBaseStore],
+  );
+
+  const visibleBanners = bannerConfigs.filter(
+    (banner) => !dismissedBannerIds.has(banner.id),
+  );
+
+  const dismissBanner = (bannerId: string): void => {
+    setDismissedBannerIds((prev) => new Set([...prev, bannerId]));
+    LegendMarketplaceTelemetryHelper.logEvent_DismissHomePageBanner(
+      applicationStore.telemetryService,
+      bannerId,
+    );
+  };
 
   useEffect(() => {
     LegendMarketplaceTelemetryHelper.clearSearchSessionId();
@@ -150,6 +180,20 @@ export const MarketplaceLakehouseHome = observer(() => {
 
   return (
     <LegendMarketplacePage className="marketplace-lakehouse-home">
+      {visibleBanners.map((banner) => (
+        <div key={banner.id} className="marketplace-lakehouse-home__banner">
+          <div className="marketplace-lakehouse-home__banner__content">
+            {banner.content}
+          </div>
+          <button
+            className="marketplace-lakehouse-home__banner__close"
+            onClick={() => dismissBanner(banner.id)}
+            title="Dismiss banner"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+      ))}
       <Container className="marketplace-lakehouse-home__search-container">
         <Box className="marketplace-lakehouse-home__search-container__logo">
           <img
