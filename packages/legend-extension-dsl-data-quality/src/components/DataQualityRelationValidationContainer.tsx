@@ -22,7 +22,6 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   getCollapsiblePanelGroupProps,
-  type ResizablePanelHandlerProps,
 } from '@finos/legend-art';
 import { DataQualityRelationValidationsEditor } from './DataQualityRelationValidationsEditor.js';
 import type { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
@@ -36,22 +35,9 @@ export const DataQualityRelationValidationContainer = observer(
     const { suggestionPanelState } = state.suggestedValidationsState;
     const suggestionsState = state.suggestedValidationsState;
 
-    // Create resize handler for snapping effect
-    const resizeSuggestionPanel = (
-      handleProps: ResizablePanelHandlerProps,
-    ): void =>
-      suggestionPanelState.setSize(
-        (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
-          .width,
-      );
-
-    // Get collapsible panel props
     const collapsibleSuggestionPanelGroupProps = getCollapsiblePanelGroupProps(
       suggestionPanelState.size === 0,
-      {
-        onStopResize: resizeSuggestionPanel,
-        size: suggestionPanelState.size,
-      },
+      { size: suggestionPanelState.size },
     );
 
     const isLoading = suggestionsState.fetchState.isInProgress;

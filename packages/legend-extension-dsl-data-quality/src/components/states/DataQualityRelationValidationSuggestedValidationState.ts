@@ -57,6 +57,7 @@ export class SuggestedValidationsState {
       onFilterChange: action,
       fetchValidationSuggestions: flow,
       existingValidationsByName: computed,
+      selectedSuggestions: computed,
       filteredSuggestions: computed,
     });
 
@@ -85,7 +86,6 @@ export class SuggestedValidationsState {
           return type === SuggestionType.NEW;
         case SuggestedValidationsFilter.MODIFICATIONS:
           return type === SuggestionType.EDIT;
-        case SuggestedValidationsFilter.ALL:
         default:
           return type === SuggestionType.NEW || type === SuggestionType.EDIT;
       }
@@ -102,8 +102,7 @@ export class SuggestedValidationsState {
     const name = suggestion.relationValidation.name;
     const existingHash = this.existingValidationsByName.get(name);
 
-    // name does not exist already, treated as new rule
-    // probably needs to change if exact assertion exist, because then the suggestion is unecessary?
+    // TODO: name does not exist already treated as new rule probably needs to change if exact assertion exist, because then the suggestion is unecessary?
     if (existingHash === undefined) {
       return SuggestionType.NEW;
     }
@@ -144,13 +143,12 @@ export class SuggestedValidationsState {
         ),
       };
 
-      const promise = extension.fetchValidationSuggestions(
+      const result = (yield extension.fetchValidationSuggestions(
         model,
         packagePath,
         options,
-      );
+      )) as DataQualityRelationValidation[];
 
-      const result = (yield promise) as DataQualityRelationValidation[];
       const suggestions: DataQualityRelationValidation[] = result.map(
         (suggestion) => {
           const lambda =

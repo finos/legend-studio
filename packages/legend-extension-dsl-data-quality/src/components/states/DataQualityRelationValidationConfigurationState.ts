@@ -283,7 +283,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   executionResult?: ExecutionResult | undefined;
   executionPlanState: ExecutionPlanState;
   validationStates: DataQualityRelationValidationState[] = [];
-  suggestedValidationsState: SuggestedValidationsState;
+  readonly suggestedValidationsState: SuggestedValidationsState;
   parametersState: RelationDefinitionParameterState;
   isConvertingValidationLambdaObjects = false;
   resultState: DataQualityRelationResultState;

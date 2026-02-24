@@ -546,7 +546,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     const engineServerClient = guaranteeType(
       this.graphManager.engine,
       V1_RemoteEngine,
-      'executeValidation is only supported by remote engine',
+      'fetchValidationSuggestions is only supported by remote engine',
     ).getEngineServerClient();
 
     return engineServerClient.postWithTracing(
