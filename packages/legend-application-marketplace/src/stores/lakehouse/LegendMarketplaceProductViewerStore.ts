@@ -444,8 +444,9 @@ export class LegendMarketplaceProductViewerStore {
   /**
    * This is a fallback to support the old data product URL with GAV and path.
    * We check to see if the data product has been deployed, and if so, we redirect
-   * to the new URL format with data product ID and deployment ID. If not, we show
-   * an error saying the product is not deployed.
+   * to the new URL format with data product ID and deployment ID. If no deploymentId
+   * exists (meaning nativeModelAccess only, no access point groups), we render the
+   * nativeModelAccess UI directly.
    *
    * @param gav The GAV coordinates of the product.
    * @param path The path to the product.
@@ -460,19 +461,17 @@ export class LegendMarketplaceProductViewerStore {
         const storeProject = new StoreProjectData();
         storeProject.groupId = projectData.groupId;
         storeProject.artifactId = projectData.artifactId;
-        const v1DataProduct = deserialize(
-          V1_dataProductModelSchema(
-            this.marketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
-          ),
-          (
-            (yield this.marketplaceBaseStore.depotServerClient.getVersionEntity(
-              projectData.groupId,
-              projectData.artifactId,
-              resolveVersion(projectData.versionId),
-              path,
-            )) as Entity
-          ).content,
+        const entityResponse =
+          (yield this.marketplaceBaseStore.depotServerClient.getVersionEntity(
+            projectData.groupId,
+            projectData.artifactId,
+            resolveVersion(projectData.versionId),
+            path,
+          )) as Entity;
+        const schema = V1_dataProductModelSchema(
+          this.marketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
         );
+        const v1DataProduct = deserialize(schema, entityResponse.content);
         const files =
           (yield this.marketplaceBaseStore.depotServerClient.getGenerationFilesByType(
             storeProject,
@@ -483,28 +482,124 @@ export class LegendMarketplaceProductViewerStore {
           ?.file.content;
         if (fileGen) {
           const content: PlainObject = JSON.parse(fileGen) as PlainObject;
-          const gen = V1_DataProductArtifact.serialization.fromJson(content);
-          const dataProductId = v1DataProduct.name.toUpperCase();
-          const deploymentId = Number(gen.dataProduct.deploymentId);
-          this.marketplaceBaseStore.applicationStore.navigationService.navigator.goToLocation(
-            generateLakehouseDataProductPath(dataProductId, deploymentId),
-          );
-          this.loadingProductState.complete();
-          LegendMarketplaceTelemetryHelper.logEvent_LoadSDLCDataProduct(
-            this.marketplaceBaseStore.applicationStore.telemetryService,
-            {
-              path: path,
-              origin: {
-                type: DATAPRODUCT_TYPE.SDLC,
-                groupId: projectData.groupId,
-                artifactId: projectData.artifactId,
-                versionId: projectData.versionId,
+          const dataProductInfo = content.dataProduct as
+            | { deploymentId?: string }
+            | undefined;
+
+          if (dataProductInfo?.deploymentId) {
+            const dataProductId = v1DataProduct.name.toUpperCase();
+            const deploymentId = Number(dataProductInfo.deploymentId);
+            this.marketplaceBaseStore.applicationStore.navigationService.navigator.goToLocation(
+              generateLakehouseDataProductPath(dataProductId, deploymentId),
+            );
+            this.loadingProductState.complete();
+            LegendMarketplaceTelemetryHelper.logEvent_LoadSDLCDataProduct(
+              this.marketplaceBaseStore.applicationStore.telemetryService,
+              {
+                path: path,
+                origin: {
+                  type: DATAPRODUCT_TYPE.SDLC,
+                  groupId: projectData.groupId,
+                  artifactId: projectData.artifactId,
+                  versionId: projectData.versionId,
+                },
+                dataProductId: dataProductId,
+                deploymentId: deploymentId,
               },
-              dataProductId: dataProductId,
-              deploymentId: deploymentId,
-            },
-            undefined,
-          );
+              undefined,
+            );
+          } else {
+            const graphManagerState = new GraphManagerState(
+              this.marketplaceBaseStore.applicationStore.pluginManager,
+              this.marketplaceBaseStore.applicationStore.logService,
+            );
+            const graphManager = guaranteeType(
+              graphManagerState.graphManager,
+              V1_PureGraphManager,
+              'GraphManager must be a V1_PureGraphManager',
+            );
+
+            yield graphManager.initialize(
+              {
+                env: this.marketplaceBaseStore.applicationStore.config.env,
+                tabSize: DEFAULT_TAB_SIZE,
+                clientConfig: {
+                  baseUrl:
+                    this.marketplaceBaseStore.applicationStore.config
+                      .engineServerUrl,
+                  queryBaseUrl:
+                    this.marketplaceBaseStore.applicationStore.config
+                      .engineQueryServerUrl,
+                  enableCompression: true,
+                },
+              },
+              { engine: this.marketplaceBaseStore.remoteEngine },
+            );
+            yield graphManagerState.initializeSystem();
+
+            graphManagerState.graph.setOrigin(
+              new LegendSDLC(
+                projectData.groupId,
+                projectData.artifactId,
+                resolveVersion(projectData.versionId),
+              ),
+            );
+
+            const dataProductArtifact =
+              V1_DataProductArtifact.serialization.fromJson(content);
+
+            const projectGAV = {
+              groupId: projectData.groupId,
+              artifactId: projectData.artifactId,
+              versionId: projectData.versionId,
+            };
+
+            const dataProductViewerState = new DataProductViewerState(
+              v1DataProduct,
+              this.marketplaceBaseStore.applicationStore,
+              this.marketplaceBaseStore.engineServerClient,
+              this.marketplaceBaseStore.depotServerClient,
+              graphManagerState,
+              this.marketplaceBaseStore.applicationStore.config.options.dataProductConfig,
+              this.marketplaceBaseStore.userSearchService,
+              projectGAV,
+              {
+                viewDataProductSource: () => {
+                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                    EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                      this.marketplaceBaseStore.applicationStore.config
+                        .studioApplicationUrl,
+                      projectData.groupId,
+                      projectData.artifactId,
+                      projectData.versionId,
+                      v1DataProduct.path,
+                    ),
+                  );
+                },
+              },
+              this.marketplaceBaseStore.registryServerClient,
+            );
+
+            yield flowResult(
+              dataProductViewerState.init(undefined, dataProductArtifact),
+            );
+
+            this.setDataProductViewer(dataProductViewerState);
+            this.loadingProductState.complete();
+            LegendMarketplaceTelemetryHelper.logEvent_LoadSDLCDataProduct(
+              this.marketplaceBaseStore.applicationStore.telemetryService,
+              {
+                path: path,
+                origin: {
+                  type: DATAPRODUCT_TYPE.SDLC,
+                  groupId: projectData.groupId,
+                  artifactId: projectData.artifactId,
+                  versionId: projectData.versionId,
+                },
+              },
+              undefined,
+            );
+          }
         } else {
           throw new Error('File generation not found');
         }

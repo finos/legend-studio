@@ -37,13 +37,18 @@ import {
   V1_PureGraphManager,
   V1_PureModelContextPointer,
   V1_SdlcDeploymentDataProductOrigin,
-  type V1_SampleQueryInfo,
+  type V1_SampleQuery,
   V1_Mapping,
   V1_PackageableRuntime,
+  V1_EngineRuntime,
   resolvePackagePathAndElementName,
   type V1_DiagramInfo,
   type V1_PackageableElement,
   V1_ModelAccessPointGroupInfo,
+  V1_ServiceExecutableInfo,
+  V1_MultiExecutionServiceExecutableInfo,
+  GraphDataWithOrigin,
+  LegendSDLC,
 } from '@finos/legend-graph';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
@@ -82,6 +87,7 @@ import {
 import type { ViewerModelsDocumentationState } from '@finos/legend-lego/model-documentation';
 import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramViewerState.js';
 import type { RegistryServerClient } from '@finos/legend-server-marketplace';
+import { DataAccessState } from '@finos/legend-query-builder';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
@@ -107,6 +113,8 @@ export class DataProductViewerState extends BaseViewerState<
     | DataProductViewerDiagramViewerState
     | undefined;
   dataProductArtifact: V1_DataProductArtifact | undefined;
+  sampleQueryDataAccessStateIndex = new Map<V1_SampleQuery, DataAccessState>();
+  nativeModelAccessDataAccessState: DataAccessState | undefined;
 
   // actions
   readonly viewDataProductSource?: (() => void) | undefined;
@@ -150,8 +158,10 @@ export class DataProductViewerState extends BaseViewerState<
       dataProductArtifact: observable,
       modelsDocumentationState: observable,
       modelAccessPointGroupDiagramViewerState: observable,
+      sampleQueryDataAccessStateIndex: observable,
       nativeModelAccessDocumentationState: observable,
       nativeModelAccessDiagramViewerState: observable,
+      nativeModelAccessDataAccessState: observable,
       init: flow,
       isAllApgsCollapsed: computed,
       toggleAllApgGroupCollapse: action,
@@ -295,11 +305,150 @@ export class DataProductViewerState extends BaseViewerState<
     );
   }
 
-  getSampleQueries(): V1_SampleQueryInfo[] {
+  getSampleQueries(): V1_SampleQuery[] {
     if (!this.dataProductArtifact?.nativeModelAccess?.sampleQueries?.length) {
       return [];
     }
     return this.dataProductArtifact.nativeModelAccess.sampleQueries;
+  }
+
+  buildSampleQueryDataAccessStates(
+    nativeModelAccess: V1_NativeModelAccessInfo,
+  ): void {
+    const sampleQueries = nativeModelAccess.sampleQueries ?? [];
+
+    if (!this.projectGAV) {
+      return;
+    }
+
+    const graphData = new GraphDataWithOrigin(
+      new LegendSDLC(
+        this.projectGAV.groupId,
+        this.projectGAV.artifactId,
+        resolveVersion(this.projectGAV.versionId),
+      ),
+    );
+
+    // Get the default execution context for fallback mapping/runtime
+    const defaultExecutionContext =
+      nativeModelAccess.nativeModelExecutionContexts.find(
+        (ctx) => ctx.key === nativeModelAccess.defaultExecutionContext,
+      );
+
+    sampleQueries.forEach((sampleQuery) => {
+      let mapping: string | undefined;
+      let runtime: string | undefined;
+
+      // Check if info has mapping/runtime (ServiceExecutableInfo or MultiExecutionServiceExecutableInfo)
+      if (sampleQuery.info instanceof V1_ServiceExecutableInfo) {
+        mapping = sampleQuery.info.mapping;
+        runtime = sampleQuery.info.runtime;
+      } else if (
+        sampleQuery.info instanceof V1_MultiExecutionServiceExecutableInfo
+      ) {
+        const firstKeyedInfo = sampleQuery.info.keyedExecutableInfos.at(0);
+        mapping = firstKeyedInfo?.mapping;
+        runtime = firstKeyedInfo?.runtime;
+      }
+
+      // Fallback to execution context based on executionContextKey or default
+      if (!mapping || !runtime) {
+        const executionContextKey =
+          sampleQuery.info.executionContextKey ??
+          nativeModelAccess.defaultExecutionContext;
+        const executionContext =
+          nativeModelAccess.nativeModelExecutionContexts.find(
+            (ctx) => ctx.key === executionContextKey,
+          ) ?? defaultExecutionContext;
+
+        if (executionContext) {
+          if (!mapping) {
+            mapping = executionContext.mapping;
+          }
+          if (!runtime && executionContext.runtimeGeneration) {
+            runtime = executionContext.runtimeGeneration.path;
+          }
+        }
+      }
+
+      // Only create DataAccessState if we have both mapping and runtime
+      if (mapping && runtime) {
+        try {
+          const dataAccessState = new DataAccessState(
+            this.applicationStore,
+            this.graphManagerState,
+            {
+              mapping,
+              runtime,
+              graphData,
+              getQuery: async () => undefined,
+            },
+          );
+
+          this.sampleQueryDataAccessStateIndex.set(
+            sampleQuery,
+            dataAccessState,
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          this.applicationStore.logService.warn(
+            LogEvent.create('data-product.sampleQueryDataAccess.failure'),
+            `Unable to create DataAccessState for sample query '${sampleQuery.title}': ${error.message}`,
+          );
+        }
+      }
+    });
+  }
+
+  buildNativeModelAccessDataAccessState(
+    nativeModelAccess: V1_NativeModelAccessInfo,
+  ): void {
+    if (!this.projectGAV) {
+      return;
+    }
+
+    const defaultExecutionContext =
+      nativeModelAccess.nativeModelExecutionContexts.find(
+        (ctx) => ctx.key === nativeModelAccess.defaultExecutionContext,
+      );
+
+    if (!defaultExecutionContext) {
+      return;
+    }
+
+    const mapping = defaultExecutionContext.mapping;
+    const runtime = defaultExecutionContext.runtimeGeneration?.path;
+
+    if (!mapping || !runtime) {
+      return;
+    }
+
+    const graphData = new GraphDataWithOrigin(
+      new LegendSDLC(
+        this.projectGAV.groupId,
+        this.projectGAV.artifactId,
+        resolveVersion(this.projectGAV.versionId),
+      ),
+    );
+
+    try {
+      this.nativeModelAccessDataAccessState = new DataAccessState(
+        this.applicationStore,
+        this.graphManagerState,
+        {
+          mapping,
+          runtime,
+          graphData,
+          getQuery: async () => undefined,
+        },
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create('data-product.nativeModelAccessDataAccess.failure'),
+        `Unable to create DataAccessState for native model access: ${error.message}`,
+      );
+    }
   }
 
   getAccessPointModel(
@@ -412,21 +561,22 @@ export class DataProductViewerState extends BaseViewerState<
           mappingProtocol.name = mappingName;
           elements.push(mappingProtocol);
 
-          if (defaultExecutionContext.runtime) {
-            const [runtimePackagePath, runtimeName] =
-              resolvePackagePathAndElementName(
-                defaultExecutionContext.runtime.path,
-              );
-            const runtimeProtocol = new V1_PackageableRuntime();
-            runtimeProtocol.package = runtimePackagePath;
-            runtimeProtocol.name = runtimeName;
-            elements.push(runtimeProtocol);
-          }
-
           const mappingGeneration =
             nativeModelAccessInfo.mappingGenerations.get(
               defaultExecutionContext.mapping,
             );
+
+          if (defaultExecutionContext.runtimeGeneration) {
+            const [runtimePackagePath, runtimeName] =
+              resolvePackagePathAndElementName(
+                defaultExecutionContext.runtimeGeneration.path,
+              );
+            const runtimeProtocol = new V1_PackageableRuntime();
+            runtimeProtocol.package = runtimePackagePath;
+            runtimeProtocol.name = runtimeName;
+            runtimeProtocol.runtimeValue = new V1_EngineRuntime();
+            elements.push(runtimeProtocol);
+          }
 
           if (mappingGeneration) {
             elements.push(...mappingGeneration.model.elements);
@@ -462,8 +612,11 @@ export class DataProductViewerState extends BaseViewerState<
 
   *init(
     entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
+    prefetchedArtifact?: V1_DataProductArtifact,
   ): GeneratorFn<void> {
-    const dataProductArtifactPromise = this.fetchDataProductArtifact();
+    const dataProductArtifactPromise = prefetchedArtifact
+      ? Promise.resolve(prefetchedArtifact)
+      : this.fetchDataProductArtifact();
     this.apgStates.map((apgState) =>
       apgState.init(dataProductArtifactPromise, entitlementsDataProductDetails),
     );
@@ -473,8 +626,9 @@ export class DataProductViewerState extends BaseViewerState<
     this.dataProductArtifact = dataProductArtifact;
 
     const isSdlc =
+      prefetchedArtifact !== undefined ||
       entitlementsDataProductDetails?.origin instanceof
-      V1_SdlcDeploymentDataProductOrigin;
+        V1_SdlcDeploymentDataProductOrigin;
 
     const modelAccessPointGroupInfo =
       dataProductArtifact?.accessPointGroups.find(
@@ -500,11 +654,32 @@ export class DataProductViewerState extends BaseViewerState<
       }
     }
 
-    if (dataProductArtifact?.nativeModelAccess) {
+    const nativeModelAccess = dataProductArtifact?.nativeModelAccess;
+    if (isSdlc && nativeModelAccess) {
+      try {
+        this.buildSampleQueryDataAccessStates(nativeModelAccess);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.warn(
+          LogEvent.create('data-product.sampleQueryDataAccess.failure'),
+          `Unable to build sample query data access states: ${error.message}`,
+        );
+      }
+
+      try {
+        this.buildNativeModelAccessDataAccessState(nativeModelAccess);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.warn(
+          LogEvent.create('data-product.nativeModelAccessDataAccess.failure'),
+          `Unable to build native model access data access state: ${error.message}`,
+        );
+      }
+
       try {
         this.nativeModelAccessDocumentationState =
           new DataProductDocumentationState(
-            dataProductArtifact.nativeModelAccess.elementDocs,
+            nativeModelAccess.elementDocs,
             this.graphManagerState,
           );
       } catch (error) {
@@ -556,7 +731,7 @@ export class DataProductViewerState extends BaseViewerState<
         );
         this.modelAccessPointGroupDiagramViewerState = undefined;
       }
-    } else if (!isSdlc) {
+    } else if (!isSdlc && this.getModelAccessPointGroup()) {
       // graph is already built
       try {
         this.modelsDocumentationState =

@@ -57,9 +57,16 @@ export enum V1_ResourceBuilderType {
   FUNCTION_ACCESS_POINT = 'functionAccessPoint',
 }
 
-export enum V1_SampleQueryType {
-  IN_LINE_SAMPLE_QUERY = 'inLineSampleQuery',
-  PACKAGEABLE_ELEMENT_SAMPLE_QUERY = 'packageableElementSampleQuery',
+export enum V1_ExecutableInfoType {
+  TEMPLATE = 'templateExecutableInfo',
+  FUNCTION_POINTER = 'functionPointerExecutableInfo',
+  SERVICE = 'service',
+  MULTI_EXECUTION_SERVICE = 'multiExecutionService',
+}
+
+export enum V1_ExecutableResultType {
+  TDS = 'tds',
+  RELATION = 'relation',
 }
 
 export enum V1_DatabaseDDLImplementationType {
@@ -280,14 +287,14 @@ export class V1_MappingGenerationInfo {
 export class V1_NativeModelExecutionContextInfo {
   key!: string;
   mapping!: string;
-  runtime?: V1_RuntimeGenerationInfo | undefined;
+  runtimeGeneration?: V1_RuntimeGenerationInfo | undefined;
   datasets: V1_DatasetSpecification[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_NativeModelExecutionContextInfo, {
       key: primitive(),
       mapping: primitive(),
-      runtime: optionalCustomUsingModelSchema(
+      runtimeGeneration: optionalCustomUsingModelSchema(
         V1_RuntimeGenerationInfo.serialization.schema,
       ),
       datasets: list(
@@ -297,62 +304,222 @@ export class V1_NativeModelExecutionContextInfo {
   );
 }
 
-export abstract class V1_SampleQueryInfo {
-  id!: string;
-  title!: string;
-  description?: string;
-  executionContextKey!: string;
+export abstract class V1_ExecutableInfo {
+  id?: string | undefined;
+  executionContextKey?: string | undefined;
+  query!: string;
 }
 
-export class V1_InLineSampleQueryInfo extends V1_SampleQueryInfo {
-  queryGrammar!: string;
-
+export class V1_TemplateExecutableInfo extends V1_ExecutableInfo {
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_InLineSampleQueryInfo, {
-      _type: usingConstantValueSchema(V1_SampleQueryType.IN_LINE_SAMPLE_QUERY),
-      id: primitive(),
-      title: primitive(),
-      description: optional(primitive()),
-      queryGrammar: primitive(),
-      executionContextKey: primitive(),
+    createModelSchema(V1_TemplateExecutableInfo, {
+      _type: usingConstantValueSchema(V1_ExecutableInfoType.TEMPLATE),
+      id: optional(primitive()),
+      executionContextKey: optional(primitive()),
+      query: primitive(),
     }),
   );
 }
 
-export class V1_PackageableElementSampleQueryInfo extends V1_SampleQueryInfo {
-  queryPath!: string;
+export class V1_FunctionPointerExecutableInfo extends V1_ExecutableInfo {
+  function!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_PackageableElementSampleQueryInfo, {
-      _type: usingConstantValueSchema(
-        V1_SampleQueryType.PACKAGEABLE_ELEMENT_SAMPLE_QUERY,
+    createModelSchema(V1_FunctionPointerExecutableInfo, {
+      _type: usingConstantValueSchema(V1_ExecutableInfoType.FUNCTION_POINTER),
+      id: optional(primitive()),
+      executionContextKey: optional(primitive()),
+      function: primitive(),
+      query: primitive(),
+    }),
+  );
+}
+
+export class V1_ServiceExecutableInfo extends V1_ExecutableInfo {
+  pattern!: string;
+  mapping?: string | undefined;
+  runtime?: string | undefined;
+  datasets: V1_DatasetSpecification[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_ServiceExecutableInfo, {
+      _type: usingConstantValueSchema(V1_ExecutableInfoType.SERVICE),
+      id: optional(primitive()),
+      executionContextKey: optional(primitive()),
+      datasets: list(
+        usingModelSchema(V1_DatasetSpecification.serialization.schema),
       ),
-      id: primitive(),
-      title: primitive(),
-      description: optional(primitive()),
-      queryPath: primitive(),
-      executionContextKey: primitive(),
+      mapping: optional(primitive()),
+      pattern: primitive(),
+      query: primitive(),
+      runtime: optional(primitive()),
     }),
   );
 }
 
-const V1_deserializeSampleQuery = (
-  json: PlainObject<V1_SampleQueryInfo>,
-): V1_SampleQueryInfo => {
+export class V1_MultiExecutionServiceKeyedExecutableInfo {
+  key!: string;
+  mapping?: string | undefined;
+  runtime?: string | undefined;
+  datasets: V1_DatasetSpecification[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_MultiExecutionServiceKeyedExecutableInfo, {
+      key: primitive(),
+      mapping: optional(primitive()),
+      runtime: optional(primitive()),
+      datasets: list(
+        usingModelSchema(V1_DatasetSpecification.serialization.schema),
+      ),
+    }),
+  );
+}
+
+export class V1_MultiExecutionServiceExecutableInfo extends V1_ExecutableInfo {
+  pattern!: string;
+  keyedExecutableInfos: V1_MultiExecutionServiceKeyedExecutableInfo[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_MultiExecutionServiceExecutableInfo, {
+      _type: usingConstantValueSchema(
+        V1_ExecutableInfoType.MULTI_EXECUTION_SERVICE,
+      ),
+      id: optional(primitive()),
+      executionContextKey: optional(primitive()),
+      keyedExecutableInfos: list(
+        usingModelSchema(
+          V1_MultiExecutionServiceKeyedExecutableInfo.serialization.schema,
+        ),
+      ),
+      pattern: primitive(),
+      query: primitive(),
+    }),
+  );
+}
+
+const V1_deserializeExecutableInfo = (
+  json: PlainObject<V1_ExecutableInfo>,
+): V1_ExecutableInfo => {
   switch (json._type) {
-    case V1_SampleQueryType.IN_LINE_SAMPLE_QUERY:
-      return deserialize(V1_InLineSampleQueryInfo.serialization.schema, json);
-    case V1_SampleQueryType.PACKAGEABLE_ELEMENT_SAMPLE_QUERY:
-      return deserialize(
-        V1_PackageableElementSampleQueryInfo.serialization.schema,
+    case V1_ExecutableInfoType.TEMPLATE:
+      return V1_TemplateExecutableInfo.serialization.fromJson(json);
+    case V1_ExecutableInfoType.FUNCTION_POINTER:
+      return V1_FunctionPointerExecutableInfo.serialization.fromJson(json);
+    case V1_ExecutableInfoType.SERVICE:
+      return V1_ServiceExecutableInfo.serialization.fromJson(json);
+    case V1_ExecutableInfoType.MULTI_EXECUTION_SERVICE:
+      return V1_MultiExecutionServiceExecutableInfo.serialization.fromJson(
         json,
       );
     default:
       throw new UnsupportedOperationError(
-        `Can't deserialize data product sample query of type '${json._type}'`,
+        `Can't deserialize executable info of type '${json._type}'`,
       );
   }
 };
+
+// ========================
+// Executable Result classes
+// ========================
+
+export class V1_ExecutableTDSResultColumn {
+  name!: string;
+  type?: string | undefined;
+  relationalType?: string | undefined;
+  doc?: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_ExecutableTDSResultColumn, {
+      name: primitive(),
+      type: optional(primitive()),
+      relationalType: optional(primitive()),
+      doc: optional(primitive()),
+    }),
+  );
+}
+
+export class V1_ExecutableTDSResultInfo {
+  tdsColumns: V1_ExecutableTDSResultColumn[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_ExecutableTDSResultInfo, {
+      _type: usingConstantValueSchema(V1_ExecutableResultType.TDS),
+      tdsColumns: list(
+        usingModelSchema(V1_ExecutableTDSResultColumn.serialization.schema),
+      ),
+    }),
+  );
+}
+
+export abstract class V1_ExecutableResult {}
+
+export class V1_ExecutableTDSResult extends V1_ExecutableResult {
+  tdsResult!: V1_ExecutableTDSResultInfo;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_ExecutableTDSResult, {
+      _type: usingConstantValueSchema(V1_ExecutableResultType.TDS),
+      tdsResult: usingModelSchema(
+        V1_ExecutableTDSResultInfo.serialization.schema,
+      ),
+    }),
+  );
+}
+
+export class V1_ExecutableRelationResult extends V1_ExecutableResult {
+  genericType!: V1_GenericType;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_ExecutableRelationResult, {
+      _type: usingConstantValueSchema(V1_ExecutableResultType.RELATION),
+      genericType: custom(
+        (val) => serialize(V1_genericTypeModelSchema, val),
+        (val) => V1_deserializeGenericType(val),
+      ),
+    }),
+  );
+}
+
+const V1_deserializeExecutableResult = (
+  json: PlainObject<V1_ExecutableResult>,
+): V1_ExecutableResult => {
+  switch (json._type) {
+    case V1_ExecutableResultType.TDS:
+      return V1_ExecutableTDSResult.serialization.fromJson(json);
+    case V1_ExecutableResultType.RELATION:
+      return V1_ExecutableRelationResult.serialization.fromJson(json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize executable result of type '${json._type}'`,
+      );
+  }
+};
+
+export class V1_SampleQuery {
+  title!: string;
+  description?: string | undefined;
+  executable?: string | undefined;
+  info!: V1_ExecutableInfo;
+  result!: V1_ExecutableResult;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_SampleQuery, {
+      title: primitive(),
+      description: optional(primitive()),
+      executable: optional(primitive()),
+      info: custom(
+        () => SKIP,
+        (val: PlainObject<V1_ExecutableInfo>) =>
+          V1_deserializeExecutableInfo(val),
+      ),
+      result: custom(
+        () => SKIP,
+        (val: PlainObject<V1_ExecutableResult>) =>
+          V1_deserializeExecutableResult(val),
+      ),
+    }),
+  );
+}
 
 export class V1_NativeModelAccessInfo {
   diagrams: V1_DiagramInfo[] = [];
@@ -362,7 +529,7 @@ export class V1_NativeModelAccessInfo {
   elementDocs: V1_ModelDocumentationEntry[] = [];
   mappingGenerations!: Map<string, V1_MappingGenerationInfo>;
   nativeModelExecutionContexts!: V1_NativeModelExecutionContextInfo[];
-  sampleQueries?: V1_SampleQueryInfo[] | undefined;
+  sampleQueries?: V1_SampleQuery[] | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_NativeModelAccessInfo, {
@@ -380,8 +547,8 @@ export class V1_NativeModelAccessInfo {
       ),
       sampleQueries: optionalCustomList(
         () => SKIP as never,
-        (val: PlainObject<V1_SampleQueryInfo>) =>
-          V1_deserializeSampleQuery(val),
+        (val: PlainObject<V1_SampleQuery>) =>
+          V1_SampleQuery.serialization.fromJson(val),
       ),
       mappingGenerations: custom(
         () => SKIP,

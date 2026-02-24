@@ -21,6 +21,10 @@ import type {
 } from './DataProduct/DataProductDataAccessState.js';
 import type { AccessPointGroupAccess } from './DataProduct/DataProductAPGState.js';
 import type { PlainObject } from '@finos/legend-shared';
+import type {
+  DataProductTDSSampleQueryTabConfiguration,
+  DataProductRelationSampleQueryTabConfiguration,
+} from './DataProduct/DataProductSampleQueryTabState.js';
 
 export interface DataProductDataAccess_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
@@ -57,4 +61,14 @@ export interface DataProductDataAccess_LegendApplicationPlugin_Extension
    * ownership data for a given data product DID
    */
   handleDataProductOwnersResponse?(response: PlainObject): string[];
+
+  /**
+   * Config to add extra tabs for TDS Sample Query results in data products
+   */
+  getExtraDataProductTDSSampleQueryTabConfiguration?(): DataProductTDSSampleQueryTabConfiguration[];
+
+  /**
+   * Config to add extra tabs for Relation Sample Query results in data products
+   */
+  getExtraDataProductRelationSampleQueryTabConfiguration?(): DataProductRelationSampleQueryTabConfiguration[];
 }

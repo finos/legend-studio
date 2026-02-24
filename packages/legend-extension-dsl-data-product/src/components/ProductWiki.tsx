@@ -44,6 +44,7 @@ import { V1_ExternalDataProductType } from '@finos/legend-graph';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 import { DataProductSampleQueries } from './DataProduct/DataProductSampleQueries.js';
+import { DataProductNativeModelAccessDataAccess } from './DataProduct/DataProductNativeModelAccessDataAccess.js';
 import { DiagramViewer } from '@finos/legend-extension-dsl-diagram';
 import { useNavigationZone } from '@finos/legend-application/browser';
 
@@ -376,6 +377,9 @@ export const ProductWiki = observer(
                     />
                   )}
                   <DataProductSampleQueries
+                    dataProductViewerState={productViewerState}
+                  />
+                  <DataProductNativeModelAccessDataAccess
                     dataProductViewerState={productViewerState}
                   />
                 </>
