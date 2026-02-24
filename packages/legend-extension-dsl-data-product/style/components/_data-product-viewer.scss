@@ -2532,82 +2532,192 @@
 }
 
 .data-product__viewer__sample-queries {
-  &__content {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+  margin: 3rem 0;
 }
 
 .data-product__viewer__sample-query__item {
-  border: 0.1rem solid var(--color-light-grey-200);
-  border-radius: 0.2rem;
-  background: var(--color-white);
-  margin-bottom: 1rem;
+  margin: 3rem 0;
 
   &__header {
     @include flexVCenter;
 
-    width: 100%;
-    cursor: pointer;
-    padding: 1rem;
-    background: transparent;
-    border: none;
-    text-align: left;
-    color: inherit;
-    gap: 1rem;
+    height: 3rem;
+    margin-bottom: 1rem;
 
-    &:hover {
-      background: var(--color-light-grey-100);
+    &__title {
+      @include ellipsisTextOverflow;
+
+      color: var(--color-black);
+      font-size: 2rem;
+      font-weight: 500;
+      user-select: none;
     }
 
-    &__icon {
-      @include flexCenter;
+    &__type {
+      @include flexVCenter;
 
-      width: 2rem;
       height: 2rem;
-      flex-shrink: 0;
+      padding: 0 0.5rem;
+      border-radius: 0.5rem;
+      background: var(--color-dark-grey-300);
+      color: var(--color-light-grey-150);
+      user-select: none;
+      margin-left: 0.5rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    &__anchor {
+      @include flexVCenter;
+
+      margin-left: 0.5rem;
+      cursor: pointer;
+      display: none;
 
       svg {
-        font-size: 1.8rem;
+        color: var(--color-dark-grey-300);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-400);
+      }
+    }
+  }
+
+  &__header:hover &__header__anchor {
+    display: inline-flex;
+  }
+
+  &__description {
+    margin-bottom: 1rem;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
+
+    &__tab__header {
+      @include flexVCenter;
+
+      justify-content: space-between;
+      height: 3.8rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-280);
+      border-top: 0.1rem solid var(--color-dark-grey-280);
+    }
+
+    &__tabs {
+      @include flexVCenter;
+
+      width: calc(100% - 19rem);
+      overflow-x: auto;
+    }
+
+    &__tabs--full-width {
+      width: 100%;
+    }
+
+    &__tab {
+      @include flexVCenter;
+
+      padding: 0 1rem;
+      color: var(--color-dark-grey-300);
+      user-select: none;
+    }
+
+    &__tab + &__tab {
+      border-left: 0.1rem solid var(--color-dark-grey-280);
+    }
+
+    &__tab__label {
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    &__tab__icon {
+      &--query {
+        font-size: 1.6rem;
+      }
+    }
+
+    &__tab__icon + &__tab__label {
+      margin-left: 0.5rem;
+    }
+
+    &__tab:hover &__tab__label {
+      color: var(--color-dark-grey-400);
+    }
+
+    &__tab:hover &__tab__icon {
+      svg {
         color: var(--color-dark-grey-400);
       }
     }
 
-    &__content {
-      flex: 1;
-      overflow: hidden;
-    }
-
-    &__title {
+    &__tab--active:hover &__tab__label,
+    &__tab--active &__tab__label {
+      color: var(--color-blue-200);
       font-weight: 500;
-      font-size: 1.4rem;
-      color: var(--color-dark-grey-500);
     }
 
-    &__description {
-      font-size: 1.2rem;
-      color: var(--color-dark-grey-400);
-      margin-top: 0.3rem;
+    &__tab--active:hover &__tab__icon,
+    &__tab--active &__tab__icon {
+      svg {
+        color: var(--color-blue-200);
+      }
+    }
+
+    &__tab__content {
+      margin-top: 1rem;
+      height: 30rem;
+    }
+
+    &__action-tab-group {
+      display: flex;
+      width: 19rem;
+      border-left: 0.1rem solid var(--color-dark-grey-280);
     }
   }
 
-  &__content {
-    padding: 0 1rem 1rem 4rem;
+  &__tds__column-specs {
+    height: 100%;
+  }
 
-    &__query {
-      height: 20rem;
-      border: 0.1rem solid var(--color-light-grey-200);
+  &__grammar {
+    height: 100%;
+    border: 0.1rem solid var(--color-dark-grey-200);
+    border-radius: 0.2rem;
+    overflow: hidden;
+  }
+
+  &__tds__query {
+    @include flexCenter;
+
+    height: 100%;
+    border: 0.1rem solid var(--color-dark-grey-200);
+
+    &__actions {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      height: 2.8rem;
+      width: 25rem;
       border-radius: 0.2rem;
-      overflow: hidden;
-    }
 
-    &__info {
-      font-size: 1.2rem;
-      color: var(--color-dark-grey-400);
-      padding: 1rem;
-      font-family: 'Roboto Mono', monospace;
+      & + & {
+        margin-top: 0.5rem;
+      }
     }
+  }
+
+  &__tds__placeholder-panel {
+    height: 100%;
+    width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-200);
   }
 }
 

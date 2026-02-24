@@ -3113,6 +3113,7 @@ __metadata:
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
+    "@finos/legend-query-builder": "workspace:^"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-lakehouse": "workspace:*"
     "@finos/legend-server-marketplace": "workspace:*"
@@ -3642,7 +3643,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-query-builder@workspace:*, @finos/legend-query-builder@workspace:packages/legend-query-builder":
+"@finos/legend-query-builder@workspace:*, @finos/legend-query-builder@workspace:^, @finos/legend-query-builder@workspace:packages/legend-query-builder":
   version: 0.0.0-use.local
   resolution: "@finos/legend-query-builder@workspace:packages/legend-query-builder"
   dependencies:
