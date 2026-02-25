@@ -1,5 +1,19 @@
 # @finos/legend-application-marketplace
 
+## 0.1.71
+
+### Patch Changes
+
+- [#4912](https://github.com/finos/legend-studio/pull/4912) [`073c071`](https://github.com/finos/legend-studio/commit/073c0713017bacd139ad9f7c8ad11a7034593a9d) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented banner on marketplace home and new header logo update
+
+- [#4917](https://github.com/finos/legend-studio/pull/4917) [`efe4c3c`](https://github.com/finos/legend-studio/commit/efe4c3c6f87474b74653467f87a58e2080143bc8) ([@travisstebbins](https://github.com/travisstebbins)) - Fix contract viewer bug
+
+- [#4915](https://github.com/finos/legend-studio/pull/4915) [`6551c40`](https://github.com/finos/legend-studio/commit/6551c406cf587c441708e0fcc9480725c8de86c1) ([@yash0024](https://github.com/yash0024)) - Extract deploymentId directly instead of deserializing DataProduct artifact
+
+- [#4915](https://github.com/finos/legend-studio/pull/4915) [`6551c40`](https://github.com/finos/legend-studio/commit/6551c406cf587c441708e0fcc9480725c8de86c1) ([@yash0024](https://github.com/yash0024)) - Methods to get extra sampleQuery TDS and Relation tabs
+
+- [#4915](https://github.com/finos/legend-studio/pull/4915) [`6551c40`](https://github.com/finos/legend-studio/commit/6551c406cf587c441708e0fcc9480725c8de86c1) ([@yash0024](https://github.com/yash0024)) - Marketplace DataProduct flow for those without deploymentId
+
 ## 0.1.70
 
 ## 0.1.69

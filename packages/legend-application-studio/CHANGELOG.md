@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.98
+
+### Patch Changes
+
+- [#4916](https://github.com/finos/legend-studio/pull/4916) [`a4a347c`](https://github.com/finos/legend-studio/commit/a4a347c39d2f764ac95b01bdb5d3aff0ee389d00) ([@kelly-thai](https://github.com/kelly-thai)) - Clean up MAPG form; fix diagrams bug, remove access points, update MAPG error checking
+
 ## 28.19.97
 
 ## 28.19.96

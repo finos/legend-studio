@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.3.35
+
+### Patch Changes
+
+- [#4915](https://github.com/finos/legend-studio/pull/4915) [`6551c40`](https://github.com/finos/legend-studio/commit/6551c406cf587c441708e0fcc9480725c8de86c1) ([@yash0024](https://github.com/yash0024)) - Update sampleQuery class definition in the dataproduct artifact
+
+- [#4914](https://github.com/finos/legend-studio/pull/4914) [`d69c41d`](https://github.com/finos/legend-studio/commit/d69c41d25d51730b7e987919e74030806e0a0aac) ([@yash0024](https://github.com/yash0024)) - Update V1_ModelAccessPointGroupInfo
+
 ## 32.3.34
 
 ## 32.3.33

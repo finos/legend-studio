@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.56
+
+### Patch Changes
+
+- [#4917](https://github.com/finos/legend-studio/pull/4917) [`efe4c3c`](https://github.com/finos/legend-studio/commit/efe4c3c6f87474b74653467f87a58e2080143bc8) ([@travisstebbins](https://github.com/travisstebbins)) - Fix contract viewer bug
+
+- [#4915](https://github.com/finos/legend-studio/pull/4915) [`6551c40`](https://github.com/finos/legend-studio/commit/6551c406cf587c441708e0fcc9480725c8de86c1) ([@yash0024](https://github.com/yash0024)) - Update DataProduct SampleQueries UI and add Data Access section
+
+- [#4914](https://github.com/finos/legend-studio/pull/4914) [`d69c41d`](https://github.com/finos/legend-studio/commit/d69c41d25d51730b7e987919e74030806e0a0aac) ([@yash0024](https://github.com/yash0024)) - ModelApg in marletplace for SDLC deployed data products
+
+- [#4915](https://github.com/finos/legend-studio/pull/4915) [`6551c40`](https://github.com/finos/legend-studio/commit/6551c406cf587c441708e0fcc9480725c8de86c1) ([@yash0024](https://github.com/yash0024)) - Marketplace DataProduct flow for those without deploymentId
+
 ## 0.0.55
 
 ### Patch Changes
