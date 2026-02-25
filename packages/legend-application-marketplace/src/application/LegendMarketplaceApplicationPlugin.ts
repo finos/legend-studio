@@ -22,6 +22,8 @@ import type {
   DataProductDataAccess_LegendApplicationPlugin_Extension,
   AccessPointGroupAccess,
   DataProductAccessPointCodeConfiguration,
+  DataProductTDSSampleQueryTabConfiguration,
+  DataProductRelationSampleQueryTabConfiguration,
 } from '@finos/legend-extension-dsl-data-product';
 import type { ProductCardState } from '../stores/lakehouse/dataProducts/ProductCardState.js';
 import type React from 'react';
@@ -83,6 +85,16 @@ export abstract class LegendMarketplaceApplicationPlugin
    * Config to add extra data product access point code for other code types
    */
   getExtraDataProductAccessPointCodeConfiguration?(): DataProductAccessPointCodeConfiguration[];
+
+  /**
+   * Config to add extra tabs for TDS Sample Query results in data products
+   */
+  getExtraDataProductTDSSampleQueryTabConfiguration?(): DataProductTDSSampleQueryTabConfiguration[];
+
+  /**
+   * Config to add extra tabs for Relation Sample Query results in data products
+   */
+  getExtraDataProductRelationSampleQueryTabConfiguration?(): DataProductRelationSampleQueryTabConfiguration[];
 
   /**
    * Config to allow adding arbitrary additional pages to the marketplace application.

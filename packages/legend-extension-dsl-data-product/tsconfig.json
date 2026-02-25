@@ -19,6 +19,7 @@
     { "path": "../legend-server-marketplace" },
     { "path": "../legend-shared" },
     { "path": "../legend-storage" },
-    { "path": "../legend-extension-dsl-diagram" }
+    { "path": "../legend-extension-dsl-diagram" },
+    { "path": "../legend-query-builder" }
   ]
 }
