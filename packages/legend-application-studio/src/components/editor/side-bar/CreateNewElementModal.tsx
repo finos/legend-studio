@@ -29,9 +29,13 @@ import {
   type RuntimeOption,
   NewLakehouseDataProductDriver,
   NewRuntimeType,
-  DataProductType,
 } from '../../../stores/editor/NewElementState.js';
-import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
+import {
+  Dialog,
+  compareLabelFn,
+  CustomSelectorInput,
+  Checkbox,
+} from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import {
   guaranteeNonNullable,
@@ -490,20 +494,8 @@ const NewLakehouseDataProductEditor = observer(() => {
     event,
   ) => newProductDriver.setTitle(event.target.value);
 
-  const type = newProductDriver.type;
-  const typeOptions = Object.values(DataProductType).map((typeOption) => ({
-    label: prettyCONSTName(typeOption),
-    value: typeOption,
-  }));
-  const typeOption = {
-    value: type,
-    label: prettyCONSTName(type),
-  };
-  const onTypeChange = (val: {
-    value: DataProductType;
-    label: string;
-  }): void => {
-    newProductDriver.setType(val.value);
+  const onTypeChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    newProductDriver.setModelled(event.target.checked);
   };
 
   return (
@@ -518,20 +510,14 @@ const NewLakehouseDataProductEditor = observer(() => {
           placeholder={`Choose a title for this Data Product to display in Marketplace`}
         />
       </div>
-      <div className="panel__content__form__section__header__label">
-        Data Product Type
-      </div>
       <div className="explorer__new-element-modal__driver">
-        <CustomSelectorInput
-          className="explorer__new-element-modal__driver__dropdown"
-          options={typeOptions}
+        <Checkbox
+          checked={newProductDriver.modelled}
           onChange={onTypeChange}
-          value={typeOption}
-          darkMode={
-            !editorStore.applicationStore.layoutService
-              .TEMPORARY__isLightColorThemeEnabled
-          }
+          size="small"
+          className="panel__content__form__section__list__item__content__actions-exclude__btn"
         />
+        <span>Modeled Data Product</span>
       </div>
     </>
   );

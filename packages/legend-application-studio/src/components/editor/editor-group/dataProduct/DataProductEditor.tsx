@@ -1313,7 +1313,7 @@ export const CompatibleDiagramsEditor = observer(
                 Diagram
               </div>
               <div className="panel__content__form__section__list__item__content__title">
-                {item.title}
+                {item.diagram.name}
               </div>
             </div>
             <div className="panel__content__form__section__list__item__form">
@@ -1370,7 +1370,7 @@ export const CompatibleDiagramsEditor = observer(
         title="Diagrams"
         prompt="Add diagrams to include in this Data Product. Set a title and description for each diagram."
         items={group.diagrams}
-        keySelector={(element: DataProductDiagram) => element.hashCode}
+        keySelector={(element: DataProductDiagram) => element.diagram.name}
         ItemComponent={DiagramComponent}
         NewItemComponent={NewDiagramComponent}
         handleRemoveItem={handleRemoveDiagram}
@@ -1799,44 +1799,49 @@ const AccessPointGroupEditor = observer(
         {editorStore.applicationStore.config.options.dataProductConfig && (
           <AccessPointGroupPublicToggle groupState={groupState} />
         )}
-        {groupState instanceof ModelAccessPointGroupState && (
+        {groupState instanceof ModelAccessPointGroupState ? (
           <ModelAccessPointGroupEditor
             groupState={groupState}
             isReadOnly={isReadOnly}
           />
-        )}
-        <PanelHeader className="panel__header--access-point">
-          <div className="panel__header__title">Access Points</div>
-          <PanelHeaderActions>
-            <PanelHeaderActionItem
-              className="panel__header__action"
-              onClick={handleAddAccessPoint}
-              title="Create new access point"
+        ) : (
+          <>
+            <PanelHeader className="panel__header--access-point">
+              <div className="panel__header__title">Access Points</div>
+              <PanelHeaderActions>
+                <PanelHeaderActionItem
+                  className="panel__header__action"
+                  onClick={handleAddAccessPoint}
+                  title="Create new access point"
+                >
+                  <PlusIcon />
+                </PanelHeaderActionItem>
+              </PanelHeaderActions>
+            </PanelHeader>
+            {groupState.accessPointStates.length === 0 && (
+              <div
+                className="access-point-editor__group-container__description--warning"
+                style={{ color: 'var(--color-red-300)' }}
+              >
+                <WarningIcon />
+                This group needs at least one access point defined.
+              </div>
+            )}
+            <div
+              style={{ gap: '1rem', display: 'flex', flexDirection: 'column' }}
             >
-              <PlusIcon />
-            </PanelHeaderActionItem>
-          </PanelHeaderActions>
-        </PanelHeader>
-        {groupState.accessPointStates.length === 0 && (
-          <div
-            className="access-point-editor__group-container__description--warning"
-            style={{ color: 'var(--color-red-300)' }}
-          >
-            <WarningIcon />
-            This group needs at least one access point defined.
-          </div>
+              {groupState.accessPointStates
+                .filter(filterByType(LakehouseAccessPointState))
+                .map((apState) => (
+                  <LakehouseDataProductAccessPointEditor
+                    key={apState.uuid}
+                    isReadOnly={isReadOnly}
+                    accessPointState={apState}
+                  />
+                ))}
+            </div>
+          </>
         )}
-        <div style={{ gap: '1rem', display: 'flex', flexDirection: 'column' }}>
-          {groupState.accessPointStates
-            .filter(filterByType(LakehouseAccessPointState))
-            .map((apState) => (
-              <LakehouseDataProductAccessPointEditor
-                key={apState.uuid}
-                isReadOnly={isReadOnly}
-                accessPointState={apState}
-              />
-            ))}
-        </div>
       </div>
     );
   },

@@ -61,6 +61,7 @@ import {
   DataElementReference,
   DataElement,
   DataProductDiagram,
+  observe_DataProductDiagram,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -769,6 +770,15 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
     this.editorState = editorState;
   }
 
+  override hasErrors(): boolean {
+    return (
+      this.value.id === '' ||
+      !this.value.description ||
+      !this.value.title ||
+      this.value.mapping.value.path === ''
+    );
+  }
+
   setMapping(mapping: Mapping): void {
     modelAccessPointGroup_setMapping(
       this.value,
@@ -795,7 +805,7 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
 
   addDiagram = (option: { label: string; value: PackageableElement }): void => {
     const diagramValue = option.value;
-    const newDiagram = new DataProductDiagram();
+    const newDiagram = observe_DataProductDiagram(new DataProductDiagram());
     newDiagram.title = diagramValue.name;
     newDiagram.diagram = diagramValue;
     modelAccessPointGroup_addDiagram(this.value, newDiagram);

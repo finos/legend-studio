@@ -515,22 +515,17 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
   }
 }
 
-export enum DataProductType {
-  LAKEHOUSE = 'LAKEHOUSE',
-  MODELLED = 'MODELLED',
-}
-
 export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct> {
   title: string;
-  type = DataProductType.LAKEHOUSE;
+  modelled = false;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
     this.title = '';
     makeObservable(this, {
       title: observable,
-      type: observable,
-      setType: action,
+      modelled: observable,
+      setModelled: action,
       setTitle: action,
       isValid: computed,
     });
@@ -542,15 +537,15 @@ export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct>
   setTitle(val: string) {
     this.title = val;
   }
-  setType(val: DataProductType) {
-    this.type = val;
+  setModelled(val: boolean) {
+    this.modelled = val;
   }
   override createElement(name: string): DataProduct {
     const dataProduct = new DataProduct(name);
     dataProduct_setTitle(dataProduct, this.title);
     dataProduct_setType(dataProduct, new InternalDataProductType());
 
-    if (this.type === DataProductType.LAKEHOUSE) {
+    if (!this.modelled) {
       const defaultGroup = new AccessPointGroup();
       defaultGroup.id = 'default';
       dataProduct_addAccessPointGroup(dataProduct, defaultGroup);
