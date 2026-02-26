@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.57
+
+### Patch Changes
+
+- [#4922](https://github.com/finos/legend-studio/pull/4922) [`9d80625`](https://github.com/finos/legend-studio/commit/9d806252956ab54ba07053067af72c5e85fad5db) ([@gs-gunjan](https://github.com/gs-gunjan)) - fixing package error dependencies
+
 ## 0.0.56
 
 ### Patch Changes

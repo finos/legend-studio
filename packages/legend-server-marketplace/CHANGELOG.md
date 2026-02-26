@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.48
+
+### Patch Changes
+
+- [#4919](https://github.com/finos/legend-studio/pull/4919) [`8e0b7a0`](https://github.com/finos/legend-studio/commit/8e0b7a08c507fba8f4996039594a54e081bc3251) ([@jackp5150](https://github.com/jackp5150)) - Added classes to handle deserialization of search metadata
+
 ## 0.1.47
 
 ## 0.1.46
