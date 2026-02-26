@@ -16,7 +16,7 @@
 
 export { Core_DataProductDataAccess_LegendApplicationPlugin } from './components/Core_DataProductDataAccess_LegendApplicationPlugin.js';
 export { EntitlementsDataContractCreator } from './components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
-export { EntitlementsDataContractViewer } from './components/DataProduct/DataContract/EntitlementsDataContractViewer.js';
+export { DataAccessRequestViewer as EntitlementsDataContractViewer } from './components/DataProduct/DataContract/EntitlementsDataContractViewer.js';
 export * from './components/ProductViewer.js';
 export { MultiUserRenderer } from './components/UserRenderer/MultiUserRenderer.js';
 export { UserRenderer } from './components/UserRenderer/UserRenderer.js';

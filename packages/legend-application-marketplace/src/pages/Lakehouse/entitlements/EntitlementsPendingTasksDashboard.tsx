@@ -65,7 +65,7 @@ import {
   UserRenderer,
   getOrganizationalScopeTypeName,
   getOrganizationalScopeTypeDetails,
-  EntitlementsDataContractViewer,
+  DataAccessRequestViewer,
   EntitlementsDataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
@@ -866,10 +866,10 @@ export const EntitlementsPendingTasksDashboard = observer(
           marketplaceBaseStore={marketplaceBaseStore}
         />
         {selectedContract !== undefined && (
-          <EntitlementsDataContractViewer
+          <DataAccessRequestViewer
             open={true}
             onClose={() => setSelectedContract(undefined)}
-            currentViewer={
+            viewerState={
               new EntitlementsDataContractViewerState(
                 selectedContract,
                 undefined,
@@ -890,7 +890,7 @@ export const EntitlementsPendingTasksDashboard = observer(
                 ),
               );
             }}
-            getContractTaskUrl={(contractId: string, taskId: string) =>
+            getTaskUrl={(contractId: string, taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateContractPagePath(contractId, taskId),
               )

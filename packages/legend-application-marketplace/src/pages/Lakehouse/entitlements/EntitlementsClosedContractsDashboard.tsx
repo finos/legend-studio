@@ -41,7 +41,7 @@ import { useLegendMarketplaceBaseStore } from '../../../application/providers/Le
 import { observer } from 'mobx-react-lite';
 import { useAuth } from 'react-oidc-context';
 import {
-  EntitlementsDataContractViewer,
+  DataAccessRequestViewer,
   EntitlementsDataContractViewerState,
   isApprovalStatusTerminal,
   isContractInTerminalState,
@@ -211,10 +211,10 @@ export const EntitlementsClosedContractsDashboard = observer(
           />
         </Box>
         {selectedContract !== undefined && (
-          <EntitlementsDataContractViewer
+          <DataAccessRequestViewer
             open={true}
             onClose={() => setSelectedContract(undefined)}
-            currentViewer={
+            viewerState={
               new EntitlementsDataContractViewerState(
                 selectedContract,
                 undefined,
@@ -236,7 +236,7 @@ export const EntitlementsClosedContractsDashboard = observer(
                 ),
               );
             }}
-            getContractTaskUrl={(contractId: string, taskId: string) =>
+            getTaskUrl={(contractId: string, taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateContractPagePath(contractId, taskId),
               )

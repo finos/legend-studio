@@ -34,7 +34,7 @@ import {
 import { createSpy } from '@finos/legend-shared/test';
 import { AuthProvider } from 'react-oidc-context';
 import { DataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
-import { EntitlementsDataContractViewer } from '../DataProduct/DataContract/EntitlementsDataContractViewer.js';
+import { DataAccessRequestViewer } from '../DataProduct/DataContract/EntitlementsDataContractViewer.js';
 import {
   TEST__getGenericApplicationConfig,
   TEST__LegendApplicationPluginManager,
@@ -146,11 +146,11 @@ const setupDataContractViewerTest = async (
                 <Route
                   path="*"
                   element={
-                    <EntitlementsDataContractViewer
+                    <DataAccessRequestViewer
                       open={true}
                       onClose={jest.fn()}
-                      currentViewer={MOCK__contractViewerState}
-                      getContractTaskUrl={() => ''}
+                      viewerState={MOCK__contractViewerState}
+                      getTaskUrl={() => ''}
                       getDataProductUrl={() => ''}
                       initialSelectedUser={initialSelectedUser}
                     />

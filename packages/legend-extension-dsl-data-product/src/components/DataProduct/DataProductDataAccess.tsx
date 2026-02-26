@@ -106,7 +106,7 @@ import {
 } from '../../stores/ProductViewerNavigation.js';
 import { DataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import { EntitlementsDataContractCreator } from './DataContract/EntitlementsDataContractCreator.js';
-import { EntitlementsDataContractViewer } from './DataContract/EntitlementsDataContractViewer.js';
+import { DataAccessRequestViewer } from './DataContract/EntitlementsDataContractViewer.js';
 import { DataProductSubscriptionViewer } from './Subscriptions/DataProductSubscriptionsViewer.js';
 import {
   type DataProductAPGState,
@@ -1393,14 +1393,14 @@ export const DataProductAccessPointGroupViewer = observer(
           />
         )}
         {entitlementsDataContractViewerState && dataAccessState && (
-          <EntitlementsDataContractViewer
+          <DataAccessRequestViewer
             open={true}
             onClose={() =>
               dataAccessState.setContractViewerContractAndSubscription(
                 undefined,
               )
             }
-            currentViewer={entitlementsDataContractViewerState}
+            viewerState={entitlementsDataContractViewerState}
             onRefresh={() => {
               if (apgState.associatedUserContract) {
                 apgState.fetchUserAccessStatus(
@@ -1410,7 +1410,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 );
               }
             }}
-            getContractTaskUrl={dataAccessState.getContractTaskUrl}
+            getTaskUrl={dataAccessState.getContractTaskUrl}
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />
         )}

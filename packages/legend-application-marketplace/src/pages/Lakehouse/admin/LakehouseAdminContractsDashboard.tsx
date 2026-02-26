@@ -31,7 +31,7 @@ import {
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useState } from 'react';
 import {
-  EntitlementsDataContractViewer,
+  DataAccessRequestViewer,
   EntitlementsDataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
@@ -126,10 +126,10 @@ export const LakehouseAdminContractsDashboard = observer(
           />
         </Box>
         {selectedContract !== undefined && (
-          <EntitlementsDataContractViewer
+          <DataAccessRequestViewer
             open={true}
             onClose={() => setSelectedContract(undefined)}
-            currentViewer={
+            viewerState={
               new EntitlementsDataContractViewerState(
                 selectedContract,
                 undefined,
@@ -143,7 +143,7 @@ export const LakehouseAdminContractsDashboard = observer(
               )
             }
             onRefresh={() => adminStore.refresh()}
-            getContractTaskUrl={(contractId: string, taskId: string) =>
+            getTaskUrl={(contractId: string, taskId: string) =>
               adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateContractPagePath(contractId, taskId),
               )

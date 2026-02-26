@@ -27,7 +27,7 @@ import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import {
-  EntitlementsDataContractContent,
+  DataAccessRequestContent,
   EntitlementsDataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import { useCallback, useEffect, useState } from 'react';
@@ -292,12 +292,9 @@ export const LakehouseDataContractTask =
                   </Button>
                 </Box>
               )}
-              <EntitlementsDataContractContent
-                currentViewer={contractViewerState}
-                getContractTaskUrl={(
-                  contractIdParam: string,
-                  taskIdParam: string,
-                ) =>
+              <DataAccessRequestContent
+                viewerState={contractViewerState}
+                getTaskUrl={(contractIdParam: string, taskIdParam: string) =>
                   marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                     generateContractPagePath(contractIdParam, taskIdParam),
                   )

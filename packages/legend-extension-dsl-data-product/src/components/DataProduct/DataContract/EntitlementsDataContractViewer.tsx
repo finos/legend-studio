@@ -264,27 +264,27 @@ const ContractEscalationModal = (props: {
   );
 };
 
-export const EntitlementsDataContractContent = observer(
+export const DataAccessRequestContent = observer(
   (props: {
-    currentViewer: DataAccessRequestState;
-    getContractTaskUrl: (contractId: string, taskId: string) => string;
+    viewerState: DataAccessRequestState;
+    getTaskUrl: (contractId: string, taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
     initialSelectedUser?: string | undefined;
     onRefresh?: (() => void) | (() => Promise<void>);
     isReadOnly?: boolean | undefined;
   }) => {
     const {
-      currentViewer,
-      getContractTaskUrl,
+      viewerState,
+      getTaskUrl,
       getDataProductUrl,
       initialSelectedUser,
       onRefresh,
       isReadOnly,
     } = props;
     const auth = useAuth();
-    const consumer = currentViewer.consumer;
+    const consumer = viewerState.consumer;
 
-    const targetUsers = currentViewer.targetUsers;
+    const targetUsers = viewerState.targetUsers;
 
     // In order to ensure the Select menu is properly resized after we load
     // all the target user data, track how many users have finished loading
@@ -305,16 +305,16 @@ export const EntitlementsDataContractContent = observer(
           <MenuItem key={user} value={user}>
             <UserRenderer
               userId={user}
-              applicationStore={currentViewer.applicationStore}
-              userSearchService={currentViewer.userSearchService}
+              applicationStore={viewerState.applicationStore}
+              userSearchService={viewerState.userSearchService}
               disableOnClick={true}
               onFinishedLoadingCallback={finishedLoadingUserCallback}
             />
           </MenuItem>
         )),
       [
-        currentViewer.applicationStore,
-        currentViewer.userSearchService,
+        viewerState.applicationStore,
+        viewerState.userSearchService,
         finishedLoadingUserCallback,
         targetUsers,
       ],
@@ -328,18 +328,18 @@ export const EntitlementsDataContractContent = observer(
     const [showEscalationModal, setShowEscalationModal] = useState(false);
 
     useEffect(() => {
-      if (!currentViewer.initializationState.hasCompleted) {
+      if (!viewerState.initializationState.hasCompleted) {
         setIsLoading(true);
-        flowResult(currentViewer.init(auth.user?.access_token))
-          .catch(currentViewer.applicationStore.alertUnhandledError)
+        flowResult(viewerState.init(auth.user?.access_token))
+          .catch(viewerState.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
       }
     }, [
       auth.user?.access_token,
-      currentViewer,
-      currentViewer.initializationState,
-      currentViewer.initializationState.hasCompleted,
-      currentViewer.applicationStore.alertUnhandledError,
+      viewerState,
+      viewerState.initializationState,
+      viewerState.initializationState.hasCompleted,
+      viewerState.applicationStore.alertUnhandledError,
     ]);
 
     useEffect(() => {
@@ -350,21 +350,21 @@ export const EntitlementsDataContractContent = observer(
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
-      currentViewer.initializationState.reset();
+      viewerState.initializationState.reset();
       await onRefresh?.();
     };
 
-    const dataProduct = currentViewer.resourceId;
-    const accessPointGroup = currentViewer.accessPointGroup;
-    const timelineSteps = currentViewer.getTimelineSteps(selectedTargetUser);
+    const dataProduct = viewerState.resourceId;
+    const accessPointGroup = viewerState.accessPointGroup;
+    const timelineSteps = viewerState.getTimelineSteps(selectedTargetUser);
     const privilegeManagerStep = timelineSteps.find(
       (step) => step.key === 'privilege-manager-approval',
     );
     const showEscalationButton =
       selectedTargetUser ===
-        currentViewer.applicationStore.identityService.currentUser ||
+        viewerState.applicationStore.identityService.currentUser ||
       (selectedTargetUser !== undefined &&
-        currentViewer.getContractUserType(selectedTargetUser) ===
+        viewerState.getContractUserType(selectedTargetUser) ===
           V1_UserType.SYSTEM_ACCOUNT);
     const isContractEscalated = privilegeManagerStep?.isEscalated === true;
     const canEscalateContract =
@@ -373,33 +373,33 @@ export const EntitlementsDataContractContent = observer(
       !isContractEscalated;
 
     const copyContractId = (): void => {
-      currentViewer.applicationStore.clipboardService
-        .copyTextToClipboard(currentViewer.guid)
+      viewerState.applicationStore.clipboardService
+        .copyTextToClipboard(viewerState.guid)
         .then(() =>
-          currentViewer.applicationStore.notificationService.notifySuccess(
+          viewerState.applicationStore.notificationService.notifySuccess(
             'Contract ID Copied to Clipboard',
             undefined,
             2500,
           ),
         )
-        .catch(currentViewer.applicationStore.alertUnhandledError);
+        .catch(viewerState.applicationStore.alertUnhandledError);
     };
 
     const copyTaskLink = (text: string): void => {
-      currentViewer.applicationStore.clipboardService
+      viewerState.applicationStore.clipboardService
         .copyTextToClipboard(text)
         .then(() =>
-          currentViewer.applicationStore.notificationService.notifySuccess(
+          viewerState.applicationStore.notificationService.notifySuccess(
             'Task Link Copied to Clipboard',
             undefined,
             2500,
           ),
         )
-        .catch(currentViewer.applicationStore.alertUnhandledError);
+        .catch(viewerState.applicationStore.alertUnhandledError);
     };
 
     const checkBeforeClosingContract = (): void => {
-      currentViewer.applicationStore.alertService.setActionAlertInfo({
+      viewerState.applicationStore.alertService.setActionAlertInfo({
         message: 'Are you sure you want to close this contract?',
         type: ActionAlertType.CAUTION,
         actions: [
@@ -410,12 +410,12 @@ export const EntitlementsDataContractContent = observer(
               const invalidateContract = async (): Promise<void> => {
                 try {
                   await flowResult(
-                    currentViewer.invalidateContract(auth.user?.access_token),
+                    viewerState.invalidateContract(auth.user?.access_token),
                   );
                   await refresh();
                 } catch (error) {
                   assertErrorThrown(error);
-                  currentViewer.applicationStore.notificationService.notifyError(
+                  viewerState.applicationStore.notificationService.notifyError(
                     `Error closing contract: ${error.message}`,
                   );
                 }
@@ -438,9 +438,9 @@ export const EntitlementsDataContractContent = observer(
         <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
           <b>Ordered By:&nbsp;</b>
           <UserRenderer
-            userId={currentViewer.createdBy}
-            applicationStore={currentViewer.applicationStore}
-            userSearchService={currentViewer.userSearchService}
+            userId={viewerState.createdBy}
+            applicationStore={viewerState.applicationStore}
+            userSearchService={viewerState.userSearchService}
           />
         </div>
         <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
@@ -453,11 +453,11 @@ export const EntitlementsDataContractContent = observer(
                   Contract consumer type:{' '}
                   {getOrganizationalScopeTypeName(
                     consumer,
-                    currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
+                    viewerState.applicationStore.pluginManager.getApplicationPlugins(),
                   )}
                   {getOrganizationalScopeTypeDetails(
                     consumer,
-                    currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
+                    viewerState.applicationStore.pluginManager.getApplicationPlugins(),
                   )}
                 </>
               }
@@ -472,8 +472,8 @@ export const EntitlementsDataContractContent = observer(
               <UserRenderer
                 key={selectedTargetUser ?? targetUsers[0]}
                 userId={selectedTargetUser ?? targetUsers[0]}
-                applicationStore={currentViewer.applicationStore}
-                userSearchService={currentViewer.userSearchService}
+                applicationStore={viewerState.applicationStore}
+                userSearchService={viewerState.userSearchService}
               />
             ) : (
               <Select
@@ -491,11 +491,11 @@ export const EntitlementsDataContractContent = observer(
         </div>
         <div>
           <b>Business Justification: </b>
-          {currentViewer.description}
+          {viewerState.description}
         </div>
         <div>
           <b>Date Created: </b>
-          {formatDate(new Date(currentViewer.createdAt), 'MMM d, yyyy')}
+          {formatDate(new Date(viewerState.createdAt), 'MMM d, yyyy')}
         </div>
       </Box>
     );
@@ -526,7 +526,7 @@ export const EntitlementsDataContractContent = observer(
               }}
             >
               <Link
-                href={getContractTaskUrl(currentViewer.guid, step.taskId)}
+                href={getTaskUrl(viewerState.guid, step.taskId)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -535,8 +535,8 @@ export const EntitlementsDataContractContent = observer(
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    getContractTaskUrl(
-                      currentViewer.guid,
+                    getTaskUrl(
+                      viewerState.guid,
                       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                       step.taskId!,
                     ),
@@ -578,8 +578,8 @@ export const EntitlementsDataContractContent = observer(
           description: step.assignees ? (
             <AssigneesList
               userIds={step.assignees}
-              applicationStore={currentViewer.applicationStore}
-              userSearchService={currentViewer.userSearchService}
+              applicationStore={viewerState.applicationStore}
+              userSearchService={viewerState.userSearchService}
             />
           ) : undefined,
         };
@@ -606,8 +606,8 @@ export const EntitlementsDataContractContent = observer(
                   assignees: step.assignees ?? [],
                 } as unknown as V1_TaskMetadata
               }
-              applicationStore={currentViewer.applicationStore}
-              userSearchService={currentViewer.userSearchService}
+              applicationStore={viewerState.applicationStore}
+              userSearchService={viewerState.userSearchService}
             />
           ),
         };
@@ -616,7 +616,7 @@ export const EntitlementsDataContractContent = observer(
     });
 
     const contractTimelineSection =
-      currentViewer.resourceType === V1_ResourceType.ACCESS_POINT_GROUP ? (
+      viewerState.resourceType === V1_ResourceType.ACCESS_POINT_GROUP ? (
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
           <Timeline>
             {contractTimelineSteps.map((step, index) => (
@@ -665,8 +665,7 @@ export const EntitlementsDataContractContent = observer(
       ) : (
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
           Unable to display data contract tasks for resource of type{' '}
-          {currentViewer.resourceType} on data product{' '}
-          {currentViewer.resourceId}.
+          {viewerState.resourceType} on data product {viewerState.resourceId}.
         </Box>
       );
 
@@ -685,10 +684,7 @@ export const EntitlementsDataContractContent = observer(
               Access Point Group in{' '}
               <Link
                 className="marketplace-lakehouse-text__emphasis"
-                href={getDataProductUrl(
-                  dataProduct,
-                  currentViewer.deploymentId,
-                )}
+                href={getDataProductUrl(dataProduct, viewerState.deploymentId)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -697,7 +693,7 @@ export const EntitlementsDataContractContent = observer(
               Data Product
             </div>
             {contractMetadataSection}
-            {!currentViewer.isInTerminalState && (
+            {!viewerState.isInTerminalState && (
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
                 <Button
                   size="small"
@@ -717,21 +713,21 @@ export const EntitlementsDataContractContent = observer(
         )}
 
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
-          {currentViewer.subscription !== undefined && (
+          {viewerState.subscription !== undefined && (
             <Alert
               severity="info"
               className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__subscription-info"
             >
               A subscription has been auto-created for you
-              {currentViewer.subscription.target instanceof V1_SnowflakeTarget
-                ? ` with Snowflake account ${currentViewer.subscription.target.snowflakeAccountId}`
+              {viewerState.subscription.target instanceof V1_SnowflakeTarget
+                ? ` with Snowflake account ${viewerState.subscription.target.snowflakeAccountId}`
                 : ''}
               .
             </Alert>
           )}
           <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details">
             <Box>
-              Contract ID: {currentViewer.guid}
+              Contract ID: {viewerState.guid}
               <IconButton
                 onClick={() => copyContractId()}
                 title="Copy Contract ID"
@@ -741,7 +737,7 @@ export const EntitlementsDataContractContent = observer(
             </Box>
             <span
               title={
-                currentViewer.state === V1_ContractState.CLOSED
+                viewerState.state === V1_ContractState.CLOSED
                   ? 'Contract is already closed'
                   : 'Close Contract'
               }
@@ -749,9 +745,9 @@ export const EntitlementsDataContractContent = observer(
               <IconButton
                 onClick={() => checkBeforeClosingContract()}
                 disabled={
-                  currentViewer.initializationState.isInProgress ||
-                  currentViewer.invalidatingContractState.isInProgress ||
-                  currentViewer.state === V1_ContractState.CLOSED
+                  viewerState.initializationState.isInProgress ||
+                  viewerState.invalidatingContractState.isInProgress ||
+                  viewerState.state === V1_ContractState.CLOSED
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
               >
@@ -764,7 +760,7 @@ export const EntitlementsDataContractContent = observer(
         <ContractEscalationModal
           open={showEscalationModal && canEscalateContract}
           onClose={() => setShowEscalationModal(false)}
-          currentViewer={currentViewer}
+          currentViewer={viewerState}
           selectedUser={selectedTargetUser}
           refresh={refresh}
         />
@@ -773,20 +769,20 @@ export const EntitlementsDataContractContent = observer(
   },
 );
 
-export const EntitlementsDataContractViewer = observer(
+export const DataAccessRequestViewer = observer(
   (props: {
     open: boolean;
     onClose: () => void;
-    currentViewer: DataAccessRequestState;
-    getContractTaskUrl: (contractId: string, taskId: string) => string;
+    viewerState: DataAccessRequestState;
+    getTaskUrl: (contractId: string, taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
     initialSelectedUser?: string | undefined;
     onRefresh?: (() => void) | (() => Promise<void>);
     isReadOnly?: boolean | undefined;
   }) => {
-    const { open, onClose, currentViewer, ...contentProps } = props;
+    const { open, onClose, viewerState: viewerState, ...contentProps } = props;
 
-    const isContractInProgressForUser = currentViewer.isInProgress;
+    const isContractInProgressForUser = viewerState.isInProgress;
 
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
@@ -797,8 +793,8 @@ export const EntitlementsDataContractViewer = observer(
           <CloseIcon />
         </IconButton>
         <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-          <EntitlementsDataContractContent
-            currentViewer={currentViewer}
+          <DataAccessRequestContent
+            viewerState={viewerState}
             {...contentProps}
           />
         </DialogContent>

@@ -45,7 +45,7 @@ import { useAuth } from 'react-oidc-context';
 import {
   MultiUserRenderer,
   isContractInTerminalState,
-  EntitlementsDataContractViewer,
+  DataAccessRequestViewer,
   EntitlementsDataContractViewerState,
   isApprovalStatusTerminal,
 } from '@finos/legend-extension-dsl-data-product';
@@ -244,10 +244,10 @@ export const EntitlementsPendingContractsDashboard = observer(
           />
         </Box>
         {selectedContract !== undefined && (
-          <EntitlementsDataContractViewer
+          <DataAccessRequestViewer
             open={true}
             onClose={() => setSelectedContract(undefined)}
-            currentViewer={
+            viewerState={
               new EntitlementsDataContractViewerState(
                 selectedContract,
                 undefined,
@@ -268,7 +268,7 @@ export const EntitlementsPendingContractsDashboard = observer(
                 ),
               );
             }}
-            getContractTaskUrl={(contractId: string, taskId: string) =>
+            getTaskUrl={(contractId: string, taskId: string) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateContractPagePath(contractId, taskId),
               )
