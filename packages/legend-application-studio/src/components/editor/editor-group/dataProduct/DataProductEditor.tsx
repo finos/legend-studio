@@ -1368,14 +1368,14 @@ export const CompatibleDiagramsEditor = observer(
     return (
       <ListEditor
         title="Diagrams"
-        prompt="Add diagrams to include in this Data Product. Set a title and description for each diagram."
+        prompt="Add diagrams to include in this Data Product. Diagrams are required to showcase and explain your curated data models"
         items={group.diagrams}
         keySelector={(element: DataProductDiagram) => element.diagram.name}
         ItemComponent={DiagramComponent}
         NewItemComponent={NewDiagramComponent}
         handleRemoveItem={handleRemoveDiagram}
         isReadOnly={groupState.state.isReadOnly}
-        emptyMessage="No Diagrams specified"
+        emptyMessage="⚠ No Diagrams specified. Add at least one diagram to this Data Product."
         emptyClassName="data-product-editor__empty-diagram"
       />
     );

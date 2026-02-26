@@ -157,6 +157,21 @@
     color: var(--color-red-300);
   }
 
+  &__empty-diagram {
+    @include flexCenter;
+
+    height: 4rem;
+    width: 100%;
+    font-weight: 600;
+    font-size: 1.3rem;
+    max-width: 45rem;
+    border: 0.2rem dashed var(--color-red-300);
+    color: var(--color-red-300);
+    background: var(--color-red-50);
+    border-radius: 0.4rem;
+    padding: 0.5rem;
+  }
+
   &__home-tab {
     display: flex;
     flex-direction: column;

@@ -34,7 +34,7 @@ import {
   Dialog,
   compareLabelFn,
   CustomSelectorInput,
-  Checkbox,
+  PanelBooleanField,
 } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import {
@@ -494,8 +494,8 @@ const NewLakehouseDataProductEditor = observer(() => {
     event,
   ) => newProductDriver.setTitle(event.target.value);
 
-  const onTypeChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    newProductDriver.setModelled(event.target.checked);
+  const setIsModeled = (val: boolean): void => {
+    newProductDriver.setModeled(val);
   };
 
   return (
@@ -510,14 +510,15 @@ const NewLakehouseDataProductEditor = observer(() => {
           placeholder={`Choose a title for this Data Product to display in Marketplace`}
         />
       </div>
-      <div className="explorer__new-element-modal__driver">
-        <Checkbox
-          checked={newProductDriver.modelled}
-          onChange={onTypeChange}
-          size="small"
-          className="panel__content__form__section__list__item__content__actions-exclude__btn"
+
+      <div className="explorer__new-element-modal__driver--bottom-padding">
+        <PanelBooleanField
+          isReadOnly={false}
+          value={newProductDriver.modeled}
+          name="Modeled"
+          prompt="Expose data product access points through curated data models"
+          update={(value?: boolean): void => setIsModeled(Boolean(value))}
         />
-        <span>Modeled Data Product</span>
       </div>
     </>
   );
