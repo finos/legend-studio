@@ -104,7 +104,7 @@ import {
   generateAnchorForSection,
   DATA_PRODUCT_VIEWER_SECTION,
 } from '../../stores/ProductViewerNavigation.js';
-import { EntitlementsDataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
+import { DataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import { EntitlementsDataContractCreator } from './DataContract/EntitlementsDataContractCreator.js';
 import { EntitlementsDataContractViewer } from './DataContract/EntitlementsDataContractViewer.js';
 import { DataProductSubscriptionViewer } from './Subscriptions/DataProductSubscriptionsViewer.js';
@@ -1075,7 +1075,7 @@ export const DataProductAccessPointGroupViewer = observer(
           .resource instanceof V1_AccessPointGroupReference &&
         dataAccessState.contractViewerContractAndSubscription.dataContract
           .resource.accessPointGroup === apgState.apg.id
-        ? new EntitlementsDataContractViewerState(
+        ? new DataContractViewerState(
             V1_transformDataContractToLiteDatacontract(
               dataAccessState.contractViewerContractAndSubscription
                 .dataContract,

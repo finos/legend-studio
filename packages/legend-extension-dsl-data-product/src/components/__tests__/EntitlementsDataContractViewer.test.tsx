@@ -33,7 +33,7 @@ import {
 } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
 import { AuthProvider } from 'react-oidc-context';
-import { EntitlementsDataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
+import { DataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import { EntitlementsDataContractViewer } from '../DataProduct/DataContract/EntitlementsDataContractViewer.js';
 import {
   TEST__getGenericApplicationConfig,
@@ -122,7 +122,7 @@ const setupDataContractViewerTest = async (
     },
   );
 
-  const MOCK__contractViewerState = new EntitlementsDataContractViewerState(
+  const MOCK__contractViewerState = new DataContractViewerState(
     mockLiteContract,
     mockSubscription,
     MOCK__applicationStore,

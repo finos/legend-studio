@@ -43,15 +43,12 @@ import {
 } from '@mui/lab';
 import {
   type V1_TaskMetadata,
-  V1_AdhocTeam,
-  V1_ApprovalType,
   V1_ContractState,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ProducerScope,
   V1_ResourceType,
   V1_SnowflakeTarget,
-  V1_UserApprovalStatus,
   V1_UserType,
 } from '@finos/legend-graph';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -78,14 +75,14 @@ import {
   TimesIcon,
   TrashIcon,
 } from '@finos/legend-art';
-import type { EntitlementsDataContractViewerState } from '../../../stores/DataProduct/EntitlementsDataContractViewerState.js';
+import type { DataAccessRequestState } from '../../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import {
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
   stringifyOrganizationalScope,
 } from '../../../utils/LakehouseUtils.js';
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
-import { isContractInTerminalState } from '../../../utils/DataContractUtils.js';
+
 import {
   ActionAlertActionType,
   ActionAlertType,
@@ -185,7 +182,7 @@ const TaskApprovalView = (props: {
 const ContractEscalationModal = (props: {
   open: boolean;
   onClose: () => void;
-  currentViewer: EntitlementsDataContractViewerState;
+  currentViewer: DataAccessRequestState;
   selectedUser: string | undefined;
   refresh: () => Promise<void>;
 }) => {
@@ -216,7 +213,7 @@ const ContractEscalationModal = (props: {
     setIsLoading(true);
     try {
       await currentViewer.lakehouseContractServerClient.escalateUserOnContract(
-        currentViewer.liteContract.guid,
+        currentViewer.guid,
         selectedUser,
         false,
         auth.user?.access_token,
@@ -269,7 +266,7 @@ const ContractEscalationModal = (props: {
 
 export const EntitlementsDataContractContent = observer(
   (props: {
-    currentViewer: EntitlementsDataContractViewerState;
+    currentViewer: DataAccessRequestState;
     getContractTaskUrl: (contractId: string, taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
     initialSelectedUser?: string | undefined;
@@ -285,24 +282,9 @@ export const EntitlementsDataContractContent = observer(
       isReadOnly,
     } = props;
     const auth = useAuth();
-    const consumer = currentViewer.liteContract.consumer;
+    const consumer = currentViewer.consumer;
 
-    // We try to get the target users from the associated tasks first, since the
-    // tasks are what drive the timeline view. If there are no associated tasks,
-    // then we use the contract consumer.
-    const targetUsers = useMemo(
-      () =>
-        currentViewer.associatedTasks?.length
-          ? Array.from(
-              new Set<string>(
-                currentViewer.associatedTasks.map((task) => task.rec.consumer),
-              ),
-            ).sort()
-          : consumer instanceof V1_AdhocTeam
-            ? consumer.users.map((user) => user.name).sort()
-            : undefined,
-      [consumer, currentViewer.associatedTasks],
-    );
+    const targetUsers = currentViewer.targetUsers;
 
     // In order to ensure the Select menu is properly resized after we load
     // all the target user data, track how many users have finished loading
@@ -372,17 +354,11 @@ export const EntitlementsDataContractContent = observer(
       await onRefresh?.();
     };
 
-    const dataProduct = currentViewer.liteContract.resourceId;
-    const accessPointGroup = currentViewer.liteContract.accessPointGroup;
-    const privilegeManagerApprovalTask = currentViewer.associatedTasks?.find(
-      (task) =>
-        task.rec.consumer === selectedTargetUser &&
-        task.rec.type === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-    );
-    const dataOwnerApprovalTask = currentViewer.associatedTasks?.find(
-      (task) =>
-        task.rec.consumer === selectedTargetUser &&
-        task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
+    const dataProduct = currentViewer.resourceId;
+    const accessPointGroup = currentViewer.accessPointGroup;
+    const timelineSteps = currentViewer.getTimelineSteps(selectedTargetUser);
+    const privilegeManagerStep = timelineSteps.find(
+      (step) => step.key === 'privilege-manager-approval',
     );
     const showEscalationButton =
       selectedTargetUser ===
@@ -390,13 +366,15 @@ export const EntitlementsDataContractContent = observer(
       (selectedTargetUser !== undefined &&
         currentViewer.getContractUserType(selectedTargetUser) ===
           V1_UserType.SYSTEM_ACCOUNT);
-    const isContractEscalated =
-      privilegeManagerApprovalTask?.rec.isEscalated === true;
-    const canEscalateContract = showEscalationButton && !isContractEscalated;
+    const isContractEscalated = privilegeManagerStep?.isEscalated === true;
+    const canEscalateContract =
+      showEscalationButton &&
+      privilegeManagerStep?.status === 'active' &&
+      !isContractEscalated;
 
     const copyContractId = (): void => {
       currentViewer.applicationStore.clipboardService
-        .copyTextToClipboard(currentViewer.liteContract.guid)
+        .copyTextToClipboard(currentViewer.guid)
         .then(() =>
           currentViewer.applicationStore.notificationService.notifySuccess(
             'Contract ID Copied to Clipboard',
@@ -460,7 +438,7 @@ export const EntitlementsDataContractContent = observer(
         <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
           <b>Ordered By:&nbsp;</b>
           <UserRenderer
-            userId={currentViewer.liteContract.createdBy}
+            userId={currentViewer.createdBy}
             applicationStore={currentViewer.applicationStore}
             userSearchService={currentViewer.userSearchService}
           />
@@ -513,30 +491,32 @@ export const EntitlementsDataContractContent = observer(
         </div>
         <div>
           <b>Business Justification: </b>
-          {currentViewer.liteContract.description}
+          {currentViewer.description}
         </div>
         <div>
           <b>Date Created: </b>
-          {formatDate(
-            new Date(currentViewer.liteContract.createdAt),
-            'MMM d, yyyy',
-          )}
+          {formatDate(new Date(currentViewer.createdAt), 'MMM d, yyyy')}
         </div>
       </Box>
     );
 
-    const contractTimelineSteps: {
-      key: string;
-      label: React.ReactNode;
-      status: 'active' | 'complete' | 'denied' | 'skipped' | 'upcoming';
-      description?: React.ReactNode;
-    }[] = [
-      { key: 'submitted', status: 'complete', label: <>Submitted</> },
-      {
-        key: 'privilege-manager-approval',
-        label:
-          privilegeManagerApprovalTask?.rec.status ===
-          V1_UserApprovalStatus.PENDING ? (
+    // Enrich the data-only timeline steps from the state with interactive
+    // React elements (links, copy/escalation buttons, assignees lists).
+    const contractTimelineSteps = timelineSteps.map((step) => {
+      // Active approval steps get interactive links, copy buttons, and assignees
+      if (
+        (step.key === 'privilege-manager-approval' ||
+          step.key === 'data-producer-approval') &&
+        step.status === 'active' &&
+        step.taskId
+      ) {
+        const stepLabel =
+          step.key === 'privilege-manager-approval'
+            ? 'Privilege Manager Approval'
+            : 'Data Producer Approval';
+        return {
+          ...step,
+          label: (
             <Box
               sx={{
                 display: 'flex',
@@ -546,21 +526,19 @@ export const EntitlementsDataContractContent = observer(
               }}
             >
               <Link
-                href={getContractTaskUrl(
-                  currentViewer.liteContract.guid,
-                  privilegeManagerApprovalTask.rec.taskId,
-                )}
+                href={getContractTaskUrl(currentViewer.guid, step.taskId)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Privilege Manager Approval
+                {stepLabel}
               </Link>
               <IconButton
                 onClick={() =>
                   copyTaskLink(
                     getContractTaskUrl(
-                      currentViewer.liteContract.guid,
-                      privilegeManagerApprovalTask.rec.taskId,
+                      currentViewer.guid,
+                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                      step.taskId!,
                     ),
                   )
                 }
@@ -572,149 +550,73 @@ export const EntitlementsDataContractContent = observer(
                   Copy
                 </div>
               </IconButton>
-              {showEscalationButton && (
-                <span
-                  title={
-                    canEscalateContract
-                      ? 'Escalate request'
-                      : isContractEscalated
-                        ? 'Request has already been escalated'
-                        : 'Cannot escalate request'
-                  }
-                >
-                  <IconButton
-                    onClick={() => setShowEscalationModal(true)}
-                    disabled={!canEscalateContract}
-                    className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
+              {step.key === 'privilege-manager-approval' &&
+                showEscalationButton && (
+                  <span
+                    title={
+                      canEscalateContract
+                        ? 'Escalate request'
+                        : isContractEscalated
+                          ? 'Request has already been escalated'
+                          : 'Cannot escalate request'
+                    }
                   >
-                    <ArrowUpFromBracketIcon />
-                    <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
-                      Escalate
-                    </div>
-                  </IconButton>
-                </span>
-              )}
-            </Box>
-          ) : (
-            <>Privilege Manager Approval</>
-          ),
-        status:
-          privilegeManagerApprovalTask?.rec.status ===
-          V1_UserApprovalStatus.PENDING
-            ? 'active'
-            : privilegeManagerApprovalTask?.rec.status ===
-                V1_UserApprovalStatus.APPROVED
-              ? 'complete'
-              : privilegeManagerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.DENIED ||
-                  privilegeManagerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.REVOKED
-                ? 'denied'
-                : privilegeManagerApprovalTask === undefined
-                  ? 'skipped'
-                  : 'upcoming',
-        description:
-          privilegeManagerApprovalTask?.rec.status ===
-          V1_UserApprovalStatus.PENDING ? (
-            <AssigneesList
-              userIds={privilegeManagerApprovalTask.assignees}
-              applicationStore={currentViewer.applicationStore}
-              userSearchService={currentViewer.userSearchService}
-            />
-          ) : (
-            <TaskApprovalView
-              task={privilegeManagerApprovalTask}
-              applicationStore={currentViewer.applicationStore}
-              userSearchService={currentViewer.userSearchService}
-            />
-          ),
-      },
-      {
-        key: 'data-producer-approval',
-        label:
-          dataOwnerApprovalTask?.rec.status ===
-          V1_UserApprovalStatus.PENDING ? (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                gap: '1rem',
-              }}
-            >
-              <Link
-                href={getContractTaskUrl(
-                  currentViewer.liteContract.guid,
-                  dataOwnerApprovalTask.rec.taskId,
+                    <IconButton
+                      onClick={() => setShowEscalationModal(true)}
+                      disabled={!canEscalateContract}
+                      className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
+                    >
+                      <ArrowUpFromBracketIcon />
+                      <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
+                        Escalate
+                      </div>
+                    </IconButton>
+                  </span>
                 )}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Data Producer Approval
-              </Link>
-              <IconButton
-                onClick={() =>
-                  copyTaskLink(
-                    getContractTaskUrl(
-                      currentViewer.liteContract.guid,
-                      dataOwnerApprovalTask.rec.taskId,
-                    ),
-                  )
-                }
-                className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
-                title="Copy Task Link"
-              >
-                <CopyFilledIcon />
-                <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
-                  Copy
-                </div>
-              </IconButton>
             </Box>
-          ) : (
-            <>Data Producer Approval</>
           ),
-        status:
-          dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING
-            ? 'active'
-            : dataOwnerApprovalTask?.rec.status ===
-                V1_UserApprovalStatus.APPROVED
-              ? 'complete'
-              : dataOwnerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.DENIED ||
-                  dataOwnerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.REVOKED
-                ? 'denied'
-                : 'upcoming',
-        description:
-          dataOwnerApprovalTask?.rec.status ===
-          V1_UserApprovalStatus.PENDING ? (
+          description: step.assignees ? (
             <AssigneesList
-              userIds={dataOwnerApprovalTask.assignees}
-              applicationStore={currentViewer.applicationStore}
-              userSearchService={currentViewer.userSearchService}
-            />
-          ) : dataOwnerApprovalTask !== undefined ? (
-            <TaskApprovalView
-              task={dataOwnerApprovalTask}
+              userIds={step.assignees}
               applicationStore={currentViewer.applicationStore}
               userSearchService={currentViewer.userSearchService}
             />
           ) : undefined,
-      },
-      {
-        key: 'complete',
-        // Some contracts don't require privilege manager approval, so we only need to check if the data owner approval has completed to determine if the contract is complete
-        status:
-          dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.APPROVED
-            ? 'complete'
-            : 'upcoming',
-        label: <>Complete</>,
-      },
-    ];
+        };
+      }
+      // Non-active approval steps show the approval/denial details
+      if (
+        (step.key === 'privilege-manager-approval' ||
+          step.key === 'data-producer-approval') &&
+        step.status !== 'active' &&
+        step.status !== 'upcoming' &&
+        step.status !== 'skipped' &&
+        step.approvalPayload
+      ) {
+        return {
+          ...step,
+          description: (
+            <TaskApprovalView
+              task={
+                {
+                  rec: {
+                    status: step.taskStatus,
+                    eventPayload: step.approvalPayload,
+                  },
+                  assignees: step.assignees ?? [],
+                } as unknown as V1_TaskMetadata
+              }
+              applicationStore={currentViewer.applicationStore}
+              userSearchService={currentViewer.userSearchService}
+            />
+          ),
+        };
+      }
+      return step;
+    });
 
     const contractTimelineSection =
-      currentViewer.liteContract.resourceType ===
-      V1_ResourceType.ACCESS_POINT_GROUP ? (
+      currentViewer.resourceType === V1_ResourceType.ACCESS_POINT_GROUP ? (
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
           <Timeline>
             {contractTimelineSteps.map((step, index) => (
@@ -763,8 +665,8 @@ export const EntitlementsDataContractContent = observer(
       ) : (
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
           Unable to display data contract tasks for resource of type{' '}
-          {currentViewer.liteContract.resourceType} on data product{' '}
-          {currentViewer.liteContract.resourceId}.
+          {currentViewer.resourceType} on data product{' '}
+          {currentViewer.resourceId}.
         </Box>
       );
 
@@ -785,7 +687,7 @@ export const EntitlementsDataContractContent = observer(
                 className="marketplace-lakehouse-text__emphasis"
                 href={getDataProductUrl(
                   dataProduct,
-                  currentViewer.liteContract.deploymentId,
+                  currentViewer.deploymentId,
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -795,7 +697,7 @@ export const EntitlementsDataContractContent = observer(
               Data Product
             </div>
             {contractMetadataSection}
-            {!isContractInTerminalState(currentViewer.liteContract) && (
+            {!currentViewer.isInTerminalState && (
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
                 <Button
                   size="small"
@@ -829,7 +731,7 @@ export const EntitlementsDataContractContent = observer(
           )}
           <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details">
             <Box>
-              Contract ID: {currentViewer.liteContract.guid}
+              Contract ID: {currentViewer.guid}
               <IconButton
                 onClick={() => copyContractId()}
                 title="Copy Contract ID"
@@ -839,7 +741,7 @@ export const EntitlementsDataContractContent = observer(
             </Box>
             <span
               title={
-                currentViewer.liteContract.state === V1_ContractState.CLOSED
+                currentViewer.state === V1_ContractState.CLOSED
                   ? 'Contract is already closed'
                   : 'Close Contract'
               }
@@ -849,7 +751,7 @@ export const EntitlementsDataContractContent = observer(
                 disabled={
                   currentViewer.initializationState.isInProgress ||
                   currentViewer.invalidatingContractState.isInProgress ||
-                  currentViewer.liteContract.state === V1_ContractState.CLOSED
+                  currentViewer.state === V1_ContractState.CLOSED
                 }
                 className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
               >
@@ -875,7 +777,7 @@ export const EntitlementsDataContractViewer = observer(
   (props: {
     open: boolean;
     onClose: () => void;
-    currentViewer: EntitlementsDataContractViewerState;
+    currentViewer: DataAccessRequestState;
     getContractTaskUrl: (contractId: string, taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
     initialSelectedUser?: string | undefined;
@@ -884,10 +786,7 @@ export const EntitlementsDataContractViewer = observer(
   }) => {
     const { open, onClose, currentViewer, ...contentProps } = props;
 
-    const isContractInProgressForUser =
-      currentViewer.associatedTasks?.some(
-        (task) => task.rec.status === V1_UserApprovalStatus.PENDING,
-      ) ?? false;
+    const isContractInProgressForUser = currentViewer.isInProgress;
 
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
