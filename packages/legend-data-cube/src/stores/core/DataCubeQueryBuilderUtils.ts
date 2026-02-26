@@ -568,7 +568,7 @@ export function _castCols(columns: DataCubeColumn[]) {
       V1_createRelationType(
         columns.map((col) =>
           V1_createRelationTypeColumn(
-            col.name,
+            col.name.replace(/^'|'$/g, ''),
             col.type,
             _generateTypeVariableValues(col.type),
           ),

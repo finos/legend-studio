@@ -458,7 +458,7 @@ async function getCastColumns(
   return result.result.builder.columns.map((column) => {
     const type = column.type as string;
     return {
-      name: column.name,
+      name: column.name.replace(/^'|'$/g, ''),
       // FIXME: this is a workaround to help plan generation does not handle well decimal type
       // Remove this once https://github.com/finos/legend-engine/pull/3400 is productionized
       type: type === PRIMITIVE_TYPE.DECIMAL ? PRIMITIVE_TYPE.FLOAT : type,
