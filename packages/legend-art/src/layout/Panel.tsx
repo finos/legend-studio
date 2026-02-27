@@ -419,10 +419,10 @@ export const PanelFormTextField = forwardRef<
 });
 
 /**
- * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
- * This is subjected to change and review, especially in terms in UX.
+ * A boolean toggle field without the PanelFormSection wrapper.
+ * Use this when you need the toggle without the section padding.
  */
-export const PanelFormBooleanField = observer(
+export const PanelBooleanField = observer(
   (props: {
     name?: string;
     prompt?: string;
@@ -439,7 +439,7 @@ export const PanelFormBooleanField = observer(
     };
 
     return (
-      <PanelFormSection>
+      <>
         {name && (
           <div className="panel__content__form__section__header__label">
             {capitalize(name)}
@@ -465,6 +465,23 @@ export const PanelFormBooleanField = observer(
             {prompt} {children}
           </div>
         </div>
+      </>
+    );
+  },
+);
+
+export const PanelFormBooleanField = observer(
+  (props: {
+    name?: string;
+    prompt?: string;
+    value: boolean | undefined;
+    children?: React.ReactNode;
+    isReadOnly: boolean;
+    update: (value: boolean | undefined) => void;
+  }) => {
+    return (
+      <PanelFormSection>
+        <PanelBooleanField {...props} />
       </PanelFormSection>
     );
   },

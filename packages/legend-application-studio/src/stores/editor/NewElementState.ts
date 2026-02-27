@@ -517,15 +517,15 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
 export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct> {
   title: string;
-  modelled = false;
+  modeled = false;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
     this.title = '';
     makeObservable(this, {
       title: observable,
-      modelled: observable,
-      setModelled: action,
+      modeled: observable,
+      setModeled: action,
       setTitle: action,
       isValid: computed,
     });
@@ -534,18 +534,21 @@ export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct>
   override get isValid(): boolean {
     return Boolean(this.title);
   }
+
   setTitle(val: string) {
     this.title = val;
   }
-  setModelled(val: boolean) {
-    this.modelled = val;
+
+  setModeled(val: boolean) {
+    this.modeled = val;
   }
+
   override createElement(name: string): DataProduct {
     const dataProduct = new DataProduct(name);
     dataProduct_setTitle(dataProduct, this.title);
     dataProduct_setType(dataProduct, new InternalDataProductType());
 
-    if (!this.modelled) {
+    if (!this.modeled) {
       const defaultGroup = new AccessPointGroup();
       defaultGroup.id = 'default';
       dataProduct_addAccessPointGroup(dataProduct, defaultGroup);
