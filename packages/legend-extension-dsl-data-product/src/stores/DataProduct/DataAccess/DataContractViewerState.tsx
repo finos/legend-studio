@@ -39,7 +39,6 @@ import {
   type UserSearchService,
   ActionState,
   assertErrorThrown,
-  guaranteeType,
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
@@ -195,6 +194,16 @@ export class DataContractViewerState implements DataAccessRequestState {
         task.rec.consumer === selectedTargetUser &&
         task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
     );
+    const privilegeManagerApprovalPayload =
+      privilegeManagerApprovalTask?.rec.eventPayload instanceof
+      V1_ContractUserEventPrivilegeManagerPayload
+        ? privilegeManagerApprovalTask.rec.eventPayload
+        : undefined;
+    const dataOwnerApprovalPayload =
+      dataOwnerApprovalTask?.rec.eventPayload instanceof
+      V1_ContractUserEventDataProducerPayload
+        ? dataOwnerApprovalTask.rec.eventPayload
+        : undefined;
     const privilegeManagerApprovalStepStatus = privilegeManagerApprovalTask
       ? privilegeManagerApprovalTask.rec.status ===
         V1_UserApprovalStatus.PENDING
@@ -263,17 +272,15 @@ export class DataContractViewerState implements DataAccessRequestState {
         },
         status: privilegeManagerApprovalStepStatus,
         assignees: privilegeManagerApprovalTask?.assignees,
-        approvalPayload: privilegeManagerApprovalTask?.rec.eventPayload
-          ? {
-              status: privilegeManagerApprovalTask.rec.status,
-              approvalTimestamp:
-                privilegeManagerApprovalTask.rec.eventPayload.eventTimestamp,
-              approverId: guaranteeType(
-                privilegeManagerApprovalTask.rec.eventPayload,
-                V1_ContractUserEventPrivilegeManagerPayload,
-              ).managerIdentity,
-            }
-          : undefined,
+        approvalPayload:
+          privilegeManagerApprovalTask && privilegeManagerApprovalPayload
+            ? {
+                status: privilegeManagerApprovalTask.rec.status,
+                approvalTimestamp:
+                  privilegeManagerApprovalPayload.eventTimestamp,
+                approverId: privilegeManagerApprovalPayload.managerIdentity,
+              }
+            : undefined,
       },
       {
         key: 'data-producer-approval',
@@ -286,17 +293,14 @@ export class DataContractViewerState implements DataAccessRequestState {
         },
         status: dataOwnerApprovalStepStatus,
         assignees: dataOwnerApprovalTask?.assignees,
-        approvalPayload: dataOwnerApprovalTask?.rec.eventPayload
-          ? {
-              status: dataOwnerApprovalTask.rec.status,
-              approvalTimestamp:
-                dataOwnerApprovalTask.rec.eventPayload.eventTimestamp,
-              approverId: guaranteeType(
-                dataOwnerApprovalTask.rec.eventPayload,
-                V1_ContractUserEventDataProducerPayload,
-              ).dataProducerIdentity,
-            }
-          : undefined,
+        approvalPayload:
+          dataOwnerApprovalTask && dataOwnerApprovalPayload
+            ? {
+                status: dataOwnerApprovalTask.rec.status,
+                approvalTimestamp: dataOwnerApprovalPayload.eventTimestamp,
+                approverId: dataOwnerApprovalPayload.dataProducerIdentity,
+              }
+            : undefined,
       },
       {
         key: 'complete',
