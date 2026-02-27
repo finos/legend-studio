@@ -193,7 +193,8 @@ beforeEach(() => {
     },
   };
   if (originalCookieDescriptor.get) {
-    descriptor.get = originalCookieDescriptor.get;
+    const boundGet = originalCookieDescriptor.get.bind(document);
+    descriptor.get = boundGet;
   }
   Object.defineProperty(document, 'cookie', descriptor);
 });
@@ -466,9 +467,9 @@ describe('LegendTokenSync', () => {
       expect(cookieWithMaxAge).toBeDefined();
       // The max-age should be close to 1800 (within a small tolerance for
       // the time elapsed between Date.now() calls).
-      const match = cookieWithMaxAge!.match(/max-age=(\d+)/);
+      const match = cookieWithMaxAge?.match(/max-age=(?<maxAge>\d+)/);
       expect(match).not.toBeNull();
-      const writtenMaxAge = Number(match![1]);
+      const writtenMaxAge = Number(match?.groups?.maxAge);
       expect(writtenMaxAge).toBeGreaterThanOrEqual(1798);
       expect(writtenMaxAge).toBeLessThanOrEqual(1800);
     },
