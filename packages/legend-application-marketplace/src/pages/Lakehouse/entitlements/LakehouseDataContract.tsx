@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { withLegendMarketplaceProductViewerStore } from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import {
+  generateContractPagePath,
   generateLakehouseDataProductPath,
   type LakehouseDataContractTaskPathParams,
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
@@ -145,7 +146,10 @@ export const LakehouseDataContractTask =
 
               const viewerState = new DataContractViewerState(
                 liteDataContract,
-                () => '',
+                (_contractId: string, _taskId: string) =>
+                  marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateContractPagePath(_contractId, _taskId),
+                  ),
                 undefined,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
