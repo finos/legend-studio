@@ -32,6 +32,8 @@ export * from './components/ApplicationFrameworkProvider.js';
 export * from './components/useApplicationNavigationContext.js';
 export * from './components/useCommands.js';
 export * from './components/ReleaseNotesManager.js';
+export * from './components/LegendTokenSync.js';
+
 export {
   forceDispatchKeyboardEvent,
   BackdropContainer,
