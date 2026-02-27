@@ -552,7 +552,7 @@ export const DataAccessRequestContent = observer(
                   {index < timelineSteps.length - 1 && <TimelineConnector />}
                 </TimelineSeparator>
                 <TimelineContent className="marketplace-lakehouse-entitlements__data-access-request-viewer__timeline__content">
-                  {step.assignees ? (
+                  {step.status === 'active' && step.assignees ? (
                     <AssigneesList
                       userIds={step.assignees}
                       applicationStore={viewerState.applicationStore}
