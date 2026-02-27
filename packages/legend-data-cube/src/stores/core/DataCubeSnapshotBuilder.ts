@@ -486,7 +486,7 @@ export async function validateAndBuildSnapshot(
     const castColumns = _relationType(
       _genericTypeParam(funcMap.pivotCast, 0).genericType,
     ).columns.map((column) => ({
-      name: column.name,
+      name: column.name.replace(/^'|'$/g, ''),
       type: _packageableType(column.genericType).fullPath,
     }));
     data.pivot = {
