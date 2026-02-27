@@ -37,7 +37,10 @@ import {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
 } from './LegendStudioFrameworkProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  LegendTokenSync,
+} from '@finos/legend-application';
 import {
   BrowserEnvironmentProvider,
   generateExtensionUrlPattern,
@@ -344,13 +347,17 @@ export const LegendStudioWebApplication = observer(
       if (enableOauthFlow) {
         return (
           <AuthProvider {...mergedOIDCConfig}>
-            <AuthenticatedLegendStudioWebProvider baseUrl={baseUrl} />
+            <LegendTokenSync>
+              <AuthenticatedLegendStudioWebProvider baseUrl={baseUrl} />
+            </LegendTokenSync>
           </AuthProvider>
         );
       }
       return (
         <AuthProvider {...mergedOIDCConfig}>
-          <LegendStudioWebProvider baseUrl={baseUrl} />
+          <LegendTokenSync>
+            <LegendStudioWebProvider baseUrl={baseUrl} />
+          </LegendTokenSync>
         </AuthProvider>
       );
     }

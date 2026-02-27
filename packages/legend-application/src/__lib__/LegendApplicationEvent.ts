@@ -53,5 +53,7 @@ export enum APPLICATION_EVENT {
 
   APPLICATION_TELEMETRY_EVENT__FAILURE = 'application.telemetry-event.failure',
 
+  TOKEN_EXPIRED = 'application.token.expired',
+
   DEBUG = 'development.debug',
 }

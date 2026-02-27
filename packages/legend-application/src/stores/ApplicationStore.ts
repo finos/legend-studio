@@ -66,11 +66,14 @@ export abstract class ApplicationExtensionState {
   abstract get INTERNAL__identifierKey(): string;
 }
 
+const LEGEND_ACCESS_TOKEN_COOKIE_NAME = 'legend-access-token';
+
 export class ApplicationStore<
   T extends LegendApplicationConfig,
   V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 > {
   readonly uuid = uuid();
+  accessToken: string | undefined = undefined;
 
   /**
    * This is a mechanism to have the store holds references to extension states
@@ -221,6 +224,33 @@ export class ApplicationStore<
       error,
     );
   };
+
+  /**
+   * Stores the OIDC access token in memory and syncs it to a browser cookie
+   * (`legend-access-token`) so that HTTP clients using `credentials: 'include'`
+   * automatically send it with every request.
+   */
+  setAccessToken(token: string | undefined, maxAge?: number): void {
+    this.accessToken = token;
+    this._syncAccessTokenCookie(maxAge);
+  }
+
+  getAccessToken(): string | undefined {
+    return this.accessToken;
+  }
+
+  private _syncAccessTokenCookie(maxAge?: number): void {
+    if (this.accessToken) {
+      let cookie = `${LEGEND_ACCESS_TOKEN_COOKIE_NAME}=${encodeURIComponent(this.accessToken)}; path=/; Secure; SameSite=Strict`;
+      if (maxAge !== undefined && maxAge > 0) {
+        cookie += `; max-age=${Math.floor(maxAge)}`;
+      }
+      document.cookie = cookie;
+    } else {
+      // expire the cookie
+      document.cookie = `${LEGEND_ACCESS_TOKEN_COOKIE_NAME}=; path=/; Secure; SameSite=Strict; max-age=0`;
+    }
+  }
 
   /**
    * Guarantee that the action being used by the component does not throw unhandled errors

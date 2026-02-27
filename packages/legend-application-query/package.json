@@ -61,8 +61,10 @@
     "@types/react-dom": "19.0.4",
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
+    "oidc-client-ts": "^3.2.0",
     "react": "19.0.1",
     "react-dom": "19.0.1",
+    "react-oidc-context": "^3.3.0",
     "reactflow": "11.11.4",
     "serializr": "3.0.3"
   },

@@ -33,8 +33,24 @@ import {
   list,
   object,
   optional,
+  raw,
 } from 'serializr';
 import { QueryBuilderConfig } from '@finos/legend-query-builder';
+import type { AuthProviderProps } from 'react-oidc-context';
+
+export class LegendQueryOIDCConfiguration {
+  redirectPath!: string;
+  silentRedirectPath!: string;
+  authProviderProps!: AuthProviderProps;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(LegendQueryOIDCConfiguration, {
+      redirectPath: primitive(),
+      silentRedirectPath: primitive(),
+      authProviderProps: raw(),
+    }),
+  );
+}
 
 export class ServiceRegistrationEnvironmentConfig {
   env!: string;
@@ -72,6 +88,20 @@ class LegendQueryApplicationCoreOptions {
    */
   queryBuilderConfig: QueryBuilderConfig | undefined;
 
+  /**
+   * OIDC configuration for the Query application.
+   * When provided, the application will be wrapped in a `LegendTokenProvider`
+   * to enable automatic access-token syncing.
+   */
+  oidcConfig: LegendQueryOIDCConfiguration | undefined;
+
+  /**
+   * Indicates if we should enable oauth flow
+   *
+   * Default to `false`
+   */
+  enableOauthFlow = false;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendQueryApplicationCoreOptions, {
       TEMPORARY__serviceRegistrationConfig: list(
@@ -81,6 +111,10 @@ class LegendQueryApplicationCoreOptions {
         usingModelSchema(QueryBuilderConfig.serialization.schema),
       ),
       TEMPORARY__enableMinimalGraph: optional(primitive()),
+      oidcConfig: optional(
+        usingModelSchema(LegendQueryOIDCConfiguration.serialization.schema),
+      ),
+      enableOauthFlow: optional(primitive()),
     }),
   );
 

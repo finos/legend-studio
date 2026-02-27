@@ -18,16 +18,17 @@ import { observer } from 'mobx-react-lite';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../__lib__/LegendQueryNavigation.js';
 import { QuerySetupLandingPage } from './QuerySetup.js';
 import {
-  MappingQueryCreator,
   ExistingQueryEditor,
+  MappingQueryCreator,
   ServiceQueryCreator,
 } from './QueryEditor.js';
 import {
   BrowserEnvironmentProvider,
+  generateExtensionUrlPattern,
   Route,
   Routes,
-  generateExtensionUrlPattern,
 } from '@finos/legend-application/browser';
+import { LegendTokenSync } from '@finos/legend-application';
 import {
   LegendQueryFrameworkProvider,
   useLegendQueryApplicationStore,
@@ -41,6 +42,16 @@ import { LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN } from '../__lib__/DSL_DataSpace_
 import { DataSpaceTemplateQueryCreator } from './data-space/DataSpaceTemplateQueryCreator.js';
 import { DataSpaceQueryCreator } from './data-space/DataSpaceQueryCreator.js';
 import { ExistingQueryDataCubeViewer } from './data-cube/ExistingQueryDataCubeViewer.js';
+import {
+  AuthProvider,
+  withAuthenticationRequired,
+  type AuthProviderProps,
+} from 'react-oidc-context';
+import type { User } from 'oidc-client-ts';
+import {
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
+} from '@finos/legend-art';
 
 const LegendQueryWebApplicationRouter = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
@@ -129,16 +140,69 @@ const LegendQueryWebApplicationRouter = observer(() => {
   );
 });
 
+const LegendQueryWebProvider: React.FC<{
+  baseUrl: string;
+}> = ({ baseUrl }) => {
+  return (
+    <BrowserEnvironmentProvider baseUrl={baseUrl}>
+      <LegendQueryFrameworkProvider>
+        <LegendQueryWebApplicationRouter />
+      </LegendQueryFrameworkProvider>
+    </BrowserEnvironmentProvider>
+  );
+};
+
+const AuthenticatedLegendQueryWebProvider = withAuthenticationRequired(
+  LegendQueryWebProvider,
+  {
+    OnRedirecting: () => (
+      <CubesLoadingIndicator isLoading={true}>
+        <CubesLoadingIndicatorIcon />
+      </CubesLoadingIndicator>
+    ),
+    signinRedirectArgs: {
+      state: `${window.location.pathname}${window.location.search}`,
+    },
+  },
+);
+
 export const LegendQueryWebApplication = observer(
   (props: { baseUrl: string }) => {
     const { baseUrl } = props;
+    const applicationStore = useLegendQueryApplicationStore();
+    const oidcConfig = applicationStore.config.options.oidcConfig;
+    const enableOauthFlow = applicationStore.config.options.enableOauthFlow;
 
-    return (
-      <BrowserEnvironmentProvider baseUrl={baseUrl}>
-        <LegendQueryFrameworkProvider>
-          <LegendQueryWebApplicationRouter />
-        </LegendQueryFrameworkProvider>
-      </BrowserEnvironmentProvider>
-    );
+    if (oidcConfig) {
+      const onSigninCallback = (_user: User | undefined): void => {
+        window.location.href = (_user?.state as string | undefined) ?? '/';
+      };
+
+      const mergedOIDCConfig: AuthProviderProps = {
+        ...oidcConfig.authProviderProps,
+        redirect_uri: `${window.location.origin}${oidcConfig.redirectPath}`,
+        silent_redirect_uri: `${window.location.origin}${oidcConfig.silentRedirectPath}`,
+        onSigninCallback,
+      };
+
+      if (enableOauthFlow) {
+        return (
+          <AuthProvider {...mergedOIDCConfig}>
+            <LegendTokenSync>
+              <AuthenticatedLegendQueryWebProvider baseUrl={baseUrl} />
+            </LegendTokenSync>
+          </AuthProvider>
+        );
+      }
+      return (
+        <AuthProvider {...mergedOIDCConfig}>
+          <LegendTokenSync>
+            <LegendQueryWebProvider baseUrl={baseUrl} />
+          </LegendTokenSync>
+        </AuthProvider>
+      );
+    }
+
+    return <LegendQueryWebProvider baseUrl={baseUrl} />;
   },
 );
