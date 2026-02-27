@@ -17,94 +17,43 @@
 import {
   type GraphManagerState,
   type V1_ContractUserMembership,
-  type V1_ContractUserEventPayload,
   type V1_DataSubscription,
   type V1_LiteDataContract,
   type V1_OrganizationalScope,
   type V1_TaskMetadata,
-  type V1_UserType,
-  type V1_ContractState,
   V1_AdhocTeam,
   V1_ApprovalType,
+  V1_ContractState,
   V1_ResourceType,
   V1_UserApprovalStatus,
+  V1_UserType,
   V1_deserializeDataContractResponse,
   V1_deserializeTaskResponse,
   V1_observe_LiteDataContract,
   V1_transformDataContractToLiteDatacontract,
+  V1_ContractUserEventPrivilegeManagerPayload,
+  V1_ContractUserEventDataProducerPayload,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
   type UserSearchService,
   ActionState,
   assertErrorThrown,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
-import { isContractInTerminalState } from '../../utils/DataContractUtils.js';
-
-export type TimelineStep = {
-  key: string;
-  label: React.ReactNode;
-  status: 'active' | 'complete' | 'denied' | 'skipped' | 'upcoming';
-  description?: React.ReactNode;
-  // Optional task metadata for rendering interactive elements
-  taskId?: string | undefined;
-  taskStatus?: string | undefined;
-  assignees?: string[] | undefined;
-  isEscalated?: boolean | undefined;
-  approvalPayload?: V1_ContractUserEventPayload | undefined;
-};
-
-export interface DataAccessRequestState {
-  // Identity
-  readonly guid: string;
-  readonly description: string;
-  readonly createdBy: string;
-  readonly createdAt: string;
-
-  // Resource info
-  readonly resourceId: string;
-  readonly resourceType: string;
-  readonly accessPointGroup: string | undefined;
-  readonly deploymentId: number;
-
-  // Consumer info
-  readonly consumer: V1_OrganizationalScope;
-
-  // Status
-  readonly state: V1_ContractState;
-  readonly isInTerminalState: boolean;
-  readonly isInProgress: boolean;
-
-  // Subscription
-  readonly subscription: V1_DataSubscription | undefined;
-
-  // Services
-  readonly applicationStore: GenericLegendApplicationStore;
-  readonly userSearchService: UserSearchService | undefined;
-  readonly lakehouseContractServerClient: LakehouseContractServerClient;
-
-  // Action states
-  readonly initializationState: ActionState;
-  readonly invalidatingContractState: ActionState;
-
-  // Data
-  readonly contractMembers: V1_ContractUserMembership[];
-  readonly targetUsers: string[] | undefined;
-
-  // Timeline
-  getTimelineSteps(selectedTargetUser: string | undefined): TimelineStep[];
-
-  // Actions
-  init(token: string | undefined): GeneratorFn<void>;
-  invalidateContract(token: string | undefined): GeneratorFn<void>;
-  getContractUserType(userId: string): V1_UserType | undefined;
-}
+import {
+  DataAccessRequestStatus,
+  type DataAccessRequestState,
+  type TimelineStep,
+} from './DataAccessRequestState.js';
+import { isContractInTerminalState } from '../../../utils/DataContractUtils.js';
 
 export class DataContractViewerState implements DataAccessRequestState {
   liteContract: V1_LiteDataContract;
+  readonly getTaskUrl: (contractId: string, taskId: string) => string;
   readonly subscription: V1_DataSubscription | undefined;
   readonly applicationStore: GenericLegendApplicationStore;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
@@ -115,10 +64,12 @@ export class DataContractViewerState implements DataAccessRequestState {
 
   readonly initializationState = ActionState.create();
   readonly fetchingMembersState = ActionState.create();
-  readonly invalidatingContractState = ActionState.create();
+  readonly escalatingState = ActionState.create();
+  readonly invalidatingState = ActionState.create();
 
   constructor(
     dataContract: V1_LiteDataContract,
+    getTaskUrl: (contractId: string, taskId: string) => string,
     subscription: V1_DataSubscription | undefined,
     applicationStore: GenericLegendApplicationStore,
     lakehouseContractServerClient: LakehouseContractServerClient,
@@ -135,10 +86,11 @@ export class DataContractViewerState implements DataAccessRequestState {
       targetUsers: computed,
       isInProgress: computed,
       init: flow,
-      invalidateContract: flow,
+      invalidateRequest: flow,
     });
 
     this.liteContract = V1_observe_LiteDataContract(dataContract);
+    this.getTaskUrl = getTaskUrl;
     this.subscription = subscription;
     this.applicationStore = applicationStore;
     this.lakehouseContractServerClient = lakehouseContractServerClient;
@@ -184,8 +136,25 @@ export class DataContractViewerState implements DataAccessRequestState {
     return this.liteContract.consumer;
   }
 
-  get state(): V1_ContractState {
-    return this.liteContract.state;
+  get status(): DataAccessRequestStatus {
+    switch (this.liteContract.state) {
+      case V1_ContractState.DRAFT:
+        return DataAccessRequestStatus.DRAFT;
+      case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
+        return DataAccessRequestStatus.PENDING_DATA_OWNER_APPROVAL;
+      case V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL:
+        return DataAccessRequestStatus.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL;
+      case V1_ContractState.COMPLETED:
+        return DataAccessRequestStatus.COMPLETED;
+      case V1_ContractState.REJECTED:
+        return DataAccessRequestStatus.REJECTED;
+      case V1_ContractState.CLOSED:
+        return DataAccessRequestStatus.CLOSED;
+      default:
+        throw new Error(
+          `Unsupported contract state: ${this.liteContract.state}`,
+        );
+    }
   }
 
   get isInTerminalState(): boolean {
@@ -226,60 +195,108 @@ export class DataContractViewerState implements DataAccessRequestState {
         task.rec.consumer === selectedTargetUser &&
         task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
     );
+    const privilegeManagerApprovalStepStatus = privilegeManagerApprovalTask
+      ? privilegeManagerApprovalTask.rec.status ===
+        V1_UserApprovalStatus.PENDING
+        ? ('active' as const)
+        : privilegeManagerApprovalTask.rec.status ===
+            V1_UserApprovalStatus.APPROVED
+          ? ('complete' as const)
+          : privilegeManagerApprovalTask.rec.status ===
+                V1_UserApprovalStatus.DENIED ||
+              privilegeManagerApprovalTask.rec.status ===
+                V1_UserApprovalStatus.REVOKED ||
+              privilegeManagerApprovalTask.rec.status ===
+                V1_UserApprovalStatus.CLOSED
+            ? ('denied' as const)
+            : ('upcoming' as const)
+      : ('skipped' as const);
+    const dataOwnerApprovalStepStatus = dataOwnerApprovalTask
+      ? dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.PENDING
+        ? ('active' as const)
+        : dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.APPROVED
+          ? ('complete' as const)
+          : dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.DENIED ||
+              dataOwnerApprovalTask.rec.status ===
+                V1_UserApprovalStatus.REVOKED ||
+              dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.CLOSED
+            ? ('denied' as const)
+            : ('upcoming' as const)
+      : ('upcoming' as const);
+
+    const showEscalateButton =
+      selectedTargetUser ===
+        this.applicationStore.identityService.currentUser ||
+      (selectedTargetUser !== undefined &&
+        this.getContractUserType(selectedTargetUser) ===
+          V1_UserType.SYSTEM_ACCOUNT);
+    const isEscalated = privilegeManagerApprovalTask?.rec.isEscalated ?? false;
+    const isEscalatable =
+      showEscalateButton &&
+      privilegeManagerApprovalStepStatus === 'active' &&
+      !isEscalated;
 
     if (this.liteContract.resourceType !== V1_ResourceType.ACCESS_POINT_GROUP) {
       return [];
     }
 
     return [
-      { key: 'submitted', status: 'complete' as const, label: 'Submitted' },
+      {
+        key: 'submitted',
+        status: 'complete' as const,
+        label: { title: 'Submitted' },
+      },
       {
         key: 'privilege-manager-approval',
-        label: 'Privilege Manager Approval',
-        status:
-          privilegeManagerApprovalTask?.rec.status ===
-          V1_UserApprovalStatus.PENDING
-            ? ('active' as const)
-            : privilegeManagerApprovalTask?.rec.status ===
-                V1_UserApprovalStatus.APPROVED
-              ? ('complete' as const)
-              : privilegeManagerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.DENIED ||
-                  privilegeManagerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.REVOKED ||
-                  privilegeManagerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.CLOSED
-                ? ('denied' as const)
-                : privilegeManagerApprovalTask === undefined
-                  ? ('skipped' as const)
-                  : ('upcoming' as const),
-        taskId: privilegeManagerApprovalTask?.rec.taskId,
-        taskStatus: privilegeManagerApprovalTask?.rec.status,
+        label: {
+          title: 'Privilege Manager Approval',
+          link:
+            privilegeManagerApprovalStepStatus === 'active'
+              ? this.getTaskUrl(
+                  this.guid,
+                  privilegeManagerApprovalTask!.rec.taskId,
+                )
+              : undefined,
+          showEscalateButton,
+          isEscalatable,
+          isEscalated,
+        },
+        status: privilegeManagerApprovalStepStatus,
         assignees: privilegeManagerApprovalTask?.assignees,
-        isEscalated: privilegeManagerApprovalTask?.rec.isEscalated,
-        approvalPayload: privilegeManagerApprovalTask?.rec.eventPayload,
+        approvalPayload: privilegeManagerApprovalTask?.rec.eventPayload
+          ? {
+              status: privilegeManagerApprovalTask.rec.status,
+              approvalTimestamp:
+                privilegeManagerApprovalTask.rec.eventPayload.eventTimestamp,
+              approverId: guaranteeType(
+                privilegeManagerApprovalTask.rec.eventPayload,
+                V1_ContractUserEventPrivilegeManagerPayload,
+              ).managerIdentity,
+            }
+          : undefined,
       },
       {
         key: 'data-producer-approval',
-        label: 'Data Producer Approval',
-        status:
-          dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING
-            ? ('active' as const)
-            : dataOwnerApprovalTask?.rec.status ===
-                V1_UserApprovalStatus.APPROVED
-              ? ('complete' as const)
-              : dataOwnerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.DENIED ||
-                  dataOwnerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.REVOKED ||
-                  dataOwnerApprovalTask?.rec.status ===
-                    V1_UserApprovalStatus.CLOSED
-                ? ('denied' as const)
-                : ('upcoming' as const),
-        taskId: dataOwnerApprovalTask?.rec.taskId,
-        taskStatus: dataOwnerApprovalTask?.rec.status,
+        label: {
+          title: 'Data Producer Approval',
+          link:
+            dataOwnerApprovalStepStatus === 'active'
+              ? this.getTaskUrl(this.guid, dataOwnerApprovalTask!.rec.taskId)
+              : undefined,
+        },
+        status: dataOwnerApprovalStepStatus,
         assignees: dataOwnerApprovalTask?.assignees,
-        approvalPayload: dataOwnerApprovalTask?.rec.eventPayload,
+        approvalPayload: dataOwnerApprovalTask?.rec.eventPayload
+          ? {
+              status: dataOwnerApprovalTask.rec.status,
+              approvalTimestamp:
+                dataOwnerApprovalTask.rec.eventPayload.eventTimestamp,
+              approverId: guaranteeType(
+                dataOwnerApprovalTask.rec.eventPayload,
+                V1_ContractUserEventDataProducerPayload,
+              ).dataProducerIdentity,
+            }
+          : undefined,
       },
       {
         key: 'complete',
@@ -287,7 +304,7 @@ export class DataContractViewerState implements DataAccessRequestState {
           dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.APPROVED
             ? ('complete' as const)
             : ('upcoming' as const),
-        label: 'Complete',
+        label: { title: 'Complete' },
       },
     ];
   }
@@ -364,9 +381,37 @@ export class DataContractViewerState implements DataAccessRequestState {
     }
   }
 
-  *invalidateContract(token: string | undefined): GeneratorFn<void> {
+  getContractUserType(userId: string): V1_UserType | undefined {
+    return this.contractMembers.find((member) => member.user.name === userId)
+      ?.user.userType;
+  }
+
+  *escalateRequest(user: string, token: string | undefined): GeneratorFn<void> {
     try {
-      this.invalidatingContractState.inProgress();
+      this.escalatingState.inProgress();
+      yield this.lakehouseContractServerClient.escalateUserOnContract(
+        this.guid,
+        user,
+        false,
+        token,
+      );
+
+      this.applicationStore.notificationService.notifySuccess(
+        'Contract escalated successfully',
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Error escalating contract: ${error.message}`,
+      );
+    } finally {
+      this.escalatingState.complete();
+    }
+  }
+
+  *invalidateRequest(token: string | undefined): GeneratorFn<void> {
+    try {
+      this.invalidatingState.inProgress();
       yield this.lakehouseContractServerClient.invalidateContract(
         this.liteContract.guid,
         token,
@@ -381,21 +426,7 @@ export class DataContractViewerState implements DataAccessRequestState {
         `Error closing contract: ${error.message}`,
       );
     } finally {
-      this.invalidatingContractState.complete();
+      this.invalidatingState.complete();
     }
   }
-
-  getContractUserType(userId: string): V1_UserType | undefined {
-    return this.contractMembers.find((member) => member.user.name === userId)
-      ?.user.userType;
-  }
 }
-
-/**
- * @deprecated Use {@link DataContractViewerState} instead.
- */
-export const EntitlementsDataContractViewerState = DataContractViewerState;
-/**
- * @deprecated Use {@link DataContractViewerState} instead.
- */
-export type EntitlementsDataContractViewerState = DataContractViewerState;

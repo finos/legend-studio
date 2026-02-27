@@ -42,14 +42,9 @@ import {
   TimelineSeparator,
 } from '@mui/lab';
 import {
-  type V1_TaskMetadata,
-  V1_ContractState,
-  V1_ContractUserEventDataProducerPayload,
-  V1_ContractUserEventPrivilegeManagerPayload,
   V1_ProducerScope,
   V1_ResourceType,
   V1_SnowflakeTarget,
-  V1_UserType,
 } from '@finos/legend-graph';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -75,7 +70,6 @@ import {
   TimesIcon,
   TrashIcon,
 } from '@finos/legend-art';
-import type { DataAccessRequestState } from '../../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import {
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
@@ -88,6 +82,10 @@ import {
   ActionAlertType,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
+import {
+  DataAccessRequestStatus,
+  type DataAccessRequestState,
+} from '../../../stores/DataProduct/DataAccess/DataAccessRequestState.js';
 
 const AssigneesList = (props: {
   userIds: string[];
@@ -108,7 +106,7 @@ const AssigneesList = (props: {
     </span>
   ) : (
     <Accordion
-      className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list__container"
+      className="marketplace-lakehouse-entitlements__data-access-request-viewer__user-list__container"
       elevation={0}
       disableGutters={true}
       defaultExpanded={true}
@@ -116,7 +114,7 @@ const AssigneesList = (props: {
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         Assignees ({userIds.length}):
       </AccordionSummary>
-      <AccordionDetails className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list">
+      <AccordionDetails className="marketplace-lakehouse-entitlements__data-access-request-viewer__user-list">
         {[...userIds].sort().map((userId) => (
           <UserRenderer
             key={userId}
@@ -131,77 +129,66 @@ const AssigneesList = (props: {
 };
 
 const TaskApprovalView = (props: {
-  task: V1_TaskMetadata | undefined;
+  status: string;
+  approverId?: string | undefined;
+  timestamp?: string | undefined;
   applicationStore: GenericLegendApplicationStore;
   userSearchService?: UserSearchService | undefined;
 }): React.ReactNode => {
-  const { task, applicationStore, userSearchService } = props;
-  const approverId =
-    task?.rec.eventPayload instanceof
-    V1_ContractUserEventPrivilegeManagerPayload
-      ? task.rec.eventPayload.managerIdentity
-      : task?.rec.eventPayload instanceof
-          V1_ContractUserEventDataProducerPayload
-        ? task.rec.eventPayload.dataProducerIdentity
-        : undefined;
+  const { status, approverId, timestamp, applicationStore, userSearchService } =
+    props;
 
-  if (task) {
-    const taskStatus = task.rec.status;
-
-    return (
-      <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
-        <Box>
-          {lodashCapitalize(taskStatus)}
-          {approverId !== undefined && (
-            <>
-              {' '}
-              by{' '}
-              <UserRenderer
-                userId={approverId}
-                applicationStore={applicationStore}
-                userSearchService={userSearchService}
-              />
-            </>
-          )}
-        </Box>
-        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
-          {task.rec.eventPayload?.eventTimestamp
-            ? formatDate(
-                new Date(task.rec.eventPayload.eventTimestamp),
-                `MM/dd/yyyy HH:mm:ss`,
-              )
-            : 'Unknown datetime'}
-        </Box>
+  return (
+    <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__task-approval-view">
+      <Box>
+        {lodashCapitalize(status)}
+        {approverId !== undefined && (
+          <>
+            {' '}
+            by{' '}
+            <UserRenderer
+              userId={approverId}
+              applicationStore={applicationStore}
+              userSearchService={userSearchService}
+            />
+          </>
+        )}
       </Box>
-    );
-  } else {
-    return undefined;
-  }
+      <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__task-approval-view__timestamp">
+        {timestamp !== undefined
+          ? formatDate(new Date(timestamp), `MM/dd/yyyy HH:mm:ss`)
+          : 'Unknown datetime'}
+      </Box>
+    </Box>
+  );
 };
 
-const ContractEscalationModal = (props: {
+const RequestEscalationModal = (props: {
   open: boolean;
   onClose: () => void;
-  currentViewer: DataAccessRequestState;
+  viewerState: DataAccessRequestState;
   selectedUser: string | undefined;
   refresh: () => Promise<void>;
 }) => {
-  const { open, onClose, currentViewer, selectedUser, refresh } = props;
+  const { open, onClose, viewerState, selectedUser, refresh } = props;
 
   const auth = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
 
   if (!selectedUser) {
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
-        <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__escalation__content">
+        <DialogContent className="marketplace-lakehouse-entitlements__data-access-request-viewer__escalation__content">
           <div>
             Can&apos;t escalate privilege manager approval request. No user
             selected.
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} variant="outlined" disabled={isLoading}>
+          <Button
+            onClick={onClose}
+            variant="outlined"
+            disabled={viewerState.escalatingState.isInProgress}
+          >
             Close
           </Button>
         </DialogActions>
@@ -210,35 +197,33 @@ const ContractEscalationModal = (props: {
   }
 
   const handleEscalate = async () => {
-    setIsLoading(true);
     try {
-      await currentViewer.lakehouseContractServerClient.escalateUserOnContract(
-        currentViewer.guid,
-        selectedUser,
-        false,
-        auth.user?.access_token,
-      );
-      currentViewer.applicationStore.notificationService.notifySuccess(
-        'Successfully escalated contract request',
+      await flowResult(
+        viewerState.escalateRequest?.(selectedUser, auth.user?.access_token),
       );
       // eslint-disable-next-line no-void
       void refresh();
+      viewerState.applicationStore.notificationService.notifySuccess(
+        'Successfully escalated access request',
+      );
       onClose();
     } catch (error) {
       assertErrorThrown(error);
-      currentViewer.applicationStore.alertUnhandledError(error);
-    } finally {
-      setIsLoading(false);
+      viewerState.applicationStore.notificationService.notifyError(
+        `Error escalating request: ${error.message}`,
+      );
     }
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
-      <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__escalation__content">
-        <CubesLoadingIndicator isLoading={isLoading}>
+      <DialogContent className="marketplace-lakehouse-entitlements__data-access-request-viewer__escalation__content">
+        <CubesLoadingIndicator
+          isLoading={viewerState.escalatingState.isInProgress}
+        >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        {!isLoading && (
+        {!viewerState.escalatingState.isInProgress && (
           <div>
             Are you sure you want to escalate the privilege manager approval
             request?
@@ -252,11 +237,15 @@ const ContractEscalationModal = (props: {
             void handleEscalate();
           }}
           variant="contained"
-          disabled={isLoading}
+          disabled={viewerState.escalatingState.isInProgress}
         >
           Escalate
         </Button>
-        <Button onClick={onClose} variant="outlined" disabled={isLoading}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          disabled={viewerState.escalatingState.isInProgress}
+        >
           Cancel
         </Button>
       </DialogActions>
@@ -267,7 +256,6 @@ const ContractEscalationModal = (props: {
 export const DataAccessRequestContent = observer(
   (props: {
     viewerState: DataAccessRequestState;
-    getTaskUrl: (contractId: string, taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
     initialSelectedUser?: string | undefined;
     onRefresh?: (() => void) | (() => Promise<void>);
@@ -275,7 +263,6 @@ export const DataAccessRequestContent = observer(
   }) => {
     const {
       viewerState,
-      getTaskUrl,
       getDataProductUrl,
       initialSelectedUser,
       onRefresh,
@@ -357,40 +344,13 @@ export const DataAccessRequestContent = observer(
     const dataProduct = viewerState.resourceId;
     const accessPointGroup = viewerState.accessPointGroup;
     const timelineSteps = viewerState.getTimelineSteps(selectedTargetUser);
-    const privilegeManagerStep = timelineSteps.find(
-      (step) => step.key === 'privilege-manager-approval',
-    );
-    const showEscalationButton =
-      selectedTargetUser ===
-        viewerState.applicationStore.identityService.currentUser ||
-      (selectedTargetUser !== undefined &&
-        viewerState.getContractUserType(selectedTargetUser) ===
-          V1_UserType.SYSTEM_ACCOUNT);
-    const isContractEscalated = privilegeManagerStep?.isEscalated === true;
-    const canEscalateContract =
-      showEscalationButton &&
-      privilegeManagerStep?.status === 'active' &&
-      !isContractEscalated;
 
-    const copyContractId = (): void => {
-      viewerState.applicationStore.clipboardService
-        .copyTextToClipboard(viewerState.guid)
-        .then(() =>
-          viewerState.applicationStore.notificationService.notifySuccess(
-            'Contract ID Copied to Clipboard',
-            undefined,
-            2500,
-          ),
-        )
-        .catch(viewerState.applicationStore.alertUnhandledError);
-    };
-
-    const copyTaskLink = (text: string): void => {
+    const copyToClipboard = (text: string): void => {
       viewerState.applicationStore.clipboardService
         .copyTextToClipboard(text)
         .then(() =>
           viewerState.applicationStore.notificationService.notifySuccess(
-            'Task Link Copied to Clipboard',
+            'Copied to Clipboard',
             undefined,
             2500,
           ),
@@ -398,30 +358,30 @@ export const DataAccessRequestContent = observer(
         .catch(viewerState.applicationStore.alertUnhandledError);
     };
 
-    const checkBeforeClosingContract = (): void => {
+    const checkBeforeClosingRequest = (): void => {
       viewerState.applicationStore.alertService.setActionAlertInfo({
-        message: 'Are you sure you want to close this contract?',
+        message: 'Are you sure you want to close this request?',
         type: ActionAlertType.CAUTION,
         actions: [
           {
-            label: 'Close Contract',
+            label: 'Close Request',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: () => {
-              const invalidateContract = async (): Promise<void> => {
+              const invalidateRequest = async (): Promise<void> => {
                 try {
                   await flowResult(
-                    viewerState.invalidateContract(auth.user?.access_token),
+                    viewerState.invalidateRequest?.(auth.user?.access_token),
                   );
                   await refresh();
                 } catch (error) {
                   assertErrorThrown(error);
                   viewerState.applicationStore.notificationService.notifyError(
-                    `Error closing contract: ${error.message}`,
+                    `Error closing request: ${error.message}`,
                   );
                 }
               };
               // eslint-disable-next-line no-void
-              void invalidateContract();
+              void invalidateRequest();
             },
           },
           {
@@ -433,9 +393,9 @@ export const DataAccessRequestContent = observer(
       });
     };
 
-    const contractMetadataSection = (
-      <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
-        <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
+    const metadataSection = (
+      <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata">
+        <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-by">
           <b>Ordered By:&nbsp;</b>
           <UserRenderer
             userId={viewerState.createdBy}
@@ -443,14 +403,14 @@ export const DataAccessRequestContent = observer(
             userSearchService={viewerState.userSearchService}
           />
         </div>
-        <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
+        <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-for">
           <b>
             Ordered For
             <Tooltip
-              className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
+              className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-for__tooltip__icon"
               title={
                 <>
-                  Contract consumer type:{' '}
+                  Request consumer type:{' '}
                   {getOrganizationalScopeTypeName(
                     consumer,
                     viewerState.applicationStore.pluginManager.getApplicationPlugins(),
@@ -480,7 +440,7 @@ export const DataAccessRequestContent = observer(
                 value={selectedTargetUser}
                 onChange={(event) => setSelectedTargetUser(event.target.value)}
                 size="small"
-                className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
+                className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-for__select"
               >
                 {targetUserSelectItems}
               </Select>
@@ -500,137 +460,75 @@ export const DataAccessRequestContent = observer(
       </Box>
     );
 
-    // Enrich the data-only timeline steps from the state with interactive
-    // React elements (links, copy/escalation buttons, assignees lists).
-    const contractTimelineSteps = timelineSteps.map((step) => {
-      // Active approval steps get interactive links, copy buttons, and assignees
-      if (
-        (step.key === 'privilege-manager-approval' ||
-          step.key === 'data-producer-approval') &&
-        step.status === 'active' &&
-        step.taskId
-      ) {
-        const stepLabel =
-          step.key === 'privilege-manager-approval'
-            ? 'Privilege Manager Approval'
-            : 'Data Producer Approval';
-        return {
-          ...step,
-          label: (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                gap: '1rem',
-              }}
-            >
-              <Link
-                href={getTaskUrl(viewerState.guid, step.taskId)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {stepLabel}
-              </Link>
-              <IconButton
-                onClick={() =>
-                  copyTaskLink(
-                    getTaskUrl(
-                      viewerState.guid,
-                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                      step.taskId!,
-                    ),
-                  )
-                }
-                className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
-                title="Copy Task Link"
-              >
-                <CopyFilledIcon />
-                <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
-                  Copy
-                </div>
-              </IconButton>
-              {step.key === 'privilege-manager-approval' &&
-                showEscalationButton && (
-                  <span
-                    title={
-                      canEscalateContract
-                        ? 'Escalate request'
-                        : isContractEscalated
-                          ? 'Request has already been escalated'
-                          : 'Cannot escalate request'
-                    }
-                  >
-                    <IconButton
-                      onClick={() => setShowEscalationModal(true)}
-                      disabled={!canEscalateContract}
-                      className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-group"
-                    >
-                      <ArrowUpFromBracketIcon />
-                      <div className="marketplace-lakehouse-entitlements__data-contract-viewer__icon-label">
-                        Escalate
-                      </div>
-                    </IconButton>
-                  </span>
-                )}
-            </Box>
-          ),
-          description: step.assignees ? (
-            <AssigneesList
-              userIds={step.assignees}
-              applicationStore={viewerState.applicationStore}
-              userSearchService={viewerState.userSearchService}
-            />
-          ) : undefined,
-        };
-      }
-      // Non-active approval steps show the approval/denial details
-      if (
-        (step.key === 'privilege-manager-approval' ||
-          step.key === 'data-producer-approval') &&
-        step.status !== 'active' &&
-        step.status !== 'upcoming' &&
-        step.status !== 'skipped' &&
-        step.approvalPayload
-      ) {
-        return {
-          ...step,
-          description: (
-            <TaskApprovalView
-              task={
-                {
-                  rec: {
-                    status: step.taskStatus,
-                    eventPayload: step.approvalPayload,
-                  },
-                  assignees: step.assignees ?? [],
-                } as unknown as V1_TaskMetadata
-              }
-              applicationStore={viewerState.applicationStore}
-              userSearchService={viewerState.userSearchService}
-            />
-          ),
-        };
-      }
-      return step;
-    });
-
-    const contractTimelineSection =
+    const timelineSection =
       viewerState.resourceType === V1_ResourceType.ACCESS_POINT_GROUP ? (
-        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
+        <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__timeline">
           <Timeline>
-            {contractTimelineSteps.map((step, index) => (
+            {timelineSteps.map((step, index) => (
               <TimelineItem key={step.key}>
                 <TimelineOppositeContent
                   className={clsx(
-                    'marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content',
+                    'marketplace-lakehouse-entitlements__data-access-request-viewer__timeline__content',
                     {
-                      'marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content--with-button':
+                      'marketplace-lakehouse-entitlements__data-access-request-viewer__timeline__content--with-button':
                         step.status === 'active',
                     },
                   )}
                 >
-                  {step.label}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-end',
+                      gap: '1rem',
+                    }}
+                  >
+                    {step.label.link ? (
+                      <>
+                        <Link
+                          href={step.label.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {step.label.title}
+                        </Link>
+                        <IconButton
+                          onClick={() => copyToClipboard(step.label.link ?? '')}
+                          className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
+                          title="Copy Task Link"
+                        >
+                          <CopyFilledIcon />
+                          <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
+                            Copy
+                          </div>
+                        </IconButton>
+                      </>
+                    ) : (
+                      step.label.title
+                    )}
+                    {step.label.showEscalateButton && (
+                      <span
+                        title={
+                          step.label.isEscalatable
+                            ? 'Escalate request'
+                            : step.label.isEscalated
+                              ? 'Request has already been escalated'
+                              : 'Cannot escalate request'
+                        }
+                      >
+                        <IconButton
+                          onClick={() => setShowEscalationModal(true)}
+                          disabled={!step.label.isEscalatable}
+                          className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
+                        >
+                          <ArrowUpFromBracketIcon />
+                          <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
+                            Escalate
+                          </div>
+                        </IconButton>
+                      </span>
+                    )}
+                  </Box>
                 </TimelineOppositeContent>
                 <TimelineSeparator>
                   <TimelineDot
@@ -644,27 +542,39 @@ export const DataAccessRequestContent = observer(
                     variant={step.status === 'upcoming' ? 'outlined' : 'filled'}
                     title={
                       step.status === 'skipped'
-                        ? 'This step was skipped because it is not required for this contract'
+                        ? 'This step was skipped because it is not required for this access request'
                         : undefined
                     }
                   >
                     {step.status === 'complete' && <CheckIcon />}
                     {step.status === 'denied' && <TimesIcon />}
                   </TimelineDot>
-                  {index < contractTimelineSteps.length - 1 && (
-                    <TimelineConnector />
-                  )}
+                  {index < timelineSteps.length - 1 && <TimelineConnector />}
                 </TimelineSeparator>
-                <TimelineContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
-                  {step.description}
+                <TimelineContent className="marketplace-lakehouse-entitlements__data-access-request-viewer__timeline__content">
+                  {step.assignees ? (
+                    <AssigneesList
+                      userIds={step.assignees}
+                      applicationStore={viewerState.applicationStore}
+                      userSearchService={viewerState.userSearchService}
+                    />
+                  ) : step.approvalPayload ? (
+                    <TaskApprovalView
+                      status={step.approvalPayload.status}
+                      timestamp={step.approvalPayload.approvalTimestamp}
+                      approverId={step.approvalPayload.approverId}
+                      applicationStore={viewerState.applicationStore}
+                      userSearchService={viewerState.userSearchService}
+                    />
+                  ) : null}
                 </TimelineContent>
               </TimelineItem>
             ))}
           </Timeline>
         </Box>
       ) : (
-        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
-          Unable to display data contract tasks for resource of type{' '}
+        <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__timeline">
+          Unable to display access request tasks for resource of type{' '}
           {viewerState.resourceType} on data product {viewerState.resourceId}.
         </Box>
       );
@@ -692,9 +602,9 @@ export const DataAccessRequestContent = observer(
               </Link>{' '}
               Data Product
             </div>
-            {contractMetadataSection}
+            {metadataSection}
             {!viewerState.isInTerminalState && (
-              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
+              <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__refresh-btn">
                 <Button
                   size="small"
                   variant="outlined"
@@ -708,15 +618,15 @@ export const DataAccessRequestContent = observer(
                 </Button>
               </Box>
             )}
-            {contractTimelineSection}
+            {timelineSection}
           </>
         )}
 
-        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
+        <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__footer">
           {viewerState.subscription !== undefined && (
             <Alert
               severity="info"
-              className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__subscription-info"
+              className="marketplace-lakehouse-entitlements__data-access-request-viewer__footer__subscription-info"
             >
               A subscription has been auto-created for you
               {viewerState.subscription.target instanceof V1_SnowflakeTarget
@@ -725,42 +635,43 @@ export const DataAccessRequestContent = observer(
               .
             </Alert>
           )}
-          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details">
+          <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__footer__request-details">
             <Box>
-              Contract ID: {viewerState.guid}
+              Request ID: {viewerState.guid}
               <IconButton
-                onClick={() => copyContractId()}
-                title="Copy Contract ID"
+                onClick={() => copyToClipboard(viewerState.guid)}
+                title="Copy Request ID"
               >
                 <CopyIcon />
               </IconButton>
             </Box>
-            <span
-              title={
-                viewerState.state === V1_ContractState.CLOSED
-                  ? 'Contract is already closed'
-                  : 'Close Contract'
-              }
-            >
-              <IconButton
-                onClick={() => checkBeforeClosingContract()}
-                disabled={
-                  viewerState.initializationState.isInProgress ||
-                  viewerState.invalidatingContractState.isInProgress ||
-                  viewerState.state === V1_ContractState.CLOSED
+            {viewerState.invalidateRequest !== undefined && (
+              <span
+                title={
+                  viewerState.status === DataAccessRequestStatus.CLOSED
+                    ? 'Request is already closed'
+                    : 'Close Request'
                 }
-                className="marketplace-lakehouse-entitlements__data-contract-viewer__footer__contract-details__close-contract-btn"
               >
-                <TrashIcon />
-              </IconButton>
-            </span>
+                <IconButton
+                  onClick={() => checkBeforeClosingRequest()}
+                  disabled={
+                    viewerState.initializationState.isInProgress ||
+                    viewerState.invalidatingState.isInProgress ||
+                    viewerState.status === DataAccessRequestStatus.CLOSED
+                  }
+                  className="marketplace-lakehouse-entitlements__data-access-request-viewer__footer__request-details__close-request-btn"
+                >
+                  <TrashIcon />
+                </IconButton>
+              </span>
+            )}
           </Box>
         </Box>
-
-        <ContractEscalationModal
-          open={showEscalationModal && canEscalateContract}
+        <RequestEscalationModal
+          open={showEscalationModal}
           onClose={() => setShowEscalationModal(false)}
-          currentViewer={viewerState}
+          viewerState={viewerState}
           selectedUser={selectedTargetUser}
           refresh={refresh}
         />
@@ -774,25 +685,24 @@ export const DataAccessRequestViewer = observer(
     open: boolean;
     onClose: () => void;
     viewerState: DataAccessRequestState;
-    getTaskUrl: (contractId: string, taskId: string) => string;
     getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
     initialSelectedUser?: string | undefined;
     onRefresh?: (() => void) | (() => Promise<void>);
     isReadOnly?: boolean | undefined;
   }) => {
-    const { open, onClose, viewerState: viewerState, ...contentProps } = props;
+    const { open, onClose, viewerState, ...contentProps } = props;
 
-    const isContractInProgressForUser = viewerState.isInProgress;
+    const isRequestInProgress = viewerState.isInProgress;
 
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>
-          {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
+          {isRequestInProgress ? 'Pending ' : ''}Data Access Request
         </DialogTitle>
         <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
           <CloseIcon />
         </IconButton>
-        <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
+        <DialogContent className="marketplace-lakehouse-entitlements__data-access-request-viewer__content">
           <DataAccessRequestContent
             viewerState={viewerState}
             {...contentProps}

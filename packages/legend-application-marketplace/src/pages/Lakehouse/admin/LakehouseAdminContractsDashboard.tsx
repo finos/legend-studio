@@ -32,7 +32,7 @@ import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/Lakeho
 import { useState } from 'react';
 import {
   DataAccessRequestViewer,
-  EntitlementsDataContractViewerState,
+  DataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
   generateContractPagePath,
@@ -130,8 +130,12 @@ export const LakehouseAdminContractsDashboard = observer(
             open={true}
             onClose={() => setSelectedContract(undefined)}
             viewerState={
-              new EntitlementsDataContractViewerState(
+              new DataContractViewerState(
                 selectedContract,
+                (contractId: string, taskId: string) =>
+                  adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateContractPagePath(contractId, taskId),
+                  ),
                 undefined,
                 adminStore.legendMarketplaceBaseStore.applicationStore,
                 adminStore.legendMarketplaceBaseStore.lakehouseContractServerClient,
@@ -143,11 +147,6 @@ export const LakehouseAdminContractsDashboard = observer(
               )
             }
             onRefresh={() => adminStore.refresh()}
-            getTaskUrl={(contractId: string, taskId: string) =>
-              adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateContractPagePath(contractId, taskId),
-              )
-            }
             getDataProductUrl={(dataProductId: string, deploymentId: number) =>
               adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseDataProductPath(dataProductId, deploymentId),

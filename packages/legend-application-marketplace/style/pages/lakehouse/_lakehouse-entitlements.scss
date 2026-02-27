@@ -201,7 +201,7 @@
   }
 }
 
-.marketplace-lakehouse-entitlements__data-contract-viewer {
+.marketplace-lakehouse-entitlements__data-access-request-viewer {
   &__content {
     @include flexVCenter;
 
@@ -337,12 +337,12 @@
       font-size: 1.4rem;
     }
 
-    &__contract-details {
+    &__request-details {
       display: flex;
       align-items: center;
       justify-content: space-between;
 
-      &__close-contract-btn {
+      &__close-request-btn {
         color: var(--color-red-200);
       }
     }

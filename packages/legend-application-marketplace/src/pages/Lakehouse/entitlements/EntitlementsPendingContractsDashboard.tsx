@@ -46,8 +46,8 @@ import {
   MultiUserRenderer,
   isContractInTerminalState,
   DataAccessRequestViewer,
-  EntitlementsDataContractViewerState,
   isApprovalStatusTerminal,
+  DataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
   generateContractPagePath,
@@ -248,8 +248,12 @@ export const EntitlementsPendingContractsDashboard = observer(
             open={true}
             onClose={() => setSelectedContract(undefined)}
             viewerState={
-              new EntitlementsDataContractViewerState(
+              new DataContractViewerState(
                 selectedContract,
+                (contractId: string, taskId: string) =>
+                  marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateContractPagePath(contractId, taskId),
+                  ),
                 undefined,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
@@ -268,11 +272,6 @@ export const EntitlementsPendingContractsDashboard = observer(
                 ),
               );
             }}
-            getTaskUrl={(contractId: string, taskId: string) =>
-              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateContractPagePath(contractId, taskId),
-              )
-            }
             getDataProductUrl={(dataProductId: string, deploymentId: number) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseDataProductPath(dataProductId, deploymentId),

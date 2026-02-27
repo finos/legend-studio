@@ -104,9 +104,7 @@ import {
   generateAnchorForSection,
   DATA_PRODUCT_VIEWER_SECTION,
 } from '../../stores/ProductViewerNavigation.js';
-import { DataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import { EntitlementsDataContractCreator } from './DataContract/EntitlementsDataContractCreator.js';
-import { DataAccessRequestViewer } from './DataContract/EntitlementsDataContractViewer.js';
 import { DataProductSubscriptionViewer } from './Subscriptions/DataProductSubscriptionsViewer.js';
 import {
   type DataProductAPGState,
@@ -128,6 +126,8 @@ import {
   PRODUCT_INTEGRATION_TYPE,
 } from '../../__lib__/DataProductTelemetryHelper.js';
 import { flowResult } from 'mobx';
+import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/DataContractViewerState.js';
+import { DataAccessRequestViewer } from './DataContract/DataAccessRequestViewer.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -1069,7 +1069,7 @@ export const DataProductAccessPointGroupViewer = observer(
         apgState.dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [apgState, anchor]);
 
-    const entitlementsDataContractViewerState = useMemo(() => {
+    const dataContractViewerState = useMemo(() => {
       return dataAccessState?.contractViewerContractAndSubscription &&
         dataAccessState.contractViewerContractAndSubscription.dataContract
           .resource instanceof V1_AccessPointGroupReference &&
@@ -1080,6 +1080,8 @@ export const DataProductAccessPointGroupViewer = observer(
               dataAccessState.contractViewerContractAndSubscription
                 .dataContract,
             ),
+            (contractId: string, taskId: string) =>
+              dataAccessState.getContractTaskUrl(contractId, taskId),
             dataAccessState.contractViewerContractAndSubscription.subscriptions?.[0],
             apgState.applicationStore,
             dataAccessState.lakehouseContractServerClient,
@@ -1092,8 +1094,7 @@ export const DataProductAccessPointGroupViewer = observer(
       apgState.applicationStore,
       apgState.dataProductViewerState.graphManagerState,
       apgState.dataProductViewerState.userSearchService,
-      dataAccessState?.contractViewerContractAndSubscription,
-      dataAccessState?.lakehouseContractServerClient,
+      dataAccessState,
     ]);
 
     useEffect(() => {
@@ -1392,7 +1393,7 @@ export const DataProductAccessPointGroupViewer = observer(
             tokenProvider={() => auth.user?.access_token}
           />
         )}
-        {entitlementsDataContractViewerState && dataAccessState && (
+        {dataContractViewerState && dataAccessState && (
           <DataAccessRequestViewer
             open={true}
             onClose={() =>
@@ -1400,7 +1401,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 undefined,
               )
             }
-            viewerState={entitlementsDataContractViewerState}
+            viewerState={dataContractViewerState}
             onRefresh={() => {
               if (apgState.associatedUserContract) {
                 apgState.fetchUserAccessStatus(
@@ -1410,7 +1411,6 @@ export const DataProductAccessPointGroupViewer = observer(
                 );
               }
             }}
-            getTaskUrl={dataAccessState.getContractTaskUrl}
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />
         )}

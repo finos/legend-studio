@@ -18,7 +18,6 @@ import { observer } from 'mobx-react-lite';
 import { withLegendMarketplaceProductViewerStore } from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import {
-  generateContractPagePath,
   generateLakehouseDataProductPath,
   type LakehouseDataContractTaskPathParams,
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
@@ -26,10 +25,6 @@ import {
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import {
-  DataAccessRequestContent,
-  EntitlementsDataContractViewerState,
-} from '@finos/legend-extension-dsl-data-product';
 import { useCallback, useEffect, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
@@ -46,6 +41,10 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
+import {
+  DataAccessRequestContent,
+  DataContractViewerState,
+} from '@finos/legend-extension-dsl-data-product';
 
 export const LakehouseDataContractTask =
   withLegendMarketplaceProductViewerStore(
@@ -56,7 +55,7 @@ export const LakehouseDataContractTask =
       const currentUser =
         marketplaceBaseStore.applicationStore.identityService.currentUser;
       const [contractViewerState, setContractViewerState] = useState<
-        EntitlementsDataContractViewerState | undefined
+        DataContractViewerState | undefined
       >(undefined);
       const [isLoading, setIsLoading] = useState(false);
 
@@ -144,8 +143,9 @@ export const LakehouseDataContractTask =
               const liteDataContract =
                 V1_transformDataContractToLiteDatacontract(dataContract);
 
-              const viewerState = new EntitlementsDataContractViewerState(
+              const viewerState = new DataContractViewerState(
                 liteDataContract,
+                () => '',
                 undefined,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
@@ -294,11 +294,6 @@ export const LakehouseDataContractTask =
               )}
               <DataAccessRequestContent
                 viewerState={contractViewerState}
-                getTaskUrl={(contractIdParam: string, taskIdParam: string) =>
-                  marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                    generateContractPagePath(contractIdParam, taskIdParam),
-                  )
-                }
                 getDataProductUrl={(
                   dataProductId: string,
                   deploymentId: number,

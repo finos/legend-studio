@@ -33,8 +33,6 @@ import {
 } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
 import { AuthProvider } from 'react-oidc-context';
-import { DataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
-import { DataAccessRequestViewer } from '../DataProduct/DataContract/EntitlementsDataContractViewer.js';
 import {
   TEST__getGenericApplicationConfig,
   TEST__LegendApplicationPluginManager,
@@ -64,6 +62,8 @@ import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { deserialize } from 'serializr';
 import { Route, Routes } from '@finos/legend-application/browser';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
+import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/DataContractViewerState.js';
+import { DataAccessRequestViewer } from '../DataProduct/DataContract/DataAccessRequestViewer.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -124,6 +124,7 @@ const setupDataContractViewerTest = async (
 
   const MOCK__contractViewerState = new DataContractViewerState(
     mockLiteContract,
+    () => '',
     mockSubscription,
     MOCK__applicationStore,
     lakehouseContractServerClient,
@@ -150,7 +151,6 @@ const setupDataContractViewerTest = async (
                       open={true}
                       onClose={jest.fn()}
                       viewerState={MOCK__contractViewerState}
-                      getTaskUrl={() => ''}
                       getDataProductUrl={() => ''}
                       initialSelectedUser={initialSelectedUser}
                     />

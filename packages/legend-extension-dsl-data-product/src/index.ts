@@ -16,7 +16,10 @@
 
 export { Core_DataProductDataAccess_LegendApplicationPlugin } from './components/Core_DataProductDataAccess_LegendApplicationPlugin.js';
 export { EntitlementsDataContractCreator } from './components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
-export { DataAccessRequestViewer as EntitlementsDataContractViewer } from './components/DataProduct/DataContract/EntitlementsDataContractViewer.js';
+export {
+  DataAccessRequestContent,
+  DataAccessRequestViewer,
+} from './components/DataProduct/DataContract/DataAccessRequestViewer.js';
 export * from './components/ProductViewer.js';
 export { MultiUserRenderer } from './components/UserRenderer/MultiUserRenderer.js';
 export { UserRenderer } from './components/UserRenderer/UserRenderer.js';
@@ -30,11 +33,11 @@ export * from './stores/DataProduct/DataProductDataAccessState.js';
 export * from './stores/DataProduct/DataProductSampleQueryTabState.js';
 export * from './stores/DataProduct/DataProductViewerState.js';
 export * from './stores/DataProduct/DataProductAccessPointState.js';
-export * from './stores/DataProduct/EntitlementsDataContractViewerState.js';
+export * from './stores/DataProduct/DataAccess/DataAccessRequestState.js';
+export * from './stores/DataProduct/DataAccess/DataContractViewerState.js';
 export * from './stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 export * from './stores/TerminalProduct/TerminalProductViewerState.js';
 export * from './stores/TerminalProduct/TerminalProductDataAccessState.js';
-export * from './components/DataProduct/DataContract/EntitlementsDataContractViewer.js';
 export { TabMessageScreen } from './components/DataProduct/DataProductDataAccess.js';
 
 export * from './utils/DataContractUtils.js';
