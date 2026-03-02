@@ -772,7 +772,7 @@ describe('DataProductViewer', () => {
       });
       fireEvent.click(pendingButton);
 
-      await screen.findByText('Pending Data Contract Request');
+      await screen.findByText('Pending Data Access Request');
     });
 
     test('PENDING MANAGER APPROVAL secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
@@ -986,7 +986,7 @@ describe('DataProductViewer', () => {
       });
       fireEvent.click(pendingButton);
 
-      await screen.findByText('Pending Data Contract Request');
+      await screen.findByText('Pending Data Access Request');
     });
 
     test('PENDING DATA OWNER APPROVAL secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
@@ -1381,7 +1381,7 @@ describe('DataProductViewer', () => {
       });
       fireEvent.click(entitledButton);
 
-      await screen.findByText('Data Contract Request');
+      await screen.findByText('Data Access Request');
     });
 
     test('ENTITLED secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
