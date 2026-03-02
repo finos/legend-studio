@@ -2005,6 +2005,73 @@
     color: var(--color-dark-theme-text-primary);
   }
 
+  .taxonomy-filter-panel {
+    border-color: var(--color-dark-theme-border-light);
+    background: var(--color-dark-theme-bg-secondary);
+
+    &__header {
+      border-bottom: 2px solid var(--color-dark-theme-blue-accent);
+      background: var(--color-dark-theme-bg-tertiary);
+
+      &__title {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__clear {
+        color: var(--color-dark-theme-blue-primary);
+
+        &:hover {
+          color: var(--color-dark-theme-text-secondary);
+        }
+      }
+    }
+
+    &__empty {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__tree-node {
+      &__row {
+        &:hover {
+          background-color: var(--color-light-shade-50);
+        }
+      }
+
+      &__label {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__count {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__expand-icon {
+        color: var(--color-dark-theme-text-secondary);
+
+        &:hover {
+          background-color: var(--color-light-shade-100);
+        }
+      }
+
+      &__children {
+        border-left-color: var(--color-dark-theme-border-light);
+      }
+    }
+
+    // MUI Checkbox overrides for dark mode
+    .MuiCheckbox-root {
+      color: var(--color-dark-theme-text-secondary);
+
+      &.Mui-checked {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &:hover {
+        background-color: var(--color-light-shade-100);
+      }
+    }
+  }
+
   // Lakehouse Home
   .marketplace-lakehouse-home {
     background: var(--color-dark-theme-bg-primary);

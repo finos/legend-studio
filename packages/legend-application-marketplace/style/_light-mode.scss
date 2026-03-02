@@ -1555,6 +1555,73 @@
     }
   }
 
+  .taxonomy-filter-panel {
+    border-color: var(--color-hclight-grey-20);
+    background: var(--color-hclight-white);
+
+    &__header {
+      border-bottom: 2px solid var(--color-hclight-blue-60);
+      background: var(--color-hclight-blue-10);
+
+      &__title {
+        color: var(--color-hclight-blue-70);
+      }
+
+      &__clear {
+        color: var(--color-hclight-blue-60);
+
+        &:hover {
+          color: var(--color-hclight-blue-70);
+        }
+      }
+    }
+
+    &__empty {
+      color: var(--color-hclight-grey-50);
+    }
+
+    &__tree-node {
+      &__row {
+        &:hover {
+          background-color: var(--color-hclight-blue-10);
+        }
+      }
+
+      &__label {
+        color: var(--color-hclight-grey-90);
+      }
+
+      &__count {
+        color: var(--color-hclight-grey-50);
+      }
+
+      &__expand-icon {
+        color: var(--color-hclight-grey-50);
+
+        &:hover {
+          background-color: var(--color-hclight-grey-10);
+        }
+      }
+
+      &__children {
+        border-left-color: var(--color-hclight-grey-20);
+      }
+    }
+
+    // MUI Checkbox overrides for light mode
+    .MuiCheckbox-root {
+      color: var(--color-hclight-grey-50);
+
+      &.Mui-checked {
+        color: var(--color-hclight-blue-60);
+      }
+
+      &:hover {
+        background-color: var(--color-hclight-grey-shade-10);
+      }
+    }
+  }
+
   .data-product__viewer {
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-90);

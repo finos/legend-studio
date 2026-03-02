@@ -33,6 +33,8 @@ import {
   LakehouseDataProductSearchResultOriginType,
   LakehouseSDLCDataProductSearchResultOrigin,
   type MarketplaceServerClient,
+  type TaxonomyNode,
+  type TaxonomyTreeResponse,
 } from '@finos/legend-server-marketplace';
 import { ProductCardState } from './dataProducts/ProductCardState.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -69,6 +71,8 @@ export class LegendMarketplaceSearchResultsStore {
   producerSearchDataProductCardStates: ProductCardState[] = [];
   producerSearchLegacyDataProductCardStates: ProductCardState[] = [];
   sort: DataProductSort = DataProductSort.DEFAULT;
+  taxonomyTree: TaxonomyNode[] = [];
+  selectedTaxonomyNodeIds: Set<string> = new Set<string>();
 
   page = 1;
   itemsPerPage = 12;
@@ -77,6 +81,7 @@ export class LegendMarketplaceSearchResultsStore {
   readonly executingSemanticSearchState = ActionState.create();
   readonly fetchingProducerSearchDataProductsState = ActionState.create();
   readonly fetchingProducerSearchLegacyDataProductsState = ActionState.create();
+  readonly fetchingTaxonomyTreeState = ActionState.create();
 
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
@@ -89,6 +94,8 @@ export class LegendMarketplaceSearchResultsStore {
       producerSearchDataProductCardStates: observable,
       producerSearchLegacyDataProductCardStates: observable,
       sort: observable,
+      taxonomyTree: observable,
+      selectedTaxonomyNodeIds: observable,
       setSearchQuery: action,
       setUseProducerSearch: action,
       page: observable,
@@ -101,9 +108,13 @@ export class LegendMarketplaceSearchResultsStore {
       setPage: action,
       setItemsPerPage: action,
       setTotalItems: action,
+      setTaxonomyTree: action,
+      setSelectedTaxonomyNodeIds: action,
+      toggleTaxonomyNode: action,
       filterSortProducts: computed,
       isLoading: computed,
       executeSearch: flow,
+      fetchTaxonomyTree: flow,
     });
   }
 
@@ -126,6 +137,21 @@ export class LegendMarketplaceSearchResultsStore {
       .filter((productCardState) =>
         this.marketplaceBaseStore.envState.filterDataProduct(productCardState),
       )
+      .filter((productCardState) => {
+        if (this.selectedTaxonomyNodeIds.size === 0) {
+          return true;
+        }
+        const productTaxonomyPaths =
+          productCardState.searchResult.tags2.flatMap((tag) =>
+            tag.split(',').map((t) => t.trim()),
+          );
+        return productTaxonomyPaths.some((path) =>
+          Array.from(this.selectedTaxonomyNodeIds).some(
+            (selectedId) =>
+              path === selectedId || path.startsWith(`${selectedId}::`),
+          ),
+        );
+      })
       .sort((a, b) => {
         switch (this.sort) {
           case DataProductSort.DEFAULT:
@@ -184,6 +210,87 @@ export class LegendMarketplaceSearchResultsStore {
     this.sort = sort;
   }
 
+  setTaxonomyTree(tree: TaxonomyNode[]): void {
+    this.taxonomyTree = tree;
+  }
+
+  setSelectedTaxonomyNodeIds(ids: string[]): void {
+    this.selectedTaxonomyNodeIds = new Set(ids);
+  }
+
+  /**
+   * Collect all descendant node IDs for a given node (including itself).
+   */
+  private collectAllNodeIds(node: TaxonomyNode): string[] {
+    const ids: string[] = [node.id];
+    for (const child of node.children) {
+      ids.push(...this.collectAllNodeIds(child));
+    }
+    return ids;
+  }
+
+  private findNode(
+    nodes: TaxonomyNode[],
+    nodeId: string,
+  ): TaxonomyNode | undefined {
+    for (const node of nodes) {
+      if (node.id === nodeId) {
+        return node;
+      }
+      const found = this.findNode(node.children, nodeId);
+      if (found) {
+        return found;
+      }
+    }
+    return undefined;
+  }
+
+  toggleTaxonomyNode(nodeId: string): void {
+    if (this.selectedTaxonomyNodeIds.has(nodeId)) {
+      const node = this.findNode(this.taxonomyTree, nodeId);
+      if (node) {
+        const idsToRemove = this.collectAllNodeIds(node);
+        for (const id of idsToRemove) {
+          this.selectedTaxonomyNodeIds.delete(id);
+        }
+      } else {
+        this.selectedTaxonomyNodeIds.delete(nodeId);
+      }
+    } else {
+      const node = this.findNode(this.taxonomyTree, nodeId);
+      if (node) {
+        const idsToAdd = this.collectAllNodeIds(node);
+        for (const id of idsToAdd) {
+          this.selectedTaxonomyNodeIds.add(id);
+        }
+      } else {
+        this.selectedTaxonomyNodeIds.add(nodeId);
+      }
+    }
+  }
+
+  *fetchTaxonomyTree(searchQuery?: string | undefined): GeneratorFn<void> {
+    this.fetchingTaxonomyTreeState.inProgress();
+    try {
+      const response = (yield this.marketplaceServerClient.getTaxonomyTree(
+        this.marketplaceBaseStore.envState.lakehouseEnvironment,
+        searchQuery,
+      )) as TaxonomyTreeResponse;
+      this.setTaxonomyTree(response.taxonomy_tree);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.marketplaceBaseStore.applicationStore.logService.error(
+        LogEvent.create(
+          LEGEND_MARKETPLACE_APP_EVENT.FETCH_TAXONOMY_TREE_FAILURE,
+        ),
+        `Error fetching taxonomy tree: ${error.message}`,
+      );
+      this.setTaxonomyTree([]);
+    } finally {
+      this.fetchingTaxonomyTreeState.complete();
+    }
+  }
+
   *executeSearch(
     query: string,
     useProducerSearch: boolean,
@@ -194,7 +301,12 @@ export class LegendMarketplaceSearchResultsStore {
       this.setProducerSearchDataProductCardStates([]);
       this.setProducerSearchLegacyDataProductCardStates([]);
 
-      // Crete graph manager for parsing ad-hoc deployed data products
+      const searchFilters =
+        this.selectedTaxonomyNodeIds.size > 0
+          ? [`taxonomy=${[...this.selectedTaxonomyNodeIds].join(',')}`]
+          : [];
+
+      // Create graph manager for parsing ad-hoc deployed data products
       const graphManager = new V1_PureGraphManager(
         this.marketplaceBaseStore.applicationStore.pluginManager,
         this.marketplaceBaseStore.applicationStore.logService,
@@ -215,7 +327,12 @@ export class LegendMarketplaceSearchResultsStore {
       if (useProducerSearch) {
         yield this.executeProducerSearch(query, graphManager, token);
       } else {
-        yield this.executeSemanticSearch(query, graphManager, token);
+        yield this.executeSemanticSearch(
+          query,
+          graphManager,
+          token,
+          searchFilters,
+        );
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -274,6 +391,7 @@ export class LegendMarketplaceSearchResultsStore {
     query: string,
     graphManager: V1_PureGraphManager,
     token: string | undefined,
+    filters: string[] = [],
   ): Promise<void> {
     this.executingSemanticSearchState.inProgress();
 
@@ -282,6 +400,7 @@ export class LegendMarketplaceSearchResultsStore {
         query,
         this.marketplaceBaseStore.envState.lakehouseEnvironment,
         'hybrid',
+        filters,
         this.itemsPerPage,
         this.page,
       );
