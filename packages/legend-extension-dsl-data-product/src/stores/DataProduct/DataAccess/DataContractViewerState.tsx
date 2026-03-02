@@ -39,6 +39,7 @@ import {
   type UserSearchService,
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
@@ -211,26 +212,14 @@ export class DataContractViewerState implements DataAccessRequestState {
         : privilegeManagerApprovalTask.rec.status ===
             V1_UserApprovalStatus.APPROVED
           ? ('complete' as const)
-          : privilegeManagerApprovalTask.rec.status ===
-                V1_UserApprovalStatus.DENIED ||
-              privilegeManagerApprovalTask.rec.status ===
-                V1_UserApprovalStatus.REVOKED ||
-              privilegeManagerApprovalTask.rec.status ===
-                V1_UserApprovalStatus.CLOSED
-            ? ('denied' as const)
-            : ('upcoming' as const)
+          : ('denied' as const)
       : ('skipped' as const);
     const dataOwnerApprovalStepStatus = dataOwnerApprovalTask
       ? dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.PENDING
         ? ('active' as const)
         : dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.APPROVED
           ? ('complete' as const)
-          : dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.DENIED ||
-              dataOwnerApprovalTask.rec.status ===
-                V1_UserApprovalStatus.REVOKED ||
-              dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.CLOSED
-            ? ('denied' as const)
-            : ('upcoming' as const)
+          : ('denied' as const)
       : ('upcoming' as const);
 
     const showEscalateButton =
@@ -261,7 +250,10 @@ export class DataContractViewerState implements DataAccessRequestState {
             privilegeManagerApprovalStepStatus === 'active'
               ? this.getTaskUrl(
                   this.guid,
-                  privilegeManagerApprovalTask!.rec.taskId,
+                  guaranteeNonNullable(
+                    privilegeManagerApprovalTask,
+                    'Expected privilege manager approval task to be defined',
+                  ).rec.taskId,
                 )
               : undefined,
           showEscalateButton,
@@ -286,7 +278,13 @@ export class DataContractViewerState implements DataAccessRequestState {
           title: 'Data Producer Approval',
           link:
             dataOwnerApprovalStepStatus === 'active'
-              ? this.getTaskUrl(this.guid, dataOwnerApprovalTask!.rec.taskId)
+              ? this.getTaskUrl(
+                  this.guid,
+                  guaranteeNonNullable(
+                    dataOwnerApprovalTask,
+                    'Expected data owner approval task to be defined',
+                  ).rec.taskId,
+                )
               : undefined,
         },
         status: dataOwnerApprovalStepStatus,
