@@ -28,7 +28,10 @@ import type {
   CommandRegistrar,
   GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import { AbstractSQLPlaygroundState } from '@finos/legend-lego/sql-playground';
+import {
+  AbstractSQLPlaygroundState,
+  SQLPlaygroundDataProductExplorerState,
+} from '@finos/legend-lego/sql-playground';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
   GRAPH_MANAGER_EVENT,
@@ -36,12 +39,17 @@ import {
   V1_buildExecutionResult,
   V1_deserializeExecutionResult,
   V1_ExecuteInput,
+  V1_SdlcDeploymentDataProductOrigin,
   type V1_ExecutionResult,
+  type V1_DataProductArtifact,
+  V1_entitiesToPureModelContextData,
+  V1_PureModelContextData,
 } from '@finos/legend-graph';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
 import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
 import type { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import { getIngestDeploymentServerConfigName } from '@finos/legend-server-lakehouse';
+import type { Entity } from '@finos/legend-storage';
 
 const DEFAULT_SQL_TEXT = `--Start building your SQL.`;
 
@@ -58,6 +66,7 @@ export class DataProductSqlPlaygroundPanelState
   isFetchingSchema = ActionState.create();
   applicationStore: GenericLegendApplicationStore;
   dataAccessState: DataProductDataAccessState | undefined;
+  dataProductExplorerState: SQLPlaygroundDataProductExplorerState | undefined;
   accessPointState: DataProductAccessPointState | undefined;
 
   constructor(dataProductViewerState: DataProductViewerState) {
@@ -65,10 +74,12 @@ export class DataProductSqlPlaygroundPanelState
     makeObservable(this, {
       isFetchingSchema: observable,
       dataAccessState: observable,
+      dataProductExplorerState: observable,
       accessPointState: observable,
       query: computed,
       executeRawSQL: flow,
       init: flow,
+      initializeDataProductExplorer: flow,
     });
     this.dataProductViewerState = dataProductViewerState;
     this.applicationStore = this.dataProductViewerState.applicationStore;
@@ -89,6 +100,40 @@ export class DataProductSqlPlaygroundPanelState
   ): GeneratorFn<void> {
     this.dataAccessState = dataAccessState;
     this.accessPointState = accessPointState;
+  }
+
+  *initializeDataProductExplorer(): GeneratorFn<void> {
+    if (this.dataProductExplorerState || !this.dataAccessState) {
+      return;
+    }
+    const dataOrigin =
+      this.dataAccessState.entitlementsDataProductDetails.origin;
+    const entities =
+      dataOrigin instanceof V1_SdlcDeploymentDataProductOrigin
+        ? ((yield this.dataAccessState.dataProductViewerState.depotServerClient.getVersionEntities(
+            dataOrigin.group,
+            dataOrigin.artifact,
+            dataOrigin.version,
+          )) as Entity[])
+        : [];
+
+    const pmcd = new V1_PureModelContextData();
+    yield V1_entitiesToPureModelContextData(
+      entities,
+      pmcd,
+      this.dataProductViewerState.graphManagerState.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+
+    const dataProductArtifact =
+      (yield this.dataProductViewerState.fetchDataProductArtifact()) as
+        | V1_DataProductArtifact
+        | undefined;
+    if (dataProductArtifact) {
+      this.dataProductExplorerState = new SQLPlaygroundDataProductExplorerState(
+        pmcd,
+        dataProductArtifact,
+      );
+    }
   }
 
   get query(): string | undefined {

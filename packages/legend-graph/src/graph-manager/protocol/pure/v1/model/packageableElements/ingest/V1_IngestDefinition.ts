@@ -15,6 +15,7 @@
  */
 
 import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
+import type { V1_RelationTypeColumn } from '../type/V1_RelationType.js';
 import { V1_INTERNAL__UnknownPackageableElement } from '../V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_PackageableElementVisitor } from '../V1_PackageableElement.js';
 
@@ -28,4 +29,15 @@ export class V1_IngestDefinition extends V1_INTERNAL__UnknownPackageableElement 
   ): T {
     return visitor.visit_IngestDefinition(this);
   }
+}
+export interface V1_IngestDataset {
+  name: string;
+  primaryKey: string[];
+  source: {
+    _type: string;
+    schema: {
+      _type: string;
+      columns: V1_RelationTypeColumn[];
+    };
+  };
 }

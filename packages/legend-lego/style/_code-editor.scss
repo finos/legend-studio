@@ -196,3 +196,144 @@
     background: transparent;
   }
 }
+
+.dataproduct-schema-explorer {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__container {
+    height: calc(100% - 3.4rem);
+    width: 100%;
+    padding: 0.5rem 0;
+  }
+
+  &__node__container {
+    display: flex;
+    width: 100%;
+    height: 2.8rem;
+
+    &:hover {
+      background: var(--color-dark-blue-shade-100);
+    }
+
+    &--level-0 {
+      padding-left: 0;
+    }
+
+    &--level-1 {
+      padding-left: 1rem;
+    }
+
+    &--level-2 {
+      padding-left: 2rem;
+    }
+
+    &--level-3 {
+      padding-left: 3rem;
+    }
+
+    &--level-4 {
+      padding-left: 4rem;
+    }
+
+    &--level-5 {
+      padding-left: 5rem;
+    }
+
+    &--level-6 {
+      padding-left: 6rem;
+    }
+  }
+
+  &__expand-icon,
+  &__checker-icon,
+  &__type-icon {
+    @include flexHCenter;
+
+    width: 1.4rem;
+    min-width: 1.4rem;
+  }
+
+  &__node__icon__group {
+    width: 2rem;
+    min-width: 2rem;
+  }
+
+  &__expand-icon svg {
+    font-size: 1.2rem;
+  }
+
+  &__node__label {
+    display: flex;
+    user-select: none;
+    font-size: 1.3rem;
+    margin-left: 0.5rem;
+  }
+
+  &__node__type {
+    @include flexVCenter;
+  }
+
+  &__node__pk {
+    @include flexVCenter;
+
+    margin-left: 0.5rem;
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-200);
+    }
+  }
+
+  &__node__type__label {
+    @include flexVCenter;
+
+    margin-left: 0.5rem;
+    border-radius: 0.2rem;
+    font-size: 1rem;
+    padding: 0 0.5rem;
+    height: 1.6rem;
+    font-weight: 500;
+    background: var(--color-dark-grey-250);
+    color: var(--color-light-grey-200);
+    user-select: none;
+  }
+
+  &__icon {
+    &--schema svg {
+      color: var(--color-lime-75);
+    }
+
+    &--table svg {
+      font-size: 1.6rem;
+      color: var(--color-magenta-100);
+    }
+  }
+}
+
+.sql-playground__explorer {
+  border-right: 1px solid var(--color-blue-50);
+  overflow: auto;
+  height: 100%;
+  padding: 8px 10px;
+}
+
+.relation-source-tree__icon {
+  &__string {
+    color: var(--color-pink-200);
+  }
+
+  &__number {
+    color: var(--color-blue-200);
+  }
+
+  &__time {
+    color: var(--color-yellow-200);
+  }
+
+  &__unknown {
+    color: var(--color-dark-grey-300);
+  }
+}

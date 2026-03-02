@@ -18,11 +18,11 @@ import { observer } from 'mobx-react-lite';
 import {
   CheckSquareIcon,
   clsx,
+  PanelLoadingIndicator,
   PlayIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
-  ResizablePanelSplitterLine,
   SquareIcon,
 } from '@finos/legend-art';
 import { prettyDuration } from '@finos/legend-shared';
@@ -31,6 +31,7 @@ import {
   type SQLPlaygroundPanelProps,
 } from './SQLPlaygroundEditor.js';
 import { PlayGroundSQLExecutionResultGrid } from './SQLPlaygroundGrid.js';
+import { SQLPlaygroundExplorer } from './SQLDataProductExplorer.js';
 
 export const SQLPlaygroundEditorResultPanel = observer(
   (props: SQLPlaygroundPanelProps) => {
@@ -39,6 +40,8 @@ export const SQLPlaygroundEditorResultPanel = observer(
       advancedMode,
       disableDragDrop = false,
       enableDarkMode = false,
+      schemaExplorerState,
+      showSchemaExplorer = false,
     } = props;
 
     const executeRawSQL = (): void => {
@@ -57,7 +60,20 @@ export const SQLPlaygroundEditorResultPanel = observer(
     };
 
     return (
-      <ResizablePanelGroup orientation="horizontal">
+      <ResizablePanelGroup orientation="vertical">
+        {showSchemaExplorer && schemaExplorerState && (
+          <ResizablePanel size={280} minSize={240} maxSize={600}>
+            <PanelLoadingIndicator
+              isLoading={schemaExplorerState.isGeneratingDataProduct}
+            />
+            {schemaExplorerState.treeData && (
+              <SQLPlaygroundExplorer
+                dataProductSchemaState={schemaExplorerState}
+              />
+            )}
+          </ResizablePanel>
+        )}
+        <ResizablePanelSplitter />
         <ResizablePanel>
           <div className="panel sql-playground__sql-editor">
             <ResizablePanelGroup orientation="horizontal">
@@ -69,9 +85,7 @@ export const SQLPlaygroundEditorResultPanel = observer(
                   enableDarkMode={enableDarkMode}
                 />
               </ResizablePanel>
-              <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-250)" />
-              </ResizablePanelSplitter>
+              <ResizablePanelSplitter />
               <ResizablePanel size={300}>
                 <div className="panel__header">
                   <div className="panel__header__title">

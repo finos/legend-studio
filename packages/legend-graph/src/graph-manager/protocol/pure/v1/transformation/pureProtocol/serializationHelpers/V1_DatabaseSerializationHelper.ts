@@ -129,7 +129,7 @@ enum V1_RelationalOperationElementType {
 
 const V1_TABLE_POINTER_TYPE = 'Table';
 
-enum V1_RelationalDataTypeType {
+export enum V1_RelationalDataTypeType {
   VARCHAR = 'Varchar',
   CHAR = 'Char',
   VARBINARY = 'Varbinary',

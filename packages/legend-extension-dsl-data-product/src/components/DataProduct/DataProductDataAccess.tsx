@@ -127,6 +127,7 @@ import {
   DataProductTelemetryHelper,
   PRODUCT_INTEGRATION_TYPE,
 } from '../../__lib__/DataProductTelemetryHelper.js';
+import { flowResult } from 'mobx';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -294,9 +295,6 @@ export const SqlPlaygroundScreen = observer(
       );
       openSqlModal();
     };
-    useEffect(() => {
-      playgroundState.init(dataAccessState, accessPointState);
-    }, [playgroundState, accessPointState, dataAccessState]);
     const resolvedUserEnv = dataAccessState.resolvedUserEnv;
     const dataProductOrigin =
       dataAccessState.entitlementsDataProductDetails.origin;
@@ -321,6 +319,23 @@ export const SqlPlaygroundScreen = observer(
         );
       }
     };
+    useEffect(() => {
+      playgroundState.init(dataAccessState, accessPointState);
+    }, [playgroundState, accessPointState, dataAccessState]);
+    useEffect(() => {
+      if (isSqlModalOpen && !playgroundState.dataProductExplorerState) {
+        flowResult(playgroundState.initializeDataProductExplorer())
+          .then(() => {
+            if (playgroundState.dataProductExplorerState) {
+              return flowResult(
+                playgroundState.dataProductExplorerState.fetchProjectData(),
+              );
+            }
+            return undefined;
+          })
+          .catch(dataAccessState.applicationStore.alertUnhandledError);
+      }
+    }, [isSqlModalOpen, playgroundState, dataAccessState]);
     return (
       <div className="data-product__viewer__tab-screen">
         <button
@@ -399,12 +414,17 @@ export const SqlPlaygroundScreen = observer(
                 </div>
               </div>
               <ModalBody>
-                <div className="sql-playground-overlay">
-                  <SQLPlaygroundEditorResultPanel
-                    playgroundState={playgroundState}
-                    advancedMode={advancedMode}
-                    disableDragDrop={true}
-                  />
+                <div className="sql-playground__layout">
+                  {playgroundState.dataProductExplorerState && (
+                    <SQLPlaygroundEditorResultPanel
+                      playgroundState={playgroundState}
+                      advancedMode={advancedMode}
+                      schemaExplorerState={
+                        playgroundState.dataProductExplorerState
+                      }
+                      showSchemaExplorer={true}
+                    />
+                  )}
                 </div>
               </ModalBody>
             </Modal>
