@@ -133,10 +133,10 @@ export abstract class AbstractSQLPlaygroundState implements CommandRegistrar {
   setSQLEditor(val: monaco.editor.IStandaloneCodeEditor | undefined): void {
     this.sqlEditor = val;
     if (val) {
-      const lines = this.sqlText.split('\n');
+      const lastLine = this.sqlEditorTextModel.getLineCount();
       moveCursorToPosition(val, {
-        lineNumber: lines.length,
-        column: lines.at(-1)?.length ?? 0,
+        lineNumber: lastLine,
+        column: this.sqlEditorTextModel.getLineMaxColumn(lastLine),
       });
     }
   }

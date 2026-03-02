@@ -93,7 +93,11 @@ export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/func
 export { SnowflakeM2MUdf } from './graph/metamodel/pure/packageableElements/function/SnowflakeM2MUdf.js';
 export { SnowflakeM2MUdfDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeM2MUdfDeploymentConfiguration.js';
 export { INTERNAL__UnknownElement } from './graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
-export { V1_IngestDefinition } from './graph-manager/protocol/pure/v1/model/packageableElements/ingest/V1_IngestDefinition.js';
+export {
+  V1_IngestDefinition,
+  type V1_IngestDataset,
+  type V1_IngestDefinitionContent,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/ingest/V1_IngestDefinition.js';
 export {
   Ownership,
   DeploymentOwner,
@@ -402,6 +406,7 @@ export {
   V1_NativeModelExecutionContextInfo,
   V1_AccessPointImplementation,
   V1_AccessPointGroupInfo,
+  V1_DataProductInfo,
   V1_ModelAccessPointGroupInfo,
   V1_AccessPointGroupInfoType,
   V1_SampleQuery,

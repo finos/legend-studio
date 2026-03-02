@@ -35,7 +35,7 @@ import type { CommandRegistrar } from '@finos/legend-application';
 import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY } from '../../../__lib__/STO_Relational_LegendStudioCommand.js';
 import { PANEL_MODE } from '../EditorConfig.js';
 import { DatabaseSchemaExplorerState } from '../editor-state/element-editor-state/connection/DatabaseBuilderState.js';
-import { AbstractSQLPlaygroundState } from '@finos/legend-lego/sql-playground';
+import { AbstractSQLPlaygroundState } from '@finos/legend-query-builder';
 
 const DEFAULT_SQL_TEXT = `--Start building your SQL. Note that you can also drag-and-drop nodes from schema explorer\n`;
 
