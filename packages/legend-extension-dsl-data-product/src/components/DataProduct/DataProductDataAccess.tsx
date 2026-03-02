@@ -1049,6 +1049,8 @@ export const DataProductAccessPointGroupViewer = observer(
   }) => {
     const { apgState, dataAccessState } = props;
     const accessPointStates = apgState.accessPointStates;
+    const contractViewerContractAndSubscription =
+      dataAccessState?.contractViewerContractAndSubscription;
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
@@ -1070,19 +1072,18 @@ export const DataProductAccessPointGroupViewer = observer(
     }, [apgState, anchor]);
 
     const dataContractViewerState = useMemo(() => {
-      return dataAccessState?.contractViewerContractAndSubscription &&
-        dataAccessState.contractViewerContractAndSubscription.dataContract
-          .resource instanceof V1_AccessPointGroupReference &&
-        dataAccessState.contractViewerContractAndSubscription.dataContract
-          .resource.accessPointGroup === apgState.apg.id
+      return contractViewerContractAndSubscription &&
+        contractViewerContractAndSubscription.dataContract.resource instanceof
+          V1_AccessPointGroupReference &&
+        contractViewerContractAndSubscription.dataContract.resource
+          .accessPointGroup === apgState.apg.id
         ? new DataContractViewerState(
             V1_transformDataContractToLiteDatacontract(
-              dataAccessState.contractViewerContractAndSubscription
-                .dataContract,
+              contractViewerContractAndSubscription.dataContract,
             ),
             (contractId: string, taskId: string) =>
               dataAccessState.getContractTaskUrl(contractId, taskId),
-            dataAccessState.contractViewerContractAndSubscription.subscriptions?.[0],
+            contractViewerContractAndSubscription.subscriptions?.[0],
             apgState.applicationStore,
             dataAccessState.lakehouseContractServerClient,
             apgState.dataProductViewerState.graphManagerState,
@@ -1094,6 +1095,7 @@ export const DataProductAccessPointGroupViewer = observer(
       apgState.applicationStore,
       apgState.dataProductViewerState.graphManagerState,
       apgState.dataProductViewerState.userSearchService,
+      contractViewerContractAndSubscription,
       dataAccessState,
     ]);
 
