@@ -7,4 +7,4 @@
 '@finos/legend-shared': patch
 ---
 
-Fix roundtrip test util imports
+Fix test util imports
