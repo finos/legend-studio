@@ -182,7 +182,7 @@ describe('DataAccessRequestViewer', () => {
       );
 
       // Verify title
-      await screen.findByText('Pending Data Contract Request');
+      await screen.findByText('Pending Data Access Request');
       await screen.findByText(/Access request for/);
       screen.getByText(/GROUP1/);
       screen.getByText(/Access Point Group in/);
@@ -207,7 +207,7 @@ describe('DataAccessRequestViewer', () => {
       screen.getByText('Complete');
 
       // Verify Contract ID
-      screen.getByText('Contract ID: test-data-contract-id');
+      screen.getByText('Request ID: test-data-contract-id');
     });
 
     test('Displays correct "ordered for" for producer contract type', async () => {
@@ -256,8 +256,8 @@ describe('DataAccessRequestViewer', () => {
       );
 
       // Verify title
-      await screen.findByText('Data Contract Request');
-      expect(screen.queryByText('Pending Data Contract Request')).toBeNull();
+      await screen.findByText('Data Access Request');
+      expect(screen.queryByText('Pending Data Access Request')).toBeNull();
 
       // Verify approved privilege manager task
       expect(await screen.findAllByText('Approved by')).toHaveLength(2);
@@ -367,7 +367,7 @@ describe('DataAccessRequestViewer', () => {
       );
 
       // Verify escalate button
-      await screen.findByText('Pending Data Contract Request');
+      await screen.findByText('Pending Data Access Request');
       await screen.findByText('test-system-account-user-id');
       await screen.findByTitle('Escalate request');
     });
@@ -493,16 +493,16 @@ describe('DataAccessRequestViewer', () => {
 
       // Find and click close request button
       const closeRequestButton = guaranteeNonNullable(
-        (await screen.findByTitle('Close Contract')).firstElementChild,
+        (await screen.findByTitle('Close Request')).firstElementChild,
       );
       fireEvent.click(closeRequestButton);
 
       // Verify confirm modal appears
-      await screen.findByText('Are you sure you want to close this contract?');
+      await screen.findByText('Are you sure you want to close this request?');
 
       // Click confirm button
       const confirmButton = await screen.findByRole('button', {
-        name: 'Close Contract',
+        name: 'Close Request',
       });
       await act(() => fireEvent.click(confirmButton));
 
@@ -518,7 +518,7 @@ describe('DataAccessRequestViewer', () => {
 
       // Verify close contract button is disabled
       const closedContractButton = guaranteeNonNullable(
-        (await screen.findByTitle('Contract is already closed'))
+        (await screen.findByTitle('Request is already closed'))
           .firstElementChild,
       );
       expect(closedContractButton.hasAttribute('disabled')).toBe(true);

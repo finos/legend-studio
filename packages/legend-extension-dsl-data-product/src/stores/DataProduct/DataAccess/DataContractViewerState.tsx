@@ -87,6 +87,7 @@ export class DataContractViewerState implements DataAccessRequestState {
       isInProgress: computed,
       init: flow,
       invalidateRequest: flow,
+      escalateRequest: flow,
     });
 
     this.liteContract = V1_observe_LiteDataContract(dataContract);
