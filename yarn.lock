@@ -3808,6 +3808,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@jest/globals": "npm:29.7.0"
     "@testing-library/dom": "npm:10.4.0"
+    "@testing-library/react": "npm:16.2.0"
     "@types/lodash-es": "npm:4.17.12"
     "@types/object-hash": "npm:3.0.6"
     "@types/pako": "npm:2.0.3"
