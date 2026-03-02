@@ -94,6 +94,8 @@ import { DataProductEditorState } from '../../../stores/editor/editor-state/elem
 import { DataProductEditor } from './dataProduct/DataProductEditor.js';
 import { IngestDefinitionEditorState } from '../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import { IngestDefinitionEditor } from './ingest-editor/IngestDefinitionEditor.js';
+import { DatabaseEditorState } from '../../../stores/editor/editor-state/element-editor-state/database/DatabaseEditorState.js';
+import { DatabaseEditor } from './database/DatabaseEditor.js';
 import {
   MemSQLFunctionActivatorEditor,
   MemSQLFunctionActivatorEdtiorState,
@@ -330,6 +332,8 @@ export const EditorGroup = observer(() => {
             currentTabState instanceof MemSQLFunctionActivatorEdtiorState
           ) {
             return <MemSQLFunctionActivatorEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof DatabaseEditorState) {
+            return <DatabaseEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof UnsupportedElementEditorState) {
             return <UnsupportedElementEditor key={currentTabState.uuid} />;
           } else if (
