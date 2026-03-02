@@ -173,7 +173,7 @@ const setupDataContractViewerTest = async (
   };
 };
 
-describe('EntitlementsDataContractViewer', () => {
+describe('DataAccessRequestViewer', () => {
   test('Displays contract details', async () => {
     await setupDataContractViewerTest(
       mockDataContract,
