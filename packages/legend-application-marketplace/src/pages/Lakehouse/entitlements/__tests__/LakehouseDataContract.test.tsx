@@ -436,7 +436,7 @@ describe('Lakehouse Data Contract', () => {
 
       // The privilege manager step should show as skipped with a tooltip
       const skippedDot = await screen.findByTitle(
-        'This step was skipped because it is not required for this contract',
+        'This step was skipped because it is not required for this access request',
       );
       expect(skippedDot).toBeDefined();
     });
@@ -487,7 +487,7 @@ describe('Lakehouse Data Contract', () => {
 
       // The skipped tooltip should still be present for the PM step
       const skippedDot = await screen.findByTitle(
-        'This step was skipped because it is not required for this contract',
+        'This step was skipped because it is not required for this access request',
       );
       expect(skippedDot).toBeDefined();
 
