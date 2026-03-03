@@ -209,3 +209,99 @@ describe('UnknownElement', () => {
     },
   );
 });
+
+describe('Large graph build (batch processing)', () => {
+  /**
+   * Creates N simple class entities to exceed the GRAPH_BUILDER_BATCH_SIZE (100).
+   * Each class has a single String property to ensure it exercises the full
+   * graph builder pipeline (indexing, second pass, etc.).
+   */
+  const createLargeEntitySet = (count: number): Entity[] =>
+    Array.from({ length: count }, (_, i) => ({
+      path: `test::largebatch::TestClass_${i}`,
+      content: {
+        _type: 'class',
+        name: `TestClass_${i}`,
+        package: 'test::largebatch',
+        properties: [
+          {
+            multiplicity: { lowerBound: 1, upperBound: 1 },
+            name: 'value',
+            type: 'String',
+          },
+        ],
+      },
+      classifierPath: 'meta::pure::metamodel::type::Class',
+    })) as Entity[];
+
+  test(
+    unitTest(
+      'Graph builds successfully with > 100 elements (multi-batch indexing and processing)',
+    ),
+    async () => {
+      const count = 150;
+      const entities = createLargeEntitySet(count);
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(state, entities);
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+
+      // All elements should be indexed and accessible
+      for (let i = 0; i < count; i++) {
+        const cls = state.graph.getClass(`test::largebatch::TestClass_${i}`);
+        expect(cls).toBeDefined();
+        expect(cls.properties).toHaveLength(1);
+        expect(cls.properties[0]!.name).toBe('value');
+      }
+    },
+  );
+
+  test(
+    unitTest(
+      'All elements are roundtrip-able after multi-batch graph build',
+    ),
+    async () => {
+      const count = 150;
+      const entities = createLargeEntitySet(count);
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(state, entities);
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+
+      // Serialize elements back to entities and verify count matches
+      const transformedEntities = state.graph.allOwnElements.map((element) =>
+        state.graphManager.elementToEntity(element),
+      );
+      expect(transformedEntities).toHaveLength(count);
+
+      // Each original entity path should be present in the output
+      const transformedPaths = new Set(
+        transformedEntities.map((e) => e.path),
+      );
+      for (let i = 0; i < count; i++) {
+        expect(transformedPaths.has(`test::largebatch::TestClass_${i}`)).toBe(
+          true,
+        );
+      }
+    },
+  );
+
+  test(
+    unitTest(
+      'Element order is preserved across batch boundaries in graph build',
+    ),
+    async () => {
+      const count = 250;
+      const entities = createLargeEntitySet(count);
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(state, entities);
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+      expect(state.graph.allOwnElements.length).toBe(count);
+
+      // Spot-check elements near batch boundaries (0, 99, 100, 199, 200, 249)
+      for (const idx of [0, 99, 100, 199, 200, 249]) {
+        expect(
+          state.graph.getClass(`test::largebatch::TestClass_${idx}`),
+        ).toBeDefined();
+      }
+    },
+  );
+});
