@@ -242,81 +242,6 @@ describe('DataAccessRequestViewer', () => {
         screen.getByText('Producer DID: 12345');
       });
 
-      test('Shows correct details for Pending Privilege Manager Approval', async () => {
-        await setupDataContractViewerTest(
-          mockContracts.pendingPrivilegeManager,
-          getMockPendingManagerApprovalTasksResponse(),
-        );
-
-        // Verify pending assignee
-        await screen.findByText('Assignee:');
-        screen.getByText('test-privilege-manager-user-id');
-      });
-
-      test('Shows correct details for Pending Data Producer Approval', async () => {
-        await setupDataContractViewerTest(
-          mockContracts.pendingDataOwner,
-          getMockPendingDataOwnerApprovalTasksResponse(),
-        );
-
-        // Verify approved task
-        await screen.findByText('Approved by');
-        screen.getByText('test-privilege-manager-user-id');
-        screen.getByText(/08\/06\/2025/);
-        screen.getByText(/:00:00/);
-
-        // Verify pending assignee
-        await screen.findByText('Assignee:');
-        screen.getByText('test-data-owner-user-id');
-      });
-
-      test('Shows correct details for Approved contract', async () => {
-        await setupDataContractViewerTest(
-          mockContracts.completedContract,
-          getMockCompletedTasksResponse(),
-        );
-
-        // Verify title
-        await screen.findByText('Data Access Request');
-        expect(screen.queryByText('Pending Data Access Request')).toBeNull();
-
-        // Verify approved privilege manager task
-        expect(await screen.findAllByText('Approved by')).toHaveLength(2);
-        screen.getByText('test-privilege-manager-user-id');
-        screen.getByText(/08\/06\/2025/);
-        screen.getByText(/:00:00/);
-
-        // Verify approved data owner task
-        screen.getByText('test-data-owner-user-id');
-        screen.getByText(/08\/07\/2025/);
-        screen.getByText(/:15:00/);
-      });
-
-      test('Shows correct details for Denied contract', async () => {
-        await setupDataContractViewerTest(
-          mockContracts.rejectedContract,
-          getMockDeniedPrivilegeManagerTasksResponse(),
-        );
-
-        // Verify denied privilege manager task
-        await screen.findByText('Denied by');
-        screen.getByText('test-privilege-manager-user-id');
-        screen.getByText(/08\/06\/2025/);
-        screen.getByText(/:00:00/);
-      });
-
-      test('Shows list of assignees if there is more than 1', async () => {
-        await setupDataContractViewerTest(
-          mockContracts.pendingPrivilegeManager,
-          getMockPendingDataOwnerApprovalMultipleAssigneesTasksResponse(),
-        );
-
-        // Verify pending assignees
-        await screen.findByText('Assignees (2):');
-        screen.getByText('test-data-owner-user-id-1');
-        screen.getByText('test-data-owner-user-id-2');
-      });
-
       test('Shows list of "ordered for" if there is more than 1 consumer and respects initialSelectedUser', async () => {
         await setupDataContractViewerTest(
           mockContracts.pendingPrivilegeManagerMultipleConsumers,
@@ -371,6 +296,54 @@ describe('DataAccessRequestViewer', () => {
     });
 
     describe('renders timeline steps correctly', () => {
+      test('privilege manager pending step shows as active with link', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingPrivilegeManager,
+          getMockPendingManagerApprovalTasksResponse(),
+        );
+        // Pending PM task should render as a link instead of plain text
+        const pmApprovalLink = await screen.findByText(
+          'Privilege Manager Approval',
+        );
+        expect(pmApprovalLink.tagName).toBe('A');
+        await screen.findByText('Assignee:');
+        screen.getByText('test-privilege-manager-user-id');
+      });
+
+      test('data owner pending step shows as active with link and shows approved pending manager step', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingDataOwner,
+          getMockPendingDataOwnerApprovalTasksResponse(),
+        );
+        // Pending DO task should render as a link
+        const doApprovalLink = await screen.findByText(
+          'Data Producer Approval',
+        );
+        expect(doApprovalLink.tagName).toBe('A');
+
+        // Verify approved privilege manager task
+        await screen.findByText('Approved by');
+        screen.getByText('test-privilege-manager-user-id');
+        screen.getByText(/08\/06\/2025/);
+        screen.getByText(/:00:00/);
+
+        // Verify pending assignee for data owner task
+        await screen.findByText('Assignee:');
+        screen.getByText('test-data-owner-user-id');
+      });
+
+      test('Shows list of assignees if there is more than 1', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingPrivilegeManager,
+          getMockPendingDataOwnerApprovalMultipleAssigneesTasksResponse(),
+        );
+
+        // Verify pending assignees
+        await screen.findByText('Assignees (2):');
+        screen.getByText('test-data-owner-user-id-1');
+        screen.getByText('test-data-owner-user-id-2');
+      });
+
       test('shows "skipped" status for privilege manager when no PM task exists', async () => {
         await setupDataContractViewerTest(
           mockContracts.pendingDataOwnerNoPrivilegeManager,
@@ -383,6 +356,55 @@ describe('DataAccessRequestViewer', () => {
         expect(skippedDot).toBeDefined();
       });
 
+      test('shows complete status when both PM and data owner approvals are completed', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.completedContract,
+          getMockCompletedTasksResponse(),
+        );
+
+        // Verify title
+        await screen.findByText('Data Access Request');
+        expect(screen.queryByText('Pending Data Access Request')).toBeNull();
+
+        // Verify approved privilege manager task
+        expect(await screen.findAllByText('Approved by')).toHaveLength(2);
+        await screen.findByText('Privilege Manager Approval');
+        screen.getByText('test-privilege-manager-user-id');
+        screen.getByText(/08\/06\/2025/);
+        screen.getByText(/:00:00/);
+
+        // Verify approved data owner task
+        await screen.findByText('Data Producer Approval');
+        screen.getByText('test-data-owner-user-id');
+        screen.getByText(/08\/07\/2025/);
+        screen.getByText(/:15:00/);
+        const completeText = await screen.findByText('Complete');
+        expect(completeText).toBeDefined();
+      });
+
+      test('shows complete status when only data owner approval is completed (no PM required)', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingDataOwnerNoPrivilegeManager,
+          getMockNoPrivilegeManagerCompletedTasksResponse(),
+        );
+        // The skipped tooltip should still be present for the PM step
+        const skippedDot = await screen.findByTitle(
+          'This step was skipped because it is not required for this access request',
+        );
+        expect(skippedDot).toBeDefined();
+
+        // Verify "Data Producer Approval" approved message are shown
+        await screen.findByText('Data Producer Approval');
+        await screen.findByText('Approved by');
+        await screen.findByText('test-data-owner-user-id');
+        await screen.findByText(/08\/07\/2025/);
+        screen.getByText(/:15:00/);
+
+        // The complete step text should be rendered
+        const completeText = await screen.findByText('Complete');
+        expect(completeText).toBeDefined();
+      });
+
       test('shows denied status for denied privilege manager task', async () => {
         await setupDataContractViewerTest(
           mockContracts.rejectedContract,
@@ -393,6 +415,7 @@ describe('DataAccessRequestViewer', () => {
         await screen.findByText('Denied by');
         await screen.findByText('test-privilege-manager-user-id');
         await screen.findByText(/08\/06\/2025/);
+        screen.getByText(/:00:00/);
       });
 
       test('shows denied status for denied data owner task', async () => {
@@ -410,67 +433,6 @@ describe('DataAccessRequestViewer', () => {
         await screen.findByText('Denied by');
         await screen.findByText('test-data-owner-user-id');
         await screen.findByText(/08\/06\/2025/);
-      });
-
-      test('shows complete status when only data owner approval is completed (no PM required)', async () => {
-        await setupDataContractViewerTest(
-          mockContracts.pendingDataOwnerNoPrivilegeManager,
-          getMockNoPrivilegeManagerCompletedTasksResponse(),
-        );
-        // The skipped tooltip should still be present for the PM step
-        const skippedDot = await screen.findByTitle(
-          'This step was skipped because it is not required for this access request',
-        );
-        expect(skippedDot).toBeDefined();
-        // The complete step text should be rendered
-        const completeText = await screen.findByText('Complete');
-        expect(completeText).toBeDefined();
-        // Verify "Data Producer Approval" approved message are shown
-        await screen.findByText('Data Producer Approval');
-        await screen.findByText('Approved by');
-        await screen.findByText('test-data-owner-user-id');
-        await screen.findByText(/08\/07\/2025/);
-      });
-
-      test('shows complete status when both PM and data owner approvals are completed', async () => {
-        await setupDataContractViewerTest(
-          mockContracts.completedContract,
-          getMockCompletedTasksResponse(),
-        );
-        const completeText = await screen.findByText('Complete');
-        expect(completeText).toBeDefined();
-        // Verify "Privilege Manager Approval" and "Data Producer Approval" approved message are shown
-        expect(await screen.findAllByText('Approved by')).toHaveLength(2);
-        await screen.findByText('Privilege Manager Approval');
-        await screen.findByText('test-privilege-manager-user-id');
-        await screen.findByText(/08\/06\/2025/);
-        await screen.findByText('Data Producer Approval');
-        await screen.findByText('test-data-owner-user-id');
-        await screen.findByText(/08\/07\/2025/);
-      });
-
-      test('privilege manager pending step shows as active with link', async () => {
-        await setupDataContractViewerTest(
-          mockContracts.pendingPrivilegeManager,
-          getMockPendingManagerApprovalTasksResponse(),
-        );
-        // Pending PM task should render as a link instead of plain text
-        const pmApprovalLink = await screen.findByText(
-          'Privilege Manager Approval',
-        );
-        await waitFor(() => expect(pmApprovalLink.tagName).toBe('A'));
-      });
-
-      test('data owner pending step shows as active with link', async () => {
-        await setupDataContractViewerTest(
-          mockContracts.pendingDataOwner,
-          getMockPendingDataOwnerApprovalTasksResponse(),
-        );
-        // Pending DO task should render as a link
-        const doApprovalLink = await screen.findByText(
-          'Data Producer Approval',
-        );
-        expect(doApprovalLink.tagName).toBe('A');
       });
     });
 
