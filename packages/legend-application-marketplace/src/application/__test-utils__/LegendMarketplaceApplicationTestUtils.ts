@@ -126,7 +126,7 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
 
   override async getExtraHomePageDataProducts(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
-  ): Promise<ProductCardState[] | undefined> {
+  ): Promise<Record<string, ProductCardState[]> | undefined> {
     // Crete graph manager for parsing ad-hoc deployed data products
     const graphManager = new V1_PureGraphManager(
       marketplaceBaseStore.applicationStore.pluginManager,
@@ -156,6 +156,6 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
       graphManager,
       testImageMap,
     );
-    return [dataProductState];
+    return { Sponsored: [dataProductState] };
   }
 }

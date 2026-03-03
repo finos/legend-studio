@@ -223,133 +223,148 @@ export class LegendMarketplaceBaseStore {
     return undefined;
   }
 
-  async initHighlightedDataProducts(
-    token: string | undefined,
-  ): Promise<ProductCardState[] | undefined> {
-    const highlightedDataProducts =
-      this.applicationStore.config.options.highlightedDataProducts
-        ?.split(',')
-        .map((entry) => {
-          const vals = entry.split('/');
-          if (vals[0] === undefined || vals[1] === undefined) {
-            return undefined;
-          }
-          const id = vals[0];
-          const secondPart = vals[1];
-          if (Number.isInteger(Number(secondPart))) {
-            return {
-              dataProductId: id,
-              deploymentId: parseInt(secondPart),
-            };
-          } else {
-            return { dataProductId: id, gav: secondPart };
-          }
-        })
-        .filter(isNonNullable);
-
-    if (highlightedDataProducts?.length) {
-      const getDataProductState = async (
-        dataProductId: string,
-        deploymentId: number,
-        graphManager: V1_PureGraphManager,
-      ) => {
-        const rawResponse =
-          await this.lakehouseContractServerClient.getDataProductByIdAndDID(
-            dataProductId,
-            deploymentId,
-            token,
-          );
-        const dataProductDetail =
-          V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-            rawResponse,
-          )[0];
-
-        if (dataProductDetail) {
-          const searchResult =
-            convertEntitlementsDataProductDetailsToSearchResult(
-              dataProductDetail,
-            );
-          return new ProductCardState(
-            this,
-            searchResult,
-            graphManager,
-            new Map(),
-          );
-        } else {
+  private parseDataProductEntries(
+    entriesString: string,
+  ): (
+    | { dataProductId: string; deploymentId: number; gav?: undefined }
+    | { dataProductId: string; gav: string; deploymentId?: undefined }
+  )[] {
+    return entriesString
+      .split(',')
+      .map((entry) => {
+        const vals = entry.split('/');
+        if (vals[0] === undefined || vals[1] === undefined) {
           return undefined;
         }
-      };
+        const id = vals[0];
+        const secondPart = vals[1];
+        if (Number.isInteger(Number(secondPart))) {
+          return {
+            dataProductId: id,
+            deploymentId: parseInt(secondPart),
+          };
+        } else {
+          return { dataProductId: id, gav: secondPart };
+        }
+      })
+      .filter(isNonNullable);
+  }
 
-      const getLegacyDataProductState = async (
-        dataProductId: string,
-        gav: string,
-        graphManager: V1_PureGraphManager,
-      ) => {
-        const coordinates = parseGAVCoordinates(gav);
-        const storeProject = new StoreProjectData();
-        storeProject.groupId = coordinates.groupId;
-        storeProject.artifactId = coordinates.artifactId;
-        const legacyDataProuct = await this.depotServerClient.getEntity(
-          storeProject,
-          coordinates.versionId,
+  async initHighlightedDataProducts(
+    token: string | undefined,
+  ): Promise<Record<string, ProductCardState[]> | undefined> {
+    const highlightedConfig =
+      this.applicationStore.config.options.highlightedDataProducts;
+    if (!highlightedConfig) {
+      return undefined;
+    }
+
+    const sectionEntries = Object.entries(highlightedConfig);
+    if (sectionEntries.length === 0) {
+      return undefined;
+    }
+
+    const getDataProductState = async (
+      dataProductId: string,
+      deploymentId: number,
+      graphManager: V1_PureGraphManager,
+    ) => {
+      const rawResponse =
+        await this.lakehouseContractServerClient.getDataProductByIdAndDID(
           dataProductId,
+          deploymentId,
+          token,
         );
-        const dataSpace = V1_deserializeDataSpace(
-          (legacyDataProuct as unknown as Entity).content,
-        );
-        const searchResult = convertLegacyDataProductToSearchResult(
-          dataSpace,
-          coordinates.groupId,
-          coordinates.artifactId,
-          coordinates.versionId,
-        );
+      const dataProductDetail =
+        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+          rawResponse,
+        )[0];
+
+      if (dataProductDetail) {
+        const searchResult =
+          convertEntitlementsDataProductDetailsToSearchResult(
+            dataProductDetail,
+          );
         return new ProductCardState(
           this,
           searchResult,
           graphManager,
           new Map(),
         );
-      };
+      } else {
+        return undefined;
+      }
+    };
 
-      const graphManager = new V1_PureGraphManager(
-        this.applicationStore.pluginManager,
-        this.applicationStore.logService,
-        this.remoteEngine,
+    const getLegacyDataProductState = async (
+      dataProductId: string,
+      gav: string,
+      graphManager: V1_PureGraphManager,
+    ) => {
+      const coordinates = parseGAVCoordinates(gav);
+      const storeProject = new StoreProjectData();
+      storeProject.groupId = coordinates.groupId;
+      storeProject.artifactId = coordinates.artifactId;
+      const legacyDataProuct = await this.depotServerClient.getEntity(
+        storeProject,
+        coordinates.versionId,
+        dataProductId,
       );
-      await graphManager.initialize(
-        {
-          env: this.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl: this.applicationStore.config.engineServerUrl,
-          },
+      const dataSpace = V1_deserializeDataSpace(
+        (legacyDataProuct as unknown as Entity).content,
+      );
+      const searchResult = convertLegacyDataProductToSearchResult(
+        dataSpace,
+        coordinates.groupId,
+        coordinates.artifactId,
+        coordinates.versionId,
+      );
+      return new ProductCardState(this, searchResult, graphManager, new Map());
+    };
+
+    const graphManager = new V1_PureGraphManager(
+      this.applicationStore.pluginManager,
+      this.applicationStore.logService,
+      this.remoteEngine,
+    );
+    await graphManager.initialize(
+      {
+        env: this.applicationStore.config.env,
+        tabSize: DEFAULT_TAB_SIZE,
+        clientConfig: {
+          baseUrl: this.applicationStore.config.engineServerUrl,
         },
-        { engine: this.remoteEngine },
-      );
+      },
+      { engine: this.remoteEngine },
+    );
 
-      const dataProductStates = (
-        await Promise.all(
-          highlightedDataProducts.map(async (dataProduct) =>
-            'deploymentId' in dataProduct
-              ? getDataProductState(
-                  dataProduct.dataProductId,
-                  dataProduct.deploymentId,
-                  graphManager,
-                )
-              : getLegacyDataProductState(
-                  dataProduct.dataProductId,
-                  dataProduct.gav,
-                  graphManager,
-                ),
-          ),
-        )
-      ).filter(isNonNullable);
-      dataProductStates.forEach((dataProductState) =>
-        dataProductState.init(token),
-      );
-      return dataProductStates;
-    }
-    return undefined;
+    const result: Record<string, ProductCardState[]> = {};
+    await Promise.all(
+      sectionEntries.map(async ([sectionName, entriesString]) => {
+        const entries = this.parseDataProductEntries(entriesString);
+        const states = (
+          await Promise.all(
+            entries.map(async (dataProduct) =>
+              dataProduct.deploymentId !== undefined
+                ? getDataProductState(
+                    dataProduct.dataProductId,
+                    dataProduct.deploymentId,
+                    graphManager,
+                  )
+                : getLegacyDataProductState(
+                    dataProduct.dataProductId,
+                    dataProduct.gav!,
+                    graphManager,
+                  ),
+            ),
+          )
+        ).filter(isNonNullable);
+        states.forEach((state) => state.init(token));
+        result[sectionName] = states;
+      }),
+    );
+
+    return result;
   }
 
   setDemoModal(val: boolean): void {
