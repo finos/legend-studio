@@ -21,7 +21,7 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
-    "./test": "./lib/__test__.js",
+    "./test-utils": "./lib/components/__test-utils__/index.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",

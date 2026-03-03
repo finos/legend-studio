@@ -55,8 +55,8 @@ import {
   list,
   optional,
   primitive,
+  raw,
   serialize,
-  SKIP,
 } from 'serializr';
 import {
   type V1_OrganizationalScope,
@@ -139,10 +139,17 @@ export const V1_EntitlementsDataProductModelSchema = createModelSchema(
 export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
   V1_AccessPointGroupReference,
   {
+    _type: usingConstantValueSchema(
+      V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+    ),
     dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
     accessPointGroup: primitive(),
   },
 );
+
+export const V1_DataBundleModelSchema = createModelSchema(V1_DataBundle, {
+  content: raw(),
+});
 
 export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
   _type: usingConstantValueSchema(V1_OrganizationalScopeType.AdHocTeam),
@@ -207,10 +214,29 @@ const V1_serializeOrganizationalScope = (
       return result;
     }
   }
-  throw new UnsupportedOperationError();
+  throw new UnsupportedOperationError(
+    `Can't serialize unsupported organizational scope type: ${organizationalScope?.constructor.name}`,
+  );
 };
 
-const V1_deseralizeV1_ConsumerEntitlementResource = (
+const V1_seralizeConsumerEntitlementResource = (
+  consumerEntitlementResource: V1_ConsumerEntitlementResource,
+): PlainObject<V1_ConsumerEntitlementResource> => {
+  if (consumerEntitlementResource instanceof V1_AccessPointGroupReference) {
+    return serialize(
+      V1_AccessPointGroupReferenceModelSchema,
+      consumerEntitlementResource,
+    );
+  } else if (consumerEntitlementResource instanceof V1_DataBundle) {
+    return serialize(V1_DataBundleModelSchema, consumerEntitlementResource);
+  } else {
+    throw new UnsupportedOperationError(
+      `Can't serialize unsupported consumer entitlement resource type: ${consumerEntitlementResource?.constructor.name}`,
+    );
+  }
+};
+
+const V1_deseralizeConsumerEntitlementResource = (
   json: PlainObject<V1_ConsumerEntitlementResource>,
 ): V1_ConsumerEntitlementResource => {
   switch (json._type) {
@@ -240,7 +266,10 @@ export const V1_dataContractModelSchema = (
     guid: primitive(),
     version: primitive(),
     state: primitive(),
-    resource: custom(() => SKIP, V1_deseralizeV1_ConsumerEntitlementResource),
+    resource: custom(
+      V1_seralizeConsumerEntitlementResource,
+      V1_deseralizeConsumerEntitlementResource,
+    ),
     members: optional(
       list(usingModelSchema(V1_contractUserMembershipModelSchema)),
     ),
@@ -585,7 +614,9 @@ const V1_serializeDataProductOrigin = (
   if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
     return serialize(V1_SdlcDeploymentDataProductOriginModelSchema, origin);
   }
-  throw new UnsupportedOperationError();
+  throw new UnsupportedOperationError(
+    `Can't serialize unsupported data product origin type: ${origin?.constructor.name}`,
+  );
 };
 
 export const V1_EntitlementsLakehouseEnvironmentModelSchema = createModelSchema(

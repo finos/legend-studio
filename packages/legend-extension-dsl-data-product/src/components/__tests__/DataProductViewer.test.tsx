@@ -53,10 +53,6 @@ import {
   mockSDLCDataProductNoSupportInfo,
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
 import { createSpy } from '@finos/legend-shared/test';
-import {
-  getMockPendingManagerApprovalTasksResponse,
-  mockApprovedTasksResponse,
-} from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 import { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import { AuthProvider } from 'react-oidc-context';
 import { ProductViewer } from '../ProductViewer.js';
@@ -76,6 +72,10 @@ import {
   MockedMonacoEditorModel,
 } from '@finos/legend-lego/code-editor/test';
 import { BrowserRouter } from '@finos/legend-application/browser';
+import {
+  getMockCompletedTasksResponse,
+  getMockPendingManagerApprovalTasksResponse,
+} from '../__test-utils__/TEST_DATA__LakehouseDataContracts.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -237,7 +237,7 @@ const setupLakehouseDataProductTest = async (
         contractId === 'test-approved-contract-id' ||
         contractId === 'test-partially-approved-contract-id'
       ) {
-        return mockApprovedTasksResponse as unknown as PlainObject<V1_TaskResponse>;
+        return getMockCompletedTasksResponse() as unknown as PlainObject<V1_TaskResponse>;
       }
       return getMockPendingManagerApprovalTasksResponse() as unknown as PlainObject<V1_TaskResponse>;
     });

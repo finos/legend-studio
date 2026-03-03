@@ -24,6 +24,7 @@ import {
 } from '@testing-library/react';
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import {
+  type PureProtocolProcessorPlugin,
   type V1_DataContract,
   type V1_DataSubscription,
   type V1_TaskResponse,
@@ -38,32 +39,31 @@ import {
   TEST__LegendApplicationPluginManager,
 } from '../__test-utils__/StateTestUtils.js';
 import {
-  getMockPendingManagerApprovalTasksResponse,
-  mockApprovedTasksResponse,
-  mockDataContract,
-  mockDataContractMultipleConsumers,
-  mockDataContractWithSystemAccountMember,
-  mockDeniedTasksResponse,
-  mockEscalatedPendingManagerApprovalTasksResponse,
-  mockPendingDataOwnerApprovalTasksResponse,
-  mockPendingManagerApprovalMultipleAssigneesTasksResponse,
-  mockPendingManagerApprovalMultipleConsumersTasksResponse,
-  mockAutoCreatedSubscription,
-  mockProducerDataContract,
-  mockClosedDataContract,
-  mockClosedContractTasksResponse,
-} from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
-import {
   ApplicationFrameworkProvider,
   ApplicationStore,
   ApplicationStoreProvider,
 } from '@finos/legend-application';
 import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
-import { deserialize } from 'serializr';
+import { serialize } from 'serializr';
 import { Route, Routes } from '@finos/legend-application/browser';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/DataContractViewerState.js';
 import { DataAccessRequestViewer } from '../DataProduct/DataContract/DataAccessRequestViewer.js';
+import {
+  getMockClosedTasksResponse,
+  getMockCompletedTasksResponse,
+  getMockDeniedDataOwnerTasksResponse,
+  getMockDeniedPrivilegeManagerTasksResponse,
+  getMockNoPrivilegeManagerCompletedTasksResponse,
+  getMockNoPrivilegeManagerTasksResponse,
+  getMockPendingDataOwnerApprovalMultipleAssigneesTasksResponse,
+  getMockPendingDataOwnerApprovalTasksResponse,
+  getMockPendingManagerApprovalTasksResponse,
+  getMockPendingManagerApprovaMultipleConsumersTasksResponse,
+  getMockPendingManagerEscalatedTasksResponse,
+  mockAutoCreatedSubscription,
+  mockContracts,
+} from '../__test-utils__/TEST_DATA__LakehouseDataContracts.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -73,10 +73,14 @@ jest.mock('react-oidc-context', () => {
 });
 
 const setupDataContractViewerTest = async (
-  mockContractObject: PlainObject<V1_DataContract>,
+  mockContractCallback: (
+    plugins: PureProtocolProcessorPlugin[],
+  ) => V1_DataContract,
   mockTasks: V1_TaskResponse,
   initialSelectedUser?: string,
-  contractWithMembersObject?: PlainObject<V1_DataContract>,
+  mockContractWithMembersCallback?: (
+    plugins: PureProtocolProcessorPlugin[],
+  ) => V1_DataContract,
   mockSubscription?: V1_DataSubscription,
 ) => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
@@ -99,12 +103,27 @@ const setupDataContractViewerTest = async (
     (location: string) => location,
   );
 
-  const mockContract = deserialize(
+  const mockContract = mockContractCallback(
+    MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+  );
+  const mockContractObject = serialize(
     V1_dataContractModelSchema(
       MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
     ),
-    mockContractObject,
+    mockContract,
   );
+
+  const mockContractWithMembers = mockContractWithMembersCallback?.(
+    MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+  );
+  const mockContractWithMembersObject = mockContractWithMembers
+    ? serialize(
+        V1_dataContractModelSchema(
+          MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        ),
+        mockContractWithMembers,
+      )
+    : undefined;
 
   const mockLiteContract =
     V1_transformDataContractToLiteDatacontract(mockContract);
@@ -116,15 +135,16 @@ const setupDataContractViewerTest = async (
 
   createSpy(lakehouseContractServerClient, 'getDataContract').mockResolvedValue(
     {
-      dataContracts: contractWithMembersObject
-        ? [{ dataContract: contractWithMembersObject }]
+      dataContracts: mockContractWithMembersObject
+        ? [{ dataContract: mockContractWithMembersObject }]
         : [{ dataContract: mockContractObject }],
     },
   );
 
   const MOCK__contractViewerState = new DataContractViewerState(
     mockLiteContract,
-    () => '',
+    (contractId: string, taskId: string) =>
+      `http://test-task-url?contractId=${contractId}&taskId=${taskId}`,
     mockSubscription,
     MOCK__applicationStore,
     lakehouseContractServerClient,
@@ -178,7 +198,7 @@ describe('DataAccessRequestViewer', () => {
     describe('renders contract details correctly and handles refresh', () => {
       test('Displays contract details', async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
+          mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
         );
 
@@ -196,7 +216,7 @@ describe('DataAccessRequestViewer', () => {
         screen.getByText(/Ordered For/);
         screen.getByText('test-consumer-user-id');
         screen.getByText('Business Justification:');
-        screen.getByText('Test contract creation request');
+        screen.getByText('Test contract pending privilege manager approval');
 
         // Verify refresh button
         screen.getByRole('button', { name: 'Refresh' });
@@ -208,12 +228,12 @@ describe('DataAccessRequestViewer', () => {
         screen.getByText('Complete');
 
         // Verify Contract ID
-        screen.getByText('Request ID: test-data-contract-id');
+        screen.getByText('Request ID: contract-pending-pm-id');
       });
 
       test('Displays correct "ordered for" for producer contract type', async () => {
         await setupDataContractViewerTest(
-          mockProducerDataContract,
+          mockContracts.producerContract,
           getMockPendingManagerApprovalTasksResponse(),
         );
 
@@ -224,7 +244,7 @@ describe('DataAccessRequestViewer', () => {
 
       test('Shows correct details for Pending Privilege Manager Approval', async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
+          mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
         );
 
@@ -235,15 +255,15 @@ describe('DataAccessRequestViewer', () => {
 
       test('Shows correct details for Pending Data Producer Approval', async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
-          mockPendingDataOwnerApprovalTasksResponse,
+          mockContracts.pendingDataOwner,
+          getMockPendingDataOwnerApprovalTasksResponse(),
         );
 
         // Verify approved task
         await screen.findByText('Approved by');
         screen.getByText('test-privilege-manager-user-id');
         screen.getByText(/08\/06\/2025/);
-        screen.getByText(/:54:46/);
+        screen.getByText(/:00:00/);
 
         // Verify pending assignee
         await screen.findByText('Assignee:');
@@ -252,8 +272,8 @@ describe('DataAccessRequestViewer', () => {
 
       test('Shows correct details for Approved contract', async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
-          mockApprovedTasksResponse,
+          mockContracts.completedContract,
+          getMockCompletedTasksResponse(),
         );
 
         // Verify title
@@ -264,43 +284,43 @@ describe('DataAccessRequestViewer', () => {
         expect(await screen.findAllByText('Approved by')).toHaveLength(2);
         screen.getByText('test-privilege-manager-user-id');
         screen.getByText(/08\/06\/2025/);
-        screen.getByText(/:54:46/);
+        screen.getByText(/:00:00/);
 
         // Verify approved data owner task
         screen.getByText('test-data-owner-user-id');
         screen.getByText(/08\/07\/2025/);
-        screen.getByText(/:32:18/);
+        screen.getByText(/:15:00/);
       });
 
       test('Shows correct details for Denied contract', async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
-          mockDeniedTasksResponse,
+          mockContracts.rejectedContract,
+          getMockDeniedPrivilegeManagerTasksResponse(),
         );
 
         // Verify denied privilege manager task
         await screen.findByText('Denied by');
         screen.getByText('test-privilege-manager-user-id');
         screen.getByText(/08\/06\/2025/);
-        screen.getByText(/:54:46/);
+        screen.getByText(/:00:00/);
       });
 
       test('Shows list of assignees if there is more than 1', async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
-          mockPendingManagerApprovalMultipleAssigneesTasksResponse,
+          mockContracts.pendingPrivilegeManager,
+          getMockPendingDataOwnerApprovalMultipleAssigneesTasksResponse(),
         );
 
         // Verify pending assignees
         await screen.findByText('Assignees (2):');
-        screen.getByText('test-privilege-manager-user-id-1');
-        screen.getByText('test-privilege-manager-user-id-2');
+        screen.getByText('test-data-owner-user-id-1');
+        screen.getByText('test-data-owner-user-id-2');
       });
 
       test('Shows list of "ordered for" if there is more than 1 consumer and respects initialSelectedUser', async () => {
         await setupDataContractViewerTest(
-          mockDataContractMultipleConsumers,
-          mockPendingManagerApprovalMultipleConsumersTasksResponse,
+          mockContracts.pendingPrivilegeManagerMultipleConsumers,
+          getMockPendingManagerApprovaMultipleConsumersTasksResponse(),
           'test-consumer-user-id-2',
         );
 
@@ -311,12 +331,12 @@ describe('DataAccessRequestViewer', () => {
         await act(async () => {
           fireEvent.mouseDown(userButton);
         });
-        await screen.findByText('test-consumer-user-id-1');
+        await screen.findByText('test-consumer-user-id');
       });
 
       test('Refresh button re-initializes data access request viewer', async () => {
         const { MOCK__contractViewerState } = await setupDataContractViewerTest(
-          mockDataContract,
+          mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
         );
 
@@ -336,7 +356,7 @@ describe('DataAccessRequestViewer', () => {
 
       test('Renders subscription details if provided', async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
+          mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
           undefined,
           undefined,
@@ -350,10 +370,114 @@ describe('DataAccessRequestViewer', () => {
       });
     });
 
+    describe('renders timeline steps correctly', () => {
+      test('shows "skipped" status for privilege manager when no PM task exists', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingDataOwnerNoPrivilegeManager,
+          getMockNoPrivilegeManagerTasksResponse(),
+        );
+        // The privilege manager step should show as skipped with a tooltip
+        const skippedDot = await screen.findByTitle(
+          'This step was skipped because it is not required for this access request',
+        );
+        expect(skippedDot).toBeDefined();
+      });
+
+      test('shows denied status for denied privilege manager task', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.rejectedContract,
+          getMockDeniedPrivilegeManagerTasksResponse(),
+        );
+        // Verify "Privilege Manager Approval" denied message is shown
+        await screen.findByText('Privilege Manager Approval');
+        await screen.findByText('Denied by');
+        await screen.findByText('test-privilege-manager-user-id');
+        await screen.findByText(/08\/06\/2025/);
+      });
+
+      test('shows denied status for denied data owner task', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.rejectedContract,
+          getMockDeniedDataOwnerTasksResponse(),
+        );
+        // Verify "Data Privlege Manager Approval" approved message is shown
+        await screen.findByText('Privilege Manager Approval');
+        await screen.findByText('Approved by');
+        await screen.findByText('test-privilege-manager-user-id');
+        await screen.findByText(/08\/06\/2025/);
+        // Verify "Data Producer Approval" denied message is shown
+        await screen.findByText('Data Producer Approval');
+        await screen.findByText('Denied by');
+        await screen.findByText('test-data-owner-user-id');
+        await screen.findByText(/08\/06\/2025/);
+      });
+
+      test('shows complete status when only data owner approval is completed (no PM required)', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingDataOwnerNoPrivilegeManager,
+          getMockNoPrivilegeManagerCompletedTasksResponse(),
+        );
+        // The skipped tooltip should still be present for the PM step
+        const skippedDot = await screen.findByTitle(
+          'This step was skipped because it is not required for this access request',
+        );
+        expect(skippedDot).toBeDefined();
+        // The complete step text should be rendered
+        const completeText = await screen.findByText('Complete');
+        expect(completeText).toBeDefined();
+        // Verify "Data Producer Approval" approved message are shown
+        await screen.findByText('Data Producer Approval');
+        await screen.findByText('Approved by');
+        await screen.findByText('test-data-owner-user-id');
+        await screen.findByText(/08\/07\/2025/);
+      });
+
+      test('shows complete status when both PM and data owner approvals are completed', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.completedContract,
+          getMockCompletedTasksResponse(),
+        );
+        const completeText = await screen.findByText('Complete');
+        expect(completeText).toBeDefined();
+        // Verify "Privilege Manager Approval" and "Data Producer Approval" approved message are shown
+        expect(await screen.findAllByText('Approved by')).toHaveLength(2);
+        await screen.findByText('Privilege Manager Approval');
+        await screen.findByText('test-privilege-manager-user-id');
+        await screen.findByText(/08\/06\/2025/);
+        await screen.findByText('Data Producer Approval');
+        await screen.findByText('test-data-owner-user-id');
+        await screen.findByText(/08\/07\/2025/);
+      });
+
+      test('privilege manager pending step shows as active with link', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingPrivilegeManager,
+          getMockPendingManagerApprovalTasksResponse(),
+        );
+        // Pending PM task should render as a link instead of plain text
+        const pmApprovalLink = await screen.findByText(
+          'Privilege Manager Approval',
+        );
+        await waitFor(() => expect(pmApprovalLink.tagName).toBe('A'));
+      });
+
+      test('data owner pending step shows as active with link', async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingDataOwner,
+          getMockPendingDataOwnerApprovalTasksResponse(),
+        );
+        // Pending DO task should render as a link
+        const doApprovalLink = await screen.findByText(
+          'Data Producer Approval',
+        );
+        expect(doApprovalLink.tagName).toBe('A');
+      });
+    });
+
     describe('renders escalate button correctly', () => {
       test("Shows escalate button for user's own task", async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
+          mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
         );
 
@@ -365,8 +489,21 @@ describe('DataAccessRequestViewer', () => {
 
       test("Doesn't show escalate button for another user's task", async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
+          mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
+          'test-consumer-user-id-2',
+        );
+
+        // Verify no escalate button
+        await screen.findByText('Pending Data Access Request');
+        await screen.findByText('test-consumer-user-id-2');
+        expect(screen.queryByTitle('Escalate request')).toBeNull();
+      });
+
+      test("Doesn't show escalate button when there is no privilege manager approval task", async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingDataOwnerNoPrivilegeManager,
+          getMockNoPrivilegeManagerTasksResponse(),
           'test-consumer-user-id-2',
         );
 
@@ -378,10 +515,10 @@ describe('DataAccessRequestViewer', () => {
 
       test('Shows escalate button for system account task', async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
+          mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
           'test-system-account-user-id',
-          mockDataContractWithSystemAccountMember,
+          mockContracts.pendingPrivilegeManagerWithSystemAccountMember,
         );
 
         // Verify escalate button
@@ -392,8 +529,8 @@ describe('DataAccessRequestViewer', () => {
 
       test('Disables escalate button for already escalated task', async () => {
         await setupDataContractViewerTest(
-          mockDataContract,
-          getMockPendingManagerApprovalTasksResponse(true),
+          mockContracts.pendingPrivilegeManager,
+          getMockPendingManagerEscalatedTasksResponse(),
         );
 
         // Verify escalate button
@@ -407,7 +544,7 @@ describe('DataAccessRequestViewer', () => {
 
       test('Clicking escalate button opens confirm modal and submitting modal calls escalate endpoint', async () => {
         const { MOCK__contractViewerState } = await setupDataContractViewerTest(
-          mockDataContract,
+          mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
         );
 
@@ -433,7 +570,7 @@ describe('DataAccessRequestViewer', () => {
           MOCK__contractViewerState.lakehouseContractServerClient,
           'getContractTasks',
         ).mockResolvedValue(
-          mockEscalatedPendingManagerApprovalTasksResponse as unknown as PlainObject<V1_TaskResponse>,
+          getMockPendingManagerEscalatedTasksResponse() as unknown as PlainObject<V1_TaskResponse>,
         );
 
         // Get escalate button
@@ -458,7 +595,7 @@ describe('DataAccessRequestViewer', () => {
 
         expect(escalateSpy).toHaveBeenCalledTimes(1);
         expect(escalateSpy).toHaveBeenCalledWith(
-          mockDataContract.guid,
+          mockContracts.pendingPrivilegeManager([]).guid,
           'test-consumer-user-id',
           false,
           'mock-access-token',
@@ -475,7 +612,7 @@ describe('DataAccessRequestViewer', () => {
     describe('renders close request button correctly', () => {
       test('Close contract button calls invalidate endpoint', async () => {
         const { MOCK__contractViewerState } = await setupDataContractViewerTest(
-          mockDataContract,
+          mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
         );
 
@@ -491,13 +628,13 @@ describe('DataAccessRequestViewer', () => {
           MOCK__contractViewerState.lakehouseContractServerClient,
           'getDataContract',
         ).mockResolvedValue({
-          dataContracts: [{ dataContract: mockClosedDataContract }],
+          dataContracts: [{ dataContract: mockContracts.closedContract([]) }],
         });
         createSpy(
           MOCK__contractViewerState.lakehouseContractServerClient,
           'getContractTasks',
         ).mockResolvedValue(
-          mockClosedContractTasksResponse as unknown as PlainObject<V1_TaskResponse>,
+          getMockClosedTasksResponse() as unknown as PlainObject<V1_TaskResponse>,
         );
 
         // Find and click close request button
@@ -518,7 +655,7 @@ describe('DataAccessRequestViewer', () => {
         // Verify invalidate API called
         expect(invalidateSpy).toHaveBeenCalledTimes(1);
         expect(invalidateSpy).toHaveBeenCalledWith(
-          mockDataContract.guid,
+          mockContracts.closedContract([]).guid,
           'mock-access-token',
         );
 
