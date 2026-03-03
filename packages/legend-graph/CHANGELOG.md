@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.36
+
+### Patch Changes
+
+- [#4933](https://github.com/finos/legend-studio/pull/4933) [`9975b4b`](https://github.com/finos/legend-studio/commit/9975b4bf4c518e540780a597b0dd8d263aac0ec6) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Ingest content interface and helper to check if packageable Element is data product or Ingest.
+
 ## 32.3.35
 
 ### Patch Changes

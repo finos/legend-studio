@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.3.72
+
+### Patch Changes
+
+- [#4921](https://github.com/finos/legend-studio/pull/4921) [`b443263`](https://github.com/finos/legend-studio/commit/b4432635a256d41828f68708ee800c8c7dc4322d) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: handling pivot columns with extra quotes
+
 ## 0.3.71
 
 ## 0.3.70

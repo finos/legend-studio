@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.49
+
+### Patch Changes
+
+- [#4932](https://github.com/finos/legend-studio/pull/4932) [`1338c93`](https://github.com/finos/legend-studio/commit/1338c93a782bac268c17e8b430b0476e8ed75e55) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented taxonomy filters feature for classic catalogue and search based filters
+
 ## 0.1.48
 
 ### Patch Changes
