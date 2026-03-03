@@ -61,6 +61,8 @@ import {
   getMockPendingManagerApprovalTasksResponse,
   getMockPendingManagerApprovaMultipleConsumersTasksResponse,
   getMockPendingManagerEscalatedTasksResponse,
+  getMockSystemAccountNoPrivilegeManagerTasksResponse,
+  getMockSystemAccountPendingManagerApprovalTasksResponse,
   mockAutoCreatedSubscription,
   mockContracts,
 } from '../__test-utils__/TEST_DATA__LakehouseDataContracts.js';
@@ -466,19 +468,18 @@ describe('DataAccessRequestViewer', () => {
         await setupDataContractViewerTest(
           mockContracts.pendingDataOwnerNoPrivilegeManager,
           getMockNoPrivilegeManagerTasksResponse(),
-          'test-consumer-user-id-2',
         );
 
         // Verify no escalate button
         await screen.findByText('Pending Data Access Request');
-        await screen.findByText('test-consumer-user-id-2');
+        await screen.findByText('test-consumer-user-id');
         expect(screen.queryByTitle('Escalate request')).toBeNull();
       });
 
       test('Shows escalate button for system account task', async () => {
         await setupDataContractViewerTest(
           mockContracts.pendingPrivilegeManager,
-          getMockPendingManagerApprovalTasksResponse(),
+          getMockSystemAccountPendingManagerApprovalTasksResponse(),
           'test-system-account-user-id',
           mockContracts.pendingPrivilegeManagerWithSystemAccountMember,
         );
@@ -487,6 +488,20 @@ describe('DataAccessRequestViewer', () => {
         await screen.findByText('Pending Data Access Request');
         await screen.findByText('test-system-account-user-id');
         await screen.findByTitle('Escalate request');
+      });
+
+      test("Doesn't show escalate button when there is no privilege manager approval task for system account", async () => {
+        await setupDataContractViewerTest(
+          mockContracts.pendingPrivilegeManager,
+          getMockSystemAccountNoPrivilegeManagerTasksResponse(),
+          'test-system-account-user-id',
+          mockContracts.pendingPrivilegeManagerWithSystemAccountMember,
+        );
+
+        // Verify no escalate button
+        await screen.findByText('Pending Data Access Request');
+        await screen.findByText('test-system-account-user-id');
+        expect(screen.queryByTitle('Escalate request')).toBeNull();
       });
 
       test('Disables escalate button for already escalated task', async () => {

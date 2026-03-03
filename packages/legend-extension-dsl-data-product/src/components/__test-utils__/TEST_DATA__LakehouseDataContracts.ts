@@ -207,6 +207,14 @@ export const mockTasks = {
     consumer: 'test-consumer-user-id',
   },
 
+  systemAccountPrivilegeManagerPending: {
+    taskId: 'pm-task-pending-id',
+    type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+    status: V1_UserApprovalStatus.PENDING,
+    assignees: ['test-privilege-manager-user-id'],
+    consumer: 'test-system-account-user-id',
+  },
+
   privilegeManagerPendingAdditionalConsumer: {
     taskId: 'pm-task-pending-id-2',
     type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
@@ -272,6 +280,14 @@ export const mockTasks = {
     status: V1_UserApprovalStatus.PENDING,
     assignees: ['test-data-owner-user-id-1', 'test-data-owner-user-id-2'],
     consumer: 'test-consumer-user-id',
+  },
+
+  systemAccountDataOwnerPending: {
+    taskId: 'do-system-account-task-pending-id',
+    type: V1_ApprovalType.DATA_OWNER_APPROVAL,
+    status: V1_UserApprovalStatus.PENDING,
+    assignees: ['test-privilege-manager-user-id'],
+    consumer: 'test-system-account-user-id',
   },
 
   dataOwnerApproved: {
@@ -344,6 +360,9 @@ export const createMockTaskResponse = (
 export const getMockPendingManagerApprovalTasksResponse = () =>
   createMockTaskResponse([mockTasks.privilegeManagerPending]);
 
+export const getMockSystemAccountPendingManagerApprovalTasksResponse = () =>
+  createMockTaskResponse([mockTasks.systemAccountPrivilegeManagerPending]);
+
 export const getMockPendingManagerApprovaMultipleConsumersTasksResponse = () =>
   createMockTaskResponse([
     mockTasks.privilegeManagerPending,
@@ -386,6 +405,9 @@ export const getMockNoPrivilegeManagerTasksResponse = () =>
 
 export const getMockNoPrivilegeManagerCompletedTasksResponse = () =>
   createMockTaskResponse([mockTasks.dataOwnerApproved]);
+
+export const getMockSystemAccountNoPrivilegeManagerTasksResponse = () =>
+  createMockTaskResponse([mockTasks.systemAccountDataOwnerPending]);
 
 export const getMockClosedTasksResponse = () =>
   createMockTaskResponse([mockTasks.closed]);

@@ -224,12 +224,12 @@ export class DataContractViewerState implements DataAccessRequestState {
       : ('upcoming' as const);
 
     const showEscalateButton =
-      (privilegeManagerApprovalStepStatus === 'active' &&
-        selectedTargetUser ===
-          this.applicationStore.identityService.currentUser) ||
-      (selectedTargetUser !== undefined &&
-        this.getContractUserType(selectedTargetUser) ===
-          V1_UserType.SYSTEM_ACCOUNT);
+      privilegeManagerApprovalStepStatus === 'active' &&
+      (selectedTargetUser ===
+        this.applicationStore.identityService.currentUser ||
+        (selectedTargetUser !== undefined &&
+          this.getContractUserType(selectedTargetUser) ===
+            V1_UserType.SYSTEM_ACCOUNT));
     const isEscalated = privilegeManagerApprovalTask?.rec.isEscalated ?? false;
     const isEscalatable = showEscalateButton && !isEscalated;
 
