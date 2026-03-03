@@ -28,6 +28,7 @@ import {
   HttpStatus,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
+import type * as LegendApplication from '@finos/legend-application';
 import {
   type V1_DataContract,
   type V1_DataProduct,
@@ -97,6 +98,11 @@ jest.mock('swiper/modules', () => ({
 jest.mock('react-dnd', () => ({
   useDrop: () => [{ isOver: false }, jest.fn()],
   useDrag: () => [{}, jest.fn()],
+}));
+
+jest.mock('@finos/legend-application', () => ({
+  ...jest.requireActual<typeof LegendApplication>('@finos/legend-application'),
+  useApplicationStore: jest.fn(),
 }));
 
 (global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
@@ -187,6 +193,17 @@ const setupLakehouseDataProductTest = async (
           response.owners as string[],
       );
     }
+
+    createSpy(
+      dataProductViewerState.depotServerClient,
+      'getVersionEntities',
+    ).mockResolvedValue([
+      {
+        path: dataProduct.path,
+        content: dataProduct,
+        classifierPath: 'meta::pure::metamodel::dataproduct::DataProduct',
+      },
+    ]);
 
     createSpy(
       dataProductDataAccessState.lakehouseContractServerClient,
@@ -1056,6 +1073,7 @@ describe('DataProductViewer', () => {
             artifactId: 'test-artifact',
             versionId: '1.0.0',
           },
+          getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
         );
 
       jest

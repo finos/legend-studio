@@ -33,7 +33,7 @@ import {
   type DataGridDefaultMenuItem,
   type DataGridGetContextMenuItemsParams,
   type DataGridMenuItemDef,
-} from '../data-grid/DataGrid.js';
+} from '@finos/legend-lego/data-grid';
 
 const parseExecutionResultData = (
   data: string,

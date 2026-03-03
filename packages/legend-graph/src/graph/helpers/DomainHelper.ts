@@ -31,6 +31,8 @@ import {
 } from '../MetaModelConst.js';
 import { Package } from '../metamodel/pure/packageableElements/domain/Package.js';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
+import { DataProduct } from '../metamodel/pure/dataProduct/DataProduct.js';
+import { IngestDefinition } from '../metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
   type Clazz,
   AssertionError,
@@ -307,6 +309,11 @@ export const isSystemElement = (
     elementRootPackageName === ROOT_PACKAGE_NAME.CORE
   );
 };
+
+export const isAccessorDataProductOrIngestDefinition = (
+  element: PackageableElement,
+): element is DataProduct | IngestDefinition =>
+  element instanceof DataProduct || element instanceof IngestDefinition;
 
 /**
  * Extract the type of temporal milestone the class is associated with (using stereotype).

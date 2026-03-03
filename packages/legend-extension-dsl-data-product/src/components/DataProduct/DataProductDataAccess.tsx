@@ -119,14 +119,15 @@ import {
   type IngestDeploymentServerConfig,
   type IngestDeploymentServerConfigOption,
 } from '@finos/legend-server-lakehouse';
-import { SQLPlaygroundEditorResultPanel } from '@finos/legend-lego/sql-playground';
+import { SQLPlaygroundEditorResultPanel } from '@finos/legend-query-builder';
 import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
-import { DataProductSqlPlaygroundPanelState } from '../../stores/DataProduct/DataProductSqlPlaygroundPanelState.js';
+import { EmbeddedLegendSQLPlaygroundPanelState } from '../../stores/DataProduct/EmbeddedLegendSQLPlaygroundPanelState.js';
 import {
   DATAPRODUCT_TYPE,
   DataProductTelemetryHelper,
   PRODUCT_INTEGRATION_TYPE,
 } from '../../__lib__/DataProductTelemetryHelper.js';
+import { flowResult } from 'mobx';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -236,7 +237,7 @@ const PowerBiScreen = observer(
 
 export const SqlPlaygroundScreen = observer(
   (props: {
-    playgroundState: DataProductSqlPlaygroundPanelState;
+    playgroundState: EmbeddedLegendSQLPlaygroundPanelState;
     dataAccessState: DataProductDataAccessState | undefined;
     accessPointState: DataProductAccessPointState;
     advancedMode: boolean;
@@ -294,9 +295,6 @@ export const SqlPlaygroundScreen = observer(
       );
       openSqlModal();
     };
-    useEffect(() => {
-      playgroundState.init(dataAccessState, accessPointState);
-    }, [playgroundState, accessPointState, dataAccessState]);
     const resolvedUserEnv = dataAccessState.resolvedUserEnv;
     const dataProductOrigin =
       dataAccessState.entitlementsDataProductDetails.origin;
@@ -321,6 +319,20 @@ export const SqlPlaygroundScreen = observer(
         );
       }
     };
+    useEffect(() => {
+      if (isSqlModalOpen && !playgroundState.accessorExplorerState) {
+        flowResult(playgroundState.initializeAccessorExplorer())
+          .then(() => {
+            if (playgroundState.accessorExplorerState) {
+              return flowResult(
+                playgroundState.accessorExplorerState.fetchProjectData(),
+              );
+            }
+            return undefined;
+          })
+          .catch(dataAccessState.applicationStore.alertUnhandledError);
+      }
+    }, [isSqlModalOpen, playgroundState, dataAccessState]);
     return (
       <div className="data-product__viewer__tab-screen">
         <button
@@ -399,12 +411,17 @@ export const SqlPlaygroundScreen = observer(
                 </div>
               </div>
               <ModalBody>
-                <div className="sql-playground-overlay">
-                  <SQLPlaygroundEditorResultPanel
-                    playgroundState={playgroundState}
-                    advancedMode={advancedMode}
-                    disableDragDrop={true}
-                  />
+                <div className="sql-playground__layout">
+                  {playgroundState.accessorExplorerState && (
+                    <SQLPlaygroundEditorResultPanel
+                      playgroundState={playgroundState}
+                      advancedMode={advancedMode}
+                      accessorExplorerState={
+                        playgroundState.accessorExplorerState
+                      }
+                      showAccessorExplorer={true}
+                    />
+                  )}
                 </div>
               </ModalBody>
             </Modal>
@@ -678,10 +695,15 @@ const AccessPointTable = observer(
       DataProductAccessPointTabs | string
     >(DataProductAccessPointTabs.COLUMNS);
     const playgroundState = useMemo(() => {
-      return new DataProductSqlPlaygroundPanelState(
-        accessPointState.apgState.dataProductViewerState,
+      const dataProductViewerState =
+        accessPointState.apgState.dataProductViewerState;
+      return new EmbeddedLegendSQLPlaygroundPanelState(
+        dataProductViewerState,
+        dataAccessState?.entitlementsDataProductDetails,
+        () => dataAccessState?.resolvedUserEnv,
+        accessPointState.accessPoint.id,
       );
-    }, [accessPointState]);
+    }, [accessPointState, dataAccessState]);
     const handleTabChange = (
       _: React.SyntheticEvent,
       newValue: DataProductAccessPointTabs | string,

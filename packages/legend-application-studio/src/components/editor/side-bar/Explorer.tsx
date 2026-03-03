@@ -115,6 +115,8 @@ import {
   isRelationalDatabaseConnection,
   LegendSDLC,
   DataProduct,
+  IngestDefinition,
+  isAccessorDataProductOrIngestDefinition,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -125,6 +127,7 @@ import {
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
+import { LegendSQLPlaygroundModal } from '../LegendSQLPlaygroundModal.js';
 import {
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
   PACKAGEABLE_ELEMENT_TYPE,
@@ -542,6 +545,16 @@ const ExplorerContextMenu = observer(
           await queryDataProduct(node.packageableElement, editorStore);
         }
       });
+    const openLegendSqlPlayground = (): void => {
+      if (
+        node?.packageableElement &&
+        isAccessorDataProductOrIngestDefinition(node.packageableElement)
+      ) {
+        editorStore.legendSQLStudioPlaygroundState.open(
+          node.packageableElement,
+        );
+      }
+    };
     const buildServiceQuery = editorStore.applicationStore.guardUnhandledError(
       async () => {
         if (node?.packageableElement instanceof Service) {
@@ -858,6 +871,9 @@ const ExplorerContextMenu = observer(
             <MenuContentItem onClick={buildDataProductQuery}>
               Query...
             </MenuContentItem>
+            <MenuContentItem onClick={openLegendSqlPlayground}>
+              Run SQL...
+            </MenuContentItem>
             <MenuContentDivider />
           </>
         )}
@@ -875,6 +891,14 @@ const ExplorerContextMenu = observer(
             <MenuContentItem onClick={buildServiceQuery}>
               Query...
             </MenuContentItem>
+          </>
+        )}
+        {node.packageableElement instanceof IngestDefinition && (
+          <>
+            <MenuContentItem onClick={openLegendSqlPlayground}>
+              Run SQL...
+            </MenuContentItem>
+            <MenuContentDivider />
           </>
         )}
         {isElementSupportedByDataCube(node.packageableElement) && (
@@ -1579,6 +1603,11 @@ export const Explorer = observer(() => {
           </div>
         </div>
       </div>
+      {editorStore.legendSQLStudioPlaygroundState.isOpen && (
+        <LegendSQLPlaygroundModal
+          playgroundState={editorStore.legendSQLStudioPlaygroundState}
+        />
+      )}
     </div>
   );
 });

@@ -47,6 +47,8 @@ export const MockedMonacoEditorModel = {
   getValue: createMock(),
   getLineCount: createMock(),
   getLineMaxColumn: createMock(),
+  getValueInRange: createMock(),
+  setValue: createMock(),
   pushStackElement: createMock(),
   pushEditOperations: createMock(),
   findMatches: createMock(),
@@ -80,7 +82,7 @@ export const MockedMonacoEditorInstance = {
 export const MockedMonacoEditorAPI = {
   create: (): typeof MockedMonacoEditorInstance => MockedMonacoEditorInstance,
   focus: createMock(),
-  createModel: createMock(),
+  createModel: createMock().mockReturnValue(MockedMonacoEditorModel),
   createDiffEditor: () => ({
     getOriginalEditor: (): typeof MockedMonacoEditorInstance =>
       MockedMonacoEditorInstance,

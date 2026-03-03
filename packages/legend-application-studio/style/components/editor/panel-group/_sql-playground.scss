@@ -144,3 +144,33 @@
     }
   }
 }
+
+.sql-playground-modal {
+  height: 90vh !important;
+  width: 90vw !important;
+  max-height: 90vh !important;
+  max-width: 90vw !important;
+
+  &__content {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .panel {
+    height: 100%;
+  }
+
+  .sql-playground__explorer {
+    background: var(--color-dark-grey-50);
+
+    .panel__header {
+      border-bottom: 0.1rem solid var(--color-dark-grey-100);
+    }
+
+    .panel__content {
+      height: calc(100% - 2.8rem);
+      overflow: auto;
+    }
+  }
+}

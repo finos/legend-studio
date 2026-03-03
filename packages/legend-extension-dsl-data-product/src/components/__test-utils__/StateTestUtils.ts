@@ -50,7 +50,6 @@ import { DataProductConfig } from '../../stores/DataProduct/DataProductConfig.js
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import { createSpy } from '@finos/legend-shared/test';
-import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 import { RegistryServerClient } from '@finos/legend-server-marketplace';
 
 export class TEST__LegendApplicationPluginManager
@@ -170,10 +169,6 @@ export const TEST__getDataProductViewerState = async (
     },
   );
   await graphManagerState.initializeSystem();
-
-  MockedMonacoEditorAPI.createModel.mockReturnValue({
-    setValue(): void {},
-  });
 
   return new DataProductViewerState(
     dataProduct,
