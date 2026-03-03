@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.17.90
+
+### Patch Changes
+
+- [#4933](https://github.com/finos/legend-studio/pull/4933) [`9975b4b`](https://github.com/finos/legend-studio/commit/9975b4bf4c518e540780a597b0dd8d263aac0ec6) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added SQL Playground With Accessor Explorer.
+
 ## 4.17.89
 
 ## 4.17.88

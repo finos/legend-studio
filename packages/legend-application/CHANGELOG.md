@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.99
+
+### Patch Changes
+
+- [#4927](https://github.com/finos/legend-studio/pull/4927) [`eb8e8c4`](https://github.com/finos/legend-studio/commit/eb8e8c4e408ef627e2ed6bb75443837b54dd88eb) ([@gs-saurabh](https://github.com/gs-saurabh)) - Add OAuth access-token cookie support
+
 ## 16.0.98
 
 ## 16.0.97

@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.19.100
+
+### Patch Changes
+
+- [#4925](https://github.com/finos/legend-studio/pull/4925) [`4f18266`](https://github.com/finos/legend-studio/commit/4f1826681b4b04de5784154390ac1f8ac7f7f7f1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Improve data product editor flow for modeled access point groups.
+
+- [#4933](https://github.com/finos/legend-studio/pull/4933) [`9975b4b`](https://github.com/finos/legend-studio/commit/9975b4bf4c518e540780a597b0dd8d263aac0ec6) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Explorer to LegendSQL Playground in Marketplace and Studio.
+
+- [#4927](https://github.com/finos/legend-studio/pull/4927) [`eb8e8c4`](https://github.com/finos/legend-studio/commit/eb8e8c4e408ef627e2ed6bb75443837b54dd88eb) ([@gs-saurabh](https://github.com/gs-saurabh)) - Add OAuth access-token cookie support
+
 ## 28.19.99
 
 ## 28.19.98
