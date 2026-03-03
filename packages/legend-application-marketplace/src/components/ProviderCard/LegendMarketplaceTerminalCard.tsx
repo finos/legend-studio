@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type JSX, useState } from 'react';
+import { type JSX, useCallback, useState } from 'react';
 import {
   Box,
   Button,
@@ -35,6 +35,7 @@ import { flowResult } from 'mobx';
 import { toastManager } from '../Toast/CartToast.js';
 import { RecommendedAddOnsModal } from '../AddToCart/RecommendedAddOnsModal.js';
 import { assertErrorThrown } from '@finos/legend-shared';
+import { MAX_PRODUCT_IMAGE_COUNT } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 
 export const LegendMarketplaceTerminalCard = observer(
   (props: { terminalResult: TerminalResult }): JSX.Element => {
@@ -52,12 +53,11 @@ export const LegendMarketplaceTerminalCard = observer(
     const applicationStore = legendMarketplaceBaseStore.applicationStore;
     const assetUrl = applicationStore.config.assetsBaseUrl;
 
-    const getImageUrl = (): string => {
-      const maxImageCount = 7;
-      const randomIndex = Math.floor(Math.random() * maxImageCount) + 1;
-      const selectedImage = `${assetUrl}/images${randomIndex}.jpg`;
-      return selectedImage;
-    };
+    const [imageUrl] = useState(() => {
+      const randomIndex =
+        Math.floor(Math.random() * MAX_PRODUCT_IMAGE_COUNT) + 1;
+      return `${assetUrl}/images${randomIndex}.jpg`;
+    });
 
     const handleAddToCart = async () => {
       setIsAddingToCart(true);
@@ -92,6 +92,19 @@ export const LegendMarketplaceTerminalCard = observer(
       legendMarketplaceBaseStore.cartStore.setOpen(true);
     };
 
+    const handleTerminalSelected = useCallback(
+      (
+        _selectedTerminal: TerminalResult,
+        recommendations: TerminalResult[],
+        responseMessage: string,
+      ) => {
+        setRecommendedItems(recommendations);
+        setModalMessage(responseMessage);
+        setShowRecommendationsModal(true);
+      },
+      [],
+    );
+
     return (
       <Card className="legend-marketplace-terminal-card">
         <CardActionArea className="legend-marketplace-terminal-card__action">
@@ -99,7 +112,7 @@ export const LegendMarketplaceTerminalCard = observer(
             component="img"
             className="legend-marketplace-terminal-card__image"
             height="140"
-            image={getImageUrl()}
+            image={imageUrl}
             alt="data asset"
           />
           {terminalResult.category && (
@@ -189,6 +202,7 @@ export const LegendMarketplaceTerminalCard = observer(
           showModal={showRecommendationsModal}
           setShowModal={setShowRecommendationsModal}
           onViewCart={handleViewCart}
+          onTerminalSelected={handleTerminalSelected}
         />
       </Card>
     );

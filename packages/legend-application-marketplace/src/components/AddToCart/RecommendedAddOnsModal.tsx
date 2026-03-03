@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -32,6 +32,8 @@ import {
   FormControl,
   InputLabel,
   Pagination,
+  Divider,
+  CircularProgress,
   type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -45,9 +47,16 @@ import {
 } from '@finos/legend-art';
 import {
   TerminalItemType,
+  RecommendationSource,
+  SortOrder,
   type TerminalResult,
 } from '@finos/legend-server-marketplace';
 import { RecommendedItemsCard } from './RecommendedItemsCard.js';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
+import { flowResult } from 'mobx';
+import { toastManager } from '../Toast/CartToast.js';
 
 interface RecommendedAddOnsModalProps {
   terminal: TerminalResult | null;
@@ -56,10 +65,45 @@ interface RecommendedAddOnsModalProps {
   showModal: boolean;
   setShowModal: (show: boolean) => void;
   onViewCart?: () => void;
+  onTerminalSelected?: (
+    selectedTerminal: TerminalResult,
+    recommendations: TerminalResult[],
+    responseMessage: string,
+  ) => void;
 }
 
 const MAX_DISPLAY_ITEMS_COUNT = 10;
 const ITEMS_PER_PAGE_LIST = [10, 15, 25, 50];
+const SERVER_SEARCH_PAGE_SIZE = 300;
+
+const ListHeader = (props: { headerName: string }) => (
+  <Box className="recommended-addons-modal__list-header">
+    <Typography
+      variant="subtitle2"
+      className="recommended-addons-modal__header-name"
+    >
+      {props.headerName}
+    </Typography>
+    <Typography
+      variant="subtitle2"
+      className="recommended-addons-modal__header-provider"
+    >
+      Provider
+    </Typography>
+    <Typography
+      variant="subtitle2"
+      className="recommended-addons-modal__header-price"
+    >
+      Price (monthly)
+    </Typography>
+    <Typography
+      variant="subtitle2"
+      className="recommended-addons-modal__header-action"
+    >
+      Action
+    </Typography>
+  </Box>
+);
 
 export const RecommendedAddOnsModal = observer(
   (props: RecommendedAddOnsModalProps) => {
@@ -70,37 +114,174 @@ export const RecommendedAddOnsModal = observer(
       showModal,
       setShowModal,
       onViewCart,
+      onTerminalSelected,
     } = props;
 
+    const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
+    const applicationStore = legendMarketplaceBaseStore.applicationStore;
+    const currentUser = applicationStore.identityService.currentUser;
+
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | ''>('');
+    const [sortOrder, setSortOrder] = useState<SortOrder | undefined>();
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(15);
+    const [terminalSearchResults, setTerminalSearchResults] = useState<
+      TerminalResult[] | undefined
+    >(undefined);
+    const [isSearching, setIsSearching] = useState(false);
+    const [isAssociating, setIsAssociating] = useState(false);
+    const [associatingItemId, setAssociatingItemId] = useState<
+      number | undefined
+    >(undefined);
 
     const isTerminalAdded =
       terminal && terminal.terminalItemType === TerminalItemType.TERMINAL;
+    const isAddOnAssociation = !isTerminalAdded;
     const headerName = isTerminalAdded ? 'Add-On Name' : 'Terminal Name';
 
-    const filteredAndSortedItems = useMemo(() => {
-      let items = [...recommendedItems];
+    const hasMultipleSources = useMemo(() => {
+      const hasCartItems = recommendedItems.some(
+        (item) => item.source === RecommendationSource.CART,
+      );
+      const hasMarketplaceItems = recommendedItems.some(
+        (item) =>
+          item.source === RecommendationSource.MARKETPLACE ||
+          item.source === RecommendationSource.INVENTORY,
+      );
+      return hasCartItems && hasMarketplaceItems;
+    }, [recommendedItems]);
 
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase();
-        items = items.filter(
+    const cartSourceItems = useMemo(
+      () =>
+        recommendedItems.filter(
+          (item) => item.source === RecommendationSource.CART,
+        ),
+      [recommendedItems],
+    );
+    const marketplaceSourceItems = useMemo(
+      () =>
+        recommendedItems.filter(
           (item) =>
-            item.productName.toLowerCase().includes(search) ||
-            item.providerName.toLowerCase().includes(search),
-        );
+            item.source === RecommendationSource.MARKETPLACE ||
+            item.source === RecommendationSource.INVENTORY,
+        ),
+      [recommendedItems],
+    );
+
+    const fetchVendorAddons = useCallback(
+      async (
+        query: string,
+        sort?: SortOrder,
+        signal?: AbortSignal,
+      ): Promise<void> => {
+        if (!terminal || !isTerminalAdded) {
+          return;
+        }
+        setIsSearching(true);
+        try {
+          const response =
+            await legendMarketplaceBaseStore.marketplaceServerClient.searchVendorAddons(
+              currentUser,
+              terminal.providerName,
+              {
+                // SERVER_SEARCH_PAGE_SIZE is set high enough to cover all expected results and paginate client-side.
+                page: 1,
+                page_size: SERVER_SEARCH_PAGE_SIZE,
+                search: query,
+                ...(sort ? { sort_by_price: sort } : {}),
+              },
+              signal,
+            );
+          if (!signal?.aborted) {
+            setTerminalSearchResults(
+              response.marketplace_addons as TerminalResult[],
+            );
+          }
+        } catch (error) {
+          assertErrorThrown(error);
+          if (error.name === 'AbortError') {
+            return;
+          }
+          applicationStore.logService.error(
+            LogEvent.create(
+              LEGEND_MARKETPLACE_APP_EVENT.SEARCH_VENDOR_ADDONS_FAILURE,
+            ),
+            error,
+          );
+          setTerminalSearchResults(undefined);
+        } finally {
+          if (!signal?.aborted) {
+            setIsSearching(false);
+          }
+        }
+      },
+      [
+        terminal,
+        isTerminalAdded,
+        currentUser,
+        legendMarketplaceBaseStore.marketplaceServerClient,
+        applicationStore.logService,
+      ],
+    );
+
+    const abortControllerRef = useRef<AbortController | null>(null);
+
+    const triggerSearch = useCallback(
+      (query: string, sort?: SortOrder) => {
+        abortControllerRef.current?.abort();
+
+        if (!isTerminalAdded || !query.trim()) {
+          setTerminalSearchResults(undefined);
+          setIsSearching(false);
+          return;
+        }
+
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+        // eslint-disable-next-line no-void
+        void fetchVendorAddons(query.trim(), sort, controller.signal);
+      },
+      [isTerminalAdded, fetchVendorAddons],
+    );
+
+    const handleSearchAction = useCallback(() => {
+      setCurrentPage(1);
+      triggerSearch(searchTerm, sortOrder);
+    }, [searchTerm, sortOrder, triggerSearch]);
+
+    const filteredAndSortedItems = useMemo(() => {
+      let items: TerminalResult[];
+      if (isTerminalAdded && searchTerm.trim() && terminalSearchResults) {
+        items = [...terminalSearchResults];
+      } else {
+        items = [...recommendedItems];
+        if (searchTerm) {
+          const search = searchTerm.toLowerCase();
+          items = items.filter(
+            (item) =>
+              item.productName.toLowerCase().includes(search) ||
+              item.providerName.toLowerCase().includes(search),
+          );
+        }
       }
 
-      if (sortOrder) {
+      if (
+        sortOrder &&
+        !(isTerminalAdded && searchTerm.trim() && terminalSearchResults)
+      ) {
         items.sort((a, b) =>
-          sortOrder === 'asc' ? a.price - b.price : b.price - a.price,
+          sortOrder === SortOrder.ASC ? a.price - b.price : b.price - a.price,
         );
       }
 
       return items;
-    }, [recommendedItems, searchTerm, sortOrder]);
+    }, [
+      recommendedItems,
+      searchTerm,
+      sortOrder,
+      isTerminalAdded,
+      terminalSearchResults,
+    ]);
 
     const totalPages = Math.ceil(filteredAndSortedItems.length / itemsPerPage);
     const mandatoryAddOn: string = useMemo<string>(() => {
@@ -116,23 +297,81 @@ export const RecommendedAddOnsModal = observer(
       return filteredAndSortedItems.slice(startIndex, endIndex);
     }, [filteredAndSortedItems, currentPage, itemsPerPage]);
 
-    const closeModal = () => {
+    const closeModal = useCallback(() => {
       setShowModal(false);
       setSearchTerm('');
-      setSortOrder('');
+      setSortOrder(undefined);
       setCurrentPage(1);
-    };
+      setTerminalSearchResults(undefined);
+      setIsSearching(false);
+      setIsAssociating(false);
+      setAssociatingItemId(undefined);
+      abortControllerRef.current?.abort();
+    }, [setShowModal]);
+
+    const handleAssociateTerminal = useCallback(
+      (selectedTerminal: TerminalResult) => {
+        const associate = async (): Promise<void> => {
+          setIsAssociating(true);
+          setAssociatingItemId(selectedTerminal.id);
+          try {
+            const cartRequest =
+              legendMarketplaceBaseStore.cartStore.providerToCartRequest(
+                selectedTerminal,
+              );
+            const result = await flowResult(
+              legendMarketplaceBaseStore.cartStore.addToCartWithAPI(
+                cartRequest,
+              ),
+            );
+
+            if (!result.success) {
+              return;
+            }
+
+            if (
+              result.recommendations &&
+              result.recommendations.length > 0 &&
+              onTerminalSelected
+            ) {
+              closeModal();
+              onTerminalSelected(
+                selectedTerminal,
+                result.recommendations,
+                result.message,
+              );
+            } else {
+              closeModal();
+            }
+          } catch (error) {
+            assertErrorThrown(error);
+            toastManager.error(
+              `Failed to associate with ${selectedTerminal.productName}: ${error.message}`,
+            );
+          } finally {
+            setIsAssociating(false);
+            setAssociatingItemId(undefined);
+          }
+        };
+        // eslint-disable-next-line no-void
+        void associate();
+      },
+      [legendMarketplaceBaseStore.cartStore, onTerminalSelected, closeModal],
+    );
 
     const handleViewCart = () => {
       onViewCart?.();
       closeModal();
     };
 
-    const handleSortChange = (
-      event: SelectChangeEvent<'asc' | 'desc' | ''>,
-    ) => {
-      setSortOrder(event.target.value);
+    const handleSortChange = (event: SelectChangeEvent<string>) => {
+      const value = event.target.value;
+      const newSortOrder = value ? (value as SortOrder) : undefined;
+      setSortOrder(newSortOrder);
       setCurrentPage(1);
+      if (isTerminalAdded && searchTerm.trim() && terminalSearchResults) {
+        triggerSearch(searchTerm, newSortOrder);
+      }
     };
 
     const handlePageChange = (
@@ -225,10 +464,78 @@ export const RecommendedAddOnsModal = observer(
           {recommendedItems.length === 0 ? (
             <Box className="recommended-addons-modal__empty-state">
               <Typography variant="body1">
-                {terminal?.terminalItemType === TerminalItemType.TERMINAL
+                {isTerminalAdded
                   ? 'No recommended add-ons available for this terminal.'
                   : 'No recommended terminals available for this add-on.'}
               </Typography>
+            </Box>
+          ) : isAddOnAssociation && hasMultipleSources ? (
+            <Box className="recommended-addons-modal__association-content">
+              {cartSourceItems.length > 0 && (
+                <Box className="recommended-addons-modal__source-section">
+                  <Box className="recommended-addons-modal__source-header">
+                    <Typography
+                      variant="h6"
+                      className="recommended-addons-modal__source-title"
+                    >
+                      From Your Cart
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      className="recommended-addons-modal__source-description"
+                    >
+                      Select a terminal from your cart to associate
+                    </Typography>
+                  </Box>
+                  <Box className="recommended-addons-modal__list">
+                    <ListHeader headerName={headerName} />
+                    {cartSourceItems.map((item) => (
+                      <RecommendedItemsCard
+                        key={item.id}
+                        recommendedItem={item}
+                        onSelect={handleAssociateTerminal}
+                        isSelecting={isAssociating}
+                        selectedItemId={associatingItemId}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              {cartSourceItems.length > 0 &&
+                marketplaceSourceItems.length > 0 && <Divider sx={{ my: 2 }} />}
+
+              {marketplaceSourceItems.length > 0 && (
+                <Box className="recommended-addons-modal__source-section">
+                  <Box className="recommended-addons-modal__source-header">
+                    <Typography
+                      variant="h6"
+                      className="recommended-addons-modal__source-title"
+                    >
+                      From Marketplace
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      className="recommended-addons-modal__source-description"
+                    >
+                      Explore other available terminal options from the
+                      marketplace
+                    </Typography>
+                  </Box>
+                  <Box className="recommended-addons-modal__list">
+                    <ListHeader headerName={headerName} />
+                    {marketplaceSourceItems.map((item) => (
+                      <RecommendedItemsCard
+                        key={item.id}
+                        recommendedItem={item}
+                        onSelect={handleAssociateTerminal}
+                        isSelecting={isAssociating}
+                        selectedItemId={associatingItemId}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
             </Box>
           ) : (
             <>
@@ -244,13 +551,29 @@ export const RecommendedAddOnsModal = observer(
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1);
+                    if (!e.target.value.trim()) {
+                      setTerminalSearchResults(undefined);
+                      setIsSearching(false);
+                      abortControllerRef.current?.abort();
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearchAction();
+                    }
                   }}
                   className="recommended-addons-modal__search-field"
                   slotProps={{
                     input: {
                       endAdornment: (
                         <InputAdornment position="end">
-                          <SearchIcon />
+                          <IconButton
+                            onClick={handleSearchAction}
+                            size="small"
+                            edge="end"
+                          >
+                            <SearchIcon />
+                          </IconButton>
                         </InputAdornment>
                       ),
                     },
@@ -269,7 +592,7 @@ export const RecommendedAddOnsModal = observer(
                   </InputLabel>
                   <Select
                     labelId="recommended-addons-sort-label"
-                    value={sortOrder}
+                    value={sortOrder ?? ''}
                     label="Sort by Price"
                     onChange={handleSortChange}
                     sx={{ fontSize: '1rem' }}
@@ -277,7 +600,7 @@ export const RecommendedAddOnsModal = observer(
                     <MenuItem value="" sx={{ fontSize: '1rem' }}>
                       <em>None</em>
                     </MenuItem>
-                    <MenuItem value="asc" sx={{ fontSize: '1rem' }}>
+                    <MenuItem value={SortOrder.ASC} sx={{ fontSize: '1rem' }}>
                       <Box display="flex" alignItems="center">
                         <ArrowUpIcon fontSize="small" />
                         <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
@@ -285,7 +608,7 @@ export const RecommendedAddOnsModal = observer(
                         </Typography>
                       </Box>
                     </MenuItem>
-                    <MenuItem value="desc" sx={{ fontSize: '1rem' }}>
+                    <MenuItem value={SortOrder.DESC} sx={{ fontSize: '1rem' }}>
                       <Box display="flex" alignItems="center">
                         <ArrowDownIcon fontSize="small" />
                         <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
@@ -328,7 +651,17 @@ export const RecommendedAddOnsModal = observer(
                 )}
               </Box>
 
-              {filteredAndSortedItems.length === 0 ? (
+              {isSearching ? (
+                <Box
+                  className="recommended-addons-modal__empty-state"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <CircularProgress size={24} sx={{ mr: 1 }} />
+                  <Typography variant="body1">Searching...</Typography>
+                </Box>
+              ) : filteredAndSortedItems.length === 0 ? (
                 <Box className="recommended-addons-modal__empty-state">
                   <Typography variant="body1">
                     No items match your search criteria.
@@ -353,38 +686,18 @@ export const RecommendedAddOnsModal = observer(
                     </Typography>
                   </Box>
                   <Box className="recommended-addons-modal__list">
-                    <Box className="recommended-addons-modal__list-header">
-                      <Typography
-                        variant="subtitle2"
-                        className="recommended-addons-modal__header-name"
-                      >
-                        {headerName}
-                      </Typography>
-                      <Typography
-                        variant="subtitle2"
-                        className="recommended-addons-modal__header-provider"
-                      >
-                        Provider
-                      </Typography>
-                      <Typography
-                        variant="subtitle2"
-                        className="recommended-addons-modal__header-price"
-                      >
-                        Price (monthly)
-                      </Typography>
-                      <Typography
-                        variant="subtitle2"
-                        className="recommended-addons-modal__header-action"
-                      >
-                        Action
-                      </Typography>
-                    </Box>
+                    <ListHeader headerName={headerName} />
                     {paginatedItems
                       .filter((item) => !item.isMandatory)
                       .map((item) => (
                         <RecommendedItemsCard
                           key={item.id}
                           recommendedItem={item}
+                          {...(isAddOnAssociation && {
+                            onSelect: handleAssociateTerminal,
+                            isSelecting: isAssociating,
+                            selectedItemId: associatingItemId,
+                          })}
                         />
                       ))}
                   </Box>
@@ -413,9 +726,9 @@ export const RecommendedAddOnsModal = observer(
             onClick={closeModal}
             className="recommended-addons-modal__close-button"
           >
-            Close
+            {isAddOnAssociation ? 'Cancel' : 'Close'}
           </Button>
-          {onViewCart && (
+          {onViewCart && !isAddOnAssociation && (
             <Button
               variant="contained"
               endIcon={<ArrowRightIcon />}

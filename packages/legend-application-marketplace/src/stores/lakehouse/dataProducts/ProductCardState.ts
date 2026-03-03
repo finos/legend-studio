@@ -48,6 +48,8 @@ import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../__lib__/LegendMarketplace
 import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
 import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 
+export const MAX_PRODUCT_IMAGE_COUNT = 15;
+
 export class ProductCardState {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly searchResult: DataProductSearchResult;
@@ -219,13 +221,12 @@ export class ProductCardState {
   }
 
   getDataProductImage(productImageMap: Map<string, string>): string {
-    const maxImageCount = 7;
     const existingImage = productImageMap.get(this.title);
     if (existingImage) {
       return existingImage;
     }
 
-    const randomIndex = Math.floor(Math.random() * maxImageCount) + 1;
+    const randomIndex = Math.floor(Math.random() * MAX_PRODUCT_IMAGE_COUNT) + 1;
     const selectedImage = `/assets/images${randomIndex}.jpg`;
     productImageMap.set(this.title, selectedImage);
     return selectedImage;

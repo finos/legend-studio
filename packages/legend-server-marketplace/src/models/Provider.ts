@@ -43,6 +43,12 @@ export enum TerminalItemType {
   ADD_ON = 'Add-On',
 }
 
+export enum RecommendationSource {
+  CART = 'cart',
+  INVENTORY = 'inventory',
+  MARKETPLACE = 'marketplace',
+}
+
 export class TerminalResult {
   id!: number;
   category!: string;
@@ -56,6 +62,7 @@ export class TerminalResult {
   skipWorkflow?: boolean;
   isOwned?: boolean;
   vendorProfileId?: number;
+  source?: RecommendationSource;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(TerminalResult, {
@@ -71,6 +78,7 @@ export class TerminalResult {
       skipWorkflow: optional(primitive()),
       isOwned: primitive(),
       vendorProfileId: primitive(),
+      source: optional(primitive()),
     }),
   );
 

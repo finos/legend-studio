@@ -298,10 +298,6 @@
   .selector-input--dark .selector-input--dark__option:active {
     background-color: var(--color-hclight-white);
   }
-  // Removed duplicate .menu and .menu__item selectors to resolve stylelint errors. The first occurrence is kept, and all style is preserved.
-  // ...existing code...
-  // Duplicate .notification__content removed. See below for the main definition.
-  // Removed empty .notification__message__content:active ruleset to resolve stylelint error.
 
   .fuzzy-search__advanced-config__panel {
     background: var(--color-hclight-white);
@@ -694,7 +690,6 @@
 
   // Vendor Data Page
   .legend-marketplace-vendor-data {
-    background: var(--color-hclight-grey-10);
     color: var(--color-hclight-grey-90);
 
     &__content {
@@ -735,8 +730,6 @@
     }
 
     &-search-results {
-      background: var(--color-hclight-grey-10);
-
       &__category {
         .see-all {
           color: var(--color-hclight-blue-60);
@@ -1334,6 +1327,45 @@
         &.Mui-focused {
           color: var(--color-hclight-blue-60);
         }
+      }
+    }
+  }
+
+  .MuiAutocomplete-popper {
+    .MuiAutocomplete-paper {
+      background: var(--color-hclight-white);
+      border: 1px solid var(--color-hclight-grey-30);
+      border-radius: 0.8rem;
+      box-shadow: 0 4px 16px rgb(0 0 0 / 10%);
+    }
+
+    .MuiAutocomplete-listbox {
+      padding: 0.4rem 0;
+
+      .MuiAutocomplete-option {
+        &:hover,
+        &.Mui-focused {
+          background: var(--color-hclight-blue-5, #f0f6ff);
+        }
+
+        &[aria-selected='true'] {
+          background: var(--color-hclight-blue-10, #e1edff);
+        }
+      }
+    }
+
+    .legend-user-display {
+      &__name {
+        color: var(--color-hclight-grey-90);
+      }
+
+      &__avatar--text {
+        background: var(--color-hclight-blue-50);
+        color: var(--color-hclight-white);
+      }
+
+      &__avatar--image {
+        border: 1px solid var(--color-hclight-grey-30);
       }
     }
   }

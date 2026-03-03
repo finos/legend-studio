@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  AbstractServerClient,
+  isNonEmptyString,
+} from '@finos/legend-shared';
 import type {
   LightProvider,
   TerminalServicesResponse,
@@ -30,6 +34,8 @@ import type {
   CartItemRequest,
   CartItemResponse,
   CartSummary,
+  VendorAddonsSearchParams,
+  VendorAddonsSearchResponse,
 } from './models/Cart.js';
 import type { OrderDetails } from './models/Order.js';
 import type { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
@@ -167,6 +173,35 @@ export class MarketplaceServerClient extends AbstractServerClient {
     cartItemData: CartItemRequest,
   ): Promise<PlainObject<CartItemResponse>> =>
     this.post(this._cart(user), cartItemData);
+
+  searchVendorAddons = async (
+    user: string,
+    providerName: string,
+    params?: VendorAddonsSearchParams,
+    signal?: AbortSignal,
+  ): Promise<PlainObject<VendorAddonsSearchResponse>> => {
+    const queryParams: Record<string, string | number | boolean> = {};
+
+    if (params?.page !== undefined) {
+      queryParams.page = params.page;
+    }
+    if (params?.page_size !== undefined) {
+      queryParams.page_size = params.page_size;
+    }
+    if (isNonEmptyString(params?.search)) {
+      queryParams.search = params.search;
+    }
+    if (params?.sort_by_price !== undefined) {
+      queryParams.sort_by_price = params.sort_by_price;
+    }
+
+    return this.get<PlainObject<VendorAddonsSearchResponse>>(
+      `${this._cart(user)}/vendor-addons/${encodeURIComponent(providerName)}`,
+      signal ? { signal } : {},
+      undefined,
+      queryParams,
+    );
+  };
 
   submitOrder = async (
     user: string,

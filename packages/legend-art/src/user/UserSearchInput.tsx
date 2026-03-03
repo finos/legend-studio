@@ -32,6 +32,12 @@ type UserSearchInputProps = TextFieldProps & {
   setUserValue: (user: LegendUser) => void;
   userSearchService?: UserSearchService | undefined;
   initializing?: boolean | undefined;
+  renderOption?:
+    | ((
+        props: React.HTMLAttributes<HTMLLIElement>,
+        option: LegendUser,
+      ) => React.ReactNode)
+    | undefined;
 };
 
 export const UserSearchInput = forwardRef<
@@ -44,6 +50,7 @@ export const UserSearchInput = forwardRef<
     setUserValue,
     userSearchService,
     initializing,
+    renderOption: renderOptionProp,
     ...inputProps
   } = props;
 
@@ -97,6 +104,7 @@ export const UserSearchInput = forwardRef<
         options={userOptions}
         loading={loadingUsers}
         filterOptions={(x) => x}
+        {...(renderOptionProp ? { renderOption: renderOptionProp } : {})}
         renderInput={(params) => {
           return (
             <TextField

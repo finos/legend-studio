@@ -397,9 +397,7 @@ export class LegendMarketplaceBaseStore {
 
     // Initialize cart store to load existing items
     try {
-      if (this.applicationStore.config.options.showDevFeatures) {
-        yield* this.cartStore.initialize();
-      }
+      yield* this.cartStore.initialize();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.warn(

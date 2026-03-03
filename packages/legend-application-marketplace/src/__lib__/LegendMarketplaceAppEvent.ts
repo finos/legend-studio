@@ -36,4 +36,5 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   CLICK_TOOLBAR_MENU = 'marketplace.click.toolbar.menu',
   SEARCH_AUTOSUGGEST_SELECTION = 'marketplace.search.autosuggest.selection',
   DISMISS_HOME_PAGE_BANNER = 'marketplace.dismiss.home-page.banner',
+  SEARCH_VENDOR_ADDONS_FAILURE = 'marketplace.search.vendor-addons.failure',
 }
