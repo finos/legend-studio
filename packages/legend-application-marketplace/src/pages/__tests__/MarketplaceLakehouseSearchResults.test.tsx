@@ -41,6 +41,8 @@ import {
   mockProdSearchResultResponse,
   mockPaginatedSearchResultPage1Response,
   mockPaginatedSearchResultPage2Response,
+  mockTaxonomyTreeResponse,
+  mockEmptyTaxonomyTreeResponse,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
 import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 
@@ -138,6 +140,12 @@ const setupTestComponent = async (
     MOCK__baseStore.lakehouseContractServerClient,
     'getOwnersForDid',
   ).mockResolvedValue(mockOwnersResponse);
+
+  // Mock taxonomy tree API call
+  createSpy(
+    MOCK__baseStore.marketplaceServerClient,
+    'getTaxonomyTree',
+  ).mockResolvedValue(mockTaxonomyTreeResponse);
 
   // Mock the plugin's handleDataProductOwnersResponse
   const mockPlugin =
@@ -677,6 +685,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
         'paginated',
         expect.anything(),
         'hybrid',
+        [],
         12,
         2,
       );
@@ -714,7 +723,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       ).toHaveBeenCalledTimes(1);
       expect(
         MOCK__baseStore.marketplaceServerClient.dataProductSearch,
-      ).toHaveBeenCalledWith('data', expect.anything(), 'hybrid', 48, 1);
+      ).toHaveBeenCalledWith('data', expect.anything(), 'hybrid', [], 48, 1);
     });
 
     test('Pagination controls render for producer search', async () => {
@@ -724,6 +733,117 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       expect(screen.getByText('Items per page:')).toBeDefined();
       expect(screen.getByText(/Showing/)).toBeDefined();
+    });
+  });
+
+  describe('Taxonomy', () => {
+    test('getTaxonomyTree is called on mount', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.getTaxonomyTree,
+      ).toHaveBeenCalled();
+    });
+
+    test('Taxonomy filter panel renders with tree nodes from API', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      // Wait for taxonomy tree to render
+      // Top-level (depth 0) nodes are expanded by default, so their
+      // direct children (depth 1) are visible, but deeper nodes are collapsed
+      await waitFor(() => {
+        expect(screen.getByText('Reference Data')).toBeDefined();
+      });
+      expect(screen.getByText('Market Data')).toBeDefined();
+      expect(screen.getByText('Static')).toBeDefined();
+      expect(screen.getByText('Derived Data')).toBeDefined();
+      expect(screen.getByText('Analytics')).toBeDefined();
+
+      // Depth-2 nodes (children of depth-1) are collapsed by default
+      expect(screen.queryByText('ESG')).toBeNull();
+      expect(screen.queryByText('Pricing')).toBeNull();
+    });
+
+    test('Taxonomy header is rendered', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      await waitFor(() => {
+        expect(screen.getByText('Filters')).toBeDefined();
+      });
+    });
+
+    test('Empty taxonomy tree shows empty message', async () => {
+      const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore(
+        {
+          dataProductEnv: 'prod',
+        },
+      );
+      mockUseSearchParams.mockReturnValue([
+        new URLSearchParams({ query: 'data' }),
+        mockSetSearchParams,
+      ]);
+
+      createSpy(
+        MOCK__baseStore.marketplaceServerClient,
+        'dataProductSearch',
+      ).mockResolvedValue(mockProdSearchResultResponse);
+
+      createSpy(
+        MOCK__baseStore.lakehouseContractServerClient,
+        'getDataProducts',
+      ).mockResolvedValue(mockDataProductsResponse);
+      createSpy(
+        MOCK__baseStore.depotServerClient,
+        'getEntitiesSummaryByClassifier',
+      ).mockResolvedValue([
+        mockLegacyDataProductSummaryEntity,
+      ] as unknown as PlainObject<StoredSummaryEntity>[]);
+
+      const mockEnvironment = {
+        ingestEnvironmentUrn: 'production-analytics',
+        environmentClassification: 'prod',
+        ingestServerUrl: 'https://test-prod-ingest-server.com',
+        environmentName: 'production-analytics',
+      };
+      createSpy(
+        MOCK__baseStore.lakehousePlatformServerClient,
+        'findProducerServer',
+      ).mockResolvedValue(mockEnvironment);
+
+      createSpy(
+        MOCK__baseStore.lakehouseContractServerClient,
+        'getOwnersForDid',
+      ).mockResolvedValue({ owners: [] });
+
+      // Mock empty taxonomy tree
+      createSpy(
+        MOCK__baseStore.marketplaceServerClient,
+        'getTaxonomyTree',
+      ).mockResolvedValue(mockEmptyTaxonomyTreeResponse);
+
+      const mockPlugin =
+        MOCK__baseStore.applicationStore.pluginManager.getApplicationPlugins()[0];
+      if (mockPlugin) {
+        mockPlugin.handleDataProductOwnersResponse = jest.fn(
+          (response: PlainObject<{ owners: string[] }>) =>
+            response.owners as string[],
+        );
+      }
+
+      await TEST__setUpMarketplaceLakehouse(
+        MOCK__baseStore,
+        '/dataProduct/results?query=data',
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('No categories available')).toBeDefined();
+      });
     });
   });
 });

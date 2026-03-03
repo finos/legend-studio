@@ -56,6 +56,23 @@
     flex-grow: 1;
   }
 
+  &__results-layout {
+    display: flex;
+    width: 100%;
+    gap: 2rem;
+  }
+
+  &__sidebar {
+    flex-shrink: 0;
+    width: 38rem;
+    min-width: 30rem;
+  }
+
+  &__main-content {
+    flex: 1;
+    min-width: 0;
+  }
+
   &__subtitles {
     font-weight: bold;
     margin: 0.8em 0;

@@ -18,6 +18,7 @@ import { type PlainObject } from '@finos/legend-shared';
 import type {
   DataProductSearchResponse,
   DataProductSearchResult,
+  TaxonomyTreeResponse,
 } from '@finos/legend-server-marketplace';
 
 const createMockPaginatedResult = (
@@ -294,3 +295,65 @@ export const mockPaginatedSearchResultPage2Response: PlainObject<DataProductSear
     },
     as_of_time: '2026-01-27T00:00:00.000Z',
   };
+
+export const mockTaxonomyTreeResponse: TaxonomyTreeResponse = {
+  taxonomy_tree: [
+    {
+      id: 'referenceData',
+      label: 'Reference Data',
+      count: 5,
+      children: [
+        {
+          id: 'referenceData::marketData',
+          label: 'Market Data',
+          count: 3,
+          children: [
+            {
+              id: 'referenceData::marketData::esg',
+              label: 'ESG',
+              count: 2,
+              children: [],
+            },
+            {
+              id: 'referenceData::marketData::pricing',
+              label: 'Pricing',
+              count: 1,
+              children: [],
+            },
+          ],
+        },
+        {
+          id: 'referenceData::static',
+          label: 'Static',
+          count: 2,
+          children: [],
+        },
+      ],
+    },
+    {
+      id: 'derivedData',
+      label: 'Derived Data',
+      count: 1,
+      children: [
+        {
+          id: 'derivedData::analytics',
+          label: 'Analytics',
+          count: 1,
+          children: [],
+        },
+      ],
+    },
+  ],
+  total_categories: 6,
+  total_results: 6,
+  classified_count: 5,
+  unclassified_count: 1,
+};
+
+export const mockEmptyTaxonomyTreeResponse: TaxonomyTreeResponse = {
+  taxonomy_tree: [],
+  total_categories: 0,
+  total_results: 0,
+  classified_count: 0,
+  unclassified_count: 0,
+};

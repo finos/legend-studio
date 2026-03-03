@@ -1,0 +1,146 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.taxonomy-filter-panel {
+  border: 1px solid var(--color-light-grey-200);
+  border-radius: 0.8rem;
+  overflow: hidden;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.6rem 2rem;
+    border-bottom: 2px solid var(--color-light-grey-200);
+
+    &__title {
+      font-family: 'GS Sans Condensed', 'Trebuchet MS', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.2rem;
+      text-transform: uppercase;
+      color: var(--marketplace-link-color);
+    }
+
+    &__clear {
+      font-size: 1.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--marketplace-link-color);
+      text-decoration: none;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--marketplace-link-color);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__content {
+    padding: 1rem 0;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  &__loading {
+    position: relative;
+    height: 10rem;
+  }
+
+  &__empty {
+    padding: 1.6rem 2rem;
+    font-size: 1.6rem;
+    color: var(--marketplace-text-muted);
+    font-style: italic;
+  }
+
+  &__tree {
+    padding: 0.4rem 1rem;
+  }
+
+  &__tree-node {
+    &__row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem;
+      cursor: pointer;
+      border-radius: 0.4rem;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: var(--color-dark-shade-0);
+
+        .taxonomy-filter-panel__tree-node__label {
+          color: var(--marketplace-link-color);
+        }
+      }
+    }
+
+    &__expand-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.2rem;
+      height: 2.2rem;
+      flex-shrink: 0;
+      cursor: pointer;
+      border-radius: 0.3rem;
+      transition: background-color 0.15s ease;
+      color: var(--marketplace-text-muted);
+
+      &:hover {
+        background-color: var(--color-dark-shade-50);
+      }
+
+      svg {
+        font-size: 2rem;
+      }
+
+      &--spacer {
+        width: 2.2rem;
+      }
+    }
+
+    &__label {
+      font-size: 1.6rem;
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+      line-height: 1.5;
+      color: var(--marketplace-text-primary);
+      transition: color 0.15s ease;
+    }
+
+    &__count {
+      font-size: 1.4rem;
+      color: var(--marketplace-text-muted);
+      flex-shrink: 0;
+      margin-right: 0.8rem;
+      font-weight: 500;
+    }
+
+    &__children {
+      border-left: 1px solid var(--color-dark-shade-50);
+      margin-left: 1.1rem;
+    }
+  }
+}

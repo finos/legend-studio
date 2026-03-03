@@ -50,6 +50,7 @@ import { useSyncStateAndSearchParam } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
 import { isNonEmptyString } from '@finos/legend-shared';
 import { PaginationControls } from '../../../components/Pagination/PaginationControls.js';
+import { TaxonomyFilterPanel } from '../../../components/TaxonomyFilterPanel/TaxonomyFilterPanel.js';
 
 export const LegendMarketplaceSearchResults =
   withLegendMarketplaceSearchResultsStore(
@@ -80,6 +81,10 @@ export const LegendMarketplaceSearchResults =
         searchResultsStore.useProducerSearch,
         applicationStore,
       ]);
+
+      useEffect(() => {
+        searchResultsStore.fetchTaxonomyTree(searchResultsStore.searchQuery);
+      }, [searchResultsStore, searchResultsStore.searchQuery]);
 
       useSyncStateAndSearchParam(
         searchResultsStore.useProducerSearch,
@@ -227,66 +232,74 @@ export const LegendMarketplaceSearchResults =
               </FormControl>
             </div>
           </div>
-          <div className="marketplace-lakehouse-search-results__content-wrapper">
-            <Container
-              maxWidth="xxxl"
-              className="marketplace-lakehouse-search-results__results-container"
-            >
-              <Grid
-                container={true}
-                spacing={{ xs: 2, sm: 3, xxl: 4 }}
-                columns={{ sm: 1, md: 2, lg: 3, xxl: 4 }}
-                className="marketplace-lakehouse-search-results__data-product-cards"
-              >
-                {!isLoadingDataProducts &&
-                  searchResultsStore.filterSortProducts?.map(
-                    (productCardState) => (
-                      <Grid key={productCardState.guid} size={1}>
-                        <LakehouseProductCard
-                          productCardState={productCardState}
-                          moreInfoPreview="small"
-                          onClick={() => {
-                            const path = generatePathForDataProductSearchResult(
-                              productCardState.searchResult,
-                            );
-                            if (path) {
-                              applicationStore.navigationService.navigator.visitAddress(
-                                applicationStore.navigationService.navigator.generateAddress(
-                                  path,
-                                ),
+          <Container
+            maxWidth="xxxl"
+            className="marketplace-lakehouse-search-results__results-container"
+          >
+            <div className="marketplace-lakehouse-search-results__results-layout">
+              {!searchResultsStore.useProducerSearch && (
+                <div className="marketplace-lakehouse-search-results__sidebar">
+                  <TaxonomyFilterPanel store={searchResultsStore} />
+                </div>
+              )}
+              <div className="marketplace-lakehouse-search-results__main-content">
+                <Grid
+                  container={true}
+                  spacing={{ xs: 2, sm: 3, xxl: 4 }}
+                  columns={{ sm: 1, md: 2, lg: 3, xxl: 4 }}
+                  className="marketplace-lakehouse-search-results__data-product-cards"
+                >
+                  {!isLoadingDataProducts &&
+                    searchResultsStore.filterSortProducts?.map(
+                      (productCardState) => (
+                        <Grid key={productCardState.guid} size={1}>
+                          <LakehouseProductCard
+                            productCardState={productCardState}
+                            moreInfoPreview="small"
+                            onClick={() => {
+                              const path =
+                                generatePathForDataProductSearchResult(
+                                  productCardState.searchResult,
+                                );
+                              if (path) {
+                                applicationStore.navigationService.navigator.visitAddress(
+                                  applicationStore.navigationService.navigator.generateAddress(
+                                    path,
+                                  ),
+                                );
+                              }
+                              logClickingDataProductCard(
+                                productCardState,
+                                applicationStore,
+                                LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
                               );
-                            }
-                            logClickingDataProductCard(
-                              productCardState,
-                              applicationStore,
-                              LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
-                            );
-                          }}
-                        />
-                      </Grid>
-                    ),
+                            }}
+                          />
+                        </Grid>
+                      ),
+                    )}
+                  {isLoadingDataProducts && (
+                    <Grid size={1}>
+                      <CubesLoadingIndicator
+                        isLoading={true}
+                        className="marketplace-lakehouse-search-results__loading-data-products-indicator"
+                      >
+                        <CubesLoadingIndicatorIcon />
+                      </CubesLoadingIndicator>
+                    </Grid>
                   )}
-                {isLoadingDataProducts && (
-                  <Grid size={1}>
-                    <CubesLoadingIndicator
-                      isLoading={true}
-                      className="marketplace-lakehouse-search-results__loading-data-products-indicator"
-                    >
-                      <CubesLoadingIndicatorIcon />
-                    </CubesLoadingIndicator>
-                  </Grid>
-                )}
-              </Grid>
-            </Container>
-            <PaginationControls
-              totalItems={searchResultsStore.totalItems}
-              itemsPerPage={searchResultsStore.itemsPerPage}
-              page={searchResultsStore.page}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
-              disabled={isLoadingDataProducts}
-            />
-          </div>
+                </Grid>
+                <PaginationControls
+                  totalItems={searchResultsStore.totalItems}
+                  itemsPerPage={searchResultsStore.itemsPerPage}
+                  page={searchResultsStore.page}
+                  onPageChange={handlePageChange}
+                  onItemsPerPageChange={handleItemsPerPageChange}
+                  disabled={isLoadingDataProducts}
+                />
+              </div>
+            </div>
+          </Container>
         </LegendMarketplacePage>
       );
     }),

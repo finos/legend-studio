@@ -38,6 +38,7 @@ import {
   OrderStatusCategory,
 } from './models/TerminalProductOrder.js';
 import type { AutosuggestResponse } from './models/AutosuggestResult.js';
+import type { TaxonomyTreeResponse } from './models/Taxonomy.js';
 
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
@@ -106,12 +107,16 @@ export class MarketplaceServerClient extends AbstractServerClient {
     query: string,
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
     searchType: string = 'hybrid',
+    searchFilters: string[] = [],
     pageSize: number = 12,
     pageNumber: number = 1,
-  ): Promise<PlainObject<DataProductSearchResponse>> =>
-    this.get<PlainObject<DataProductSearchResponse>>(
-      `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}&page_size=${pageSize}&page_number=${pageNumber}`,
+  ): Promise<PlainObject<DataProductSearchResponse>> => {
+    const filters = searchFilters.join('&search_filters=');
+    const searchFilterParam = filters ? `&search_filters=${filters}` : '';
+    return this.get<PlainObject<DataProductSearchResponse>>(
+      `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}${searchFilterParam}&page_size=${pageSize}&page_number=${pageNumber}`,
     );
+  };
 
   getAutosuggestions = async (
     query: string,
@@ -125,6 +130,29 @@ export class MarketplaceServerClient extends AbstractServerClient {
       undefined,
       { query, limit },
     );
+
+  // ------------------------------------------- Taxonomy -------------------------------------------
+
+  private _taxonomyTree = (): string => `${this.baseUrl}/v1/taxonomy/tree`;
+
+  getTaxonomyTree = async (
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+    searchQuery?: string | undefined,
+    refresh: boolean = false,
+  ): Promise<TaxonomyTreeResponse> => {
+    const queryParams: Record<string, string | boolean> = {
+      refresh,
+    };
+    if (searchQuery) {
+      queryParams.search_query = searchQuery;
+    }
+    return this.get<TaxonomyTreeResponse>(
+      `${this._taxonomyTree()}/${lakehouseEnv}`,
+      undefined,
+      undefined,
+      queryParams,
+    );
+  };
 
   // ------------------------------------------- Subscriptions -----------------------------------------
 
