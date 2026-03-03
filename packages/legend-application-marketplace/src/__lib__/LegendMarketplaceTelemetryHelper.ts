@@ -377,4 +377,18 @@ export class LegendMarketplaceTelemetryHelper {
       },
     );
   }
+
+  static logEvent_SubmitFeedback(
+    telemetryService: TelemetryService,
+    originPage: string,
+    rating: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SUBMIT_FEEDBACK, {
+      originPage: originPage,
+      rating: rating,
+      ...session,
+    });
+  }
 }

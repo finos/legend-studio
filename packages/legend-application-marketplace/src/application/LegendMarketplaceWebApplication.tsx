@@ -45,6 +45,7 @@ import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplication
 import { MarketplaceLakehouseHeader } from '../components/Header/LegendMarketplaceHeader.js';
 import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
 import { CartToast } from '../components/Toast/CartToast.js';
+import { FeedbackWidget } from '../components/Feedback/FeedbackWidget.js';
 import { flowResult } from 'mobx';
 
 // Lazy load page components for code splitting
@@ -256,6 +257,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               <>
                 <MarketplaceLakehouseHeader />
                 <CartToast />
+                <FeedbackWidget />
                 <Suspense fallback={LazyLoadingFallback}>
                   <Outlet />
                 </Suspense>
