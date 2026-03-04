@@ -29,7 +29,7 @@ import {
   queryByText,
   screen,
   waitFor,
-} from '@testing-library/dom';
+} from '@testing-library/react';
 import {
   TEST__provideMockedLegendDataCubeBaseStore,
   TEST__provideMockedLegendDataCubeBuilderStore,

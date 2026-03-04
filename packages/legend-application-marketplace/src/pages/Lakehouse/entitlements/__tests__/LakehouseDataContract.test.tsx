@@ -25,8 +25,13 @@ import {
 } from '@finos/legend-graph';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { createSpy } from '@finos/legend-shared/test';
-import { act } from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { LakehouseDataContractTask } from '../LakehouseDataContract.js';
 import { type PlainObject } from '@finos/legend-shared';

@@ -16,10 +16,12 @@
 
 import { test, expect, jest } from '@jest/globals';
 import {
-  waitFor,
-  fireEvent,
-  findByDisplayValue,
   act,
+  findByDisplayValue,
+  fireEvent,
+  getByText,
+  screen,
+  waitFor,
 } from '@testing-library/react';
 import { createSpy, integrationTest } from '@finos/legend-shared/test';
 import {
@@ -40,7 +42,6 @@ import {
 } from '@finos/legend-query-builder';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
-import { getByText, screen } from '@testing-library/dom';
 import { TEST_DATA__DataProduct_NativeModelAccess } from './DataProductTestData.js';
 
 const rawMappingCoverageCustomer = {

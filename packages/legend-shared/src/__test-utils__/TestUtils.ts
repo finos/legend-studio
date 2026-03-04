@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { prettyDOM } from '@testing-library/dom';
+import { prettyDOM } from '@testing-library/react';
 import { noop, type SuperGenericFunction } from '../CommonUtils.js';
 import { jest } from '@jest/globals';
 import { writeFileSync } from 'fs';

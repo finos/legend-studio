@@ -45,8 +45,7 @@ import {
 import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
 import { ENGINE_TEST_SUPPORT__generateArtifacts } from '@finos/legend-graph/test';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
-import { waitFor, getByText, fireEvent } from '@testing-library/dom';
-import { act } from 'react';
+import { act, waitFor, getByText, fireEvent } from '@testing-library/react';
 import { DepotGeneration, StoredFileGeneration } from '@finos/legend-storage';
 
 const V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY = 'dataSpace-analytics';

@@ -19,12 +19,12 @@ import { integrationTest } from '@finos/legend-shared/test';
 import TEST_DATA_SimpleCalendarModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Calendar.json' with { type: 'json' };
 import { expect, test } from '@jest/globals';
 import {
+  act,
   fireEvent,
   getByText,
   getByTitle,
   waitFor,
-} from '@testing-library/dom';
-import { act } from 'react';
+} from '@testing-library/react';
 import { TEST_DATA__ModelCoverageAnalysisResult_Calendar } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Calendar.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {

@@ -16,10 +16,18 @@
 
 import { test, expect, jest } from '@jest/globals';
 import {
-  waitFor,
-  fireEvent,
-  findByText,
   findByDisplayValue,
+  findByPlaceholderText,
+  findByRole,
+  findByText,
+  fireEvent,
+  getAllByRole,
+  getAllByText,
+  getByText,
+  queryAllByTitle,
+  screen,
+  waitFor,
+  within,
 } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
@@ -38,16 +46,6 @@ import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import {
-  findByPlaceholderText,
-  findByRole,
-  getAllByRole,
-  getAllByText,
-  getByText,
-  queryAllByTitle,
-  screen,
-  within,
-} from '@testing-library/dom';
 import { AP_EMPTY_DESC_WARNING } from '../DataProductEditor.js';
 
 const pluginManager = LegendStudioPluginManager.create();
