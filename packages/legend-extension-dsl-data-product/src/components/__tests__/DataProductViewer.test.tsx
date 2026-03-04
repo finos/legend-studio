@@ -53,10 +53,6 @@ import {
   mockSDLCDataProductNoSupportInfo,
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
 import { createSpy } from '@finos/legend-shared/test';
-import {
-  getMockPendingManagerApprovalTasksResponse,
-  mockApprovedTasksResponse,
-} from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 import { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import { AuthProvider } from 'react-oidc-context';
 import { ProductViewer } from '../ProductViewer.js';
@@ -76,6 +72,10 @@ import {
   MockedMonacoEditorModel,
 } from '@finos/legend-lego/code-editor/test';
 import { BrowserRouter } from '@finos/legend-application/browser';
+import {
+  getMockCompletedTasksResponse,
+  getMockPendingManagerApprovalTasksResponse,
+} from '../__test-utils__/TEST_DATA__LakehouseDataContracts.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -237,7 +237,7 @@ const setupLakehouseDataProductTest = async (
         contractId === 'test-approved-contract-id' ||
         contractId === 'test-partially-approved-contract-id'
       ) {
-        return mockApprovedTasksResponse as unknown as PlainObject<V1_TaskResponse>;
+        return getMockCompletedTasksResponse() as unknown as PlainObject<V1_TaskResponse>;
       }
       return getMockPendingManagerApprovalTasksResponse() as unknown as PlainObject<V1_TaskResponse>;
     });
@@ -772,7 +772,7 @@ describe('DataProductViewer', () => {
       });
       fireEvent.click(pendingButton);
 
-      await screen.findByText('Pending Data Contract Request');
+      await screen.findByText('Pending Data Access Request');
     });
 
     test('PENDING MANAGER APPROVAL secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
@@ -986,7 +986,7 @@ describe('DataProductViewer', () => {
       });
       fireEvent.click(pendingButton);
 
-      await screen.findByText('Pending Data Contract Request');
+      await screen.findByText('Pending Data Access Request');
     });
 
     test('PENDING DATA OWNER APPROVAL secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
@@ -1381,7 +1381,7 @@ describe('DataProductViewer', () => {
       });
       fireEvent.click(entitledButton);
 
-      await screen.findByText('Data Contract Request');
+      await screen.findByText('Data Access Request');
     });
 
     test('ENTITLED secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {

@@ -31,8 +31,8 @@ import {
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useState } from 'react';
 import {
-  EntitlementsDataContractViewer,
-  EntitlementsDataContractViewerState,
+  DataAccessRequestViewer,
+  DataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
   generateContractPagePath,
@@ -126,12 +126,16 @@ export const LakehouseAdminContractsDashboard = observer(
           />
         </Box>
         {selectedContract !== undefined && (
-          <EntitlementsDataContractViewer
+          <DataAccessRequestViewer
             open={true}
             onClose={() => setSelectedContract(undefined)}
-            currentViewer={
-              new EntitlementsDataContractViewerState(
+            viewerState={
+              new DataContractViewerState(
                 selectedContract,
+                (contractId: string, taskId: string) =>
+                  adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateContractPagePath(contractId, taskId),
+                  ),
                 undefined,
                 adminStore.legendMarketplaceBaseStore.applicationStore,
                 adminStore.legendMarketplaceBaseStore.lakehouseContractServerClient,
@@ -143,11 +147,6 @@ export const LakehouseAdminContractsDashboard = observer(
               )
             }
             onRefresh={() => adminStore.refresh()}
-            getContractTaskUrl={(contractId: string, taskId: string) =>
-              adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateContractPagePath(contractId, taskId),
-              )
-            }
             getDataProductUrl={(dataProductId: string, deploymentId: number) =>
               adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseDataProductPath(dataProductId, deploymentId),

@@ -16,12 +16,9 @@
 
 import { describe, test, expect, jest } from '@jest/globals';
 import {
-  type V1_ContractState,
-  type V1_ContractUserEventPayload,
+  type PureProtocolProcessorPlugin,
+  type V1_TaskResponse,
   type V1_DataContract,
-  V1_ApprovalType,
-  V1_ContractEventPayloadType,
-  V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { createSpy } from '@finos/legend-shared/test';
@@ -35,6 +32,11 @@ import {
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { LakehouseDataContractTask } from '../LakehouseDataContract.js';
 import { type PlainObject } from '@finos/legend-shared';
+import {
+  getMockPendingDataOwnerApprovalTasksResponse,
+  getMockPendingManagerApprovalTasksResponse,
+  mockContracts,
+} from '@finos/legend-extension-dsl-data-product/test-utils';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -43,213 +45,13 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
-const createMockContract = (
-  overrides: Partial<V1_DataContract> & { guid: string; state: string },
-): V1_DataContract =>
-  ({
-    version: 0,
-    description: 'Test contract',
-    members: [],
-    consumer: {
-      _type: 'AdHocTeam',
-      users: [
-        {
-          name: 'test-consumer-user-id',
-          type: 'WORKFORCE_USER',
-        },
-      ],
-    },
-    createdBy: 'test-requester-user-id',
-    createdAt: '2026-01-09T14:30:41.837Z',
-    resource: {
-      _type: 'AccessPointGroupReference',
-      accessPointGroup: 'GROUP1',
-      dataProduct: {
-        name: 'MOCK_SDLC_DATAPRODUCT',
-        owner: {
-          appDirId: 12345,
-        },
-      },
-    },
-    ...overrides,
-  }) as V1_DataContract;
-
-const mockContracts = {
-  pendingPrivilegeManager: createMockContract({
-    guid: 'contract-pending-pm-id',
-    state: 'OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL' as V1_ContractState,
-    description: 'Test contract pending privilege manager approval',
-  }),
-
-  pendingDataOwner: createMockContract({
-    guid: 'contract-pending-do-id',
-    state: 'PENDING_DATA_OWNER_APPROVAL' as V1_ContractState,
-    description: 'Test contract pending data owner approval',
-  }),
-
-  completedContract: createMockContract({
-    guid: 'contract-completed-id',
-    state: 'COMPLETED' as V1_ContractState,
-    description: 'Test completed contract',
-  }),
-
-  rejectedContract: createMockContract({
-    guid: 'contract-rejected-id',
-    state: 'REJECTED' as V1_ContractState,
-    description: 'Test rejected contract',
-  }),
-
-  pendingDataOwnerNoPrivilegeManager: createMockContract({
-    guid: 'contract-no-pm-id',
-    state: 'PENDING_DATA_OWNER_APPROVAL' as V1_ContractState,
-    description:
-      'Test contract pending data owner approval without privilege manager',
-  }),
-};
-
-const mockTasks = {
-  privilegeManagerPending: {
-    taskId: 'pm-task-pending-id',
-    type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-    status: V1_UserApprovalStatus.PENDING,
-    assignees: ['test-privilege-manager-user-id'],
-    consumer: 'test-consumer-user-id',
-  },
-
-  privilegeManagerApproved: {
-    taskId: 'pm-task-pending-id',
-    type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-    status: V1_UserApprovalStatus.APPROVED,
-    assignees: ['test-privilege-manager-user-id'],
-    consumer: 'test-consumer-user-id',
-    eventPayload: {
-      type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_APPROVED,
-      eventTimestamp: '2025-08-06T08:00:00.000Z',
-      candidateIdentity: 'test-consumer-user-id',
-      managerIdentity: 'test-privilege-manager-user-id',
-      taskId: 'pm-task-pending-id',
-    },
-  },
-
-  privilegeManagerDenied: {
-    taskId: 'pm-task-denied-id',
-    type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-    status: V1_UserApprovalStatus.DENIED,
-    assignees: ['test-privilege-manager-user-id'],
-    consumer: 'test-consumer-user-id',
-    eventPayload: {
-      type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_REJECTED,
-      eventTimestamp: '2025-08-06T08:00:00.000Z',
-      candidateIdentity: 'test-consumer-user-id',
-      managerIdentity: 'test-privilege-manager-user-id',
-      taskId: 'pm-task-denied-id',
-    },
-  },
-
-  dataOwnerPending: {
-    taskId: 'do-task-pending-id',
-    type: V1_ApprovalType.DATA_OWNER_APPROVAL,
-    status: V1_UserApprovalStatus.PENDING,
-    assignees: ['test-data-owner-user-id'],
-    consumer: 'test-consumer-user-id',
-  },
-
-  dataOwnerApproved: {
-    taskId: 'do-task-approved-id',
-    type: V1_ApprovalType.DATA_OWNER_APPROVAL,
-    status: V1_UserApprovalStatus.APPROVED,
-    assignees: ['test-data-owner-user-id'],
-    consumer: 'test-consumer-user-id',
-    eventPayload: {
-      type: V1_ContractEventPayloadType.DATA_PRODUCER_APPROVED,
-      eventTimestamp: '2025-08-06T08:00:00.000Z',
-      candidateIdentity: 'test-consumer-user-id',
-      dataProducerIdentity: 'test-data-owner-user-id',
-      taskId: 'do-task-approved-id',
-    },
-  },
-
-  dataOwnerDenied: {
-    taskId: 'do-task-denied-id',
-    type: V1_ApprovalType.DATA_OWNER_APPROVAL,
-    status: V1_UserApprovalStatus.DENIED,
-    assignees: ['test-data-owner-user-id'],
-    consumer: 'test-consumer-user-id',
-    eventPayload: {
-      type: V1_ContractEventPayloadType.DATA_PRODUCER_REJECTED,
-      eventTimestamp: '2025-08-06T08:00:00.000Z',
-      candidateIdentity: 'test-consumer-user-id',
-      dataProducerIdentity: 'test-data-owner-user-id',
-      taskId: 'do-task-denied-id',
-    },
-  },
-};
-
-const createMockTaskResponse = (
-  tasks: Array<{
-    taskId: string;
-    type: V1_ApprovalType;
-    status: V1_UserApprovalStatus;
-    consumer: string;
-    assignees: string[];
-    eventPayload?: Partial<V1_ContractUserEventPayload>;
-  }>,
-): PlainObject => ({
-  tasks: tasks.map((task) => ({
-    rec: {
-      taskId: task.taskId,
-      type: task.type,
-      status: task.status,
-      consumer: task.consumer,
-      dataContractId: 'test-contract-id',
-      effectiveFrom: '2025-08-07T00:00:00.000Z',
-      effectiveTo: '2026-08-07T00:00:00.000Z',
-      isEscalated: false,
-      eventPayload: {
-        type: 'SUBMITTED',
-        eventTimestamp: '2025-08-06T08:00:00.069672876Z',
-        ...task.eventPayload,
-      },
-    },
-    assignees: task.assignees,
-  })),
-});
-
-const getMockPendingManagerApprovalTasksResponse = () =>
-  createMockTaskResponse([mockTasks.privilegeManagerPending]);
-
-const getMockPendingDataOwnerApprovalTasksResponse = () =>
-  createMockTaskResponse([
-    mockTasks.privilegeManagerApproved,
-    mockTasks.dataOwnerPending,
-  ]);
-
-const getMockDeniedPrivilegeManagerTasksResponse = () =>
-  createMockTaskResponse([mockTasks.privilegeManagerDenied]);
-
-const getMockDeniedDataOwnerTasksResponse = () =>
-  createMockTaskResponse([
-    mockTasks.privilegeManagerApproved,
-    mockTasks.dataOwnerDenied,
-  ]);
-
-const getMockCompletedTasksResponse = () =>
-  createMockTaskResponse([
-    mockTasks.privilegeManagerApproved,
-    mockTasks.dataOwnerApproved,
-  ]);
-
-const getMockNoPrivilegeManagerTasksResponse = () =>
-  createMockTaskResponse([mockTasks.dataOwnerPending]);
-
-const getMockNoPrivilegeManagerCompletedTasksResponse = () =>
-  createMockTaskResponse([mockTasks.dataOwnerApproved]);
-
 const setupLakehouseDataContractTest = async (
   contractId: string,
   taskId: string,
-  mockContract: V1_DataContract,
-  mockTasksResponse: PlainObject,
+  mockContractCallback: (
+    plugins: PureProtocolProcessorPlugin[],
+  ) => V1_DataContract,
+  mockTasksResponse: V1_TaskResponse,
   currentUserId: string = 'test-user-id',
 ) => {
   const marketplaceBaseStore =
@@ -278,13 +80,21 @@ const setupLakehouseDataContractTest = async (
     marketplaceBaseStore.lakehouseContractServerClient,
     'getDataContract',
   ).mockResolvedValue({
-    dataContracts: [{ dataContract: mockContract }],
+    dataContracts: [
+      {
+        dataContract: mockContractCallback(
+          marketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        ),
+      },
+    ],
   });
 
   createSpy(
     marketplaceBaseStore.lakehouseContractServerClient,
     'getContractTasks',
-  ).mockResolvedValue(mockTasksResponse);
+  ).mockResolvedValue(
+    mockTasksResponse as unknown as PlainObject<V1_TaskResponse>,
+  );
 
   createSpy(
     marketplaceBaseStore.lakehouseContractServerClient,
@@ -426,136 +236,6 @@ describe('Lakehouse Data Contract', () => {
 
       expect(approveButton.disabled).toBe(true);
       expect(denyButton.disabled).toBe(true);
-    });
-  });
-
-  describe('Timeline status display', () => {
-    test('shows "skipped" status for privilege manager when no PM task exists', async () => {
-      await setupLakehouseDataContractTest(
-        'contract-no-pm-id',
-        'do-task-pending-id',
-        mockContracts.pendingDataOwnerNoPrivilegeManager,
-        getMockNoPrivilegeManagerTasksResponse(),
-        'test-data-owner-user-id',
-      );
-
-      // The privilege manager step should show as skipped with a tooltip
-      const skippedDot = await screen.findByTitle(
-        'This step was skipped because it is not required for this contract',
-      );
-      expect(skippedDot).toBeDefined();
-    });
-
-    test('shows denied status for denied privilege manager task', async () => {
-      await setupLakehouseDataContractTest(
-        'contract-rejected-id',
-        'pm-task-denied-id',
-        mockContracts.rejectedContract,
-        getMockDeniedPrivilegeManagerTasksResponse(),
-        'test-privilege-manager-user-id',
-      );
-
-      // Verify "Privilege Manager Approval" denied message is shown
-      await screen.findByText('Privilege Manager Approval');
-      await screen.findByText('Denied by');
-      await screen.findByText('test-privilege-manager-user-id');
-      await screen.findByText(/08\/06\/2025/);
-    });
-
-    test('shows denied status for denied data owner task', async () => {
-      await setupLakehouseDataContractTest(
-        'contract-rejected-id',
-        'do-task-denied-id',
-        mockContracts.rejectedContract,
-        getMockDeniedDataOwnerTasksResponse(),
-        'test-data-owner-user-id',
-      );
-
-      const doApprovalText = await screen.findByText('Data Producer Approval');
-      expect(doApprovalText).toBeDefined();
-
-      // Verify "Data Producer Approval" denied message is shown
-      await screen.findByText('Data Producer Approval');
-      await screen.findByText('Denied by');
-      await screen.findByText('test-data-owner-user-id');
-      expect(await screen.findAllByText(/08\/06\/2025/)).toHaveLength(2);
-    });
-
-    test('shows complete status when only data owner approval is completed (no PM required)', async () => {
-      await setupLakehouseDataContractTest(
-        'contract-no-pm-id',
-        'do-task-approved-id',
-        mockContracts.pendingDataOwnerNoPrivilegeManager,
-        getMockNoPrivilegeManagerCompletedTasksResponse(),
-        'test-consumer-user-id',
-      );
-
-      // The skipped tooltip should still be present for the PM step
-      const skippedDot = await screen.findByTitle(
-        'This step was skipped because it is not required for this contract',
-      );
-      expect(skippedDot).toBeDefined();
-
-      // The complete step text should be rendered
-      const completeText = await screen.findByText('Complete');
-      expect(completeText).toBeDefined();
-
-      // Verify "Data Producer Approval" approved message are shown
-      await screen.findByText('Data Producer Approval');
-      await screen.findByText('Approved by');
-      await screen.findByText('test-data-owner-user-id');
-      await screen.findByText(/08\/06\/2025/);
-    });
-
-    test('shows complete status when both PM and data owner approvals are completed', async () => {
-      await setupLakehouseDataContractTest(
-        'contract-completed-id',
-        'do-task-approved-id',
-        mockContracts.completedContract,
-        getMockCompletedTasksResponse(),
-        'test-consumer-user-id',
-      );
-
-      const completeText = await screen.findByText('Complete');
-      expect(completeText).toBeDefined();
-
-      // Verify "Privilege Manager Approval" and "Data Producer Approval" approved message are shown
-      await screen.findByText('Privilege Manager Approval');
-      await screen.findByText('Data Producer Approval');
-      expect(await screen.findAllByText('Approved by')).toHaveLength(2);
-      await screen.findByText('test-privilege-manager-user-id');
-      await screen.findByText('test-data-owner-user-id');
-      expect(await screen.findAllByText(/08\/06\/2025/)).toHaveLength(2);
-    });
-
-    test('privilege manager pending step shows as active with link', async () => {
-      await setupLakehouseDataContractTest(
-        'contract-pending-pm-id',
-        'pm-task-pending-id',
-        mockContracts.pendingPrivilegeManager,
-        getMockPendingManagerApprovalTasksResponse(),
-        'test-privilege-manager-user-id',
-      );
-
-      // Pending PM task should render as a link instead of plain text
-      const pmApprovalLink = await screen.findByText(
-        'Privilege Manager Approval',
-      );
-      expect(pmApprovalLink.tagName).toBe('A');
-    });
-
-    test('data owner pending step shows as active with link', async () => {
-      await setupLakehouseDataContractTest(
-        'contract-pending-do-id',
-        'do-task-pending-id',
-        mockContracts.pendingDataOwner,
-        getMockPendingDataOwnerApprovalTasksResponse(),
-        'test-data-owner-user-id',
-      );
-
-      // Pending DO task should render as a link
-      const doApprovalLink = await screen.findByText('Data Producer Approval');
-      expect(doApprovalLink.tagName).toBe('A');
     });
   });
 });

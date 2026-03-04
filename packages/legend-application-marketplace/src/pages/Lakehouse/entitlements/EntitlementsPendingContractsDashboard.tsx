@@ -45,9 +45,9 @@ import { useAuth } from 'react-oidc-context';
 import {
   MultiUserRenderer,
   isContractInTerminalState,
-  EntitlementsDataContractViewer,
-  EntitlementsDataContractViewerState,
+  DataAccessRequestViewer,
   isApprovalStatusTerminal,
+  DataContractViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
   generateContractPagePath,
@@ -244,12 +244,16 @@ export const EntitlementsPendingContractsDashboard = observer(
           />
         </Box>
         {selectedContract !== undefined && (
-          <EntitlementsDataContractViewer
+          <DataAccessRequestViewer
             open={true}
             onClose={() => setSelectedContract(undefined)}
-            currentViewer={
-              new EntitlementsDataContractViewerState(
+            viewerState={
+              new DataContractViewerState(
                 selectedContract,
+                (contractId: string, taskId: string) =>
+                  marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateContractPagePath(contractId, taskId),
+                  ),
                 undefined,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
@@ -268,11 +272,6 @@ export const EntitlementsPendingContractsDashboard = observer(
                 ),
               );
             }}
-            getContractTaskUrl={(contractId: string, taskId: string) =>
-              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateContractPagePath(contractId, taskId),
-              )
-            }
             getDataProductUrl={(dataProductId: string, deploymentId: number) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseDataProductPath(dataProductId, deploymentId),

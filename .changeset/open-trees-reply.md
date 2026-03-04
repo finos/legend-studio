@@ -1,5 +1,6 @@
 ---
 '@finos/legend-application-marketplace': patch
+'@finos/legend-extension-dsl-data-product': patch
 ---
 
-Update LakehouseDataContract tests
+Refactor contract viewer to handle new data access request types

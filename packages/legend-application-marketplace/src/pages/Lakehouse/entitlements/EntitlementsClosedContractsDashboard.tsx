@@ -41,8 +41,8 @@ import { useLegendMarketplaceBaseStore } from '../../../application/providers/Le
 import { observer } from 'mobx-react-lite';
 import { useAuth } from 'react-oidc-context';
 import {
-  EntitlementsDataContractViewer,
-  EntitlementsDataContractViewerState,
+  DataAccessRequestViewer,
+  DataContractViewerState,
   isApprovalStatusTerminal,
   isContractInTerminalState,
 } from '@finos/legend-extension-dsl-data-product';
@@ -211,12 +211,16 @@ export const EntitlementsClosedContractsDashboard = observer(
           />
         </Box>
         {selectedContract !== undefined && (
-          <EntitlementsDataContractViewer
+          <DataAccessRequestViewer
             open={true}
             onClose={() => setSelectedContract(undefined)}
-            currentViewer={
-              new EntitlementsDataContractViewerState(
+            viewerState={
+              new DataContractViewerState(
                 selectedContract,
+                (contractId: string, taskId: string) =>
+                  marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateContractPagePath(contractId, taskId),
+                  ),
                 undefined,
                 marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
@@ -236,11 +240,6 @@ export const EntitlementsClosedContractsDashboard = observer(
                 ),
               );
             }}
-            getContractTaskUrl={(contractId: string, taskId: string) =>
-              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateContractPagePath(contractId, taskId),
-              )
-            }
             getDataProductUrl={(dataProductId: string, deploymentId: number) =>
               marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
                 generateLakehouseDataProductPath(dataProductId, deploymentId),

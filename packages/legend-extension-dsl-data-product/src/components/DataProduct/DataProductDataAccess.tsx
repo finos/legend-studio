@@ -104,9 +104,7 @@ import {
   generateAnchorForSection,
   DATA_PRODUCT_VIEWER_SECTION,
 } from '../../stores/ProductViewerNavigation.js';
-import { EntitlementsDataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import { EntitlementsDataContractCreator } from './DataContract/EntitlementsDataContractCreator.js';
-import { EntitlementsDataContractViewer } from './DataContract/EntitlementsDataContractViewer.js';
 import { DataProductSubscriptionViewer } from './Subscriptions/DataProductSubscriptionsViewer.js';
 import {
   type DataProductAPGState,
@@ -128,6 +126,8 @@ import {
   PRODUCT_INTEGRATION_TYPE,
 } from '../../__lib__/DataProductTelemetryHelper.js';
 import { flowResult } from 'mobx';
+import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/DataContractViewerState.js';
+import { DataAccessRequestViewer } from './DataContract/DataAccessRequestViewer.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -1049,6 +1049,8 @@ export const DataProductAccessPointGroupViewer = observer(
   }) => {
     const { apgState, dataAccessState } = props;
     const accessPointStates = apgState.accessPointStates;
+    const contractViewerContractAndSubscription =
+      dataAccessState?.contractViewerContractAndSubscription;
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
@@ -1069,18 +1071,19 @@ export const DataProductAccessPointGroupViewer = observer(
         apgState.dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [apgState, anchor]);
 
-    const entitlementsDataContractViewerState = useMemo(() => {
-      return dataAccessState?.contractViewerContractAndSubscription &&
-        dataAccessState.contractViewerContractAndSubscription.dataContract
-          .resource instanceof V1_AccessPointGroupReference &&
-        dataAccessState.contractViewerContractAndSubscription.dataContract
-          .resource.accessPointGroup === apgState.apg.id
-        ? new EntitlementsDataContractViewerState(
+    const dataContractViewerState = useMemo(() => {
+      return contractViewerContractAndSubscription &&
+        contractViewerContractAndSubscription.dataContract.resource instanceof
+          V1_AccessPointGroupReference &&
+        contractViewerContractAndSubscription.dataContract.resource
+          .accessPointGroup === apgState.apg.id
+        ? new DataContractViewerState(
             V1_transformDataContractToLiteDatacontract(
-              dataAccessState.contractViewerContractAndSubscription
-                .dataContract,
+              contractViewerContractAndSubscription.dataContract,
             ),
-            dataAccessState.contractViewerContractAndSubscription.subscriptions?.[0],
+            (contractId: string, taskId: string) =>
+              dataAccessState.getContractTaskUrl(contractId, taskId),
+            contractViewerContractAndSubscription.subscriptions?.[0],
             apgState.applicationStore,
             dataAccessState.lakehouseContractServerClient,
             apgState.dataProductViewerState.graphManagerState,
@@ -1092,8 +1095,8 @@ export const DataProductAccessPointGroupViewer = observer(
       apgState.applicationStore,
       apgState.dataProductViewerState.graphManagerState,
       apgState.dataProductViewerState.userSearchService,
-      dataAccessState?.contractViewerContractAndSubscription,
-      dataAccessState?.lakehouseContractServerClient,
+      contractViewerContractAndSubscription,
+      dataAccessState,
     ]);
 
     useEffect(() => {
@@ -1392,15 +1395,15 @@ export const DataProductAccessPointGroupViewer = observer(
             tokenProvider={() => auth.user?.access_token}
           />
         )}
-        {entitlementsDataContractViewerState && dataAccessState && (
-          <EntitlementsDataContractViewer
+        {dataContractViewerState && dataAccessState && (
+          <DataAccessRequestViewer
             open={true}
             onClose={() =>
               dataAccessState.setContractViewerContractAndSubscription(
                 undefined,
               )
             }
-            currentViewer={entitlementsDataContractViewerState}
+            viewerState={dataContractViewerState}
             onRefresh={() => {
               if (apgState.associatedUserContract) {
                 apgState.fetchUserAccessStatus(
@@ -1410,7 +1413,6 @@ export const DataProductAccessPointGroupViewer = observer(
                 );
               }
             }}
-            getContractTaskUrl={dataAccessState.getContractTaskUrl}
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />
         )}

@@ -378,8 +378,8 @@ export {
   V1_EntitlementsAccessPointModelSchema,
   V1_EntitlementsDataProductDetailsModelSchema,
   V1_EntitlementsDataProductDetailsResponseModelSchema,
-  V1_EntitlementsDataProductLiteModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_EntitlementsDataProductLiteModelSchema,
   V1_EntitlementsDataProductModelSchema,
   V1_EntitlementsLakehouseEnvironmentModelSchema,
   V1_liteDataContractModelSchema,
@@ -388,6 +388,7 @@ export {
   V1_OrganizationalScopeType,
   V1_pendingTasksResponseModelSchema,
   V1_SdlcDeploymentDataProductOriginModelSchema,
+  V1_taskResponseModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
   V1_terminalProvisionPayloadModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
