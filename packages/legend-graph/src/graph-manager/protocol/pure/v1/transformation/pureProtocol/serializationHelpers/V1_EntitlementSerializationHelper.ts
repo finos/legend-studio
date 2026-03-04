@@ -215,7 +215,7 @@ const V1_serializeOrganizationalScope = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize unsupported organizational scope type: ${organizationalScope?.constructor.name}`,
+    `Can't serialize unsupported organizational scope type: ${organizationalScope.constructor.name}`,
   );
 };
 
@@ -231,7 +231,7 @@ const V1_seralizeConsumerEntitlementResource = (
     return serialize(V1_DataBundleModelSchema, consumerEntitlementResource);
   } else {
     throw new UnsupportedOperationError(
-      `Can't serialize unsupported consumer entitlement resource type: ${consumerEntitlementResource?.constructor.name}`,
+      `Can't serialize unsupported consumer entitlement resource type: ${consumerEntitlementResource.constructor.name}`,
     );
   }
 };
