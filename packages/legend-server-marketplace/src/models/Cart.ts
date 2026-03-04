@@ -28,6 +28,7 @@ export interface CartItemRequest {
   skipWorkflow?: boolean;
   vendorProfileId?: number;
   cartId?: number;
+  source?: string;
 }
 
 export interface CartItem extends CartItemRequest {
@@ -46,6 +47,28 @@ export interface CartItemResponse {
   vendor_profile_id: number;
   marketplace_addons: TerminalResult[] | null;
   marketplace_terminals: TerminalResult[] | null;
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
+export interface VendorAddonsSearchParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  sort_by_price?: SortOrder;
+}
+
+export interface VendorAddonsSearchResponse {
+  marketplace_addons: TerminalResult[];
   total_count: number;
   page: number;
   page_size: number;

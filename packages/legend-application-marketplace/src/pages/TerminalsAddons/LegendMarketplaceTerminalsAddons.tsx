@@ -19,9 +19,6 @@ import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMar
 import {
   Button,
   ButtonGroup,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
   Tooltip,
   Typography,
   List,
@@ -41,19 +38,12 @@ import {
   withLegendMarketplaceVendorDataStore,
 } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 import { useParams } from '@finos/legend-application/browser';
-import {
-  AnalyticsIcon,
-  CompassIcon,
-  DatabaseIcon,
-  InfoCircleIcon,
-  SparkleStarsIcon,
-  UserSearchInput,
-} from '@finos/legend-art';
-import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
+import { InfoCircleIcon, UserSearchInput } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import type { LegendUser } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
+import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -106,11 +96,18 @@ const SearchResultsRenderer = observer(
     vendorDataState: LegendMarketPlaceVendorDataStore;
     terminalResults: TerminalResult[];
     sectionTitle: VendorDataProviderType;
+    totalCount?: number | undefined;
     seeAll?: boolean;
     tooltip?: string;
   }) => {
-    const { vendorDataState, terminalResults, sectionTitle, seeAll, tooltip } =
-      props;
+    const {
+      vendorDataState,
+      terminalResults,
+      sectionTitle,
+      totalCount,
+      seeAll,
+      tooltip,
+    } = props;
 
     const showCount = vendorDataState.searchTerm.trim().length > 0;
 
@@ -121,7 +118,7 @@ const SearchResultsRenderer = observer(
             {sectionTitle}
             {showCount && (
               <span className="legend-marketplace-vendordata-main-sidebar__title__count">
-                ({terminalResults.length})
+                ({totalCount ?? terminalResults.length})
               </span>
             )}
           </div>
@@ -190,32 +187,6 @@ export const VendorDataMainContent = observer(
           </div>
         ) : (
           <>
-            <div className="legend-marketplace-vendordata-main-sidebar legend-marketplace-vendordata-main-sidebar--hidden">
-              <div className="legend-marketplace-vendordata-main-sidebar__title">
-                Filters
-              </div>
-              <hr></hr>
-              <div className="legend-marketplace-vendordata-main-sidebar__subtitle">
-                Providers
-              </div>
-              <div className="legend-marketplace-vendordata-main-content__sidebar__checkbox-filter-group">
-                <FormGroup sx={{ gap: '1rem' }}>
-                  {marketPlaceVendorDataState.terminalProviders.map(
-                    (vendor) => (
-                      <FormControlLabel
-                        key={vendor.id}
-                        control={<Checkbox color={'primary'} />}
-                        label={
-                          <Typography sx={{ fontSize: '14px' }}>
-                            {vendor.providerName}
-                          </Typography>
-                        }
-                      />
-                    ),
-                  )}
-                </FormGroup>
-              </div>
-            </div>
             <div className="legend-marketplace-vendordata-main-search-results">
               {marketPlaceVendorDataState.providerDisplayState ===
                 VendorDataProviderType.ALL && (
@@ -226,6 +197,7 @@ export const VendorDataMainContent = observer(
                       marketPlaceVendorDataState.terminalProviders
                     }
                     sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
+                    totalCount={marketPlaceVendorDataState.totalTerminalItems}
                     seeAll={true}
                   />
                   <hr />
@@ -233,6 +205,7 @@ export const VendorDataMainContent = observer(
                     vendorDataState={marketPlaceVendorDataState}
                     terminalResults={marketPlaceVendorDataState.addOnProviders}
                     sectionTitle={VendorDataProviderType.ADD_ONS}
+                    totalCount={marketPlaceVendorDataState.totalAddOnItems}
                     seeAll={true}
                     tooltip={addOnsInfoMessage}
                   />
@@ -244,6 +217,7 @@ export const VendorDataMainContent = observer(
                   vendorDataState={marketPlaceVendorDataState}
                   terminalResults={marketPlaceVendorDataState.providers}
                   sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
+                  totalCount={marketPlaceVendorDataState.totalItems}
                   seeAll={false}
                 />
               )}
@@ -253,6 +227,7 @@ export const VendorDataMainContent = observer(
                   vendorDataState={marketPlaceVendorDataState}
                   terminalResults={marketPlaceVendorDataState.providers}
                   sectionTitle={VendorDataProviderType.ADD_ONS}
+                  totalCount={marketPlaceVendorDataState.totalItems}
                   seeAll={false}
                   tooltip={addOnsInfoMessage}
                 />
@@ -334,16 +309,25 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
                 setUserValue={(_user: LegendUser): void => {
                   if (!_user.id) {
                     marketPlaceVendorDataStore.resetSelectedUser();
-                    cartStore.resetUser();
+                    cartStore.setTargetUser(undefined);
                   } else {
                     marketPlaceVendorDataStore.setSelectedUser(_user);
-                    cartStore.setUser(_user.id);
+                    cartStore.setTargetUser(_user.id);
                   }
                 }}
                 userSearchService={marketplaceStore.userSearchService}
                 label="Search user or kerberos"
                 required={true}
                 variant="outlined"
+                renderOption={(optionProps, option) => (
+                  <li {...optionProps} key={option.id}>
+                    <UserRenderer
+                      userId={option.id}
+                      applicationStore={marketplaceStore.applicationStore}
+                      userSearchService={marketplaceStore.userSearchService}
+                    />
+                  </li>
+                )}
               />
             </div>
             <div className="legend-marketplace-body__tab">
@@ -389,31 +373,3 @@ export const LegendMarketplaceVendorDetails =
       );
     }),
   );
-
-export const LegendMarketplaceTerminalsAddOnsComingSoon = observer(() => {
-  const featuresPreviewItems = [
-    {
-      icon: <CompassIcon />,
-      title: 'Vendor Data',
-    },
-    {
-      icon: <AnalyticsIcon />,
-      title: 'Terminals',
-    },
-    {
-      icon: <SparkleStarsIcon />,
-      title: 'Add Ons',
-    },
-  ];
-
-  return (
-    <LegendMarketplacePage className="vendor-data-coming-soon">
-      <ComingSoonDisplay
-        loadingIcon={<DatabaseIcon />}
-        title="Terminals and Add Ons"
-        description="Discover quality vendor data available for use"
-        featuresPreviewItems={featuresPreviewItems}
-      />
-    </LegendMarketplacePage>
-  );
-});
