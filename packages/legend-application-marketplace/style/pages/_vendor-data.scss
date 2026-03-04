@@ -101,13 +101,14 @@
     }
 
     .legend-marketplace__user-input {
-      min-width: 25rem;
+      min-width: 30rem;
       max-width: 35rem;
 
       .MuiOutlinedInput-root {
         background: var(--marketplace-bg-primary);
-        border-radius: 0.6rem;
-        font-size: 1.4rem;
+        border-radius: 3rem;
+        font-size: 1.2rem;
+        padding: 0.1rem 0.4rem;
 
         &:hover .MuiOutlinedInput-notchedOutline {
           border-color: var(--color-blue-100);
@@ -120,12 +121,16 @@
       }
 
       .MuiInputLabel-root {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         color: var(--marketplace-text-muted);
 
         &.Mui-focused {
           color: var(--color-blue-100);
         }
+      }
+
+      .MuiAutocomplete-option {
+        padding: 0.6rem 1.2rem;
       }
     }
   }

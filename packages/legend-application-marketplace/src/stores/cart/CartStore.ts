@@ -45,7 +45,7 @@ export class CartStore {
   readonly baseStore: LegendMarketplaceBaseStore;
 
   items: Record<number, CartItem[]> = {};
-  user = '';
+  targetUser: string | undefined = undefined;
   businessReason: string | undefined = undefined;
   readonly initState = ActionState.create();
   readonly loadingState = ActionState.create();
@@ -60,12 +60,12 @@ export class CartStore {
   constructor(baseStore: LegendMarketplaceBaseStore) {
     makeObservable(this, {
       items: observable,
+      targetUser: observable,
       businessReason: observable,
       open: observable,
       cartSummary: observable,
       setOpen: action,
-      setUser: action,
-      resetUser: action,
+      setTargetUser: action,
       setBusinessReason: action,
       initialize: flow,
       submitOrder: flow,
@@ -77,16 +77,16 @@ export class CartStore {
     this.baseStore = baseStore;
   }
 
+  private get currentUser(): string {
+    return this.baseStore.applicationStore.identityService.currentUser;
+  }
+
   setOpen(val: boolean): void {
     this.open = val;
   }
 
-  setUser(val: string): void {
-    this.user = val;
-  }
-
-  resetUser(): void {
-    this.user = this.baseStore.applicationStore.identityService.currentUser;
+  setTargetUser(val: string | undefined): void {
+    this.targetUser = val;
   }
 
   setBusinessReason(val: string | undefined): void {
@@ -110,8 +110,7 @@ export class CartStore {
     recommendations?: TerminalResult[];
     message: string;
   }> {
-    const applicationStore = this.baseStore.applicationStore;
-    const user = applicationStore.identityService.currentUser;
+    const user = this.currentUser;
 
     if (!user) {
       const message = 'User not authenticated';
@@ -143,16 +142,12 @@ export class CartStore {
       const recommendations: TerminalResult[] =
         response.marketplace_addons ?? response.marketplace_terminals ?? [];
 
-      // Set vendorProfileId and skipWorkflow on each recommendation
       const parentVendorId = response.vendor_profile_id;
       if (parentVendorId && recommendations.length > 0) {
         recommendations.forEach((item) => {
-          // Only set vendorProfileId if not already set by backend
           if (!item.vendorProfileId) {
             item.vendorProfileId = parentVendorId;
           }
-          // Set skipWorkflow to true if not explicitly set by backend
-          // This allows add-ons to bypass workflow validation when added from modal
           if (item.skipWorkflow === undefined) {
             item.skipWorkflow = true;
           }
@@ -188,6 +183,9 @@ export class CartStore {
       ...(provider.vendorProfileId !== undefined && {
         vendorProfileId: provider.vendorProfileId,
       }),
+      ...(provider.source !== undefined && {
+        source: provider.source,
+      }),
     };
   }
 
@@ -210,22 +208,19 @@ export class CartStore {
   }
 
   *refresh(): GeneratorFn<void> {
-    const applicationStore = this.baseStore.applicationStore;
-    if (!this.user) {
-      this.user = applicationStore.identityService.currentUser;
-    }
-    if (!this.user) {
+    const user = this.currentUser;
+    if (!user) {
       return;
     }
 
     try {
       this.items = (yield this.baseStore.marketplaceServerClient.getCart(
-        this.user,
+        user,
       )) as Record<number, CartItem[]>;
 
       this.cartSummary =
         (yield this.baseStore.marketplaceServerClient.getCartSummary(
-          this.user,
+          user,
         )) as CartSummary;
     } catch (error) {
       assertErrorThrown(error);
@@ -237,13 +232,14 @@ export class CartStore {
   }
 
   *getCartSummary(): GeneratorFn<void> {
-    if (!this.user) {
+    const user = this.currentUser;
+    if (!user) {
       return;
     }
     try {
       const cartSummary =
         (yield this.baseStore.marketplaceServerClient.getCartSummary(
-          this.user,
+          user,
         )) as CartSummary;
       this.cartSummary = cartSummary;
     } catch (error) {
@@ -271,7 +267,8 @@ export class CartStore {
       toastManager.warning('Cart is empty - nothing to order');
       return;
     }
-    if (!this.user) {
+    const user = this.currentUser;
+    if (!user) {
       toastManager.error('User not authenticated');
       return;
     }
@@ -279,16 +276,13 @@ export class CartStore {
     this.submitState.inProgress();
     try {
       const orderData: OrderDetails = {
-        ordered_by: this.baseStore.applicationStore.identityService.currentUser,
-        kerberos: this.user,
+        ordered_by: user,
+        kerberos: this.targetUser ?? user,
         order_items: this.items,
         business_justification: this.businessReason,
       };
 
-      yield this.baseStore.marketplaceServerClient.submitOrder(
-        this.user,
-        orderData,
-      );
+      yield this.baseStore.marketplaceServerClient.submitOrder(user, orderData);
 
       this.getCartSummary();
 
@@ -307,14 +301,15 @@ export class CartStore {
   }
 
   *clearCart(): GeneratorFn<void> {
-    if (!this.user) {
+    const user = this.currentUser;
+    if (!user) {
       toastManager.error('User not authenticated');
       return;
     }
 
     this.loadingState.inProgress();
     try {
-      yield this.baseStore.marketplaceServerClient.clearCart(this.user);
+      yield this.baseStore.marketplaceServerClient.clearCart(user);
       this.refresh();
       this.getCartSummary();
       toastManager.success('Cart cleared successfully');
@@ -328,17 +323,15 @@ export class CartStore {
   }
 
   *deleteCartItem(cartId: number): GeneratorFn<void> {
-    if (!this.user) {
+    const user = this.currentUser;
+    if (!user) {
       toastManager.error('User not authenticated');
       return;
     }
 
     this.loadingState.inProgress();
     try {
-      yield this.baseStore.marketplaceServerClient.deleteCartItem(
-        this.user,
-        cartId,
-      );
+      yield this.baseStore.marketplaceServerClient.deleteCartItem(user, cartId);
 
       this.getCartSummary();
       this.refresh();

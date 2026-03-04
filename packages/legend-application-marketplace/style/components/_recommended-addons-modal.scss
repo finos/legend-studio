@@ -365,6 +365,83 @@
     justify-content: center;
   }
 
+  &__source-section {
+    margin-bottom: 1rem;
+  }
+
+  &__source-header {
+    margin-bottom: 1.2rem;
+  }
+
+  &__source-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-modal-text-primary);
+    margin-bottom: 0.4rem;
+  }
+
+  &__source-description {
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--color-modal-text-secondary);
+  }
+
+  &__in-cart-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-hclight-green-50);
+    font-weight: 600;
+
+    svg {
+      font-size: 1.8rem;
+      color: var(--color-hclight-green-50);
+    }
+
+    .MuiTypography-root {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--color-hclight-green-50);
+    }
+  }
+
+  &__owned-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-hclight-grey-60);
+    font-weight: 600;
+
+    svg {
+      font-size: 1.8rem;
+      color: var(--color-hclight-grey-60);
+    }
+
+    .MuiTypography-root {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--color-hclight-grey-60);
+    }
+  }
+
+  &__select-btn {
+    font-size: 1.3rem;
+    font-weight: 600;
+    padding: 0.8rem 1.6rem;
+    border-radius: 0.6rem;
+    text-transform: none;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: var(--legend-marketplace-light-blue);
+    border: 1.5px solid var(--legend-marketplace-light-blue);
+
+    &:hover {
+      background: rgb(115 153 198 / 8%);
+      border-color: var(--color-legacylight-light-blue-200);
+      color: var(--color-legacylight-light-blue-200);
+    }
+  }
+
   &__add-btn {
     font-size: 1.3rem;
     font-weight: 600;
@@ -372,13 +449,14 @@
     border-radius: 0.6rem;
     text-transform: none;
     transition: all 0.2s ease;
-    background: var(--legend-marketplace-light-blue);
-    color: var(--color-white);
-    border-color: var(--legend-marketplace-light-blue);
+    background: transparent;
+    color: var(--legend-marketplace-light-blue);
+    border: 1.5px solid var(--legend-marketplace-light-blue);
 
     &:hover {
-      background: var(--color-legacylight-light-blue-200);
+      background: rgb(115 153 198 / 8%);
       border-color: var(--color-legacylight-light-blue-200);
+      color: var(--color-legacylight-light-blue-200);
     }
 
     &--added {

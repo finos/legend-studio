@@ -136,13 +136,6 @@ const LegendMarketplaceVendorData = React.lazy(() =>
     }),
   ),
 );
-const LegendMarketplaceTerminalsAddOnsComingSoon = React.lazy(() =>
-  import('../pages/TerminalsAddons/LegendMarketplaceTerminalsAddons.js').then(
-    (module) => ({
-      default: module.LegendMarketplaceTerminalsAddOnsComingSoon,
-    }),
-  ),
-);
 const LegendMarketplaceSubscriptions = React.lazy(() =>
   import('../pages/Profile/LegendMarketplaceSubscriptions.js').then(
     (module) => ({
@@ -215,8 +208,6 @@ const useProtectedPage = (PageComponent: React.FC): React.FC =>
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
   const marketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
-  const showDevFeatures =
-    marketplaceBaseStore.applicationStore.config.options.showDevFeatures;
 
   useEffect(() => {
     if (marketplaceBaseStore.initState.isInInitialState) {
@@ -290,13 +281,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_ADD_ONS}
-              element={
-                showDevFeatures ? (
-                  <LegendMarketplaceVendorData />
-                ) : (
-                  <LegendMarketplaceTerminalsAddOnsComingSoon />
-                )
-              }
+              element={<LegendMarketplaceVendorData />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT}

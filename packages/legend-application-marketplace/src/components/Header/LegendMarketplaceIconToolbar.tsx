@@ -449,13 +449,12 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     {
       title: 'Cart',
       renderer: CartIconRenderer,
-      disable: !showDevFeatures,
     },
     {
       title: 'Help',
       renderer: HelpIconRenderer,
     },
-  ].filter((item) => !item.disable);
+  ];
 
   return (
     <>
