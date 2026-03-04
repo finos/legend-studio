@@ -250,15 +250,13 @@ describe('Large graph build (batch processing)', () => {
         const cls = state.graph.getClass(`test::largebatch::TestClass_${i}`);
         expect(cls).toBeDefined();
         expect(cls.properties).toHaveLength(1);
-        expect(cls.properties[0]!.name).toBe('value');
+        expect(guaranteeNonNullable(cls.properties[0]).name).toBe('value');
       }
     },
   );
 
   test(
-    unitTest(
-      'All elements are roundtrip-able after multi-batch graph build',
-    ),
+    unitTest('All elements are roundtrip-able after multi-batch graph build'),
     async () => {
       const count = 150;
       const entities = createLargeEntitySet(count);
@@ -273,9 +271,7 @@ describe('Large graph build (batch processing)', () => {
       expect(transformedEntities).toHaveLength(count);
 
       // Each original entity path should be present in the output
-      const transformedPaths = new Set(
-        transformedEntities.map((e) => e.path),
-      );
+      const transformedPaths = new Set(transformedEntities.map((e) => e.path));
       for (let i = 0; i < count; i++) {
         expect(transformedPaths.has(`test::largebatch::TestClass_${i}`)).toBe(
           true,

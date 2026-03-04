@@ -1300,8 +1300,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       // index other (plugin-contributed) elements
       const otherElements =
         this.graphBuilderExtensions.sortedExtraElementBuilders.flatMap(
-          (builder) =>
-            input.data.otherElementsByBuilder.get(builder) ?? [],
+          (builder) => input.data.otherElementsByBuilder.get(builder) ?? [],
         );
       await this.runBatchedLoop(otherElements, (element) =>
         this.visitWithGraphBuilderErrorHandling(
@@ -1319,47 +1318,77 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<void> {
     // Second pass
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.profiles,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.profiles,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.classes,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.classes,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.enumerations,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.enumerations,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.measures,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.measures,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.functions,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.functions,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     // Third pass
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.classes,
-      (ctx) => new V1_ElementThirdPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.classes,
+      (ctx) => new V1_ElementThirdPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.associations,
-      (ctx) => new V1_ElementThirdPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.associations,
+      (ctx) => new V1_ElementThirdPassBuilder(ctx),
+      options,
     );
     // Fourth Pass
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.classes,
-      (ctx) => new V1_ElementFourthPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.classes,
+      (ctx) => new V1_ElementFourthPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.associations,
-      (ctx) => new V1_ElementFourthPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.associations,
+      (ctx) => new V1_ElementFourthPassBuilder(ctx),
+      options,
     );
     // Fifth pass
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.classes,
-      (ctx) => new V1_ElementFifthPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.classes,
+      (ctx) => new V1_ElementFifthPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1369,8 +1398,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.functionActivators,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.functionActivators,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1380,20 +1412,32 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.stores,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.stores,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.stores,
-      (ctx) => new V1_ElementThirdPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.stores,
+      (ctx) => new V1_ElementThirdPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.stores,
-      (ctx) => new V1_ElementFourthPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.stores,
+      (ctx) => new V1_ElementFourthPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.stores,
-      (ctx) => new V1_ElementFifthPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.stores,
+      (ctx) => new V1_ElementFifthPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1403,16 +1447,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.mappings,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.mappings,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.mappings,
-      (ctx) => new V1_ElementThirdPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.mappings,
+      (ctx) => new V1_ElementThirdPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.mappings,
-      (ctx) => new V1_ElementFourthPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.mappings,
+      (ctx) => new V1_ElementFourthPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1423,12 +1476,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<void> {
     // NOTE: connections must be built before runtimes
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.connections,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.connections,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.runtimes,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.runtimes,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1438,12 +1497,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.services,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.services,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.executionEnvironments,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.executionEnvironments,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1453,8 +1518,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.dataElements,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.dataElements,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1464,8 +1532,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.products,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.products,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1475,8 +1546,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.fileGenerations,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.fileGenerations,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1486,8 +1560,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.generationSpecifications,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.generationSpecifications,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1497,8 +1574,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await this.processElementsInBatches(
-      graph, inputs, (data) => data.sectionIndices,
-      (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+      graph,
+      inputs,
+      (data) => data.sectionIndices,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1514,20 +1594,32 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ): V1_PackageableElement[] =>
         data.otherElementsByBuilder.get(builder) ?? [];
       await this.processElementsInBatches(
-        graph, inputs, getElements,
-        (ctx) => new V1_ElementSecondPassBuilder(ctx), options,
+        graph,
+        inputs,
+        getElements,
+        (ctx) => new V1_ElementSecondPassBuilder(ctx),
+        options,
       );
       await this.processElementsInBatches(
-        graph, inputs, getElements,
-        (ctx) => new V1_ElementThirdPassBuilder(ctx), options,
+        graph,
+        inputs,
+        getElements,
+        (ctx) => new V1_ElementThirdPassBuilder(ctx),
+        options,
       );
       await this.processElementsInBatches(
-        graph, inputs, getElements,
-        (ctx) => new V1_ElementFourthPassBuilder(ctx), options,
+        graph,
+        inputs,
+        getElements,
+        (ctx) => new V1_ElementFourthPassBuilder(ctx),
+        options,
       );
       await this.processElementsInBatches(
-        graph, inputs, getElements,
-        (ctx) => new V1_ElementFifthPassBuilder(ctx), options,
+        graph,
+        inputs,
+        getElements,
+        (ctx) => new V1_ElementFifthPassBuilder(ctx),
+        options,
       );
     }
   }
@@ -1547,7 +1639,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
       const end = Math.min(i + GRAPH_BUILDER_BATCH_SIZE, items.length);
       for (let j = i; j < end; j++) {
-        process(items[j]!);
+        process(guaranteeNonNullable(items[j]));
       }
     }
   }
