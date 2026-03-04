@@ -103,6 +103,11 @@ export const getBaseJestConfig = (isGlobal) => {
   /** @type {import('jest').Config} */
   const config = {
     ...baseConfig,
+    // Restart workers that exceed this memory threshold after finishing a test file.
+    // This prevents workers from accumulating too much memory across test suites
+    // and getting OOM-killed by the OS in CI.
+    // See https://jestjs.io/docs/configuration#workeridlememorylimit-numberstring
+    workerIdleMemoryLimit: '1GB',
     setupFiles: [
       '@finos/legend-dev-utils/jest/disallowConsoleError',
       '@finos/legend-dev-utils/jest/handleUnhandledRejection',
