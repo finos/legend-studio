@@ -63,14 +63,16 @@ export abstract class LegendMarketplaceApplicationPlugin
   }
 
   /**
-   * Callback to return a list of data products to be displayed on the home page.
+   * Callback to return a map of section titles to data products to be displayed on the home page.
+   * Each key is a section title (e.g. "Sponsored", "Featured") and the value is the list of
+   * product card states to display under that section.
    *
    * @param marketplaceStore
    */
   async getExtraHomePageDataProducts?(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     token: string | undefined,
-  ): Promise<ProductCardState[] | undefined>;
+  ): Promise<Record<string, ProductCardState[]> | undefined>;
 
   /**
    * Returns additional details about a given access point group access type.

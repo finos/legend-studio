@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { createModelSchema, list, optional, primitive } from 'serializr';
+import {
+  createModelSchema,
+  custom,
+  list,
+  optional,
+  primitive,
+} from 'serializr';
 import {
   type PlainObject,
   assertNonNullable,
@@ -43,7 +49,7 @@ class LegendMarketplaceApplicationCoreOptions {
    */
   showDevFeatures = false;
 
-  highlightedDataProducts: string | undefined;
+  highlightedDataProducts: Record<string, string> | undefined;
 
   /**
    * Default search suggestions to show when the search bar is empty or has no autosuggest results
@@ -57,7 +63,12 @@ class LegendMarketplaceApplicationCoreOptions {
       ),
       newsletterUrl: optional(primitive()),
       showDevFeatures: optional(primitive()),
-      highlightedDataProducts: optional(primitive()),
+      highlightedDataProducts: optional(
+        custom(
+          (value) => value,
+          (value) => value as Record<string, string> | undefined,
+        ),
+      ),
       historicalNewsletterUrl: optional(primitive()),
       defaultSearchSuggestions: optional(list(primitive())),
     }),

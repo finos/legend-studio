@@ -26,11 +26,7 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import { generateLakehouseSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
-import {
-  assertErrorThrown,
-  isNonEmptyString,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { assertErrorThrown, isNonEmptyString } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { DemoModal } from './DemoModal.js';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -54,8 +50,8 @@ export const MarketplaceLakehouseHome = observer(() => {
     !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
   const [highlightedDataProducts, setHighlightedDataProducts] = useState<
-    ProductCardState[]
-  >([]);
+    Record<string, ProductCardState[]>
+  >({});
   const [loading, setLoading] = useState(false);
   const [dismissedBannerIds, setDismissedBannerIds] = useState<Set<string>>(
     new Set(),
@@ -90,15 +86,19 @@ export const MarketplaceLakehouseHome = observer(() => {
     LegendMarketplaceTelemetryHelper.clearSearchSessionId();
   }, []);
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  const sectionNames = useMemo(
+    () => Object.keys(highlightedDataProducts),
+    [highlightedDataProducts],
+  );
+
   useEffect(() => {
     const loadDataProducts = async (): Promise<void> => {
       setLoading(true);
 
       try {
-        const dataProducts = (
+        const [configDataProducts, ...extraDataProductSections] =
           await Promise.all([
-            await legendMarketplaceBaseStore.initHighlightedDataProducts(
+            legendMarketplaceBaseStore.initHighlightedDataProducts(
               auth.user?.access_token,
             ),
             ...applicationStore.pluginManager
@@ -108,16 +108,31 @@ export const MarketplaceLakehouseHome = observer(() => {
                   (await plugin.getExtraHomePageDataProducts?.(
                     legendMarketplaceBaseStore,
                     auth.user?.access_token,
-                  )) ?? [],
+                  )) ?? {},
               ),
-          ])
-        )
-          .filter(isNonNullable)
-          .flat();
-        dataProducts.forEach((dataProductState) =>
-          dataProductState.init(auth.user?.access_token),
-        );
-        setHighlightedDataProducts(dataProducts);
+          ]);
+
+        const result: Record<string, ProductCardState[]> = {
+          ...configDataProducts,
+        };
+
+        for (const pluginSections of extraDataProductSections) {
+          for (const [sectionTitle, dataProductStates] of Object.entries(
+            pluginSections,
+          )) {
+            if (dataProductStates.length > 0) {
+              dataProductStates.forEach((dataProductState) =>
+                dataProductState.init(auth.user?.access_token),
+              );
+              result[sectionTitle] = [
+                ...(result[sectionTitle] ?? []),
+                ...dataProductStates,
+              ];
+            }
+          }
+        }
+
+        setHighlightedDataProducts(result);
       } catch (error) {
         assertErrorThrown(error);
         if (applicationStore.config.options.showDevFeatures) {
@@ -135,18 +150,36 @@ export const MarketplaceLakehouseHome = observer(() => {
       }
     };
 
-    if (highlightedDataProducts.length === 0) {
+    if (sectionNames.length === 0) {
       // eslint-disable-next-line no-void
       void loadDataProducts();
     }
   }, [
     auth.user?.access_token,
-    highlightedDataProducts.length,
+    sectionNames.length,
     applicationStore.notificationService,
     applicationStore.pluginManager,
     legendMarketplaceBaseStore,
     applicationStore.config.options.showDevFeatures,
   ]);
+
+  const handleCardClick = (productCardState: ProductCardState): void => {
+    const path = generatePathForDataProductSearchResult(
+      productCardState.searchResult,
+    );
+    if (path) {
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(path),
+      );
+    }
+    logClickingDataProductCard(
+      productCardState,
+      applicationStore,
+      LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
+    );
+  };
+
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const handleSearch = (
     _query: string | undefined,
@@ -163,19 +196,6 @@ export const MarketplaceLakehouseHome = observer(() => {
         LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
       );
     }
-  };
-
-  const getCarouselTitle = (): string => {
-    if (activeIndex === 0) {
-      return 'New';
-    }
-    if (activeIndex === 1) {
-      return 'Trending';
-    }
-    if (activeIndex === 2) {
-      return 'Sponsored';
-    }
-    return '';
   };
 
   return (
@@ -226,7 +246,7 @@ export const MarketplaceLakehouseHome = observer(() => {
         ) : (
           <div className="marketplace-lakehouse-home__carousel-header">
             <div className="marketplace-lakehouse-home__carousel-title">
-              {getCarouselTitle()}
+              {sectionNames[activeIndex] ?? ''}
             </div>
             <Swiper
               modules={[Navigation, Pagination, Autoplay]}
@@ -241,102 +261,24 @@ export const MarketplaceLakehouseHome = observer(() => {
               onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
               className="marketplace-lakehouse-home__carousel"
             >
-              <SwiperSlide key={1}>
-                <div className="marketplace-lakehouse-home__carousel-slide">
-                  {highlightedDataProducts.map(
-                    (productCardState: ProductCardState) => (
-                      <LakehouseProductCard
-                        key={`slide-1-${productCardState.guid}`}
-                        productCardState={productCardState}
-                        moreInfoPreview="large"
-                        hideInfoPopover={true}
-                        hideTags={true}
-                        onClick={() => {
-                          const path = generatePathForDataProductSearchResult(
-                            productCardState.searchResult,
-                          );
-                          if (path) {
-                            applicationStore.navigationService.navigator.visitAddress(
-                              applicationStore.navigationService.navigator.generateAddress(
-                                path,
-                              ),
-                            );
-                          }
-                          logClickingDataProductCard(
-                            productCardState,
-                            applicationStore,
-                            LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
-                          );
-                        }}
-                      />
-                    ),
-                  )}
-                </div>
-              </SwiperSlide>
-              <SwiperSlide key={2}>
-                <div className="marketplace-lakehouse-home__carousel-slide">
-                  {highlightedDataProducts.map(
-                    (productCardState: ProductCardState) => (
-                      <LakehouseProductCard
-                        key={`slide-2-${productCardState.guid}`}
-                        productCardState={productCardState}
-                        moreInfoPreview="large"
-                        hideInfoPopover={true}
-                        hideTags={true}
-                        onClick={() => {
-                          const path = generatePathForDataProductSearchResult(
-                            productCardState.searchResult,
-                          );
-                          if (path) {
-                            applicationStore.navigationService.navigator.visitAddress(
-                              applicationStore.navigationService.navigator.generateAddress(
-                                path,
-                              ),
-                            );
-                          }
-                          logClickingDataProductCard(
-                            productCardState,
-                            applicationStore,
-                            LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
-                          );
-                        }}
-                      />
-                    ),
-                  )}
-                </div>
-              </SwiperSlide>
-              <SwiperSlide key={3}>
-                <div className="marketplace-lakehouse-home__carousel-slide">
-                  {highlightedDataProducts.map(
-                    (productCardState: ProductCardState) => (
-                      <LakehouseProductCard
-                        key={`slide-1-${productCardState.guid}`}
-                        productCardState={productCardState}
-                        moreInfoPreview="large"
-                        hideInfoPopover={true}
-                        hideTags={true}
-                        onClick={() => {
-                          const path = generatePathForDataProductSearchResult(
-                            productCardState.searchResult,
-                          );
-                          if (path) {
-                            applicationStore.navigationService.navigator.visitAddress(
-                              applicationStore.navigationService.navigator.generateAddress(
-                                path,
-                              ),
-                            );
-                          }
-                          logClickingDataProductCard(
-                            productCardState,
-                            applicationStore,
-                            LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
-                          );
-                        }}
-                      />
-                    ),
-                  )}
-                </div>
-              </SwiperSlide>
+              {sectionNames.map((sectionName) => (
+                <SwiperSlide key={sectionName}>
+                  <div className="marketplace-lakehouse-home__carousel-slide">
+                    {highlightedDataProducts[sectionName]?.map(
+                      (productCardState) => (
+                        <LakehouseProductCard
+                          key={`${sectionName}-${productCardState.guid}`}
+                          productCardState={productCardState}
+                          moreInfoPreview="large"
+                          hideInfoPopover={true}
+                          hideTags={true}
+                          onClick={() => handleCardClick(productCardState)}
+                        />
+                      ),
+                    )}
+                  </div>
+                </SwiperSlide>
+              ))}
             </Swiper>
           </div>
         )}
