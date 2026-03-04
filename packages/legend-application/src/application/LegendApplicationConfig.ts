@@ -85,6 +85,7 @@ export interface LegendApplicationConfigurationData {
     storageKey?: string;
     settingsOverrides?: SettingOverrideConfigData;
   };
+  legendCookieDomain?: string;
   // TODO: when we support vault-like settings, we could support `settingOverrides`
   // See https://github.com/finos/legend-studio/issues/407
   // settingOverrides
@@ -96,6 +97,7 @@ export abstract class LegendApplicationConfig {
   readonly baseAddress: string | undefined;
   readonly env: string;
   readonly applicationStorageKey: string;
+  readonly legendCookieDomain?: string | undefined;
 
   // documentation
   readonly documentationUrl?: string | undefined;
@@ -124,6 +126,7 @@ export abstract class LegendApplicationConfig {
     this.applicationStorageKey =
       input.configData.application?.storageKey ??
       this.getDefaultApplicationStorageKey();
+    this.legendCookieDomain = input.configData.legendCookieDomain;
 
     // Documentation
     this.documentationUrl = input.configData.documentation?.url;

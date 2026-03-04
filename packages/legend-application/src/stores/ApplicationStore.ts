@@ -240,15 +240,18 @@ export class ApplicationStore<
   }
 
   private _syncAccessTokenCookie(maxAge?: number): void {
+    const domainAttr = this.config.legendCookieDomain
+      ? `; Domain=${this.config.legendCookieDomain}`
+      : '';
     if (this.accessToken) {
-      let cookie = `${LEGEND_ACCESS_TOKEN_COOKIE_NAME}=${encodeURIComponent(this.accessToken)}; path=/; Secure; SameSite=Strict`;
+      let cookie = `${LEGEND_ACCESS_TOKEN_COOKIE_NAME}=${encodeURIComponent(this.accessToken)}; path=/${domainAttr}; Secure; SameSite=Strict`;
       if (maxAge !== undefined && maxAge > 0) {
         cookie += `; max-age=${Math.floor(maxAge)}`;
       }
       document.cookie = cookie;
     } else {
       // expire the cookie
-      document.cookie = `${LEGEND_ACCESS_TOKEN_COOKIE_NAME}=; path=/; Secure; SameSite=Strict; max-age=0`;
+      document.cookie = `${LEGEND_ACCESS_TOKEN_COOKIE_NAME}=; path=/${domainAttr}; Secure; SameSite=Strict; max-age=0`;
     }
   }
 

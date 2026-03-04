@@ -288,6 +288,42 @@ describe('ApplicationStore.accessToken', () => {
       expect(appStore.getAccessToken()).toBe(specialToken);
     },
   );
+
+  test(
+    integrationTest(
+      'cookie includes Domain attribute when cookieDomain is configured',
+    ),
+    async () => {
+      const storeWithDomain = new ApplicationStore(
+        TEST__getLegendStudioApplicationConfig({
+          legendCookieDomain: '.example.com',
+        }),
+        LegendStudioPluginManager.create(),
+      );
+      cookieWrites = [];
+      storeWithDomain.setAccessToken('domain-token');
+      const written = cookieWrites.find((c) =>
+        c.includes('legend-access-token=domain-token'),
+      );
+      expect(written).toBeDefined();
+      expect(written).toContain('Domain=.example.com');
+    },
+  );
+
+  test(
+    integrationTest(
+      'cookie omits Domain attribute when cookieDomain is not configured',
+    ),
+    async () => {
+      cookieWrites = [];
+      appStore.setAccessToken('no-domain-token');
+      const written = cookieWrites.find((c) =>
+        c.includes('legend-access-token=no-domain-token'),
+      );
+      expect(written).toBeDefined();
+      expect(written).not.toContain('Domain=');
+    },
+  );
 });
 
 describe('LegendTokenSync', () => {
