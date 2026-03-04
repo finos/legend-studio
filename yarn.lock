@@ -2509,7 +2509,7 @@ __metadata:
     "@types/react": "npm:19.0.10"
     "@types/react-dom": "npm:19.0.4"
     cross-env: "npm:7.0.3"
-    dompurify: "npm:3.2.5"
+    dompurify: "npm:3.3.1"
     eslint: "npm:9.20.1"
     jest: "npm:29.7.0"
     mobx: "npm:6.13.6"
@@ -3131,7 +3131,7 @@ __metadata:
     "@types/react": "npm:19.0.10"
     "@types/react-dom": "npm:19.0.4"
     cross-env: "npm:7.0.3"
-    dompurify: "npm:3.2.5"
+    dompurify: "npm:3.3.1"
     eslint: "npm:9.20.1"
     jest: "npm:29.7.0"
     mobx: "npm:6.13.6"
@@ -10227,15 +10227,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:3.2.5":
-  version: 3.2.5
-  resolution: "dompurify@npm:3.2.5"
+"dompurify@npm:3.3.1":
+  version: 3.3.1
+  resolution: "dompurify@npm:3.3.1"
   dependencies:
     "@types/trusted-types": "npm:^2.0.7"
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 10/03974f18851fb4e447d26adc0ebf7a64b6c5b4a11caebebec3e04de8fcaa19cdb67bf3575a2335727123d0fc1c2febc1bc992a84f327a8ce65a0bfd11e3afc50
+  checksum: 10/f71cca489e628591165d16e8cf4fa4f0d3e2ee48db4d73e9d2c5bedc6f915c92f9e9f101f8c4ba790bec0cdffe7f4e1747f5e31c69dc53ce7ae20a81ff6b0022
   languageName: node
   linkType: hard
 
