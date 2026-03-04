@@ -38,4 +38,6 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   DISMISS_HOME_PAGE_BANNER = 'marketplace.dismiss.home-page.banner',
   FETCH_TAXONOMY_TREE_FAILURE = 'marketplace.fetch.taxonomy-tree.failure',
   SEARCH_VENDOR_ADDONS_FAILURE = 'marketplace.search.vendor-addons.failure',
+  SUBMIT_FEEDBACK = 'marketplace.submit.feedback',
+  SUBMIT_FEEDBACK_FAILURE = 'marketplace.submit.feedback.failure',
 }
