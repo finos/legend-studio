@@ -29,6 +29,7 @@ import {
   usingConstantValueSchema,
   UnsupportedOperationError,
   assertErrorThrown,
+  guaranteeNonNullable,
   usingModelSchema,
 } from '@finos/legend-shared';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
@@ -109,10 +110,7 @@ export const V1_entitiesToPureModelContextData = async (
         if (i > 0) {
           await new Promise<void>((resolve) => setTimeout(resolve, 0));
         }
-        const end = Math.min(
-          i + DESERIALIZATION_BATCH_SIZE,
-          entities.length,
-        );
+        const end = Math.min(i + DESERIALIZATION_BATCH_SIZE, entities.length);
         for (let j = i; j < end; j++) {
           // NOTE: here we skip the check for classifier path, so there could be cases
           // where the classifier path is different from the actua element protocol path
@@ -120,7 +118,7 @@ export const V1_entitiesToPureModelContextData = async (
           // path is changed in the backend. If we are to check for this, we might consider
           // not throwing error but quitely print out warnings about elements that would not
           // be built.
-          results.push(entityToElement(entities[j]!));
+          results.push(entityToElement(guaranteeNonNullable(entities[j])));
         }
       }
       graph.elements = results;
