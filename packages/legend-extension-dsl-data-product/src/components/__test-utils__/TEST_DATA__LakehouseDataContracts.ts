@@ -63,7 +63,7 @@ export const createMockContract = (
       },
     },
     ...overrides,
-  }) as V1_DataContract;
+  });
 
 export const mockContracts = {
   pendingPrivilegeManager: (plugins: PureProtocolProcessorPlugin[]) =>

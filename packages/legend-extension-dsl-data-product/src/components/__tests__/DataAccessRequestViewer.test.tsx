@@ -113,18 +113,18 @@ const setupDataContractViewerTest = async (
       MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
     ),
     mockContract,
-  );
+  ) as PlainObject<V1_DataContract>;
 
   const mockContractWithMembers = mockContractWithMembersCallback?.(
     MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
   );
   const mockContractWithMembersObject = mockContractWithMembers
-    ? serialize(
+    ? (serialize(
         V1_dataContractModelSchema(
           MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
         ),
         mockContractWithMembers,
-      )
+      ) as PlainObject<V1_DataContract>)
     : undefined;
 
   const mockLiteContract =
