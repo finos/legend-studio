@@ -2583,4 +2583,27 @@
   .data-access__check-entitlements__user-entitlements__table-container {
     border: 0.1rem solid var(--color-hclight-grey-20);
   }
+
+  .legend-marketplace-feedback-widget {
+    &__popup {
+      background: var(--color-white);
+      border: 1px solid var(--color-hclight-grey-20);
+    }
+
+    &__textarea {
+      background: var(--color-white);
+      border-color: var(--color-hclight-grey-30);
+      color: var(--color-hclight-grey-90);
+
+      &:focus {
+        border-color: var(--color-hclight-blue-50);
+      }
+    }
+
+    &__toggle {
+      &--active {
+        background: var(--color-hclight-grey-50);
+      }
+    }
+  }
 }

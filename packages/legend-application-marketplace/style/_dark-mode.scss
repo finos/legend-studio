@@ -3943,4 +3943,47 @@
       border-color: var(--color-dark-theme-text-primary) !important;
     }
   }
+
+  .legend-marketplace-feedback-widget {
+    &__popup {
+      background: var(--color-dark-theme-bg-secondary);
+      box-shadow:
+        0 8px 32px rgb(0 0 0 / 30%),
+        0 4px 12px rgb(0 0 0 / 20%);
+    }
+
+    &__header {
+      box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+    }
+
+    &__textarea {
+      background: var(--color-dark-theme-bg-elevated);
+      border-color: var(--color-dark-theme-border-light);
+      color: var(--color-dark-theme-text-primary);
+
+      &::placeholder {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &:focus {
+        border-color: var(--legend-marketplace-light-blue);
+      }
+    }
+
+    &__toggle {
+      box-shadow:
+        0 4px 12px rgb(0 0 0 / 30%),
+        0 2px 4px rgb(0 0 0 / 20%);
+
+      &:hover {
+        box-shadow:
+          0 6px 20px rgb(0 0 0 / 40%),
+          0 3px 6px rgb(0 0 0 / 25%);
+      }
+
+      &--active {
+        background: var(--color-dark-theme-border-light);
+      }
+    }
+  }
 }

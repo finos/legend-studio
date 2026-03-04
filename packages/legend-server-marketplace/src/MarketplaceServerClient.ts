@@ -38,6 +38,7 @@ import type {
   VendorAddonsSearchResponse,
 } from './models/Cart.js';
 import type { OrderDetails } from './models/Order.js';
+import type { FeedbackRequest, FeedbackResponse } from './models/Feedback.js';
 import type { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
   type TerminalProductOrderResponse,
@@ -261,4 +262,13 @@ export class MarketplaceServerClient extends AbstractServerClient {
     process_instance_id: string;
   }): Promise<PlainObject<{ status_code: number; message: string }>> =>
     this.post(`${this.baseUrl}/v1/workflow/cancel/order`, cancelData);
+
+  // ------------------------------------------- Feedback -------------------------------------------
+
+  private _feedback = (): string => `${this.baseUrl}/v1/feedback`;
+
+  submitFeedback = async (
+    feedbackData: FeedbackRequest,
+  ): Promise<PlainObject<FeedbackResponse>> =>
+    this.post(this._feedback(), feedbackData);
 }

@@ -21,6 +21,7 @@ export * from './models/Provider.js';
 export * from './models/Subscription.js';
 export * from './models/Cart.js';
 export * from './models/Order.js';
+export * from './models/Feedback.js';
 export * from './models/TerminalProductOrder.js';
 export * from './models/Registry.js';
 export { MarketplaceServerClient } from './MarketplaceServerClient.js';
