@@ -301,3 +301,85 @@ describe('Large graph build (batch processing)', () => {
     },
   );
 });
+
+describe('Diverse graph build (parallel build phases)', () => {
+  test(
+    unitTest(
+      'Graph with diverse element types builds correctly with parallel phases',
+    ),
+    async () => {
+      const { TEST_DATA__DiverseGraph } = await import(
+        './TEST_DATA__DiverseGraph.js'
+      );
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(
+        state,
+        TEST_DATA__DiverseGraph as Entity[],
+      );
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+
+      const graph = state.graph;
+
+      // Verify types built correctly (sequential phase)
+      expect(graph.getProfile('test::diverse::MyProfile')).toBeDefined();
+      expect(graph.getEnumeration('test::diverse::Status')).toBeDefined();
+      expect(graph.getEnumeration('test::diverse::Status').values).toHaveLength(
+        2,
+      );
+      expect(graph.getClass('test::diverse::SourcePerson')).toBeDefined();
+      expect(graph.getClass('test::diverse::TargetPerson')).toBeDefined();
+
+      // Verify mapping built correctly (sequential phase)
+      const mapping = graph.getMapping('test::diverse::MyMapping');
+      expect(mapping).toBeDefined();
+      expect(mapping.classMappings).toHaveLength(1);
+
+      // Verify connection and runtime built correctly (sequential phase)
+      expect(graph.getConnection('test::diverse::MyConnection')).toBeDefined();
+      const runtime = graph.getRuntime('test::diverse::MyRuntime');
+      expect(runtime).toBeDefined();
+
+      // Verify service built correctly (parallelized phase)
+      // This is the key assertion — services are now built in parallel
+      // and reference mappings/runtimes from earlier phases
+      const service = graph.getService('test::diverse::MyService');
+      expect(service).toBeDefined();
+    },
+  );
+
+  test(
+    unitTest('All diverse elements are roundtrip-able after parallel build'),
+    async () => {
+      const { TEST_DATA__DiverseGraph } = await import(
+        './TEST_DATA__DiverseGraph.js'
+      );
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(
+        state,
+        TEST_DATA__DiverseGraph as Entity[],
+      );
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+
+      // Serialize all elements back to entities
+      const transformedEntities = state.graph.allOwnElements.map((element) =>
+        state.graphManager.elementToEntity(element),
+      );
+
+      // Every input entity path should be present in the output
+      const transformedPaths = new Set(transformedEntities.map((e) => e.path));
+      const expectedPaths = [
+        'test::diverse::MyProfile',
+        'test::diverse::Status',
+        'test::diverse::SourcePerson',
+        'test::diverse::TargetPerson',
+        'test::diverse::MyMapping',
+        'test::diverse::MyConnection',
+        'test::diverse::MyRuntime',
+        'test::diverse::MyService',
+      ];
+      for (const path of expectedPaths) {
+        expect(transformedPaths.has(path)).toBe(true);
+      }
+    },
+  );
+});

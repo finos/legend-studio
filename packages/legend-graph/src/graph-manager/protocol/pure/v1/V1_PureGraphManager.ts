@@ -1192,32 +1192,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_CONNECTIONS_AND_RUNTIMES__SUCCESS,
     );
 
-    // build function activators
-    graphBuilderState.setMessage(`Building function activators...`);
-    await this.buildFunctionActivators(graph, inputs, options);
-    stopWatch.record(
-      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DOMAIN_MODELS__SUCCESS,
-    );
-
-    // build services
+    // build remaining elements in parallel — these phases are independent of each
+    // other and only reference types, stores, mappings, connections, and runtimes
+    // which have already been built above.
     graphBuilderState.setMessage(
-      `Building services and execution environments...`,
+      `Building services, data elements, and other elements...`,
     );
-    await this.buildServices(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_SERVICES__SUCCESS);
-
-    // build data elements
-    graphBuilderState.setMessage(`Building data elements...`);
-    await this.buildDataElements(graph, inputs, options);
-    stopWatch.record(
-      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DATA_ELEMENTS__SUCCESS,
-    );
-
-    // build other elements
-    graphBuilderState.setMessage(`Building other elements...`);
-    await this.buildFileGenerations(graph, inputs, options);
-    await this.buildGenerationSpecifications(graph, inputs, options);
-    await this.buildOtherElements(graph, inputs, options);
+    await Promise.all([
+      this.buildFunctionActivators(graph, inputs, options),
+      this.buildServices(graph, inputs, options),
+      this.buildDataElements(graph, inputs, options),
+      this.buildFileGenerations(graph, inputs, options),
+      this.buildGenerationSpecifications(graph, inputs, options),
+      this.buildOtherElements(graph, inputs, options),
+    ]);
     stopWatch.record(
       GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_OTHER_ELEMENTS__SUCCESS,
     );
