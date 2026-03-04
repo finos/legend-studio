@@ -1,5 +1,19 @@
 # @finos/legend-application-marketplace
 
+## 0.1.74
+
+### Patch Changes
+
+- [#4945](https://github.com/finos/legend-studio/pull/4945) [`02c6fe6`](https://github.com/finos/legend-studio/commit/02c6fe6e2a1a5fb02c21a6579fe0a7c825716412) ([@bojja-gs](https://github.com/bojja-gs)) - Refactor home page carousel to support per-section highlighted data products.
+
+- [#4943](https://github.com/finos/legend-studio/pull/4943) [`44cb49d`](https://github.com/finos/legend-studio/commit/44cb49df9d5eed8242a53d9e10bc2336523a665b) ([@bojja-gs](https://github.com/bojja-gs)) - New terminals and addons fixes and recommended modal implementations and prod release
+
+- [#4944](https://github.com/finos/legend-studio/pull/4944) [`2da13d4`](https://github.com/finos/legend-studio/commit/2da13d49b4ce6e7b5558fa767df1eb7b25804fce) ([@bojja-gs](https://github.com/bojja-gs)) - feedback feature implementation with tracking user, page, search query, filters
+
+- [#4918](https://github.com/finos/legend-studio/pull/4918) [`4b79740`](https://github.com/finos/legend-studio/commit/4b797404f52a596547948d1affef68893a4586cb) ([@travisstebbins](https://github.com/travisstebbins)) - Refactor contract viewer to handle new data access request types
+
+- [#4910](https://github.com/finos/legend-studio/pull/4910) [`2a27cbe`](https://github.com/finos/legend-studio/commit/2a27cbe801af221caeabde1cce83992035b0b845) ([@travisstebbins](https://github.com/travisstebbins)) - Fix test util imports
+
 ## 0.1.73
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-repl",
-  "version": "1.1.136",
+  "version": "1.1.137",
   "description": "Legend REPL Grid client application core",
   "keywords": [
     "legend",

@@ -1,5 +1,13 @@
 # @finos/legend-server-marketplace
 
+## 0.1.50
+
+### Patch Changes
+
+- [#4943](https://github.com/finos/legend-studio/pull/4943) [`44cb49d`](https://github.com/finos/legend-studio/commit/44cb49df9d5eed8242a53d9e10bc2336523a665b) ([@bojja-gs](https://github.com/bojja-gs)) - New terminals and addons fixes and recommended modal implementations and prod release
+
+- [#4944](https://github.com/finos/legend-studio/pull/4944) [`2da13d4`](https://github.com/finos/legend-studio/commit/2da13d49b4ce6e7b5558fa767df1eb7b25804fce) ([@bojja-gs](https://github.com/bojja-gs)) - feedback feature implementation with tracking user, page, search query, filters
+
 ## 0.1.49
 
 ### Patch Changes

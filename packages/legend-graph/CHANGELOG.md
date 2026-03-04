@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.3.37
+
+### Patch Changes
+
+- [#4941](https://github.com/finos/legend-studio/pull/4941) [`3b19363`](https://github.com/finos/legend-studio/commit/3b193637388d8cd6cceff551fd60968fead1a123) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Optimize graph builder performance by batching element processing. Instead of scheduling a separate `setTimeout` macrotask per element (which incurs ~4ms minimum delay each), elements are now processed synchronously in batches of 100 with a single event-loop yield between batches. This applies to both entity deserialization (`V1_entitiesToPureModelContextData`) and all graph builder passes (`initializeAndIndexElements`, `buildTypes`, `buildStores`, `buildMappings`, etc.). For large projects this reduces graph build time significantly while still keeping the UI responsive.
+
+- [#4926](https://github.com/finos/legend-studio/pull/4926) [`2521aa7`](https://github.com/finos/legend-studio/commit/2521aa7c0317ec90078c404362f3ff926e921257) ([@travisstebbins](https://github.com/travisstebbins)) - Handle serializing V1_ConsumerEntitlementResource
+
 ## 32.3.36
 
 ### Patch Changes

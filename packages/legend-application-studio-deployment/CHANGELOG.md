@@ -1,5 +1,11 @@
 # @finos/legend-application-studio-deployment
 
+## 13.195.0
+
+### Patch Changes
+
+- [#4942](https://github.com/finos/legend-studio/pull/4942) [`7f73388`](https://github.com/finos/legend-studio/commit/7f73388cc483f41bda5ba336d88d3df57ba837a3) ([@gs-saurabh](https://github.com/gs-saurabh)) - fix: cookie domain issue
+
 ## 13.194.0
 
 ## 13.193.0
