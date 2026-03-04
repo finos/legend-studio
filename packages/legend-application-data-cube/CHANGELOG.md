@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.51
+
+### Patch Changes
+
+- [#4910](https://github.com/finos/legend-studio/pull/4910) [`2a27cbe`](https://github.com/finos/legend-studio/commit/2a27cbe801af221caeabde1cce83992035b0b845) ([@travisstebbins](https://github.com/travisstebbins)) - Fix test util imports
+
 ## 0.7.50
 
 ## 0.7.49

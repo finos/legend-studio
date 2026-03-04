@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.59
+
+### Patch Changes
+
+- [#4918](https://github.com/finos/legend-studio/pull/4918) [`4b79740`](https://github.com/finos/legend-studio/commit/4b797404f52a596547948d1affef68893a4586cb) ([@travisstebbins](https://github.com/travisstebbins)) - Refactor contract viewer to handle new data access request types
+
 ## 0.0.58
 
 ### Patch Changes

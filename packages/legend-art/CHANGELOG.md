@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.145
+
+### Patch Changes
+
+- [#4943](https://github.com/finos/legend-studio/pull/4943) [`44cb49d`](https://github.com/finos/legend-studio/commit/44cb49df9d5eed8242a53d9e10bc2336523a665b) ([@bojja-gs](https://github.com/bojja-gs)) - New terminals and addons fixes and recommended modal implementations and prod release
+
 ## 7.1.144
 
 ## 7.1.143
