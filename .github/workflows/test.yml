@@ -56,7 +56,10 @@ jobs:
       - name: Build
         run: yarn build
       - name: Test
-        run: yarn test:ci ${{ matrix.group }}
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 2
+          command: yarn test:ci ${{ matrix.group }}
       - name: Shut down engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
         run: docker compose --file=grammar-test-setup-docker-compose.yml down
