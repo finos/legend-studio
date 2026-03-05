@@ -1180,7 +1180,7 @@ describe('DataProductViewer', () => {
         );
         expect(clipBoardSpy).toHaveBeenCalledWith(
           expect.stringContaining(
-            `com.example.analytics:customer-analytics:1.2.0?options='--compute=testtargetenvironment--environment=Development--warehouse=LAKEHOUSE_CONSUMER_DEFAULT_WH'`,
+            `projects|com.example.analytics:customer-analytics:1.2.0?options='--compute=testtargetenvironment --environment=Development --warehouse=LAKEHOUSE_CONSUMER_DEFAULT_WH'`,
           ),
         );
       });
