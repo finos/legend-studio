@@ -85,7 +85,9 @@ test('closes feedback popup when toggle button is clicked again', async () => {
 
   fireEvent.click(toggleButton);
 
-  expect(screen.queryByText('Marketplace Feedback')).toBeNull();
+  await waitFor(() => {
+    expect(screen.queryByText('Marketplace Feedback')).toBeNull();
+  });
 });
 
 test('submit button is disabled when no rating is selected', async () => {
