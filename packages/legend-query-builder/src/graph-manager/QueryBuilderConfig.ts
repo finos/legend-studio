@@ -51,6 +51,12 @@ export class QueryBuilderConfig {
    */
   enableTypedTDS = false;
 
+  /**
+   * This flag is for any feature that is not production ready.
+   * Used to iterate over features until they are ready for production.
+   */
+  NonProductionFeatureFlag = false;
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
       TEMPORARY__disableQueryBuilderChat: optional(primitive()),
@@ -60,6 +66,7 @@ export class QueryBuilderConfig {
       legendMCPServiceURL: optional(primitive()),
       zipkinTraceBaseURL: optional(primitive()),
       enableTypedTDS: optional(primitive()),
+      NonProductionFeatureFlag: optional(primitive()),
     }),
   );
 }
