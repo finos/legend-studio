@@ -61,6 +61,8 @@ export const LegendMarketplaceSearchResults =
 
       const marketplaceBaseStore = searchResultsStore.marketplaceBaseStore;
       const applicationStore = marketplaceBaseStore.applicationStore;
+      const showTaxonomyFilters =
+        applicationStore.config.options.showDevFeatures;
 
       useEffect(() => {
         if (searchResultsStore.useProducerSearch === undefined) {
@@ -83,8 +85,14 @@ export const LegendMarketplaceSearchResults =
       ]);
 
       useEffect(() => {
-        searchResultsStore.fetchTaxonomyTree(searchResultsStore.searchQuery);
-      }, [searchResultsStore, searchResultsStore.searchQuery]);
+        if (showTaxonomyFilters) {
+          searchResultsStore.fetchTaxonomyTree(searchResultsStore.searchQuery);
+        }
+      }, [
+        searchResultsStore,
+        searchResultsStore.searchQuery,
+        showTaxonomyFilters,
+      ]);
 
       useSyncStateAndSearchParam(
         searchResultsStore.useProducerSearch,
@@ -237,7 +245,7 @@ export const LegendMarketplaceSearchResults =
             className="marketplace-lakehouse-search-results__results-container"
           >
             <div className="marketplace-lakehouse-search-results__results-layout">
-              {!searchResultsStore.useProducerSearch && (
+              {showTaxonomyFilters && !searchResultsStore.useProducerSearch && (
                 <div className="marketplace-lakehouse-search-results__sidebar">
                   <TaxonomyFilterPanel store={searchResultsStore} />
                 </div>

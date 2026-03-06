@@ -16,7 +16,7 @@
 
 .legend-marketplace-feedback-widget {
   position: fixed;
-  bottom: 2.4rem;
+  bottom: 10rem;
   right: 2.4rem;
   z-index: 1400;
   display: flex;
@@ -25,6 +25,11 @@
   gap: 1.2rem;
   font-family: 'GS Sans', Helvetica, Arial, sans-serif;
 
+  &--dragged {
+    bottom: auto;
+    right: auto;
+  }
+
   &__toggle {
     width: 5.2rem;
     height: 5.2rem;
@@ -32,7 +37,7 @@
     border: none;
     background: var(--legend-marketplace-light-blue);
     color: var(--color-white);
-    cursor: pointer;
+    cursor: grab;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -42,6 +47,11 @@
     transition:
       transform 0.2s ease,
       box-shadow 0.2s ease;
+    user-select: none;
+
+    &:active {
+      cursor: grabbing;
+    }
 
     &:hover {
       transform: scale(1.08);
@@ -66,12 +76,6 @@
     box-shadow:
       0 8px 32px rgb(0 0 0 / 12%),
       0 4px 12px rgb(0 0 0 / 8%);
-    overflow: hidden;
-    animation: feedbackSlideUp 0.25s ease-out;
-
-    &--closing {
-      animation: feedbackSlideDown 0.3s ease-in forwards;
-    }
   }
 
   &__header {
@@ -278,30 +282,6 @@
     margin: 0;
     font-size: 1.5rem;
     color: var(--marketplace-text-secondary);
-  }
-}
-
-@keyframes feedbackSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(1rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes feedbackSlideDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateY(1.5rem);
   }
 }
 

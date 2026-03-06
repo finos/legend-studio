@@ -738,19 +738,87 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
   describe('Taxonomy', () => {
     test('getTaxonomyTree is called on mount', async () => {
-      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+      const { MOCK__baseStore } = await setupTestComponent('data', 'dev');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('2 Products');
 
       expect(
         MOCK__baseStore.marketplaceServerClient.getTaxonomyTree,
       ).toHaveBeenCalled();
     });
 
-    test('Taxonomy filter panel renders with tree nodes from API', async () => {
-      await setupTestComponent('data', 'prod');
+    test('Taxonomy filter panel is hidden when showDevFeatures is false', async () => {
+      const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore(
+        {
+          dataProductEnv: 'prod',
+        },
+      );
+      MOCK__baseStore.applicationStore.config.options.showDevFeatures = false;
+
+      mockUseSearchParams.mockReturnValue([
+        new URLSearchParams({ query: 'data' }),
+        mockSetSearchParams,
+      ]);
+
+      createSpy(
+        MOCK__baseStore.marketplaceServerClient,
+        'dataProductSearch',
+      ).mockResolvedValue(mockProdSearchResultResponse);
+
+      createSpy(
+        MOCK__baseStore.lakehouseContractServerClient,
+        'getDataProducts',
+      ).mockResolvedValue(mockDataProductsResponse);
+      createSpy(
+        MOCK__baseStore.depotServerClient,
+        'getEntitiesSummaryByClassifier',
+      ).mockResolvedValue([
+        mockLegacyDataProductSummaryEntity,
+      ] as unknown as PlainObject<StoredSummaryEntity>[]);
+
+      createSpy(
+        MOCK__baseStore.lakehousePlatformServerClient,
+        'findProducerServer',
+      ).mockResolvedValue({
+        ingestEnvironmentUrn: 'production-analytics',
+        environmentClassification: 'prod',
+        ingestServerUrl: 'https://test-prod-ingest-server.com',
+        environmentName: 'production-analytics',
+      });
+
+      createSpy(
+        MOCK__baseStore.lakehouseContractServerClient,
+        'getOwnersForDid',
+      ).mockResolvedValue({ owners: [] });
+
+      createSpy(
+        MOCK__baseStore.marketplaceServerClient,
+        'getTaxonomyTree',
+      ).mockResolvedValue(mockTaxonomyTreeResponse);
+
+      const mockPlugin =
+        MOCK__baseStore.applicationStore.pluginManager.getApplicationPlugins()[0];
+      if (mockPlugin) {
+        mockPlugin.handleDataProductOwnersResponse = jest.fn(
+          (response: PlainObject<{ owners: string[] }>) =>
+            response.owners as string[],
+        );
+      }
+
+      await TEST__setUpMarketplaceLakehouse(
+        MOCK__baseStore,
+        '/dataProduct/results?query=data',
+      );
 
       await screen.findByText('4 Products');
+
+      expect(screen.queryByText('Filters')).toBeNull();
+    });
+
+    test('Taxonomy filter panel renders with tree nodes from API', async () => {
+      await setupTestComponent('data', 'dev');
+
+      await screen.findByText('2 Products');
 
       // Wait for taxonomy tree to render
       // Top-level (depth 0) nodes are expanded by default, so their
@@ -769,9 +837,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
     });
 
     test('Taxonomy header is rendered', async () => {
-      await setupTestComponent('data', 'prod');
+      await setupTestComponent('data', 'dev');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('2 Products');
 
       await waitFor(() => {
         expect(screen.getByText('Filters')).toBeDefined();
@@ -781,7 +849,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Empty taxonomy tree shows empty message', async () => {
       const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore(
         {
-          dataProductEnv: 'prod',
+          dataProductEnv: 'dev',
         },
       );
       mockUseSearchParams.mockReturnValue([
@@ -792,7 +860,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       createSpy(
         MOCK__baseStore.marketplaceServerClient,
         'dataProductSearch',
-      ).mockResolvedValue(mockProdSearchResultResponse);
+      ).mockResolvedValue(mockDevSearchResultResponse);
 
       createSpy(
         MOCK__baseStore.lakehouseContractServerClient,
