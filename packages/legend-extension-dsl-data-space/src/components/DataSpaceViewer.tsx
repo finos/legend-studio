@@ -91,8 +91,8 @@ const DataSpaceHeader = observer(
             <ControlledDropdownMenu
               className="data-space__viewer__header__execution-context-selector"
               menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+                transformOrigin: { vertical: 'top', horizontal: 'center' },
                 elevation: 7,
               }}
               title={`Current Execution Context: ${dataSpaceViewerState.currentExecutionContext.name}\nClick to switch`}
