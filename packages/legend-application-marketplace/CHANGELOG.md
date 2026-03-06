@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.75
+
+### Patch Changes
+
+- [#4956](https://github.com/finos/legend-studio/pull/4956) [`5e2bb42`](https://github.com/finos/legend-studio/commit/5e2bb42db175ce488c4f30b3e5ec722c824f85c1) ([@bojja-gs](https://github.com/bojja-gs)) - Enable dev flag for filters and feedback popup float
+
 ## 0.1.74
 
 ### Patch Changes
