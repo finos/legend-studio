@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.60
+
+### Patch Changes
+
+- [#4952](https://github.com/finos/legend-studio/pull/4952) [`78bb6d6`](https://github.com/finos/legend-studio/commit/78bb6d688982f1addb66c9b9c51178f2f296d332) ([@gs-jp1](https://github.com/gs-jp1)) - fix the sql connection string geneated for data products
+
 ## 0.0.59
 
 ### Patch Changes
