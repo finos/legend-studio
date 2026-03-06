@@ -135,7 +135,14 @@
       }
 
       &__option {
-        width: 17.2rem;
+        max-width: 25rem;
+        height: auto;
+        min-height: 2.8rem;
+        padding: 0.5rem 1rem;
+        white-space: normal;
+        overflow-wrap: break-word;
+        text-align: center;
+        justify-content: center;
       }
 
       &__option--active {
