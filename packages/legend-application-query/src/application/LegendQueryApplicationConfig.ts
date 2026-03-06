@@ -81,6 +81,12 @@ class LegendQueryApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
     [];
 
+  /**
+   * This flag is for any feature that is not production ready.
+   * Used to iterate over features until they are ready for production.
+   */
+  NonProductionFeatureFlag = false;
+
   TEMPORARY__enableMinimalGraph = false;
 
   /**
@@ -110,6 +116,7 @@ class LegendQueryApplicationCoreOptions {
       queryBuilderConfig: optional(
         usingModelSchema(QueryBuilderConfig.serialization.schema),
       ),
+      NonProductionFeatureFlag: optional(primitive()),
       TEMPORARY__enableMinimalGraph: optional(primitive()),
       oidcConfig: optional(
         usingModelSchema(LegendQueryOIDCConfiguration.serialization.schema),
