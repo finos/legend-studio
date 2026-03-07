@@ -2817,7 +2817,7 @@ __metadata:
     "@types/react-dom": "npm:19.0.4"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
-    fast-xml-parser: "npm:5.0.8"
+    fast-xml-parser: "npm:5.3.8"
     jest: "npm:29.7.0"
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
@@ -11286,14 +11286,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:5.0.8":
-  version: 5.0.8
-  resolution: "fast-xml-parser@npm:5.0.8"
+"fast-xml-parser@npm:5.3.8":
+  version: 5.3.8
+  resolution: "fast-xml-parser@npm:5.3.8"
   dependencies:
-    strnum: "npm:^2.0.5"
+    strnum: "npm:^2.1.2"
   bin:
     fxparser: src/cli/cli.js
-  checksum: 10/4b30577ccb337a2750c0a5281ad1bdcdff036a87ddc0253aed617802a8a0b1ad6204a27cc79465e19dbbc5c7b91b6fd690545a5f1b15067bde84d36d79aedcf4
+  checksum: 10/e373c1b984415161ad0450a693680ba161335751674cba0edc000b884c2a8048e59270283ea87a480384f609fdf09352b299bda205d106b4cfac9567fbe37a8a
   languageName: node
   linkType: hard
 
@@ -19930,10 +19930,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strnum@npm:^2.0.5":
-  version: 2.1.1
-  resolution: "strnum@npm:2.1.1"
-  checksum: 10/d5fe6e4333cddc17569331048e403e876ffcf629989815f0359b0caf05dae9441b7eef3d7dd07427313ac8b3f05a8f60abc1f61efc15f97245dbc24028362bc9
+"strnum@npm:^2.1.2":
+  version: 2.2.0
+  resolution: "strnum@npm:2.2.0"
+  checksum: 10/2969dbc8441f5af1b55db1d2fcea64a8f912de18515b57f85574e66bdb8f30ae76c419cf1390b343d72d687e2aea5aca82390f18b9e0de45d6bcc6d605eb9385
   languageName: node
   linkType: hard
 
