@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-diagram-studio
 
+## 0.0.34
+
 ## 0.0.33
 
 ## 0.0.32

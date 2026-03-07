@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.203
+
+### Patch Changes
+
+- [#4962](https://github.com/finos/legend-studio/pull/4962) [`11562d4`](https://github.com/finos/legend-studio/commit/11562d477a78532da75095c23669659f367f728a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `NonProductionFeatureFlag` to `QueryBuilderConfig and QueryApplicationConfig`
+
 ## 13.7.202
 
 ### Patch Changes

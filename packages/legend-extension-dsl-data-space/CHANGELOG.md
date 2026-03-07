@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.200
+
+### Patch Changes
+
+- [#4961](https://github.com/finos/legend-studio/pull/4961) [`d2e9610`](https://github.com/finos/legend-studio/commit/d2e9610e4f17d6a12273e235446d03506857c757) ([@jackp5150](https://github.com/jackp5150)) - Fixed dataspace execution context dropdown option overlapping
+
 ## 10.4.199
 
 ## 10.4.198
