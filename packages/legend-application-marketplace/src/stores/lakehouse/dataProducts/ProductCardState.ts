@@ -66,7 +66,8 @@ export class ProductCardState {
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     searchResult: DataProductSearchResult,
     graphManager: V1_PureGraphManager,
-    displayImageMap: Map<string, string>,
+    vendorImageMap: ReadonlyMap<string, string>,
+    usedImages?: Set<string> | undefined,
   ) {
     makeObservable(this, {
       dataProductElement: observable,
@@ -82,7 +83,7 @@ export class ProductCardState {
     this.marketplaceBaseStore = marketplaceBaseStore;
     this.searchResult = searchResult;
     this.graphManager = graphManager;
-    this.displayImage = this.getDataProductImage(displayImageMap);
+    this.displayImage = this.resolveDisplayImage(vendorImageMap, usedImages);
   }
 
   get title(): string {
@@ -220,16 +221,40 @@ export class ProductCardState {
     this.lakehouseOwners = value;
   }
 
-  getDataProductImage(productImageMap: Map<string, string>): string {
-    const existingImage = productImageMap.get(this.title);
-    if (existingImage) {
-      return existingImage;
+  private static hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash * 31 + str.charCodeAt(i)) | 0;
+    }
+    return Math.abs(hash);
+  }
+
+  private resolveDisplayImage(
+    vendorImageMap: ReadonlyMap<string, string>,
+    usedImages?: Set<string> | undefined,
+  ): string {
+    const GENERIC_IMAGE_COUNT = 20;
+    const guidUpper = this.guid.toUpperCase();
+
+    for (const [vendorName, imagePath] of vendorImageMap.entries()) {
+      if (guidUpper.includes(vendorName.toUpperCase())) {
+        return imagePath;
+      }
     }
 
-    const randomIndex = Math.floor(Math.random() * MAX_PRODUCT_IMAGE_COUNT) + 1;
-    const selectedImage = `/assets/images${randomIndex}.jpg`;
-    productImageMap.set(this.title, selectedImage);
-    return selectedImage;
+    const baseIndex =
+      ProductCardState.hashString(this.guid) % GENERIC_IMAGE_COUNT;
+    if (usedImages) {
+      for (let offset = 0; offset < GENERIC_IMAGE_COUNT; offset++) {
+        const candidate = `/assets/images${((baseIndex + offset) % GENERIC_IMAGE_COUNT) + 1}.jpg`;
+        if (!usedImages.has(candidate)) {
+          usedImages.add(candidate);
+          return candidate;
+        }
+      }
+    }
+
+    return `/assets/images${baseIndex + 1}.jpg`;
   }
 
   async getLakehouseDataProduct(

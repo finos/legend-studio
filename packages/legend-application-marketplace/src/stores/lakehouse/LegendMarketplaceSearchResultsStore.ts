@@ -64,7 +64,6 @@ export enum DataProductSort {
 export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly marketplaceServerClient: MarketplaceServerClient;
-  readonly displayImageMap = new Map<string, string>();
   searchQuery: string | undefined = undefined;
   useProducerSearch: boolean | undefined = undefined;
   semanticSearchProductCardStates: ProductCardState[] = [];
@@ -371,13 +370,15 @@ export class LegendMarketplaceSearchResultsStore {
         ),
     );
 
+    const usedImages = new Set<string>();
     const productCardStates: ProductCardState[] = validResults.map(
       (result) =>
         new ProductCardState(
           this.marketplaceBaseStore,
           result,
           graphManager,
-          this.displayImageMap,
+          new Map(),
+          usedImages,
         ),
     );
     productCardStates.forEach((dataProductState) =>
@@ -450,6 +451,7 @@ export class LegendMarketplaceSearchResultsStore {
           rawResponse,
         );
 
+      const usedImages = new Set<string>();
       const productCardStates = dataProductDetails
         .map((detail) => {
           try {
@@ -493,7 +495,8 @@ export class LegendMarketplaceSearchResultsStore {
               this.marketplaceBaseStore,
               searchResult,
               graphManager,
-              this.displayImageMap,
+              new Map(),
+              usedImages,
             );
           } catch (error) {
             this.marketplaceBaseStore.applicationStore.logService.error(
@@ -538,6 +541,7 @@ export class LegendMarketplaceSearchResultsStore {
             summary: true,
           },
         )) as unknown as StoredSummaryEntity[];
+      const usedImages = new Set<string>();
       const productCardStates = dataSpaceEntitySummaries
         .map((entity) => {
           try {
@@ -568,7 +572,8 @@ export class LegendMarketplaceSearchResultsStore {
               this.marketplaceBaseStore,
               searchResult,
               graphManager,
-              this.displayImageMap,
+              new Map(),
+              usedImages,
             );
           } catch (error) {
             this.marketplaceBaseStore.applicationStore.logService.error(
