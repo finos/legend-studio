@@ -1,5 +1,7 @@
 # @finos/legend-application-marketplace
 
+## 0.1.77
+
 ## 0.1.76
 
 ## 0.1.75
