@@ -23,9 +23,6 @@ import {
   MenuContentItem,
   MenuIcon,
   MenuContentDivider,
-  MenuContentItemIcon,
-  CheckIcon,
-  MenuContentItemLabel,
   Modal,
   ModalHeader,
   ModalBody,
@@ -37,6 +34,9 @@ import {
   ModalHeaderActions,
   TimesIcon,
   Panel,
+  PanelForm,
+  PanelFormBooleanField,
+  PanelFormTextField,
   PanelFullContent,
   CustomSelectorInput,
   PencilIcon,
@@ -91,6 +91,7 @@ import {
   debounce,
   compareSemVerVersions,
   guaranteeNonNullable,
+  isValidUrl,
 } from '@finos/legend-shared';
 import { LegendQueryInfo } from './LegendQueryAppInfo.js';
 import { QueryEditorDataspaceInfoModal } from './data-space/DataSpaceInfo.js';
@@ -671,11 +672,116 @@ const QueryEditorExistingQueryInfoModal = observer(
   },
 );
 
+const QueryEditorSettingsModal = observer(
+  (props: { open: boolean; onClose: () => void }) => {
+    const { open, onClose } = props;
+    const applicationStore = useApplicationStore();
+    const editorStore = useQueryEditorStore();
+    const engineConfig =
+      editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
+
+    const toggleEngineClientRequestPayloadCompression = (): void =>
+      engineConfig.setUseClientRequestPayloadCompression(
+        !engineConfig.useClientRequestPayloadCompression,
+      );
+
+    const toggleEngineClientRequestPayloadDebugging = (): void =>
+      engineConfig.setEnableDebuggingPayload(
+        !engineConfig.enableDebuggingPayload,
+      );
+
+    const toggleEnableMinialGraphForDataSpaceLoadingPerformance = (): void => {
+      editorStore.setEnableMinialGraphForDataSpaceLoadingPerformance(
+        !editorStore.enableMinialGraphForDataSpaceLoadingPerformance,
+      );
+    };
+
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="query-export"
+        >
+          <ModalHeader>
+            <ModalTitle title="Dev Settings" />
+            <ModalHeaderActions>
+              <button
+                className="modal__header__action"
+                tabIndex={-1}
+                onClick={onClose}
+              >
+                <TimesIcon />
+              </button>
+            </ModalHeaderActions>
+          </ModalHeader>
+          <ModalBody>
+            <PanelForm>
+              <PanelFormTextField
+                name="Engine client base URL"
+                value={engineConfig.baseUrl ?? ''}
+                isReadOnly={false}
+                update={(value: string | undefined): void =>
+                  engineConfig.setBaseUrl(value === '' ? undefined : value)
+                }
+                errorMessage={
+                  !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
+                }
+              />
+              <PanelFormBooleanField
+                name="Engine client request payload compression"
+                prompt="Specifies if request payload should be compressed"
+                value={engineConfig.useClientRequestPayloadCompression}
+                isReadOnly={false}
+                update={toggleEngineClientRequestPayloadCompression}
+              />
+              <PanelFormBooleanField
+                name="Engine client request payload debug"
+                prompt="Specifies if request payload should be downloaded for debugging purpose"
+                value={engineConfig.enableDebuggingPayload}
+                isReadOnly={false}
+                update={toggleEngineClientRequestPayloadDebugging}
+              />
+
+              <PanelFormBooleanField
+                name="Enable minimal graph"
+                prompt="Leverage minimal graph from corresponding mapping to improve performance"
+                value={
+                  editorStore.enableMinialGraphForDataSpaceLoadingPerformance
+                }
+                isReadOnly={false}
+                update={toggleEnableMinialGraphForDataSpaceLoadingPerformance}
+              />
+            </PanelForm>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              text="Close"
+              onClick={onClose}
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 export const QueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const editorStore = useQueryEditorStore();
   const isLoadingEditor = !editorStore.initState.hasCompleted;
   const isExistingQuery = editorStore instanceof ExistingQueryEditorStore;
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // documentation
   const appDocUrl = applicationStore.documentationService.url;
@@ -696,19 +802,8 @@ export const QueryEditor = observer(() => {
       ),
     );
   // settings
-  // NOTE: this is temporary until we find a better home for these settings in query builder
-  const engineConfig =
-    editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
-  const toggleEngineClientRequestPayloadCompression = (): void =>
-    engineConfig.setUseClientRequestPayloadCompression(
-      !engineConfig.useClientRequestPayloadCompression,
-    );
-
-  const toggleEnableMinialGraphForDataSpaceLoadingPerformance = (): void => {
-    editorStore.setEnableMinialGraphForDataSpaceLoadingPerformance(
-      !editorStore.enableMinialGraphForDataSpaceLoadingPerformance,
-    );
-  };
+  const openSettings = (): void => setShowSettingsModal(true);
+  const closeSettings = (): void => setShowSettingsModal(false);
 
   const TEMPORARY__toggleLightDarkMode = (): void => {
     applicationStore.layoutService.setColorTheme(
@@ -772,32 +867,8 @@ export const QueryEditor = observer(() => {
                     </MenuContentItem>
                   ))}
                   <MenuContentDivider />
-                  <MenuContentItem disabled={true}>Settings</MenuContentItem>
-                  <MenuContentItem
-                    onClick={toggleEngineClientRequestPayloadCompression}
-                  >
-                    <MenuContentItemIcon>
-                      {engineConfig.useClientRequestPayloadCompression ? (
-                        <CheckIcon />
-                      ) : null}
-                    </MenuContentItemIcon>
-                    <MenuContentItemLabel>
-                      Compress request payload
-                    </MenuContentItemLabel>
-                  </MenuContentItem>
-                  <MenuContentItem
-                    onClick={
-                      toggleEnableMinialGraphForDataSpaceLoadingPerformance
-                    }
-                  >
-                    <MenuContentItemIcon>
-                      {editorStore.enableMinialGraphForDataSpaceLoadingPerformance ? (
-                        <CheckIcon />
-                      ) : null}
-                    </MenuContentItemIcon>
-                    <MenuContentItemLabel>
-                      Enable minimal graph
-                    </MenuContentItemLabel>
+                  <MenuContentItem onClick={openSettings}>
+                    Dev Settings
                   </MenuContentItem>
                 </MenuContent>
               }
@@ -913,6 +984,12 @@ export const QueryEditor = observer(() => {
             query={editorStore.query}
           />
         )}
+      {showSettingsModal && (
+        <QueryEditorSettingsModal
+          open={showSettingsModal}
+          onClose={closeSettings}
+        />
+      )}
       <ReleaseLogManager />
       <ReleaseNotesManager />
     </div>
