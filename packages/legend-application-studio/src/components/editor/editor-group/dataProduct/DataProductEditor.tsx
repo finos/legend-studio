@@ -1627,7 +1627,10 @@ const AccessPointGroupEditor = observer(
 
     const handleRemoveAccessPointGroup = (): void => {
       editorStore.applicationStore.alertService.setActionAlertInfo({
-        message: `Are you sure you want to delete Access Point Group ${groupState.value.id} and all of its Access Points?`,
+        message:
+          groupState instanceof ModelAccessPointGroupState
+            ? `Are you sure you want to delete Model Access Point Group "${groupState.value.id}"?`
+            : `Are you sure you want to delete Access Point Group "${groupState.value.id}" and all of its Access Points?`,
         type: ActionAlertType.CAUTION,
         actions: [
           {
@@ -1696,18 +1699,16 @@ const AccessPointGroupEditor = observer(
               {isHoveringName && hoverIcon()}
             </div>
           )}
-          {!groupState.state.modelledDataProduct && (
-            <button
-              className="access-point-editor__generic-entry__remove-btn--group"
-              onClick={() => {
-                handleRemoveAccessPointGroup();
-              }}
-              tabIndex={-1}
-              title="Remove Access Point Group"
-            >
-              <TimesIcon />
-            </button>
-          )}
+          <button
+            className="access-point-editor__generic-entry__remove-btn--group"
+            onClick={() => {
+              handleRemoveAccessPointGroup();
+            }}
+            tabIndex={-1}
+            title="Remove Access Point Group"
+          >
+            <TimesIcon />
+          </button>
         </div>
         <div className="access-point-editor__group-container__name-editor">
           {editingTitle ? (
@@ -1881,6 +1882,16 @@ const GroupTabRenderer = observer(
     >(
       () => ({
         accept: [AP_GROUP_DND_TYPE, AP_DND_TYPE],
+        canDrop: (item, monitor) => {
+          const itemType = monitor.getItemType();
+          if (
+            itemType === AP_DND_TYPE &&
+            group instanceof ModelAccessPointGroupState
+          ) {
+            return false;
+          }
+          return true;
+        },
         hover: (item, monitor) => {
           const itemType = monitor.getItemType();
           if (itemType === AP_GROUP_DND_TYPE) {
@@ -1909,10 +1920,10 @@ const GroupTabRenderer = observer(
               ? monitor.getItem<AccessPointDragSource | null>()
                   ?.accessPointState
               : undefined,
-          isOver: monitor.isOver(),
+          isOver: monitor.isOver() && monitor.canDrop(),
         }),
       }),
-      [handleHover],
+      [handleHover, group],
     );
 
     const [, dragConnector, dragPreviewConnector] = useDrag<APGDragSource>(
@@ -1973,6 +1984,15 @@ const AccessPointGroupTab = observer(
       dataProductEditorState.setSelectedGroupState(newGroup);
     };
 
+    const handleAddModelAccessPointGroup = () => {
+      const newGroup = dataProductEditorState.createGroupAndAdd(
+        newNamePlaceholder,
+        undefined,
+        true,
+      );
+      dataProductEditorState.setSelectedGroupState(newGroup);
+    };
+
     const AccessPointDragPreviewLayer: React.FC = () => (
       <DragPreviewLayer
         labelGetter={(item: AccessPointDragSource): string => {
@@ -2008,20 +2028,46 @@ const AccessPointGroupTab = observer(
                 />
               );
             })}
-            {!dataProductEditorState.modelledDataProduct && (
-              <PanelHeaderActionItem
+            {
+              <ControlledDropdownMenu
                 className="panel__header__action"
-                onClick={handleAddAccessPointGroup}
-                disabled={isReadOnly || disableAddGroup}
-                title={
-                  disableAddGroup
-                    ? 'Provide all group names'
-                    : 'Create new access point group'
+                disabled={disableAddGroup || isReadOnly}
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="btn__dropdown-combo__option"
+                      onClick={handleAddAccessPointGroup}
+                    >
+                      New Access Point Group
+                    </MenuContentItem>
+                    <MenuContentItem
+                      className="btn__dropdown-combo__option"
+                      onClick={handleAddModelAccessPointGroup}
+                    >
+                      New Model Access Point Group
+                    </MenuContentItem>
+                  </MenuContent>
                 }
+                menuProps={{
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'left',
+                  },
+                }}
               >
-                <PlusIcon />
-              </PanelHeaderActionItem>
-            )}
+                <PlusIcon
+                  title={
+                    disableAddGroup
+                      ? 'Provide all group names'
+                      : 'Create new access point group'
+                  }
+                />
+              </ControlledDropdownMenu>
+            }
           </div>
         </PanelHeader>
         <PanelContent>

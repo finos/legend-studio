@@ -62,6 +62,7 @@ import {
   DataElement,
   DataProductDiagram,
   observe_DataProductDiagram,
+  stub_Mapping,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -775,7 +776,8 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
       this.value.id === '' ||
       !this.value.description ||
       !this.value.title ||
-      this.value.mapping.value.path === ''
+      this.value.mapping.value.path === '' ||
+      this.value.diagrams.length === 0
     );
   }
 
@@ -1047,7 +1049,11 @@ export class DataProductEditorState extends ElementEditorState {
     addUniqueEntry(this.accessPointGroupStates, groupState);
   }
 
-  createGroupAndAdd(id: string, description?: string): AccessPointGroupState {
+  createGroupAndAdd(
+    id: string,
+    description?: string,
+    modeled?: boolean,
+  ): AccessPointGroupState {
     const existingGroupState = this.accessPointGroupStates.find(
       (groupState) => groupState.value.id === id,
     );
@@ -1055,12 +1061,24 @@ export class DataProductEditorState extends ElementEditorState {
     if (existingGroupState) {
       return existingGroupState;
     }
-    const group = new AccessPointGroup();
-    group.id = id;
-    group.description = description;
-    dataProduct_addAccessPointGroup(this.product, group);
-    const newGroupState = new AccessPointGroupState(group, this);
-    this.addGroupState(newGroupState);
+
+    let newGroupState: AccessPointGroupState;
+    if (modeled) {
+      const group = new ModelAccessPointGroup();
+      group.id = id;
+      group.mapping =
+        PackageableElementExplicitReference.create(stub_Mapping());
+      dataProduct_addAccessPointGroup(this.product, group);
+      newGroupState = new ModelAccessPointGroupState(group, this);
+      this.addGroupState(newGroupState);
+    } else {
+      const group = new AccessPointGroup();
+      group.id = id;
+      group.description = description;
+      dataProduct_addAccessPointGroup(this.product, group);
+      newGroupState = new AccessPointGroupState(group, this);
+      this.addGroupState(newGroupState);
+    }
     return newGroupState;
   }
 
