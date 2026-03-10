@@ -24,7 +24,6 @@ import {
   getAllByRole,
   getAllByText,
   getByText,
-  queryAllByTitle,
   screen,
   waitFor,
   within,
@@ -286,15 +285,6 @@ test(
     //check rendered as mapg editor
     await findByText(editorGroup, 'Mapping');
     await findByText(editorGroup, 'Featured Elements');
-
-    //make sure there is only one mapg
-    expect(within(editorGroup).getAllByRole('tab')).toHaveLength(1);
-    expect(
-      queryAllByTitle(editorGroup, 'Create new access point group'),
-    ).toHaveLength(0);
-    expect(
-      queryAllByTitle(editorGroup, 'Remove Access Point Group'),
-    ).toHaveLength(0);
 
     //mapping editor
     const mappingDropdown = await screen.findByText('model::dummyMapping');
@@ -564,5 +554,171 @@ test(
 
     // Close dropdown
     fireEvent.keyDown(regionSelector, { key: 'Escape' });
+  },
+);
+
+test(integrationTest('Add an Access Point Group'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    { entities: TEST_DATA__LHDataProduct },
+  );
+  MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+    readOnly: true,
+  });
+  await TEST__openElementFromExplorerTree(
+    'model::sampleDataProduct',
+    renderResult,
+  );
+  const editorGroup = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+  );
+  fireEvent.click(await findByText(editorGroup, 'APG'));
+
+  //Add new APG
+  const addGroupButton = await screen.findByTitle(
+    'Create new access point group',
+  );
+  fireEvent.click(addGroupButton);
+  await screen.findByText('New Access Point Group');
+  await screen.findByText('New Model Access Point Group');
+  fireEvent.click(await screen.findByText('New Access Point Group'));
+
+  const accessPointGroupContainer = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.ACCESS_POINT_GROUP_EDITOR),
+  );
+  await findByPlaceholderText(
+    accessPointGroupContainer,
+    'Access Point Group Name',
+  );
+});
+
+test(integrationTest('Adding a Model Access Point Group'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    { entities: TEST_DATA__LHDataProduct },
+  );
+  MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+    readOnly: true,
+  });
+  await TEST__openElementFromExplorerTree(
+    'model::sampleDataProduct',
+    renderResult,
+  );
+  const editorGroup = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+  );
+  fireEvent.click(await findByText(editorGroup, 'APG'));
+
+  //Add new MAPG
+  const addGroupButton = await screen.findByTitle(
+    'Create new access point group',
+  );
+  fireEvent.click(addGroupButton);
+  fireEvent.click(await screen.findByText('New Model Access Point Group'));
+
+  await findByText(editorGroup, 'Mapping');
+  await findByText(editorGroup, 'Diagrams');
+  await findByText(editorGroup, 'Featured Elements');
+});
+
+test(
+  integrationTest(
+    'Allow both ModelAccessPointGroup and Access Point Groups in one data product',
+  ),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__LHDataProduct },
+    );
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+    await TEST__openElementFromExplorerTree(
+      'model::sampleDataProduct',
+      renderResult,
+    );
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    fireEvent.click(await findByText(editorGroup, 'APG'));
+
+    //Add MAPG to APG data product
+    const addGroupButton = await screen.findByTitle(
+      'Create new access point group',
+    );
+    fireEvent.click(addGroupButton);
+    const modelGroupOption = await screen.findByText(
+      'New Model Access Point Group',
+    );
+    fireEvent.click(modelGroupOption);
+    const nameTextbox = await findByPlaceholderText(
+      editorGroup,
+      'Access Point Group Name',
+    );
+    fireEvent.change(nameTextbox, { target: { value: 'modelGroup' } });
+    fireEvent.blur(nameTextbox);
+
+    // Check all groups exist
+    await findByText(editorGroup, 'group1');
+    await findByText(editorGroup, 'group2');
+    expect(within(editorGroup).getAllByText('modelGroup')).not.toBeNull();
+
+    await findByText(editorGroup, 'Mapping');
+
+    // Switch to APG and check rendered properly
+    fireEvent.click(await findByText(editorGroup, 'group1'));
+    await findByText(editorGroup, 'Access Points');
+    await findByText(editorGroup, 'ap1');
+  },
+);
+
+test.only(
+  integrationTest('Removing model access point group shows correct message'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__ModelApgDataProduct },
+    );
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+    await TEST__openElementFromExplorerTree(
+      'model::animal::AnimalDataProduct',
+      renderResult,
+    );
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    fireEvent.click(await findByText(editorGroup, 'APG'));
+
+    const groupTabsBefore = within(editorGroup).getAllByRole('tab');
+    expect(
+      groupTabsBefore.some((tab) => tab.textContent?.includes('grp')),
+    ).toBe(true);
+
+    fireEvent.click(
+      guaranteeNonNullable(
+        (
+          await screen.findAllByRole('button', {
+            name: 'Remove Access Point Group',
+          })
+        )[0],
+      ),
+    );
+
+    await screen.findByText(
+      /Are you sure you want to delete Model Access Point Group/,
+    );
+    fireEvent.click(await screen.findByText('Confirm'));
+    await waitFor(() => {
+      const groupTabsAfter = within(editorGroup).queryAllByRole('tab');
+      expect(
+        groupTabsAfter.every((tab) => !tab.textContent?.includes('grp')),
+      ).toBe(true);
+    });
   },
 );
