@@ -58,7 +58,8 @@ export class LakehouseAdminStore {
       getRows: (
         params: DataGridServerSideGetRowsParams<V1_LiteDataContract>,
       ) => {
-        this.fetchContractsPage(params, token);
+        // eslint-disable-next-line no-void
+        void this.fetchContractsPage(params, token);
       },
     };
   }
@@ -71,13 +72,10 @@ export class LakehouseAdminStore {
       const startRow = params.request.startRow ?? 0;
       // Determine cursor: for the first page we pass undefined
       // For subsequent pages, get the last contract id from the currently loaded rows
-      let lastContractId: string | undefined;
-      if (startRow > 0) {
-        const lastLoadedRow = params.api.getDisplayedRowAtIndex(startRow - 1);
-        lastContractId = (
-          lastLoadedRow?.data as V1_LiteDataContract | undefined
-        )?.guid;
-      }
+      const lastContractId =
+        startRow > 0
+          ? params.api.getDisplayedRowAtIndex(startRow - 1)?.data?.guid
+          : undefined;
 
       const rawResponse =
         await this.legendMarketplaceBaseStore.lakehouseContractServerClient.getLiteDataContractsPaginated(
@@ -124,7 +122,8 @@ export class LakehouseAdminStore {
       getRows: (
         params: DataGridServerSideGetRowsParams<V1_DataSubscription>,
       ) => {
-        this.fetchSubscriptionsPage(params, token);
+        // eslint-disable-next-line no-void
+        void this.fetchSubscriptionsPage(params, token);
       },
     };
   }
@@ -135,13 +134,10 @@ export class LakehouseAdminStore {
   ): Promise<void> {
     try {
       const startRow = params.request.startRow ?? 0;
-      let lastSubscriptionId: string | undefined;
-      if (startRow > 0) {
-        const lastLoadedRow = params.api.getDisplayedRowAtIndex(startRow - 1);
-        lastSubscriptionId = (
-          lastLoadedRow?.data as V1_DataSubscription | undefined
-        )?.guid;
-      }
+      const lastSubscriptionId =
+        startRow > 0
+          ? params.api.getDisplayedRowAtIndex(startRow - 1)?.data?.guid
+          : undefined;
 
       const rawResponse =
         await this.legendMarketplaceBaseStore.lakehouseContractServerClient.getAllSubscriptionsPaginated(
