@@ -50,13 +50,13 @@ type MarketplaceDataProductOrigin_TelemetryData = {
   groupId?: string | undefined;
   artifactId?: string | undefined;
   versionId?: string | undefined;
+  path?: string | undefined;
 };
 
 type MarketplaceDataProduct_TelemetryData = {
   origin?: MarketplaceDataProductOrigin_TelemetryData | undefined;
   dataProductId?: string | undefined;
   deploymentId?: number | undefined;
-  path?: string | undefined;
   name?: string | undefined;
   environmentClassification?:
     | V1_EntitlementsLakehouseEnvironmentType
@@ -390,5 +390,74 @@ export class LegendMarketplaceTelemetryHelper {
       rating: rating,
       ...session,
     });
+  }
+
+  static logEvent_ClickQueryDataProduct(
+    telemetryService: TelemetryService,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    path: string,
+    executionContextKey: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_QUERY_DATA_PRODUCT,
+      {
+        groupId: groupId,
+        artifactId: artifactId,
+        versionId: versionId,
+        path: path,
+        executionContextKey: executionContextKey,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickOpenServiceQuery(
+    telemetryService: TelemetryService,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    servicePath: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_OPEN_SERVICE_QUERY,
+      {
+        groupId: groupId,
+        artifactId: artifactId,
+        versionId: versionId,
+        servicePath: servicePath,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickQuickStartExtensionTab(
+    telemetryService: TelemetryService,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    path: string,
+    tabKey: string,
+    executableTitle: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_QUICKSTART_EXTENSION_TAB,
+      {
+        groupId: groupId,
+        artifactId: artifactId,
+        versionId: versionId,
+        path: path,
+        tabKey: tabKey,
+        executableTitle: executableTitle,
+        ...session,
+      },
+    );
   }
 }

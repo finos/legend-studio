@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { LakehouseDataProductSearchResultDetails } from '@finos/legend-server-marketplace';
+import {
+  LakehouseDataProductSearchResultDetails,
+  LakehouseSDLCDataProductSearchResultOrigin,
+  LegacyDataProductSearchResultDetails,
+} from '@finos/legend-server-marketplace';
 import {
   type LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
@@ -31,6 +35,22 @@ export const logClickingDataProductCard = (
 ): void => {
   const searchResult = productCardState.searchResult;
   const projectGAV = getSearchResultProjectGAV(searchResult);
+  const deploymentId =
+    searchResult.dataProductDetails instanceof
+    LakehouseDataProductSearchResultDetails
+      ? searchResult.dataProductDetails.deploymentId
+      : undefined;
+  const path =
+    searchResult.dataProductDetails instanceof
+    LakehouseDataProductSearchResultDetails
+      ? searchResult.dataProductDetails.origin instanceof
+        LakehouseSDLCDataProductSearchResultOrigin
+        ? searchResult.dataProductDetails.origin.path
+        : undefined
+      : searchResult.dataProductDetails instanceof
+          LegacyDataProductSearchResultDetails
+        ? searchResult.dataProductDetails.path
+        : undefined;
   const origin =
     projectGAV !== undefined
       ? {
@@ -38,15 +58,11 @@ export const logClickingDataProductCard = (
           groupId: projectGAV.groupId,
           artifactId: projectGAV.artifactId,
           versionId: projectGAV.versionId,
+          path,
         }
       : {
           type: DATAPRODUCT_TYPE.ADHOC,
         };
-  const deploymentId =
-    searchResult.dataProductDetails instanceof
-    LakehouseDataProductSearchResultDetails
-      ? searchResult.dataProductDetails.deploymentId
-      : undefined;
   LegendMarketplaceTelemetryHelper.logEvent_ClickingDataProductCard(
     applicationStore.telemetryService,
     {

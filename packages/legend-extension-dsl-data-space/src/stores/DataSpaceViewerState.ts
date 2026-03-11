@@ -66,6 +66,9 @@ export class DataSpaceViewerState {
     | undefined;
   readonly queryClass: (_class: Class) => void;
   readonly openServiceQuery: (servicePath: string) => void;
+  readonly onQuickStartTabChange?:
+    | ((tabKey: string, executableTitle: string) => void)
+    | undefined;
 
   readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
@@ -92,6 +95,9 @@ export class DataSpaceViewerState {
       queryClass: (_class: Class) => void;
       openServiceQuery: (servicePath: string) => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
+      onQuickStartTabChange?:
+        | ((tabKey: string, executableTitle: string) => void)
+        | undefined;
     },
   ) {
     makeObservable(this, {
@@ -124,6 +130,7 @@ export class DataSpaceViewerState {
     this.onZoneChange = actions.onZoneChange;
     this.queryClass = actions.queryClass;
     this.openServiceQuery = actions.openServiceQuery;
+    this.onQuickStartTabChange = actions.onQuickStartTabChange;
 
     this.currentExecutionContext =
       dataSpaceAnalysisResult.defaultExecutionContext;

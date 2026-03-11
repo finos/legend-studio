@@ -212,7 +212,13 @@ const DataSpaceExecutableTDSResultView = observer(
                   },
                 )}
                 tabIndex={-1}
-                onClick={() => setSelectedTab(config.key)}
+                onClick={() => {
+                  setSelectedTab(config.key);
+                  dataSpaceViewerState.onQuickStartTabChange?.(
+                    config.key,
+                    executableAnalysisResult.title,
+                  );
+                }}
               >
                 {config.icon !== undefined && (
                   <div className="data-space__viewer__quickstart__item__content__tab__icon">
