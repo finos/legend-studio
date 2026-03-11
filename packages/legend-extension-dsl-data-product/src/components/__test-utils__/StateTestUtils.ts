@@ -191,6 +191,7 @@ export const TEST__getDataProductViewerState = async (
     {
       viewDataProductSource: jest.fn(),
       openLineage: jest.fn(),
+      openGovernance: jest.fn(),
     },
     registryServerClient,
   );

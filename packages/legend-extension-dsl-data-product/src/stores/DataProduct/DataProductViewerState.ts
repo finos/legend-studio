@@ -121,6 +121,7 @@ export class DataProductViewerState extends BaseViewerState<
   readonly openLineage?:
     | ((dataProductName: string, accessPointName: string) => void)
     | undefined;
+  readonly openGovernance?: ((id: string) => void) | undefined;
   readonly fetchingDataProductArtifactState = ActionState.create();
 
   constructor(
@@ -140,6 +141,7 @@ export class DataProductViewerState extends BaseViewerState<
       openLineage?:
         | ((dataProductName: string, accessPointName: string) => void)
         | undefined;
+      openGovernance?: ((id: string) => void) | undefined;
     },
     registryServerClient?: RegistryServerClient | undefined,
   ) {
@@ -181,6 +183,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.openPowerBi = actions.openPowerBi;
     this.openDataCube = actions.openDataCube;
     this.openLineage = actions.openLineage;
+    this.openGovernance = actions.openGovernance;
   }
 
   protected getValidSections(): string[] {

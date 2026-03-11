@@ -25,7 +25,8 @@ export enum DATA_PRODUCT_EVENT {
 export enum PRODUCT_INTEGRATION_TYPE {
   DATA_CUBE = 'dataCube',
   POWER_BI = 'powerBI',
-  REGISTRY = 'registry',
+  REGISTRY_LINEAGE = 'registryLineage',
+  REGISTRY_GOVERNANCE = 'registryGovernance',
   SQL = 'sql',
 }
 
