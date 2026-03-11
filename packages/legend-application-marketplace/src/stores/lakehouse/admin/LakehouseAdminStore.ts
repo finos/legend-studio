@@ -15,75 +15,40 @@
  */
 
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
-import {
-  type GeneratorFn,
-  ActionState,
-  assertErrorThrown,
-} from '@finos/legend-shared';
-import { deserialize } from 'serializr';
+import { ActionState, assertErrorThrown } from '@finos/legend-shared';
 import {
   type V1_DataSubscription,
+  V1_DataSubscriptionsPaginatedResponseModelSchema,
   type V1_LiteDataContract,
-  V1_DataSubscriptionResponseModelSchema,
   V1_deserializeLiteDataContractsPaginatedResponse,
 } from '@finos/legend-graph';
-import { makeObservable, flow, action, observable } from 'mobx';
+import { makeObservable, action, observable } from 'mobx';
 import type {
   DataGridServerSideDatasource,
   DataGridServerSideGetRowsParams,
 } from '@finos/legend-lego/data-grid';
+import { deserialize } from 'serializr';
 
 const CONTRACTS_PAGE_SIZE = 100;
+const SUBSCRIPTIONS_PAGE_SIZE = 100;
 
 export class LakehouseAdminStore {
   readonly legendMarketplaceBaseStore: LegendMarketplaceBaseStore;
   initializationState = ActionState.create();
-  subscriptionsInitializationState = ActionState.create();
-  subscriptions: V1_DataSubscription[] = [];
   contractsGridApi: { refreshServerSide: () => void } | undefined = undefined;
+  subscriptionsGridApi: { refreshServerSide: () => void } | undefined =
+    undefined;
 
   constructor(legendMarketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.legendMarketplaceBaseStore = legendMarketplaceBaseStore;
     makeObservable(this, {
-      subscriptions: observable,
       initializationState: observable,
       contractsGridApi: observable.ref,
-      init: flow,
-      setSubscriptions: action,
+      subscriptionsGridApi: observable.ref,
       setContractsGridApi: action,
+      setSubscriptionsGridApi: action,
       refresh: action,
     });
-  }
-
-  *init(token: string | undefined): GeneratorFn<void> {
-    const fetchSubscriptions = async (): Promise<void> => {
-      try {
-        this.subscriptionsInitializationState.inProgress();
-        const rawSubscriptions =
-          await this.legendMarketplaceBaseStore.lakehouseContractServerClient.getAllSubscriptions(
-            token,
-          );
-        const subscriptions = deserialize(
-          V1_DataSubscriptionResponseModelSchema,
-          rawSubscriptions,
-        ).subscriptions;
-        this.setSubscriptions(subscriptions ?? []);
-      } catch (error) {
-        assertErrorThrown(error);
-        this.legendMarketplaceBaseStore.applicationStore.notificationService.notifyError(
-          `Error fetching subscriptions: ${error.message}`,
-        );
-      } finally {
-        this.subscriptionsInitializationState.complete();
-      }
-    };
-
-    this.initializationState.inProgress();
-    try {
-      yield fetchSubscriptions();
-    } finally {
-      this.initializationState.complete();
-    }
   }
 
   createContractsServerSideDatasource(
@@ -149,15 +114,73 @@ export class LakehouseAdminStore {
   refresh(): void {
     this.initializationState = ActionState.create();
     this.contractsGridApi?.refreshServerSide();
+    this.subscriptionsGridApi?.refreshServerSide();
   }
 
-  setSubscriptions(val: V1_DataSubscription[]): void {
-    this.subscriptions = val;
+  createSubscriptionsServerSideDatasource(
+    token: string | undefined,
+  ): DataGridServerSideDatasource {
+    return {
+      getRows: (
+        params: DataGridServerSideGetRowsParams<V1_DataSubscription>,
+      ) => {
+        this.fetchSubscriptionsPage(params, token);
+      },
+    };
+  }
+
+  private async fetchSubscriptionsPage(
+    params: DataGridServerSideGetRowsParams<V1_DataSubscription>,
+    token: string | undefined,
+  ): Promise<void> {
+    try {
+      const startRow = params.request.startRow ?? 0;
+      let lastSubscriptionId: string | undefined;
+      if (startRow > 0) {
+        const lastLoadedRow = params.api.getDisplayedRowAtIndex(startRow - 1);
+        lastSubscriptionId = (
+          lastLoadedRow?.data as V1_DataSubscription | undefined
+        )?.guid;
+      }
+
+      const rawResponse =
+        await this.legendMarketplaceBaseStore.lakehouseContractServerClient.getAllSubscriptionsPaginated(
+          SUBSCRIPTIONS_PAGE_SIZE,
+          lastSubscriptionId,
+          token,
+        );
+      const paginatedResponse = deserialize(
+        V1_DataSubscriptionsPaginatedResponseModelSchema,
+        rawResponse,
+      );
+      const subscriptions = paginatedResponse.dataContractSubscriptions ?? [];
+      const hasNextPage =
+        paginatedResponse.paginationMetadataRecord.hasNextPage;
+
+      const lastRow = hasNextPage ? -1 : startRow + subscriptions.length;
+
+      params.success({
+        rowData: subscriptions,
+        rowCount: lastRow,
+      });
+    } catch (error) {
+      assertErrorThrown(error);
+      this.legendMarketplaceBaseStore.applicationStore.notificationService.notifyError(
+        `Error fetching subscriptions: ${error.message}`,
+      );
+      params.fail();
+    }
   }
 
   setContractsGridApi(
     api: { refreshServerSide: () => void } | undefined,
   ): void {
     this.contractsGridApi = api;
+  }
+
+  setSubscriptionsGridApi(
+    api: { refreshServerSide: () => void } | undefined,
+  ): void {
+    this.subscriptionsGridApi = api;
   }
 }

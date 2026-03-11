@@ -398,6 +398,7 @@ export {
   V1_CreateSubscriptionInput,
   V1_DataSubscription,
   V1_DataSubscriptionResponse,
+  V1_DataSubscriptionsPaginatedResponse,
   V1_DataSubscriptionTarget,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeNetwork,
@@ -448,6 +449,7 @@ export {
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
+  V1_dataSubscriptionsPaginatedResponseModelSchema as V1_DataSubscriptionsPaginatedResponseModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_SubscriptionSerializationHelper.js';
 export {
   V1_deserializeIngestEnvironment,

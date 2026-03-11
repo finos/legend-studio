@@ -15,43 +15,45 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
-} from '@finos/legend-art';
+import { clsx } from '@finos/legend-art';
 import { DataGrid } from '@finos/legend-lego/data-grid';
 import { Box } from '@mui/material';
-import { V1_SnowflakeTarget } from '@finos/legend-graph';
+import {
+  type V1_DataSubscription,
+  V1_SnowflakeTarget,
+} from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
+import { useMemo } from 'react';
+import { useAuth } from 'react-oidc-context';
 
 export const LakehouseAdminSubscriptionsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
+    const auth = useAuth();
 
-    const subscriptions = adminStore.subscriptions;
+    const datasource = useMemo(
+      () =>
+        adminStore.createSubscriptionsServerSideDatasource(
+          auth.user?.access_token,
+        ),
+      [adminStore, auth.user?.access_token],
+    );
 
     return (
       <>
-        <CubesLoadingIndicator
-          isLoading={Boolean(
-            adminStore.subscriptionsInitializationState.isInProgress,
-          )}
-        >
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
         <Box
           className={clsx('marketplace-lakehouse-admin__subscriptions__grid', {
             'ag-theme-balham': true,
           })}
         >
-          <DataGrid
-            rowData={subscriptions}
-            onRowDataUpdated={(params) => {
-              params.api.refreshCells({ force: true });
-            }}
+          <DataGrid<V1_DataSubscription>
+            rowModelType="serverSide"
+            serverSideDatasource={datasource}
             suppressFieldDotNotation={true}
             suppressContextMenu={false}
+            onGridReady={(params) => {
+              adminStore.setSubscriptionsGridApi(params.api);
+            }}
             columnDefs={[
               {
                 minWidth: 50,

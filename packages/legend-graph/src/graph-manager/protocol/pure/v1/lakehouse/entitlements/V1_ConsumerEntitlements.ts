@@ -17,6 +17,7 @@
 import { type PlainObject } from '@finos/legend-shared';
 import {
   type V1_OrganizationalScope,
+  type V1_PaginationMetadataRecord,
   type V1_User,
   V1_Resource,
 } from './V1_CoreEntitlements.js';
@@ -93,19 +94,9 @@ export class V1_LiteDataContractsResponse {
   dataContracts?: V1_LiteDataContract[];
 }
 
-export class V1_LiteDataContractsPaginationMetadataRecordLastValuesMap {
-  contractId!: string;
-}
-
-export class V1_LiteDataContractsPaginationMetadataRecord {
-  hasNextPage!: boolean;
-  lastValuesMap!: V1_LiteDataContractsPaginationMetadataRecordLastValuesMap;
-  size!: number;
-}
-
 export class V1_LiteDataContractsPaginatedResponse {
   liteDataContractsResponse!: V1_LiteDataContractsResponse;
-  paginationMetadataRecord!: V1_LiteDataContractsPaginationMetadataRecord;
+  paginationMetadataRecord!: V1_PaginationMetadataRecord;
 }
 
 export class V1_LiteDataContractWithUserStatus {

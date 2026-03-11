@@ -20,11 +20,11 @@ import {
   type V1_AppDirNode,
   type V1_AWSSnowflakeIngestEnvironment,
   type V1_DataContractsResponse,
-  type V1_DataSubscriptionResponse,
+  type V1_DataSubscriptionsPaginatedResponse,
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_LiteDataContractsPaginatedResponse,
-  V1_EntitlementsLakehouseEnvironmentType,
   V1_AppDirLevel,
+  V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
 import type { StoredSummaryEntity } from '@finos/legend-server-depot';
 
@@ -338,29 +338,37 @@ export const mockLiteDataContracts: PlainObject<V1_LiteDataContractsPaginatedRes
     },
   };
 
-export const mockSubscriptions: PlainObject<V1_DataSubscriptionResponse> = {
-  subscriptions: [
-    {
-      guid: 'subscription-789',
-      dataContractId: 'contract-123',
-      target: {
-        _type: 'Snowflake',
-        snowflakeAccountId: 'account-123',
-        snowflakeRegion: 'AWS_US_EAST_1',
-        snowflakeNetwork: 'PUBLIC',
+export const mockPaginatedSubscriptions: PlainObject<V1_DataSubscriptionsPaginatedResponse> =
+  {
+    dataContractSubscriptions: [
+      {
+        guid: 'subscription-789',
+        dataContractId: 'contract-123',
+        target: {
+          _type: 'Snowflake',
+          snowflakeAccountId: 'account-123',
+          snowflakeRegion: 'AWS_US_EAST_1',
+          snowflakeNetwork: 'PUBLIC',
+        },
+        createdBy: 'subscriber.user',
       },
-      createdBy: 'subscriber.user',
-    },
-    {
-      guid: 'subscription-101',
-      dataContractId: 'contract-456',
-      target: {
-        _type: 'Snowflake',
-        snowflakeAccountId: 'account-456',
-        snowflakeRegion: 'AWS_US_EAST_1',
-        snowflakeNetwork: 'GOLDMAN',
+      {
+        guid: 'subscription-101',
+        dataContractId: 'contract-456',
+        target: {
+          _type: 'Snowflake',
+          snowflakeAccountId: 'account-456',
+          snowflakeRegion: 'AWS_US_EAST_1',
+          snowflakeNetwork: 'GOLDMAN',
+        },
+        createdBy: 'another.user',
       },
-      createdBy: 'another.user',
+    ],
+    paginationMetadataRecord: {
+      hasNextPage: false,
+      lastValuesMap: {
+        subscription_id: 'subscription-101',
+      },
+      size: 100,
     },
-  ],
-};
+  };

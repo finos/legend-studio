@@ -22,7 +22,7 @@ import {
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { createSpy } from '@finos/legend-shared/test';
 import {
-  mockSubscriptions,
+  mockPaginatedSubscriptions,
   mockLiteDataContracts,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
 
@@ -49,8 +49,8 @@ const setupLakehouseAdminTest = async () => {
 
   createSpy(
     mockedStore.lakehouseContractServerClient,
-    'getAllSubscriptions',
-  ).mockResolvedValue(mockSubscriptions);
+    'getAllSubscriptionsPaginated',
+  ).mockResolvedValue(mockPaginatedSubscriptions);
   createSpy(
     mockedStore.lakehouseContractServerClient,
     'getLiteDataContractsPaginated',

@@ -32,9 +32,11 @@ import {
   V1_CreateSubscriptionInput,
   V1_DataSubscription,
   V1_DataSubscriptionResponse,
+  V1_DataSubscriptionsPaginatedResponse,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeTarget,
 } from '../../../lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
+import { V1_paginationMetadataRecordModelSchema } from './V1_EntitlementSerializationHelper.js';
 
 export const V1_SnowflakeTargetModelSchema = createModelSchema(
   V1_SnowflakeTarget,
@@ -85,6 +87,14 @@ export const V1_DataSubscriptionResponseModelSchema = createModelSchema(
     subscriptions: usingModelSchema(V1_dataSubscriptionModelSchema),
   },
 );
+
+export const V1_dataSubscriptionsPaginatedResponseModelSchema =
+  createModelSchema(V1_DataSubscriptionsPaginatedResponse, {
+    dataContractSubscriptions: usingModelSchema(V1_dataSubscriptionModelSchema),
+    paginationMetadataRecord: usingModelSchema(
+      V1_paginationMetadataRecordModelSchema,
+    ),
+  });
 
 export const V1_CreateSubscriptionInputModelSchema = createModelSchema(
   V1_CreateSubscriptionInput,

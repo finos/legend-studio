@@ -48,11 +48,8 @@ import {
   V1_TerminalProvisionPayload,
   V1_LiteDataContractWithUserStatus,
   V1_LiteDataContractsPaginatedResponse,
-  V1_LiteDataContractsPaginationMetadataRecordLastValuesMap,
-  V1_LiteDataContractsPaginationMetadataRecord,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
-  alias,
   createModelSchema,
   custom,
   deserialize,
@@ -66,6 +63,7 @@ import {
   type V1_OrganizationalScope,
   V1_AdhocTeam,
   V1_AppDirNode,
+  V1_PaginationMetadataRecord,
   V1_ProducerScope,
   V1_UnknownOrganizationalScopeType,
   V1_User,
@@ -253,6 +251,15 @@ const V1_deseralizeConsumerEntitlementResource = (
   }
 };
 
+export const V1_paginationMetadataRecordModelSchema = createModelSchema(
+  V1_PaginationMetadataRecord,
+  {
+    hasNextPage: primitive(),
+    lastValuesMap: raw(),
+    size: primitive(),
+  },
+);
+
 const V1_contractUserMembershipModelSchema = createModelSchema(
   V1_ContractUserMembership,
   {
@@ -339,20 +346,6 @@ const V1_liteDataContractsResponseModelSchema = (
     ),
   });
 
-const V1_LiteDataContractsPaginationMetadataRecordLastValuesMapModelSchema =
-  createModelSchema(V1_LiteDataContractsPaginationMetadataRecordLastValuesMap, {
-    contractId: alias('contract_id', primitive()),
-  });
-
-const V1_LiteDataContractsPaginationMetadataRecordModelSchema =
-  createModelSchema(V1_LiteDataContractsPaginationMetadataRecord, {
-    hasNextPage: primitive(),
-    lastValuesMap: usingModelSchema(
-      V1_LiteDataContractsPaginationMetadataRecordLastValuesMapModelSchema,
-    ),
-    size: primitive(),
-  });
-
 export const V1_liteDataContractsPaginatedResponseModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
@@ -361,7 +354,7 @@ export const V1_liteDataContractsPaginatedResponseModelSchema = (
       V1_liteDataContractsResponseModelSchema(plugins),
     ),
     paginationMetadataRecord: usingModelSchema(
-      V1_LiteDataContractsPaginationMetadataRecordModelSchema,
+      V1_paginationMetadataRecordModelSchema,
     ),
   });
 

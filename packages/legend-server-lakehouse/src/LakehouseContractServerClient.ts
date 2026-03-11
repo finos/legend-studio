@@ -21,6 +21,7 @@ import type {
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_DataSubscriptionResponse,
+  V1_DataSubscriptionsPaginatedResponse,
   V1_EntitlementsDataProductDetailsResponse,
   V1_EntitlementsUserEnvResponse,
   V1_InvalidateDataContractResponse,
@@ -259,10 +260,16 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _subscriptions = (): string => `${this.baseUrl}/subscriptions`;
 
-  getAllSubscriptions = (
+  getAllSubscriptionsPaginated = (
+    size: number,
+    lastSubscriptionId: string | undefined,
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
-    this.get(this._subscriptions(), {}, this._token(token));
+  ): Promise<PlainObject<V1_DataSubscriptionsPaginatedResponse>> =>
+    this.get(
+      `${this._subscriptions()}?size=${size}${lastSubscriptionId ? `&lastSubscriptionId=${encodeURIComponent(lastSubscriptionId)}` : ''}`,
+      {},
+      this._token(token),
+    );
 
   getSubscriptionsForContract = (
     contractId: string,
