@@ -169,6 +169,9 @@ export const V1_EntitlementsDataProductLiteModelSchema = createModelSchema(
       V1_deserializeDataProductOrigin,
     ),
     fullPath: optional(primitive()),
+    lakehouseEnvironment: usingModelSchema(
+      V1_EntitlementsLakehouseEnvironmentModelSchema,
+    ),
   },
 );
 
