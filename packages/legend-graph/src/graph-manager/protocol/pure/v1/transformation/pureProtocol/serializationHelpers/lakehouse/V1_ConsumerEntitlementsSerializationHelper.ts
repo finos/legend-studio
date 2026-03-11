@@ -23,6 +23,16 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import {
+  createModelSchema,
+  custom,
+  deserialize,
+  list,
+  optional,
+  primitive,
+  raw,
+  serialize,
+} from 'serializr';
+import {
   type V1_ConsumerEntitlementResource,
   type V1_ContractUserEventPayload,
   V1_AccessPointGroupReference,
@@ -48,95 +58,21 @@ import {
   V1_TerminalProvisionPayload,
   V1_LiteDataContractWithUserStatus,
   V1_LiteDataContractsPaginatedResponse,
-} from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
+} from '../../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
+import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import {
-  createModelSchema,
-  custom,
-  deserialize,
-  list,
-  optional,
-  primitive,
-  raw,
-  serialize,
-} from 'serializr';
-import {
-  type V1_OrganizationalScope,
-  V1_AdhocTeam,
-  V1_AppDirNode,
-  V1_PaginationMetadataRecord,
-  V1_ProducerScope,
-  V1_UnknownOrganizationalScopeType,
-  V1_User,
-} from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
-import type { DSL_Lakehouse_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
+  V1_UserModelSchema,
+  V1_paginationMetadataRecordModelSchema,
+  V1_serializeOrganizationalScope,
+  V1_deserializeOrganizationalScope,
+} from './V1_CoreEntitlementsSerializationHelper.js';
+import { V1_EntitlementsDataProductModelSchema } from './V1_EntitlementsDataProductSerializationHelper.js';
+import { V1_pendingTaskWithAssigneesModelSchema } from './V1_EntitlementsTasksSerializationHelper.js';
 import { V1_dataSubscriptionModelSchema } from './V1_SubscriptionSerializationHelper.js';
-import {
-  type V1_EntitlementsDataProductOrigin,
-  V1_AccessPointGroupStereotypeMapping,
-  V1_AdHocDeploymentDataProductOrigin,
-  V1_EntitlementsAccessPoint,
-  V1_EntitlementsDataProduct,
-  V1_EntitlementsDataProductDetails,
-  V1_EntitlementsDataProductDetailsResponse,
-  V1_EntitlementsDataProductLite,
-  V1_EntitlementsDataProductLiteResponse,
-  V1_EntitlementsLakehouseEnvironment,
-  V1_SdlcDeploymentDataProductOrigin,
-  V1_UnknownDataProductOriginType,
-} from '../../../lakehouse/entitlements/V1_EntitlementsDataProduct.js';
-import { V1_stereotypePtrModelSchema } from './V1_CoreSerializationHelper.js';
-import { V1_PendingTaskWithAssignees } from '../../../lakehouse/entitlements/V1_EntitlementsTasks.js';
-
-export enum V1_OrganizationalScopeType {
-  AdHocTeam = 'AdHocTeam',
-  Producer = 'Producer',
-}
-
-export enum V1_DataProductOriginType {
-  AD_HOC_DEPLOYMENT = 'AdHocDeployment',
-  SDLC_DEPLOYMENT = 'SdlcDeployment',
-}
 
 export enum V1_AccessPointGroupReferenceType {
   AccessPointGroupReference = 'AccessPointGroupReference',
 }
-
-export const V1_UserModelSchema = createModelSchema(V1_User, {
-  name: primitive(),
-  userType: primitive(),
-});
-
-export const V1_EntitlementsAccessPointModelSchema = createModelSchema(
-  V1_EntitlementsAccessPoint,
-  {
-    name: primitive(),
-    groups: list(primitive()),
-  },
-);
-
-export const V1_AccessPointGroupStereotypeMappingModelSchema =
-  createModelSchema(V1_AccessPointGroupStereotypeMapping, {
-    accessPointGroup: primitive(),
-    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
-  });
-
-export const V1_AppDirNodeModelSchema = createModelSchema(V1_AppDirNode, {
-  appDirId: primitive(),
-  level: primitive(),
-});
-
-export const V1_EntitlementsDataProductModelSchema = createModelSchema(
-  V1_EntitlementsDataProduct,
-  {
-    name: primitive(),
-    accessPoints: customListWithSchema(V1_EntitlementsAccessPointModelSchema),
-    accessPointGroupStereotypeMappings: customListWithSchema(
-      V1_AccessPointGroupStereotypeMappingModelSchema,
-    ),
-    owner: usingModelSchema(V1_AppDirNodeModelSchema),
-  },
-);
 
 export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
   V1_AccessPointGroupReference,
@@ -152,74 +88,6 @@ export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
 export const V1_DataBundleModelSchema = createModelSchema(V1_DataBundle, {
   content: raw(),
 });
-
-export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
-  _type: usingConstantValueSchema(V1_OrganizationalScopeType.AdHocTeam),
-  users: customListWithSchema(V1_UserModelSchema),
-});
-
-export const V1_ProducerScopeModelSchema = createModelSchema(V1_ProducerScope, {
-  _type: usingConstantValueSchema(V1_OrganizationalScopeType.Producer),
-  did: primitive(),
-});
-
-const V1_deserializeOrganizationalScope = (
-  json: PlainObject<V1_OrganizationalScope>,
-  plugins: PureProtocolProcessorPlugin[],
-): V1_OrganizationalScope => {
-  switch (json._type) {
-    case V1_OrganizationalScopeType.AdHocTeam:
-      return deserialize(V1_AdhocTeamModelSchema, json);
-    case V1_OrganizationalScopeType.Producer:
-      return deserialize(V1_ProducerScopeModelSchema, json);
-    default: {
-      const extraOrganizationalScopeDeserializers = plugins.flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_Lakehouse_PureProtocolProcessorPlugin_Extension
-          ).V1_getExtraOrganizationalScopeDeserializers?.() ?? [],
-      );
-      for (const deserializer of extraOrganizationalScopeDeserializers) {
-        const protocol = deserializer(json);
-        if (protocol) {
-          return protocol;
-        }
-      }
-
-      // Fall back to create unknown stub if not supported
-      const org = new V1_UnknownOrganizationalScopeType();
-      org.content = json;
-      return org;
-    }
-  }
-};
-
-const V1_serializeOrganizationalScope = (
-  organizationalScope: V1_OrganizationalScope,
-  plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_OrganizationalScope> => {
-  if (organizationalScope instanceof V1_AdhocTeam) {
-    return serialize(V1_AdhocTeamModelSchema, organizationalScope);
-  }
-  if (organizationalScope instanceof V1_ProducerScope) {
-    return serialize(V1_ProducerScopeModelSchema, organizationalScope);
-  }
-  const extraOrganizationalScopeSerializers = plugins.flatMap(
-    (plugin) =>
-      (
-        plugin as DSL_Lakehouse_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraOrganizationalScopeSerializers?.() ?? [],
-  );
-  for (const serializer of extraOrganizationalScopeSerializers) {
-    const result = serializer(organizationalScope);
-    if (result) {
-      return result;
-    }
-  }
-  throw new UnsupportedOperationError(
-    `Can't serialize unsupported organizational scope type: ${organizationalScope.constructor.name}`,
-  );
-};
 
 const V1_seralizeConsumerEntitlementResource = (
   consumerEntitlementResource: V1_ConsumerEntitlementResource,
@@ -250,15 +118,6 @@ const V1_deseralizeConsumerEntitlementResource = (
       return bundle;
   }
 };
-
-export const V1_paginationMetadataRecordModelSchema = createModelSchema(
-  V1_PaginationMetadataRecord,
-  {
-    hasNextPage: primitive(),
-    lastValuesMap: raw(),
-    size: primitive(),
-  },
-);
 
 const V1_contractUserMembershipModelSchema = createModelSchema(
   V1_ContractUserMembership,
@@ -357,14 +216,6 @@ export const V1_liteDataContractsPaginatedResponseModelSchema = (
       V1_paginationMetadataRecordModelSchema,
     ),
   });
-
-export const V1_pendingTaskWithAssigneesModelSchema = createModelSchema(
-  V1_PendingTaskWithAssignees,
-  {
-    taskId: primitive(),
-    assignees: list(primitive()),
-  },
-);
 
 export const V1_liteDataContractWithUserStatusModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
@@ -599,134 +450,6 @@ export const V1_ContractUserStatusResponseModelSchema = createModelSchema(
     status: primitive(),
   },
 );
-
-export const V1_AdHocDeploymentDataProductOriginModelSchema = createModelSchema(
-  V1_AdHocDeploymentDataProductOrigin,
-  {
-    type: usingConstantValueSchema(V1_DataProductOriginType.AD_HOC_DEPLOYMENT),
-    definition: primitive(),
-  },
-);
-
-export const V1_SdlcDeploymentDataProductOriginModelSchema = createModelSchema(
-  V1_SdlcDeploymentDataProductOrigin,
-  {
-    type: usingConstantValueSchema(V1_DataProductOriginType.SDLC_DEPLOYMENT),
-    group: primitive(),
-    artifact: primitive(),
-    version: primitive(),
-  },
-);
-
-const V1_deserializeDataProductOrigin = (
-  json: PlainObject<V1_EntitlementsDataProductOrigin> | null,
-): V1_EntitlementsDataProductOrigin | null => {
-  if (json === null) {
-    return null;
-  }
-  switch (json.type) {
-    case V1_DataProductOriginType.AD_HOC_DEPLOYMENT:
-      return deserialize(V1_AdHocDeploymentDataProductOriginModelSchema, json);
-    case V1_DataProductOriginType.SDLC_DEPLOYMENT:
-      return deserialize(V1_SdlcDeploymentDataProductOriginModelSchema, json);
-    default: {
-      // Fall back to create unknown stub if not supported
-      const origin = new V1_UnknownDataProductOriginType();
-      origin.content = json;
-      return origin;
-    }
-  }
-};
-
-const V1_serializeDataProductOrigin = (
-  origin: V1_EntitlementsDataProductOrigin | null,
-): PlainObject<V1_EntitlementsDataProductOrigin> => {
-  if (origin instanceof V1_AdHocDeploymentDataProductOrigin) {
-    return serialize(V1_AdHocDeploymentDataProductOriginModelSchema, origin);
-  }
-  if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
-    return serialize(V1_SdlcDeploymentDataProductOriginModelSchema, origin);
-  }
-  throw new UnsupportedOperationError(
-    `Can't serialize unsupported data product origin type: ${origin?.constructor.name}`,
-  );
-};
-
-export const V1_EntitlementsLakehouseEnvironmentModelSchema = createModelSchema(
-  V1_EntitlementsLakehouseEnvironment,
-  {
-    producerEnvironmentName: primitive(),
-    type: primitive(),
-  },
-);
-
-export const V1_EntitlementsDataProductDetailsModelSchema = createModelSchema(
-  V1_EntitlementsDataProductDetails,
-  {
-    id: primitive(),
-    deploymentId: primitive(),
-    title: optional(primitive()),
-    description: optional(primitive()),
-    origin: custom(
-      V1_serializeDataProductOrigin,
-      V1_deserializeDataProductOrigin,
-    ),
-    lakehouseEnvironment: usingModelSchema(
-      V1_EntitlementsLakehouseEnvironmentModelSchema,
-    ),
-    dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
-    fullPath: primitive(),
-  },
-);
-
-export const V1_EntitlementsDataProductLiteModelSchema = createModelSchema(
-  V1_EntitlementsDataProductLite,
-  {
-    id: primitive(),
-    deploymentId: primitive(),
-    title: optional(primitive()),
-    description: optional(primitive()),
-    origin: custom(
-      V1_serializeDataProductOrigin,
-      V1_deserializeDataProductOrigin,
-    ),
-    fullPath: optional(primitive()),
-  },
-);
-
-export const V1_EntitlementsDataProductDetailsResponseModelSchema =
-  createModelSchema(V1_EntitlementsDataProductDetailsResponse, {
-    dataProducts: customListWithSchema(
-      V1_EntitlementsDataProductDetailsModelSchema,
-    ),
-  });
-
-export const V1_EntitlementsDataProductLiteResponseModelSchema =
-  createModelSchema(V1_EntitlementsDataProductLiteResponse, {
-    dataProducts: customListWithSchema(
-      V1_EntitlementsDataProductLiteModelSchema,
-    ),
-  });
-
-export const V1_entitlementsDataProductDetailsResponseToDataProductDetails = (
-  json: PlainObject<V1_EntitlementsDataProductDetailsResponse>,
-): V1_EntitlementsDataProductDetails[] => {
-  const response = deserialize(
-    V1_EntitlementsDataProductDetailsResponseModelSchema,
-    json,
-  );
-  return response.dataProducts ?? [];
-};
-
-export const V1_entitlementsDataProductLiteResponseToDataProductLite = (
-  json: PlainObject<V1_EntitlementsDataProductLiteResponse>,
-): V1_EntitlementsDataProductLite[] => {
-  const response = deserialize(
-    V1_EntitlementsDataProductLiteResponseModelSchema,
-    json,
-  );
-  return response.dataProducts ?? [];
-};
 
 export const V1_DataContractApprovedUsersResponseModelSchema =
   createModelSchema(V1_DataContractApprovedUsersResponse, {

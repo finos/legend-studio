@@ -18,9 +18,9 @@ import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStor
 import { ActionState, assertErrorThrown } from '@finos/legend-shared';
 import {
   type V1_DataSubscription,
-  V1_DataSubscriptionsPaginatedResponseModelSchema,
   type V1_LiteDataContract,
   V1_deserializeLiteDataContractsPaginatedResponse,
+  V1_dataSubscriptionsPaginatedResponseModelSchema,
 } from '@finos/legend-graph';
 import { makeObservable, action, observable } from 'mobx';
 import type {
@@ -150,7 +150,7 @@ export class LakehouseAdminStore {
           token,
         );
       const paginatedResponse = deserialize(
-        V1_DataSubscriptionsPaginatedResponseModelSchema,
+        V1_dataSubscriptionsPaginatedResponseModelSchema,
         rawResponse,
       );
       const subscriptions = paginatedResponse.dataContractSubscriptions ?? [];

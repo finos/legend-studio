@@ -35,8 +35,8 @@ import {
   V1_DataSubscriptionsPaginatedResponse,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeTarget,
-} from '../../../lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
-import { V1_paginationMetadataRecordModelSchema } from './V1_EntitlementSerializationHelper.js';
+} from '../../../../lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
+import { V1_paginationMetadataRecordModelSchema } from './V1_CoreEntitlementsSerializationHelper.js';
 
 export const V1_SnowflakeTargetModelSchema = createModelSchema(
   V1_SnowflakeTarget,
