@@ -57,7 +57,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
             columnDefs={[
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Subscription Id',
                 valueGetter: (p) => p.data?.guid,
@@ -65,7 +64,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Contract ID',
                 valueGetter: (p) => p.data?.dataContractId,
@@ -73,7 +71,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Target Type',
                 valueGetter: (p) =>
@@ -84,7 +81,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Snowflake Account ID',
                 valueGetter: (p) =>
@@ -95,7 +91,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Snowflake Region',
                 valueGetter: (p) =>
@@ -106,7 +101,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Snowflake Network',
                 valueGetter: (p) =>
@@ -117,7 +111,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Created By',
                 valueGetter: (p) => p.data?.createdBy,

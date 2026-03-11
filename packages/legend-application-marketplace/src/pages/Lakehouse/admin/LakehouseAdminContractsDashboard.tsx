@@ -72,7 +72,6 @@ export const LakehouseAdminContractsDashboard = observer(
             columnDefs={[
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Contract Id',
                 valueGetter: (p) => p.data?.guid,
@@ -80,7 +79,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Contract Description',
                 valueGetter: (p) => p.data?.description,
@@ -88,7 +86,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 10,
-                sortable: true,
                 resizable: true,
                 headerName: 'Version',
                 valueGetter: (p) => p.data?.version,
@@ -96,7 +93,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'State',
                 valueGetter: (p) => p.data?.state,
@@ -104,7 +100,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Members',
                 valueGetter: (p) => p.data?.members.map((m) => m.user),
@@ -112,7 +107,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Created By',
                 valueGetter: (p) => p.data?.createdBy,
