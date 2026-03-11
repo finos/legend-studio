@@ -43,7 +43,7 @@ import {
   V1_deserializeDataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
-  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_entitlementsDataProductLiteResponseToDataProductLite,
   V1_PureGraphManager,
   extractPackagePathFromPath,
   extractElementNameFromPath,
@@ -442,15 +442,13 @@ export class LegendMarketplaceSearchResultsStore {
     this.fetchingProducerSearchDataProductsState.inProgress();
     try {
       const rawResponse =
-        await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProducts(
+        await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProductsLite(
           token,
         );
-      const dataProductDetails =
-        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-          rawResponse,
-        );
+      const dataProductLiteDetails =
+        V1_entitlementsDataProductLiteResponseToDataProductLite(rawResponse);
 
-      const productCardStates = dataProductDetails
+      const productCardStates = dataProductLiteDetails
         .map((detail) => {
           try {
             const origin =
@@ -471,7 +469,7 @@ export class LegendMarketplaceSearchResultsStore {
                   );
             const searchResult = DataProductSearchResult.serialization.fromJson(
               {
-                dataProductTitle: detail.title ?? detail.dataProduct.name,
+                dataProductTitle: detail.title ?? detail.id,
                 dataProductDescription: detail.description,
                 tags1: [],
                 tags2: [],
@@ -479,7 +477,7 @@ export class LegendMarketplaceSearchResultsStore {
                 similarity: 0,
                 dataProductDetails: {
                   _type: DataProductSearchResultDetailsType.LAKEHOUSE,
-                  dataProductId: detail.dataProduct.name,
+                  dataProductId: detail.id,
                   deploymentId: detail.deploymentId,
                   producerEnvironmentName:
                     detail.lakehouseEnvironment?.producerEnvironmentName,

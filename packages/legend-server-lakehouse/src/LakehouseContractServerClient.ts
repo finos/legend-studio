@@ -23,6 +23,7 @@ import type {
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
   V1_EntitlementsDataProductDetailsResponse,
+  V1_EntitlementsDataProductLiteResponse,
   V1_EntitlementsUserEnvResponse,
   V1_InvalidateDataContractResponse,
   V1_LiteDataContractsPaginatedResponse,
@@ -291,14 +292,9 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _dataProducts = (): string => `${this.baseUrl}/dataproducts`;
 
-  getDataProducts = (
-    token: string | undefined,
-  ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
-    this.get(this._dataProducts(), {}, this._token(token));
-
   getDataProductsLite = (
     token: string | undefined,
-  ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
+  ): Promise<PlainObject<V1_EntitlementsDataProductLiteResponse>> =>
     this.get(`${this._dataProducts()}/lite`, {}, this._token(token));
 
   getDataProduct = (
