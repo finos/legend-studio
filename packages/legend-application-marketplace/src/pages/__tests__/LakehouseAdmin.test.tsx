@@ -53,7 +53,7 @@ const setupLakehouseAdminTest = async () => {
   ).mockResolvedValue(mockSubscriptions);
   createSpy(
     mockedStore.lakehouseContractServerClient,
-    'getLiteDataContracts',
+    'getLiteDataContractsPaginated',
   ).mockResolvedValue(mockLiteDataContracts);
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(

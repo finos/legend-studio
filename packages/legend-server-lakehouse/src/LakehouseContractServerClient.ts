@@ -24,6 +24,7 @@ import type {
   V1_EntitlementsDataProductDetailsResponse,
   V1_EntitlementsUserEnvResponse,
   V1_InvalidateDataContractResponse,
+  V1_LiteDataContractsPaginatedResponse,
   V1_LiteDataContractsResponse,
   V1_LiteDataContractWithUserStatus,
   V1_PendingTasksResponse,
@@ -55,15 +56,16 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _dataContracts = (): string => `${this.baseUrl}/datacontracts`;
 
-  getDataContracts = (
+  getLiteDataContractsPaginated = (
+    size: number,
+    lastContractId: string | undefined,
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataContractsResponse>> =>
-    this.get(this._dataContracts(), {}, this._token(token));
-
-  getLiteDataContracts = (
-    token: string | undefined,
-  ): Promise<PlainObject<V1_LiteDataContractsResponse>> =>
-    this.get(`${this._dataContracts()}/lite`, {}, this._token(token));
+  ): Promise<PlainObject<V1_LiteDataContractsPaginatedResponse>> =>
+    this.get(
+      `${this._dataContracts()}/litePaginated?size=${size}${lastContractId ? `&lastContractId=${lastContractId}` : ''}`,
+      {},
+      this._token(token),
+    );
 
   getDataContract = (
     id: string,

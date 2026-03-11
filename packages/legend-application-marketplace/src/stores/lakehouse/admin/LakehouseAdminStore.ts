@@ -25,27 +25,32 @@ import {
   type V1_DataSubscription,
   type V1_LiteDataContract,
   V1_DataSubscriptionResponseModelSchema,
-  V1_liteDataContractsResponseModelSchemaToContracts,
+  V1_deserializeLiteDataContractsPaginatedResponse,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action, observable } from 'mobx';
+import type {
+  DataGridServerSideDatasource,
+  DataGridServerSideGetRowsParams,
+} from '@finos/legend-lego/data-grid';
+
+const CONTRACTS_PAGE_SIZE = 100;
 
 export class LakehouseAdminStore {
   readonly legendMarketplaceBaseStore: LegendMarketplaceBaseStore;
   initializationState = ActionState.create();
   subscriptionsInitializationState = ActionState.create();
-  contractsInitializationState = ActionState.create();
   subscriptions: V1_DataSubscription[] = [];
-  contracts: V1_LiteDataContract[] = [];
+  contractsGridApi: { refreshServerSide: () => void } | undefined = undefined;
 
   constructor(legendMarketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.legendMarketplaceBaseStore = legendMarketplaceBaseStore;
     makeObservable(this, {
       subscriptions: observable,
-      contracts: observable,
       initializationState: observable,
+      contractsGridApi: observable.ref,
       init: flow,
       setSubscriptions: action,
-      setContracts: action,
+      setContractsGridApi: action,
       refresh: action,
     });
   }
@@ -73,45 +78,86 @@ export class LakehouseAdminStore {
       }
     };
 
-    const fetchContracts = async (): Promise<void> => {
-      try {
-        this.contractsInitializationState.inProgress();
-        const rawContracts =
-          await this.legendMarketplaceBaseStore.lakehouseContractServerClient.getLiteDataContracts(
-            token,
-          );
-        const contracts = V1_liteDataContractsResponseModelSchemaToContracts(
-          rawContracts,
-          this.legendMarketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
-        );
-        this.setContracts(contracts);
-      } catch (error) {
-        assertErrorThrown(error);
-        this.legendMarketplaceBaseStore.applicationStore.notificationService.notifyError(
-          `Error fetching data contracts: ${error.message}`,
-        );
-      } finally {
-        this.contractsInitializationState.complete();
-      }
-    };
-
     this.initializationState.inProgress();
     try {
-      yield Promise.all([fetchSubscriptions(), fetchContracts()]);
+      yield fetchSubscriptions();
     } finally {
       this.initializationState.complete();
     }
   }
 
+  createContractsServerSideDatasource(
+    token: string | undefined,
+  ): DataGridServerSideDatasource {
+    return {
+      getRows: (
+        params: DataGridServerSideGetRowsParams<V1_LiteDataContract>,
+      ) => {
+        this.fetchContractsPage(params, token);
+      },
+    };
+  }
+
+  private async fetchContractsPage(
+    params: DataGridServerSideGetRowsParams<V1_LiteDataContract>,
+    token: string | undefined,
+  ): Promise<void> {
+    try {
+      const startRow = params.request.startRow ?? 0;
+      // Determine cursor: for the first page we pass undefined
+      // For subsequent pages, get the last contract id from the currently loaded rows
+      let lastContractId: string | undefined;
+      if (startRow > 0) {
+        const lastLoadedRow = params.api.getDisplayedRowAtIndex(startRow - 1);
+        lastContractId = (
+          lastLoadedRow?.data as V1_LiteDataContract | undefined
+        )?.guid;
+      }
+
+      const rawResponse =
+        await this.legendMarketplaceBaseStore.lakehouseContractServerClient.getLiteDataContractsPaginated(
+          CONTRACTS_PAGE_SIZE,
+          lastContractId,
+          token,
+        );
+      const paginatedResponse =
+        V1_deserializeLiteDataContractsPaginatedResponse(
+          rawResponse,
+          this.legendMarketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        );
+      const contracts =
+        paginatedResponse.liteDataContractsResponse.dataContracts ?? [];
+      const hasNextPage =
+        paginatedResponse.paginationMetadataRecord.hasNextPage;
+
+      // If there's no next page, compute the total row count
+      const lastRow = hasNextPage ? -1 : startRow + contracts.length;
+
+      params.success({
+        rowData: contracts,
+        rowCount: lastRow,
+      });
+    } catch (error) {
+      assertErrorThrown(error);
+      this.legendMarketplaceBaseStore.applicationStore.notificationService.notifyError(
+        `Error fetching data contracts: ${error.message}`,
+      );
+      params.fail();
+    }
+  }
+
   refresh(): void {
     this.initializationState = ActionState.create();
+    this.contractsGridApi?.refreshServerSide();
   }
 
   setSubscriptions(val: V1_DataSubscription[]): void {
     this.subscriptions = val;
   }
 
-  setContracts(val: V1_LiteDataContract[]): void {
-    this.contracts = val;
+  setContractsGridApi(
+    api: { refreshServerSide: () => void } | undefined,
+  ): void {
+    this.contractsGridApi = api;
   }
 }

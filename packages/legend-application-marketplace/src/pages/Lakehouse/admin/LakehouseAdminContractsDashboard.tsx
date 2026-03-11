@@ -16,10 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
-} from '@finos/legend-art';
-import {
   DataGrid,
   type DataGridRowClickedEvent,
 } from '@finos/legend-lego/data-grid';
@@ -29,7 +25,8 @@ import {
   type V1_LiteDataContract,
 } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useAuth } from 'react-oidc-context';
 import {
   DataAccessRequestViewer,
   DataContractViewerState,
@@ -42,8 +39,7 @@ import {
 export const LakehouseAdminContractsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
-
-    const contracts = adminStore.contracts;
+    const auth = useAuth();
 
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
@@ -55,24 +51,24 @@ export const LakehouseAdminContractsDashboard = observer(
       setSelectedContract(event.data);
     };
 
+    const datasource = useMemo(
+      () =>
+        adminStore.createContractsServerSideDatasource(auth.user?.access_token),
+      [adminStore, auth.user?.access_token],
+    );
+
     return (
       <>
-        <CubesLoadingIndicator
-          isLoading={Boolean(
-            adminStore.contractsInitializationState.isInProgress,
-          )}
-        >
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
         <Box className="marketplace-lakehouse-admin__contracts__grid ag-theme-balham">
           <DataGrid
-            rowData={contracts}
-            onRowDataUpdated={(params) => {
-              params.api.refreshCells({ force: true });
-            }}
+            rowModelType="serverSide"
+            serverSideDatasource={datasource}
             suppressFieldDotNotation={true}
             suppressContextMenu={false}
             onRowClicked={handleRowClicked}
+            onGridReady={(params) => {
+              adminStore.setContractsGridApi(params.api);
+            }}
             columnDefs={[
               {
                 minWidth: 50,

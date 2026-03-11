@@ -93,6 +93,21 @@ export class V1_LiteDataContractsResponse {
   dataContracts?: V1_LiteDataContract[];
 }
 
+export class V1_LiteDataContractsPaginationMetadataRecordLastValuesMap {
+  contractId!: string;
+}
+
+export class V1_LiteDataContractsPaginationMetadataRecord {
+  hasNextPage!: boolean;
+  lastValuesMap!: V1_LiteDataContractsPaginationMetadataRecordLastValuesMap;
+  size!: number;
+}
+
+export class V1_LiteDataContractsPaginatedResponse {
+  liteDataContractsResponse!: V1_LiteDataContractsResponse;
+  paginationMetadataRecord!: V1_LiteDataContractsPaginationMetadataRecord;
+}
+
 export class V1_LiteDataContractWithUserStatus {
   contractResultLite!: V1_LiteDataContract;
   status!: V1_EnrichedUserApprovalStatus;

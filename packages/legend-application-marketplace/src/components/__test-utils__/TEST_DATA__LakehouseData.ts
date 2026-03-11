@@ -22,7 +22,7 @@ import {
   type V1_DataContractsResponse,
   type V1_DataSubscriptionResponse,
   type V1_EntitlementsDataProductDetailsResponse,
-  type V1_LiteDataContractsResponse,
+  type V1_LiteDataContractsPaginatedResponse,
   V1_EntitlementsLakehouseEnvironmentType,
   V1_AppDirLevel,
 } from '@finos/legend-graph';
@@ -309,24 +309,33 @@ export const mockDataContracts: PlainObject<V1_DataContractsResponse> = {
   ],
 };
 
-export const mockLiteDataContracts: PlainObject<V1_LiteDataContractsResponse> =
+export const mockLiteDataContracts: PlainObject<V1_LiteDataContractsPaginatedResponse> =
   {
-    dataContracts: [
-      {
-        guid: 'contract-123',
-        description: 'Test Contract Description 1',
-        version: 1,
-        state: 'COMPLETED',
-        createdBy: 'admin.user',
+    liteDataContractsResponse: {
+      dataContracts: [
+        {
+          guid: 'contract-123',
+          description: 'Test Contract Description 1',
+          version: 1,
+          state: 'COMPLETED',
+          createdBy: 'admin.user',
+        },
+        {
+          guid: 'contract-456',
+          description: 'Test Contract Description 2',
+          version: 2,
+          state: 'PENDING',
+          createdBy: 'test.user',
+        },
+      ],
+    },
+    paginationMetadataRecord: {
+      hasNextPage: false,
+      lastValuesMap: {
+        contract_id: 'contract-456',
       },
-      {
-        guid: 'contract-456',
-        description: 'Test Contract Description 2',
-        version: 2,
-        state: 'PENDING',
-        createdBy: 'test.user',
-      },
-    ],
+      size: 100,
+    },
   };
 
 export const mockSubscriptions: PlainObject<V1_DataSubscriptionResponse> = {

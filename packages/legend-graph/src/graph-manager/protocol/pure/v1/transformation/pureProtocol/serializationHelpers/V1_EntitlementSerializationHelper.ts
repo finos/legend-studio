@@ -47,8 +47,12 @@ import {
   V1_TerminalOrderItem,
   V1_TerminalProvisionPayload,
   V1_LiteDataContractWithUserStatus,
+  V1_LiteDataContractsPaginatedResponse,
+  V1_LiteDataContractsPaginationMetadataRecordLastValuesMap,
+  V1_LiteDataContractsPaginationMetadataRecord,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
+  alias,
   createModelSchema,
   custom,
   deserialize,
@@ -326,12 +330,38 @@ export const V1_dataContractsResponseModelSchema = (
     ),
   });
 
-export const V1_liteDataContractsResponseModelSchema = (
+const V1_liteDataContractsResponseModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
   createModelSchema(V1_LiteDataContractsResponse, {
     dataContracts: optional(
       customListWithSchema(V1_liteDataContractModelSchema(plugins)),
+    ),
+  });
+
+const V1_LiteDataContractsPaginationMetadataRecordLastValuesMapModelSchema =
+  createModelSchema(V1_LiteDataContractsPaginationMetadataRecordLastValuesMap, {
+    contractId: alias('contract_id', primitive()),
+  });
+
+const V1_LiteDataContractsPaginationMetadataRecordModelSchema =
+  createModelSchema(V1_LiteDataContractsPaginationMetadataRecord, {
+    hasNextPage: primitive(),
+    lastValuesMap: usingModelSchema(
+      V1_LiteDataContractsPaginationMetadataRecordLastValuesMapModelSchema,
+    ),
+    size: primitive(),
+  });
+
+export const V1_liteDataContractsPaginatedResponseModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_LiteDataContractsPaginatedResponse, {
+    liteDataContractsResponse: usingModelSchema(
+      V1_liteDataContractsResponseModelSchema(plugins),
+    ),
+    paginationMetadataRecord: usingModelSchema(
+      V1_LiteDataContractsPaginationMetadataRecordModelSchema,
     ),
   });
 
@@ -466,6 +496,16 @@ export const V1_deserializeDataContractResponse = (
     json,
   );
   return contracts.dataContracts ?? [];
+};
+
+export const V1_deserializeLiteDataContractsPaginatedResponse = (
+  json: PlainObject<V1_LiteDataContractsResponse>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_LiteDataContractsPaginatedResponse => {
+  return deserialize(
+    V1_liteDataContractsPaginatedResponseModelSchema(plugins),
+    json,
+  );
 };
 
 export const V1_liteDataContractsResponseModelSchemaToContracts = (
