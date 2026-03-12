@@ -33,10 +33,13 @@ import {
   type V1_ConsumerEntitlementResource,
   type V1_OrganizationalScope,
   V1_AccessPointGroupReference,
+  V1_AccessPointGroupStereotypeMapping,
   V1_AdhocTeam,
   V1_AppDirNode,
   V1_ContractUserMembership,
   V1_DataBundle,
+  V1_EntitlementsAccessPoint,
+  V1_EntitlementsDataProduct,
   V1_PaginationMetadataRecord,
   V1_ProducerScope,
   V1_UnknownOrganizationalScopeType,
@@ -44,20 +47,10 @@ import {
 } from '../../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import type { DSL_Lakehouse_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
-import {
-  V1_AccessPointGroupStereotypeMapping,
-  V1_EntitlementsAccessPoint,
-  V1_EntitlementsDataProduct,
-} from '../../../../lakehouse/entitlements/V1_EntitlementsDataProduct.js';
 import { V1_stereotypePtrModelSchema } from '../V1_CoreSerializationHelper.js';
 
-export const V1_EntitlementsAccessPointModelSchema = createModelSchema(
-  V1_EntitlementsAccessPoint,
-  {
-    name: primitive(),
-    groups: list(primitive()),
-  },
-);
+// ---------------------------------------- Users & App Directory --------------------------------------
+
 export const V1_UserModelSchema = createModelSchema(V1_User, {
   name: primitive(),
   userType: primitive(),
@@ -68,47 +61,7 @@ export const V1_AppDirNodeModelSchema = createModelSchema(V1_AppDirNode, {
   level: primitive(),
 });
 
-export const V1_AccessPointGroupStereotypeMappingModelSchema =
-  createModelSchema(V1_AccessPointGroupStereotypeMapping, {
-    accessPointGroup: primitive(),
-    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
-  });
-
-export enum V1_AccessPointGroupReferenceType {
-  AccessPointGroupReference = 'AccessPointGroupReference',
-}
-
-export const V1_EntitlementsDataProductModelSchema = createModelSchema(
-  V1_EntitlementsDataProduct,
-  {
-    name: primitive(),
-    accessPoints: customListWithSchema(V1_EntitlementsAccessPointModelSchema),
-    accessPointGroupStereotypeMappings: customListWithSchema(
-      V1_AccessPointGroupStereotypeMappingModelSchema,
-    ),
-    owner: usingModelSchema(V1_AppDirNodeModelSchema),
-  },
-);
-
-export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
-  V1_AccessPointGroupReference,
-  {
-    _type: usingConstantValueSchema(
-      V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-    ),
-    dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
-    accessPointGroup: primitive(),
-  },
-);
-
-export const V1_DataBundleModelSchema = createModelSchema(V1_DataBundle, {
-  content: raw(),
-});
-
-export enum V1_OrganizationalScopeType {
-  AdHocTeam = 'AdHocTeam',
-  Producer = 'Producer',
-}
+// -------------------------------------------- Pagination ---------------------------------------------
 
 export const V1_paginationMetadataRecordModelSchema = createModelSchema(
   V1_PaginationMetadataRecord,
@@ -118,6 +71,13 @@ export const V1_paginationMetadataRecordModelSchema = createModelSchema(
     size: primitive(),
   },
 );
+
+// ---------------------------------------- Organizational Scopes --------------------------------------
+
+export enum V1_OrganizationalScopeType {
+  AdHocTeam = 'AdHocTeam',
+  Producer = 'Producer',
+}
 
 export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
   _type: usingConstantValueSchema(V1_OrganizationalScopeType.AdHocTeam),
@@ -187,6 +147,55 @@ export const V1_serializeOrganizationalScope = (
   );
 };
 
+// -------------------------------- Entitlements Data Products & Access Points --------------------------
+
+export const V1_EntitlementsAccessPointModelSchema = createModelSchema(
+  V1_EntitlementsAccessPoint,
+  {
+    name: primitive(),
+    groups: list(primitive()),
+  },
+);
+
+export const V1_AccessPointGroupStereotypeMappingModelSchema =
+  createModelSchema(V1_AccessPointGroupStereotypeMapping, {
+    accessPointGroup: primitive(),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+  });
+
+export const V1_EntitlementsDataProductModelSchema = createModelSchema(
+  V1_EntitlementsDataProduct,
+  {
+    name: primitive(),
+    accessPoints: customListWithSchema(V1_EntitlementsAccessPointModelSchema),
+    accessPointGroupStereotypeMappings: customListWithSchema(
+      V1_AccessPointGroupStereotypeMappingModelSchema,
+    ),
+    owner: usingModelSchema(V1_AppDirNodeModelSchema),
+  },
+);
+
+// ------------------------------------- Consumer Entitlement Resources --------------------------------
+
+export enum V1_AccessPointGroupReferenceType {
+  AccessPointGroupReference = 'AccessPointGroupReference',
+}
+
+export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
+  V1_AccessPointGroupReference,
+  {
+    _type: usingConstantValueSchema(
+      V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+    ),
+    dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
+    accessPointGroup: primitive(),
+  },
+);
+
+export const V1_DataBundleModelSchema = createModelSchema(V1_DataBundle, {
+  content: raw(),
+});
+
 export const V1_seralizeConsumerEntitlementResource = (
   consumerEntitlementResource: V1_ConsumerEntitlementResource,
 ): PlainObject<V1_ConsumerEntitlementResource> => {
@@ -216,6 +225,8 @@ export const V1_deseralizeConsumerEntitlementResource = (
       return bundle;
   }
 };
+
+// -------------------------------------- Contract User Membership -------------------------------------
 
 export const V1_contractUserMembershipModelSchema = createModelSchema(
   V1_ContractUserMembership,

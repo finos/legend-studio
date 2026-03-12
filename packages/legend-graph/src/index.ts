@@ -305,21 +305,7 @@ export type {
   V1_UserEntitlementEnvsResponse as V1_EntitlementsUserEnvResponse,
   V1_UserEntitlementEnv as V1_EntitlementsUserEnv,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsEnv.js';
-export {
-  V1_AccessPointGroupStereotypeMapping,
-  V1_AdHocDeploymentDataProductOrigin,
-  V1_EntitlementsAccessPoint,
-  V1_EntitlementsDataProduct,
-  V1_EntitlementsDataProductDetails,
-  V1_EntitlementsDataProductDetailsResponse,
-  V1_EntitlementsDataProductLite,
-  V1_EntitlementsDataProductLiteResponse,
-  V1_EntitlementsDataProductOrigin,
-  V1_EntitlementsLakehouseEnvironment,
-  V1_EntitlementsLakehouseEnvironmentType,
-  V1_SdlcDeploymentDataProductOrigin,
-  V1_UnknownDataProductOriginType,
-} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsDataProduct.js';
+export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsDataProduct.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_CoreEntitlementsSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_EntitlementsDataProductSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_EntitlementsTasksSerializationHelper.js';

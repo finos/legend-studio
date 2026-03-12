@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { type V1_AppDirNode } from './V1_CoreEntitlements.js';
-import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr.js';
+import { type V1_EntitlementsDataProduct } from './V1_CoreEntitlements.js';
 import type { PlainObject } from '@finos/legend-shared';
 
 export abstract class V1_EntitlementsDataProductOrigin {}
@@ -43,24 +42,6 @@ export enum V1_EntitlementsLakehouseEnvironmentType {
 export class V1_EntitlementsLakehouseEnvironment {
   producerEnvironmentName!: string;
   type!: V1_EntitlementsLakehouseEnvironmentType;
-}
-
-export class V1_EntitlementsAccessPoint {
-  name!: string;
-  groups: string[] = [];
-}
-
-export class V1_AccessPointGroupStereotypeMapping {
-  accessPointGroup!: string;
-  stereotypes: V1_StereotypePtr[] = [];
-}
-
-export class V1_EntitlementsDataProduct {
-  name!: string;
-  accessPoints: V1_EntitlementsAccessPoint[] = [];
-  accessPointGroupStereotypeMappings: V1_AccessPointGroupStereotypeMapping[] =
-    [];
-  owner!: V1_AppDirNode;
 }
 
 export class V1_EntitlementsDataProductDetails {

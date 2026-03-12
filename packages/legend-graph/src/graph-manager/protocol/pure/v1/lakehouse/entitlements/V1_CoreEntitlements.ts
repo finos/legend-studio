@@ -15,9 +15,19 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
-import { type V1_EntitlementsDataProduct } from './V1_EntitlementsDataProduct.js';
+import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr.js';
 
-export class V1_OrganizationalScope {}
+// ---------------------------------------- Users & App Directory --------------------------------------
+
+export class V1_User {
+  name!: string;
+  userType!: V1_UserType;
+}
+
+export enum V1_UserType {
+  WORKFORCE_USER = 'WORKFORCE_USER',
+  SYSTEM_ACCOUNT = 'SYSTEM_ACCOUNT',
+}
 
 export class V1_AppDirNode {
   appDirId!: number;
@@ -31,6 +41,18 @@ export enum V1_AppDirLevel {
   APPLICATION = 'APPLICATION',
   DEPLOYMENT = 'DEPLOYMENT',
 }
+
+// -------------------------------------------- Pagination ---------------------------------------------
+
+export class V1_PaginationMetadataRecord {
+  hasNextPage!: boolean;
+  lastValuesMap!: Record<string, string>;
+  size!: number;
+}
+
+// ---------------------------------------- Organizational Scopes --------------------------------------
+
+export class V1_OrganizationalScope {}
 
 export class V1_AppDirOrganizationalScope extends V1_OrganizationalScope {
   appDirNode!: V1_AppDirNode[];
@@ -47,6 +69,29 @@ export class V1_ProducerScope extends V1_OrganizationalScope {
 export class V1_UnknownOrganizationalScopeType extends V1_OrganizationalScope {
   content!: PlainObject;
 }
+
+// -------------------------------- Entitlements Data Products & Access Points --------------------------
+
+export class V1_EntitlementsAccessPoint {
+  name!: string;
+  groups: string[] = [];
+}
+
+export class V1_AccessPointGroupStereotypeMapping {
+  accessPointGroup!: string;
+  stereotypes: V1_StereotypePtr[] = [];
+}
+
+export class V1_EntitlementsDataProduct {
+  name!: string;
+  accessPoints: V1_EntitlementsAccessPoint[] = [];
+  accessPointGroupStereotypeMappings: V1_AccessPointGroupStereotypeMapping[] =
+    [];
+  owner!: V1_AppDirNode;
+}
+
+// ------------------------------------ Logical Entitlements (RBAC) -------------------------------------
+
 export class V1_LogicalEntitlements {
   roleUniverse: V1_Role[] = [];
   roleMemberships: V1_RoleMembership[] = [];
@@ -62,16 +107,6 @@ export class V1_RoleMembership {
   role!: V1_Role;
 }
 
-export class V1_User {
-  name!: string;
-  userType!: V1_UserType;
-}
-
-export enum V1_UserType {
-  WORKFORCE_USER = 'WORKFORCE_USER',
-  SYSTEM_ACCOUNT = 'SYSTEM_ACCOUNT',
-}
-
 export class V1_Privilege {
   subject!: V1_Role;
   action!: V1_Action;
@@ -82,13 +117,9 @@ export enum V1_Action {
   READ,
 }
 
-export class V1_Resource {}
+// ------------------------------------- Consumer Entitlement Resources --------------------------------
 
-export class V1_PaginationMetadataRecord {
-  hasNextPage!: boolean;
-  lastValuesMap!: Record<string, string>;
-  size!: number;
-}
+export class V1_Resource {}
 
 export class V1_ConsumerEntitlementResource extends V1_Resource {}
 
@@ -100,6 +131,8 @@ export class V1_AccessPointGroupReference extends V1_ConsumerEntitlementResource
 export class V1_DataBundle extends V1_ConsumerEntitlementResource {
   content!: PlainObject;
 }
+
+// -------------------------------------- Contract User Membership -------------------------------------
 
 export enum V1_UserApprovalStatus {
   PENDING = 'PENDING',
