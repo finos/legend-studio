@@ -17,9 +17,11 @@
 import type {
   V1_ContractUserStatusResponse,
   V1_CreateContractPayload,
+  V1_CreateDataAccessRequestPayload,
   V1_CreateSubscriptionInput,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
+  V1_DataRequestsWithWorkflowResponse,
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
   V1_EntitlementsDataProductDetailsResponse,
@@ -254,6 +256,21 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       `${this._tasks()}/${encodeURIComponent(id)}/deny`,
       {},
       {},
+      this._token(token),
+    );
+
+  // --------------------------------- Data Access Requests --------------------------------------
+
+  private _dataAccessRequests = (): string => `${this.baseUrl}/datarequests`;
+
+  createDataAccessRequest = (
+    contractRequest: PlainObject<V1_CreateDataAccessRequestPayload>,
+    token: string | undefined,
+  ): Promise<V1_DataRequestsWithWorkflowResponse> =>
+    this.post(
+      `${this._dataContracts()}`,
+      contractRequest,
+      undefined,
       this._token(token),
     );
 

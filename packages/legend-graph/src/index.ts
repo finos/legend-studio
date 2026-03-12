@@ -328,6 +328,7 @@ export {
   V1_TerminalProvisionPayload,
   V1_UserApprovalStatus,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_ConsumerEntitlements.js';
+export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_DataAccessRequest.js';
 export {
   V1_getEntitlementsEnvFromIngestEnv,
   V1_isIngestEnvsCompatibleWithEntitlements,
