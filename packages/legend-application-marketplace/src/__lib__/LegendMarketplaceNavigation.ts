@@ -30,6 +30,7 @@ export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   TERMINAL_ID = 'terminalId',
   DATA_CONTRACT_ID = 'dataContractId',
   DATA_CONTRACT_TASK_ID = 'dataContractTaskId',
+  DATA_ACCESS_REQUEST_ID = 'dataAccessRequestId',
 }
 
 export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
@@ -65,6 +66,10 @@ export type LegacyDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
 };
 
+export type WorkflowDataAccessRequestPathParams = {
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID]: string;
+};
+
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   HOME_PAGE: '/',
   OAUTH_CALLBACK: '/callback',
@@ -85,6 +90,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   // Lakehouse
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_ENTITLEMENTS_CONTRACT_TASK: `/lakehouse/entitlements/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_TASK_ID}`,
+  LAKEHOUSE_ENTITLEMENTS_WORKFLOW_DATA_ACCESS_REQUEST: `/lakehouse/entitlements/workflowDataAccessRequest/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID}`,
   LAKEHOUSE_ADMIN: '/lakehouse/admin',
   // Deprecated
   DEPRECATED_LAKEHOUSE: '/lakehouse',
@@ -113,6 +119,17 @@ export const generateContractPagePath = (
       dataContractTaskId,
     },
   );
+
+export const generateWorkflowDataAccessRequestPagePath = (
+  dataAccessRequestId: string,
+): string =>
+  generatePath(
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_WORKFLOW_DATA_ACCESS_REQUEST,
+    {
+      dataAccessRequestId,
+    },
+  );
+
 export const generateLegacyDataProductPath = (
   gav: string,
   path: string,

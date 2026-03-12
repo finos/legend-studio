@@ -294,6 +294,22 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       this._token(token),
     );
 
+  // TODO: add implementations
+  approveRequest = (
+    _requestId: string,
+    _taskId: string,
+    _token: string | undefined,
+  ): Promise<PlainObject> =>
+    Promise.reject(new Error('approveRequest not yet implemented'));
+
+  // TODO: add implementations
+  denyRequest = (
+    _requestId: string,
+    _taskId: string,
+    _token: string | undefined,
+  ): Promise<PlainObject> =>
+    Promise.reject(new Error('denyRequest not yet implemented'));
+
   // --------------------------------------- Subscriptions ---------------------------------------
 
   private _subscriptions = (): string => `${this.baseUrl}/subscriptions`;

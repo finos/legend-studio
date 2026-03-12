@@ -35,6 +35,7 @@ export * from './stores/DataProduct/DataProductViewerState.js';
 export * from './stores/DataProduct/DataProductAccessPointState.js';
 export * from './stores/DataProduct/DataAccess/DataAccessRequestState.js';
 export * from './stores/DataProduct/DataAccess/DataContractViewerState.js';
+export * from './stores/DataProduct/DataAccess/WorkflowDataAccessRequestState.js';
 export * from './stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 export * from './stores/TerminalProduct/TerminalProductViewerState.js';
 export * from './stores/TerminalProduct/TerminalProductDataAccessState.js';
