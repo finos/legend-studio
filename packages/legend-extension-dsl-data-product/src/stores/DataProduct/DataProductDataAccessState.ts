@@ -18,9 +18,11 @@ import {
   type GraphManagerState,
   type V1_AccessPointGroup,
   type V1_CreateContractPayload,
+  type V1_CreateDataAccessRequestPayload,
   type V1_DataContractsResponse,
   type V1_DataContractSubscriptions,
   type V1_DataProduct,
+  type V1_DataRequestsWithWorkflowResponse,
   type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsUserEnv,
@@ -31,7 +33,9 @@ import {
   V1_AppDirLevel,
   V1_AppDirNode,
   V1_createContractPayloadModelSchema,
+  V1_createDataAccessRequestPayloadModelSchema,
   V1_deserializeDataContractResponse,
+  V1_deserializeDataRequestsWithWorkflowResponse,
   V1_deserializeIngestEnvironment,
   V1_isIngestEnvsCompatibleWithEntitlements,
   V1_liteDataContractsResponseModelSchemaToContracts,
@@ -63,6 +67,11 @@ import type { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
 
+export type ContractCreationRendererResult = {
+  component: React.ReactNode;
+  requestType: 'contract' | 'workflow';
+};
+
 export type ContractConsumerTypeRendererConfig = {
   type: string;
   createContractRenderer: (
@@ -70,7 +79,7 @@ export type ContractConsumerTypeRendererConfig = {
     handleOrganizationalScopeChange: (consumer: V1_OrganizationalScope) => void,
     handleDescriptionChange: (description: string | undefined) => void,
     handleIsValidChange: (isValid: boolean) => void,
-  ) => React.ReactNode;
+  ) => ContractCreationRendererResult;
   organizationalScopeTypeName?: (
     consumer: V1_OrganizationalScope,
   ) => string | undefined;
@@ -126,6 +135,7 @@ export class DataProductDataAccessState {
   dataProductOwners: string[] = [];
 
   readonly creatingContractState = ActionState.create();
+  readonly creatingWorkflowRequestState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
   readonly fetchingDataProductOwnersState = ActionState.create();
 
@@ -157,6 +167,7 @@ export class DataProductDataAccessState {
       setEntitlementsEnv: action,
       setLakehouseIngestEnv: action,
       createContract: flow,
+      createWorkflowRequest: flow,
       fetchContracts: action,
       fetchIngestEnvironmentDetails: action,
       setDataProductOwners: action,
@@ -414,6 +425,74 @@ export class DataProductDataAccessState {
       this.applicationStore.notificationService.notifyError(`${error.message}`);
     } finally {
       this.creatingContractState.complete();
+    }
+  }
+
+  *createWorkflowRequest(
+    consumer: V1_OrganizationalScope,
+    description: string,
+    group: V1_AccessPointGroup,
+    tokenProvider: () => string | undefined,
+    consumerType: string,
+  ): GeneratorFn<void> {
+    try {
+      this.creatingWorkflowRequestState.inProgress();
+      const request = serialize(
+        V1_createDataAccessRequestPayloadModelSchema(
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+        ),
+        {
+          description,
+          resourceId: this.product.name,
+          deploymentId: this.entitlementsDataProductDetails.deploymentId,
+          accessPointGroup: group.id,
+          consumer,
+        } satisfies V1_CreateDataAccessRequestPayload,
+      ) as PlainObject<V1_CreateDataAccessRequestPayload>;
+      try {
+        const response = V1_deserializeDataRequestsWithWorkflowResponse(
+          (yield this.lakehouseContractServerClient.createDataAccessRequest(
+            request,
+            tokenProvider(),
+          )) as PlainObject<V1_DataRequestsWithWorkflowResponse>,
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+        );
+        if (response.length > 0) {
+          this.setContractCreatorAPG(undefined);
+          this.applicationStore.notificationService.notifySuccess(
+            `Data access request created successfully`,
+          );
+        }
+        this.applicationStore.telemetryService.logEvent(
+          DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
+          {
+            ...request,
+            consumerType,
+            status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS,
+            requestType: 'workflow',
+          },
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.notificationService.notifyError(
+          `${error.message}`,
+        );
+        this.applicationStore.telemetryService.logEvent(
+          DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
+          {
+            ...request,
+            consumerType,
+            status: DSL_DATAPRODUCT_EVENT_STATUS.FAILURE,
+            error: error.message,
+            requestType: 'workflow',
+          },
+        );
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(`${error.message}`);
+    } finally {
+      this.creatingWorkflowRequestState.complete();
     }
   }
 

@@ -230,18 +230,21 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
           ) => void,
           handleDescriptionChange: (description: string | undefined) => void,
           handleIsValidChange: (isValid: boolean) => void,
-        ) => (
-          <CommonRenderer
-            key="user"
-            type="user"
-            label="User"
-            apgState={apgState}
-            handleOrganizationalScopeChange={handleOrganizationalScopeChange}
-            handleDescriptionChange={handleDescriptionChange}
-            handleIsValidChange={handleIsValidChange}
-            enableUserSearch={true}
-          />
-        ),
+        ) => ({
+          component: (
+            <CommonRenderer
+              key="user"
+              type="user"
+              label="User"
+              apgState={apgState}
+              handleOrganizationalScopeChange={handleOrganizationalScopeChange}
+              handleDescriptionChange={handleDescriptionChange}
+              handleIsValidChange={handleIsValidChange}
+              enableUserSearch={true}
+            />
+          ),
+          requestType: 'contract' as const,
+        }),
       },
       {
         type: 'System Account',
@@ -253,18 +256,21 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
           ) => void,
           handleDescriptionChange: (description: string | undefined) => void,
           handleIsValidChange: (isValid: boolean) => void,
-        ) => (
-          <CommonRenderer
-            key="system-account"
-            type="system-account"
-            label="System Account"
-            apgState={apgState}
-            handleOrganizationalScopeChange={handleOrganizationalScopeChange}
-            handleDescriptionChange={handleDescriptionChange}
-            handleIsValidChange={handleIsValidChange}
-            enableUserSearch={false}
-          />
-        ),
+        ) => ({
+          component: (
+            <CommonRenderer
+              key="system-account"
+              type="system-account"
+              label="System Account"
+              apgState={apgState}
+              handleOrganizationalScopeChange={handleOrganizationalScopeChange}
+              handleDescriptionChange={handleDescriptionChange}
+              handleIsValidChange={handleIsValidChange}
+              enableUserSearch={false}
+            />
+          ),
+          requestType: 'contract' as const,
+        }),
       },
       {
         type: 'Producer',
@@ -276,18 +282,21 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
           ) => void,
           handleDescriptionChange: (description: string | undefined) => void,
           handleIsValidChange: (isValid: boolean) => void,
-        ) => (
-          <CommonRenderer
-            key="producer"
-            type="producer"
-            label="Producer DID"
-            apgState={apgState}
-            handleOrganizationalScopeChange={handleOrganizationalScopeChange}
-            handleDescriptionChange={handleDescriptionChange}
-            handleIsValidChange={handleIsValidChange}
-            enableUserSearch={false}
-          />
-        ),
+        ) => ({
+          component: (
+            <CommonRenderer
+              key="producer"
+              type="producer"
+              label="Producer DID"
+              apgState={apgState}
+              handleOrganizationalScopeChange={handleOrganizationalScopeChange}
+              handleDescriptionChange={handleDescriptionChange}
+              handleIsValidChange={handleIsValidChange}
+              enableUserSearch={false}
+            />
+          ),
+          requestType: 'contract' as const,
+        }),
       },
     ];
   }
