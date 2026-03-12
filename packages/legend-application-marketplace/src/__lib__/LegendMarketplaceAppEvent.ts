@@ -40,4 +40,7 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   SEARCH_VENDOR_ADDONS_FAILURE = 'marketplace.search.vendor-addons.failure',
   SUBMIT_FEEDBACK = 'marketplace.submit.feedback',
   SUBMIT_FEEDBACK_FAILURE = 'marketplace.submit.feedback.failure',
+  CLICK_QUERY_DATA_PRODUCT = 'marketplace.click.query.data-product',
+  CLICK_OPEN_SERVICE_QUERY = 'marketplace.click.open.service.query',
+  CLICK_QUICKSTART_EXTENSION_TAB = 'marketplace.click.quickstart.extension.tab',
 }

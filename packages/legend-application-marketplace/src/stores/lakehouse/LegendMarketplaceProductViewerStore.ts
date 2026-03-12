@@ -513,12 +513,12 @@ export class LegendMarketplaceProductViewerStore {
             LegendMarketplaceTelemetryHelper.logEvent_LoadSDLCDataProduct(
               this.marketplaceBaseStore.applicationStore.telemetryService,
               {
-                path: path,
                 origin: {
                   type: DATAPRODUCT_TYPE.SDLC,
                   groupId: projectData.groupId,
                   artifactId: projectData.artifactId,
                   versionId: projectData.versionId,
+                  path: path,
                 },
                 dataProductId: dataProductId,
                 deploymentId: deploymentId,
@@ -606,12 +606,12 @@ export class LegendMarketplaceProductViewerStore {
             LegendMarketplaceTelemetryHelper.logEvent_LoadSDLCDataProduct(
               this.marketplaceBaseStore.applicationStore.telemetryService,
               {
-                path: path,
                 origin: {
                   type: DATAPRODUCT_TYPE.SDLC,
                   groupId: projectData.groupId,
                   artifactId: projectData.artifactId,
                   versionId: projectData.versionId,
+                  path: path,
                 },
               },
               undefined,
@@ -630,12 +630,12 @@ export class LegendMarketplaceProductViewerStore {
         LegendMarketplaceTelemetryHelper.logEvent_LoadSDLCDataProduct(
           this.marketplaceBaseStore.applicationStore.telemetryService,
           {
-            path: path,
             origin: {
               type: DATAPRODUCT_TYPE.SDLC,
               groupId: projectData.groupId,
               artifactId: projectData.artifactId,
               versionId: projectData.versionId,
+              path: path,
             },
           },
           message,
@@ -734,7 +734,15 @@ export class LegendMarketplaceProductViewerStore {
               new GraphDataWithOrigin(
                 new LegendSDLC(groupId, artifactId, versionId),
               ),
-            queryDataSpace: (executionContextKey: string) =>
+            queryDataSpace: (executionContextKey: string) => {
+              LegendMarketplaceTelemetryHelper.logEvent_ClickQueryDataProduct(
+                this.marketplaceBaseStore.applicationStore.telemetryService,
+                groupId,
+                artifactId,
+                versionId,
+                analysisResult.path,
+                executionContextKey,
+              );
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
                   this.marketplaceBaseStore.applicationStore.config
@@ -747,7 +755,8 @@ export class LegendMarketplaceProductViewerStore {
                   undefined,
                   undefined,
                 ),
-              ),
+              );
+            },
             viewProject: (entityPath: string | undefined) => {
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
@@ -799,6 +808,13 @@ export class LegendMarketplaceProductViewerStore {
               );
             },
             openServiceQuery: (servicePath: string): void => {
+              LegendMarketplaceTelemetryHelper.logEvent_ClickOpenServiceQuery(
+                this.marketplaceBaseStore.applicationStore.telemetryService,
+                groupId,
+                artifactId,
+                versionId,
+                servicePath,
+              );
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
                   this.marketplaceBaseStore.applicationStore.config
@@ -818,6 +834,20 @@ export class LegendMarketplaceProductViewerStore {
                   zone,
                 );
               }
+            },
+            onQuickStartTabChange: (
+              tabKey: string,
+              executableTitle: string,
+            ): void => {
+              LegendMarketplaceTelemetryHelper.logEvent_ClickQuickStartExtensionTab(
+                this.marketplaceBaseStore.applicationStore.telemetryService,
+                groupId,
+                artifactId,
+                versionId,
+                analysisResult.path,
+                tabKey,
+                executableTitle,
+              );
             },
           },
         );
