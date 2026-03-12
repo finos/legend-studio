@@ -294,78 +294,23 @@ export {
   V1_SQLAccessor,
 } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
-export {
-  type V1_UserPendingContractsRecord,
-  type V1_UserPendingContractsResponse,
-  V1_AccessPointGroupReference,
-  V1_ApprovalType,
-  V1_ContractEventPayloadType,
-  V1_ContractState,
-  V1_ContractUserEventDataProducerPayload,
-  V1_ContractUserEventPayload,
-  V1_ContractUserEventPrivilegeManagerPayload,
-  V1_ContractUserEventRecord,
-  V1_ContractUserMembership,
-  V1_ContractUserStatusResponse,
-  V1_CreateContractPayload,
-  V1_DataContract,
-  V1_DataContractApprovedUsersResponse,
-  V1_DataContractsResponse,
-  V1_DataContractSubscriptions,
-  V1_EnrichedUserApprovalStatus,
-  V1_InvalidateDataContractResponse,
-  V1_LiteDataContract,
-  V1_LiteDataContractsPaginatedResponse,
-  V1_LiteDataContractsResponse,
-  V1_LiteDataContractWithUserStatus,
-  V1_PendingTasksResponse,
-  V1_ResourceType,
-  V1_TaskMetadata,
-  V1_TaskResponse,
-  V1_TaskStatus,
-  V1_TaskStatusChangeResponse,
-  V1_TerminalOrderItem,
-  V1_TerminalProvisionPayload,
-  V1_UserApprovalStatus,
-} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_ConsumerEntitlements.js';
+export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_ConsumerEntitlements.js';
+export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_DataAccessRequest.js';
 export {
   V1_getEntitlementsEnvFromIngestEnv,
   V1_isIngestEnvsCompatibleWithEntitlements,
 } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_CoreLakehouseHelper.js';
-export {
-  V1_AdhocTeam,
-  V1_AppDirLevel,
-  V1_AppDirNode,
-  V1_AppDirOrganizationalScope,
-  V1_OrganizationalScope,
-  V1_ProducerScope,
-  V1_UnknownOrganizationalScopeType,
-  V1_User,
-  V1_UserType,
-} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
+export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
 export type {
   V1_UserEntitlementEnvsResponse as V1_EntitlementsUserEnvResponse,
   V1_UserEntitlementEnv as V1_EntitlementsUserEnv,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsEnv.js';
-export {
-  V1_AccessPointGroupStereotypeMapping,
-  V1_AdHocDeploymentDataProductOrigin,
-  V1_EntitlementsAccessPoint,
-  V1_EntitlementsDataProduct,
-  V1_EntitlementsDataProductDetails,
-  V1_EntitlementsDataProductDetailsResponse,
-  V1_EntitlementsDataProductLite,
-  V1_EntitlementsDataProductLiteResponse,
-  V1_EntitlementsDataProductOrigin,
-  V1_EntitlementsLakehouseEnvironment,
-  V1_EntitlementsLakehouseEnvironmentType,
-  V1_SdlcDeploymentDataProductOrigin,
-  V1_UnknownDataProductOriginType,
-} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsDataProduct.js';
+export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsDataProduct.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_CoreEntitlementsSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_EntitlementsDataProductSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_EntitlementsTasksSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_ConsumerEntitlementsSerializationHelper.js';
+export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_DataAccessRequestSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_SubscriptionSerializationHelper.js';
 export {
   V1_CreateSubscriptionInput,

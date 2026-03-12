@@ -25,17 +25,13 @@ import {
   createModelSchema,
   custom,
   deserialize,
-  list,
   optional,
   primitive,
   serialize,
 } from 'serializr';
 import {
   type V1_EntitlementsDataProductOrigin,
-  V1_AccessPointGroupStereotypeMapping,
   V1_AdHocDeploymentDataProductOrigin,
-  V1_EntitlementsAccessPoint,
-  V1_EntitlementsDataProduct,
   V1_EntitlementsDataProductDetails,
   V1_EntitlementsDataProductDetailsResponse,
   V1_EntitlementsDataProductLite,
@@ -44,39 +40,12 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
   V1_UnknownDataProductOriginType,
 } from '../../../../lakehouse/entitlements/V1_EntitlementsDataProduct.js';
-import { V1_AppDirNodeModelSchema } from './V1_CoreEntitlementsSerializationHelper.js';
-import { V1_stereotypePtrModelSchema } from '../V1_CoreSerializationHelper.js';
+import { V1_EntitlementsDataProductModelSchema } from './V1_CoreEntitlementsSerializationHelper.js';
 
 export enum V1_DataProductOriginType {
   AD_HOC_DEPLOYMENT = 'AdHocDeployment',
   SDLC_DEPLOYMENT = 'SdlcDeployment',
 }
-
-export const V1_EntitlementsAccessPointModelSchema = createModelSchema(
-  V1_EntitlementsAccessPoint,
-  {
-    name: primitive(),
-    groups: list(primitive()),
-  },
-);
-
-export const V1_AccessPointGroupStereotypeMappingModelSchema =
-  createModelSchema(V1_AccessPointGroupStereotypeMapping, {
-    accessPointGroup: primitive(),
-    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
-  });
-
-export const V1_EntitlementsDataProductModelSchema = createModelSchema(
-  V1_EntitlementsDataProduct,
-  {
-    name: primitive(),
-    accessPoints: customListWithSchema(V1_EntitlementsAccessPointModelSchema),
-    accessPointGroupStereotypeMappings: customListWithSchema(
-      V1_AccessPointGroupStereotypeMappingModelSchema,
-    ),
-    owner: usingModelSchema(V1_AppDirNodeModelSchema),
-  },
-);
 
 export const V1_AdHocDeploymentDataProductOriginModelSchema = createModelSchema(
   V1_AdHocDeploymentDataProductOrigin,

@@ -14,28 +14,17 @@
  * limitations under the License.
  */
 
-import { type PlainObject } from '@finos/legend-shared';
 import {
+  type V1_ContractUserMembership,
+  type V1_ConsumerEntitlementResource,
   type V1_OrganizationalScope,
   type V1_PaginationMetadataRecord,
   type V1_User,
-  V1_Resource,
+  type V1_UserApprovalStatus,
 } from './V1_CoreEntitlements.js';
 import type { V1_DataSubscription } from '../subscriptions/V1_ConsumerSubscriptions.js';
-import type { V1_EntitlementsDataProduct } from './V1_EntitlementsDataProduct.js';
 
 // ------------------------------------------- Data Contracts -------------------------------------------
-
-export class V1_ConsumerEntitlementResource extends V1_Resource {}
-
-export class V1_AccessPointGroupReference extends V1_ConsumerEntitlementResource {
-  dataProduct!: V1_EntitlementsDataProduct;
-  accessPointGroup!: string;
-}
-
-export class V1_DataBundle extends V1_ConsumerEntitlementResource {
-  content!: PlainObject;
-}
 
 export enum V1_ContractState {
   DRAFT = 'DRAFT',
@@ -108,14 +97,6 @@ export class V1_LiteDataContractWithUserStatus {
 
 // -------------------------------------- Data Contract Approval ---------------------------------------
 
-export enum V1_UserApprovalStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  DENIED = 'DENIED',
-  REVOKED = 'REVOKED',
-  CLOSED = 'CLOSED',
-}
-
 export enum V1_EnrichedUserApprovalStatus {
   PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL = 'PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL',
   PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
@@ -127,12 +108,6 @@ export enum V1_EnrichedUserApprovalStatus {
 
 export class V1_DataContractApprovedUsersResponse {
   approvedUsers?: V1_User[];
-}
-
-export class V1_ContractUserMembership {
-  guid!: string;
-  user!: V1_User;
-  status!: V1_UserApprovalStatus;
 }
 
 export enum V1_ResourceType {

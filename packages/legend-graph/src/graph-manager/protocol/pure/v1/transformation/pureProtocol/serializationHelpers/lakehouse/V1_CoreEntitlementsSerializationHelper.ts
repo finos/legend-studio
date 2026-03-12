@@ -18,19 +18,28 @@ import {
   customListWithSchema,
   UnsupportedOperationError,
   usingConstantValueSchema,
+  usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
   deserialize,
+  list,
   primitive,
   raw,
   serialize,
 } from 'serializr';
 import {
+  type V1_ConsumerEntitlementResource,
   type V1_OrganizationalScope,
+  V1_AccessPointGroupReference,
+  V1_AccessPointGroupStereotypeMapping,
   V1_AdhocTeam,
   V1_AppDirNode,
+  V1_ContractUserMembership,
+  V1_DataBundle,
+  V1_EntitlementsAccessPoint,
+  V1_EntitlementsDataProduct,
   V1_PaginationMetadataRecord,
   V1_ProducerScope,
   V1_UnknownOrganizationalScopeType,
@@ -38,11 +47,9 @@ import {
 } from '../../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import type { DSL_Lakehouse_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
+import { V1_stereotypePtrModelSchema } from '../V1_CoreSerializationHelper.js';
 
-export enum V1_OrganizationalScopeType {
-  AdHocTeam = 'AdHocTeam',
-  Producer = 'Producer',
-}
+// ---------------------------------------- Users & App Directory --------------------------------------
 
 export const V1_UserModelSchema = createModelSchema(V1_User, {
   name: primitive(),
@@ -54,6 +61,8 @@ export const V1_AppDirNodeModelSchema = createModelSchema(V1_AppDirNode, {
   level: primitive(),
 });
 
+// -------------------------------------------- Pagination ---------------------------------------------
+
 export const V1_paginationMetadataRecordModelSchema = createModelSchema(
   V1_PaginationMetadataRecord,
   {
@@ -62,6 +71,13 @@ export const V1_paginationMetadataRecordModelSchema = createModelSchema(
     size: primitive(),
   },
 );
+
+// ---------------------------------------- Organizational Scopes --------------------------------------
+
+export enum V1_OrganizationalScopeType {
+  AdHocTeam = 'AdHocTeam',
+  Producer = 'Producer',
+}
 
 export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
   _type: usingConstantValueSchema(V1_OrganizationalScopeType.AdHocTeam),
@@ -130,3 +146,93 @@ export const V1_serializeOrganizationalScope = (
     `Can't serialize unsupported organizational scope type: ${organizationalScope.constructor.name}`,
   );
 };
+
+// -------------------------------- Entitlements Data Products & Access Points --------------------------
+
+export const V1_EntitlementsAccessPointModelSchema = createModelSchema(
+  V1_EntitlementsAccessPoint,
+  {
+    name: primitive(),
+    groups: list(primitive()),
+  },
+);
+
+export const V1_AccessPointGroupStereotypeMappingModelSchema =
+  createModelSchema(V1_AccessPointGroupStereotypeMapping, {
+    accessPointGroup: primitive(),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+  });
+
+export const V1_EntitlementsDataProductModelSchema = createModelSchema(
+  V1_EntitlementsDataProduct,
+  {
+    name: primitive(),
+    accessPoints: customListWithSchema(V1_EntitlementsAccessPointModelSchema),
+    accessPointGroupStereotypeMappings: customListWithSchema(
+      V1_AccessPointGroupStereotypeMappingModelSchema,
+    ),
+    owner: usingModelSchema(V1_AppDirNodeModelSchema),
+  },
+);
+
+// ------------------------------------- Consumer Entitlement Resources --------------------------------
+
+export enum V1_AccessPointGroupReferenceType {
+  AccessPointGroupReference = 'AccessPointGroupReference',
+}
+
+export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
+  V1_AccessPointGroupReference,
+  {
+    _type: usingConstantValueSchema(
+      V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+    ),
+    dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
+    accessPointGroup: primitive(),
+  },
+);
+
+export const V1_DataBundleModelSchema = createModelSchema(V1_DataBundle, {
+  content: raw(),
+});
+
+export const V1_seralizeConsumerEntitlementResource = (
+  consumerEntitlementResource: V1_ConsumerEntitlementResource,
+): PlainObject<V1_ConsumerEntitlementResource> => {
+  if (consumerEntitlementResource instanceof V1_AccessPointGroupReference) {
+    return serialize(
+      V1_AccessPointGroupReferenceModelSchema,
+      consumerEntitlementResource,
+    );
+  } else if (consumerEntitlementResource instanceof V1_DataBundle) {
+    return serialize(V1_DataBundleModelSchema, consumerEntitlementResource);
+  } else {
+    throw new UnsupportedOperationError(
+      `Can't serialize unsupported consumer entitlement resource type: ${consumerEntitlementResource.constructor.name}`,
+    );
+  }
+};
+
+export const V1_deseralizeConsumerEntitlementResource = (
+  json: PlainObject<V1_ConsumerEntitlementResource>,
+): V1_ConsumerEntitlementResource => {
+  switch (json._type) {
+    case V1_AccessPointGroupReferenceType.AccessPointGroupReference:
+      return deserialize(V1_AccessPointGroupReferenceModelSchema, json);
+    default:
+      const bundle = new V1_DataBundle();
+      bundle.content = json;
+      return bundle;
+  }
+};
+
+// -------------------------------------- Contract User Membership -------------------------------------
+
+export const V1_contractUserMembershipModelSchema = createModelSchema(
+  V1_ContractUserMembership,
+  {
+    guid: primitive(),
+    user: usingModelSchema(V1_UserModelSchema),
+    status: primitive(),
+  },
+);

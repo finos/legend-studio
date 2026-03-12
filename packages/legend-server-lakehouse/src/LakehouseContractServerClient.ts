@@ -17,9 +17,11 @@
 import type {
   V1_ContractUserStatusResponse,
   V1_CreateContractPayload,
+  V1_CreateDataAccessRequestPayload,
   V1_CreateSubscriptionInput,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
+  V1_DataRequestsWithWorkflowResponse,
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
   V1_EntitlementsDataProductDetailsResponse,
@@ -253,6 +255,41 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     this.post(
       `${this._tasks()}/${encodeURIComponent(id)}/deny`,
       {},
+      {},
+      this._token(token),
+    );
+
+  // --------------------------------- Data Access Requests --------------------------------------
+
+  private _dataAccessRequests = (): string => `${this.baseUrl}/datarequests`;
+
+  createDataAccessRequest = (
+    requestPayload: PlainObject<V1_CreateDataAccessRequestPayload>,
+    token: string | undefined,
+  ): Promise<V1_DataRequestsWithWorkflowResponse> =>
+    this.post(
+      `${this._dataAccessRequests()}`,
+      requestPayload,
+      undefined,
+      this._token(token),
+    );
+
+  getDataAccessRequestsCreatedBy = (
+    userId: string,
+    token: string | undefined,
+  ): Promise<V1_DataRequestsWithWorkflowResponse> =>
+    this.get(
+      `${this._dataAccessRequests()}/withWorkflow/createdBy/${userId}`,
+      {},
+      this._token(token),
+    );
+
+  getDataAccessRequestWithWorkflow = (
+    accessRequestId: string,
+    token: string | undefined,
+  ): Promise<V1_DataRequestsWithWorkflowResponse> =>
+    this.get(
+      `${this._dataAccessRequests()}/${encodeURIComponent(accessRequestId)}/withWorkflow`,
       {},
       this._token(token),
     );
