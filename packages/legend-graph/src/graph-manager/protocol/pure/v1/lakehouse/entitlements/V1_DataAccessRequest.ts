@@ -114,7 +114,3 @@ export class V1_DataRequestWithWorkflow {
 export class V1_DataRequestsWithWorkflowResponse {
   dataRequests!: V1_DataRequestWithWorkflow[];
 }
-
-export class V1_DataRequestsResponse {
-  dataRequests!: V1_DataRequest[];
-}

@@ -264,13 +264,33 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   private _dataAccessRequests = (): string => `${this.baseUrl}/datarequests`;
 
   createDataAccessRequest = (
-    contractRequest: PlainObject<V1_CreateDataAccessRequestPayload>,
+    requestPayload: PlainObject<V1_CreateDataAccessRequestPayload>,
     token: string | undefined,
   ): Promise<V1_DataRequestsWithWorkflowResponse> =>
     this.post(
-      `${this._dataContracts()}`,
-      contractRequest,
+      `${this._dataAccessRequests()}`,
+      requestPayload,
       undefined,
+      this._token(token),
+    );
+
+  getDataAccessRequestsCreatedBy = (
+    userId: string,
+    token: string | undefined,
+  ): Promise<V1_DataRequestsWithWorkflowResponse> =>
+    this.get(
+      `${this._dataAccessRequests()}/withWorkflow/createdBy/${userId}`,
+      {},
+      this._token(token),
+    );
+
+  getDataAccessRequestWithWorkflow = (
+    accessRequestId: string,
+    token: string | undefined,
+  ): Promise<V1_DataRequestsWithWorkflowResponse> =>
+    this.get(
+      `${this._dataAccessRequests()}/${encodeURIComponent(accessRequestId)}/withWorkflow`,
+      {},
       this._token(token),
     );
 
