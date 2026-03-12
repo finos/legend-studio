@@ -20,6 +20,8 @@ import type {
   V1_OrganizationalScope,
 } from './V1_CoreEntitlements.js';
 
+// --------------------------------- Create Data Access Request Payload ---------------------------------
+
 export class V1_CreateDataAccessRequestPayload {
   description!: string;
   resourceId!: string;
@@ -28,6 +30,8 @@ export class V1_CreateDataAccessRequestPayload {
   consumer!: V1_OrganizationalScope;
 }
 
+// -------------------------------------------- Requests -----------------------------------------------
+
 export enum V1_RequestState {
   DRAFT = 'DRAFT',
   SUBMITTED_FOR_APPROVALS = 'SUBMITTED_FOR_APPROVALS',
@@ -35,25 +39,6 @@ export enum V1_RequestState {
   REJECTED = 'REJECTED',
   INVALIDATED = 'INVALIDATED',
   OBSOLETE = 'OBSOLETE',
-}
-
-export enum V1_WorkflowStatus {
-  OPEN = 'OPEN',
-  COMPLETED = 'COMPLETED',
-  CLOSED = 'CLOSED',
-}
-
-export enum V1_WorkflowTaskStatus {
-  OPEN = 'OPEN',
-  COMPLETED = 'COMPLETED',
-  CLOSED = 'CLOSED',
-  OBSOLETE = 'OBSOLETE',
-}
-
-export enum V1_WorkflowTaskAction {
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-  ESCALATED = 'ESCALATED',
 }
 
 export abstract class V1_Request {}
@@ -69,6 +54,21 @@ export class V1_DataRequest extends V1_Request {
   consumer!: V1_OrganizationalScope;
   createdBy!: string;
   userDigest!: string;
+}
+
+// ----------------------------------------- Workflow Tasks ---------------------------------------------
+
+export enum V1_WorkflowTaskStatus {
+  OPEN = 'OPEN',
+  COMPLETED = 'COMPLETED',
+  CLOSED = 'CLOSED',
+  OBSOLETE = 'OBSOLETE',
+}
+
+export enum V1_WorkflowTaskAction {
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  ESCALATED = 'ESCALATED',
 }
 
 export abstract class V1_WorkflowTask {
@@ -98,6 +98,14 @@ export class V1_DataOwnerApprovalTask extends V1_WorkflowTask {
   accessPointGroup!: string;
 }
 
+// -------------------------------------------- Workflows ----------------------------------------------
+
+export enum V1_WorkflowStatus {
+  OPEN = 'OPEN',
+  COMPLETED = 'COMPLETED',
+  CLOSED = 'CLOSED',
+}
+
 export class V1_Workflow {
   workflowId!: string;
   dataRequestId!: string;
@@ -105,6 +113,8 @@ export class V1_Workflow {
   tasks: V1_WorkflowTask[] = [];
   url!: string;
 }
+
+// ------------------------------------------- Responses -----------------------------------------------
 
 export class V1_DataRequestWithWorkflow {
   dataRequest!: V1_DataRequest;
