@@ -257,5 +257,5 @@ export const V1_deserializeDataRequestsWithWorkflowResponse = (
     V1_dataRequestsWithWorkflowResponseModelSchema(plugins),
     json,
   );
-  return response.dataRequests ?? [];
+  return response.dataRequests;
 };
