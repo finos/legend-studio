@@ -17,7 +17,6 @@
 import {
   customListWithSchema,
   optionalCustomListWithSchema,
-  usingConstantValueSchema,
   usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -28,7 +27,6 @@ import {
   list,
   optional,
   primitive,
-  raw,
   serialize,
 } from 'serializr';
 import {
@@ -64,32 +62,8 @@ import {
   V1_deseralizeConsumerEntitlementResource,
   V1_seralizeConsumerEntitlementResource,
 } from './V1_CoreEntitlementsSerializationHelper.js';
-import { V1_EntitlementsDataProductModelSchema } from './V1_EntitlementsDataProductSerializationHelper.js';
 import { V1_pendingTaskWithAssigneesModelSchema } from './V1_EntitlementsTasksSerializationHelper.js';
 import { V1_dataSubscriptionModelSchema } from './V1_SubscriptionSerializationHelper.js';
-import {
-  V1_AccessPointGroupReference,
-  V1_DataBundle,
-} from '../../../../lakehouse/entitlements/V1_CoreEntitlements.js';
-
-export enum V1_AccessPointGroupReferenceType {
-  AccessPointGroupReference = 'AccessPointGroupReference',
-}
-
-export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
-  V1_AccessPointGroupReference,
-  {
-    _type: usingConstantValueSchema(
-      V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-    ),
-    dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
-    accessPointGroup: primitive(),
-  },
-);
-
-export const V1_DataBundleModelSchema = createModelSchema(V1_DataBundle, {
-  content: raw(),
-});
 
 export const V1_dataContractModelSchema = (
   plugins: PureProtocolProcessorPlugin[],

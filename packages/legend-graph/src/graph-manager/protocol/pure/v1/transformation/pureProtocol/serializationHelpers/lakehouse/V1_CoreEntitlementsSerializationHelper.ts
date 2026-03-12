@@ -24,6 +24,7 @@ import {
 import {
   createModelSchema,
   deserialize,
+  list,
   primitive,
   raw,
   serialize,
@@ -44,16 +45,19 @@ import {
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import type { DSL_Lakehouse_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
 import {
-  V1_AccessPointGroupReferenceModelSchema,
-  V1_DataBundleModelSchema,
-  V1_AccessPointGroupReferenceType,
-} from './V1_ConsumerEntitlementsSerializationHelper.js';
+  V1_AccessPointGroupStereotypeMapping,
+  V1_EntitlementsAccessPoint,
+  V1_EntitlementsDataProduct,
+} from '../../../../lakehouse/entitlements/V1_EntitlementsDataProduct.js';
+import { V1_stereotypePtrModelSchema } from '../V1_CoreSerializationHelper.js';
 
-export enum V1_OrganizationalScopeType {
-  AdHocTeam = 'AdHocTeam',
-  Producer = 'Producer',
-}
-
+export const V1_EntitlementsAccessPointModelSchema = createModelSchema(
+  V1_EntitlementsAccessPoint,
+  {
+    name: primitive(),
+    groups: list(primitive()),
+  },
+);
 export const V1_UserModelSchema = createModelSchema(V1_User, {
   name: primitive(),
   userType: primitive(),
@@ -63,6 +67,48 @@ export const V1_AppDirNodeModelSchema = createModelSchema(V1_AppDirNode, {
   appDirId: primitive(),
   level: primitive(),
 });
+
+export const V1_AccessPointGroupStereotypeMappingModelSchema =
+  createModelSchema(V1_AccessPointGroupStereotypeMapping, {
+    accessPointGroup: primitive(),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+  });
+
+export enum V1_AccessPointGroupReferenceType {
+  AccessPointGroupReference = 'AccessPointGroupReference',
+}
+
+export const V1_EntitlementsDataProductModelSchema = createModelSchema(
+  V1_EntitlementsDataProduct,
+  {
+    name: primitive(),
+    accessPoints: customListWithSchema(V1_EntitlementsAccessPointModelSchema),
+    accessPointGroupStereotypeMappings: customListWithSchema(
+      V1_AccessPointGroupStereotypeMappingModelSchema,
+    ),
+    owner: usingModelSchema(V1_AppDirNodeModelSchema),
+  },
+);
+
+export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
+  V1_AccessPointGroupReference,
+  {
+    _type: usingConstantValueSchema(
+      V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+    ),
+    dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
+    accessPointGroup: primitive(),
+  },
+);
+
+export const V1_DataBundleModelSchema = createModelSchema(V1_DataBundle, {
+  content: raw(),
+});
+
+export enum V1_OrganizationalScopeType {
+  AdHocTeam = 'AdHocTeam',
+  Producer = 'Producer',
+}
 
 export const V1_paginationMetadataRecordModelSchema = createModelSchema(
   V1_PaginationMetadataRecord,
