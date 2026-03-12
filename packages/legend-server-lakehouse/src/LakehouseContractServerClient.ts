@@ -21,9 +21,12 @@ import type {
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_DataSubscriptionResponse,
+  V1_DataSubscriptionsPaginatedResponse,
   V1_EntitlementsDataProductDetailsResponse,
+  V1_EntitlementsDataProductLiteResponse,
   V1_EntitlementsUserEnvResponse,
   V1_InvalidateDataContractResponse,
+  V1_LiteDataContractsPaginatedResponse,
   V1_LiteDataContractsResponse,
   V1_LiteDataContractWithUserStatus,
   V1_PendingTasksResponse,
@@ -55,15 +58,16 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _dataContracts = (): string => `${this.baseUrl}/datacontracts`;
 
-  getDataContracts = (
+  getLiteDataContractsPaginated = (
+    size: number,
+    lastContractId: string | undefined,
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataContractsResponse>> =>
-    this.get(this._dataContracts(), {}, this._token(token));
-
-  getLiteDataContracts = (
-    token: string | undefined,
-  ): Promise<PlainObject<V1_LiteDataContractsResponse>> =>
-    this.get(`${this._dataContracts()}/lite`, {}, this._token(token));
+  ): Promise<PlainObject<V1_LiteDataContractsPaginatedResponse>> =>
+    this.get(
+      `${this._dataContracts()}/litePaginated?size=${size}${lastContractId ? `&lastContractId=${lastContractId}` : ''}`,
+      {},
+      this._token(token),
+    );
 
   getDataContract = (
     id: string,
@@ -257,10 +261,16 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _subscriptions = (): string => `${this.baseUrl}/subscriptions`;
 
-  getAllSubscriptions = (
+  getAllSubscriptionsPaginated = (
+    size: number,
+    lastSubscriptionId: string | undefined,
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
-    this.get(this._subscriptions(), {}, this._token(token));
+  ): Promise<PlainObject<V1_DataSubscriptionsPaginatedResponse>> =>
+    this.get(
+      `${this._subscriptions()}?size=${size}${lastSubscriptionId ? `&lastSubscriptionId=${encodeURIComponent(lastSubscriptionId)}` : ''}`,
+      {},
+      this._token(token),
+    );
 
   getSubscriptionsForContract = (
     contractId: string,
@@ -282,14 +292,9 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _dataProducts = (): string => `${this.baseUrl}/dataproducts`;
 
-  getDataProducts = (
-    token: string | undefined,
-  ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
-    this.get(this._dataProducts(), {}, this._token(token));
-
   getDataProductsLite = (
     token: string | undefined,
-  ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
+  ): Promise<PlainObject<V1_EntitlementsDataProductLiteResponse>> =>
     this.get(`${this._dataProducts()}/lite`, {}, this._token(token));
 
   getDataProduct = (

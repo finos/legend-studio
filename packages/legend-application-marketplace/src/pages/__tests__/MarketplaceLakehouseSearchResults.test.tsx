@@ -31,7 +31,7 @@ import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
-  mockDataProductsResponse,
+  mockDataProductsLiteResponse,
   mockLegacyDataProductSummaryEntity,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
 import type { StoredSummaryEntity } from '@finos/legend-server-depot';
@@ -111,8 +111,8 @@ const setupTestComponent = async (
   // Spies for producer search
   createSpy(
     MOCK__baseStore.lakehouseContractServerClient,
-    'getDataProducts',
-  ).mockResolvedValue(mockDataProductsResponse);
+    'getDataProductsLite',
+  ).mockResolvedValue(mockDataProductsLiteResponse);
   createSpy(
     MOCK__baseStore.depotServerClient,
     'getEntitiesSummaryByClassifier',
@@ -284,7 +284,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
         MOCK__baseStore.marketplaceServerClient.dataProductSearch,
       ).toHaveBeenCalledTimes(1);
       expect(
-        MOCK__baseStore.lakehouseContractServerClient.getDataProducts,
+        MOCK__baseStore.lakehouseContractServerClient.getDataProductsLite,
       ).not.toHaveBeenCalled();
       expect(
         MOCK__baseStore.depotServerClient.getEntitiesSummaryByClassifier,
@@ -462,7 +462,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       await screen.findByText('3 Products');
 
       expect(
-        MOCK__baseStore.lakehouseContractServerClient.getDataProducts,
+        MOCK__baseStore.lakehouseContractServerClient.getDataProductsLite,
       ).toHaveBeenCalledTimes(1);
       expect(
         MOCK__baseStore.depotServerClient.getEntitiesSummaryByClassifier,
@@ -767,8 +767,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       createSpy(
         MOCK__baseStore.lakehouseContractServerClient,
-        'getDataProducts',
-      ).mockResolvedValue(mockDataProductsResponse);
+        'getDataProductsLite',
+      ).mockResolvedValue(mockDataProductsLiteResponse);
       createSpy(
         MOCK__baseStore.depotServerClient,
         'getEntitiesSummaryByClassifier',
@@ -864,8 +864,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       createSpy(
         MOCK__baseStore.lakehouseContractServerClient,
-        'getDataProducts',
-      ).mockResolvedValue(mockDataProductsResponse);
+        'getDataProductsLite',
+      ).mockResolvedValue(mockDataProductsLiteResponse);
       createSpy(
         MOCK__baseStore.depotServerClient,
         'getEntitiesSummaryByClassifier',

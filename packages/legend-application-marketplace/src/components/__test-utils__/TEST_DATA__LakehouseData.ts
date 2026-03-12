@@ -17,18 +17,16 @@
 import { type PlainObject } from '@finos/legend-shared';
 import { type IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import {
-  type V1_AppDirNode,
   type V1_AWSSnowflakeIngestEnvironment,
   type V1_DataContractsResponse,
-  type V1_DataSubscriptionResponse,
-  type V1_EntitlementsDataProductDetailsResponse,
-  type V1_LiteDataContractsResponse,
+  type V1_DataSubscriptionsPaginatedResponse,
+  type V1_EntitlementsDataProductLiteResponse,
+  type V1_LiteDataContractsPaginatedResponse,
   V1_EntitlementsLakehouseEnvironmentType,
-  V1_AppDirLevel,
 } from '@finos/legend-graph';
 import type { StoredSummaryEntity } from '@finos/legend-server-depot';
 
-export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDetailsResponse> =
+export const mockDataProductsLiteResponse: PlainObject<V1_EntitlementsDataProductLiteResponse> =
   {
     dataProducts: [
       {
@@ -48,33 +46,6 @@ export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDet
           producerEnvironmentName: 'production-analytics',
           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
         },
-        dataProduct: {
-          name: 'SDLC_PRODUCTION_DATAPRODUCT',
-          accessPoints: [
-            {
-              name: 'customer_demographics',
-              groups: ['marketing', 'analytics'],
-            },
-            {
-              name: 'customer_transactions',
-              groups: ['finance', 'analytics'],
-            },
-          ],
-          accessPointGroupStereotypeMappings: [
-            {
-              accessPointGroup: 'marketing',
-              stereotypes: [],
-            },
-            {
-              accessPointGroup: 'analytics',
-              stereotypes: [],
-            },
-          ],
-          owner: {
-            appDirId: 12345,
-            level: V1_AppDirLevel.DEPLOYMENT,
-          } satisfies V1_AppDirNode,
-        },
       },
       {
         id: 'SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE',
@@ -90,33 +61,6 @@ export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDet
         lakehouseEnvironment: {
           producerEnvironmentName: 'production-analytics',
           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-        },
-        dataProduct: {
-          name: 'SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE',
-          accessPoints: [
-            {
-              name: 'customer_demographics',
-              groups: ['marketing', 'analytics'],
-            },
-            {
-              name: 'customer_transactions',
-              groups: ['finance', 'analytics'],
-            },
-          ],
-          accessPointGroupStereotypeMappings: [
-            {
-              accessPointGroup: 'marketing',
-              stereotypes: [],
-            },
-            {
-              accessPointGroup: 'analytics',
-              stereotypes: [],
-            },
-          ],
-          owner: {
-            appDirId: 12345,
-            level: V1_AppDirLevel.DEPLOYMENT,
-          } satisfies V1_AppDirNode,
         },
       },
       {
@@ -134,33 +78,6 @@ export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDet
           producerEnvironmentName: 'production-finance',
           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
         },
-        dataProduct: {
-          name: 'SDLC_PROD_PARALLEL_DATAPRODUCT',
-          accessPoints: [
-            {
-              name: 'regulatory_reports',
-              groups: ['compliance', 'finance'],
-            },
-            {
-              name: 'financial_statements',
-              groups: ['finance', 'executives'],
-            },
-          ],
-          accessPointGroupStereotypeMappings: [
-            {
-              accessPointGroup: 'compliance',
-              stereotypes: [],
-            },
-            {
-              accessPointGroup: 'finance',
-              stereotypes: [],
-            },
-          ],
-          owner: {
-            appDirId: 67890,
-            level: V1_AppDirLevel.DEPLOYMENT,
-          } satisfies V1_AppDirNode,
-        },
       },
       {
         id: 'SDLC_DEVELOPMENT_DATAPRODUCT',
@@ -176,20 +93,6 @@ export const mockDataProductsResponse: PlainObject<V1_EntitlementsDataProductDet
         lakehouseEnvironment: {
           producerEnvironmentName: 'development-analytics',
           type: V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-        },
-        dataProduct: {
-          name: 'ADHOC_DEVELOPMENT_DATAPRODUCT',
-          accessPoints: [
-            {
-              name: 'TEST_VIEW',
-              groups: ['GROUP1'],
-            },
-          ],
-          accessPointGroupStereotypeMappings: [],
-          owner: {
-            appDirId: 22222,
-            level: V1_AppDirLevel.DEPLOYMENT,
-          },
         },
       },
     ],
@@ -309,49 +212,66 @@ export const mockDataContracts: PlainObject<V1_DataContractsResponse> = {
   ],
 };
 
-export const mockLiteDataContracts: PlainObject<V1_LiteDataContractsResponse> =
+export const mockLiteDataContracts: PlainObject<V1_LiteDataContractsPaginatedResponse> =
   {
-    dataContracts: [
-      {
-        guid: 'contract-123',
-        description: 'Test Contract Description 1',
-        version: 1,
-        state: 'COMPLETED',
-        createdBy: 'admin.user',
+    liteDataContractsResponse: {
+      dataContracts: [
+        {
+          guid: 'contract-123',
+          description: 'Test Contract Description 1',
+          version: 1,
+          state: 'COMPLETED',
+          createdBy: 'admin.user',
+        },
+        {
+          guid: 'contract-456',
+          description: 'Test Contract Description 2',
+          version: 2,
+          state: 'PENDING',
+          createdBy: 'test.user',
+        },
+      ],
+    },
+    paginationMetadataRecord: {
+      hasNextPage: false,
+      lastValuesMap: {
+        contract_id: 'contract-456',
       },
-      {
-        guid: 'contract-456',
-        description: 'Test Contract Description 2',
-        version: 2,
-        state: 'PENDING',
-        createdBy: 'test.user',
-      },
-    ],
+      size: 100,
+    },
   };
 
-export const mockSubscriptions: PlainObject<V1_DataSubscriptionResponse> = {
-  subscriptions: [
-    {
-      guid: 'subscription-789',
-      dataContractId: 'contract-123',
-      target: {
-        _type: 'Snowflake',
-        snowflakeAccountId: 'account-123',
-        snowflakeRegion: 'AWS_US_EAST_1',
-        snowflakeNetwork: 'PUBLIC',
+export const mockPaginatedSubscriptions: PlainObject<V1_DataSubscriptionsPaginatedResponse> =
+  {
+    dataContractSubscriptions: [
+      {
+        guid: 'subscription-789',
+        dataContractId: 'contract-123',
+        target: {
+          _type: 'Snowflake',
+          snowflakeAccountId: 'account-123',
+          snowflakeRegion: 'AWS_US_EAST_1',
+          snowflakeNetwork: 'PUBLIC',
+        },
+        createdBy: 'subscriber.user',
       },
-      createdBy: 'subscriber.user',
-    },
-    {
-      guid: 'subscription-101',
-      dataContractId: 'contract-456',
-      target: {
-        _type: 'Snowflake',
-        snowflakeAccountId: 'account-456',
-        snowflakeRegion: 'AWS_US_EAST_1',
-        snowflakeNetwork: 'GOLDMAN',
+      {
+        guid: 'subscription-101',
+        dataContractId: 'contract-456',
+        target: {
+          _type: 'Snowflake',
+          snowflakeAccountId: 'account-456',
+          snowflakeRegion: 'AWS_US_EAST_1',
+          snowflakeNetwork: 'GOLDMAN',
+        },
+        createdBy: 'another.user',
       },
-      createdBy: 'another.user',
+    ],
+    paginationMetadataRecord: {
+      hasNextPage: false,
+      lastValuesMap: {
+        subscription_id: 'subscription-101',
+      },
+      size: 100,
     },
-  ],
-};
+  };

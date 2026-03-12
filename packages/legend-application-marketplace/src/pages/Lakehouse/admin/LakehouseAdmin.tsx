@@ -19,9 +19,8 @@ import {
   withLakehouseAdminStore,
   useLakehouseAdminStore,
 } from '../../../application/providers/LakehouseAdminStoreProvider.js';
-import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Container, Tab, Tabs, Typography } from '@mui/material';
 import { LakehouseAdminSubscriptionsDashboard } from './LakehouseAdminSubscriptionsDashboard.js';
 import { LakehouseAdminContractsDashboard } from './LakehouseAdminContractsDashboard.js';
@@ -34,15 +33,8 @@ const enum AdminTabs {
 export const LakehouseAdmin = withLakehouseAdminStore(
   observer(() => {
     const adminStore = useLakehouseAdminStore();
-    const auth = useAuth();
 
     const [selectedTab, setSelectedTab] = useState(AdminTabs.ALL_CONTRACTS);
-
-    useEffect(() => {
-      if (adminStore.initializationState.isInInitialState) {
-        adminStore.init(auth.user?.access_token);
-      }
-    }, [auth.user?.access_token, adminStore, adminStore.initializationState]);
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-admin">
