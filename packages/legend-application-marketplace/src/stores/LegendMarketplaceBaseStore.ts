@@ -264,6 +264,14 @@ export class LegendMarketplaceBaseStore {
       return undefined;
     }
 
+    const vendorImageMap = new Map<string, string>();
+    const assetsBaseUrl = this.applicationStore.config.assetsBaseUrl;
+    for (const [vendorName, filename] of Object.entries(
+      this.applicationStore.config.assetsProductImageMap,
+    )) {
+      vendorImageMap.set(vendorName, `${assetsBaseUrl}/${filename}`);
+    }
+
     const getDataProductState = async (
       dataProductId: string,
       deploymentId: number,
@@ -289,7 +297,7 @@ export class LegendMarketplaceBaseStore {
           this,
           searchResult,
           graphManager,
-          new Map(),
+          vendorImageMap,
         );
       } else {
         return undefined;
@@ -319,7 +327,12 @@ export class LegendMarketplaceBaseStore {
         coordinates.artifactId,
         coordinates.versionId,
       );
-      return new ProductCardState(this, searchResult, graphManager, new Map());
+      return new ProductCardState(
+        this,
+        searchResult,
+        graphManager,
+        vendorImageMap,
+      );
     };
 
     const graphManager = new V1_PureGraphManager(
