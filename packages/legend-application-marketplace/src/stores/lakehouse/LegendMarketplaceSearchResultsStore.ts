@@ -450,7 +450,6 @@ export class LegendMarketplaceSearchResultsStore {
         V1_entitlementsDataProductLiteResponseToDataProductLite(rawResponse);
 
       const usedImages = new Set<string>();
-      const productCardStates = dataProductDetails
       const productCardStates = dataProductLiteDetails
         .map((detail) => {
           try {
