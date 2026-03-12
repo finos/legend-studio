@@ -15,12 +15,14 @@
  */
 
 import {
-  V1_AccessPointGroupReference,
-  V1_DataBundle,
   V1_ResourceType,
   type V1_DataContract,
   type V1_LiteDataContract,
 } from '../entitlements/V1_ConsumerEntitlements.js';
+import {
+  V1_AccessPointGroupReference,
+  V1_DataBundle,
+} from '../entitlements/V1_CoreEntitlements.js';
 
 export const V1_transformDataContractToLiteDatacontract = (
   dataContract: V1_DataContract,

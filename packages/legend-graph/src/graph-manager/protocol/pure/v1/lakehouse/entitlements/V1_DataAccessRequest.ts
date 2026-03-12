@@ -17,8 +17,8 @@
 import type {
   V1_ConsumerEntitlementResource,
   V1_ContractUserMembership,
-} from './V1_ConsumerEntitlements.js';
-import type { V1_OrganizationalScope } from './V1_CoreEntitlements.js';
+  V1_OrganizationalScope,
+} from './V1_CoreEntitlements.js';
 
 export class V1_CreateDataAccessRequestPayload {
   description!: string;

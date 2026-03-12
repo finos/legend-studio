@@ -300,17 +300,7 @@ export {
   V1_getEntitlementsEnvFromIngestEnv,
   V1_isIngestEnvsCompatibleWithEntitlements,
 } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_CoreLakehouseHelper.js';
-export {
-  V1_AdhocTeam,
-  V1_AppDirLevel,
-  V1_AppDirNode,
-  V1_AppDirOrganizationalScope,
-  V1_OrganizationalScope,
-  V1_ProducerScope,
-  V1_UnknownOrganizationalScopeType,
-  V1_User,
-  V1_UserType,
-} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
+export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
 export type {
   V1_UserEntitlementEnvsResponse as V1_EntitlementsUserEnvResponse,
   V1_UserEntitlementEnv as V1_EntitlementsUserEnv,
