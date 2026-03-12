@@ -15,6 +15,7 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
+import { type V1_EntitlementsDataProduct } from './V1_EntitlementsDataProduct.js';
 
 export class V1_OrganizationalScope {}
 
@@ -87,4 +88,29 @@ export class V1_PaginationMetadataRecord {
   hasNextPage!: boolean;
   lastValuesMap!: Record<string, string>;
   size!: number;
+}
+
+export class V1_ConsumerEntitlementResource extends V1_Resource {}
+
+export class V1_AccessPointGroupReference extends V1_ConsumerEntitlementResource {
+  dataProduct!: V1_EntitlementsDataProduct;
+  accessPointGroup!: string;
+}
+
+export class V1_DataBundle extends V1_ConsumerEntitlementResource {
+  content!: PlainObject;
+}
+
+export enum V1_UserApprovalStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
+  REVOKED = 'REVOKED',
+  CLOSED = 'CLOSED',
+}
+
+export class V1_ContractUserMembership {
+  guid!: string;
+  user!: V1_User;
+  status!: V1_UserApprovalStatus;
 }

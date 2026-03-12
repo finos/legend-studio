@@ -18,6 +18,7 @@ import {
   customListWithSchema,
   UnsupportedOperationError,
   usingConstantValueSchema,
+  usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
@@ -28,9 +29,13 @@ import {
   serialize,
 } from 'serializr';
 import {
+  type V1_ConsumerEntitlementResource,
   type V1_OrganizationalScope,
+  V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_AppDirNode,
+  V1_ContractUserMembership,
+  V1_DataBundle,
   V1_PaginationMetadataRecord,
   V1_ProducerScope,
   V1_UnknownOrganizationalScopeType,
@@ -38,6 +43,11 @@ import {
 } from '../../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import type { DSL_Lakehouse_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
+import {
+  V1_AccessPointGroupReferenceModelSchema,
+  V1_DataBundleModelSchema,
+  V1_AccessPointGroupReferenceType,
+} from './V1_ConsumerEntitlementsSerializationHelper.js';
 
 export enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
@@ -130,3 +140,42 @@ export const V1_serializeOrganizationalScope = (
     `Can't serialize unsupported organizational scope type: ${organizationalScope.constructor.name}`,
   );
 };
+
+export const V1_seralizeConsumerEntitlementResource = (
+  consumerEntitlementResource: V1_ConsumerEntitlementResource,
+): PlainObject<V1_ConsumerEntitlementResource> => {
+  if (consumerEntitlementResource instanceof V1_AccessPointGroupReference) {
+    return serialize(
+      V1_AccessPointGroupReferenceModelSchema,
+      consumerEntitlementResource,
+    );
+  } else if (consumerEntitlementResource instanceof V1_DataBundle) {
+    return serialize(V1_DataBundleModelSchema, consumerEntitlementResource);
+  } else {
+    throw new UnsupportedOperationError(
+      `Can't serialize unsupported consumer entitlement resource type: ${consumerEntitlementResource.constructor.name}`,
+    );
+  }
+};
+
+export const V1_deseralizeConsumerEntitlementResource = (
+  json: PlainObject<V1_ConsumerEntitlementResource>,
+): V1_ConsumerEntitlementResource => {
+  switch (json._type) {
+    case V1_AccessPointGroupReferenceType.AccessPointGroupReference:
+      return deserialize(V1_AccessPointGroupReferenceModelSchema, json);
+    default:
+      const bundle = new V1_DataBundle();
+      bundle.content = json;
+      return bundle;
+  }
+};
+
+export const V1_contractUserMembershipModelSchema = createModelSchema(
+  V1_ContractUserMembership,
+  {
+    guid: primitive(),
+    user: usingModelSchema(V1_UserModelSchema),
+    status: primitive(),
+  },
+);

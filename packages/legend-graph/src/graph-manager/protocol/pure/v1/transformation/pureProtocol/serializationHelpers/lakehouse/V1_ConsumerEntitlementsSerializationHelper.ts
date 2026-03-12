@@ -17,7 +17,6 @@
 import {
   customListWithSchema,
   optionalCustomListWithSchema,
-  UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
   type PlainObject,
@@ -33,15 +32,12 @@ import {
   serialize,
 } from 'serializr';
 import {
-  type V1_ConsumerEntitlementResource,
   type V1_ContractUserEventPayload,
-  V1_AccessPointGroupReference,
   V1_ContractEventPayloadType,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ContractUserEventRecord,
   V1_CreateContractPayload,
-  V1_DataBundle,
   V1_DataContract,
   V1_DataContractSubscriptions,
   V1_DataContractsResponse,
@@ -49,7 +45,6 @@ import {
   V1_TaskMetadata,
   V1_TaskResponse,
   V1_TaskStatusChangeResponse,
-  V1_ContractUserMembership,
   V1_ContractUserStatusResponse,
   V1_LiteDataContractsResponse,
   V1_LiteDataContract,
@@ -65,10 +60,17 @@ import {
   V1_paginationMetadataRecordModelSchema,
   V1_serializeOrganizationalScope,
   V1_deserializeOrganizationalScope,
+  V1_contractUserMembershipModelSchema,
+  V1_deseralizeConsumerEntitlementResource,
+  V1_seralizeConsumerEntitlementResource,
 } from './V1_CoreEntitlementsSerializationHelper.js';
 import { V1_EntitlementsDataProductModelSchema } from './V1_EntitlementsDataProductSerializationHelper.js';
 import { V1_pendingTaskWithAssigneesModelSchema } from './V1_EntitlementsTasksSerializationHelper.js';
 import { V1_dataSubscriptionModelSchema } from './V1_SubscriptionSerializationHelper.js';
+import {
+  V1_AccessPointGroupReference,
+  V1_DataBundle,
+} from '../../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 
 export enum V1_AccessPointGroupReferenceType {
   AccessPointGroupReference = 'AccessPointGroupReference',
@@ -88,45 +90,6 @@ export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
 export const V1_DataBundleModelSchema = createModelSchema(V1_DataBundle, {
   content: raw(),
 });
-
-const V1_seralizeConsumerEntitlementResource = (
-  consumerEntitlementResource: V1_ConsumerEntitlementResource,
-): PlainObject<V1_ConsumerEntitlementResource> => {
-  if (consumerEntitlementResource instanceof V1_AccessPointGroupReference) {
-    return serialize(
-      V1_AccessPointGroupReferenceModelSchema,
-      consumerEntitlementResource,
-    );
-  } else if (consumerEntitlementResource instanceof V1_DataBundle) {
-    return serialize(V1_DataBundleModelSchema, consumerEntitlementResource);
-  } else {
-    throw new UnsupportedOperationError(
-      `Can't serialize unsupported consumer entitlement resource type: ${consumerEntitlementResource.constructor.name}`,
-    );
-  }
-};
-
-const V1_deseralizeConsumerEntitlementResource = (
-  json: PlainObject<V1_ConsumerEntitlementResource>,
-): V1_ConsumerEntitlementResource => {
-  switch (json._type) {
-    case V1_AccessPointGroupReferenceType.AccessPointGroupReference:
-      return deserialize(V1_AccessPointGroupReferenceModelSchema, json);
-    default:
-      const bundle = new V1_DataBundle();
-      bundle.content = json;
-      return bundle;
-  }
-};
-
-const V1_contractUserMembershipModelSchema = createModelSchema(
-  V1_ContractUserMembership,
-  {
-    guid: primitive(),
-    user: usingModelSchema(V1_UserModelSchema),
-    status: primitive(),
-  },
-);
 
 export const V1_dataContractModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
