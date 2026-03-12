@@ -15,47 +15,48 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
-} from '@finos/legend-art';
+import { clsx } from '@finos/legend-art';
 import { DataGrid } from '@finos/legend-lego/data-grid';
 import { Box } from '@mui/material';
-import { V1_SnowflakeTarget } from '@finos/legend-graph';
+import {
+  type V1_DataSubscription,
+  V1_SnowflakeTarget,
+} from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
+import { useMemo } from 'react';
+import { useAuth } from 'react-oidc-context';
 
 export const LakehouseAdminSubscriptionsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
+    const auth = useAuth();
 
-    const subscriptions = adminStore.subscriptions;
+    const datasource = useMemo(
+      () =>
+        adminStore.createSubscriptionsServerSideDatasource(
+          auth.user?.access_token,
+        ),
+      [adminStore, auth.user?.access_token],
+    );
 
     return (
       <>
-        <CubesLoadingIndicator
-          isLoading={Boolean(
-            adminStore.subscriptionsInitializationState.isInProgress,
-          )}
-        >
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
         <Box
           className={clsx('marketplace-lakehouse-admin__subscriptions__grid', {
             'ag-theme-balham': true,
           })}
         >
-          <DataGrid
-            rowData={subscriptions}
-            onRowDataUpdated={(params) => {
-              params.api.refreshCells({ force: true });
-            }}
+          <DataGrid<V1_DataSubscription>
+            rowModelType="serverSide"
+            serverSideDatasource={datasource}
             suppressFieldDotNotation={true}
             suppressContextMenu={false}
+            onGridReady={(params) => {
+              adminStore.setSubscriptionsGridApi(params.api);
+            }}
             columnDefs={[
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Subscription Id',
                 valueGetter: (p) => p.data?.guid,
@@ -63,7 +64,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Contract ID',
                 valueGetter: (p) => p.data?.dataContractId,
@@ -71,7 +71,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Target Type',
                 valueGetter: (p) =>
@@ -82,7 +81,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Snowflake Account ID',
                 valueGetter: (p) =>
@@ -93,7 +91,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Snowflake Region',
                 valueGetter: (p) =>
@@ -104,7 +101,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Snowflake Network',
                 valueGetter: (p) =>
@@ -115,7 +111,6 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Created By',
                 valueGetter: (p) => p.data?.createdBy,

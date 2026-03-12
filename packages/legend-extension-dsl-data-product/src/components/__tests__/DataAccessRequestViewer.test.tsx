@@ -261,6 +261,120 @@ describe('DataAccessRequestViewer', () => {
         await screen.findByText('test-consumer-user-id');
       });
 
+      test('Race condition: initialSelectedUser overrides targetUsers[0] when async load completes late', async () => {
+        const pluginManager = TEST__LegendApplicationPluginManager.create();
+        const MOCK__applicationStore = new ApplicationStore(
+          TEST__getGenericApplicationConfig(),
+          pluginManager,
+        );
+        MOCK__applicationStore.identityService.setCurrentUser(
+          'test-consumer-user-id',
+        );
+
+        const lakehouseContractServerClient = new LakehouseContractServerClient(
+          {
+            baseUrl: 'http://test-contract-server-client',
+          },
+        );
+        lakehouseContractServerClient.setTracerService(
+          MOCK__applicationStore.tracerService,
+        );
+
+        MOCK__applicationStore.navigationService.navigator.generateAddress =
+          jest.fn((location: string) => location);
+
+        const mockContract =
+          mockContracts.pendingPrivilegeManagerMultipleConsumers(
+            MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          );
+        const mockContractObject = serialize(
+          V1_dataContractModelSchema(
+            MOCK__applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
+          mockContract,
+        ) as PlainObject<V1_DataContract>;
+
+        const mockLiteContract =
+          V1_transformDataContractToLiteDatacontract(mockContract);
+
+        // Mock getContractTasks to resolve slowly (simulating the race)
+        const mockTasksPromise: Promise<PlainObject<V1_TaskResponse>> =
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve(
+                getMockPendingManagerApprovaMultipleConsumersTasksResponse() as unknown as PlainObject<V1_TaskResponse>,
+              );
+            }, 100); // Delay to simulate slow load
+          });
+
+        createSpy(
+          lakehouseContractServerClient,
+          'getContractTasks',
+        ).mockReturnValue(mockTasksPromise);
+
+        createSpy(
+          lakehouseContractServerClient,
+          'getDataContract',
+        ).mockResolvedValue({
+          dataContracts: [{ dataContract: mockContractObject }],
+        });
+
+        const MOCK__contractViewerState = new DataContractViewerState(
+          mockLiteContract,
+          (contractId: string, taskId: string) =>
+            `http://test-task-url?contractId=${contractId}&taskId=${taskId}`,
+          undefined,
+          MOCK__applicationStore,
+          lakehouseContractServerClient,
+          new GraphManagerState(
+            MOCK__applicationStore.pluginManager,
+            MOCK__applicationStore.logService,
+          ),
+          undefined,
+        );
+
+        await act(async () => {
+          render(
+            <AuthProvider>
+              <ApplicationStoreProvider store={MOCK__applicationStore}>
+                <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
+                  <ApplicationFrameworkProvider>
+                    <Routes>
+                      <Route
+                        path="*"
+                        element={
+                          <DataAccessRequestViewer
+                            open={true}
+                            onClose={jest.fn()}
+                            viewerState={MOCK__contractViewerState}
+                            getDataProductUrl={() => ''}
+                            initialSelectedUser="test-consumer-user-id-2"
+                          />
+                        }
+                      />
+                    </Routes>
+                  </ApplicationFrameworkProvider>
+                </TEST__BrowserEnvironmentProvider>
+              </ApplicationStoreProvider>
+            </AuthProvider>,
+          );
+        });
+
+        // Wait for the async initialization to complete
+        await waitFor(
+          () => {
+            expect(
+              MOCK__contractViewerState.initializationState.hasCompleted,
+            ).toBe(true);
+          },
+          { timeout: 3000 },
+        );
+
+        // Verify that test-consumer-user-id-2 is selected (not targetUsers[0])
+        await screen.findByText('test-consumer-user-id-2');
+        expect(screen.queryByText('test-consumer-user-id')).toBeNull();
+      });
+
       test('Refresh button re-initializes data access request viewer', async () => {
         const { MOCK__contractViewerState } = await setupDataContractViewerTest(
           mockContracts.pendingPrivilegeManager,

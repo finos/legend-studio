@@ -20,6 +20,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateRegistryLineageUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateRegistryGovernanceUrl,
 } from '@finos/legend-application';
 import {
   resolveVersion,
@@ -368,6 +369,22 @@ export class LegendMarketplaceProductViewerStore {
                         .registryUrl,
                       dataProductName,
                       accessPointName,
+                    ),
+                  );
+                }
+              }
+            : undefined,
+          openGovernance: this.marketplaceBaseStore.applicationStore.config
+            .registryUrl
+            ? (id: string) => {
+                if (
+                  this.marketplaceBaseStore.applicationStore.config.registryUrl
+                ) {
+                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                    EXTERNAL_APPLICATION_NAVIGATION__generateRegistryGovernanceUrl(
+                      this.marketplaceBaseStore.applicationStore.config
+                        .registryUrl,
+                      id,
                     ),
                   );
                 }

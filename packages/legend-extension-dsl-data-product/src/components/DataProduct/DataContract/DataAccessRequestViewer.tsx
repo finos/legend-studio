@@ -335,6 +335,14 @@ export const DataAccessRequestContent = observer(
       }
     }, [selectedTargetUser, initialSelectedUser, targetUsers]);
 
+    // When initialSelectedUser becomes available after async loading,
+    // override any default that was set from targetUsers[0].
+    useEffect(() => {
+      if (initialSelectedUser !== undefined) {
+        setSelectedTargetUser(initialSelectedUser);
+      }
+    }, [initialSelectedUser]);
+
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
       viewerState.initializationState.reset();

@@ -588,7 +588,7 @@ const DataCubeScreen = observer(
   },
 );
 
-const LineageScreen = observer(
+const GovernanceScreen = observer(
   (props: {
     accessPointState: DataProductAccessPointState;
     dataAccessState: DataProductDataAccessState | undefined;
@@ -621,7 +621,7 @@ const LineageScreen = observer(
             },
             deploymentId:
               dataAccessState.entitlementsDataProductDetails.deploymentId,
-            productIntegrationType: PRODUCT_INTEGRATION_TYPE.REGISTRY,
+            productIntegrationType: PRODUCT_INTEGRATION_TYPE.REGISTRY_LINEAGE,
             name: dataAccessState.entitlementsDataProductDetails.dataProduct
               .name,
           },
@@ -633,11 +633,51 @@ const LineageScreen = observer(
         accessPointGroup,
       );
     };
+    const openGovernanceAction = () => {
+      if (
+        dataAccessState?.entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
+      ) {
+        const {
+          group: groupId,
+          artifact: artifactId,
+          version: versionId,
+        } = dataAccessState.entitlementsDataProductDetails.origin;
+
+        DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
+          dataAccessState.applicationStore.telemetryService,
+          {
+            origin: {
+              type: DATAPRODUCT_TYPE.SDLC,
+              groupId,
+              artifactId,
+              versionId,
+            },
+            deploymentId:
+              dataAccessState.entitlementsDataProductDetails.deploymentId,
+            productIntegrationType:
+              PRODUCT_INTEGRATION_TYPE.REGISTRY_GOVERNANCE,
+            name: dataAccessState.entitlementsDataProductDetails.dataProduct
+              .name,
+          },
+          undefined,
+        );
+      }
+
+      if (accessPointState.registryMetadata?.id) {
+        dataAccessState?.dataProductViewerState.openGovernance?.(
+          accessPointState.registryMetadata.id,
+        );
+      }
+    };
 
     const validAccessPointLineage =
       dataAccessState?.dataProductViewerState.openLineage &&
       dataProductName &&
       accessPointName;
+    const validAccessPointGovernance =
+      dataAccessState?.dataProductViewerState.openGovernance &&
+      accessPointState.registryMetadata?.id;
     if (
       !(
         dataAccessState?.entitlementsDataProductDetails.origin instanceof
@@ -645,17 +685,28 @@ const LineageScreen = observer(
       )
     ) {
       return (
-        <TabMessageScreen message="Lineage not supported for Adhoc Data Products" />
+        <TabMessageScreen message="Governance not supported for Adhoc Data Products" />
       );
-    } else if (!dataAccessState.dataProductViewerState.openLineage) {
-      return <TabMessageScreen message="Lineage has not been configured" />;
     } else if (!accessPointState.registryMetadata?.id) {
       return (
-        <TabMessageScreen message="Lineage has not been registered for this access point" />
+        <TabMessageScreen message="Governance has not been registered for this access point" />
       );
     }
     return (
       <div className="data-product__viewer__tab-screen">
+        <button
+          onClick={openGovernanceAction}
+          tabIndex={-1}
+          disabled={!validAccessPointGovernance}
+          className="data-product__viewer__tab-screen__btn"
+          title={
+            !validAccessPointGovernance
+              ? 'Governance not configured'
+              : 'Open Governance Details'
+          }
+        >
+          Open Governance Details
+        </button>
         <button
           onClick={() => {
             if (validAccessPointLineage) {
@@ -665,7 +716,11 @@ const LineageScreen = observer(
           tabIndex={-1}
           disabled={!validAccessPointLineage}
           className="data-product__viewer__tab-screen__btn"
-          title="Open Lineage Viewer"
+          title={
+            !validAccessPointLineage
+              ? 'Lineage not configured'
+              : 'Open Lineage Viewer'
+          }
         >
           Open Lineage Viewer
         </button>
@@ -677,7 +732,7 @@ const LineageScreen = observer(
 const enum DataProductAccessPointTabs {
   COLUMNS = 'Columns',
   GRAMMAR = 'Grammar',
-  LINEAGE = 'Lineage',
+  GOVERNANCE = 'Governance',
   DATACUBE = 'Datacube',
   POWER_BI = 'Power BI',
   SQL = 'SQL',
@@ -913,9 +968,9 @@ const AccessPointTable = observer(
               )}
             </>
           );
-        case DataProductAccessPointTabs.LINEAGE:
+        case DataProductAccessPointTabs.GOVERNANCE:
           return (
-            <LineageScreen
+            <GovernanceScreen
               accessPointState={accessPointState}
               dataAccessState={dataAccessState}
             />
@@ -963,8 +1018,8 @@ const AccessPointTable = observer(
         icon: null,
       },
       {
-        key: DataProductAccessPointTabs.LINEAGE,
-        label: 'Lineage',
+        key: DataProductAccessPointTabs.GOVERNANCE,
+        label: 'Governance',
         icon: <GitBranchIcon />,
       },
       {

@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.19.105
+
+### Patch Changes
+
+- [#4970](https://github.com/finos/legend-studio/pull/4970) [`827a804`](https://github.com/finos/legend-studio/commit/827a804d2d4b5079544954b41a703cefc00e76f7) ([@kelly-thai](https://github.com/kelly-thai)) - Allow both ModelAccessPointGroup and AccessPointGroup in one DataProduct
+
+## 28.19.104
+
+## 28.19.103
+
 ## 28.19.102
 
 ## 28.19.101

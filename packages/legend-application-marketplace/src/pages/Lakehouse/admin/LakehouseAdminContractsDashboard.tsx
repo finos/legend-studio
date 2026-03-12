@@ -16,10 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
-} from '@finos/legend-art';
-import {
   DataGrid,
   type DataGridRowClickedEvent,
 } from '@finos/legend-lego/data-grid';
@@ -29,7 +25,8 @@ import {
   type V1_LiteDataContract,
 } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useAuth } from 'react-oidc-context';
 import {
   DataAccessRequestViewer,
   DataContractViewerState,
@@ -42,8 +39,7 @@ import {
 export const LakehouseAdminContractsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
-
-    const contracts = adminStore.contracts;
+    const auth = useAuth();
 
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
@@ -55,28 +51,27 @@ export const LakehouseAdminContractsDashboard = observer(
       setSelectedContract(event.data);
     };
 
+    const datasource = useMemo(
+      () =>
+        adminStore.createContractsServerSideDatasource(auth.user?.access_token),
+      [adminStore, auth.user?.access_token],
+    );
+
     return (
       <>
-        <CubesLoadingIndicator
-          isLoading={Boolean(
-            adminStore.contractsInitializationState.isInProgress,
-          )}
-        >
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
         <Box className="marketplace-lakehouse-admin__contracts__grid ag-theme-balham">
           <DataGrid
-            rowData={contracts}
-            onRowDataUpdated={(params) => {
-              params.api.refreshCells({ force: true });
-            }}
+            rowModelType="serverSide"
+            serverSideDatasource={datasource}
             suppressFieldDotNotation={true}
             suppressContextMenu={false}
             onRowClicked={handleRowClicked}
+            onGridReady={(params) => {
+              adminStore.setContractsGridApi(params.api);
+            }}
             columnDefs={[
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Contract Id',
                 valueGetter: (p) => p.data?.guid,
@@ -84,7 +79,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Contract Description',
                 valueGetter: (p) => p.data?.description,
@@ -92,7 +86,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 10,
-                sortable: true,
                 resizable: true,
                 headerName: 'Version',
                 valueGetter: (p) => p.data?.version,
@@ -100,7 +93,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'State',
                 valueGetter: (p) => p.data?.state,
@@ -108,7 +100,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Members',
                 valueGetter: (p) => p.data?.members.map((m) => m.user),
@@ -116,7 +107,6 @@ export const LakehouseAdminContractsDashboard = observer(
               },
               {
                 minWidth: 50,
-                sortable: true,
                 resizable: true,
                 headerName: 'Created By',
                 valueGetter: (p) => p.data?.createdBy,

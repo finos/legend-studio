@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { V1_PaginationMetadataRecord } from '../entitlements/V1_CoreEntitlements.js';
+
 export enum V1_DataSubscriptionTargetType {
   BigQuery = 'BigQuery',
   Snowflake = 'Snowflake',
@@ -28,6 +30,11 @@ export class V1_DataSubscription {
 
 export class V1_DataSubscriptionResponse {
   subscriptions: V1_DataSubscription[] | undefined;
+}
+
+export class V1_DataSubscriptionsPaginatedResponse {
+  dataContractSubscriptions: V1_DataSubscription[] | undefined;
+  paginationMetadataRecord!: V1_PaginationMetadataRecord;
 }
 
 export abstract class V1_DataSubscriptionTarget {}

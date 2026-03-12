@@ -82,3 +82,9 @@ export enum V1_Action {
 }
 
 export class V1_Resource {}
+
+export class V1_PaginationMetadataRecord {
+  hasNextPage!: boolean;
+  lastValuesMap!: Record<string, string>;
+  size!: number;
+}
