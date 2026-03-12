@@ -16,6 +16,7 @@
 
 import {
   ELEMENT_PATH_DELIMITER,
+  V1_ModelAccessPointGroup,
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
@@ -68,8 +69,13 @@ export const EntitlementsDataContractCreator = observer(
               (rendererConfig: ContractConsumerTypeRendererConfig) =>
                 apgState.access !== AccessPointGroupAccess.ENTERPRISE ||
                 rendererConfig.enableForEnterpriseAPGs,
+            )
+            .filter(
+              (rendererConfig: ContractConsumerTypeRendererConfig) =>
+                !(apgState.apg instanceof V1_ModelAccessPointGroup) ||
+                rendererConfig.type !== 'User',
             ),
-        [apgState.access, dataAccessState.dataAccessPlugins],
+        [apgState.access, dataAccessState.dataAccessPlugins, apgState.apg],
       );
     const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
       consumerTypeRendererConfigs[0]?.type ?? '',
