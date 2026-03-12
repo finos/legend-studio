@@ -56,3 +56,8 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateRegistryLineageUrl = (
   accessPointName: string,
 ): string =>
   `${registryApplicationUrl}/#/lineage/lakehouse/dataProduct/${dataProductName.toUpperCase()}/accessPoint/${accessPointName.toUpperCase()}`;
+
+export const EXTERNAL_APPLICATION_NAVIGATION__generateRegistryGovernanceUrl = (
+  registryApplicationUrl: string,
+  id: string,
+): string => `${registryApplicationUrl}/#/dataset/${id}`;

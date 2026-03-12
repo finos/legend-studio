@@ -2296,8 +2296,8 @@ describe('DataProductViewer', () => {
     });
   });
 
-  describe('Lineage with registry metadata', () => {
-    test('Shows lineage tab message when registry metadata id is missing', async () => {
+  describe('Governance with registry metadata', () => {
+    test('Shows governance tab message when registry metadata id is missing', async () => {
       const { dataProductViewerState } = await setupLakehouseDataProductTest(
         mockSDLCDataProduct,
         mockEntitlementsSDLCDataProduct,
@@ -2325,14 +2325,16 @@ describe('DataProductViewer', () => {
       });
 
       await screen.findByText('Customer Demographics');
-      const lineageTab = await screen.findByRole('tab', { name: 'Lineage' });
-      fireEvent.click(lineageTab);
+      const governanceTab = await screen.findByRole('tab', {
+        name: 'Governance',
+      });
+      fireEvent.click(governanceTab);
       await screen.findByText(
-        'Lineage has not been registered for this access point',
+        'Governance has not been registered for this access point',
       );
     });
 
-    test('Shows lineage tab message when registry metadata is not fetched', async () => {
+    test('Shows governance tab message when registry metadata is not fetched', async () => {
       const { dataProductViewerState } = await setupLakehouseDataProductTest(
         mockSDLCDataProduct,
         mockEntitlementsSDLCDataProduct,
@@ -2356,11 +2358,183 @@ describe('DataProductViewer', () => {
       });
 
       await screen.findByText('Customer Demographics');
-      const lineageTab = await screen.findByRole('tab', { name: 'Lineage' });
-      fireEvent.click(lineageTab);
+      const governanceTab = await screen.findByRole('tab', {
+        name: 'Governance',
+      });
+      fireEvent.click(governanceTab);
       await screen.findByText(
-        'Lineage has not been registered for this access point',
+        'Governance has not been registered for this access point',
       );
+    });
+
+    test('Shows governance tab message for AdHoc Data Products', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsAdHocDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Customer Demographics');
+      const governanceTab = await screen.findByRole('tab', {
+        name: 'Governance',
+      });
+      fireEvent.click(governanceTab);
+      await screen.findByText(
+        'Governance not supported for Adhoc Data Products',
+      );
+    });
+
+    test('Shows Open Governance Details and Open Lineage Viewer buttons when registry metadata is available', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        {
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '1.0.0',
+        },
+      );
+
+      if (dataProductViewerState.registryServerClient) {
+        createSpy(
+          dataProductViewerState.registryServerClient,
+          'getRegistrationMetadata',
+        ).mockResolvedValue({
+          id: 'test-registry-id-123',
+          ads: true,
+          pde: false,
+        });
+      }
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      const governanceTab = await screen.findByRole('tab', {
+        name: 'Governance',
+      });
+      fireEvent.click(governanceTab);
+
+      // Both buttons should be present
+      await screen.findByRole('button', { name: 'Open Governance Details' });
+      await screen.findByRole('button', { name: 'Open Lineage Viewer' });
+
+      //click governance
+      const openGovernanceButton = await screen.findByRole('button', {
+        name: 'Open Governance Details',
+      });
+      fireEvent.click(openGovernanceButton);
+
+      expect(dataProductViewerState.openGovernance).toHaveBeenCalledWith(
+        'test-registry-id-123',
+      );
+
+      //click lineage
+      const openLineageButton = await screen.findByRole('button', {
+        name: 'Open Lineage Viewer',
+      });
+      fireEvent.click(openLineageButton);
+
+      expect(dataProductViewerState.openLineage).toHaveBeenCalledWith(
+        'Mock_SDLC_DataProduct',
+        'customer_demographics',
+      );
+    });
+
+    test('Open Governance Details button is disabled when openGovernance function is not configured', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        {
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '1.0.0',
+        },
+      );
+
+      // Clear the openGovernance function to simulate it not being configured
+      (dataProductViewerState as { openGovernance: undefined }).openGovernance =
+        undefined;
+
+      if (dataProductViewerState.registryServerClient) {
+        createSpy(
+          dataProductViewerState.registryServerClient,
+          'getRegistrationMetadata',
+        ).mockResolvedValue({
+          id: 'test-registry-id-123',
+          ads: true,
+          pde: false,
+        });
+      }
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      const governanceTab = await screen.findByRole('tab', {
+        name: 'Governance',
+      });
+      fireEvent.click(governanceTab);
+
+      const openGovernanceButton = await screen.findByRole('button', {
+        name: 'Open Governance Details',
+      });
+      expect((openGovernanceButton as HTMLButtonElement).disabled).toBe(true);
+      expect(
+        (openGovernanceButton as HTMLButtonElement).getAttribute('title'),
+      ).toBe('Governance not configured');
+    });
+
+    test('Open Lineage Viewer button is disabled when openLineage function is not configured', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        {
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '1.0.0',
+        },
+      );
+
+      // Clear the openLineage function to simulate it not being configured
+      (dataProductViewerState as { openLineage: undefined }).openLineage =
+        undefined;
+
+      if (dataProductViewerState.registryServerClient) {
+        createSpy(
+          dataProductViewerState.registryServerClient,
+          'getRegistrationMetadata',
+        ).mockResolvedValue({
+          id: 'test-registry-id-123',
+          ads: true,
+          pde: false,
+        });
+      }
+      await act(async () => {
+        await dataProductViewerState.apgStates[0]?.accessPointStates[0]?.fetchRegistryMetadata();
+      });
+
+      await screen.findByText('Customer Demographics');
+      const governanceTab = await screen.findByRole('tab', {
+        name: 'Governance',
+      });
+      fireEvent.click(governanceTab);
+
+      const openLineageButton = await screen.findByRole('button', {
+        name: 'Open Lineage Viewer',
+      });
+
+      expect((openLineageButton as HTMLButtonElement).disabled).toBe(true);
+      expect(
+        (openLineageButton as HTMLButtonElement).getAttribute('title'),
+      ).toBe('Lineage not configured');
     });
   });
 });
