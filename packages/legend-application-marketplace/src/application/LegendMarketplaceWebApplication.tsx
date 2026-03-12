@@ -312,18 +312,18 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={
-                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACT_TASK
-              }
-              element={React.createElement(
-                useProtectedPage(LakehouseDataContractTask),
-              )}
-            />
-            <Route
-              path={
                 LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_WORKFLOW_DATA_ACCESS_REQUEST
               }
               element={React.createElement(
                 useProtectedPage(WorkflowDataAccessRequestTask),
+              )}
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACT_TASK
+              }
+              element={React.createElement(
+                useProtectedPage(LakehouseDataContractTask),
               )}
             />
             <Route
