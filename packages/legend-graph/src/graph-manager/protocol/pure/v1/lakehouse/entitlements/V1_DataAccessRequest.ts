@@ -56,7 +56,9 @@ export enum V1_WorkflowTaskAction {
   ESCALATED = 'ESCALATED',
 }
 
-export class V1_DataRequest {
+export abstract class V1_Request {}
+
+export class V1_DataRequest extends V1_Request {
   businessJustification!: string;
   guid!: string;
   version!: number;
@@ -111,4 +113,8 @@ export class V1_DataRequestWithWorkflow {
 
 export class V1_DataRequestsWithWorkflowResponse {
   dataRequests!: V1_DataRequestWithWorkflow[];
+}
+
+export class V1_DataRequestsResponse {
+  dataRequests!: V1_DataRequest[];
 }

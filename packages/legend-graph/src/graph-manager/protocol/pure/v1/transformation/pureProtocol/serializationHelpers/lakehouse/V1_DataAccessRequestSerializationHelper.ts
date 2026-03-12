@@ -15,6 +15,7 @@
  */
 
 import {
+  customList,
   customListWithSchema,
   UnsupportedOperationError,
   usingConstantValueSchema,
@@ -32,6 +33,7 @@ import {
 } from 'serializr';
 import {
   type V1_WorkflowTask,
+  type V1_Request,
   V1_CreateDataAccessRequestPayload,
   V1_DataOwnerApprovalTask,
   V1_DataRequest,
@@ -48,6 +50,12 @@ import {
   V1_deseralizeConsumerEntitlementResource,
   V1_seralizeConsumerEntitlementResource,
 } from './V1_CoreEntitlementsSerializationHelper.js';
+
+// ---------------------------------------- Request Types ----------------------------------------
+
+export enum V1_RequestType {
+  DataRequest = 'DataRequest',
+}
 
 // ---------------------------------------- Workflow Task Types ----------------------------------------
 
@@ -78,6 +86,7 @@ export const V1_dataRequestModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
   createModelSchema(V1_DataRequest, {
+    _type: usingConstantValueSchema(V1_RequestType.DataRequest),
     businessJustification: primitive(),
     guid: primitive(),
     version: primitive(),
@@ -95,6 +104,32 @@ export const V1_dataRequestModelSchema = (
     createdBy: primitive(),
     userDigest: primitive(),
   });
+
+const V1_serializeRequest = (
+  request: V1_Request,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_Request> => {
+  if (request instanceof V1_DataRequest) {
+    return serialize(V1_dataRequestModelSchema(plugins), request);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize unsupported request type: ${request.constructor.name}`,
+  );
+};
+
+const V1_deserializeRequest = (
+  json: PlainObject<V1_Request>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_Request => {
+  switch (json._type) {
+    case V1_RequestType.DataRequest:
+      return deserialize(V1_dataRequestModelSchema(plugins), json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize unsupported request type: ${json._type}`,
+      );
+  }
+};
 
 // ----------------------------------------- Workflow Tasks --------------------------------------------
 
@@ -182,11 +217,10 @@ export const V1_workflowModelSchema = (
     workflowId: primitive(),
     dataRequestId: primitive(),
     status: primitive(),
-    tasks: custom(
-      (val: V1_WorkflowTask[]) =>
-        val.map((task) => V1_serializeWorkflowTask(task, plugins)),
-      (val: PlainObject<V1_WorkflowTask>[]) =>
-        val.map((task) => V1_deserializeWorkflowTask(task, plugins)),
+    tasks: customList(
+      (val: V1_WorkflowTask) => V1_serializeWorkflowTask(val, plugins),
+      (val: PlainObject<V1_WorkflowTask>) =>
+        V1_deserializeWorkflowTask(val, plugins),
     ),
     url: primitive(),
   });
@@ -197,7 +231,10 @@ export const V1_dataRequestWithWorkflowModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
   createModelSchema(V1_DataRequestWithWorkflow, {
-    dataRequest: usingModelSchema(V1_dataRequestModelSchema(plugins)),
+    dataRequest: custom(
+      (val) => V1_serializeRequest(val, plugins),
+      (val) => V1_deserializeRequest(val, plugins),
+    ),
     workflows: customListWithSchema(V1_workflowModelSchema(plugins)),
   });
 
