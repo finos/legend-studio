@@ -1,5 +1,17 @@
 # @finos/legend-application-marketplace
 
+## 0.1.78
+
+### Patch Changes
+
+- [#4976](https://github.com/finos/legend-studio/pull/4976) [`00062e2`](https://github.com/finos/legend-studio/commit/00062e2f060d73412435bf6c4a9291b910bb536b) ([@travisstebbins](https://github.com/travisstebbins)) - Remove use of deprecated lakehouse contract/data product APIs
+
+- [#4980](https://github.com/finos/legend-studio/pull/4980) [`c59abc3`](https://github.com/finos/legend-studio/commit/c59abc3e9303d2d7e0c405fee7b136d2f83ae804) ([@bojja-gs](https://github.com/bojja-gs)) - Deterministic vendor image mapping with hash-based for data product card images and home carousel images.
+
+- [#4982](https://github.com/finos/legend-studio/pull/4982) [`1d9bed7`](https://github.com/finos/legend-studio/commit/1d9bed7005b3828ce641ef9b7f9f29640b94eaca) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add telemetry tracking for data product path in card clicks, query and service query actions, and extension tab clicks on legacy data product page
+
+- [#4977](https://github.com/finos/legend-studio/pull/4977) [`435dfee`](https://github.com/finos/legend-studio/commit/435dfee0498dcda28821fe3d62fdb658a97dcf76) ([@kelly-thai](https://github.com/kelly-thai)) - Add openGovernance implementation to navigate to registration from access point viewer
+
 ## 0.1.77
 
 ## 0.1.76

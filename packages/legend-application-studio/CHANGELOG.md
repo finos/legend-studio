@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.106
+
+### Patch Changes
+
+- [#4985](https://github.com/finos/legend-studio/pull/4985) [`f962216`](https://github.com/finos/legend-studio/commit/f96221649fd8b3c231de9a572d98ea2bd858e472) ([@yash0024](https://github.com/yash0024)) - Generate Diagram from Mapping
+
+- [#4984](https://github.com/finos/legend-studio/pull/4984) [`4cf5183`](https://github.com/finos/legend-studio/commit/4cf5183bc9b42c8405adccf5f5abf1f39996d147) ([@gs-saurabh](https://github.com/gs-saurabh)) - Pass `client_name` as a query parameter on all SDLC API requests when configured, by overriding `request()` in `SDLCServerClient`. Remove `client_name` from `authorizeCallbackUrl` static method since it is now included automatically.
+
 ## 28.19.105
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.202
+
+### Patch Changes
+
+- [#4982](https://github.com/finos/legend-studio/pull/4982) [`1d9bed7`](https://github.com/finos/legend-studio/commit/1d9bed7005b3828ce641ef9b7f9f29640b94eaca) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add optional `onQuickStartTabChange` callback to `DataSpaceViewerState` to support telemetry tracking when extension tabs are clicked in the QuickStart section
+
 ## 10.4.201
 
 ## 10.4.200
