@@ -172,6 +172,16 @@
     padding: 0.5rem;
   }
 
+  &__diagrams-section {
+    position: relative;
+  }
+
+  &__generate-diagram-btn {
+    position: absolute;
+    left: 47rem;
+    bottom: 5rem;
+  }
+
   &__home-tab {
     display: flex;
     flex-direction: column;

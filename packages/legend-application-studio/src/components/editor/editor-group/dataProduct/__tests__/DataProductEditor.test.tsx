@@ -299,6 +299,32 @@ test(
     fireEvent.click(dropdownOption as HTMLElement);
 
     await screen.findByText('model::dummyMapping2');
+
+    //diagrams editor
+    await findByText(editorGroup, 'Diagrams');
+    fireEvent.click(
+      guaranteeNonNullable(
+        (
+          await screen.findAllByRole('button', {
+            name: 'Add Value',
+          })
+        )[0],
+      ),
+    );
+    await screen.findByText('Select a diagram to add...');
+    fireEvent.click(
+      guaranteeNonNullable(
+        (
+          await screen.findAllByRole('button', {
+            name: 'Generate from Mapping',
+          })
+        )[0],
+      ),
+    );
+    await screen.findByText('Animal');
+    await screen.findByText('Animal2');
+    await screen.findByText('GenericAnimal');
+    await screen.findByText('GenericAnimal2');
   },
 );
 
@@ -675,7 +701,7 @@ test(
   },
 );
 
-test.only(
+test(
   integrationTest('Removing model access point group shows correct message'),
   async () => {
     const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });

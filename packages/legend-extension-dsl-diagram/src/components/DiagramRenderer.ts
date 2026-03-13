@@ -57,6 +57,7 @@ import {
   buildBottomRightCornerBox,
   getBottomRightCornerPoint,
   getElementPosition,
+  layoutDiagram,
   rotatePointX,
   rotatePointY,
 } from '../graph/helpers/DSL_Diagram_Helper.js';
@@ -615,6 +616,19 @@ export class DiagramRenderer {
     this.diagram.classViews.forEach((classView) =>
       this.ensureClassViewMeetMinDimensions(classView),
     );
+
+    // Auto-layout on initial render when all class views still sit at the origin,
+    // which indicates the diagram was just generated and needs re-positioning
+    if (
+      options?.initial &&
+      this.diagram.classViews.length > 1 &&
+      this.diagram.classViews.every(
+        (cv) => cv.position.x === 0 && cv.position.y === 0,
+      )
+    ) {
+      layoutDiagram(this.diagram);
+    }
+
     this.refresh();
 
     if (options?.initial) {

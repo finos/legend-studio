@@ -298,3 +298,219 @@ export const boxContains = (
     )
   );
 };
+
+/**
+ * Manhattan grid layout: arranges ClassViews on a grid with a small gap
+ * between cells, placing connected nodes in adjacent cells via BFS so
+ * that edges stay short and crossings are minimised.
+ * The final layout is centred on (0, 0).
+ *
+ * Assumes rectangle dimensions on each ClassView have already been set
+ * (e.g. by DiagramRenderer.ensureClassViewMeetMinDimensions).
+ */
+export const layoutDiagram = (diagram: Diagram): void => {
+  const classViews = diagram.classViews;
+  if (classViews.length === 0) {
+    return;
+  }
+
+  const viewMap = new Map<string, ClassView>();
+  for (const cv of classViews) {
+    viewMap.set(cv.id, cv);
+  }
+
+  const neighbors = new Map<string, Set<string>>();
+  for (const cv of classViews) {
+    neighbors.set(cv.id, new Set());
+  }
+
+  for (const gv of diagram.generalizationViews) {
+    const fromId = gv.from.classView.value.id;
+    const toId = gv.to.classView.value.id;
+    const fromSet = neighbors.get(fromId);
+    if (fromSet) {
+      fromSet.add(toId);
+    }
+    const toSet = neighbors.get(toId);
+    if (toSet) {
+      toSet.add(fromId);
+    }
+  }
+
+  for (const pv of diagram.propertyViews) {
+    const fromId = pv.from.classView.value.id;
+    const toId = pv.to.classView.value.id;
+    const fromSet = neighbors.get(fromId);
+    if (fromSet) {
+      fromSet.add(toId);
+    }
+    const toSet = neighbors.get(toId);
+    if (toSet) {
+      toSet.add(fromId);
+    }
+  }
+
+  // Start BFS from the most-connected node to keep the densest cluster central
+  const sortedByDegree = [...classViews].sort((a, b) => {
+    const degA = neighbors.get(a.id)?.size ?? 0;
+    const degB = neighbors.get(b.id)?.size ?? 0;
+    return degB - degA;
+  });
+
+  // Tracks which grid cells are taken
+  const gridAssignment = new Map<string, { row: number; col: number }>();
+  const occupied = new Set<string>();
+  const cellKey = (r: number, c: number): string => `${r},${c}`;
+
+  // Four directions
+  const dirs: [number, number][] = [
+    [0, 1],
+    [1, 0],
+    [0, -1],
+    [-1, 0],
+  ];
+
+  // Pick the best unoccupied cell adjacent to already-placed neighbours
+  const findBestCell = (nodeId: string): { row: number; col: number } => {
+    const nodeNeighbors = neighbors.get(nodeId);
+    const placedCells: { row: number; col: number }[] = [];
+    if (nodeNeighbors) {
+      for (const nId of nodeNeighbors) {
+        const cell = gridAssignment.get(nId);
+        if (cell) {
+          placedCells.push(cell);
+        }
+      }
+    }
+
+    const candidates: { row: number; col: number; score: number }[] = [];
+    const seen = new Set<string>();
+    for (const cell of placedCells) {
+      for (const [dr, dc] of dirs) {
+        const nr = cell.row + dr;
+        const nc = cell.col + dc;
+        const key = cellKey(nr, nc);
+        if (!occupied.has(key) && !seen.has(key)) {
+          seen.add(key);
+          let dist = 0;
+          for (const pc of placedCells) {
+            dist += Math.abs(nr - pc.row) + Math.abs(nc - pc.col);
+          }
+          candidates.push({ row: nr, col: nc, score: dist });
+        }
+      }
+    }
+
+    if (candidates.length > 0) {
+      candidates.sort((a, b) => a.score - b.score);
+      const best = candidates[0];
+      if (best) {
+        return { row: best.row, col: best.col };
+      }
+    }
+
+    for (let radius = 0; radius <= classViews.length + 1; radius++) {
+      for (let r = -radius; r <= radius; r++) {
+        for (let c = -radius; c <= radius; c++) {
+          if (
+            Math.abs(r) + Math.abs(c) === radius &&
+            !occupied.has(cellKey(r, c))
+          ) {
+            return { row: r, col: c };
+          }
+        }
+      }
+    }
+    return { row: 0, col: 0 };
+  };
+
+  // BFS across every connected component, starting from highest-degree node
+  const visited = new Set<string>();
+  for (const startNode of sortedByDegree) {
+    if (visited.has(startNode.id)) {
+      continue;
+    }
+
+    if (gridAssignment.size === 0) {
+      gridAssignment.set(startNode.id, { row: 0, col: 0 });
+      occupied.add(cellKey(0, 0));
+    } else {
+      const cell = findBestCell(startNode.id);
+      gridAssignment.set(startNode.id, cell);
+      occupied.add(cellKey(cell.row, cell.col));
+    }
+    visited.add(startNode.id);
+
+    const queue: string[] = [startNode.id];
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (!current) {
+        continue;
+      }
+      const currentNeighbors = neighbors.get(current);
+      if (!currentNeighbors) {
+        continue;
+      }
+      for (const nId of currentNeighbors) {
+        if (visited.has(nId)) {
+          continue;
+        }
+        visited.add(nId);
+        const cell = findBestCell(nId);
+        gridAssignment.set(nId, cell);
+        occupied.add(cellKey(cell.row, cell.col));
+        queue.push(nId);
+      }
+    }
+  }
+
+  const CELL_GAP = 100;
+  const MAX_PER_ROW = 5;
+
+  const gridRowItems = new Map<number, { cv: ClassView; col: number }[]>();
+  for (const cv of classViews) {
+    const cell = gridAssignment.get(cv.id);
+    if (!cell) {
+      continue;
+    }
+    const items = gridRowItems.get(cell.row) ?? [];
+    items.push({ cv, col: cell.col });
+    gridRowItems.set(cell.row, items);
+  }
+
+  const visualRows: { cv: ClassView; col: number }[][] = [];
+  const sortedGridRows = [...gridRowItems.keys()].sort((a, b) => a - b);
+  for (const gridRow of sortedGridRows) {
+    const items = gridRowItems.get(gridRow);
+    if (!items) {
+      continue;
+    }
+    items.sort((a, b) => a.col - b.col);
+    for (let i = 0; i < items.length; i += MAX_PER_ROW) {
+      visualRows.push(items.slice(i, i + MAX_PER_ROW));
+    }
+  }
+
+  const rowHeights: number[] = visualRows.map((items) =>
+    items.reduce((max, item) => Math.max(max, item.cv.rectangle.height), 0),
+  );
+  const rowYOffsets: number[] = [];
+  let cumY = 0;
+  for (let i = 0; i < rowHeights.length; i++) {
+    rowYOffsets.push(cumY);
+    cumY += (rowHeights[i] ?? 0) + CELL_GAP;
+  }
+
+  for (let r = 0; r < visualRows.length; r++) {
+    const items = visualRows[r];
+    if (!items) {
+      continue;
+    }
+    let curX = 0;
+    const yPos = rowYOffsets[r] ?? 0;
+    for (const item of items) {
+      item.cv.position = new Point(curX, yPos);
+      curX += item.cv.rectangle.width + CELL_GAP;
+    }
+  }
+};
