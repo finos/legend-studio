@@ -61,8 +61,12 @@ export interface FilterValidationParameters extends BaseValidationParameters {
 }
 
 export interface FilterConditionParameters {
-  property: AbstractPropertyExpression;
+  property: AbstractPropertyExpression | DataQualityValidationPropertyGuarantee;
   otherParams: (PrimitiveInstanceValue | CollectionInstanceValue)[];
+}
+
+export interface PropertyGuaranteeParameters {
+  property: AbstractPropertyExpression;
 }
 
 export interface LogicalGroupValidationParameters {
@@ -103,6 +107,10 @@ export interface DataQualityValidationFunctionVisitor<T> {
   visitCustomHelper(func: DataQualityValidationCustomHelperFunction): T;
   visitFilterCondition(func: DataQualityValidationFilterCondition): T;
   visitLogicalGroup(func: DataQualityValidationLogicalGroupFunction): T;
+  visitPropertyGuarantee(
+    func: DataQualityValidationPropertyGuarantee,
+    context?: unknown,
+  ): T;
 }
 
 export class DataQualityValidationFilterFunction extends DataQualityValidationFunction<FilterValidationParameters> {
@@ -120,18 +128,35 @@ export class DataQualityValidationFilterFunction extends DataQualityValidationFu
   }
 }
 
-export class DataQualityValidationFilterCondition extends DataQualityValidationFunction<FilterConditionParameters> {
+abstract class AbstractDataQualityValidationFilterCondition<
+  T,
+> extends DataQualityValidationFunction<T> {
   name: string;
-  parameters: FilterConditionParameters;
+  parameters: T;
 
-  constructor(name: string, parameters: FilterConditionParameters) {
+  constructor(name: string, parameters: T) {
     super();
     this.name = name;
     this.parameters = parameters;
   }
 
+  abstract override accept<R>(
+    visitor: DataQualityValidationFunctionVisitor<R>,
+  ): R;
+}
+
+export class DataQualityValidationFilterCondition extends AbstractDataQualityValidationFilterCondition<FilterConditionParameters> {
   accept<R>(visitor: DataQualityValidationFunctionVisitor<R>): R {
     return visitor.visitFilterCondition(this);
+  }
+}
+
+export class DataQualityValidationPropertyGuarantee extends AbstractDataQualityValidationFilterCondition<PropertyGuaranteeParameters> {
+  override accept<R>(
+    visitor: DataQualityValidationFunctionVisitor<R>,
+    context?: unknown,
+  ): R {
+    return visitor.visitPropertyGuarantee(this, context);
   }
 }
 

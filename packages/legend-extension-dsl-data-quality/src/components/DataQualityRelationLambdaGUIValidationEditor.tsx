@@ -50,7 +50,14 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
     const { assertion, otherFunction } = dataQualityValidationLambdaFormState;
 
     return (
-      <div className="data-quality-validation-gui-editor">
+      <div
+        className="data-quality-validation-gui-editor"
+        role="group"
+        tabIndex={-1}
+        onFocus={() =>
+          validationState.debouncedHandleValidationFormChange.cancel()
+        }
+      >
         <div className="data-quality-validation-gui-editor__functions-list">
           {otherFunction instanceof DataQualityValidationFilterFunction && (
             <DataQualityValidationFilterEditor

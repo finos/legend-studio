@@ -244,6 +244,7 @@ export const observe_RelationTypeColumnMetadata = skipObserved(
     makeObservable(column, {
       type: observable,
       name: observable,
+      multiplicity: observable,
     }),
 );
 

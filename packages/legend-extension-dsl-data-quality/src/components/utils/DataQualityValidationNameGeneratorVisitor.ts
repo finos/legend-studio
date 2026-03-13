@@ -19,13 +19,14 @@ import {
   PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import { DataQualityFunctionDefaults } from './DataQualityFunctionDefaults.js';
-import type {
-  DataQualityValidationAssertionFunction,
-  DataQualityValidationCustomHelperFunction,
-  DataQualityValidationFilterCondition,
-  DataQualityValidationFilterFunction,
-  DataQualityValidationFunctionVisitor,
-  DataQualityValidationLogicalGroupFunction,
+import {
+  DataQualityValidationPropertyGuarantee,
+  type DataQualityValidationAssertionFunction,
+  type DataQualityValidationCustomHelperFunction,
+  type DataQualityValidationFilterCondition,
+  type DataQualityValidationFilterFunction,
+  type DataQualityValidationFunctionVisitor,
+  type DataQualityValidationLogicalGroupFunction,
 } from './DataQualityValidationFunction.js';
 import { hashArray } from '@finos/legend-shared';
 
@@ -76,7 +77,14 @@ export class DataQualityValidationNameGeneratorVisitor
       func.name,
     );
 
-    const columnName = property.func.value.name;
+    let columnName = '';
+
+    if (property instanceof DataQualityValidationPropertyGuarantee) {
+      columnName = property.parameters.property.func.value.name;
+    } else {
+      columnName = property.func.value.name;
+    }
+
     if (!columnName || !nameTemplate) {
       return '';
     }
@@ -109,6 +117,10 @@ export class DataQualityValidationNameGeneratorVisitor
     }
 
     return `${leftName}${operator}${rightName}`;
+  }
+
+  visitPropertyGuarantee(): string {
+    return '';
   }
 
   private composeName(

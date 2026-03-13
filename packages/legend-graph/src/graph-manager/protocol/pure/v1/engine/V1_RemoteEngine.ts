@@ -178,6 +178,7 @@ import {
 } from '../model/lineage/V1_Lineage.js';
 import { V1_DevMetadataPushRequest } from './dev-metadata/V1_DevMetadataPushRequest.js';
 import { DeployProjectResponse } from '../../../../action/dev-metadata/DeployProjectResponse.js';
+import { Multiplicity } from '../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -770,6 +771,10 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
         new RelationTypeColumnMetadata(
           V1_getGenericTypeFullPath(column.genericType),
           column.name,
+          new Multiplicity(
+            column.multiplicity.lowerBound,
+            column.multiplicity.upperBound,
+          ),
         ),
     );
     return relationType;

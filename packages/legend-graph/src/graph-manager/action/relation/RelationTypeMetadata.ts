@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
+import type { Multiplicity } from '../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
+
 export class RelationTypeColumnMetadata {
   type: string;
   name: string;
+  multiplicity: Multiplicity;
 
-  constructor(type: string, name: string) {
+  constructor(type: string, name: string, multiplicity: Multiplicity) {
     this.type = type;
     this.name = name;
+    this.multiplicity = multiplicity;
   }
 }
 

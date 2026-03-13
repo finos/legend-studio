@@ -121,7 +121,10 @@ export class DataQualityValidationLambdaFormState {
     }
   };
 
-  handleValidationBodyChange = (name: string) => {
+  handleValidationBodyChange = (
+    name: string,
+    isCurrentColOptional?: boolean,
+  ) => {
     const currentFunc = this.rule.parameters.otherParam;
 
     if (currentFunc) {
@@ -129,6 +132,7 @@ export class DataQualityValidationLambdaFormState {
         name,
         this.validationFuncFactory,
         this.observerContext,
+        isCurrentColOptional ?? false,
       );
 
       this.rule.parameters.otherParam = currentFunc.accept<

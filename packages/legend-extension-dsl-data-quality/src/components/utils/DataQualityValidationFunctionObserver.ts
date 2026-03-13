@@ -19,17 +19,19 @@ import {
   type DataQualityValidationFilterCondition,
   type DataQualityValidationLogicalGroupFunction,
   type DataQualityValidationAssertionFunction,
+  type DataQualityValidationPropertyGuarantee,
   DataQualityValidationCustomHelperFunction,
   DataQualityValidationFilterFunction,
 } from '../utils/DataQualityValidationFunction.js';
-import type {
-  CollectionInstanceValue,
-  PrimitiveInstanceValue,
+import {
+  skipObserved,
+  type CollectionInstanceValue,
+  type PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 
-export function observe_values(
+export const observe_values = (
   values: (PrimitiveInstanceValue | CollectionInstanceValue)[],
-) {
+) => {
   values.forEach((param) => {
     if (!isObservableObject(param)) {
       makeObservable(param, {
@@ -37,105 +39,204 @@ export function observe_values(
       });
     }
   });
-}
+};
 
-export function observe_DataQualityValidationFilterCondition(
-  func: DataQualityValidationFilterCondition,
-) {
-  observe_values(func.parameters.otherParams);
+const observe_FilterConditionParameters = skipObserved(
+  (func: DataQualityValidationFilterCondition) => {
+    makeObservable(func.parameters, {
+      otherParams: observable,
+      property: observable,
+    });
+    return func;
+  },
+);
 
-  makeObservable(func.parameters, {
-    otherParams: observable,
-    property: observable,
-  });
+const observe_FilterConditionFunc = skipObserved(
+  (func: DataQualityValidationFilterCondition) => {
+    makeObservable(func, {
+      parameters: observable,
+      name: observable,
+    });
+    return func;
+  },
+);
 
-  makeObservable(func, {
-    parameters: observable,
-    name: observable,
-  });
+export const observe_DataQualityValidationFilterCondition = skipObserved(
+  (func: DataQualityValidationFilterCondition) => {
+    observe_values(func.parameters.otherParams);
+    observe_FilterConditionParameters(func);
+    observe_FilterConditionFunc(func);
 
-  return func;
-}
+    return func;
+  },
+);
 
-export function observe_DataQualityValidationLogicalGroupFunction(
-  func: DataQualityValidationLogicalGroupFunction,
-) {
-  makeObservable(func.parameters, {
-    left: observable,
-    right: observable,
-  });
+const observe_PropertyGuaranteeParameters = skipObserved(
+  (func: DataQualityValidationPropertyGuarantee) => {
+    makeObservable(func.parameters, {
+      property: observable,
+    });
+    return func;
+  },
+);
 
-  makeObservable(func, {
-    parameters: observable,
-    name: observable,
-    changeName: action,
-  });
+const observe_PropertyGuaranteeFunc = skipObserved(
+  (func: DataQualityValidationPropertyGuarantee) => {
+    makeObservable(func, {
+      parameters: observable,
+      name: observable,
+    });
+    return func;
+  },
+);
 
-  return func;
-}
+export const observe_DataQualityValidationPropertyGuarantee = skipObserved(
+  (func: DataQualityValidationPropertyGuarantee) => {
+    observe_PropertyGuaranteeParameters(func);
+    observe_PropertyGuaranteeFunc(func);
 
-export function observe_AssertionFunction(
-  assertFunc: DataQualityValidationAssertionFunction,
-) {
-  makeObservable(assertFunc.parameters, {
-    columns: observable,
-    otherParam: observable,
-  });
+    return func;
+  },
+);
 
-  makeObservable(assertFunc, {
-    parameters: observable,
-  });
+const observe_LogicalGroupParameters = skipObserved(
+  (func: DataQualityValidationLogicalGroupFunction) => {
+    makeObservable(func.parameters, {
+      left: observable,
+      right: observable,
+    });
+    return func;
+  },
+);
 
-  return assertFunc;
-}
+const observe_LogicalGroupFunc = skipObserved(
+  (func: DataQualityValidationLogicalGroupFunction) => {
+    makeObservable(func, {
+      parameters: observable,
+      name: observable,
+      changeName: action,
+    });
+    return func;
+  },
+);
 
-export function observe_DataQualityValidationFilterFunction(
-  func: DataQualityValidationFilterFunction,
-) {
-  makeObservable(func.parameters.lambda, {
-    body: observable,
-  });
+export const observe_DataQualityValidationLogicalGroupFunction = skipObserved(
+  (func: DataQualityValidationLogicalGroupFunction) => {
+    observe_LogicalGroupParameters(func);
+    observe_LogicalGroupFunc(func);
 
-  makeObservable(func.parameters, {
-    lambda: observable,
-  });
+    return func;
+  },
+);
 
-  makeObservable(func, {
-    parameters: observable,
-  });
+const observe_AssertionParameters = skipObserved(
+  (assertFunc: DataQualityValidationAssertionFunction) => {
+    makeObservable(assertFunc.parameters, {
+      columns: observable,
+      otherParam: observable,
+    });
+    return assertFunc;
+  },
+);
 
-  return func;
-}
+const observe_AssertionFunc = skipObserved(
+  (assertFunc: DataQualityValidationAssertionFunction) => {
+    makeObservable(assertFunc, {
+      parameters: observable,
+    });
+    return assertFunc;
+  },
+);
 
-export function observe_DataQualityValidationCustomHelperFunction(
-  func: DataQualityValidationCustomHelperFunction,
-) {
-  observe_values(func.parameters.otherParams);
+export const observe_AssertionFunction = skipObserved(
+  (assertFunc: DataQualityValidationAssertionFunction) => {
+    observe_AssertionParameters(assertFunc);
+    observe_AssertionFunc(assertFunc);
 
-  makeObservable(func.parameters, {
-    column: observable,
-    otherParams: observable,
-  });
+    return assertFunc;
+  },
+);
 
-  makeObservable(func, {
-    parameters: observable,
-  });
+const observe_FilterFunctionLambda = skipObserved(
+  (func: DataQualityValidationFilterFunction) => {
+    makeObservable(func.parameters.lambda, {
+      body: observable,
+    });
+    return func;
+  },
+);
 
-  return func;
-}
+const observe_FilterFunctionParameters = skipObserved(
+  (func: DataQualityValidationFilterFunction) => {
+    makeObservable(func.parameters, {
+      lambda: observable,
+    });
+    return func;
+  },
+);
 
-export function observe_FilterFunction(
-  func:
-    | DataQualityValidationCustomHelperFunction
-    | DataQualityValidationFilterFunction,
-) {
-  if (func instanceof DataQualityValidationCustomHelperFunction) {
-    observe_DataQualityValidationCustomHelperFunction(func);
-  }
+const observe_FilterFunctionFunc = skipObserved(
+  (func: DataQualityValidationFilterFunction) => {
+    makeObservable(func, {
+      parameters: observable,
+    });
+    return func;
+  },
+);
 
-  if (func instanceof DataQualityValidationFilterFunction) {
-    observe_DataQualityValidationFilterFunction(func);
-  }
+export const observe_DataQualityValidationFilterFunction = skipObserved(
+  (func: DataQualityValidationFilterFunction) => {
+    observe_FilterFunctionLambda(func);
+    observe_FilterFunctionParameters(func);
+    observe_FilterFunctionFunc(func);
 
-  return func;
-}
+    return func;
+  },
+);
+
+const observe_CustomHelperParameters = skipObserved(
+  (func: DataQualityValidationCustomHelperFunction) => {
+    makeObservable(func.parameters, {
+      column: observable,
+      otherParams: observable,
+    });
+    return func;
+  },
+);
+
+const observe_CustomHelperFunc = skipObserved(
+  (func: DataQualityValidationCustomHelperFunction) => {
+    makeObservable(func, {
+      parameters: observable,
+    });
+    return func;
+  },
+);
+
+export const observe_DataQualityValidationCustomHelperFunction = skipObserved(
+  (func: DataQualityValidationCustomHelperFunction) => {
+    observe_values(func.parameters.otherParams);
+    observe_CustomHelperParameters(func);
+    observe_CustomHelperFunc(func);
+
+    return func;
+  },
+);
+
+export const observe_FilterFunction = skipObserved(
+  (
+    func:
+      | DataQualityValidationCustomHelperFunction
+      | DataQualityValidationFilterFunction,
+  ) => {
+    if (func instanceof DataQualityValidationCustomHelperFunction) {
+      observe_DataQualityValidationCustomHelperFunction(func);
+    }
+
+    if (func instanceof DataQualityValidationFilterFunction) {
+      observe_DataQualityValidationFilterFunction(func);
+    }
+
+    return func;
+  },
+);
