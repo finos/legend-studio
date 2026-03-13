@@ -1,5 +1,12 @@
 # @finos/legend-extension-dsl-diagram
 
+## 8.1.222
+
+### Patch Changes
+
+- [#4985](https://github.com/finos/legend-studio/pull/4985) [`f962216`](https://github.com/finos/legend-studio/commit/f96221649fd8b3c231de9a572d98ea2bd858e472) ([@yash0024](https://github.com/yash0024)) - Created a diagram layout algorithm using BFS to place classView-rectangles
+  in Manhattan style
+
 ## 8.1.221
 
 ## 8.1.220

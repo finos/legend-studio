@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 2.0.177
+
+### Patch Changes
+
+- [#4976](https://github.com/finos/legend-studio/pull/4976) [`00062e2`](https://github.com/finos/legend-studio/commit/00062e2f060d73412435bf6c4a9291b910bb536b) ([@travisstebbins](https://github.com/travisstebbins)) - Add additional ag-grid exports
+
 ## 2.0.176
 
 ## 2.0.175
