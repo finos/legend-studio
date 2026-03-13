@@ -30,8 +30,12 @@ import {
   type PlainObject,
   type TraceData,
   type RequestHeaders,
+  type Parameters,
+  type RequestProcessConfig,
+  type ResponseProcessConfig,
   AbstractServerClient,
   ContentType,
+  type HttpMethod,
   guaranteeNonNullable,
   HttpHeader,
 } from '@finos/legend-shared';
@@ -157,6 +161,33 @@ export class SDLCServerClient extends AbstractServerClient {
     );
   }
 
+  override async request<T>(
+    method: HttpMethod,
+    url: string,
+    data: unknown,
+    options: RequestInit,
+    headers?: RequestHeaders | undefined,
+    parameters?: Parameters | undefined,
+    requestProcessConfig?: RequestProcessConfig | undefined,
+    responseProcessConfig?: ResponseProcessConfig | undefined,
+    traceData?: TraceData | undefined,
+  ): Promise<T> {
+    const params = this.client
+      ? { ...parameters, client_name: this.client }
+      : parameters;
+    return super.request(
+      method,
+      url,
+      data,
+      options,
+      headers,
+      params,
+      requestProcessConfig,
+      responseProcessConfig,
+      traceData,
+    );
+  }
+
   private getTraceData = (
     name: SDLC_ACTIVITY_TRACE,
     tracingTags?: PlainObject,
@@ -186,13 +217,8 @@ export class SDLCServerClient extends AbstractServerClient {
   static authorizeCallbackUrl = (
     authenticationServerUrl: string,
     callbackURI: string,
-    client?: string,
-  ): string => {
-    const clientParam = client
-      ? `&client_name=${encodeURIComponent(client)}`
-      : '';
-    return `${authenticationServerUrl}/auth/authorize?redirect_uri=${callbackURI}${clientParam}`;
-  };
+  ): string =>
+    `${authenticationServerUrl}/auth/authorize?redirect_uri=${callbackURI}`;
 
   private _auth = (): string => `${this.baseUrl}/auth`;
   isAuthorized = (): Promise<boolean> => this.get(`${this._auth()}/authorized`);
