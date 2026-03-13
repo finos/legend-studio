@@ -120,6 +120,7 @@ import type {
 import { deserialize } from 'serializr';
 import { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { LegendStudioTelemetryHelper } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
+import { onGeneratingDiagramFromMapping } from '../mapping/MappingEditorState.js';
 
 export enum DATA_PRODUCT_TAB {
   HOME = 'Home',
@@ -769,6 +770,10 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
     super(val, editorState);
     this.value = val;
     this.editorState = editorState;
+
+    makeObservable(this, {
+      generateDiagramFromMapping: flow,
+    });
   }
 
   override hasErrors(): boolean {
@@ -816,6 +821,22 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
   handleRemoveDiagram = (diagram: DataProductDiagram): void => {
     modelAccessPointGroup_removeDiagram(this.value, diagram);
   };
+
+  *generateDiagramFromMapping(): GeneratorFn<void> {
+    const mapping = this.value.mapping.value;
+    if (mapping.path === '') {
+      return;
+    }
+    const diagram = (yield flowResult(
+      onGeneratingDiagramFromMapping(mapping, this.state.editorStore),
+    )) as Diagram | undefined;
+    if (diagram) {
+      const newDiagram = observe_DataProductDiagram(new DataProductDiagram());
+      newDiagram.title = diagram.name;
+      newDiagram.diagram = diagram;
+      modelAccessPointGroup_addDiagram(this.value, newDiagram);
+    }
+  }
 
   addFeaturedElement(element: DataProductElement): void {
     const elementPointer = observe_DataProductElementScope(

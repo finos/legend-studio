@@ -130,6 +130,11 @@ import { MappingTestableState } from './testable/MappingTestableState.js';
 import { MappingTestMigrationState } from './legacy/MappingTestMigrationState.js';
 import { relationFunction_setRelationFunction } from '../../../../graph-modifier/STO_RelationFunction_GraphModifierHelper.js';
 import { RelationFunctionInstanceSetImplementationState } from './RelationFunctionInstanceSetImplementationState.js';
+import { generateMappingDiagram } from './MappingDiagramGenerator.js';
+import {
+  observe_Diagram,
+  type Diagram,
+} from '@finos/legend-extension-dsl-diagram';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -614,6 +619,35 @@ const reprocessMappingElementNodes = (
   });
   return { rootIds, nodes };
 };
+
+export const onGeneratingDiagramFromMapping = flow(function* (
+  mapping: Mapping,
+  editorStore: EditorStore,
+): GeneratorFn<Diagram | undefined> {
+  try {
+    const diagram = generateMappingDiagram(
+      mapping,
+      editorStore.graphManagerState.usableClasses,
+    );
+    observe_Diagram(diagram);
+    editorStore.graphManagerState.graph.addElement(
+      diagram,
+      mapping.package?.path.replace(/mapping/, 'diagram'),
+    );
+    editorStore.graphEditorMode.openElement(diagram);
+    yield flowResult(editorStore.explorerTreeState.build());
+    editorStore.applicationStore.notificationService.notifySuccess(
+      `Successfully generated diagram ${diagram.path} from mapping ${mapping.name}`,
+    );
+    return diagram;
+  } catch (error) {
+    assertErrorThrown(error);
+    editorStore.applicationStore.notificationService.notifyError(
+      `Failed to generate diagram from mapping ${mapping.name}: ${error.message}`,
+    );
+    return undefined;
+  }
+});
 
 export interface MappingElementSpec {
   showTarget: boolean;

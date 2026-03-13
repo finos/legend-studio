@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, expect, beforeEach } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import { createSpy, integrationTest } from '@finos/legend-shared/test';
 import {
   type RenderResult,
@@ -38,18 +38,21 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTestin
 import type { EditorStore } from '../../../../../stores/editor/EditorStore.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { createGraphFetchQueryFromMappingAnalysis } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/testable/MappingTestingHelper.js';
+import {
+  TEST__getTestGraphManagerState,
+  TEST__buildGraphWithEntities,
+} from '@finos/legend-graph/test';
+import { generateMappingDiagram } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/MappingDiagramGenerator.js';
+import { TEST_DATA__RelationalMapping } from './TEST_DATA__RelationalMapping.js';
 
 let renderResult: RenderResult;
 let MOCK__editorStore: EditorStore;
 
-beforeEach(async () => {
+test(integrationTest('Mapping test editor functionality'), async () => {
   MOCK__editorStore = TEST__provideMockedEditorStore();
   renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
     entities: TEST_DATA__ModelToModelMapping,
   });
-});
-
-test(integrationTest('Mapping test editor functionality'), async () => {
   await TEST__openElementFromExplorerTree(
     'mapping::ModelToModelMapping',
     renderResult,
@@ -134,6 +137,33 @@ test(integrationTest('Mapping test editor functionality'), async () => {
       mapping,
     ),
   );
+});
+
+test(integrationTest('Generate Diagram From Mapping'), async () => {
+  const graphManagerState = TEST__getTestGraphManagerState();
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
+    TEST_DATA__RelationalMapping,
+  );
+
+  const mapping = graphManagerState.graph.getMapping(
+    'mapping::SimpleInheritanceMapping',
+  );
+  const diagram = generateMappingDiagram(
+    mapping,
+    graphManagerState.usableClasses,
+  );
+
+  expect(diagram.name).toBe('SimpleInheritanceDiagram');
+
+  expect(diagram.classViews).toHaveLength(3);
+  const classNames = diagram.classViews.map((cv) => cv.class.value.name).sort();
+  expect(classNames).toEqual(['Income', 'Person', 'PromotableWorker']);
+
+  expect(diagram.propertyViews).toHaveLength(1);
+  expect(diagram.propertyViews[0]?.property.value.name).toBe('income');
+
+  expect(diagram.generalizationViews).toHaveLength(1);
 });
 
 const expectedGraphFetchLambda = {
@@ -253,6 +283,10 @@ const expectedGraphFetchLambda = {
   parameters: [],
 };
 test(integrationTest('Mapping test - create graph fetch query'), async () => {
+  MOCK__editorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
+    entities: TEST_DATA__ModelToModelMapping,
+  });
   const mapping = MOCK__editorStore.graphManagerState.graph.getMapping(
     'mapping::ModelToModelMapping',
   );

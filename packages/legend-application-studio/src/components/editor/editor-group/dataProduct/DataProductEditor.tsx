@@ -86,6 +86,7 @@ import {
   type ChangeEventHandler,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -1337,47 +1338,104 @@ export const CompatibleDiagramsEditor = observer(
       },
     );
 
+    const hasMappingSet = group.mapping.value.path !== '';
+    const noDiagramsInProject =
+      groupState.getCompatibleDiagramOptions().length === 0 &&
+      group.diagrams.length === 0;
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [isAddingDiagram, setIsAddingDiagram] = useState(false);
+
+    const handleGenerateFromMapping = (): void => {
+      setIsGenerating(true);
+      flowResult(groupState.generateDiagramFromMapping())
+        .catch(
+          groupState.state.editorStore.applicationStore.alertUnhandledError,
+        )
+        .finally(() => setIsGenerating(false));
+    };
+
     const NewDiagramComponent = observer(
       (newDiagramProps: {
         onFinishEditing: () => void;
       }): React.ReactElement => {
         const { onFinishEditing } = newDiagramProps;
 
+        useLayoutEffect(() => {
+          setIsAddingDiagram(true);
+          return () => setIsAddingDiagram(false);
+        }, []);
+
         return (
-          <div className="panel__content__form__section__list__new-item__input">
-            <CustomSelectorInput
-              options={groupState.getCompatibleDiagramOptions()}
-              onChange={(event: {
-                label: string;
-                value: PackageableElement;
-              }) => {
-                onFinishEditing();
-                handleAddDiagram(event);
-              }}
-              placeholder="Select a diagram to add..."
-              darkMode={
-                !groupState.state.editorStore.applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-            />
-          </div>
+          <>
+            <div className="panel__content__form__section__list__new-item__input">
+              <CustomSelectorInput
+                options={groupState.getCompatibleDiagramOptions()}
+                onChange={(event: {
+                  label: string;
+                  value: PackageableElement;
+                }) => {
+                  onFinishEditing();
+                  handleAddDiagram(event);
+                }}
+                placeholder="Select a diagram to add..."
+                darkMode={
+                  !groupState.state.editorStore.applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+              />
+            </div>
+            {noDiagramsInProject &&
+              hasMappingSet &&
+              !groupState.state.isReadOnly && (
+                <button
+                  className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                  disabled={isGenerating}
+                  onClick={() => {
+                    onFinishEditing();
+                    handleGenerateFromMapping();
+                  }}
+                  title="Auto-generate a diagram from the mapping"
+                  tabIndex={-1}
+                >
+                  {isGenerating ? 'Generating...' : 'Generate from Mapping'}
+                </button>
+              )}
+          </>
         );
       },
     );
 
     return (
-      <ListEditor
-        title="Diagrams"
-        prompt="Add diagrams to include in this Data Product. Diagrams are required to showcase and explain your curated data models"
-        items={group.diagrams}
-        keySelector={(element: DataProductDiagram) => element.diagram.name}
-        ItemComponent={DiagramComponent}
-        NewItemComponent={NewDiagramComponent}
-        handleRemoveItem={handleRemoveDiagram}
-        isReadOnly={groupState.state.isReadOnly}
-        emptyMessage="⚠ No Diagrams specified. Add at least one diagram to this Data Product."
-        emptyClassName="data-product-editor__empty-diagram"
-      />
+      <div className="data-product-editor__diagrams-section">
+        <ListEditor
+          title="Diagrams"
+          prompt="Add diagrams to include in this Data Product. Diagrams are required to showcase and explain your curated data models"
+          items={group.diagrams}
+          keySelector={(element: DataProductDiagram) => element.diagram.name}
+          ItemComponent={DiagramComponent}
+          NewItemComponent={NewDiagramComponent}
+          handleRemoveItem={handleRemoveDiagram}
+          isReadOnly={groupState.state.isReadOnly}
+          emptyMessage="⚠ No Diagrams specified. Add at least one diagram to this Data Product."
+          emptyClassName="data-product-editor__empty-diagram"
+        />
+        {noDiagramsInProject &&
+          !isAddingDiagram &&
+          hasMappingSet &&
+          !groupState.state.isReadOnly && (
+            <div className="data-product-editor__generate-diagram-btn">
+              <button
+                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                disabled={isGenerating}
+                onClick={handleGenerateFromMapping}
+                title="Generate a Diagram from the Mapping"
+                tabIndex={-1}
+              >
+                {isGenerating ? 'Generating...' : 'Generate from Mapping'}
+              </button>
+            </div>
+          )}
+      </div>
     );
   },
 );
