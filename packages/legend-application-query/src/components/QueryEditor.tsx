@@ -75,6 +75,7 @@ import {
   QueryBuilderNavigationBlocker,
   QueryLoaderDialog,
   QueryBuilderDiffViewPanel,
+  DataProductQueryBuilderState,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 
@@ -95,6 +96,7 @@ import {
 } from '@finos/legend-shared';
 import { LegendQueryInfo } from './LegendQueryAppInfo.js';
 import { QueryEditorDataspaceInfoModal } from './data-space/DataSpaceInfo.js';
+import { QueryEditorDataProductInfoModal } from './data-product/DataProductInfo.js';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryBareQueryBuilderState } from '../stores/data-space/LegendQueryBareQueryBuilderState.js';
 
@@ -974,6 +976,17 @@ export const QueryEditor = observer(() => {
             executionContext={editorStore.queryBuilderState.executionContext}
             open={editorStore.showDataspaceInfo}
             closeModal={() => editorStore.setShowDataspaceInfo(false)}
+          />
+        )}
+      {editorStore.showDataProductInfo &&
+        editorStore.queryBuilderState instanceof
+          DataProductQueryBuilderState && (
+          <QueryEditorDataProductInfoModal
+            editorStore={editorStore}
+            dataProduct={editorStore.queryBuilderState.dataProduct}
+            queryBuilderState={editorStore.queryBuilderState}
+            open={editorStore.showDataProductInfo}
+            closeModal={() => editorStore.setShowDataProductInfo(false)}
           />
         )}
       {isExistingQuery &&

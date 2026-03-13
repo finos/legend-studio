@@ -147,6 +147,7 @@ import { V1_GenerationSpecification } from './model/packageableElements/generati
 import { V1_Mapping } from './model/packageableElements/mapping/V1_Mapping.js';
 import { V1_ConcreteFunctionDefinition } from './model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 import { V1_PureModelContextComposite } from './model/context/V1_PureModelContextComposite.js';
+import { V1_PureModelContextCombination } from './model/context/V1_PureModelContextCombination.js';
 import { V1_LegendSDLC } from './model/context/V1_SDLC.js';
 import { V1_Protocol } from './model/V1_Protocol.js';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext.js';
@@ -211,6 +212,7 @@ import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.j
 import {
   type Entity,
   type EntitiesWithOrigin,
+  type ProjectGAVCoordinates,
   ENTITY_PATH_DELIMITER,
 } from '@finos/legend-storage';
 import {
@@ -219,7 +221,10 @@ import {
   PureClientVersion,
   SystemGraphBuilderError,
 } from '../../../../graph-manager/GraphManagerUtils.js';
-import { PackageableElementReference } from '../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import {
+  PackageableElementExplicitReference,
+  PackageableElementReference,
+} from '../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import type { GraphManagerPluginManager } from '../../../GraphManagerPluginManager.js';
 import type { QuerySearchSpecification } from '../../../../graph-manager/action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from '../../../../graph-manager/action/externalFormat/ExternalFormatDescription.js';
@@ -363,6 +368,22 @@ import {
   V1_createGenericTypeWithElementPath,
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
+import {
+  V1_DataProductArtifact,
+  V1_ModelAccessPointGroupInfo,
+  type V1_NativeModelExecutionContextInfo,
+  type V1_MappingGenerationInfo,
+} from './lakehouse/deploy/V1_DataProductArtifact.js';
+import {
+  DataProductAnalysisQueryResult,
+  DataProductAnalysis,
+} from '../../../action/analytics/data-product/DataProductAnalysis.js';
+import {
+  DataProductAccessType,
+  ModelAccessPointGroup,
+  NativeModelAccess,
+  NativeModelExecutionContext,
+} from '../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_MemSQLFunction } from './model/packageableElements/function/V1_MemSQLFunction.js';
 import { LineageModel } from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
 import {
@@ -2696,18 +2717,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  public createExecutionInput = (
+  public createExecutionInput = async (
     graph: PureModel,
     mapping: Mapping | undefined,
     lambda: RawLambda,
     runtime: Runtime | undefined,
     clientVersion: string | undefined,
     options?: ExecutionOptions,
-  ): V1_ExecuteInput =>
-    this.createExecutionInputWithPureModelContext(
-      graph.origin
-        ? this.buildPureModelSDLCPointer(graph.origin, undefined)
-        : this.getFullGraphModelData(graph),
+  ): Promise<V1_ExecuteInput> => {
+    let context: V1_PureModelContext = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+      : this.getFullGraphModelData(graph);
+    if (
+      options?.floatingExecutionElements &&
+      options.floatingExecutionElements.length > 0
+    ) {
+      const floatingData = new V1_PureModelContextData();
+      floatingData.elements = options.floatingExecutionElements.map((element) =>
+        this.elementToProtocol(element),
+      );
+      context = new V1_PureModelContextCombination([context, floatingData]);
+    }
+    return this.createExecutionInputWithPureModelContext(
+      context,
       mapping,
       lambda,
       runtime,
@@ -2715,15 +2747,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       new V1_ExecuteInput(),
       options,
     );
+  };
 
-  public createLineageInput = (
+  public createLineageInput = async (
     graph: PureModel,
     mapping: Mapping | undefined,
     lambda: RawLambda,
     runtime: Runtime | undefined,
     clientVersion: string | undefined,
-  ): V1_LineageInput => {
-    const executionInput = this.createExecutionInput(
+  ): Promise<V1_LineageInput> => {
+    const executionInput = await this.createExecutionInput(
       graph,
       mapping,
       lambda,
@@ -2933,13 +2966,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async _runQuery(
-    createV1ExecuteInputFunc: () => V1_ExecuteInput,
+    createV1ExecuteInputFunc: () => V1_ExecuteInput | Promise<V1_ExecuteInput>,
     options?: ExecutionOptions,
     _report?: GraphManagerOperationReport,
   ): Promise<ExecutionResultWithMetadata> {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
-    const input = createV1ExecuteInputFunc();
+    const input = await createV1ExecuteInputFunc();
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
 
     const result = await this.engine.runQuery(input, options);
@@ -2975,7 +3008,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
 
-    const input = this.createExecutionInput(
+    const input = await this.createExecutionInput(
       graph,
       mapping,
       lambda,
@@ -3082,7 +3115,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
 
-    const input = this.createExecutionInput(
+    const input = await this.createExecutionInput(
       graph,
       mapping,
       lambda,
@@ -3116,7 +3149,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
 
-    const input = this.createExecutionInput(
+    const input = await this.createExecutionInput(
       graph,
       mapping,
       lambda,
@@ -3746,6 +3779,193 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.pluginManager.getPureProtocolProcessorPlugins(),
       ),
     );
+  }
+
+  async analyzeDataProductAndBuildMinimalGraph(
+    dataProductPath: string,
+    cacheRetriever: () => Promise<PlainObject>,
+    pureGraph: PureModel,
+    accessPointId: string,
+    dataProductAccessType: DataProductAccessType,
+    projectInfo: ProjectGAVCoordinates,
+    functionEntitiesRetriever?: () => Promise<
+      [PlainObject<Entity>[], PlainObject<Entity>[]]
+    >,
+    graphReport?: GraphManagerOperationReport,
+  ): Promise<DataProductAnalysisQueryResult> {
+    // Fetch the data product artifact from cache
+    const artifactJson = await cacheRetriever();
+    const artifact =
+      V1_DataProductArtifact.serialization.fromJson(artifactJson);
+
+    return this.buildDataProductAnalysis(
+      artifact,
+      dataProductPath,
+      pureGraph,
+      accessPointId,
+      dataProductAccessType,
+      projectInfo,
+      graphReport,
+    );
+  }
+
+  async buildDataProductAnalysis(
+    artifact: V1_DataProductArtifact,
+    dataProductPath: string,
+    pureGraph: PureModel,
+    accessPointId: string,
+    dataProductAccessType: DataProductAccessType,
+    projectInfo: ProjectGAVCoordinates,
+    graphReport?: GraphManagerOperationReport,
+  ): Promise<DataProductAnalysisQueryResult> {
+    // Collect all mapping generation infos from model access point groups and native model access
+    const allMappingGenInfos = new Map<string, V1_MappingGenerationInfo>();
+
+    const modelAccessPointGroups = artifact.accessPointGroups.filter(
+      (group): group is V1_ModelAccessPointGroupInfo =>
+        group instanceof V1_ModelAccessPointGroupInfo,
+    );
+    for (const group of modelAccessPointGroups) {
+      allMappingGenInfos.set(
+        group.mappingGeneration.path,
+        group.mappingGeneration,
+      );
+    }
+
+    if (artifact.nativeModelAccess?.mappingGenerations) {
+      for (const [path, genInfo] of artifact.nativeModelAccess
+        .mappingGenerations) {
+        if (!allMappingGenInfos.has(path)) {
+          allMappingGenInfos.set(path, genInfo);
+        }
+      }
+    }
+
+    // Resolve mapping path from accessPointId and dataProductAccessType
+    let mappingPath: string | undefined;
+    let accessGroup:
+      | V1_ModelAccessPointGroupInfo
+      | V1_NativeModelExecutionContextInfo
+      | undefined = undefined;
+    if (dataProductAccessType === DataProductAccessType.MODEL) {
+      const group = modelAccessPointGroups.find((g) => g.id === accessPointId);
+      if (group) {
+        mappingPath = group.mappingGeneration.path;
+        accessGroup = group;
+      }
+    } else if (dataProductAccessType === DataProductAccessType.NATIVE) {
+      const nativeCtx =
+        artifact.nativeModelAccess?.nativeModelExecutionContexts.find(
+          (ctx) => ctx.key === accessPointId,
+        );
+      if (nativeCtx) {
+        mappingPath = nativeCtx.mapping;
+        accessGroup = nativeCtx;
+      }
+    }
+
+    if (!mappingPath) {
+      throw new Error(
+        `Can't resolve mapping path for access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
+      );
+    }
+    if (!accessGroup) {
+      throw new Error(
+        `Can't resolve access group for access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
+      );
+    }
+    // Build the minimal graph using ONLY the elements from the resolved mapping
+    const resolvedMappingGenInfo = mappingPath
+      ? allMappingGenInfos.get(mappingPath)
+      : undefined;
+
+    if (!resolvedMappingGenInfo) {
+      throw new Error(
+        `Can't find mapping generation info for access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
+      );
+    }
+
+    // Create a dummy mapping for the resolved mapping path
+    const dummyMapping = new V1_Mapping();
+    dummyMapping.package = extractPackagePathFromPath(mappingPath) ?? '';
+    dummyMapping.name = extractElementNameFromPath(mappingPath);
+
+    // Create a dummy data product element
+    const dummyDataProduct = new V1_DataProduct();
+    dummyDataProduct.package =
+      extractPackagePathFromPath(dataProductPath) ?? '';
+    dummyDataProduct.name = extractElementNameFromPath(dataProductPath);
+    dummyDataProduct.title = artifact.dataProduct.title;
+    dummyDataProduct.description = artifact.dataProduct.description;
+    // Build the minimal graph from the resolved mapping's model elements + dummy mapping + dummy data product
+    const graphEntities = resolvedMappingGenInfo.model.elements
+      .concat([dummyMapping])
+      .concat(dummyDataProduct)
+      .filter((el) => !pureGraph.getNullableElement(el.path, false))
+      .map((el) => this.elementProtocolToEntity(el));
+    await this.buildGraph(
+      pureGraph,
+      graphEntities,
+      ActionState.create(),
+      {
+        origin: new LegendSDLC(
+          projectInfo.groupId,
+          projectInfo.artifactId,
+          projectInfo.versionId,
+        ),
+      },
+      graphReport,
+    );
+
+    const data = pureGraph.getDataProduct(dataProductPath);
+    // build access point group
+    let exec: ModelAccessPointGroup | NativeModelExecutionContext;
+    if (accessGroup instanceof V1_ModelAccessPointGroupInfo) {
+      const group = new ModelAccessPointGroup();
+      group.id = accessGroup.id;
+      data.accessPointGroups = [group];
+      group.mapping = PackageableElementExplicitReference.create(
+        pureGraph.getMapping(mappingPath),
+      );
+      exec = group;
+    } else {
+      const nativeAccess = new NativeModelExecutionContext();
+      nativeAccess.key = accessGroup.key;
+      nativeAccess.mapping = PackageableElementExplicitReference.create(
+        pureGraph.getMapping(mappingPath),
+      );
+      const na = new NativeModelAccess();
+      na.nativeModelExecutionContexts = [nativeAccess];
+      data.nativeModelAccess = na;
+      exec = nativeAccess;
+    }
+
+    // Build MappingModelCoverageAnalysisResult for the resolved mapping only
+    const mappingToMappingCoverageResult = new Map<
+      string,
+      MappingModelCoverageAnalysisResult
+    >();
+    const v1Result = new V1_MappingModelCoverageAnalysisResult();
+    v1Result.mappedEntities = resolvedMappingGenInfo.mappedEntities;
+    v1Result.model = resolvedMappingGenInfo.model;
+    mappingToMappingCoverageResult.set(
+      mappingPath,
+      V1_buildModelCoverageAnalysisResult(
+        v1Result,
+        this,
+        pureGraph.getMapping(mappingPath),
+        resolvedMappingGenInfo.model,
+      ),
+    );
+
+    // Build the analysis result
+    const result = new DataProductAnalysis();
+    result.path = dataProductPath;
+    result.title = artifact.dataProduct.title;
+    result.description = artifact.dataProduct.description;
+    result.mappingToMappingCoverageResult = mappingToMappingCoverageResult;
+
+    return new DataProductAnalysisQueryResult(mappingPath, result, exec);
   }
 
   async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
@@ -4764,7 +4984,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
 
-    const input = this.createLineageInput(
+    const input = await this.createLineageInput(
       graph,
       mapping,
       lambda,

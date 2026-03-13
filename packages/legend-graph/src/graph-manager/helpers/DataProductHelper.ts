@@ -102,7 +102,7 @@ export const resolveUsableDataProductClasses = (
     );
   }
   if (elements?.length) {
-    return compatibleClasses.filter((_class) => {
+    const filtered = compatibleClasses.filter((_class) => {
       const _classElements = elements
         .filter((e) => matchesDataElement(_class, e.element.value))
         // we sort because we respect the closest definition to the element.
@@ -114,6 +114,7 @@ export const resolveUsableDataProductClasses = (
       }
       return !_classElements[0]?.exclude;
     });
+    return filtered;
   }
   return compatibleClasses;
 };

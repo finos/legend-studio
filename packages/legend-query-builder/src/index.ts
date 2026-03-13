@@ -62,11 +62,14 @@ export { ClassQueryBuilderState } from './stores/workflows/ClassQueryBuilderStat
 export { FunctionQueryBuilderState } from './stores/workflows/FunctionQueryBuilderState.js';
 export {
   DataProductQueryBuilderState,
+  type DataProductOption,
+  buildExecOptions,
   type ModelAccessPointGroupOption,
   buildModelAccessPointGroupOption,
   NativeModelDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
 } from './stores/workflows/dataProduct/DataProductQueryBuilderState.js';
+export { DataProductQueryBuilderSetupFormContent } from './components/workflows/DataProductQueryBuilder.js';
 export { MappingQueryBuilderState } from './stores/workflows/MappingQueryBuilderState.js';
 export {
   type ServiceExecutionContext,

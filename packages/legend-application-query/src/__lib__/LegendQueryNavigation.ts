@@ -23,6 +23,7 @@ import {
   stringifyQueryParams,
 } from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
+import { DataProductAccessType } from '@finos/legend-graph';
 
 export enum LEGEND_QUERY_ROUTE_PATTERN_TOKEN {
   GAV = 'gav',
@@ -35,8 +36,8 @@ export enum LEGEND_QUERY_ROUTE_PATTERN_TOKEN {
 export enum DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN {
   GAV = 'gav',
   DATA_PRODUCT_PATH = 'dataProductPath',
-  EXECUTION_TYPE = 'type',
-  EXECUTION_CONTEXT_KEY = 'executionKey',
+  DATA_PRODUCT_ACCESS_TYPE = 'accessType',
+  DATA_PRODUCT_ACCESS_ID = 'accessId',
 }
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
@@ -52,41 +53,87 @@ export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH}`,
   EDIT_EXISTING_QUERY: `/edit/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID}`,
   DATA_CUBE_EXISTING_QUERY: `/edit/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID}/cube`,
-  DATA_PRODUCT: `/data-product/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_TYPE}/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT_KEY}`,
+  DATA_PRODUCT: `/data-product/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_TYPE}/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_ID}`,
 });
 
 // DataProduct
 
-export enum DATA_PRODUCT_EXECUTION_TYPE {
-  NATIVE = 'native',
-  ACCESS_GROUPS = 'access_groups',
-}
+export type DataProductPathParams = {
+  [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]: string;
+  [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
+  [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_TYPE]: string;
+  [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_ID]: string;
+};
 
+/**
+ * Generates a data product route for the given access type.
+ */
 export const generateDataProductRoute = (
   groupId: string,
   artifactId: string,
   versionId: string,
   dataProductPath: string,
   executionType: string,
-  executionContextKey: string,
+  accessPointId: string,
 ): string =>
   generatePath(LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT, {
+    [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_TYPE]:
+      executionType,
     [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]:
       generateGAVCoordinates(groupId, artifactId, versionId),
     [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]:
       dataProductPath,
-    [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_TYPE]:
-      executionType,
-    [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT_KEY]:
-      executionContextKey,
+    [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_ID]:
+      accessPointId,
   });
 
-export type DataProductPathParams = {
-  [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]: string;
-  [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
-  [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_TYPE]: string;
-  [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT_KEY]: string;
-};
+export const generateDataProductNativeRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  dataProductPath: string,
+  accessPointId: string,
+): string =>
+  generateDataProductRoute(
+    groupId,
+    artifactId,
+    versionId,
+    dataProductPath,
+    DataProductAccessType.NATIVE,
+    accessPointId,
+  );
+
+export const generateDataProductModelRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  dataProductPath: string,
+  accessPointId: string,
+): string =>
+  generateDataProductRoute(
+    groupId,
+    artifactId,
+    versionId,
+    dataProductPath,
+    DataProductAccessType.MODEL,
+    accessPointId,
+  );
+
+export const generateDataProductLakehouseRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  dataProductPath: string,
+  accessPointId: string,
+): string =>
+  generateDataProductRoute(
+    groupId,
+    artifactId,
+    versionId,
+    dataProductPath,
+    DataProductAccessType.LAKEHOUSE,
+    accessPointId,
+  );
 
 // setup
 
@@ -291,3 +338,14 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl = (
   `${dataCubeApplicationUrl}?sourceData=${encodeURIComponent(
     btoa(JSON.stringify(sourceData)),
   )}`;
+
+/**
+ * @external_application_navigation This depends on Legend Marketplace routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl =
+  (
+    marketplaceApplicationUrl: string,
+    dataProductId: string,
+    deploymentId: string,
+  ): string =>
+    `${marketplaceApplicationUrl}/dataProduct/deployed/${dataProductId}/${deploymentId}`;

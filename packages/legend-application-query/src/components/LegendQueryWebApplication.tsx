@@ -40,7 +40,7 @@ import { useEffect } from 'react';
 import { flowResult } from 'mobx';
 import { LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceTemplateQueryCreator } from './data-space/DataSpaceTemplateQueryCreator.js';
-import { DataSpaceQueryCreator } from './data-space/DataSpaceQueryCreator.js';
+import { QueryCreator } from './data-space/DataProductQueryCreator.js';
 import { ExistingQueryDataCubeViewer } from './data-cube/ExistingQueryDataCubeViewer.js';
 import {
   AuthProvider,
@@ -72,7 +72,7 @@ const LegendQueryWebApplicationRouter = observer(() => {
         <Routes>
           <Route
             path={LEGEND_QUERY_ROUTE_PATTERN.DEFAULT}
-            element={<DataSpaceQueryCreator />}
+            element={<QueryCreator />}
           />
           <Route
             path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY_SETUP}
@@ -104,6 +104,10 @@ const LegendQueryWebApplicationRouter = observer(() => {
             element={<ExistingQueryDataCubeViewer />}
           />
           <Route
+            path={LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT}
+            element={<QueryCreator />}
+          />
+          <Route
             path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY}
             element={<ServiceQueryCreator />}
           />
@@ -117,14 +121,14 @@ const LegendQueryWebApplicationRouter = observer(() => {
             path={generateExtensionUrlPattern(
               LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP,
             )}
-            element={<DataSpaceQueryCreator />}
+            element={<QueryCreator />}
           />
 
           <Route
             path={generateExtensionUrlPattern(
               LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE,
             )}
-            element={<DataSpaceQueryCreator />}
+            element={<QueryCreator />}
           />
 
           {extraApplicationPageEntries.flatMap((entry) =>

@@ -27,17 +27,27 @@ import {
   createVisitedDataspaceFromInfo,
   createIdFromDataSpaceInfo,
   createVisitedDataSpaceId,
+  createVisitedDataProductId,
+  type VisitedLegacyDataProduct,
   type VisitedDataProduct,
 } from './LegendQueryUserDataSpaceHelper.js';
 import type { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 
 export enum LEGEND_QUERY_USER_DATA_KEY {
   RECENTLY_VIEWED_QUERIES = 'query-editor.recent-queries',
-  RECENTLY_VIEWED_DATASPACES = 'query-editor.recent-dataSpaces',
+  RECENTLY_VIEWED_LEGACY_DATAPRODUCTS = 'query-editor.recent-dataSpaces',
+  RECENTLY_VIEWED_DATAPRODUCTS = 'query-editor.recent-dataProducts',
+  USER_LAKEHOUSE_INFO = 'query-editor.lakehouse-info',
+}
+
+export interface LakehouseUserInfo {
+  env: string | undefined;
+  snowflakeWarehouse: string | undefined;
 }
 
 export const USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT = 10;
 export const USER_DATA_QUERY_DATASPACE_LIMIT = 10;
+export const USER_DATA_QUERY_DATAPRODUCT_LIMIT = 50;
 
 type SavedData = string[];
 
@@ -132,9 +142,9 @@ export class LegendQueryUserDataHelper {
   // DataSpaces
   static getRecentlyVisitedDataSpaces(
     service: UserDataService,
-  ): VisitedDataProduct[] {
+  ): VisitedLegacyDataProduct[] {
     const data = service.getObjectValue(
-      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATASPACES,
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_LEGACY_DATAPRODUCTS,
     );
     return (
       // TODO: think of a better way to deserialize this data, maybe like settings, use JSON schema
@@ -149,7 +159,7 @@ export class LegendQueryUserDataHelper {
               {
                 data,
               },
-            ) as { data: VisitedDataProduct[] }
+            ) as { data: VisitedLegacyDataProduct[] }
           ).data,
       ) ?? []
     );
@@ -158,7 +168,7 @@ export class LegendQueryUserDataHelper {
   static findRecentlyVisitedDataSpace(
     service: UserDataService,
     id: string,
-  ): VisitedDataProduct | undefined {
+  ): VisitedLegacyDataProduct | undefined {
     return LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service).find(
       (v) => v.id === id,
     );
@@ -166,17 +176,18 @@ export class LegendQueryUserDataHelper {
 
   static getRecentlyVisitedDataSpace(
     service: UserDataService,
-  ): VisitedDataProduct | undefined {
+  ): VisitedLegacyDataProduct | undefined {
     return LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service)[0];
   }
 
   static persistVisitedDataspace(
     service: UserDataService,
-    value: VisitedDataProduct,
-    persistedData: VisitedDataProduct[],
+    value: VisitedLegacyDataProduct,
+    persistedData: VisitedLegacyDataProduct[],
     limit = USER_DATA_QUERY_DATASPACE_LIMIT,
   ): void {
-    const key = LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATASPACES;
+    const key = LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_LEGACY_DATAPRODUCTS;
+    value.lastViewedAt = Date.now();
     const idx = persistedData.findIndex((data) => data.id === value.id);
     if (idx === -1) {
       if (persistedData.length >= limit) {
@@ -192,7 +203,7 @@ export class LegendQueryUserDataHelper {
 
   static removeRecentlyViewedDataSpaces(service: UserDataService): void {
     service.persistValue(
-      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATASPACES,
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_LEGACY_DATAPRODUCTS,
       [],
     );
   }
@@ -211,7 +222,7 @@ export class LegendQueryUserDataHelper {
     }
     dataSpaces.splice(idx, 1);
     service.persistValue(
-      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_LEGACY_DATAPRODUCTS,
       dataSpaces,
     );
   }
@@ -244,7 +255,7 @@ export class LegendQueryUserDataHelper {
   }
   static addVisitedDatspace(
     service: UserDataService,
-    visited: VisitedDataProduct,
+    visited: VisitedLegacyDataProduct,
   ): void {
     const dataspaces =
       LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service);
@@ -272,5 +283,159 @@ export class LegendQueryUserDataHelper {
       return true;
     }
     return false;
+  }
+
+  // DataProducts
+  static getRecentlyVisitedDataProducts(
+    service: UserDataService,
+  ): VisitedDataProduct[] {
+    const data = service.getObjectValue(
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATAPRODUCTS,
+    );
+    return (
+      returnUndefOnError(
+        () =>
+          (
+            deserialize(
+              createSimpleSchema({
+                data: raw(),
+              }),
+              {
+                data,
+              },
+            ) as { data: VisitedDataProduct[] }
+          ).data,
+      ) ?? []
+    );
+  }
+
+  static findRecentlyVisitedDataProduct(
+    service: UserDataService,
+    id: string,
+  ): VisitedDataProduct | undefined {
+    return LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+      service,
+    ).find((v) => v.id === id);
+  }
+
+  static getRecentlyVisitedDataProduct(
+    service: UserDataService,
+  ): VisitedDataProduct | undefined {
+    return LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(service)[0];
+  }
+
+  static persistVisitedDataProduct(
+    service: UserDataService,
+    value: VisitedDataProduct,
+    persistedData: VisitedDataProduct[],
+    limit = USER_DATA_QUERY_DATAPRODUCT_LIMIT,
+  ): void {
+    const key = LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATAPRODUCTS;
+    value.lastViewedAt = Date.now();
+    const idx = persistedData.findIndex((data) => data.id === value.id);
+    if (idx === -1) {
+      if (persistedData.length >= limit) {
+        persistedData.pop();
+      }
+      persistedData.unshift(value);
+    } else {
+      persistedData.splice(idx, 1);
+      persistedData.unshift(value);
+    }
+    service.persistValue(key, persistedData);
+  }
+
+  static removeRecentlyViewedDataProducts(service: UserDataService): void {
+    service.persistValue(
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATAPRODUCTS,
+      [],
+    );
+  }
+
+  static removeRecentlyViewedDataProduct(
+    service: UserDataService,
+    id: string,
+  ): void {
+    const dataProducts =
+      LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(service);
+    const idx = dataProducts.findIndex(
+      (visitedDataProduct) => visitedDataProduct.id === id,
+    );
+    if (idx === -1) {
+      return;
+    }
+    dataProducts.splice(idx, 1);
+    service.persistValue(
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATAPRODUCTS,
+      dataProducts,
+    );
+  }
+
+  static addVisitedDataProduct(
+    service: UserDataService,
+    visited: VisitedDataProduct,
+  ): void {
+    const dataProducts =
+      LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(service);
+    LegendQueryUserDataHelper.persistVisitedDataProduct(
+      service,
+      visited,
+      dataProducts,
+    );
+  }
+
+  static updateVisitedDataProductExecContext(
+    service: UserDataService,
+    groupId: string,
+    artifactId: string,
+    dataProductPath: string,
+    exec: string,
+  ): boolean {
+    const visited = LegendQueryUserDataHelper.findRecentlyVisitedDataProduct(
+      service,
+      createVisitedDataProductId(groupId, artifactId, dataProductPath),
+    );
+    if (visited) {
+      visited.accessId = exec;
+      LegendQueryUserDataHelper.addVisitedDataProduct(service, visited);
+      return true;
+    }
+    return false;
+  }
+
+  // Lakehouse User Info
+  static getLakehouseUserInfo(
+    service: UserDataService,
+  ): LakehouseUserInfo | undefined {
+    const data = service.getObjectValue(
+      LEGEND_QUERY_USER_DATA_KEY.USER_LAKEHOUSE_INFO,
+    );
+    return returnUndefOnError(
+      () =>
+        (
+          deserialize(
+            createSimpleSchema({
+              data: raw(),
+            }),
+            {
+              data,
+            },
+          ) as { data: LakehouseUserInfo }
+        ).data,
+    );
+  }
+
+  static persistLakehouseUserInfo(
+    service: UserDataService,
+    info: LakehouseUserInfo,
+  ): void {
+    service.persistValue(LEGEND_QUERY_USER_DATA_KEY.USER_LAKEHOUSE_INFO, info);
+  }
+
+  static removeLakehouseUserInfo(service: UserDataService): void {
+    service.persistValue(
+      LEGEND_QUERY_USER_DATA_KEY.USER_LAKEHOUSE_INFO,
+      undefined,
+    );
   }
 }

@@ -53,6 +53,7 @@ import {
   createQueryDataSpaceTaggedValue,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryDataSpaceQueryBuilderState } from './query-builder/LegendQueryDataSpaceQueryBuilderState.js';
+import { DataProductSelectorState } from './DataProductSelectorState.js';
 
 export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;
@@ -189,6 +190,15 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       },
       undefined,
       async (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) => {
+        this.applicationStore.notificationService.notifyWarning(
+          `Can't switch data product to visit current template query`,
+        );
+      },
+      new DataProductSelectorState(
+        this.depotServerClient,
+        this.applicationStore,
+      ),
+      () => {
         this.applicationStore.notificationService.notifyWarning(
           `Can't switch data product to visit current template query`,
         );

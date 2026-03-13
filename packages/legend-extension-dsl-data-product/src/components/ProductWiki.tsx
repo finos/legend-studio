@@ -275,6 +275,11 @@ export const ProductWiki = observer(
                     productViewerState.modelsDocumentationState
                   }
                   applicationStore={productViewerState.applicationStore}
+                  queryModel={
+                    productViewerState.openQuery
+                      ? () => productViewerState.openQuery?.()
+                      : undefined
+                  }
                 />
               )}
               {productViewerState.modelAccessPointGroupDiagramViewerState && (
@@ -285,6 +290,13 @@ export const ProductWiki = observer(
                     productViewerState.modelAccessPointGroupDiagramViewerState
                   }
                   actions={{
+                    onQueryClass:
+                      productViewerState.projectGAV &&
+                      productViewerState.openQuery
+                        ? (_class) => {
+                            productViewerState.openQuery?.();
+                          }
+                        : undefined,
                     onViewClassDocumentation: (classPath) =>
                       productViewerState.modelsDocumentationState?.viewClassDocumentation(
                         classPath,

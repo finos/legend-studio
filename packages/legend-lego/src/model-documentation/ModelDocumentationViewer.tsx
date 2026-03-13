@@ -27,6 +27,7 @@ import {
   MenuContent,
   MenuContentItem,
   MoreVerticalIcon,
+  PlayIcon,
   SearchIcon,
   TimesIcon,
   Tooltip,
@@ -1064,8 +1065,10 @@ export const ModelsDocumentation = observer(
     modelsDocumentationState: ViewerModelsDocumentationState;
     applicationStore: GenericLegendApplicationStore;
     title?: string | undefined;
+    queryModel?: (() => void) | undefined;
   }) => {
-    const { modelsDocumentationState, applicationStore, title } = props;
+    const { modelsDocumentationState, applicationStore, title, queryModel } =
+      props;
     const sectionRef = useRef<HTMLDivElement>(null);
     const elementDocs = modelsDocumentationState.elementDocs;
 
@@ -1091,6 +1094,17 @@ export const ModelsDocumentation = observer(
               <AnchorLinkIcon />
             </button>
           </div>
+          {queryModel && (
+            <button
+              className="models-documentation__viewer__wiki__section__header__query-btn"
+              tabIndex={-1}
+              onClick={queryModel}
+              title="Query"
+            >
+              <PlayIcon />
+              Query
+            </button>
+          )}
         </div>
         <div className="models-documentation__viewer__wiki__section__content">
           {elementDocs.length > 0 && (

@@ -37,6 +37,9 @@ import {
   PackageableElementExplicitReference,
   resolveDataProductExecutionState,
   RuntimePointer,
+  type QueryExecutionContext,
+  QueryDataProductNativeExecutionContext,
+  QueryDataProductModelAccessExecutionContext,
 } from '@finos/legend-graph';
 import { QueryBuilderState } from '../../QueryBuilderState.js';
 
@@ -150,6 +153,7 @@ export class NativeModelDataProductExecutionState extends DataProductExecutionSt
 
 export class ModelAccessPointDataProductExecutionState extends DataProductExecutionState<ModelAccessPointGroup> {
   selectedRuntime: PackageableRuntime | undefined;
+  adhocRuntime = false;
 
   constructor(
     executionState: ModelAccessPointGroup,
@@ -158,9 +162,11 @@ export class ModelAccessPointDataProductExecutionState extends DataProductExecut
     super(executionState, queryBuilderState);
     makeObservable(this, {
       selectedRuntime: observable,
+      adhocRuntime: observable,
       compatibleRuntimes: computed,
       showRuntimeOptions: computed,
       changeSelectedRuntime: action,
+      withAdhocRuntime: action,
     });
     this.selectedRuntime = this.compatibleRuntimes[0];
   }
@@ -168,6 +174,11 @@ export class ModelAccessPointDataProductExecutionState extends DataProductExecut
   changeSelectedRuntime(val: PackageableRuntime): void {
     this.selectedRuntime = val;
     this.queryBuilderState.changeRuntime(val);
+  }
+
+  withAdhocRuntime(): ModelAccessPointDataProductExecutionState {
+    this.adhocRuntime = true;
+    return this;
   }
 
   override get label(): string {
@@ -239,6 +250,13 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       setExecutionState: action,
       selectedDataProductOption: computed,
       isProductLinkable: computed,
+      isNativeMode: computed,
+      isModelAccessPointGroupMode: computed,
+      showExecutionContextOptions: computed,
+      showModelAccessPointGroupSelector: computed,
+      selectedExecOption: computed,
+      selectedModelAccessPointGroupOption: computed,
+      usableClasses: computed,
       modelAccessPointGroups: computed,
       hasModelAccessPointGroups: computed,
       modelAccessPointGroupOptions: computed,
@@ -267,22 +285,137 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     return false;
   }
 
+  get isNativeMode(): boolean {
+    return this.executionState instanceof NativeModelDataProductExecutionState;
+  }
+
+  get isModelAccessPointGroupMode(): boolean {
+    return (
+      this.executionState instanceof ModelAccessPointDataProductExecutionState
+    );
+  }
+
+  get showExecutionContextOptions(): boolean {
+    return this.isNativeMode && this.execOptions.length > 1;
+  }
+
+  get showModelAccessPointGroupSelector(): boolean {
+    return (
+      this.isModelAccessPointGroupMode &&
+      this.modelAccessPointGroupOptions.length > 1
+    );
+  }
+
+  get selectedExecOption():
+    | { label: string; value: NativeModelExecutionContext }
+    | undefined {
+    return this.executionState instanceof NativeModelDataProductExecutionState
+      ? buildExecOptions(this.executionState.exectionValue)
+      : undefined;
+  }
+
+  get selectedModelAccessPointGroupOption():
+    | ModelAccessPointGroupOption
+    | undefined {
+    return this.executionState instanceof
+      ModelAccessPointDataProductExecutionState
+      ? buildModelAccessPointGroupOption(this.executionState.exectionValue)
+      : undefined;
+  }
+
+  get usableClasses(): Class[] {
+    const activeMapping = this.activeMapping;
+    return activeMapping
+      ? resolveUsableDataProductClasses(
+          this.activeFeaturedElements,
+          activeMapping,
+          this.graphManagerState,
+          this.explorerState.mappingModelCoverageAnalysisResult,
+        )
+      : [];
+  }
+
+  changeNativeExecutionContext(val: NativeModelExecutionContext): void {
+    if (this.isNativeMode && val === this.executionState.exectionValue) {
+      return;
+    }
+    this.setExecutionState(val);
+    this.propagateExecutionContextChange()
+      .then(() => this.onExecutionContextChange?.(val))
+      .catch(this.applicationStore.alertUnhandledError);
+  }
+
+  changeModelAccessPointGroupValue(val: ModelAccessPointGroup): void {
+    if (
+      this.isModelAccessPointGroupMode &&
+      val === this.executionState.exectionValue
+    ) {
+      return;
+    }
+    this.setExecutionState(val);
+    this.propagateExecutionContextChange().catch(
+      this.applicationStore.alertUnhandledError,
+    );
+  }
+
+  override getQueryExecutionContext(): QueryExecutionContext {
+    if (this.executionState instanceof NativeModelDataProductExecutionState) {
+      const execContext = new QueryDataProductNativeExecutionContext();
+      execContext.dataProductPath = this.dataProduct.path;
+      execContext.executionKey = this.executionState.exectionValue.key;
+      return execContext;
+    } else if (
+      this.executionState instanceof ModelAccessPointDataProductExecutionState
+    ) {
+      const execContext = new QueryDataProductModelAccessExecutionContext();
+      execContext.dataProductPath = this.dataProduct.path;
+      execContext.accessPointGroupId = this.executionState.exectionValue.id;
+      return execContext;
+    }
+    return super.getQueryExecutionContext();
+  }
+
   handleDataProductChange(val: DepotEntityWithOrigin): void {
     try {
       this.loadDataProductModelState.inProgress();
-      const dataProduct = this.graphManagerState.graph.getDataProduct(val.path);
-      this.initWithDataProduct(dataProduct);
+      const dataProduct =
+        this.graphManagerState.graph.getOwnNullableDataProduct(val.path) ??
+        this.graphManagerState.graph.generationModel.getOwnNullableDataProduct(
+          val.path,
+        );
+      if (dataProduct) {
+        this.initWithDataProduct(dataProduct);
+        this.loadDataProductModelState.pass();
+      } else if (this.onDataProductChange) {
+        // data product not in current graph — trigger full rebuild
+        this.onDataProductChange(val).catch((error) => {
+          assertErrorThrown(error);
+          this.applicationStore.notificationService.notifyError(
+            `Failed to change Data Product: ${error.message}`,
+          );
+          this.loadDataProductModelState.fail();
+        });
+      } else {
+        throw new Error(
+          `Data Product '${val.path}' not found in current graph and no cross-project handler is available`,
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Failed to change Data Product: ${error.message}`,
       );
+      this.loadDataProductModelState.fail();
     }
   }
 
-  initWithDataProduct(dataProduct: DataProduct): void {
+  initWithDataProduct(
+    dataProduct: DataProduct,
+    preResolvedState?: NativeModelExecutionContext | ModelAccessPointGroup,
+  ): void {
     try {
-      const execValue = resolveDataProductExecutionState(dataProduct);
+      const execValue =
+        preResolvedState ?? resolveDataProductExecutionState(dataProduct);
       this.dataProduct = dataProduct;
       this.executionState =
         execValue instanceof NativeModelExecutionContext
