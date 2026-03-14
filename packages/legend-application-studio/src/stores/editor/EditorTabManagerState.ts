@@ -58,6 +58,7 @@ import { MappingEditorState } from './editor-state/element-editor-state/mapping/
 import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState.js';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState.js';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState.js';
+import { DatabaseEditorState } from './editor-state/element-editor-state/database/DatabaseEditorState.js';
 import { EntityDiffViewerState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState.js';
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
@@ -169,11 +170,9 @@ export class EditorTabManagerState extends TabManagerState {
       return new UMLEditorState(this.editorStore, element);
     } else if (element instanceof ConcreteFunctionDefinition) {
       return new FunctionEditorState(this.editorStore, element);
-    } else if (
-      element instanceof Measure ||
-      element instanceof Database ||
-      element instanceof FlatData
-    ) {
+    } else if (element instanceof Database) {
+      return new DatabaseEditorState(this.editorStore, element);
+    } else if (element instanceof Measure || element instanceof FlatData) {
       return new UnsupportedElementEditorState(this.editorStore, element);
     } else if (element instanceof PackageableRuntime) {
       return new PackageableRuntimeEditorState(this.editorStore, element);
