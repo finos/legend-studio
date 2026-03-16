@@ -22,6 +22,7 @@ import type {
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_DataRequestsWithWorkflowResponse,
+  V1_DataRequestTasksResponse,
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
   V1_EntitlementsDataProductDetailsResponse,
@@ -290,6 +291,16 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   ): Promise<V1_DataRequestsWithWorkflowResponse> =>
     this.get(
       `${this._dataAccessRequests()}/${encodeURIComponent(accessRequestId)}/withWorkflow`,
+      {},
+      this._token(token),
+    );
+
+  getDataAccessRequestTasks = (
+    accessRequestId: string,
+    token: string | undefined,
+  ): Promise<V1_DataRequestTasksResponse> =>
+    this.get(
+      `${this.baseUrl}/datarequests/${encodeURIComponent(accessRequestId)}/tasks`,
       {},
       this._token(token),
     );

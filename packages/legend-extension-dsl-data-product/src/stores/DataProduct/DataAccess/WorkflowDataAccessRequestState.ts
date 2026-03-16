@@ -21,6 +21,7 @@ import {
   type V1_DataRequestWithWorkflow,
   type V1_OrganizationalScope,
   type V1_UserType,
+  type V1_RawWorkflowTask,
   V1_AccessPointGroupReference,
   V1_DataOwnerApprovalTask,
   V1_PrivilegeManagerApprovalTask,
@@ -29,6 +30,7 @@ import {
   V1_WorkflowTaskAction,
   V1_WorkflowTaskStatus,
   V1_deserializeDataRequestsWithWorkflowResponse,
+  V1_workflowTaskModelSchema,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -36,20 +38,33 @@ import {
   type UserSearchService,
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import type {
+  LakehouseContractServerClient,
+  LakehouseWorkflowServerClient,
+} from '@finos/legend-server-lakehouse';
+import { deserialize } from 'serializr';
 import {
   DataAccessRequestStatus,
   type DataAccessRequestState,
   type TimelineStep,
 } from './DataAccessRequestState.js';
 
+export interface WorkflowTasksState {
+  privilegeManagerTask: V1_RawWorkflowTask | undefined;
+  dataOwnerTask: V1_RawWorkflowTask | undefined;
+}
+
 export class WorkflowDataAccessRequestState implements DataAccessRequestState {
-  dataRequestWithWorkflow: V1_DataRequestWithWorkflow;
+  readonly dataAccessRequestId: string;
+  dataRequestWithWorkflow: V1_DataRequestWithWorkflow | undefined;
+  workflowTasks: WorkflowTasksState;
   readonly applicationStore: GenericLegendApplicationStore;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
+  readonly lakehouseWorkflowServerClient: LakehouseWorkflowServerClient;
   readonly graphManagerState: GraphManagerState;
   readonly userSearchService: UserSearchService | undefined;
   readonly subscription: V1_DataSubscription | undefined;
@@ -59,16 +74,19 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   readonly invalidatingState = ActionState.create();
 
   constructor(
-    dataRequestWithWorkflow: V1_DataRequestWithWorkflow,
+    dataAccessRequestId: string,
     applicationStore: GenericLegendApplicationStore,
     lakehouseContractServerClient: LakehouseContractServerClient,
+    lakehouseWorkflowServerClient: LakehouseWorkflowServerClient,
     graphManagerState: GraphManagerState,
     userSearchService: UserSearchService | undefined,
     subscription?: V1_DataSubscription | undefined,
   ) {
     makeObservable(this, {
       dataRequestWithWorkflow: observable,
+      workflowTasks: observable,
       setDataRequestWithWorkflow: action,
+      setWorkflowTasks: action,
       targetUsers: computed,
       isInProgress: computed,
       isInTerminalState: computed,
@@ -76,9 +94,15 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       init: flow,
     });
 
-    this.dataRequestWithWorkflow = dataRequestWithWorkflow;
+    this.dataAccessRequestId = dataAccessRequestId;
+    this.dataRequestWithWorkflow = undefined;
+    this.workflowTasks = {
+      privilegeManagerTask: undefined,
+      dataOwnerTask: undefined,
+    };
     this.applicationStore = applicationStore;
     this.lakehouseContractServerClient = lakehouseContractServerClient;
+    this.lakehouseWorkflowServerClient = lakehouseWorkflowServerClient;
     this.graphManagerState = graphManagerState;
     this.userSearchService = userSearchService;
     this.subscription = subscription;
@@ -87,21 +111,24 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   // ---- Delegate getters for DataAccessRequestState ----
 
   get guid(): string {
-    return this.dataRequestWithWorkflow.dataRequest.guid;
+    return this.dataAccessRequestId;
   }
 
   get description(): string {
-    return this.dataRequestWithWorkflow.dataRequest.businessJustification;
+    return guaranteeNonNullable(this.dataRequestWithWorkflow).dataRequest
+      .businessJustification;
   }
 
   get createdBy(): string {
-    return this.dataRequestWithWorkflow.dataRequest.createdBy;
+    return guaranteeNonNullable(this.dataRequestWithWorkflow).dataRequest
+      .createdBy;
   }
 
   get createdAt(): string {
     // V1_DataRequest does not have a dedicated createdAt field;
     // fall back to the workflow's first task createdOn or current date.
-    const firstWorkflow = this.dataRequestWithWorkflow.workflows[0];
+    const firstWorkflow = guaranteeNonNullable(this.dataRequestWithWorkflow)
+      .workflows[0];
     if (firstWorkflow?.tasks.length) {
       return new Date(firstWorkflow.tasks[0]!.createdOn).toISOString();
     }
@@ -109,7 +136,8 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   }
 
   get resourceId(): string {
-    const resource = this.dataRequestWithWorkflow.dataRequest.resource;
+    const resource = guaranteeNonNullable(this.dataRequestWithWorkflow)
+      .dataRequest.resource;
     if (resource instanceof V1_AccessPointGroupReference) {
       return resource.dataProduct.name;
     }
@@ -117,7 +145,8 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   }
 
   get resourceType(): string {
-    const resource = this.dataRequestWithWorkflow.dataRequest.resource;
+    const resource = guaranteeNonNullable(this.dataRequestWithWorkflow)
+      .dataRequest.resource;
     if (resource instanceof V1_AccessPointGroupReference) {
       return V1_ResourceType.ACCESS_POINT_GROUP;
     }
@@ -125,7 +154,8 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   }
 
   get accessPointGroup(): string | undefined {
-    const resource = this.dataRequestWithWorkflow.dataRequest.resource;
+    const resource = guaranteeNonNullable(this.dataRequestWithWorkflow)
+      .dataRequest.resource;
     if (resource instanceof V1_AccessPointGroupReference) {
       return resource.accessPointGroup;
     }
@@ -133,7 +163,8 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   }
 
   get deploymentId(): number {
-    const resource = this.dataRequestWithWorkflow.dataRequest.resource;
+    const resource = guaranteeNonNullable(this.dataRequestWithWorkflow)
+      .dataRequest.resource;
     if (resource instanceof V1_AccessPointGroupReference) {
       return resource.dataProduct.owner.appDirId;
     }
@@ -141,11 +172,14 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   }
 
   get consumer(): V1_OrganizationalScope {
-    return this.dataRequestWithWorkflow.dataRequest.consumer;
+    return guaranteeNonNullable(this.dataRequestWithWorkflow).dataRequest
+      .consumer;
   }
 
   get status(): DataAccessRequestStatus {
-    switch (this.dataRequestWithWorkflow.dataRequest.state) {
+    switch (
+      guaranteeNonNullable(this.dataRequestWithWorkflow).dataRequest.state
+    ) {
       case V1_RequestState.DRAFT:
         return DataAccessRequestStatus.DRAFT;
       case V1_RequestState.SUBMITTED_FOR_APPROVALS:
@@ -159,13 +193,14 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
         return DataAccessRequestStatus.CLOSED;
       default:
         throw new Error(
-          `Unsupported request state: ${this.dataRequestWithWorkflow.dataRequest.state}`,
+          `Unsupported request state: ${guaranteeNonNullable(this.dataRequestWithWorkflow).dataRequest.state}`,
         );
     }
   }
 
   get isInTerminalState(): boolean {
-    const state = this.dataRequestWithWorkflow.dataRequest.state;
+    const state = guaranteeNonNullable(this.dataRequestWithWorkflow).dataRequest
+      .state;
     return (
       state === V1_RequestState.COMPLETED ||
       state === V1_RequestState.REJECTED ||
@@ -175,18 +210,29 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   }
 
   get isInProgress(): boolean {
-    const workflows = this.dataRequestWithWorkflow.workflows;
+    // Use workflow server tasks as source of truth if available
+    const { privilegeManagerTask, dataOwnerTask } = this.workflowTasks;
+    if (privilegeManagerTask || dataOwnerTask) {
+      return [privilegeManagerTask, dataOwnerTask].some(
+        (task) => task !== undefined && !task.completed,
+      );
+    }
+    const workflows = guaranteeNonNullable(
+      this.dataRequestWithWorkflow,
+    ).workflows;
     return workflows.some((wf) =>
       wf.tasks.some((task) => task.status === V1_WorkflowTaskStatus.OPEN),
     );
   }
 
   get contractMembers(): V1_ContractUserMembership[] {
-    return this.dataRequestWithWorkflow.dataRequest.members;
+    return guaranteeNonNullable(this.dataRequestWithWorkflow).dataRequest
+      .members;
   }
 
   get targetUsers(): string[] | undefined {
-    const members = this.dataRequestWithWorkflow.dataRequest.members;
+    const members = guaranteeNonNullable(this.dataRequestWithWorkflow)
+      .dataRequest.members;
     if (members.length > 0) {
       return Array.from(new Set(members.map((m) => m.user.name))).sort();
     }
@@ -200,7 +246,8 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       return [];
     }
 
-    const workflow = this.dataRequestWithWorkflow.workflows[0];
+    const workflow = guaranteeNonNullable(this.dataRequestWithWorkflow)
+      .workflows[0];
     if (!workflow) {
       return [
         {
@@ -222,6 +269,24 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     const doTask = workflow.tasks.find(
       (t) => t instanceof V1_DataOwnerApprovalTask,
     );
+
+    // Look up workflow server tasks for source-of-truth status/assignees
+    const pmWorkflowTask = this.workflowTasks.privilegeManagerTask;
+    const doWorkflowTask = this.workflowTasks.dataOwnerTask;
+
+    // Helper to get effective assignees: prefer workflow server, fall back to dataRequestWithWorkflow
+    const getEffectiveAssignees = (
+      task:
+        | V1_PrivilegeManagerApprovalTask
+        | V1_DataOwnerApprovalTask
+        | undefined,
+      workflowTask: V1_RawWorkflowTask | undefined,
+    ): string[] | undefined => {
+      if (workflowTask && workflowTask.potentialAssignees.length > 0) {
+        return workflowTask.potentialAssignees;
+      }
+      return task?.assignees;
+    };
 
     const getTaskStepStatus = (
       task:
@@ -276,7 +341,10 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
           isEscalated,
         },
         status: pmStepStatus,
-        assignees: pmStepStatus === 'active' ? pmTask?.assignees : undefined,
+        assignees:
+          pmStepStatus === 'active'
+            ? getEffectiveAssignees(pmTask, pmWorkflowTask)
+            : undefined,
         approvalPayload:
           pmTask && pmStepStatus !== 'active' && pmStepStatus !== 'skipped'
             ? {
@@ -296,7 +364,10 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
           link: doStepStatus === 'active' ? doTask?.url : undefined,
         },
         status: doStepStatus,
-        assignees: doStepStatus === 'active' ? doTask?.assignees : undefined,
+        assignees:
+          doStepStatus === 'active'
+            ? getEffectiveAssignees(doTask, doWorkflowTask)
+            : undefined,
         approvalPayload:
           doTask && doStepStatus !== 'active' && doStepStatus !== 'upcoming'
             ? {
@@ -326,16 +397,25 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     this.dataRequestWithWorkflow = val;
   }
 
+  setWorkflowTasks(val: WorkflowTasksState): void {
+    this.workflowTasks = val;
+  }
+
   // ---- Actions ----
 
   *init(token: string | undefined): GeneratorFn<void> {
     try {
       this.initializationState.inProgress();
-      const response =
-        (yield this.lakehouseContractServerClient.getDataAccessRequestWithWorkflow(
-          this.guid,
+      const [response, tasksResponse] = (yield Promise.all([
+        this.lakehouseContractServerClient.getDataAccessRequestWithWorkflow(
+          this.dataAccessRequestId,
           token,
-        )) as PlainObject;
+        ),
+        this.lakehouseContractServerClient.getDataAccessRequestTasks(
+          this.dataAccessRequestId,
+          token,
+        ),
+      ])) as [PlainObject, PlainObject];
       const dataRequests = V1_deserializeDataRequestsWithWorkflowResponse(
         response as PlainObject,
         this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
@@ -344,6 +424,47 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       if (refreshed) {
         this.setDataRequestWithWorkflow(refreshed);
       }
+
+      // Fetch latest task details from workflow server
+      const workflowTasks =
+        (tasksResponse as { workflowTasks?: { taskId: string }[] })
+          .workflowTasks ?? [];
+      const result: WorkflowTasksState = {
+        privilegeManagerTask: undefined,
+        dataOwnerTask: undefined,
+      };
+      if (workflowTasks.length > 0 && refreshed) {
+        const allWorkflowTaskEntries = refreshed.workflows.flatMap((wf) =>
+          wf.tasks.map((task) => {
+            let taskType: 'privilegeManagerTask' | 'dataOwnerTask' | undefined;
+            if (task instanceof V1_PrivilegeManagerApprovalTask) {
+              taskType = 'privilegeManagerTask';
+            } else if (task instanceof V1_DataOwnerApprovalTask) {
+              taskType = 'dataOwnerTask';
+            }
+            return { taskId: task.taskId, taskType };
+          }),
+        );
+
+        const rawTasks = (yield Promise.all(
+          workflowTasks.map((wt) =>
+            this.lakehouseWorkflowServerClient.getTask(wt.taskId, token),
+          ),
+        )) as PlainObject<V1_RawWorkflowTask>[];
+
+        for (const rawTask of rawTasks) {
+          const entry = allWorkflowTaskEntries.find(
+            (e) => e.taskId === (rawTask as { taskId?: string }).taskId,
+          );
+          if (entry?.taskType) {
+            result[entry.taskType] = deserialize(
+              V1_workflowTaskModelSchema,
+              rawTask,
+            );
+          }
+        }
+      }
+      this.setWorkflowTasks(result);
     } catch (error) {
       assertErrorThrown(error);
     } finally {

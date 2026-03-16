@@ -22,19 +22,17 @@ import {
   type WorkflowDataAccessRequestPathParams,
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
-import {
-  type PlainObject,
-  assertErrorThrown,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useEffect, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   GraphManagerState,
+  V1_DataOwnerApprovalTask,
+  V1_PrivilegeManagerApprovalTask,
   V1_WorkflowTaskStatus,
-  V1_deserializeDataRequestsWithWorkflowResponse,
+  type V1_RawWorkflowTask,
 } from '@finos/legend-graph';
 import { Box, Button } from '@mui/material';
 import {
@@ -45,6 +43,7 @@ import {
   DataAccessRequestContent,
   WorkflowDataAccessRequestState,
 } from '@finos/legend-extension-dsl-data-product';
+import { flowResult } from 'mobx';
 
 export const WorkflowDataAccessRequestTask =
   withLegendMarketplaceProductViewerStore(
@@ -64,45 +63,50 @@ export const WorkflowDataAccessRequestTask =
         params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID],
       );
 
-      // Find the first OPEN task across all workflows
-      const actionableTask = workflowState?.dataRequestWithWorkflow.workflows
+      // Find the first OPEN task across all workflows, using workflow server assignees when available
+      const actionableTask = workflowState?.dataRequestWithWorkflow?.workflows
         .flatMap((wf) => wf.tasks)
         .find((task) => task.status === V1_WorkflowTaskStatus.OPEN);
 
+      const getActionableTaskAssignees = (): string[] => {
+        if (!actionableTask || !workflowState) {
+          return [];
+        }
+        let workflowTask: V1_RawWorkflowTask | undefined;
+        if (actionableTask instanceof V1_PrivilegeManagerApprovalTask) {
+          workflowTask = workflowState.workflowTasks.privilegeManagerTask;
+        } else if (actionableTask instanceof V1_DataOwnerApprovalTask) {
+          workflowTask = workflowState.workflowTasks.dataOwnerTask;
+        }
+        if (workflowTask && workflowTask.potentialAssignees.length > 0) {
+          return workflowTask.potentialAssignees;
+        }
+        return actionableTask.assignees;
+      };
+
       const userCanAction =
         actionableTask !== undefined &&
-        actionableTask.assignees.includes(currentUser);
+        getActionableTaskAssignees().includes(currentUser);
 
       useEffect(() => {
         const fetchAndInitialize = async () => {
           try {
             setIsLoading(true);
-            const rawResponse =
-              await marketplaceBaseStore.lakehouseContractServerClient.getDataAccessRequestWithWorkflow(
-                dataAccessRequestId,
-                auth.user?.access_token,
-              );
 
-            const dataRequests = V1_deserializeDataRequestsWithWorkflowResponse(
-              rawResponse as unknown as PlainObject,
-              marketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+            const state = new WorkflowDataAccessRequestState(
+              dataAccessRequestId,
+              marketplaceBaseStore.applicationStore,
+              marketplaceBaseStore.lakehouseContractServerClient,
+              marketplaceBaseStore.lakehouseWorkflowServerClient,
+              new GraphManagerState(
+                marketplaceBaseStore.applicationStore.pluginManager,
+                marketplaceBaseStore.applicationStore.logService,
+              ),
+              marketplaceBaseStore.userSearchService,
             );
 
-            const dataRequestWithWorkflow = dataRequests[0];
-            if (dataRequestWithWorkflow) {
-              const state = new WorkflowDataAccessRequestState(
-                dataRequestWithWorkflow,
-                marketplaceBaseStore.applicationStore,
-                marketplaceBaseStore.lakehouseContractServerClient,
-                new GraphManagerState(
-                  marketplaceBaseStore.applicationStore.pluginManager,
-                  marketplaceBaseStore.applicationStore.logService,
-                ),
-                marketplaceBaseStore.userSearchService,
-              );
-
-              setWorkflowState(state);
-            }
+            setWorkflowState(state);
+            await flowResult(state.init(auth.user?.access_token));
           } catch (error) {
             assertErrorThrown(error);
             marketplaceBaseStore.applicationStore.notificationService.notifyError(
@@ -193,7 +197,7 @@ export const WorkflowDataAccessRequestTask =
           <CubesLoadingIndicator isLoading={isLoading}>
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
-          {workflowState && (
+          {workflowState?.dataRequestWithWorkflow && (
             <div className="marketplace-lakehouse-single-contract-viewer__container">
               {actionableTask !== undefined && (
                 <Box className="marketplace-lakehouse-single-contract-viewer__action-btns">

@@ -41,6 +41,7 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   lakehouse: {
     url: 'https://testLakehouseUrl',
     platformUrl: 'https://testLakehousePlatformUrl',
+    workflowUrl: 'https://testLakehouseWorkflowUrl',
     entitlements: {
       applicationDirectoryUrl: 'https://testApplicationDirectoryUrl',
       applicationIDUrl: 'https://testApplicationIDUrl',
