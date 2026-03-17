@@ -15,6 +15,10 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
 import { withLegendMarketplaceProductViewerStore } from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import {
@@ -34,7 +38,7 @@ import {
   V1_WorkflowTaskStatus,
   type V1_RawWorkflowTask,
 } from '@finos/legend-graph';
-import { Box, Button } from '@mui/material';
+import { Box, Button, TextField } from '@mui/material';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -126,14 +130,14 @@ export const WorkflowDataAccessRequestTask =
         }
       };
 
-      const handleApprove = async () => {
-        if (!actionableTask) {
+      const handleApprove = async (justification: string) => {
+        if (!actionableTask || !currentUser) {
           return;
         }
-        await marketplaceBaseStore.lakehouseContractServerClient.approveRequest(
-          dataAccessRequestId,
+        await marketplaceBaseStore.lakehouseWorkflowServerClient.approveTask(
           actionableTask.taskId,
-          auth.user?.access_token,
+          currentUser,
+          justification,
         );
 
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
@@ -143,14 +147,14 @@ export const WorkflowDataAccessRequestTask =
         await handleRefresh();
       };
 
-      const handleDeny = async () => {
-        if (!actionableTask) {
+      const handleDeny = async (justification: string) => {
+        if (!actionableTask || !currentUser) {
           return;
         }
-        await marketplaceBaseStore.lakehouseContractServerClient.denyRequest(
-          dataAccessRequestId,
+        await marketplaceBaseStore.lakehouseWorkflowServerClient.rejectTask(
           actionableTask.taskId,
-          auth.user?.access_token,
+          currentUser,
+          justification,
         );
 
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
@@ -161,35 +165,101 @@ export const WorkflowDataAccessRequestTask =
       };
 
       const handleApproveClick = () => {
-        if (!isLoading) {
-          setIsLoading(true);
-          handleApprove()
-            .catch((error) => {
-              assertErrorThrown(error);
-              marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                `Error approving request: ${error.message}`,
-              );
-            })
-            .finally(() => {
-              setIsLoading(false);
-            });
-        }
+        let justification = '';
+        marketplaceBaseStore.applicationStore.alertService.setActionAlertInfo({
+          title: 'Approve Request',
+          message:
+            'Please provide a business justification for approving this request.',
+          prompt: (
+            <TextField
+              fullWidth={true}
+              autoFocus={true}
+              multiline={true}
+              minRows={3}
+              placeholder="Business Justification"
+              onChange={(e) => {
+                justification = e.target.value;
+              }}
+              sx={{ marginTop: 2 }}
+            />
+          ),
+          type: ActionAlertType.STANDARD,
+          actions: [
+            {
+              label: 'Approve',
+              type: ActionAlertActionType.PROCEED,
+              handler: () => {
+                if (!isLoading) {
+                  setIsLoading(true);
+                  handleApprove(justification)
+                    .catch((error) => {
+                      assertErrorThrown(error);
+                      marketplaceBaseStore.applicationStore.notificationService.notifyError(
+                        `Error approving request: ${error.message}`,
+                      );
+                    })
+                    .finally(() => {
+                      setIsLoading(false);
+                    });
+                }
+              },
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.STANDARD,
+              default: true,
+            },
+          ],
+        });
       };
 
       const handleDenyClick = () => {
-        if (!isLoading) {
-          setIsLoading(true);
-          handleDeny()
-            .catch((error) => {
-              assertErrorThrown(error);
-              marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                `Error denying request: ${error.message}`,
-              );
-            })
-            .finally(() => {
-              setIsLoading(false);
-            });
-        }
+        let justification = '';
+        marketplaceBaseStore.applicationStore.alertService.setActionAlertInfo({
+          title: 'Deny Request',
+          message:
+            'Please provide a business justification for denying this request.',
+          prompt: (
+            <TextField
+              fullWidth={true}
+              autoFocus={true}
+              multiline={true}
+              minRows={3}
+              placeholder="Business Justification"
+              onChange={(e) => {
+                justification = e.target.value;
+              }}
+              sx={{ marginTop: 2 }}
+            />
+          ),
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Deny',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: () => {
+                if (!isLoading) {
+                  setIsLoading(true);
+                  handleDeny(justification)
+                    .catch((error) => {
+                      assertErrorThrown(error);
+                      marketplaceBaseStore.applicationStore.notificationService.notifyError(
+                        `Error denying request: ${error.message}`,
+                      );
+                    })
+                    .finally(() => {
+                      setIsLoading(false);
+                    });
+                }
+              },
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.STANDARD,
+              default: true,
+            },
+          ],
+        });
       };
 
       return (

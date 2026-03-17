@@ -31,8 +31,8 @@ export enum ActionAlertActionType {
 
 export interface ActionAlertInfo {
   title?: string | undefined;
-  message: string;
-  prompt?: string | undefined;
+  message: string | React.ReactNode;
+  prompt?: string | React.ReactNode | undefined;
   type?: ActionAlertType;
   onClose?: () => void;
   onEnter?: () => void;

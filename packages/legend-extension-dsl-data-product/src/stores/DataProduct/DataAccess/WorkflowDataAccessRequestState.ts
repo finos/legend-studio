@@ -448,7 +448,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
 
         const rawTasks = (yield Promise.all(
           workflowTasks.map((wt) =>
-            this.lakehouseWorkflowServerClient.getTask(wt.taskId, token),
+            this.lakehouseWorkflowServerClient.getTask(wt.taskId),
           ),
         )) as PlainObject<V1_RawWorkflowTask>[];
 
