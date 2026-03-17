@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.205
+
+### Patch Changes
+
+- [#4973](https://github.com/finos/legend-studio/pull/4973) [`8d9331b`](https://github.com/finos/legend-studio/commit/8d9331bf5182d492a8823fdb930670d6b0de3bfa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Dev Settings modal to Query Editor with Engine client base URL, request payload compression, request payload debug, and minimal graph toggle options.
+
 ## 13.7.204
 
 ## 13.7.203

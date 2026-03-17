@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.101
+
+### Patch Changes
+
+- [#4977](https://github.com/finos/legend-studio/pull/4977) [`435dfee`](https://github.com/finos/legend-studio/commit/435dfee0498dcda28821fe3d62fdb658a97dcf76) ([@kelly-thai](https://github.com/kelly-thai)) - Add external navigation to access point registration page
+
 ## 16.0.100
 
 ### Patch Changes

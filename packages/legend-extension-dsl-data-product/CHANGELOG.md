@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.63
+
+### Patch Changes
+
+- [#4983](https://github.com/finos/legend-studio/pull/4983) [`f66bdf1`](https://github.com/finos/legend-studio/commit/f66bdf1692f9e9dfab68cd5d60d055c430ef806c) ([@kelly-thai](https://github.com/kelly-thai)) - Remove User flow from MAPG data contract request modal
+
+- [#4977](https://github.com/finos/legend-studio/pull/4977) [`435dfee`](https://github.com/finos/legend-studio/commit/435dfee0498dcda28821fe3d62fdb658a97dcf76) ([@kelly-thai](https://github.com/kelly-thai)) - Add openGovernance implementation to navigate to registration from access point viewer
+
 ## 0.0.62
 
 ## 0.0.61

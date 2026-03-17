@@ -1,5 +1,13 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.40
+
+### Patch Changes
+
+- [#4976](https://github.com/finos/legend-studio/pull/4976) [`00062e2`](https://github.com/finos/legend-studio/commit/00062e2f060d73412435bf6c4a9291b910bb536b) ([@travisstebbins](https://github.com/travisstebbins)) - Remove use of deprecated lakehouse contract/data product APIs
+
+- [#4981](https://github.com/finos/legend-studio/pull/4981) [`5c9f346`](https://github.com/finos/legend-studio/commit/5c9f3464072cc4a6f83936006331dbd3b7e301ed) ([@travisstebbins](https://github.com/travisstebbins)) - Add data access request endpoints and models
+
 ## 0.3.39
 
 ## 0.3.38
