@@ -33,10 +33,8 @@ import { useEffect, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   GraphManagerState,
-  V1_DataOwnerApprovalTask,
-  V1_PrivilegeManagerApprovalTask,
+  V1_RawWorkflowTask,
   V1_WorkflowTaskStatus,
-  type V1_RawWorkflowTask,
 } from '@finos/legend-graph';
 import { Box, Button, TextField } from '@mui/material';
 import {
@@ -67,30 +65,48 @@ export const WorkflowDataAccessRequestTask =
         params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID],
       );
 
-      // Find the first OPEN task across all workflows, using workflow server assignees when available
-      const actionableTask = workflowState?.dataRequestWithWorkflow?.workflows
-        .flatMap((wf) => wf.tasks)
-        .find((task) => task.status === V1_WorkflowTaskStatus.OPEN);
-
-      const getActionableTaskAssignees = (): string[] => {
-        if (!actionableTask || !workflowState) {
-          return [];
+      // Find the first OPEN task, preferring workflow server tasks as source of truth
+      const getActionableTask = (): V1_RawWorkflowTask | undefined => {
+        if (!workflowState) {
+          return undefined;
         }
-        let workflowTask: V1_RawWorkflowTask | undefined;
-        if (actionableTask instanceof V1_PrivilegeManagerApprovalTask) {
-          workflowTask = workflowState.workflowTasks.privilegeManagerTask;
-        } else if (actionableTask instanceof V1_DataOwnerApprovalTask) {
-          workflowTask = workflowState.workflowTasks.dataOwnerTask;
+        // Prefer workflow server tasks
+        const { privilegeManagerTask, dataOwnerTask } =
+          workflowState.workflowTasks;
+        const workflowServerTask = [privilegeManagerTask, dataOwnerTask].find(
+          (task) => task !== undefined && task.status === 'OPEN',
+        );
+        if (workflowServerTask) {
+          return workflowServerTask;
         }
-        if (workflowTask && workflowTask.potentialAssignees.length > 0) {
-          return workflowTask.potentialAssignees;
+        // Fallback to dataRequestWithWorkflow tasks
+        const fallbackTask = workflowState.dataRequestWithWorkflow?.workflows
+          .flatMap((wf) => wf.tasks)
+          .find((task) => task.status === V1_WorkflowTaskStatus.OPEN);
+        if (fallbackTask) {
+          // Find the matching raw workflow task by taskId, or build a minimal one from the fallback
+          const matchingRaw = [privilegeManagerTask, dataOwnerTask].find(
+            (t) => t?.taskId === fallbackTask.taskId,
+          );
+          if (matchingRaw) {
+            return matchingRaw;
+          }
+          // Create a minimal V1_RawWorkflowTask from the fallback
+          const raw = new V1_RawWorkflowTask();
+          raw.taskId = fallbackTask.taskId;
+          raw.status = fallbackTask.status;
+          raw.potentialAssignees = fallbackTask.assignees;
+          raw.completed = false;
+          return raw;
         }
-        return actionableTask.assignees;
+        return undefined;
       };
+
+      const actionableTask = getActionableTask();
 
       const userCanAction =
         actionableTask !== undefined &&
-        getActionableTaskAssignees().includes(currentUser);
+        actionableTask.potentialAssignees.includes(currentUser);
 
       useEffect(() => {
         const fetchAndInitialize = async () => {
