@@ -23,6 +23,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import { noop } from '@finos/legend-shared';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
+import clsx from 'clsx';
 
 const getActionButtonClassName = (type: ActionAlertActionType): string => {
   switch (type) {
@@ -38,7 +39,17 @@ const getActionButtonClassName = (type: ActionAlertActionType): string => {
 const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
   const { info } = props;
   const applicationStore = useApplicationStore();
-  const { title, message, prompt, type, onClose, onEnter, actions } = info;
+  const {
+    title,
+    message,
+    messageClass,
+    prompt,
+    promptClass,
+    type,
+    onClose,
+    onEnter,
+    actions,
+  } = info;
   const handleClose = (): void => {
     onClose?.();
     applicationStore.alertService.setActionAlertInfo(undefined);
@@ -68,8 +79,12 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
       >
         {title && <ModalHeader title={title} />}
         <ModalBody>
-          <div className="blocking-alert__summary-text">{message}</div>
-          <div className="blocking-alert__prompt-text">{prompt}</div>
+          <div className={clsx('blocking-alert__summary-text', messageClass)}>
+            {message}
+          </div>
+          <div className={clsx('blocking-alert__prompt-text', promptClass)}>
+            {prompt}
+          </div>
         </ModalBody>
         <ModalFooter>
           {actions.map((action, idx) => {

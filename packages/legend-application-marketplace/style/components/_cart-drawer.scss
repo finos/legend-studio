@@ -578,12 +578,16 @@
   }
 
   .blocking-alert__summary-text {
-    font-size: 2.2rem !important;
+    font-size: 1.2rem !important;
     line-height: 1.7;
     color: var(--color-black) !important;
     margin-bottom: 1.2rem;
     font-weight: 800 !important;
     letter-spacing: 0.02rem;
+
+    &.legend-marketplace-cart-drawer__alert-message {
+      font-size: 2.2rem !important;
+    }
   }
 
   .blocking-alert__prompt-text {
