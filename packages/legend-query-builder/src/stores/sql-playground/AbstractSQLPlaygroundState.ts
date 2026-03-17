@@ -17,6 +17,7 @@
 import { ActionState, type GeneratorFn } from '@finos/legend-shared';
 import * as monaco from 'monaco-editor';
 import type { CommandRegistrar } from '@finos/legend-application';
+import type { ExecutionResult } from '@finos/legend-graph';
 import {
   CODE_EDITOR_LANGUAGE,
   moveCursorToPosition,
@@ -24,9 +25,27 @@ import {
 import { action, makeObservable, observable } from 'mobx';
 
 export type SQLPlaygroundTheme = 'light' | 'dark';
-export interface SQL_ExecutionResult {
+
+export abstract class SqlExecutionResult {}
+
+export class CsvSqlExecutionResult extends SqlExecutionResult {
   value: string;
   sqlDuration: number;
+
+  constructor(value: string, sqlDuration: number) {
+    super();
+    this.value = value;
+    this.sqlDuration = sqlDuration;
+  }
+}
+
+export class QueryExecutionResult extends SqlExecutionResult {
+  result: ExecutionResult;
+
+  constructor(result: ExecutionResult) {
+    super();
+    this.result = result;
+  }
 }
 const SQL_KEYWORDS = [
   'AND',
@@ -70,7 +89,7 @@ export abstract class AbstractSQLPlaygroundState implements CommandRegistrar {
   theme: SQLPlaygroundTheme;
   sqlText = '';
   executeRawSQLState: ActionState;
-  sqlExecutionResult?: SQL_ExecutionResult | undefined;
+  sqlExecutionResult?: SqlExecutionResult | undefined;
   sqlEditorViewState: monaco.editor.ICodeEditorViewState | undefined;
   sqlEditorTextModel: monaco.editor.ITextModel;
   sqlEditor?: monaco.editor.IStandaloneCodeEditor | undefined;
@@ -112,7 +131,7 @@ export abstract class AbstractSQLPlaygroundState implements CommandRegistrar {
     this.sqlExecutionResult = undefined;
   }
 
-  setSqlExecutionResult(val: SQL_ExecutionResult | undefined) {
+  setSqlExecutionResult(val: SqlExecutionResult | undefined): void {
     this.sqlExecutionResult = val;
   }
 

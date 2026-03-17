@@ -18,7 +18,6 @@ import {
   type GeneratorFn,
   assertErrorThrown,
   LogEvent,
-  csvStringify,
 } from '@finos/legend-shared';
 import { observable, makeObservable, flow, flowResult } from 'mobx';
 import {
@@ -40,6 +39,7 @@ import {
   DEFAULT_SQL_TEXT,
   buildDefaultDataProductQuery,
   buildDefaultIngestQuery,
+  QueryExecutionResult,
 } from '@finos/legend-query-builder';
 
 const DATA_PRODUCT_ARTIFACT_EXTENSION = 'dataProduct';
@@ -168,7 +168,6 @@ export class LegendSQLStudioPlaygroundState extends LegendSQLPlaygroundState {
     try {
       this.executeRawSQLState.inProgress();
       const sql = this.getSelectedSQL();
-      const start = Date.now();
       const sqlQuery = `#SQL{${sql}}#`;
 
       const runtimes = this.editorStore.graphManagerState.graph.ownRuntimes;
@@ -203,12 +202,7 @@ export class LegendSQLStudioPlaygroundState extends LegendSQLPlaygroundState {
 
       const result = executionResult.executionResult;
       if (result instanceof TDSExecutionResult) {
-        const data = result.result.rows.map((row) => row.values);
-        const csvData = csvStringify([result.result.columns, ...data]);
-        this.setSqlExecutionResult({
-          value: csvData,
-          sqlDuration: Date.now() - start,
-        });
+        this.setSqlExecutionResult(new QueryExecutionResult(result));
       } else {
         this.editorStore.applicationStore.notificationService.notifyError(
           'Expected TDS execution result, got unsupported result type',
