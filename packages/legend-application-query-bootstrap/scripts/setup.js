@@ -47,6 +47,13 @@ export const setup = (outputDir) => {
         depot: {
           url: 'http://localhost:6200/depot/api',
         },
+        marketplace: {
+          url: 'http://localhost:6400/marketplace',
+          productionParallelUrl: 'http://localhost:6500/marketplace',
+        },
+        lakehouse: {
+          url: "http://localhost:6600/lakehouse/api",
+        },
         studio: {
           url: 'http://localhost:9000/studio',
           instances: [

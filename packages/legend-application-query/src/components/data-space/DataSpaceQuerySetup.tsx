@@ -35,7 +35,7 @@ import type { LegendQueryBareQueryBuilderState } from '../../stores/data-space/L
 import type {
   DataProductOption,
   DataProductWithLegacyOption,
-} from '../../stores/data-space/DataSpaceQueryCreatorStore.js';
+} from '../../stores/data-space/DataProductSelectorState.js';
 import { flowResult } from 'mobx';
 import { DepotEntityWithOrigin } from '@finos/legend-storage';
 

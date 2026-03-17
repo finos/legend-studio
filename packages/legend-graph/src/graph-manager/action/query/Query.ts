@@ -46,9 +46,16 @@ export class QueryDataSpaceExecutionContext extends QueryExecutionContext {
   executionKey: string | undefined;
 }
 
-export class QueryDataProductExecutionContext extends QueryExecutionContext {
+export abstract class QueryDataProductExecutionContext extends QueryExecutionContext {
   dataProductPath!: string;
-  executionKey: string | undefined;
+}
+
+export class QueryDataProductNativeExecutionContext extends QueryDataProductExecutionContext {
+  executionKey!: string;
+}
+
+export class QueryDataProductModelAccessExecutionContext extends QueryDataProductExecutionContext {
+  accessPointGroupId!: string;
 }
 
 export interface QueryGridConfig {
@@ -162,7 +169,12 @@ export class QueryDataSpaceExecutionContextInfo extends QueryExecutionContextInf
 
 export class QueryDataProductNativeExecutionContextInfo extends QueryExecutionContextInfo {
   dataProductPath!: string;
-  executionKey: string | undefined;
+  executionKey!: string;
+}
+
+export class QueryDataProductModelAccessExecutionContextInfo extends QueryExecutionContextInfo {
+  dataProductPath!: string;
+  accessPointGroupId!: string;
 }
 
 export interface QueryInfo {

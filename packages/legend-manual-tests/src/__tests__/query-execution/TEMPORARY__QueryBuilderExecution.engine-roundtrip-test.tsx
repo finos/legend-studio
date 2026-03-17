@@ -106,7 +106,7 @@ test(integrationTest('test query execution with parameters'), async () => {
     queryBuilderState.parametersState.parameterStates,
     queryBuilderState.graphManagerState,
   );
-  const executionInput = (
+  const executionInput = await (
     queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
   ).createExecutionInput(
     queryBuilderState.graphManagerState.graph,
@@ -172,7 +172,7 @@ test(integrationTest('test query execution with parameters'), async () => {
   await waitFor(() =>
     findByText(queryBuilderResultPanel1, 'Preview data might be stale'),
   );
-  const executionInput1 = (
+  const executionInput1 = await (
     queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
   ).createExecutionInput(
     queryBuilderState.graphManagerState.graph,
@@ -255,7 +255,7 @@ test(integrationTest('test preview-data query execution'), async () => {
       create_RawLambda(rawLambda.parameters, rawLambda.body),
     );
   });
-  const executionInput = (
+  const executionInput = await (
     queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
   ).createExecutionInput(
     queryBuilderState.graphManagerState.graph,

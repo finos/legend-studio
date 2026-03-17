@@ -62,7 +62,7 @@ test(integrationTest('Test Building of From Queries'), async () => {
   const runtimePointer = new RuntimePointer(
     PackageableElementExplicitReference.create(runtime),
   );
-  const executeInput = v1Manager.createExecutionInput(
+  const executeInput = await v1Manager.createExecutionInput(
     graph,
     mapping,
     create_RawLambda(rawLambda.parameters, rawLambda.body),
@@ -72,7 +72,7 @@ test(integrationTest('Test Building of From Queries'), async () => {
   expect(executeInput.mapping).toBe(mappingPath);
   expect(executeInput.runtime instanceof V1_RuntimePointer).toBe(true);
   expect((executeInput.runtime as V1_RuntimePointer).runtime).toBe(runtimePath);
-  const fromExecuteInput = v1Manager.createExecutionInput(
+  const fromExecuteInput = await v1Manager.createExecutionInput(
     graph,
     mapping,
     create_RawLambda(rawLambda.parameters, rawLambda.body),
@@ -85,7 +85,7 @@ test(integrationTest('Test Building of From Queries'), async () => {
   expect(fromExecuteInput.mapping).toBeUndefined();
   expect(fromExecuteInput.runtime).toBeUndefined();
 
-  const fromNoMappingExecuteInput = v1Manager.createExecutionInput(
+  const fromNoMappingExecuteInput = await v1Manager.createExecutionInput(
     graph,
     undefined,
     create_RawLambda(rawLambda.parameters, rawLambda.body),
@@ -128,7 +128,7 @@ test(integrationTest('Test Building of From Queries'), async () => {
     withLetStatements,
   )) as unknown as { parameters: object | undefined; body: object | undefined };
   const letLambda = create_RawLambda(letFunc.parameters, letFunc.body);
-  const letLambdaExecuteInput = v1Manager.createExecutionInput(
+  const letLambdaExecuteInput = await v1Manager.createExecutionInput(
     graph,
     mapping,
     letLambda,
@@ -152,16 +152,17 @@ test(integrationTest('Test Building of From Queries'), async () => {
     ),
   ).toBe(true);
 
-  const executeInputWithoutRuntimePointer = v1Manager.createExecutionInput(
-    graph,
-    mapping,
-    create_RawLambda(rawLambda.parameters, rawLambda.body),
-    runtime.runtimeValue,
-    undefined,
-    {
-      forceFromExpression: true,
-    },
-  );
+  const executeInputWithoutRuntimePointer =
+    await v1Manager.createExecutionInput(
+      graph,
+      mapping,
+      create_RawLambda(rawLambda.parameters, rawLambda.body),
+      runtime.runtimeValue,
+      undefined,
+      {
+        forceFromExpression: true,
+      },
+    );
   expect(executeInputWithoutRuntimePointer.mapping).toBeDefined();
   expect(executeInputWithoutRuntimePointer.runtime).toBeDefined();
 });

@@ -63,7 +63,11 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import type { LightQuery, Query, QueryInfo } from './action/query/Query.js';
-import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
+import type {
+  EntitiesWithOrigin,
+  Entity,
+  ProjectGAVCoordinates,
+} from '@finos/legend-storage';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
@@ -124,7 +128,9 @@ import type {
   RawLineageModel,
 } from '../graph/metamodel/pure/lineage/LineageModel.js';
 import type { DeployProjectResponse } from './action/dev-metadata/DeployProjectResponse.js';
+import type { DataProductAnalysisQueryResult } from './action/analytics/data-product/DataProductAnalysis.js';
 import type { MetadataRequestOptions } from './action/dev-metadata/MetadataRequestOptions.js';
+import type { DataProductAccessType } from '../graph/metamodel/pure/dataProduct/DataProduct.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -177,6 +183,11 @@ export interface ExecutionOptions {
    * instead of providing in separate input property
    */
   forceFromExpression?: boolean | undefined;
+  /**
+   * Additional elements needed for execution that are not part of the immediate graph.
+   * These will be included alongside the graph data when sending the execution request.
+   */
+  floatingExecutionElements?: PackageableElement[] | undefined;
 }
 
 export interface ServiceRegistrationOptions {
@@ -737,6 +748,29 @@ export abstract class AbstractPureGraphManager {
     query: RawLambda | undefined,
     graphData: GraphData,
   ): Promise<DatasetEntitlementReport[]>;
+
+  abstract analyzeDataProductAndBuildMinimalGraph(
+    dataProductPath: string,
+    cacheRetriever: () => Promise<PlainObject>,
+    pureGraph: PureModel,
+    accessPointId: string,
+    dataProductAccessType: DataProductAccessType,
+    projectInfo: ProjectGAVCoordinates,
+    functionEntitiesRetriever?: () => Promise<
+      [PlainObject<Entity>[], PlainObject<Entity>[]]
+    >,
+    graphReport?: GraphManagerOperationReport,
+  ): Promise<DataProductAnalysisQueryResult>;
+
+  abstract buildDataProductAnalysis(
+    artifact: object,
+    dataProductPath: string,
+    pureGraph: PureModel,
+    accessPointId: string,
+    dataProductAccessType: DataProductAccessType,
+    projectInfo: ProjectGAVCoordinates,
+    graphReport?: GraphManagerOperationReport,
+  ): Promise<DataProductAnalysisQueryResult>;
 
   /**
    * TODO: Move these to store relational extension

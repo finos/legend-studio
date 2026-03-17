@@ -19,6 +19,7 @@ import {
   type PlainObject,
   type AbstractPlugin,
   type AbstractPreset,
+  filterByType,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { createMock, createSpy } from '@finos/legend-shared/test';
@@ -31,9 +32,14 @@ import {
   RawLambda,
   QueryExplicitExecutionContext,
   QueryDataSpaceExecutionContext,
+  QueryDataProductModelAccessExecutionContext,
+  QueryDataProductNativeExecutionContext,
   PackageableElementExplicitReference,
   QueryDataSpaceExecutionContextInfo,
   QueryExplicitExecutionContextInfo,
+  QueryDataProductModelAccessExecutionContextInfo,
+  QueryDataProductNativeExecutionContextInfo,
+  ModelAccessPointGroup,
 } from '@finos/legend-graph';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -48,11 +54,15 @@ import type {
   Entity,
   StoredFileGeneration,
 } from '@finos/legend-storage';
-import { ExistingQueryEditorStore } from '../../stores/QueryEditorStore.js';
+import {
+  ExistingQueryEditorStore,
+  QueryBuilderActionConfig_QueryApplication,
+} from '../../stores/QueryEditorStore.js';
 import type { LegendQueryApplicationStore } from '../../stores/LegendQueryBaseStore.js';
 import {
   type QueryBuilderState,
   QUERY_BUILDER_TEST_ID,
+  QueryBuilderDataBrowserWorkflow,
 } from '@finos/legend-query-builder';
 import { LegendQueryFrameworkProvider } from '../LegendQueryFrameworkProvider.js';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
@@ -66,6 +76,8 @@ import {
   type V1_DataSpaceAnalysisResult,
   DSL_DataSpace_getGraphManagerExtension,
 } from '@finos/legend-extension-dsl-data-space/graph';
+import { LegendQueryDataProductQueryBuilderState } from '../../stores/data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
+import { DataProductSelectorState } from '../../stores/data-space/DataProductSelectorState.js';
 
 const TEST_QUERY_ID = 'test-query-id';
 export const TEST_QUERY_NAME = 'MyTestQuery';
@@ -93,17 +105,19 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
       TEST__getTestLegendQueryApplicationConfig(),
       pluginManager,
     );
+  const depotServerClient = new DepotServerClient({
+    serverUrl: applicationStore.config.depotServerUrl,
+  });
+  depotServerClient.setTracerService(applicationStore.tracerService);
   const value =
     customization?.mock ??
     new ExistingQueryEditorStore(
       applicationStore,
-      new DepotServerClient({
-        serverUrl: applicationStore.config.depotServerUrl,
-      }),
+      depotServerClient,
       TEST_QUERY_ID,
       undefined,
     );
-  const MOCK__QueryEditorStoreProvider = require('../QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
+  const MOCK__QueryEditorStoreProvider = require('../QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-require-imports,@typescript-eslint/no-unsafe-assignment
   MOCK__QueryEditorStoreProvider.useQueryEditorStore = createMock();
   MOCK__QueryEditorStoreProvider.useQueryEditorStore.mockReturnValue(value);
   return value;
@@ -387,6 +401,405 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   );
 
   MOCK__editorStore.buildGraph = createMock();
+  graphManagerState.graphManager.initialize = createMock();
+
+  const renderResult = render(
+    <ApplicationStoreProvider store={MOCK__editorStore.applicationStore}>
+      <TEST__BrowserEnvironmentProvider
+        initialEntries={[generateExistingQueryEditorRoute(lightQuery.id)]}
+      >
+        <LegendQueryFrameworkProvider>
+          <Routes>
+            <Route
+              path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
+              element={<ExistingQueryEditor />}
+            />
+          </Routes>
+        </LegendQueryFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
+  await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+  );
+
+  return {
+    renderResult,
+    queryBuilderState: guaranteeNonNullable(
+      MOCK__editorStore.queryBuilderState,
+      `Query builder state should have been initialized`,
+    ),
+  };
+};
+
+export const TEST__setUpDataProductExistingQueryEditor = async (
+  MOCK__editorStore: ExistingQueryEditorStore,
+  dataProductPath: string,
+  accessPointGroupId: string,
+  lambda: RawLambda,
+  entities: PlainObject<Entity>[],
+): Promise<{
+  renderResult: RenderResult;
+  queryBuilderState: QueryBuilderState;
+}> => {
+  const projectData = {
+    id: 'test-id',
+    groupId: 'test.group',
+    artifactId: 'test-artifact',
+    projectId: 'test-project-id',
+    versions: ['0.0.0'],
+    latestVersion: '0.0.0',
+  };
+
+  const lightQuery = new LightQuery();
+  lightQuery.name = TEST_QUERY_NAME;
+  lightQuery.id = TEST_QUERY_ID;
+  lightQuery.versionId = '0.0.0';
+  lightQuery.groupId = 'test.group';
+  lightQuery.artifactId = 'test-artifact';
+  lightQuery.owner = 'test-artifact';
+  lightQuery.isCurrentUserQuery = true;
+
+  const graphManagerState = MOCK__editorStore.graphManagerState;
+
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
+
+  await graphManagerState.initializeSystem();
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities as unknown as Entity[],
+    graphManagerState.graphBuildState,
+  );
+
+  const query = new Query();
+  query.name = lightQuery.name;
+  query.id = lightQuery.id;
+  query.versionId = lightQuery.versionId;
+  query.groupId = lightQuery.groupId;
+  query.artifactId = lightQuery.artifactId;
+  query.owner = lightQuery.owner;
+  query.isCurrentUserQuery = lightQuery.isCurrentUserQuery;
+  const execContext = new QueryDataProductModelAccessExecutionContext();
+  execContext.dataProductPath = dataProductPath;
+  execContext.accessPointGroupId = accessPointGroupId;
+  query.executionContext = execContext;
+  query.content = 'some content';
+
+  const execContextInfo = new QueryDataProductModelAccessExecutionContextInfo();
+  execContextInfo.dataProductPath = dataProductPath;
+  execContextInfo.accessPointGroupId = accessPointGroupId;
+
+  const queryInfo: QueryInfo = {
+    name: TEST_QUERY_NAME,
+    id: TEST_QUERY_ID,
+    versionId: '0.0.0',
+    groupId: 'test.group',
+    artifactId: 'test-artifact',
+    executionContext: execContextInfo,
+    content: 'some content',
+    isCurrentUserQuery: true,
+  };
+
+  // Resolve the data product and execution state from the built graph
+  const dataProduct = graphManagerState.graph.getDataProduct(dataProductPath);
+  const modelGroups = dataProduct.accessPointGroups.filter(
+    filterByType(ModelAccessPointGroup),
+  );
+  const executionState = guaranteeNonNullable(
+    modelGroups.find((g) => g.id === accessPointGroupId),
+    `Can't find access point group '${accessPointGroupId}'`,
+  );
+
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getProject',
+  ).mockResolvedValue(projectData);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntities',
+  ).mockResolvedValue(entities);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntitiesByClassifier',
+  ).mockResolvedValue([]);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntitiesSummaryByClassifier',
+  ).mockResolvedValue([]);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getVersions',
+  ).mockResolvedValue([projectData.latestVersion]);
+  createSpy(graphManagerState.graphManager, 'getLightQuery').mockResolvedValue(
+    lightQuery,
+  );
+  createSpy(graphManagerState.graphManager, 'getQueryInfo').mockResolvedValue(
+    queryInfo,
+  );
+  createSpy(
+    graphManagerState.graphManager,
+    'pureCodeToLambda',
+  ).mockResolvedValue(new RawLambda(lambda.parameters, lambda.body));
+  createSpy(graphManagerState.graphManager, 'getQuery').mockResolvedValue(
+    query,
+  );
+  createSpy(
+    graphManagerState.graphManager,
+    'analyzeMappingModelCoverage',
+  ).mockResolvedValue(
+    graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+      { mappedEntities: [] },
+      executionState.mapping.value,
+    ),
+  );
+
+  // Build the query builder state that buildDataProductQueryBuilderState would return
+  const mockQueryBuilderState = new LegendQueryDataProductQueryBuilderState(
+    MOCK__editorStore.applicationStore,
+    graphManagerState,
+    QueryBuilderDataBrowserWorkflow.INSTANCE,
+    new QueryBuilderActionConfig_QueryApplication(MOCK__editorStore),
+    dataProduct,
+    undefined,
+    executionState,
+    MOCK__editorStore.depotServerClient,
+    { groupId: 'test.group', artifactId: 'test-artifact', versionId: '0.0.0' },
+    async () => {
+      /* no-op for tests */
+    },
+    new DataProductSelectorState(
+      MOCK__editorStore.depotServerClient,
+      MOCK__editorStore.applicationStore,
+    ),
+    undefined,
+    undefined,
+    MOCK__editorStore.applicationStore.config.options.queryBuilderConfig,
+    {
+      groupId: 'test.group',
+      artifactId: 'test-artifact',
+      versionId: '0.0.0',
+      dataProduct: dataProductPath,
+    },
+  );
+  mockQueryBuilderState.initWithDataProduct(dataProduct, executionState);
+
+  MOCK__editorStore.buildGraph = createMock();
+  MOCK__editorStore.buildFullGraph = createMock();
+  MOCK__editorStore.fetchDataProductArtifact = createMock();
+  (
+    MOCK__editorStore.fetchDataProductArtifact as ReturnType<typeof createMock>
+  ).mockResolvedValue({});
+  MOCK__editorStore.buildDataProductQueryBuilderState = createMock();
+  (
+    MOCK__editorStore.buildDataProductQueryBuilderState as ReturnType<
+      typeof createMock
+    >
+  ).mockResolvedValue(mockQueryBuilderState);
+  graphManagerState.graphManager.initialize = createMock();
+
+  const renderResult = render(
+    <ApplicationStoreProvider store={MOCK__editorStore.applicationStore}>
+      <TEST__BrowserEnvironmentProvider
+        initialEntries={[generateExistingQueryEditorRoute(lightQuery.id)]}
+      >
+        <LegendQueryFrameworkProvider>
+          <Routes>
+            <Route
+              path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
+              element={<ExistingQueryEditor />}
+            />
+          </Routes>
+        </LegendQueryFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
+  await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+  );
+
+  return {
+    renderResult,
+    queryBuilderState: guaranteeNonNullable(
+      MOCK__editorStore.queryBuilderState,
+      `Query builder state should have been initialized`,
+    ),
+  };
+};
+
+export const TEST__setUpDataProductNativeExistingQueryEditor = async (
+  MOCK__editorStore: ExistingQueryEditorStore,
+  dataProductPath: string,
+  executionKey: string,
+  lambda: RawLambda,
+  entities: PlainObject<Entity>[],
+): Promise<{
+  renderResult: RenderResult;
+  queryBuilderState: QueryBuilderState;
+}> => {
+  const projectData = {
+    id: 'test-id',
+    groupId: 'test.group',
+    artifactId: 'test-artifact',
+    projectId: 'test-project-id',
+    versions: ['0.0.0'],
+    latestVersion: '0.0.0',
+  };
+
+  const lightQuery = new LightQuery();
+  lightQuery.name = TEST_QUERY_NAME;
+  lightQuery.id = TEST_QUERY_ID;
+  lightQuery.versionId = '0.0.0';
+  lightQuery.groupId = 'test.group';
+  lightQuery.artifactId = 'test-artifact';
+  lightQuery.owner = 'test-artifact';
+  lightQuery.isCurrentUserQuery = true;
+
+  const graphManagerState = MOCK__editorStore.graphManagerState;
+
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
+
+  await graphManagerState.initializeSystem();
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities as unknown as Entity[],
+    graphManagerState.graphBuildState,
+  );
+
+  const query = new Query();
+  query.name = lightQuery.name;
+  query.id = lightQuery.id;
+  query.versionId = lightQuery.versionId;
+  query.groupId = lightQuery.groupId;
+  query.artifactId = lightQuery.artifactId;
+  query.owner = lightQuery.owner;
+  query.isCurrentUserQuery = lightQuery.isCurrentUserQuery;
+  const execContext = new QueryDataProductNativeExecutionContext();
+  execContext.dataProductPath = dataProductPath;
+  execContext.executionKey = executionKey;
+  query.executionContext = execContext;
+  query.content = 'some content';
+
+  const execContextInfo = new QueryDataProductNativeExecutionContextInfo();
+  execContextInfo.dataProductPath = dataProductPath;
+  execContextInfo.executionKey = executionKey;
+
+  const queryInfo: QueryInfo = {
+    name: TEST_QUERY_NAME,
+    id: TEST_QUERY_ID,
+    versionId: '0.0.0',
+    groupId: 'test.group',
+    artifactId: 'test-artifact',
+    executionContext: execContextInfo,
+    content: 'some content',
+    isCurrentUserQuery: true,
+  };
+
+  // Resolve the data product and execution state from the built graph
+  const dataProduct = graphManagerState.graph.getDataProduct(dataProductPath);
+  const nativeAccess = guaranteeNonNullable(
+    dataProduct.nativeModelAccess,
+    `Data product '${dataProductPath}' has no native model access`,
+  );
+  const executionState = guaranteeNonNullable(
+    nativeAccess.nativeModelExecutionContexts.find(
+      (ctx) => ctx.key === executionKey,
+    ),
+    `Can't find native execution context '${executionKey}'`,
+  );
+
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getProject',
+  ).mockResolvedValue(projectData);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntities',
+  ).mockResolvedValue(entities);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntitiesByClassifier',
+  ).mockResolvedValue([]);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntitiesSummaryByClassifier',
+  ).mockResolvedValue([]);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getVersions',
+  ).mockResolvedValue([projectData.latestVersion]);
+  createSpy(graphManagerState.graphManager, 'getLightQuery').mockResolvedValue(
+    lightQuery,
+  );
+  createSpy(graphManagerState.graphManager, 'getQueryInfo').mockResolvedValue(
+    queryInfo,
+  );
+  createSpy(
+    graphManagerState.graphManager,
+    'pureCodeToLambda',
+  ).mockResolvedValue(new RawLambda(lambda.parameters, lambda.body));
+  createSpy(graphManagerState.graphManager, 'getQuery').mockResolvedValue(
+    query,
+  );
+  createSpy(
+    graphManagerState.graphManager,
+    'analyzeMappingModelCoverage',
+  ).mockResolvedValue(
+    graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+      { mappedEntities: [] },
+      executionState.mapping.value,
+    ),
+  );
+
+  // Build the query builder state that buildDataProductQueryBuilderState would return
+  const mockQueryBuilderState = new LegendQueryDataProductQueryBuilderState(
+    MOCK__editorStore.applicationStore,
+    graphManagerState,
+    QueryBuilderDataBrowserWorkflow.INSTANCE,
+    new QueryBuilderActionConfig_QueryApplication(MOCK__editorStore),
+    dataProduct,
+    undefined,
+    executionState,
+    MOCK__editorStore.depotServerClient,
+    { groupId: 'test.group', artifactId: 'test-artifact', versionId: '0.0.0' },
+    async () => {
+      /* no-op for tests */
+    },
+    new DataProductSelectorState(
+      MOCK__editorStore.depotServerClient,
+      MOCK__editorStore.applicationStore,
+    ),
+    undefined,
+    undefined,
+    MOCK__editorStore.applicationStore.config.options.queryBuilderConfig,
+    {
+      groupId: 'test.group',
+      artifactId: 'test-artifact',
+      versionId: '0.0.0',
+      dataProduct: dataProductPath,
+    },
+  );
+  mockQueryBuilderState.initWithDataProduct(dataProduct, executionState);
+
+  MOCK__editorStore.buildGraph = createMock();
+  MOCK__editorStore.buildFullGraph = createMock();
+  MOCK__editorStore.fetchDataProductArtifact = createMock();
+  (
+    MOCK__editorStore.fetchDataProductArtifact as ReturnType<typeof createMock>
+  ).mockResolvedValue({});
+  MOCK__editorStore.buildDataProductQueryBuilderState = createMock();
+  (
+    MOCK__editorStore.buildDataProductQueryBuilderState as ReturnType<
+      typeof createMock
+    >
+  ).mockResolvedValue(mockQueryBuilderState);
   graphManagerState.graphManager.initialize = createMock();
 
   const renderResult = render(

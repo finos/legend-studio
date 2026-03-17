@@ -413,6 +413,8 @@ export class QueryBuilderResultState {
               this.queryBuilderState.parametersState.parameterStates,
               this.queryBuilderState.graphManagerState,
             ),
+            floatingExecutionElements:
+              this.queryBuilderState.floatingExecutionElements,
           },
           undefined,
           contentType,
@@ -508,6 +510,8 @@ export class QueryBuilderResultState {
           tracingtags: { ...this.queryBuilderState.sourceInfo },
           forceFromExpression:
             this.queryBuilderState.forceFromExpressionForExec,
+          floatingExecutionElements:
+            this.queryBuilderState.floatingExecutionElements,
         },
       );
 

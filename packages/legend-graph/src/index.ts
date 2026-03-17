@@ -729,6 +729,7 @@ export {
   type DataProductElement,
   NativeModelAccess,
   NativeModelExecutionContext,
+  DataProductAccessType,
   DataProductOperationalMetadata,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
@@ -900,6 +901,10 @@ export {
   EntityMappedProperty,
   EnumMappedProperty,
 } from './graph-manager/action/analytics/MappingModelCoverageAnalysis.js';
+export {
+  DataProductAnalysis,
+  DataProductAnalysisQueryResult,
+} from './graph-manager/action/analytics/data-product/DataProductAnalysis.js';
 export {
   DatasetSpecification,
   DatasetEntitlementReport,

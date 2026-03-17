@@ -32,7 +32,10 @@ import {
   type QueryExecutionContextInfo,
   QueryExplicitExecutionContextInfo,
   QueryDataSpaceExecutionContextInfo,
-  QueryDataProductExecutionContext,
+  QueryDataProductNativeExecutionContext,
+  QueryDataProductModelAccessExecutionContext,
+  QueryDataProductNativeExecutionContextInfo,
+  QueryDataProductModelAccessExecutionContextInfo,
 } from '../../../../../graph-manager/action/query/Query.js';
 import {
   type V1_LightQuery,
@@ -41,7 +44,8 @@ import {
   V1_QueryExplicitExecutionContext,
   V1_QueryDataSpaceExecutionContext,
   type V1_QueryExecutionContext,
-  V1_QueryDataProductExecutionContext,
+  V1_DataProductNativeExecutionContext,
+  V1_DataProductModelAccessExecutionContext,
 } from './query/V1_Query.js';
 import type { PureModel } from '../../../../../graph/PureModel.js';
 import { DEPRECATED__ServiceTestResult } from '../../../../../graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
@@ -202,6 +206,20 @@ export const V1_buildExecutionContext = (
     exec.dataSpacePath = protocolExecContext.dataSpacePath;
     exec.executionKey = protocolExecContext.executionKey;
     return exec;
+  } else if (
+    protocolExecContext instanceof V1_DataProductNativeExecutionContext
+  ) {
+    const exec = new QueryDataProductNativeExecutionContext();
+    exec.dataProductPath = protocolExecContext.dataProductPath;
+    exec.executionKey = protocolExecContext.executionKey;
+    return exec;
+  } else if (
+    protocolExecContext instanceof V1_DataProductModelAccessExecutionContext
+  ) {
+    const exec = new QueryDataProductModelAccessExecutionContext();
+    exec.dataProductPath = protocolExecContext.dataProductPath;
+    exec.accessPointGroupId = protocolExecContext.accessPointGroupId;
+    return exec;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');
 };
@@ -232,6 +250,18 @@ export const V1_buildExecutionContextInfo = (
     const exec = new QueryDataSpaceExecutionContextInfo();
     exec.dataSpacePath = v1_execContext.dataSpacePath;
     exec.executionKey = v1_execContext.executionKey;
+    return exec;
+  } else if (v1_execContext instanceof V1_DataProductNativeExecutionContext) {
+    const exec = new QueryDataProductNativeExecutionContextInfo();
+    exec.dataProductPath = v1_execContext.dataProductPath;
+    exec.executionKey = v1_execContext.executionKey;
+    return exec;
+  } else if (
+    v1_execContext instanceof V1_DataProductModelAccessExecutionContext
+  ) {
+    const exec = new QueryDataProductModelAccessExecutionContextInfo();
+    exec.dataProductPath = v1_execContext.dataProductPath;
+    exec.accessPointGroupId = v1_execContext.accessPointGroupId;
     return exec;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');
@@ -340,10 +370,17 @@ export const V1_transformQueryExecutionContext = (
     protocol.dataSpacePath = execContext.dataSpacePath;
     protocol.executionKey = execContext.executionKey;
     return protocol;
-  } else if (execContext instanceof QueryDataProductExecutionContext) {
-    const protocol = new V1_QueryDataProductExecutionContext();
+  } else if (execContext instanceof QueryDataProductNativeExecutionContext) {
+    const protocol = new V1_DataProductNativeExecutionContext();
     protocol.dataProductPath = execContext.dataProductPath;
     protocol.executionKey = execContext.executionKey;
+    return protocol;
+  } else if (
+    execContext instanceof QueryDataProductModelAccessExecutionContext
+  ) {
+    const protocol = new V1_DataProductModelAccessExecutionContext();
+    protocol.dataProductPath = execContext.dataProductPath;
+    protocol.accessPointGroupId = execContext.accessPointGroupId;
     return protocol;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');

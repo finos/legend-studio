@@ -193,3 +193,21 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl =
     )}/${dataSpacePath}/${executionContext}/${
       runtimePath ? `/${runtimePath}` : ''
     }${classPath ? `?class=${classPath}` : ''}`;
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl =
+  (
+    queryApplicationUrl: string,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataProductPath: string,
+    accessPointId: string,
+  ): string =>
+    `${queryApplicationUrl}/data-product/model/${generateGAVCoordinates(
+      groupId,
+      artifactId,
+      versionId,
+    )}/${dataProductPath}/${accessPointId}`;

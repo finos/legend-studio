@@ -24,6 +24,12 @@ export * from './__lib__/LegendQueryEventHelper.js';
 export {
   generateExistingQueryEditorRoute,
   generateServiceQueryCreatorRoute,
+  generateDataProductRoute,
+  generateDataProductNativeRoute,
+  generateDataProductModelRoute,
+  generateDataProductLakehouseRoute,
+  LEGEND_QUERY_ROUTE_PATTERN,
+  type DataProductPathParams,
 } from './__lib__/LegendQueryNavigation.js';
 
 export {

@@ -30,7 +30,7 @@ import {
 } from '../QueryEditorStore.js';
 import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/data-space/DataSpaceQuerySetup.js';
 import { DataSpaceAdvancedSearchState } from '@finos/legend-extension-dsl-data-space/application-query';
-import { DataProductSelectorState } from './DataSpaceQueryCreatorStore.js';
+import { DataProductSelectorState } from './DataProductSelectorState.js';
 import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,

@@ -42,13 +42,14 @@ import {
 } from '@finos/legend-shared';
 import {
   type LightQuery,
+  NativeModelExecutionContext,
   type RawLambda,
   type Runtime,
   type Service,
   type QueryGridConfig,
   type ValueSpecification,
   type GraphInitializationReport,
-  type PackageableRuntime,
+  PackageableRuntime,
   type QueryInfo,
   GraphManagerState,
   Query,
@@ -75,6 +76,16 @@ import {
   QUERY_PROFILE_PATH,
   QueryDataSpaceExecutionContextInfo,
   QueryExplicitExecutionContextInfo,
+  QueryDataProductNativeExecutionContextInfo,
+  QueryDataProductModelAccessExecutionContextInfo,
+  ModelAccessPointGroup,
+  type DataProduct,
+  LakehouseRuntime,
+  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+  V1_DataProductArtifact,
+  V1_ModelAccessPointGroupInfo,
+  DataProductAccessType,
+  type DataProductAnalysisQueryResult,
 } from '@finos/legend-graph';
 import {
   generateExistingQueryEditorRoute,
@@ -86,7 +97,9 @@ import {
   type Entity,
   type ProjectGAVCoordinates,
   type EntitiesWithOrigin,
+  type DepotEntityWithOrigin,
   parseGACoordinates,
+  StoredFileGeneration,
 } from '@finos/legend-storage';
 import {
   type DepotServerClient,
@@ -95,6 +108,8 @@ import {
   LATEST_VERSION_ALIAS,
   VersionedProjectData,
   retrieveProjectEntitiesWithClassifier,
+  isSnapshotVersion,
+  SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import {
   ActionAlertActionType,
@@ -116,6 +131,8 @@ import {
   QueryBuilderDataBrowserWorkflow,
   QueryBuilderActionConfig,
   QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT,
+  NativeModelDataProductExecutionState,
+  ModelAccessPointDataProductExecutionState,
 } from '@finos/legend-query-builder';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
@@ -133,6 +150,13 @@ import {
 import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { hasDataSpaceInfoBeenVisited } from '../__lib__/LegendQueryUserDataSpaceHelper.js';
 import { LegendQueryDataSpaceQueryBuilderState } from './data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
+import { LegendQueryDataProductQueryBuilderState } from './data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
+import { DataProductSelectorState } from './data-space/DataProductSelectorState.js';
+import {
+  decorateEnvWithRealm,
+  LakehouseContractServerClient,
+  LakehouseEnvironmentType,
+} from '@finos/legend-server-lakehouse';
 
 export interface QueryPersistConfiguration {
   defaultName?: string | undefined;
@@ -266,12 +290,21 @@ export class QueryCreatorState {
   }
 }
 
+export class LegendQueryLakehouseState {
+  readonly contractServerClient: LakehouseContractServerClient;
+
+  constructor(contractServerClient: LakehouseContractServerClient) {
+    this.contractServerClient = contractServerClient;
+  }
+}
+
 export abstract class QueryEditorStore {
   readonly applicationStore: LegendQueryApplicationStore;
   readonly depotServerClient: DepotServerClient;
   readonly pluginManager: LegendQueryPluginManager;
   readonly graphManagerState: GraphManagerState;
   readonly queryLoaderState: QueryLoaderState;
+  readonly lakehouseState?: LegendQueryLakehouseState | undefined;
 
   readonly initState = ActionState.create();
 
@@ -281,6 +314,7 @@ export abstract class QueryEditorStore {
   showRegisterServiceModal = false;
   showAppInfo = false;
   showDataspaceInfo = false;
+  showDataProductInfo = false;
   enableMinialGraphForDataSpaceLoadingPerformance = true;
 
   constructor(
@@ -294,6 +328,7 @@ export abstract class QueryEditorStore {
       showRegisterServiceModal: observable,
       showAppInfo: observable,
       showDataspaceInfo: observable,
+      showDataProductInfo: observable,
       queryBuilderState: observable,
       enableMinialGraphForDataSpaceLoadingPerformance: observable,
       isPerformingBlockingAction: computed,
@@ -301,6 +336,7 @@ export abstract class QueryEditorStore {
       setShowRegisterServiceModal: action,
       setShowAppInfo: action,
       setShowDataspaceInfo: action,
+      setShowDataProductInfo: action,
       setEnableMinialGraphForDataSpaceLoadingPerformance: action,
       initialize: flow,
       buildGraph: flow,
@@ -315,6 +351,15 @@ export abstract class QueryEditorStore {
       applicationStore.pluginManager,
       applicationStore.logService,
     );
+
+    // lakehouse
+    if (applicationStore.config.lakehouseContractUrl) {
+      const contractServerClient = new LakehouseContractServerClient({
+        baseUrl: applicationStore.config.lakehouseContractUrl,
+      });
+      contractServerClient.setTracerService(applicationStore.tracerService);
+      this.lakehouseState = new LegendQueryLakehouseState(contractServerClient);
+    }
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
       this.graphManagerState.graphManager,
@@ -400,6 +445,10 @@ export abstract class QueryEditorStore {
 
   setShowDataspaceInfo(val: boolean): void {
     this.showDataspaceInfo = val;
+  }
+
+  setShowDataProductInfo(val: boolean): void {
+    this.showDataProductInfo = val;
   }
 
   setShowRegisterServiceModal(val: boolean): void {
@@ -826,6 +875,394 @@ export abstract class QueryEditorStore {
       dataSpaceAnalysisResult,
       isLightGraphEnabled,
     };
+  }
+
+  async fetchDataProductArtifact(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataProductPath: string,
+  ): Promise<V1_DataProductArtifact> {
+    const project = StoreProjectData.serialization.fromJson(
+      await this.depotServerClient.getProject(groupId, artifactId),
+    );
+    const files = (
+      await this.depotServerClient.getGenerationFilesByType(
+        project,
+        versionId,
+        V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+      )
+    ).map((rawFile) => StoredFileGeneration.serialization.fromJson(rawFile));
+    const fileContent = guaranteeNonNullable(
+      files.find((e) => e.path === dataProductPath)?.file.content,
+      `Artifact generation not found for data product: ${groupId}:${artifactId}:${versionId}/${dataProductPath}`,
+    );
+    const result = V1_DataProductArtifact.serialization.fromJson(
+      JSON.parse(fileContent) as PlainObject,
+    );
+    return result;
+  }
+
+  resolveDataProductMappingPath(
+    artifact: V1_DataProductArtifact,
+    executionContextId: string | undefined,
+  ): string {
+    // Try native execution contexts first
+    if (artifact.nativeModelAccess) {
+      const native = artifact.nativeModelAccess;
+      if (executionContextId) {
+        const matchingContext = native.nativeModelExecutionContexts.find(
+          (ctx) => ctx.key === executionContextId,
+        );
+        if (matchingContext) {
+          return matchingContext.mapping;
+        }
+      }
+      // Fall back to default execution context
+      const defaultContext = native.nativeModelExecutionContexts.find(
+        (ctx) => ctx.key === native.defaultExecutionContext,
+      );
+      if (defaultContext) {
+        return defaultContext.mapping;
+      }
+      // Fall back to first context
+      const firstContext = native.nativeModelExecutionContexts[0];
+      if (firstContext) {
+        return firstContext.mapping;
+      }
+    }
+
+    // Try model access point groups
+    const modelGroups = artifact.accessPointGroups.filter(
+      (g): g is V1_ModelAccessPointGroupInfo =>
+        g instanceof V1_ModelAccessPointGroupInfo,
+    );
+    if (executionContextId) {
+      const matchingGroup = modelGroups.find(
+        (g) => g.id === executionContextId,
+      );
+      if (matchingGroup) {
+        return matchingGroup.mappingGeneration.path;
+      }
+    }
+    // Fall back to first model access point group
+    const firstGroup = modelGroups[0];
+    if (firstGroup) {
+      return firstGroup.mappingGeneration.path;
+    }
+
+    throw new UnsupportedOperationError(
+      `Can't resolve mapping path for data product artifact`,
+    );
+  }
+
+  async buildGraphAndDataproductAnalyticsResult(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataProductPath: string,
+    dataProductAccessType: DataProductAccessType,
+    accessPointId: string,
+    preFetchedArtifact?: V1_DataProductArtifact | undefined,
+  ): Promise<DataProductAnalysisQueryResult> {
+    this.initState.setMessage('Fetching data product analysis result...');
+    const project = StoreProjectData.serialization.fromJson(
+      await this.depotServerClient.getProject(groupId, artifactId),
+    );
+    const graph_buildReport = createGraphBuilderReport();
+    const stopWatch = new StopWatch();
+
+    // initialize system
+    stopWatch.record();
+    await this.graphManagerState.initializeSystem();
+    stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS);
+
+    const dependency_buildReport = createGraphBuilderReport();
+    const dataProductAnalysisResult = preFetchedArtifact
+      ? await this.graphManagerState.graphManager.buildDataProductAnalysis(
+          preFetchedArtifact,
+          dataProductPath,
+          this.graphManagerState.graph,
+          accessPointId,
+          dataProductAccessType,
+          { groupId, artifactId, versionId },
+          graph_buildReport,
+        )
+      : await this.graphManagerState.graphManager.analyzeDataProductAndBuildMinimalGraph(
+          dataProductPath,
+          async () => {
+            const files = (
+              await this.depotServerClient.getGenerationFilesByType(
+                project,
+                versionId,
+                V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+              )
+            ).map((rawFile) =>
+              StoredFileGeneration.serialization.fromJson(rawFile),
+            );
+            const fileContent = guaranteeNonNullable(
+              files.find((e) => e.path === dataProductPath)?.file.content,
+              `Artifact generation not found for data product: ${groupId}:${artifactId}:${versionId}/${dataProductPath}`,
+            );
+            return JSON.parse(fileContent) as PlainObject;
+          },
+          this.graphManagerState.graph,
+          accessPointId,
+          dataProductAccessType,
+          { groupId, artifactId, versionId },
+          undefined,
+          graph_buildReport,
+        );
+
+    // report
+    stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
+    const graphBuilderReportData = {
+      timings:
+        this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
+      dependencies: dependency_buildReport,
+      dependenciesCount:
+        this.graphManagerState.graph.dependencyManager.numberOfDependencies,
+      graph: graph_buildReport,
+      isLightGraphEnabled: true,
+    };
+    this.logBuildGraphMetrics(graphBuilderReportData);
+    this.applicationStore.logService.info(
+      LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
+      graphBuilderReportData,
+    );
+
+    return dataProductAnalysisResult;
+  }
+
+  /**
+   * Resolves the execution state for a data product by looking up `accessId`
+   * in both model access point groups (by `id`) and native execution contexts
+   * (by `key`). Throws if no matching state is found.
+   */
+  resolveDataProductExecutionState(
+    dataProduct: DataProduct,
+    accessId: string | undefined,
+  ): NativeModelExecutionContext | ModelAccessPointGroup {
+    // Search model access point groups
+    const modelGroups = dataProduct.accessPointGroups.filter(
+      filterByType(ModelAccessPointGroup),
+    );
+    if (accessId) {
+      const matchingGroup = modelGroups.find((g) => g.id === accessId);
+      if (matchingGroup) {
+        return matchingGroup;
+      }
+      // Search native execution contexts
+      const matchingNative =
+        dataProduct.nativeModelAccess?.nativeModelExecutionContexts.find(
+          (ctx) => ctx.key === accessId,
+        );
+      if (matchingNative) {
+        return matchingNative;
+      }
+    } else {
+      // No accessId: fall back to defaults
+      if (dataProduct.nativeModelAccess) {
+        return dataProduct.nativeModelAccess.defaultExecutionContext;
+      }
+      if (modelGroups.length > 0) {
+        return guaranteeNonNullable(modelGroups[0]);
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't resolve execution state for data product '${dataProduct.path}'${accessId ? ` with access ID '${accessId}'` : ''}`,
+    );
+  }
+
+  /**
+   * Resolves the user's lakehouse environment and warehouse, creates a
+   * `LakehouseRuntime`, and wraps it in a `PackageableRuntime`.
+   *
+   * Resolution order:
+   * 1. Check local storage (`LakehouseUserInfo`) for a previously persisted value.
+   * 2. If not found, fetch from the lakehouse contract server via
+   *    `getUserEntitlementEnvs()` and persist the result to local storage.
+   */
+  async createLakehousePackageableRuntime(
+    dataProductPath: string,
+    gav: {
+      groupId: string;
+      artifactId: string;
+      versionId: string;
+    },
+  ): Promise<PackageableRuntime> {
+    // 1. Check local storage for persisted lakehouse user info
+    const persistedInfo = LegendQueryUserDataHelper.getLakehouseUserInfo(
+      this.applicationStore.userDataService,
+    );
+
+    let userEnvironment: string | undefined = persistedInfo?.env;
+    const userWarehouse: string | undefined =
+      persistedInfo?.snowflakeWarehouse ?? 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
+    // 2. If no persisted environment, fetch from the server
+    if (userEnvironment === undefined && this.lakehouseState) {
+      try {
+        const entitlementEnvs =
+          await this.lakehouseState.contractServerClient.getUserEntitlementEnvs(
+            this.applicationStore.identityService.currentUser,
+            this.applicationStore.getAccessToken(),
+          );
+        userEnvironment = entitlementEnvs.users
+          .map((e) => e.lakehouseEnvironment)
+          .at(0);
+        // Persist to local storage for future use
+        LegendQueryUserDataHelper.persistLakehouseUserInfo(
+          this.applicationStore.userDataService,
+          {
+            env: userEnvironment,
+            snowflakeWarehouse: userWarehouse,
+          },
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.warn(
+          LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+          `Unable to fetch user lakehouse environment: ${error.message}`,
+        );
+      }
+    }
+
+    if (userEnvironment === undefined) {
+      throw new Error(
+        `Can't query data product '${dataProductPath}': unable to resolve lakehouse user environment. ` +
+          `Please ensure your lakehouse entitlements are configured.`,
+      );
+    }
+    if (
+      isSnapshotVersion(gav.versionId) ||
+      gav.versionId === SNAPSHOT_VERSION_ALIAS
+    ) {
+      userEnvironment = decorateEnvWithRealm(
+        userEnvironment,
+        LakehouseEnvironmentType.PRODUCTION_PARALLEL,
+      );
+    }
+    const lakehouseRuntime = new LakehouseRuntime(
+      userEnvironment,
+      userWarehouse,
+    );
+    const packageableRuntime = new PackageableRuntime(
+      `${dataProductPath}_LakehouseRuntime`,
+    );
+    packageableRuntime.runtimeValue = lakehouseRuntime;
+    return packageableRuntime;
+  }
+
+  /**
+   * Centralized method to build a data product query builder state.
+   * Used by both the creator flow (new query from data product route/picker)
+   * and the existing query flow (loading a saved data product query).
+   *
+   * This fetches the data product artifact, resolves the mapping path,
+   * builds the minimal graph via `buildGraphAndDataproductAnalyticsResult`,
+   * creates `LegendQueryDataProductQueryBuilderState`, and wires in
+   * mapping coverage results.
+   */
+  async buildDataProductQueryBuilderState(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataProductPath: string,
+    artifact: V1_DataProductArtifact,
+    accessId: string,
+    dataProductAccessType: DataProductAccessType,
+    onDataProductChange: (val: DepotEntityWithOrigin) => Promise<void>,
+    productSelectorState?: DataProductSelectorState | undefined,
+  ): Promise<LegendQueryDataProductQueryBuilderState> {
+    // 3. Build minimal graph and get analysis result
+    const dataProductAnalysisResult =
+      await this.buildGraphAndDataproductAnalyticsResult(
+        groupId,
+        artifactId,
+        versionId,
+        dataProductPath,
+        dataProductAccessType,
+        accessId,
+        artifact,
+      );
+    // 3.5. Create a LakehouseRuntime and add it to the graph
+    const packageableRuntime = await this.createLakehousePackageableRuntime(
+      dataProductPath,
+      {
+        groupId,
+        artifactId,
+        versionId,
+      },
+    );
+    this.graphManagerState.graph.addElement(packageableRuntime, '_internal_');
+    // 4. Get the data product from the built graph
+    const dataProduct =
+      this.graphManagerState.graph.getDataProduct(dataProductPath);
+    // 5. Resolve execution state from accessId
+    const resolvedState = this.resolveDataProductExecutionState(
+      dataProduct,
+      accessId,
+    );
+
+    // 6. Create query builder state
+    const projectInfo = { groupId, artifactId, versionId };
+    const sourceInfo = {
+      groupId,
+      artifactId,
+      versionId,
+      dataProduct: dataProductPath,
+    };
+    const queryBuilderState = new LegendQueryDataProductQueryBuilderState(
+      this.applicationStore,
+      this.graphManagerState,
+      QueryBuilderDataBrowserWorkflow.INSTANCE,
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      new QueryBuilderActionConfig_QueryApplication(this),
+      dataProduct,
+      artifact,
+      resolvedState,
+      this.depotServerClient,
+      projectInfo,
+      onDataProductChange,
+      productSelectorState ??
+        new DataProductSelectorState(
+          this.depotServerClient,
+          this.applicationStore,
+        ),
+      undefined,
+      undefined,
+      this.applicationStore.config.options.queryBuilderConfig,
+      sourceInfo,
+    );
+    // Pass pre-resolved state to avoid double-resolution
+    queryBuilderState.initWithDataProduct(dataProduct, resolvedState);
+
+    // 7. Wire in mapping coverage result
+    const mappingCoverageResult =
+      dataProductAnalysisResult.dataProductAnalysis.mappingToMappingCoverageResult?.get(
+        dataProductAnalysisResult.targetMappingPath,
+      );
+    if (mappingCoverageResult) {
+      queryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
+        mappingCoverageResult;
+    }
+
+    // init
+    const execValue = dataProductAnalysisResult.targetExecState;
+    queryBuilderState.executionState =
+      execValue instanceof NativeModelExecutionContext
+        ? new NativeModelDataProductExecutionState(execValue, queryBuilderState)
+        : new ModelAccessPointDataProductExecutionState(
+            execValue,
+            queryBuilderState,
+          ).withAdhocRuntime();
+    queryBuilderState.changeMapping(queryBuilderState.executionState.mapping);
+    queryBuilderState.changeRuntime(
+      new RuntimePointer(
+        PackageableElementExplicitReference.create(packageableRuntime),
+      ),
+    );
+    return queryBuilderState;
   }
 }
 
@@ -1451,7 +1888,11 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       !(
         dataSpaceTaggedValue !== undefined ||
         queryInfo?.executionContext instanceof
-          QueryDataSpaceExecutionContextInfo
+          QueryDataSpaceExecutionContextInfo ||
+        queryInfo?.executionContext instanceof
+          QueryDataProductNativeExecutionContextInfo ||
+        queryInfo?.executionContext instanceof
+          QueryDataProductModelAccessExecutionContextInfo
       )
     ) {
       yield flowResult(this.buildFullGraph());
@@ -1603,6 +2044,15 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
                 );
               }
             },
+            new DataProductSelectorState(
+              this.depotServerClient,
+              this.applicationStore,
+            ),
+            () => {
+              this.applicationStore.notificationService.notifyWarning(
+                'Switching data products is not supported from the existing query editor. Please open a new query instead.',
+              );
+            },
             dataSpaceAnalysisResult,
             undefined,
             undefined,
@@ -1667,6 +2117,39 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           : undefined,
       );
       return classQueryBuilderState;
+    } else if (
+      exec instanceof QueryDataProductNativeExecutionContextInfo ||
+      exec instanceof QueryDataProductModelAccessExecutionContextInfo
+    ) {
+      const executionContextId =
+        exec instanceof QueryDataProductNativeExecutionContextInfo
+          ? exec.executionKey
+          : exec.accessPointGroupId;
+      const accessType =
+        exec instanceof QueryDataProductNativeExecutionContextInfo
+          ? DataProductAccessType.NATIVE
+          : DataProductAccessType.MODEL;
+      const artifact = await this.fetchDataProductArtifact(
+        queryInfo.groupId,
+        queryInfo.artifactId,
+        queryInfo.versionId,
+        exec.dataProductPath,
+      );
+      const queryBuilderState = await this.buildDataProductQueryBuilderState(
+        queryInfo.groupId,
+        queryInfo.artifactId,
+        queryInfo.versionId,
+        exec.dataProductPath,
+        artifact,
+        executionContextId,
+        accessType,
+        async () => {
+          this.applicationStore.notificationService.notifyWarning(
+            'Switching data products is not supported from the existing query editor. Please open a new query instead.',
+          );
+        },
+      );
+      return queryBuilderState;
     }
     throw new UnsupportedOperationError(`Unsupported query execution context`);
   }
