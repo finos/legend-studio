@@ -122,6 +122,7 @@ export class DataProductViewerState extends BaseViewerState<
     | ((dataProductName: string, accessPointName: string) => void)
     | undefined;
   readonly openGovernance?: ((id: string) => void) | undefined;
+  readonly openQuery?: (() => void) | undefined;
   readonly fetchingDataProductArtifactState = ActionState.create();
 
   constructor(
@@ -142,6 +143,7 @@ export class DataProductViewerState extends BaseViewerState<
         | ((dataProductName: string, accessPointName: string) => void)
         | undefined;
       openGovernance?: ((id: string) => void) | undefined;
+      openQuery?: (() => void) | undefined;
     },
     registryServerClient?: RegistryServerClient | undefined,
   ) {
@@ -184,6 +186,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.openDataCube = actions.openDataCube;
     this.openLineage = actions.openLineage;
     this.openGovernance = actions.openGovernance;
+    this.openQuery = actions.openQuery;
   }
 
   protected getValidSections(): string[] {

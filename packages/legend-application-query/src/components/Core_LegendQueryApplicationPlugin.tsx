@@ -78,6 +78,7 @@ import {
   type QueryBuilderPropagateExecutionContextChangeHelper,
   QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
   type QueryExportUsageConfiguration,
+  DataProductQueryBuilderState,
 } from '@finos/legend-query-builder';
 import {
   ExistingQueryEditorStore,
@@ -116,7 +117,7 @@ import { parseProjectIdentifier } from '@finos/legend-storage';
 import { QueryEditorExistingQueryHeader } from './QueryEditor.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 import { createViewSDLCProjectHandler } from '../stores/data-space/DataSpaceQueryBuilderHelper.js';
-import { DataSpaceQueryCreatorStore } from '../stores/data-space/DataSpaceQueryCreatorStore.js';
+import { DataProductQueryCreatorStore } from '../stores/data-space/DataProductQueryCreatorStore.js';
 import {
   CodeEditor,
   configureCodeEditorComponent,
@@ -617,7 +618,8 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
               (editorStore instanceof ExistingQueryEditorStore &&
                 queryBuilderState instanceof DataSpaceQueryBuilderState) ||
               editorStore instanceof DataSpaceTemplateQueryCreatorStore ||
-              editorStore instanceof DataSpaceQueryCreatorStore
+              editorStore instanceof DataProductQueryCreatorStore ||
+              queryBuilderState instanceof DataProductQueryBuilderState
             ) {
               return false;
             }
@@ -633,6 +635,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
               queryBuilderState.workflowState.actionConfig.editorStore;
             if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
               editorStore.setShowDataspaceInfo(true);
+            } else if (
+              queryBuilderState instanceof DataProductQueryBuilderState
+            ) {
+              editorStore.setShowDataProductInfo(true);
             }
           }
         },

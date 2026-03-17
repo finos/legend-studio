@@ -19,10 +19,8 @@ import {
   ResolvedDataSpaceEntityWithOrigin,
 } from '@finos/legend-extension-dsl-data-space/application';
 import {
-  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   type DataSpaceExecutionContext,
   DataSpaceServiceExecutableInfo,
-  extractDataSpaceInfo,
   type DataSpace,
   type DataSpaceExecutableAnalysisResult,
   type DataSpaceAnalysisResult,
@@ -36,16 +34,11 @@ import {
   type DataSpaceOption,
 } from '@finos/legend-extension-dsl-data-space/application-query';
 import {
-  DepotScope,
-  extractDepotEntityInfo,
   resolveVersion,
   SNAPSHOT_VERSION_ALIAS,
-  type StoredEntity,
-  type StoredSummaryEntity,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
 import {
-  CORE_PURE_PATH,
   GraphDataWithOrigin,
   LegendSDLC,
   RuntimePointer,
@@ -65,17 +58,14 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../DataSpaceQueryBuilderHelper.js';
-import {
-  assertErrorThrown,
-  LogEvent,
-  type GeneratorFn,
-} from '@finos/legend-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import type {
   DepotEntityWithOrigin,
   ProjectGAVCoordinates,
   QueryableSourceInfo,
 } from '@finos/legend-storage';
-import { APPLICATION_EVENT } from '@finos/legend-application';
+import type { DataProductSelectorState } from '../DataProductSelectorState.js';
 
 /**
  * Legend Query DataSpace query builder state.
@@ -84,8 +74,8 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
   declare applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
   project: ProjectGAVCoordinates;
-  disableDataProducts = false;
   declare extraOptionsConfig: ExtraOptionsConfig<DepotEntityWithOrigin>;
+  productSelectorState: DataProductSelectorState;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -103,6 +93,8 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
     onDataSpaceChange: (
       val: ResolvedDataSpaceEntityWithOrigin,
     ) => Promise<void>,
+    productSelectorState: DataProductSelectorState,
+    onDataProductChange: (val: DepotEntityWithOrigin) => void,
     dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined,
     onExecutionContextChange?:
       | ((val: DataSpaceExecutionContext) => void)
@@ -131,12 +123,16 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
     );
     this.project = project;
     this.depotServerClient = depotServerClient;
+    this.productSelectorState = productSelectorState;
     this.extraOptionsConfig = new ExtraOptionsConfig<DepotEntityWithOrigin>(
       'DataProduct',
       'DEPOT_ENTITY_WITH_ORIGIN',
+      productSelectorState.dataProducts?.map((e) => ({
+        label: e.name,
+        value: e,
+      })),
       undefined,
-      undefined,
-      (val: DepotEntityWithOrigin): string => val.path,
+      onDataProductChange,
       undefined,
       undefined,
     );
@@ -168,6 +164,7 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
   ): LegendQueryDataSpaceQueryBuilderState {
     this.entities = dataspaces;
     if (products) {
+      this.productSelectorState.setDataProducts(products);
       this.extraOptionsConfig.setOptions(
         products.map((e) => ({
           label: e.path,
@@ -231,47 +228,23 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
   override *loadEntities(): GeneratorFn<void> {
     if (this.entities === undefined) {
       this.loadEntitiesState.inProgress();
-      const toGetSnapShot = this.project.versionId === SNAPSHOT_VERSION_ALIAS;
       try {
-        // use promise
-        this.entities = (
-          (yield this.depotServerClient.getEntitiesByClassifier(
-            DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-            {
-              scope: toGetSnapShot ? DepotScope.SNAPSHOT : DepotScope.RELEASES,
-            },
-          )) as StoredEntity[]
-        ).map((storedEntity) =>
-          extractDataSpaceInfo(storedEntity, toGetSnapShot),
-        );
-        const dataProducts = this.disableDataProducts
-          ? []
-          : (
-              (yield this.depotServerClient.getEntitiesSummaryByClassifier(
-                CORE_PURE_PATH.DATA_PRODUCT,
-                {
-                  scope: DepotScope.RELEASES,
-                  summary: true,
-                },
-              )) as StoredSummaryEntity[]
-            ).map((storedEntity) => {
-              return extractDepotEntityInfo(storedEntity, false);
-            });
-        this.extraOptionsConfig.setOptions(
-          dataProducts.map((e) => ({
-            label: e.name,
-            value: e,
-          })),
-        );
+        // If the selector already has data, use it; otherwise trigger loading
+        if (!this.productSelectorState.isCompletelyLoaded) {
+          yield flowResult(this.productSelectorState.loadProducts());
+        }
+        this.entities = this.productSelectorState.legacyDataProducts;
+        if (this.productSelectorState.dataProducts) {
+          this.extraOptionsConfig.setOptions(
+            this.productSelectorState.dataProducts.map((e) => ({
+              label: e.name,
+              value: e,
+            })),
+          );
+        }
         this.loadEntitiesState.pass();
-      } catch (error) {
-        assertErrorThrown(error);
+      } catch {
         this.loadEntitiesState.fail();
-        this.applicationStore.notificationService.notifyError(error);
-        this.applicationStore.logService.error(
-          LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
-          error,
-        );
       }
     }
   }

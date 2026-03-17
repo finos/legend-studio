@@ -87,6 +87,12 @@ export enum LakehouseTargetEnv {
   DuckDb = 'DuckDb',
 }
 
+export enum DataProductAccessType {
+  MODEL = 'model',
+  NATIVE = 'native',
+  LAKEHOUSE = 'lakehouse',
+}
+
 export class LakehouseAccessPoint extends AccessPoint {
   targetEnvironment: string;
   classification: string | undefined;

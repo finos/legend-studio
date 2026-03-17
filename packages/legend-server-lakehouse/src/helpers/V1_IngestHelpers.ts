@@ -102,3 +102,20 @@ export const filterEnvironmentsByEntitlementsEnv = (
     ),
   );
 };
+
+export const decorateEnvWithRealm = (
+  env: string,
+  relam: LakehouseEnvironmentType,
+): string => {
+  if (relam === LakehouseEnvironmentType.DEVELOPMENT) {
+    if (env.startsWith(`${LakehouseEnvironmentType.DEVELOPMENT}-`)) {
+      return env;
+    }
+    return `${LakehouseEnvironmentType.DEVELOPMENT}-${env}`;
+  } else {
+    if (env.endsWith(`-${LakehouseEnvironmentType.PRODUCTION_PARALLEL}`)) {
+      return env;
+    }
+    return `${env}-${LakehouseEnvironmentType.PRODUCTION_PARALLEL}`;
+  }
+};

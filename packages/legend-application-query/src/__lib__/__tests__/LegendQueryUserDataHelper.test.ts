@@ -19,12 +19,15 @@ import type { UserDataService } from '@finos/legend-application';
 import {
   LegendQueryUserDataHelper,
   USER_DATA_QUERY_DATASPACE_LIMIT,
+  USER_DATA_QUERY_DATAPRODUCT_LIMIT,
   USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT,
+  type LakehouseUserInfo,
 } from '../LegendQueryUserDataHelper.js';
 import { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 import {
   createIdFromDataSpaceInfo,
   hasDataSpaceInfoBeenVisited,
+  createVisitedDataProductId,
 } from '../LegendQueryUserDataSpaceHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
@@ -504,6 +507,480 @@ describe('LegendQueryUserDataHelper', () => {
       expect(withoutOrigin.origin?.groupId).toBeUndefined();
       expect(withoutOrigin.origin?.artifactId).toBeUndefined();
       expect(withoutOrigin.origin?.versionId).toBeUndefined();
+    });
+  });
+
+  describe('Recently viewed data products', () => {
+    it('should save and retrieve a recently viewed data product', () => {
+      const dataProduct = {
+        id: 'my-group:myartifact:model::MyDataProduct',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct',
+        versionId: 'latest',
+      };
+      const dataProduct2 = {
+        id: 'my-group:myartifact:model::MyDataProduct2',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct2',
+        execContext: 'access-point-1',
+        versionId: 'latest',
+      };
+
+      const userDataService = getService();
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProduct,
+      );
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProduct2,
+      );
+
+      const expected = [dataProduct2.id, dataProduct.id];
+
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+          userDataService,
+        ).map((e) => e.id),
+      ).toEqual(expected);
+    });
+
+    it('should retrieve the most recent data product', () => {
+      const dataProduct = {
+        id: 'my-group:myartifact:model::MyDataProduct',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct',
+        versionId: 'latest',
+      };
+      const dataProduct2 = {
+        id: 'my-group:myartifact:model::MyDataProduct2',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct2',
+        execContext: 'access-point-1',
+        versionId: 'latest',
+      };
+
+      const userDataService = getService();
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProduct,
+      );
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProduct2,
+      );
+
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProduct(userDataService)
+          ?.id,
+      ).toEqual(dataProduct2.id);
+    });
+
+    it('should replace existing data product and move to front when re-visited', () => {
+      const dataProduct = {
+        id: 'my-group:myartifact:model::MyDataProduct',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct',
+        versionId: 'latest',
+      };
+      const dataProduct2 = {
+        id: 'my-group:myartifact:model::MyDataProduct2',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct2',
+        versionId: 'latest',
+      };
+
+      const userDataService = getService();
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProduct,
+      );
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProduct2,
+      );
+
+      // Re-visit first data product with updated version
+      const dataProductUpdated = {
+        ...dataProduct,
+        versionId: '2.0.0',
+      };
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProductUpdated,
+      );
+
+      const visited =
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+          userDataService,
+        );
+      expect(visited).toHaveLength(2);
+      expect(visited[0]?.id).toBe(dataProduct.id);
+      expect(visited[0]?.versionId).toBe('2.0.0');
+    });
+
+    it(`should maintain a list of ${USER_DATA_QUERY_DATAPRODUCT_LIMIT} saved data products`, () => {
+      const userDataService = getService();
+
+      for (let i = 0; i < USER_DATA_QUERY_DATAPRODUCT_LIMIT + 2; i++) {
+        const dataProduct = {
+          id: `my-group:myartifact:model::MyDataProduct${i}`,
+          groupId: 'my-group',
+          artifactId: 'myartifact',
+          path: `model::MyDataProduct${i}`,
+          versionId: 'latest',
+        };
+
+        LegendQueryUserDataHelper.addVisitedDataProduct(
+          userDataService,
+          dataProduct,
+        );
+      }
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+          userDataService,
+        ),
+      ).toHaveLength(USER_DATA_QUERY_DATAPRODUCT_LIMIT);
+    });
+
+    it('should find a recently visited data product by id', () => {
+      const dataProduct = {
+        id: 'my-group:myartifact:model::MyDataProduct',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct',
+        versionId: 'latest',
+        accessId: 'access-point-1',
+      };
+
+      const userDataService = getService();
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProduct,
+      );
+
+      const found = LegendQueryUserDataHelper.findRecentlyVisitedDataProduct(
+        userDataService,
+        dataProduct.id,
+      );
+      expect(found).toBeDefined();
+      expect(found?.accessId).toBe('access-point-1');
+
+      const notFound = LegendQueryUserDataHelper.findRecentlyVisitedDataProduct(
+        userDataService,
+        'nonexistent-id',
+      );
+      expect(notFound).toBeUndefined();
+    });
+
+    it('should remove a specific data product', () => {
+      const dataProduct = {
+        id: 'my-group:myartifact:model::MyDataProduct',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct',
+        versionId: 'latest',
+      };
+      const dataProduct2 = {
+        id: 'my-group:myartifact:model::MyDataProduct2',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct2',
+        versionId: 'latest',
+      };
+
+      const userDataService = getService();
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProduct,
+      );
+      LegendQueryUserDataHelper.addVisitedDataProduct(
+        userDataService,
+        dataProduct2,
+      );
+
+      LegendQueryUserDataHelper.removeRecentlyViewedDataProduct(
+        userDataService,
+        dataProduct.id,
+      );
+
+      const visited =
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+          userDataService,
+        );
+      expect(visited).toHaveLength(1);
+      expect(visited[0]?.id).toBe(dataProduct2.id);
+    });
+
+    it('should remove all data products', () => {
+      const userDataService = getService();
+      LegendQueryUserDataHelper.addVisitedDataProduct(userDataService, {
+        id: 'my-group:myartifact:model::MyDataProduct',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct',
+        versionId: 'latest',
+      });
+
+      LegendQueryUserDataHelper.removeRecentlyViewedDataProducts(
+        userDataService,
+      );
+
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+          userDataService,
+        ),
+      ).toHaveLength(0);
+    });
+
+    it('should update exec context on a visited data product', () => {
+      const userDataService = getService();
+      LegendQueryUserDataHelper.addVisitedDataProduct(userDataService, {
+        id: createVisitedDataProductId(
+          'my-group',
+          'myartifact',
+          'model::MyDataProduct',
+        ),
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct',
+        versionId: 'latest',
+        accessId: 'old-context',
+      });
+
+      const updated =
+        LegendQueryUserDataHelper.updateVisitedDataProductExecContext(
+          userDataService,
+          'my-group',
+          'myartifact',
+          'model::MyDataProduct',
+          'new-context',
+        );
+      expect(updated).toBe(true);
+
+      const visited =
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProduct(
+          userDataService,
+        );
+      expect(visited?.accessId).toBe('new-context');
+    });
+
+    it('should return false when updating exec context for non-existent data product', () => {
+      const userDataService = getService();
+
+      const updated =
+        LegendQueryUserDataHelper.updateVisitedDataProductExecContext(
+          userDataService,
+          'my-group',
+          'myartifact',
+          'model::NonExistent',
+          'new-context',
+        );
+      expect(updated).toBe(false);
+    });
+
+    it('should store data products separately from legacy data products', () => {
+      const userDataService = getService();
+
+      // Add a legacy data product (dataspace)
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, {
+        id: 'my-group:myartifact:model::MyDataSpace',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataSpace',
+        versionId: 'latest',
+      });
+
+      // Add a data product
+      LegendQueryUserDataHelper.addVisitedDataProduct(userDataService, {
+        id: 'my-group:myartifact:model::MyDataProduct',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct',
+        versionId: 'latest',
+      });
+
+      // They should be stored independently
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(1);
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+          userDataService,
+        ),
+      ).toHaveLength(1);
+
+      // Removing one should not affect the other
+      LegendQueryUserDataHelper.removeRecentlyViewedDataProducts(
+        userDataService,
+      );
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(1);
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+          userDataService,
+        ),
+      ).toHaveLength(0);
+    });
+  });
+
+  describe('Lakehouse user info', () => {
+    it('should return undefined when no lakehouse info is persisted', () => {
+      const userDataService = getService();
+      expect(
+        LegendQueryUserDataHelper.getLakehouseUserInfo(userDataService),
+      ).toBeUndefined();
+    });
+
+    it('should persist and retrieve lakehouse user info', () => {
+      const userDataService = getService();
+      const info: LakehouseUserInfo = {
+        env: 'production',
+        snowflakeWarehouse: 'MY_WAREHOUSE',
+      };
+
+      LegendQueryUserDataHelper.persistLakehouseUserInfo(userDataService, info);
+
+      const retrieved =
+        LegendQueryUserDataHelper.getLakehouseUserInfo(userDataService);
+      expect(retrieved?.env).toBe('production');
+      expect(retrieved?.snowflakeWarehouse).toBe('MY_WAREHOUSE');
+    });
+
+    it('should persist lakehouse info with undefined fields', () => {
+      const userDataService = getService();
+      const info: LakehouseUserInfo = {
+        env: undefined,
+        snowflakeWarehouse: undefined,
+      };
+
+      LegendQueryUserDataHelper.persistLakehouseUserInfo(userDataService, info);
+
+      const retrieved =
+        LegendQueryUserDataHelper.getLakehouseUserInfo(userDataService);
+      expect(retrieved).toBeDefined();
+      expect(retrieved?.env).toBeUndefined();
+      expect(retrieved?.snowflakeWarehouse).toBeUndefined();
+    });
+
+    it('should overwrite previously persisted lakehouse info', () => {
+      const userDataService = getService();
+
+      LegendQueryUserDataHelper.persistLakehouseUserInfo(userDataService, {
+        env: 'staging',
+        snowflakeWarehouse: 'OLD_WAREHOUSE',
+      });
+
+      LegendQueryUserDataHelper.persistLakehouseUserInfo(userDataService, {
+        env: 'production',
+        snowflakeWarehouse: 'NEW_WAREHOUSE',
+      });
+
+      const retrieved =
+        LegendQueryUserDataHelper.getLakehouseUserInfo(userDataService);
+      expect(retrieved?.env).toBe('production');
+      expect(retrieved?.snowflakeWarehouse).toBe('NEW_WAREHOUSE');
+    });
+
+    it('should remove lakehouse user info', () => {
+      const userDataService = getService();
+
+      LegendQueryUserDataHelper.persistLakehouseUserInfo(userDataService, {
+        env: 'production',
+        snowflakeWarehouse: 'MY_WAREHOUSE',
+      });
+
+      expect(
+        LegendQueryUserDataHelper.getLakehouseUserInfo(userDataService),
+      ).toBeDefined();
+
+      LegendQueryUserDataHelper.removeLakehouseUserInfo(userDataService);
+
+      expect(
+        LegendQueryUserDataHelper.getLakehouseUserInfo(userDataService),
+      ).toBeUndefined();
+    });
+
+    it('should persist lakehouse info with only env set', () => {
+      const userDataService = getService();
+
+      LegendQueryUserDataHelper.persistLakehouseUserInfo(userDataService, {
+        env: 'dev',
+        snowflakeWarehouse: undefined,
+      });
+
+      const retrieved =
+        LegendQueryUserDataHelper.getLakehouseUserInfo(userDataService);
+      expect(retrieved?.env).toBe('dev');
+      expect(retrieved?.snowflakeWarehouse).toBeUndefined();
+    });
+
+    it('should persist lakehouse info with only snowflakeWarehouse set', () => {
+      const userDataService = getService();
+
+      LegendQueryUserDataHelper.persistLakehouseUserInfo(userDataService, {
+        env: undefined,
+        snowflakeWarehouse: 'COMPUTE_WH',
+      });
+
+      const retrieved =
+        LegendQueryUserDataHelper.getLakehouseUserInfo(userDataService);
+      expect(retrieved?.env).toBeUndefined();
+      expect(retrieved?.snowflakeWarehouse).toBe('COMPUTE_WH');
+    });
+
+    it('should not affect other persisted data', () => {
+      const userDataService = getService();
+
+      // Add a query and a data product
+      LegendQueryUserDataHelper.addRecentlyViewedQuery(
+        userDataService,
+        'query-1',
+      );
+      LegendQueryUserDataHelper.addVisitedDataProduct(userDataService, {
+        id: 'my-group:myartifact:model::MyDataProduct',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataProduct',
+        versionId: 'latest',
+      });
+
+      // Persist lakehouse info
+      LegendQueryUserDataHelper.persistLakehouseUserInfo(userDataService, {
+        env: 'prod',
+        snowflakeWarehouse: 'WH',
+      });
+
+      // All data should coexist
+      expect(
+        LegendQueryUserDataHelper.getRecentlyViewedQueries(userDataService),
+      ).toHaveLength(1);
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+          userDataService,
+        ),
+      ).toHaveLength(1);
+      expect(
+        LegendQueryUserDataHelper.getLakehouseUserInfo(userDataService),
+      ).toBeDefined();
+
+      // Removing lakehouse info should not affect others
+      LegendQueryUserDataHelper.removeLakehouseUserInfo(userDataService);
+      expect(
+        LegendQueryUserDataHelper.getRecentlyViewedQueries(userDataService),
+      ).toHaveLength(1);
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataProducts(
+          userDataService,
+        ),
+      ).toHaveLength(1);
     });
   });
 });

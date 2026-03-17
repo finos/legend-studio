@@ -45,6 +45,7 @@ import { V1_relationElementModelSchema } from '../../transformation/pureProtocol
 import { V1_pureModelContextDataPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity.js';
+import { V1_MappedEntity } from '../../engine/analytics/V1_MappingModelCoverageAnalysis.js';
 import { V1_multiplicityModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 
 export enum V1_DataProductTypeEnum {
@@ -275,11 +276,15 @@ export class V1_DiagramInfo {
 export class V1_MappingGenerationInfo {
   path!: string;
   model!: V1_PureModelContextData;
+  mappedEntities: V1_MappedEntity[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_MappingGenerationInfo, {
       path: primitive(),
       model: V1_pureModelContextDataPropSchema,
+      mappedEntities: list(
+        usingModelSchema(V1_MappedEntity.serialization.schema),
+      ),
     }),
   );
 }

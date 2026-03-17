@@ -153,6 +153,13 @@ export interface LegendQueryApplicationConfigurationData
   dataCube?: {
     url: string;
   };
+  marketplace?: {
+    url: string;
+    productionParallelUrl: string;
+  };
+  lakehouse?: {
+    url: string;
+  };
 }
 
 export class LegendQueryApplicationConfig extends LegendApplicationConfig {
@@ -164,6 +171,9 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly studioApplicationUrl: string;
   readonly taxonomyApplicationUrl?: string;
   readonly dataCubeApplicationUrl?: string;
+  readonly marketplaceApplicationUrl?: string;
+  readonly marketplaceProductionParallelUrl?: string;
+  readonly lakehouseContractUrl?: string;
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
 
@@ -228,6 +238,27 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
     if (input.configData.dataCube?.url) {
       this.dataCubeApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.dataCube.url,
+      );
+    }
+
+    // marketplace
+    if (input.configData.marketplace?.url) {
+      this.marketplaceApplicationUrl =
+        LegendApplicationConfig.resolveAbsoluteUrl(
+          input.configData.marketplace.url,
+        );
+    }
+    if (input.configData.marketplace?.productionParallelUrl) {
+      this.marketplaceProductionParallelUrl =
+        LegendApplicationConfig.resolveAbsoluteUrl(
+          input.configData.marketplace.productionParallelUrl,
+        );
+    }
+
+    // lakehouse
+    if (input.configData.lakehouse?.url) {
+      this.lakehouseContractUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.lakehouse.url,
       );
     }
 

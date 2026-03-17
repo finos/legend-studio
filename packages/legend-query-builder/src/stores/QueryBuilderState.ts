@@ -52,6 +52,7 @@ import {
   type Mapping,
   type Runtime,
   type GraphManagerState,
+  type PackageableElement,
   type ValueSpecification,
   type Type,
   type QueryGridConfig,
@@ -375,6 +376,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   get isResultPanelHidden(): boolean {
     return false;
+  }
+
+  get floatingExecutionElements(): PackageableElement[] | undefined {
+    return undefined;
   }
 
   /**

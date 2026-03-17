@@ -17,11 +17,14 @@
 import {
   DataProductQueryBuilderState,
   NativeModelDataProductExecutionState,
+  ModelAccessPointDataProductExecutionState,
+  type DataProductOption,
   type QueryBuilderActionConfig,
   type QueryBuilderConfig,
   type QueryBuilderWorkflowState,
   type ExtraOptionsConfig,
 } from '@finos/legend-query-builder';
+import { renderLegendDataProductQueryBuilderSetupPanelContent } from '../../../components/data-product/LegendQueryDataProductQueryBuilder.js';
 import type { LegendQueryApplicationStore } from '../../LegendQueryBaseStore.js';
 import {
   resolveVersion,
@@ -39,18 +42,24 @@ import {
   type GraphManagerState,
   type ModelAccessPointGroup,
   type NativeModelExecutionContext,
+  type PackageableElement,
   type V1_DataProductArtifact,
 } from '@finos/legend-graph';
 import {
-  DATA_PRODUCT_EXECUTION_TYPE,
-  generateDataProductRoute,
+  generateDataProductNativeRoute,
+  generateDataProductModelRoute,
 } from '../../../__lib__/LegendQueryNavigation.js';
+import { compareLabelFn } from '@finos/legend-art';
+import type { DataProductSelectorState } from '../../data-space/DataProductSelectorState.js';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 
 export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBuilderState {
   declare applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
   project: ProjectGAVCoordinates;
   declare extraOptionsConfig: ExtraOptionsConfig<DepotEntityWithOrigin>;
+  productSelectorState: DataProductSelectorState;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -60,10 +69,10 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     dataProduct: DataProduct,
     artifact: V1_DataProductArtifact | undefined,
     executionState: NativeModelExecutionContext | ModelAccessPointGroup,
-    isLightGraphEnabled: boolean,
     depotServerClient: DepotServerClient,
     project: ProjectGAVCoordinates,
     onDataProductChange: (val: DepotEntityWithOrigin) => Promise<void>,
+    productSelectorState: DataProductSelectorState,
     onExecutionContextChange?:
       | ((val: NativeModelExecutionContext) => void)
       | undefined,
@@ -88,7 +97,37 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     );
     this.project = project;
     this.depotServerClient = depotServerClient;
+    this.productSelectorState = productSelectorState;
   }
+
+  override get dataProductOptions(): DataProductOption[] {
+    const graphOptions = super.dataProductOptions;
+    const depotOptions: DataProductOption[] = [
+      ...(this.productSelectorState.legacyDataProducts ?? []),
+      ...(this.productSelectorState.dataProducts ?? []),
+    ].map((e) => ({ label: e.name, value: e }));
+    // merge depot entities, deduplicating against graph-local options
+    const seenPaths = new Set(graphOptions.map((o) => o.value.path));
+    const uniqueDepotOptions = depotOptions.filter(
+      (o) => !seenPaths.has(o.value.path),
+    );
+    return [...graphOptions, ...uniqueDepotOptions].sort(compareLabelFn);
+  }
+
+  override *loadEntities(): GeneratorFn<void> {
+    yield flowResult(super.loadEntities());
+    // also ensure the shared selector has loaded depot-level entities
+    if (!this.productSelectorState.isCompletelyLoaded) {
+      yield flowResult(this.productSelectorState.loadProducts());
+    }
+  }
+
+  override get isProductLinkable(): boolean {
+    return true;
+  }
+
+  override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
+    renderLegendDataProductQueryBuilderSetupPanelContent(this);
 
   get sdlc(): LegendSDLC {
     return new LegendSDLC(
@@ -98,27 +137,49 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     );
   }
 
-  override copyDataProductLinkToClipBoard(): void {
-    const dataSpace = this.dataProduct;
-    const execState = this.executionState;
-    if (!(execState instanceof NativeModelDataProductExecutionState)) {
-      this.applicationStore.notificationService.notifyError(
-        'Data Product link is not available for this access type.',
-      );
-      return;
+  override get floatingExecutionElements(): PackageableElement[] | undefined {
+    if (
+      this.executionState instanceof
+        ModelAccessPointDataProductExecutionState &&
+      this.executionState.adhocRuntime &&
+      this.graphManagerState.graph.origin !== undefined &&
+      this.executionState.selectedRuntime !== undefined
+    ) {
+      return [this.executionState.selectedRuntime];
     }
-    const executionContext = execState.exectionValue;
-    const route =
-      this.applicationStore.navigationService.navigator.generateAddress(
-        generateDataProductRoute(
+    return undefined;
+  }
+
+  override copyDataProductLinkToClipBoard(): void {
+    const dataProduct = this.dataProduct;
+    const execState = this.executionState;
+    let route: string;
+    if (execState instanceof NativeModelDataProductExecutionState) {
+      route = this.applicationStore.navigationService.navigator.generateAddress(
+        generateDataProductNativeRoute(
           this.project.groupId,
           this.project.artifactId,
           this.project.versionId,
-          dataSpace.path,
-          DATA_PRODUCT_EXECUTION_TYPE.NATIVE,
-          executionContext.key,
+          dataProduct.path,
+          execState.exectionValue.key,
         ),
       );
+    } else if (execState instanceof ModelAccessPointDataProductExecutionState) {
+      route = this.applicationStore.navigationService.navigator.generateAddress(
+        generateDataProductModelRoute(
+          this.project.groupId,
+          this.project.artifactId,
+          this.project.versionId,
+          dataProduct.path,
+          execState.exectionValue.id,
+        ),
+      );
+    } else {
+      this.applicationStore.notificationService.notifyError(
+        'Data Product link is not available for this execution type.',
+      );
+      return;
+    }
 
     navigator.clipboard
       .writeText(route)

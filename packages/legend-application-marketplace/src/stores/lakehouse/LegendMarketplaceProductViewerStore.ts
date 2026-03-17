@@ -55,6 +55,7 @@ import {
   V1_DataProductArtifact,
   V1_dataProductModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_ModelAccessPointGroup,
   V1_PureGraphManager,
   V1_SdlcDeploymentDataProductOrigin,
   V1_TerminalModelSchema,
@@ -71,6 +72,7 @@ import {
 } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
 import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
@@ -390,6 +392,27 @@ export class LegendMarketplaceProductViewerStore {
                 }
               }
             : undefined,
+          // TODO: improve with class opening
+          openQuery: projectGAV
+            ? (): void => {
+                const modelAPG = v1DataProduct.accessPointGroups.find(
+                  (apg) => apg instanceof V1_ModelAccessPointGroup,
+                );
+                if (modelAPG) {
+                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                    EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl(
+                      this.marketplaceBaseStore.applicationStore.config
+                        .queryApplicationUrl,
+                      projectGAV.groupId,
+                      projectGAV.artifactId,
+                      projectGAV.versionId,
+                      v1DataProduct.path,
+                      modelAPG.id,
+                    ),
+                  );
+                }
+              }
+            : undefined,
         },
         this.marketplaceBaseStore.registryServerClient,
       );
@@ -592,6 +615,24 @@ export class LegendMarketplaceProductViewerStore {
                       v1DataProduct.path,
                     ),
                   );
+                },
+                openQuery: (): void => {
+                  const modelAPG = v1DataProduct.accessPointGroups.find(
+                    (apg) => apg instanceof V1_ModelAccessPointGroup,
+                  );
+                  if (modelAPG) {
+                    this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                      EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl(
+                        this.marketplaceBaseStore.applicationStore.config
+                          .queryApplicationUrl,
+                        projectData.groupId,
+                        projectData.artifactId,
+                        projectData.versionId,
+                        v1DataProduct.path,
+                        modelAPG.id,
+                      ),
+                    );
+                  }
                 },
               },
               this.marketplaceBaseStore.registryServerClient,

@@ -17,15 +17,31 @@
 import type { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 import { GAV_DELIMITER, generateGAVCoordinates } from '@finos/legend-storage';
 
-export interface VisitedDataProduct {
+export interface VisitedLegacyDataProduct {
   id: string;
   groupId: string;
   artifactId: string;
   path: string;
   versionId: string | undefined;
   execContext?: string | undefined;
+  lastViewedAt?: number | undefined;
 }
 
+export interface VisitedDataProduct {
+  id: string;
+  groupId: string;
+  artifactId: string;
+  path: string;
+  versionId: string | undefined;
+  accessId?: string | undefined;
+  dataProductAccessType?: string | undefined;
+  title?: string | undefined;
+  description?: string | undefined;
+  deploymentId?: string | undefined;
+  lastViewedAt?: number | undefined;
+}
+
+export type SavedVisitedLegacyDataProducts = VisitedLegacyDataProduct[];
 export type SavedVisitedDataProducts = VisitedDataProduct[];
 
 export const createVisitedDataSpaceId = (
@@ -55,19 +71,20 @@ export const createSimpleVisitedDataspace = (
   versionId: string | undefined,
   path: string,
   exec: string | undefined,
-): VisitedDataProduct => ({
+): VisitedLegacyDataProduct => ({
   id: createVisitedDataSpaceId(groupId, artifactId, path),
   groupId,
   artifactId,
   versionId,
   path,
   execContext: exec,
+  lastViewedAt: Date.now(),
 });
 
 export const createVisitedDataspaceFromInfo = (
   info: ResolvedDataSpaceEntityWithOrigin,
   execContext: string | undefined,
-): VisitedDataProduct | undefined => {
+): VisitedLegacyDataProduct | undefined => {
   const groupId = info.origin?.groupId;
   const artifactId = info.origin?.artifactId;
   const versionId = info.origin?.versionId;
@@ -86,7 +103,7 @@ export const createVisitedDataspaceFromInfo = (
 
 export const hasDataSpaceInfoBeenVisited = (
   val: ResolvedDataSpaceEntityWithOrigin,
-  visited: VisitedDataProduct[],
+  visited: VisitedLegacyDataProduct[],
 ): boolean =>
   Boolean(
     visited.find((_visit) => {
@@ -96,3 +113,36 @@ export const hasDataSpaceInfoBeenVisited = (
       return false;
     }),
   );
+
+export const createVisitedDataProductId = (
+  groupId: string,
+  artifactId: string,
+  dataProductPath: string,
+): string =>
+  generateGAVCoordinates(groupId, artifactId, undefined) +
+  GAV_DELIMITER +
+  dataProductPath;
+
+export const createSimpleVisitedDataProduct = (
+  groupId: string,
+  artifactId: string,
+  versionId: string | undefined,
+  path: string,
+  accessId: string | undefined,
+  dataProductAccessType?: string | undefined,
+  title?: string | undefined,
+  description?: string | undefined,
+  deploymentId?: string | undefined,
+): VisitedDataProduct => ({
+  id: createVisitedDataProductId(groupId, artifactId, path),
+  groupId,
+  artifactId,
+  versionId,
+  path,
+  accessId,
+  dataProductAccessType,
+  title,
+  description,
+  deploymentId,
+  lastViewedAt: Date.now(),
+});

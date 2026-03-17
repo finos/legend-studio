@@ -65,7 +65,8 @@ export class V1_QueryExecutionContext {}
 export enum V1_QueryExecutionContextType {
   QUERY_EXPLICIT_EXECUTION_CONTEXT = 'explicitExecutionContext',
   QUERY_DATASAPCE_EXECUTION_CONTEXT = 'dataSpaceExecutionContext',
-  QUERY_DATAPRODUCT_EXECUTION_CONTEXT = 'dataProductExecutionContext',
+  QUERY_DATAPRODUCT_NATIVE_EXECUTION_CONTEXT = 'dataProductNativeExecutionContext',
+  QUERY_DATAPRODUCT_MODEL_ACCESS_EXECUTION_CONTEXT = 'dataProductModelAccessExecutionContext',
 }
 
 export class V1_QueryExplicitExecutionContext extends V1_QueryExecutionContext {
@@ -104,17 +105,37 @@ export class V1_QueryDataSpaceExecutionContext extends V1_QueryExecutionContext 
   );
 }
 
-export class V1_QueryDataProductExecutionContext extends V1_QueryExecutionContext {
+export abstract class V1_QueryDataProductExecutionContext extends V1_QueryExecutionContext {
   dataProductPath!: string;
-  executionKey: string | undefined;
+}
+
+export class V1_DataProductNativeExecutionContext extends V1_QueryDataProductExecutionContext {
+  executionKey!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_QueryDataProductExecutionContext, {
+    createModelSchema(V1_DataProductNativeExecutionContext, {
       _type: usingConstantValueSchema(
-        V1_QueryExecutionContextType.QUERY_DATAPRODUCT_EXECUTION_CONTEXT,
+        V1_QueryExecutionContextType.QUERY_DATAPRODUCT_NATIVE_EXECUTION_CONTEXT,
       ),
       dataProductPath: primitive(),
-      executionKey: optional(primitive()),
+      executionKey: primitive(),
+    }),
+    {
+      deserializeNullAsUndefined: true,
+    },
+  );
+}
+
+export class V1_DataProductModelAccessExecutionContext extends V1_QueryDataProductExecutionContext {
+  accessPointGroupId!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataProductModelAccessExecutionContext, {
+      _type: usingConstantValueSchema(
+        V1_QueryExecutionContextType.QUERY_DATAPRODUCT_MODEL_ACCESS_EXECUTION_CONTEXT,
+      ),
+      dataProductPath: primitive(),
+      accessPointGroupId: primitive(),
     }),
     {
       deserializeNullAsUndefined: true,
@@ -136,9 +157,14 @@ export const V1_deserializeQueryExecutionContext = (
         V1_QueryDataSpaceExecutionContext.serialization.schema,
         json,
       );
-    case V1_QueryExecutionContextType.QUERY_DATAPRODUCT_EXECUTION_CONTEXT:
+    case V1_QueryExecutionContextType.QUERY_DATAPRODUCT_NATIVE_EXECUTION_CONTEXT:
       return deserialize(
-        V1_QueryDataProductExecutionContext.serialization.schema,
+        V1_DataProductNativeExecutionContext.serialization.schema,
+        json,
+      );
+    case V1_QueryExecutionContextType.QUERY_DATAPRODUCT_MODEL_ACCESS_EXECUTION_CONTEXT:
+      return deserialize(
+        V1_DataProductModelAccessExecutionContext.serialization.schema,
         json,
       );
     default: {
@@ -162,9 +188,14 @@ export const V1_serializeQueryExecutionContext = (
       V1_QueryDataSpaceExecutionContext.serialization.schema,
       protocol,
     );
-  } else if (protocol instanceof V1_QueryDataProductExecutionContext) {
+  } else if (protocol instanceof V1_DataProductNativeExecutionContext) {
     return serialize(
-      V1_QueryDataProductExecutionContext.serialization.schema,
+      V1_DataProductNativeExecutionContext.serialization.schema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_DataProductModelAccessExecutionContext) {
+    return serialize(
+      V1_DataProductModelAccessExecutionContext.serialization.schema,
       protocol,
     );
   }
