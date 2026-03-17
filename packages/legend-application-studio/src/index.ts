@@ -126,3 +126,9 @@ export { SnowflakeM2MUdfFunctionActivatorEditor } from './components/editor/edit
 export { HostedServiceFunctionActivatorEditorState } from './stores/editor/editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 export { MemSQLFunctionActivatorEditorState } from './stores/editor/editor-state/element-editor-state/function-activator/MemSQLFunctionActivatorEditorState.js';
 export { MemSQLFunctionActivatorEditor } from './components/editor/editor-group/function-activator/MemSQLFunctionActivatorEditor.js';
+export { BulkServiceRegistrationEditor } from './components/editor/editor-group/service-editor/BulkServiceRegistrationEditor.js';
+export {
+  REGISTRATION_RESULT,
+  getServiceRegistrationResult,
+} from './stores/editor/sidebar-state/BulkServiceRegistrationState.js';
+export { getRegistrationStatusIcon } from './components/editor/side-bar/RegisterService.js';
