@@ -34,7 +34,7 @@ import {
 export const deserializeLakehouseDataProductSearchResultOrigin = (
   json: PlainObject<LakehouseDataProductSearchResultOrigin> | null,
 ): LakehouseDataProductSearchResultOrigin | null => {
-  if (json === null) {
+  if (json?._type === null || json?._type === undefined) {
     return null;
   }
   switch (json._type) {

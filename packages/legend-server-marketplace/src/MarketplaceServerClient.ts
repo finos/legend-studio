@@ -121,7 +121,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
     const filters = searchFilters.join('&search_filters=');
     const searchFilterParam = filters ? `&search_filters=${filters}` : '';
     return this.get<PlainObject<DataProductSearchResponse>>(
-      `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}${searchFilterParam}&page_size=${pageSize}&page_number=${pageNumber}`,
+      `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}${searchFilterParam}&page_size=${pageSize}&page_number=${pageNumber}&include_filter_metadata=true`,
     );
   };
 
