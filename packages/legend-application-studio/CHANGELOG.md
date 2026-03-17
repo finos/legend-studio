@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.107
+
+### Patch Changes
+
+- [#4991](https://github.com/finos/legend-studio/pull/4991) [`5fa05ea`](https://github.com/finos/legend-studio/commit/5fa05ea3e3dc2a7c0227f6e352cf3578c86cc735) ([@jackp5150](https://github.com/jackp5150)) - Add export for service registration editor
+
 ## 28.19.106
 
 ### Patch Changes
