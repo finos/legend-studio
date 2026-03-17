@@ -28,22 +28,64 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     });
   }
 
-  // auth
-  private _token = (token?: string) => ({
-    Authorization: `Bearer ${token}`,
-  });
-
   // ------------------------------------------- Tasks -------------------------------------------
 
   private _tasks = (): string => `${this.baseUrl}/tasks`;
 
-  getTask = (
+  getTask = (taskId: string): Promise<PlainObject<V1_RawWorkflowTask>> =>
+    this.get(`${this._tasks()}/${encodeURIComponent(taskId)}`);
+
+  approveTask = (
     taskId: string,
-    token: string | undefined,
-  ): Promise<PlainObject<V1_RawWorkflowTask>> =>
-    this.get(
-      `${this._tasks()}/${encodeURIComponent(taskId)}`,
-      {},
-      this._token(token),
+    actioningUserId: string,
+    justification: string,
+  ): Promise<void> => {
+    const requestBody = {
+      params: {
+        justificationApprove: {
+          businessJustification: justification,
+        },
+      },
+      userId: actioningUserId,
+      reasonCode: 'Approved',
+    };
+
+    return this.post(
+      `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
+      requestBody,
     );
+  };
+
+  rejectTask = (
+    taskId: string,
+    actioningUserId: string,
+    justification: string,
+  ): Promise<void> => {
+    const requestBody = {
+      params: {
+        justificationReject: {
+          businessJustification: justification,
+        },
+      },
+      userId: actioningUserId,
+      reasonCode: 'Rejected',
+    };
+
+    return this.post(
+      `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
+      requestBody,
+    );
+  };
+
+  escalateTask = (taskId: string, actioningUserId: string): Promise<void> => {
+    const requestBody = {
+      userId: actioningUserId,
+      reasonCode: 'Escalated',
+    };
+
+    return this.post(
+      `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
+      requestBody,
+    );
+  };
 }
