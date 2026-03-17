@@ -203,7 +203,7 @@ export const WorkflowDataAccessRequestTask =
           actions: [
             {
               label: 'Approve',
-              type: ActionAlertActionType.PROCEED,
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: () => {
                 if (!isLoading) {
                   setIsLoading(true);
@@ -222,7 +222,7 @@ export const WorkflowDataAccessRequestTask =
             },
             {
               label: 'Cancel',
-              type: ActionAlertActionType.STANDARD,
+              type: ActionAlertActionType.PROCEED,
               default: true,
             },
           ],
@@ -271,7 +271,7 @@ export const WorkflowDataAccessRequestTask =
             },
             {
               label: 'Cancel',
-              type: ActionAlertActionType.STANDARD,
+              type: ActionAlertActionType.PROCEED,
               default: true,
             },
           ],
