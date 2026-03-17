@@ -35,14 +35,12 @@ import type { CommandRegistrar } from '@finos/legend-application';
 import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY } from '../../../__lib__/STO_Relational_LegendStudioCommand.js';
 import { PANEL_MODE } from '../EditorConfig.js';
 import { DatabaseSchemaExplorerState } from '../editor-state/element-editor-state/connection/DatabaseBuilderState.js';
-import { AbstractSQLPlaygroundState } from '@finos/legend-query-builder';
+import {
+  AbstractSQLPlaygroundState,
+  CsvSqlExecutionResult,
+} from '@finos/legend-query-builder';
 
 const DEFAULT_SQL_TEXT = `--Start building your SQL. Note that you can also drag-and-drop nodes from schema explorer\n`;
-
-export interface SQL_ExecutionResult {
-  value: string;
-  sqlDuration: number;
-}
 
 export class StudioSQLPlaygroundPanelState
   extends AbstractSQLPlaygroundState
@@ -170,10 +168,10 @@ export class StudioSQLPlaygroundPanelState
           guaranteeRelationalDatabaseConnection(this.connection),
           sql,
         )) as string;
-      this.sqlExecutionResult = {
-        value: value,
-        sqlDuration: Date.now() - start,
-      };
+      this.sqlExecutionResult = new CsvSqlExecutionResult(
+        value,
+        Date.now() - start,
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(

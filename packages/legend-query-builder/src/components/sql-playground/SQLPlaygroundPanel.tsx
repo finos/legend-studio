@@ -30,8 +30,16 @@ import {
   PlaygroundSQLCodeEditor,
   type SQLPlaygroundPanelProps,
 } from './SQLPlaygroundEditor.js';
-import { PlayGroundSQLExecutionResultGrid } from './SQLPlaygroundGrid.js';
+import {
+  PlayGroundSQLExecutionResultGrid,
+  TEMPORARY_PlaygroundTDSResultGrid,
+} from './SQLPlaygroundGrid.js';
 import { SQLPlaygroundExplorer } from './SQLPlaygroundExplorer.js';
+import {
+  CsvSqlExecutionResult,
+  QueryExecutionResult,
+} from '../../stores/sql-playground/AbstractSQLPlaygroundState.js';
+import { TDSExecutionResult } from '@finos/legend-graph';
 
 export const SQLPlaygroundEditorResultPanel = observer(
   (props: SQLPlaygroundPanelProps) => {
@@ -47,14 +55,15 @@ export const SQLPlaygroundEditorResultPanel = observer(
     const executeRawSQL = (): void => {
       playgroundState.executeRawSQL();
     };
-    const resultDescription = playgroundState.sqlExecutionResult
-      ? `query ran in ${prettyDuration(
-          playgroundState.sqlExecutionResult.sqlDuration,
-          {
-            ms: true,
-          },
-        )}`
-      : undefined;
+    const resultDescription =
+      playgroundState.sqlExecutionResult instanceof CsvSqlExecutionResult
+        ? `query ran in ${prettyDuration(
+            playgroundState.sqlExecutionResult.sqlDuration,
+            {
+              ms: true,
+            },
+          )}`
+        : undefined;
     const toggleLocalMode = (): void => {
       playgroundState.toggleIsLocalModeEnabled();
     };
@@ -151,7 +160,8 @@ export const SQLPlaygroundEditorResultPanel = observer(
                     </div>
                   </div>
                 </div>
-                {playgroundState.sqlExecutionResult !== undefined && (
+                {playgroundState.sqlExecutionResult instanceof
+                  CsvSqlExecutionResult && (
                   <PlayGroundSQLExecutionResultGrid
                     result={playgroundState.sqlExecutionResult.value}
                     useAdvancedGrid={advancedMode}
@@ -159,7 +169,17 @@ export const SQLPlaygroundEditorResultPanel = observer(
                     enableDarkMode={enableDarkMode}
                   />
                 )}
-                {playgroundState.sqlExecutionResult === undefined && <div />}
+                {playgroundState.sqlExecutionResult instanceof
+                  QueryExecutionResult &&
+                  playgroundState.sqlExecutionResult.result instanceof
+                    TDSExecutionResult && (
+                    <TEMPORARY_PlaygroundTDSResultGrid
+                      result={playgroundState.sqlExecutionResult.result}
+                      useAdvancedGrid={advancedMode}
+                      useLocalMode={playgroundState.isLocalModeEnabled}
+                      enableDarkMode={enableDarkMode}
+                    />
+                  )}
               </ResizablePanel>
             </ResizablePanelGroup>
           </div>

@@ -25,7 +25,7 @@ import {
   isNumber,
   isValidURL,
 } from '@finos/legend-shared';
-
+import { type TDSExecutionResult } from '@finos/legend-graph';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -34,6 +34,8 @@ import {
   type DataGridGetContextMenuItemsParams,
   type DataGridMenuItemDef,
 } from '@finos/legend-lego/data-grid';
+import { getRowDataFromExecutionResult } from '../result/tds/QueryBuilderTDSResultShared.js';
+import { getFilterTDSColumnCustomizations } from '../result/tds/QueryBuilderTDSGridResult.js';
 
 const parseExecutionResultData = (
   data: string,
@@ -238,6 +240,163 @@ export const PlayGroundSQLExecutionResultGrid = observer(
             field: column,
             flex: 1,
           }))}
+        />
+      </div>
+    );
+  },
+);
+// NOTE: TEMPORARY - this component will be removed and replaced with QueryBuilderTDSGridResult
+// once the dependency on QueryBuilderState is removed from that component.
+export const TEMPORARY_PlaygroundTDSResultGrid = observer(
+  (props: {
+    result: TDSExecutionResult;
+    useAdvancedGrid?: boolean;
+    useLocalMode?: boolean;
+    enableDarkMode?: boolean;
+  }) => {
+    const {
+      result,
+      useAdvancedGrid,
+      useLocalMode,
+      enableDarkMode = false,
+    } = props;
+    const rowData = getRowDataFromExecutionResult(result);
+    const darkMode = enableDarkMode;
+
+    const getContextMenuItems = useCallback(
+      (
+        params: DataGridGetContextMenuItemsParams,
+      ): (DataGridDefaultMenuItem | DataGridMenuItemDef)[] => [
+        'copy',
+        'copyWithHeaders',
+        {
+          name: 'Copy Row Value',
+          action: () => {
+            params.api.copySelectedRowsToClipboard();
+          },
+        },
+      ],
+      [],
+    );
+
+    if (useAdvancedGrid && useLocalMode) {
+      const localColDefs = result.result.columns.map(
+        (colName) =>
+          ({
+            minWidth: 150,
+            sortable: true,
+            resizable: true,
+            field: colName,
+            flex: 1,
+            enablePivot: true,
+            enableRowGroup: true,
+            enableValue: true,
+            cellRenderer: TDSResultCellRenderer,
+            allowedAggFuncs: ['count'],
+          }) as DataGridColumnDefinition,
+      );
+      return (
+        <div
+          className={clsx('sql-playground__result__grid', {
+            'ag-theme-balham': !darkMode,
+            'ag-theme-balham-dark': darkMode,
+          })}
+        >
+          <DataGrid
+            rowData={rowData}
+            gridOptions={{
+              suppressScrollOnNewData: true,
+              getRowId: (data) => `${data.data.rowNumber}`,
+              rowSelection: {
+                mode: 'multiRow',
+                checkboxes: false,
+                headerCheckbox: false,
+              },
+              pivotPanelShow: 'always',
+              rowGroupPanelShow: 'always',
+              cellSelection: true,
+            }}
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
+            }}
+            suppressFieldDotNotation={true}
+            suppressContextMenu={false}
+            columnDefs={localColDefs}
+            sideBar={['columns', 'filters']}
+            getContextMenuItems={(params) => getContextMenuItems(params)}
+          />
+        </div>
+      );
+    }
+
+    if (useAdvancedGrid) {
+      const colDefs = result.result.columns.map(
+        (colName) =>
+          ({
+            minWidth: 150,
+            sortable: true,
+            resizable: true,
+            field: colName,
+            flex: 1,
+            cellRenderer: TDSResultCellRenderer,
+            ...getFilterTDSColumnCustomizations(result, colName),
+          }) as DataGridColumnDefinition,
+      );
+      return (
+        <div
+          className={clsx('sql-playground__result__grid', {
+            'ag-theme-balham': !darkMode,
+            'ag-theme-balham-dark': darkMode,
+          })}
+        >
+          <DataGrid
+            rowData={rowData}
+            overlayNoRowsTemplate={`<div class="sql-playground__result__grid--empty">No results</div>`}
+            gridOptions={{
+              suppressScrollOnNewData: true,
+              getRowId: (data) => `${data.data.rowNumber}`,
+              rowSelection: {
+                mode: 'multiRow',
+                checkboxes: false,
+                headerCheckbox: false,
+              },
+              cellSelection: true,
+            }}
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
+            }}
+            suppressFieldDotNotation={true}
+            suppressClipboardPaste={false}
+            suppressContextMenu={false}
+            columnDefs={colDefs}
+            getContextMenuItems={(params) => getContextMenuItems(params)}
+          />
+        </div>
+      );
+    }
+
+    const colDefs = result.result.columns.map((colName) => ({
+      minWidth: 150,
+      sortable: true,
+      resizable: true,
+      headerName: colName,
+      field: colName,
+      flex: 1,
+      cellRenderer: TDSResultCellRenderer,
+    }));
+    return (
+      <div
+        className={clsx('sql-playground__result__grid', {
+          'ag-theme-balham': !darkMode,
+          'ag-theme-balham-dark': darkMode,
+        })}
+      >
+        <DataGrid
+          rowData={rowData}
+          overlayNoRowsTemplate={`<div class="sql-playground__result__grid--empty">No results</div>`}
+          alwaysShowVerticalScroll={true}
+          suppressFieldDotNotation={true}
+          columnDefs={colDefs}
         />
       </div>
     );

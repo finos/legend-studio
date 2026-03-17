@@ -18,7 +18,6 @@ import {
   type GeneratorFn,
   assertErrorThrown,
   LogEvent,
-  csvStringify,
   guaranteeNonNullable,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -27,6 +26,7 @@ import {
   LegendSQLPlaygroundState,
   DEFAULT_SQL_TEXT,
   buildDefaultDataProductQuery,
+  QueryExecutionResult,
 } from '@finos/legend-query-builder';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -171,7 +171,6 @@ export class EmbeddedLegendSQLPlaygroundPanelState extends LegendSQLPlaygroundSt
       this.executeRawSQLState.inProgress();
       const sql = this.getSelectedSQL();
       const sqlQuery = `#SQL{${sql}}#`;
-      const start = Date.now();
       const resolvedUserEnv = this.getResolvedUserEnv();
       const executionInput = (yield createExecuteInput(
         guaranteeNonNullable(
@@ -191,12 +190,7 @@ export class EmbeddedLegendSQLPlaygroundPanelState extends LegendSQLPlaygroundSt
         ),
       );
       if (result instanceof TDSExecutionResult) {
-        const data = result.result.rows.map((row) => row.values);
-        const csvData = csvStringify([result.result.columns, ...data]);
-        this.setSqlExecutionResult({
-          value: csvData,
-          sqlDuration: Date.now() - start,
-        });
+        this.setSqlExecutionResult(new QueryExecutionResult(result));
       }
     } catch (error) {
       assertErrorThrown(error);
