@@ -52,7 +52,7 @@ export const setup = (outputDir) => {
           productionParallelUrl: 'http://localhost:6500/marketplace',
         },
         lakehouse: {
-          url: "http://localhost:6600/lakehouse/api",
+          url: 'http://localhost:6600/lakehouse/api',
         },
         studio: {
           url: 'http://localhost:9000/studio',

@@ -19,6 +19,7 @@
     { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-art" },
     { "path": "../legend-code-editor" },
-    { "path": "../legend-lego" }
+    { "path": "../legend-lego" },
+    { "path": "../legend-server-lakehouse" }
   ]
 }
