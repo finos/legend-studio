@@ -27,6 +27,7 @@ import {
   list,
   optional,
   primitive,
+  raw,
 } from 'serializr';
 import {
   deserializeDataProductSearchResultDetails,
@@ -34,6 +35,8 @@ import {
   serializeDataProductSearchResultDetails,
   serializeLakehouseDataProductSearchResultOrigin,
 } from '../serializationHelpers/DataProductSerializationHelper.js';
+
+import type { TaxonomyNode } from './Taxonomy.js';
 
 export enum DataProductSearchResultDetailsType {
   LAKEHOUSE = 'lakehouse',
@@ -140,6 +143,9 @@ export class DataProductSearchResultMetadata {
   page_size!: number;
   prev_page_number!: number | null;
   total_count!: number;
+  lakehouse_count: number | undefined;
+  legacy_count: number | undefined;
+  external_source_count: number | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductSearchResultMetadata, {
@@ -149,6 +155,9 @@ export class DataProductSearchResultMetadata {
       page_size: primitive(),
       prev_page_number: optional(primitive()),
       total_count: primitive(),
+      lakehouse_count: optional(primitive()),
+      legacy_count: optional(primitive()),
+      external_source_count: optional(primitive()),
     }),
   );
 }
@@ -184,10 +193,21 @@ export class DataProductSearchResult {
   );
 }
 
+export class DataProductSearchFiltersMetadata {
+  taxonomy_tree!: TaxonomyNode[];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductSearchFiltersMetadata, {
+      taxonomy_tree: list(raw()),
+    }),
+  );
+}
+
 export class DataProductSearchResponse {
   results!: DataProductSearchResult[];
   as_of_time!: string;
   metadata!: DataProductSearchResultMetadata;
+  filters_metadata?: DataProductSearchFiltersMetadata;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductSearchResponse, {
@@ -197,6 +217,9 @@ export class DataProductSearchResponse {
       as_of_time: primitive(),
       metadata: usingModelSchema(
         DataProductSearchResultMetadata.serialization.schema,
+      ),
+      filters_metadata: optional(
+        usingModelSchema(DataProductSearchFiltersMetadata.serialization.schema),
       ),
     }),
   );

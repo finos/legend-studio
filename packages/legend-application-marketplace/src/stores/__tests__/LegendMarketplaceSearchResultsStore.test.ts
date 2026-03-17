@@ -15,15 +15,14 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { flowResult } from 'mobx';
-import { createSpy } from '@finos/legend-shared/test';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
-import { LegendMarketplaceSearchResultsStore } from '../lakehouse/LegendMarketplaceSearchResultsStore.js';
-import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import {
-  mockTaxonomyTreeResponse,
-  mockEmptyTaxonomyTreeResponse,
-} from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
+  LegendMarketplaceSearchResultsStore,
+  DataProductTypeFilter,
+  DataProductSourceFilter,
+} from '../lakehouse/LegendMarketplaceSearchResultsStore.js';
+import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
+import { mockTaxonomyTreeResponse } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
 
 const setupStore = async (): Promise<{
   store: LegendMarketplaceSearchResultsStore;
@@ -37,77 +36,6 @@ const setupStore = async (): Promise<{
 };
 
 describe('LegendMarketplaceSearchResultsStore - Taxonomy', () => {
-  describe('fetchTaxonomyTree', () => {
-    test('fetches taxonomy tree from API and sets tree on store', async () => {
-      const { store, baseStore } = await setupStore();
-
-      createSpy(
-        baseStore.marketplaceServerClient,
-        'getTaxonomyTree',
-      ).mockResolvedValue(mockTaxonomyTreeResponse);
-
-      await flowResult(store.fetchTaxonomyTree('test query'));
-
-      expect(
-        baseStore.marketplaceServerClient.getTaxonomyTree,
-      ).toHaveBeenCalledWith(
-        baseStore.envState.lakehouseEnvironment,
-        'test query',
-      );
-      expect(store.taxonomyTree).toHaveLength(2);
-      expect(store.taxonomyTree[0]?.id).toBe('referenceData');
-      expect(store.taxonomyTree[1]?.id).toBe('derivedData');
-      expect(store.fetchingTaxonomyTreeState.hasCompleted).toBe(true);
-    });
-
-    test('fetches taxonomy tree without search query', async () => {
-      const { store, baseStore } = await setupStore();
-
-      createSpy(
-        baseStore.marketplaceServerClient,
-        'getTaxonomyTree',
-      ).mockResolvedValue(mockTaxonomyTreeResponse);
-
-      await flowResult(store.fetchTaxonomyTree());
-
-      expect(
-        baseStore.marketplaceServerClient.getTaxonomyTree,
-      ).toHaveBeenCalledWith(
-        baseStore.envState.lakehouseEnvironment,
-        undefined,
-      );
-      expect(store.taxonomyTree).toHaveLength(2);
-    });
-
-    test('sets empty tree when API returns empty response', async () => {
-      const { store, baseStore } = await setupStore();
-
-      createSpy(
-        baseStore.marketplaceServerClient,
-        'getTaxonomyTree',
-      ).mockResolvedValue(mockEmptyTaxonomyTreeResponse);
-
-      await flowResult(store.fetchTaxonomyTree('test'));
-
-      expect(store.taxonomyTree).toHaveLength(0);
-      expect(store.fetchingTaxonomyTreeState.hasCompleted).toBe(true);
-    });
-
-    test('sets empty tree and completes state on API error', async () => {
-      const { store, baseStore } = await setupStore();
-
-      createSpy(
-        baseStore.marketplaceServerClient,
-        'getTaxonomyTree',
-      ).mockRejectedValue(new Error('Network error'));
-
-      await flowResult(store.fetchTaxonomyTree('test'));
-
-      expect(store.taxonomyTree).toHaveLength(0);
-      expect(store.fetchingTaxonomyTreeState.hasCompleted).toBe(true);
-    });
-  });
-
   describe('setTaxonomyTree', () => {
     test('sets taxonomy tree on store', async () => {
       const { store } = await setupStore();
@@ -141,19 +69,23 @@ describe('LegendMarketplaceSearchResultsStore - Taxonomy', () => {
   });
 
   describe('toggleTaxonomyNode', () => {
-    test('selecting a leaf node adds only that node', async () => {
+    test('selecting a leaf node adds it and all ancestor nodes', async () => {
       const { store } = await setupStore();
       store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
 
       store.toggleTaxonomyNode('referenceData::marketData::esg');
 
-      expect(store.selectedTaxonomyNodeIds.size).toBe(1);
       expect(
         store.selectedTaxonomyNodeIds.has('referenceData::marketData::esg'),
       ).toBe(true);
+      expect(
+        store.selectedTaxonomyNodeIds.has('referenceData::marketData'),
+      ).toBe(true);
+      expect(store.selectedTaxonomyNodeIds.has('referenceData')).toBe(true);
+      expect(store.selectedTaxonomyNodeIds.size).toBe(3);
     });
 
-    test('selecting a parent node adds the node and all descendants', async () => {
+    test('selecting a parent node adds it, all descendants, and ancestors', async () => {
       const { store } = await setupStore();
       store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
 
@@ -168,7 +100,8 @@ describe('LegendMarketplaceSearchResultsStore - Taxonomy', () => {
       expect(
         store.selectedTaxonomyNodeIds.has('referenceData::marketData::pricing'),
       ).toBe(true);
-      expect(store.selectedTaxonomyNodeIds.size).toBe(3);
+      expect(store.selectedTaxonomyNodeIds.has('referenceData')).toBe(true);
+      expect(store.selectedTaxonomyNodeIds.size).toBe(4);
     });
 
     test('selecting a top-level node adds it and all nested descendants', async () => {
@@ -197,30 +130,27 @@ describe('LegendMarketplaceSearchResultsStore - Taxonomy', () => {
       const { store } = await setupStore();
       store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
 
-      // Select two leaf nodes
       store.toggleTaxonomyNode('referenceData::marketData::esg');
-      store.toggleTaxonomyNode('referenceData::marketData::pricing');
-      expect(store.selectedTaxonomyNodeIds.size).toBe(2);
+      expect(store.selectedTaxonomyNodeIds.size).toBe(3);
 
-      // Deselect one
       store.toggleTaxonomyNode('referenceData::marketData::esg');
-      expect(store.selectedTaxonomyNodeIds.size).toBe(1);
+      expect(store.selectedTaxonomyNodeIds.size).toBe(2);
       expect(
-        store.selectedTaxonomyNodeIds.has('referenceData::marketData::pricing'),
+        store.selectedTaxonomyNodeIds.has('referenceData::marketData'),
       ).toBe(true);
+      expect(store.selectedTaxonomyNodeIds.has('referenceData')).toBe(true);
     });
 
     test('deselecting a parent node removes it and all descendants', async () => {
       const { store } = await setupStore();
       store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
 
-      // Select parent (adds parent + children)
       store.toggleTaxonomyNode('referenceData::marketData');
-      expect(store.selectedTaxonomyNodeIds.size).toBe(3);
+      expect(store.selectedTaxonomyNodeIds.size).toBe(4);
 
-      // Deselect parent (removes parent + children)
       store.toggleTaxonomyNode('referenceData::marketData');
-      expect(store.selectedTaxonomyNodeIds.size).toBe(0);
+      expect(store.selectedTaxonomyNodeIds.size).toBe(1);
+      expect(store.selectedTaxonomyNodeIds.has('referenceData')).toBe(true);
     });
 
     test('toggling nodes from different branches works independently', async () => {
@@ -236,7 +166,7 @@ describe('LegendMarketplaceSearchResultsStore - Taxonomy', () => {
       expect(store.selectedTaxonomyNodeIds.has('derivedData::analytics')).toBe(
         true,
       );
-      expect(store.selectedTaxonomyNodeIds.size).toBe(2);
+      expect(store.selectedTaxonomyNodeIds.size).toBe(5);
     });
 
     test('toggling a node not found in tree still adds/removes it', async () => {
@@ -248,6 +178,319 @@ describe('LegendMarketplaceSearchResultsStore - Taxonomy', () => {
 
       store.toggleTaxonomyNode('nonExistentNode');
       expect(store.selectedTaxonomyNodeIds.has('nonExistentNode')).toBe(false);
+    });
+
+    test('selecting top-level then deselecting clears everything', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleTaxonomyNode('referenceData');
+      expect(store.selectedTaxonomyNodeIds.size).toBe(5);
+
+      store.toggleTaxonomyNode('referenceData');
+      expect(store.selectedTaxonomyNodeIds.size).toBe(0);
+    });
+
+    test('deselecting mid-level removes it and descendants but keeps ancestors', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleTaxonomyNode('referenceData::marketData::esg');
+      expect(store.selectedTaxonomyNodeIds.size).toBe(3);
+
+      store.toggleTaxonomyNode('referenceData::marketData');
+      expect(store.selectedTaxonomyNodeIds.size).toBe(1);
+      expect(store.selectedTaxonomyNodeIds.has('referenceData')).toBe(true);
+    });
+  });
+
+  describe('simpleToggleTaxonomyNode', () => {
+    test('adds a single node without ancestors or descendants', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.simpleToggleTaxonomyNode('referenceData::marketData::esg');
+
+      expect(store.selectedTaxonomyNodeIds.size).toBe(1);
+      expect(
+        store.selectedTaxonomyNodeIds.has('referenceData::marketData::esg'),
+      ).toBe(true);
+    });
+
+    test('removes a single node', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.simpleToggleTaxonomyNode('referenceData::marketData::esg');
+      store.simpleToggleTaxonomyNode('referenceData::marketData::esg');
+
+      expect(store.selectedTaxonomyNodeIds.size).toBe(0);
+    });
+  });
+});
+
+describe('LegendMarketplaceSearchResultsStore - Filters', () => {
+  describe('toggleDataProductType', () => {
+    test('adds a data product type when not selected', async () => {
+      const { store } = await setupStore();
+
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+
+      expect(
+        store.selectedDataProductTypes.has(DataProductTypeFilter.LAKEHOUSE),
+      ).toBe(true);
+      expect(store.selectedDataProductTypes.size).toBe(1);
+    });
+
+    test('removes a data product type when already selected', async () => {
+      const { store } = await setupStore();
+
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+
+      expect(
+        store.selectedDataProductTypes.has(DataProductTypeFilter.LAKEHOUSE),
+      ).toBe(false);
+      expect(store.selectedDataProductTypes.size).toBe(0);
+    });
+
+    test('can select multiple data product types', async () => {
+      const { store } = await setupStore();
+
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+      store.toggleDataProductType(DataProductTypeFilter.LEGACY);
+
+      expect(store.selectedDataProductTypes.size).toBe(2);
+      expect(
+        store.selectedDataProductTypes.has(DataProductTypeFilter.LAKEHOUSE),
+      ).toBe(true);
+      expect(
+        store.selectedDataProductTypes.has(DataProductTypeFilter.LEGACY),
+      ).toBe(true);
+    });
+  });
+
+  describe('toggleSource', () => {
+    test('adds a source when not selected', async () => {
+      const { store } = await setupStore();
+
+      store.toggleSource(DataProductSourceFilter.EXTERNAL);
+
+      expect(store.selectedSources.has(DataProductSourceFilter.EXTERNAL)).toBe(
+        true,
+      );
+      expect(store.selectedSources.size).toBe(1);
+    });
+
+    test('removes a source when already selected', async () => {
+      const { store } = await setupStore();
+
+      store.toggleSource(DataProductSourceFilter.EXTERNAL);
+      store.toggleSource(DataProductSourceFilter.EXTERNAL);
+
+      expect(store.selectedSources.has(DataProductSourceFilter.EXTERNAL)).toBe(
+        false,
+      );
+      expect(store.selectedSources.size).toBe(0);
+    });
+  });
+
+  describe('clearAllFilters', () => {
+    test('clears all filter types', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+      store.toggleSource(DataProductSourceFilter.EXTERNAL);
+      store.toggleTaxonomyNode('referenceData');
+
+      expect(store.hasActiveFilters).toBe(true);
+
+      store.clearAllFilters();
+
+      expect(store.selectedDataProductTypes.size).toBe(0);
+      expect(store.selectedSources.size).toBe(0);
+      expect(store.selectedTaxonomyNodeIds.size).toBe(0);
+      expect(store.hasActiveFilters).toBe(false);
+    });
+
+    test('is a no-op when no filters are active', async () => {
+      const { store } = await setupStore();
+
+      store.clearAllFilters();
+
+      expect(store.hasActiveFilters).toBe(false);
+    });
+  });
+
+  describe('hasActiveFilters', () => {
+    test('returns false when no filters are active', async () => {
+      const { store } = await setupStore();
+
+      expect(store.hasActiveFilters).toBe(false);
+    });
+
+    test('returns true when data product type filter is active', async () => {
+      const { store } = await setupStore();
+
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+
+      expect(store.hasActiveFilters).toBe(true);
+    });
+
+    test('returns true when source filter is active', async () => {
+      const { store } = await setupStore();
+
+      store.toggleSource(DataProductSourceFilter.EXTERNAL);
+
+      expect(store.hasActiveFilters).toBe(true);
+    });
+
+    test('returns true when taxonomy filter is active', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleTaxonomyNode('referenceData::marketData::esg');
+
+      expect(store.hasActiveFilters).toBe(true);
+    });
+  });
+
+  describe('computeFilterNodeIds', () => {
+    const callComputeFilterNodeIds = (store: object): string[] =>
+      (
+        store as unknown as { computeFilterNodeIds: () => string[] }
+      ).computeFilterNodeIds.call(store);
+
+    test('returns only leaf node when a single leaf is selected', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleTaxonomyNode('referenceData::marketData::esg');
+
+      const result = callComputeFilterNodeIds(store);
+      expect(result).toContain('referenceData::marketData::esg');
+      expect(result).not.toContain('referenceData');
+      expect(result).not.toContain('referenceData::marketData');
+      expect(result).toHaveLength(1);
+    });
+
+    test('returns parent when all its children are selected', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleTaxonomyNode('referenceData::marketData');
+
+      const result = callComputeFilterNodeIds(store);
+      expect(result).toContain('referenceData::marketData');
+      expect(result).not.toContain('referenceData::marketData::esg');
+      expect(result).not.toContain('referenceData::marketData::pricing');
+    });
+
+    test('returns parent when all direct children happen to be selected via ancestors', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleTaxonomyNode('referenceData::marketData::esg');
+      store.toggleTaxonomyNode('referenceData::static');
+
+      const result = callComputeFilterNodeIds(store);
+      expect(result).toContain('referenceData');
+      expect(result).toHaveLength(1);
+    });
+
+    test('returns empty array when no taxonomy nodes are selected', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      const result = callComputeFilterNodeIds(store);
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('buildSearchFilters', () => {
+    test('returns empty array when no filters are active', async () => {
+      const { store } = await setupStore();
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toEqual([]);
+    });
+
+    test('builds correct filter string for single data product type', async () => {
+      const { store } = await setupStore();
+
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toEqual(['data_product_type=lakehouse']);
+    });
+
+    test('builds correct filter string for multiple data product types', async () => {
+      const { store } = await setupStore();
+
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+      store.toggleDataProductType(DataProductTypeFilter.LEGACY);
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(
+            /^data_product_type=.*lakehouse.*legacy|data_product_type=.*legacy.*lakehouse$/,
+          ),
+        ]),
+      );
+      expect(filters).toHaveLength(1);
+    });
+
+    test('builds correct filter string for source filter', async () => {
+      const { store } = await setupStore();
+
+      store.toggleSource(DataProductSourceFilter.EXTERNAL);
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toEqual(['data_product_source=External']);
+    });
+
+    test('builds correct filter string for taxonomy filter', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleTaxonomyNode('referenceData::marketData::esg');
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toHaveLength(1);
+      expect(filters[0]).toBe('taxonomy=referenceData::marketData::esg');
+    });
+
+    test('builds correct filter string for multiple filter types combined', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+      store.toggleSource(DataProductSourceFilter.EXTERNAL);
+      store.toggleTaxonomyNode('referenceData::marketData::esg');
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toHaveLength(3);
+      expect(filters).toEqual(
+        expect.arrayContaining([
+          'data_product_type=lakehouse',
+          'data_product_source=External',
+          expect.stringContaining('taxonomy='),
+        ]),
+      );
     });
   });
 });

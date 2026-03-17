@@ -21,6 +21,7 @@ import {
   getByRole,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { useSearchParams } from '@finos/legend-application/browser';
 import {
@@ -41,8 +42,6 @@ import {
   mockProdSearchResultResponse,
   mockPaginatedSearchResultPage1Response,
   mockPaginatedSearchResultPage2Response,
-  mockTaxonomyTreeResponse,
-  mockEmptyTaxonomyTreeResponse,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
 import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 
@@ -140,12 +139,6 @@ const setupTestComponent = async (
     MOCK__baseStore.lakehouseContractServerClient,
     'getOwnersForDid',
   ).mockResolvedValue(mockOwnersResponse);
-
-  // Mock taxonomy tree API call
-  createSpy(
-    MOCK__baseStore.marketplaceServerClient,
-    'getTaxonomyTree',
-  ).mockResolvedValue(mockTaxonomyTreeResponse);
 
   // Mock the plugin's handleDataProductOwnersResponse
   const mockPlugin =
@@ -737,88 +730,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
   });
 
   describe('Taxonomy', () => {
-    test('getTaxonomyTree is called on mount', async () => {
-      const { MOCK__baseStore } = await setupTestComponent('data', 'dev');
-
-      await screen.findByText('2 Products');
-
-      expect(
-        MOCK__baseStore.marketplaceServerClient.getTaxonomyTree,
-      ).toHaveBeenCalled();
-    });
-
-    test('Taxonomy filter panel is hidden when showDevFeatures is false', async () => {
-      const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore(
-        {
-          dataProductEnv: 'prod',
-        },
-      );
-      MOCK__baseStore.applicationStore.config.options.showDevFeatures = false;
-
-      mockUseSearchParams.mockReturnValue([
-        new URLSearchParams({ query: 'data' }),
-        mockSetSearchParams,
-      ]);
-
-      createSpy(
-        MOCK__baseStore.marketplaceServerClient,
-        'dataProductSearch',
-      ).mockResolvedValue(mockProdSearchResultResponse);
-
-      createSpy(
-        MOCK__baseStore.lakehouseContractServerClient,
-        'getDataProductsLite',
-      ).mockResolvedValue(mockDataProductsLiteResponse);
-      createSpy(
-        MOCK__baseStore.depotServerClient,
-        'getEntitiesSummaryByClassifier',
-      ).mockResolvedValue([
-        mockLegacyDataProductSummaryEntity,
-      ] as unknown as PlainObject<StoredSummaryEntity>[]);
-
-      createSpy(
-        MOCK__baseStore.lakehousePlatformServerClient,
-        'findProducerServer',
-      ).mockResolvedValue({
-        ingestEnvironmentUrn: 'production-analytics',
-        environmentClassification: 'prod',
-        ingestServerUrl: 'https://test-prod-ingest-server.com',
-        environmentName: 'production-analytics',
-      });
-
-      createSpy(
-        MOCK__baseStore.lakehouseContractServerClient,
-        'getOwnersForDid',
-      ).mockResolvedValue({ owners: [] });
-
-      createSpy(
-        MOCK__baseStore.marketplaceServerClient,
-        'getTaxonomyTree',
-      ).mockResolvedValue(mockTaxonomyTreeResponse);
-
-      const mockPlugin =
-        MOCK__baseStore.applicationStore.pluginManager.getApplicationPlugins()[0];
-      if (mockPlugin) {
-        mockPlugin.handleDataProductOwnersResponse = jest.fn(
-          (response: PlainObject<{ owners: string[] }>) =>
-            response.owners as string[],
-        );
-      }
-
-      await TEST__setUpMarketplaceLakehouse(
-        MOCK__baseStore,
-        '/dataProduct/results?query=data',
-      );
+    test('Taxonomy filter panel renders with tree nodes from search response', async () => {
+      await setupTestComponent('data', 'prod');
 
       await screen.findByText('4 Products');
-
-      expect(screen.queryByText('Filters')).toBeNull();
-    });
-
-    test('Taxonomy filter panel renders with tree nodes from API', async () => {
-      await setupTestComponent('data', 'dev');
-
-      await screen.findByText('2 Products');
 
       // Wait for taxonomy tree to render
       // Top-level (depth 0) nodes are expanded by default, so their
@@ -837,19 +752,19 @@ describe('MarketplaceLakehouseSearchResults', () => {
     });
 
     test('Taxonomy header is rendered', async () => {
-      await setupTestComponent('data', 'dev');
+      await setupTestComponent('data', 'prod');
 
-      await screen.findByText('2 Products');
+      await screen.findByText('4 Products');
 
       await waitFor(() => {
         expect(screen.getByText('Filters')).toBeDefined();
       });
     });
 
-    test('Empty taxonomy tree shows empty message', async () => {
+    test('Empty taxonomy tree hides Taxonomy section', async () => {
       const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore(
         {
-          dataProductEnv: 'dev',
+          dataProductEnv: 'prod',
         },
       );
       mockUseSearchParams.mockReturnValue([
@@ -857,10 +772,18 @@ describe('MarketplaceLakehouseSearchResults', () => {
         mockSetSearchParams,
       ]);
 
+      // Return a search response with empty taxonomy tree in filters_metadata
+      const emptyTaxonomySearchResponse = {
+        ...mockProdSearchResultResponse,
+        filters_metadata: {
+          taxonomy_tree: [],
+        },
+      };
+
       createSpy(
         MOCK__baseStore.marketplaceServerClient,
         'dataProductSearch',
-      ).mockResolvedValue(mockDevSearchResultResponse);
+      ).mockResolvedValue(emptyTaxonomySearchResponse);
 
       createSpy(
         MOCK__baseStore.lakehouseContractServerClient,
@@ -889,12 +812,6 @@ describe('MarketplaceLakehouseSearchResults', () => {
         'getOwnersForDid',
       ).mockResolvedValue({ owners: [] });
 
-      // Mock empty taxonomy tree
-      createSpy(
-        MOCK__baseStore.marketplaceServerClient,
-        'getTaxonomyTree',
-      ).mockResolvedValue(mockEmptyTaxonomyTreeResponse);
-
       const mockPlugin =
         MOCK__baseStore.applicationStore.pluginManager.getApplicationPlugins()[0];
       if (mockPlugin) {
@@ -910,8 +827,168 @@ describe('MarketplaceLakehouseSearchResults', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('No categories available')).toBeDefined();
+        expect(screen.getByText('Filters')).toBeDefined();
+        expect(screen.getByText('Data Product Type')).toBeDefined();
+        expect(screen.queryByText('Taxonomy')).toBeNull();
       });
+    });
+
+    test('Filter sections render all filter categories', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      await waitFor(() => {
+        const filterPanel = document.querySelector(
+          '.marketplace-search-filters-panel',
+        ) as HTMLElement;
+        expect(filterPanel).toBeDefined();
+        const panel = within(filterPanel);
+
+        // Filter panel header
+        expect(panel.getByText('Filters')).toBeDefined();
+
+        // Data Product Type section with options
+        expect(panel.getByText('Data Product Type')).toBeDefined();
+        expect(panel.getByText('Lakehouse')).toBeDefined();
+        expect(panel.getByText('Legacy')).toBeDefined();
+
+        // Source section with options
+        expect(panel.getByText('Source')).toBeDefined();
+        expect(panel.getByText('External')).toBeDefined();
+
+        // Taxonomy section with tree nodes
+        expect(panel.getByText('Taxonomy')).toBeDefined();
+      });
+    });
+
+    test('Clicking a filter checkbox triggers search with correct search_filters', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      // Clear initial call count
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      // Click on 'Lakehouse' filter checkbox in the filter panel
+      await act(async () => {
+        fireEvent.click(panel.getByText('Lakehouse'));
+        await flushMicrotasks();
+      });
+
+      // Verify dataProductSearch was called with the correct filter
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenCalledWith(
+        'data',
+        expect.anything(),
+        'hybrid',
+        ['data_product_type=lakehouse'],
+        12,
+        1,
+      );
+    });
+
+    test('Clicking multiple filters passes all filters to search', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+
+      // Click on 'Lakehouse' filter
+      await act(async () => {
+        fireEvent.click(panel.getByText('Lakehouse'));
+        await flushMicrotasks();
+      });
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+
+      // Click on 'External' source filter
+      await act(async () => {
+        fireEvent.click(panel.getByText('External'));
+        await flushMicrotasks();
+      });
+
+      // Verify the latest call has both filters
+      const lastCall = (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mock.calls[0];
+      const filters = lastCall?.[3] as string[];
+      expect(filters).toHaveLength(2);
+      expect(filters).toEqual(
+        expect.arrayContaining([
+          'data_product_type=lakehouse',
+          'data_product_source=External',
+        ]),
+      );
+    });
+
+    test('Clear all button appears when filters are active and resets filters', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      // Initially no "Clear all" button
+      expect(panel.queryByText('Clear all')).toBeNull();
+
+      // Click a filter to activate
+      await act(async () => {
+        fireEvent.click(panel.getByText('External'));
+        await flushMicrotasks();
+      });
+
+      // "Clear all" should now appear
+      expect(panel.getByText('Clear all')).toBeDefined();
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+
+      // Click "Clear all"
+      await act(async () => {
+        fireEvent.click(panel.getByText('Clear all'));
+        await flushMicrotasks();
+      });
+
+      // Search should be re-triggered with empty filters
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenCalledWith('data', expect.anything(), 'hybrid', [], 12, 1);
+
+      // "Clear all" should disappear
+      expect(panel.queryByText('Clear all')).toBeNull();
+    });
+
+    test('Filter panel is not rendered for producer search', async () => {
+      await setupTestComponent('data', 'prod', true);
+
+      await screen.findByText('3 Products');
+
+      // Filter panel should not be present
+      expect(screen.queryByText('Data Product Type')).toBeNull();
+      expect(screen.queryByText('Source')).toBeNull();
     });
   });
 });

@@ -1622,6 +1622,10 @@
       color: var(--color-dark-theme-text-primary);
     }
 
+    .MuiSelect-icon {
+      color: var(--color-dark-theme-text-primary);
+    }
+
     .MuiOutlinedInput-notchedOutline {
       border-color: var(--color-dark-theme-border);
     }
@@ -2147,7 +2151,19 @@
     color: var(--color-dark-theme-text-primary);
   }
 
-  .taxonomy-filter-panel {
+  .marketplace-lakehouse-search-results {
+    &__empty-state {
+      &__title {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__message {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+  }
+
+  .marketplace-search-filters-panel {
     border-color: var(--color-dark-theme-border-light);
     background: var(--color-dark-theme-bg-secondary);
 
@@ -2164,6 +2180,60 @@
 
         &:hover {
           color: var(--color-dark-theme-text-secondary);
+        }
+      }
+    }
+
+    &__section {
+      &:not(:last-child) {
+        border-bottom-color: var(--color-dark-theme-border-light);
+      }
+
+      &__title {
+        color: var(--color-dark-theme-text-secondary);
+      }
+
+      &__option {
+        &:hover {
+          background-color: var(--color-light-shade-50);
+        }
+
+        &__label {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+    }
+
+    &__search {
+      &__input {
+        .MuiOutlinedInput-root {
+          color: var(--color-dark-theme-text-primary);
+          background: var(--color-dark-theme-bg-tertiary);
+          border: 1px solid var(--color-dark-theme-border-light);
+
+          .MuiOutlinedInput-notchedOutline {
+            border: none;
+          }
+
+          &:hover {
+            border-color: var(--color-dark-theme-border-light);
+          }
+
+          &.Mui-focused {
+            border-color: var(--color-dark-theme-blue-primary);
+          }
+        }
+
+        .MuiInputAdornment-root svg {
+          color: var(--color-dark-theme-text-secondary);
+        }
+      }
+
+      &__clear {
+        color: var(--color-dark-theme-text-secondary);
+
+        &:hover {
+          color: var(--color-dark-theme-text-primary);
         }
       }
     }
@@ -2369,6 +2439,20 @@
       &.Mui-focused {
         border-color: var(--color-dark-theme-blue-primary);
         box-shadow: 0 0 0 3px rgb(115 153 198 / 20%);
+      }
+    }
+
+    &.marketplace-search-filters-panel__search__input .MuiInputBase-root {
+      border: 1px solid var(--color-dark-theme-border-light);
+      background: var(--color-dark-theme-bg-tertiary);
+
+      &:hover {
+        border-color: var(--color-dark-theme-border-light);
+      }
+
+      &.Mui-focused {
+        border-color: var(--color-dark-theme-blue-primary);
+        box-shadow: none;
       }
     }
 

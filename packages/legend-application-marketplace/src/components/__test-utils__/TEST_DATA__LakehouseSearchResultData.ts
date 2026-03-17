@@ -138,6 +138,58 @@ export const mockProdSearchResultResponse: PlainObject<DataProductSearchResponse
       page_number: 1,
       next_page_number: null,
       prev_page_number: null,
+      lakehouse_count: 2,
+      legacy_count: 2,
+      external_source_count: 1,
+    },
+    filters_metadata: {
+      taxonomy_tree: [
+        {
+          id: 'referenceData',
+          label: 'Reference Data',
+          count: 5,
+          children: [
+            {
+              id: 'referenceData::marketData',
+              label: 'Market Data',
+              count: 3,
+              children: [
+                {
+                  id: 'referenceData::marketData::esg',
+                  label: 'ESG',
+                  count: 2,
+                  children: [],
+                },
+                {
+                  id: 'referenceData::marketData::pricing',
+                  label: 'Pricing',
+                  count: 1,
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: 'referenceData::static',
+              label: 'Static',
+              count: 2,
+              children: [],
+            },
+          ],
+        },
+        {
+          id: 'derivedData',
+          label: 'Derived Data',
+          count: 1,
+          children: [
+            {
+              id: 'derivedData::analytics',
+              label: 'Analytics',
+              count: 1,
+              children: [],
+            },
+          ],
+        },
+      ],
     },
     as_of_time: '2026-01-27T00:00:00.000Z',
   };
@@ -198,6 +250,12 @@ export const mockProdParSearchResultResponse: PlainObject<DataProductSearchRespo
       page_number: 1,
       next_page_number: null,
       prev_page_number: null,
+      lakehouse_count: 2,
+      legacy_count: 0,
+      external_source_count: 1,
+    },
+    filters_metadata: {
+      taxonomy_tree: [],
     },
     as_of_time: '2026-01-27T00:00:00.000Z',
   };
@@ -256,6 +314,12 @@ export const mockDevSearchResultResponse: PlainObject<DataProductSearchResponse>
       page_number: 1,
       next_page_number: null,
       prev_page_number: null,
+      lakehouse_count: 2,
+      legacy_count: 0,
+      external_source_count: 0,
+    },
+    filters_metadata: {
+      taxonomy_tree: [],
     },
     as_of_time: '2026-01-27T00:00:00.000Z',
   };
@@ -278,6 +342,12 @@ export const mockPaginatedSearchResultPage1Response: PlainObject<DataProductSear
       page_number: 1,
       next_page_number: 2,
       prev_page_number: null,
+      lakehouse_count: 15,
+      legacy_count: 0,
+      external_source_count: 0,
+    },
+    filters_metadata: {
+      taxonomy_tree: [],
     },
     as_of_time: '2026-01-27T00:00:00.000Z',
   };
@@ -292,6 +362,12 @@ export const mockPaginatedSearchResultPage2Response: PlainObject<DataProductSear
       page_number: 2,
       next_page_number: null,
       prev_page_number: 1,
+      lakehouse_count: 15,
+      legacy_count: 0,
+      external_source_count: 0,
+    },
+    filters_metadata: {
+      taxonomy_tree: [],
     },
     as_of_time: '2026-01-27T00:00:00.000Z',
   };
@@ -348,12 +424,4 @@ export const mockTaxonomyTreeResponse: TaxonomyTreeResponse = {
   total_results: 6,
   classified_count: 5,
   unclassified_count: 1,
-};
-
-export const mockEmptyTaxonomyTreeResponse: TaxonomyTreeResponse = {
-  taxonomy_tree: [],
-  total_categories: 0,
-  total_results: 0,
-  classified_count: 0,
-  unclassified_count: 0,
 };
