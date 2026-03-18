@@ -321,8 +321,14 @@
       background-color: var(--color-dark-theme-blue-primary);
       color: var(--color-white);
 
-      &:hover {
+      &:hover:not(:disabled) {
         background-color: var(--color-dark-theme-blue-accent);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        background-color: var(--color-dark-theme-border);
+        color: var(--color-dark-theme-text-muted);
       }
     }
 

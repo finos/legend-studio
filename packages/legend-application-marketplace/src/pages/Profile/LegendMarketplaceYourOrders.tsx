@@ -207,24 +207,35 @@ const OrderAccordion: React.FC<{
 
             {isOpenOrder && (
               <Box className="legend-marketplace-order-accordion__summary-actions">
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<OpenNewTabIcon />}
-                  disabled={!order.workflow_details?.url_manager}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const url = order.workflow_details?.url_manager;
-                    if (url) {
-                      baseStore.applicationStore.navigationService.navigator.visitAddress(
-                        url,
-                      );
-                    }
-                  }}
-                  className="legend-marketplace-order-accordion__track-button"
+                <Tooltip
+                  title={
+                    !order.workflow_details?.url_manager
+                      ? 'Tracking link is not yet available for this order'
+                      : ''
+                  }
+                  arrow={true}
                 >
-                  Track Order
-                </Button>
+                  <span>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<OpenNewTabIcon />}
+                      disabled={!order.workflow_details?.url_manager}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const url = order.workflow_details?.url_manager;
+                        if (url) {
+                          baseStore.applicationStore.navigationService.navigator.visitAddress(
+                            url,
+                          );
+                        }
+                      }}
+                      className="legend-marketplace-order-accordion__track-button"
+                    >
+                      Track Order
+                    </Button>
+                  </span>
+                </Tooltip>
                 <Tooltip
                   title={
                     !isCancellable
