@@ -36,11 +36,12 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   CLICK_TOOLBAR_MENU = 'marketplace.click.toolbar.menu',
   SEARCH_AUTOSUGGEST_SELECTION = 'marketplace.search.autosuggest.selection',
   DISMISS_HOME_PAGE_BANNER = 'marketplace.dismiss.home-page.banner',
-  FETCH_TAXONOMY_TREE_FAILURE = 'marketplace.fetch.taxonomy-tree.failure',
   SEARCH_VENDOR_ADDONS_FAILURE = 'marketplace.search.vendor-addons.failure',
   SUBMIT_FEEDBACK = 'marketplace.submit.feedback',
   SUBMIT_FEEDBACK_FAILURE = 'marketplace.submit.feedback.failure',
   CLICK_QUERY_DATA_PRODUCT = 'marketplace.click.query.data-product',
   CLICK_OPEN_SERVICE_QUERY = 'marketplace.click.open.service.query',
   CLICK_QUICKSTART_EXTENSION_TAB = 'marketplace.click.quickstart.extension.tab',
+  APPLY_SEARCH_FILTER = 'marketplace.apply.search-filter',
+  CLEAR_SEARCH_FILTERS = 'marketplace.clear.search-filters',
 }

@@ -1585,9 +1585,19 @@
     &__data-product-cards {
       background: var(--color-hclight-white);
     }
+
+    &__empty-state {
+      &__title {
+        color: var(--color-hclight-grey-90);
+      }
+
+      &__message {
+        color: var(--color-hclight-grey-50);
+      }
+    }
   }
 
-  .taxonomy-filter-panel {
+  .marketplace-search-filters-panel {
     border-color: var(--color-hclight-grey-20);
     background: var(--color-hclight-white);
 
@@ -1604,6 +1614,59 @@
 
         &:hover {
           color: var(--color-hclight-blue-70);
+        }
+      }
+    }
+
+    &__section {
+      &:not(:last-child) {
+        border-bottom-color: var(--color-hclight-grey-20);
+      }
+
+      &__title {
+        color: var(--color-hclight-grey-70);
+      }
+
+      &__option {
+        &:hover {
+          background-color: var(--color-hclight-blue-10);
+        }
+
+        &__label {
+          color: var(--color-hclight-grey-90);
+        }
+      }
+    }
+
+    &__search {
+      &__input {
+        .MuiOutlinedInput-root {
+          color: var(--color-hclight-grey-90);
+          background: var(--color-hclight-white);
+
+          .MuiOutlinedInput-notchedOutline {
+            border-color: var(--color-hclight-grey-20);
+          }
+
+          &:hover .MuiOutlinedInput-notchedOutline {
+            border-color: var(--color-hclight-grey-50);
+          }
+
+          &.Mui-focused .MuiOutlinedInput-notchedOutline {
+            border-color: var(--color-hclight-blue-60);
+          }
+        }
+
+        .MuiInputAdornment-root svg {
+          color: var(--color-hclight-grey-50);
+        }
+      }
+
+      &__clear {
+        color: var(--color-hclight-grey-50);
+
+        &:hover {
+          color: var(--color-hclight-grey-70);
         }
       }
     }

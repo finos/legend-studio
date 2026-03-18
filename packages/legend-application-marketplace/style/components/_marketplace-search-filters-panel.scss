@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-.taxonomy-filter-panel {
+.marketplace-search-filters-panel {
   border: 1px solid var(--color-light-grey-200);
   border-radius: 0.8rem;
   overflow: hidden;
@@ -53,8 +53,56 @@
 
   &__content {
     padding: 1rem 0;
+    min-height: 60vh;
     max-height: 70vh;
     overflow-y: auto;
+  }
+
+  &__section {
+    padding: 0 2rem;
+    margin-bottom: 0.4rem;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--color-light-grey-200);
+      padding-bottom: 1.2rem;
+    }
+
+    &__title {
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1rem;
+      color: var(--marketplace-text-primary);
+      padding: 1rem 0 0.4rem;
+    }
+
+    &__options {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__option {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.4rem;
+      cursor: pointer;
+      border-radius: 0.4rem;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: var(--color-dark-shade-0);
+      }
+
+      &__label {
+        font-size: 1.5rem;
+        font-weight: 400;
+        color: var(--marketplace-text-primary);
+        line-height: 1.5;
+        user-select: none;
+      }
+    }
   }
 
   &__loading {
@@ -62,15 +110,51 @@
     height: 10rem;
   }
 
+  &__search {
+    padding: 0.6rem 0 0.8rem;
+
+    &__input {
+      .MuiOutlinedInput-root {
+        font-size: 1.4rem;
+        border-radius: 0.6rem;
+      }
+
+      .MuiInputAdornment-root svg {
+        font-size: 1.6rem;
+        color: var(--marketplace-text-muted);
+      }
+    }
+
+    &__clear {
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--marketplace-text-muted);
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: var(--marketplace-text-primary);
+      }
+    }
+  }
+
+  &__count {
+    font-size: 1.3rem;
+    color: var(--marketplace-text-muted);
+    flex-shrink: 0;
+    margin-left: auto;
+    margin-right: 0.4rem;
+    font-weight: 500;
+  }
+
   &__empty {
-    padding: 1.6rem 2rem;
-    font-size: 1.6rem;
+    padding: 1rem 0;
+    font-size: 1.4rem;
     color: var(--marketplace-text-muted);
     font-style: italic;
   }
 
   &__tree {
-    padding: 0.4rem 1rem;
+    padding: 0.4rem 0;
   }
 
   &__tree-node {
@@ -86,7 +170,7 @@
       &:hover {
         background-color: var(--color-dark-shade-0);
 
-        .taxonomy-filter-panel__tree-node__label {
+        .marketplace-search-filters-panel__tree-node__label {
           color: var(--marketplace-link-color);
         }
       }
