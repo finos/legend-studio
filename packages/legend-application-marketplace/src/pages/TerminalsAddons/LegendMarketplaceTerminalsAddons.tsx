@@ -128,15 +128,17 @@ const SearchResultsRenderer = observer(
             </Tooltip>
           )}
           {seeAll && (
-            <a
-              href="#"
+            <button
               className="see-all"
               onClick={() => {
                 vendorDataState.setProviderDisplayState(sectionTitle);
+                flowResult(vendorDataState.populateProviders()).catch(
+                  vendorDataState.applicationStore.alertUnhandledError,
+                );
               }}
             >
               <strong>See All&gt;</strong>
-            </a>
+            </button>
           )}
         </div>
         <div className="legend-marketplace-vendordata-main-search-results__card-group">
@@ -325,6 +327,7 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
                       userId={option.id}
                       applicationStore={marketplaceStore.applicationStore}
                       userSearchService={marketplaceStore.userSearchService}
+                      disableOnClick={true}
                     />
                   </li>
                 )}

@@ -281,13 +281,13 @@ export const RecommendedAddOnsModal = observer(
     ]);
 
     const totalPages = Math.ceil(filteredAndSortedItems.length / itemsPerPage);
-    const mandatoryAddOn: string = useMemo<string>(() => {
-      const mandatory = filteredAndSortedItems.find((i) => i.isMandatory);
-      if (mandatory?.productName) {
-        return `${mandatory.productName} Added To Cart `;
-      }
-      return '';
-    }, [filteredAndSortedItems]);
+    const mandatoryAddOns = useMemo(
+      () =>
+        filteredAndSortedItems
+          .filter((i) => i.isMandatory && i.productName)
+          .map((i) => i.productName),
+      [filteredAndSortedItems],
+    );
     const paginatedItems = useMemo(() => {
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
@@ -429,12 +429,38 @@ export const RecommendedAddOnsModal = observer(
         </DialogTitle>
 
         <DialogContent className="recommended-addons-modal__content">
-          {mandatoryAddOn && (
+          {mandatoryAddOns.length > 0 && (
             <Box className="recommended-addons-modal__alert">
               <CheckCircleIcon />
-              <Typography>
-                <strong>Mandatory Add-On Included:</strong> {mandatoryAddOn}
-              </Typography>
+              <Box>
+                <Typography>
+                  <strong>
+                    Mandatory Add-On{mandatoryAddOns.length > 1 ? 's' : ''}{' '}
+                    Included:
+                  </strong>
+                </Typography>
+                {mandatoryAddOns.length === 1 ? (
+                  <Typography variant="body2">
+                    {mandatoryAddOns[0]} Added To Cart
+                  </Typography>
+                ) : (
+                  <Box
+                    component="ul"
+                    sx={{ margin: '0.4rem 0 0', paddingLeft: '2rem' }}
+                  >
+                    {mandatoryAddOns.map((name) => (
+                      <Typography
+                        component="li"
+                        variant="body2"
+                        key={name}
+                        sx={{ lineHeight: 1.6 }}
+                      >
+                        {name}
+                      </Typography>
+                    ))}
+                  </Box>
+                )}
+              </Box>
             </Box>
           )}
           <Box className="recommended-addons-modal__content-header">

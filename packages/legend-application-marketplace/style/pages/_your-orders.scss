@@ -237,9 +237,16 @@
     text-transform: none;
     @include transition-smooth;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: var(--color-blue-200);
       transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: var(--color-light-grey-300);
+      color: var(--color-dark-grey-500);
     }
 
     .MuiSvgIcon-root {
