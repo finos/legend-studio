@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.17.96
+
+### Patch Changes
+
+- [#4993](https://github.com/finos/legend-studio/pull/4993) [`36e5ac1`](https://github.com/finos/legend-studio/commit/36e5ac13d46bb79ac24a36560e59dc4ca8aaf83d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `TEMPORARY_PlaygroundTDSResultGrid` component to SQL playground and refactor SQL execution result handling to use typed result classes (`QueryExecutionResult`, `CsvSqlExecutionResult`) instead of plain CSV objects
+
 ## 4.17.95
 
 ### Patch Changes
