@@ -460,4 +460,40 @@ export class LegendMarketplaceTelemetryHelper {
       },
     );
   }
+
+  static logEvent_ApplySearchFilter(
+    telemetryService: TelemetryService,
+    filterType: string,
+    filterValue: string,
+    action: 'select' | 'deselect',
+    searchQuery: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.APPLY_SEARCH_FILTER,
+      {
+        filterType,
+        filterValue,
+        action,
+        searchQuery,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClearSearchFilters(
+    telemetryService: TelemetryService,
+    searchQuery: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLEAR_SEARCH_FILTERS,
+      {
+        searchQuery,
+        ...session,
+      },
+    );
+  }
 }

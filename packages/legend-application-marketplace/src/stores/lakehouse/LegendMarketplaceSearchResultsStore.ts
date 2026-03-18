@@ -34,7 +34,6 @@ import {
   LakehouseSDLCDataProductSearchResultOrigin,
   type MarketplaceServerClient,
   type TaxonomyNode,
-  type TaxonomyTreeResponse,
 } from '@finos/legend-server-marketplace';
 import { ProductCardState } from './dataProducts/ProductCardState.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -61,10 +60,27 @@ export enum DataProductSort {
   NAME_REVERSE_ALPHABETICAL = 'Name Z-A',
 }
 
+export enum DataProductTypeFilter {
+  LAKEHOUSE = 'lakehouse',
+  LEGACY = 'legacy',
+}
+
+export enum DataProductSourceFilter {
+  EXTERNAL = 'External',
+  INTERNAL = 'Internal',
+}
+
+export interface FilterCounts {
+  lakehouse_count: number;
+  legacy_count: number;
+  external_source_count: number;
+}
+
 export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly marketplaceServerClient: MarketplaceServerClient;
   searchQuery: string | undefined = undefined;
+  private _lastTaxonomyQuery: string | undefined = undefined;
   useProducerSearch: boolean | undefined = undefined;
   semanticSearchProductCardStates: ProductCardState[] = [];
   producerSearchDataProductCardStates: ProductCardState[] = [];
@@ -72,6 +88,15 @@ export class LegendMarketplaceSearchResultsStore {
   sort: DataProductSort = DataProductSort.DEFAULT;
   taxonomyTree: TaxonomyNode[] = [];
   selectedTaxonomyNodeIds: Set<string> = new Set<string>();
+  selectedDataProductTypes: Set<DataProductTypeFilter> =
+    new Set<DataProductTypeFilter>();
+  selectedSources: Set<DataProductSourceFilter> =
+    new Set<DataProductSourceFilter>();
+  filterCounts: FilterCounts = {
+    lakehouse_count: 0,
+    legacy_count: 0,
+    external_source_count: 0,
+  };
 
   page = 1;
   itemsPerPage = 12;
@@ -80,41 +105,52 @@ export class LegendMarketplaceSearchResultsStore {
   readonly executingSemanticSearchState = ActionState.create();
   readonly fetchingProducerSearchDataProductsState = ActionState.create();
   readonly fetchingProducerSearchLegacyDataProductsState = ActionState.create();
-  readonly fetchingTaxonomyTreeState = ActionState.create();
 
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
     this.marketplaceServerClient = marketplaceBaseStore.marketplaceServerClient;
 
-    makeObservable(this, {
-      searchQuery: observable,
-      useProducerSearch: observable,
-      semanticSearchProductCardStates: observable,
-      producerSearchDataProductCardStates: observable,
-      producerSearchLegacyDataProductCardStates: observable,
-      sort: observable,
-      taxonomyTree: observable,
-      selectedTaxonomyNodeIds: observable,
-      setSearchQuery: action,
-      setUseProducerSearch: action,
-      page: observable,
-      itemsPerPage: observable,
-      totalItems: observable,
-      setSemanticSearchProductCardStates: action,
-      setProducerSearchDataProductCardStates: action,
-      setProducerSearchLegacyDataProductCardStates: action,
-      setSort: action,
-      setPage: action,
-      setItemsPerPage: action,
-      setTotalItems: action,
-      setTaxonomyTree: action,
-      setSelectedTaxonomyNodeIds: action,
-      toggleTaxonomyNode: action,
-      filterSortProducts: computed,
-      isLoading: computed,
-      executeSearch: flow,
-      fetchTaxonomyTree: flow,
-    });
+    makeObservable<LegendMarketplaceSearchResultsStore, '_lastTaxonomyQuery'>(
+      this,
+      {
+        searchQuery: observable,
+        useProducerSearch: observable,
+        semanticSearchProductCardStates: observable,
+        producerSearchDataProductCardStates: observable,
+        producerSearchLegacyDataProductCardStates: observable,
+        sort: observable,
+        taxonomyTree: observable,
+        selectedTaxonomyNodeIds: observable,
+        selectedDataProductTypes: observable,
+        selectedSources: observable,
+        filterCounts: observable,
+        _lastTaxonomyQuery: false,
+        setSearchQuery: action,
+        setUseProducerSearch: action,
+        page: observable,
+        itemsPerPage: observable,
+        totalItems: observable,
+        setSemanticSearchProductCardStates: action,
+        setProducerSearchDataProductCardStates: action,
+        setProducerSearchLegacyDataProductCardStates: action,
+        setSort: action,
+        setPage: action,
+        setItemsPerPage: action,
+        setTotalItems: action,
+        setTaxonomyTree: action,
+        setFilterCounts: action,
+        setSelectedTaxonomyNodeIds: action,
+        toggleTaxonomyNode: action,
+        simpleToggleTaxonomyNode: action,
+        toggleDataProductType: action,
+        toggleSource: action,
+        clearAllFilters: action,
+        filterSortProducts: computed,
+        isLoading: computed,
+        hasActiveFilters: computed,
+        executeSearch: flow,
+      },
+    );
   }
 
   setSearchQuery(query: string): void {
@@ -132,14 +168,11 @@ export class LegendMarketplaceSearchResultsStore {
           ...this.producerSearchLegacyDataProductCardStates,
         ].sort((a, b) => a.title.localeCompare(b.title))
       : this.semanticSearchProductCardStates;
-    return productCardStates
-      .filter((productCardState) =>
-        this.marketplaceBaseStore.envState.filterDataProduct(productCardState),
-      )
-      .filter((productCardState) => {
-        if (this.selectedTaxonomyNodeIds.size === 0) {
-          return true;
-        }
+    let filtered = productCardStates.filter((productCardState) =>
+      this.marketplaceBaseStore.envState.filterDataProduct(productCardState),
+    );
+    if (this.useProducerSearch && this.selectedTaxonomyNodeIds.size > 0) {
+      filtered = filtered.filter((productCardState) => {
         const productTaxonomyPaths =
           productCardState.searchResult.tags2.flatMap((tag) =>
             tag.split(',').map((t) => t.trim()),
@@ -150,19 +183,20 @@ export class LegendMarketplaceSearchResultsStore {
               path === selectedId || path.startsWith(`${selectedId}::`),
           ),
         );
-      })
-      .sort((a, b) => {
-        switch (this.sort) {
-          case DataProductSort.DEFAULT:
-            return b.searchResult.similarity - a.searchResult.similarity;
-          case DataProductSort.NAME_ALPHABETICAL:
-            return a.title.localeCompare(b.title);
-          case DataProductSort.NAME_REVERSE_ALPHABETICAL:
-            return b.title.localeCompare(a.title);
-          default:
-            return 0;
-        }
       });
+    }
+    return filtered.sort((a, b) => {
+      switch (this.sort) {
+        case DataProductSort.DEFAULT:
+          return b.searchResult.similarity - a.searchResult.similarity;
+        case DataProductSort.NAME_ALPHABETICAL:
+          return a.title.localeCompare(b.title);
+        case DataProductSort.NAME_REVERSE_ALPHABETICAL:
+          return b.title.localeCompare(a.title);
+        default:
+          return 0;
+      }
+    });
   }
 
   get isLoading(): boolean {
@@ -213,13 +247,14 @@ export class LegendMarketplaceSearchResultsStore {
     this.taxonomyTree = tree;
   }
 
+  setFilterCounts(counts: FilterCounts): void {
+    this.filterCounts = counts;
+  }
+
   setSelectedTaxonomyNodeIds(ids: string[]): void {
     this.selectedTaxonomyNodeIds = new Set(ids);
   }
 
-  /**
-   * Collect all descendant node IDs for a given node (including itself).
-   */
   private collectAllNodeIds(node: TaxonomyNode): string[] {
     const ids: string[] = [node.id];
     for (const child of node.children) {
@@ -244,50 +279,168 @@ export class LegendMarketplaceSearchResultsStore {
     return undefined;
   }
 
+  private findAncestorPath(
+    nodes: TaxonomyNode[],
+    nodeId: string,
+    currentPath: TaxonomyNode[] = [],
+  ): TaxonomyNode[] | undefined {
+    for (const node of nodes) {
+      if (node.id === nodeId) {
+        return [...currentPath];
+      }
+      const found = this.findAncestorPath(node.children, nodeId, [
+        ...currentPath,
+        node,
+      ]);
+      if (found) {
+        return found;
+      }
+    }
+    return undefined;
+  }
+
   toggleTaxonomyNode(nodeId: string): void {
     if (this.selectedTaxonomyNodeIds.has(nodeId)) {
-      const node = this.findNode(this.taxonomyTree, nodeId);
-      if (node) {
-        const idsToRemove = this.collectAllNodeIds(node);
-        for (const id of idsToRemove) {
-          this.selectedTaxonomyNodeIds.delete(id);
-        }
-      } else {
-        this.selectedTaxonomyNodeIds.delete(nodeId);
+      this.deselectTaxonomyNode(nodeId);
+    } else {
+      this.selectTaxonomyNode(nodeId);
+    }
+  }
+
+  private deselectTaxonomyNode(nodeId: string): void {
+    const node = this.findNode(this.taxonomyTree, nodeId);
+    if (node) {
+      const idsToRemove = this.collectAllNodeIds(node);
+      for (const id of idsToRemove) {
+        this.selectedTaxonomyNodeIds.delete(id);
       }
     } else {
-      const node = this.findNode(this.taxonomyTree, nodeId);
-      if (node) {
-        const idsToAdd = this.collectAllNodeIds(node);
-        for (const id of idsToAdd) {
-          this.selectedTaxonomyNodeIds.add(id);
-        }
-      } else {
-        this.selectedTaxonomyNodeIds.add(nodeId);
+      this.selectedTaxonomyNodeIds.delete(nodeId);
+    }
+  }
+
+  private selectTaxonomyNode(nodeId: string): void {
+    const node = this.findNode(this.taxonomyTree, nodeId);
+    if (node) {
+      const idsToAdd = this.collectAllNodeIds(node);
+      for (const id of idsToAdd) {
+        this.selectedTaxonomyNodeIds.add(id);
+      }
+    } else {
+      this.selectedTaxonomyNodeIds.add(nodeId);
+    }
+    const ancestors = this.findAncestorPath(this.taxonomyTree, nodeId, []);
+    if (ancestors) {
+      for (const ancestor of ancestors) {
+        this.selectedTaxonomyNodeIds.add(ancestor.id);
       }
     }
   }
 
-  *fetchTaxonomyTree(searchQuery?: string | undefined): GeneratorFn<void> {
-    this.fetchingTaxonomyTreeState.inProgress();
-    try {
-      const response = (yield this.marketplaceServerClient.getTaxonomyTree(
-        this.marketplaceBaseStore.envState.lakehouseEnvironment,
-        searchQuery,
-      )) as TaxonomyTreeResponse;
-      this.setTaxonomyTree(response.taxonomy_tree);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.marketplaceBaseStore.applicationStore.logService.error(
-        LogEvent.create(
-          LEGEND_MARKETPLACE_APP_EVENT.FETCH_TAXONOMY_TREE_FAILURE,
-        ),
-        `Error fetching taxonomy tree: ${error.message}`,
-      );
-      this.setTaxonomyTree([]);
-    } finally {
-      this.fetchingTaxonomyTreeState.complete();
+  simpleToggleTaxonomyNode(nodeId: string): void {
+    if (this.selectedTaxonomyNodeIds.has(nodeId)) {
+      this.selectedTaxonomyNodeIds.delete(nodeId);
+    } else {
+      this.selectedTaxonomyNodeIds.add(nodeId);
     }
+  }
+
+  toggleDataProductType(value: DataProductTypeFilter): void {
+    if (this.selectedDataProductTypes.has(value)) {
+      this.selectedDataProductTypes.delete(value);
+    } else {
+      this.selectedDataProductTypes.add(value);
+    }
+  }
+
+  toggleSource(value: DataProductSourceFilter): void {
+    if (this.selectedSources.has(value)) {
+      this.selectedSources.delete(value);
+    } else {
+      this.selectedSources.add(value);
+    }
+  }
+
+  clearAllFilters(): void {
+    this.selectedDataProductTypes.clear();
+    this.selectedSources.clear();
+    this.selectedTaxonomyNodeIds.clear();
+  }
+
+  get hasActiveFilters(): boolean {
+    return (
+      this.selectedDataProductTypes.size > 0 ||
+      this.selectedSources.size > 0 ||
+      this.selectedTaxonomyNodeIds.size > 0
+    );
+  }
+
+  private computeFilterNodeIds(): string[] {
+    const selectedIds = this.selectedTaxonomyNodeIds;
+    if (selectedIds.size === 0) {
+      return [];
+    }
+    const filterIds: string[] = [];
+    const visitedIds = new Set<string>();
+
+    const processNode = (node: TaxonomyNode): void => {
+      visitedIds.add(node.id);
+      if (!selectedIds.has(node.id)) {
+        node.children.forEach((child) => {
+          processNode(child);
+        });
+        return;
+      }
+      const selectedChildCount = node.children.filter((c) =>
+        selectedIds.has(c.id),
+      ).length;
+      if (
+        node.children.length === 0 ||
+        selectedChildCount === 0 ||
+        selectedChildCount === node.children.length
+      ) {
+        filterIds.push(node.id);
+        const markVisited = (n: TaxonomyNode): void => {
+          visitedIds.add(n.id);
+          n.children.forEach(markVisited);
+        };
+        node.children.forEach(markVisited);
+      } else {
+        node.children.forEach((child) => {
+          processNode(child);
+        });
+      }
+    };
+
+    this.taxonomyTree.forEach((rootNode) => {
+      processNode(rootNode);
+    });
+
+    for (const id of selectedIds) {
+      if (!visitedIds.has(id)) {
+        filterIds.push(id);
+      }
+    }
+    return filterIds;
+  }
+
+  private buildSearchFilters(): string[] {
+    const filters: string[] = [];
+    if (this.selectedDataProductTypes.size > 0) {
+      filters.push(
+        `data_product_type=${Array.from(this.selectedDataProductTypes).join(',')}`,
+      );
+    }
+    if (this.selectedSources.size > 0) {
+      filters.push(
+        `data_product_source=${Array.from(this.selectedSources).join(',')}`,
+      );
+    }
+    const taxonomyFilterIds = this.computeFilterNodeIds();
+    if (taxonomyFilterIds.length > 0) {
+      filters.push(`taxonomy=${taxonomyFilterIds.join(',')}`);
+    }
+    return filters;
   }
 
   *executeSearch(
@@ -300,10 +453,7 @@ export class LegendMarketplaceSearchResultsStore {
       this.setProducerSearchDataProductCardStates([]);
       this.setProducerSearchLegacyDataProductCardStates([]);
 
-      const searchFilters =
-        this.selectedTaxonomyNodeIds.size > 0
-          ? [`taxonomy=${[...this.selectedTaxonomyNodeIds].join(',')}`]
-          : [];
+      const searchFilters = this.buildSearchFilters();
 
       // Create graph manager for parsing ad-hoc deployed data products
       const graphManager = new V1_PureGraphManager(
@@ -414,6 +564,18 @@ export class LegendMarketplaceSearchResultsStore {
 
       this.setTotalItems(response.metadata.total_count);
       this.setSemanticSearchProductCardStates(productCardStates);
+
+      const isNewQuery = query !== this._lastTaxonomyQuery;
+      if (response.filters_metadata && isNewQuery) {
+        this.setTaxonomyTree(response.filters_metadata.taxonomy_tree);
+        this._lastTaxonomyQuery = query;
+      }
+
+      this.setFilterCounts({
+        lakehouse_count: response.metadata.lakehouse_count ?? 0,
+        legacy_count: response.metadata.legacy_count ?? 0,
+        external_source_count: response.metadata.external_source_count ?? 0,
+      });
     } finally {
       this.executingSemanticSearchState.complete();
     }

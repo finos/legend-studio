@@ -59,6 +59,10 @@ export const PaginationControls = observer(
       [onItemsPerPageChange],
     );
 
+    if (totalItems === 0) {
+      return null;
+    }
+
     return (
       <Box className="legend-marketplace-pagination-container">
         <Box className="legend-marketplace-pagination-page-size">
