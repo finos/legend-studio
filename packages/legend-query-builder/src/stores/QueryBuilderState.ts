@@ -720,6 +720,17 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     );
   }
 
+  /**
+   * Builds the raw lambda intended for persistence (saving to query store).
+   * The default implementation delegates to buildQuery(). Subclasses that embed
+   * execution context inside the lambda body (e.g. DataProductQueryBuilderState)
+   * should override this to return a plain lambda without that wrapping, since
+   * the execution context is persisted separately via query.executionContext.
+   */
+  buildQueryForPersistence(): RawLambda {
+    return this.buildQuery();
+  }
+
   buildFromQuery(): RawLambda {
     assertTrue(
       this.isQuerySupported,

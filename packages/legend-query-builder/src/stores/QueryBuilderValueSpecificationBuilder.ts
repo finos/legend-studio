@@ -246,7 +246,9 @@ export const buildLambdaFunction = (
     options,
   );
   // build execution-state
-  queryBuilderState.buildExecutionContextExpression(lambdaFunction);
+  if (!options?.skipExecutionContext) {
+    queryBuilderState.buildExecutionContextExpression(lambdaFunction);
+  }
 
   // build variable expressions
   if (queryBuilderState.constantState.constants.length) {

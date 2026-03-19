@@ -16,27 +16,31 @@
 
 import {
   QUERY_PROFILE_PATH,
-  QUERY_PROFILE_TAG_CLASS,
   QueryTaggedValue,
+  isValidFullPath,
+  type Query,
 } from '@finos/legend-graph';
-import { QUERY_PROFILE_TAG_DATA_SPACE } from '../../graph/DSL_DataSpace_MetaModelConst.js';
 
-export const createQueryDataSpaceTaggedValue = (
-  dataSpacePath: string,
+export const QUERY_PROFILE_TAG_DATA_PRODUCT = 'dataProduct';
+
+export const createQueryDataProductTaggedValue = (
+  dataProductPath: string,
 ): QueryTaggedValue => {
   const taggedValue = new QueryTaggedValue();
   taggedValue.profile = QUERY_PROFILE_PATH;
-  taggedValue.tag = QUERY_PROFILE_TAG_DATA_SPACE;
-  taggedValue.value = dataSpacePath;
+  taggedValue.tag = QUERY_PROFILE_TAG_DATA_PRODUCT;
+  taggedValue.value = dataProductPath;
   return taggedValue;
 };
 
-export const createQueryClassTaggedValue = (
-  classPath: string,
-): QueryTaggedValue => {
-  const taggedValue = new QueryTaggedValue();
-  taggedValue.profile = QUERY_PROFILE_PATH;
-  taggedValue.tag = QUERY_PROFILE_TAG_CLASS;
-  taggedValue.value = classPath;
-  return taggedValue;
+export const getDataProductQueryExecutionInfo = (
+  query: Query,
+): string | undefined => {
+  const dataProductTaggedValue = query.taggedValues?.find(
+    (taggedValue) =>
+      taggedValue.profile === QUERY_PROFILE_PATH &&
+      taggedValue.tag === QUERY_PROFILE_TAG_DATA_PRODUCT &&
+      isValidFullPath(taggedValue.value),
+  );
+  return dataProductTaggedValue?.value;
 };

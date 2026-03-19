@@ -577,6 +577,7 @@ export const TEST__setUpDataProductExistingQueryEditor = async (
     ),
     undefined,
     undefined,
+    undefined,
     MOCK__editorStore.applicationStore.config.options.queryBuilderConfig,
     {
       groupId: 'test.group',
@@ -776,6 +777,7 @@ export const TEST__setUpDataProductNativeExistingQueryEditor = async (
       MOCK__editorStore.depotServerClient,
       MOCK__editorStore.applicationStore,
     ),
+    undefined,
     undefined,
     undefined,
     MOCK__editorStore.applicationStore.config.options.queryBuilderConfig,

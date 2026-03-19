@@ -60,10 +60,11 @@ import {
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import {
   type DataSpaceQueryBuilderState,
-  ResolvedDataSpaceEntityWithOrigin,
+  type ResolvedDataSpaceEntityWithOrigin,
   createQueryClassTaggedValue,
   createQueryDataSpaceTaggedValue,
 } from '@finos/legend-extension-dsl-data-space/application';
+import { createQueryDataProductTaggedValue } from '../../components/data-product/QueryDataProductUtil.js';
 import { DataProductSelectorState } from './DataProductSelectorState.js';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 import {
@@ -397,15 +398,14 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
       queryableDataProduct.id,
       queryableDataProduct.dataProductType as DataProductAccessType,
       async (dataProductInfo: DepotEntityWithOrigin) => {
-        if (dataProductInfo instanceof ResolvedDataSpaceEntityWithOrigin) {
-          flowResult(this.changeDataSpace(dataProductInfo)).catch(
-            this.applicationStore.alertUnhandledError,
-          );
-        } else {
-          flowResult(this.changeDataProduct(dataProductInfo)).catch(
-            this.applicationStore.alertUnhandledError,
-          );
-        }
+        flowResult(this.changeDataProduct(dataProductInfo)).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+      (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) => {
+        flowResult(this.changeDataSpace(dataSpaceInfo)).catch(
+          this.applicationStore.alertUnhandledError,
+        );
       },
       this.productSelectorState,
     );
@@ -666,7 +666,14 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
               createQueryClassTaggedValue(this.queryBuilderState.class.path),
             );
           }
-          taggedValues.push(createQueryDataSpaceTaggedValue(element.path));
+          if (element instanceof QueryableDataProduct) {
+            // For new DataProducts, use the 'dataProduct' tagged value so the
+            // query is not mis-classified as a DataSpace when reopened.
+            taggedValues.push(createQueryDataProductTaggedValue(element.path));
+          } else {
+            // Legacy DataSpace-based products use the 'dataSpace' tagged value.
+            taggedValues.push(createQueryDataSpaceTaggedValue(element.path));
+          }
           query.taggedValues = taggedValues;
         },
       };
@@ -755,7 +762,9 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
         }),
       ];
       val.taggedValues = [
-        createQueryDataSpaceTaggedValue(this.queryableElement.path),
+        this.queryableElement instanceof QueryableDataProduct
+          ? createQueryDataProductTaggedValue(this.queryableElement.path)
+          : createQueryDataSpaceTaggedValue(this.queryableElement.path),
       ];
       val.combineTaggedValuesCondition = true;
     }
