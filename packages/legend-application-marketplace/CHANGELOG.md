@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.80
+
+### Patch Changes
+
+- [#5002](https://github.com/finos/legend-studio/pull/5002) [`acfe11d`](https://github.com/finos/legend-studio/commit/acfe11d2a99b25b42336a5b665225f8c3715609b) ([@bojja-gs](https://github.com/bojja-gs)) - Marketplace filters implementation with data product source, type and taxonomy (renders dynamic), and removing flag for prod release and fixed tests.
+
+- [#5003](https://github.com/finos/legend-studio/pull/5003) [`e751dd3`](https://github.com/finos/legend-studio/commit/e751dd3a6cb879fd2ba8913a3eb54a3495bc7711) ([@bojja-gs](https://github.com/bojja-gs)) - terminals and addons minor bug fixes in see all tabs
+
 ## 0.1.79
 
 ### Patch Changes

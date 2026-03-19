@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.54
+
+### Patch Changes
+
+- [#5002](https://github.com/finos/legend-studio/pull/5002) [`acfe11d`](https://github.com/finos/legend-studio/commit/acfe11d2a99b25b42336a5b665225f8c3715609b) ([@bojja-gs](https://github.com/bojja-gs)) - Marketplace filters implementation with data product source, type and taxonomy (renders dynamic), and removing flag for prod release and fixed tests.
+
 ## 0.1.53
 
 ## 0.1.52
