@@ -67,9 +67,14 @@ import type { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
 
+export enum DataAccessRequestType {
+  CONTRACT = 'CONTRACT',
+  WORKFLOW = 'WORKFLOW',
+}
+
 export type ContractCreationRendererResult = {
   component: React.ReactNode;
-  requestType: 'contract' | 'workflow';
+  requestType: DataAccessRequestType;
 };
 
 export type ContractConsumerTypeRendererConfig = {

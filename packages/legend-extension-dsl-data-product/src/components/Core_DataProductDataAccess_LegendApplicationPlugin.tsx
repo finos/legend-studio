@@ -28,7 +28,10 @@ import {
   AccessPointGroupAccess,
   type DataProductAPGState,
 } from '../stores/DataProduct/DataProductAPGState.js';
-import { type ContractConsumerTypeRendererConfig } from '../stores/DataProduct/DataProductDataAccessState.js';
+import {
+  DataAccessRequestType,
+  type ContractConsumerTypeRendererConfig,
+} from '../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import { UserSearchInput } from '@finos/legend-art';
 import { TextField } from '@mui/material';
@@ -243,7 +246,7 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
               enableUserSearch={true}
             />
           ),
-          requestType: 'contract' as const,
+          requestType: DataAccessRequestType.CONTRACT,
         }),
       },
       {
@@ -269,7 +272,7 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
               enableUserSearch={false}
             />
           ),
-          requestType: 'contract' as const,
+          requestType: DataAccessRequestType.CONTRACT,
         }),
       },
       {
@@ -295,7 +298,7 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
               enableUserSearch={false}
             />
           ),
-          requestType: 'contract' as const,
+          requestType: DataAccessRequestType.CONTRACT,
         }),
       },
     ];

@@ -36,6 +36,7 @@ import {
 } from '@finos/legend-art';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import {
+  DataAccessRequestType,
   type ContractConsumerTypeRendererConfig,
   type DataProductDataAccessState,
 } from '../../../stores/DataProduct/DataProductDataAccessState.js';
@@ -101,11 +102,11 @@ export const EntitlementsDataContractCreator = observer(
 
     const currentConsumerTypeComponent = currentConsumerTypeResult?.component;
     const currentRequestType =
-      currentConsumerTypeResult?.requestType ?? 'contract';
+      currentConsumerTypeResult?.requestType ?? DataAccessRequestType.CONTRACT;
 
     const onCreate = (): void => {
       if (isValid && consumer && description) {
-        if (currentRequestType === 'workflow') {
+        if (currentRequestType === DataAccessRequestType.WORKFLOW) {
           flowResult(
             dataAccessState.createWorkflowRequest(
               consumer,
