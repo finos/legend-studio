@@ -810,6 +810,38 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
       }));
   }
 
+  collectFeaturedClasses = (
+    element: PackageableElement,
+    excludedPaths: string[],
+    elements: Set<Class>,
+  ): void => {
+    if (excludedPaths.includes(element.path)) {
+      return;
+    }
+    if (element instanceof Class) {
+      elements.add(element);
+    } else if (element instanceof Package) {
+      this.collectClassesFromPackage(element, excludedPaths, elements);
+    }
+  };
+
+  collectClassesFromPackage = (
+    element: Package,
+    excludedPaths: string[],
+    elements: Set<Class>,
+  ): void => {
+    element.children.forEach((child) => {
+      if (excludedPaths.includes(child.path)) {
+        return;
+      }
+      if (child instanceof Class) {
+        elements.add(child);
+      } else if (child instanceof Package) {
+        this.collectClassesFromPackage(child, excludedPaths, elements);
+      }
+    });
+  };
+
   addDiagram = (option: { label: string; value: PackageableElement }): void => {
     const diagramValue = option.value;
     const newDiagram = observe_DataProductDiagram(new DataProductDiagram());
@@ -827,8 +859,26 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
     if (mapping.path === '') {
       return;
     }
+    let featuredClasses: Class[] | undefined = undefined;
+    if (this.value.featuredElements.length > 0) {
+      const includes = this.value.featuredElements
+        .filter((el) => el.exclude === undefined || el.exclude === false)
+        .map((el) => el.element.value);
+      const excludedPaths = this.value.featuredElements
+        .filter((el) => el.exclude !== undefined && el.exclude === true)
+        .map((el) => el.element.value.path);
+      const elements = new Set<Class>();
+      includes.forEach((element) => {
+        this.collectFeaturedClasses(element, excludedPaths, elements);
+      });
+      featuredClasses = Array.from(elements);
+    }
     const diagram = (yield flowResult(
-      onGeneratingDiagramFromMapping(mapping, this.state.editorStore),
+      onGeneratingDiagramFromMapping(
+        mapping,
+        this.state.editorStore,
+        featuredClasses,
+      ),
     )) as Diagram | undefined;
     if (diagram) {
       const newDiagram = observe_DataProductDiagram(new DataProductDiagram());

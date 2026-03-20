@@ -623,11 +623,14 @@ const reprocessMappingElementNodes = (
 export const onGeneratingDiagramFromMapping = flow(function* (
   mapping: Mapping,
   editorStore: EditorStore,
+  featuredClasses?: Class[],
 ): GeneratorFn<Diagram | undefined> {
   try {
     const diagram = generateMappingDiagram(
       mapping,
-      editorStore.graphManagerState.usableClasses,
+      featuredClasses && featuredClasses.length > 0
+        ? featuredClasses
+        : editorStore.graphManagerState.usableClasses,
     );
     observe_Diagram(diagram);
     editorStore.graphManagerState.graph.addElement(

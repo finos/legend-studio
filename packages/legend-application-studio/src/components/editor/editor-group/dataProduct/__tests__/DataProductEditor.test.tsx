@@ -308,7 +308,7 @@ test(
           await screen.findAllByRole('button', {
             name: 'Add Value',
           })
-        )[0],
+        )[1],
       ),
     );
     await screen.findByText('Select a diagram to add...');
@@ -357,7 +357,7 @@ test(
           await screen.findAllByRole('button', {
             name: 'Add Value',
           })
-        )[1],
+        )[0],
       ),
     );
     const newElementDropdown = await screen.findByText(
