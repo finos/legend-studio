@@ -48,11 +48,11 @@ import {
   type Runtime,
 } from '@finos/legend-graph';
 import {
-  ExtraOptionsConfig,
   type QueryBuilderActionConfig,
   type QueryBuilderConfig,
   type QueryBuilderWorkflowState,
 } from '@finos/legend-query-builder';
+import { renderLegendQueryDataSpaceQueryBuilderSetupPanelContent } from '../../../components/data-space/LegendQueryDataSpaceQueryBuilder.js';
 import type { LegendQueryApplicationStore } from '../../LegendQueryBaseStore.js';
 import {
   createViewProjectHandler,
@@ -74,8 +74,11 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
   declare applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
   project: ProjectGAVCoordinates;
-  declare extraOptionsConfig: ExtraOptionsConfig<DepotEntityWithOrigin>;
+  readonly onDataProductChange: (val: DepotEntityWithOrigin) => void;
   productSelectorState: DataProductSelectorState;
+
+  override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
+    renderLegendQueryDataSpaceQueryBuilderSetupPanelContent(this);
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -124,18 +127,7 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
     this.project = project;
     this.depotServerClient = depotServerClient;
     this.productSelectorState = productSelectorState;
-    this.extraOptionsConfig = new ExtraOptionsConfig<DepotEntityWithOrigin>(
-      'DataProduct',
-      'DEPOT_ENTITY_WITH_ORIGIN',
-      productSelectorState.dataProducts?.map((e) => ({
-        label: e.name,
-        value: e,
-      })),
-      undefined,
-      onDataProductChange,
-      undefined,
-      undefined,
-    );
+    this.onDataProductChange = onDataProductChange;
   }
 
   override get isAdvancedDataSpaceSearchEnabled(): boolean {
@@ -165,12 +157,6 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
     this.entities = dataspaces;
     if (products) {
       this.productSelectorState.setDataProducts(products);
-      this.extraOptionsConfig.setOptions(
-        products.map((e) => ({
-          label: e.path,
-          value: e,
-        })),
-      );
     }
     return this;
   }
@@ -234,14 +220,6 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
           yield flowResult(this.productSelectorState.loadProducts());
         }
         this.entities = this.productSelectorState.legacyDataProducts;
-        if (this.productSelectorState.dataProducts) {
-          this.extraOptionsConfig.setOptions(
-            this.productSelectorState.dataProducts.map((e) => ({
-              label: e.name,
-              value: e,
-            })),
-          );
-        }
         this.loadEntitiesState.pass();
       } catch {
         this.loadEntitiesState.fail();

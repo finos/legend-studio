@@ -215,7 +215,7 @@ export class QueryCreatorState {
         'Query builder state required to build query to edit',
       );
       this.createQueryState.inProgress();
-      const rawLambda = queryBuilderState.buildQuery();
+      const rawLambda = queryBuilderState.buildQueryForPersistence();
       const config = this.editorStore.getPersistConfiguration(rawLambda, {
         update: true,
       });
@@ -1047,26 +1047,15 @@ export abstract class QueryEditorStore {
     const modelGroups = dataProduct.accessPointGroups.filter(
       filterByType(ModelAccessPointGroup),
     );
+    if (!modelGroups.length) {
+      throw new UnsupportedOperationError(
+        `Only Data Product with Model Access Points are currently supported in Query. ${dataProduct.path} does not have any Model Access Point Groups.`,
+      );
+    }
     if (accessId) {
       const matchingGroup = modelGroups.find((g) => g.id === accessId);
       if (matchingGroup) {
         return matchingGroup;
-      }
-      // Search native execution contexts
-      const matchingNative =
-        dataProduct.nativeModelAccess?.nativeModelExecutionContexts.find(
-          (ctx) => ctx.key === accessId,
-        );
-      if (matchingNative) {
-        return matchingNative;
-      }
-    } else {
-      // No accessId: fall back to defaults
-      if (dataProduct.nativeModelAccess) {
-        return dataProduct.nativeModelAccess.defaultExecutionContext;
-      }
-      if (modelGroups.length > 0) {
-        return guaranteeNonNullable(modelGroups[0]);
       }
     }
     throw new UnsupportedOperationError(
@@ -1172,6 +1161,9 @@ export abstract class QueryEditorStore {
     accessId: string,
     dataProductAccessType: DataProductAccessType,
     onDataProductChange: (val: DepotEntityWithOrigin) => Promise<void>,
+    onLegacyDataSpaceChange?:
+      | ((val: ResolvedDataSpaceEntityWithOrigin) => void)
+      | undefined,
     productSelectorState?: DataProductSelectorState | undefined,
   ): Promise<LegendQueryDataProductQueryBuilderState> {
     // 3. Build minimal graph and get analysis result
@@ -1229,6 +1221,7 @@ export abstract class QueryEditorStore {
           this.depotServerClient,
           this.applicationStore,
         ),
+      onLegacyDataSpaceChange,
       undefined,
       undefined,
       this.applicationStore.config.options.queryBuilderConfig,
@@ -1628,7 +1621,7 @@ export class ExistingQueryUpdateState {
         this.editorStore.queryBuilderState,
         'Query builder state required to build query to edit',
       );
-      const rawLambda = queryBuilderState.buildQuery();
+      const rawLambda = queryBuilderState.buildQueryForPersistence();
       const config = this.editorStore.getPersistConfiguration(rawLambda, {
         update: true,
       });

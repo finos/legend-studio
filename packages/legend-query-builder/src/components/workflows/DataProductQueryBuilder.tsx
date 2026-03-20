@@ -42,8 +42,14 @@ import { flowResult } from 'mobx';
  * the LegendQuery-specific setup panel.
  */
 export const DataProductQueryBuilderSetupFormContent = observer(
-  (props: { queryBuilderState: DataProductQueryBuilderState }) => {
-    const { queryBuilderState } = props;
+  (props: {
+    queryBuilderState: DataProductQueryBuilderState;
+    formatOptionLabel?:
+      | ((option: DataProductOption) => React.ReactNode)
+      | undefined;
+    isLoading?: boolean | undefined;
+  }) => {
+    const { queryBuilderState, formatOptionLabel, isLoading } = props;
     const applicationStore = useApplicationStore();
 
     const onDataProductOptionChange = (
@@ -74,7 +80,10 @@ export const DataProductQueryBuilderSetupFormContent = observer(
             inputId="query-builder__setup__data-product-selector"
             className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
             options={queryBuilderState.dataProductOptions}
-            isLoading={queryBuilderState.loadDataProductModelState.isInProgress}
+            isLoading={
+              isLoading ??
+              queryBuilderState.loadDataProductModelState.isInProgress
+            }
             onChange={onDataProductOptionChange}
             value={queryBuilderState.selectedDataProductOption}
             placeholder="Search for data product..."
@@ -83,6 +92,7 @@ export const DataProductQueryBuilderSetupFormContent = observer(
               !applicationStore.layoutService
                 .TEMPORARY__isLightColorThemeEnabled
             }
+            {...(formatOptionLabel ? { formatOptionLabel } : {})}
           />
         </div>
         {Boolean(queryBuilderState.showExecutionContextOptions) && (

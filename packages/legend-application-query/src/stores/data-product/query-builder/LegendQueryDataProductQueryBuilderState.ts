@@ -22,7 +22,6 @@ import {
   type QueryBuilderActionConfig,
   type QueryBuilderConfig,
   type QueryBuilderWorkflowState,
-  type ExtraOptionsConfig,
 } from '@finos/legend-query-builder';
 import { renderLegendDataProductQueryBuilderSetupPanelContent } from '../../../components/data-product/LegendQueryDataProductQueryBuilder.js';
 import type { LegendQueryApplicationStore } from '../../LegendQueryBaseStore.js';
@@ -51,6 +50,7 @@ import {
 } from '../../../__lib__/LegendQueryNavigation.js';
 import { compareLabelFn } from '@finos/legend-art';
 import type { DataProductSelectorState } from '../../data-space/DataProductSelectorState.js';
+import { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 
@@ -58,7 +58,9 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
   declare applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
   project: ProjectGAVCoordinates;
-  declare extraOptionsConfig: ExtraOptionsConfig<DepotEntityWithOrigin>;
+  readonly onLegacyDataSpaceChange:
+    | ((val: ResolvedDataSpaceEntityWithOrigin) => void)
+    | undefined;
   productSelectorState: DataProductSelectorState;
 
   constructor(
@@ -73,6 +75,9 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     project: ProjectGAVCoordinates,
     onDataProductChange: (val: DepotEntityWithOrigin) => Promise<void>,
     productSelectorState: DataProductSelectorState,
+    onLegacyDataSpaceChange?:
+      | ((val: ResolvedDataSpaceEntityWithOrigin) => void)
+      | undefined,
     onExecutionContextChange?:
       | ((val: NativeModelExecutionContext) => void)
       | undefined,
@@ -98,6 +103,18 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     this.project = project;
     this.depotServerClient = depotServerClient;
     this.productSelectorState = productSelectorState;
+    this.onLegacyDataSpaceChange = onLegacyDataSpaceChange;
+  }
+
+  override handleDataProductChange(val: DepotEntityWithOrigin): void {
+    if (
+      val instanceof ResolvedDataSpaceEntityWithOrigin &&
+      this.onLegacyDataSpaceChange
+    ) {
+      this.onLegacyDataSpaceChange(val);
+    } else {
+      super.handleDataProductChange(val);
+    }
   }
 
   override get dataProductOptions(): DataProductOption[] {
@@ -115,8 +132,6 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
   }
 
   override *loadEntities(): GeneratorFn<void> {
-    yield flowResult(super.loadEntities());
-    // also ensure the shared selector has loaded depot-level entities
     if (!this.productSelectorState.isCompletelyLoaded) {
       yield flowResult(this.productSelectorState.loadProducts());
     }

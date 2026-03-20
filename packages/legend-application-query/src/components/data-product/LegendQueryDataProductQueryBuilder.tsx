@@ -45,6 +45,7 @@ import { observer } from 'mobx-react-lite';
 import { LakehouseRuntime } from '@finos/legend-graph';
 import { useEffect, useState } from 'react';
 import type { LegendQueryDataProductQueryBuilderState } from '../../stores/data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
+import { formatDataProductOptionLabel } from '../shared/LegendQueryDataProductOptionLabel.js';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 
 /**
@@ -240,6 +241,12 @@ const LegendDataProductQueryBuilderSetupPanelContent = observer(
         <div className="query-builder__setup__config-group__content">
           <DataProductQueryBuilderSetupFormContent
             queryBuilderState={queryBuilderState}
+            formatOptionLabel={formatDataProductOptionLabel}
+            isLoading={
+              queryBuilderState.productSelectorState.loadProductsState
+                .isInProgress ||
+              queryBuilderState.loadDataProductModelState.isInProgress
+            }
           />
         </div>
         {executionState instanceof

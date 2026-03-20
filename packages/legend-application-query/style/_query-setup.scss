@@ -16,6 +16,41 @@
 
 @use 'mixins' as *;
 
+.query-builder__setup__data-product__option {
+  @include ellipsisTextOverflow;
+
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+
+  &__label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__tag {
+    @include flexVCenter;
+
+    flex-shrink: 0;
+    margin-left: 0.8rem;
+    padding: 0 0.5rem;
+    height: 1.6rem;
+    border-radius: 0.3rem;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+
+    &--lakehouse {
+      background: var(--color-blue-200);
+      color: var(--color-light-grey-0);
+    }
+  }
+}
+
 .query-setup {
   @include flexHCenter;
 

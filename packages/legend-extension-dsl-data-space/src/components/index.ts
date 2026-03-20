@@ -22,7 +22,10 @@ export { DSL_DataSpace_LegendApplicationPlugin } from './DSL_DataSpace_LegendApp
 export { DataSpaceViewer } from './DataSpaceViewer.js';
 export * from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 export { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
-export { DataSpaceQueryBuilderState } from '../stores/query-builder/DataSpaceQueryBuilderState.js';
+export {
+  DataSpaceQueryBuilderState,
+  resolveUsableDataSpaceClasses,
+} from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 export {
   ResolvedDataSpaceEntityWithOrigin,
   extractDataSpaceInfo,

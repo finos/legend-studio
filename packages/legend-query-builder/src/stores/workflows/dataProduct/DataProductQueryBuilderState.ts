@@ -40,6 +40,8 @@ import {
   type QueryExecutionContext,
   QueryDataProductNativeExecutionContext,
   QueryDataProductModelAccessExecutionContext,
+  type RawLambda,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import { QueryBuilderState } from '../../QueryBuilderState.js';
 
@@ -64,6 +66,7 @@ import {
 } from '@finos/legend-storage';
 import { compareLabelFn } from '@finos/legend-art';
 import { QueryBuilderEmbeddedFromExecutionContextState } from '../../QueryBuilderExecutionContextState.js';
+import { buildLambdaFunction } from '../../QueryBuilderValueSpecificationBuilder.js';
 
 export type DataProductOption = {
   label: string;
@@ -355,6 +358,22 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     this.setExecutionState(val);
     this.propagateExecutionContextChange().catch(
       this.applicationStore.alertUnhandledError,
+    );
+  }
+
+  override buildQueryForPersistence(): RawLambda {
+    if (!this.isQuerySupported) {
+      return this.buildQuery();
+    }
+    // Build without embedding execution context in the lambda body.
+    // The execution context (dataProductPath, executionKey/accessPointGroupId)
+    // is stored separately in query.executionContext via getQueryExecutionContext().
+    return buildRawLambdaFromLambdaFunction(
+      buildLambdaFunction(this, {
+        skipExecutionContext: true,
+        useTypedRelationFunctions: this.isFetchStructureTyped,
+      }),
+      this.graphManagerState,
     );
   }
 

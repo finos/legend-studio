@@ -209,4 +209,11 @@ export type LambdaFunctionBuilderOption = {
    * Set this flag to `true` when you want to execute a query that exceeds the limit to check for additional data in the database.
    */
   withDataOverflowCheck?: boolean | undefined;
+
+  /**
+   * Set this flag to `true` when building a lambda for persistence (saving to query store).
+   * This skips embedding execution context (e.g. from()/with()) directly in the lambda body,
+   * since the execution context is persisted separately via query.executionContext.
+   */
+  skipExecutionContext?: boolean | undefined;
 };
