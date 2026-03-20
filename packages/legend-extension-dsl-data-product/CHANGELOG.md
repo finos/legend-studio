@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.66
+
+### Patch Changes
+
+- [#5010](https://github.com/finos/legend-studio/pull/5010) [`64e4c05`](https://github.com/finos/legend-studio/commit/64e4c0543d99599e2eac4c84d52d9a22a4602f40) ([@travisstebbins](https://github.com/travisstebbins)) - Use explicit dependency versions for oidc libraries
+
 ## 0.0.65
 
 ### Patch Changes
