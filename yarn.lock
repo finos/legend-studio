@@ -2428,10 +2428,10 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    oidc-client-ts: "npm:^3.2.0"
+    oidc-client-ts: "npm:3.2.0"
     react: "npm:19.0.1"
     react-dom: "npm:19.0.1"
-    react-oidc-context: "npm:^3.3.0"
+    react-oidc-context: "npm:3.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
@@ -2517,11 +2517,11 @@ __metadata:
     mobx-utils: "npm:6.1.0"
     node-diff3: "npm:3.1.2"
     npm-run-all: "npm:4.1.5"
-    oidc-client-ts: "npm:^3.2.0"
+    oidc-client-ts: "npm:3.2.0"
     react: "npm:19.0.1"
     react-dnd: "npm:16.0.1"
     react-dom: "npm:19.0.1"
-    react-oidc-context: "npm:^3.3.0"
+    react-oidc-context: "npm:3.3.0"
     react-router-dom: "npm:7.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.0"
@@ -2670,10 +2670,10 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    oidc-client-ts: "npm:^3.2.0"
+    oidc-client-ts: "npm:3.2.0"
     react: "npm:19.0.1"
     react-dom: "npm:19.0.1"
-    react-oidc-context: "npm:^3.3.0"
+    react-oidc-context: "npm:3.3.0"
     reactflow: "npm:11.11.4"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
@@ -2826,11 +2826,11 @@ __metadata:
     monaco-editor: "npm:0.52.2"
     node-diff3: "npm:3.1.2"
     npm-run-all: "npm:4.1.5"
-    oidc-client-ts: "npm:^3.2.0"
+    oidc-client-ts: "npm:3.2.0"
     react: "npm:19.0.1"
     react-dnd: "npm:16.0.1"
     react-dom: "npm:19.0.1"
-    react-oidc-context: "npm:^3.3.0"
+    react-oidc-context: "npm:3.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
@@ -2861,12 +2861,12 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
-    oidc-client-ts: "npm:^3.2.0"
+    oidc-client-ts: "npm:3.2.0"
     react: "npm:19.0.1"
     react-dnd: "npm:16.0.1"
     react-dnd-html5-backend: "npm:16.0.1"
     react-dom: "npm:19.0.1"
-    react-oidc-context: "npm:^3.3.0"
+    react-oidc-context: "npm:3.3.0"
     react-router: "npm:7.3.0"
     react-router-dom: "npm:7.3.0"
     rimraf: "npm:6.0.1"
@@ -3140,11 +3140,11 @@ __metadata:
     mobx-utils: "npm:6.1.0"
     node-diff3: "npm:3.1.2"
     npm-run-all: "npm:4.1.5"
-    oidc-client-ts: "npm:^3.2.0"
+    oidc-client-ts: "npm:3.2.0"
     react: "npm:19.0.1"
     react-dnd: "npm:16.0.1"
     react-dom: "npm:19.0.1"
-    react-oidc-context: "npm:^3.3.0"
+    react-oidc-context: "npm:3.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.0"
     serializr: "npm:3.0.3"
@@ -16023,12 +16023,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oidc-client-ts@npm:^3.2.0":
-  version: 3.4.1
-  resolution: "oidc-client-ts@npm:3.4.1"
+"oidc-client-ts@npm:3.2.0":
+  version: 3.2.0
+  resolution: "oidc-client-ts@npm:3.2.0"
   dependencies:
     jwt-decode: "npm:^4.0.0"
-  checksum: 10/9b02efa7eee9160741d38a7f31a7640a9b9843519abe2e1ee74f44cd7a6ac76c745428af73e32838b52c4780901ffd6223abdea9f130b38472ec310f91a82d0b
+  checksum: 10/26bb3c7a050f15781e0c5ff8efecfd769bd9723fe2332c50b4c89213577a3ec67ae65be9a177f8cbb92c29d9c55ff725e6a699d76a44900ab65cc7ab1c0ac21a
   languageName: node
   linkType: hard
 
@@ -18043,7 +18043,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-oidc-context@npm:^3.3.0":
+"react-oidc-context@npm:3.3.0":
   version: 3.3.0
   resolution: "react-oidc-context@npm:3.3.0"
   peerDependencies:
