@@ -1,5 +1,13 @@
 # @finos/legend-application-query
 
+## 13.8.2
+
+### Patch Changes
+
+- [#5010](https://github.com/finos/legend-studio/pull/5010) [`64e4c05`](https://github.com/finos/legend-studio/commit/64e4c0543d99599e2eac4c84d52d9a22a4602f40) ([@travisstebbins](https://github.com/travisstebbins)) - Use explicit dependency versions for oidc libraries
+
+- [#5005](https://github.com/finos/legend-studio/pull/5005) [`78cc6f0`](https://github.com/finos/legend-studio/commit/78cc6f0c159ce17a6f5755a6c2310c2c96a3eebb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle saving and opening data product model access point saved queries by only saving lambda functions in store
+
 ## 13.8.1
 
 ## 13.8.0
