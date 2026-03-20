@@ -32,14 +32,17 @@ import { uuid } from '@finos/legend-shared';
 
 export const generateMappingDiagram = (
   mapping: Mapping,
-  allClasses: Class[],
+  featuredClasses: Class[],
 ): Diagram => {
   let diagramName = mapping.name.replace(/mapping/i, 'Diagram');
   if (diagramName === mapping.name) {
     diagramName = `${mapping.name}GeneratedDiagram`;
   }
   const diagram = new Diagram(diagramName);
-  const classesInMapping = getMappingCompatibleClasses(mapping, allClasses);
+  const classesInMapping = getMappingCompatibleClasses(
+    mapping,
+    featuredClasses,
+  );
   diagram.classViews = classesInMapping.map(
     (clazz) =>
       new ClassView(

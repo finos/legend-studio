@@ -37,8 +37,6 @@ import {
   MenuContentItem,
   MenuContent,
   LockIcon,
-  PanelHeader,
-  ShapesIcon,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor.js';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
@@ -50,7 +48,6 @@ import {
   MAPPING_ELEMENT_TYPE,
   getMappingElementLabel,
   MAPPING_EDITOR_TAB,
-  onGeneratingDiagramFromMapping,
 } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { MappingElementState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 import { MappingExplorer } from './MappingExplorer.js';
@@ -356,11 +353,6 @@ export const MappingEditor = observer(() => {
     (tab: MAPPING_EDITOR_TAB): (() => void) =>
     (): void =>
       mappingEditorState.setSelectedTab(tab);
-  const generateDiagram = (): void => {
-    flowResult(onGeneratingDiagramFromMapping(mapping, editorStore)).catch(
-      editorStore.applicationStore.alertUnhandledError,
-    );
-  };
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.MAPPING_EDITOR}
@@ -378,24 +370,6 @@ export const MappingEditor = observer(() => {
             <div className="panel__header__title__content">{mapping.name}</div>
           </div>
         </div>
-        <PanelHeader title="General" darkMode={true}>
-          <div className="panel__header__actions">
-            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-              <button
-                className="btn__dropdown-combo__label"
-                onClick={generateDiagram}
-                title="Generate Diagram"
-                tabIndex={-1}
-                style={{ width: 'auto', whiteSpace: 'nowrap' }}
-              >
-                <ShapesIcon className="btn__dropdown-combo__label__icon" />
-                <div className="btn__dropdown-combo__label__title">
-                  Generate Diagram
-                </div>
-              </button>
-            </div>
-          </div>
-        </PanelHeader>
         <div className="panel__header service-editor__header--with-tabs">
           <div className="uml-element-editor__tabs">
             {Object.values(MAPPING_EDITOR_TAB).map((tab) => (

@@ -1605,11 +1605,11 @@ const ModelAccessPointGroupEditor = observer(
             <LongArrowRightIcon />
           </button>
         </div>
-        <CompatibleDiagramsEditor groupState={groupState} />
         <FeaturedElementsEditor
           groupState={groupState}
           isReadOnly={isReadOnly}
         />
+        <CompatibleDiagramsEditor groupState={groupState} />
       </div>
     );
   },
