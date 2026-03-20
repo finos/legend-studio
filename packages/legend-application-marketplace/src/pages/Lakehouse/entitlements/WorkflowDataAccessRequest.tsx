@@ -105,8 +105,7 @@ export const WorkflowDataAccessRequestTask =
       const actionableTask = getActionableTask();
 
       const userCanAction =
-        actionableTask !== undefined &&
-        actionableTask.potentialAssignees.includes(currentUser);
+        actionableTask?.potentialAssignees.includes(currentUser);
 
       useEffect(() => {
         const fetchAndInitialize = async () => {

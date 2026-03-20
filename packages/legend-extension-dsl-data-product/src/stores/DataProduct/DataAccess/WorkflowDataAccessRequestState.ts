@@ -130,7 +130,9 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     const firstWorkflow = guaranteeNonNullable(this.dataRequestWithWorkflow)
       .workflows[0];
     if (firstWorkflow?.tasks.length) {
-      return new Date(firstWorkflow.tasks[0]!.createdOn).toISOString();
+      return new Date(
+        guaranteeNonNullable(firstWorkflow.tasks[0]).createdOn,
+      ).toISOString();
     }
     return new Date().toISOString();
   }
@@ -417,7 +419,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
         ),
       ])) as [PlainObject, PlainObject];
       const dataRequests = V1_deserializeDataRequestsWithWorkflowResponse(
-        response as PlainObject,
+        response,
         this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
       );
       const refreshed = dataRequests[0];
