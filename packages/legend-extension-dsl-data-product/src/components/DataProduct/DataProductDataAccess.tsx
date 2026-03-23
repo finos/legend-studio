@@ -73,6 +73,9 @@ import {
   CODE_EDITOR_THEME,
 } from '@finos/legend-code-editor';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   ButtonGroup,
@@ -1131,6 +1134,97 @@ const AccessPointTable = observer(
   },
 );
 
+export const DataProductAccessPointViewer = observer(
+  (props: {
+    accessPointState: DataProductAccessPointState;
+    dataAccessState: DataProductDataAccessState | undefined;
+  }) => {
+    const { accessPointState, dataAccessState } = props;
+
+    return (
+      <Accordion
+        expanded={!accessPointState.isCollapsed}
+        onChange={() =>
+          accessPointState.setIsCollapsed(!accessPointState.isCollapsed)
+        }
+        className="data-product__viewer__access-point-section access_group_gap"
+        disableGutters={true}
+        elevation={0}
+        sx={{
+          backgroundColor: 'transparent',
+          '&:before': { display: 'none' },
+          boxShadow: 'none',
+        }}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          sx={{
+            flexDirection: 'row-reverse',
+            padding: 0,
+            '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+              transform: 'rotate(0deg)',
+            },
+            '& .MuiAccordionSummary-expandIconWrapper': {
+              transform: 'rotate(-90deg)',
+              marginRight: '0.5rem',
+            },
+            '& .MuiAccordionSummary-content': { margin: '12px 0' },
+            '& .MuiAccordionSummary-content.Mui-expanded': { margin: '12px 0' },
+          }}
+        >
+          <div
+            className="data-product__viewer__access-point__info"
+            style={{ flex: 1, padding: 0, margin: 0 }}
+          >
+            <div className="data-product__viewer__access-point__details">
+              <div
+                className="data-product__viewer__access-point__name"
+                style={{ display: 'flex', alignItems: 'center' }}
+              >
+                <strong>
+                  {accessPointState.accessPoint.title ??
+                    accessPointState.accessPoint.id}
+                </strong>
+              </div>
+              <div className="data-product__viewer__access-point__description">
+                {accessPointState.accessPoint.description?.trim() ?? (
+                  <span className="data-product__viewer__grid__empty-cell">
+                    No description to provide
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="data-product__viewer__access-point__tags">
+              {accessPointState.registryMetadata?.ads && (
+                <Chip
+                  className="data-product__viewer__wiki__tags__chip"
+                  label="ADS"
+                  title="Authorized Data Source"
+                />
+              )}
+              {accessPointState.registryMetadata?.pde && (
+                <Chip
+                  className="data-product__viewer__wiki__tags__chip"
+                  label="PDE"
+                  title="Point of Data Entry"
+                />
+              )}
+            </div>
+          </div>
+        </AccordionSummary>
+        <AccordionDetails sx={{ padding: 0 }}>
+          <div className="data-product__viewer__access-point__tabs">
+            <AccessPointTable
+              accessPointState={accessPointState}
+              dataAccessState={dataAccessState}
+            />
+          </div>
+        </AccordionDetails>
+      </Accordion>
+    );
+  },
+);
+
 export const DataProductAccessPointGroupViewer = observer(
   (props: {
     apgState: DataProductAPGState;
@@ -1462,87 +1556,11 @@ export const DataProductAccessPointGroupViewer = observer(
             <div className="data-product__viewer__access-group__item__content">
               <div className="data-product__viewer__access-group__item__content__tab__content">
                 {filteredAccessPointStates.map((accessPointState) => (
-                  <div
+                  <DataProductAccessPointViewer
                     key={accessPointState.accessPoint.id}
-                    className="data-product__viewer__access-point-section access_group_gap"
-                  >
-                    <div className="data-product__viewer__access-point__info">
-                      <div className="data-product__viewer__access-point__details">
-                        <div
-                          className="data-product__viewer__access-point__name"
-                          style={{ display: 'flex', alignItems: 'center' }}
-                        >
-                          <button
-                            onClick={() =>
-                              accessPointState.setIsCollapsed(
-                                !accessPointState.isCollapsed,
-                              )
-                            }
-                            title={
-                              accessPointState.isCollapsed
-                                ? 'Expand'
-                                : 'Collapse'
-                            }
-                            tabIndex={-1}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                              padding: 0,
-                              marginRight: '0.5rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <ExpandMoreIcon
-                              className={clsx(
-                                'data-product__viewer__access-group__item__header__caret',
-                                {
-                                  'data-product__viewer__access-group__item__header__caret--collapsed':
-                                    accessPointState.isCollapsed,
-                                },
-                              )}
-                            />
-                          </button>
-                          <strong>
-                            {accessPointState.accessPoint.title ??
-                              accessPointState.accessPoint.id}
-                          </strong>
-                        </div>
-                        <div className="data-product__viewer__access-point__description">
-                          {accessPointState.accessPoint.description?.trim() ?? (
-                            <span className="data-product__viewer__grid__empty-cell">
-                              No description to provide
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="data-product__viewer__access-point__tags">
-                        {accessPointState.registryMetadata?.ads && (
-                          <Chip
-                            className="data-product__viewer__wiki__tags__chip"
-                            label="ADS"
-                            title="Authorized Data Source"
-                          />
-                        )}
-                        {accessPointState.registryMetadata?.pde && (
-                          <Chip
-                            className="data-product__viewer__wiki__tags__chip"
-                            label="PDE"
-                            title="Point of Data Entry"
-                          />
-                        )}
-                      </div>
-                    </div>
-                    {!accessPointState.isCollapsed && (
-                      <div className="data-product__viewer__access-point__tabs">
-                        <AccessPointTable
-                          accessPointState={accessPointState}
-                          dataAccessState={dataAccessState}
-                        />
-                      </div>
-                    )}
-                  </div>
+                    accessPointState={accessPointState}
+                    dataAccessState={dataAccessState}
+                  />
                 ))}
               </div>
             </div>
