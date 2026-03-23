@@ -41,6 +41,7 @@ import {
   LakehouseContractServerClient,
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
+  LakehouseWorkflowServerClient,
 } from '@finos/legend-server-lakehouse';
 import { jest } from '@jest/globals';
 import { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
@@ -210,6 +211,9 @@ export const TEST__getDataProductDataAccessState = (
   const lakehouseIngestServerClient = new LakehouseIngestServerClient(
     undefined,
   );
+  const lakehouseWorkflowServerClient = new LakehouseWorkflowServerClient({
+    baseUrl: 'http://test-workflow-server-client',
+  });
 
   return new DataProductDataAccessState(
     entitlementsDataProductDetails,
@@ -217,6 +221,7 @@ export const TEST__getDataProductDataAccessState = (
     lakehouseContractServerClient,
     lakehousePlatformServerClient,
     lakehouseIngestServerClient,
+    lakehouseWorkflowServerClient,
     [new Core_DataProductDataAccess_LegendApplicationPlugin()],
     {
       getContractTaskUrl: jest.fn(() => ''),

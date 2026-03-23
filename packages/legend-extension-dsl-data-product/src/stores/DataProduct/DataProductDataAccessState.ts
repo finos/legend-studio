@@ -20,7 +20,6 @@ import {
   type V1_CreateContractPayload,
   type V1_CreateDataAccessRequestPayload,
   type V1_DataContractsResponse,
-  type V1_DataContractSubscriptions,
   type V1_DataProduct,
   type V1_DataRequestsWithWorkflowResponse,
   type V1_EngineServerClient,
@@ -40,6 +39,7 @@ import {
   V1_isIngestEnvsCompatibleWithEntitlements,
   V1_liteDataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
+  V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -56,8 +56,12 @@ import {
   type LakehouseIngestServerClient,
   type LakehouseContractServerClient,
   type LakehousePlatformServerClient,
+  type LakehouseWorkflowServerClient,
   IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
+import type { DataAccessRequestState } from './DataAccess/DataAccessRequestState.js';
+import { DataContractViewerState } from './DataAccess/DataContractViewerState.js';
+import { WorkflowDataAccessRequestState } from './DataAccess/WorkflowDataAccessRequestState.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   DSL_DATAPRODUCT_EVENT,
@@ -117,6 +121,7 @@ export class DataProductDataAccessState {
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
+  readonly lakehouseWorkflowServerClient: LakehouseWorkflowServerClient;
   readonly graphManagerState: GraphManagerState;
   readonly dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[];
 
@@ -130,9 +135,7 @@ export class DataProductDataAccessState {
   // state
   associatedContracts: V1_LiteDataContract[] | undefined = undefined;
   contractCreatorAPG: V1_AccessPointGroup | undefined = undefined;
-  contractViewerContractAndSubscription:
-    | V1_DataContractSubscriptions
-    | undefined = undefined;
+  dataAccessRequestViewerState: DataAccessRequestState | undefined = undefined;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnv: IngestDeploymentServerConfig | undefined;
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
@@ -150,19 +153,20 @@ export class DataProductDataAccessState {
     lakehouseContractServerClient: LakehouseContractServerClient,
     lakehousePlatformServerClient: LakehousePlatformServerClient,
     lakehouseIngestServerClient: LakehouseIngestServerClient,
+    lakehouseWorkflowServerClient: LakehouseWorkflowServerClient,
     dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
     actions: DataProductDataAccessStateActions,
   ) {
     makeObservable(this, {
       associatedContracts: observable,
       contractCreatorAPG: observable,
-      contractViewerContractAndSubscription: observable,
+      dataAccessRequestViewerState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnv: observable,
       lakehouseIngestEnvironmentDetails: observable,
       userEntitlementsEnv: observable,
       dataProductOwners: observable,
-      setContractViewerContractAndSubscription: action,
+      setDataAccessRequestViewerState: action,
       setAssociatedContracts: action,
       filteredDataProductQueryEnvs: computed,
       resolvedUserEnv: computed,
@@ -186,6 +190,7 @@ export class DataProductDataAccessState {
     this.lakehouseContractServerClient = lakehouseContractServerClient;
     this.lakehousePlatformServerClient = lakehousePlatformServerClient;
     this.lakehouseIngestServerClient = lakehouseIngestServerClient;
+    this.lakehouseWorkflowServerClient = lakehouseWorkflowServerClient;
     this.graphManagerState = this.dataProductViewerState.graphManagerState;
     this.dataAccessPlugins = dataAccessPlugins;
 
@@ -236,10 +241,8 @@ export class DataProductDataAccessState {
     this.contractCreatorAPG = val;
   }
 
-  setContractViewerContractAndSubscription(
-    val: V1_DataContractSubscriptions | undefined,
-  ) {
-    this.contractViewerContractAndSubscription = val;
+  setDataAccessRequestViewerState(val: DataAccessRequestState | undefined) {
+    this.dataAccessRequestViewerState = val;
   }
 
   setLakehouseIngestEnvironmentSummaries(
@@ -410,9 +413,21 @@ export class DataProductDataAccessState {
         }
 
         this.setContractCreatorAPG(undefined);
-        this.setContractViewerContractAndSubscription(
-          associatedContractAndSubscription,
-        );
+        if (associatedContractAndSubscription) {
+          const viewerState = new DataContractViewerState(
+            V1_transformDataContractToLiteDatacontract(
+              associatedContractAndSubscription.dataContract,
+            ),
+            (contractId: string, taskId: string) =>
+              this.getContractTaskUrl(contractId, taskId),
+            associatedContractAndSubscription.subscriptions?.[0],
+            this.applicationStore,
+            this.lakehouseContractServerClient,
+            this.graphManagerState,
+            this.dataProductViewerState.userSearchService,
+          );
+          this.setDataAccessRequestViewerState(viewerState);
+        }
         this.applicationStore.notificationService.notifySuccess(
           `Contract created, please go to contract view for pending tasks`,
         );
@@ -464,6 +479,19 @@ export class DataProductDataAccessState {
         );
         if (response.length > 0) {
           this.setContractCreatorAPG(undefined);
+          const firstResponse = response[0];
+          if (firstResponse) {
+            const workflowViewerState = new WorkflowDataAccessRequestState(
+              firstResponse.dataRequest.guid,
+              this.applicationStore,
+              this.lakehouseContractServerClient,
+              this.lakehouseWorkflowServerClient,
+              this.graphManagerState,
+              this.dataProductViewerState.userSearchService,
+            );
+            workflowViewerState.setDataRequestWithWorkflow(firstResponse);
+            this.setDataAccessRequestViewerState(workflowViewerState);
+          }
           this.applicationStore.notificationService.notifySuccess(
             `Data access request created successfully`,
           );
