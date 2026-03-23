@@ -156,7 +156,7 @@ export class DataProductAPGState {
     this.dataProductViewerState = dataProductViewerState;
     this.applicationStore = dataProductViewerState.applicationStore;
     this.accessPointStates = this.apg.accessPoints.map(
-      (ap) => new DataProductAccessPointState(this, ap),
+      (ap) => new DataProductAccessPointState(this, ap, initialCollapsed),
     );
     this.isCollapsed = initialCollapsed;
   }

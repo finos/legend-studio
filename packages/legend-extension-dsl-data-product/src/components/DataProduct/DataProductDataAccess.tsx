@@ -1461,7 +1461,42 @@ export const DataProductAccessPointGroupViewer = observer(
                   >
                     <div className="data-product__viewer__access-point__info">
                       <div className="data-product__viewer__access-point__details">
-                        <div className="data-product__viewer__access-point__name">
+                        <div
+                          className="data-product__viewer__access-point__name"
+                          style={{ display: 'flex', alignItems: 'center' }}
+                        >
+                          <button
+                            onClick={() =>
+                              accessPointState.setIsCollapsed(
+                                !accessPointState.isCollapsed,
+                              )
+                            }
+                            title={
+                              accessPointState.isCollapsed
+                                ? 'Expand'
+                                : 'Collapse'
+                            }
+                            tabIndex={-1}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: 0,
+                              marginRight: '0.5rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <ExpandMoreIcon
+                              className={clsx(
+                                'data-product__viewer__access-group__item__header__caret',
+                                {
+                                  'data-product__viewer__access-group__item__header__caret--collapsed':
+                                    accessPointState.isCollapsed,
+                                },
+                              )}
+                            />
+                          </button>
                           <strong>
                             {accessPointState.accessPoint.title ??
                               accessPointState.accessPoint.id}
@@ -1492,12 +1527,14 @@ export const DataProductAccessPointGroupViewer = observer(
                         )}
                       </div>
                     </div>
-                    <div className="data-product__viewer__access-point__tabs">
-                      <AccessPointTable
-                        accessPointState={accessPointState}
-                        dataAccessState={dataAccessState}
-                      />
-                    </div>
+                    {!accessPointState.isCollapsed && (
+                      <div className="data-product__viewer__access-point__tabs">
+                        <AccessPointTable
+                          accessPointState={accessPointState}
+                          dataAccessState={dataAccessState}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

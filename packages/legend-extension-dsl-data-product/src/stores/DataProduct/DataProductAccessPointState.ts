@@ -40,7 +40,7 @@ import {
   guaranteeNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { makeAutoObservable, observable, flow } from 'mobx';
+import { makeAutoObservable, observable, flow, action } from 'mobx';
 import { deserialize } from 'serializr';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
@@ -62,17 +62,29 @@ export class DataProductAccessPointState {
   readonly fetchingGrammarState = ActionState.create();
 
   registryMetadata: RegistryMetadataResponse | undefined;
+  isCollapsed = false;
 
-  constructor(apgState: DataProductAPGState, accessPoint: V1_AccessPoint) {
+  constructor(
+    apgState: DataProductAPGState,
+    accessPoint: V1_AccessPoint,
+    initialCollapsed = false,
+  ) {
     makeAutoObservable(this, {
       relationType: observable,
       grammar: observable,
       relationElement: observable,
+      isCollapsed: observable,
+      setIsCollapsed: action,
       init: flow,
     });
 
     this.apgState = apgState;
     this.accessPoint = accessPoint;
+    this.isCollapsed = initialCollapsed;
+  }
+
+  setIsCollapsed(val: boolean): void {
+    this.isCollapsed = val;
   }
 
   *init(
