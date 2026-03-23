@@ -1130,6 +1130,11 @@ export const DataProductAccessPointViewer = observer(
           accessPointState.setIsCollapsed(!accessPointState.isCollapsed)
         }
         elevation={2}
+        slotProps={{
+          transition: {
+            unmountOnExit: true,
+          },
+        }}
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
