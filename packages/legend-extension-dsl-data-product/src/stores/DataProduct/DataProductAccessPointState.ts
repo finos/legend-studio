@@ -61,6 +61,7 @@ export class DataProductAccessPointState {
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingRelationElement = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
+  readonly fetchingSampleDataState = ActionState.create();
 
   registryMetadata: RegistryMetadataResponse | undefined;
   isCollapsed = false;
@@ -166,6 +167,7 @@ export class DataProductAccessPointState {
     dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
   ): Promise<void> {
     this.fetchingRelationElement.inProgress();
+    this.fetchingSampleDataState.inProgress();
     try {
       const artifact = await dataProductArtifactPromise;
       this.relationElement = artifact?.accessPointGroups
@@ -180,6 +182,7 @@ export class DataProductAccessPointState {
       );
     } finally {
       this.fetchingRelationElement.complete();
+      this.fetchingSampleDataState.complete();
     }
   }
 
@@ -277,6 +280,7 @@ export class DataProductAccessPointState {
   }
 
   async fetchSampleDataFromEngine(resolvedUserEnv: string): Promise<void> {
+    this.fetchingSampleDataState.inProgress();
     try {
       if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
         const query = `#P{${this.apgState.dataProductViewerState.product.path}.${this.accessPoint.id}}#->take(200)`;
@@ -327,6 +331,8 @@ export class DataProductAccessPointState {
     } catch (error) {
       assertErrorThrown(error);
       throw error;
+    } finally {
+      this.fetchingSampleDataState.complete();
     }
   }
 }

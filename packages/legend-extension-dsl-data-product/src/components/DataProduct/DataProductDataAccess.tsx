@@ -827,7 +827,11 @@ const AccessPointTable = observer(
       if (gridApi) {
         gridApi.refreshCells({ force: true });
       }
-    }, [gridApi, accessPointState.relationElement]);
+    }, [
+      gridApi,
+      accessPointState.relationElement,
+      accessPointState.fetchingSampleDataState.isInProgress,
+    ]);
 
     const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
       [
@@ -882,6 +886,9 @@ const AccessPointTable = observer(
           wrapText: true,
           autoHeight: true,
           valueGetter: (_params) => {
+            if (accessPointState.fetchingSampleDataState.isInProgress) {
+              return 'Loading sample data';
+            }
             if (!_params.data || !accessPointState.relationElement) {
               return 'No sample values provided';
             }
