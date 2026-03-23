@@ -1648,16 +1648,6 @@ export const DataProducteDataAccess = observer(
           <div className="data-product__viewer__wiki__section__header__label">
             Data Access
             <button
-              className="data-product__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => {
-                dataProductViewerState.changeZone(anchor, true);
-                dataProductViewerState.copyLinkToClipboard(anchor);
-              }}
-            >
-              <AnchorLinkIcon />
-            </button>
-            <button
               onClick={() => dataProductViewerState.toggleAllApgGroupCollapse()}
               title={
                 dataProductViewerState.isAllApgsCollapsed
@@ -1674,6 +1664,16 @@ export const DataProducteDataAccess = observer(
                   },
                 )}
               />
+            </button>
+            <button
+              className="data-product__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => {
+                dataProductViewerState.changeZone(anchor, true);
+                dataProductViewerState.copyLinkToClipboard(anchor);
+              }}
+            >
+              <AnchorLinkIcon />
             </button>
           </div>
           {Boolean(documentationUrl) && (
