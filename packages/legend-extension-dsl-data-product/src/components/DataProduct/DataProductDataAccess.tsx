@@ -1244,7 +1244,8 @@ export const DataProductAccessPointGroupViewer = observer(
       if (
         !apgState.isCollapsed &&
         dataAccessState?.lakehouseContractServerClient &&
-        apgState.apgContracts.length > 0
+        apgState.apgContracts.length > 0 &&
+        apgState.fetchingSubscriptionsState.isInInitialState
       ) {
         apgState.fetchSubscriptions(
           apgState.apgContracts,
