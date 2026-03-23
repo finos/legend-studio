@@ -1147,8 +1147,7 @@ export const DataProductAccessPointViewer = observer(
         onChange={() =>
           accessPointState.setIsCollapsed(!accessPointState.isCollapsed)
         }
-        disableGutters={true}
-        elevation={0}
+        elevation={2}
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
@@ -1530,7 +1529,7 @@ export const DataProductAccessPointGroupViewer = observer(
               />
             </div>
             <div className="data-product__viewer__access-group__item__content">
-              <div className="data-product__viewer__access-group__item__content__tab__content data-product__viewer__access-group__item__content__tab__content--access-points">
+              <div className="data-product__viewer__access-group__item__content__tab__content">
                 {filteredAccessPointStates.map((accessPointState) => (
                   <DataProductAccessPointViewer
                     key={accessPointState.accessPoint.id}
