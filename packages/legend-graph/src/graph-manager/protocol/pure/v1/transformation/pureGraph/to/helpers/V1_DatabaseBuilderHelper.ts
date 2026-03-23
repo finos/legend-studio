@@ -42,7 +42,7 @@ import { Table } from '../../../../../../../../graph/metamodel/pure/packageableE
 import { Column } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Column.js';
 import { View } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/View.js';
 import {
-  Join,
+  type Join,
   SELF_JOIN_TABLE_NAME,
   SELF_JOIN_ALIAS_PREFIX,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Join.js';
@@ -712,21 +712,19 @@ export const V1_buildDatabaseSchemaViewsSecondPass = (
 
 export const V1_buildDatabaseJoin = (
   srcJoin: V1_Join,
+  join: Join,
   context: V1_GraphBuilderContext,
   database: Database,
-): Join => {
+): void => {
   assertNonEmptyString(srcJoin.name, `Join 'name' field is missing or empty`);
   const tableAliasIndex = new Map<string, TableAlias>();
   const selfJoinTargets: TableAliasColumn[] = [];
-  const join = new Join(
-    srcJoin.name,
-    V1_buildRelationalOperationElement(
-      srcJoin.operation,
-      context,
-      tableAliasIndex,
-      selfJoinTargets,
-      buildGeneratedIndex(database),
-    ),
+  join.operation = V1_buildRelationalOperationElement(
+    srcJoin.operation,
+    context,
+    tableAliasIndex,
+    selfJoinTargets,
+    buildGeneratedIndex(database),
   );
   const aliases = Array.from(tableAliasIndex.values());
   assertTrue(aliases.length > 0, `Can't build join with no table`);
@@ -784,7 +782,6 @@ export const V1_buildDatabaseJoin = (
     ),
   ];
   join.owner = database;
-  return join;
 };
 
 export const V1_buildDatabaseFilter = (
