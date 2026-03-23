@@ -176,11 +176,19 @@ export class DataProductViewerState extends BaseViewerState<
       totalAccessPoints: computed,
     });
 
-    const shouldAutoCollapse =
+    const shouldAutoCollapseAPGs =
       this.product.accessPointGroups.length > 1 &&
       this.totalAccessPoints > APG_AUTO_COLLAPSE_THRESHOLD;
+    const shouldAutoCollapseAPs =
+      this.totalAccessPoints > APG_AUTO_COLLAPSE_THRESHOLD;
     this.apgStates = this.product.accessPointGroups.map(
-      (e) => new DataProductAPGState(e, this, shouldAutoCollapse),
+      (e) =>
+        new DataProductAPGState(
+          e,
+          this,
+          shouldAutoCollapseAPGs,
+          shouldAutoCollapseAPs,
+        ),
     );
     this.engineServerClient = engineServerClient;
     this.depotServerClient = depotServerClient;

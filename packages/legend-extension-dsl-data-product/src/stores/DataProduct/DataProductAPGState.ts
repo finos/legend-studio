@@ -122,6 +122,7 @@ export class DataProductAPGState {
     group: V1_AccessPointGroup,
     dataProductViewerState: DataProductViewerState,
     initialCollapsed = false,
+    initialAccessPointsCollapsed = false,
   ) {
     makeAutoObservable(this, {
       handleContractClick: action,
@@ -156,7 +157,8 @@ export class DataProductAPGState {
     this.dataProductViewerState = dataProductViewerState;
     this.applicationStore = dataProductViewerState.applicationStore;
     this.accessPointStates = this.apg.accessPoints.map(
-      (ap) => new DataProductAccessPointState(this, ap, initialCollapsed),
+      (ap) =>
+        new DataProductAccessPointState(this, ap, initialAccessPointsCollapsed),
     );
     this.isCollapsed = initialCollapsed;
   }
