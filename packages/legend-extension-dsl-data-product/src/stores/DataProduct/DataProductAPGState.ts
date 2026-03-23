@@ -18,11 +18,9 @@ import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type V1_AccessPointGroup,
   type V1_ContractUserStatusResponse,
-  type V1_DataProductArtifact,
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
-  type V1_EntitlementsDataProductDetails,
   type V1_LiteDataContract,
   type V1_User,
   V1_ContractUserStatusResponseModelSchema,
@@ -46,7 +44,14 @@ import {
   HttpStatus,
   uuid,
 } from '@finos/legend-shared';
-import { makeAutoObservable, action, observable, flow, computed } from 'mobx';
+import {
+  makeAutoObservable,
+  action,
+  observable,
+  flow,
+  computed,
+  flowResult,
+} from 'mobx';
 import { deserialize, serialize } from 'serializr';
 import {
   dataContractContainsAccessGroup,
@@ -110,6 +115,7 @@ export class DataProductAPGState {
     approvedUsers: V1_User[];
   }[] = [];
 
+  readonly initializationState = ActionState.create();
   readonly fetchingAccessState = ActionState.create();
   readonly pollingConsumerGrantState = ActionState.create();
   readonly handlingContractsState = ActionState.create();
@@ -165,6 +171,13 @@ export class DataProductAPGState {
 
   setIsCollapsed(isCollapsed: boolean): void {
     this.isCollapsed = isCollapsed;
+    if (
+      !isCollapsed &&
+      this.initializationState.isInInitialState &&
+      this.dataProductViewerState.dataProductArtifactPromise
+    ) {
+      flowResult(this.init());
+    }
   }
 
   get access(): AccessPointGroupAccess {
@@ -231,15 +244,22 @@ export class DataProductAPGState {
     }
   }
 
-  *init(
-    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
-    entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
-  ): GeneratorFn<void> {
-    yield Promise.all(
-      this.accessPointStates.map((ap) =>
-        ap.init(dataProductArtifactPromise, entitlementsDataProductDetails),
-      ),
-    );
+  *init(): GeneratorFn<void> {
+    if (!this.initializationState.isInInitialState) {
+      return;
+    }
+    try {
+      yield Promise.all(
+        this.accessPointStates.map((ap) => {
+          if (!ap.isCollapsed) {
+            return flowResult(ap.init());
+          }
+          return Promise.resolve();
+        }),
+      );
+    } finally {
+      this.initializationState.complete();
+    }
   }
 
   *fetchAndSetAssociatedSystemAccountContracts(

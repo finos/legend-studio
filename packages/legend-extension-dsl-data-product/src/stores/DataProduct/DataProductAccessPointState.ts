@@ -40,7 +40,7 @@ import {
   guaranteeNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { makeAutoObservable, observable, flow, action } from 'mobx';
+import { makeAutoObservable, observable, flow, action, flowResult } from 'mobx';
 import { deserialize } from 'serializr';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
@@ -57,6 +57,7 @@ export class DataProductAccessPointState {
     | V1_EntitlementsDataProductDetails
     | undefined;
 
+  readonly initializationState = ActionState.create();
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingRelationElement = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
@@ -85,24 +86,40 @@ export class DataProductAccessPointState {
 
   setIsCollapsed(val: boolean): void {
     this.isCollapsed = val;
+    if (
+      !val &&
+      this.initializationState.isInInitialState &&
+      this.apgState.dataProductViewerState.dataProductArtifactPromise
+    ) {
+      flowResult(this.init());
+    }
   }
 
-  *init(
-    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
-    entitlementsDataProductDetails?:
-      | V1_EntitlementsDataProductDetails
-      | undefined,
-  ): GeneratorFn<void> {
-    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
-    yield Promise.all([
-      this.fetchRelationType(
-        dataProductArtifactPromise,
-        entitlementsDataProductDetails,
-      ),
-      this.fetchSampleDataFromArtifact(dataProductArtifactPromise),
-      this.fetchGrammar(),
-      this.fetchRegistryMetadata(),
-    ]);
+  *init(): GeneratorFn<void> {
+    if (!this.initializationState.isInInitialState) {
+      return;
+    }
+    try {
+      const dataProductArtifactPromise =
+        this.apgState.dataProductViewerState.dataProductArtifactPromise;
+      const entitlementsDataProductDetails =
+        this.apgState.dataProductViewerState.entitlementsDataProductDetails;
+      if (!dataProductArtifactPromise) {
+        return;
+      }
+      this.entitlementsDataProductDetails = entitlementsDataProductDetails;
+      yield Promise.all([
+        this.fetchRelationType(
+          dataProductArtifactPromise,
+          entitlementsDataProductDetails,
+        ),
+        this.fetchSampleDataFromArtifact(dataProductArtifactPromise),
+        this.fetchGrammar(),
+        this.fetchRegistryMetadata(),
+      ]);
+    } finally {
+      this.initializationState.complete();
+    }
   }
 
   async fetchRegistryMetadata(): Promise<void> {

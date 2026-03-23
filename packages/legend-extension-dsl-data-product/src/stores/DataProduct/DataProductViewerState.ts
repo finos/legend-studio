@@ -50,7 +50,14 @@ import {
   GraphDataWithOrigin,
   LegendSDLC,
 } from '@finos/legend-graph';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
 import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
@@ -113,6 +120,10 @@ export class DataProductViewerState extends BaseViewerState<
     | DataProductViewerDiagramViewerState
     | undefined;
   dataProductArtifact: V1_DataProductArtifact | undefined;
+  dataProductArtifactPromise:
+    | Promise<V1_DataProductArtifact | undefined>
+    | undefined;
+  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails | undefined;
   sampleQueryDataAccessStateIndex = new Map<V1_SampleQuery, DataAccessState>();
   apgSearchText = '';
   nativeModelAccessDataAccessState: DataAccessState | undefined;
@@ -661,13 +672,16 @@ export class DataProductViewerState extends BaseViewerState<
     entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
     prefetchedArtifact?: V1_DataProductArtifact,
   ): GeneratorFn<void> {
-    const dataProductArtifactPromise = prefetchedArtifact
+    this.dataProductArtifactPromise = prefetchedArtifact
       ? Promise.resolve(prefetchedArtifact)
       : this.fetchDataProductArtifact();
-    this.apgStates.map((apgState) =>
-      apgState.init(dataProductArtifactPromise, entitlementsDataProductDetails),
-    );
-    const dataProductArtifact = (yield dataProductArtifactPromise) as
+    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
+    this.apgStates.forEach((apgState) => {
+      if (!apgState.isCollapsed) {
+        flowResult(apgState.init());
+      }
+    });
+    const dataProductArtifact = (yield this.dataProductArtifactPromise) as
       | V1_DataProductArtifact
       | undefined;
     this.dataProductArtifact = dataProductArtifact;
