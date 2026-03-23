@@ -1150,37 +1150,14 @@ export const DataProductAccessPointViewer = observer(
         className="data-product__viewer__access-point-section access_group_gap"
         disableGutters={true}
         elevation={0}
-        sx={{
-          backgroundColor: 'transparent',
-          '&:before': { display: 'none' },
-          boxShadow: 'none',
-        }}
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          sx={{
-            flexDirection: 'row-reverse',
-            padding: 0,
-            '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-              transform: 'rotate(0deg)',
-            },
-            '& .MuiAccordionSummary-expandIconWrapper': {
-              transform: 'rotate(-90deg)',
-              marginRight: '0.5rem',
-            },
-            '& .MuiAccordionSummary-content': { margin: '12px 0' },
-            '& .MuiAccordionSummary-content.Mui-expanded': { margin: '12px 0' },
-          }}
+          className="data-product__viewer__access-point__summary"
         >
-          <div
-            className="data-product__viewer__access-point__info"
-            style={{ flex: 1, padding: 0, margin: 0 }}
-          >
+          <div className="data-product__viewer__access-point__info">
             <div className="data-product__viewer__access-point__details">
-              <div
-                className="data-product__viewer__access-point__name"
-                style={{ display: 'flex', alignItems: 'center' }}
-              >
+              <div className="data-product__viewer__access-point__name">
                 <strong>
                   {accessPointState.accessPoint.title ??
                     accessPointState.accessPoint.id}
@@ -1212,7 +1189,7 @@ export const DataProductAccessPointViewer = observer(
             </div>
           </div>
         </AccordionSummary>
-        <AccordionDetails sx={{ padding: 0 }}>
+        <AccordionDetails className="data-product__viewer__access-point__details-container">
           <div className="data-product__viewer__access-point__tabs">
             <AccessPointTable
               accessPointState={accessPointState}

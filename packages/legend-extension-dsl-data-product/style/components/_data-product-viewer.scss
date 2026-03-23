@@ -2782,15 +2782,58 @@
   }
 }
 
+.data-product__viewer__access-point-section {
+  background-color: transparent !important;
+  box-shadow: none !important;
+
+  &::before {
+    display: none;
+  }
+}
+
 .data-product__viewer__access-point {
+  &__summary {
+    flex-direction: row-reverse;
+    padding: 0;
+
+    .MuiAccordionSummary-expandIconWrapper.Mui-expanded {
+      transform: rotate(0deg);
+    }
+
+    .MuiAccordionSummary-expandIconWrapper {
+      transform: rotate(-90deg);
+      margin-right: 0.5rem;
+    }
+
+    .MuiAccordionSummary-content {
+      margin: 1.2rem 0;
+
+      &.Mui-expanded {
+        margin: 1.2rem 0;
+      }
+    }
+  }
+
   &__info {
     display: flex;
     justify-content: space-between;
     gap: 0.5rem;
+    flex: 1;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__name {
+    display: flex;
+    align-items: center;
   }
 
   &__details {
     display: block;
+  }
+
+  &__details-container {
+    padding: 0;
   }
 
   &__tags {
