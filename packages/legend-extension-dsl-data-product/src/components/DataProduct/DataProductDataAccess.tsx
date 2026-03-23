@@ -1390,6 +1390,22 @@ export const DataProductAccessPointGroupViewer = observer(
       );
     };
 
+    const searchText = apgState.dataProductViewerState.apgSearchText
+      .trim()
+      .toLowerCase();
+    const isApgMatch = searchText
+      ? apgState.apg.id.toLowerCase().includes(searchText) ||
+        (apgState.apg.title?.toLowerCase().includes(searchText) ?? false)
+      : true;
+    const filteredAccessPointStates = isApgMatch
+      ? accessPointStates
+      : accessPointStates.filter(
+          (apState) =>
+            apState.accessPoint.id.toLowerCase().includes(searchText) ||
+            (apState.accessPoint.title?.toLowerCase().includes(searchText) ??
+              false),
+        );
+
     return (
       <div ref={ref} className="data-product__viewer__access-group__item">
         <div className="data-product__viewer__access-group__item__header">
@@ -1438,7 +1454,7 @@ export const DataProductAccessPointGroupViewer = observer(
             </div>
             <div className="data-product__viewer__access-group__item__content">
               <div className="data-product__viewer__access-group__item__content__tab__content">
-                {accessPointStates.map((accessPointState) => (
+                {filteredAccessPointStates.map((accessPointState) => (
                   <div
                     key={accessPointState.accessPoint.id}
                     className="data-product__viewer__access-point-section access_group_gap"
