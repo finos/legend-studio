@@ -753,24 +753,6 @@ const AccessPointTable = observer(
     const [selectedTab, setSelectedTab] = useState<
       DataProductAccessPointTabs | string
     >(DataProductAccessPointTabs.COLUMNS);
-    const ref = useRef<HTMLDivElement>(null);
-    const [hasBeenVisible, setHasBeenVisible] = useState(false);
-
-    useEffect(() => {
-      const intersectionObserver = new IntersectionObserver(
-        ([entry]) => {
-          if (entry?.isIntersecting) {
-            setHasBeenVisible(true);
-            intersectionObserver.disconnect();
-          }
-        },
-        { rootMargin: '100px' },
-      );
-      if (ref.current) {
-        intersectionObserver.observe(ref.current);
-      }
-      return () => intersectionObserver.disconnect();
-    }, []);
 
     const playgroundState = useMemo(() => {
       const dataProductViewerState =
@@ -802,7 +784,7 @@ const AccessPointTable = observer(
 
     useEffect(() => {
       if (
-        hasBeenVisible &&
+        !accessPointState.isCollapsed &&
         userEnv &&
         !accessPointState.relationElement &&
         !accessPointState.apgState.isCollapsed &&
@@ -821,9 +803,9 @@ const AccessPointTable = observer(
       }
     }, [
       accessPointState,
+      accessPointState.isCollapsed,
       userEnv,
       accessPointState.apgState.isCollapsed,
-      hasBeenVisible,
     ]);
 
     useEffect(() => {
@@ -1076,7 +1058,7 @@ const AccessPointTable = observer(
       },
     ];
     return (
-      <div ref={ref}>
+      <div>
         <div className="data-product__viewer__tabs-bar">
           <Tabs
             value={selectedTab}
@@ -1206,24 +1188,6 @@ export const DataProductAccessPointGroupViewer = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { apgState, dataAccessState } = props;
-    const ref = useRef<HTMLDivElement>(null);
-    const [hasBeenVisible, setHasBeenVisible] = useState(false);
-
-    useEffect(() => {
-      const intersectionObserver = new IntersectionObserver(
-        ([entry]) => {
-          if (entry?.isIntersecting) {
-            setHasBeenVisible(true);
-            intersectionObserver.disconnect();
-          }
-        },
-        { rootMargin: '100px' },
-      );
-      if (ref.current) {
-        intersectionObserver.observe(ref.current);
-      }
-      return () => intersectionObserver.disconnect();
-    }, []);
 
     const accessPointStates = apgState.accessPointStates;
     const contractViewerContractAndSubscription =
@@ -1278,7 +1242,6 @@ export const DataProductAccessPointGroupViewer = observer(
 
     useEffect(() => {
       if (
-        hasBeenVisible &&
         !apgState.isCollapsed &&
         dataAccessState?.lakehouseContractServerClient &&
         apgState.apgContracts.length > 0
@@ -1296,7 +1259,6 @@ export const DataProductAccessPointGroupViewer = observer(
       apgState.apgContracts,
       auth.user?.access_token,
       dataAccessState?.lakehouseContractServerClient,
-      hasBeenVisible,
     ]);
 
     const handleContractsClick = (): void => {
@@ -1483,7 +1445,7 @@ export const DataProductAccessPointGroupViewer = observer(
         );
 
     return (
-      <div ref={ref} className="data-product__viewer__access-group__item">
+      <div className="data-product__viewer__access-group__item">
         <div className="data-product__viewer__access-group__item__header">
           <div className="data-product__viewer__access-group__item__header-main">
             <div className="data-product__viewer__access-group__item__header__title">
