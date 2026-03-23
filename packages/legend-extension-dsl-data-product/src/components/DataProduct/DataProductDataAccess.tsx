@@ -890,7 +890,7 @@ const AccessPointTable = observer(
           autoHeight: true,
           valueGetter: (_params) => {
             if (accessPointState.fetchingSampleDataState.isInProgress) {
-              return 'Loading sample data';
+              return 'Loading sample data...';
             }
             if (!_params.data || !accessPointState.relationElement) {
               return 'No sample values provided';
