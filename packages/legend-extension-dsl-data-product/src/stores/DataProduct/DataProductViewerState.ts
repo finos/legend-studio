@@ -88,6 +88,8 @@ import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramV
 import type { RegistryServerClient } from '@finos/legend-server-marketplace';
 import { DataAccessState } from '@finos/legend-query-builder';
 
+const APG_AUTO_COLLAPSE_THRESHOLD = 10;
+
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
   DataProductLayoutState
@@ -112,6 +114,7 @@ export class DataProductViewerState extends BaseViewerState<
     | undefined;
   dataProductArtifact: V1_DataProductArtifact | undefined;
   sampleQueryDataAccessStateIndex = new Map<V1_SampleQuery, DataAccessState>();
+  apgSearchText = '';
   nativeModelAccessDataAccessState: DataAccessState | undefined;
 
   // actions
@@ -167,10 +170,15 @@ export class DataProductViewerState extends BaseViewerState<
       init: flow,
       isAllApgsCollapsed: computed,
       toggleAllApgGroupCollapse: action,
+      apgSearchText: observable,
+      setApgSearchText: action,
+      filteredApgStates: computed,
     });
 
+    const shouldAutoCollapse =
+      this.product.accessPointGroups.length > APG_AUTO_COLLAPSE_THRESHOLD;
     this.apgStates = this.product.accessPointGroups.map(
-      (e) => new DataProductAPGState(e, this),
+      (e) => new DataProductAPGState(e, this, shouldAutoCollapse),
     );
     this.engineServerClient = engineServerClient;
     this.depotServerClient = depotServerClient;
@@ -217,16 +225,32 @@ export class DataProductViewerState extends BaseViewerState<
 
   get isAllApgsCollapsed(): boolean {
     return (
-      this.apgStates.length > 0 &&
-      this.apgStates.every((groupState) => groupState.isCollapsed)
+      this.filteredApgStates.length > 0 &&
+      this.filteredApgStates.every((groupState) => groupState.isCollapsed)
     );
   }
 
   toggleAllApgGroupCollapse(): void {
     const shouldCollapse = !this.isAllApgsCollapsed;
-    this.apgStates.forEach((groupState) => {
+    this.filteredApgStates.forEach((groupState) => {
       groupState.setIsCollapsed(shouldCollapse);
     });
+  }
+
+  setApgSearchText(text: string): void {
+    this.apgSearchText = text;
+  }
+
+  get filteredApgStates(): DataProductAPGState[] {
+    if (!this.apgSearchText.trim()) {
+      return this.apgStates;
+    }
+    const search = this.apgSearchText.trim().toLowerCase();
+    return this.apgStates.filter(
+      (state) =>
+        state.apg.id.toLowerCase().includes(search) ||
+        (state.apg.title?.toLowerCase().includes(search) ?? false),
+    );
   }
 
   getModelAccessPointDiagrams(): DiagramAnalysisResult[] {

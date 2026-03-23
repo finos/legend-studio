@@ -82,6 +82,7 @@ import {
   MenuItem,
   Tab,
   Tabs,
+  TextField,
   Tooltip,
 } from '@mui/material';
 import { useAuth } from 'react-oidc-context';
@@ -781,6 +782,7 @@ const AccessPointTable = observer(
       if (
         userEnv &&
         !accessPointState.relationElement &&
+        !accessPointState.apgState.isCollapsed &&
         accessPointState.apgState.access === AccessPointGroupAccess.ENTERPRISE
       ) {
         accessPointState
@@ -794,7 +796,7 @@ const AccessPointTable = observer(
             );
           });
       }
-    }, [accessPointState, userEnv]);
+    }, [accessPointState, userEnv, accessPointState.apgState.isCollapsed]);
 
     useEffect(() => {
       if (gridApi) {
@@ -1156,6 +1158,7 @@ export const DataProductAccessPointGroupViewer = observer(
 
     useEffect(() => {
       if (
+        !apgState.isCollapsed &&
         dataAccessState?.lakehouseContractServerClient &&
         apgState.apgContracts.length > 0
       ) {
@@ -1167,6 +1170,7 @@ export const DataProductAccessPointGroupViewer = observer(
       }
     }, [
       apgState,
+      apgState.isCollapsed,
       apgState.fetchingSubscriptionsState,
       apgState.apgContracts,
       auth.user?.access_token,
@@ -1562,9 +1566,22 @@ export const DataProducteDataAccess = observer(
             </button>
           )}
         </div>
+        {dataProductViewerState.apgStates.length > 10 && (
+          <div className="data-product__viewer__data-access__search">
+            <TextField
+              size="small"
+              placeholder="Search access point groups..."
+              value={dataProductViewerState.apgSearchText}
+              onChange={(e) =>
+                dataProductViewerState.setApgSearchText(e.target.value)
+              }
+              fullWidth={true}
+            />
+          </div>
+        )}
         <div className="data-product__viewer__wiki__section__content">
           <div className="data-product__viewer__data-access">
-            {dataProductViewerState.apgStates.map((groupState) => (
+            {dataProductViewerState.filteredApgStates.map((groupState) => (
               <DataProductAccessPointGroupViewer
                 key={groupState.id}
                 apgState={groupState}
