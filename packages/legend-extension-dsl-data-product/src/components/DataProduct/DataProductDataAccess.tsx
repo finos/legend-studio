@@ -1518,16 +1518,6 @@ export const DataProductAccessPointGroupViewer = observer(
               LAKEHOUSE
             </div>
             <button
-              className="data-product__viewer__access-group__item__header__anchor"
-              tabIndex={-1}
-              onClick={() => {
-                apgState.dataProductViewerState.changeZone(anchor, true);
-                apgState.dataProductViewerState.copyLinkToClipboard(anchor);
-              }}
-            >
-              <AnchorLinkIcon />
-            </button>
-            <button
               onClick={() => apgState.setIsCollapsed(!apgState.isCollapsed)}
               title={apgState.isCollapsed ? 'Expand' : 'Collapse'}
             >
@@ -1540,6 +1530,16 @@ export const DataProductAccessPointGroupViewer = observer(
                   },
                 )}
               />
+            </button>
+            <button
+              className="data-product__viewer__access-group__item__header__anchor"
+              tabIndex={-1}
+              onClick={() => {
+                apgState.dataProductViewerState.changeZone(anchor, true);
+                apgState.dataProductViewerState.copyLinkToClipboard(anchor);
+              }}
+            >
+              <AnchorLinkIcon />
             </button>
           </div>
           <Box className="data-product__viewer__access-group__item__header__actions">
