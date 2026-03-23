@@ -26,6 +26,7 @@ export const TerminalProductPrice = observer(
     const [isAnnual, setIsAnnual] = useState(true);
 
     const availablePrice =
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       terminal.price || terminal.tieredPrice || terminal.totalFirmPrice;
 
     if (!availablePrice) {
