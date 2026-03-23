@@ -750,6 +750,25 @@ const AccessPointTable = observer(
     const [selectedTab, setSelectedTab] = useState<
       DataProductAccessPointTabs | string
     >(DataProductAccessPointTabs.COLUMNS);
+    const ref = useRef<HTMLDivElement>(null);
+    const [hasBeenVisible, setHasBeenVisible] = useState(false);
+
+    useEffect(() => {
+      const intersectionObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) {
+            setHasBeenVisible(true);
+            intersectionObserver.disconnect();
+          }
+        },
+        { rootMargin: '100px' },
+      );
+      if (ref.current) {
+        intersectionObserver.observe(ref.current);
+      }
+      return () => intersectionObserver.disconnect();
+    }, []);
+
     const playgroundState = useMemo(() => {
       const dataProductViewerState =
         accessPointState.apgState.dataProductViewerState;
@@ -780,6 +799,7 @@ const AccessPointTable = observer(
 
     useEffect(() => {
       if (
+        hasBeenVisible &&
         userEnv &&
         !accessPointState.relationElement &&
         !accessPointState.apgState.isCollapsed &&
@@ -796,7 +816,12 @@ const AccessPointTable = observer(
             );
           });
       }
-    }, [accessPointState, userEnv, accessPointState.apgState.isCollapsed]);
+    }, [
+      accessPointState,
+      userEnv,
+      accessPointState.apgState.isCollapsed,
+      hasBeenVisible,
+    ]);
 
     useEffect(() => {
       if (gridApi) {
@@ -1041,7 +1066,7 @@ const AccessPointTable = observer(
       },
     ];
     return (
-      <div>
+      <div ref={ref}>
         <div className="data-product__viewer__tabs-bar">
           <Tabs
             value={selectedTab}
@@ -1105,6 +1130,25 @@ export const DataProductAccessPointGroupViewer = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { apgState, dataAccessState } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const [hasBeenVisible, setHasBeenVisible] = useState(false);
+
+    useEffect(() => {
+      const intersectionObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) {
+            setHasBeenVisible(true);
+            intersectionObserver.disconnect();
+          }
+        },
+        { rootMargin: '100px' },
+      );
+      if (ref.current) {
+        intersectionObserver.observe(ref.current);
+      }
+      return () => intersectionObserver.disconnect();
+    }, []);
+
     const accessPointStates = apgState.accessPointStates;
     const contractViewerContractAndSubscription =
       dataAccessState?.contractViewerContractAndSubscription;
@@ -1158,6 +1202,7 @@ export const DataProductAccessPointGroupViewer = observer(
 
     useEffect(() => {
       if (
+        hasBeenVisible &&
         !apgState.isCollapsed &&
         dataAccessState?.lakehouseContractServerClient &&
         apgState.apgContracts.length > 0
@@ -1175,6 +1220,7 @@ export const DataProductAccessPointGroupViewer = observer(
       apgState.apgContracts,
       auth.user?.access_token,
       dataAccessState?.lakehouseContractServerClient,
+      hasBeenVisible,
     ]);
 
     const handleContractsClick = (): void => {
@@ -1345,10 +1391,7 @@ export const DataProductAccessPointGroupViewer = observer(
     };
 
     return (
-      <div
-        ref={sectionRef}
-        className="data-product__viewer__access-group__item"
-      >
+      <div ref={ref} className="data-product__viewer__access-group__item">
         <div className="data-product__viewer__access-group__item__header">
           <div className="data-product__viewer__access-group__item__header-main">
             <div className="data-product__viewer__access-group__item__header__title">
@@ -1566,7 +1609,7 @@ export const DataProducteDataAccess = observer(
             </button>
           )}
         </div>
-        {dataProductViewerState.apgStates.length > 10 && (
+        {dataProductViewerState.totalAccessPoints > 10 && (
           <div className="data-product__viewer__data-access__search">
             <TextField
               size="small"

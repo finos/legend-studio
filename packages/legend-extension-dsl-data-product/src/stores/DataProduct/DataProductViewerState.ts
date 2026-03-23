@@ -173,10 +173,12 @@ export class DataProductViewerState extends BaseViewerState<
       apgSearchText: observable,
       setApgSearchText: action,
       filteredApgStates: computed,
+      totalAccessPoints: computed,
     });
 
     const shouldAutoCollapse =
-      this.product.accessPointGroups.length > APG_AUTO_COLLAPSE_THRESHOLD;
+      this.product.accessPointGroups.length > 1 &&
+      this.totalAccessPoints > APG_AUTO_COLLAPSE_THRESHOLD;
     this.apgStates = this.product.accessPointGroups.map(
       (e) => new DataProductAPGState(e, this, shouldAutoCollapse),
     );
@@ -249,7 +251,19 @@ export class DataProductViewerState extends BaseViewerState<
     return this.apgStates.filter(
       (state) =>
         state.apg.id.toLowerCase().includes(search) ||
-        (state.apg.title?.toLowerCase().includes(search) ?? false),
+        (state.apg.title?.toLowerCase().includes(search) ?? false) ||
+        state.apg.accessPoints.some(
+          (ap) =>
+            ap.id.toLowerCase().includes(search) ||
+            (ap.title?.toLowerCase().includes(search) ?? false),
+        ),
+    );
+  }
+
+  get totalAccessPoints(): number {
+    return this.product.accessPointGroups.reduce(
+      (acc, apg) => acc + apg.accessPoints.length,
+      0,
     );
   }
 
