@@ -1634,7 +1634,7 @@ export const DataProducteDataAccess = observer(
           <div className="data-product__viewer__data-access__search">
             <TextField
               size="small"
-              placeholder="Search access point groups..."
+              placeholder="Search access point groups/access points..."
               value={dataProductViewerState.apgSearchText}
               onChange={(e) =>
                 dataProductViewerState.setApgSearchText(e.target.value)
