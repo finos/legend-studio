@@ -28,7 +28,10 @@ import {
   AccessPointGroupAccess,
   type DataProductAPGState,
 } from '../stores/DataProduct/DataProductAPGState.js';
-import { type ContractConsumerTypeRendererConfig } from '../stores/DataProduct/DataProductDataAccessState.js';
+import {
+  DataAccessRequestType,
+  type ContractConsumerTypeRendererConfig,
+} from '../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import { UserSearchInput } from '@finos/legend-art';
 import { TextField } from '@mui/material';
@@ -230,18 +233,21 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
           ) => void,
           handleDescriptionChange: (description: string | undefined) => void,
           handleIsValidChange: (isValid: boolean) => void,
-        ) => (
-          <CommonRenderer
-            key="user"
-            type="user"
-            label="User"
-            apgState={apgState}
-            handleOrganizationalScopeChange={handleOrganizationalScopeChange}
-            handleDescriptionChange={handleDescriptionChange}
-            handleIsValidChange={handleIsValidChange}
-            enableUserSearch={true}
-          />
-        ),
+        ) => ({
+          component: (
+            <CommonRenderer
+              key="user"
+              type="user"
+              label="User"
+              apgState={apgState}
+              handleOrganizationalScopeChange={handleOrganizationalScopeChange}
+              handleDescriptionChange={handleDescriptionChange}
+              handleIsValidChange={handleIsValidChange}
+              enableUserSearch={true}
+            />
+          ),
+          requestType: DataAccessRequestType.CONTRACT,
+        }),
       },
       {
         type: 'System Account',
@@ -253,18 +259,21 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
           ) => void,
           handleDescriptionChange: (description: string | undefined) => void,
           handleIsValidChange: (isValid: boolean) => void,
-        ) => (
-          <CommonRenderer
-            key="system-account"
-            type="system-account"
-            label="System Account"
-            apgState={apgState}
-            handleOrganizationalScopeChange={handleOrganizationalScopeChange}
-            handleDescriptionChange={handleDescriptionChange}
-            handleIsValidChange={handleIsValidChange}
-            enableUserSearch={false}
-          />
-        ),
+        ) => ({
+          component: (
+            <CommonRenderer
+              key="system-account"
+              type="system-account"
+              label="System Account"
+              apgState={apgState}
+              handleOrganizationalScopeChange={handleOrganizationalScopeChange}
+              handleDescriptionChange={handleDescriptionChange}
+              handleIsValidChange={handleIsValidChange}
+              enableUserSearch={false}
+            />
+          ),
+          requestType: DataAccessRequestType.CONTRACT,
+        }),
       },
       {
         type: 'Producer',
@@ -276,18 +285,21 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
           ) => void,
           handleDescriptionChange: (description: string | undefined) => void,
           handleIsValidChange: (isValid: boolean) => void,
-        ) => (
-          <CommonRenderer
-            key="producer"
-            type="producer"
-            label="Producer DID"
-            apgState={apgState}
-            handleOrganizationalScopeChange={handleOrganizationalScopeChange}
-            handleDescriptionChange={handleDescriptionChange}
-            handleIsValidChange={handleIsValidChange}
-            enableUserSearch={false}
-          />
-        ),
+        ) => ({
+          component: (
+            <CommonRenderer
+              key="producer"
+              type="producer"
+              label="Producer DID"
+              apgState={apgState}
+              handleOrganizationalScopeChange={handleOrganizationalScopeChange}
+              handleDescriptionChange={handleDescriptionChange}
+              handleIsValidChange={handleIsValidChange}
+              enableUserSearch={false}
+            />
+          ),
+          requestType: DataAccessRequestType.CONTRACT,
+        }),
       },
     ];
   }

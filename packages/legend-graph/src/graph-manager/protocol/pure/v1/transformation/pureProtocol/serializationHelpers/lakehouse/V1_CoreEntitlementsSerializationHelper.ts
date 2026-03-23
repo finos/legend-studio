@@ -227,7 +227,6 @@ export const V1_deseralizeConsumerEntitlementResource = (
 };
 
 // -------------------------------------- Contract User Membership -------------------------------------
-
 export const V1_contractUserMembershipModelSchema = createModelSchema(
   V1_ContractUserMembership,
   {

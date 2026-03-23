@@ -124,3 +124,7 @@ export class V1_DataRequestWithWorkflow {
 export class V1_DataRequestsWithWorkflowResponse {
   dataRequests: V1_DataRequestWithWorkflow[] = [];
 }
+
+export class V1_DataRequestTasksResponse {
+  workflowTasks: V1_WorkflowTask[] = [];
+}

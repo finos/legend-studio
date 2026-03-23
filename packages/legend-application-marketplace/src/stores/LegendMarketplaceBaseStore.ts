@@ -52,6 +52,7 @@ import {
   LakehouseContractServerClient,
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
+  LakehouseWorkflowServerClient,
 } from '@finos/legend-server-lakehouse';
 import { CartStore } from './cart/CartStore.js';
 import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
@@ -89,6 +90,7 @@ export class LegendMarketplaceBaseStore {
   readonly pluginManager: LegendMarketplacePluginManager;
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
+  readonly lakehouseWorkflowServerClient: LakehouseWorkflowServerClient;
   readonly lakehouseDataProductService: LakehouseDataProductService;
   readonly cartStore: CartStore;
   readonly terminalAccessServerClient: TerminalAccessServerClient;
@@ -163,6 +165,14 @@ export class LegendMarketplaceBaseStore {
       this.applicationStore.config.lakehousePlatformUrl,
     );
     this.lakehousePlatformServerClient.setTracerService(
+      this.applicationStore.tracerService,
+    );
+
+    // lakehouse workflow
+    this.lakehouseWorkflowServerClient = new LakehouseWorkflowServerClient({
+      baseUrl: this.applicationStore.config.lakehouseWorkflowServerUrl,
+    });
+    this.lakehouseWorkflowServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
 

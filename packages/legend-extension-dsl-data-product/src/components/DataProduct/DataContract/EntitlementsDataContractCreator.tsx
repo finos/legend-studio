@@ -36,6 +36,7 @@ import {
 } from '@finos/legend-art';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import {
+  DataAccessRequestType,
   type ContractConsumerTypeRendererConfig,
   type DataProductDataAccessState,
 } from '../../../stores/DataProduct/DataProductDataAccessState.js';
@@ -86,7 +87,7 @@ export const EntitlementsDataContractCreator = observer(
     const [description, setDescription] = useState<string | undefined>();
     const [isValid, setIsValid] = useState<boolean>(false);
 
-    const currentConsumerTypeComponent = useMemo(
+    const currentConsumerTypeResult = useMemo(
       () =>
         consumerTypeRendererConfigs
           .find((config) => config.type === selectedConsumerType)
@@ -99,17 +100,33 @@ export const EntitlementsDataContractCreator = observer(
       [apgState, consumerTypeRendererConfigs, selectedConsumerType],
     );
 
+    const currentConsumerTypeComponent = currentConsumerTypeResult?.component;
+    const currentRequestType =
+      currentConsumerTypeResult?.requestType ?? DataAccessRequestType.CONTRACT;
+
     const onCreate = (): void => {
       if (isValid && consumer && description) {
-        flowResult(
-          dataAccessState.createContract(
-            consumer,
-            description,
-            accessPointGroup,
-            tokenProvider,
-            selectedConsumerType,
-          ),
-        ).catch(viewerState.applicationStore.alertUnhandledError);
+        if (currentRequestType === DataAccessRequestType.WORKFLOW) {
+          flowResult(
+            dataAccessState.createWorkflowRequest(
+              consumer,
+              description,
+              accessPointGroup,
+              tokenProvider,
+              selectedConsumerType,
+            ),
+          ).catch(viewerState.applicationStore.alertUnhandledError);
+        } else {
+          flowResult(
+            dataAccessState.createContract(
+              consumer,
+              description,
+              accessPointGroup,
+              tokenProvider,
+              selectedConsumerType,
+            ),
+          ).catch(viewerState.applicationStore.alertUnhandledError);
+        }
       }
     };
 
@@ -122,55 +139,61 @@ export const EntitlementsDataContractCreator = observer(
         <DialogTitle>Data Contract Request</DialogTitle>
         <DialogContent className="marketplace-lakehouse-entitlements__data-contract-creator__content">
           <CubesLoadingIndicator
-            isLoading={dataAccessState.creatingContractState.isInProgress}
+            isLoading={
+              dataAccessState.creatingContractState.isInProgress ||
+              dataAccessState.creatingWorkflowRequestState.isInProgress
+            }
           >
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
-          {!dataAccessState.creatingContractState.isInProgress && (
-            <>
-              <div>
-                Submit access request for{' '}
-                <span className="marketplace-lakehouse-text__emphasis">
-                  {accessPointGroup.id}
-                </span>{' '}
-                Access Point Group in{' '}
-                <span className="marketplace-lakehouse-text__emphasis">
-                  {dataProductTitle}
-                </span>{' '}
-                Data Product
-              </div>
-              <ButtonGroup
-                className="marketplace-lakehouse-entitlements__data-contract-creator__consumer-type-btn-group"
-                variant="contained"
-              >
-                {consumerTypeRendererConfigs.map((config) => (
-                  <Button
-                    key={config.type}
-                    variant={
-                      selectedConsumerType === config.type
-                        ? 'contained'
-                        : 'outlined'
-                    }
-                    onClick={(): void => {
-                      if (config.type !== selectedConsumerType) {
-                        setSelectedConsumerType(config.type);
+          {!dataAccessState.creatingContractState.isInProgress &&
+            !dataAccessState.creatingWorkflowRequestState.isInProgress && (
+              <>
+                <div>
+                  Submit access request for{' '}
+                  <span className="marketplace-lakehouse-text__emphasis">
+                    {accessPointGroup.id}
+                  </span>{' '}
+                  Access Point Group in{' '}
+                  <span className="marketplace-lakehouse-text__emphasis">
+                    {dataProductTitle}
+                  </span>{' '}
+                  Data Product
+                </div>
+                <ButtonGroup
+                  className="marketplace-lakehouse-entitlements__data-contract-creator__consumer-type-btn-group"
+                  variant="contained"
+                >
+                  {consumerTypeRendererConfigs.map((config) => (
+                    <Button
+                      key={config.type}
+                      variant={
+                        selectedConsumerType === config.type
+                          ? 'contained'
+                          : 'outlined'
                       }
-                    }}
-                  >
-                    {config.type}
-                  </Button>
-                ))}
-              </ButtonGroup>
-              {currentConsumerTypeComponent}
-            </>
-          )}
+                      onClick={(): void => {
+                        if (config.type !== selectedConsumerType) {
+                          setSelectedConsumerType(config.type);
+                        }
+                      }}
+                    >
+                      {config.type}
+                    </Button>
+                  ))}
+                </ButtonGroup>
+                {currentConsumerTypeComponent}
+              </>
+            )}
         </DialogContent>
         <DialogActions>
           <Button
             onClick={onCreate}
             variant="contained"
             disabled={
-              dataAccessState.creatingContractState.isInProgress || !isValid
+              dataAccessState.creatingContractState.isInProgress ||
+              dataAccessState.creatingWorkflowRequestState.isInProgress ||
+              !isValid
             }
           >
             Create
@@ -178,7 +201,10 @@ export const EntitlementsDataContractCreator = observer(
           <Button
             onClick={onClose}
             variant="outlined"
-            disabled={dataAccessState.creatingContractState.isInProgress}
+            disabled={
+              dataAccessState.creatingContractState.isInProgress ||
+              dataAccessState.creatingWorkflowRequestState.isInProgress
+            }
           >
             Cancel
           </Button>

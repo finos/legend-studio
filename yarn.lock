@@ -2855,6 +2855,7 @@ __metadata:
     "@types/react": "npm:19.0.10"
     "@types/react-dom": "npm:19.0.4"
     "@types/react-router-dom": "npm:5.3.3"
+    clsx: "npm:2.1.1"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     jest: "npm:29.7.0"

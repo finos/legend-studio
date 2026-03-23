@@ -134,16 +134,16 @@ export class V1_DataBundle extends V1_ConsumerEntitlementResource {
 
 // -------------------------------------- Contract User Membership -------------------------------------
 
+export class V1_ContractUserMembership {
+  guid!: string;
+  user!: V1_User;
+  status!: V1_UserApprovalStatus;
+}
+
 export enum V1_UserApprovalStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   DENIED = 'DENIED',
   REVOKED = 'REVOKED',
   CLOSED = 'CLOSED',
-}
-
-export class V1_ContractUserMembership {
-  guid!: string;
-  user!: V1_User;
-  status!: V1_UserApprovalStatus;
 }

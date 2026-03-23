@@ -42,8 +42,8 @@ export type TimelineStep = {
   approvalPayload?:
     | {
         status: string;
-        approvalTimestamp?: string;
-        approverId?: string;
+        approvalTimestamp?: string | undefined;
+        approverId?: string | undefined;
       }
     | undefined;
 };

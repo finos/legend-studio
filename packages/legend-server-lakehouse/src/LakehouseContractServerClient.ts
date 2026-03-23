@@ -22,6 +22,7 @@ import type {
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_DataRequestsWithWorkflowResponse,
+  V1_DataRequestTasksResponse,
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
   V1_EntitlementsDataProductDetailsResponse,
@@ -293,6 +294,32 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       {},
       this._token(token),
     );
+
+  getDataAccessRequestTasks = (
+    accessRequestId: string,
+    token: string | undefined,
+  ): Promise<V1_DataRequestTasksResponse> =>
+    this.get(
+      `${this.baseUrl}/datarequests/${encodeURIComponent(accessRequestId)}/tasks`,
+      {},
+      this._token(token),
+    );
+
+  // TODO: add implementations
+  approveRequest = (
+    _requestId: string,
+    _taskId: string,
+    _token: string | undefined,
+  ): Promise<PlainObject> =>
+    Promise.reject(new Error('approveRequest not yet implemented'));
+
+  // TODO: add implementations
+  denyRequest = (
+    _requestId: string,
+    _taskId: string,
+    _token: string | undefined,
+  ): Promise<PlainObject> =>
+    Promise.reject(new Error('denyRequest not yet implemented'));
 
   // --------------------------------------- Subscriptions ---------------------------------------
 

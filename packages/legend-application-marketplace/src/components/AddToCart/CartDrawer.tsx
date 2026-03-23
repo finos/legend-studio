@@ -62,6 +62,7 @@ export const CartDrawer = observer((): React.ReactNode => {
     applicationStore.alertService.setActionAlertInfo({
       title: `Clear Cart`,
       message: `Remove ${itemCount} ${itemText}?`,
+      messageClass: 'legend-marketplace-cart-drawer__alert-message',
       prompt: `This will permanently remove all items from your cart. This action cannot be undone.`,
       type: ActionAlertType.CAUTION,
       actions: [
