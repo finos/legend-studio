@@ -2790,6 +2790,10 @@
     .MuiAccordionSummary-expandIconWrapper {
       transform: rotate(-90deg);
       margin-right: 0.5rem;
+
+      .theme__hc-dark & {
+        color: var(--color-dark-theme-text-primary);
+      }
     }
 
     .MuiAccordionSummary-content {
