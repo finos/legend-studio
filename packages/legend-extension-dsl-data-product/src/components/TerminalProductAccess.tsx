@@ -48,7 +48,6 @@ const getFormattedPrice = (
 
   const prices = [Number(price), Number(tieredPrice), Number(totalFirmPrice)];
 
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const validPrice = prices.find((p) => p > 0) || 0;
   const hasValidPrice = validPrice > 0;
 
@@ -122,7 +121,6 @@ export const TerminalAccessAndTable = observer(
     );
 
     const productName =
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       terminal.productName || terminal.applicationName || 'Unknown Product';
 
     const { formattedPrice } = getFormattedPrice(
