@@ -1147,7 +1147,6 @@ export const DataProductAccessPointViewer = observer(
         onChange={() =>
           accessPointState.setIsCollapsed(!accessPointState.isCollapsed)
         }
-        className="data-product__viewer__access-point-section access_group_gap"
         disableGutters={true}
         elevation={0}
       >
@@ -1531,7 +1530,7 @@ export const DataProductAccessPointGroupViewer = observer(
               />
             </div>
             <div className="data-product__viewer__access-group__item__content">
-              <div className="data-product__viewer__access-group__item__content__tab__content">
+              <div className="data-product__viewer__access-group__item__content__tab__content data-product__viewer__access-group__item__content__tab__content--access-points">
                 {filteredAccessPointStates.map((accessPointState) => (
                   <DataProductAccessPointViewer
                     key={accessPointState.accessPoint.id}
