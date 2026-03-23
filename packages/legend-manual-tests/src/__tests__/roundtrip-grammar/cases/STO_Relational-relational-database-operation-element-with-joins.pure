@@ -1,0 +1,29 @@
+###Relational
+Database test::stores::testDB
+(
+  Schema UDF_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(100),
+      PROFIT INTEGER,
+      FIRM_DATE DATE
+    )
+    Table EMPLOYEE_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FULLNAME VARCHAR(100),
+      FIRM_ID INTEGER,
+      DESIGNATION_ID INTEGER
+    )
+    Table DESIGNATION_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100)
+    )
+  )
+
+  Join JoinFirst(UDF_SCHEMA.FIRM_TABLE.ID = UDF_SCHEMA.EMPLOYEE_TABLE.FIRM_ID)
+  Join JoinSecond(([test::stores::testDB]@JoinFirst | UDF_SCHEMA.FIRM_TABLE.LEGALNAME = 'myfirm') and UDF_SCHEMA.EMPLOYEE_TABLE.DESIGNATION_ID = UDF_SCHEMA.DESIGNATION_TABLE.ID)
+)

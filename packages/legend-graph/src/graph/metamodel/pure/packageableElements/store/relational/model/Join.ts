@@ -36,11 +36,10 @@ export class Join implements Hashable {
    * Normally, it has 2 pairs (A,B) and (B,A)
    */
   aliases: Pair<TableAlias, TableAlias>[] = [];
-  operation: Operation;
+  operation!: Operation;
 
-  constructor(name: string, operation: Operation) {
+  constructor(name: string) {
     this.name = name;
-    this.operation = operation;
   }
 
   get hashCode(): string {

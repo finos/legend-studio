@@ -147,6 +147,7 @@ import {
 } from './helpers/V1_DataProductBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { IncludeStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';
+import { Join } from '../../../../../../../STO_Relational_Exports.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -515,6 +516,7 @@ export class V1_ElementSecondPassBuilder
     const database = this.context.currentSubGraph.getOwnDatabase(
       V1_buildFullPath(element.package, element.name),
     );
+    database.joins = element.joins.map((join) => new Join(join.name));
     database.includes = element.includedStores.map((includedStore) =>
       this.context.resolveDatabase(includedStore.path),
     );

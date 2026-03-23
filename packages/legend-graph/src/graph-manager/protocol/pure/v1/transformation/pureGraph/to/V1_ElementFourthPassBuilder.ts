@@ -15,6 +15,7 @@
  */
 
 import {
+  AssertionError,
   UnsupportedOperationError,
   guaranteeType,
   isNonNullable,
@@ -47,8 +48,8 @@ import type { V1_FileGenerationSpecification } from '../../../model/packageableE
 import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure.js';
 import {
-  V1_buildDatabaseJoin,
   V1_buildDatabaseFilter,
+  V1_buildDatabaseJoin,
 } from './helpers/V1_DatabaseBuilderHelper.js';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
 import { V1_buildAssociationMapping } from './helpers/V1_AssociationMappingHelper.js';
@@ -174,9 +175,15 @@ export class V1_ElementFourthPassBuilder
     const database = this.context.currentSubGraph.getOwnDatabase(
       V1_buildFullPath(element.package, element.name),
     );
-    database.joins = element.joins.map((join) =>
-      V1_buildDatabaseJoin(join, this.context, database),
-    );
+    element.joins.forEach((srcJoin, index) => {
+      const join = database.joins[index];
+      if (!join) {
+        throw new AssertionError(
+          `Can't find join '${srcJoin.name}' in metamodel database '${database.path}'`,
+        );
+      }
+      V1_buildDatabaseJoin(srcJoin, join, this.context, database);
+    });
     database.filters = element.filters.map((filter) =>
       V1_buildDatabaseFilter(filter, this.context, database),
     );
