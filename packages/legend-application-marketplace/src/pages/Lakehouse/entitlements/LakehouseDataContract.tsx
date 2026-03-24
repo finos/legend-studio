@@ -32,6 +32,7 @@ import {
   GraphManagerState,
   V1_ApprovalType,
   V1_dataContractsResponseModelSchema,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_TaskStatusChangeResponseModelSchema,
   V1_transformDataContractToLiteDatacontract,
   V1_UserApprovalStatus,
@@ -57,6 +58,9 @@ export const LakehouseDataContractTask =
         marketplaceBaseStore.applicationStore.identityService.currentUser;
       const [contractViewerState, setContractViewerState] = useState<
         DataContractViewerState | undefined
+      >(undefined);
+      const [dataProductEnvironment, setDataProductEnvironment] = useState<
+        string | undefined
       >(undefined);
       const [isLoading, setIsLoading] = useState(false);
 
@@ -143,6 +147,40 @@ export const LakehouseDataContractTask =
               const dataContract = dataContracts[0]?.dataContract;
               const liteDataContract =
                 V1_transformDataContractToLiteDatacontract(dataContract);
+
+              try {
+                const rawDetails =
+                  await marketplaceBaseStore.lakehouseContractServerClient.getDataProductByIdAndDID(
+                    liteDataContract.resourceId,
+                    liteDataContract.deploymentId,
+                    auth.user?.access_token,
+                  );
+                const details =
+                  V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+                    rawDetails,
+                  );
+                const env = details[0]?.lakehouseEnvironment?.type;
+                if (env) {
+                  const userEnv =
+                    marketplaceBaseStore.envState.lakehouseEnvironment;
+                  const adjacentEnvUrl =
+                    marketplaceBaseStore.applicationStore.config.adjacentEnvUrl;
+                  if (env !== userEnv && adjacentEnvUrl) {
+                    const currentLocation =
+                      marketplaceBaseStore.applicationStore.navigationService.navigator.getCurrentLocation();
+                    marketplaceBaseStore.applicationStore.navigationService.navigator.goToAddress(
+                      `${adjacentEnvUrl}${currentLocation}`,
+                    );
+                    return;
+                  }
+                  setDataProductEnvironment(env);
+                }
+              } catch (error) {
+                assertErrorThrown(error);
+                marketplaceBaseStore.applicationStore.notificationService.notifyError(
+                  `Error fetching data product details: ${error.message}`,
+                );
+              }
 
               const viewerState = new DataContractViewerState(
                 liteDataContract,
@@ -312,6 +350,7 @@ export const LakehouseDataContractTask =
                 initialSelectedUser={initialUser}
                 onRefresh={handleRefresh}
                 isReadOnly={true}
+                dataProductEnvironment={dataProductEnvironment}
               />
             </div>
           )}

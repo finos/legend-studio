@@ -900,6 +900,10 @@ export const EntitlementsPendingTasksDashboard = observer(
               )
             }
             initialSelectedUser={selectedContractTargetUser}
+            //Derives environment from the fact that other environments are filtered out
+            dataProductEnvironment={
+              marketplaceBaseStore.envState.lakehouseEnvironment
+            }
           />
         )}
       </>

@@ -245,6 +245,10 @@ export const EntitlementsClosedContractsDashboard = observer(
                 generateLakehouseDataProductPath(dataProductId, deploymentId),
               )
             }
+            //Derives environment from the fact that other environments are filtered out
+            dataProductEnvironment={
+              marketplaceBaseStore.envState.lakehouseEnvironment
+            }
           />
         )}
       </Box>

@@ -33,6 +33,7 @@ import {
   type V1_TaskStatus,
   type V1_TaskStatusChangeResponse,
   V1_dataContractsResponseModelSchema,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_pendingTasksResponseModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
@@ -120,6 +121,7 @@ export class EntitlementsDashboardState {
       fetchPendingTaskContracts: flow,
       fetchContractsForUser: flow,
       fetchContractsCreatedByUser: flow,
+      fetchContractDeploymentEnvironments: flow,
       updateContract: flow,
     });
   }
@@ -135,28 +137,70 @@ export class EntitlementsDashboardState {
   *init(token: string | undefined): GeneratorFn<void> {
     this.initializationState.inProgress();
     try {
-      yield Promise.all([
-        (async () => {
-          this.fetchingPendingTasksState.inProgress();
-          try {
-            await flowResult(this.fetchPendingTasks(token));
-            await flowResult(this.fetchPendingTaskContracts(token));
-          } catch (error) {
-            assertErrorThrown(error);
-            this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError(
-              error,
-            );
-          } finally {
-            this.fetchingPendingTasksState.complete();
-          }
-        })(),
-        flowResult(this.fetchContractsForUser(token)).catch(
-          this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
+      this.fetchingPendingTasksState.inProgress();
+      this.fetchingContractsForUserState.inProgress();
+      this.fetchingContractsByUserState.inProgress();
+
+      const [pendingTasksData, contractsForUser, contractsCreatedByUserMap] =
+        (yield Promise.all([
+          (async () => {
+            try {
+              const tasks = await flowResult(this.fetchPendingTasks(token));
+              const taskContractMap = await flowResult(
+                this.fetchPendingTaskContracts(token, tasks),
+              );
+              return { tasks, taskContractMap };
+            } catch (error) {
+              assertErrorThrown(error);
+              this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError(
+                error,
+              );
+              return {
+                tasks: [] as V1_ContractUserEventRecord[],
+                taskContractMap: new Map<string, V1_LiteDataContract>(),
+              };
+            }
+          })(),
+          flowResult(this.fetchContractsForUser(token)),
+          flowResult(this.fetchContractsCreatedByUser(token)),
+        ])) as [
+          {
+            tasks: V1_ContractUserEventRecord[];
+            taskContractMap: Map<string, V1_LiteDataContract>;
+          },
+          V1_LiteDataContractWithUserStatus[],
+          Map<string, ContractCreatedByUserDetails>,
+        ];
+
+      const allContracts: V1_LiteDataContract[] = [
+        ...Array.from(pendingTasksData.taskContractMap.values()),
+        ...contractsForUser.map((c) => c.contractResultLite),
+        ...Array.from(contractsCreatedByUserMap.values()).map(
+          (c) => c.contractResultLite,
         ),
-        flowResult(this.fetchContractsCreatedByUser(token)).catch(
-          this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
-        ),
-      ]);
+      ];
+      const envMap = (yield flowResult(
+        this.fetchContractDeploymentEnvironments(token, allContracts),
+      )) as Map<number, string>;
+
+      const {
+        filteredTasks,
+        filteredContractsForUser,
+        filteredCreatedByUserMap,
+      } = this.filterByUserEnvironment(
+        pendingTasksData,
+        contractsForUser,
+        contractsCreatedByUserMap,
+        envMap,
+      );
+      this.pendingTaskContractMap = pendingTasksData.taskContractMap;
+      this.pendingTasks = filteredTasks;
+      this.allContractsForUser = filteredContractsForUser;
+      this.allContractsCreatedByUserMap = filteredCreatedByUserMap;
+
+      this.fetchingPendingTasksState.complete();
+      this.fetchingContractsForUserState.complete();
+      this.fetchingContractsByUserState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError(
@@ -167,27 +211,32 @@ export class EntitlementsDashboardState {
     }
   }
 
-  *fetchPendingTasks(token: string | undefined): GeneratorFn<void> {
+  *fetchPendingTasks(
+    token: string | undefined,
+  ): GeneratorFn<V1_ContractUserEventRecord[]> {
     try {
-      this.pendingTasks = undefined;
       const rawTasks =
         (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getPendingTasks(
           TEST_USER,
           token,
         )) as PlainObject<V1_PendingTasksResponse>;
       const tasks = deserialize(V1_pendingTasksResponseModelSchema, rawTasks);
-      this.pendingTasks = [...tasks.dataOwner, ...tasks.privilegeManager];
+      return [...tasks.dataOwner, ...tasks.privilegeManager];
     } catch (error) {
       assertErrorThrown(error);
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
         `Error fetching pending tasks: ${error.message}`,
       );
+      return [];
     }
   }
 
-  *fetchPendingTaskContracts(token: string | undefined): GeneratorFn<void> {
+  *fetchPendingTaskContracts(
+    token: string | undefined,
+    pendingTasks: V1_ContractUserEventRecord[],
+  ): GeneratorFn<Map<string, V1_LiteDataContract>> {
     const pendingTaskContractIds = Array.from(
-      new Set(this.pendingTasks?.map((t) => t.dataContractId) ?? []),
+      new Set(pendingTasks.map((t) => t.dataContractId)),
     );
     const pendingTaskContracts = (
       (yield Promise.all(
@@ -210,25 +259,27 @@ export class EntitlementsDashboardState {
     )
       .filter(isNonNullable)
       .map(V1_transformDataContractToLiteDatacontract);
+    const resultMap = new Map<string, V1_LiteDataContract>();
     pendingTaskContractIds.forEach((contractId) => {
       const contract = pendingTaskContracts.find((c) => c.guid === contractId);
       if (contract) {
-        this.pendingTaskContractMap.set(contractId, contract);
+        resultMap.set(contractId, contract);
       }
     });
+    return resultMap;
   }
 
-  *fetchContractsForUser(token: string | undefined): GeneratorFn<void> {
-    this.fetchingContractsForUserState.inProgress();
+  *fetchContractsForUser(
+    token: string | undefined,
+  ): GeneratorFn<V1_LiteDataContractWithUserStatus[]> {
     try {
-      this.allContractsForUser = undefined;
       const rawContracts =
         (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getContractsForUser(
           this.lakehouseEntitlementsStore.applicationStore.identityService
             .currentUser,
           token,
         )) as PlainObject<V1_LiteDataContractWithUserStatus>[];
-      const contracts = rawContracts.map((rawContract) =>
+      return rawContracts.map((rawContract) =>
         deserialize(
           V1_liteDataContractWithUserStatusModelSchema(
             this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
@@ -236,21 +287,19 @@ export class EntitlementsDashboardState {
           rawContract,
         ),
       );
-      this.allContractsForUser = [...contracts];
     } catch (error) {
       assertErrorThrown(error);
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
         `Error fetching data contracts for user: ${error.message}`,
       );
-    } finally {
-      this.fetchingContractsForUserState.complete();
+      return [];
     }
   }
 
-  *fetchContractsCreatedByUser(token: string | undefined): GeneratorFn<void> {
-    this.fetchingContractsByUserState.inProgress();
+  *fetchContractsCreatedByUser(
+    token: string | undefined,
+  ): GeneratorFn<Map<string, ContractCreatedByUserDetails>> {
     try {
-      this.allContractsCreatedByUserMap = new Map();
       const rawContracts =
         (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getContractsCreatedByUser(
           this.lakehouseEntitlementsStore.applicationStore.identityService
@@ -265,33 +314,112 @@ export class EntitlementsDashboardState {
           rawContract,
         ),
       );
+      const resultMap = new Map<string, ContractCreatedByUserDetails>();
       contracts.forEach((contract) => {
-        if (
-          !this.allContractsCreatedByUserMap.has(
-            contract.contractResultLite.guid,
-          )
-        ) {
-          this.allContractsCreatedByUserMap.set(
+        if (!resultMap.has(contract.contractResultLite.guid)) {
+          resultMap.set(
             contract.contractResultLite.guid,
             new ContractCreatedByUserDetails(contract.contractResultLite),
           );
         }
         const entry = guaranteeNonNullable(
-          this.allContractsCreatedByUserMap.get(
-            contract.contractResultLite.guid,
-          ),
+          resultMap.get(contract.contractResultLite.guid),
         );
         entry.addAssignees(contract.pendingTaskWithAssignees?.assignees ?? []);
         entry.addMember(contract.user, contract.status);
       });
+      return resultMap;
     } catch (error) {
       assertErrorThrown(error);
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
         `Error fetching data contracts created by user: ${error.message}`,
       );
-    } finally {
-      this.fetchingContractsByUserState.complete();
+      return new Map();
     }
+  }
+
+  *fetchContractDeploymentEnvironments(
+    token: string | undefined,
+    allContracts: V1_LiteDataContract[],
+  ): GeneratorFn<Map<number, string>> {
+    const uniqueDIDToDataProduct = new Map<number, string>();
+    for (const contract of allContracts) {
+      uniqueDIDToDataProduct.set(contract.deploymentId, contract.resourceId);
+    }
+
+    const didToEnvType = new Map<number, string>();
+    yield Promise.all(
+      Array.from(uniqueDIDToDataProduct.entries()).map(
+        async ([deploymentId, resourceId]) => {
+          try {
+            const raw =
+              await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getDataProductByIdAndDID(
+                resourceId,
+                deploymentId,
+                token,
+              );
+            const details =
+              V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+                raw,
+              );
+            const env = details[0]?.lakehouseEnvironment?.type;
+            if (env) {
+              didToEnvType.set(deploymentId, env);
+            }
+          } catch (error) {
+            assertErrorThrown(error);
+            this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
+              `Error fetching deployment environment for deployment ${deploymentId}: ${error.message}`,
+            );
+          }
+        },
+      ),
+    );
+    return didToEnvType;
+  }
+
+  private filterByUserEnvironment(
+    pendingData: {
+      tasks: V1_ContractUserEventRecord[];
+      taskContractMap: Map<string, V1_LiteDataContract>;
+    },
+    contractsForUser: V1_LiteDataContractWithUserStatus[],
+    contractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails>,
+    envMap: Map<number, string>,
+  ): {
+    filteredTasks: V1_ContractUserEventRecord[];
+    filteredContractsForUser: V1_LiteDataContractWithUserStatus[];
+    filteredCreatedByUserMap: Map<string, ContractCreatedByUserDetails>;
+  } {
+    const userEnv =
+      this.lakehouseEntitlementsStore.marketplaceBaseStore.envState
+        .lakehouseEnvironment;
+    const envMatchesForDeploymentId = (deploymentId: number): boolean => {
+      const env = envMap.get(deploymentId);
+      return !env || env === userEnv;
+    };
+
+    const filteredTasks = pendingData.tasks.filter((task) => {
+      const contract = pendingData.taskContractMap.get(task.dataContractId);
+      return !contract || envMatchesForDeploymentId(contract.deploymentId);
+    });
+    const filteredContractsForUser = contractsForUser.filter((c) =>
+      envMatchesForDeploymentId(c.contractResultLite.deploymentId),
+    );
+    const filteredCreatedByUserMap = new Map<
+      string,
+      ContractCreatedByUserDetails
+    >();
+    for (const [guid, details] of contractsCreatedByUserMap.entries()) {
+      if (envMatchesForDeploymentId(details.contractResultLite.deploymentId)) {
+        filteredCreatedByUserMap.set(guid, details);
+      }
+    }
+    return {
+      filteredTasks,
+      filteredContractsForUser,
+      filteredCreatedByUserMap,
+    };
   }
 
   *updateContract(

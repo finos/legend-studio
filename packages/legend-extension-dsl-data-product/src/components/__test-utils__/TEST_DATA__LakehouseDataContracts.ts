@@ -21,7 +21,10 @@ import {
   type V1_DataContract,
   type V1_DataSubscription,
   type V1_TaskResponse,
+  type V1_EntitlementsDataProductDetailsResponse,
+  type V1_EntitlementsLakehouseEnvironmentType,
   V1_ApprovalType,
+  V1_AppDirLevel,
   V1_ContractEventPayloadType,
   V1_ContractState,
   V1_dataContractModelSchema,
@@ -427,3 +430,36 @@ export const mockAutoCreatedSubscription: V1_DataSubscription = deserialize(
     createdAt: '2026-01-09T14:30:41.837Z',
   },
 );
+
+export const mockDataProductDetailsResponse = (
+  envType: V1_EntitlementsLakehouseEnvironmentType,
+): V1_EntitlementsDataProductDetailsResponse => ({
+  dataProducts: [
+    {
+      id: 'MOCK_SDLC_DATAPRODUCT',
+      deploymentId: 12345,
+      title: 'Mock Data Product',
+      description: 'Test data product',
+      origin: {
+        type: 'SdlcDeployment',
+        group: 'com.example',
+        artifact: 'test-product',
+        version: '1.0.0',
+      },
+      lakehouseEnvironment: {
+        producerEnvironmentName: 'test-env',
+        type: envType,
+      },
+      dataProduct: {
+        name: 'MOCK_SDLC_DATAPRODUCT',
+        accessPoints: [{ name: 'test_access_point', groups: ['GROUP1'] }],
+        accessPointGroupStereotypeMappings: [],
+        owner: {
+          appDirId: 12345,
+          level: V1_AppDirLevel.DEPLOYMENT,
+        },
+      },
+      fullPath: 'com::example::Mock_DataProduct',
+    },
+  ],
+});

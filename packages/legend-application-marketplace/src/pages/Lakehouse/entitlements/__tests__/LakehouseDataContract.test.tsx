@@ -19,6 +19,8 @@ import {
   type PureProtocolProcessorPlugin,
   type V1_TaskResponse,
   type V1_DataContract,
+  type V1_EntitlementsDataProductDetailsResponse,
+  V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { createSpy } from '@finos/legend-shared/test';
@@ -36,6 +38,7 @@ import {
   getMockPendingDataOwnerApprovalTasksResponse,
   getMockPendingManagerApprovalTasksResponse,
   mockContracts,
+  mockDataProductDetailsResponse,
 } from '@finos/legend-extension-dsl-data-product/test-utils';
 
 jest.mock('react-oidc-context', () => {
@@ -44,6 +47,27 @@ jest.mock('react-oidc-context', () => {
   }>('@finos/legend-shared/test');
   return MOCK__reactOIDCContext;
 });
+
+const setupCommonSpies = (
+  marketplaceBaseStore: Awaited<
+    ReturnType<typeof TEST__provideMockLegendMarketplaceBaseStore>
+  >,
+) => {
+  createSpy(
+    marketplaceBaseStore.applicationStore.navigationService.navigator,
+    'generateAddress',
+  ).mockImplementation((path: string) => path);
+
+  createSpy(
+    marketplaceBaseStore.applicationStore.notificationService,
+    'notifySuccess',
+  ).mockReturnValue(undefined);
+
+  createSpy(
+    marketplaceBaseStore.applicationStore.notificationService,
+    'notifyError',
+  ).mockReturnValue(undefined);
+};
 
 const setupLakehouseDataContractTest = async (
   contractId: string,
@@ -61,20 +85,7 @@ const setupLakehouseDataContractTest = async (
     currentUserId,
   );
 
-  createSpy(
-    marketplaceBaseStore.applicationStore.navigationService.navigator,
-    'generateAddress',
-  ).mockImplementation((path: string) => path);
-
-  createSpy(
-    marketplaceBaseStore.applicationStore.notificationService,
-    'notifySuccess',
-  ).mockReturnValue(undefined);
-
-  createSpy(
-    marketplaceBaseStore.applicationStore.notificationService,
-    'notifyError',
-  ).mockReturnValue(undefined);
+  setupCommonSpies(marketplaceBaseStore);
 
   createSpy(
     marketplaceBaseStore.lakehouseContractServerClient,
@@ -236,6 +247,126 @@ describe('Lakehouse Data Contract', () => {
 
       expect(approveButton.disabled).toBe(true);
       expect(denyButton.disabled).toBe(true);
+    });
+  });
+
+  describe('Cross-environment redirect', () => {
+    const ADJACENT_ENV_URL = 'https://adjacent.legend.gs.com';
+
+    const setupRedirectTest = async (
+      userEnv: string,
+      dataProductEnvType: V1_EntitlementsLakehouseEnvironmentType,
+    ) => {
+      const marketplaceBaseStore =
+        await TEST__provideMockLegendMarketplaceBaseStore({
+          dataProductEnv: userEnv,
+          adjacentEnvUrl: ADJACENT_ENV_URL,
+        });
+
+      marketplaceBaseStore.applicationStore.identityService.setCurrentUser(
+        'test-user-id',
+      );
+
+      setupCommonSpies(marketplaceBaseStore);
+
+      const goToAddressSpy = createSpy(
+        marketplaceBaseStore.applicationStore.navigationService.navigator,
+        'goToAddress',
+      ).mockReturnValue(undefined);
+
+      const getCurrentLocationSpy = createSpy(
+        marketplaceBaseStore.applicationStore.navigationService.navigator,
+        'getCurrentLocation',
+      ).mockReturnValue(
+        '/lakehouse/entitlements/contract-pending-pm-id/pm-task-pending-id',
+      );
+
+      const mockContract = mockContracts.pendingPrivilegeManager(
+        marketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+      );
+
+      createSpy(
+        marketplaceBaseStore.lakehouseContractServerClient,
+        'getDataContract',
+      ).mockResolvedValue({
+        dataContracts: [{ dataContract: mockContract }],
+      });
+
+      createSpy(
+        marketplaceBaseStore.lakehouseContractServerClient,
+        'getContractTasks',
+      ).mockResolvedValue(
+        getMockPendingManagerApprovalTasksResponse() as unknown as PlainObject<V1_TaskResponse>,
+      );
+
+      createSpy(
+        marketplaceBaseStore.lakehouseContractServerClient,
+        'getDataProductByIdAndDID',
+      ).mockResolvedValue(
+        mockDataProductDetailsResponse(
+          dataProductEnvType,
+        ) as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>,
+      );
+
+      const contractId = 'contract-pending-pm-id';
+      const taskId = 'pm-task-pending-id';
+      const initialRoute = `/lakehouse/entitlements/${contractId}/${taskId}`;
+
+      await act(async () => {
+        render(
+          <MemoryRouter initialEntries={[initialRoute]}>
+            <Routes>
+              <Route
+                path="/lakehouse/entitlements/:dataContractId/:dataContractTaskId"
+                element={<LakehouseDataContractTask />}
+              />
+            </Routes>
+          </MemoryRouter>,
+        );
+      });
+
+      return { marketplaceBaseStore, goToAddressSpy, getCurrentLocationSpy };
+    };
+
+    test('redirects to adjacent environment when user is on prod and contract is in prod-par', async () => {
+      const { goToAddressSpy, getCurrentLocationSpy } = await setupRedirectTest(
+        'prod',
+        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+      );
+
+      await waitFor(() => {
+        expect(getCurrentLocationSpy).toHaveBeenCalled();
+        expect(goToAddressSpy).toHaveBeenCalledWith(
+          `${ADJACENT_ENV_URL}/lakehouse/entitlements/contract-pending-pm-id/pm-task-pending-id`,
+        );
+      });
+    });
+
+    test('redirects to adjacent environment when user is on prod-par and contract is in prod', async () => {
+      const { goToAddressSpy, getCurrentLocationSpy } = await setupRedirectTest(
+        'prod-par',
+        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+      );
+
+      await waitFor(() => {
+        expect(getCurrentLocationSpy).toHaveBeenCalled();
+        expect(goToAddressSpy).toHaveBeenCalledWith(
+          `${ADJACENT_ENV_URL}/lakehouse/entitlements/contract-pending-pm-id/pm-task-pending-id`,
+        );
+      });
+    });
+
+    test('does not redirect when contract is in the same environment as the user', async () => {
+      const { goToAddressSpy } = await setupRedirectTest(
+        'prod',
+        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+      );
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      });
+
+      expect(goToAddressSpy).not.toHaveBeenCalled();
     });
   });
 });
