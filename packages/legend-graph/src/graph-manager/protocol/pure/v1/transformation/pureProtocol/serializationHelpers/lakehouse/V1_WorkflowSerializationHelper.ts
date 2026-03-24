@@ -14,8 +14,45 @@
  * limitations under the License.
  */
 
+import { usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, primitive } from 'serializr';
-import { V1_RawWorkflowTask } from '../../../../lakehouse/entitlements/V1_Workflow.js';
+import {
+  V1_RawWorkflowTask,
+  V1_WorkflowChildProcessInstance,
+  V1_WorkflowProcessInstance,
+  V1_WorkflowTaskSummary,
+} from '../../../../lakehouse/entitlements/V1_Workflow.js';
+
+export const V1_workflowChildProcessInstanceModelSchema = createModelSchema(
+  V1_WorkflowChildProcessInstance,
+  {
+    processInstanceId: primitive(),
+    processVersion: primitive(),
+  },
+);
+
+export const V1_workflowTaskSummaryModelSchema = createModelSchema(
+  V1_WorkflowTaskSummary,
+  {
+    completed: primitive(),
+    processInstanceId: primitive(),
+    reference: primitive(),
+    taskId: primitive(),
+    type: primitive(),
+  },
+);
+
+export const V1_workflowProcessInstanceModelSchema = createModelSchema(
+  V1_WorkflowProcessInstance,
+  {
+    active: primitive(),
+    childProcessInstances: list(
+      usingModelSchema(V1_workflowChildProcessInstanceModelSchema),
+    ),
+    processInstanceId: primitive(),
+    taskSummaries: list(usingModelSchema(V1_workflowTaskSummaryModelSchema)),
+  },
+);
 
 export const V1_workflowTaskModelSchema = createModelSchema(
   V1_RawWorkflowTask,
