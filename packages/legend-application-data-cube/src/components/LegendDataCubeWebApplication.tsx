@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { BrowserEnvironmentProvider } from '@finos/legend-application';
+import {
+  BrowserEnvironmentProvider,
+  LegendTokenSync,
+} from '@finos/legend-application';
 import { Route, Routes } from '@finos/legend-application/browser';
 import {
   LegendDataCubeFrameworkProvider,
@@ -121,7 +124,9 @@ export const LegendDataCubeWebApplication = observer(
 
     return mergedOIDCConfig ? (
       <AuthProvider {...mergedOIDCConfig}>
-        <AuthenticatedLegendDataCubeWebProvider baseUrl={baseUrl} />
+        <LegendTokenSync>
+          <AuthenticatedLegendDataCubeWebProvider baseUrl={baseUrl} />
+        </LegendTokenSync>
       </AuthProvider>
     ) : (
       <LegendDataCubeWebProvider baseUrl={baseUrl} />

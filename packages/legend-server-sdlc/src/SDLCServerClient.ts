@@ -217,8 +217,13 @@ export class SDLCServerClient extends AbstractServerClient {
   static authorizeCallbackUrl = (
     authenticationServerUrl: string,
     callbackURI: string,
-  ): string =>
-    `${authenticationServerUrl}/auth/authorize?redirect_uri=${callbackURI}`;
+    client?: string,
+  ): string => {
+    const clientParam = client
+      ? `&client_name=${encodeURIComponent(client)}`
+      : '';
+    return `${authenticationServerUrl}/auth/authorize?redirect_uri=${callbackURI}${clientParam}`;
+  };
 
   private _auth = (): string => `${this.baseUrl}/auth`;
   isAuthorized = (): Promise<boolean> => this.get(`${this._auth()}/authorized`);
