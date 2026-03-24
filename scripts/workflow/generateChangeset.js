@@ -41,7 +41,19 @@ const argv = yargs.default(hideBin(process.argv)).argv;
  *
  * Of course, we can allow a workaround for people who work directly `master` branch.
  */
-const DEFAULT_BRANCH_NAME = 'master';
+let detectedDefaultBranch = 'master';
+try {
+  const remoteHead = execSync('git rev-parse --abbrev-ref origin/HEAD', {
+    encoding: 'utf-8',
+  }).trim();
+  // output is e.g. "origin/main" — strip the "origin/" prefix
+  detectedDefaultBranch = remoteHead.replace(/^origin\//, '');
+} catch {
+  // origin/HEAD not set; fall back to 'master'
+}
+const DEFAULT_BRANCH_NAME = argv.defaultBranch
+  ? argv.defaultBranch.toString()
+  : detectedDefaultBranch;
 const useOrigin = argv.useOrigin;
 const generateForBranch = argv.branch;
 const message = argv.m;

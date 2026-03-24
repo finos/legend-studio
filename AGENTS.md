@@ -57,7 +57,7 @@ Some tests require a running Engine Server. You can start it using Docker:
 ## Key Conventions
 
 - **Language**: TypeScript is used throughout the project.
-- **Versioning**: We use [Changesets](https://github.com/atlassian/changesets) for versioning. Run `yarn changeset` to generate a changeset for your changes.
+- **Versioning**: We use [Changesets](https://github.com/atlassian/changesets) for versioning. Run `yarn changeset:branch` to generate a changeset for your changes.
 - **Commit Messages**: Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
   - `feat: ...`
   - `fix: ...`
