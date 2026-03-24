@@ -215,6 +215,7 @@ export class LegendStudioBaseStore {
           SDLCServerClient.authorizeCallbackUrl(
             this.applicationStore.config.sdlcServerUrl,
             this.applicationStore.navigationService.navigator.getCurrentAddress(),
+            this.applicationStore.config.sdlcServerClient,
           ),
         );
       } else {
