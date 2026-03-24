@@ -21,6 +21,7 @@ import {
   type AbstractPreset,
   filterByType,
   guaranteeNonNullable,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { createMock, createSpy } from '@finos/legend-shared/test';
 import {
@@ -40,6 +41,7 @@ import {
   QueryDataProductModelAccessExecutionContextInfo,
   QueryDataProductNativeExecutionContextInfo,
   ModelAccessPointGroup,
+  V1_PureGraphManager,
 } from '@finos/legend-graph';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -67,19 +69,34 @@ import {
 import { LegendQueryFrameworkProvider } from '../LegendQueryFrameworkProvider.js';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import { Core_LegendQueryApplicationPlugin } from '../Core_LegendQueryApplicationPlugin.js';
-import { Route, Routes } from '@finos/legend-application/browser';
+import {
+  Route,
+  Routes,
+  generateExtensionUrlPattern,
+} from '@finos/legend-application/browser';
 import {
   generateExistingQueryEditorRoute,
   LEGEND_QUERY_ROUTE_PATTERN,
 } from '../../__lib__/LegendQueryNavigation.js';
+import {
+  generateDataSpaceTemplateQueryCreatorRoute,
+  LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN,
+} from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { DataSpaceTemplateQueryCreator } from '../data-space/DataSpaceTemplateQueryCreator.js';
 import {
   type V1_DataSpaceAnalysisResult,
   DSL_DataSpace_getGraphManagerExtension,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { LegendQueryDataProductQueryBuilderState } from '../../stores/data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
 import { DataProductSelectorState } from '../../stores/data-space/DataProductSelectorState.js';
+import { DataSpaceTemplateQueryCreatorStore } from '../../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 
 const TEST_QUERY_ID = 'test-query-id';
+const TEST_GROUP_ID = 'test-group';
+const TEST_ARTIFACT_ID = 'test-artifact';
+const TEST_VERSION_ID = 'test-version';
+const TEST_TEMPLATE_QUERY_ID = 'templateQuery';
+const TEST_DATA_SPACE_PATH = 'domain::COVIDDatapace';
 export const TEST_QUERY_NAME = 'MyTestQuery';
 
 export const TEST__provideMockedQueryEditorStore = (customization?: {
@@ -122,6 +139,52 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
   MOCK__QueryEditorStoreProvider.useQueryEditorStore.mockReturnValue(value);
   return value;
 };
+
+export const TEST__provideMockedDataSpaceTemplateQueryCreatorStore =
+  (customization?: {
+    mock?: DataSpaceTemplateQueryCreatorStore;
+    applicationStore?: LegendQueryApplicationStore;
+    graphManagerState?: GraphManagerState;
+    pluginManager?: LegendQueryPluginManager;
+    extraPlugins?: AbstractPlugin[];
+    extraPresets?: AbstractPreset[];
+  }): DataSpaceTemplateQueryCreatorStore => {
+    const pluginManager =
+      customization?.pluginManager ?? LegendQueryPluginManager.create();
+    pluginManager
+      .usePlugins([
+        new Core_LegendQueryApplicationPlugin(),
+        ...(customization?.extraPlugins ?? []),
+      ])
+      .usePresets([...(customization?.extraPresets ?? [])])
+      .install();
+    const applicationStore =
+      customization?.applicationStore ??
+      new ApplicationStore(
+        TEST__getTestLegendQueryApplicationConfig(),
+        pluginManager,
+      );
+    const depotServerClient = new DepotServerClient({
+      serverUrl: applicationStore.config.depotServerUrl,
+    });
+    depotServerClient.setTracerService(applicationStore.tracerService);
+    const value =
+      customization?.mock ??
+      new DataSpaceTemplateQueryCreatorStore(
+        applicationStore,
+        depotServerClient,
+        TEST_GROUP_ID,
+        TEST_ARTIFACT_ID,
+        TEST_VERSION_ID,
+        TEST_DATA_SPACE_PATH,
+        TEST_TEMPLATE_QUERY_ID,
+        { fips: 'value' },
+      );
+    const MOCK__QueryEditorStoreProvider = require('../QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-require-imports,@typescript-eslint/no-unsafe-assignment
+    MOCK__QueryEditorStoreProvider.useQueryEditorStore = createMock();
+    MOCK__QueryEditorStoreProvider.useQueryEditorStore.mockReturnValue(value);
+    return value;
+  };
 
 export const TEST__setUpQueryEditor = async (
   MOCK__editorStore: ExistingQueryEditorStore,
@@ -413,6 +476,147 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
             <Route
               path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
               element={<ExistingQueryEditor />}
+            />
+          </Routes>
+        </LegendQueryFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
+  await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+  );
+
+  return {
+    renderResult,
+    queryBuilderState: guaranteeNonNullable(
+      MOCK__editorStore.queryBuilderState,
+      `Query builder state should have been initialized`,
+    ),
+  };
+};
+
+export const TEST__setUpDataSpaceTemplateQueryEditor = async (
+  MOCK__editorStore: DataSpaceTemplateQueryCreatorStore,
+  V1_dataspaceAnalyticsResult: PlainObject<V1_DataSpaceAnalysisResult>,
+  dataSpacePath: string,
+  executionContext: string,
+  lambda: RawLambda,
+  entities: PlainObject<Entity>[],
+): Promise<{
+  renderResult: RenderResult;
+  queryBuilderState: QueryBuilderState;
+}> => {
+  const projectData = {
+    id: 'test-id',
+    groupId: MOCK__editorStore.groupId,
+    artifactId: MOCK__editorStore.artifactId,
+    projectId: 'test-project-id',
+    versions: [MOCK__editorStore.versionId],
+    latestVersion: MOCK__editorStore.versionId,
+  };
+
+  const graphManagerState = MOCK__editorStore.graphManagerState;
+
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
+
+  await graphManagerState.initializeSystem();
+
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getProject',
+  ).mockResolvedValue(projectData);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntities',
+  ).mockResolvedValue(entities);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getIndexedDependencyEntities',
+  ).mockResolvedValue(new Map<string, EntitiesWithOrigin>());
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntitiesByClassifier',
+  ).mockResolvedValue([]);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getGenerationContentByPath',
+  ).mockResolvedValue(JSON.stringify(V1_dataspaceAnalyticsResult));
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getGenerationFilesByType',
+  ).mockResolvedValue([]);
+  createSpy(
+    graphManagerState.graphManager,
+    'pureCodeToLambda',
+  ).mockResolvedValue(new RawLambda(lambda.parameters, lambda.body));
+  createSpy(
+    graphManagerState.graphManager,
+    'lambdaToPureCode',
+  ).mockResolvedValue('');
+  createSpy(graphManagerState.graphManager, 'surveyDatasets').mockResolvedValue(
+    [],
+  );
+  createSpy(
+    graphManagerState.graphManager,
+    'checkDatasetEntitlements',
+  ).mockResolvedValue([]);
+
+  // Mock engine's transformCodeToValueSpecifications to handle preset URL string parameter values.
+  const pureGraphManager = guaranteeType(
+    graphManagerState.graphManager,
+    V1_PureGraphManager,
+  );
+  createSpy(
+    pureGraphManager.engine,
+    'transformCodeToValueSpecifications',
+  ).mockImplementation(async (input: Record<string, { value: string }>) => {
+    const result = new Map<string, PlainObject>();
+    for (const [key, entry] of Object.entries(input)) {
+      const match = /^'(?<content>.*)'$/.exec(entry.value);
+      if (match?.groups) {
+        result.set(key, { _type: 'string', value: match.groups.content });
+      }
+    }
+    return result;
+  });
+
+  const graphManagerExtension = DSL_DataSpace_getGraphManagerExtension(
+    graphManagerState.graphManager,
+  );
+  const dataspaceAnalyticsResult =
+    await graphManagerExtension.buildDataSpaceAnalytics(
+      V1_dataspaceAnalyticsResult,
+      graphManagerState.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+  createSpy(graphManagerExtension, 'analyzeDataSpace').mockResolvedValue(
+    dataspaceAnalyticsResult,
+  );
+
+  MOCK__editorStore.buildGraph = createMock();
+  graphManagerState.graphManager.initialize = createMock();
+
+  const templateRoute = generateDataSpaceTemplateQueryCreatorRoute(
+    MOCK__editorStore.groupId,
+    MOCK__editorStore.artifactId,
+    MOCK__editorStore.versionId,
+    MOCK__editorStore.dataSpacePath,
+    MOCK__editorStore.templateQueryId,
+  );
+
+  const renderResult = render(
+    <ApplicationStoreProvider store={MOCK__editorStore.applicationStore}>
+      <TEST__BrowserEnvironmentProvider initialEntries={[templateRoute]}>
+        <LegendQueryFrameworkProvider>
+          <Routes>
+            <Route
+              path={generateExtensionUrlPattern(
+                LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.TEMPLATE_QUERY,
+              )}
+              element={<DataSpaceTemplateQueryCreator />}
             />
           </Routes>
         </LegendQueryFrameworkProvider>

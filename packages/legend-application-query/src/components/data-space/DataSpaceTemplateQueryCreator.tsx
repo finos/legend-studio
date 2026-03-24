@@ -25,17 +25,22 @@ import { DataSpaceTemplateQueryCreatorStore } from '../../stores/data-space/Data
 import { QueryEditorStoreContext } from '../QueryEditorStoreProvider.js';
 import {
   DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN,
+  generateDataSpaceTemplateQueryCreatorRoute,
   type DataSpaceTemplateQueryCreatorPathParams,
 } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { QueryEditor } from '../QueryEditor.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { useApplicationStore } from '@finos/legend-application';
+import { extractQueryParams } from '../utils/QueryParameterUtils.js';
+import { useEffect } from 'react';
 
 const DataSpaceTemplateQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
   gav: string;
   dataSpacePath: string;
   templateQueryId: string;
-}> = ({ children, gav, dataSpacePath, templateQueryId }) => {
+  params: Record<string, string> | undefined;
+}> = ({ children, gav, dataSpacePath, templateQueryId, params }) => {
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const baseStore = useLegendQueryBaseStore();
@@ -49,6 +54,7 @@ const DataSpaceTemplateQueryCreatorStoreProvider: React.FC<{
         versionId,
         dataSpacePath,
         templateQueryId,
+        params,
       ),
   );
   return (
@@ -59,6 +65,7 @@ const DataSpaceTemplateQueryCreatorStoreProvider: React.FC<{
 };
 
 export const DataSpaceTemplateQueryCreator = observer(() => {
+  const applicationStore = useApplicationStore();
   const parameters = useParams<DataSpaceTemplateQueryCreatorPathParams>();
   const gav = guaranteeNonNullable(
     parameters[DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV],
@@ -74,11 +81,31 @@ export const DataSpaceTemplateQueryCreator = observer(() => {
     ],
   );
 
+  const queryParams =
+    applicationStore.navigationService.navigator.getCurrentLocationParameters();
+  const processed = extractQueryParams(queryParams);
+
+  useEffect(() => {
+    // clear params
+    if (processed && Object.keys(processed).length) {
+      const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
+      applicationStore.navigationService.navigator.updateCurrentLocation(
+        generateDataSpaceTemplateQueryCreatorRoute(
+          groupId,
+          artifactId,
+          versionId,
+          dataSpacePath,
+          templateQueryId,
+        ),
+      );
+    }
+  }, [applicationStore, gav, dataSpacePath, templateQueryId, processed]);
   return (
     <DataSpaceTemplateQueryCreatorStoreProvider
       gav={gav}
       dataSpacePath={dataSpacePath}
       templateQueryId={templateQueryId}
+      params={processed}
     >
       <QueryEditor />
     </DataSpaceTemplateQueryCreatorStoreProvider>

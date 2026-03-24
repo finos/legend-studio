@@ -16,7 +16,7 @@
 
 import { stub_RawLambda } from '@finos/legend-graph';
 import { integrationTest } from '@finos/legend-shared/test';
-import { test } from '@jest/globals';
+import { test, expect, jest } from '@jest/globals';
 import TEST_DATA__DSL_DataSpace_AnalyticsResult from './TEST_DATA__DSL_DataSpace_AnalyticsResult.json' with { type: 'json' };
 import TEST_DATA__DSL_DataSpace_Entities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
 import TEST_DATA__DSL_DataSpace_Artifacts from './TEST_DATA__DSL_DataSpace_Artifacts.json' with { type: 'json' };
@@ -24,11 +24,22 @@ import {
   TEST__provideMockedQueryEditorStore,
   TEST_QUERY_NAME,
   TEST__setUpDataSpaceExistingQueryEditor,
+  TEST__provideMockedDataSpaceTemplateQueryCreatorStore,
+  TEST__setUpDataSpaceTemplateQueryEditor,
 } from '../__test-utils__/QueryEditorComponentTestUtils.js';
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
-import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
-import { act, fireEvent, getByText, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  getByText,
+  getByDisplayValue,
+  waitFor,
+} from '@testing-library/react';
 import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
+import {
+  QUERY_BUILDER_TEST_ID,
+  QueryBuilder_GraphManagerPreset,
+} from '@finos/legend-query-builder';
 
 test(
   integrationTest('Load Existing Data Product Query in Query Editor'),
@@ -90,6 +101,23 @@ test(
     await waitFor(() => getByText(aboutDataSpaceModal, 'CovidDataMapping'));
     await waitFor(() => getByText(aboutDataSpaceModal, 'H2Runtime'));
 
+    const mockWriteText = jest
+      .fn<(text: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: { writeText: mockWriteText },
+    });
+    const copyLinkButton = renderResult.getByTitle(
+      'copy data product query set up link to clipboard',
+    );
+    await act(async () => {
+      fireEvent.click(copyLinkButton);
+    });
+    expect(mockWriteText).toHaveBeenCalledTimes(1);
+    expect(mockWriteText).toHaveBeenCalledWith(
+      expect.stringContaining('/edit/test-query-id'),
+    );
+
     // TODO: below is for testing data product quick start module
     // const openDataSpaceButton = await waitFor(() =>
     //   renderResult.getByTitle('Open advanced search for data product...'),
@@ -103,6 +131,87 @@ test(
     // await waitFor(() => getByText(dataspaceViewModal, 'this is template with function pointer'));
     // await waitFor(() => getByText(dataspaceViewModal, 'this is template with service'));
     // await waitFor(() => getByText(dataspaceViewModal, 'this is template with inline query'));
+  },
+);
+
+test(
+  integrationTest('Load Template Data Product Query in Query Editor'),
+  async () => {
+    const mockedQueryEditorStore =
+      TEST__provideMockedDataSpaceTemplateQueryCreatorStore({
+        extraPlugins: [new DSL_DataSpace_LegendApplicationPlugin()],
+        extraPresets: [
+          new DSL_DataSpace_GraphManagerPreset(),
+          new QueryBuilder_GraphManagerPreset(),
+        ],
+      });
+    const { renderResult } = await TEST__setUpDataSpaceTemplateQueryEditor(
+      mockedQueryEditorStore,
+      TEST_DATA__DSL_DataSpace_AnalyticsResult,
+      'domain::COVIDDatapace',
+      'dummyContext',
+      stub_RawLambda(),
+      TEST_DATA__DSL_DataSpace_Entities,
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    await waitFor(() => getByText(explorerPanel, 'Fips'));
+    await waitFor(() => getByText(explorerPanel, 'Cases'));
+    await waitFor(() => getByText(explorerPanel, 'Case Type'));
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toBeDefined();
+    await act(async () => {
+      fireEvent.click(renderResult.getByTitle('See more options'));
+    });
+    await act(async () => {
+      fireEvent.click(renderResult.getByText('About Data Product'));
+    });
+    const aboutDataSpaceModal = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
+    await waitFor(() =>
+      getByText(aboutDataSpaceModal, 'test-group:test-artifact:test-version'),
+    );
+    await waitFor(() => getByText(aboutDataSpaceModal, 'COVID Sample Data'));
+    await waitFor(() => getByText(aboutDataSpaceModal, 'dummyContext'));
+    await waitFor(() => getByText(aboutDataSpaceModal, 'CovidDataMapping'));
+    await waitFor(() => getByText(aboutDataSpaceModal, 'H2Runtime'));
+
+    const mockWriteText = jest
+      .fn<(text: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: { writeText: mockWriteText },
+    });
+    const copyLinkButton = renderResult.getByTitle(
+      'copy data product query set up link to clipboard',
+    );
+    await act(async () => {
+      fireEvent.click(copyLinkButton);
+    });
+    expect(mockWriteText).toHaveBeenCalledTimes(1);
+    expect(mockWriteText).toHaveBeenCalledWith(
+      expect.stringContaining('/dataspace/'),
+    );
+    expect(mockWriteText).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'test-group:test-artifact:test-version/domain::COVIDDatapace/template/templateQuery',
+      ),
+    );
+
+    await act(async () => {
+      fireEvent.keyDown(aboutDataSpaceModal, { key: 'Escape' });
+    });
+
+    fireEvent.click(renderResult.getByRole('button', { name: 'Run Query' }));
+    const executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(getByText(executeDialog, 'Set Parameter Values')).toBeDefined();
+    expect(getByText(executeDialog, 'fips')).toBeDefined();
+    expect(getByText(executeDialog, 'String')).toBeDefined();
+    // verify preset parameter value from URL params is shown in the input
+    expect(getByDisplayValue(executeDialog, 'value')).toBeDefined();
   },
 );
 

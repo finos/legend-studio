@@ -68,9 +68,6 @@ import {
   cloneQueryStereotype,
   cloneQueryTaggedValue,
   QueryProjectCoordinates,
-  buildLambdaVariableExpressions,
-  VariableExpression,
-  PrimitiveType,
   CORE_PURE_PATH,
   isValidFullPath,
   QUERY_PROFILE_PATH,
@@ -157,6 +154,7 @@ import {
   LakehouseContractServerClient,
   LakehouseEnvironmentType,
 } from '@finos/legend-server-lakehouse';
+import { processQueryParameters } from '../components/utils/QueryParameterUtils.js';
 
 export interface QueryPersistConfiguration {
   defaultName?: string | undefined;
@@ -470,6 +468,11 @@ export abstract class QueryEditorStore {
   }
 
   abstract getProjectInfo(): ProjectGAVCoordinates | undefined;
+
+  getEditorRoute(): string | undefined {
+    return undefined;
+  }
+
   /**
    * Set up the editor state before building the graph
    */
@@ -1754,38 +1757,6 @@ const resolveExecutionContext = (
   return matchingExecContexts[0];
 };
 
-const processQueryParams = (
-  query: RawLambda,
-  savedQueryParams: QueryParameterValue[] | undefined,
-  urlParams: Record<string, string> | undefined,
-  graphManagerState: GraphManagerState,
-): Map<string, string> | undefined => {
-  const resolvedStringParams = new Map<string, string>();
-  savedQueryParams?.forEach((e) => {
-    resolvedStringParams.set(e.name, e.content);
-  });
-  // here we overwrite any params coming from the url
-  if (urlParams && Object.values(urlParams).length > 0) {
-    const compiledParams = returnUndefOnError(() =>
-      buildLambdaVariableExpressions(query, graphManagerState),
-    )?.filter(filterByType(VariableExpression));
-    Object.entries(urlParams).forEach(([key, value]) => {
-      const cP = compiledParams?.find((e) => e.name === key);
-      if (cP?.genericType?.value.rawType === PrimitiveType.STRING) {
-        resolvedStringParams.set(key, `'${value}'`);
-      } else if (
-        cP?.genericType?.value.rawType === PrimitiveType.DATE ||
-        cP?.genericType?.value.rawType === PrimitiveType.DATETIME
-      ) {
-        resolvedStringParams.set(key, `%${value}`);
-      } else {
-        resolvedStringParams.set(key, value);
-      }
-    });
-  }
-  return resolvedStringParams.size > 0 ? resolvedStringParams : undefined;
-};
-
 export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
   private _lightQuery?: LightQuery | undefined;
@@ -1821,6 +1792,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
   get lightQuery(): LightQuery {
     return guaranteeNonNullable(this._lightQuery, `Query has not been loaded`);
+  }
+
+  override getEditorRoute(): string {
+    return generateExistingQueryEditorRoute(this.queryId);
   }
 
   override get isPerformingBlockingAction(): boolean {
@@ -2178,7 +2153,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     // leverage initialization of query builder state to ensure we handle unsupported queries
     let defaultParameters: Map<string, ValueSpecification> | undefined =
       undefined;
-    const processedQueryParamValues = processQueryParams(
+    const processedQueryParamValues = processQueryParameters(
       existingQueryLambda,
       query.defaultParameterValues,
       this.urlQueryParamValues,
