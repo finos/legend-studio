@@ -331,7 +331,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataSubscriptionsPaginatedResponse>> =>
     this.get(
-      `${this._subscriptions()}?size=${size}${lastSubscriptionId ? `&lastSubscriptionId=${encodeURIComponent(lastSubscriptionId)}` : ''}`,
+      `${this._subscriptions()}/paginated?size=${size}${lastSubscriptionId ? `&lastSubscriptionId=${encodeURIComponent(lastSubscriptionId)}` : ''}`,
       {},
       this._token(token),
     );
