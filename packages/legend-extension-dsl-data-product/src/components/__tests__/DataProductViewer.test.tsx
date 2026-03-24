@@ -2634,51 +2634,40 @@ describe('DataProductViewer', () => {
 
   describe('Search text filtering', () => {
     test('Empty search text returns all APG states', async () => {
-      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+      await setupLakehouseDataProductTest(
         mockMultiGroupLargeSDLCDataProduct,
         mockEntitlementsMultiGroupLargeSDLCDataProduct,
         [],
         [],
       );
 
-      expect(dataProductViewerState.apgSearchText).toBe('');
-      expect(dataProductViewerState.filteredApgStates.length).toBe(2);
       await screen.findByText('Group A');
       await screen.findByText('Group B');
     });
 
     test('Search text by APG ID filters correctly', async () => {
-      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+      await setupLakehouseDataProductTest(
         mockMultiGroupLargeSDLCDataProduct,
         mockEntitlementsMultiGroupLargeSDLCDataProduct,
         [],
         [],
       );
 
-      // Searching for 'MULTI_GROUP_A'
-      act(() => {
-        dataProductViewerState.setApgSearchText('MULTI_GROUP_A');
-      });
-
-      expect(dataProductViewerState.filteredApgStates.length).toBe(1);
-      expect(dataProductViewerState.filteredApgStates[0]?.apg.id).toBe(
-        'MULTI_GROUP_A',
-      );
-
-      // Via UI interaction:
       const searchInput = await screen.findByPlaceholderText(
         'Search access point groups/access points...',
       );
+      fireEvent.change(searchInput, { target: { value: 'MULTI_GROUP_A' } });
+
+      await screen.findByText('Group A');
+      expect(screen.queryByText('Group B')).toBeNull();
       fireEvent.change(searchInput, { target: { value: 'MULTI_GROUP_B' } });
 
-      expect(dataProductViewerState.filteredApgStates.length).toBe(1);
-      expect(dataProductViewerState.filteredApgStates[0]?.apg.id).toBe(
-        'MULTI_GROUP_B',
-      );
+      await screen.findByText('Group B');
+      expect(screen.queryByText('Group A')).toBeNull();
     });
 
     test('Search text by AP title filters correctly', async () => {
-      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+      await setupLakehouseDataProductTest(
         mockMultiGroupLargeSDLCDataProduct,
         mockEntitlementsMultiGroupLargeSDLCDataProduct,
         [],
@@ -2686,29 +2675,30 @@ describe('DataProductViewer', () => {
       );
 
       // Searching for 'group_b_ap_1'
-      act(() => {
-        dataProductViewerState.setApgSearchText('group_b_ap_1');
-      });
-
-      expect(dataProductViewerState.filteredApgStates.length).toBe(1);
-      expect(dataProductViewerState.filteredApgStates[0]?.apg.id).toBe(
-        'MULTI_GROUP_B',
+      const searchInput = await screen.findByPlaceholderText(
+        'Search access point groups/access points...',
       );
+      fireEvent.change(searchInput, { target: { value: 'group_b_ap_1' } });
+
+      await screen.findByText('Group B');
+      expect(screen.queryByText('Group A')).toBeNull();
     });
 
     test('Search text with no matches returns empty', async () => {
-      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+      await setupLakehouseDataProductTest(
         mockMultiGroupLargeSDLCDataProduct,
         mockEntitlementsMultiGroupLargeSDLCDataProduct,
         [],
         [],
       );
 
-      act(() => {
-        dataProductViewerState.setApgSearchText('nonexistent_search_query');
+      const searchInput = await screen.findByPlaceholderText(
+        'Search access point groups/access points...',
+      );
+      fireEvent.change(searchInput, {
+        target: { value: 'nonexistent_search_query' },
       });
 
-      expect(dataProductViewerState.filteredApgStates.length).toBe(0);
       expect(screen.queryByText('Group A')).toBeNull();
       expect(screen.queryByText('Group B')).toBeNull();
     });
@@ -2824,14 +2814,25 @@ describe('DataProductViewer', () => {
           Promise.resolve(undefined);
       });
 
-      await act(async () => {
-        apgState.setIsCollapsed(false);
+      const expandButtons = await screen.findAllByRole('button', {
+        name: 'Expand',
       });
       await act(async () => {
-        apgState.setIsCollapsed(true);
+        fireEvent.click(expandButtons[0] as HTMLElement);
+      });
+
+      const collapseButtons = await screen.findAllByRole('button', {
+        name: 'Collapse',
       });
       await act(async () => {
-        apgState.setIsCollapsed(false);
+        fireEvent.click(collapseButtons[0] as HTMLElement);
+      });
+
+      const expandButtonsAgain = await screen.findAllByRole('button', {
+        name: 'Expand',
+      });
+      await act(async () => {
+        fireEvent.click(expandButtonsAgain[0] as HTMLElement);
       });
 
       // Called once from setIsCollapsed because the second time isInInitialState is false
@@ -2841,15 +2842,15 @@ describe('DataProductViewer', () => {
 
   describe('toggleAllApgGroupCollapse', () => {
     test('Collapses all and expands all filtered APGs', async () => {
-      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+      await setupLakehouseDataProductTest(
         mockMultiGroupLargeSDLCDataProduct,
         mockEntitlementsMultiGroupLargeSDLCDataProduct,
         [],
         [],
       );
 
-      // Starts all collapsed
-      expect(dataProductViewerState.isAllApgsCollapsed).toBe(true);
+      // Starts all collapsed (APs are not visible)
+      expect(screen.queryAllByText('Access Point 1').length).toBe(0);
 
       // Click Expand All
       const toggleAllBtn = await screen.findByRole('button', {
@@ -2860,9 +2861,8 @@ describe('DataProductViewer', () => {
       });
 
       // Now all should be expanded
-      expect(dataProductViewerState.isAllApgsCollapsed).toBe(false);
-      expect(dataProductViewerState.apgStates[0]?.isCollapsed).toBe(false);
-      expect(dataProductViewerState.apgStates[1]?.isCollapsed).toBe(false);
+      const ap1s = await screen.findAllByText('Access Point 1');
+      expect(ap1s.length).toBe(2); // One in each group
 
       // Click Collapse All
       const toggleAllBtnCollapse = await screen.findByRole('button', {
@@ -2873,9 +2873,7 @@ describe('DataProductViewer', () => {
       });
 
       // Now all should be collapsed again
-      expect(dataProductViewerState.isAllApgsCollapsed).toBe(true);
-      expect(dataProductViewerState.apgStates[0]?.isCollapsed).toBe(true);
-      expect(dataProductViewerState.apgStates[1]?.isCollapsed).toBe(true);
+      expect(screen.queryAllByText('Access Point 1').length).toBe(0);
     });
   });
 });
