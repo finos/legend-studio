@@ -62,6 +62,7 @@ export class DataProductAccessPointState {
   readonly fetchingRelationElement = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
   readonly fetchingSampleDataState = ActionState.create();
+  readonly fetchingRegistryMetadataState = ActionState.create();
 
   registryMetadata: RegistryMetadataResponse | undefined;
   isCollapsed = false;
@@ -92,7 +93,9 @@ export class DataProductAccessPointState {
       this.initializationState.isInInitialState &&
       this.apgState.dataProductViewerState.dataProductArtifactPromise
     ) {
-      flowResult(this.init());
+      flowResult(this.init()).catch(
+        this.apgState.applicationStore.alertUnhandledError,
+      );
     }
   }
 
@@ -109,21 +112,16 @@ export class DataProductAccessPointState {
         return;
       }
       this.entitlementsDataProductDetails = entitlementsDataProductDetails;
-      yield Promise.all([
-        this.fetchRelationType(
-          dataProductArtifactPromise,
-          entitlementsDataProductDetails,
-        ),
-        this.fetchSampleDataFromArtifact(dataProductArtifactPromise),
-        this.fetchGrammar(),
-        this.fetchRegistryMetadata(),
-      ]);
     } finally {
       this.initializationState.complete();
     }
   }
 
   async fetchRegistryMetadata(): Promise<void> {
+    if (!this.fetchingRegistryMetadataState.isInInitialState) {
+      return;
+    }
+    this.fetchingRegistryMetadataState.inProgress();
     const dataProductName =
       this.apgState.dataProductViewerState.product.name.toUpperCase();
     const apName = this.accessPoint.id.toUpperCase();
@@ -142,6 +140,8 @@ export class DataProductAccessPointState {
         LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
         error,
       );
+    } finally {
+      this.fetchingRegistryMetadataState.complete();
     }
   }
 
@@ -166,6 +166,9 @@ export class DataProductAccessPointState {
   async fetchSampleDataFromArtifact(
     dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
   ): Promise<void> {
+    if (!this.fetchingSampleDataState.isInInitialState) {
+      return;
+    }
     this.fetchingRelationElement.inProgress();
     this.fetchingSampleDataState.inProgress();
     try {
@@ -228,6 +231,9 @@ export class DataProductAccessPointState {
       | V1_EntitlementsDataProductDetails
       | undefined,
   ): Promise<void> {
+    if (!this.fetchingRelationTypeState.isInInitialState) {
+      return;
+    }
     this.fetchingRelationTypeState.inProgress();
     try {
       const abortController = new AbortController();
@@ -259,6 +265,9 @@ export class DataProductAccessPointState {
   }
 
   async fetchGrammar(): Promise<void> {
+    if (!this.fetchingGrammarState.isInInitialState) {
+      return;
+    }
     this.fetchingGrammarState.inProgress();
     try {
       if (this.accessPoint instanceof V1_LakehouseAccessPoint) {

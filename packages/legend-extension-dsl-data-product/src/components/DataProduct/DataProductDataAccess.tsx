@@ -600,6 +600,19 @@ const GovernanceScreen = observer(
     const { accessPointState, dataAccessState } = props;
     const dataProductName = dataAccessState?.product.name;
     const accessPointName = accessPointState.accessPoint.id;
+
+    useEffect(() => {
+      if (accessPointState.fetchingRegistryMetadataState.isInInitialState) {
+        accessPointState
+          .fetchRegistryMetadata()
+          .catch((error: Error) =>
+            accessPointState.apgState.applicationStore.notificationService.notifyError(
+              error,
+            ),
+          );
+      }
+    }, [accessPointState]);
+
     const openLineageAction = (
       dataProduct: string,
       accessPointGroup: string,
@@ -742,45 +755,15 @@ const enum DataProductAccessPointTabs {
   SQL = 'SQL',
 }
 
-const AccessPointTable = observer(
+const ColumnsScreen = observer(
   (props: {
     accessPointState: DataProductAccessPointState;
     dataAccessState: DataProductDataAccessState | undefined;
-  }): React.ReactNode => {
+  }) => {
     const { accessPointState, dataAccessState } = props;
     const [gridApi, setGridApi] =
       useState<DataGridApi<V1_RelationTypeColumn> | null>(null);
-    const [selectedTab, setSelectedTab] = useState<
-      DataProductAccessPointTabs | string
-    >(DataProductAccessPointTabs.COLUMNS);
-
-    const playgroundState = useMemo(() => {
-      const dataProductViewerState =
-        accessPointState.apgState.dataProductViewerState;
-      return new EmbeddedLegendSQLPlaygroundPanelState(
-        dataProductViewerState,
-        dataAccessState?.entitlementsDataProductDetails,
-        () => dataAccessState?.resolvedUserEnv,
-        accessPointState.accessPoint.id,
-      );
-    }, [accessPointState, dataAccessState]);
-    const handleTabChange = (
-      _: React.SyntheticEvent,
-      newValue: DataProductAccessPointTabs | string,
-    ) => {
-      setSelectedTab(newValue);
-    };
     const userEnv = dataAccessState?.resolvedUserEnv;
-    const codeExtensions: DataProductAccessPointCodeConfiguration[] = useMemo(
-      () =>
-        dataAccessState?.dataAccessPlugins
-          .map((plugin) =>
-            plugin.getExtraDataProductAccessPointCodeConfiguration?.(),
-          )
-          .flat()
-          .filter(isNonNullable) ?? [],
-      [dataAccessState?.dataAccessPlugins],
-    );
 
     useEffect(() => {
       if (
@@ -807,6 +790,39 @@ const AccessPointTable = observer(
       userEnv,
       accessPointState.apgState.isCollapsed,
     ]);
+
+    useEffect(() => {
+      const exec = async () => {
+        const dataProductArtifactPromise =
+          accessPointState.apgState.dataProductViewerState
+            .dataProductArtifactPromise;
+        const entitlementsDataProductDetails =
+          accessPointState.apgState.dataProductViewerState
+            .entitlementsDataProductDetails;
+        if (
+          dataProductArtifactPromise &&
+          accessPointState.fetchingRelationTypeState.isInInitialState
+        ) {
+          await accessPointState.fetchRelationType(
+            dataProductArtifactPromise,
+            entitlementsDataProductDetails,
+          );
+        }
+        if (
+          dataProductArtifactPromise &&
+          accessPointState.fetchingSampleDataState.isInInitialState
+        ) {
+          await accessPointState.fetchSampleDataFromArtifact(
+            dataProductArtifactPromise,
+          );
+        }
+      };
+      exec().catch((error: Error) =>
+        accessPointState.apgState.applicationStore.notificationService.notifyError(
+          error,
+        ),
+      );
+    }, [accessPointState]);
 
     useEffect(() => {
       if (gridApi) {
@@ -836,8 +852,6 @@ const AccessPointTable = observer(
                   _params.data.genericType.typeVariableValues.length > 0
                     ? `(${_params.data.genericType.typeVariableValues
                         .map((valueSpec) => {
-                          // TODO: Move V1_stringifyValueSpecification out of
-                          // @finos/legend-query-builder so it can be used in other packages
                           if (
                             valueSpec instanceof V1_CDateTime ||
                             valueSpec instanceof V1_CStrictDate ||
@@ -846,7 +860,6 @@ const AccessPointTable = observer(
                             valueSpec instanceof V1_CBoolean ||
                             valueSpec instanceof V1_CByteArray ||
                             valueSpec instanceof V1_CDecimal ||
-                            valueSpec instanceof V1_CFloat ||
                             valueSpec instanceof V1_CFloat ||
                             valueSpec instanceof V1_CInteger ||
                             valueSpec instanceof V1_EnumValue
@@ -890,103 +903,167 @@ const AccessPointTable = observer(
           },
         },
       ];
+
+    return (
+      <>
+        {accessPointState.fetchingRelationTypeState.isInProgress ||
+        accessPointState.fetchingRelationElement.isInProgress ? (
+          <Box className="data-product__viewer__more-info__loading-indicator">
+            <CubesLoadingIndicator isLoading={true}>
+              <CubesLoadingIndicatorIcon />
+            </CubesLoadingIndicator>
+          </Box>
+        ) : accessPointState.fetchingRelationTypeState.hasCompleted &&
+          accessPointState.fetchingRelationElement.hasCompleted ? (
+          <Box
+            className={clsx(
+              'data-product__viewer__more-info__columns-grid ag-theme-balham',
+              {
+                'data-product__viewer__more-info__columns-grid--auto-height':
+                  (accessPointState.relationType?.columns.length ?? 0) <=
+                  MAX_GRID_AUTO_HEIGHT_ROWS,
+                'data-product__viewer__more-info__columns-grid--auto-height--empty':
+                  (accessPointState.relationType?.columns.length ?? 0) === 0,
+                'data-product__viewer__more-info__columns-grid--auto-height--non-empty':
+                  (accessPointState.relationType?.columns.length ?? 0) > 0 &&
+                  (accessPointState.relationType?.columns.length ?? 0) <=
+                    MAX_GRID_AUTO_HEIGHT_ROWS,
+              },
+            )}
+          >
+            <DataGrid
+              rowData={accessPointState.relationType?.columns ?? []}
+              columnDefs={relationColumnDefs}
+              domLayout={
+                (accessPointState.relationType?.columns.length ?? 0) >
+                MAX_GRID_AUTO_HEIGHT_ROWS
+                  ? 'normal'
+                  : 'autoHeight'
+              }
+              onGridReady={(params) => {
+                setGridApi(params.api);
+                if (!accessPointState.relationType?.columns.length) {
+                  accessPointState.apgState.dataProductViewerState.layoutState.markGridAsRendered();
+                }
+              }}
+              onFirstDataRendered={() => {
+                if (
+                  accessPointState.relationType?.columns.length !== undefined &&
+                  accessPointState.relationType.columns.length > 0
+                ) {
+                  accessPointState.apgState.dataProductViewerState.layoutState.markGridAsRendered();
+                }
+              }}
+            />
+          </Box>
+        ) : (
+          <TabMessageScreen message="Unable to fetch access point columns" />
+        )}
+      </>
+    );
+  },
+);
+
+const GrammarScreen = observer(
+  (props: { accessPointState: DataProductAccessPointState }) => {
+    const { accessPointState } = props;
+
+    useEffect(() => {
+      if (accessPointState.fetchingGrammarState.isInInitialState) {
+        accessPointState
+          .fetchGrammar()
+          .catch((error: Error) =>
+            accessPointState.apgState.applicationStore.notificationService.notifyError(
+              error,
+            ),
+          );
+      }
+    }, [accessPointState]);
+
+    return (
+      <>
+        {accessPointState.fetchingGrammarState.isInProgress ? (
+          <Box className="data-product__viewer__more-info__loading-indicator">
+            <CubesLoadingIndicator isLoading={true}>
+              <CubesLoadingIndicatorIcon />
+            </CubesLoadingIndicator>
+          </Box>
+        ) : accessPointState.fetchingGrammarState.hasCompleted ? (
+          <Box className="data-product__viewer__more-info__grammar">
+            <CodeEditor
+              inputValue={accessPointState.grammar ?? 'Unable to fetch grammar'}
+              isReadOnly={true}
+              language={CODE_EDITOR_LANGUAGE.PURE}
+              hideMinimap={true}
+              hideGutter={true}
+              hideActionBar={true}
+              lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
+              extraEditorOptions={{
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+              }}
+            />
+          </Box>
+        ) : (
+          <TabMessageScreen message="Unable to fetch access point grammar" />
+        )}
+      </>
+    );
+  },
+);
+
+const AccessPointTable = observer(
+  (props: {
+    accessPointState: DataProductAccessPointState;
+    dataAccessState: DataProductDataAccessState | undefined;
+  }): React.ReactNode => {
+    const { accessPointState, dataAccessState } = props;
+    const [selectedTab, setSelectedTab] = useState<
+      DataProductAccessPointTabs | string
+    >(DataProductAccessPointTabs.COLUMNS);
+
+    const playgroundState = useMemo(() => {
+      const dataProductViewerState =
+        accessPointState.apgState.dataProductViewerState;
+      return new EmbeddedLegendSQLPlaygroundPanelState(
+        dataProductViewerState,
+        dataAccessState?.entitlementsDataProductDetails,
+        () => dataAccessState?.resolvedUserEnv,
+        accessPointState.accessPoint.id,
+      );
+    }, [accessPointState, dataAccessState]);
+
+    const handleTabChange = (
+      _: React.SyntheticEvent,
+      newValue: DataProductAccessPointTabs | string,
+    ) => {
+      setSelectedTab(newValue);
+    };
+
+    const codeExtensions: DataProductAccessPointCodeConfiguration[] = useMemo(
+      () =>
+        dataAccessState?.dataAccessPlugins
+          .map((plugin) =>
+            plugin.getExtraDataProductAccessPointCodeConfiguration?.(),
+          )
+          .flat()
+          .filter(isNonNullable) ?? [],
+      [dataAccessState?.dataAccessPlugins],
+    );
+
     const renderTab = (
       _selectedTab: DataProductAccessPointTabs | string,
     ): React.ReactNode => {
       switch (_selectedTab) {
         case DataProductAccessPointTabs.COLUMNS:
           return (
-            <>
-              {accessPointState.fetchingRelationTypeState.isInProgress ||
-              accessPointState.fetchingRelationElement.isInProgress ? (
-                <Box className="data-product__viewer__more-info__loading-indicator">
-                  <CubesLoadingIndicator isLoading={true}>
-                    <CubesLoadingIndicatorIcon />
-                  </CubesLoadingIndicator>
-                </Box>
-              ) : accessPointState.fetchingRelationTypeState.hasCompleted &&
-                accessPointState.fetchingRelationElement.hasCompleted ? (
-                <Box
-                  className={clsx(
-                    'data-product__viewer__more-info__columns-grid ag-theme-balham',
-                    {
-                      'data-product__viewer__more-info__columns-grid--auto-height':
-                        (accessPointState.relationType?.columns.length ?? 0) <=
-                        MAX_GRID_AUTO_HEIGHT_ROWS,
-                      'data-product__viewer__more-info__columns-grid--auto-height--empty':
-                        (accessPointState.relationType?.columns.length ?? 0) ===
-                        0,
-                      'data-product__viewer__more-info__columns-grid--auto-height--non-empty':
-                        (accessPointState.relationType?.columns.length ?? 0) >
-                          0 &&
-                        (accessPointState.relationType?.columns.length ?? 0) <=
-                          MAX_GRID_AUTO_HEIGHT_ROWS,
-                    },
-                  )}
-                >
-                  <DataGrid
-                    rowData={accessPointState.relationType?.columns ?? []}
-                    columnDefs={relationColumnDefs}
-                    domLayout={
-                      (accessPointState.relationType?.columns.length ?? 0) >
-                      MAX_GRID_AUTO_HEIGHT_ROWS
-                        ? 'normal'
-                        : 'autoHeight'
-                    }
-                    onGridReady={(params) => {
-                      setGridApi(params.api);
-                      if (!accessPointState.relationType?.columns.length) {
-                        accessPointState.apgState.dataProductViewerState.layoutState.markGridAsRendered();
-                      }
-                    }}
-                    onFirstDataRendered={() => {
-                      if (
-                        accessPointState.relationType?.columns.length !==
-                          undefined &&
-                        accessPointState.relationType.columns.length > 0
-                      ) {
-                        accessPointState.apgState.dataProductViewerState.layoutState.markGridAsRendered();
-                      }
-                    }}
-                  />
-                </Box>
-              ) : (
-                <TabMessageScreen message="Unable to fetch access point columns" />
-              )}
-            </>
+            <ColumnsScreen
+              accessPointState={accessPointState}
+              dataAccessState={dataAccessState}
+            />
           );
         case DataProductAccessPointTabs.GRAMMAR:
-          return (
-            <>
-              {accessPointState.fetchingGrammarState.isInProgress ? (
-                <Box className="data-product__viewer__more-info__loading-indicator">
-                  <CubesLoadingIndicator isLoading={true}>
-                    <CubesLoadingIndicatorIcon />
-                  </CubesLoadingIndicator>
-                </Box>
-              ) : accessPointState.fetchingGrammarState.hasCompleted ? (
-                <Box className="data-product__viewer__more-info__grammar">
-                  <CodeEditor
-                    inputValue={
-                      accessPointState.grammar ?? 'Unable to fetch grammar'
-                    }
-                    isReadOnly={true}
-                    language={CODE_EDITOR_LANGUAGE.PURE}
-                    hideMinimap={true}
-                    hideGutter={true}
-                    hideActionBar={true}
-                    lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
-                    extraEditorOptions={{
-                      scrollBeyondLastLine: false,
-                      wordWrap: 'on',
-                    }}
-                  />
-                </Box>
-              ) : (
-                <TabMessageScreen message="Unable to fetch access point grammar" />
-              )}
-            </>
-          );
+          return <GrammarScreen accessPointState={accessPointState} />;
         case DataProductAccessPointTabs.GOVERNANCE:
           return (
             <GovernanceScreen

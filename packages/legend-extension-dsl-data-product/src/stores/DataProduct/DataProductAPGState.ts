@@ -176,7 +176,7 @@ export class DataProductAPGState {
       this.initializationState.isInInitialState &&
       this.dataProductViewerState.dataProductArtifactPromise
     ) {
-      flowResult(this.init());
+      flowResult(this.init()).catch(this.applicationStore.alertUnhandledError);
     }
   }
 

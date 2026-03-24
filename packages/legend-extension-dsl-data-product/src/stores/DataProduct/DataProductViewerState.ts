@@ -678,7 +678,9 @@ export class DataProductViewerState extends BaseViewerState<
     this.entitlementsDataProductDetails = entitlementsDataProductDetails;
     this.apgStates.forEach((apgState) => {
       if (!apgState.isCollapsed) {
-        flowResult(apgState.init());
+        flowResult(apgState.init()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
       }
     });
     const dataProductArtifact = (yield this.dataProductArtifactPromise) as
