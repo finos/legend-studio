@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { V1_RawWorkflowTask } from '@finos/legend-graph';
+import type {
+  V1_RawWorkflowTask,
+  V1_WorkflowProcessInstance,
+} from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
 export interface LakehouseWorkflowServerClientConfig {
@@ -34,7 +37,7 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
 
   getProcessInstance = (
     processInstanceId: string,
-  ): Promise<PlainObject<V1_RawWorkflowTask>> =>
+  ): Promise<PlainObject<V1_WorkflowProcessInstance>> =>
     this.get(
       `${this._processInstances()}/${encodeURIComponent(processInstanceId)}`,
     );
