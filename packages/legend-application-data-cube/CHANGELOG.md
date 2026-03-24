@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.59
+
+### Patch Changes
+
+- [#5021](https://github.com/finos/legend-studio/pull/5021) [`38f1b71`](https://github.com/finos/legend-studio/commit/38f1b71a59d520ce6e64a9684e1b938f769f3e3d) ([@gs-saurabh](https://github.com/gs-saurabh)) - Add `client_name` parameter to authorize callback URL and create legend-access-token cookie via `LegendTokenSync`
+
 ## 0.7.58
 
 ## 0.7.57
