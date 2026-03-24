@@ -99,6 +99,7 @@ import { QueryEditorDataspaceInfoModal } from './data-space/DataSpaceInfo.js';
 import { QueryEditorDataProductInfoModal } from './data-product/DataProductInfo.js';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryBareQueryBuilderState } from '../stores/data-space/LegendQueryBareQueryBuilderState.js';
+import { extractQueryParams } from './utils/QueryParameterUtils.js';
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
@@ -1009,25 +1010,6 @@ export const QueryEditor = observer(() => {
   );
 });
 
-const EXISTING_QUERY_PARAM_SUFFIX = 'p:';
-
-const processQueryParams = (
-  urlQuery: Record<string, string | undefined>,
-): Record<string, string> | undefined => {
-  const queryParamEntries = Array.from(Object.entries(urlQuery));
-  if (queryParamEntries.length) {
-    const paramValues: Record<string, string> = {};
-    queryParamEntries.forEach(([key, queryValue]) => {
-      if (queryValue && key.startsWith(EXISTING_QUERY_PARAM_SUFFIX)) {
-        paramValues[key.slice(EXISTING_QUERY_PARAM_SUFFIX.length)] = queryValue;
-      }
-    });
-    return Object.values(paramValues).length === 0 ? undefined : paramValues;
-  }
-
-  return undefined;
-};
-
 export const ExistingQueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const params = useParams<ExistingQueryEditorPathParams>();
@@ -1036,7 +1018,7 @@ export const ExistingQueryEditor = observer(() => {
   );
   const queryParams =
     applicationStore.navigationService.navigator.getCurrentLocationParameters();
-  const processed = processQueryParams(queryParams);
+  const processed = extractQueryParams(queryParams);
   useEffect(() => {
     // clear params
     if (processed && Object.keys(processed).length) {

@@ -18,12 +18,15 @@ import {
   type Query,
   type QuerySearchSpecification,
   type RawLambda,
+  type ValueSpecification,
   QueryProjectCoordinates,
   extractElementNameFromPath,
 } from '@finos/legend-graph';
 import { type DepotServerClient } from '@finos/legend-server-depot';
 import {
+  assertErrorThrown,
   IllegalStateError,
+  LogEvent,
   uuid,
   type GeneratorFn,
 } from '@finos/legend-shared';
@@ -41,6 +44,7 @@ import {
   QueryEditorStore,
 } from '../QueryEditorStore.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
+import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import {
   DataSpacePackageableElementExecutable,
   getDataSpace,
@@ -54,6 +58,8 @@ import {
 } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryDataSpaceQueryBuilderState } from './query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 import { DataProductSelectorState } from './DataProductSelectorState.js';
+import { processQueryParameters } from '../../components/utils/QueryParameterUtils.js';
+import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
 
 export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;
@@ -62,6 +68,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly dataSpacePath: string;
   readonly templateQueryId: string;
   templateQueryTitle?: string;
+  urlQueryParamValues: Record<string, string> | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -71,6 +78,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     versionId: string,
     dataSpacePath: string,
     templateQueryId: string,
+    urlQueryParamValues: Record<string, string> | undefined,
   ) {
     super(applicationStore, depotServerClient);
 
@@ -79,6 +87,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     this.versionId = versionId;
     this.dataSpacePath = dataSpacePath;
     this.templateQueryId = templateQueryId;
+    this.urlQueryParamValues = urlQueryParamValues;
   }
 
   getProjectInfo(): ProjectGAVCoordinates {
@@ -87,6 +96,16 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       artifactId: this.artifactId,
       versionId: this.versionId,
     };
+  }
+
+  override getEditorRoute(): string {
+    return generateDataSpaceTemplateQueryCreatorRoute(
+      this.groupId,
+      this.artifactId,
+      this.versionId,
+      this.dataSpacePath,
+      this.templateQueryId,
+    );
   }
 
   override *buildGraph(): GeneratorFn<void> {
@@ -212,7 +231,31 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     );
     queryBuilderState.setExecutionContext(executionContext);
     await queryBuilderState.propagateExecutionContextChange(true);
-    queryBuilderState.initializeWithQuery(query);
+
+    let defaultParameters: Map<string, ValueSpecification> | undefined =
+      undefined;
+    const processedQueryParamValues = processQueryParameters(
+      query,
+      undefined,
+      this.urlQueryParamValues,
+      this.graphManagerState,
+    );
+    if (processedQueryParamValues?.size) {
+      try {
+        defaultParameters =
+          await this.graphManagerState.graphManager.pureCodeToValueSpecifications(
+            processedQueryParamValues,
+            this.graphManagerState.graph,
+          );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.error(
+          LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+          `Error resolving preset query param values: ${error.message}`,
+        );
+      }
+    }
+    queryBuilderState.initializeWithQuery(query, defaultParameters);
     return queryBuilderState;
   }
 

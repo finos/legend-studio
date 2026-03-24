@@ -54,6 +54,7 @@ import {
 } from '@finos/legend-query-builder';
 import { renderLegendQueryDataSpaceQueryBuilderSetupPanelContent } from '../../../components/data-space/LegendQueryDataSpaceQueryBuilder.js';
 import type { LegendQueryApplicationStore } from '../../LegendQueryBaseStore.js';
+import { QueryBuilderActionConfig_QueryApplication } from '../../QueryEditorStore.js';
 import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
@@ -162,23 +163,36 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
   }
 
   override copyDataSpaceLinkToClipboard(): void {
-    const dataSpace = this.dataSpace;
-    const executionContext = this.executionContext;
-    const runtimePath =
-      this.executionContextState.runtimeValue instanceof RuntimePointer
-        ? this.executionContextState.runtimeValue.packageableRuntime.value.path
+    const editorStore =
+      this.workflowState.actionConfig instanceof
+      QueryBuilderActionConfig_QueryApplication
+        ? this.workflowState.actionConfig.editorStore
         : undefined;
+    const editorRoute = editorStore?.getEditorRoute();
+    let routePath: string;
+    if (editorRoute) {
+      routePath = editorRoute;
+    } else {
+      const dataSpace = this.dataSpace;
+      const executionContext = this.executionContext;
+      const runtimePath =
+        this.executionContextState.runtimeValue instanceof RuntimePointer
+          ? this.executionContextState.runtimeValue.packageableRuntime.value
+              .path
+          : undefined;
+      routePath = generateDataSpaceQueryCreatorRoute(
+        this.project.groupId,
+        this.project.artifactId,
+        this.project.versionId,
+        dataSpace.path,
+        executionContext.name,
+        runtimePath,
+        this.class?.path,
+      );
+    }
     const route =
       this.applicationStore.navigationService.navigator.generateAddress(
-        generateDataSpaceQueryCreatorRoute(
-          this.project.groupId,
-          this.project.artifactId,
-          this.project.versionId,
-          dataSpace.path,
-          executionContext.name,
-          runtimePath,
-          this.class?.path,
-        ),
+        routePath,
       );
 
     navigator.clipboard
