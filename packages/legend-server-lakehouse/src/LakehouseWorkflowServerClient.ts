@@ -31,28 +31,44 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     });
   }
 
+  // auth
+  private _token = (token?: string) => ({
+    Authorization: `Bearer ${token}`,
+  });
+
   // ------------------------------------- Process Instances -------------------------------------
 
   private _processInstances = (): string => `${this.baseUrl}/processinstances`;
 
   getProcessInstance = (
     processInstanceId: string,
+    token: string | undefined,
   ): Promise<PlainObject<V1_WorkflowProcessInstance>> =>
     this.get(
       `${this._processInstances()}/${encodeURIComponent(processInstanceId)}`,
+      {},
+      this._token(token),
     );
 
   // ------------------------------------------- Tasks -------------------------------------------
 
   private _tasks = (): string => `${this.baseUrl}/tasks`;
 
-  getTask = (taskId: string): Promise<PlainObject<V1_RawWorkflowTask>> =>
-    this.get(`${this._tasks()}/${encodeURIComponent(taskId)}`);
+  getTask = (
+    taskId: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_RawWorkflowTask>> =>
+    this.get(
+      `${this._tasks()}/${encodeURIComponent(taskId)}`,
+      {},
+      this._token(token),
+    );
 
   approveTask = (
     taskId: string,
     actioningUserId: string,
     justification: string,
+    token: string | undefined,
   ): Promise<void> => {
     const requestBody = {
       params: {
@@ -67,6 +83,8 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     return this.post(
       `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
       requestBody,
+      {},
+      this._token(token),
     );
   };
 
@@ -74,6 +92,7 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     taskId: string,
     actioningUserId: string,
     justification: string,
+    token: string | undefined,
   ): Promise<void> => {
     const requestBody = {
       params: {
@@ -88,10 +107,16 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     return this.post(
       `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
       requestBody,
+      {},
+      this._token(token),
     );
   };
 
-  escalateTask = (taskId: string, actioningUserId: string): Promise<void> => {
+  escalateTask = (
+    taskId: string,
+    actioningUserId: string,
+    token: string | undefined,
+  ): Promise<void> => {
     const requestBody = {
       userId: actioningUserId,
       reasonCode: 'Escalated',
@@ -100,6 +125,8 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     return this.post(
       `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
       requestBody,
+      {},
+      this._token(token),
     );
   };
 }

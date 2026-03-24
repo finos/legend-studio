@@ -153,6 +153,7 @@ export const WorkflowDataAccessRequestTask =
           actionableTask.taskId,
           currentUser,
           justification,
+          auth.user?.access_token,
         );
 
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
@@ -170,6 +171,7 @@ export const WorkflowDataAccessRequestTask =
           actionableTask.taskId,
           currentUser,
           justification,
+          auth.user?.access_token,
         );
 
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(

@@ -415,10 +415,12 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
 
   private async collectTaskSummaries(
     processInstanceId: string,
+    token: string | undefined,
   ): Promise<V1_WorkflowTaskSummary[]> {
     const rawProcessInstance =
       await this.lakehouseWorkflowServerClient.getProcessInstance(
         processInstanceId,
+        token,
       );
     const processInstance = deserialize(
       V1_workflowProcessInstanceModelSchema,
@@ -427,7 +429,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
 
     const childResults = await Promise.all(
       processInstance.childProcessInstances.map((child) =>
-        this.collectTaskSummaries(child.processInstanceId),
+        this.collectTaskSummaries(child.processInstanceId, token),
       ),
     );
 
@@ -462,7 +464,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       // Step 2: Recursively collect task summaries via process instances
       const allTaskSummaries = (yield Promise.all(
         refreshed.workflows.map((wf) =>
-          this.collectTaskSummaries(wf.workflowId),
+          this.collectTaskSummaries(wf.workflowId, token),
         ),
       )) as V1_WorkflowTaskSummary[][];
       const taskSummaries = allTaskSummaries.flat();
@@ -470,7 +472,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       // Step 3: Fetch full task details in parallel
       const rawTasks = (yield Promise.all(
         taskSummaries.map((ts) =>
-          this.lakehouseWorkflowServerClient.getTask(ts.taskId),
+          this.lakehouseWorkflowServerClient.getTask(ts.taskId, token),
         ),
       )) as PlainObject<V1_RawWorkflowTask>[];
 
