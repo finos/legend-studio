@@ -304,6 +304,156 @@ export const mockEntitlementsAdHocDataProduct: V1_EntitlementsDataProductDetails
     },
   });
 
+// Helper to generate N access point definitions for mock data
+const generateAccessPoints = (
+  count: number,
+  prefix = 'ap',
+): {
+  _type: string;
+  id: string;
+  title: string;
+  description: string;
+  targetEnvironment: string;
+  func: object;
+}[] =>
+  Array.from({ length: count }, (_, i) => ({
+    _type: 'lakehouseAccessPoint',
+    id: `${prefix}_${i + 1}`,
+    title: `Access Point ${i + 1}`,
+    description: `Description for access point ${i + 1}`,
+    targetEnvironment: 'testTargetEnvironment',
+    func: {
+      _type: 'lambda',
+      body: [
+        {
+          _type: 'classInstance',
+          type: 'I',
+          value: {
+            metadata: false,
+            path: ['test', 'IngestDefinition'],
+          },
+        },
+      ],
+      parameters: [],
+    },
+  }));
+
+const generateEntitlementsAccessPoints = (
+  count: number,
+  groupId: string,
+  prefix = 'ap',
+): { name: string; groups: string[] }[] =>
+  Array.from({ length: count }, (_, i) => ({
+    name: `${prefix}_${i + 1}`,
+    groups: [groupId],
+  }));
+
+// 1 APG with 11 access points (above threshold of 10)
+export const mockLargeSDLCDataProduct: V1_DataProduct = deserialize(
+  V1_dataProductModelSchema([]),
+  {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_Large_SDLC_DataProduct',
+    title: 'Mock Large SDLC Data Product',
+    description: 'Data product with many access points',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'LARGE_GROUP1',
+        title: 'Large Group',
+        description: 'Test access point group with many access points',
+        accessPoints: generateAccessPoints(11),
+      },
+    ],
+  },
+);
+
+export const mockEntitlementsLargeSDLCDataProduct: V1_EntitlementsDataProductDetails =
+  deserialize(V1_EntitlementsDataProductDetailsModelSchema, {
+    id: 'MOCK_LARGE_SDLC_DATAPRODUCT',
+    deploymentId: 44444,
+    title: 'Mock Large SDLC Data Product',
+    description: 'Data product with many access points',
+    origin: {
+      type: 'SdlcDeployment',
+      group: 'com.example.analytics',
+      artifact: 'large-data-product',
+      version: '1.0.0',
+    },
+    lakehouseEnvironment: {
+      producerEnvironmentName: 'production-analytics',
+      type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+    },
+    dataProduct: {
+      name: 'MOCK_LARGE_SDLC_DATAPRODUCT',
+      accessPoints: generateEntitlementsAccessPoints(11, 'LARGE_GROUP1'),
+      accessPointGroupStereotypeMappings: [],
+      owner: {
+        appDirId: 44444,
+        level: V1_AppDirLevel.DEPLOYMENT,
+      },
+    },
+  });
+
+// 2 APGs with 6 access points each (12 total, above threshold of 10)
+export const mockMultiGroupLargeSDLCDataProduct: V1_DataProduct = deserialize(
+  V1_dataProductModelSchema([]),
+  {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_MultiGroup_Large_SDLC_DataProduct',
+    title: 'Mock Multi-Group Large SDLC Data Product',
+    description: 'Data product with multiple groups above threshold',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'MULTI_GROUP_A',
+        title: 'Group A',
+        description: 'First group',
+        accessPoints: generateAccessPoints(6, 'group_a_ap'),
+      },
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'MULTI_GROUP_B',
+        title: 'Group B',
+        description: 'Second group',
+        accessPoints: generateAccessPoints(6, 'group_b_ap'),
+      },
+    ],
+  },
+);
+
+export const mockEntitlementsMultiGroupLargeSDLCDataProduct: V1_EntitlementsDataProductDetails =
+  deserialize(V1_EntitlementsDataProductDetailsModelSchema, {
+    id: 'MOCK_MULTIGROUP_LARGE_SDLC_DATAPRODUCT',
+    deploymentId: 55555,
+    title: 'Mock Multi-Group Large SDLC Data Product',
+    description: 'Data product with multiple groups above threshold',
+    origin: {
+      type: 'SdlcDeployment',
+      group: 'com.example.analytics',
+      artifact: 'multi-group-data-product',
+      version: '1.0.0',
+    },
+    lakehouseEnvironment: {
+      producerEnvironmentName: 'production-analytics',
+      type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+    },
+    dataProduct: {
+      name: 'MOCK_MULTIGROUP_LARGE_SDLC_DATAPRODUCT',
+      accessPoints: [
+        ...generateEntitlementsAccessPoints(6, 'MULTI_GROUP_A', 'group_a_ap'),
+        ...generateEntitlementsAccessPoints(6, 'MULTI_GROUP_B', 'group_b_ap'),
+      ],
+      accessPointGroupStereotypeMappings: [],
+      owner: {
+        appDirId: 55555,
+        level: V1_AppDirLevel.DEPLOYMENT,
+      },
+    },
+  });
+
 export const getMockDataProductGenerationFilesByType = (
   dataProduct: V1_DataProduct,
 ): StoredFileGeneration[] => [

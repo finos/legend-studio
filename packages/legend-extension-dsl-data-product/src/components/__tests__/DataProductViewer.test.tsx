@@ -47,8 +47,12 @@ import {
   mockEnterpriseDataProduct,
   mockEntitlementsAdHocDataProduct,
   mockEntitlementsEnterpriseDataProduct,
+  mockEntitlementsLargeSDLCDataProduct,
+  mockEntitlementsMultiGroupLargeSDLCDataProduct,
   mockEntitlementsSDLCDataProduct,
   mockEntitlementsSDLCDataProductNoSupportInfo,
+  mockLargeSDLCDataProduct,
+  mockMultiGroupLargeSDLCDataProduct,
   mockSDLCDataProduct,
   mockSDLCDataProductNoSupportInfo,
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
@@ -60,6 +64,8 @@ import {
   TEST__getDataProductDataAccessState,
   TEST__getDataProductViewerState,
 } from '../__test-utils__/StateTestUtils.js';
+import type { DataProductAPGState } from '../../stores/DataProduct/DataProductAPGState.js';
+import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
 import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
 import { flowResult } from 'mobx';
 import type {
@@ -104,13 +110,6 @@ jest.mock('@finos/legend-application', () => ({
   ...jest.requireActual<typeof LegendApplication>('@finos/legend-application'),
   useApplicationStore: jest.fn(),
 }));
-
-(global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
-  jest.fn().mockImplementation(() => ({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn(),
-  }));
 
 const setupLakehouseDataProductTest = async (
   dataProduct: V1_DataProduct,
@@ -2535,6 +2534,348 @@ describe('DataProductViewer', () => {
       expect(
         (openLineageButton as HTMLButtonElement).getAttribute('title'),
       ).toBe('Lineage not configured');
+    });
+  });
+
+  describe('Auto-collapse threshold', () => {
+    test('Below threshold: APGs and APs are expanded', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      // Verify state is expanded
+      expect(dataProductViewerState.apgStates[0]?.isCollapsed).toBe(false);
+      expect(
+        dataProductViewerState.apgStates[0]?.accessPointStates[0]?.isCollapsed,
+      ).toBe(false);
+
+      // Verify component rendering
+      await screen.findByText('Mock SDLC Data Product');
+      await screen.findByText('Main Group Test');
+      await screen.findByText('Customer Demographics');
+    });
+
+    test('Above threshold, 1 APG: APG expanded, APs collapsed', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockLargeSDLCDataProduct,
+        mockEntitlementsLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      // Verify APG is expanded
+      expect(dataProductViewerState.apgStates[0]?.isCollapsed).toBe(false);
+
+      // Verify all APs are collapsed
+      dataProductViewerState.apgStates[0]?.accessPointStates.forEach((ap) => {
+        expect(ap.isCollapsed).toBe(true);
+      });
+
+      // Verify APG title is visible
+      await screen.findByText('Large Group');
+      // Verify APs titles are visible (MUI Accordion Summary renders them even if collapsed)
+      await screen.findByText('Access Point 1');
+      await screen.findByText('Access Point 11');
+
+      // Verify AP details content isn't visible
+      expect(screen.queryAllByText('Column Name').length).toBe(0);
+    });
+
+    test('Above threshold, >1 APG: all APGs collapsed', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      // Verify all APGs are collapsed
+      expect(dataProductViewerState.apgStates[0]?.isCollapsed).toBe(true);
+      expect(dataProductViewerState.apgStates[1]?.isCollapsed).toBe(true);
+
+      // Verify APG titles are visible
+      await screen.findByText('Group A');
+      await screen.findByText('Group B');
+
+      // Verify APs are not visible because the APG is collapsed and content is not rendered
+      expect(screen.queryByText('Access Point 1')).toBeNull();
+    });
+
+    test('Expanding a collapsed APG shows collapsed APs', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      // APG starts collapsed, APs are not visible
+      expect(screen.queryByText('Access Point 1')).toBeNull();
+
+      // Find the expand button for the first APG and click it
+      const expandButtons = await screen.findAllByRole('button', {
+        name: 'Expand',
+      });
+      fireEvent.click(expandButtons[0] as HTMLElement);
+
+      // Now APG should be expanded, and APs should be visible (but titles only, details collapsed)
+      expect(dataProductViewerState.apgStates[0]?.isCollapsed).toBe(false);
+      await screen.findByText('Access Point 1');
+
+      // APs are collapsed by default in this case
+      expect(
+        dataProductViewerState.apgStates[0]?.accessPointStates[0]?.isCollapsed,
+      ).toBe(true);
+    });
+  });
+
+  describe('Search text filtering', () => {
+    test('Empty search text returns all APG states', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      expect(dataProductViewerState.apgSearchText).toBe('');
+      expect(dataProductViewerState.filteredApgStates.length).toBe(2);
+      await screen.findByText('Group A');
+      await screen.findByText('Group B');
+    });
+
+    test('Search text by APG ID filters correctly', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      // Searching for 'MULTI_GROUP_A'
+      act(() => {
+        dataProductViewerState.setApgSearchText('MULTI_GROUP_A');
+      });
+
+      expect(dataProductViewerState.filteredApgStates.length).toBe(1);
+      expect(dataProductViewerState.filteredApgStates[0]?.apg.id).toBe(
+        'MULTI_GROUP_A',
+      );
+
+      // Via UI interaction:
+      const searchInput = await screen.findByPlaceholderText(
+        'Search access point groups/access points...',
+      );
+      fireEvent.change(searchInput, { target: { value: 'MULTI_GROUP_B' } });
+
+      expect(dataProductViewerState.filteredApgStates.length).toBe(1);
+      expect(dataProductViewerState.filteredApgStates[0]?.apg.id).toBe(
+        'MULTI_GROUP_B',
+      );
+    });
+
+    test('Search text by AP title filters correctly', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      // Searching for 'group_b_ap_1'
+      act(() => {
+        dataProductViewerState.setApgSearchText('group_b_ap_1');
+      });
+
+      expect(dataProductViewerState.filteredApgStates.length).toBe(1);
+      expect(dataProductViewerState.filteredApgStates[0]?.apg.id).toBe(
+        'MULTI_GROUP_B',
+      );
+    });
+
+    test('Search text with no matches returns empty', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      act(() => {
+        dataProductViewerState.setApgSearchText('nonexistent_search_query');
+      });
+
+      expect(dataProductViewerState.filteredApgStates.length).toBe(0);
+      expect(screen.queryByText('Group A')).toBeNull();
+      expect(screen.queryByText('Group B')).toBeNull();
+    });
+  });
+
+  describe('Deferred initialization', () => {
+    test('Collapsed APG and AP do not call init', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      const apgState = dataProductViewerState
+        .apgStates[0] as DataProductAPGState;
+      expect(apgState.isCollapsed).toBe(true);
+      expect(apgState.initializationState.isInInitialState).toBe(true);
+
+      const apState = apgState
+        .accessPointStates[0] as DataProductAccessPointState;
+      expect(apState.isCollapsed).toBe(true);
+      expect(apState.initializationState.isInInitialState).toBe(true);
+    });
+
+    test('Expanding APG triggers APG init but not AP init if APIs are collapsed', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      const apgState = dataProductViewerState
+        .apgStates[0] as DataProductAPGState;
+      const apState = apgState
+        .accessPointStates[0] as DataProductAccessPointState;
+
+      // Ensure that we have a promise set up by init
+      act(() => {
+        dataProductViewerState.dataProductArtifactPromise =
+          Promise.resolve(undefined);
+      });
+
+      // Find the expand button for the first APG and click it
+      const expandButtons = await screen.findAllByRole('button', {
+        name: 'Expand',
+      });
+      await act(async () => {
+        fireEvent.click(expandButtons[0] as HTMLElement);
+      });
+
+      expect(apgState.isCollapsed).toBe(false);
+      // Wait for async changes to propagate
+      await waitFor(() => {
+        expect(apgState.initializationState.isInInitialState).toBe(false);
+      });
+
+      // Still collapsed because APs collapse independently when > threshold
+      expect(apState.isCollapsed).toBe(true);
+      expect(apState.initializationState.isInInitialState).toBe(true);
+    });
+
+    test('Expanding AP triggers AP init', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockLargeSDLCDataProduct, // 1 APG (expanded), 11 APs (collapsed)
+        mockEntitlementsLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      const apgState = dataProductViewerState
+        .apgStates[0] as DataProductAPGState;
+      const apState = apgState
+        .accessPointStates[0] as DataProductAccessPointState;
+
+      expect(apState.isCollapsed).toBe(true);
+      expect(apState.initializationState.isInInitialState).toBe(true);
+
+      // Ensure that we have a promise set up by init
+      act(() => {
+        dataProductViewerState.dataProductArtifactPromise =
+          Promise.resolve(undefined);
+      });
+
+      // In real UI clicking Accordion expands it, let's simulate the UI interaction
+      const apSummary = await screen.findByText('Access Point 1');
+      await act(async () => {
+        fireEvent.click(apSummary);
+      });
+
+      expect(apState.isCollapsed).toBe(false);
+      await waitFor(() => {
+        expect(apState.initializationState.isInInitialState).toBe(false);
+      });
+    });
+
+    test('APG init and AP init is only called once', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      const apgState = dataProductViewerState
+        .apgStates[0] as DataProductAPGState;
+
+      const initSpy = jest.spyOn(apgState, 'init');
+
+      act(() => {
+        dataProductViewerState.dataProductArtifactPromise =
+          Promise.resolve(undefined);
+      });
+
+      await act(async () => {
+        apgState.setIsCollapsed(false);
+      });
+      await act(async () => {
+        apgState.setIsCollapsed(true);
+      });
+      await act(async () => {
+        apgState.setIsCollapsed(false);
+      });
+
+      // Called once from setIsCollapsed because the second time isInInitialState is false
+      expect(initSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('toggleAllApgGroupCollapse', () => {
+    test('Collapses all and expands all filtered APGs', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      // Starts all collapsed
+      expect(dataProductViewerState.isAllApgsCollapsed).toBe(true);
+
+      // Click Expand All
+      const toggleAllBtn = await screen.findByRole('button', {
+        name: 'Expand All',
+      });
+      act(() => {
+        fireEvent.click(toggleAllBtn);
+      });
+
+      // Now all should be expanded
+      expect(dataProductViewerState.isAllApgsCollapsed).toBe(false);
+      expect(dataProductViewerState.apgStates[0]?.isCollapsed).toBe(false);
+      expect(dataProductViewerState.apgStates[1]?.isCollapsed).toBe(false);
+
+      // Click Collapse All
+      const toggleAllBtnCollapse = await screen.findByRole('button', {
+        name: 'Collapse All',
+      });
+      act(() => {
+        fireEvent.click(toggleAllBtnCollapse);
+      });
+
+      // Now all should be collapsed again
+      expect(dataProductViewerState.isAllApgsCollapsed).toBe(true);
+      expect(dataProductViewerState.apgStates[0]?.isCollapsed).toBe(true);
+      expect(dataProductViewerState.apgStates[1]?.isCollapsed).toBe(true);
     });
   });
 });
