@@ -14,6 +14,26 @@
  * limitations under the License.
  */
 
+export class V1_WorkflowChildProcessInstance {
+  processInstanceId!: string;
+  processVersion!: number;
+}
+
+export class V1_WorkflowTaskSummary {
+  completed!: boolean;
+  processInstanceId!: string;
+  reference!: string;
+  taskId!: string;
+  type!: string;
+}
+
+export class V1_WorkflowProcessInstance {
+  active!: boolean;
+  processInstanceId!: string;
+  childProcessInstances: V1_WorkflowChildProcessInstance[] = [];
+  taskSummaries: V1_WorkflowTaskSummary[] = [];
+}
+
 export class V1_RawWorkflowTask {
   completed!: boolean;
   createdDate!: Date;

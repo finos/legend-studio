@@ -28,6 +28,17 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     });
   }
 
+  // ------------------------------------- Process Instances -------------------------------------
+
+  private _processInstances = (): string => `${this.baseUrl}/processinstances`;
+
+  getProcessInstance = (
+    processInstanceId: string,
+  ): Promise<PlainObject<V1_RawWorkflowTask>> =>
+    this.get(
+      `${this._processInstances()}/${encodeURIComponent(processInstanceId)}`,
+    );
+
   // ------------------------------------------- Tasks -------------------------------------------
 
   private _tasks = (): string => `${this.baseUrl}/tasks`;
