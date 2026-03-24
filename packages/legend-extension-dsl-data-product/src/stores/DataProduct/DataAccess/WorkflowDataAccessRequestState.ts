@@ -22,6 +22,7 @@ import {
   type V1_OrganizationalScope,
   type V1_UserType,
   type V1_RawWorkflowTask,
+  type V1_WorkflowTaskSummary,
   V1_AccessPointGroupReference,
   V1_DataOwnerApprovalTask,
   V1_PrivilegeManagerApprovalTask,
@@ -30,6 +31,7 @@ import {
   V1_WorkflowTaskAction,
   V1_WorkflowTaskStatus,
   V1_deserializeDataRequestsWithWorkflowResponse,
+  V1_workflowProcessInstanceModelSchema,
   V1_workflowTaskModelSchema,
 } from '@finos/legend-graph';
 import {
@@ -52,10 +54,16 @@ import {
   type DataAccessRequestState,
   type TimelineStep,
 } from './DataAccessRequestState.js';
+import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 
 export interface WorkflowTasksState {
   privilegeManagerTask: V1_RawWorkflowTask | undefined;
   dataOwnerTask: V1_RawWorkflowTask | undefined;
+}
+
+export enum V1_RawWorkflowTaskType {
+  PRIVILEGE_MANAGER = 'PRIVILEGE_MAANGER',
+  DATA_OWNER = 'DATA_OWNER',
 }
 
 export class WorkflowDataAccessRequestState implements DataAccessRequestState {
@@ -405,67 +413,108 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
 
   // ---- Actions ----
 
+  private async collectTaskSummaries(
+    processInstanceId: string,
+  ): Promise<V1_WorkflowTaskSummary[]> {
+    const rawProcessInstance =
+      await this.lakehouseWorkflowServerClient.getProcessInstance(
+        processInstanceId,
+      );
+    const processInstance = deserialize(
+      V1_workflowProcessInstanceModelSchema,
+      rawProcessInstance,
+    );
+
+    const childResults = await Promise.all(
+      processInstance.childProcessInstances.map((child) =>
+        this.collectTaskSummaries(child.processInstanceId),
+      ),
+    );
+
+    return [...processInstance.taskSummaries, ...childResults.flat()];
+  }
+
   *init(token: string | undefined): GeneratorFn<void> {
     try {
       this.initializationState.inProgress();
-      const [response, tasksResponse] = (yield Promise.all([
-        this.lakehouseContractServerClient.getDataAccessRequestWithWorkflow(
-          this.dataAccessRequestId,
-          token,
-        ),
-        this.lakehouseContractServerClient.getDataAccessRequestTasks(
-          this.dataAccessRequestId,
-          token,
-        ),
-      ])) as [PlainObject, PlainObject];
-      const dataRequests = V1_deserializeDataRequestsWithWorkflowResponse(
-        response,
-        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-      );
-      const refreshed = dataRequests[0];
-      if (refreshed) {
-        this.setDataRequestWithWorkflow(refreshed);
-      }
 
-      // Fetch latest task details from workflow server
-      const workflowTasks =
-        (tasksResponse as { workflowTasks?: { taskId: string }[] })
-          .workflowTasks ?? [];
+      // Step 1: Fetch the data request with workflow, retrying if workflows are empty
+      let refreshed: V1_DataRequestWithWorkflow | undefined;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const response =
+          (yield this.lakehouseContractServerClient.getDataAccessRequestWithWorkflow(
+            this.dataAccessRequestId,
+            token,
+          )) as PlainObject;
+        const dataRequests = V1_deserializeDataRequestsWithWorkflowResponse(
+          response,
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+        );
+        refreshed = dataRequests[0];
+        if (refreshed && refreshed.workflows.length > 0) {
+          break;
+        }
+        yield new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      this.setDataRequestWithWorkflow(refreshed);
+
+      // Step 2: Recursively collect task summaries via process instances
+      const allTaskSummaries = (yield Promise.all(
+        refreshed.workflows.map((wf) =>
+          this.collectTaskSummaries(wf.workflowId),
+        ),
+      )) as V1_WorkflowTaskSummary[][];
+      const taskSummaries = allTaskSummaries.flat();
+
+      // Step 3: Fetch full task details in parallel
+      const rawTasks = (yield Promise.all(
+        taskSummaries.map((ts) =>
+          this.lakehouseWorkflowServerClient.getTask(ts.taskId),
+        ),
+      )) as PlainObject<V1_RawWorkflowTask>[];
+
+      const deserializedTasks = rawTasks.map((rawTask) =>
+        deserialize(V1_workflowTaskModelSchema, rawTask),
+      );
+
+      // Step 4: Categorize tasks using plugin extension
+      const plugins =
+        this.applicationStore.pluginManager.getApplicationPlugins() as DataProductDataAccess_LegendApplicationPlugin_Extension[];
+
       const result: WorkflowTasksState = {
         privilegeManagerTask: undefined,
         dataOwnerTask: undefined,
       };
-      if (workflowTasks.length > 0 && refreshed) {
-        const allWorkflowTaskEntries = refreshed.workflows.flatMap((wf) =>
-          wf.tasks.map((task) => {
-            let taskType: 'privilegeManagerTask' | 'dataOwnerTask' | undefined;
-            if (task instanceof V1_PrivilegeManagerApprovalTask) {
-              taskType = 'privilegeManagerTask';
-            } else if (task instanceof V1_DataOwnerApprovalTask) {
-              taskType = 'dataOwnerTask';
-            }
-            return { taskId: task.taskId, taskType };
-          }),
-        );
 
-        const rawTasks = (yield Promise.all(
-          workflowTasks.map((wt) =>
-            this.lakehouseWorkflowServerClient.getTask(wt.taskId),
-          ),
-        )) as PlainObject<V1_RawWorkflowTask>[];
-
-        for (const rawTask of rawTasks) {
-          const entry = allWorkflowTaskEntries.find(
-            (e) => e.taskId === (rawTask as { taskId?: string }).taskId,
-          );
-          if (entry?.taskType) {
-            result[entry.taskType] = deserialize(
-              V1_workflowTaskModelSchema,
-              rawTask,
-            );
+      for (const task of deserializedTasks) {
+        let taskType: V1_RawWorkflowTaskType | undefined;
+        for (const plugin of plugins) {
+          taskType = plugin.getRawWorkflowTaskType?.(task);
+          if (taskType !== undefined) {
+            break;
           }
         }
+
+        if (taskType === undefined) {
+          continue;
+        }
+
+        // Step 5 & 6: Determine target key and pick latest by createdDate
+        const key: 'privilegeManagerTask' | 'dataOwnerTask' =
+          taskType === V1_RawWorkflowTaskType.PRIVILEGE_MANAGER
+            ? 'privilegeManagerTask'
+            : 'dataOwnerTask';
+        const existing = result[key];
+        if (
+          !existing ||
+          new Date(task.createdDate).getTime() >
+            new Date(existing.createdDate).getTime()
+        ) {
+          result[key] = task;
+        }
       }
+
       this.setWorkflowTasks(result);
     } catch (error) {
       assertErrorThrown(error);
