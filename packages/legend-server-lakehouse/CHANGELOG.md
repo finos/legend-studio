@@ -1,5 +1,13 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.42
+
+### Patch Changes
+
+- [#5020](https://github.com/finos/legend-studio/pull/5020) [`cf60dde`](https://github.com/finos/legend-studio/commit/cf60ddeb041baf8b79050d37729d104771316cd9) ([@travisstebbins](https://github.com/travisstebbins)) - Fix paginated subscriptions API
+
+- [#5004](https://github.com/finos/legend-studio/pull/5004) [`784a284`](https://github.com/finos/legend-studio/commit/784a28460fc29b213105c849693c4d5d1674aa73) ([@travisstebbins](https://github.com/travisstebbins)) - Add data access request endpoints and models
+
 ## 0.3.41
 
 ## 0.3.40

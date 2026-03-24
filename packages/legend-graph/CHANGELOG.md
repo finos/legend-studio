@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.4.1
+
+### Patch Changes
+
+- [#5016](https://github.com/finos/legend-studio/pull/5016) [`210ce28`](https://github.com/finos/legend-studio/commit/210ce28e56e50acb316b8a6d03539b3684dc92ed) ([@yash0024](https://github.com/yash0024)) - Add Database Joins in second pass to fix resolution in subsequent passes
+
+- [#5004](https://github.com/finos/legend-studio/pull/5004) [`784a284`](https://github.com/finos/legend-studio/commit/784a28460fc29b213105c849693c4d5d1674aa73) ([@travisstebbins](https://github.com/travisstebbins)) - Add data access request endpoints and models
+
 ## 32.4.0
 
 ### Minor Changes

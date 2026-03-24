@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.110
+
+### Patch Changes
+
+- [#5011](https://github.com/finos/legend-studio/pull/5011) [`318a4f8`](https://github.com/finos/legend-studio/commit/318a4f86a4d9ba77713f2f1c7170aaac1b079186) ([@yash0024](https://github.com/yash0024)) - Remove 'Generate Diagram' button from mappings. On the MAPG editor, use only classes in the mapping present in the featured classes if the latter set is non-empty
+
 ## 28.19.109
 
 ### Patch Changes

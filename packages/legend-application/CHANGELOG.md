@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.103
+
+### Patch Changes
+
+- [#5004](https://github.com/finos/legend-studio/pull/5004) [`784a284`](https://github.com/finos/legend-studio/commit/784a28460fc29b213105c849693c4d5d1674aa73) ([@travisstebbins](https://github.com/travisstebbins)) - Handle new workflow-based data access requests
+
 ## 16.0.102
 
 ### Patch Changes
