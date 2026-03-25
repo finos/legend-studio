@@ -797,7 +797,7 @@ const ColumnsScreen = observer(
     ]);
 
     useEffect(() => {
-      const exec = async () => {
+      const fetchRelationTypeAndSampleData = async () => {
         const dataProductArtifactPromise =
           accessPointState.apgState.dataProductViewerState
             .dataProductArtifactPromise;
@@ -822,7 +822,7 @@ const ColumnsScreen = observer(
           );
         }
       };
-      exec().catch((error: Error) =>
+      fetchRelationTypeAndSampleData().catch((error: Error) =>
         accessPointState.apgState.applicationStore.notificationService.notifyError(
           error,
         ),
