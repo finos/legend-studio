@@ -348,7 +348,7 @@ const generateEntitlementsAccessPoints = (
     groups: [groupId],
   }));
 
-// 1 APG with 11 access points (above threshold of 10)
+// 1 APG with 21 access points (above threshold of 20)
 export const mockLargeSDLCDataProduct: V1_DataProduct = deserialize(
   V1_dataProductModelSchema([]),
   {
@@ -363,7 +363,7 @@ export const mockLargeSDLCDataProduct: V1_DataProduct = deserialize(
         id: 'LARGE_GROUP1',
         title: 'Large Group',
         description: 'Test access point group with many access points',
-        accessPoints: generateAccessPoints(11),
+        accessPoints: generateAccessPoints(21),
       },
     ],
   },
@@ -387,7 +387,7 @@ export const mockEntitlementsLargeSDLCDataProduct: V1_EntitlementsDataProductDet
     },
     dataProduct: {
       name: 'MOCK_LARGE_SDLC_DATAPRODUCT',
-      accessPoints: generateEntitlementsAccessPoints(11, 'LARGE_GROUP1'),
+      accessPoints: generateEntitlementsAccessPoints(21, 'LARGE_GROUP1'),
       accessPointGroupStereotypeMappings: [],
       owner: {
         appDirId: 44444,
@@ -396,7 +396,7 @@ export const mockEntitlementsLargeSDLCDataProduct: V1_EntitlementsDataProductDet
     },
   });
 
-// 2 APGs with 6 access points each (12 total, above threshold of 10)
+// 2 APGs with 11 access points each (22 total, above threshold of 20)
 export const mockMultiGroupLargeSDLCDataProduct: V1_DataProduct = deserialize(
   V1_dataProductModelSchema([]),
   {
@@ -411,14 +411,14 @@ export const mockMultiGroupLargeSDLCDataProduct: V1_DataProduct = deserialize(
         id: 'MULTI_GROUP_A',
         title: 'Group A',
         description: 'First group',
-        accessPoints: generateAccessPoints(6, 'group_a_ap'),
+        accessPoints: generateAccessPoints(11, 'group_a_ap'),
       },
       {
         _type: 'defaultAccessPointGroup',
         id: 'MULTI_GROUP_B',
         title: 'Group B',
         description: 'Second group',
-        accessPoints: generateAccessPoints(6, 'group_b_ap'),
+        accessPoints: generateAccessPoints(11, 'group_b_ap'),
       },
     ],
   },
@@ -443,8 +443,8 @@ export const mockEntitlementsMultiGroupLargeSDLCDataProduct: V1_EntitlementsData
     dataProduct: {
       name: 'MOCK_MULTIGROUP_LARGE_SDLC_DATAPRODUCT',
       accessPoints: [
-        ...generateEntitlementsAccessPoints(6, 'MULTI_GROUP_A', 'group_a_ap'),
-        ...generateEntitlementsAccessPoints(6, 'MULTI_GROUP_B', 'group_b_ap'),
+        ...generateEntitlementsAccessPoints(11, 'MULTI_GROUP_A', 'group_a_ap'),
+        ...generateEntitlementsAccessPoints(11, 'MULTI_GROUP_B', 'group_b_ap'),
       ],
       accessPointGroupStereotypeMappings: [],
       owner: {

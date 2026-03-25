@@ -2578,7 +2578,7 @@ describe('DataProductViewer', () => {
       await screen.findByText('Large Group');
       // Verify APs titles are visible (MUI Accordion Summary renders them even if collapsed)
       await screen.findByText('Access Point 1');
-      await screen.findByText('Access Point 11');
+      await screen.findByText('Access Point 21');
 
       // Verify AP details content isn't visible
       expect(screen.queryAllByText('Column Name').length).toBe(0);
