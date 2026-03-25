@@ -81,6 +81,8 @@ import {
   ButtonGroup,
   Chip,
   CircularProgress,
+  IconButton,
+  InputAdornment,
   Menu,
   MenuItem,
   Tab,
@@ -1710,7 +1712,7 @@ export const DataProducteDataAccess = observer(
         {dataProductViewerState.totalAccessPoints > 10 && (
           <div className="data-product__viewer__data-access__search">
             <TextField
-              label="Filter:"
+              label="Filter"
               size="small"
               placeholder="Filter access point groups/access points..."
               value={dataProductViewerState.apgSearchText}
@@ -1718,6 +1720,24 @@ export const DataProducteDataAccess = observer(
                 dataProductViewerState.setApgSearchText(e.target.value)
               }
               fullWidth={true}
+              slotProps={{
+                input: {
+                  endAdornment: dataProductViewerState.apgSearchText ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          dataProductViewerState.setApgSearchText('')
+                        }
+                        title="Clear filter"
+                        edge="end"
+                      >
+                        <TimesIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                },
+              }}
             />
           </div>
         )}
