@@ -21,7 +21,9 @@ import {
   LakehouseSDLCDataProductSearchResultOrigin,
   LegacyDataProductSearchResultDetails,
   DataProductDetailsType,
+  LakehouseDataProductSearchResultOriginType,
   type AutosuggestResult,
+  type TrendingDataProductEntry,
 } from '@finos/legend-server-marketplace';
 import {
   generateGAVCoordinates,
@@ -191,6 +193,50 @@ export const convertAutosuggestResultToSearchResult = (
     legacyDetails.versionId = details.versionId;
     legacyDetails.path = details.path;
     searchResult.dataProductDetails = legacyDetails;
+  }
+
+  return searchResult;
+};
+
+export const convertTrendingEntryToSearchResult = (
+  entry: TrendingDataProductEntry,
+): DataProductSearchResult => {
+  const searchResult = new DataProductSearchResult();
+  searchResult.dataProductTitle = entry.dataProductName ?? entry.productName;
+  searchResult.dataProductDescription = entry.productDescription ?? '';
+  searchResult.dataProductSource = entry.dataProductSource;
+  searchResult.licenseTo = entry.licenseTo;
+  searchResult.tag_score = 0;
+  searchResult.similarity = 0;
+
+  if (entry.dataProductType === 'lakehouse') {
+    const details = new LakehouseDataProductSearchResultDetails();
+    details.dataProductId = entry.dataProductId ?? '';
+    details.deploymentId = Number(entry.deploymentId ?? 0);
+    details.producerEnvironmentName = entry.producerEnvironmentName ?? '';
+    details.producerEnvironmentType = entry.producerEnvironmentType as
+      | V1_EntitlementsLakehouseEnvironmentType
+      | undefined;
+
+    if (entry.originType === LakehouseDataProductSearchResultOriginType.SDLC) {
+      const origin = new LakehouseSDLCDataProductSearchResultOrigin();
+      origin.groupId = entry.groupId ?? '';
+      origin.artifactId = entry.artifactId ?? '';
+      origin.versionId = entry.versionId ?? '';
+      origin.path = entry.dataProductPath ?? '';
+      details.origin = origin;
+    } else {
+      details.origin = new LakehouseAdHocDataProductSearchResultOrigin();
+    }
+
+    searchResult.dataProductDetails = details;
+  } else {
+    const details = new LegacyDataProductSearchResultDetails();
+    details.groupId = entry.groupId ?? '';
+    details.artifactId = entry.artifactId ?? '';
+    details.versionId = entry.versionId ?? '';
+    details.path = entry.dataProductPath ?? '';
+    searchResult.dataProductDetails = details;
   }
 
   return searchResult;

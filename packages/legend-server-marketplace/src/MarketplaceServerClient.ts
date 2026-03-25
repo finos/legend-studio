@@ -47,6 +47,24 @@ import {
 import type { AutosuggestResponse } from './models/AutosuggestResult.js';
 import type { TaxonomyTreeResponse } from './models/Taxonomy.js';
 
+export interface TrendingDataProductEntry {
+  dataProductId?: string | undefined;
+  deploymentId?: string | undefined;
+  dataProductType: string;
+  productName: string;
+  productDescription?: string | undefined;
+  dataProductName?: string | undefined;
+  groupId?: string | undefined;
+  artifactId?: string | undefined;
+  versionId?: string | undefined;
+  dataProductPath?: string | undefined;
+  originType?: string | undefined;
+  producerEnvironmentName?: string | undefined;
+  producerEnvironmentType?: string | undefined;
+  dataProductSource?: string | undefined;
+  licenseTo?: string | undefined;
+}
+
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
   subscriptionUrl: string;
@@ -136,6 +154,23 @@ export class MarketplaceServerClient extends AbstractServerClient {
       signal ? { signal } : {},
       undefined,
       { query, limit },
+    );
+
+  // ------------------------------------------- Trending -------------------------------------------
+
+  private _analytics = (): string => `${this.baseUrl}/v1/analytics`;
+
+  getTrendingDataProducts = async (
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+    size: number = 10,
+    daysBack: number = 30,
+    elasticEnv: string = 'qa',
+  ): Promise<TrendingDataProductEntry[]> =>
+    this.get<TrendingDataProductEntry[]>(
+      `${this._analytics()}/top-products/${lakehouseEnv}`,
+      undefined,
+      undefined,
+      { size, days_back: daysBack, elastic_env: elasticEnv },
     );
 
   // ------------------------------------------- Taxonomy -------------------------------------------

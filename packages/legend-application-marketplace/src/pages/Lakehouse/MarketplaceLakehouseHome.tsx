@@ -96,6 +96,19 @@ export const MarketplaceLakehouseHome = observer(() => {
       setLoading(true);
 
       try {
+        // Fetch trending from API and config sections in parallel
+        let trendingDataProducts:
+          | Record<string, ProductCardState[]>
+          | undefined;
+        try {
+          trendingDataProducts =
+            await legendMarketplaceBaseStore.fetchTrendingDataProducts(
+              auth.user?.access_token,
+            );
+        } catch {
+          // Trending API failed — will fall back to Trending section from config if present
+        }
+
         const [configDataProducts, ...extraDataProductSections] =
           await Promise.all([
             legendMarketplaceBaseStore.initHighlightedDataProducts(
@@ -112,9 +125,14 @@ export const MarketplaceLakehouseHome = observer(() => {
               ),
           ]);
 
+        // Always include config sections, but override the Trending
+        // section with API results if available
         const result: Record<string, ProductCardState[]> = {
           ...configDataProducts,
         };
+        if (trendingDataProducts) {
+          Object.assign(result, trendingDataProducts);
+        }
 
         for (const pluginSections of extraDataProductSections) {
           for (const [sectionTitle, dataProductStates] of Object.entries(
