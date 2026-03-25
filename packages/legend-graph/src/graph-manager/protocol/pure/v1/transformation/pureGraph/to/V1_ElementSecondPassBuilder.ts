@@ -619,6 +619,7 @@ export class V1_ElementSecondPassBuilder
       .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
     service.pattern = element.pattern;
+    service.title = element.title;
     service.owners = element.owners.slice();
     service.documentation = element.documentation;
     service.autoActivateUpdates = element.autoActivateUpdates;

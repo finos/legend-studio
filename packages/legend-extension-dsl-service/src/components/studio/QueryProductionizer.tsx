@@ -39,6 +39,7 @@ import {
   clsx,
   CustomSelectorInput,
   Dialog,
+  ErrorWarnIcon,
   EyeIcon,
   FunctionIcon,
   GitBranchIcon,
@@ -323,6 +324,10 @@ const QueryProductionizerContent = observer(() => {
     event,
   ) => productionizerStore.setServicePattern(event.target.value);
 
+  const onChangeServiceTitle: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => productionizerStore.setServiceTitle(event.target.value);
+
   // actions
   const productionizeQuery = (): void => {
     productionizerStore
@@ -523,6 +528,38 @@ const QueryProductionizerContent = observer(() => {
             <div className="query-productionizer__group query-productionizer__group--service">
               <div className="query-productionizer__group__header">service</div>
               <div className="query-productionizer__group__content">
+                <div className="query-productionizer__input">
+                  <div
+                    className="query-productionizer__input__label"
+                    style={{
+                      color: !productionizerStore.serviceTitle
+                        ? 'var(--color-red-300)'
+                        : undefined,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                    }}
+                  >
+                    {!productionizerStore.serviceTitle && (
+                      <ErrorWarnIcon style={{ fontSize: '1.2rem' }} />
+                    )}
+                    Title
+                  </div>
+                  <div className="input-group query-productionizer__input__input">
+                    <input
+                      className="input input--dark input-group__input"
+                      spellCheck={false}
+                      placeholder=""
+                      value={productionizerStore.serviceTitle ?? ''}
+                      onChange={onChangeServiceTitle}
+                      style={{
+                        borderColor: !productionizerStore.serviceTitle
+                          ? 'var(--color-red-300)'
+                          : undefined,
+                      }}
+                    />
+                  </div>
+                </div>
                 <div className="query-productionizer__input">
                   <div className="query-productionizer__input__label">Path</div>
                   <div className="input-group query-productionizer__input__input">

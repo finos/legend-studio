@@ -29,6 +29,7 @@ import {
   LockIcon,
   TimesIcon,
   ErrorIcon,
+  ErrorWarnIcon,
   PanelFormBooleanField,
   PanelForm,
   CustomSelectorInput,
@@ -48,6 +49,7 @@ import {
   service_setDocumentation,
   service_setPattern,
   service_setMcpServer,
+  service_setTitle,
   service_updateOwner,
   service_deploymentOwnership,
   service_addUserOwnership,
@@ -239,6 +241,12 @@ const ServiceGeneralEditor = observer(() => {
       service_setDocumentation(service, event.target.value);
     }
   };
+
+  const changeTitle: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    if (!isReadOnly) {
+      service_setTitle(service, event.target.value);
+    }
+  };
   const toggleAutoActivateUpdates = (): void => {
     service_setAutoActivateUpdates(service, !service.autoActivateUpdates);
   };
@@ -294,6 +302,36 @@ const ServiceGeneralEditor = observer(() => {
 
   return (
     <PanelContentLists className="service-editor__general">
+      <PanelForm>
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Title
+          </div>
+          <div
+            className="panel__content__form__section__header__prompt"
+            style={{
+              color: !service.title ? 'var(--color-red-300)' : undefined,
+            }}
+          >
+            {!service.title && (
+              <ErrorWarnIcon
+                style={{ marginRight: '0.3rem', fontSize: '1.2rem' }}
+              />
+            )}
+            {`Provide a title for the service`}
+          </div>
+          <input
+            className="panel__content__form__section__input"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={service.title ?? ''}
+            onChange={changeTitle}
+            style={{
+              borderColor: !service.title ? 'var(--color-red-300)' : undefined,
+            }}
+          />
+        </div>
+      </PanelForm>
       <PanelForm>
         <PanelFormValidatedTextField
           ref={patternRef}
@@ -360,13 +398,32 @@ const ServiceGeneralEditor = observer(() => {
           <div className="panel__content__form__section__header__label">
             Documentation
           </div>
-          <div className="panel__content__form__section__header__prompt">{`Provide a brief description of the service's functionalities and usage`}</div>
+          <div
+            className="panel__content__form__section__header__prompt"
+            style={{
+              color: !service.documentation
+                ? 'var(--color-red-300)'
+                : undefined,
+            }}
+          >
+            {!service.documentation && (
+              <ErrorWarnIcon
+                style={{ marginRight: '0.3rem', fontSize: '1.2rem' }}
+              />
+            )}
+            {`Provide a brief description of the service's functionalities and usage`}
+          </div>
           <textarea
             className="panel__content__form__section__textarea service-editor__documentation__input"
             spellCheck={false}
             disabled={isReadOnly}
             value={service.documentation}
             onChange={changeDocumentation}
+            style={{
+              borderColor: !service.documentation
+                ? 'var(--color-red-300)'
+                : undefined,
+            }}
           />
         </div>
       </PanelForm>

@@ -329,25 +329,26 @@ export const V1_transformService = (
 ): V1_Service => {
   const service = new V1_Service();
   V1_initPackageableElement(service, element);
-  service.stereotypes = element.stereotypes.map(V1_transformStereotype);
-  service.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   service.autoActivateUpdates = element.autoActivateUpdates;
-  service.mcpServer = element.mcpServer;
   service.documentation = element.documentation;
   service.execution = transformServiceExecution(element.execution, context);
+  service.mcpServer = element.mcpServer;
+  service.owners = element.owners;
   if (element.ownership) {
     service.ownership = transformServiceOwnership(element.ownership);
   }
-  service.owners = element.owners;
   service.pattern = element.pattern;
+  service.postValidations = element.postValidations.map((postValidation) =>
+    V1_transformPostValidation(postValidation, context),
+  );
+  service.stereotypes = element.stereotypes.map(V1_transformStereotype);
+  service.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   if (element.test) {
     service.test = transformLegacyServiceTest(element.test, context);
   }
   service.testSuites = element.tests.map((testSuite) =>
     V1_transformTestSuite(testSuite, context),
   );
-  service.postValidations = element.postValidations.map((postValidation) =>
-    V1_transformPostValidation(postValidation, context),
-  );
+  service.title = element.title;
   return service;
 };

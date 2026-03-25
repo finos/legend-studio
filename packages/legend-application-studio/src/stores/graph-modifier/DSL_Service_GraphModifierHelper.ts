@@ -200,6 +200,13 @@ export const service_setMcpServer = action(
   },
 );
 
+export const service_setTitle = action(
+  (service: Service, value: string | undefined) => {
+    const title = value === '' ? undefined : value;
+    service.title = title;
+  },
+);
+
 export const service_deploymentOwnership = action(
   (deployment: DeploymentOwnership, value: string): void => {
     deployment.identifier = value;

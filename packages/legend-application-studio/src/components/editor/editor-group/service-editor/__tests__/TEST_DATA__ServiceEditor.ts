@@ -270,6 +270,7 @@ export const TEST_DATA__serviceEntities = [
         },
       },
       name: 'RelationalService',
+      title: 'my service title',
       owners: ['owner1', 'owner2'],
       package: 'model',
       pattern: '/example/myTestUrl/{myParam}',

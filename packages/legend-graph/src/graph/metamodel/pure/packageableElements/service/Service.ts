@@ -31,6 +31,7 @@ export const DEFAULT_SERVICE_PATTERN = '/';
 
 export class Service extends PackageableElement implements Hashable, Testable {
   pattern = '/';
+  title?: string | undefined;
   owners: string[] = [];
   ownership: ServiceOwnership | undefined;
   documentation = '';
@@ -65,6 +66,7 @@ export class Service extends PackageableElement implements Hashable, Testable {
       this.execution,
       this.test ?? '',
       this.mcpServer ?? '',
+      this.title ?? '',
       hashArray(this.tests),
       hashArray(this.postValidations),
       hashArray(this.taggedValues),

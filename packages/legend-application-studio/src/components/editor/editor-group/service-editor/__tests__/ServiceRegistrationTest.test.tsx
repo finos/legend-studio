@@ -307,6 +307,8 @@ test(
     );
     // labels + values
     fireEvent.click(getByText(editorGroup, 'General'));
+    await waitFor(() => getByText(editorGroup, 'Title'));
+    await waitFor(() => renderResult.getByDisplayValue('my service title'));
     await waitFor(() => getByText(editorGroup, 'URL Pattern'));
     expect(
       await waitFor(() =>

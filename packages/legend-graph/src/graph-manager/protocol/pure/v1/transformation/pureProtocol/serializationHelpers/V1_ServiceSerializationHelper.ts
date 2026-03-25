@@ -355,6 +355,7 @@ export const V1_serviceModelSchema = (
       (val) => V1_serializeServiceExecution(val),
       (val) => V1_deserializeServiceExecution(val),
     ),
+    mcpServer: optional(primitive()),
     name: primitive(),
     owners: list(primitive()),
     ownership: optionalCustom(
@@ -363,6 +364,9 @@ export const V1_serviceModelSchema = (
     ),
     package: primitive(),
     pattern: primitive(),
+    postValidations: customListWithSchema(V1_servicePostValidationModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
@@ -380,8 +384,5 @@ export const V1_serviceModelSchema = (
         INTERNAL__forceReturnEmptyInTest: true,
       },
     ),
-    postValidations: customListWithSchema(V1_servicePostValidationModelSchema, {
-      INTERNAL__forceReturnEmptyInTest: true,
-    }),
-    mcpServer: optional(primitive()),
+    title: optional(primitive()),
   });
