@@ -1510,7 +1510,10 @@ export const DataProductAccessPointGroupViewer = observer(
         );
 
     return (
-      <div className="data-product__viewer__access-group__item">
+      <div
+        ref={sectionRef}
+        className="data-product__viewer__access-group__item"
+      >
         <div className="data-product__viewer__access-group__item__header">
           <div className="data-product__viewer__access-group__item__header-main">
             <div className="data-product__viewer__access-group__item__header__title">
