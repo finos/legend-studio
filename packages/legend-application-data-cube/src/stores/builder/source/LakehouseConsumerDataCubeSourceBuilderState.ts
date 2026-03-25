@@ -62,6 +62,7 @@ import {
   V1_dataProductModelSchema,
   V1_deserializePureModelContextData,
   V1_EntitlementsDataProductLiteModelSchema,
+  V1_entitlementsDataProductLiteResponseToDataProductLite,
 } from '@finos/legend-graph';
 import {
   RawLakehouseAdhocOrigin,
@@ -188,10 +189,14 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     try {
       this.dataProductLoadingState.inProgress();
       const dataProducts =
-        (yield this._contractServerClient.getDataProductsLite(
+        (yield this._contractServerClient.getAllLiteDataProducts(
+          this.envMode,
+          undefined,
           access_token,
-        )) as V1_EntitlementsDataProductLiteResponse;
-      this.setDataProducts(dataProducts.dataProducts ?? []);
+        )) as PlainObject<V1_EntitlementsDataProductLiteResponse>;
+      const dataProductLiteDetails =
+        V1_entitlementsDataProductLiteResponseToDataProductLite(dataProducts);
+      this.setDataProducts(dataProductLiteDetails);
       this.dataProductLoadingState.complete();
     } catch (error) {
       assertErrorThrown(error);
