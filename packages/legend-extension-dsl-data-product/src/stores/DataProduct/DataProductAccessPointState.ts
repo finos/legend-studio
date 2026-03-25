@@ -315,24 +315,19 @@ export class DataProductAccessPointState {
     }
     this.fetchingSampleDataState.inProgress();
     try {
-      const promises: Promise<V1_RelationElement | undefined>[] = [
+      const [artifactResult, engineResult] = await Promise.allSettled([
         this.fetchSampleDataFromArtifact(dataProductArtifactPromise),
-      ];
-      if (resolvedUserEnv) {
-        promises.push(this.fetchSampleDataFromEngine(resolvedUserEnv));
-      }
-      const relationElement = await Promise.any(promises);
-      this.relationElement = relationElement;
-    } catch (error) {
-      assertErrorThrown(error);
-      if (error instanceof AggregateError) {
-        this.apgState.applicationStore.notificationService.notifyError(
-          `Error fetching access point sample data: ${error.errors[1] ?? error.errors[0] ?? error.message}`,
-        );
-      } else {
-        this.apgState.applicationStore.notificationService.notifyError(
-          `Error fetching access point sample data: ${error.message}`,
-        );
+        ...(resolvedUserEnv
+          ? [this.fetchSampleDataFromEngine(resolvedUserEnv)]
+          : []),
+      ]);
+      if (engineResult?.status === 'fulfilled' && engineResult.value) {
+        this.relationElement = engineResult.value;
+      } else if (
+        artifactResult?.status === 'fulfilled' &&
+        artifactResult.value
+      ) {
+        this.relationElement = artifactResult.value;
       }
     } finally {
       this.fetchingSampleDataState.complete();
