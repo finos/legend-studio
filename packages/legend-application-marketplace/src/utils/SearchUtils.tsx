@@ -47,11 +47,12 @@ export const getSearchResultProjectGAV = (
     searchResult.dataProductDetails.origin instanceof
       LakehouseSDLCDataProductSearchResultOrigin
   ) {
-    return {
-      groupId: searchResult.dataProductDetails.origin.groupId,
-      artifactId: searchResult.dataProductDetails.origin.artifactId,
-      versionId: searchResult.dataProductDetails.origin.versionId,
-    };
+    const { groupId, artifactId, versionId } =
+      searchResult.dataProductDetails.origin;
+    if (groupId === null || artifactId === null || versionId === null) {
+      return undefined;
+    }
+    return { groupId, artifactId, versionId };
   } else if (
     searchResult.dataProductDetails instanceof
     LegacyDataProductSearchResultDetails

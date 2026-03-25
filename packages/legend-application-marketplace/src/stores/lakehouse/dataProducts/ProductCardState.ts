@@ -122,7 +122,7 @@ export class ProductCardState {
             LakehouseDataProductSearchResultDetails &&
           this.searchResult.dataProductDetails.origin instanceof
             LakehouseSDLCDataProductSearchResultOrigin
-        ? this.searchResult.dataProductDetails.origin.versionId
+        ? (this.searchResult.dataProductDetails.origin.versionId ?? undefined)
         : undefined;
   }
 
@@ -272,9 +272,9 @@ export class ProductCardState {
       entitlementsDataProductDetails.deploymentId =
         searchResultDetails.deploymentId;
       const origin = new V1_SdlcDeploymentDataProductOrigin();
-      origin.group = searchResultDetails.origin.groupId;
-      origin.artifact = searchResultDetails.origin.artifactId;
-      origin.version = searchResultDetails.origin.versionId;
+      origin.group = searchResultDetails.origin.groupId ?? '';
+      origin.artifact = searchResultDetails.origin.artifactId ?? '';
+      origin.version = searchResultDetails.origin.versionId ?? '';
       entitlementsDataProductDetails.origin = origin;
 
       // Fetch data product entity

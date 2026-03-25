@@ -52,10 +52,10 @@ export enum LakehouseDataProductSearchResultOriginType {
 export abstract class LakehouseDataProductSearchResultOrigin {}
 
 export class LakehouseSDLCDataProductSearchResultOrigin extends LakehouseDataProductSearchResultOrigin {
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
-  path!: string;
+  groupId!: string | null;
+  artifactId!: string | null;
+  versionId!: string | null;
+  path!: string | null;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(LakehouseSDLCDataProductSearchResultOrigin, {
@@ -87,7 +87,7 @@ export class LakehouseDataProductSearchResultDetails extends DataProductSearchRe
   deploymentId!: number;
   producerEnvironmentName!: string;
   producerEnvironmentType!: V1_EntitlementsLakehouseEnvironmentType | undefined;
-  origin!: LakehouseDataProductSearchResultOrigin;
+  origin!: LakehouseDataProductSearchResultOrigin | null;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(LakehouseDataProductSearchResultDetails, {

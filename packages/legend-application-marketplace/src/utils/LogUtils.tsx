@@ -58,7 +58,7 @@ export const logClickingDataProductCard = (
           groupId: projectGAV.groupId,
           artifactId: projectGAV.artifactId,
           versionId: projectGAV.versionId,
-          path,
+          path: path ?? undefined,
         }
       : {
           type: DATAPRODUCT_TYPE.ADHOC,
