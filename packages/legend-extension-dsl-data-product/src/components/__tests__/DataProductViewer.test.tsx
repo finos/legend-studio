@@ -2838,6 +2838,109 @@ describe('DataProductViewer', () => {
       // Called once from setIsCollapsed because the second time isInInitialState is false
       expect(initSpy).toHaveBeenCalledTimes(1);
     });
+
+    test('Data is fetched only when the respective tab is selected', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+
+      const apgState = dataProductViewerState
+        .apgStates[0] as DataProductAPGState;
+      const apState = apgState
+        .accessPointStates[0] as DataProductAccessPointState;
+
+      // Ensure that we have a promise set up by init
+      act(() => {
+        dataProductViewerState.dataProductArtifactPromise =
+          Promise.resolve(undefined);
+      });
+
+      // Mock the fetches to return a promise that never resolves.
+      // This prevents the UI from actually attempting to render the result (like CodeEditor or DataGrid),
+      // which might crash in the mocked JSDOM environment, while still allowing us to verify the method was called.
+      const fetchRelationTypeSpy = jest
+        .spyOn(apState, 'fetchRelationType')
+        .mockImplementation(() => {
+          apState.fetchingRelationTypeState.inProgress();
+          return new Promise(() => {});
+        });
+      const fetchGrammarSpy = jest
+        .spyOn(apState, 'fetchGrammar')
+        .mockImplementation(() => {
+          apState.fetchingGrammarState.inProgress();
+          return new Promise(() => {});
+        });
+      const fetchRegistryMetadataSpy = jest
+        .spyOn(apState, 'fetchRegistryMetadata')
+        .mockImplementation(() => {
+          apState.fetchingRegistryMetadataState.inProgress();
+          return new Promise(() => {});
+        });
+
+      // Find the expand button for the first APG and click it
+      const expandAPGButtons = await screen.findAllByRole('button', {
+        name: 'Expand',
+      });
+      await act(async () => {
+        fireEvent.click(expandAPGButtons[0] as HTMLElement);
+      });
+
+      // Expand the first Access Point
+      const apSummary = await screen.findByText('Access Point 1');
+      await act(async () => {
+        fireEvent.click(apSummary);
+      });
+
+      // Assert that Columns tab fetch happens immediately (default tab)
+      await waitFor(() => {
+        expect(fetchRelationTypeSpy).toHaveBeenCalledTimes(1);
+      });
+
+      // Grammar and Governance fetches should not have been called yet
+      expect(fetchGrammarSpy).not.toHaveBeenCalled();
+      expect(fetchRegistryMetadataSpy).not.toHaveBeenCalled();
+
+      // Click on Grammar tab
+      const grammarTab = await screen.findByText('Grammar');
+      await act(async () => {
+        fireEvent.click(grammarTab);
+      });
+
+      // Assert that Grammar fetch happens
+      await waitFor(() => {
+        expect(fetchGrammarSpy).toHaveBeenCalledTimes(1);
+      });
+      expect(fetchRegistryMetadataSpy).not.toHaveBeenCalled();
+
+      // Click on Governance tab
+      const governanceTab = await screen.findByText('Governance');
+      await act(async () => {
+        fireEvent.click(governanceTab);
+      });
+
+      // Assert that Governance fetch happens
+      await waitFor(() => {
+        expect(fetchRegistryMetadataSpy).toHaveBeenCalledTimes(1);
+      });
+
+      // Ensure they were all called exactly once despite interacting with tabs again
+      await act(async () => {
+        fireEvent.click(await screen.findByText('Column Specifications'));
+      });
+      await act(async () => {
+        fireEvent.click(await screen.findByText('Grammar'));
+      });
+      await act(async () => {
+        fireEvent.click(await screen.findByText('Governance'));
+      });
+
+      expect(fetchRelationTypeSpy).toHaveBeenCalledTimes(1);
+      expect(fetchGrammarSpy).toHaveBeenCalledTimes(1);
+      expect(fetchRegistryMetadataSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('toggleAllApgGroupCollapse', () => {
