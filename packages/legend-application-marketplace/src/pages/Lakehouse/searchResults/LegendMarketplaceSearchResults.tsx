@@ -402,7 +402,6 @@ export const LegendMarketplaceSearchResults =
       );
       const handleShowAllProducts = useCallback(() => {
         searchResultsStore.setShowAllProducts(true);
-        searchResultsStore.setPage(1);
         flowResult(
           searchResultsStore.executeSearch(
             searchResultsStore.searchQuery ?? '',
