@@ -2654,7 +2654,7 @@ describe('DataProductViewer', () => {
       );
 
       const searchInput = await screen.findByPlaceholderText(
-        'Search access point groups/access points...',
+        'Filter access point groups/access points...',
       );
       fireEvent.change(searchInput, { target: { value: 'MULTI_GROUP_A' } });
 
@@ -2676,7 +2676,7 @@ describe('DataProductViewer', () => {
 
       // Searching for 'group_b_ap_1'
       const searchInput = await screen.findByPlaceholderText(
-        'Search access point groups/access points...',
+        'Filter access point groups/access points...',
       );
       fireEvent.change(searchInput, { target: { value: 'group_b_ap_1' } });
 
@@ -2693,7 +2693,7 @@ describe('DataProductViewer', () => {
       );
 
       const searchInput = await screen.findByPlaceholderText(
-        'Search access point groups/access points...',
+        'Filter access point groups/access points...',
       );
       fireEvent.change(searchInput, {
         target: { value: 'nonexistent_search_query' },

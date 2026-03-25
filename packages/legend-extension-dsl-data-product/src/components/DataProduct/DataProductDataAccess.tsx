@@ -1710,8 +1710,9 @@ export const DataProducteDataAccess = observer(
         {dataProductViewerState.totalAccessPoints > 10 && (
           <div className="data-product__viewer__data-access__search">
             <TextField
+              label="Filter:"
               size="small"
-              placeholder="Search access point groups/access points..."
+              placeholder="Filter access point groups/access points..."
               value={dataProductViewerState.apgSearchText}
               onChange={(e) =>
                 dataProductViewerState.setApgSearchText(e.target.value)
