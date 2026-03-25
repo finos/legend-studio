@@ -112,6 +112,13 @@ jest.mock('@finos/legend-application', () => ({
   useApplicationStore: jest.fn(),
 }));
 
+(global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
+  jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  }));
+
 const setupLakehouseDataProductTest = async (
   dataProduct: V1_DataProduct,
   entitlementsDataProductDetails: V1_EntitlementsDataProductDetails | undefined,
