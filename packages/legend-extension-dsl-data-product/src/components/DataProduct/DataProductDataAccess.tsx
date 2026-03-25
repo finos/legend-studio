@@ -105,7 +105,10 @@ import {
   type DataProductAccessPointCodeConfiguration,
   type DataProductDataAccessState,
 } from '../../stores/DataProduct/DataProductDataAccessState.js';
-import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
+import {
+  APG_AUTO_COLLAPSE_THRESHOLD,
+  type DataProductViewerState,
+} from '../../stores/DataProduct/DataProductViewerState.js';
 import {
   generateAnchorForSection,
   DATA_PRODUCT_VIEWER_SECTION,
@@ -1709,7 +1712,8 @@ export const DataProducteDataAccess = observer(
             </button>
           )}
         </div>
-        {dataProductViewerState.totalAccessPoints > 10 && (
+        {dataProductViewerState.totalAccessPoints >
+          APG_AUTO_COLLAPSE_THRESHOLD && (
           <div className="data-product__viewer__data-access__search">
             <TextField
               label="Filter"

@@ -88,7 +88,7 @@ import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramV
 import type { RegistryServerClient } from '@finos/legend-server-marketplace';
 import { DataAccessState } from '@finos/legend-query-builder';
 
-const APG_AUTO_COLLAPSE_THRESHOLD = 20;
+export const APG_AUTO_COLLAPSE_THRESHOLD = 20;
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
