@@ -34,6 +34,7 @@ import {
   type V1_DataProduct,
   type V1_EntitlementsDataProductDetails,
   type V1_LiteDataContract,
+  type V1_RelationElement,
   type V1_TaskResponse,
   V1_AccessPointGroupReferenceType,
   V1_ContractState,
@@ -2843,6 +2844,128 @@ describe('DataProductViewer', () => {
 
       // Now all should be collapsed again
       expect(screen.queryAllByText('Access Point 1').length).toBe(0);
+    });
+  });
+
+  describe('fetchSampleData logic', () => {
+    test('uses engine result when both engine and artifact promises resolve successfully', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+      const apState = dataProductViewerState.apgStates[0]
+        ?.accessPointStates[0] as DataProductAccessPointState;
+
+      const engineEle = {
+        _type: 'relationElement',
+        columns: ['engine_col'],
+      } as unknown as V1_RelationElement;
+      const artifactEle = {
+        _type: 'relationElement',
+        columns: ['artifact_col'],
+      } as unknown as V1_RelationElement;
+
+      jest
+        .spyOn(apState, 'fetchSampleDataFromEngine')
+        .mockResolvedValue(engineEle);
+      jest
+        .spyOn(apState, 'fetchSampleDataFromArtifact')
+        .mockResolvedValue(artifactEle);
+
+      expect(apState.fetchingSampleDataState.isInInitialState).toBe(true);
+
+      await apState.fetchSampleData(
+        Promise.resolve(undefined),
+        'test-env-name',
+      );
+
+      expect(apState.relationElement).toEqual(engineEle);
+    });
+
+    test('uses artifact result when engine promise fails but artifact promise resolves successfully', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+      const apState = dataProductViewerState.apgStates[0]
+        ?.accessPointStates[0] as DataProductAccessPointState;
+
+      const artifactEle = {
+        _type: 'relationElement',
+        columns: ['artifact_col'],
+      } as unknown as V1_RelationElement;
+
+      jest
+        .spyOn(apState, 'fetchSampleDataFromEngine')
+        .mockRejectedValue(new Error('Engine failed'));
+      jest
+        .spyOn(apState, 'fetchSampleDataFromArtifact')
+        .mockResolvedValue(artifactEle);
+
+      await apState.fetchSampleData(
+        Promise.resolve(undefined),
+        'test-env-name',
+      );
+
+      expect(apState.relationElement).toEqual(artifactEle);
+    });
+
+    test('only requests engine if artifact promise is not provided', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+      const apState = dataProductViewerState.apgStates[0]
+        ?.accessPointStates[0] as DataProductAccessPointState;
+
+      const engineEle = {
+        _type: 'relationElement',
+        columns: ['engine_col'],
+      } as unknown as V1_RelationElement;
+
+      const engineSpy = jest
+        .spyOn(apState, 'fetchSampleDataFromEngine')
+        .mockResolvedValue(engineEle);
+      const artifactSpy = jest.spyOn(apState, 'fetchSampleDataFromArtifact');
+
+      await apState.fetchSampleData(undefined, 'test-env-name');
+
+      expect(apState.relationElement).toEqual(engineEle);
+      expect(engineSpy).toHaveBeenCalledWith('test-env-name');
+      expect(artifactSpy).not.toHaveBeenCalled();
+    });
+
+    test('only requests artifact if resolvedUserEnv is not provided', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockMultiGroupLargeSDLCDataProduct,
+        mockEntitlementsMultiGroupLargeSDLCDataProduct,
+        [],
+        [],
+      );
+      const apState = dataProductViewerState.apgStates[0]
+        ?.accessPointStates[0] as DataProductAccessPointState;
+
+      const artifactEle = {
+        _type: 'relationElement',
+        columns: ['artifact_col'],
+      } as unknown as V1_RelationElement;
+
+      const engineSpy = jest.spyOn(apState, 'fetchSampleDataFromEngine');
+      const artifactSpy = jest
+        .spyOn(apState, 'fetchSampleDataFromArtifact')
+        .mockResolvedValue(artifactEle);
+
+      await apState.fetchSampleData(Promise.resolve(undefined), undefined);
+
+      expect(apState.relationElement).toEqual(artifactEle);
+      expect(artifactSpy).toHaveBeenCalled();
+      expect(engineSpy).not.toHaveBeenCalled();
     });
   });
 });

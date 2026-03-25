@@ -116,7 +116,7 @@ export class DataProductAccessPointState {
     }
   }
 
-  private async fetchRelationTypeFromArtifact(
+  async fetchRelationTypeFromArtifact(
     dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
   ): Promise<V1_RelationType | undefined> {
     const artifact = await dataProductArtifactPromise;
@@ -134,7 +134,7 @@ export class DataProductAccessPointState {
     }
   }
 
-  private async fetchRelationTypeFromEngine(
+  async fetchRelationTypeFromEngine(
     abortController: AbortController,
     entitlementsDataProductDetails?:
       | V1_EntitlementsDataProductDetails
@@ -237,7 +237,7 @@ export class DataProductAccessPointState {
     }
   }
 
-  private async fetchSampleDataFromArtifact(
+  async fetchSampleDataFromArtifact(
     dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
   ): Promise<V1_RelationElement | undefined> {
     const artifact = await dataProductArtifactPromise;
@@ -255,7 +255,7 @@ export class DataProductAccessPointState {
     }
   }
 
-  private async fetchSampleDataFromEngine(
+  async fetchSampleDataFromEngine(
     resolvedUserEnv: string,
   ): Promise<V1_RelationElement> {
     if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
