@@ -307,13 +307,9 @@ export const ServiceRegisterModal = observer(
               <div className="service-register-modal__group__content">
                 <div className="service-register-modal__input">
                   <div
-                    className="service-register-modal__input__label"
-                    style={{
-                      color: !title ? 'var(--color-red-300)' : undefined,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                    }}
+                    className={clsx('service-register-modal__input__label', {
+                      'service-register-modal__input__label--warning': !title,
+                    })}
                   >
                     {!title && <ErrorWarnIcon style={{ fontSize: '1.2rem' }} />}
                     TITLE
@@ -389,15 +385,10 @@ export const ServiceRegisterModal = observer(
                 </div>
                 <div className="service-register-modal__input">
                   <div
-                    className="service-register-modal__input__label"
-                    style={{
-                      color: !serviceDocumentation
-                        ? 'var(--color-red-300)'
-                        : undefined,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                    }}
+                    className={clsx('service-register-modal__input__label', {
+                      'service-register-modal__input__label--warning':
+                        !serviceDocumentation,
+                    })}
                   >
                     {!serviceDocumentation && (
                       <ErrorWarnIcon style={{ fontSize: '1.2rem' }} />

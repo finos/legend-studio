@@ -530,15 +530,10 @@ const QueryProductionizerContent = observer(() => {
               <div className="query-productionizer__group__content">
                 <div className="query-productionizer__input">
                   <div
-                    className="query-productionizer__input__label"
-                    style={{
-                      color: !productionizerStore.serviceTitle
-                        ? 'var(--color-red-300)'
-                        : undefined,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                    }}
+                    className={clsx('query-productionizer__input__label', {
+                      'query-productionizer__input__label--warning':
+                        !productionizerStore.serviceTitle,
+                    })}
                   >
                     {!productionizerStore.serviceTitle && (
                       <ErrorWarnIcon style={{ fontSize: '1.2rem' }} />

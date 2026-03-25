@@ -308,16 +308,11 @@ const ServiceGeneralEditor = observer(() => {
             Title
           </div>
           <div
-            className="panel__content__form__section__header__prompt"
-            style={{
-              color: !service.title ? 'var(--color-red-300)' : undefined,
-            }}
+            className={clsx('panel__content__form__section__header__prompt', {
+              'service-editor__general__warning-prompt': !service.title,
+            })}
           >
-            {!service.title && (
-              <ErrorWarnIcon
-                style={{ marginRight: '0.3rem', fontSize: '1.2rem' }}
-              />
-            )}
+            {!service.title && <ErrorWarnIcon style={{ fontSize: '1.2rem' }} />}
             {`Provide a title for the service`}
           </div>
           <input
@@ -399,17 +394,12 @@ const ServiceGeneralEditor = observer(() => {
             Documentation
           </div>
           <div
-            className="panel__content__form__section__header__prompt"
-            style={{
-              color: !service.documentation
-                ? 'var(--color-red-300)'
-                : undefined,
-            }}
+            className={clsx('panel__content__form__section__header__prompt', {
+              'service-editor__general__warning-prompt': !service.documentation,
+            })}
           >
             {!service.documentation && (
-              <ErrorWarnIcon
-                style={{ marginRight: '0.3rem', fontSize: '1.2rem' }}
-              />
+              <ErrorWarnIcon style={{ fontSize: '1.2rem' }} />
             )}
             {`Provide a brief description of the service's functionalities and usage`}
           </div>

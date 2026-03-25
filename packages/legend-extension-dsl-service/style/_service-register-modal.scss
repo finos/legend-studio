@@ -84,6 +84,11 @@
       color: var(--color-dark-grey-500);
     }
 
+    &__label--warning {
+      color: var(--color-red-300);
+      gap: 0.3rem;
+    }
+
     &__input,
     &__selector {
       flex: 1 0;
