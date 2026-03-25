@@ -57,7 +57,6 @@ export class DataProductAccessPointState {
     | undefined;
 
   readonly fetchingRelationTypeState = ActionState.create();
-  readonly fetchingRelationElement = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
   readonly fetchingSampleDataState = ActionState.create();
   readonly fetchingRegistryMetadataState = ActionState.create();
@@ -117,7 +116,7 @@ export class DataProductAccessPointState {
     }
   }
 
-  async fetchRelationTypeFromArtifact(
+  private async fetchRelationTypeFromArtifact(
     dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
   ): Promise<V1_RelationType | undefined> {
     const artifact = await dataProductArtifactPromise;
@@ -135,25 +134,7 @@ export class DataProductAccessPointState {
     }
   }
 
-  async fetchSampleDataFromArtifact(
-    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
-  ): Promise<V1_RelationElement | undefined> {
-    const artifact = await dataProductArtifactPromise;
-    const relationElement = artifact?.accessPointGroups
-      .find((apg) => apg.id === this.apgState.apg.id)
-      ?.accessPointImplementations.find(
-        (ap) => ap.id === this.accessPoint.id,
-      )?.relationElement;
-    if (relationElement !== undefined) {
-      return relationElement;
-    } else {
-      throw new Error(
-        `Data product artifact is missing sample data for access point: ${this.accessPoint.id}`,
-      );
-    }
-  }
-
-  async fetchRelationTypeFromEngine(
+  private async fetchRelationTypeFromEngine(
     abortController: AbortController,
     entitlementsDataProductDetails?:
       | V1_EntitlementsDataProductDetails
@@ -190,7 +171,9 @@ export class DataProductAccessPointState {
   }
 
   async fetchRelationType(
-    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
+    dataProductArtifactPromise:
+      | Promise<V1_DataProductArtifact | undefined>
+      | undefined,
     entitlementsDataProductDetails?:
       | V1_EntitlementsDataProductDetails
       | undefined,
@@ -202,7 +185,9 @@ export class DataProductAccessPointState {
     try {
       const abortController = new AbortController();
       const relationType = await Promise.any([
-        this.fetchRelationTypeFromArtifact(dataProductArtifactPromise),
+        ...(dataProductArtifactPromise
+          ? [this.fetchRelationTypeFromArtifact(dataProductArtifactPromise)]
+          : []),
         this.fetchRelationTypeFromEngine(
           abortController,
           entitlementsDataProductDetails,
@@ -252,7 +237,25 @@ export class DataProductAccessPointState {
     }
   }
 
-  async fetchSampleDataFromEngine(
+  private async fetchSampleDataFromArtifact(
+    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
+  ): Promise<V1_RelationElement | undefined> {
+    const artifact = await dataProductArtifactPromise;
+    const relationElement = artifact?.accessPointGroups
+      .find((apg) => apg.id === this.apgState.apg.id)
+      ?.accessPointImplementations.find(
+        (ap) => ap.id === this.accessPoint.id,
+      )?.relationElement;
+    if (relationElement !== undefined) {
+      return relationElement;
+    } else {
+      throw new Error(
+        `Data product artifact is missing sample data for access point: ${this.accessPoint.id}`,
+      );
+    }
+  }
+
+  private async fetchSampleDataFromEngine(
     resolvedUserEnv: string,
   ): Promise<V1_RelationElement> {
     if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
@@ -307,7 +310,9 @@ export class DataProductAccessPointState {
   }
 
   async fetchSampleData(
-    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
+    dataProductArtifactPromise:
+      | Promise<V1_DataProductArtifact | undefined>
+      | undefined,
     resolvedUserEnv: string | undefined,
   ): Promise<void> {
     if (!this.fetchingSampleDataState.isInInitialState) {
@@ -316,7 +321,9 @@ export class DataProductAccessPointState {
     this.fetchingSampleDataState.inProgress();
     try {
       const [artifactResult, engineResult] = await Promise.allSettled([
-        this.fetchSampleDataFromArtifact(dataProductArtifactPromise),
+        ...(dataProductArtifactPromise
+          ? [this.fetchSampleDataFromArtifact(dataProductArtifactPromise)]
+          : []),
         ...(resolvedUserEnv
           ? [this.fetchSampleDataFromEngine(resolvedUserEnv)]
           : []),
@@ -328,6 +335,18 @@ export class DataProductAccessPointState {
         artifactResult.value
       ) {
         this.relationElement = artifactResult.value;
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof AggregateError) {
+        // Default to showing the relation type from engine error
+        this.apgState.applicationStore.notificationService.notifyError(
+          `Error fetching access point sample data: ${error.errors[1] ?? error.errors[0] ?? error.message}`,
+        );
+      } else {
+        this.apgState.applicationStore.notificationService.notifyError(
+          `Error fetching access point sample data: ${error.message}`,
+        );
       }
     } finally {
       this.fetchingSampleDataState.complete();

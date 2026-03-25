@@ -98,7 +98,6 @@ import {
   isEmpty,
   isNonEmptyString,
   isNonNullable,
-  LogEvent,
   noop,
 } from '@finos/legend-shared';
 import {
@@ -771,63 +770,43 @@ const ColumnsScreen = observer(
     const userEnv = dataAccessState?.resolvedUserEnv;
 
     useEffect(() => {
-      if (
-        !accessPointState.isCollapsed &&
-        userEnv &&
-        !accessPointState.relationElement &&
-        !accessPointState.apgState.isCollapsed &&
-        accessPointState.apgState.access === AccessPointGroupAccess.ENTERPRISE
-      ) {
-        accessPointState
-          .fetchSampleDataFromEngine(
-            guaranteeNonNullable(getIngestDeploymentServerConfigName(userEnv)),
-          )
-          .catch((error) => {
-            accessPointState.apgState.applicationStore.logService.error(
-              LogEvent.create(`error fetching sample data`),
-              `Error fetching access point: ${accessPointState.accessPoint.id} sample data from engine: ${error.message}`,
-            );
-          });
-      }
-    }, [
-      accessPointState,
-      accessPointState.isCollapsed,
-      userEnv,
-      accessPointState.apgState.isCollapsed,
-    ]);
-
-    useEffect(() => {
-      const fetchRelationTypeAndSampleData = async () => {
+      const fetchRelationType = async () => {
         const dataProductArtifactPromise =
           accessPointState.apgState.dataProductViewerState
             .dataProductArtifactPromise;
         const entitlementsDataProductDetails =
           accessPointState.apgState.dataProductViewerState
             .entitlementsDataProductDetails;
-        if (
-          dataProductArtifactPromise &&
-          accessPointState.fetchingRelationTypeState.isInInitialState
-        ) {
+        if (accessPointState.fetchingRelationTypeState.isInInitialState) {
           await accessPointState.fetchRelationType(
             dataProductArtifactPromise,
             entitlementsDataProductDetails,
           );
         }
-        if (
-          dataProductArtifactPromise &&
-          accessPointState.fetchingSampleDataState.isInInitialState
-        ) {
-          await accessPointState.fetchSampleDataFromArtifact(
+      };
+
+      const fetchSampleData = async () => {
+        const dataProductArtifactPromise =
+          accessPointState.apgState.dataProductViewerState
+            .dataProductArtifactPromise;
+        if (accessPointState.fetchingSampleDataState.isInInitialState) {
+          await accessPointState.fetchSampleData(
             dataProductArtifactPromise,
+            userEnv ? getIngestDeploymentServerConfigName(userEnv) : undefined,
           );
         }
       };
+
+      const fetchRelationTypeAndSampleData = async () => {
+        await Promise.all([fetchRelationType(), fetchSampleData()]);
+      };
+
       fetchRelationTypeAndSampleData().catch((error: Error) =>
         accessPointState.apgState.applicationStore.notificationService.notifyError(
           error,
         ),
       );
-    }, [accessPointState]);
+    }, [accessPointState, userEnv]);
 
     useEffect(() => {
       if (gridApi) {
@@ -911,15 +890,13 @@ const ColumnsScreen = observer(
 
     return (
       <>
-        {accessPointState.fetchingRelationTypeState.isInProgress ||
-        accessPointState.fetchingRelationElement.isInProgress ? (
+        {accessPointState.fetchingRelationTypeState.isInProgress ? (
           <Box className="data-product__viewer__more-info__loading-indicator">
             <CubesLoadingIndicator isLoading={true}>
               <CubesLoadingIndicatorIcon />
             </CubesLoadingIndicator>
           </Box>
-        ) : accessPointState.fetchingRelationTypeState.hasCompleted &&
-          accessPointState.fetchingRelationElement.hasCompleted ? (
+        ) : accessPointState.fetchingRelationTypeState.hasCompleted ? (
           <Box
             className={clsx(
               'data-product__viewer__more-info__columns-grid ag-theme-balham',
