@@ -33,14 +33,13 @@ import {
   type TDSExecutionResult,
 } from '@finos/legend-graph';
 import {
-  type GeneratorFn,
   type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { makeAutoObservable, observable, flow, action, flowResult } from 'mobx';
+import { makeAutoObservable, observable, action } from 'mobx';
 import { deserialize } from 'serializr';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
@@ -57,7 +56,6 @@ export class DataProductAccessPointState {
     | V1_EntitlementsDataProductDetails
     | undefined;
 
-  readonly initializationState = ActionState.create();
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingRelationElement = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
@@ -78,43 +76,17 @@ export class DataProductAccessPointState {
       relationElement: observable,
       isCollapsed: observable,
       setIsCollapsed: action,
-      init: flow,
     });
 
     this.apgState = apgState;
     this.accessPoint = accessPoint;
     this.isCollapsed = initialCollapsed;
+    this.entitlementsDataProductDetails =
+      this.apgState.dataProductViewerState.entitlementsDataProductDetails;
   }
 
   setIsCollapsed(val: boolean): void {
     this.isCollapsed = val;
-    if (
-      !val &&
-      this.initializationState.isInInitialState &&
-      this.apgState.dataProductViewerState.dataProductArtifactPromise
-    ) {
-      flowResult(this.init()).catch(
-        this.apgState.applicationStore.alertUnhandledError,
-      );
-    }
-  }
-
-  *init(): GeneratorFn<void> {
-    if (!this.initializationState.isInInitialState) {
-      return;
-    }
-    try {
-      const dataProductArtifactPromise =
-        this.apgState.dataProductViewerState.dataProductArtifactPromise;
-      const entitlementsDataProductDetails =
-        this.apgState.dataProductViewerState.entitlementsDataProductDetails;
-      if (!dataProductArtifactPromise) {
-        return;
-      }
-      this.entitlementsDataProductDetails = entitlementsDataProductDetails;
-    } finally {
-      this.initializationState.complete();
-    }
   }
 
   async fetchRegistryMetadata(): Promise<void> {

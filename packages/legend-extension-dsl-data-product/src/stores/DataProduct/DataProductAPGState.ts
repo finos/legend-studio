@@ -44,14 +44,7 @@ import {
   HttpStatus,
   uuid,
 } from '@finos/legend-shared';
-import {
-  makeAutoObservable,
-  action,
-  observable,
-  flow,
-  computed,
-  flowResult,
-} from 'mobx';
+import { makeAutoObservable, action, observable, flow, computed } from 'mobx';
 import { deserialize, serialize } from 'serializr';
 import {
   dataContractContainsAccessGroup,
@@ -115,7 +108,6 @@ export class DataProductAPGState {
     approvedUsers: V1_User[];
   }[] = [];
 
-  readonly initializationState = ActionState.create();
   readonly fetchingAccessState = ActionState.create();
   readonly pollingConsumerGrantState = ActionState.create();
   readonly handlingContractsState = ActionState.create();
@@ -139,7 +131,6 @@ export class DataProductAPGState {
       associatedSystemAccountContractsAndApprovedUsers: observable,
       setApgContracts: action,
       setAssociatedUserContract: action,
-      init: flow,
       fetchAndSetAssociatedSystemAccountContracts: flow,
       subscriptions: observable,
       isCollapsed: observable,
@@ -171,13 +162,6 @@ export class DataProductAPGState {
 
   setIsCollapsed(isCollapsed: boolean): void {
     this.isCollapsed = isCollapsed;
-    if (
-      !isCollapsed &&
-      this.initializationState.isInInitialState &&
-      this.dataProductViewerState.dataProductArtifactPromise
-    ) {
-      flowResult(this.init()).catch(this.applicationStore.alertUnhandledError);
-    }
   }
 
   get access(): AccessPointGroupAccess {
@@ -241,24 +225,6 @@ export class DataProductAPGState {
         lakehouseContractServerClient,
         tokenProvider,
       );
-    }
-  }
-
-  *init(): GeneratorFn<void> {
-    if (!this.initializationState.isInInitialState) {
-      return;
-    }
-    try {
-      yield Promise.all(
-        this.accessPointStates.map((ap) => {
-          if (!ap.isCollapsed) {
-            return flowResult(ap.init());
-          }
-          return Promise.resolve();
-        }),
-      );
-    } finally {
-      this.initializationState.complete();
     }
   }
 
