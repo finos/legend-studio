@@ -991,4 +991,62 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(screen.queryByText('Source')).toBeNull();
     });
   });
+
+  describe('getSearchResultProjectGAV', () => {
+    test('returns undefined when SDLC origin has null GAV fields', () => {
+      const {
+        getSearchResultProjectGAV,
+      } = require('../../utils/SearchUtils.js');
+      const {
+        DataProductSearchResult,
+        LakehouseDataProductSearchResultDetails,
+        LakehouseSDLCDataProductSearchResultOrigin,
+      } = require('@finos/legend-server-marketplace');
+
+      const searchResult = new DataProductSearchResult();
+      const details = new LakehouseDataProductSearchResultDetails();
+      const origin = new LakehouseSDLCDataProductSearchResultOrigin();
+      origin.groupId = null;
+      origin.artifactId = 'some-artifact';
+      origin.versionId = '1.0.0';
+      origin.path = 'test::Path';
+      details.origin = origin;
+      details.dataProductId = 'TEST_PRODUCT';
+      details.deploymentId = 1;
+      details.producerEnvironmentName = 'test-env';
+      searchResult.dataProductDetails = details;
+
+      expect(getSearchResultProjectGAV(searchResult)).toBeUndefined();
+    });
+
+    test('returns GAV when SDLC origin has all non-null fields', () => {
+      const {
+        getSearchResultProjectGAV,
+      } = require('../../utils/SearchUtils.js');
+      const {
+        DataProductSearchResult,
+        LakehouseDataProductSearchResultDetails,
+        LakehouseSDLCDataProductSearchResultOrigin,
+      } = require('@finos/legend-server-marketplace');
+
+      const searchResult = new DataProductSearchResult();
+      const details = new LakehouseDataProductSearchResultDetails();
+      const origin = new LakehouseSDLCDataProductSearchResultOrigin();
+      origin.groupId = 'com.example';
+      origin.artifactId = 'my-product';
+      origin.versionId = '1.0.0';
+      origin.path = 'test::Path';
+      details.origin = origin;
+      details.dataProductId = 'TEST_PRODUCT';
+      details.deploymentId = 1;
+      details.producerEnvironmentName = 'test-env';
+      searchResult.dataProductDetails = details;
+
+      expect(getSearchResultProjectGAV(searchResult)).toEqual({
+        groupId: 'com.example',
+        artifactId: 'my-product',
+        versionId: '1.0.0',
+      });
+    });
+  });
 });
