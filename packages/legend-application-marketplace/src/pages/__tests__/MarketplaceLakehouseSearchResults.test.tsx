@@ -44,6 +44,12 @@ import {
   mockPaginatedSearchResultPage2Response,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
 import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
+import { getSearchResultProjectGAV } from '../../utils/SearchUtils.js';
+import {
+  DataProductSearchResult,
+  LakehouseDataProductSearchResultDetails,
+  LakehouseSDLCDataProductSearchResultOrigin,
+} from '@finos/legend-server-marketplace';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -994,15 +1000,6 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
   describe('getSearchResultProjectGAV', () => {
     test('returns undefined when SDLC origin has null GAV fields', () => {
-      const {
-        getSearchResultProjectGAV,
-      } = require('../../utils/SearchUtils.js');
-      const {
-        DataProductSearchResult,
-        LakehouseDataProductSearchResultDetails,
-        LakehouseSDLCDataProductSearchResultOrigin,
-      } = require('@finos/legend-server-marketplace');
-
       const searchResult = new DataProductSearchResult();
       const details = new LakehouseDataProductSearchResultDetails();
       const origin = new LakehouseSDLCDataProductSearchResultOrigin();
@@ -1020,15 +1017,6 @@ describe('MarketplaceLakehouseSearchResults', () => {
     });
 
     test('returns GAV when SDLC origin has all non-null fields', () => {
-      const {
-        getSearchResultProjectGAV,
-      } = require('../../utils/SearchUtils.js');
-      const {
-        DataProductSearchResult,
-        LakehouseDataProductSearchResultDetails,
-        LakehouseSDLCDataProductSearchResultOrigin,
-      } = require('@finos/legend-server-marketplace');
-
       const searchResult = new DataProductSearchResult();
       const details = new LakehouseDataProductSearchResultDetails();
       const origin = new LakehouseSDLCDataProductSearchResultOrigin();
