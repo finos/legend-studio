@@ -39,7 +39,7 @@ import {
   guaranteeNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { makeAutoObservable, observable, action } from 'mobx';
+import { makeAutoObservable, observable, action, computed } from 'mobx';
 import { deserialize } from 'serializr';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
@@ -52,9 +52,6 @@ export class DataProductAccessPointState {
   relationType: V1_RelationType | undefined;
   relationElement: V1_RelationElement | undefined;
   grammar: string | undefined;
-  entitlementsDataProductDetails?:
-    | V1_EntitlementsDataProductDetails
-    | undefined;
 
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
@@ -75,13 +72,18 @@ export class DataProductAccessPointState {
       relationElement: observable,
       isCollapsed: observable,
       setIsCollapsed: action,
+      entitlementsDataProductDetails: computed,
     });
 
     this.apgState = apgState;
     this.accessPoint = accessPoint;
     this.isCollapsed = initialCollapsed;
-    this.entitlementsDataProductDetails =
-      this.apgState.dataProductViewerState.entitlementsDataProductDetails;
+  }
+
+  get entitlementsDataProductDetails():
+    | V1_EntitlementsDataProductDetails
+    | undefined {
+    return this.apgState.dataProductViewerState.entitlementsDataProductDetails;
   }
 
   setIsCollapsed(val: boolean): void {
