@@ -24,9 +24,11 @@ export const PureCompatibilityTestManager = observer(() => {
 
   useEffect(() => {
     if (config.pctReportUrl) {
-      window.location.href = config.pctReportUrl;
+      studioApplicationStore.navigationService.navigator.goToAddress(
+        config.pctReportUrl,
+      );
     }
-  }, [config.pctReportUrl]);
+  }, [config.pctReportUrl, studioApplicationStore.navigationService.navigator]);
 
   return null;
 });
