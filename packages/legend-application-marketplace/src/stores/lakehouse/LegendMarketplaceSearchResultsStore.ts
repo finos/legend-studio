@@ -30,6 +30,7 @@ import {
   DataProductSearchResponse,
   ErrorDataProductSearchResultDetails,
   LakehouseAdHocDataProductSearchResultOrigin,
+  LakehouseDataProductSearchResultDetails,
   LakehouseDataProductSearchResultOriginType,
   LakehouseSDLCDataProductSearchResultOrigin,
   type MarketplaceServerClient,
@@ -517,6 +518,11 @@ export class LegendMarketplaceSearchResultsStore {
         !(
           result.dataProductDetails instanceof
           ErrorDataProductSearchResultDetails
+        ) &&
+        !(
+          result.dataProductDetails instanceof
+            LakehouseDataProductSearchResultDetails &&
+          result.dataProductDetails.origin === null
         ),
     );
 
