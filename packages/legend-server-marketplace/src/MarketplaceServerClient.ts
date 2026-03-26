@@ -159,18 +159,13 @@ export class MarketplaceServerClient extends AbstractServerClient {
   // ------------------------------------------- Trending -------------------------------------------
 
   private _analytics = (): string => `${this.baseUrl}/v1/analytics`;
-
   getTrendingDataProducts = async (
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
-    size: number = 10,
-    daysBack: number = 30,
-    elasticEnv: string = 'qa',
   ): Promise<TrendingDataProductEntry[]> =>
     this.get<TrendingDataProductEntry[]>(
       `${this._analytics()}/top-products/${lakehouseEnv}`,
       undefined,
       undefined,
-      { size, days_back: daysBack, elastic_env: elasticEnv },
     );
 
   // ------------------------------------------- Taxonomy -------------------------------------------

@@ -225,6 +225,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    top: 3rem;
+    position: relative;
   }
 
   &__show-all-text {
