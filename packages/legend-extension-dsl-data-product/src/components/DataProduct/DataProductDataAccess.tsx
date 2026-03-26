@@ -770,42 +770,45 @@ const ColumnsScreen = observer(
     const userEnv = dataAccessState?.resolvedUserEnv;
 
     useEffect(() => {
-      const fetchRelationType = async () => {
-        const dataProductArtifactPromise =
-          accessPointState.apgState.dataProductViewerState
-            .dataProductArtifactPromise;
-        const entitlementsDataProductDetails =
-          accessPointState.apgState.dataProductViewerState
-            .entitlementsDataProductDetails;
-        if (accessPointState.fetchingRelationTypeState.isInInitialState) {
-          await accessPointState.fetchRelationType(
+      const dataProductArtifactPromise =
+        accessPointState.apgState.dataProductViewerState
+          .dataProductArtifactPromise;
+      const entitlementsDataProductDetails =
+        accessPointState.apgState.dataProductViewerState
+          .entitlementsDataProductDetails;
+      if (accessPointState.fetchingRelationTypeState.isInInitialState) {
+        accessPointState
+          .fetchRelationType(
             dataProductArtifactPromise,
             entitlementsDataProductDetails,
+          )
+          .catch((error: Error) =>
+            accessPointState.apgState.applicationStore.notificationService.notifyError(
+              error,
+            ),
           );
-        }
-      };
+      }
+    }, [accessPointState]);
 
-      const fetchSampleData = async () => {
-        const dataProductArtifactPromise =
-          accessPointState.apgState.dataProductViewerState
-            .dataProductArtifactPromise;
-        if (accessPointState.fetchingSampleDataState.isInInitialState) {
-          await accessPointState.fetchSampleData(
+    useEffect(() => {
+      if (!userEnv) {
+        return;
+      }
+      const dataProductArtifactPromise =
+        accessPointState.apgState.dataProductViewerState
+          .dataProductArtifactPromise;
+      if (accessPointState.fetchingSampleDataState.isInInitialState) {
+        accessPointState
+          .fetchSampleData(
             dataProductArtifactPromise,
-            userEnv ? getIngestDeploymentServerConfigName(userEnv) : undefined,
+            getIngestDeploymentServerConfigName(userEnv),
+          )
+          .catch((error: Error) =>
+            accessPointState.apgState.applicationStore.notificationService.notifyError(
+              error,
+            ),
           );
-        }
-      };
-
-      const fetchRelationTypeAndSampleData = async () => {
-        await Promise.all([fetchRelationType(), fetchSampleData()]);
-      };
-
-      fetchRelationTypeAndSampleData().catch((error: Error) =>
-        accessPointState.apgState.applicationStore.notificationService.notifyError(
-          error,
-        ),
-      );
+      }
     }, [accessPointState, userEnv]);
 
     useEffect(() => {
