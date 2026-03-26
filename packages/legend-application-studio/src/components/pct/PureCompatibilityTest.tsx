@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
+import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
 
 export const PureCompatibilityTestManager = observer(() => {
   const studioApplicationStore = useLegendStudioApplicationStore();
   const config = studioApplicationStore.config;
-  if (!config.pctReportUrl) {
-    return null;
-  }
-  return (
-    <div className="app__page">
-      <iframe
-        src={config.pctReportUrl}
-        style={{ width: '100%', height: '100%', border: 'none' }}
-        title="Legend Pure Compatibility Test"
-      />
-    </div>
-  );
+
+  useEffect(() => {
+    if (config.pctReportUrl) {
+      window.location.href = config.pctReportUrl;
+    }
+  }, [config.pctReportUrl]);
+
+  return null;
 });
