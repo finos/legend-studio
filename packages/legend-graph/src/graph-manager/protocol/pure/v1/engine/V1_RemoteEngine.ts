@@ -112,11 +112,8 @@ import type {
   V1_CompilationResult,
   V1_TextCompilationResult,
 } from './compilation/V1_CompilationResult.js';
-import {
-  V1_CompilationWarning,
-  V1_PURE_WARNING_DEFECT_TYPE_ID,
-} from './compilation/V1_CompilationWarning.js';
-import { V1_Defect } from './compilation/V1_Defect.js';
+import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
+import { V1_DefectSeverityLevel } from './compilation/V1_Defect.js';
 import { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
 import type { GraphManagerOperationReport } from '../../../../GraphManagerStatistics.js';
 import {
@@ -613,18 +610,18 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       const compilationResult = await this.engineServerClient.compile(
         this.serializePureModelContext(model),
       );
-      const defects = (
-        compilationResult.defects as PlainObject<V1_Defect>[] | undefined
-      )?.map((defect) =>
-        (defect as { defectTypeId?: string }).defectTypeId ===
-        V1_PURE_WARNING_DEFECT_TYPE_ID
-          ? V1_CompilationWarning.serialization.fromJson(defect)
-          : V1_Defect.serialization.fromJson(defect),
-      );
+      const warnings = (
+        compilationResult.defects as
+          | PlainObject<V1_CompilationWarning>[]
+          | undefined
+      )
+        ?.map((defect) => V1_CompilationWarning.serialization.fromJson(defect))
+        .filter(
+          (defect) =>
+            defect.defectSeverityLevel === V1_DefectSeverityLevel.WARN,
+        );
       return {
-        warnings: defects?.filter(
-          (d): d is V1_CompilationWarning => d instanceof V1_CompilationWarning,
-        ),
+        warnings: warnings && warnings.length > 0 ? warnings : undefined,
       };
     } catch (error) {
       assertErrorThrown(error);
@@ -671,19 +668,19 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       ] = stopWatch.elapsed;
 
       const model = V1_deserializePureModelContextData(mainGraph);
-      const defects = (
-        compilationResult.defects as PlainObject<V1_Defect>[] | undefined
-      )?.map((defect) =>
-        (defect as { defectTypeId?: string }).defectTypeId ===
-        V1_PURE_WARNING_DEFECT_TYPE_ID
-          ? V1_CompilationWarning.serialization.fromJson(defect)
-          : V1_Defect.serialization.fromJson(defect),
-      );
+      const warnings = (
+        compilationResult.defects as
+          | PlainObject<V1_CompilationWarning>[]
+          | undefined
+      )
+        ?.map((defect) => V1_CompilationWarning.serialization.fromJson(defect))
+        .filter(
+          (defect) =>
+            defect.defectSeverityLevel === V1_DefectSeverityLevel.WARN,
+        );
       return {
         model,
-        warnings: defects?.filter(
-          (d): d is V1_CompilationWarning => d instanceof V1_CompilationWarning,
-        ),
+        warnings: warnings && warnings.length > 0 ? warnings : undefined,
         sourceInformationIndex:
           this.extractElementSourceInformationIndexFromPureModelContextDataJSON(
             mainGraph,

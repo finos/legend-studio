@@ -18,7 +18,7 @@ import { createModelSchema, optional, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { V1_sourceInformationSerialization } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import type { V1_SourceInformation } from '../../model/V1_SourceInformation.js';
-import { V1_Defect } from './V1_Defect.js';
+import { V1_Defect, V1_DefectSeverityLevel } from './V1_Defect.js';
 
 export const V1_PURE_WARNING_DEFECT_TYPE_ID = 'PureWarning';
 
@@ -29,7 +29,7 @@ export class V1_CompilationWarning extends V1_Defect {
   constructor() {
     super();
     this.defectTypeId = V1_PURE_WARNING_DEFECT_TYPE_ID;
-    this.defectSeverityLevel = 'WARN';
+    this.defectSeverityLevel = V1_DefectSeverityLevel.WARN;
   }
 
   static override readonly serialization = new SerializationFactory(
