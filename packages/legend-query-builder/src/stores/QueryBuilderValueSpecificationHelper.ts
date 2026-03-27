@@ -47,6 +47,7 @@ import {
   isSubType,
   type ObserverContext,
   InstanceValue,
+  getCorrespondingStandardPrimitiveType,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -211,6 +212,21 @@ export const isPropertyExpressionChainOptional = (
   return isOptional;
 };
 
+/**
+ * Maps a type to its equivalent standard PRIMITIVE_TYPE for compatibility checks.
+ * For standard primitive types, returns their own enum value.
+ * For precise primitive types, returns their standard equivalent.
+ * Returns undefined for non-primitive types (e.g. Enumeration, Class).
+ */
+export const getStandardPrimitiveTypeEquivalent = (
+  type: Type,
+): PRIMITIVE_TYPE | undefined => {
+  if (type instanceof PrimitiveType) {
+    return type.path as PRIMITIVE_TYPE;
+  }
+  return getCorrespondingStandardPrimitiveType(type.path);
+};
+
 export const isTypeCompatibleForAssignment = (
   type: Type | undefined,
   assignmentType: Type,
@@ -228,20 +244,29 @@ export const isTypeCompatibleForAssignment = (
     PRIMITIVE_TYPE.LATESTDATE,
   ] as string[];
 
+  if (type === undefined) {
+    return false;
+  }
+
+  // Normalize precise primitive types to their standard equivalents
+  const normalizedTypePath =
+    getStandardPrimitiveTypeEquivalent(type) ?? type.path;
+  const normalizedAssignmentTypePath =
+    getStandardPrimitiveTypeEquivalent(assignmentType) ?? assignmentType.path;
+
   // When changing the return type for LHS, the RHS value should be adjusted accordingly.
   return (
-    type !== undefined &&
     // Numeric value is handled loosely because of autoboxing
     // e.g. LHS (integer) = RHS (float) is acceptable
-    ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
-      NUMERIC_PRIMITIVE_TYPES.includes(assignmentType.path)) ||
-      // Date value is handled loosely as well if the LHS is of type DateTime
-      // This is because we would simulate auto-boxing for date by altering the
-      // Pure function used for the operation
-      // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
-      DATE_PRIMITIVE_TYPES.includes(type.path) ||
-      type.path === assignmentType.path ||
-      isSuperType(assignmentType, type))
+    (NUMERIC_PRIMITIVE_TYPES.includes(normalizedTypePath) &&
+      NUMERIC_PRIMITIVE_TYPES.includes(normalizedAssignmentTypePath)) ||
+    // Date value is handled loosely as well if the LHS is of type DateTime
+    // This is because we would simulate auto-boxing for date by altering the
+    // Pure function used for the operation
+    // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
+    DATE_PRIMITIVE_TYPES.includes(normalizedTypePath) ||
+    normalizedTypePath === normalizedAssignmentTypePath ||
+    isSuperType(assignmentType, type)
   );
 };
 

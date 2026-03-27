@@ -83,6 +83,7 @@ import {
   Class,
   DerivedProperty,
   PrimitiveType,
+  PrecisePrimitiveType,
   PRIMITIVE_TYPE,
   Enumeration,
   TYPE_CAST_TOKEN,
@@ -102,6 +103,7 @@ import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPan
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { getClassPropertyIcon } from '@finos/legend-lego/graph-editor';
+import { getStandardPrimitiveTypeEquivalent } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QueryBuilderRootClassInfoTooltip } from '../shared/QueryBuilderRootClassInfoTooltip.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import type { QueryBuilderPropertySearchState } from '../../stores/explorer/QueryBuilderPropertySearchState.js';
@@ -419,28 +421,29 @@ const QueryBuilderExplorerContextMenu = observer(
 );
 
 export const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
-  if (type instanceof PrimitiveType) {
-    if (type.name === PRIMITIVE_TYPE.STRING) {
+  if (type instanceof PrimitiveType || type instanceof PrecisePrimitiveType) {
+    const typeName = getStandardPrimitiveTypeEquivalent(type) ?? type.path;
+    if (typeName === PRIMITIVE_TYPE.STRING) {
       return (
         <StringTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__string" />
       );
-    } else if (type.name === PRIMITIVE_TYPE.BOOLEAN) {
+    } else if (typeName === PRIMITIVE_TYPE.BOOLEAN) {
       return (
         <ToggleIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__boolean" />
       );
     } else if (
-      type.name === PRIMITIVE_TYPE.NUMBER ||
-      type.name === PRIMITIVE_TYPE.INTEGER ||
-      type.name === PRIMITIVE_TYPE.FLOAT ||
-      type.name === PRIMITIVE_TYPE.DECIMAL
+      typeName === PRIMITIVE_TYPE.NUMBER ||
+      typeName === PRIMITIVE_TYPE.INTEGER ||
+      typeName === PRIMITIVE_TYPE.FLOAT ||
+      typeName === PRIMITIVE_TYPE.DECIMAL
     ) {
       return (
         <HashtagIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__number" />
       );
     } else if (
-      type.name === PRIMITIVE_TYPE.DATE ||
-      type.name === PRIMITIVE_TYPE.DATETIME ||
-      type.name === PRIMITIVE_TYPE.STRICTDATE
+      typeName === PRIMITIVE_TYPE.DATE ||
+      typeName === PRIMITIVE_TYPE.DATETIME ||
+      typeName === PRIMITIVE_TYPE.STRICTDATE
     ) {
       return (
         <ClockIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />

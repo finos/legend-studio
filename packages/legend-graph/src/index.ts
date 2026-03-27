@@ -28,7 +28,9 @@ export { Type } from './graph/metamodel/pure/packageableElements/domain/Type.js'
 export { DataType } from './graph/metamodel/pure/packageableElements/domain/DataType.js';
 export {
   PrimitiveType,
+  PrecisePrimitiveType,
   getPrimitiveTypeInstanceFromEnum,
+  getCorrespondingStandardPrimitiveType,
 } from './graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 export {
   GenericTypeReference,

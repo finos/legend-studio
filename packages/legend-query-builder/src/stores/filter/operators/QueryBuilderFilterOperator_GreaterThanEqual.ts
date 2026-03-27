@@ -35,7 +35,10 @@ import {
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
-import { isTypeCompatibleForAssignment } from '../../QueryBuilderValueSpecificationHelper.js';
+import {
+  getStandardPrimitiveTypeEquivalent,
+  isTypeCompatibleForAssignment,
+} from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import { buildDefaultInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
 
@@ -53,17 +56,21 @@ export class QueryBuilderFilterOperator_GreaterThanEqual
     const propertyType =
       filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
+    const normalizedType = getStandardPrimitiveTypeEquivalent(propertyType);
     return (
-      [
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-        PRIMITIVE_TYPE.DATE,
-        PRIMITIVE_TYPE.STRICTDATE,
-        PRIMITIVE_TYPE.DATETIME,
-      ] as string[]
-    ).includes(propertyType.path);
+      normalizedType !== undefined &&
+      (
+        [
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DATE,
+          PRIMITIVE_TYPE.STRICTDATE,
+          PRIMITIVE_TYPE.DATETIME,
+        ] as string[]
+      ).includes(normalizedType)
+    );
   }
 
   isCompatibleWithFilterConditionValue(

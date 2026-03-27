@@ -24,6 +24,7 @@ import {
   type SimpleFunctionExpression,
   Enumeration,
   PrimitiveType,
+  PrecisePrimitiveType,
 } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
@@ -62,7 +63,8 @@ export class QueryBuilderFilterOperator_IsEmpty
     }
     return (
       propertyType instanceof Enumeration ||
-      propertyType instanceof PrimitiveType
+      propertyType instanceof PrimitiveType ||
+      propertyType instanceof PrecisePrimitiveType
     );
   }
 

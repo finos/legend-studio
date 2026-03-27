@@ -39,6 +39,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMe
 import {
   buildNotExpression,
   getCollectionValueSpecificationType,
+  getStandardPrimitiveTypeEquivalent,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
@@ -58,19 +59,21 @@ export class QueryBuilderFilterOperator_In
     const propertyType =
       filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
+    const normalizedType = getStandardPrimitiveTypeEquivalent(propertyType);
     return (
-      (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-        ] as string[]
-      ).includes(propertyType.path) ||
+      (normalizedType !== undefined &&
+        (
+          [
+            PRIMITIVE_TYPE.STRING,
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.DATETIME,
+          ] as string[]
+        ).includes(normalizedType)) ||
       // TODO: do we care if the enumeration type has no value (like in the case of `==` operator)?
       propertyType instanceof Enumeration
     );
@@ -109,7 +112,10 @@ export class QueryBuilderFilterOperator_In
               PRIMITIVE_TYPE.STRICTDATE,
               PRIMITIVE_TYPE.DATETIME,
             ] as string[]
-          ).includes(propertyType.path)
+          ).includes(
+            getStandardPrimitiveTypeEquivalent(propertyType) ??
+              propertyType.path,
+          )
         ) {
           return (
             [
@@ -121,7 +127,10 @@ export class QueryBuilderFilterOperator_In
               PRIMITIVE_TYPE.STRICTDATE,
               PRIMITIVE_TYPE.DATETIME,
             ] as string[]
-          ).includes(collectionType.path);
+          ).includes(
+            getStandardPrimitiveTypeEquivalent(collectionType) ??
+              collectionType.path,
+          );
         }
         return collectionType === propertyType;
       } else if (valueSpec instanceof VariableExpression) {

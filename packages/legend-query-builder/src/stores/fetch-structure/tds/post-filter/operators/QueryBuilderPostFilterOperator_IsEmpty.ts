@@ -21,6 +21,7 @@ import {
   type LambdaFunction,
   Enumeration,
   PrimitiveType,
+  PrecisePrimitiveType,
 } from '@finos/legend-graph';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
@@ -49,7 +50,11 @@ export class QueryBuilderPostFilterOperator_IsEmpty
   }
 
   isCompatibleWithType(type: Type): boolean {
-    return type instanceof PrimitiveType || type instanceof Enumeration;
+    return (
+      type instanceof PrimitiveType ||
+      type instanceof PrecisePrimitiveType ||
+      type instanceof Enumeration
+    );
   }
 
   isCompatibleWithConditionValue(

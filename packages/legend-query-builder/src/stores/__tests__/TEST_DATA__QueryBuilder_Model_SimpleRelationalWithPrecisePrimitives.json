@@ -1,0 +1,282 @@
+[
+  {
+    "path": "model::PrecisePrimitivePerson",
+    "content": {
+      "_type": "class",
+      "name": "PrecisePrimitivePerson",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "nameVarchar",
+          "type": "meta::pure::precisePrimitives::Varchar"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "ageInt",
+          "type": "meta::pure::precisePrimitives::Int"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "salaryDouble",
+          "type": "meta::pure::precisePrimitives::Double"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "bigIntProp",
+          "type": "meta::pure::precisePrimitives::BigInt"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::PrecisePrimitivesDB",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [],
+      "name": "PrecisePrimitivesDB",
+      "package": "model",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "nameVarchar",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "ageInt",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "salaryDouble",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Double"
+                  }
+                },
+                {
+                  "name": "bigIntProp",
+                  "nullable": true,
+                  "type": {
+                    "_type": "BigInt"
+                  }
+                }
+              ],
+              "name": "PersonTable",
+              "primaryKey": ["id"]
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "model::PrecisePrimitivesMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "model::PrecisePrimitivePerson",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::PrecisePrimitivesDB",
+            "mainTableDb": "model::PrecisePrimitivesDB",
+            "schema": "default",
+            "table": "PersonTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::PrecisePrimitivesDB",
+                "mainTableDb": "model::PrecisePrimitivesDB",
+                "schema": "default",
+                "table": "PersonTable"
+              },
+              "tableAlias": "PersonTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::PrecisePrimitivePerson",
+                "property": "nameVarchar"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "nameVarchar",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::PrecisePrimitivesDB",
+                  "mainTableDb": "model::PrecisePrimitivesDB",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::PrecisePrimitivePerson",
+                "property": "ageInt"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "ageInt",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::PrecisePrimitivesDB",
+                  "mainTableDb": "model::PrecisePrimitivesDB",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::PrecisePrimitivePerson",
+                "property": "salaryDouble"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "salaryDouble",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::PrecisePrimitivesDB",
+                  "mainTableDb": "model::PrecisePrimitivesDB",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::PrecisePrimitivePerson",
+                "property": "bigIntProp"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "bigIntProp",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::PrecisePrimitivesDB",
+                  "mainTableDb": "model::PrecisePrimitivesDB",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            }
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "PrecisePrimitivesMapping",
+      "package": "model",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "model::PrecisePrimitivesRuntime",
+    "content": {
+      "_type": "runtime",
+      "name": "PrecisePrimitivesRuntime",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "path": "model::PrecisePrimitivesDB",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "connectionPointer",
+                  "connection": "model::PrecisePrimitivesConnection"
+                },
+                "id": "precise_connection"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "model::PrecisePrimitivesMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    "classifierPath": "meta::pure::runtime::PackageableRuntime"
+  },
+  {
+    "path": "model::PrecisePrimitivesConnection",
+    "content": {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+          "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+          "_type": "h2Local"
+        },
+        "element": "model::PrecisePrimitivesDB",
+        "type": "H2"
+      },
+      "name": "PrecisePrimitivesConnection",
+      "package": "model"
+    },
+    "classifierPath": "meta::pure::runtime::PackageableConnection"
+  }
+]

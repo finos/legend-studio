@@ -1842,3 +1842,18 @@ export const TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities = {
     },
   ],
 };
+
+export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithPrecisePrimitives =
+  {
+    mappedEntities: [
+      {
+        path: 'model::PrecisePrimitivePerson',
+        properties: [
+          { _type: 'MappedProperty', name: 'nameVarchar' },
+          { _type: 'MappedProperty', name: 'ageInt' },
+          { _type: 'MappedProperty', name: 'salaryDouble' },
+          { _type: 'MappedProperty', name: 'bigIntProp' },
+        ],
+      },
+    ],
+  };

@@ -17,6 +17,7 @@
 import { DataType } from './DataType.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
 import {
+  ELEMENT_PATH_DELIMITER,
   PRECISE_PRIMITIVE_TYPE,
   PRIMITIVE_TYPE,
 } from '../../../../MetaModelConst.js';
@@ -94,6 +95,53 @@ export class PrecisePrimitiveType extends DataType {
     throw new Error('Method not implemented.');
   }
 }
+
+/**
+ * Maps a precise primitive type path to its corresponding standard PRIMITIVE_TYPE.
+ * Accepts both full paths (e.g. 'meta::pure::precisePrimitives::Varchar')
+ * and short names (e.g. 'Varchar').
+ * Returns undefined if the path is not a recognized precise primitive type.
+ */
+export const getCorrespondingStandardPrimitiveType = (
+  precisePrimitivePath: string,
+): PRIMITIVE_TYPE | undefined => {
+  const PRECISE_PRIMITIVE_TO_STANDARD = new Map<string, PRIMITIVE_TYPE>([
+    [PRECISE_PRIMITIVE_TYPE.VARCHAR, PRIMITIVE_TYPE.STRING],
+    [PRECISE_PRIMITIVE_TYPE.INT, PRIMITIVE_TYPE.INTEGER],
+    [PRECISE_PRIMITIVE_TYPE.TINY_INT, PRIMITIVE_TYPE.INTEGER],
+    [PRECISE_PRIMITIVE_TYPE.U_TINY_INT, PRIMITIVE_TYPE.INTEGER],
+    [PRECISE_PRIMITIVE_TYPE.SMALL_INT, PRIMITIVE_TYPE.INTEGER],
+    [PRECISE_PRIMITIVE_TYPE.U_SMALL_INT, PRIMITIVE_TYPE.INTEGER],
+    [PRECISE_PRIMITIVE_TYPE.U_INT, PRIMITIVE_TYPE.INTEGER],
+    [PRECISE_PRIMITIVE_TYPE.BIG_INT, PRIMITIVE_TYPE.INTEGER],
+    [PRECISE_PRIMITIVE_TYPE.U_BIG_INT, PRIMITIVE_TYPE.INTEGER],
+    [PRECISE_PRIMITIVE_TYPE.FLOAT, PRIMITIVE_TYPE.FLOAT],
+    [PRECISE_PRIMITIVE_TYPE.DOUBLE, PRIMITIVE_TYPE.FLOAT],
+    [PRECISE_PRIMITIVE_TYPE.DECIMAL, PRIMITIVE_TYPE.DECIMAL],
+    [PRECISE_PRIMITIVE_TYPE.NUMERIC, PRIMITIVE_TYPE.DECIMAL],
+    [PRECISE_PRIMITIVE_TYPE.STRICTDATE, PRIMITIVE_TYPE.STRICTDATE],
+    [PRECISE_PRIMITIVE_TYPE.DATETIME, PRIMITIVE_TYPE.DATETIME],
+    [PRECISE_PRIMITIVE_TYPE.TIMESTAMP, PRIMITIVE_TYPE.DATETIME],
+    [PRECISE_PRIMITIVE_TYPE.STRICTTIME, PRIMITIVE_TYPE.STRICTTIME],
+  ]);
+
+  // Try exact full path match first
+  const fullPathMatch = PRECISE_PRIMITIVE_TO_STANDARD.get(precisePrimitivePath);
+  if (fullPathMatch !== undefined) {
+    return fullPathMatch;
+  }
+
+  // If input has no path delimiter, try matching by short name
+  if (!precisePrimitivePath.includes(ELEMENT_PATH_DELIMITER)) {
+    for (const [fullPath, standardType] of PRECISE_PRIMITIVE_TO_STANDARD) {
+      if (extractElementNameFromPath(fullPath) === precisePrimitivePath) {
+        return standardType;
+      }
+    }
+  }
+
+  return undefined;
+};
 
 export const getPrimitiveTypeInstanceFromEnum = (
   type: PRIMITIVE_TYPE,

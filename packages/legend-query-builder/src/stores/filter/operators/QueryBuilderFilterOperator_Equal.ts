@@ -34,6 +34,7 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
+  getStandardPrimitiveTypeEquivalent,
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
@@ -54,20 +55,22 @@ export class QueryBuilderFilterOperator_Equal
     const propertyType =
       filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
+    const normalizedType = getStandardPrimitiveTypeEquivalent(propertyType);
     return (
-      (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.BOOLEAN,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-        ] as string[]
-      ).includes(propertyType.path) ||
+      (normalizedType !== undefined &&
+        (
+          [
+            PRIMITIVE_TYPE.STRING,
+            PRIMITIVE_TYPE.BOOLEAN,
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.DATETIME,
+          ] as string[]
+        ).includes(normalizedType)) ||
       // if the type is enumeration, make sure the enumeration has some value
       (propertyType instanceof Enumeration && propertyType.values.length > 0)
     );
