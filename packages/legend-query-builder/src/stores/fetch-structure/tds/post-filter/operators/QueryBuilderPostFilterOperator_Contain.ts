@@ -21,7 +21,6 @@ import {
   type LambdaFunction,
   type FunctionExpression,
   PRIMITIVE_TYPE,
-  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -37,6 +36,7 @@ import type {
 } from '../QueryBuilderPostFilterState.js';
 import {
   buildNotExpression,
+  getStandardPrimitiveTypeEquivalent,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpressionHelper } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
@@ -53,15 +53,17 @@ export class QueryBuilderPostFilterOperator_Contain
   }
 
   isCompatibleWithType(type: Type): boolean {
-    return type === PrimitiveType.STRING;
+    return getStandardPrimitiveTypeEquivalent(type) === PRIMITIVE_TYPE.STRING;
   }
 
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
+    const rhsType = postFilterConditionState.rightConditionValue.type;
     return (
       !postFilterConditionState.rightConditionValue.isCollection &&
-      PrimitiveType.STRING === postFilterConditionState.rightConditionValue.type
+      rhsType !== undefined &&
+      getStandardPrimitiveTypeEquivalent(rhsType) === PRIMITIVE_TYPE.STRING
     );
   }
 

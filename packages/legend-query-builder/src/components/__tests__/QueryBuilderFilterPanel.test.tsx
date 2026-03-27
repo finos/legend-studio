@@ -48,6 +48,9 @@ import {
   TEST_DATA__simpleLambdaWithFirstDayOfYearDateFunction,
   TEST_DATA__getAllWithOneIntegerConditionFilter,
   TEST_DATA_getAllWithOneFloatConditionFilter,
+  TEST_DATA__filterWithVarcharPrecisePrimitiveProperty,
+  TEST_DATA__filterWithIntPrecisePrimitiveProperty,
+  TEST_DATA__filterWithDoublePrecisePrimitiveProperty,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -58,6 +61,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDerivedPropFromParentUsedInFilter,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithPrecisePrimitives,
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
@@ -95,6 +99,7 @@ import {
 import type { Entity } from '@finos/legend-storage';
 import TEST_DATA__SimpleSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' with { type: 'json' };
 import TEST_DATA__NestedSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_NestedSubType.json' with { type: 'json' };
+import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithPrecisePrimitives from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithPrecisePrimitives.json' with { type: 'json' };
 import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' with { type: 'json' };
 import {
   TEST_DATA__nestedFilterWithSubType,
@@ -3480,5 +3485,253 @@ test(
     dpModal = await renderResult.findByRole('dialog');
     await findByText(dpModal, 'Derived Property');
     expect(getByDisplayValue(dpModal, 'test2')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder creates a string filter condition when DnD a Varchar precise primitive property`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithPrecisePrimitives,
+      stub_RawLambda(),
+      'model::PrecisePrimitivesMapping',
+      'model::PrecisePrimitivesRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithPrecisePrimitives,
+    );
+
+    const _class = queryBuilderState.graphManagerState.graph.getClass(
+      'model::PrecisePrimitivePerson',
+    );
+    await act(async () => {
+      queryBuilderState.changeClass(_class);
+    });
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // Drag and drop the Varchar property to create a filter condition
+    const dropZone = await findByText(filterPanel, 'Add a filter condition');
+    const dragSource = await findByText(explorerPanel, 'Name Varchar');
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+
+    // Verify a string-type filter condition is created
+    await findByText(filterPanel, 'Name Varchar');
+    await findByText(filterPanel, 'is');
+    // String filter uses a text input
+    expect(await findByDisplayValue(filterPanel, '')).not.toBeNull();
+
+    const contentNodes = await renderResult.findAllByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+    );
+    expect(contentNodes.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder creates an integer filter condition when DnD an Int precise primitive property`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithPrecisePrimitives,
+      stub_RawLambda(),
+      'model::PrecisePrimitivesMapping',
+      'model::PrecisePrimitivesRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithPrecisePrimitives,
+    );
+
+    const _class = queryBuilderState.graphManagerState.graph.getClass(
+      'model::PrecisePrimitivePerson',
+    );
+    await act(async () => {
+      queryBuilderState.changeClass(_class);
+    });
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // Drag and drop the Int property to create a filter condition
+    const dropZone = await findByText(filterPanel, 'Add a filter condition');
+    const dragSource = await findByText(explorerPanel, 'Age Int');
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+
+    // Verify an integer-type filter condition is created
+    await findByText(filterPanel, 'Age Int');
+    await findByText(filterPanel, 'is');
+    // Integer filter uses a number input
+    expect(await findByDisplayValue(filterPanel, '')).not.toBeNull();
+
+    const contentNodes = await renderResult.findAllByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+    );
+    expect(contentNodes.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads a filter with a Varchar precise primitive property`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithPrecisePrimitives,
+      stub_RawLambda(),
+      'model::PrecisePrimitivesMapping',
+      'model::PrecisePrimitivesRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithPrecisePrimitives,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          undefined,
+          TEST_DATA__filterWithVarcharPrecisePrimitiveProperty.body,
+        ),
+      );
+    });
+
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+
+    // Verify the filter condition loaded correctly with the string value
+    await findByText(filterPanel, 'Name Varchar');
+    await findByText(filterPanel, 'is');
+    expect(await findByText(filterPanel, '"testName"')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads a filter with an Int precise primitive property`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithPrecisePrimitives,
+      stub_RawLambda(),
+      'model::PrecisePrimitivesMapping',
+      'model::PrecisePrimitivesRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithPrecisePrimitives,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          undefined,
+          TEST_DATA__filterWithIntPrecisePrimitiveProperty.body,
+        ),
+      );
+    });
+
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+
+    // Verify the filter condition loaded correctly with the integer value
+    await findByText(filterPanel, 'Age Int');
+    await findByText(filterPanel, 'is');
+    expect(await findByText(filterPanel, '"30"')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads a filter with a Double precise primitive property`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithPrecisePrimitives,
+      stub_RawLambda(),
+      'model::PrecisePrimitivesMapping',
+      'model::PrecisePrimitivesRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithPrecisePrimitives,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          undefined,
+          TEST_DATA__filterWithDoublePrecisePrimitiveProperty.body,
+        ),
+      );
+    });
+
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+
+    // Verify the filter condition loaded correctly with the float value
+    await findByText(filterPanel, 'Salary Double');
+    await findByText(filterPanel, 'is');
+    expect(await findByText(filterPanel, '"75000.5"')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder shows correct operators for precise primitive property types`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithPrecisePrimitives,
+      stub_RawLambda(),
+      'model::PrecisePrimitivesMapping',
+      'model::PrecisePrimitivesRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithPrecisePrimitives,
+    );
+
+    const _class = queryBuilderState.graphManagerState.graph.getClass(
+      'model::PrecisePrimitivePerson',
+    );
+    await act(async () => {
+      queryBuilderState.changeClass(_class);
+    });
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // Add Varchar filter condition
+    const dropZone = await findByText(filterPanel, 'Add a filter condition');
+    const varcharDragSource = await findByText(explorerPanel, 'Name Varchar');
+    await dragAndDrop(
+      varcharDragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await findByText(filterPanel, 'Name Varchar');
+
+    // Open the operator menu and verify string operators are available
+    fireEvent.click(getByTitle(filterPanel, 'Choose Operator...'));
+    const operatorMenu = renderResult.getByRole('menu');
+    // String-type operators should be available for Varchar
+    expect(queryByText(operatorMenu, 'is')).not.toBeNull();
+    expect(queryByText(operatorMenu, 'is not')).not.toBeNull();
+    expect(queryByText(operatorMenu, 'contains')).not.toBeNull();
+    expect(queryByText(operatorMenu, 'starts with')).not.toBeNull();
+    expect(queryByText(operatorMenu, 'ends with')).not.toBeNull();
+    // Close the menu
+    fireEvent.keyDown(operatorMenu, { key: 'Escape', code: 'Escape' });
   },
 );

@@ -23,7 +23,6 @@ import {
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
-  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -37,6 +36,7 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
+  getStandardPrimitiveTypeEquivalent,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
@@ -54,9 +54,10 @@ export class QueryBuilderFilterOperator_StartWith
     filterConditionState: FilterConditionState,
   ): boolean {
     return (
-      PrimitiveType.STRING ===
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType
+      getStandardPrimitiveTypeEquivalent(
+        filterConditionState.propertyExpressionState.propertyExpression.func
+          .value.genericType.value.rawType,
+      ) === PRIMITIVE_TYPE.STRING
     );
   }
 
@@ -68,7 +69,10 @@ export class QueryBuilderFilterOperator_StartWith
       !filterConditionState.rightConditionValue.isCollection
         ? filterConditionState.rightConditionValue.type
         : undefined;
-    return PrimitiveType.STRING === type;
+    return (
+      type !== undefined &&
+      getStandardPrimitiveTypeEquivalent(type) === PRIMITIVE_TYPE.STRING
+    );
   }
 
   getDefaultFilterConditionValue(

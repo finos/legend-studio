@@ -44,6 +44,7 @@ import { buildPostFilterConditionExpressionHelper } from './QueryBuilderPostFilt
 import {
   buildNotExpression,
   getCollectionValueSpecificationType,
+  getStandardPrimitiveTypeEquivalent,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
@@ -58,16 +59,18 @@ export class QueryBuilderPostFilterOperator_In
   }
 
   isCompatibleWithType(type: Type): boolean {
+    const normalizedType = getStandardPrimitiveTypeEquivalent(type);
     return (
-      (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-        ] as string[]
-      ).includes(type.path) ||
+      (normalizedType !== undefined &&
+        (
+          [
+            PRIMITIVE_TYPE.STRING,
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+          ] as string[]
+        ).includes(normalizedType)) ||
       // TODO: do we care if the enumeration type has no value (like in the case of `==` operator)?
       type instanceof Enumeration
     );

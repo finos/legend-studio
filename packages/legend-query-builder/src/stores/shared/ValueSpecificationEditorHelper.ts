@@ -53,7 +53,10 @@ import {
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationHelper.js';
+import {
+  generateDefaultValueForPrimitiveType,
+  getStandardPrimitiveTypeEquivalent,
+} from '../QueryBuilderValueSpecificationHelper.js';
 import {
   functionExpression_setParametersValues,
   instanceValue_setValues,
@@ -248,7 +251,8 @@ export const buildDefaultInstanceValue = (
   observerContext: ObserverContext,
   enableInitializingDefaultValue: boolean,
 ): ValueSpecification => {
-  const path = type.path;
+  // Normalize precise primitive types to their standard equivalents
+  const path = getStandardPrimitiveTypeEquivalent(type) ?? type.path;
   switch (path) {
     case PRIMITIVE_TYPE.STRING:
     case PRIMITIVE_TYPE.STRICTDATE:

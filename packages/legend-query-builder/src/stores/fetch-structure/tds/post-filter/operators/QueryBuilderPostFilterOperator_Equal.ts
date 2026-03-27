@@ -38,6 +38,7 @@ import {
 } from '../QueryBuilderPostFilterState.js';
 import {
   buildNotExpression,
+  getStandardPrimitiveTypeEquivalent,
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
@@ -55,20 +56,22 @@ export class QueryBuilderPostFilterOperator_Equal
   }
 
   isCompatibleWithType(type: Type): boolean {
+    const normalizedType = getStandardPrimitiveTypeEquivalent(type);
     return (
-      (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.BOOLEAN,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-        ] as string[]
-      ).includes(type.path) ||
+      (normalizedType !== undefined &&
+        (
+          [
+            PRIMITIVE_TYPE.STRING,
+            PRIMITIVE_TYPE.BOOLEAN,
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.DATETIME,
+          ] as string[]
+        ).includes(normalizedType)) ||
       // if the type is enumeration, make sure the enumeration has some value
       (type instanceof Enumeration && type.values.length > 0)
     );

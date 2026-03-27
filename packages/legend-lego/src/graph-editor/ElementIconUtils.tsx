@@ -21,6 +21,7 @@ import {
   Measure,
   Unit,
   PrimitiveType,
+  PrecisePrimitiveType,
 } from '@finos/legend-graph';
 import {
   PURE_ClassIcon,
@@ -32,7 +33,7 @@ import {
 } from '@finos/legend-art';
 
 export const getClassPropertyIcon = (type: Type): React.ReactNode => {
-  if (type instanceof PrimitiveType) {
+  if (type instanceof PrimitiveType || type instanceof PrecisePrimitiveType) {
     return <PURE_PrimitiveTypeIcon />;
   } else if (type instanceof Class) {
     return <PURE_ClassIcon />;

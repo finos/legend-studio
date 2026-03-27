@@ -26,31 +26,34 @@ import {
   type Type,
   Enumeration,
   PrimitiveType,
+  PrecisePrimitiveType,
   PRIMITIVE_TYPE,
   getMultiplicityDescription,
 } from '@finos/legend-graph';
+import { getStandardPrimitiveTypeEquivalent } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { returnUndefOnError } from '@finos/legend-shared';
 import type { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import { getColumnMultiplicity } from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperatorHelper.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 
 export const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
-  if (type instanceof PrimitiveType) {
-    if (type.name === PRIMITIVE_TYPE.STRING) {
+  if (type instanceof PrimitiveType || type instanceof PrecisePrimitiveType) {
+    const typeName = getStandardPrimitiveTypeEquivalent(type) ?? type.path;
+    if (typeName === PRIMITIVE_TYPE.STRING) {
       return <StringTypeIcon className="query-builder-column-badge__icon" />;
-    } else if (type.name === PRIMITIVE_TYPE.BOOLEAN) {
+    } else if (typeName === PRIMITIVE_TYPE.BOOLEAN) {
       return <ToggleIcon className="query-builder-column-badge__icon" />;
     } else if (
-      type.name === PRIMITIVE_TYPE.NUMBER ||
-      type.name === PRIMITIVE_TYPE.INTEGER ||
-      type.name === PRIMITIVE_TYPE.FLOAT ||
-      type.name === PRIMITIVE_TYPE.DECIMAL
+      typeName === PRIMITIVE_TYPE.NUMBER ||
+      typeName === PRIMITIVE_TYPE.INTEGER ||
+      typeName === PRIMITIVE_TYPE.FLOAT ||
+      typeName === PRIMITIVE_TYPE.DECIMAL
     ) {
       return <HashtagIcon className="query-builder-column-badge__icon" />;
     } else if (
-      type.name === PRIMITIVE_TYPE.DATE ||
-      type.name === PRIMITIVE_TYPE.DATETIME ||
-      type.name === PRIMITIVE_TYPE.STRICTDATE
+      typeName === PRIMITIVE_TYPE.DATE ||
+      typeName === PRIMITIVE_TYPE.DATETIME ||
+      typeName === PRIMITIVE_TYPE.STRICTDATE
     ) {
       return <ClockIcon className="query-builder-column-badge__icon" />;
     }

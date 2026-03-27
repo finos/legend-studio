@@ -35,7 +35,10 @@ import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
-import { isTypeCompatibleForAssignment } from '../../../../QueryBuilderValueSpecificationHelper.js';
+import {
+  getStandardPrimitiveTypeEquivalent,
+  isTypeCompatibleForAssignment,
+} from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpressionHelper } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
@@ -50,17 +53,21 @@ export class QueryBuilderPostFilterOperator_LessThan
   }
 
   isCompatibleWithType(type: Type): boolean {
+    const normalizedType = getStandardPrimitiveTypeEquivalent(type);
     return (
-      [
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-        PRIMITIVE_TYPE.DATE,
-        PRIMITIVE_TYPE.STRICTDATE,
-        PRIMITIVE_TYPE.DATETIME,
-      ] as string[]
-    ).includes(type.path);
+      normalizedType !== undefined &&
+      (
+        [
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DATE,
+          PRIMITIVE_TYPE.STRICTDATE,
+          PRIMITIVE_TYPE.DATETIME,
+        ] as string[]
+      ).includes(normalizedType)
+    );
   }
 
   isCompatibleWithConditionValue(
