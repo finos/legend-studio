@@ -93,7 +93,8 @@ export const convertEntitlementsDataProductDetailsToSearchResult = (
 ): DataProductSearchResult => {
   const searchResult = new DataProductSearchResult();
   searchResult.dataProductTitle =
-    entitlementsDataProductDetails.title ??
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    entitlementsDataProductDetails.title ||
     entitlementsDataProductDetails.dataProduct.name;
   searchResult.dataProductDescription =
     entitlementsDataProductDetails.description ?? '';
