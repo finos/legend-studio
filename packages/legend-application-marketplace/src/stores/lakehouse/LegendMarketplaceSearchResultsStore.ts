@@ -593,7 +593,7 @@ export class LegendMarketplaceSearchResultsStore {
     token: string | undefined,
   ): Promise<void> {
     await Promise.all([
-      this.fetchDataProducts(query, graphManager, token),
+      this.DEPRECATED_fetchDataProducts(query, graphManager, token),
       this.fetchLegacyDataProducts(query, graphManager, token),
     ]);
 
@@ -603,7 +603,7 @@ export class LegendMarketplaceSearchResultsStore {
     );
   }
 
-  private async fetchDataProducts(
+  private async DEPRECATED_fetchDataProducts(
     query: string,
     graphManager: V1_PureGraphManager,
     token: string | undefined,
@@ -611,7 +611,9 @@ export class LegendMarketplaceSearchResultsStore {
     this.fetchingProducerSearchDataProductsState.inProgress();
     try {
       const rawResponse =
-        await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProductsLite(
+        await this.marketplaceBaseStore.lakehouseContractServerClient.getAllLiteDataProducts(
+          this.marketplaceBaseStore.envState.lakehouseEnvironment,
+          undefined,
           token,
         );
       const dataProductLiteDetails =

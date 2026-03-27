@@ -21,17 +21,21 @@ import type {
   V1_CreateSubscriptionInput,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
+  V1_DataProductLitePaginatedResponse,
   V1_DataRequestsWithWorkflowResponse,
   V1_DataRequestTasksResponse,
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
   V1_EntitlementsDataProductDetailsResponse,
   V1_EntitlementsDataProductLiteResponse,
+  V1_EntitlementsLakehouseEnvironmentType,
   V1_EntitlementsUserEnvResponse,
   V1_InvalidateDataContractResponse,
+  V1_LastValuesMapRecord,
   V1_LiteDataContractsPaginatedResponse,
   V1_LiteDataContractsResponse,
   V1_LiteDataContractWithUserStatus,
+  V1_PaginationMetadataRecord,
   V1_PendingTasksResponse,
   V1_TaskResponse,
   V1_TaskStatus,
@@ -356,10 +360,63 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _dataProducts = (): string => `${this.baseUrl}/dataproducts`;
 
-  getDataProductsLite = (
+  getDataProductsLitePaginated = (
+    size: number = 1000,
+    environmentType: V1_EntitlementsLakehouseEnvironmentType,
+    lastDataProductId: string | undefined,
+    lastDataProductDeploymentId: number | undefined,
     token: string | undefined,
-  ): Promise<PlainObject<V1_EntitlementsDataProductLiteResponse>> =>
-    this.get(`${this._dataProducts()}/lite`, {}, this._token(token));
+  ): Promise<PlainObject<V1_DataProductLitePaginatedResponse>> =>
+    this.get(`${this._dataProducts()}/lite/paginated`, {}, this._token(token), {
+      size,
+      environmentType,
+      lastDataProductId,
+      lastDataProductDeploymentId,
+    });
+
+  getAllLiteDataProducts = async (
+    environmentType: V1_EntitlementsLakehouseEnvironmentType,
+    size: number = 1000,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_EntitlementsDataProductLiteResponse>> => {
+    const allDataProducts: PlainObject[] = [];
+    let lastDataProductId: string | undefined;
+    let lastDataProductDeploymentId: number | undefined;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+      const response: PlainObject<V1_DataProductLitePaginatedResponse> =
+        await this.getDataProductsLitePaginated(
+          size,
+          environmentType,
+          lastDataProductId,
+          lastDataProductDeploymentId,
+          token,
+        );
+      const products =
+        (
+          response.liteDataProductsResponse as
+            | PlainObject<V1_EntitlementsDataProductLiteResponse>
+            | undefined
+        )?.dataProducts ?? [];
+      allDataProducts.push(...(products as PlainObject[]));
+
+      const metadata = response.paginationMetadataRecord as
+        | PlainObject<V1_PaginationMetadataRecord>
+        | undefined;
+      hasNextPage = metadata?.hasNextPage === true;
+      if (hasNextPage && metadata?.lastValuesMap) {
+        const lastValues =
+          metadata.lastValuesMap as PlainObject<V1_LastValuesMapRecord>;
+        lastDataProductId = lastValues.id as string;
+        lastDataProductDeploymentId = lastValues.deployment_id as number;
+      }
+    }
+
+    return {
+      dataProducts: allDataProducts,
+    } as PlainObject<V1_EntitlementsDataProductLiteResponse>;
+  };
 
   getDataProduct = (
     dataProductId: string,

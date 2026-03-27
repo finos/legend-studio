@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { type V1_EntitlementsDataProduct } from './V1_CoreEntitlements.js';
+import type {
+  V1_PaginationMetadataRecord,
+  V1_EntitlementsDataProduct,
+} from './V1_CoreEntitlements.js';
 import type { PlainObject } from '@finos/legend-shared';
 
 export abstract class V1_EntitlementsDataProductOrigin {}
@@ -71,4 +74,14 @@ export class V1_EntitlementsDataProductDetailsResponse {
 
 export class V1_EntitlementsDataProductLiteResponse {
   dataProducts?: V1_EntitlementsDataProductLite[];
+}
+
+export class V1_LastValuesMapRecord {
+  deployment_id!: number;
+  id!: string;
+}
+
+export class V1_DataProductLitePaginatedResponse {
+  liteDataProductsResponse!: V1_EntitlementsDataProductLiteResponse;
+  paginationMetadataRecord!: V1_PaginationMetadataRecord;
 }
