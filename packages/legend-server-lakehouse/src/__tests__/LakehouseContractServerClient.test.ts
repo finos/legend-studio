@@ -69,7 +69,7 @@ describe('LakehouseContractServerClient', () => {
             liteDataProductsResponse: { dataProducts: page1Products },
             paginationMetadataRecord: {
               hasNextPage: true,
-              size: 1,
+              size: 2,
               lastValuesMap: { id: 'dp2', deployment_id: 20 },
             },
           })
@@ -77,7 +77,7 @@ describe('LakehouseContractServerClient', () => {
             liteDataProductsResponse: { dataProducts: page2Products },
             paginationMetadataRecord: {
               hasNextPage: true,
-              size: 1,
+              size: 2,
               lastValuesMap: { id: 'dp4', deployment_id: 40 },
             },
           })
