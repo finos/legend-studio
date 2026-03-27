@@ -19,8 +19,14 @@ import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { V1_sourceInformationSerialization } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import type { V1_SourceInformation } from '../../model/V1_SourceInformation.js';
 
+export enum V1_DefectSeverityLevel {
+  WARN = 'WARN',
+  ERROR = 'ERROR',
+  INFO = 'INFO',
+}
+
 export class V1_Defect {
-  defectSeverityLevel!: string;
+  defectSeverityLevel!: V1_DefectSeverityLevel;
   sourceInformation?: V1_SourceInformation | undefined;
   message!: string;
   defectTypeId!: string;
