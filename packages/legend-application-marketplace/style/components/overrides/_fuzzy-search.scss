@@ -14,9 +14,23 @@
  * limitations under the License.
  */
 
-@use 'theme';
+.fuzzy-search__advanced-config__panel {
+  background: var(--marketplace-bg-primary);
 
-@forward 'components/data-product-owners-tooltip';
-@forward 'components/data-product-viewer';
+  &__header__label {
+    color: var(--marketplace-text-primary);
+    background: var(--color-hclight-grey-20);
+  }
 
-@forward 'components';
+  &__header__hint {
+    color: var(--marketplace-text-primary);
+  }
+
+  .mui-radio-group__group__item__label {
+    color: var(--marketplace-text-primary);
+  }
+
+  .Mui-checked {
+    color: var(--color-hclight-blue-50);
+  }
+}

@@ -41,14 +41,14 @@
   font-size: 1.8rem;
   font-weight: 400;
   background: transparent;
-  color: #000;
+  color: var(--marketplace-text-primary);
   transition: all 0.2s ease;
   min-width: 14rem;
   justify-content: center;
   font-family: 'GS Sans', Helvetica, Arial, sans-serif;
 
   &:hover {
-    color: #000;
+    color: var(--marketplace-text-primary);
     box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 15%);
   }
 
@@ -77,10 +77,10 @@
       rgb(75 80 207 / 100%) 0%,
       rgb(102 126 234 / 100%) 100%
     );
-    color: #000;
+    color: var(--marketplace-text-primary);
 
     .btn-icon .gs-icon {
-      color: #000;
+      color: var(--marketplace-text-primary);
     }
   }
 }
@@ -92,10 +92,10 @@
       rgb(75 80 207 / 100%) 0%,
       rgb(102 126 234 / 100%) 100%
     );
-    color: #000;
+    color: var(--marketplace-text-primary);
 
     .btn-icon .gs-icon {
-      color: #000;
+      color: var(--marketplace-text-primary);
     }
   }
 }
@@ -118,7 +118,7 @@
 
 .demo-form-modal {
   position: relative;
-  background: white;
+  background: var(--marketplace-bg-primary);
   border-radius: 1.6rem;
   max-width: 50rem;
   width: 90%;
@@ -130,19 +130,19 @@
 
   &__icon {
     font-size: 2.8rem;
-    color: var(--color-white);
+    color: var(--marketplace-btn-primary-text);
   }
 
   &__close {
     font-size: 1.8rem;
-    color: var(--color-black);
+    color: var(--marketplace-text-primary);
   }
 
   .close-btn {
     position: absolute;
     top: 2rem;
     right: 2rem;
-    background: #f3f4f6;
+    background: var(--marketplace-bg-secondary);
     border: none;
     border-radius: 50%;
     width: 3.6rem;
@@ -164,7 +164,7 @@
     }
 
     .gs-icon {
-      color: #000;
+      color: var(--marketplace-text-primary);
       font-size: 1.8rem;
     }
   }
@@ -173,7 +173,7 @@
 .form-header {
   text-align: center;
   padding: 4rem 3rem 2rem;
-  border-bottom: 0.1rem solid #f3f4f6;
+  border-bottom: 0.1rem solid var(--marketplace-bg-secondary);
   font-family: 'GS Sans', Helvetica, Arial, sans-serif;
 
   .form-icon {
@@ -188,21 +188,21 @@
 
     .gs-icon {
       font-size: 2.8rem;
-      color: white;
+      color: var(--marketplace-btn-primary-text);
     }
   }
 
   .form-title {
     font-size: 2.4rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--marketplace-text-primary);
     margin: 0 0 0.8rem;
     font-family: 'GS Sans', Helvetica, Arial, sans-serif;
   }
 
   .form-subtitle {
     font-size: 1.6rem;
-    color: #6b7280;
+    color: var(--marketplace-text-secondary);
     margin: 0;
     line-height: 1.4;
     font-family: 'GS Sans', Helvetica, Arial, sans-serif;
@@ -220,7 +220,7 @@
       display: block;
       font-size: 1.4rem;
       font-weight: 600;
-      color: #374151;
+      color: var(--marketplace-text-primary);
       margin-bottom: 0.8rem;
       font-family: 'GS Sans', Helvetica, Arial, sans-serif;
     }
@@ -229,7 +229,7 @@
     .form-textarea {
       width: 100%;
       padding: 1.2rem 1.6rem;
-      border: 0.2rem solid #e5e7eb;
+      border: 0.2rem solid var(--marketplace-border-color);
       border-radius: 0.8rem;
       font-size: 1.4rem;
       transition: all 0.2s ease;
@@ -238,17 +238,17 @@
 
       &:focus {
         outline: none;
-        border-color: #667eea;
+        border-color: var(--marketplace-link-color);
         box-shadow: 0 0 0 0.3rem rgb(102 126 234 / 10%);
       }
 
       &.error {
-        border-color: #ef4444;
+        border-color: var(--marketplace-error-color);
         box-shadow: 0 0 0 0.3rem rgb(239 68 68 / 10%);
       }
 
       &::placeholder {
-        color: #9ca3af;
+        color: var(--marketplace-text-muted);
       }
     }
 
@@ -261,7 +261,7 @@
     .error-message {
       display: block;
       font-size: 1.2rem;
-      color: #ef4444;
+      color: var(--marketplace-error-color);
       margin-top: 0.6rem;
       font-weight: 500;
       font-family: 'GS Sans', Helvetica, Arial, sans-serif;
@@ -269,7 +269,7 @@
 
     .character-count {
       font-size: 1.2rem;
-      color: #9ca3af;
+      color: var(--marketplace-text-muted);
       margin-top: 0.4rem;
       text-align: right;
       font-family: 'GS Sans', Helvetica, Arial, sans-serif;
@@ -282,7 +282,7 @@
     justify-content: flex-end;
     margin-top: 3.2rem;
     padding-top: 2.4rem;
-    border-top: 0.1rem solid #f3f4f6;
+    border-top: 0.1rem solid var(--marketplace-bg-secondary);
 
     .btn-secondary,
     .btn-primary {
@@ -306,20 +306,20 @@
     }
 
     .btn-secondary {
-      background: #f9fafb;
-      border: 0.1rem solid #d1d5db;
-      color: #374151;
+      background: var(--marketplace-bg-secondary);
+      border: 0.1rem solid var(--marketplace-border-color);
+      color: var(--marketplace-text-primary);
 
       &:hover:not(:disabled) {
-        background: #f3f4f6;
-        border-color: #9ca3af;
+        background: var(--marketplace-bg-tertiary);
+        border-color: var(--marketplace-text-muted);
       }
     }
 
     .btn-primary {
       background: linear-gradient(135deg, #667eea 0%, #343ae9 100%);
       border: none;
-      color: white;
+      color: var(--marketplace-btn-primary-text);
 
       &:hover:not(:disabled) {
         transform: translateY(-0.1rem);
@@ -354,10 +354,10 @@
   align-items: center;
   gap: 0.8rem;
   padding: 1.2rem 1.6rem;
-  background: #fef2f2;
-  border: 0.1rem solid #fecaca;
+  background: var(--marketplace-error-color);
+  border: 0.1rem solid var(--marketplace-error-color);
   border-radius: 0.8rem;
-  color: #dc2626;
+  color: var(--marketplace-error-color);
   font-size: 1.4rem;
   font-weight: 500;
   margin-bottom: 2rem;
@@ -388,7 +388,7 @@
 .success-popup {
   position: relative;
   background: linear-gradient(135deg, #667eea 0%, #343ae9 100%);
-  color: white;
+  color: var(--marketplace-btn-primary-text);
   padding: 4rem 5rem;
   border-radius: 2rem;
   text-align: center;
@@ -436,7 +436,7 @@
     }
 
     .gs-icon {
-      color: white;
+      color: var(--marketplace-btn-primary-text);
       font-size: 1.6rem;
     }
   }
@@ -459,7 +459,7 @@
 
     .gs-icon {
       font-size: 4rem;
-      color: white;
+      color: var(--marketplace-btn-primary-text);
     }
   }
 
@@ -490,7 +490,7 @@
   .success-btn {
     background: rgb(255 255 255 / 20%);
     border: 0.2rem solid rgb(255 255 255 / 30%);
-    color: white;
+    color: var(--marketplace-btn-primary-text);
     padding: 1.2rem 2.4rem;
     border-radius: 2.5rem;
     font-size: 1.4rem;

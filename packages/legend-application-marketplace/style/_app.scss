@@ -18,18 +18,6 @@
 
 :root {
   --legend-marketplace-header-height: 64px;
-  --legend-marketplace-light-blue: #7297c5;
-
-  // Theme-agnostic color variables (defaults to light theme)
-  --marketplace-bg-primary: var(--color-white);
-  --marketplace-bg-secondary: var(--color-hclight-grey-10);
-  --marketplace-bg-elevated: var(--color-hclight-grey-30);
-  --marketplace-text-primary: var(--color-hclight-black);
-  --marketplace-text-secondary: var(--color-legacylight-dark-grey-200);
-  --marketplace-text-muted: var(--color-legacylight-dark-grey-400);
-  --marketplace-link-color: var(--color-blue-50);
-  --marketplace-info-bg: var(--color-legacylight-light-grey-300);
-  --marketplace-info-text: var(--color-legacylight-dark-grey-200);
 }
 
 html * {
@@ -55,8 +43,8 @@ html * {
   &__info {
     &__group {
       margin-top: 1rem;
-      color: var(--marketplace-info-text);
-      background: var(--marketplace-info-bg);
+      color: var(--marketplace-text-primary);
+      background: var(--marketplace-bg-secondary);
       padding: 1.5rem;
       border-radius: 0.2rem;
     }
@@ -101,7 +89,7 @@ html * {
 
 .marketplace-lakehouse-text__emphasis {
   font-weight: 600;
-  color: var(--color-hclight-blue-60);
+  color: var(--marketplace-link-hover-color);
 }
 
 .marketplace-dialog-close-btn {

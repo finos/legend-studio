@@ -695,10 +695,7 @@ export const RecommendedAddOnsModal = observer(
                   <Box className="recommended-addons-modal__list-info">
                     <Typography
                       variant="body2"
-                      sx={{
-                        fontSize: '1.4rem',
-                        color: 'var(--color-dark-grey-300)',
-                      }}
+                      className="recommended-addons-modal__list-info__item-count"
                     >
                       Showing {(currentPage - 1) * itemsPerPage + 1} -{' '}
                       {Math.min(

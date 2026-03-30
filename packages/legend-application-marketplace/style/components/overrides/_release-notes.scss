@@ -18,7 +18,7 @@
   .modal {
     .modal__header {
       background-color: var(--legend-marketplace-light-blue);
-      color: black;
+      color: var(--marketplace-text-primary);
       height: 6rem;
       justify-content: center;
       flex: auto;
@@ -34,7 +34,7 @@
       padding: 1rem 1.5rem;
 
       &__close-btn {
-        color: black;
+        color: var(--marketplace-text-primary);
       }
 
       &__btn {
@@ -42,7 +42,7 @@
         border-radius: 0.5rem;
 
         &:hover {
-          background: #ccdaea;
+          background: var(--marketplace-bg-tertiary);
         }
       }
     }
@@ -59,7 +59,7 @@
     }
 
     &__entry__value {
-      color: var(--color-legacylight-dark-grey-200);
+      color: var(--marketplace-text-secondary);
     }
   }
 }
