@@ -88,6 +88,8 @@ import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramV
 import type { RegistryServerClient } from '@finos/legend-server-marketplace';
 import { DataAccessState } from '@finos/legend-query-builder';
 
+export const APG_AUTO_COLLAPSE_THRESHOLD = 20;
+
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
   DataProductLayoutState
@@ -111,7 +113,12 @@ export class DataProductViewerState extends BaseViewerState<
     | DataProductViewerDiagramViewerState
     | undefined;
   dataProductArtifact: V1_DataProductArtifact | undefined;
+  dataProductArtifactPromise:
+    | Promise<V1_DataProductArtifact | undefined>
+    | undefined;
+  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails | undefined;
   sampleQueryDataAccessStateIndex = new Map<V1_SampleQuery, DataAccessState>();
+  apgSearchText = '';
   nativeModelAccessDataAccessState: DataAccessState | undefined;
 
   // actions
@@ -167,10 +174,25 @@ export class DataProductViewerState extends BaseViewerState<
       init: flow,
       isAllApgsCollapsed: computed,
       toggleAllApgGroupCollapse: action,
+      apgSearchText: observable,
+      setApgSearchText: action,
+      filteredApgStates: computed,
+      totalAccessPoints: computed,
     });
 
+    const shouldAutoCollapseAPGs =
+      this.product.accessPointGroups.length > 1 &&
+      this.totalAccessPoints > APG_AUTO_COLLAPSE_THRESHOLD;
+    const shouldAutoCollapseAPs =
+      this.totalAccessPoints > APG_AUTO_COLLAPSE_THRESHOLD;
     this.apgStates = this.product.accessPointGroups.map(
-      (e) => new DataProductAPGState(e, this),
+      (e) =>
+        new DataProductAPGState(
+          e,
+          this,
+          shouldAutoCollapseAPGs,
+          shouldAutoCollapseAPs,
+        ),
     );
     this.engineServerClient = engineServerClient;
     this.depotServerClient = depotServerClient;
@@ -217,16 +239,44 @@ export class DataProductViewerState extends BaseViewerState<
 
   get isAllApgsCollapsed(): boolean {
     return (
-      this.apgStates.length > 0 &&
-      this.apgStates.every((groupState) => groupState.isCollapsed)
+      this.filteredApgStates.length > 0 &&
+      this.filteredApgStates.every((groupState) => groupState.isCollapsed)
     );
   }
 
   toggleAllApgGroupCollapse(): void {
     const shouldCollapse = !this.isAllApgsCollapsed;
-    this.apgStates.forEach((groupState) => {
+    this.filteredApgStates.forEach((groupState) => {
       groupState.setIsCollapsed(shouldCollapse);
     });
+  }
+
+  setApgSearchText(text: string): void {
+    this.apgSearchText = text;
+  }
+
+  get filteredApgStates(): DataProductAPGState[] {
+    if (!this.apgSearchText.trim()) {
+      return this.apgStates;
+    }
+    const search = this.apgSearchText.trim().toLowerCase();
+    return this.apgStates.filter(
+      (state) =>
+        state.apg.id.toLowerCase().includes(search) ||
+        (state.apg.title?.toLowerCase().includes(search) ?? false) ||
+        state.apg.accessPoints.some(
+          (ap) =>
+            ap.id.toLowerCase().includes(search) ||
+            (ap.title?.toLowerCase().includes(search) ?? false),
+        ),
+    );
+  }
+
+  get totalAccessPoints(): number {
+    return this.product.accessPointGroups.reduce(
+      (acc, apg) => acc + apg.accessPoints.length,
+      0,
+    );
   }
 
   getModelAccessPointDiagrams(): DiagramAnalysisResult[] {
@@ -615,13 +665,11 @@ export class DataProductViewerState extends BaseViewerState<
     entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
     prefetchedArtifact?: V1_DataProductArtifact,
   ): GeneratorFn<void> {
-    const dataProductArtifactPromise = prefetchedArtifact
+    this.dataProductArtifactPromise = prefetchedArtifact
       ? Promise.resolve(prefetchedArtifact)
       : this.fetchDataProductArtifact();
-    this.apgStates.map((apgState) =>
-      apgState.init(dataProductArtifactPromise, entitlementsDataProductDetails),
-    );
-    const dataProductArtifact = (yield dataProductArtifactPromise) as
+    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
+    const dataProductArtifact = (yield this.dataProductArtifactPromise) as
       | V1_DataProductArtifact
       | undefined;
     this.dataProductArtifact = dataProductArtifact;

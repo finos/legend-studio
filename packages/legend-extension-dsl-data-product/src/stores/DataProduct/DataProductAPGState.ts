@@ -18,11 +18,9 @@ import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type V1_AccessPointGroup,
   type V1_ContractUserStatusResponse,
-  type V1_DataProductArtifact,
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
-  type V1_EntitlementsDataProductDetails,
   type V1_LiteDataContract,
   type V1_User,
   V1_ContractUserStatusResponseModelSchema,
@@ -121,6 +119,8 @@ export class DataProductAPGState {
   constructor(
     group: V1_AccessPointGroup,
     dataProductViewerState: DataProductViewerState,
+    initialCollapsed = false,
+    initialAccessPointsCollapsed = false,
   ) {
     makeAutoObservable(this, {
       handleContractClick: action,
@@ -131,7 +131,6 @@ export class DataProductAPGState {
       associatedSystemAccountContractsAndApprovedUsers: observable,
       setApgContracts: action,
       setAssociatedUserContract: action,
-      init: flow,
       fetchAndSetAssociatedSystemAccountContracts: flow,
       subscriptions: observable,
       isCollapsed: observable,
@@ -155,9 +154,10 @@ export class DataProductAPGState {
     this.dataProductViewerState = dataProductViewerState;
     this.applicationStore = dataProductViewerState.applicationStore;
     this.accessPointStates = this.apg.accessPoints.map(
-      (ap) => new DataProductAccessPointState(this, ap),
+      (ap) =>
+        new DataProductAccessPointState(this, ap, initialAccessPointsCollapsed),
     );
-    this.isCollapsed = false;
+    this.isCollapsed = initialCollapsed;
   }
 
   setIsCollapsed(isCollapsed: boolean): void {
@@ -226,17 +226,6 @@ export class DataProductAPGState {
         tokenProvider,
       );
     }
-  }
-
-  *init(
-    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
-    entitlementsDataProductDetails?: V1_EntitlementsDataProductDetails,
-  ): GeneratorFn<void> {
-    yield Promise.all(
-      this.accessPointStates.map((ap) =>
-        ap.init(dataProductArtifactPromise, entitlementsDataProductDetails),
-      ),
-    );
   }
 
   *fetchAndSetAssociatedSystemAccountContracts(

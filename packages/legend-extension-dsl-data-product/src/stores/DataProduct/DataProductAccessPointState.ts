@@ -33,14 +33,13 @@ import {
   type TDSExecutionResult,
 } from '@finos/legend-graph';
 import {
-  type GeneratorFn,
   type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { makeAutoObservable, observable, flow } from 'mobx';
+import { makeAutoObservable, observable, action, computed } from 'mobx';
 import { deserialize } from 'serializr';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
@@ -53,47 +52,49 @@ export class DataProductAccessPointState {
   relationType: V1_RelationType | undefined;
   relationElement: V1_RelationElement | undefined;
   grammar: string | undefined;
-  entitlementsDataProductDetails?:
-    | V1_EntitlementsDataProductDetails
-    | undefined;
 
   readonly fetchingRelationTypeState = ActionState.create();
-  readonly fetchingRelationElement = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
+  readonly fetchingSampleDataState = ActionState.create();
+  readonly fetchingRegistryMetadataState = ActionState.create();
 
   registryMetadata: RegistryMetadataResponse | undefined;
+  isCollapsed = false;
 
-  constructor(apgState: DataProductAPGState, accessPoint: V1_AccessPoint) {
+  constructor(
+    apgState: DataProductAPGState,
+    accessPoint: V1_AccessPoint,
+    initialCollapsed = false,
+  ) {
     makeAutoObservable(this, {
       relationType: observable,
       grammar: observable,
       relationElement: observable,
-      init: flow,
+      isCollapsed: observable,
+      setIsCollapsed: action,
+      entitlementsDataProductDetails: computed,
     });
 
     this.apgState = apgState;
     this.accessPoint = accessPoint;
+    this.isCollapsed = initialCollapsed;
   }
 
-  *init(
-    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
-    entitlementsDataProductDetails?:
-      | V1_EntitlementsDataProductDetails
-      | undefined,
-  ): GeneratorFn<void> {
-    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
-    yield Promise.all([
-      this.fetchRelationType(
-        dataProductArtifactPromise,
-        entitlementsDataProductDetails,
-      ),
-      this.fetchSampleDataFromArtifact(dataProductArtifactPromise),
-      this.fetchGrammar(),
-      this.fetchRegistryMetadata(),
-    ]);
+  get entitlementsDataProductDetails():
+    | V1_EntitlementsDataProductDetails
+    | undefined {
+    return this.apgState.dataProductViewerState.entitlementsDataProductDetails;
+  }
+
+  setIsCollapsed(val: boolean): void {
+    this.isCollapsed = val;
   }
 
   async fetchRegistryMetadata(): Promise<void> {
+    if (!this.fetchingRegistryMetadataState.isInInitialState) {
+      return;
+    }
+    this.fetchingRegistryMetadataState.inProgress();
     const dataProductName =
       this.apgState.dataProductViewerState.product.name.toUpperCase();
     const apName = this.accessPoint.id.toUpperCase();
@@ -112,6 +113,8 @@ export class DataProductAccessPointState {
         LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
         error,
       );
+    } finally {
+      this.fetchingRegistryMetadataState.complete();
     }
   }
 
@@ -130,27 +133,6 @@ export class DataProductAccessPointState {
       throw new Error(
         `Data product artifact is missing relation type for access point: ${this.accessPoint.id}`,
       );
-    }
-  }
-
-  async fetchSampleDataFromArtifact(
-    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
-  ): Promise<void> {
-    this.fetchingRelationElement.inProgress();
-    try {
-      const artifact = await dataProductArtifactPromise;
-      this.relationElement = artifact?.accessPointGroups
-        .find((apg) => apg.id === this.apgState.apg.id)
-        ?.accessPointImplementations.find(
-          (ap) => ap.id === this.accessPoint.id,
-        )?.relationElement;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.apgState.applicationStore.notificationService.notifyError(
-        `Error fetching access point sample data: ${error.message}`,
-      );
-    } finally {
-      this.fetchingRelationElement.complete();
     }
   }
 
@@ -191,16 +173,23 @@ export class DataProductAccessPointState {
   }
 
   async fetchRelationType(
-    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
+    dataProductArtifactPromise:
+      | Promise<V1_DataProductArtifact | undefined>
+      | undefined,
     entitlementsDataProductDetails?:
       | V1_EntitlementsDataProductDetails
       | undefined,
   ): Promise<void> {
+    if (!this.fetchingRelationTypeState.isInInitialState) {
+      return;
+    }
     this.fetchingRelationTypeState.inProgress();
     try {
       const abortController = new AbortController();
       const relationType = await Promise.any([
-        this.fetchRelationTypeFromArtifact(dataProductArtifactPromise),
+        ...(dataProductArtifactPromise
+          ? [this.fetchRelationTypeFromArtifact(dataProductArtifactPromise)]
+          : []),
         this.fetchRelationTypeFromEngine(
           abortController,
           entitlementsDataProductDetails,
@@ -227,6 +216,9 @@ export class DataProductAccessPointState {
   }
 
   async fetchGrammar(): Promise<void> {
+    if (!this.fetchingGrammarState.isInInitialState) {
+      return;
+    }
     this.fetchingGrammarState.inProgress();
     try {
       if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
@@ -247,57 +239,119 @@ export class DataProductAccessPointState {
     }
   }
 
-  async fetchSampleDataFromEngine(resolvedUserEnv: string): Promise<void> {
-    try {
-      if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
-        const query = `#P{${this.apgState.dataProductViewerState.product.path}.${this.accessPoint.id}}#->take(200)`;
-        const executionInput = await createExecuteInput(
-          resolvedUserEnv,
-          query,
-          this.apgState.dataProductViewerState,
-          guaranteeNonNullable(this.entitlementsDataProductDetails),
-        );
-        const result = V1_buildExecutionResult(
-          V1_deserializeExecutionResult(
-            (await this.apgState.dataProductViewerState.engineServerClient.runQuery(
-              V1_ExecuteInput.serialization.toJson(executionInput),
-            )) as PlainObject<V1_ExecutionResult>,
-          ),
-        ) as TDSExecutionResult;
+  async fetchSampleDataFromArtifact(
+    dataProductArtifactPromise: Promise<V1_DataProductArtifact | undefined>,
+  ): Promise<V1_RelationElement | undefined> {
+    const artifact = await dataProductArtifactPromise;
+    const relationElement = artifact?.accessPointGroups
+      .find((apg) => apg.id === this.apgState.apg.id)
+      ?.accessPointImplementations.find(
+        (ap) => ap.id === this.accessPoint.id,
+      )?.relationElement;
+    if (relationElement !== undefined) {
+      return relationElement;
+    } else {
+      throw new Error(
+        `Data product artifact is missing sample data for access point: ${this.accessPoint.id}`,
+      );
+    }
+  }
 
-        const MAX_DISTINCT = 5;
+  async fetchSampleDataFromEngine(
+    resolvedUserEnv: string,
+  ): Promise<V1_RelationElement> {
+    if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
+      const query = `#P{${this.apgState.dataProductViewerState.product.path}.${this.accessPoint.id}}#->take(200)`;
+      const executionInput = await createExecuteInput(
+        resolvedUserEnv,
+        query,
+        this.apgState.dataProductViewerState,
+        guaranteeNonNullable(this.entitlementsDataProductDetails),
+      );
+      const result = V1_buildExecutionResult(
+        V1_deserializeExecutionResult(
+          (await this.apgState.dataProductViewerState.engineServerClient.runQuery(
+            V1_ExecuteInput.serialization.toJson(executionInput),
+          )) as PlainObject<V1_ExecutionResult>,
+        ),
+      ) as TDSExecutionResult;
 
-        const columns = result.builder.columns.map((c) => c.name);
-        const valuesPerColumn = columns.map(() => new Set<string>());
+      const MAX_DISTINCT = 5;
 
-        for (const row of result.result.rows) {
-          row.values.forEach((v, i) => {
-            const set = valuesPerColumn[i];
-            if (set && set.size < MAX_DISTINCT) {
-              set.add(String(v));
-            }
-          });
+      const columns = result.builder.columns.map((c) => c.name);
+      const valuesPerColumn = columns.map(() => new Set<string>());
 
-          if (valuesPerColumn.every((s) => s.size >= MAX_DISTINCT)) {
-            break;
+      for (const row of result.result.rows) {
+        row.values.forEach((v, i) => {
+          const set = valuesPerColumn[i];
+          if (set && set.size < MAX_DISTINCT) {
+            set.add(String(v));
           }
-        }
-
-        const relEle = new V1_RelationElement();
-        relEle.paths = [this.accessPoint.id];
-        relEle.columns = columns;
-        const maxRows = Math.max(...valuesPerColumn.map((s) => s.size));
-
-        relEle.rows = Array.from({ length: maxRows }, (_, i) => {
-          const relRow = new V1_RelationRowTestData();
-          relRow.values = valuesPerColumn.map((s) => Array.from(s)[i] ?? '');
-          return relRow;
         });
-        this.relationElement = relEle;
+
+        if (valuesPerColumn.every((s) => s.size >= MAX_DISTINCT)) {
+          break;
+        }
+      }
+
+      const relEle = new V1_RelationElement();
+      relEle.paths = [this.accessPoint.id];
+      relEle.columns = columns;
+      const maxRows = Math.max(...valuesPerColumn.map((s) => s.size));
+
+      relEle.rows = Array.from({ length: maxRows }, (_, i) => {
+        const relRow = new V1_RelationRowTestData();
+        relRow.values = valuesPerColumn.map((s) => Array.from(s)[i] ?? '');
+        return relRow;
+      });
+      return relEle;
+    }
+    throw new Error(
+      `Access point '${this.accessPoint.id}' is not a Lakehouse access point, cannot fetch sample data from engine`,
+    );
+  }
+
+  async fetchSampleData(
+    dataProductArtifactPromise:
+      | Promise<V1_DataProductArtifact | undefined>
+      | undefined,
+    resolvedUserEnv: string | undefined,
+  ): Promise<void> {
+    if (!this.fetchingSampleDataState.isInInitialState) {
+      return;
+    }
+    this.fetchingSampleDataState.inProgress();
+    try {
+      const [artifactResult, engineResult] = await Promise.allSettled([
+        ...(dataProductArtifactPromise
+          ? [this.fetchSampleDataFromArtifact(dataProductArtifactPromise)]
+          : []),
+        ...(resolvedUserEnv
+          ? [this.fetchSampleDataFromEngine(resolvedUserEnv)]
+          : []),
+      ]);
+      if (engineResult?.status === 'fulfilled' && engineResult.value) {
+        this.relationElement = engineResult.value;
+      } else if (
+        artifactResult?.status === 'fulfilled' &&
+        artifactResult.value
+      ) {
+        this.relationElement = artifactResult.value;
       }
     } catch (error) {
       assertErrorThrown(error);
-      throw error;
+      if (error instanceof AggregateError) {
+        // Default to showing the relation type from engine error
+        this.apgState.applicationStore.notificationService.notifyError(
+          `Error fetching access point sample data: ${error.errors[1] ?? error.errors[0] ?? error.message}`,
+        );
+      } else {
+        this.apgState.applicationStore.notificationService.notifyError(
+          `Error fetching access point sample data: ${error.message}`,
+        );
+      }
+    } finally {
+      this.fetchingSampleDataState.complete();
     }
   }
 }
