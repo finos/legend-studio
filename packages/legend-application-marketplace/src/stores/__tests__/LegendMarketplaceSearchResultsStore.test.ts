@@ -494,6 +494,59 @@ describe('LegendMarketplaceSearchResultsStore - Filters', () => {
       );
     });
   });
+
+  describe('isOnLastPage', () => {
+    test('returns false when totalItems is 0', async () => {
+      const { store } = await setupStore();
+      store.setTotalItems(0);
+      store.setPage(1);
+      expect(store.isOnLastPage).toBe(false);
+    });
+
+    test('returns true when on the last page', async () => {
+      const { store } = await setupStore();
+      store.setItemsPerPage(12);
+      store.setTotalItems(20);
+      store.setPage(2); // ceil(20/12) = 2
+      expect(store.isOnLastPage).toBe(true);
+    });
+
+    test('returns false when not on the last page', async () => {
+      const { store } = await setupStore();
+      store.setItemsPerPage(12);
+      store.setTotalItems(25);
+      store.setPage(1); // ceil(25/12) = 3
+      expect(store.isOnLastPage).toBe(false);
+    });
+
+    test('returns true when all items fit on a single page', async () => {
+      const { store } = await setupStore();
+      store.setItemsPerPage(12);
+      store.setTotalItems(5);
+      store.setPage(1);
+      expect(store.isOnLastPage).toBe(true);
+    });
+  });
+
+  describe('showAllProducts', () => {
+    test('defaults to false', async () => {
+      const { store } = await setupStore();
+      expect(store.showAllProducts).toBe(false);
+    });
+
+    test('can be toggled on', async () => {
+      const { store } = await setupStore();
+      store.setShowAllProducts(true);
+      expect(store.showAllProducts).toBe(true);
+    });
+
+    test('can be toggled back off', async () => {
+      const { store } = await setupStore();
+      store.setShowAllProducts(true);
+      store.setShowAllProducts(false);
+      expect(store.showAllProducts).toBe(false);
+    });
+  });
 });
 
 describe('LegendMarketplaceSearchResultsStore - ViewMode', () => {

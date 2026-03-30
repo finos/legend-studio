@@ -48,21 +48,21 @@ import type { AutosuggestResponse } from './models/AutosuggestResult.js';
 import type { TaxonomyTreeResponse } from './models/Taxonomy.js';
 
 export interface TrendingDataProductEntry {
-  dataProductId?: string | undefined;
-  deploymentId?: string | undefined;
+  dataProductId?: string;
+  deploymentId?: string;
   dataProductType: string;
   productName: string;
-  productDescription?: string | undefined;
-  dataProductName?: string | undefined;
-  groupId?: string | undefined;
-  artifactId?: string | undefined;
-  versionId?: string | undefined;
-  dataProductPath?: string | undefined;
-  originType?: string | undefined;
-  producerEnvironmentName?: string | undefined;
-  producerEnvironmentType?: string | undefined;
-  dataProductSource?: string | undefined;
-  licenseTo?: string | undefined;
+  productDescription?: string;
+  dataProductName?: string;
+  groupId?: string;
+  artifactId?: string;
+  versionId?: string;
+  dataProductPath?: string;
+  originType?: string;
+  producerEnvironmentName?: string;
+  producerEnvironmentType?: string;
+  dataProductSource?: string;
+  licenseTo?: string;
 }
 
 export interface MarketplaceServerClientConfig {
@@ -158,7 +158,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Trending -------------------------------------------
 
-  private _analytics = (): string => `${this.baseUrl}/v1/analytics`;
+  private readonly _analytics = (): string => `${this.baseUrl}/v1/analytics`;
   getTrendingDataProducts = async (
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
   ): Promise<TrendingDataProductEntry[]> =>
