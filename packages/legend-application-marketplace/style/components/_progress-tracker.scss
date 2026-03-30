@@ -14,13 +14,29 @@
  * limitations under the License.
  */
 
-.lakehouse-data-product-owners-tooltip {
-  padding: 1rem;
-  color: var(--data-product-text-primary);
-  background-color: var(--data-product-bg-primary);
+.legend-marketplace-progress-tracker {
+  background: var(--marketplace-bg-primary);
+  border: 1px solid var(--marketplace-border-color);
 
-  &__wrapper {
-    background-color: var(--data-product-bg-primary);
-    box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  .theme__hc-dark & {
+    background: var(--marketplace-bg-secondary);
+  }
+
+  &__step-label {
+    color: var(--marketplace-text-primary);
+  }
+
+  &__step-details {
+    background: var(--marketplace-bg-secondary);
+    border: 1px solid var(--marketplace-border-color);
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-tertiary);
+      border: 1px solid var(--marketplace-border-color);
+    }
+  }
+
+  &__step-detail {
+    color: var(--marketplace-text-secondary);
   }
 }

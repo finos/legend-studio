@@ -17,6 +17,11 @@
 @use 'mixins' as *;
 
 .legend-marketplace-home {
+  .theme__hc-dark & {
+    background: var(--marketplace-bg-primary);
+    color: var(--marketplace-text-primary);
+  }
+
   &__landing {
     @include flexCenter;
 
@@ -24,7 +29,7 @@
     width: 100%;
     min-height: 60rem;
     height: 60vh;
-    color: var(--color-white);
+    color: var(--marketplace-text-primary);
 
     &__title {
       font-size: 5.6rem;
@@ -63,7 +68,7 @@
     font-size: 1.8rem;
     font-weight: 400;
     background: transparent;
-    color: #000;
+    color: var(--marketplace-text-primary);
     transition: all 0.2s ease;
     min-width: 14rem;
     justify-content: center;
@@ -74,7 +79,7 @@
         rgb(75 80 207 / 100%) 0%,
         rgb(102 126 234 / 100%) 100%
       );
-      color: #000;
+      color: var(--marketplace-text-primary);
     }
 
     &__icon {

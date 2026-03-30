@@ -142,7 +142,7 @@ export const LegendMarketplaceTerminalCard = observer(
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                color: '#077D55',
+                color: 'var(--marketplace-chip-prod-text)',
                 fontWeight: 'bold',
               }}
             >
@@ -167,7 +167,12 @@ export const LegendMarketplaceTerminalCard = observer(
                 ) : isInCart ? (
                   <>
                     In Cart &nbsp;
-                    <Box sx={{ color: '#077D55', display: 'inline-flex' }}>
+                    <Box
+                      sx={{
+                        color: 'var(--marketplace-chip-prod-text)',
+                        display: 'inline-flex',
+                      }}
+                    >
                       <CheckCircleIcon />
                     </Box>
                   </>
@@ -188,7 +193,10 @@ export const LegendMarketplaceTerminalCard = observer(
                     maximumFractionDigits: 0,
                   }).format(terminalResult.price)}/month`}
                   className="legend-marketplace-terminal-card__price"
-                  sx={{ color: 'white', backgroundColor: '#077d55' }}
+                  sx={{
+                    color: 'var(--marketplace-btn-primary-text)',
+                    backgroundColor: 'var(--marketplace-chip-prod-bg)',
+                  }}
                 />
               )}
             </>

@@ -17,10 +17,36 @@
 @use 'mixins' as *;
 
 .legend-marketplace-coming-soon {
+  background: var(--marketplace-bg-secondary); // Default
+  color: var(--marketplace-text-primary);
+
   &__content {
     @include flexCenter;
 
     height: 100%;
     flex-direction: column;
+    background: var(--marketplace-bg-secondary);
+
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-primary);
+    }
+  }
+
+  .theme__hc-dark & {
+    background: var(--marketplace-bg-primary);
+    color: var(--marketplace-text-primary);
+  }
+
+  &__feature-item {
+    // ...
+    .theme__hc-dark & {
+      background: var(--marketplace-bg-secondary);
+      border: 1px solid var(--marketplace-border-color);
+
+      &:hover {
+        background: var(--marketplace-bg-tertiary);
+        border-color: var(--marketplace-link-color);
+      }
+    }
   }
 }

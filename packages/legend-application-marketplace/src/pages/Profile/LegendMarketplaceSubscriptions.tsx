@@ -243,7 +243,7 @@ export const LegendMarketplaceSubscriptions =
                   defaultColDef={{
                     headerStyle: {
                       fontSize: '18px',
-                      backgroundColor: '#dce3e8',
+                      backgroundColor: 'var(--marketplace-bg-tertiary)',
                     },
                   }}
                 />

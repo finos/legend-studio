@@ -89,15 +89,15 @@ export const CartToast = observer(() => {
   const getSeverityColor = (type: ToastNotification['type']) => {
     switch (type) {
       case 'success':
-        return '#4caf50';
+        return 'var(--marketplace-success-color)';
       case 'error':
-        return '#f44336';
+        return 'var(--marketplace-error-color)';
       case 'warning':
-        return '#ff9800';
+        return 'var(--marketplace-warning-color)';
       case 'info':
-        return '#2196f3';
+        return 'var(--marketplace-link-color)';
       default:
-        return '#4caf50';
+        return 'var(--marketplace-success-color)';
     }
   };
 
@@ -124,7 +124,7 @@ export const CartToast = observer(() => {
             variant="filled"
             sx={{
               backgroundColor: getSeverityColor(notification.type),
-              color: 'white',
+              color: 'var(--marketplace-btn-primary-text)',
               fontSize: '1.4rem',
               fontWeight: 500,
               borderRadius: '8px',
