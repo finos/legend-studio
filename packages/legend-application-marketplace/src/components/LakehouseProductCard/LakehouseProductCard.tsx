@@ -21,8 +21,6 @@ import {
   InfoCircleIcon,
   MarkdownTextViewer,
 } from '@finos/legend-art';
-import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
-import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
   Popover,
   Box,
@@ -32,7 +30,6 @@ import {
   TableRow,
   TableCell,
   IconButton,
-  Chip,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -45,19 +42,13 @@ import {
   LegacyDataProductSearchResultDetails,
 } from '@finos/legend-server-marketplace';
 import {
-  DevelopmentLegendMarketplaceEnvState,
-  ProdParallelLegendMarketplaceEnvState,
-} from '../../stores/LegendMarketplaceEnvState.js';
-import { useAuth } from 'react-oidc-context';
-import { flowResult } from 'mobx';
-import {
-  getHumanReadableIngestEnvName,
-  LakehouseDataProductOwnersTooltip,
-} from '@finos/legend-extension-dsl-data-product';
+  LakehouseProductTags,
+  DATA_PRODUCT_MARKDOWN_COMPONENTS,
+} from './LakehouseProductCardSharedUtils.js';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
-const LakehouseDataProductCardInfoPopover = observer(
+export const LakehouseDataProductCardInfoPopover = observer(
   (props: {
     dataProductCardState: ProductCardState;
     popoverAnchorEl: HTMLButtonElement | null;
@@ -172,11 +163,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                 value={{
                   value: dataProductCardState.description,
                 }}
-                components={{
-                  h1: 'h2',
-                  h2: 'h3',
-                  h3: 'h4',
-                }}
+                components={DATA_PRODUCT_MARKDOWN_COMPONENTS}
               />
             </Box>
           </Box>
@@ -306,8 +293,6 @@ export const LakehouseProductCard = observer(
 
     const [popoverAnchorEl, setPopoverAnchorEl] =
       useState<HTMLButtonElement | null>(null);
-    const [isOwnersTooltipOpen, setIsOwnersTooltipOpen] = useState(false);
-    const auth = useAuth();
 
     const truncatedDescription =
       productCardState.description &&
@@ -318,125 +303,13 @@ export const LakehouseProductCard = observer(
           )}...`
         : productCardState.description;
 
-    const versionId = productCardState.versionId;
-    const isSnapshot = versionId ? isSnapshotVersion(versionId) : undefined;
-    const isLakehouse =
-      productCardState.searchResult.dataProductDetails instanceof
-      LakehouseDataProductSearchResultDetails;
-
     const content = (
       <>
         <Box className="marketplace-lakehouse-data-product-card__container">
           <Box className="marketplace-lakehouse-data-product-card__content">
             {!hideTags && (
               <Box className="marketplace-lakehouse-data-product-card__tags">
-                {isLakehouse && (
-                  <LakehouseDataProductOwnersTooltip
-                    open={isOwnersTooltipOpen}
-                    setIsOpen={setIsOwnersTooltipOpen}
-                    owners={productCardState.lakehouseOwners}
-                    fetchingOwnersState={productCardState.fetchingOwnersState}
-                    fetchOwners={async () => {
-                      await flowResult(
-                        productCardState.fetchOwners(auth.user?.access_token),
-                      );
-                    }}
-                    applicationStore={
-                      productCardState.marketplaceBaseStore.applicationStore
-                    }
-                    userSearchService={
-                      productCardState.marketplaceBaseStore.userSearchService
-                    }
-                  >
-                    <div>
-                      <Chip
-                        size="small"
-                        label={`Lakehouse${
-                          productCardState.lakehouseEnvironment
-                            ? ` - ${getHumanReadableIngestEnvName(productCardState.lakehouseEnvironment.environmentName, productCardState.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins())}`
-                            : ''
-                        }`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setIsOwnersTooltipOpen((val) => !val);
-                        }}
-                        title="Click to view owners"
-                        className={clsx(
-                          'marketplace-lakehouse-data-product-card__lakehouse-env-chip',
-                        )}
-                      />
-                    </div>
-                  </LakehouseDataProductOwnersTooltip>
-                )}
-                {/* We only show version if it's a snapshot, because otherwise it's just the latest prod version */}
-                {isSnapshot && (
-                  <Chip
-                    size="small"
-                    label={versionId ?? 'Unknown Version'}
-                    className={clsx(
-                      'marketplace-lakehouse-data-product-card__version',
-                      {
-                        'marketplace-lakehouse-data-product-card__version--snapshot':
-                          isSnapshot,
-                        'marketplace-lakehouse-data-product-card__version--release':
-                          !isSnapshot,
-                      },
-                    )}
-                  />
-                )}
-                {/* We only show environment classification in prod-par and dev env, because otherwise they're all production */}
-                {(productCardState.marketplaceBaseStore.envState instanceof
-                  ProdParallelLegendMarketplaceEnvState ||
-                  productCardState.marketplaceBaseStore.envState instanceof
-                    DevelopmentLegendMarketplaceEnvState) &&
-                  productCardState.searchResult.dataProductDetails instanceof
-                    LakehouseDataProductSearchResultDetails && (
-                    <Chip
-                      label={
-                        productCardState.searchResult.dataProductDetails
-                          .producerEnvironmentType ?? 'Unknown Environment'
-                      }
-                      size="small"
-                      title="Environment Classification"
-                      className={clsx(
-                        'marketplace-lakehouse-data-product-card__environment-classification',
-                        {
-                          'marketplace-lakehouse-data-product-card__environment-classification--unknown':
-                            productCardState.searchResult.dataProductDetails
-                              .producerEnvironmentType === undefined,
-                          'marketplace-lakehouse-data-product-card__environment-classification--dev':
-                            productCardState.searchResult.dataProductDetails
-                              .producerEnvironmentType ===
-                            V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-                          'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
-                            productCardState.searchResult.dataProductDetails
-                              .producerEnvironmentType ===
-                            V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
-                          'marketplace-lakehouse-data-product-card__environment-classification--prod':
-                            productCardState.searchResult.dataProductDetails
-                              .producerEnvironmentType ===
-                            V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-                        },
-                      )}
-                    />
-                  )}
-                {productCardState.searchResult.dataProductSource ===
-                  'External' && (
-                  <Chip
-                    size="small"
-                    label={productCardState.searchResult.dataProductSource}
-                    title="Data Product Source"
-                    className="marketplace-lakehouse-data-product-card__data-product-source"
-                  />
-                )}
-                {productCardState.searchResult.licenseTo && (
-                  <Chip
-                    size="small"
-                    label={productCardState.searchResult.licenseTo}
-                    title="License To"
-                    className="marketplace-lakehouse-data-product-card__license-to"
-                  />
-                )}
+                <LakehouseProductTags productCardState={productCardState} />
               </Box>
             )}
             {moreInfoPreview === undefined && (
@@ -460,11 +333,7 @@ export const LakehouseProductCard = observer(
             value={{
               value: truncatedDescription,
             }}
-            components={{
-              h1: 'h2',
-              h2: 'h3',
-              h3: 'h4',
-            }}
+            components={DATA_PRODUCT_MARKDOWN_COMPONENTS}
           />
         </Box>
         {!hideInfoPopover && (

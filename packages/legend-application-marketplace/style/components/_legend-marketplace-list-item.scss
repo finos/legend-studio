@@ -1,0 +1,83 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.legend-marketplace-list-item {
+  display: flex;
+  align-items: stretch;
+  gap: 2rem;
+  padding: 2rem 2.5rem;
+  border-bottom: 3px solid var(--color-light-grey-400);
+  cursor: pointer;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+  &:hover {
+    background-color: var(--color-light-grey-100);
+  }
+
+  &__thumbnail {
+    flex-shrink: 0;
+    width: 12rem;
+    height: 10rem;
+    border-radius: 0.8rem;
+    overflow: hidden;
+    background: var(--color-light-grey-150);
+
+    &__image {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    &__loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    &__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+
+      svg {
+        width: 4rem;
+        height: 4rem;
+        color: var(--color-dark-grey-400);
+      }
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.8rem;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+}
