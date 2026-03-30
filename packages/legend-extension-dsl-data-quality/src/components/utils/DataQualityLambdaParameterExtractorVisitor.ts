@@ -253,18 +253,18 @@ export class DataQualityLambdaParameterExtractorVisitor
       propertyGuaranteeParameters: ParsedFunctionExpression['processedParameters'];
     },
   ): DataQualityValidationPropertyGuarantee {
-    const { propertyGuaranteeParameters } = context ?? {};
+    const { propertyGuaranteeParameters } = context;
     assertTrue(
       Boolean(propertyGuaranteeParameters),
       `Expected ${func.name} parameters to be present`,
     );
 
     assertTrue(
-      propertyGuaranteeParameters?.length === 1,
-      `Expected ${func.name} parameters to be 1, got ${propertyGuaranteeParameters?.length}`,
+      propertyGuaranteeParameters.length === 1,
+      `Expected ${func.name} parameters to be 1, got ${propertyGuaranteeParameters.length}`,
     );
 
-    const propertyParam = propertyGuaranteeParameters?.[0];
+    const propertyParam = propertyGuaranteeParameters[0];
 
     if (propertyParam instanceof AbstractPropertyExpression) {
       func.parameters.property = propertyParam;
