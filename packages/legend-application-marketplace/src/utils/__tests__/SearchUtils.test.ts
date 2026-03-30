@@ -16,8 +16,8 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { convertTrendingEntryToSearchResult } from '../SearchUtils.js';
-import type { TrendingDataProductEntry } from '@finos/legend-server-marketplace';
 import {
+  type TrendingDataProductEntry,
   LakehouseDataProductSearchResultDetails,
   LakehouseSDLCDataProductSearchResultOrigin,
   LakehouseAdHocDataProductSearchResultOrigin,
