@@ -32,16 +32,11 @@
   }
 
   &.btn--caution {
-    background: var(
-      --color-legacylight-orange-150
-    ); // Warning/Error colors usually static or have specific semantic vars
-
-    color: var(
-      --color-white
-    ); // Keep as explicit white because the bg is strictly orange
+    background: var(--marketplace-caution-color);
+    color: var(--marketplace-btn-primary-text);
 
     &:hover {
-      background: var(--color-legacylight-orange-100);
+      background: var(--marketplace-caution-color--hover);
     }
   }
 }

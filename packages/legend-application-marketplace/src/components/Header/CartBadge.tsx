@@ -47,14 +47,14 @@ export const CartBadge = observer((props: CartBadgeProps) => {
       color="error"
       sx={{
         '& .MuiBadge-badge': {
-          backgroundColor: '#d32f2f',
-          color: 'white',
+          backgroundColor: 'var(--marketplace-error-color)',
+          color: 'var(--marketplace-btn-primary-text)',
           fontSize: '1.25rem',
           fontWeight: 600,
           height: '20px',
           minWidth: '20px',
           borderRadius: '10px',
-          border: '2px solid white',
+          border: '2px solid var(--marketplace-btn-primary-text)',
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
           animation: animate ? 'cartBadgePulse 0.6s ease-in-out' : 'none',
         },

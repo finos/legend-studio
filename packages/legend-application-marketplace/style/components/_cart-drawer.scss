@@ -55,7 +55,7 @@
     }
 
     button {
-      color: var(--marketplace-);
+      color: var(--marketplace-btn-primary-text);
       background: transparent;
       border-radius: 8px;
       padding: 8px;
@@ -577,7 +577,7 @@
       font-size: 2.2rem;
       font-weight: 600;
       line-height: 1.4;
-      color: var(--color-black) !important;
+      color: var(--marketplace-text-primary) !important;
     }
   }
 
@@ -588,7 +588,7 @@
   .blocking-alert__summary-text {
     font-size: 1.2rem !important;
     line-height: 1.7;
-    color: var(--color-black) !important;
+    color: var(--marketplace-text-primary) !important;
     margin-bottom: 1.2rem;
     font-weight: 800 !important;
     letter-spacing: 0.02rem;
@@ -601,7 +601,7 @@
   .blocking-alert__prompt-text {
     font-size: 1.6rem;
     line-height: 1.6;
-    color: var(--color-dark-grey-300) !important;
+    color: var(--marketplace-text-secondary) !important;
     font-weight: 400;
   }
 

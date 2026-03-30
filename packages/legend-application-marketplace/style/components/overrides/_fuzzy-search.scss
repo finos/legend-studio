@@ -19,7 +19,7 @@
 
   &__header__label {
     color: var(--marketplace-text-primary);
-    background: var(--color-hclight-grey-20);
+    background: var(--marketplace-bg-tertiary);
   }
 
   &__header__hint {
@@ -31,6 +31,6 @@
   }
 
   .Mui-checked {
-    color: var(--color-hclight-blue-50);
+    color: var(--marketplace-link-color);
   }
 }

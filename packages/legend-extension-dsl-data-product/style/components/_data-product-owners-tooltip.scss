@@ -16,11 +16,11 @@
 
 .lakehouse-data-product-owners-tooltip {
   padding: 1rem;
-  color: var(--marketplace-text-primary);
-  background-color: var(--marketplace-bg-primary);
+  color: var(--data-product-text-primary);
+  background-color: var(--data-product-bg-primary);
 
   &__wrapper {
-    background-color: var(--marketplace-bg-primary);
+    background-color: var(--data-product-bg-primary);
     box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
   }
 }

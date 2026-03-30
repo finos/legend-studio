@@ -251,20 +251,14 @@
     @include transition-smooth;
 
     &:hover:not(:disabled) {
-      background-color: var(--color-dark-theme-blue-accent);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      background-color: var(--color-dark-theme-border);
-      color: var(--color-dark-theme-text-muted);
+      background-color: var(--marketplace-link-hover-color);
     }
 
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      background-color: var(--color-light-grey-300);
-      color: var(--color-dark-grey-500);
+      background-color: var(--marketplace-bg-tertiary);
+      color: var(--marketplace-text-muted);
     }
 
     .MuiSvgIcon-root {

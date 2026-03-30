@@ -243,7 +243,7 @@
 
         span {
           font-size: 14px;
-          color: #333;
+          color: var(--data-product-text-primary);
           font-weight: bold;
         }
 
@@ -260,13 +260,13 @@
 
         &--cell {
           padding: 8px;
-          border-top: 1px solid #e0e0e0;
+          border-top: 1px solid var(--data-product-border-color);
           vertical-align: middle;
           font-size: 14px;
 
           &--entity {
             font-weight: 500;
-            color: var(--color-hclight-blue-50);
+            color: var(--data-product-accent-color);
           }
 
           &--cost {
@@ -279,11 +279,11 @@
         }
 
         &--row {
-          background-color: white;
-          border-bottom: 1px solid #e5e7eb;
+          background-color: var(--data-product-bg-primary);
+          border-bottom: 1px solid var(--data-product-border-light-color);
 
           &:hover {
-            background-color: #f9f9f9;
+            background-color: var(--data-product-bg-secondary);
           }
         }
       }
@@ -1285,7 +1285,7 @@
 }
 
 .data-space__terminal__header__product-name {
-  color: #1e88e5;
+  color: var(--data-product-accent-color);
   font-weight: 500;
   font-size: clamp(18px, 4vw, 27px);
 }
@@ -1715,10 +1715,10 @@
 }
 
 .data-space__divider {
-  border: #e0e0e0;
+  border: var(--data-product-border-color);
   height: 1px;
   margin: 2px 0 10px;
-  background-color: #e0e0e0;
+  background-color: var(--data-product-border-color);
 }
 
 .data-product__viewer__access-group {
@@ -2218,7 +2218,7 @@
   background: transparent;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #6c757d;
+  color: var(--data-product-text-muted);
   display: flex;
   align-items: center;
   gap: 0.3rem;

@@ -57,18 +57,18 @@
   }
 
   &__access-status-cell__icon--access-granted svg {
-    color: var(--color-hclight-lime-50);
+    color: var(--marketplace-success-color);
   }
 
   &__access-status-cell__icon--access-approved svg {
-    color: var(--color-hclight-blue-50);
+    color: var(--marketplace-link-color);
   }
 
   &__access-status-cell__icon--access-requested svg {
-    color: var(--color-hclight-yellow-30);
+    color: var(--marketplace-warning-color);
   }
 
   &__access-status-cell__icon--access-not-granted svg {
-    color: var(--color-hclight-red-50);
+    color: var(--marketplace-error-color);
   }
 }
