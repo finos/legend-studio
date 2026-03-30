@@ -97,6 +97,9 @@ export const getBaseJestConfig = (isGlobal) => {
       // See https://github.com/mui/mui-x/issues/11568
       '@mui/x-date-pickers',
       '@babel/runtime',
+
+      // swiper
+      'swiper',
     ],
   });
 

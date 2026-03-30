@@ -17,7 +17,6 @@
 import { render, waitFor } from '@testing-library/react';
 import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
 import { createMock, createSpy } from '@finos/legend-shared/test';
-import { jest } from '@jest/globals';
 import {
   ApplicationStore,
   ApplicationStoreProvider,
@@ -34,29 +33,6 @@ import { Core_LegendMarketplaceApplicationPlugin } from '../../application/exten
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import { LegendMarketplaceFrameworkProvider } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
-
-jest.mock('@finos/legend-graph', () => {
-  const actual: Record<string, unknown> = jest.requireActual(
-    '@finos/legend-graph',
-  );
-  return {
-    ...actual,
-    getCurrentUserIDFromEngineServer: jest.fn(() =>
-      Promise.resolve('test-consumer-user-id'),
-    ),
-  };
-});
-
-jest.mock('swiper/react', () => ({
-  Swiper: ({}) => <div></div>,
-  SwiperSlide: ({}) => <div></div>,
-}));
-
-jest.mock('swiper/modules', () => ({
-  Navigation: ({}) => <div></div>,
-  Pagination: ({}) => <div></div>,
-  Autoplay: ({}) => <div></div>,
-}));
 
 export const TEST__provideMockLegendMarketplaceBaseStore =
   async (customization?: {
