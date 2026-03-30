@@ -214,9 +214,8 @@ export const convertTrendingEntryToSearchResult = (
     details.dataProductId = entry.dataProductId ?? '';
     details.deploymentId = Number(entry.deploymentId ?? 0);
     details.producerEnvironmentName = entry.producerEnvironmentName ?? '';
-    details.producerEnvironmentType = entry.producerEnvironmentType as
-      | V1_EntitlementsLakehouseEnvironmentType
-      | undefined;
+    details.producerEnvironmentType =
+      entry.producerEnvironmentType as V1_EntitlementsLakehouseEnvironmentType;
 
     if (entry.originType === LakehouseDataProductSearchResultOriginType.SDLC) {
       const origin = new LakehouseSDLCDataProductSearchResultOrigin();
