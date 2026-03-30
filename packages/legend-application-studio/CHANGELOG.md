@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.112
+
+### Patch Changes
+
+- [#5041](https://github.com/finos/legend-studio/pull/5041) [`50ad3dc`](https://github.com/finos/legend-studio/commit/50ad3dc8a572b3257b32b3ab24ea8f54b68b8791) ([@jackp5150](https://github.com/jackp5150)) - Redirect to correctly formatted pct report instead of using iframe
+
 ## 28.19.111
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.56
+
+### Patch Changes
+
+- [#5036](https://github.com/finos/legend-studio/pull/5036) [`bf626c4`](https://github.com/finos/legend-studio/commit/bf626c40e01cc3f6c4df32076dd75a4d5d8a806d) ([@jackp5150](https://github.com/jackp5150)) - Add extra filter to check for null origins
+
 ## 0.1.55
 
 ## 0.1.54

@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.43
+
+### Patch Changes
+
+- [#5028](https://github.com/finos/legend-studio/pull/5028) [`722c878`](https://github.com/finos/legend-studio/commit/722c878af088fee55048a1f391e26f2181defc43) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add paginated data product fetching via `getDataProductsLitePaginated` and `getAllLiteDataProducts` to `LakehouseContractServerClient`, replacing the removed `getDataProductsLite` endpoint. Update marketplace and data-cube consumers to use the new paginated API.
+
 ## 0.3.42
 
 ### Patch Changes

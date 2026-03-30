@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.5
+
+### Patch Changes
+
+- [#5025](https://github.com/finos/legend-studio/pull/5025) [`d502845`](https://github.com/finos/legend-studio/commit/d502845529925b665afedeb4b717f9ec0c1bfa33) ([@yash0024](https://github.com/yash0024)) - Support providing query params in template query URLs. 'copy data product query set up link to clipboard' copies the query urls for saved/template queries, and the dataspace link otherwise
+
 ## 13.8.4
 
 ## 13.8.3

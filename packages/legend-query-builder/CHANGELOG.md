@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.17.99
+
+### Patch Changes
+
+- [#5042](https://github.com/finos/legend-studio/pull/5042) [`8b08bc0`](https://github.com/finos/legend-studio/commit/8b08bc0394f3d2ae34d01d482de3c20e8a97b8c8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for precise primitive types in filter and post-filter operators. Precise types like VARCHAR, INT, BIGINT, DOUBLE, TIMESTAMP are now mapped to their standard primitive equivalents so operators correctly handle type compatibility checks.
+
 ## 4.17.98
 
 ## 4.17.97
