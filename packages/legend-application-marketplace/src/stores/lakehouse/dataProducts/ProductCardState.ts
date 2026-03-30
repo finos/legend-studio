@@ -87,7 +87,8 @@ export class ProductCardState {
   }
 
   get title(): string {
-    return this.searchResult.dataProductTitle ?? this.dataProductId;
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    return this.searchResult.dataProductTitle || this.dataProductId;
   }
 
   get description(): string {
