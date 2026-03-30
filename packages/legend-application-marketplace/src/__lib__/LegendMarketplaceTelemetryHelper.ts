@@ -332,6 +332,18 @@ export class LegendMarketplaceTelemetryHelper {
     });
   }
 
+  static logEvent_ToggleViewMode(
+    telemetryService: TelemetryService,
+    viewMode: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_VIEW_MODE, {
+      viewMode,
+      ...session,
+    });
+  }
+
   static logEvent_ClickToolbarMenu(
     telemetryService: TelemetryService,
     iconSource: ICON_TOOLBAR_TYPE,

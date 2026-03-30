@@ -48,8 +48,8 @@
 
 .legend-marketplace-search-results__sort-bar {
   width: 100%;
-  background-color: #f2f2f2;
-  border-bottom: 1px solid #d1d9e6;
+  background-color: var(--color-light-grey-50);
+  border-bottom: 1px solid var(--color-light-grey-200);
 
   &__container {
     width: 100%;
@@ -57,12 +57,110 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    background-color: #f2f2f2;
+    background-color: var(--color-light-grey-50);
     max-width: 226rem;
     margin: 0 auto;
     box-sizing: border-box;
     padding: 0.5rem;
   }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+  }
+}
+
+.legend-marketplace-search-results__view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1.5px solid var(--color-light-grey-300);
+  border-radius: 0.8rem;
+  padding: 0.3rem;
+  background: var(--color-light-grey-50);
+  position: relative;
+
+  &__slider {
+    position: absolute;
+    top: 0.3rem;
+    left: 0.3rem;
+    width: calc(50% - 0.3rem);
+    height: calc(100% - 0.6rem);
+    background: var(--color-legacylight-light-blue-400);
+    border-radius: 0.5rem;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+    box-shadow: 0 1px 3px rgb(27 76 140 / 30%);
+
+    &--right {
+      transform: translateX(100%);
+    }
+  }
+
+  &__btn {
+    padding: 0.5rem 0.8rem;
+    border-radius: 0.5rem;
+    color: var(--color-dark-grey-400);
+    position: relative;
+    z-index: 1;
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+    svg {
+      font-size: 2.4rem;
+      display: block;
+    }
+
+    &:hover {
+      color: var(--color-dark-grey-300);
+      background-color: transparent;
+    }
+
+    &--active {
+      color: var(--color-white);
+
+      &:hover {
+        color: var(--color-white);
+        background-color: transparent;
+      }
+    }
+  }
+}
+
+.legend-marketplace-search-results__sort-select {
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+  &.MuiInputBase-root .MuiSelect-select {
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--color-dark-grey-300);
+    padding: 1rem;
+    min-height: unset;
+    line-height: 2.4rem;
+  }
+
+  .MuiOutlinedInput-notchedOutline {
+    border-color: var(--color-light-grey-300);
+    border-width: 1.5px;
+    border-radius: 0.8rem;
+  }
+
+  &:hover .MuiOutlinedInput-notchedOutline {
+    border-color: var(--color-light-grey-400);
+  }
+
+  .MuiSelect-icon {
+    color: var(--color-dark-grey-400);
+    font-size: 2rem;
+    right: 0.6rem;
+  }
+}
+
+.legend-marketplace-search-results__sort-bar__controls-divider {
+  width: 1px;
+  height: 3.2rem;
+  background-color: var(--color-light-grey-200);
+  flex-shrink: 0;
 }
 
 .legend-marketplace-search-results__drawer {

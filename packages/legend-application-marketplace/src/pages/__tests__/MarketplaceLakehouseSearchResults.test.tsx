@@ -1037,4 +1037,100 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
     });
   });
+
+  describe('View Toggle', () => {
+    test('renders tile and list view toggle buttons', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      expect(screen.getByTitle('Tile View')).toBeDefined();
+      expect(screen.getByTitle('List View')).toBeDefined();
+    });
+
+    test('tile view is active by default', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      const tileBtn = screen.getByTitle('Tile View');
+      expect(tileBtn.className).toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+
+      const listBtn = screen.getByTitle('List View');
+      expect(listBtn.className).not.toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+    });
+
+    test('clicking list view toggle switches to list view', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      const listBtn = screen.getByTitle('List View');
+      await act(async () => {
+        fireEvent.click(listBtn);
+      });
+
+      expect(listBtn.className).toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+
+      const tileBtn = screen.getByTitle('Tile View');
+      expect(tileBtn.className).not.toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+    });
+
+    test('clicking tile view toggle switches back to tile view', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      // Switch to list view first
+      const listBtn = screen.getByTitle('List View');
+      await act(async () => {
+        fireEvent.click(listBtn);
+      });
+
+      // Switch back to tile view
+      const tileBtn = screen.getByTitle('Tile View');
+      await act(async () => {
+        fireEvent.click(tileBtn);
+      });
+
+      expect(tileBtn.className).toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+      expect(listBtn.className).not.toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+    });
+
+    test('list view renders data product items', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      // Switch to list view
+      const listBtn = screen.getByTitle('List View');
+      await act(async () => {
+        fireEvent.click(listBtn);
+      });
+
+      // Data products should still be visible in list view
+      expect(screen.getByText('Lakehouse SDLC Data Product')).toBeDefined();
+    });
+
+    test('view toggle is available in producer search mode', async () => {
+      await setupTestComponent('data', 'prod', true);
+
+      await screen.findByText('3 Products');
+
+      expect(screen.getByTitle('Tile View')).toBeDefined();
+      expect(screen.getByTitle('List View')).toBeDefined();
+    });
+  });
 });

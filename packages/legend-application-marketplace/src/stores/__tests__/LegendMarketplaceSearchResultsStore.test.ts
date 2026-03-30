@@ -18,6 +18,7 @@ import { describe, expect, test } from '@jest/globals';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import {
   LegendMarketplaceSearchResultsStore,
+  SearchResultsViewMode,
   DataProductTypeFilter,
   DataProductSourceFilter,
 } from '../lakehouse/LegendMarketplaceSearchResultsStore.js';
@@ -492,5 +493,30 @@ describe('LegendMarketplaceSearchResultsStore - Filters', () => {
         ]),
       );
     });
+  });
+});
+
+describe('LegendMarketplaceSearchResultsStore - ViewMode', () => {
+  test('defaults to TILE view mode', async () => {
+    const { store } = await setupStore();
+
+    expect(store.viewMode).toBe(SearchResultsViewMode.TILE);
+  });
+
+  test('setViewMode changes view mode to LIST', async () => {
+    const { store } = await setupStore();
+
+    store.setViewMode(SearchResultsViewMode.LIST);
+    expect(store.viewMode).toBe(SearchResultsViewMode.LIST);
+  });
+
+  test('setViewMode changes view mode back to TILE', async () => {
+    const { store } = await setupStore();
+
+    store.setViewMode(SearchResultsViewMode.LIST);
+    expect(store.viewMode).toBe(SearchResultsViewMode.LIST);
+
+    store.setViewMode(SearchResultsViewMode.TILE);
+    expect(store.viewMode).toBe(SearchResultsViewMode.TILE);
   });
 });

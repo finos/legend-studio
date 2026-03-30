@@ -63,7 +63,7 @@
 
   &__lakehouse-env-chip {
     align-self: end;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     text-transform: none;
     color: var(--tw-color-green-100);
     background: var(--tw-color-green-600);
@@ -75,7 +75,7 @@
 
   &__version {
     align-self: end;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     text-transform: none;
 
     &--snapshot {
@@ -91,7 +91,7 @@
 
   &__environment-classification {
     align-self: end;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     text-transform: none;
 
     &--unknown {
@@ -117,7 +117,7 @@
 
   &__data-product-source {
     align-self: end;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     text-transform: none;
     background-color: var(--color-search-chip-source-bg);
     color: var(--color-search-chip-source-text);
@@ -125,7 +125,7 @@
 
   &__license-to {
     align-self: end;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     text-transform: none;
     background-color: var(--color-search-chip-license-bg);
     color: var(--color-search-chip-license-text);

@@ -2082,48 +2082,6 @@
       }
     }
 
-    &__sort-bar {
-      background-color: var(--color-dark-theme-bg-secondary);
-      border-bottom: 1px solid var(--color-dark-theme-border);
-
-      &__container {
-        background-color: var(--color-dark-theme-bg-secondary);
-        color: var(--color-dark-theme-text-primary);
-
-        // Sort button/select styling
-        .MuiFormControl-root {
-          .MuiSelect-select {
-            color: var(--color-dark-theme-text-primary);
-            background: transparent;
-            border-color: var(--color-dark-theme-text-primary);
-
-            &:hover {
-              background: var(--color-dark-theme-text-primary);
-              color: var(--color-dark-theme-bg-secondary);
-            }
-          }
-
-          .MuiOutlinedInput-notchedOutline {
-            border-color: var(--color-dark-theme-text-primary);
-          }
-
-          .MuiOutlinedInput-root {
-            &:hover {
-              .MuiOutlinedInput-notchedOutline {
-                border-color: var(--color-dark-theme-text-primary);
-              }
-
-              background: var(--color-dark-theme-text-primary);
-
-              .MuiSelect-select {
-                color: var(--color-dark-theme-bg-secondary);
-              }
-            }
-          }
-        }
-      }
-    }
-
     &__drawer {
       background: var(--color-dark-theme-bg-secondary);
       color: var(--color-dark-theme-text-primary);
@@ -2152,12 +2110,88 @@
     }
   }
 
-  .lakehouse-search-results {
-    background: var(--color-dark-theme-bg-primary);
-    color: var(--color-dark-theme-text-primary);
+  .legend-marketplace-search-results__sort-select {
+    &.MuiInputBase-root .MuiSelect-select {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    .MuiOutlinedInput-notchedOutline {
+      border-color: var(--color-dark-theme-border-light);
+    }
+
+    &:hover .MuiOutlinedInput-notchedOutline {
+      border-color: var(--color-dark-theme-text-muted);
+    }
+
+    .MuiSelect-icon {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
+
+  .legend-marketplace-search-results__view-toggle {
+    border-color: var(--color-dark-theme-border-light);
+    background: var(--color-dark-theme-bg-tertiary);
+
+    &__slider {
+      background: var(--color-dark-theme-blue-primary);
+      box-shadow: 0 1px 3px rgb(0 0 0 / 40%);
+    }
+
+    &__btn {
+      color: var(--color-dark-theme-text-muted);
+
+      &:hover {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &--active {
+        color: var(--color-dark-theme-text-primary);
+
+        &:hover {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+    }
+  }
+
+  .legend-marketplace-search-results__sort-bar {
+    background-color: var(--color-dark-theme-bg-secondary);
+    border-bottom: 1px solid var(--color-dark-theme-border);
+
+    &__container {
+      background-color: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__controls-divider {
+      background-color: var(--color-dark-theme-border-light);
+    }
   }
 
   .marketplace-lakehouse-search-results {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    &__search-container {
+      background: var(--color-dark-theme-bg-primary);
+    }
+
+    &__content-wrapper {
+      background: var(--color-dark-theme-bg-primary);
+    }
+
+    &__results-container {
+      background: var(--color-dark-theme-bg-primary);
+    }
+
+    &__main-content {
+      background: var(--color-dark-theme-bg-primary);
+    }
+
+    &__subtitles {
+      color: var(--color-dark-theme-text-primary);
+    }
+
     &__empty-state {
       &__title {
         color: var(--color-dark-theme-text-primary);
@@ -2165,6 +2199,41 @@
 
       &__message {
         color: var(--color-dark-theme-text-muted);
+      }
+    }
+  }
+
+  .legend-marketplace-list-item {
+    background: var(--color-dark-theme-bg-secondary);
+    border-color: var(--color-dark-theme-border-light);
+
+    &:hover {
+      background-color: rgb(255 255 255 / 10%);
+    }
+
+    &__thumbnail {
+      background: var(--color-dark-theme-bg-tertiary);
+
+      &__icon svg {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+  }
+
+  .marketplace-lakehouse-list-item {
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__description {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__info-btn {
+      color: var(--color-dark-theme-text-muted);
+
+      &:hover {
+        color: var(--color-dark-theme-text-primary);
       }
     }
   }
