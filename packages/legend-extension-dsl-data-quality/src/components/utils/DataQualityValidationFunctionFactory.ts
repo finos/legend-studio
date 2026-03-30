@@ -33,6 +33,7 @@ import {
   DataQualityValidationFilterCondition,
   DataQualityValidationFilterFunction,
   DataQualityValidationLogicalGroupFunction,
+  DataQualityValidationPropertyGuarantee,
 } from './DataQualityValidationFunction.js';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { DataQualityFunctionDefaults } from './DataQualityFunctionDefaults.js';
@@ -82,6 +83,7 @@ export class DataQualityValidationFunctionFactory {
 
   createFilterConditionFunction(
     name: string,
+    propertyName?: string,
   ): DataQualityValidationFilterCondition {
     const otherParams = DataQualityFunctionDefaults.getPureFunctionDefaults(
       name,
@@ -90,7 +92,7 @@ export class DataQualityValidationFunctionFactory {
     );
     const property = DataQualityLambdaParameterParser.processPropertyParameter(
       {
-        property: '',
+        property: propertyName ?? '',
         parameters: [
           {
             name: 'row',
@@ -103,6 +105,27 @@ export class DataQualityValidationFunctionFactory {
     return new DataQualityValidationFilterCondition(name, {
       property,
       otherParams,
+    });
+  }
+
+  createPropertyGuaranteeFunction(
+    name: string,
+    propertyName?: string,
+  ): DataQualityValidationPropertyGuarantee {
+    const property = DataQualityLambdaParameterParser.processPropertyParameter(
+      {
+        property: propertyName ?? '',
+        parameters: [
+          {
+            name: 'row',
+            _type: SUPPORTED_TYPES.VAR,
+          },
+        ],
+      } as LambdaBody,
+      this.observerContext,
+    );
+    return new DataQualityValidationPropertyGuarantee(name, {
+      property,
     });
   }
 

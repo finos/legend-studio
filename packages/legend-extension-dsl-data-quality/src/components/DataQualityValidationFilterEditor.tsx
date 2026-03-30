@@ -25,6 +25,7 @@ import {
 import {
   DataQualityValidationFilterCondition,
   DataQualityValidationLogicalGroupFunction,
+  DataQualityValidationPropertyGuarantee,
   type DataQualityValidationFilterFunction,
 } from './utils/DataQualityValidationFunction.js';
 import { DataQualityValidationFunctionRenderer } from './DataQualityValidationFunctionRenderer.js';
@@ -46,6 +47,7 @@ import {
 import { DataQualityValidationFunctionFactory } from './utils/DataQualityValidationFunctionFactory.js';
 import { DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS } from './constants/DataQualityConstants.js';
 import type { Option } from './DataQualityCustomSelector.js';
+import { useRef } from 'react';
 
 const DataQualityValidationFilterConditionEditor = observer(
   (props: {
@@ -54,13 +56,20 @@ const DataQualityValidationFilterConditionEditor = observer(
     disabled: boolean;
     showAddButton: boolean;
     showDeleteButton: boolean;
-    handleFunctionChange: (name: string, id: string) => void;
+    handleFunctionChange: (
+      name: string,
+      id: string,
+      isCurrentColOptional: boolean,
+    ) => void;
     handleColumnChange: (value: string) => void;
     handleFunctionParamChange: (
       param: PrimitiveInstanceValue | CollectionInstanceValue,
       index: number,
     ) => void;
-    onAdd?: (operator: DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS) => void;
+    onAdd?: (
+      operator: DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS,
+      isCurrentColOptional: boolean,
+    ) => void;
     onDelete?: () => void;
     getFunctionOptions: (type: string) => Option[];
   }) => {
@@ -77,11 +86,19 @@ const DataQualityValidationFilterConditionEditor = observer(
       handleColumnChange,
       handleFunctionParamChange,
     } = props;
+
+    const functionParamsRef = useRef<
+      [PrimitiveInstanceValue | CollectionInstanceValue, number] | []
+    >([]);
     const { columnOptions } = validationState;
     const observerContext =
       validationState.editorStore.changeDetectionState.observerContext;
     const graph = validationState.editorStore.graphManagerState.graph;
-    const column = condition.parameters.property;
+    const column =
+      condition.parameters.property instanceof
+      DataQualityValidationPropertyGuarantee
+        ? condition.parameters.property.parameters.property
+        : condition.parameters.property;
     const columnOption = columnOptions.find(
       ({ value }) => value === column.func.value.name,
     );
@@ -106,13 +123,20 @@ const DataQualityValidationFilterConditionEditor = observer(
             handleColumnChange(value);
           }}
           selectedColumn={columnOption}
-          handleFunctionChange={handleFunctionChange}
+          handleFunctionChange={(name: string, id: string) => {
+            handleFunctionChange(name, id, columnOption?.isOptional ?? false);
+          }}
           handleFunctionParametersChange={(
             param: PrimitiveInstanceValue | CollectionInstanceValue,
             index: number,
           ) => {
             condition.parameters.otherParams[index] = param;
-            handleFunctionParamChange(param, index);
+            functionParamsRef.current = [param, index];
+          }}
+          onInputBlur={() => {
+            if (functionParamsRef.current.length === 2) {
+              handleFunctionParamChange(...functionParamsRef.current);
+            }
           }}
         />
         {showAddButton && (
@@ -123,14 +147,20 @@ const DataQualityValidationFilterConditionEditor = observer(
               <MenuContent>
                 <MenuContentItem
                   onClick={() =>
-                    onAdd?.(DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS.AND)
+                    onAdd?.(
+                      DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS.AND,
+                      columnOption?.isOptional ?? false,
+                    )
                   }
                 >
                   And
                 </MenuContentItem>
                 <MenuContentItem
                   onClick={() => {
-                    onAdd?.(DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS.OR);
+                    onAdd?.(
+                      DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS.OR,
+                      columnOption?.isOptional ?? false,
+                    );
                   }}
                 >
                   Or
@@ -209,7 +239,11 @@ const RenderConditionTree = observer(
       );
     }
 
-    const handleFunctionChange = (name: string, id: string) => {
+    const handleFunctionChange = (
+      name: string,
+      id: string,
+      isCurrentColOptional: boolean,
+    ) => {
       const findAndChange = (
         node:
           | DataQualityValidationFilterCondition
@@ -225,6 +259,7 @@ const RenderConditionTree = observer(
               isLeftChild ? 'left' : 'right',
               functionFactory,
               observerContext,
+              isCurrentColOptional,
             );
             return true;
           }
@@ -267,13 +302,14 @@ const RenderConditionTree = observer(
             );
             validationState.debouncedHandleValidationFormChange();
           }}
-          onAdd={(newOperator) => {
+          onAdd={(newOperator, isCurrentColOptional) => {
             dataQualityValidationFilterFunction_transformConditionToLogicalGroup(
               validationFunction,
               condition,
               newOperator,
               functionFactory,
               observerContext,
+              isCurrentColOptional,
             );
             validationState.debouncedHandleValidationFormChange();
           }}
@@ -327,17 +363,18 @@ export const DataQualityValidationFilterEditor = observer(
               type,
             )
           }
-          handleFunctionChange={(name) => {
-            handleValidationBodyChange(name);
+          handleFunctionChange={(name, _, isCurrentColOptional) => {
+            handleValidationBodyChange(name, isCurrentColOptional);
             validationState.debouncedHandleValidationFormChange();
           }}
-          onAdd={(operator) => {
+          onAdd={(operator, isCurrentColOptional) => {
             dataQualityValidationFilterFunction_addLogicalOperation(
               validationFunction,
               body,
               operator,
               functionFactory,
               observerContext,
+              isCurrentColOptional,
             );
           }}
           handleColumnChange={() => {

@@ -15,12 +15,13 @@
  */
 
 import { DataQualityFunctionDefaults } from './DataQualityFunctionDefaults.js';
-import type {
-  DataQualityValidationFunctionVisitor,
-  DataQualityValidationFilterFunction,
-  DataQualityValidationCustomHelperFunction,
-  DataQualityValidationFilterCondition,
-  DataQualityValidationLogicalGroupFunction,
+import {
+  type DataQualityValidationFunctionVisitor,
+  type DataQualityValidationFilterFunction,
+  type DataQualityValidationCustomHelperFunction,
+  type DataQualityValidationFilterCondition,
+  type DataQualityValidationLogicalGroupFunction,
+  DataQualityValidationPropertyGuarantee,
 } from './DataQualityValidationFunction.js';
 import {
   CollectionInstanceValue,
@@ -31,6 +32,10 @@ export class DataQualityValidationDescriptionGeneratorVisitor
   implements DataQualityValidationFunctionVisitor<string>
 {
   visitAssertion(): string {
+    return '';
+  }
+
+  visitPropertyGuarantee(func: DataQualityValidationPropertyGuarantee): string {
     return '';
   }
 
@@ -78,7 +83,10 @@ export class DataQualityValidationDescriptionGeneratorVisitor
     const values: string[] = [];
     const description =
       DataQualityFunctionDefaults.getFunctionDescriptionTemplate(func.name);
-    const columnName = property.func.value.name;
+    const columnName =
+      property instanceof DataQualityValidationPropertyGuarantee
+        ? property.parameters.property.func.value.name
+        : property.func.value.name;
 
     if (!columnName || !description) {
       return '';

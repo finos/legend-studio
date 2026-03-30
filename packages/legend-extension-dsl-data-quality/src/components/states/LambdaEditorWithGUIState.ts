@@ -48,6 +48,7 @@ export type ColumnOption = {
   value: string;
   label: string;
   type: string;
+  isOptional: boolean;
 };
 
 export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
@@ -256,13 +257,14 @@ export abstract class LambdaEditorWithGUIState extends LambdaEditorState {
   }
 
   setColumnOptions(columns: RelationTypeColumnMetadata[]) {
-    this.columnOptions = columns.map(({ name, type }) => {
+    this.columnOptions = columns.map(({ name, type, multiplicity }) => {
       return {
         value: name,
         label: name,
         type: getPrimitiveTypeEnumFromPrecisePrimitiveTypeEnum(
           type as PRECISE_PRIMITIVE_TYPE,
         ),
+        isOptional: multiplicity.lowerBound === 0,
       };
     });
   }

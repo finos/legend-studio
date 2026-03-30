@@ -36,6 +36,8 @@ import {
   observe_SimpleFunctionExpression,
   type ValueSpecification,
   observe_VariableExpression,
+  type CollectionInstanceValue,
+  type PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   buildPrimitiveCollectionInstanceValue,
@@ -53,6 +55,24 @@ export type LambdaBody = {
   body?: LambdaBody[];
   property?: string;
 };
+
+export class ParsedFunctionExpression {
+  name: string;
+  processedParameters: (
+    | CollectionInstanceValue
+    | PrimitiveInstanceValue
+    | AbstractPropertyExpression
+    | ParsedFunctionExpression
+  )[];
+
+  constructor(
+    name: string,
+    processedParameters: ParsedFunctionExpression['processedParameters'] = [],
+  ) {
+    this.name = name;
+    this.processedParameters = processedParameters;
+  }
+}
 
 export class DataQualityLambdaParameterParser {
   static processPrimitiveParameter(
@@ -192,7 +212,7 @@ export class DataQualityLambdaParameterParser {
     { parameters = [], function: name = '' }: LambdaBody,
     graph: PureModel,
     observerContext: ObserverContext,
-  ) {
+  ): ParsedFunctionExpression {
     const processedParameters = parameters.map((parameter) => {
       if (
         DataQualityLambdaParameterParser.isSupportedPrimitive(parameter._type)
@@ -215,6 +235,12 @@ export class DataQualityLambdaParameterParser {
               graph,
               observerContext,
             );
+          case SUPPORTED_TYPES.FUNCTION:
+            return DataQualityLambdaParameterParser.processFunctionParameter(
+              parameter,
+              graph,
+              observerContext,
+            );
           default:
             throw new UnsupportedOperationError(
               `Cannot process type: ${parameter._type}`,
@@ -223,10 +249,7 @@ export class DataQualityLambdaParameterParser {
       }
     });
 
-    return {
-      name,
-      processedParameters,
-    };
+    return new ParsedFunctionExpression(name, processedParameters);
   }
 
   static createSimpleFunctionExpression(

@@ -19,13 +19,14 @@ import {
   SUPPORTED_TYPES,
 } from '../constants/DataQualityConstants.js';
 import type { LambdaBody } from './DataQualityLambdaParameterParser.js';
-import type {
-  DataQualityValidationFilterFunction,
-  DataQualityValidationCustomHelperFunction,
-  DataQualityValidationAssertionFunction,
-  DataQualityValidationFunctionVisitor,
-  DataQualityValidationFilterCondition,
-  DataQualityValidationLogicalGroupFunction,
+import {
+  type DataQualityValidationFilterFunction,
+  type DataQualityValidationCustomHelperFunction,
+  type DataQualityValidationAssertionFunction,
+  type DataQualityValidationFunctionVisitor,
+  type DataQualityValidationFilterCondition,
+  type DataQualityValidationLogicalGroupFunction,
+  DataQualityValidationPropertyGuarantee,
 } from './DataQualityValidationFunction.js';
 import type {
   GraphManagerState,
@@ -141,7 +142,11 @@ export class DataQualityValidateFunctionToPureLambdaVisitor
     const { property, otherParams } = func.parameters;
     const functionParameters: LambdaBody[] = [];
 
-    functionParameters.push(this.serializeValueSpecification(property));
+    if (property instanceof DataQualityValidationPropertyGuarantee) {
+      functionParameters.push(property.accept(this));
+    } else {
+      functionParameters.push(this.serializeValueSpecification(property));
+    }
 
     if (otherParams.length > 0) {
       otherParams.forEach((param) => {
@@ -166,6 +171,18 @@ export class DataQualityValidateFunctionToPureLambdaVisitor
       _type: SUPPORTED_TYPES.FUNCTION,
       function: func.name,
       parameters: [leftLambdaBody, rightLambdaBody],
+    } as LambdaBody;
+  }
+
+  visitPropertyGuarantee(
+    func: DataQualityValidationPropertyGuarantee,
+  ): LambdaBody {
+    const { property } = func.parameters;
+
+    return {
+      _type: SUPPORTED_TYPES.FUNCTION,
+      function: func.name,
+      parameters: [this.serializeValueSpecification(property)],
     } as LambdaBody;
   }
 }

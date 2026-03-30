@@ -19,6 +19,7 @@ import {
   type DataQualityValidationFunctionVisitor,
   DataQualityValidationFilterCondition,
   type DataQualityValidationLogicalGroupFunction,
+  DataQualityValidationPropertyGuarantee,
 } from '../utils/DataQualityValidationFunction.js';
 import { assertType, UnsupportedOperationError } from '@finos/legend-shared';
 import type { DataQualityValidationFunctionFactory } from './DataQualityValidationFunctionFactory.js';
@@ -34,24 +35,111 @@ import {
   type AbstractProperty,
   Multiplicity,
 } from '@finos/legend-graph';
-import { DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS } from '../constants/DataQualityConstants.js';
 import {
-  cloneAbstractPropertyExpression,
+  DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS,
+  DATA_QUALITY_VALIDATION_PROPERTY_GUARANTEE_FUNCTIONS,
+} from '../constants/DataQualityConstants.js';
+import {
   cloneValueSpecification,
   instanceValue_setValues,
-  propertyExpression_setFunc,
 } from '@finos/legend-query-builder';
 import {
   observe_DataQualityValidationCustomHelperFunction,
   observe_DataQualityValidationFilterCondition,
   observe_DataQualityValidationFilterFunction,
+  observe_DataQualityValidationPropertyGuarantee,
 } from './DataQualityValidationFunctionObserver.js';
+import { dataQualityValidationLogicalGroupFunction_setParametersValues } from './DataQualityValidationFunctionModifier.js';
+import { DataQualityFunctionDefaults } from './DataQualityFunctionDefaults.js';
+
+const VISITOR_ERROR = new UnsupportedOperationError('Visitor not implemented');
+
+export type DataQualityValidationFilterFunctions =
+  | DataQualityValidationFilterCondition
+  | DataQualityValidationLogicalGroupFunction;
+
+export class DataQualityValidationFilterFunctionsCloningVisitor
+  implements
+    DataQualityValidationFunctionVisitor<DataQualityValidationFilterFunctions>
+{
+  private newName: string;
+  private cloneFactory: DataQualityValidationFunctionFactory;
+  private observerContext: ObserverContext;
+  private readonly isCurrentColOptional: boolean;
+
+  constructor(
+    newName: string,
+    cloneFactory: DataQualityValidationFunctionFactory,
+    observerContext: ObserverContext,
+    isCurrentColOptional: boolean,
+  ) {
+    this.newName = newName;
+    this.cloneFactory = cloneFactory;
+    this.observerContext = observerContext;
+    this.isCurrentColOptional = isCurrentColOptional;
+  }
+
+  visitAssertion(): DataQualityValidationFilterFunctions {
+    throw VISITOR_ERROR;
+  }
+
+  visitCustomHelper(): DataQualityValidationFilterFunctions {
+    throw VISITOR_ERROR;
+  }
+
+  visitFilter(): DataQualityValidationFilterFunctions {
+    throw VISITOR_ERROR;
+  }
+
+  visitFilterCondition(func: DataQualityValidationFilterCondition) {
+    const currentColumn =
+      func.parameters.property instanceof AbstractPropertyExpression
+        ? func.parameters.property
+        : func.parameters.property.parameters.property;
+    const clone = this.cloneFactory.createFilterConditionFunction(
+      this.newName,
+      currentColumn.func.value.name,
+    );
+
+    const isPureFunctionColumnRequired =
+      DataQualityFunctionDefaults.getIsPureFunctionColumnRequired(this.newName);
+
+    if (isPureFunctionColumnRequired && this.isCurrentColOptional) {
+      clone.parameters.property =
+        this.cloneFactory.createPropertyGuaranteeFunction(
+          DATA_QUALITY_VALIDATION_PROPERTY_GUARANTEE_FUNCTIONS.TO_ONE,
+          currentColumn.func.value.name,
+        );
+      dataQualityValidationLogicalGroupFunction_setParametersValues(
+        clone.parameters.property.parameters.property,
+        currentColumn.parametersValues.map((param) =>
+          cloneValueSpecification(param, this.observerContext),
+        ),
+      );
+    } else {
+      dataQualityValidationLogicalGroupFunction_setParametersValues(
+        clone.parameters.property as AbstractPropertyExpression,
+        currentColumn.parametersValues.map((param) =>
+          cloneValueSpecification(param, this.observerContext),
+        ),
+      );
+    }
+
+    return observe_DataQualityValidationFilterCondition(clone);
+  }
+
+  visitPropertyGuarantee(): DataQualityValidationFilterCondition {
+    throw VISITOR_ERROR;
+  }
+
+  visitLogicalGroup(func: DataQualityValidationLogicalGroupFunction) {
+    return func;
+  }
+}
 
 type AnyDataQualityValidationFunction =
   | DataQualityValidationFilterFunction
   | DataQualityValidationCustomHelperFunction;
-
-const VISITOR_ERROR = new UnsupportedOperationError('Visitor not implemented');
 
 export class DataQualityValidationFunctionCloningVisitor
   implements
@@ -60,15 +148,18 @@ export class DataQualityValidationFunctionCloningVisitor
   private newName: string;
   private cloneFactory: DataQualityValidationFunctionFactory;
   private observerContext: ObserverContext;
+  private readonly isCurrentColOptional: boolean;
 
   constructor(
     newName: string,
     cloneFactory: DataQualityValidationFunctionFactory,
     observerContext: ObserverContext,
+    isCurrentColOptional: boolean,
   ) {
     this.newName = newName;
     this.cloneFactory = cloneFactory;
     this.observerContext = observerContext;
+    this.isCurrentColOptional = isCurrentColOptional;
   }
 
   visitAssertion(): AnyDataQualityValidationFunction {
@@ -83,24 +174,32 @@ export class DataQualityValidationFunctionCloningVisitor
     throw VISITOR_ERROR;
   }
 
+  visitPropertyGuarantee(): AnyDataQualityValidationFunction {
+    throw VISITOR_ERROR;
+  }
+
   visitFilter(func: DataQualityValidationFilterFunction) {
-    const clone = this.createFunctionForCloning();
     const body = func.parameters.lambda.body;
     assertType(body, DataQualityValidationFilterCondition);
-    const property = body.parameters.property;
+    let property = body.parameters.property;
+    if (property instanceof DataQualityValidationPropertyGuarantee) {
+      property = property.parameters.property;
+    }
+    const clone = this.createFunctionForCloning();
     clone.id = func.id;
 
     if (clone instanceof DataQualityValidationCustomHelperFunction) {
       return this.updateCustomHelpFunctionCol(clone, property.func.value.name);
     }
 
-    (
-      clone.parameters.lambda.body as DataQualityValidationFilterCondition
-    ).parameters.property = cloneAbstractPropertyExpression(
-      property,
+    const visitor = new DataQualityValidationFilterFunctionsCloningVisitor(
+      this.newName,
+      this.cloneFactory,
       this.observerContext,
+      this.isCurrentColOptional,
     );
 
+    clone.parameters.lambda.body = body.accept(visitor);
     return clone;
   }
 
@@ -145,12 +244,9 @@ export class DataQualityValidationFunctionCloningVisitor
       );
     }
 
-    const clone = this.cloneFactory.createFilterFunction();
-    clone.parameters.lambda.body = observe_DataQualityValidationFilterCondition(
-      this.cloneFactory.createFilterChildFunction(this.newName),
+    return observe_DataQualityValidationFilterFunction(
+      this.cloneFactory.createFilterFunction(),
     );
-
-    return observe_DataQualityValidationFilterFunction(clone);
   }
 
   private updateCustomHelpFunctionCol(
@@ -173,82 +269,40 @@ export class DataQualityValidationFunctionCloningVisitor
     col: string,
     variableRef?: VariableExpression,
   ) {
-    assertType(
-      clone.parameters.lambda.body,
-      DataQualityValidationFilterCondition,
-    );
-
     const property = new AbstractPropertyExpression('');
     property.func = PropertyExplicitReference.create({
       name: col,
     } as AbstractProperty);
-
     property.parametersValues = [
       cloneValueSpecification(
         variableRef ?? new VariableExpression('row', Multiplicity.ZERO),
         this.observerContext,
       ),
     ];
-
     observe_AbstractPropertyExpression(property, this.observerContext);
-    clone.parameters.lambda.body.parameters.property = property;
-    return clone;
-  }
-}
 
-export type DataQualityValidationFilterFunctions =
-  | DataQualityValidationFilterCondition
-  | DataQualityValidationLogicalGroupFunction;
+    const body = this.cloneFactory.createFilterChildFunction(this.newName);
 
-export class DataQualityValidationFilterFunctionsCloningVisitor
-  implements
-    DataQualityValidationFunctionVisitor<DataQualityValidationFilterFunctions>
-{
-  private newName: string;
-  private cloneFactory: DataQualityValidationFunctionFactory;
-  private observerContext: ObserverContext;
-
-  constructor(
-    newName: string,
-    cloneFactory: DataQualityValidationFunctionFactory,
-    observerContext: ObserverContext,
-  ) {
-    this.newName = newName;
-    this.cloneFactory = cloneFactory;
-    this.observerContext = observerContext;
-  }
-
-  visitAssertion(): DataQualityValidationFilterFunctions {
-    throw VISITOR_ERROR;
-  }
-
-  visitCustomHelper(): DataQualityValidationFilterFunctions {
-    throw VISITOR_ERROR;
-  }
-
-  visitFilter(): DataQualityValidationFilterFunctions {
-    throw VISITOR_ERROR;
-  }
-
-  visitFilterCondition(func: DataQualityValidationFilterCondition) {
-    const clone = this.cloneFactory.createFilterConditionFunction(this.newName);
-    const currentColumn = func.parameters.property;
-
-    propertyExpression_setFunc(
-      clone.parameters.property,
-      PropertyExplicitReference.create({
-        name: currentColumn.func.value.name,
-      } as AbstractProperty),
-    );
-    clone.parameters.property.parametersValues =
-      currentColumn.parametersValues.map((param) =>
-        cloneValueSpecification(param, this.observerContext),
+    if (
+      DataQualityFunctionDefaults.getIsPureFunctionColumnRequired(
+        this.newName,
+      ) &&
+      this.isCurrentColOptional
+    ) {
+      const guarantee = this.cloneFactory.createPropertyGuaranteeFunction(
+        DATA_QUALITY_VALIDATION_PROPERTY_GUARANTEE_FUNCTIONS.TO_ONE,
       );
 
-    return observe_DataQualityValidationFilterCondition(clone);
-  }
+      guarantee.parameters.property = property;
+      body.parameters.property =
+        observe_DataQualityValidationPropertyGuarantee(guarantee);
+    } else {
+      body.parameters.property = property;
+    }
 
-  visitLogicalGroup(func: DataQualityValidationLogicalGroupFunction) {
-    return func;
+    clone.parameters.lambda.body =
+      observe_DataQualityValidationFilterCondition(body);
+
+    return clone;
   }
 }

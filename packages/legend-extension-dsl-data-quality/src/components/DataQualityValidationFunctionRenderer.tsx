@@ -30,29 +30,25 @@ import {
 } from '@finos/legend-graph';
 import type { Option } from './DataQualityCustomSelector.js';
 import { useState } from 'react';
-
-interface ColumnOption {
-  value: string;
-  label: string;
-  type: string;
-}
+import type { ColumnOption } from './states/LambdaEditorWithGUIState.js';
 
 interface DataQualityValidationFunctionRendererProps {
   id: string;
   columnOptions: ColumnOption[];
   functionOptions?: Option[];
-  handleColChange: (value: string, type: string) => void;
+  handleColChange: (value: string, type: string, isOptional: boolean) => void;
   readOnly: boolean;
   selectedColumn: ColumnOption | undefined;
   functionName: string;
   functionParameters: ValueSpecification[];
   handleFunctionChange: (name: string, id: string) => void;
-  handleFunctionParametersChange: (
+  handleFunctionParametersChange?: (
     param: PrimitiveInstanceValue | CollectionInstanceValue,
     index: number,
   ) => void;
   graph: PureModel;
   observerContext: ObserverContext;
+  onInputBlur?: () => void;
 }
 
 export function DataQualityValidationFunctionRenderer({
@@ -68,7 +64,8 @@ export function DataQualityValidationFunctionRenderer({
   functionName,
   graph,
   observerContext,
-}: DataQualityValidationFunctionRendererProps) {
+  onInputBlur,
+}: Readonly<DataQualityValidationFunctionRendererProps>) {
   const [initializeAsEditable, setInitializeAsEditable] = useState(false);
 
   return (
@@ -76,8 +73,8 @@ export function DataQualityValidationFunctionRenderer({
       <div className="data-quality-validation-gui-editor__function__parameter">
         <RenderColumn
           column={selectedColumn}
-          onChange={({ value, type }) => {
-            handleColChange(value, type);
+          onChange={({ value, type, isOptional }) => {
+            handleColChange(value, type, isOptional);
           }}
           options={columnOptions}
           disabled={readOnly}
@@ -108,14 +105,19 @@ export function DataQualityValidationFunctionRenderer({
             className="data-quality-validation-gui-editor__function__parameter data-quality-validation-gui-editor__function__parameter--value"
             key={getParameterKey(param.hashCode, idx)}
             onFocus={() => setInitializeAsEditable(true)}
-            onBlur={() => setInitializeAsEditable(false)}
+            onBlur={() => {
+              setInitializeAsEditable(false);
+              onInputBlur?.();
+            }}
+            role="group"
+            tabIndex={-1}
           >
             <EditableBasicValueSpecificationEditor
               valueSpecification={param}
               enableExpressionCalculation={false}
               displayAsString={!isPrimitiveNumber(type)}
               setValueSpecification={(newValue) => {
-                handleFunctionParametersChange(
+                handleFunctionParametersChange?.(
                   newValue as PrimitiveInstanceValue | CollectionInstanceValue,
                   idx,
                 );

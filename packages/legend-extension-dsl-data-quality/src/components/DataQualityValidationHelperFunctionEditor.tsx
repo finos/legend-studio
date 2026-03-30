@@ -70,7 +70,7 @@ export const DataQualityValidationHelperFunctionEditor = observer(
           handleValidationBodyChange(name);
           validationState.debouncedHandleValidationFormChange();
         }}
-        handleFunctionParametersChange={() => {
+        onInputBlur={() => {
           validationState.debouncedHandleValidationFormChange();
         }}
       />

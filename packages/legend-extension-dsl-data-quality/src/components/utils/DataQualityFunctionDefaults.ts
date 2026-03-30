@@ -279,7 +279,7 @@ export class DataQualityFunctionDefaults {
       [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_NON_EMPTY_COLUMN]:
         'Expect [column] to be null',
       [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_COLUMN_LONGER_THAN]:
-        'Expect [column] to have length [param-1]',
+        'Expect [column] to be shorter than [param-1]',
       [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_NEGATIVE_VALUE]:
         'Expect [column] to be positive',
       [DATA_QUALITY_FILTER_VALIDATION_HELPER_FUNCTIONS.ROWS_WITH_COLUMN_DIFFERS_FROM_PATTERN]:
@@ -311,4 +311,21 @@ export class DataQualityFunctionDefaults {
       'Expect [column] not match [param-1]',
     [DATA_QUALITY_VALIDATION_PURE_FUNCTIONS.FILTER]: '',
   };
+
+  private static readonly FUNCTIONS_ACCEPTING_OPTIONAL: Set<string> = new Set([
+    DATA_QUALITY_VALIDATION_PURE_FUNCTIONS.EQUAL,
+    DATA_QUALITY_VALIDATION_PURE_FUNCTIONS.IS_EMPTY,
+    DATA_QUALITY_VALIDATION_PURE_FUNCTIONS.IS_NOT_EMPTY,
+    DATA_QUALITY_VALIDATION_PURE_FUNCTIONS.IN,
+    DATA_QUALITY_VALIDATION_PURE_FUNCTIONS.GREATER_THAN,
+    DATA_QUALITY_VALIDATION_PURE_FUNCTIONS.GREATER_THAN_EQUAL,
+    DATA_QUALITY_VALIDATION_PURE_FUNCTIONS.LESS_THAN,
+    DATA_QUALITY_VALIDATION_PURE_FUNCTIONS.LESS_THAN_EQUAL,
+  ]);
+
+  static getIsPureFunctionColumnRequired(functionName: string): boolean {
+    return !DataQualityFunctionDefaults.FUNCTIONS_ACCEPTING_OPTIONAL.has(
+      functionName,
+    );
+  }
 }

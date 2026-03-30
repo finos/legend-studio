@@ -21,14 +21,16 @@ import type {
   DataQualityValidationCustomHelperFunction,
   DataQualityValidationFilterCondition,
   DataQualityValidationLogicalGroupFunction,
+  DataQualityValidationPropertyGuarantee,
 } from './DataQualityValidationFunction.js';
 import {
   DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS,
+  DATA_QUALITY_VALIDATION_PROPERTY_GUARANTEE_FUNCTIONS,
   SUPPORTED_TYPES,
 } from '../constants/DataQualityConstants.js';
 import { assertTrue, UnsupportedOperationError } from '@finos/legend-shared';
 import {
-  type AbstractPropertyExpression,
+  AbstractPropertyExpression,
   type CollectionInstanceValue,
   type PrimitiveInstanceValue,
   type ObserverContext,
@@ -37,16 +39,19 @@ import {
 } from '@finos/legend-graph';
 import {
   DataQualityLambdaParameterParser,
+  ParsedFunctionExpression,
   type LambdaBody,
 } from './DataQualityLambdaParameterParser.js';
 import { DataQualityValidationFunctionFactory } from './DataQualityValidationFunctionFactory.js';
 import {
   observe_DataQualityValidationFilterCondition,
   observe_DataQualityValidationLogicalGroupFunction,
+  observe_DataQualityValidationPropertyGuarantee,
 } from './DataQualityValidationFunctionObserver.js';
 
 export class DataQualityLambdaParameterExtractorVisitor
-  implements DataQualityValidationFunctionVisitor<void>
+  implements
+    DataQualityValidationFunctionVisitor<void | DataQualityValidationPropertyGuarantee>
 {
   private lambdaBody: LambdaBody;
   private graph: PureModel;
@@ -206,7 +211,7 @@ export class DataQualityLambdaParameterExtractorVisitor
     );
 
     const {
-      processedParameters: [property, ...otherParams],
+      processedParameters: [firstParam, ...otherParams],
     } = DataQualityLambdaParameterParser.processFunctionParameter(
       this.filterBody as LambdaBody,
       this.graph,
@@ -217,8 +222,58 @@ export class DataQualityLambdaParameterExtractorVisitor
       | PrimitiveInstanceValue
       | CollectionInstanceValue
     )[];
-    func.parameters.property = property as AbstractPropertyExpression;
+    if (firstParam instanceof AbstractPropertyExpression) {
+      func.parameters.property = firstParam;
+    } else if (
+      firstParam instanceof ParsedFunctionExpression &&
+      matchFunctionName(
+        firstParam.name,
+        Object.values(DATA_QUALITY_VALIDATION_PROPERTY_GUARANTEE_FUNCTIONS),
+      )
+    ) {
+      func.parameters.property = new DataQualityValidationFunctionFactory(
+        this.graph,
+        this.observerContext,
+      )
+        .createPropertyGuaranteeFunction(firstParam.name)
+        .accept(this, {
+          propertyGuaranteeParameters: firstParam.processedParameters,
+        }) as unknown as DataQualityValidationPropertyGuarantee;
+    } else {
+      throw new UnsupportedOperationError(
+        'Logical function cannot be used as property parameter in filter condition',
+      );
+    }
     observe_DataQualityValidationFilterCondition(func);
+  }
+
+  visitPropertyGuarantee(
+    func: DataQualityValidationPropertyGuarantee,
+    context: {
+      propertyGuaranteeParameters: ParsedFunctionExpression['processedParameters'];
+    },
+  ): DataQualityValidationPropertyGuarantee {
+    const { propertyGuaranteeParameters } = context;
+    assertTrue(
+      Boolean(propertyGuaranteeParameters),
+      `Expected ${func.name} parameters to be present`,
+    );
+
+    assertTrue(
+      propertyGuaranteeParameters.length === 1,
+      `Expected ${func.name} parameters to be 1, got ${propertyGuaranteeParameters.length}`,
+    );
+
+    const propertyParam = propertyGuaranteeParameters[0];
+
+    if (propertyParam instanceof AbstractPropertyExpression) {
+      func.parameters.property = propertyParam;
+      return observe_DataQualityValidationPropertyGuarantee(func);
+    }
+
+    throw new UnsupportedOperationError(
+      'Expected property parameter to be an AbstractPropertyExpression',
+    );
   }
 
   visitLogicalGroup(func: DataQualityValidationLogicalGroupFunction) {

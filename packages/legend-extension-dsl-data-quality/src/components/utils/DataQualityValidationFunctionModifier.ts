@@ -18,10 +18,15 @@ import {
   type DataQualityValidationFilterCondition,
   type DataQualityValidationFilterFunction,
   DataQualityValidationLogicalGroupFunction,
+  type DataQualityValidationPropertyGuarantee,
 } from '../utils/DataQualityValidationFunction.js';
 import type { DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS } from '../constants/DataQualityConstants.js';
 import type { DataQualityValidationFunctionFactory } from './DataQualityValidationFunctionFactory.js';
-import { type ObserverContext } from '@finos/legend-graph';
+import type {
+  AbstractPropertyExpression,
+  ValueSpecification,
+  ObserverContext,
+} from '@finos/legend-graph';
 import { observe_DataQualityValidationLogicalGroupFunction } from './DataQualityValidationFunctionObserver.js';
 import { DataQualityValidationFilterFunctionsCloningVisitor } from './DataQualityValidationFunctionCloningVisitor.js';
 import { action } from 'mobx';
@@ -33,11 +38,13 @@ export const dataQualityValidationFilterFunction_addLogicalOperation = action(
     operator: DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS,
     factory: DataQualityValidationFunctionFactory,
     observerContext: ObserverContext,
+    isCurrentColOptional: boolean,
   ): void => {
     const visitor = new DataQualityValidationFilterFunctionsCloningVisitor(
       currentCondition.name,
       factory,
       observerContext,
+      isCurrentColOptional,
     );
     const newCondition = currentCondition.accept(visitor);
 
@@ -59,12 +66,14 @@ export const dataQualityValidationFilterFunction_transformConditionToLogicalGrou
       operator: DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS,
       factory: DataQualityValidationFunctionFactory,
       observerContext: ObserverContext,
+      isCurrentColOptional: boolean,
     ): void => {
       const createGroup = () => {
         const visitor = new DataQualityValidationFilterFunctionsCloningVisitor(
           conditionToTransform.name,
           factory,
           observerContext,
+          isCurrentColOptional,
         );
         const newCondition = conditionToTransform.accept(visitor);
         const logicalGroup = factory.createLogicalFunction(operator);
@@ -174,6 +183,7 @@ export const dataQualityValidationLogicalGroupFunction_changeGroupFunction =
       childToChange: 'left' | 'right',
       factory: DataQualityValidationFunctionFactory,
       observerContext: ObserverContext,
+      isCurrentColOptional: boolean,
     ) => {
       const currentChild =
         childToChange === 'left'
@@ -184,6 +194,7 @@ export const dataQualityValidationLogicalGroupFunction_changeGroupFunction =
         newFunctionName,
         factory,
         observerContext,
+        isCurrentColOptional,
       );
 
       if (childToChange === 'left') {
@@ -191,5 +202,25 @@ export const dataQualityValidationLogicalGroupFunction_changeGroupFunction =
       } else {
         logicalGroup.parameters.right = currentChild.accept(visitor);
       }
+    },
+  );
+
+export const dataQualityValidationLogicalGroupFunction_setPropertyGuaranteeFunction =
+  action(
+    (
+      target: DataQualityValidationFilterCondition['parameters'],
+      property: DataQualityValidationPropertyGuarantee,
+    ) => {
+      target.property = property;
+    },
+  );
+
+export const dataQualityValidationLogicalGroupFunction_setParametersValues =
+  action(
+    (
+      target: AbstractPropertyExpression,
+      parametersValues: ValueSpecification[],
+    ) => {
+      target.parametersValues = parametersValues;
     },
   );

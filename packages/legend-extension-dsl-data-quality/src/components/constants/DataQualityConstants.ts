@@ -60,6 +60,10 @@ export enum DATA_QUALITY_VALIDATION_LOGICAL_FUNCTIONS {
   AND = 'and',
 }
 
+export enum DATA_QUALITY_VALIDATION_PROPERTY_GUARANTEE_FUNCTIONS {
+  TO_ONE = 'toOne',
+}
+
 export enum PARAMETER_COMPONENTS {
   LIST = 'list',
   NUMBER = 'number',
