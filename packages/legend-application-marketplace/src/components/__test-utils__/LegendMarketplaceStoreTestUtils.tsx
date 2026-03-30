@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type RenderResult, render, waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
 import { createMock, createSpy } from '@finos/legend-shared/test';
 import { jest } from '@jest/globals';
@@ -33,7 +33,6 @@ import { LegendMarketplacePluginManager } from '../../application/LegendMarketpl
 import { Core_LegendMarketplaceApplicationPlugin } from '../../application/extensions/Core_LegendMarketplaceApplicationPlugin.js';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import { LegendMarketplaceFrameworkProvider } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
 
 jest.mock('@finos/legend-graph', () => {
@@ -102,37 +101,6 @@ export const TEST__provideMockLegendMarketplaceBaseStore =
     );
     return mockBaseStore;
   };
-
-export const TEST__setUpMarketplace = async (
-  MOCK__store: LegendMarketplaceBaseStore,
-  route?: string,
-): Promise<{
-  renderResult: RenderResult;
-}> => {
-  createSpy(
-    MOCK__store.marketplaceServerClient,
-    'dataProductSearch',
-  ).mockResolvedValue({
-    dataProducts: searchResults,
-  });
-
-  const renderResult = render(
-    <ApplicationStoreProvider store={MOCK__store.applicationStore}>
-      <TEST__BrowserEnvironmentProvider initialEntries={[route ?? '/']}>
-        <LegendMarketplaceFrameworkProvider>
-          <LegendMarketplaceWebApplicationRouter />
-        </LegendMarketplaceFrameworkProvider>
-      </TEST__BrowserEnvironmentProvider>
-    </ApplicationStoreProvider>,
-  );
-  await waitFor(() =>
-    renderResult.getByTestId(LEGEND_MARKETPLACE_TEST_ID.HEADER),
-  );
-
-  return {
-    renderResult,
-  };
-};
 
 export const TEST__setUpMarketplaceLakehouse = async (
   MOCK__baseStore: LegendMarketplaceBaseStore,
