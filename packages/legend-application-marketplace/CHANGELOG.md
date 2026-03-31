@@ -1,5 +1,17 @@
 # @finos/legend-application-marketplace
 
+## 0.1.84
+
+### Patch Changes
+
+- [#5046](https://github.com/finos/legend-studio/pull/5046) [`69d9760`](https://github.com/finos/legend-studio/commit/69d976074671776f619dd558273c8d9dc1479d1b) ([@jackp5150](https://github.com/jackp5150)) - Fallback to dataproduct name if title is empty string
+
+- [#5036](https://github.com/finos/legend-studio/pull/5036) [`bf626c4`](https://github.com/finos/legend-studio/commit/bf626c40e01cc3f6c4df32076dd75a4d5d8a806d) ([@jackp5150](https://github.com/jackp5150)) - Add extra filter to check for null origins
+
+- [#5045](https://github.com/finos/legend-studio/pull/5045) [`492ccb4`](https://github.com/finos/legend-studio/commit/492ccb48fd2dc3d8562648d76fa6ea4d5461ddc8) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented list view as shared component for data products and throughout the app
+
+- [#5028](https://github.com/finos/legend-studio/pull/5028) [`722c878`](https://github.com/finos/legend-studio/commit/722c878af088fee55048a1f391e26f2181defc43) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add paginated data product fetching via `getDataProductsLitePaginated` and `getAllLiteDataProducts` to `LakehouseContractServerClient`, replacing the removed `getDataProductsLite` endpoint. Update marketplace and data-cube consumers to use the new paginated API.
+
 ## 0.1.83
 
 ## 0.1.82

@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.32
+
+### Patch Changes
+
+- [#5015](https://github.com/finos/legend-studio/pull/5015) [`e50bb22`](https://github.com/finos/legend-studio/commit/e50bb22dcecb663286775480744e859573b9fcf4) ([@codrex](https://github.com/codrex)) - add toOne function support to DQ-validation-ui
+
 ## 2.1.31
 
 ## 2.1.30

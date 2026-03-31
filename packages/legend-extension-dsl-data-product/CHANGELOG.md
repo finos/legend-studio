@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.68
+
+### Patch Changes
+
+- [#5018](https://github.com/finos/legend-studio/pull/5018) [`8201650`](https://github.com/finos/legend-studio/commit/8201650640c2fd435bab930e472639773a7cfe3c) ([@travisstebbins](https://github.com/travisstebbins)) - Improve data product viewer performance
+
 ## 0.0.67
 
 ### Patch Changes

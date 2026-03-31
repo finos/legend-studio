@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 32.4.2
+
+### Patch Changes
+
+- [#5015](https://github.com/finos/legend-studio/pull/5015) [`e50bb22`](https://github.com/finos/legend-studio/commit/e50bb22dcecb663286775480744e859573b9fcf4) ([@codrex](https://github.com/codrex)) - add toOne function support to DQ-validation-ui
+
+- [#5028](https://github.com/finos/legend-studio/pull/5028) [`722c878`](https://github.com/finos/legend-studio/commit/722c878af088fee55048a1f391e26f2181defc43) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add paginated data product fetching via `getDataProductsLitePaginated` and `getAllLiteDataProducts` to `LakehouseContractServerClient`, replacing the removed `getDataProductsLite` endpoint. Update marketplace and data-cube consumers to use the new paginated API.
+
+- [#5042](https://github.com/finos/legend-studio/pull/5042) [`8b08bc0`](https://github.com/finos/legend-studio/commit/8b08bc0394f3d2ae34d01d482de3c20e8a97b8c8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for precise primitive types in filter and post-filter operators. Precise types like VARCHAR, INT, BIGINT, DOUBLE, TIMESTAMP are now mapped to their standard primitive equivalents so operators correctly handle type compatibility checks.
+
+- [#5040](https://github.com/finos/legend-studio/pull/5040) [`949a686`](https://github.com/finos/legend-studio/commit/949a68656846d2a5af251a8a6d8934eb541ebe0e) ([@Rakan1837](https://github.com/Rakan1837)) - Support the new backend defect format for compilation results. The engine now returns `defects` with a `defectSeverityLevel` and `defectTypeId` instead of just `warnings`. Added `V1_Defect` base class with a `V1_DefectSeverityLevel` enum, updated `V1_CompilationWarning` to extend it, and changed `V1_RemoteEngine` to read from the `defects` field and filter by WARN severity. Added unit tests for defect deserialization and severity filtering.
+
 ## 32.4.1
 
 ### Patch Changes
