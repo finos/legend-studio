@@ -224,33 +224,13 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   /**
-   * Resets the producer selection and all downstream state.
-   */
-  private resetProducerSelection() {
-    this.producerEnvironments = [];
-    this.selectedProducerEnv = undefined;
-    this.resetDownstreamState();
-  }
-
-  /**
    * Full reset: clears everything including producer environments.
    * Called when mode changes.
    */
   resetAll() {
-    this.resetProducerSelection();
-  }
-
-  /**
-   * Resets downstream state while preserving the deployment ID.
-   * Used when refetching URNs for the same producer.
-   */
-  resetDeployment(deploymentId: number | undefined) {
-    this.setDeploymentId(deploymentId);
-    this.setIngestUrns([]);
-    this.setSelectedIngestUrn(undefined);
-    this.setTables([]);
-    this.setDatasetGroup(undefined);
-    this.setSelectedTable(undefined);
+    this.producerEnvironments = [];
+    this.selectedProducerEnv = undefined;
+    this.resetDownstreamState();
   }
 
   // ===== State transitions =====
@@ -365,7 +345,6 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   async fetchIngestUrns(access_token: string | undefined) {
-    this.resetDeployment(this.deploymentId);
     const ingestServerUrl = guaranteeNonNullable(
       this.selectedLakehouseEnv,
     ).ingestServerUrl;
