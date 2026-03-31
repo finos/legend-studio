@@ -71,6 +71,7 @@ const SearchResultsContent = observer(
     handleProductCardClick: (productCardState: ProductCardState) => void;
     handlePageChange: (page: number) => void;
     handleItemsPerPageChange: (itemsPerPage: number) => void;
+    handleShowAllProducts: () => void;
   }) => {
     const {
       searchResultsStore,
@@ -78,6 +79,7 @@ const SearchResultsContent = observer(
       handleProductCardClick,
       handlePageChange,
       handleItemsPerPageChange,
+      handleShowAllProducts,
     } = props;
 
     if (isLoadingDataProducts) {
@@ -92,68 +94,82 @@ const SearchResultsContent = observer(
         </div>
       );
     }
-
-const renderSearchResultsContent = (
-  isLoading: boolean,
-  searchResultsStore: LegendMarketplaceSearchResultsStore,
-  applicationStore: LegendMarketplaceApplicationStore,
-  handlePageChange: (page: number) => void,
-  handleItemsPerPageChange: (itemsPerPage: number) => void,
-  handleShowAllProducts: () => void,
-): React.ReactNode => {
-  if (isLoading) {
+    if (searchResultsStore.totalItems === 0) {
+      return (
+        <div className="marketplace-lakehouse-search-results__empty-state">
+          <Typography
+            variant="h5"
+            className="marketplace-lakehouse-search-results__empty-state__title"
+          >
+            No results found
+          </Typography>
+          <Typography
+            variant="body1"
+            className="marketplace-lakehouse-search-results__empty-state__message"
+          >
+            We couldn&apos;t find any data products matching your search. Try
+            adjusting your search terms or clearing filters.
+          </Typography>
+        </div>
+      );
+    }
     return (
       <>
-        {searchResultsStore.totalItems === 0 && (
-          <div className="marketplace-lakehouse-search-results__empty-state">
-            <Typography
-              variant="h5"
-              className="marketplace-lakehouse-search-results__empty-state__title"
-            >
-              No results found
-            </Typography>
-            <Typography
-              variant="body1"
-              className="marketplace-lakehouse-search-results__empty-state__message"
-            >
-              We couldn&apos;t find any data products matching your search. Try
-              adjusting your search terms or clearing filters.
-            </Typography>
+        {searchResultsStore.viewMode === SearchResultsViewMode.TILE && (
+          <Grid
+            container={true}
+            spacing={{ xs: 2, sm: 3, xxl: 4 }}
+            columns={{ sm: 1, md: 2, lg: 3, xxl: 4 }}
+            className="marketplace-lakehouse-search-results__data-product-cards"
+          >
+            {searchResultsStore.filterSortProducts?.map((productCardState) => (
+              <Grid key={productCardState.guid} size={1}>
+                <LakehouseProductCard
+                  productCardState={productCardState}
+                  moreInfoPreview="small"
+                  onClick={() => handleProductCardClick(productCardState)}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+        {searchResultsStore.viewMode === SearchResultsViewMode.LIST && (
+          <div className="marketplace-lakehouse-search-results__list-view">
+            {searchResultsStore.filterSortProducts?.map((productCardState) => (
+              <LakehouseProductListItem
+                key={productCardState.guid}
+                productCardState={productCardState}
+                onClick={handleProductCardClick}
+              />
+            ))}
           </div>
         )}
-        {searchResultsStore.totalItems > 0 &&
-          searchResultsStore.viewMode === SearchResultsViewMode.TILE && (
-            <Grid
-              container={true}
-              spacing={{ xs: 2, sm: 3, xxl: 4 }}
-              columns={{ sm: 1, md: 2, lg: 3, xxl: 4 }}
-              className="marketplace-lakehouse-search-results__data-product-cards"
-            >
-              {searchResultsStore.filterSortProducts?.map(
-                (productCardState) => (
-                  <Grid key={productCardState.guid} size={1}>
-                    <LakehouseProductCard
-                      productCardState={productCardState}
-                      moreInfoPreview="small"
-                      onClick={() => handleProductCardClick(productCardState)}
-                    />
-                  </Grid>
-                ),
-              )}
-            </Grid>
-          )}
-        {searchResultsStore.totalItems > 0 &&
-          searchResultsStore.viewMode === SearchResultsViewMode.LIST && (
-            <div className="marketplace-lakehouse-search-results__list-view">
-              {searchResultsStore.filterSortProducts?.map(
-                (productCardState) => (
-                  <LakehouseProductListItem
-                    key={productCardState.guid}
-                    productCardState={productCardState}
-                    onClick={handleProductCardClick}
-                  />
-                ),
-              )}
+        {searchResultsStore.isOnLastPage &&
+          !searchResultsStore.showAllProducts && (
+            <div className="marketplace-lakehouse-search-results__show-all-container">
+              <div className="marketplace-lakehouse-search-results__show-all-text-row">
+                <Typography
+                  variant="body1"
+                  className="marketplace-lakehouse-search-results__show-all-text"
+                >
+                  Can&apos;t find what you&apos;re looking for?
+                </Typography>
+                <Tooltip
+                  title="Data products might be automatically filtered out if they are identified as duplicates (e.g. QA, UAT, DEV)"
+                  placement="top"
+                  arrow={true}
+                >
+                  <span className="marketplace-lakehouse-search-results__show-all-info-icon">
+                    <InfoCircleIcon />
+                  </span>
+                </Tooltip>
+              </div>
+              <button
+                className="marketplace-lakehouse-search-results__show-all-btn"
+                onClick={handleShowAllProducts}
+              >
+                Show all data products
+              </button>
             </div>
           )}
         <PaginationControls
@@ -168,98 +184,6 @@ const renderSearchResultsContent = (
     );
   },
 );
-  }
-  if (searchResultsStore.totalItems === 0) {
-    return (
-      <div className="marketplace-lakehouse-search-results__empty-state">
-        <Typography
-          variant="h5"
-          className="marketplace-lakehouse-search-results__empty-state__title"
-        >
-          No results found
-        </Typography>
-        <Typography
-          variant="body1"
-          className="marketplace-lakehouse-search-results__empty-state__message"
-        >
-          We couldn&apos;t find any data products matching your search. Try
-          adjusting your search terms or clearing filters.
-        </Typography>
-      </div>
-    );
-  }
-  return (
-    <>
-      <Grid
-        container={true}
-        spacing={{ xs: 2, sm: 3, xxl: 4 }}
-        columns={{ sm: 1, md: 2, lg: 3, xxl: 4 }}
-        className="marketplace-lakehouse-search-results__data-product-cards"
-      >
-        {searchResultsStore.filterSortProducts?.map((productCardState) => (
-          <Grid key={productCardState.guid} size={1}>
-            <LakehouseProductCard
-              productCardState={productCardState}
-              moreInfoPreview="small"
-              onClick={() => {
-                const path = generatePathForDataProductSearchResult(
-                  productCardState.searchResult,
-                );
-                if (path) {
-                  applicationStore.navigationService.navigator.visitAddress(
-                    applicationStore.navigationService.navigator.generateAddress(
-                      path,
-                    ),
-                  );
-                }
-                logClickingDataProductCard(
-                  productCardState,
-                  applicationStore,
-                  LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
-                );
-              }}
-            />
-          </Grid>
-        ))}
-      </Grid>
-      {searchResultsStore.isOnLastPage &&
-        !searchResultsStore.showAllProducts && (
-          <div className="marketplace-lakehouse-search-results__show-all-container">
-            <div className="marketplace-lakehouse-search-results__show-all-text-row">
-              <Typography
-                variant="body1"
-                className="marketplace-lakehouse-search-results__show-all-text"
-              >
-                Can&apos;t find what you&apos;re looking for?
-              </Typography>
-              <Tooltip
-                title="Data products might be automatically filtered out if they are identified as duplicates (e.g. QA, UAT, DEV)"
-                placement="top"
-                arrow={true}
-              >
-                <span className="marketplace-lakehouse-search-results__show-all-info-icon">
-                  <InfoCircleIcon />
-                </span>
-              </Tooltip>
-            </div>
-            <button
-              className="marketplace-lakehouse-search-results__show-all-btn"
-              onClick={handleShowAllProducts}
-            >
-              Show all data products
-            </button>
-          </div>
-        )}
-      <PaginationControls
-        totalItems={searchResultsStore.totalItems}
-        itemsPerPage={searchResultsStore.itemsPerPage}
-        page={searchResultsStore.page}
-        onPageChange={handlePageChange}
-        onItemsPerPageChange={handleItemsPerPageChange}
-      />
-    </>
-  );
-};
 
 export const LegendMarketplaceSearchResults =
   withLegendMarketplaceSearchResultsStore(
@@ -537,15 +461,8 @@ export const LegendMarketplaceSearchResults =
                   handleProductCardClick={handleProductCardClick}
                   handlePageChange={handlePageChange}
                   handleItemsPerPageChange={handleItemsPerPageChange}
+                  handleShowAllProducts={handleShowAllProducts}
                 />
-                {renderSearchResultsContent(
-                  isLoadingDataProducts,
-                  searchResultsStore,
-                  applicationStore,
-                  handlePageChange,
-                  handleItemsPerPageChange,
-                  handleShowAllProducts,
-                )}
               </div>
             </div>
           </Container>

@@ -127,6 +127,53 @@
     gap: 1.2rem;
     animation: viewModeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  &__show-all-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    top: 3rem;
+    position: relative;
+  }
+
+  &__show-all-text {
+    font-size: 1.6rem;
+    color: var(--color-dark-grey-400, #666);
+  }
+
+  &__show-all-text-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__show-all-info-icon {
+    display: flex;
+    align-items: center;
+    cursor: help;
+    color: var(--color-dark-grey-400, #666);
+
+    svg {
+      font-size: 1.6rem;
+      width: 1.6rem;
+      height: 1.6rem;
+    }
+  }
+
+  &__show-all-btn {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--color-blue-200, #4066e0);
+    background: none;
+    border: none;
+    padding: 0;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-blue-150, #3355c0);
+    }
+  }
 }
 
 @keyframes viewModeIn {
@@ -221,50 +268,6 @@
 
     &:hover {
       opacity: 1;
-  &__show-all-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    top: 3rem;
-    position: relative;
-  }
-
-  &__show-all-text {
-    font-size: 1.6rem;
-    color: var(--color-dark-grey-400, #666);
-  }
-
-  &__show-all-text-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  &__show-all-info-icon {
-    display: flex;
-    align-items: center;
-    cursor: help;
-    color: var(--color-dark-grey-400, #666);
-
-    svg {
-      font-size: 1.6rem;
-      width: 1.6rem;
-      height: 1.6rem;
-    }
-  }
-
-  &__show-all-btn {
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--color-blue-200, #4066e0);
-    background: none;
-    border: none;
-    padding: 0;
-    text-decoration: underline;
-    cursor: pointer;
-
-    &:hover {
-      color: var(--color-blue-150, #3355c0);
     }
   }
 }
