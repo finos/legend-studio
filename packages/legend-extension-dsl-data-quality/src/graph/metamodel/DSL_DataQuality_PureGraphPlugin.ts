@@ -21,6 +21,7 @@ import {
   DataQualityClassValidationsConfiguration,
   DataQualityServiceValidationConfiguration,
   DataQualityRelationValidationConfiguration,
+  DataQualityRelationComparisonConfiguration,
 } from './pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export class DSL_DataQuality_PureGraphPlugin extends PureGraphPlugin {
@@ -33,6 +34,7 @@ export class DSL_DataQuality_PureGraphPlugin extends PureGraphPlugin {
       DataQualityClassValidationsConfiguration,
       DataQualityServiceValidationConfiguration,
       DataQualityRelationValidationConfiguration,
+      DataQualityRelationComparisonConfiguration,
     ];
   }
 }

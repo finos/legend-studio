@@ -68,7 +68,7 @@ export const getRowDataFromExecutionResult = (
   return rowData;
 };
 
-const DataQualityResultCellRenderer = observer(
+export const DataQualityResultCellRenderer = observer(
   (params: IRelationValidationRendererParamsWithGridType) => {
     const cellValue = params.value as DataQualityRelationResultCellDataType;
 

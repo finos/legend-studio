@@ -31,6 +31,9 @@ import {
   type DataQualityRelationValidation,
   type DataQualityRelationValidationConfiguration,
   type DataQualityRelationQueryLambda,
+  type DataQualityRelationComparisonConfiguration,
+  type ReconStrategy,
+  MD5HashStrategy,
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
 } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
@@ -200,6 +203,45 @@ export const observe_DataQualityRelationValidationConfiguration =
         observe_DataQualityRelationValidation(value),
       );
       observe_DataQualityRelationQueryLambda(metamodel.query);
+      return metamodel;
+    },
+  );
+
+export const observe_ReconStrategy = skipObserved(
+  (metamodel: ReconStrategy): ReconStrategy => {
+    if (metamodel instanceof MD5HashStrategy) {
+      return makeObservable(metamodel, {
+        sourceHashColumn: observable,
+        targetHashColumn: observable,
+        aggregatedHash: observable,
+        hashCode: computed,
+      });
+    }
+    return metamodel;
+  },
+);
+
+export const observe_DataQualityRelationComparisonConfiguration =
+  skipObservedWithContext(
+    (
+      metamodel: DataQualityRelationComparisonConfiguration,
+    ): DataQualityRelationComparisonConfiguration => {
+      observe_Abstract_PackageableElement(metamodel);
+      makeObservable<
+        DataQualityRelationComparisonConfiguration,
+        '_elementHashCode'
+      >(metamodel, {
+        _elementHashCode: override,
+        source: observable,
+        target: observable,
+        keys: observable,
+        columnsToCompare: observable,
+        strategy: observable,
+        expectedMatch: observable,
+      });
+      observe_DataQualityRelationQueryLambda(metamodel.source);
+      observe_DataQualityRelationQueryLambda(metamodel.target);
+      observe_ReconStrategy(metamodel.strategy);
       return metamodel;
     },
   );

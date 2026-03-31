@@ -20,6 +20,9 @@ import {
   type DataQualityExecutionContext,
   type DataQualityRelationValidation,
   type DataQualityRelationValidationConfiguration,
+  type DataQualityRelationComparisonConfiguration,
+  type DataQualityRelationQueryLambda,
+  type ReconStrategy,
   type RelationValidationType,
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
@@ -207,5 +210,59 @@ export const dataQualityRelationValidation_swapParameters = action(
       observe_RawVariableExpression(sourceParameter),
       observe_RawVariableExpression(targetParameter),
     );
+  },
+);
+
+export const dataQualityRelationComparison_setSource = action(
+  (
+    element: DataQualityRelationComparisonConfiguration,
+    val: DataQualityRelationQueryLambda,
+  ): void => {
+    element.source = val;
+  },
+);
+
+export const dataQualityRelationComparison_setTarget = action(
+  (
+    element: DataQualityRelationComparisonConfiguration,
+    val: DataQualityRelationQueryLambda,
+  ): void => {
+    element.target = val;
+  },
+);
+
+export const dataQualityRelationComparison_setKeys = action(
+  (
+    element: DataQualityRelationComparisonConfiguration,
+    val: string[],
+  ): void => {
+    element.keys = val;
+  },
+);
+
+export const dataQualityRelationComparison_setColumnsToCompare = action(
+  (
+    element: DataQualityRelationComparisonConfiguration,
+    val: string[],
+  ): void => {
+    element.columnsToCompare = val;
+  },
+);
+
+export const dataQualityRelationComparison_setStrategy = action(
+  (
+    element: DataQualityRelationComparisonConfiguration,
+    val: ReconStrategy,
+  ): void => {
+    element.strategy = val;
+  },
+);
+
+export const dataQualityRelationComparison_setExpectedMatch = action(
+  (
+    element: DataQualityRelationComparisonConfiguration,
+    val: number | undefined,
+  ): void => {
+    element.expectedMatch = val;
   },
 );

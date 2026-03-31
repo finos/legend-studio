@@ -1,0 +1,191 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.data-quality-relation-comparison-editor {
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+
+  .panel {
+    height: 100%;
+    width: 100%;
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__content {
+      background: var(--color-dark-grey-50);
+    }
+
+    &__header {
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-300);
+      font-weight: bold;
+      background: var(--color-dark-grey-50);
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+  }
+
+  &__panel__content__form {
+    padding-left: 1rem;
+    padding-top: 1rem;
+    max-width: 160rem;
+    width: 100%;
+  }
+
+  &__actions-bar {
+    display: flex;
+    justify-content: end;
+    background: var(--color-dark-grey-50);
+    margin-top: 2rem;
+    height: 4rem;
+    padding-top: 0.5rem;
+
+    &__cancel-btn {
+      padding-right: 2rem;
+    }
+
+    &__cancel-label {
+      height: 2.8rem;
+    }
+
+    &__run-group {
+      display: flex;
+      gap: 0.02rem;
+      padding-right: 2rem;
+    }
+
+    &__run-btn {
+      height: 2.8rem;
+      width: 14rem;
+      white-space: nowrap;
+    }
+
+    &__dropdown-btn {
+      height: 2.8rem;
+    }
+  }
+
+  &__queries {
+    height: 25rem;
+    min-height: 15rem;
+  }
+
+  &__query-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      padding-left: 2rem;
+      font-weight: 500;
+      color: var(--color-light-grey-300);
+    }
+
+    &__content {
+      flex: 1;
+      min-height: 0;
+      margin-left: 2rem;
+      margin-right: 2rem;
+      padding-top: 0.5rem;
+      overflow: hidden;
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__title {
+      height: 2.8rem;
+
+      @include flexVCenter;
+
+      background: var(--color-dark-grey-200);
+      color: var(--color-light-grey-100);
+      padding: 0 1rem;
+      border-radius: 0.2rem;
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+
+  &__lambda-editor {
+    height: 28rem !important;
+  }
+
+  &__result {
+    padding-top: 1rem;
+    padding-left: 2rem;
+    padding-right: 1rem;
+
+    &__header {
+      padding-right: 1rem;
+
+      @include flexVCenter;
+      @include flexHSpaceBetween;
+    }
+
+    &__header-group {
+      display: flex;
+      flex-direction: row;
+      color: var(--color-light-grey-300);
+
+      @include flexVCenter;
+    }
+
+    &__title {
+      height: 2.8rem;
+
+      @include flexVCenter;
+
+      background: var(--color-dark-grey-200);
+      color: var(--color-light-grey-100);
+      padding: 0 1rem;
+      border-radius: 0.2rem;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    &__status {
+      @include flexVCenter;
+
+      margin-left: 1rem;
+      color: var(--color-yellow-200);
+      font-size: 1.2rem;
+    }
+
+    &__analytics {
+      @include flexVCenter;
+
+      margin-left: 1rem;
+      color: var(--color-light-grey-400);
+      font-size: 1.2rem;
+    }
+
+    &__content {
+      width: 100%;
+      padding-top: 0.5rem;
+    }
+
+    &__viewer {
+      height: 35rem !important;
+      border: 0.1rem solid var(--color-dark-grey-280);
+    }
+  }
+}

@@ -56,7 +56,11 @@ export const RenderColumn = (props: RenderColumnProps) => {
       placeholder="Select column"
       renderLabel={({ label }) => label}
       options={options}
-      onChange={onChange}
+      onChange={(val) => {
+        if (val !== undefined) {
+          onChange(val);
+        }
+      }}
     />
   );
 };
@@ -144,7 +148,11 @@ export const FunctionSelectionHandler = (props: FunctionSelectProps) => {
       value={options.find((opt) => opt.value === value)}
       options={options}
       renderLabel={({ label }) => label}
-      onChange={(change) => onChange(change.value)}
+      onChange={(change) => {
+        if (change !== undefined) {
+          onChange(change.value);
+        }
+      }}
       placeholder="Select operation"
     />
   );

@@ -31,8 +31,10 @@ import {
   type V1_DataQualityRelationValidation,
   type V1_DataQualityRelationValidationsConfiguration,
   type V1_DataQualityServiceValidationsConfiguration,
+  type V1_DataQualityRelationComparisonConfiguration,
   V1_DataSpaceDataQualityExecutionContext,
   V1_MappingAndRuntimeDataQualityExecutionContext,
+  V1_MD5HashStrategy,
 } from '../V1_DataQualityValidationConfiguration.js';
 import {
   type DataQualityExecutionContext,
@@ -40,6 +42,7 @@ import {
   DataQualityRelationValidation,
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
+  MD5HashStrategy,
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
   type V1_GraphBuilderContext,
@@ -65,6 +68,7 @@ import {
   getOwnDataQualityClassValidationsConfiguration,
   getOwnDataQualityServiceValidationsConfiguration,
   getOwnDataQualityRelationValidationsConfiguration,
+  getOwnDataQualityRelationComparisonConfiguration,
 } from '../../../../DSL_DataQuality_GraphManagerHelper.js';
 
 export function V1_buildDataQualityExecutionContext(
@@ -354,4 +358,39 @@ export function V1_buildDataQualityServiceValidationConfiguration(
           true,
         ) as DataQualityRootGraphFetchTree)
       : undefined;
+}
+
+export function V1_buildDataQualityRelationComparisonConfiguration(
+  elementProtocol: V1_DataQualityRelationComparisonConfiguration,
+  context: V1_GraphBuilderContext,
+): void {
+  const path = V1_buildFullPath(elementProtocol.package, elementProtocol.name);
+  const element = getOwnDataQualityRelationComparisonConfiguration(
+    path,
+    context.currentSubGraph,
+  );
+  element.source = new DataQualityRelationQueryLambda();
+  element.source.body = elementProtocol.source.body;
+  element.source.parameters = elementProtocol.source.parameters.map((param) =>
+    V1_buildVariable(param, context),
+  );
+  element.target = new DataQualityRelationQueryLambda();
+  element.target.body = elementProtocol.target.body;
+  element.target.parameters = elementProtocol.target.parameters.map((param) =>
+    V1_buildVariable(param, context),
+  );
+  element.keys = elementProtocol.keys;
+  element.columnsToCompare = elementProtocol.columnsToCompare;
+  if (elementProtocol.strategy instanceof V1_MD5HashStrategy) {
+    const strategy = new MD5HashStrategy();
+    strategy.sourceHashColumn = elementProtocol.strategy.sourceHashColumn;
+    strategy.targetHashColumn = elementProtocol.strategy.targetHashColumn;
+    strategy.aggregatedHash = elementProtocol.strategy.aggregatedHash;
+    element.strategy = strategy;
+  } else {
+    throw new UnsupportedOperationError(
+      `Can't build recon strategy: unsupported type`,
+    );
+  }
+  element.expectedMatch = elementProtocol.expectedMatch;
 }

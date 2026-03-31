@@ -19,20 +19,22 @@ import {
   ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
+  TimesIcon,
 } from '@finos/legend-art';
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 
 export type Option<T = string> = { value: T; label: string };
 
 export interface DataQualityCustomSelectorProps<T> {
   value?: T | undefined;
   options: T[];
-  onChange: (value: T) => void;
+  onChange: (value: T | undefined) => void;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
   title?: string;
   renderLabel?: (option: T) => ReactNode;
+  clearable?: boolean;
 }
 
 export const DataQualityCustomSelector = <
@@ -48,6 +50,7 @@ export const DataQualityCustomSelector = <
     placeholder = 'Choose option...',
     className,
     title = 'Choose option...',
+    clearable = false,
   } = props;
 
   const selectedOption = options.find((opt) => opt.value === value?.value);
@@ -79,6 +82,17 @@ export const DataQualityCustomSelector = <
       <div className="data-quality-custom-selector__label">
         {selectedOption?.label ?? placeholder}
       </div>
+      {clearable && selectedOption && (
+        <button
+          className="data-quality-custom-selector__clear"
+          onClick={(e: MouseEvent) => {
+            e.stopPropagation();
+            onChange(undefined);
+          }}
+        >
+          <TimesIcon />
+        </button>
+      )}
       <div className="data-quality-custom-selector__dropdown__trigger">
         <CaretDownIcon />
       </div>

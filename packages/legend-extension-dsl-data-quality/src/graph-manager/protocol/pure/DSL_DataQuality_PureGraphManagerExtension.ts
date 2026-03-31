@@ -26,6 +26,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import type {
   DataQualityRelationValidation,
   DQExecuteInputOptions,
+  DQReconciliationInputOptions,
 } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export abstract class DSL_DataQuality_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
@@ -76,6 +77,21 @@ export abstract class DSL_DataQuality_PureGraphManagerExtension extends Abstract
     packagePath: string,
     options: DQExecuteInputOptions,
   ): Promise<DataQualityRelationValidation>;
+
+  abstract runReconciliation(
+    graph: PureModel,
+    options: DQReconciliationInputOptions,
+  ): Promise<ExecutionResult>;
+
+  abstract runReconciliationSourceQuery(
+    graph: PureModel,
+    options: DQReconciliationInputOptions,
+  ): Promise<ExecutionResult>;
+
+  abstract runReconciliationTargetQuery(
+    graph: PureModel,
+    options: DQReconciliationInputOptions,
+  ): Promise<ExecutionResult>;
 }
 
 export const getDataQualityPureGraphManagerExtension = (
