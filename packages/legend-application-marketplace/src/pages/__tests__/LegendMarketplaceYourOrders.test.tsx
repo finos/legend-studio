@@ -18,7 +18,7 @@ import { describe, expect, test, jest, beforeEach } from '@jest/globals';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
-  TEST__setUpMarketplace,
+  TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { createSpy } from '@finos/legend-shared/test';
 import {
@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-server-marketplace';
 import type { PlainObject } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
+import searchResults from '../__test-utils__/TEST_DATA__SearchResults.json' with { type: 'json' };
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -185,7 +186,15 @@ const setupTestComponent = async (openOrders: TerminalProductOrder[] = []) => {
     },
   );
 
-  const { renderResult } = await TEST__setUpMarketplace(MOCK__baseStore);
+  createSpy(
+    MOCK__baseStore.marketplaceServerClient,
+    'dataProductSearch',
+  ).mockResolvedValue({
+    dataProducts: searchResults,
+  });
+
+  const { renderResult } =
+    await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
 
   // Wait for home page to load
   await waitFor(() =>
