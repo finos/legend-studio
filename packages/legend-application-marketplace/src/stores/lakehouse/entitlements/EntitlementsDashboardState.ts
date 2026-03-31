@@ -180,7 +180,7 @@ export class EntitlementsDashboardState {
         ),
       ];
       const envMap = (yield flowResult(
-        this.fetchContractDeploymentEnvironments(token, allContracts),
+        this.fetchContractDeploymentEnvironments(allContracts, token),
       )) as Map<number, string>;
 
       const {
@@ -339,8 +339,8 @@ export class EntitlementsDashboardState {
   }
 
   *fetchContractDeploymentEnvironments(
-    token: string | undefined,
     allContracts: V1_LiteDataContract[],
+    token: string | undefined,
   ): GeneratorFn<Map<number, string>> {
     const uniqueDIDToDataProduct = new Map<number, string>();
     for (const contract of allContracts) {

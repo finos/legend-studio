@@ -207,10 +207,6 @@
 
     flex-direction: column;
     min-height: 40rem;
-
-    .marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__env-label {
-      margin-top: 1.5rem;
-    }
   }
 
   &__close {
@@ -224,19 +220,6 @@
     background: var(--color-light-grey-300);
     padding: 1rem;
     margin: 1rem 0;
-
-    &__env-label {
-      font-size: 13px;
-      border-radius: 0.5rem;
-      margin-top: 1rem;
-      margin-bottom: 1.5rem;
-      padding: 0;
-      align-self: flex-start;
-
-      .MuiChip-label {
-        font-weight: 500;
-      }
-    }
 
     > div {
       margin: 1rem 0;
