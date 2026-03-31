@@ -163,7 +163,9 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
 
   setDeploymentId(deploymentId: number | undefined): void {
     this.deploymentId = deploymentId;
-    this.setWarehouse(`LAKEHOUSE_PRODUCER_${deploymentId}_QUERY_WH`);
+    if (deploymentId !== undefined) {
+      this.setWarehouse(`LAKEHOUSE_PRODUCER_${deploymentId}_QUERY_WH`);
+    }
   }
 
   setWarehouse(warehouse: string | undefined): void {
