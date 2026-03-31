@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.85
+
+### Patch Changes
+
+- [#5047](https://github.com/finos/legend-studio/pull/5047) [`364e93d`](https://github.com/finos/legend-studio/commit/364e93ded13a80162955b6ae4456c902b29c9c95) ([@travisstebbins](https://github.com/travisstebbins)) - Export marketplace test utils and remove unnecessary mocks
+
 ## 0.1.84
 
 ### Patch Changes
