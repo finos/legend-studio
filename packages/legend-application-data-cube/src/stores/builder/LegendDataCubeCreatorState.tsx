@@ -132,6 +132,7 @@ export class LegendDataCubeCreatorState {
           this._engine,
           this._store.platformServerClient,
           this._store.ingestServerClient,
+          this._store.contractServerClient,
           this._alertService,
         );
       case LegendDataCubeSourceBuilderType.LAKEHOUSE_CONSUMER:
