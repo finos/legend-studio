@@ -24,13 +24,13 @@ import {
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
-  type V1_ContractUserEventRecord,
   type V1_DataContract,
   type V1_EnrichedUserApprovalStatus,
   type V1_LiteDataContract,
   type V1_LiteDataContractWithUserStatus,
   type V1_PendingTasksResponse,
   type V1_TaskStatus,
+  type V1_ContractUserEventRecord,
   type V1_TaskStatusChangeResponse,
   V1_dataContractsResponseModelSchema,
   V1_liteDataContractWithUserStatusModelSchema,
@@ -96,6 +96,8 @@ export class EntitlementsDashboardState {
   // consolidated user information from the tasks.
   allContractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails> =
     new Map();
+  selectedPrivilegeManagerTaskIds: Set<string> = new Set();
+  selectedDataOwnerTaskIds: Set<string> = new Set();
 
   readonly initializationState = ActionState.create();
   readonly fetchingPendingTasksState = ActionState.create();
@@ -111,8 +113,13 @@ export class EntitlementsDashboardState {
       allContractsForUser: observable,
       allContractsCreatedByUserMap: observable,
       pendingTaskContractMap: observable,
+      selectedPrivilegeManagerTaskIds: observable,
+      selectedDataOwnerTaskIds: observable,
       pendingTaskContracts: computed,
       allContractsCreatedByUser: computed,
+      allSelectedTaskIds: computed,
+      setSelectedPrivilegeManagerTaskIds: action,
+      setSelectedDataOwnerTaskIds: action,
       init: flow,
       approve: flow,
       deny: flow,
@@ -130,6 +137,21 @@ export class EntitlementsDashboardState {
 
   get allContractsCreatedByUser(): ContractCreatedByUserDetails[] {
     return Array.from(this.allContractsCreatedByUserMap.values());
+  }
+
+  get allSelectedTaskIds(): Set<string> {
+    return new Set([
+      ...this.selectedPrivilegeManagerTaskIds,
+      ...this.selectedDataOwnerTaskIds,
+    ]);
+  }
+
+  setSelectedPrivilegeManagerTaskIds(ids: Set<string>): void {
+    this.selectedPrivilegeManagerTaskIds = ids;
+  }
+
+  setSelectedDataOwnerTaskIds(ids: Set<string>): void {
+    this.selectedDataOwnerTaskIds = ids;
   }
 
   *init(token: string | undefined): GeneratorFn<void> {

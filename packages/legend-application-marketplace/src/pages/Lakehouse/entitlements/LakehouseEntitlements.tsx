@@ -27,6 +27,8 @@ import { Container, Tab, Tabs, Typography } from '@mui/material';
 import { EntitlementsClosedContractsDashboard } from './EntitlementsClosedContractsDashboard.js';
 import { EntitlementsPendingContractsDashboard } from './EntitlementsPendingContractsDashboard.js';
 import { EntitlementsPendingTasksDashboard } from './EntitlementsPendingTasksDashboard.js';
+import { useSearchParams } from '@finos/legend-application/browser';
+import { LEGEND_MARKETPLACE_ENTITLEMENTS_QUERY_PARAM_TOKEN } from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 const enum EntitlementsTabs {
   PENDING_TASKS = 'pendingTasks',
@@ -40,8 +42,11 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
 
     const entitlementsStore = useLakehouseEntitlementsStore();
     const auth = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [selectedTab, setSelectedTab] = useState(
-      EntitlementsTabs.PENDING_TASKS,
+      searchParams.get(
+        LEGEND_MARKETPLACE_ENTITLEMENTS_QUERY_PARAM_TOKEN.SELECTED_TAB,
+      ) ?? EntitlementsTabs.PENDING_TASKS,
     );
 
     // Effects
@@ -68,6 +73,13 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
       newValue: EntitlementsTabs,
     ) => {
       setSelectedTab(newValue);
+      setSearchParams((params) => {
+        params.set(
+          LEGEND_MARKETPLACE_ENTITLEMENTS_QUERY_PARAM_TOKEN.SELECTED_TAB,
+          newValue,
+        );
+        return params;
+      });
     };
 
     return (

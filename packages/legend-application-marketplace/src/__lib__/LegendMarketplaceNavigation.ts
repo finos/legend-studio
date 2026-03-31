@@ -42,6 +42,11 @@ export enum LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
   QUERY = 'query',
   USE_PRODUCER_SEARCH = 'useProducerSearch',
 }
+
+export enum LEGEND_MARKETPLACE_ENTITLEMENTS_QUERY_PARAM_TOKEN {
+  SELECTED_TAB = 'selectedTab',
+}
+
 export type LegendTerminalProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TERMINAL_ID]: string;
 };
@@ -166,6 +171,17 @@ export const generateSearchResultsRoute = (
       [LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]: query
         ? query
         : undefined,
+    }),
+  );
+
+export const generateLakehouseEntitlementsRoute = (
+  selectedTab: string | undefined,
+): string =>
+  addQueryParametersToUrl(
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
+    stringifyQueryParams({
+      [LEGEND_MARKETPLACE_ENTITLEMENTS_QUERY_PARAM_TOKEN.SELECTED_TAB]:
+        selectedTab,
     }),
   );
 
