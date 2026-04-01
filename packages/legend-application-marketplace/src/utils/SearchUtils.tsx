@@ -209,7 +209,7 @@ export const convertTrendingEntryToSearchResult = (
   searchResult.tag_score = 0;
   searchResult.similarity = 0;
 
-  if (entry.dataProductType === 'lakehouse') {
+  if (entry.dataProductType === DataProductDetailsType.LAKEHOUSE) {
     const details = new LakehouseDataProductSearchResultDetails();
     details.dataProductId = entry.dataProductId ?? '';
     details.deploymentId = Number(entry.deploymentId ?? 0);
