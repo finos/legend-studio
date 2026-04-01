@@ -234,6 +234,36 @@ export class LegendMarketplaceBaseStore {
     return undefined;
   }
 
+  private buildVendorImageMap(): Map<string, string> {
+    const vendorImageMap = new Map<string, string>();
+    const assetsBaseUrl = this.applicationStore.config.assetsBaseUrl;
+    for (const [vendorName, filename] of Object.entries(
+      this.applicationStore.config.assetsProductImageMap,
+    )) {
+      vendorImageMap.set(vendorName, `${assetsBaseUrl}/${filename}`);
+    }
+    return vendorImageMap;
+  }
+
+  private async createInitializedGraphManager(): Promise<V1_PureGraphManager> {
+    const graphManager = new V1_PureGraphManager(
+      this.applicationStore.pluginManager,
+      this.applicationStore.logService,
+      this.remoteEngine,
+    );
+    await graphManager.initialize(
+      {
+        env: this.applicationStore.config.env,
+        tabSize: DEFAULT_TAB_SIZE,
+        clientConfig: {
+          baseUrl: this.applicationStore.config.engineServerUrl,
+        },
+      },
+      { engine: this.remoteEngine },
+    );
+    return graphManager;
+  }
+
   private parseDataProductEntries(
     entriesString: string,
   ): (
@@ -275,13 +305,7 @@ export class LegendMarketplaceBaseStore {
       return undefined;
     }
 
-    const vendorImageMap = new Map<string, string>();
-    const assetsBaseUrl = this.applicationStore.config.assetsBaseUrl;
-    for (const [vendorName, filename] of Object.entries(
-      this.applicationStore.config.assetsProductImageMap,
-    )) {
-      vendorImageMap.set(vendorName, `${assetsBaseUrl}/${filename}`);
-    }
+    const vendorImageMap = this.buildVendorImageMap();
 
     const getDataProductState = async (
       dataProductId: string,
@@ -346,21 +370,7 @@ export class LegendMarketplaceBaseStore {
       );
     };
 
-    const graphManager = new V1_PureGraphManager(
-      this.applicationStore.pluginManager,
-      this.applicationStore.logService,
-      this.remoteEngine,
-    );
-    await graphManager.initialize(
-      {
-        env: this.applicationStore.config.env,
-        tabSize: DEFAULT_TAB_SIZE,
-        clientConfig: {
-          baseUrl: this.applicationStore.config.engineServerUrl,
-        },
-      },
-      { engine: this.remoteEngine },
-    );
+    const graphManager = await this.createInitializedGraphManager();
 
     const result: Record<string, ProductCardState[]> = {};
     await Promise.all(
@@ -394,29 +404,8 @@ export class LegendMarketplaceBaseStore {
   async fetchTrendingDataProducts(
     token: string | undefined,
   ): Promise<Record<string, ProductCardState[]> | undefined> {
-    const vendorImageMap = new Map<string, string>();
-    const assetsBaseUrl = this.applicationStore.config.assetsBaseUrl;
-    for (const [vendorName, filename] of Object.entries(
-      this.applicationStore.config.assetsProductImageMap,
-    )) {
-      vendorImageMap.set(vendorName, `${assetsBaseUrl}/${filename}`);
-    }
-
-    const graphManager = new V1_PureGraphManager(
-      this.applicationStore.pluginManager,
-      this.applicationStore.logService,
-      this.remoteEngine,
-    );
-    await graphManager.initialize(
-      {
-        env: this.applicationStore.config.env,
-        tabSize: DEFAULT_TAB_SIZE,
-        clientConfig: {
-          baseUrl: this.applicationStore.config.engineServerUrl,
-        },
-      },
-      { engine: this.remoteEngine },
-    );
+    const vendorImageMap = this.buildVendorImageMap();
+    const graphManager = await this.createInitializedGraphManager();
 
     const trendingEntries =
       await this.marketplaceServerClient.getTrendingDataProducts(

@@ -326,14 +326,7 @@ export const LegendMarketplaceSearchResults =
       );
       const handleShowAllProducts = useCallback(() => {
         searchResultsStore.setShowAllProducts(true);
-        flowResult(
-          searchResultsStore.executeSearch(
-            searchResultsStore.searchQuery ?? '',
-            searchResultsStore.useProducerSearch ?? false,
-            tokenRef.current,
-          ),
-        ).catch(applicationStore.alertUnhandledError);
-      }, [searchResultsStore, applicationStore]);
+      }, [searchResultsStore]);
 
       return (
         <LegendMarketplacePage className="marketplace-lakehouse-search-results">
