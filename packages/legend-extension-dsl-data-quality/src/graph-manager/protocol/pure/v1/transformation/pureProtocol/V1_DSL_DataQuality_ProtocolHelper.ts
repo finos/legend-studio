@@ -24,9 +24,11 @@ import {
   list,
   optional,
   raw,
+  SKIP,
 } from 'serializr';
 import {
   type V1_DataQualityExecutionContext,
+  type V1_ReconStrategy,
   V1_DataQualityClassValidationsConfiguration,
   V1_DataQualityServiceValidationsConfiguration,
   V1_DataSpaceDataQualityExecutionContext,
@@ -34,6 +36,8 @@ import {
   V1_DataQualityRelationValidationsConfiguration,
   V1_DataQualityRelationValidation,
   V1_DataQualityRelationQueryLambda,
+  V1_DataQualityRelationComparisonConfiguration,
+  V1_MD5HashStrategy,
 } from '../../V1_DataQualityValidationConfiguration.js';
 import {
   type PlainObject,
@@ -60,6 +64,8 @@ export const V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE =
   'dataqualityRelationValidation';
 export const V1_DATA_QUALITY_SERVICE_PROTOCOL_TYPE =
   'dataQualityServiceValidations';
+export const V1_DATA_QUALITY_RELATION_COMPARISON_PROTOCOL_TYPE =
+  'dataQualityRelationComparison';
 const V1_DATA_QUALITY_DATASPACE_EXECUTION_CONTEXT =
   'dataSpaceDataQualityExecutionContext';
 const V1_DATA_QUALITY_MAPPING_AND_RUNTIME_EXECUTION_CONTEXT =
@@ -251,3 +257,68 @@ export const V1_deserializeDataQualityRelationValidation = (
   plugins: PureProtocolProcessorPlugin[],
 ): V1_DataQualityRelationValidationsConfiguration =>
   deserialize(V1_dataQualityRelationValidationModelSchema(plugins), json);
+
+const V1_MD5_HASH_STRATEGY_TYPE = 'md5Hash';
+
+const V1_md5HashStrategyModelSchema = createModelSchema(V1_MD5HashStrategy, {
+  _type: usingConstantValueSchema(V1_MD5_HASH_STRATEGY_TYPE),
+  sourceHashColumn: optional(primitive()),
+  targetHashColumn: optional(primitive()),
+  aggregatedHash: optional(primitive()),
+});
+
+function V1_serializeReconStrategy(
+  value: V1_ReconStrategy,
+): PlainObject<V1_ReconStrategy> {
+  if (value instanceof V1_MD5HashStrategy) {
+    return serialize(V1_md5HashStrategyModelSchema, value);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize recon strategy: unsupported type`,
+  );
+}
+
+function V1_deserializeReconStrategy(
+  json: PlainObject<V1_ReconStrategy>,
+): V1_ReconStrategy {
+  switch (json._type) {
+    case V1_MD5_HASH_STRATEGY_TYPE:
+      return deserialize(V1_md5HashStrategyModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize recon strategy of type '${json._type}'`,
+      );
+  }
+}
+
+const V1_dataQualityRelationComparisonModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataQualityRelationComparisonConfiguration> =>
+  createModelSchema(V1_DataQualityRelationComparisonConfiguration, {
+    _type: usingConstantValueSchema(
+      V1_DATA_QUALITY_RELATION_COMPARISON_PROTOCOL_TYPE,
+    ),
+    name: primitive(),
+    package: primitive(),
+    source: usingModelSchema(V1_rawLambdaModelSchemaParameters),
+    target: usingModelSchema(V1_rawLambdaModelSchemaParameters),
+    keys: list(primitive()),
+    columnsToCompare: list(primitive()),
+    strategy: optionalCustom(
+      (val) => (val ? V1_serializeReconStrategy(val) : SKIP),
+      (val) => (val ? V1_deserializeReconStrategy(val) : SKIP),
+    ),
+    expectedMatch: optional(primitive()),
+  });
+
+export const V1_serializeDataQualityRelationComparison = (
+  protocol: V1_DataQualityRelationComparisonConfiguration,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_DataQualityRelationComparisonConfiguration> =>
+  serialize(V1_dataQualityRelationComparisonModelSchema(plugins), protocol);
+
+export const V1_deserializeDataQualityRelationComparison = (
+  json: PlainObject<V1_DataQualityRelationComparisonConfiguration>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_DataQualityRelationComparisonConfiguration =>
+  deserialize(V1_dataQualityRelationComparisonModelSchema(plugins), json);

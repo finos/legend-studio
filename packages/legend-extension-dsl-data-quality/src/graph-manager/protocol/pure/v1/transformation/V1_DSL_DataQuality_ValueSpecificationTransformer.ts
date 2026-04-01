@@ -45,17 +45,23 @@ import {
   type DataQualityRelationValidation,
   type DataQualityRelationValidationConfiguration,
   type DataQualityClassValidationsConfiguration,
+  type DataQualityRelationComparisonConfiguration,
+  type ReconStrategy,
+  MD5HashStrategy,
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
   type V1_DataQualityExecutionContext,
+  type V1_ReconStrategy,
   V1_DataQualityClassValidationsConfiguration,
   V1_DataQualityRelationValidation,
   V1_DataQualityRelationValidationsConfiguration,
   V1_DataSpaceDataQualityExecutionContext,
   V1_MappingAndRuntimeDataQualityExecutionContext,
   V1_DataQualityRelationQueryLambda,
+  V1_DataQualityRelationComparisonConfiguration,
+  V1_MD5HashStrategy,
 } from '../V1_DataQualityValidationConfiguration.js';
 import { DATA_SPACE_ELEMENT_POINTER } from '@finos/legend-extension-dsl-data-space/graph';
 
@@ -222,5 +228,49 @@ export function V1_transformDataQualityRelationValidationConfiguration(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawVariable,
   );
+  return protocol;
+}
+
+function V1_transformReconStrategy(value: ReconStrategy): V1_ReconStrategy {
+  if (value instanceof MD5HashStrategy) {
+    const protocol = new V1_MD5HashStrategy();
+    protocol.sourceHashColumn = value.sourceHashColumn;
+    protocol.targetHashColumn = value.targetHashColumn;
+    protocol.aggregatedHash = value.aggregatedHash;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform recon strategy: unsupported type`,
+  );
+}
+
+export function V1_transformDataQualityRelationComparisonConfiguration(
+  metamodel: DataQualityRelationComparisonConfiguration,
+  context: V1_GraphTransformerContext,
+): V1_DataQualityRelationComparisonConfiguration {
+  const protocol = new V1_DataQualityRelationComparisonConfiguration();
+  V1_initPackageableElement(protocol, metamodel);
+  protocol.name = metamodel.name;
+  protocol.package = metamodel.package?.path ?? '';
+  protocol.source = new V1_DataQualityRelationQueryLambda();
+  protocol.source.body = metamodel.source.body;
+  protocol.source.parameters = metamodel.source.parameters.map(
+    (v) =>
+      v.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(context),
+      ) as V1_RawVariable,
+  );
+  protocol.target = new V1_DataQualityRelationQueryLambda();
+  protocol.target.body = metamodel.target.body;
+  protocol.target.parameters = metamodel.target.parameters.map(
+    (v) =>
+      v.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(context),
+      ) as V1_RawVariable,
+  );
+  protocol.keys = metamodel.keys;
+  protocol.columnsToCompare = metamodel.columnsToCompare;
+  protocol.strategy = V1_transformReconStrategy(metamodel.strategy);
+  protocol.expectedMatch = metamodel.expectedMatch;
   return protocol;
 }

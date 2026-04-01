@@ -20,6 +20,7 @@ import {
   DataQualityClassValidationsConfiguration,
   DataQualityServiceValidationConfiguration,
   DataQualityRelationValidationConfiguration,
+  DataQualityRelationComparisonConfiguration,
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export const getOwnDataQualityClassValidationsConfiguration = (
@@ -56,4 +57,16 @@ export const getOwnDataQualityRelationValidationsConfiguration = (
       DataQualityRelationValidationConfiguration,
     ),
     `Can't find data quality tds validation element on '${path}'`,
+  );
+
+export const getOwnDataQualityRelationComparisonConfiguration = (
+  path: string,
+  graph: BasicModel,
+): DataQualityRelationComparisonConfiguration =>
+  guaranteeNonNullable(
+    graph.getOwnNullableExtensionElement(
+      path,
+      DataQualityRelationComparisonConfiguration,
+    ),
+    `Can't find data quality relation comparison element on '${path}'`,
   );

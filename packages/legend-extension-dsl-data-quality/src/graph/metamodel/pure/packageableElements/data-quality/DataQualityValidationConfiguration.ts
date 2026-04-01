@@ -51,6 +51,20 @@ export interface DQValidationSuggestionInputOptions {
   lambdaParameterValues?: ParameterValue[];
 }
 
+export interface DQReconciliationInputOptions {
+  clientVersion?: string | undefined;
+  source: RawLambda;
+  target: RawLambda;
+  keys: string[];
+  colsForHash: string[];
+  aggregatedHash?: boolean | undefined;
+  sourceHashCol?: string | undefined;
+  targetHashCol?: string | undefined;
+  includeColumnValues?: boolean | undefined;
+  runSourceQuery?: boolean | undefined;
+  runTargetQuery?: boolean | undefined;
+}
+
 export abstract class DataQualityExecutionContext implements Hashable {
   abstract get hashCode(): string;
 }
@@ -180,6 +194,55 @@ export class DataQualityRelationValidationConfiguration
       DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_CONFIGURATION,
       this.query,
       hashArray(this.validations),
+    ]);
+  }
+
+  accept_PackageableElementVisitor<T>(
+    visitor: PackageableElementVisitor<T>,
+  ): T {
+    return visitor.visit_PackageableElement(this);
+  }
+}
+
+export abstract class ReconStrategy implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class MD5HashStrategy extends ReconStrategy {
+  sourceHashColumn?: string | undefined;
+  targetHashColumn?: string | undefined;
+  aggregatedHash?: boolean | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_MD5_HASH_STRATEGY,
+      this.sourceHashColumn ?? '',
+      this.targetHashColumn ?? '',
+      String(this.aggregatedHash ?? ''),
+    ]);
+  }
+}
+
+export class DataQualityRelationComparisonConfiguration
+  extends PackageableElement
+  implements Hashable
+{
+  source!: DataQualityRelationQueryLambda;
+  target!: DataQualityRelationQueryLambda;
+  keys: string[] = [];
+  columnsToCompare: string[] = [];
+  strategy!: ReconStrategy;
+  expectedMatch?: number | undefined;
+
+  protected override get _elementHashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_COMPARISON_HASH_STRUCTURE,
+      this.source,
+      this.target,
+      hashArray(this.keys),
+      hashArray(this.columnsToCompare),
+      this.expectedMatch ?? '',
+      this.strategy,
     ]);
   }
 
