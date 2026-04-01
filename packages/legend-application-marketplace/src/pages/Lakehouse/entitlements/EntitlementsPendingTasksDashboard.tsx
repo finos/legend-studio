@@ -41,13 +41,7 @@ import {
   DialogTitle,
   Tooltip,
 } from '@mui/material';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ChangeEvent,
-} from 'react';
+import { useCallback, useMemo, useState, type ChangeEvent } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
@@ -289,7 +283,7 @@ export const EntitlementsPendingTasksDashboard = observer(
     const [selectedAction, setSelectedAction] = useState<
       'approve' | 'deny' | undefined
     >();
-    const selectedTaskIdsSet = dashboardState.allSelectedTaskIds;
+    const selectedTaskIdsSet = dashboardState.selectedTaskIds;
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
     >();
@@ -297,34 +291,6 @@ export const EntitlementsPendingTasksDashboard = observer(
       useState<string | undefined>();
 
     const auth = useAuth();
-
-    // Effects
-
-    useEffect(() => {
-      if (dashboardState.fetchingPendingTasksState.hasCompleted) {
-        const validTaskIds = new Set(
-          pendingTasks?.map((task) => task.taskId) ?? [],
-        );
-        dashboardState.setSelectedPrivilegeManagerTaskIds(
-          new Set(
-            [...dashboardState.selectedPrivilegeManagerTaskIds].filter((id) =>
-              validTaskIds.has(id),
-            ),
-          ),
-        );
-        dashboardState.setSelectedDataOwnerTaskIds(
-          new Set(
-            [...dashboardState.selectedDataOwnerTaskIds].filter((id) =>
-              validTaskIds.has(id),
-            ),
-          ),
-        );
-      }
-    }, [
-      dashboardState.fetchingPendingTasksState.hasCompleted,
-      pendingTasks,
-      dashboardState,
-    ]);
 
     // Callbacks
 
@@ -366,44 +332,17 @@ export const EntitlementsPendingTasksDashboard = observer(
       [],
     );
 
-    const getSelectionSetForTask = useCallback(
-      (
-        taskType: V1_ApprovalType,
-      ): {
-        selectedIds: Set<string>;
-        setSelectedIds: (ids: Set<string>) => void;
-      } => {
-        if (taskType === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL) {
-          return {
-            selectedIds: dashboardState.selectedPrivilegeManagerTaskIds,
-            setSelectedIds: (ids: Set<string>) =>
-              dashboardState.setSelectedPrivilegeManagerTaskIds(ids),
-          };
-        }
-        return {
-          selectedIds: dashboardState.selectedDataOwnerTaskIds,
-          setSelectedIds: (ids: Set<string>) =>
-            dashboardState.setSelectedDataOwnerTaskIds(ids),
-        };
-      },
-      [dashboardState],
-    );
-
     const CustomSelectionRenderer = useCallback(
       (params: DataGridCellRendererParams<V1_ContractUserEventRecord>) => {
-        const taskType =
-          params.data?.type ?? V1_ApprovalType.DATA_OWNER_APPROVAL;
-        const { selectedIds, setSelectedIds } =
-          getSelectionSetForTask(taskType);
         const handleChange = (_: ChangeEvent<HTMLInputElement>) => {
           if (params.data) {
-            const newSet = new Set<string>(selectedIds);
-            if (selectedIds.has(params.data.taskId)) {
+            const newSet = new Set<string>(selectedTaskIdsSet);
+            if (selectedTaskIdsSet.has(params.data.taskId)) {
               newSet.delete(params.data.taskId);
             } else {
               newSet.add(params.data.taskId);
             }
-            setSelectedIds(newSet);
+            dashboardState.setSelectedTaskIds(newSet);
           }
         };
 
@@ -416,7 +355,7 @@ export const EntitlementsPendingTasksDashboard = observer(
           />
         );
       },
-      [selectedTaskIdsSet, getSelectionSetForTask],
+      [selectedTaskIdsSet, dashboardState],
     );
 
     const CustomSelectionHeaderRenderer = useCallback(
@@ -425,27 +364,23 @@ export const EntitlementsPendingTasksDashboard = observer(
         taskSet: V1_ContractUserEventRecord[];
       }) => {
         const { taskSet } = _props;
-        const taskType =
-          taskSet[0]?.type ?? V1_ApprovalType.DATA_OWNER_APPROVAL;
-        const { selectedIds, setSelectedIds } =
-          getSelectionSetForTask(taskType);
         const checked =
           taskSet.length > 0 &&
-          taskSet.every((task) => selectedIds.has(task.taskId));
+          taskSet.every((task) => selectedTaskIdsSet.has(task.taskId));
         const indeterminate =
           taskSet.length > 0 &&
           !checked &&
-          taskSet.some((task) => selectedIds.has(task.taskId));
+          taskSet.some((task) => selectedTaskIdsSet.has(task.taskId));
 
         const handleChange = (_e: ChangeEvent<HTMLInputElement>) => {
           if (!checked || indeterminate) {
-            const newSet = new Set<string>(selectedIds);
+            const newSet = new Set<string>(selectedTaskIdsSet);
             taskSet.forEach((task) => newSet.add(task.taskId));
-            setSelectedIds(newSet);
+            dashboardState.setSelectedTaskIds(newSet);
           } else {
-            const newSet = new Set<string>(selectedIds);
+            const newSet = new Set<string>(selectedTaskIdsSet);
             taskSet.forEach((task) => newSet.delete(task.taskId));
-            setSelectedIds(newSet);
+            dashboardState.setSelectedTaskIds(newSet);
           }
         };
 
@@ -460,7 +395,7 @@ export const EntitlementsPendingTasksDashboard = observer(
           />
         );
       },
-      [getSelectionSetForTask],
+      [selectedTaskIdsSet, dashboardState],
     );
 
     const colDefs: DataGridColumnDefinition<V1_ContractUserEventRecord>[] =

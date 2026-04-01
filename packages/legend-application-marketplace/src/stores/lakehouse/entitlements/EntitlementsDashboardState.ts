@@ -96,8 +96,7 @@ export class EntitlementsDashboardState {
   // consolidated user information from the tasks.
   allContractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails> =
     new Map();
-  selectedPrivilegeManagerTaskIds: Set<string> = new Set();
-  selectedDataOwnerTaskIds: Set<string> = new Set();
+  selectedTaskIds: Set<string> = new Set();
 
   readonly initializationState = ActionState.create();
   readonly fetchingPendingTasksState = ActionState.create();
@@ -113,13 +112,10 @@ export class EntitlementsDashboardState {
       allContractsForUser: observable,
       allContractsCreatedByUserMap: observable,
       pendingTaskContractMap: observable,
-      selectedPrivilegeManagerTaskIds: observable,
-      selectedDataOwnerTaskIds: observable,
+      selectedTaskIds: observable,
       pendingTaskContracts: computed,
       allContractsCreatedByUser: computed,
-      allSelectedTaskIds: computed,
-      setSelectedPrivilegeManagerTaskIds: action,
-      setSelectedDataOwnerTaskIds: action,
+      setSelectedTaskIds: action,
       init: flow,
       approve: flow,
       deny: flow,
@@ -139,23 +135,13 @@ export class EntitlementsDashboardState {
     return Array.from(this.allContractsCreatedByUserMap.values());
   }
 
-  get allSelectedTaskIds(): Set<string> {
-    return new Set([
-      ...this.selectedPrivilegeManagerTaskIds,
-      ...this.selectedDataOwnerTaskIds,
-    ]);
-  }
-
-  setSelectedPrivilegeManagerTaskIds(ids: Set<string>): void {
-    this.selectedPrivilegeManagerTaskIds = ids;
-  }
-
-  setSelectedDataOwnerTaskIds(ids: Set<string>): void {
-    this.selectedDataOwnerTaskIds = ids;
+  setSelectedTaskIds(ids: Set<string>): void {
+    this.selectedTaskIds = ids;
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
     this.initializationState.inProgress();
+    this.setSelectedTaskIds(new Set());
     try {
       yield Promise.all([
         (async () => {
