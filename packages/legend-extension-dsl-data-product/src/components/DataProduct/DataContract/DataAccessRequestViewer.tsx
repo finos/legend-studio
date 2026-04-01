@@ -52,6 +52,7 @@ import {
   assertErrorThrown,
   formatDate,
   lodashCapitalize,
+  prettyCONSTName,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
@@ -260,6 +261,7 @@ export const DataAccessRequestContent = observer(
     initialSelectedUser?: string | undefined;
     onRefresh?: (() => void) | (() => Promise<void>);
     isReadOnly?: boolean | undefined;
+    dataProductEnvironment?: string | undefined;
   }) => {
     const {
       viewerState,
@@ -267,6 +269,7 @@ export const DataAccessRequestContent = observer(
       initialSelectedUser,
       onRefresh,
       isReadOnly,
+      dataProductEnvironment,
     } = props;
     const auth = useAuth();
     const consumer = viewerState.consumer;
@@ -465,6 +468,12 @@ export const DataAccessRequestContent = observer(
           <b>Date Created: </b>
           {formatDate(new Date(viewerState.createdAt), 'MMM d, yyyy')}
         </div>
+        {dataProductEnvironment && (
+          <div>
+            <b>Environment: </b>
+            {prettyCONSTName(dataProductEnvironment)}
+          </div>
+        )}
       </Box>
     );
 
@@ -697,6 +706,7 @@ export const DataAccessRequestViewer = observer(
     initialSelectedUser?: string | undefined;
     onRefresh?: (() => void) | (() => Promise<void>);
     isReadOnly?: boolean | undefined;
+    dataProductEnvironment?: string | undefined;
   }) => {
     const { open, onClose, viewerState, ...contentProps } = props;
 

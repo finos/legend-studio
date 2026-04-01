@@ -104,6 +104,7 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
 
 export const TEST__getTestLegendMarketplaceApplicationConfig = (
   dataProductEnv?: string | undefined,
+  adjacentEnvUrl?: string | undefined,
 ): LegendMarketplaceApplicationConfig => {
   const config = new LegendMarketplaceApplicationConfig({
     configData: {
@@ -112,6 +113,7 @@ export const TEST__getTestLegendMarketplaceApplicationConfig = (
         ...TEST_DATA__appConfig.marketplace,
         dataProductEnv:
           dataProductEnv ?? TEST_DATA__appConfig.marketplace.dataProductEnv,
+        ...(adjacentEnvUrl !== undefined ? { adjacentEnvUrl } : {}),
       },
     },
     versionData: TEST__getApplicationVersionData(),
