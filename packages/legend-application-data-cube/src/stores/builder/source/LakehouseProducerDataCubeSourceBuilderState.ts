@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
 } from './LegendDataCubeSourceBuilderState.js';
 import {
+  assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
   type PlainObject,
+  ActionState,
 } from '@finos/legend-shared';
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
@@ -33,9 +35,9 @@ import {
 } from '../../model/LakehouseProducerDataCubeSource.js';
 import {
   IngestDeploymentServerConfig,
-  ProducerEnvironment,
   type LakehouseIngestServerClient,
   type LakehousePlatformServerClient,
+  type LakehouseContractServerClient,
 } from '@finos/legend-server-lakehouse';
 import {
   V1_AWSSnowflakeIngestEnvironment,
@@ -44,8 +46,11 @@ import {
   V1_deserializeProducerEnvironment,
   V1_OpenCatalog,
   type V1_IngestDefinition,
+  V1_EntitlementsLakehouseEnvironmentType,
+  type V1_EntitlementsUserEnvResponse,
   V1_deserializePureModelContext,
   V1_PureModelContextData,
+  V1_IngestEnvironmentClassification,
 } from '@finos/legend-graph';
 
 export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
@@ -64,22 +69,34 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   databaseName: string | undefined;
   catalogUrl: string | undefined;
   milestoning: boolean;
+  envMode: V1_EntitlementsLakehouseEnvironmentType;
+  userEntitledLakehouseEnv: string | undefined;
+  allLakehouseEnvironments: IngestDeploymentServerConfig[] = [];
+  selectedLakehouseEnv: IngestDeploymentServerConfig | undefined;
+  producerEnvironments: string[] = [];
+  selectedProducerEnv: string | undefined;
+  user: string | undefined;
+  readonly initialLoadState = ActionState.create();
+  readonly fetchProducerEnvironmentsState = ActionState.create();
 
   private LAKEHOUSE_SECTION = '###Lakehouse';
 
   readonly _platformServerClient: LakehousePlatformServerClient;
   readonly _ingestServerClient: LakehouseIngestServerClient;
+  readonly _contractServerClient: LakehouseContractServerClient;
 
   constructor(
     application: LegendDataCubeApplicationStore,
     engine: LegendDataCubeDataCubeEngine,
     platformServerClient: LakehousePlatformServerClient,
     ingestServerClient: LakehouseIngestServerClient,
+    contractServerClient: LakehouseContractServerClient,
     alertService: DataCubeAlertService,
   ) {
     super(application, engine, alertService);
     this._platformServerClient = platformServerClient;
     this._ingestServerClient = ingestServerClient;
+    this._contractServerClient = contractServerClient;
 
     makeObservable(this, {
       deploymentId: observable,
@@ -91,6 +108,12 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       selectedTable: observable,
       icebergEnabled: observable,
       enableIceberg: observable,
+      envMode: observable,
+      userEntitledLakehouseEnv: observable,
+      allLakehouseEnvironments: observable,
+      selectedLakehouseEnv: observable,
+      producerEnvironments: observable,
+      selectedProducerEnv: observable,
 
       setDeploymentId: action,
       setSelectedIngestUrn: action,
@@ -100,6 +123,11 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       setDatasetGroup: action,
       setSelectedTable: action,
       setEnableIceberg: action,
+      setEnvMode: action,
+      setSelectedLakehouseEnv: action,
+      setSelectedProducerEnv: action,
+      initialLoad: flow,
+      fetchProducerEnvironments: flow,
     });
 
     this.selectedIngestUrn = '';
@@ -108,11 +136,36 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.paths = [];
     this.enableIceberg = false;
     this.milestoning = false;
+    this.envMode = V1_EntitlementsLakehouseEnvironmentType.PRODUCTION;
   }
+
+  // ===== Shared helpers =====
+
+  private get currentClassification(): V1_IngestEnvironmentClassification {
+    return this.envMode === V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
+      ? V1_IngestEnvironmentClassification.PROD
+      : V1_IngestEnvironmentClassification.PROD_PARALLEL;
+  }
+
+  /**
+   * Extracts the identifier (last segment after ':') from a producer
+   * environment URN. This can be a numeric deployment ID or a user ID.
+   */
+  private static extractProducerId(urn: string): string | undefined {
+    return urn.split(':').pop();
+  }
+
+  decoratedIngest(ingestUrn: string): string | undefined {
+    return ingestUrn.split('~').pop();
+  }
+
+  // ===== Simple setters =====
 
   setDeploymentId(deploymentId: number | undefined): void {
     this.deploymentId = deploymentId;
-    this.setWarehouse(`LAKEHOUSE_PRODUCER_${deploymentId}_QUERY_WH`);
+    if (deploymentId !== undefined) {
+      this.setWarehouse(`LAKEHOUSE_PRODUCER_${deploymentId}_QUERY_WH`);
+    }
   }
 
   setWarehouse(warehouse: string | undefined): void {
@@ -143,56 +196,185 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.enableIceberg = enable;
   }
 
-  async fetchIngestUrns(access_token: string | undefined) {
-    //TODO: we should retry this method if access token is invalid
-    this.resetDeployment(this.deploymentId);
+  setSelectedLakehouseEnv(env: IngestDeploymentServerConfig | undefined) {
+    this.selectedLakehouseEnv = env;
+  }
+
+  // ===== Reset methods (composable hierarchy) =====
+
+  /**
+   * Resets ingest/dataset/iceberg state (everything downstream of producer selection).
+   */
+  private resetDownstreamState() {
+    this.deploymentId = undefined;
+    this.user = undefined;
+    this.setWarehouse(undefined);
+    this.setIngestUrns([]);
+    this.setSelectedIngestUrn(undefined);
+    this.setTables([]);
+    this.setDatasetGroup(undefined);
+    this.setSelectedTable(undefined);
+    this.icebergEnabled = undefined;
+    this.enableIceberg = false;
+    this.catalogUrl = undefined;
+    this.databaseName = undefined;
+    this.ingestDefinition = undefined;
+    this.ingestionServerUrl = undefined;
+    this.paths = [];
+  }
+
+  /**
+   * Full reset: clears everything including producer environments.
+   * Called when mode changes.
+   */
+  resetAll() {
+    this.producerEnvironments = [];
+    this.selectedProducerEnv = undefined;
+    this.resetDownstreamState();
+  }
+
+  // ===== State transitions =====
+
+  setEnvMode(
+    env: V1_EntitlementsLakehouseEnvironmentType,
+    access_token?: string | undefined,
+  ) {
+    this.envMode = env;
+    this.resetAll();
+    this.resolveLakehouseEnvironment(access_token);
+  }
+
+  private resolveLakehouseEnvironment(access_token?: string | undefined) {
+    const matchingEnv = this.allLakehouseEnvironments.find(
+      (env) =>
+        env.environmentName === this.userEntitledLakehouseEnv &&
+        env.environmentClassification === this.currentClassification,
+    );
+    this.setSelectedLakehouseEnv(matchingEnv);
+    if (matchingEnv) {
+      this.setSelectedProducerEnv(undefined);
+      // NOTE: we trigger this but don't await because it's a flow
+      this.fetchProducerEnvironments(access_token);
+    }
+  }
+
+  setSelectedProducerEnv(env: string | undefined) {
+    this.selectedProducerEnv = env;
+    this.resetDownstreamState();
+
+    if (env) {
+      const id =
+        LakehouseProducerDataCubeSourceBuilderState.extractProducerId(env);
+      if (id) {
+        const numericId = Number(id);
+        if (!isNaN(numericId)) {
+          this.setDeploymentId(numericId);
+        } else {
+          this.user = id;
+          this.setWarehouse(`LAKEHOUSE_PRODUCER_${id.toUpperCase()}_QUERY_WH`);
+        }
+      }
+    }
+  }
+
+  get filteredLakehouseEnvironments(): IngestDeploymentServerConfig[] {
+    return this.allLakehouseEnvironments.filter(
+      (env) =>
+        env.environmentName === this.userEntitledLakehouseEnv &&
+        env.environmentClassification === this.currentClassification,
+    );
+  }
+
+  // ===== Data fetching =====
+
+  *initialLoad(access_token?: string | undefined) {
     try {
-      const producerServer =
-        await this._platformServerClient.findProducerServer(
-          guaranteeNonNullable(this.deploymentId),
-          undefined,
+      this.initialLoadState.inProgress();
+      const results =
+        (yield this._platformServerClient.getIngestEnvironmentSummaries(
           access_token,
-        );
-      const ingestServerUrl =
-        IngestDeploymentServerConfig.serialization.fromJson(
-          producerServer,
-        ).ingestServerUrl;
-      this.ingestionServerUrl = ingestServerUrl;
-
-      const producerUrn = await this._ingestServerClient.getProducerEnvironment(
-        guaranteeNonNullable(this.deploymentId),
-        ingestServerUrl,
-        access_token,
-      );
-      const producer = ProducerEnvironment.serialization.fromJson(producerUrn);
-
-      await this.fetchProducerEnvironmentDetails(
-        producer,
-        ingestServerUrl,
-        access_token,
+        )) as PlainObject<IngestDeploymentServerConfig>[];
+      this.allLakehouseEnvironments = results.map((result) =>
+        IngestDeploymentServerConfig.serialization.fromJson(result),
       );
 
-      const ingestDefinitions =
-        await this._ingestServerClient.getIngestDefinitions(
-          producer.producerEnvironmentUrn,
-          ingestServerUrl,
+      const entitlementEnvs =
+        (yield this._contractServerClient.getUserEntitlementEnvs(
+          this._application.identityService.currentUser,
           access_token,
-        );
-      this.setIngestUrns(ingestDefinitions);
-      return;
+        )) as V1_EntitlementsUserEnvResponse;
+      this.userEntitledLakehouseEnv =
+        entitlementEnvs.users.at(0)?.lakehouseEnvironment;
+
+      this.resolveLakehouseEnvironment(access_token);
+      this.initialLoadState.complete();
     } catch (error) {
+      assertErrorThrown(error);
+      this.initialLoadState.fail();
       throw error;
     }
   }
 
+  *fetchProducerEnvironments(access_token: string | undefined) {
+    try {
+      if (!this.selectedLakehouseEnv) {
+        return;
+      }
+      this.fetchProducerEnvironmentsState.inProgress();
+      const currentUser = this._application.identityService.currentUser;
+      const results = (yield this._ingestServerClient.getProducerEnvironments(
+        this.selectedLakehouseEnv.ingestServerUrl,
+        access_token,
+      )) as string[];
+
+      this.producerEnvironments = results.filter((result) => {
+        const id =
+          LakehouseProducerDataCubeSourceBuilderState.extractProducerId(result);
+        if (!id) {
+          return false;
+        }
+        // Keep numeric (deployment) environments and user-matching environments
+        return !isNaN(Number(id)) || id === currentUser;
+      });
+      this.fetchProducerEnvironmentsState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.fetchProducerEnvironmentsState.fail();
+      throw error;
+    }
+  }
+
+  async fetchIngestUrns(access_token: string | undefined) {
+    const ingestServerUrl = guaranteeNonNullable(
+      this.selectedLakehouseEnv,
+    ).ingestServerUrl;
+    this.ingestionServerUrl = ingestServerUrl;
+
+    const producerUrn = guaranteeNonNullable(this.selectedProducerEnv);
+
+    await this.fetchProducerEnvironmentDetails(
+      producerUrn,
+      ingestServerUrl,
+      access_token,
+    );
+
+    const ingestDefinitions =
+      await this._ingestServerClient.getIngestDefinitions(
+        producerUrn,
+        ingestServerUrl,
+        access_token,
+      );
+    this.setIngestUrns(ingestDefinitions);
+  }
+
   private async fetchProducerEnvironmentDetails(
-    producer: ProducerEnvironment,
+    producerUrn: string,
     ingestServerUrl: string,
     access_token: string | undefined,
   ) {
     const producerEnvPlainObject =
       await this._ingestServerClient.getProducerEnvironmentDetails(
-        producer.producerEnvironmentUrn,
+        producerUrn,
         ingestServerUrl,
         access_token,
       );
@@ -214,106 +396,77 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   async fetchDatasets(access_token: string | undefined) {
     this.setTables([]);
     this.setSelectedTable(undefined);
-    try {
-      const ingestGrammar =
-        await this._ingestServerClient.getIngestDefinitionGrammar(
-          guaranteeNonNullable(this.selectedIngestUrn),
-          this.ingestionServerUrl,
-          access_token,
-        );
 
-      const ingestPMCDPlainObject = await this._engine.parseCompatibleModel(
-        `${this.LAKEHOUSE_SECTION}\n${ingestGrammar}`,
+    const ingestGrammar =
+      await this._ingestServerClient.getIngestDefinitionGrammar(
+        guaranteeNonNullable(this.selectedIngestUrn),
+        this.ingestionServerUrl,
+        access_token,
       );
 
-      const ingestDefPMCD = guaranteeType(
-        V1_deserializePureModelContext(ingestPMCDPlainObject),
-        V1_PureModelContextData,
-      );
+    const ingestPMCDPlainObject = await this._engine.parseCompatibleModel(
+      `${this.LAKEHOUSE_SECTION}\n${ingestGrammar}`,
+    );
 
-      this.ingestDefinition = (
-        ingestDefPMCD.elements.at(0) as V1_IngestDefinition
-      ).content;
+    const ingestDefPMCD = guaranteeType(
+      V1_deserializePureModelContext(ingestPMCDPlainObject),
+      V1_PureModelContextData,
+    );
 
+    this.ingestDefinition = (
+      ingestDefPMCD.elements.at(0) as V1_IngestDefinition
+    ).content;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.setDatasetGroup((this.ingestDefinition as any).datasetGroup);
+
+    this.setTables(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.setDatasetGroup((this.ingestDefinition as any).datasetGroup);
-
-      this.setTables(
+      (this.ingestDefinition as any).datasets.map(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (this.ingestDefinition as any).datasets.map(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (dataset: any) => dataset.name,
-        ),
-      );
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  decoratedIngest(ingestUrn: string) {
-    return ingestUrn.split('~').pop();
+        (dataset: any) => dataset.name,
+      ),
+    );
   }
 
   async fetchIcebergCatalogDetails(access_token: string | undefined) {
-    try {
-      const ingestEnvPlainObject =
-        await this._ingestServerClient.getIngestEnvironment(
-          this.ingestionServerUrl,
-          access_token,
-        );
-      const ingestEnv = guaranteeType(
-        V1_deserializeIngestEnvironment(ingestEnvPlainObject),
-        V1_AWSSnowflakeIngestEnvironment,
+    const ingestEnvPlainObject =
+      await this._ingestServerClient.getIngestEnvironment(
+        this.ingestionServerUrl,
+        access_token,
       );
-      this.warehouse = ingestEnv.iceberg.catalog.name;
-      this.catalogUrl = guaranteeType(
-        ingestEnv.iceberg.catalog,
-        V1_OpenCatalog,
-      ).proxyUrl;
-    } catch (error) {
-      throw error;
-    }
+    const ingestEnv = guaranteeType(
+      V1_deserializeIngestEnvironment(ingestEnvPlainObject),
+      V1_AWSSnowflakeIngestEnvironment,
+    );
+    this.warehouse = ingestEnv.iceberg.catalog.name;
+    this.catalogUrl = guaranteeType(
+      ingestEnv.iceberg.catalog,
+      V1_OpenCatalog,
+    ).proxyUrl;
   }
 
+  // ===== Path builders =====
+
   createPath() {
-    this.paths = [];
-    this.paths.push(
+    this.paths = [
       guaranteeNonNullable(
         this.decoratedIngest(guaranteeNonNullable(this.selectedIngestUrn)),
       ),
       guaranteeNonNullable(this.selectedTable),
-    );
+    ];
   }
 
   createIcebergPath() {
-    this.paths = [];
-    this.paths.push(
+    const table = guaranteeNonNullable(this.selectedTable);
+    this.paths = [
       guaranteeNonNullable(this.databaseName),
       guaranteeNonNullable(this.datasetGroup),
-      this.milestoning
-        ? `${guaranteeNonNullable(this.selectedTable)}_MILESTONED`
-        : guaranteeNonNullable(this.selectedTable),
-    );
+      this.milestoning ? `${table}_MILESTONED` : table,
+    ];
   }
 
-  reset() {
-    this.setDeploymentId(undefined);
-    this.setIngestUrns([]);
-    this.setSelectedIngestUrn(undefined);
-    this.setTables([]);
-    this.setSelectedTable(undefined);
-    this.setDatasetGroup(undefined);
-    this.setWarehouse(undefined);
-  }
-
-  resetDeployment(deploymentId: number | undefined) {
-    this.setDeploymentId(deploymentId);
-    this.setIngestUrns([]);
-    this.setSelectedIngestUrn(undefined);
-    this.setTables([]);
-    this.setDatasetGroup(undefined);
-    this.setSelectedTable(undefined);
-  }
+  // ===== Source generation =====
 
   override get label(): LegendDataCubeSourceBuilderType {
     return LegendDataCubeSourceBuilderType.LAKEHOUSE_PRODUCER;
@@ -324,13 +477,14 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       Boolean(this.warehouse) &&
       Boolean(this.selectedIngestUrn) &&
       Boolean(this.selectedTable) &&
-      Boolean(this.deploymentId)
+      Boolean(this.selectedProducerEnv) &&
+      Boolean(this.selectedLakehouseEnv) &&
+      (Boolean(this.deploymentId) || Boolean(this.user))
     );
   }
 
   override async generateSourceData(): Promise<PlainObject> {
     const rawSource = new RawLakehouseProducerDataCubeSource();
-    // build data cube source
     if (this.enableIceberg) {
       this.milestoning =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -348,7 +502,12 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     rawSource.ingestServerUrl = guaranteeNonNullable(this.ingestionServerUrl);
     rawSource.paths = this.paths;
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);
-    rawSource.deploymentId = guaranteeNonNullable(this.deploymentId);
+    if (this.deploymentId !== undefined) {
+      rawSource.deploymentId = this.deploymentId;
+    }
+    if (this.user !== undefined) {
+      rawSource.user = this.user;
+    }
 
     return Promise.resolve(
       RawLakehouseProducerDataCubeSource.serialization.toJson(rawSource),

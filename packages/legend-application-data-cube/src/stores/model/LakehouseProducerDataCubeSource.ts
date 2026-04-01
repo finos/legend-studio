@@ -60,6 +60,7 @@ export class RawLakehouseProducerDataCubeSource {
   ingestServerUrl!: string;
   paths!: string[];
   deploymentId?: number;
+  user?: string;
   icebergConfig?: IcebergConfig;
   query?: string;
 
@@ -71,6 +72,7 @@ export class RawLakehouseProducerDataCubeSource {
       ingestServerUrl: primitive(),
       paths: list(primitive()),
       deploymentId: optional(primitive()),
+      user: optional(primitive()),
       icebergConfig: optional(
         usingModelSchema(IcebergConfig.serialization.schema),
       ),

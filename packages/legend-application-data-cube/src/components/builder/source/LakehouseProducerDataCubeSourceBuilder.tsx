@@ -15,16 +15,13 @@
  */
 import { observer } from 'mobx-react-lite';
 import type { LakehouseProducerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseProducerDataCubeSourceBuilderState.js';
-import {
-  FormButton,
-  FormCheckbox,
-  FormTextInput,
-} from '@finos/legend-data-cube';
+import { FormCheckbox, FormTextInput } from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEffect, useState } from 'react';
+import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 
 export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
   sourceBuilder: LakehouseProducerDataCubeSourceBuilderState;
@@ -39,8 +36,9 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
   };
 
   useEffect(() => {
-    state.reset();
-  }, [state]);
+    state.resetAll();
+    state.initialLoad(auth.user?.access_token);
+  }, [state, auth]);
 
   function createUrnPairs(
     urns: string[],
@@ -54,32 +52,77 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
   return (
     <div className="flex h-full w-full">
       <div className="m-3 flex w-full flex-col items-stretch gap-2 text-neutral-500">
-        <div className="query-setup__wizard__group">
-          <div className="query-setup__wizard__group__title">Deploymet ID</div>
-          <div className="flex h-full w-fit flex-auto items-center justify-end text-nowrap">
-            <FormTextInput
-              className="text-base text-black"
-              value={state.deploymentId}
-              onChange={(event) => {
-                state.setDeploymentId(Number(event.target.value));
-              }}
-              placeholder="Enter Deployment ID"
-            />
-            <FormButton
-              compact={true}
-              className="ml-1.5 text-nowrap text-sm text-black"
-              onClick={() => {
-                state
-                  .fetchIngestUrns(auth.user?.access_token)
-                  .catch((error) =>
-                    store.alertService.alertUnhandledError(error),
-                  );
-              }}
-            >
-              Proceed
-            </FormButton>
-          </div>
+        <div className="query-setup__wizard__group mt-3">
+          <div className="query-setup__wizard__group__title">Mode</div>
+          <CustomSelectorInput
+            className="query-setup__wizard__selector"
+            options={[
+              {
+                label: 'Production',
+                value: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+              },
+              {
+                label: 'Production (parallel)',
+                value:
+                  V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+              },
+            ]}
+            onChange={(newVal: {
+              label: string;
+              value: V1_EntitlementsLakehouseEnvironmentType;
+            }) => {
+              state.setEnvMode(newVal.value, auth.user?.access_token);
+            }}
+            value={{
+              label:
+                state.envMode ===
+                V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
+                  ? 'Production'
+                  : 'Production (parallel)',
+              value: state.envMode,
+            }}
+            placeholder="Choose mode"
+            isClearable={false}
+            escapeClearsValue={true}
+          />
         </div>
+        {state.userEntitledLakehouseEnv && (
+          <div className="query-setup__wizard__group mt-3">
+            <div className="query-setup__wizard__group__title">Producer</div>
+            <CustomSelectorInput
+              className="query-setup__wizard__selector"
+              options={state.producerEnvironments.map((env) => ({
+                label: env.split(':').pop() ?? env,
+                value: env,
+              }))}
+              onChange={(newVal: { label: string; value: string } | null) => {
+                state.setSelectedProducerEnv(newVal?.value);
+                if (newVal?.value) {
+                  state
+                    .fetchIngestUrns(auth.user?.access_token)
+                    .catch((error: Error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
+                }
+              }}
+              value={
+                state.selectedProducerEnv
+                  ? {
+                      label:
+                        state.selectedProducerEnv.split(':').pop() ??
+                        state.selectedProducerEnv,
+                      value: state.selectedProducerEnv,
+                    }
+                  : null
+              }
+              isLoading={state.fetchProducerEnvironmentsState.isInProgress}
+              placeholder="Choose producer environment"
+              isClearable={false}
+              escapeClearsValue={true}
+            />
+          </div>
+        )}
+
         {state.icebergEnabled && (
           <div className="query-setup__wizard__group mt-2">
             <div className="flex h-5 w-[calc(100%_-_40px)] overflow-x-auto">
