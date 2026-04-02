@@ -1888,6 +1888,24 @@
     background-color: var(--color-navy-600);
   }
 
+  .query-builder__result__tds-grid__stats-bar {
+    background: var(--color-legacylight-light-grey-100);
+    border-top-color: var(--color-legacylight-light-grey-200);
+    color: var(--color-legacylight-dark-grey-200);
+
+    &__item__label {
+      color: var(--color-legacylight-dark-grey-300);
+    }
+
+    &__item__value {
+      color: var(--color-legacylight-dark-grey-200);
+    }
+
+    &__separator {
+      background: var(--color-legacylight-light-grey-300);
+    }
+  }
+
   .query-builder__result__advanced__mode__label {
     background: var(--color-legacylight-light-blue-200);
     color: var(--color-light-grey-100);

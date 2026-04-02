@@ -727,10 +727,14 @@ export const QueryBuilderResultPanel = observer(
 
             {allowSettingPreviewLimit && (
               <div className="query-builder__result__limit">
-                <div className="query-builder__result__limit__label">
+                <label
+                  className="query-builder__result__limit__label"
+                  htmlFor="query-builder__result__preview-limit-input"
+                >
                   preview row limit
-                </div>
+                </label>
                 <input
+                  id="query-builder__result__preview-limit-input"
                   ref={inputRef}
                   className="input--dark query-builder__result__limit__input"
                   spellCheck={false}

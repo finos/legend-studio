@@ -37,6 +37,15 @@ For the details, please see the full article. But the gist is instead of focusin
 
 `e2e`: Almost the same as `integration` test, except we do make real network call and interact with the backend. We would like to use [Playwright](hhttps://playwright.dev/). In a way, `e2e` tests are valuable here because it can be used to test the whole application stack as well as a `demo` for usage and features of the app.
 
+## Frontend component testing guidelines
+
+When writing tests for React components, prefer queries that reflect how a user perceives the UI:
+
+- Prefer `getByRole`, `getByLabelText`, `getByText`, and `getByTitle` over `container.querySelector(...)`.
+- Avoid selecting elements by CSS class names. Class names are implementation details and change frequently during refactors.
+- If there’s no good user-facing query (e.g., purely decorative elements), it’s OK to fall back to DOM selectors, but keep this to a minimum.
+- Use `data-testid` sparingly as an escape hatch when no accessible query is practical.
+
 ## TODO
 
 - Mock server request instead of mocking the method that makes the network call, maybe this is the better way to write integration test (or even e2e tests)?

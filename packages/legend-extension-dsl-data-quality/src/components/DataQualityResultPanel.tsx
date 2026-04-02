@@ -274,10 +274,14 @@ export const DataQualityResultPanel = observer(
             )}
             {allowSettingPreviewLimit && (
               <div className="data-quality-validation__result__limit">
-                <div className="data-quality-validation__result__limit__label">
+                <label
+                  className="data-quality-validation__result__limit__label"
+                  htmlFor="data-quality-validation__result__preview-limit-input"
+                >
                   preview row limit
-                </div>
+                </label>
                 <input
+                  id="data-quality-validation__result__preview-limit-input"
                   ref={inputRef}
                   className="input--dark data-quality-validation__result__limit__input"
                   spellCheck={false}

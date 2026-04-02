@@ -14,35 +14,42 @@
  * limitations under the License.
  */
 
-import {
-  type CellClickedEvent,
-  type CellMouseOverEvent,
-  type CellRange,
-  type CellSelectionChangedEvent,
-  type ColDef,
-  type ColumnState,
-  type DefaultMenuItem,
-  type FirstDataRenderedEvent,
-  type GetContextMenuItemsParams,
-  type GridApi,
-  type GridOptions,
-  type IAggFuncParams,
-  type ICellRendererParams,
-  type IRowNode,
-  type IServerSideDatasource,
-  type IServerSideGetRowsParams,
-  type MenuItemDef,
-  type RowClickedEvent,
-  type RowSelectedEvent,
-  type RowSelectionOptions,
-  AllCommunityModule,
-} from 'ag-grid-community';
+import { AllCommunityModule } from 'ag-grid-community';
 import { LicenseManager, AllEnterpriseModule } from 'ag-grid-enterprise';
-import {
-  AgGridReact,
-  type AgGridReactProps,
-  type CustomHeaderProps,
-} from 'ag-grid-react';
+import { AgGridReact, type AgGridReactProps } from 'ag-grid-react';
+
+// Re-export AG Grid types with project-specific aliases.
+// NOTE: eslint no-duplicate-imports warns because `ag-grid-community` and
+// `ag-grid-react` also appear in the value imports above.  This is unavoidable
+// when a module provides both values (AllCommunityModule) and types (ColDef etc).
+// eslint-disable-next-line no-duplicate-imports
+export type {
+  CellClickedEvent as DataGridCellClickedEvent,
+  CellKeyDownEvent as DataGridCellKeyDownEvent,
+  CellMouseOverEvent as DataGridCellMouseOverEvent,
+  CellRange as DataGridCellRange,
+  CellSelectionChangedEvent as DataGridCellSelectionChangedEvent,
+  ColDef as DataGridColumnDefinition,
+  Column as DataGridColumn,
+  ColumnState as DataGridColumnState,
+  DefaultMenuItem as DataGridDefaultMenuItem,
+  FirstDataRenderedEvent as DataGridFirstDataRenderedEvent,
+  GetContextMenuItemsParams as DataGridGetContextMenuItemsParams,
+  GridApi as DataGridApi,
+  GridOptions as DataGridOptions,
+  IAggFuncParams as DataGridIAggFuncParams,
+  ICellRendererParams as DataGridCellRendererParams,
+  IRowNode as DataGridIRowNode,
+  IServerSideDatasource as DataGridServerSideDatasource,
+  IServerSideGetRowsParams as DataGridServerSideGetRowsParams,
+  MenuItemDef as DataGridMenuItemDef,
+  RowClickedEvent as DataGridRowClickedEvent,
+  RowSelectedEvent as DataGridRowSelectedEvent,
+  RowSelectionOptions as DataGridRowSelectionOptions,
+} from 'ag-grid-community';
+
+// eslint-disable-next-line no-duplicate-imports
+export type { CustomHeaderProps as DataGridCustomHeaderProps } from 'ag-grid-react';
 
 declare const AG_GRID_LICENSE: string;
 
@@ -85,27 +92,3 @@ export function DataGrid<TData = unknown>(
     />
   );
 }
-
-export type {
-  CellClickedEvent as DataGridCellClickedEvent,
-  CellMouseOverEvent as DataGridCellMouseOverEvent,
-  CellRange as DataGridCellRange,
-  CellSelectionChangedEvent as DataGridCellSelectionChangedEvent,
-  ColDef as DataGridColumnDefinition,
-  ColumnState as DataGridColumnState,
-  CustomHeaderProps as DataGridCustomHeaderProps,
-  DefaultMenuItem as DataGridDefaultMenuItem,
-  FirstDataRenderedEvent as DataGridFirstDataRenderedEvent,
-  GetContextMenuItemsParams as DataGridGetContextMenuItemsParams,
-  GridApi as DataGridApi,
-  GridOptions as DataGridOptions,
-  IAggFuncParams as DataGridIAggFuncParams,
-  ICellRendererParams as DataGridCellRendererParams,
-  IRowNode as DataGridIRowNode,
-  IServerSideDatasource as DataGridServerSideDatasource,
-  IServerSideGetRowsParams as DataGridServerSideGetRowsParams,
-  MenuItemDef as DataGridMenuItemDef,
-  RowClickedEvent as DataGridRowClickedEvent,
-  RowSelectedEvent as DataGridRowSelectedEvent,
-  RowSelectionOptions as DataGridRowSelectionOptions,
-};

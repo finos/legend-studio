@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-import { ContextMenu, WarningIcon, clsx } from '@finos/legend-art';
+import { WarningIcon, clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import {
   DataGrid,
   type DataGridColumnDefinition,
   type DataGridCustomHeaderProps,
+  type DataGridGetContextMenuItemsParams,
+  type DataGridMenuItemDef,
+  type DataGridDefaultMenuItem,
 } from '@finos/legend-lego/data-grid';
 import {
   getRowDataFromExecutionResult,
-  QueryBuilderGridResultContextMenu,
   type IQueryRendererParamsWithGridType,
 } from './QueryBuilderTDSResultShared.js';
-import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
+import type { QueryBuilderResultState } from '../../../stores/QueryBuilderResultState.js';
 import {
   guaranteeNonNullable,
   isBoolean,
@@ -36,6 +38,8 @@ import {
   isString,
   isValidURL,
 } from '@finos/legend-shared';
+import { useApplicationStore } from '@finos/legend-application';
+import { useCallback, useEffect, useRef } from 'react';
 import {
   type TDSResultCellCoordinate,
   type TDSResultCellData,
@@ -46,6 +50,9 @@ import {
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../../__lib__/QueryBuilderTesting.js';
+import { QueryBuilderTDSCellSelectionStatsBar } from './QueryBuilderTDSCellSelectionStatsBar.js';
+import { useAsyncCellSelectionStats } from './QueryBuilderTDSAsyncCellSelectionStats.js';
+import { buildTDSGridContextMenuItems } from './QueryBuilderTDSGridShared.js';
 
 export const MAXIMUM_FRACTION_DIGITS = 4;
 
@@ -114,13 +121,8 @@ const QueryResultCellRenderer = observer(
   (params: IQueryRendererParamsWithGridType) => {
     const resultState = params.resultState;
     const tdsExecutionResult = params.tdsExecutionResult;
-    const fetchStructureImplementation =
-      resultState.queryBuilderState.fetchStructureState.implementation;
-    const applicationStore = resultState.queryBuilderState.applicationStore;
     const cellValue = params.value as TDSResultCellDataType;
     const nodeRowIndex = guaranteeNonNullable(params.node.rowIndex);
-    const darkMode =
-      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
     const formattedCellValue = (): TDSResultCellDataType => {
       if (isNumber(cellValue)) {
@@ -321,104 +323,136 @@ const QueryResultCellRenderer = observer(
 
       resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
     };
-    const getContextMenuRenderer = (): React.ReactNode => {
-      if (fetchStructureImplementation instanceof QueryBuilderTDSState) {
-        const copyCellValue = applicationStore.guardUnhandledError(() =>
-          applicationStore.clipboardService.copyTextToClipboard(
-            fetchStructureImplementation.queryBuilderState.resultState.selectedCells
-              .map((cellData) => cellData.value)
-              .join(','),
-          ),
-        );
-        const findRowFromRowIndex = (rowIndex: number): string => {
-          if (
-            !fetchStructureImplementation.queryBuilderState.resultState
-              .executionResult ||
-            !(
-              fetchStructureImplementation.queryBuilderState.resultState
-                .executionResult instanceof TDSExecutionResult
-            )
-          ) {
-            return '';
-          }
-          // try to get the entire row value separated by comma
-          // rowData is in format of {columnName: value, columnName1: value, ...., rowNumber:value}
-          const valueArr: TDSResultCellDataType[] = [];
-          Object.entries(
-            params.api.getRenderedNodes().find((n) => n.rowIndex === rowIndex)
-              ?.data as TDSRowDataType,
-          ).forEach((entry) => {
-            if (entry[0] !== 'rowNumber') {
-              valueArr.push(entry[1]);
-            }
-          });
-          return valueArr.join(',');
-        };
-        const copyRowValue = applicationStore.guardUnhandledError(() =>
-          applicationStore.clipboardService.copyTextToClipboard(
-            findRowFromRowIndex(
-              fetchStructureImplementation.queryBuilderState.resultState
-                .selectedCells[0]?.coordinates.rowIndex ?? 0,
-            ),
-          ),
-        );
-        return (
-          <QueryBuilderGridResultContextMenu
-            data={resultState.mousedOverCell}
-            tdsState={fetchStructureImplementation}
-            copyCellValueFunc={copyCellValue}
-            copyCellRowValueFunc={copyRowValue}
-          />
-        );
-      }
-      return null;
-    };
 
     return (
-      <ContextMenu
-        content={getContextMenuRenderer()}
-        disabled={
-          !(
-            resultState.queryBuilderState.fetchStructureState
-              .implementation instanceof QueryBuilderTDSState
-          ) ||
-          !resultState.queryBuilderState.isQuerySupported ||
-          !resultState.mousedOverCell
-        }
-        menuProps={{ elevation: 7 }}
-        className={clsx('query-builder__result__tds-grid', {
-          'ag-theme-balham': !darkMode,
-          'ag-theme-balham-dark': darkMode,
+      <div
+        className={clsx('query-builder__result__values__table__cell', {
+          'query-builder__result__values__table__cell--active':
+            cellInFilteredResults,
         })}
+        onMouseDown={(event) => mouseDown(event)}
+        onMouseUp={(event) => mouseUp(event)}
+        onMouseOver={(event) => mouseOver(event)}
       >
-        <div
-          className={clsx('query-builder__result__values__table__cell', {
-            'query-builder__result__values__table__cell--active':
-              cellInFilteredResults,
-          })}
-          onMouseDown={(event) => mouseDown(event)}
-          onMouseUp={(event) => mouseUp(event)}
-          onMouseOver={(event) => mouseOver(event)}
-        >
-          {cellValueUrlLink ? (
-            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
-              {cellValueUrlLink}
-            </a>
-          ) : (
-            <span>{formattedCellValue()}</span>
-          )}
-        </div>
-      </ContextMenu>
+        {cellValueUrlLink ? (
+          <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
+            {cellValueUrlLink}
+          </a>
+        ) : (
+          <span>{formattedCellValue()}</span>
+        )}
+      </div>
     );
   },
 );
+
+// ---------------------------------------------------------------------------
+// Simple-grid keyboard shortcut helpers (extracted to avoid >4-level nesting)
+// ---------------------------------------------------------------------------
+
+type SimpleGridRow = { values: (string | number | boolean | null)[] };
+
+/** Build TDSResultCellData[] for all cells in the grid. */
+const buildAllCells = (
+  columns: string[],
+  rows: SimpleGridRow[],
+): TDSResultCellData[] => {
+  const cells: TDSResultCellData[] = [];
+  rows.forEach((row, rowIndex) => {
+    columns.forEach((colName, colIndex) => {
+      cells.push({
+        value: row.values[colIndex],
+        columnName: colName,
+        coordinates: { rowIndex, colIndex },
+      });
+    });
+  });
+  return cells;
+};
+
+/** Build TDSResultCellData[] for specific column indices across all rows. */
+const buildColumnCells = (
+  columns: string[],
+  rows: SimpleGridRow[],
+  colIndices: number[],
+): TDSResultCellData[] => {
+  const cells: TDSResultCellData[] = [];
+  rows.forEach((row, ri) => {
+    colIndices.forEach((ci) => {
+      cells.push({
+        value: row.values[ci],
+        columnName: columns[ci] ?? '',
+        coordinates: { rowIndex: ri, colIndex: ci },
+      });
+    });
+  });
+  return cells;
+};
+
+/** Build TDSResultCellData[] for specific row indices across all columns. */
+const buildRowCells = (
+  columns: string[],
+  rows: SimpleGridRow[],
+  rowIndices: number[],
+): TDSResultCellData[] => {
+  const cells: TDSResultCellData[] = [];
+  rowIndices.forEach((ri) => {
+    columns.forEach((cn, ci) => {
+      cells.push({
+        value: rows[ri]?.values[ci],
+        columnName: cn,
+        coordinates: { rowIndex: ri, colIndex: ci },
+      });
+    });
+  });
+  return cells;
+};
+
+/** Resolve the distinct column indices to select for Ctrl+Space. */
+const resolveColumnIndices = (
+  selectedCells: TDSResultCellData[],
+  fallbackColIndex: number,
+): number[] =>
+  selectedCells.length > 0
+    ? [...new Set(selectedCells.map((c) => c.coordinates.colIndex))]
+    : [fallbackColIndex];
+
+/** Resolve the distinct row indices to select for Shift+Space. */
+const resolveRowIndices = (
+  selectedCells: TDSResultCellData[],
+  fallbackRowIndex: number,
+): number[] =>
+  selectedCells.length > 0
+    ? [...new Set(selectedCells.map((c) => c.coordinates.rowIndex))]
+    : [fallbackRowIndex];
+
+/** Apply a cell selection to the result state if non-empty. */
+const applySelection = (
+  cells: TDSResultCellData[],
+  resultState: QueryBuilderResultState,
+): void => {
+  if (cells.length > 0) {
+    resultState.setSelectedCells(cells);
+    resultState.setMouseOverCell(cells[0] ?? null);
+  }
+};
 
 export const QueryBuilderTDSSimpleGridResult = observer(
   (props: {
     executionResult: TDSExecutionResult;
     queryBuilderState: QueryBuilderState;
+    /**
+     * Whether to show the cell-selection summary statistics bar below the grid.
+     * Defaults to `true`.
+     */
+    showSummaryStats?: boolean;
   }) => {
-    const { executionResult, queryBuilderState } = props;
+    const {
+      executionResult,
+      queryBuilderState,
+      showSummaryStats = true,
+    } = props;
+    const applicationStore = useApplicationStore();
     const resultState = queryBuilderState.resultState;
     const darkMode =
       !queryBuilderState.applicationStore.layoutService
@@ -441,13 +475,129 @@ export const QueryBuilderTDSSimpleGridResult = observer(
         }) as DataGridColumnDefinition,
     );
 
+    // Simple grid: no AG Grid cell-range API, so we keep selectedCells in
+    // MobX and pass a null gridApiRef. The hook falls back to reading from
+    // selectedCells directly when the gridApiRef is null.
+    const selectedCells = resultState.selectedCells;
+    const columnTypes = new Map<string, string | undefined>(
+      executionResult.builder.columns.map((c) => [c.name, c.type]),
+    );
+    const simpleGridApiRef = useRef<null>(null);
+    const cellSelectionStats = useAsyncCellSelectionStats(
+      selectedCells.length, // version counter — changes when selection changes
+      columnTypes,
+      simpleGridApiRef,
+      selectedCells, // fallback cells for when gridApiRef is null
+    );
+
+    const gridContainerRef = useRef<HTMLDivElement>(null);
+    // Track the last cell the user clicked so keyboard shortcuts know
+    // which row/column to act on (AG Grid internal focus is not used here
+    // because we move DOM focus to the container div, not into a grid cell).
+    const lastClickedCellRef = useRef<{
+      colName: string;
+      colIndex: number;
+      rowIndex: number;
+    } | null>(null);
+
+    // All keyboard shortcuts handled in the native capture-phase listener so
+    // they fire reliably when the container div has focus.
+    useEffect(() => {
+      const el = gridContainerRef.current;
+      if (!el) {
+        return undefined;
+      }
+      const handler = (e: KeyboardEvent): void => {
+        const columns = executionResult.result.columns;
+        const rows = executionResult.result.rows;
+
+        // Ctrl+A — select all cells
+        if (e.ctrlKey && e.code === 'KeyA') {
+          e.preventDefault();
+          // eslint-disable-next-line no-console
+          console.debug(
+            `[TDS Simple Grid] Ctrl+A → selecting all: ${rows.length} rows × ${columns.length} columns`,
+          );
+          const allCells = buildAllCells(columns, rows);
+          applySelection(allCells, resultState);
+          return;
+        }
+
+        // Ctrl+Space — select entire columns for all columns in the current selection.
+        if (e.ctrlKey && e.code === 'Space') {
+          e.preventDefault();
+          const cell = lastClickedCellRef.current;
+          if (!cell) {
+            return;
+          }
+          const colIndices = resolveColumnIndices(
+            resultState.selectedCells,
+            cell.colIndex,
+          );
+          // eslint-disable-next-line no-console
+          console.debug(
+            `[TDS Simple Grid] Ctrl+Space → selecting ${colIndices.length} column(s), ${rows.length} rows`,
+          );
+          const newCells = buildColumnCells(columns, rows, colIndices);
+          applySelection(newCells, resultState);
+          return;
+        }
+
+        // Shift+Space — select entire rows for all rows in the current selection.
+        if (e.shiftKey && e.code === 'Space') {
+          e.preventDefault();
+          const cell = lastClickedCellRef.current;
+          if (!cell) {
+            return;
+          }
+          const rowIndices = resolveRowIndices(
+            resultState.selectedCells,
+            cell.rowIndex,
+          );
+          // eslint-disable-next-line no-console
+          console.debug(
+            `[TDS Simple Grid] Shift+Space → selecting ${rowIndices.length} row(s), ${columns.length} columns`,
+          );
+          const newCells = buildRowCells(columns, rows, rowIndices);
+          applySelection(newCells, resultState);
+        }
+      };
+      el.addEventListener('keydown', handler, { capture: true });
+      return () =>
+        el.removeEventListener('keydown', handler, { capture: true });
+    }, [
+      executionResult.result.columns,
+      executionResult.result.rows,
+      resultState,
+    ]);
+
+    const getContextMenuItems = useCallback(
+      (
+        params: DataGridGetContextMenuItemsParams<TDSRowDataType>,
+      ): (DataGridDefaultMenuItem | DataGridMenuItemDef)[] =>
+        buildTDSGridContextMenuItems(
+          params,
+          applicationStore,
+          resultState,
+          queryBuilderState.applicationStore.alertUnhandledError,
+        ),
+      [
+        applicationStore,
+        resultState,
+        queryBuilderState.applicationStore.alertUnhandledError,
+      ],
+    );
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_VALUES_TDS}
         className="query-builder__result__values__table"
       >
         <div
+          ref={gridContainerRef}
+          tabIndex={-1}
           className={clsx('query-builder__result__tds-grid', {
+            'query-builder__result__tds-grid--with-stats-bar': showSummaryStats,
             'ag-theme-balham': !darkMode,
             'ag-theme-balham-dark': darkMode,
           })}
@@ -457,11 +607,6 @@ export const QueryBuilderTDSSimpleGridResult = observer(
             gridOptions={{
               suppressScrollOnNewData: true,
               getRowId: (data) => `${data.data.rowNumber}`,
-              rowSelection: {
-                mode: 'multiRow',
-                checkboxes: false,
-                headerCheckbox: false,
-              },
             }}
             // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
             // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
@@ -469,9 +614,37 @@ export const QueryBuilderTDSSimpleGridResult = observer(
               params.api.refreshCells({ force: true });
             }}
             suppressFieldDotNotation={true}
-            suppressContextMenu={false}
             columnDefs={colDefs}
+            getContextMenuItems={(params) => getContextMenuItems(params)}
+            onCellClicked={(event) => {
+              // Skip clicks originated from keyboard shortcuts (Ctrl/Shift+Space fires
+              // a synthetic click that would reset the range selection we just set).
+              const e = event.event as MouseEvent | undefined;
+              if (e?.ctrlKey || e?.shiftKey) {
+                return;
+              }
+              const colName = event.column.getColId();
+              const colIndex = executionResult.result.columns.indexOf(colName);
+              // eslint-disable-next-line no-console
+              console.debug(
+                `[TDS Simple Grid] onCellClicked: col=${colName} row=${event.rowIndex}`,
+              );
+              lastClickedCellRef.current = {
+                colName,
+                colIndex,
+                rowIndex: event.rowIndex ?? 0,
+              };
+              gridContainerRef.current?.focus({ preventScroll: true });
+            }}
           />
+          {showSummaryStats && cellSelectionStats !== undefined && (
+            <QueryBuilderTDSCellSelectionStatsBar
+              stats={cellSelectionStats.stats}
+              cellCount={cellSelectionStats.cellCount}
+              countReady={cellSelectionStats.countReady}
+              darkMode={darkMode}
+            />
+          )}
         </div>
       </div>
     );
