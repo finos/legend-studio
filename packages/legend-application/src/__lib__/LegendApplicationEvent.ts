@@ -35,6 +35,13 @@ export enum APPLICATION_EVENT {
   CONTEXTUAL_DOCUMENTATION_LOAD__SKIP = 'application.virtual-assistant.contextual-documentation-load.skip',
   VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY__ACCESS = 'application.virtual-assistant.documentation-entry.access',
 
+  VIRTUAL_ASSISTANT_PANEL__OPEN = 'application.virtual-assistant.panel.open',
+  VIRTUAL_ASSISTANT_PANEL__CLOSE = 'application.virtual-assistant.panel.close',
+  VIRTUAL_ASSISTANT_TAB__ACCESS = 'application.virtual-assistant.tab.access',
+  VIRTUAL_ASSISTANT_DOCUMENTATION_SEARCH__INITIATED = 'application.virtual-assistant.documentation-search.initiated',
+  VIRTUAL_ASSISTANT_SEARCH_RESULT__ACCESS = 'application.virtual-assistant.search-result.access',
+  VIRTUAL_ASSISTANT_CONTEXTUAL_INFO__PRESENT = 'application.virtual-assistant.contextual-info.present',
+
   TERMINAL_COMMAND_CONFIGURATION_CHECK__FAILURE = 'application.load.terminal-command.configuration-check.failure',
 
   COLOR_THEME_CONFIGURATION_CHECK__FAILURE = 'application.layout.color-theme.configuration-check.failure',

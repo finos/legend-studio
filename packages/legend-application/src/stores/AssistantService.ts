@@ -100,8 +100,22 @@ export const shouldDisplayVirtualAssistantDocumentationEntry = (
   isValidVirtualAssistantDocumentationEntry(entry) &&
   Boolean(entry.text ?? entry.markdownText);
 
+export type VirtualAssistantTelemetryCallbacks = {
+  onPanelOpen?(): void;
+  onPanelClose?(): void;
+  onTabAccess?(data: { tab: string }): void;
+  onSearchInitiated?(data: { searchText: string }): void;
+  onSearchResultAccess?(data: {
+    key: string;
+    searchText: string;
+    action: string;
+  }): void;
+  onContextualInfoPresent?(data: { contextKey: string }): void;
+};
+
 export class AssistantService {
   readonly applicationStore: GenericLegendApplicationStore;
+  telemetryCallbacks?: VirtualAssistantTelemetryCallbacks | undefined;
   /**
    * This key is used to allow programmatic re-rendering of the assistant panel
    */

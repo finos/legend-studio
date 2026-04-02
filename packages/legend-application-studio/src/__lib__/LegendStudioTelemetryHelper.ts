@@ -19,7 +19,14 @@ import {
   type GraphInitializationReport,
   type GraphManagerOperationReport,
 } from '@finos/legend-graph';
-import type { TelemetryService } from '@finos/legend-application';
+import {
+  APPLICATION_EVENT,
+  type TelemetryService,
+  type VirtualAssistantTabAccessed_TelemetryData,
+  type VirtualAssistantDocumentationSearchInitiated_TelemetryData,
+  type VirtualAssistantContextualInfoPresent_TelemetryData,
+  type VirtualAssistantSearchResultAccessed_TelemetryData,
+} from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioEvent.js';
 import type { LegendSourceInfo } from '@finos/legend-storage';
 
@@ -29,6 +36,10 @@ type Compilation_TelemetryData = GraphManagerOperationReport & {
 
 type TestDataGeneration_TelemetryData = GraphManagerOperationReport & {
   dependenciesCount: number;
+};
+
+type ShowcaseSearchInitiated_TelemetryData = {
+  searchText: string;
 };
 
 export type ShowcaseMetadata_TelemetryData = {
@@ -117,6 +128,62 @@ export class LegendStudioTelemetryHelper {
     data: ShowcaseProject_TelemetryData,
   ): void {
     service.logEvent(LEGEND_STUDIO_APP_EVENT.SHOWCASE_VIEWER_LAUNCH, data);
+  }
+
+  static logEvent_ShowcaseSearchInitiated(
+    service: TelemetryService,
+    data: ShowcaseSearchInitiated_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_SEARCH__INITIATED,
+      data,
+    );
+  }
+
+  // virtual assistant
+  static logEvent_VirtualAssistantPanelOpened(service: TelemetryService): void {
+    service.logEvent(APPLICATION_EVENT.VIRTUAL_ASSISTANT_PANEL__OPEN, {});
+  }
+
+  static logEvent_VirtualAssistantPanelClosed(service: TelemetryService): void {
+    service.logEvent(APPLICATION_EVENT.VIRTUAL_ASSISTANT_PANEL__CLOSE, {});
+  }
+
+  static logEvent_VirtualAssistantTabAccessed(
+    service: TelemetryService,
+    data: VirtualAssistantTabAccessed_TelemetryData,
+  ): void {
+    service.logEvent(APPLICATION_EVENT.VIRTUAL_ASSISTANT_TAB__ACCESS, data);
+  }
+
+  static logEvent_VirtualAssistantDocumentationSearchInitiated(
+    service: TelemetryService,
+    data: VirtualAssistantDocumentationSearchInitiated_TelemetryData,
+  ): void {
+    service.logEvent(
+      APPLICATION_EVENT.VIRTUAL_ASSISTANT_DOCUMENTATION_SEARCH__INITIATED,
+      data,
+    );
+  }
+
+  static logEvent_VirtualAssistantContextualInfoPresent(
+    service: TelemetryService,
+    data: VirtualAssistantContextualInfoPresent_TelemetryData,
+  ): void {
+    service.logEvent(
+      APPLICATION_EVENT.VIRTUAL_ASSISTANT_CONTEXTUAL_INFO__PRESENT,
+      data,
+    );
+  }
+
+  static logEvent_VirtualAssistantSearchResultAccessed(
+    service: TelemetryService,
+    data: VirtualAssistantSearchResultAccessed_TelemetryData,
+  ): void {
+    service.logEvent(
+      APPLICATION_EVENT.VIRTUAL_ASSISTANT_SEARCH_RESULT__ACCESS,
+      data,
+    );
   }
 
   // Lakehouse

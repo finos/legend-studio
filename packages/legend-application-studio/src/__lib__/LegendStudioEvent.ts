@@ -47,6 +47,7 @@ export enum LEGEND_STUDIO_APP_EVENT {
   // showcase manager
   SHOWCASE_MANAGER_LAUNCH = 'showcase.manager.launch',
   SHOWCASE_MANAGER_SHOWCASE_PROJECT_LAUNCH = 'showcase.manager.showcase.project.launch',
+  SHOWCASE_MANAGER_SEARCH__INITIATED = 'showcase.manager.search.initiated',
   SHOWCASE_VIEWER_LAUNCH = 'showcase.viewer.launch',
 
   UPDATE_WORKSPACE__SUCCESS = 'sdlc.workspace-update.success',
