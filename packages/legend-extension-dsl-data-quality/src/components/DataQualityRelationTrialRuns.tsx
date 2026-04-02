@@ -277,10 +277,14 @@ export const DataQualityRelationTrialRuns = observer(
               />
             </div>
             <div className="data-quality-validation__result__limit">
-              <div className="data-quality-validation__result__limit__label">
+              <label
+                className="data-quality-validation__result__limit__label"
+                htmlFor="data-quality-relation-validation__result__preview-limit-input"
+              >
                 preview row limit
-              </div>
+              </label>
               <input
+                id="data-quality-relation-validation__result__preview-limit-input"
                 ref={inputRef}
                 className="input--dark data-quality-validation__result__limit__input"
                 spellCheck={false}

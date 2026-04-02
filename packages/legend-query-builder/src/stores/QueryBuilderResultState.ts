@@ -224,7 +224,16 @@ export class QueryBuilderResultState {
   }
 
   addSelectedCell(val: TDSResultCellData): void {
-    this.selectedCells.push(val);
+    // Deduplicate by coordinates — Ctrl+clicking an already-selected cell
+    // must not inflate the count or corrupt statistics.
+    const alreadyPresent = this.selectedCells.some(
+      (c) =>
+        c.coordinates.rowIndex === val.coordinates.rowIndex &&
+        c.coordinates.colIndex === val.coordinates.colIndex,
+    );
+    if (!alreadyPresent) {
+      this.selectedCells.push(val);
+    }
   }
 
   setSelectedCells(val: TDSResultCellData[]): void {

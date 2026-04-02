@@ -1607,6 +1607,19 @@
 
   &__tds-grid {
     height: 100%;
+    outline: none; // suppress browser focus ring when container receives programmatic focus
+
+    &--with-stats-bar {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      // AgGridReact renders the grid as the direct child; let it fill the remaining flex space
+      > .ag-root-wrapper {
+        flex: 1;
+        min-height: 0;
+      }
+    }
 
     // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
     // might override our theme customization here
@@ -1629,6 +1642,201 @@
 
     &__text {
       margin-bottom: 2rem;
+    }
+
+    &__stats-bar {
+      @include flexVCenter;
+
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      gap: 0 1.4rem;
+      height: 2.4rem;
+      padding: 0 1rem;
+      background: var(--color-light-grey-100);
+      border-top: 0.1rem solid var(--color-light-grey-200);
+      font-size: 1.2rem;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--color-dark-grey-400);
+      user-select: none;
+
+      &--dark {
+        background: var(--color-dark-grey-85);
+        border-top-color: var(--color-dark-grey-200);
+        color: var(--color-light-grey-200);
+      }
+
+      &__item {
+        @include flexVCenter;
+
+        gap: 0.4rem;
+        position: relative;
+
+        &--has-tooltip {
+          cursor: default;
+
+          &:hover .query-builder__result__tds-grid__stats-bar__freq-tooltip {
+            display: block;
+          }
+        }
+
+        &__label {
+          font-weight: 700;
+          color: var(--color-dark-grey-300);
+        }
+
+        &__value {
+          color: var(--color-dark-grey-500);
+        }
+
+        // Inline spinner shown for each value while stats are being computed
+        &__spinner {
+          display: inline-block;
+          width: 1rem;
+          height: 1rem;
+          border: 0.15rem solid var(--color-light-grey-300);
+          border-top-color: var(--color-dark-grey-400);
+          border-radius: 50%;
+          animation: stats-bar-spin 0.6s linear infinite;
+          vertical-align: middle;
+          flex-shrink: 0;
+        }
+      }
+
+      // Dark-mode overrides for item labels, values, and spinners
+      &--dark &__item {
+        &__label {
+          color: var(--color-dark-grey-500);
+        }
+
+        &__value {
+          color: var(--color-light-grey-200);
+        }
+
+        &__spinner {
+          border-color: var(--color-dark-grey-400);
+          border-top-color: var(--color-light-grey-300);
+        }
+      }
+
+      &__freq-tooltip {
+        display: none;
+        position: absolute;
+        bottom: calc(100% + 0.4rem);
+        // Anchor to the left of the parent item rather than centering.
+        // This prevents the tooltip overflowing the left edge of the viewport
+        // when the parent item is near the left side of the stats bar.
+        left: 0;
+        z-index: 100;
+        background: var(--color-light-grey-0);
+        border: 0.1rem solid var(--color-light-grey-300);
+        border-radius: 0.3rem;
+        padding: 0.6rem 0.8rem;
+        pointer-events: none;
+        white-space: nowrap;
+
+        &--dark {
+          background: var(--color-dark-grey-100);
+          border-color: var(--color-dark-grey-300);
+        }
+
+        &__label {
+          font-size: 1.1rem;
+          font-family: 'Roboto Mono', monospace;
+          fill: var(--color-dark-grey-400);
+
+          &--other {
+            fill: var(--color-dark-grey-300);
+            font-style: italic;
+          }
+
+          &--empty {
+            fill: var(--color-dark-grey-300);
+            font-style: italic;
+          }
+        }
+
+        &__bar {
+          fill: var(--color-blue-200);
+          opacity: 0.8;
+
+          &--other {
+            fill: var(--color-light-grey-300);
+            opacity: 1;
+          }
+
+          &--empty {
+            fill: var(--color-orange-100);
+            opacity: 0.7;
+          }
+        }
+
+        &__count {
+          font-size: 1.1rem;
+          font-family: 'Roboto Mono', monospace;
+          fill: var(--color-dark-grey-300);
+        }
+      }
+
+      // Dark-mode overrides for tooltip text, bars, and counts
+      &--dark &__freq-tooltip,
+      &__freq-tooltip--dark {
+        &__label {
+          fill: var(--color-light-grey-300);
+
+          &--other {
+            fill: var(--color-light-grey-50);
+          }
+
+          &--empty {
+            fill: var(--color-light-grey-50);
+          }
+        }
+
+        &__bar {
+          &--other {
+            fill: var(--color-dark-grey-400);
+          }
+        }
+
+        &__count {
+          fill: var(--color-light-grey-400);
+        }
+      }
+
+      &__separator {
+        width: 0.1rem;
+        height: 1.4rem;
+        background: var(--color-light-grey-300);
+        margin: 0 0.2rem;
+      }
+
+      &--dark &__separator {
+        background: var(--color-dark-grey-300);
+      }
+
+      &__chart {
+        display: flex;
+        align-items: flex-end;
+        flex-shrink: 0;
+        border: 0.1rem solid var(--color-light-grey-300);
+        border-radius: 0.2rem;
+        padding: 0.1rem;
+        box-sizing: content-box;
+
+        svg {
+          display: block;
+          fill: var(--color-blue-200);
+          opacity: 0.8;
+        }
+
+        &--dark {
+          border-color: var(--color-dark-grey-300);
+
+          svg {
+            fill: var(--color-blue-100);
+          }
+        }
+      }
     }
   }
 
@@ -1844,6 +2052,12 @@
 
   &__execution-error--max {
     height: calc(100% - 1rem);
+  }
+}
+
+@keyframes stats-bar-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

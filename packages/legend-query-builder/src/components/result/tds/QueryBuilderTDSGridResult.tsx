@@ -16,36 +16,32 @@
 
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   DataGrid,
-  type DataGridCellSelectionChangedEvent,
   type DataGridApi,
-  type DataGridCellRange,
+  type DataGridCellKeyDownEvent,
   type DataGridColumnDefinition,
   type DataGridGetContextMenuItemsParams,
-  type DataGridIRowNode,
   type DataGridMenuItemDef,
   type DataGridIAggFuncParams,
   type DataGridDefaultMenuItem,
 } from '@finos/legend-lego/data-grid';
+import { handleGridKeyboardShortcut } from './QueryBuilderTDSGridKeyboardShortcuts.js';
 import {
   getRowDataFromExecutionResult,
   type IQueryRendererParamsWithGridType,
-  filterByOrOutValues,
 } from './QueryBuilderTDSResultShared.js';
 import {
   type QueryBuilderResultState,
   QueryBuilderResultWavgAggregationState,
 } from '../../../stores/QueryBuilderResultState.js';
 import {
-  type TDSResultCellData,
   type TDSResultCellDataType,
   type TDSRowDataType,
   type TDSExecutionResult,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
 import {
   assertErrorThrown,
@@ -71,6 +67,9 @@ import {
   getTDSColumnCustomizations,
   MAXIMUM_FRACTION_DIGITS,
 } from './QueryBuilderTDSSimpleGridResult.js';
+import { QueryBuilderTDSCellSelectionStatsBar } from './QueryBuilderTDSCellSelectionStatsBar.js';
+import { useAsyncCellSelectionStats } from './QueryBuilderTDSAsyncCellSelectionStats.js';
+import { buildTDSGridContextMenuItems } from './QueryBuilderTDSGridShared.js';
 
 export const enum QueryBuilderDataGridCustomAggregationFunction {
   wavg = 'wavg',
@@ -130,7 +129,8 @@ const QueryResultCellRenderer = observer(
       isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
 
     const mouseDown: React.MouseEventHandler = (event) => {
-      event.preventDefault();
+      // NOTE: do NOT call preventDefault() here — it would block the browser's
+      // native focus-on-click, preventing AG Grid from receiving keyboard events.
       if (event.button === 0 || event.button === 2) {
         resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
       }
@@ -254,8 +254,17 @@ export const QueryBuilderTDSGridResult = observer(
   (props: {
     executionResult: TDSExecutionResult;
     queryBuilderState: QueryBuilderState;
+    /**
+     * Whether to show the cell-selection summary statistics bar below the grid.
+     * Defaults to `true`.
+     */
+    showSummaryStats?: boolean;
   }) => {
-    const { executionResult, queryBuilderState } = props;
+    const {
+      executionResult,
+      queryBuilderState,
+      showSummaryStats = true,
+    } = props;
     const applicationStore = useApplicationStore();
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
@@ -285,95 +294,19 @@ export const QueryBuilderTDSGridResult = observer(
       });
     };
 
-    const getSelectedCells = (
-      api: DataGridApi<TDSRowDataType>,
-    ): TDSResultCellData[] => {
-      const selectedRanges: DataGridCellRange[] | null = api.getCellRanges();
-      const nodes = [] as DataGridIRowNode<TDSRowDataType>[];
-      api.forEachNode((node) => nodes.push(node));
-      const columns = api.getColumnDefs() as DataGridColumnDefinition[];
-      const selectedCells = [];
-      if (selectedRanges) {
-        for (const selectedRange of selectedRanges) {
-          const rangeStart: number = selectedRange.startRow?.rowIndex ?? 0;
-          const rangeEnd: number = selectedRange.endRow?.rowIndex ?? 0;
-          const startRow = rangeStart < rangeEnd ? rangeStart : rangeEnd;
-          const endRow = rangeStart < rangeEnd ? rangeEnd : rangeStart;
-          const selectedColumns: string[] = selectedRange.columns.map((col) =>
-            col.getColId(),
-          );
-          for (let x: number = startRow; x <= endRow; x++) {
-            const curRowData = nodes.find(
-              (n) => (n as DataGridIRowNode).rowIndex === x,
-            )?.data;
-            if (curRowData) {
-              for (const col of selectedColumns) {
-                const valueAndColumnId = {
-                  value: Object.entries(curRowData)
-                    .find((rData) => rData[0] === col)
-                    ?.at(1),
-                  columnName: col,
-                  coordinates: {
-                    rowIndex: x,
-                    colIndex: columns.findIndex(
-                      (colDef) => colDef.colId === col,
-                    ),
-                  },
-                } as TDSResultCellData;
-                selectedCells.push(valueAndColumnId);
-              }
-            }
-          }
-        }
-      }
-      return selectedCells;
-    };
-
     const getContextMenuItems = useCallback(
-      (params: DataGridGetContextMenuItemsParams<TDSRowDataType>) => {
-        let result: (DataGridDefaultMenuItem | DataGridMenuItemDef)[] = [];
-        const fetchStructureImplementation =
-          resultState.queryBuilderState.fetchStructureState.implementation;
-        if (fetchStructureImplementation instanceof QueryBuilderTDSState) {
-          result = [
-            {
-              name: 'Filter By',
-              action: () => {
-                filterByOrOutValues(
-                  applicationStore,
-                  resultState.mousedOverCell,
-                  true,
-                  fetchStructureImplementation,
-                ).catch(queryBuilderState.applicationStore.alertUnhandledError);
-              },
-            },
-            {
-              name: 'Filter Out',
-              action: () => {
-                filterByOrOutValues(
-                  applicationStore,
-                  resultState.mousedOverCell,
-                  false,
-                  fetchStructureImplementation,
-                ).catch(queryBuilderState.applicationStore.alertUnhandledError);
-              },
-            },
-            'copy',
-            'copyWithHeaders',
-            {
-              name: 'Copy Row Value',
-              action: () => {
-                params.api.copySelectedRowsToClipboard();
-              },
-            },
-          ];
-        }
-        return result;
-      },
+      (
+        params: DataGridGetContextMenuItemsParams<TDSRowDataType>,
+      ): (DataGridDefaultMenuItem | DataGridMenuItemDef)[] =>
+        buildTDSGridContextMenuItems(
+          params,
+          applicationStore,
+          resultState,
+          queryBuilderState.applicationStore.alertUnhandledError,
+        ),
       [
         applicationStore,
-        resultState.mousedOverCell,
-        resultState.queryBuilderState.fetchStructureState.implementation,
+        resultState,
         queryBuilderState.applicationStore.alertUnhandledError,
       ],
     );
@@ -479,6 +412,19 @@ export const QueryBuilderTDSGridResult = observer(
       }
     }, [resultState.wavgAggregationState, aggFuncParams]);
 
+    // Stats panel: use a lightweight version counter so onCellSelectionChanged
+    // only does O(1) work. The hook reads from gridApiRef lazily when debounces fire.
+    const [selectionVersion, setSelectionVersion] = useState(0);
+    const columnTypes = new Map<string, string | undefined>(
+      executionResult.builder.columns.map((c) => [c.name, c.type]),
+    );
+    const gridApiRef = useRef<DataGridApi<TDSRowDataType> | null>(null);
+    const cellSelectionStats = useAsyncCellSelectionStats(
+      selectionVersion,
+      columnTypes,
+      gridApiRef,
+    );
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_VALUES_TDS}
@@ -486,6 +432,7 @@ export const QueryBuilderTDSGridResult = observer(
       >
         <div
           className={clsx('query-builder__result__tds-grid', {
+            'query-builder__result__tds-grid--with-stats-bar': showSummaryStats,
             'ag-theme-balham': !darkMode,
             'ag-theme-balham-dark': darkMode,
           })}
@@ -494,6 +441,7 @@ export const QueryBuilderTDSGridResult = observer(
             <DataGrid
               rowData={getRowDataFromExecutionResult(executionResult)}
               onGridReady={(params): void => {
+                gridApiRef.current = params.api;
                 setGridApi(params.api);
                 params.api.updateGridOptions({
                   pivotMode: Boolean(
@@ -504,11 +452,6 @@ export const QueryBuilderTDSGridResult = observer(
               gridOptions={{
                 suppressScrollOnNewData: true,
                 getRowId: (data) => `${data.data.rowNumber}`,
-                rowSelection: {
-                  mode: 'multiRow',
-                  checkboxes: false,
-                  headerCheckbox: false,
-                },
                 pivotPanelShow: 'always',
                 rowGroupPanelShow: 'always',
                 cellSelection: true,
@@ -533,18 +476,46 @@ export const QueryBuilderTDSGridResult = observer(
               onColumnValueChanged={onSaveGridColumnState}
               onColumnPivotChanged={onSaveGridColumnState}
               onColumnPivotModeChanged={onSaveGridColumnState}
+              onCellSelectionChanged={() => {
+                // O(1) — just increment the version counter.
+                // getSelectedCells() is deferred into the stats hook debounce.
+                // eslint-disable-next-line no-console
+                console.debug(`[TDS Grid (local)] onCellSelectionChanged`);
+                setSelectionVersion((v) => v + 1);
+              }}
+              onCellClicked={(event) => {
+                // Skip clicks that originated from a keyboard shortcut (Ctrl/Shift+Space
+                // fires a synthetic click that would reset the range selection we just set).
+                const e = event.event as MouseEvent | undefined;
+                if (e?.ctrlKey || e?.shiftKey) {
+                  return;
+                }
+                // eslint-disable-next-line no-console
+                console.debug(
+                  `[TDS Grid (local)] onCellClicked: col=${event.column.getColId()} row=${event.rowIndex}`,
+                );
+                if (event.rowIndex !== null) {
+                  // Set AG Grid's internal keyboard focus to the clicked cell so
+                  // subsequent keypresses act on this cell, not wherever AG Grid
+                  // last had focus before the grid lost focus.
+                  event.api.setFocusedCell(event.rowIndex, event.column);
+                }
+              }}
+              onCellKeyDown={(
+                event: DataGridCellKeyDownEvent<TDSRowDataType>,
+              ) => {
+                handleGridKeyboardShortcut(event);
+              }}
             />
           ) : (
             <DataGrid
               rowData={getRowDataFromExecutionResult(executionResult)}
+              onGridReady={(params): void => {
+                gridApiRef.current = params.api;
+              }}
               gridOptions={{
                 suppressScrollOnNewData: true,
                 getRowId: (data) => `${data.data.rowNumber}`,
-                rowSelection: {
-                  mode: 'multiRow',
-                  checkboxes: false,
-                  headerCheckbox: false,
-                },
                 cellSelection: true,
               }}
               // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
@@ -552,20 +523,44 @@ export const QueryBuilderTDSGridResult = observer(
               onRowDataUpdated={(params) => {
                 params.api.refreshCells({ force: true });
               }}
-              onCellSelectionChanged={(
-                event: DataGridCellSelectionChangedEvent<TDSRowDataType>,
-              ) => {
-                const selectedCells = getSelectedCells(event.api);
-                resultState.setSelectedCells([]);
-                selectedCells.forEach((cell) =>
-                  resultState.addSelectedCell(cell),
+              onCellSelectionChanged={() => {
+                // O(1) — just increment the version counter.
+                // getSelectedCells() is deferred into the stats hook debounce.
+                // eslint-disable-next-line no-console
+                console.debug(`[TDS Grid] onCellSelectionChanged`);
+                setSelectionVersion((v) => v + 1);
+              }}
+              onCellClicked={(event) => {
+                const e = event.event as MouseEvent | undefined;
+                if (e?.ctrlKey || e?.shiftKey) {
+                  return;
+                }
+                // eslint-disable-next-line no-console
+                console.debug(
+                  `[TDS Grid] onCellClicked: col=${event.column.getColId()} row=${event.rowIndex}`,
                 );
+                if (event.rowIndex !== null) {
+                  event.api.setFocusedCell(event.rowIndex, event.column);
+                }
               }}
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
               suppressContextMenu={false}
               columnDefs={colDefs}
               getContextMenuItems={(params) => getContextMenuItems(params)}
+              onCellKeyDown={(
+                event: DataGridCellKeyDownEvent<TDSRowDataType>,
+              ) => {
+                handleGridKeyboardShortcut(event);
+              }}
+            />
+          )}
+          {showSummaryStats && cellSelectionStats !== undefined && (
+            <QueryBuilderTDSCellSelectionStatsBar
+              stats={cellSelectionStats.stats}
+              cellCount={cellSelectionStats.cellCount}
+              countReady={cellSelectionStats.countReady}
+              darkMode={darkMode}
             />
           )}
           {resultState.wavgAggregationState?.isApplyingWavg && (

@@ -19,6 +19,7 @@ npm-debug.log
 npm-debug.log*
 yarn-error.log*
 /build/
+/coverage/
 /packages/*/build/
 /packages/*/dist/
 /packages/*/lib/
@@ -48,3 +49,9 @@ package-lock.json
 !.yarn/versions
 !.yarn/constraints.pro
 .pnp.*
+
+# Local environment variables (never commit)
+.env
+.env.local
+packages/**/.env
+packages/**/.env.local
