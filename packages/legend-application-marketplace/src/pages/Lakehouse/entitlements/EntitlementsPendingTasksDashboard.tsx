@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useSearchParams } from '@finos/legend-application/browser';
 import {
   type V1_ContractUserEventRecord,
   type V1_LiteDataContract,
@@ -42,13 +41,7 @@ import {
   DialogTitle,
   Tooltip,
 } from '@mui/material';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ChangeEvent,
-} from 'react';
+import { useCallback, useMemo, useState, type ChangeEvent } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
@@ -287,13 +280,10 @@ export const EntitlementsPendingTasksDashboard = observer(
     const loading = dashboardState.fetchingPendingTasksState.isInProgress;
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
-    const [searchParams, setSearchParams] = useSearchParams();
     const [selectedAction, setSelectedAction] = useState<
       'approve' | 'deny' | undefined
     >();
-    const [selectedTaskIdsSet, setSelectedTaskIdsSet] = useState(
-      new Set<string>(searchParams.get('selectedTasks')?.split(',') ?? []),
-    );
+    const selectedTaskIdsSet = dashboardState.selectedTaskIds;
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
     >();
@@ -301,35 +291,6 @@ export const EntitlementsPendingTasksDashboard = observer(
       useState<string | undefined>();
 
     const auth = useAuth();
-
-    // Effects
-
-    useEffect(() => {
-      if (dashboardState.fetchingPendingTasksState.hasCompleted) {
-        setSelectedTaskIdsSet((prev) => {
-          const selectedArray = Array.from(prev.values());
-          return new Set<string>(
-            selectedArray.filter((taskId) =>
-              pendingTasks?.map((task) => task.taskId).includes(taskId),
-            ),
-          );
-        });
-      }
-    }, [dashboardState.fetchingPendingTasksState.hasCompleted, pendingTasks]);
-
-    useEffect(() => {
-      setSearchParams((params) => {
-        if (selectedTaskIdsSet.size === 0) {
-          params.delete('selectedTasks');
-        } else {
-          params.set(
-            'selectedTasks',
-            Array.from(selectedTaskIdsSet.values()).join(','),
-          );
-        }
-        return params;
-      });
-    }, [selectedTaskIdsSet, setSearchParams]);
 
     // Callbacks
 
@@ -374,18 +335,15 @@ export const EntitlementsPendingTasksDashboard = observer(
     const CustomSelectionRenderer = useCallback(
       (params: DataGridCellRendererParams<V1_ContractUserEventRecord>) => {
         const handleChange = (_: ChangeEvent<HTMLInputElement>) => {
-          setSelectedTaskIdsSet((prev) => {
-            if (params.data) {
-              const newSet = new Set<string>(prev);
-              if (prev.has(params.data.taskId)) {
-                newSet.delete(params.data.taskId);
-              } else {
-                newSet.add(params.data.taskId);
-              }
-              return newSet;
+          if (params.data) {
+            const newSet = new Set<string>(selectedTaskIdsSet);
+            if (selectedTaskIdsSet.has(params.data.taskId)) {
+              newSet.delete(params.data.taskId);
+            } else {
+              newSet.add(params.data.taskId);
             }
-            return prev;
-          });
+            dashboardState.setSelectedTaskIds(newSet);
+          }
         };
 
         return (
@@ -397,7 +355,7 @@ export const EntitlementsPendingTasksDashboard = observer(
           />
         );
       },
-      [selectedTaskIdsSet],
+      [selectedTaskIdsSet, dashboardState],
     );
 
     const CustomSelectionHeaderRenderer = useCallback(
@@ -414,19 +372,15 @@ export const EntitlementsPendingTasksDashboard = observer(
           !checked &&
           taskSet.some((task) => selectedTaskIdsSet.has(task.taskId));
 
-        const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const handleChange = (_e: ChangeEvent<HTMLInputElement>) => {
           if (!checked || indeterminate) {
-            setSelectedTaskIdsSet((prev) => {
-              const newSet = new Set<string>(prev);
-              taskSet.forEach((task) => newSet.add(task.taskId));
-              return newSet;
-            });
+            const newSet = new Set<string>(selectedTaskIdsSet);
+            taskSet.forEach((task) => newSet.add(task.taskId));
+            dashboardState.setSelectedTaskIds(newSet);
           } else {
-            setSelectedTaskIdsSet((prev) => {
-              const newSet = new Set<string>(prev);
-              taskSet.forEach((task) => newSet.delete(task.taskId));
-              return newSet;
-            });
+            const newSet = new Set<string>(selectedTaskIdsSet);
+            taskSet.forEach((task) => newSet.delete(task.taskId));
+            dashboardState.setSelectedTaskIds(newSet);
           }
         };
 
@@ -441,7 +395,7 @@ export const EntitlementsPendingTasksDashboard = observer(
           />
         );
       },
-      [selectedTaskIdsSet],
+      [selectedTaskIdsSet, dashboardState],
     );
 
     const colDefs: DataGridColumnDefinition<V1_ContractUserEventRecord>[] =

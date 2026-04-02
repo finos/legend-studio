@@ -24,13 +24,13 @@ import {
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
-  type V1_ContractUserEventRecord,
   type V1_DataContract,
   type V1_EnrichedUserApprovalStatus,
   type V1_LiteDataContract,
   type V1_LiteDataContractWithUserStatus,
   type V1_PendingTasksResponse,
   type V1_TaskStatus,
+  type V1_ContractUserEventRecord,
   type V1_TaskStatusChangeResponse,
   V1_dataContractsResponseModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
@@ -97,6 +97,7 @@ export class EntitlementsDashboardState {
   // consolidated user information from the tasks.
   allContractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails> =
     new Map();
+  selectedTaskIds: Set<string> = new Set();
 
   readonly initializationState = ActionState.create();
   readonly fetchingPendingTasksState = ActionState.create();
@@ -112,8 +113,10 @@ export class EntitlementsDashboardState {
       allContractsForUser: observable,
       allContractsCreatedByUserMap: observable,
       pendingTaskContractMap: observable,
+      selectedTaskIds: observable,
       pendingTaskContracts: computed,
       allContractsCreatedByUser: computed,
+      setSelectedTaskIds: action,
       init: flow,
       approve: flow,
       deny: flow,
@@ -134,8 +137,13 @@ export class EntitlementsDashboardState {
     return Array.from(this.allContractsCreatedByUserMap.values());
   }
 
+  setSelectedTaskIds(ids: Set<string>): void {
+    this.selectedTaskIds = ids;
+  }
+
   *init(token: string | undefined): GeneratorFn<void> {
     this.initializationState.inProgress();
+    this.setSelectedTaskIds(new Set());
     try {
       this.fetchingPendingTasksState.inProgress();
       this.fetchingContractsForUserState.inProgress();
