@@ -42,6 +42,11 @@ export enum LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
   QUERY = 'query',
   USE_PRODUCER_SEARCH = 'useProducerSearch',
 }
+
+export enum LEGEND_MARKETPLACE_DATA_APIS_QUERY_PARAM_TOKEN {
+  QUERY = 'query',
+}
+
 export type LegendTerminalProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TERMINAL_ID]: string;
 };

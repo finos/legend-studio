@@ -1567,6 +1567,12 @@
   // No overrides needed - base styles already provide the correct appearance
 
   // Search Results Page
+  .marketplace-data-apis {
+    &__search-container {
+      background: var(--legend-marketplace-light-blue);
+    }
+  }
+
   .marketplace-lakehouse-search-results {
     background: var(--color-hclight-white);
 

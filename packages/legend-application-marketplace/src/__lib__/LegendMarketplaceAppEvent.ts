@@ -45,4 +45,9 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   APPLY_SEARCH_FILTER = 'marketplace.apply.search-filter',
   CLEAR_SEARCH_FILTERS = 'marketplace.clear.search-filters',
   TOGGLE_VIEW_MODE = 'marketplace.toggle.view-mode',
+  TOGGLE_SERVICES_VIEW_MODE = 'marketplace.toggle.services.view-mode',
+  SEARCH_SERVICES = 'marketplace.search.services',
+  SORT_SERVICES = 'marketplace.sort.services',
+  FILTER_SERVICES = 'marketplace.filter.services',
+  CLICK_SERVICE_CARD = 'marketplace.click.service.card',
 }
