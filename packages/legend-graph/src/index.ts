@@ -274,6 +274,12 @@ export {
   V1_KeyedExecutionParameter,
   V1_PureExecution,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';
+export { V1_Service } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_Service.js';
+export {
+  V1_ServiceOwnership,
+  V1_DeploymentOwnership,
+  V1_UserListOwnership,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ServiceOwnership.js';
 export { V1_SourceInformation } from './graph-manager/protocol/pure/v1/model/V1_SourceInformation.js';
 export {
   V1_RelationType,
@@ -1023,6 +1029,13 @@ export { V1_TestDataGenerationResult } from './graph-manager/protocol/pure/v1/en
 export { V1_ServiceConfigurationInfo } from './graph-manager/protocol/pure/v1/engine/service/V1_ServiceConfiguration.js';
 export { V1_ServiceRegistrationResult } from './graph-manager/protocol/pure/v1/engine/service/V1_ServiceRegistrationResult.js';
 export { V1_ServiceStorage } from './graph-manager/protocol/pure/v1/engine/service/V1_ServiceStorage.js';
+export {
+  ServiceDetail,
+  ServiceOwnershipDetail,
+  DeploymentOwnershipDetail,
+  UserListOwnershipDetail,
+  ServiceOwnershipType,
+} from './graph-manager/action/service/ServiceDetail.js';
 export { V1_QuerySearchSpecification } from './graph-manager/protocol/pure/v1/engine/query/V1_QuerySearchSpecification.js';
 export {
   V1_LightQuery,

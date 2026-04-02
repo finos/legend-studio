@@ -344,6 +344,21 @@ export class LegendMarketplaceTelemetryHelper {
     });
   }
 
+  static logEvent_ToggleServicesViewMode(
+    telemetryService: TelemetryService,
+    viewMode: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_SERVICES_VIEW_MODE,
+      {
+        viewMode,
+        ...session,
+      },
+    );
+  }
+
   static logEvent_ClickToolbarMenu(
     telemetryService: TelemetryService,
     iconSource: ICON_TOOLBAR_TYPE,
@@ -507,5 +522,59 @@ export class LegendMarketplaceTelemetryHelper {
         ...session,
       },
     );
+  }
+
+  static logEvent_SearchServices(
+    telemetryService: TelemetryService,
+    query: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SEARCH_SERVICES, {
+      query,
+      ...session,
+    });
+  }
+
+  static logEvent_SortServices(
+    telemetryService: TelemetryService,
+    sortValue: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SORT_SERVICES, {
+      sortValue,
+      ...session,
+    });
+  }
+
+  static logEvent_FilterServices(
+    telemetryService: TelemetryService,
+    filterType: string,
+    filterValue: string,
+    action: 'add' | 'remove' | 'clear',
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.FILTER_SERVICES, {
+      filterType,
+      filterValue,
+      action,
+      ...session,
+    });
+  }
+
+  static logEvent_ClickServiceCard(
+    telemetryService: TelemetryService,
+    pattern: string,
+    title: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.CLICK_SERVICE_CARD, {
+      pattern,
+      title,
+      ...session,
+    });
   }
 }

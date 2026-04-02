@@ -17,6 +17,7 @@
 @forward 'mui';
 @forward 'app';
 
+@forward 'components/legend-service-card';
 @forward 'components/cart-drawer';
 @forward 'components/coming-soon-display';
 @forward 'components/dataContract-creator';
@@ -38,6 +39,7 @@
 @forward 'components/vendor-card';
 
 @forward 'pages/coming-soon';
+@forward 'pages/data-apis';
 @forward 'pages/home';
 @forward 'pages/marketplace-subscriptions';
 @forward 'pages/your-orders';

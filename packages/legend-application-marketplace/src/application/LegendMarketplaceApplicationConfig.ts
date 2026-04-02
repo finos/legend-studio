@@ -140,6 +140,9 @@ export interface LegendMarketplaceApplicationConfigurationData
   registry?: {
     url: string;
   };
+  legendServices?: {
+    url: string;
+  };
 }
 
 export class LegendLakehouseEntitlementsConfig {
@@ -163,6 +166,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
   readonly registryUrl: string | undefined;
+  readonly legendServicesUrl: string | undefined;
   readonly datacubeApplicationUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly terminalServerUrl: string;
@@ -390,6 +394,13 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
     if (input.configData.registry?.url) {
       this.registryUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.registry.url,
+      );
+    }
+
+    // Legend services
+    if (input.configData.legendServices?.url) {
+      this.legendServicesUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.legendServices.url,
       );
     }
 

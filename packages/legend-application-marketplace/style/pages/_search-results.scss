@@ -93,7 +93,7 @@
     z-index: 0;
     box-shadow: 0 1px 3px rgb(27 76 140 / 30%);
 
-    &--right {
+    &--tile {
       transform: translateX(100%);
     }
   }
@@ -134,7 +134,7 @@
     font-weight: 500;
     font-size: 1.4rem;
     color: var(--color-dark-grey-300);
-    padding: 1rem;
+    padding: 1rem 3rem 1rem 1rem;
     min-height: unset;
     line-height: 2.4rem;
   }
@@ -154,6 +154,10 @@
     font-size: 2rem;
     right: 0.6rem;
   }
+}
+
+.legend-marketplace-search-results__sort-menu-item {
+  gap: 0.5rem;
 }
 
 .legend-marketplace-search-results__sort-bar__controls-divider {
