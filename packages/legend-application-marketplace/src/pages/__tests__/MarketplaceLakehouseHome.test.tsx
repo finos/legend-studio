@@ -199,8 +199,16 @@ test('fetches and displays trending data products on homepage load', async () =>
   });
 
   const trendingEntries: TrendingDataProductEntry[] = [
-    makeTrendingEntry({ productName: 'Trending Product Alpha' }),
-    makeTrendingEntry({ productName: 'Trending Product Beta' }),
+    makeTrendingEntry({
+      productName: 'Trending Product Alpha',
+      dataProductId: 'dp-alpha',
+      deploymentId: '1',
+    }),
+    makeTrendingEntry({
+      productName: 'Trending Product Beta',
+      dataProductId: 'dp-beta',
+      deploymentId: '2',
+    }),
   ];
 
   createSpy(
@@ -242,7 +250,12 @@ test('trending API returns more than 4 entries, only 4 are used', async () => {
 
   const trendingEntries: TrendingDataProductEntry[] = Array.from(
     { length: 7 },
-    (_, i) => makeTrendingEntry({ productName: `Product ${i + 1}` }),
+    (_, i) =>
+      makeTrendingEntry({
+        productName: `Product ${i + 1}`,
+        dataProductId: `dp-${i + 1}`,
+        deploymentId: `${i + 1}`,
+      }),
   );
 
   createSpy(
