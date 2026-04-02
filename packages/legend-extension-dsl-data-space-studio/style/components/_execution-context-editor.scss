@@ -58,6 +58,7 @@
 
 .service-multi-execution-editor__panel {
   background-color: var(--color-dark-grey-85);
+  overflow-y: auto;
 }
 
 /* Additional styles for DataSpaceExecutionContextConfigurationEditor */
