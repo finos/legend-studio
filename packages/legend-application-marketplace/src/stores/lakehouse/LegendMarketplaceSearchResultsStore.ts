@@ -111,6 +111,7 @@ export class LegendMarketplaceSearchResultsStore {
   page = 1;
   itemsPerPage = 12;
   totalItems = 0;
+  showAllProducts = false;
 
   readonly executingSemanticSearchState = ActionState.create();
   readonly fetchingProducerSearchDataProductsState = ActionState.create();
@@ -150,6 +151,7 @@ export class LegendMarketplaceSearchResultsStore {
         page: observable,
         itemsPerPage: observable,
         totalItems: observable,
+        showAllProducts: observable,
         setSemanticSearchProductCardStates: action,
         setProducerSearchDataProductCardStates: action,
         setProducerSearchLegacyDataProductCardStates: action,
@@ -158,6 +160,7 @@ export class LegendMarketplaceSearchResultsStore {
         setPage: action,
         setItemsPerPage: action,
         setTotalItems: action,
+        setShowAllProducts: action,
         setTaxonomyTree: action,
         setFilterCounts: action,
         setSelectedTaxonomyNodeIds: action,
@@ -168,6 +171,7 @@ export class LegendMarketplaceSearchResultsStore {
         clearAllFilters: action,
         filterSortProducts: computed,
         isLoading: computed,
+        isOnLastPage: computed,
         hasActiveFilters: computed,
         executeSearch: flow,
       },
@@ -182,6 +186,14 @@ export class LegendMarketplaceSearchResultsStore {
     this.useProducerSearch = value;
   }
 
+  get isOnLastPage(): boolean {
+    if (this.totalItems === 0) {
+      return false;
+    }
+    const totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+    return this.page >= totalPages;
+  }
+
   get filterSortProducts(): ProductCardState[] | undefined {
     const productCardStates = this.useProducerSearch
       ? [
@@ -192,6 +204,12 @@ export class LegendMarketplaceSearchResultsStore {
     let filtered = productCardStates.filter((productCardState) =>
       this.marketplaceBaseStore.envState.filterDataProduct(productCardState),
     );
+    if (!this.showAllProducts) {
+      filtered = filtered.filter(
+        (productCardState) =>
+          productCardState.searchResult.meets_hygiene_threshold !== false,
+      );
+    }
     if (this.useProducerSearch && this.selectedTaxonomyNodeIds.size > 0) {
       filtered = filtered.filter((productCardState) => {
         const productTaxonomyPaths =
@@ -209,7 +227,7 @@ export class LegendMarketplaceSearchResultsStore {
     return filtered.sort((a, b) => {
       switch (this.sort) {
         case DataProductSort.DEFAULT:
-          return b.searchResult.similarity - a.searchResult.similarity;
+          return 0;
         case DataProductSort.NAME_ALPHABETICAL:
           return a.title.localeCompare(b.title);
         case DataProductSort.NAME_REVERSE_ALPHABETICAL:
@@ -240,6 +258,10 @@ export class LegendMarketplaceSearchResultsStore {
 
   setTotalItems(value: number): void {
     this.totalItems = value;
+  }
+
+  setShowAllProducts(value: boolean): void {
+    this.showAllProducts = value;
   }
 
   setSemanticSearchProductCardStates(

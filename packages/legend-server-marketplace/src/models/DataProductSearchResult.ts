@@ -172,6 +172,8 @@ export class DataProductSearchResult {
   dataProductDetails!: DataProductSearchResultDetails;
   dataProductSource!: string | undefined;
   licenseTo!: string | undefined;
+  hygiene_score: number | null | undefined;
+  meets_hygiene_threshold: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductSearchResult, {
@@ -189,6 +191,8 @@ export class DataProductSearchResult {
       ),
       dataProductSource: optional(primitive()),
       licenseTo: optional(primitive()),
+      hygiene_score: optional(primitive()),
+      meets_hygiene_threshold: optional(primitive()),
     }),
   );
 }

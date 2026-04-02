@@ -26,7 +26,11 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import { generateLakehouseSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { assertErrorThrown, isNonEmptyString } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  isNonEmptyString,
+  LogEvent,
+} from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { DemoModal } from './DemoModal.js';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -35,6 +39,7 @@ import {
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 import { generatePathForDataProductSearchResult } from '../../utils/SearchUtils.js';
 import { logClickingDataProductCard } from '../../utils/LogUtils.js';
@@ -96,6 +101,25 @@ export const MarketplaceLakehouseHome = observer(() => {
       setLoading(true);
 
       try {
+        let trendingDataProducts:
+          | Record<string, ProductCardState[]>
+          | undefined;
+        try {
+          trendingDataProducts =
+            await legendMarketplaceBaseStore.fetchTrendingDataProducts(
+              auth.user?.access_token,
+            );
+        } catch (error) {
+          assertErrorThrown(error);
+          applicationStore.logService.warn(
+            LogEvent.create(
+              LEGEND_MARKETPLACE_APP_EVENT.FETCH_DATA_PRODUCT_FAILURE,
+            ),
+            'Failed to fetch trending data products',
+            error,
+          );
+        }
+
         const [configDataProducts, ...extraDataProductSections] =
           await Promise.all([
             legendMarketplaceBaseStore.initHighlightedDataProducts(
@@ -111,10 +135,12 @@ export const MarketplaceLakehouseHome = observer(() => {
                   )) ?? {},
               ),
           ]);
-
         const result: Record<string, ProductCardState[]> = {
           ...configDataProducts,
         };
+        if (trendingDataProducts) {
+          Object.assign(result, trendingDataProducts);
+        }
 
         for (const pluginSections of extraDataProductSections) {
           for (const [sectionTitle, dataProductStates] of Object.entries(
@@ -159,6 +185,7 @@ export const MarketplaceLakehouseHome = observer(() => {
     sectionNames.length,
     applicationStore.notificationService,
     applicationStore.pluginManager,
+    applicationStore.logService,
     legendMarketplaceBaseStore,
     applicationStore.config.options.showDevFeatures,
   ]);

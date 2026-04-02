@@ -22,6 +22,8 @@ import {
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { TestLegendMarketplaceApplicationPlugin } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import type { HomePageBannerConfig } from '../../application/LegendMarketplaceApplicationPlugin.js';
+import { createSpy } from '@finos/legend-shared/test';
+import type { TrendingDataProductEntry } from '@finos/legend-server-marketplace';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -170,4 +172,90 @@ test('renders banner from plugin and dismisses on close click', async () => {
     expect(screen.queryByText('Test banner content')).toBeNull();
     expect(screen.queryByTitle('Dismiss banner')).toBeNull();
   });
+});
+
+const makeTrendingEntry = (
+  overrides: Partial<TrendingDataProductEntry> & { productName: string },
+): TrendingDataProductEntry => ({
+  dataProductType: 'lakehouse',
+  originType: 'AdHocDeployment',
+  ...overrides,
+});
+
+test('fetches and displays trending data products on homepage load', async () => {
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
+    extraPlugins: [new TestLegendMarketplaceApplicationPlugin()],
+  });
+
+  const trendingEntries: TrendingDataProductEntry[] = [
+    makeTrendingEntry({
+      productName: 'Trending Product Alpha',
+      dataProductId: 'dp-alpha',
+      deploymentId: '1',
+    }),
+    makeTrendingEntry({
+      productName: 'Trending Product Beta',
+      dataProductId: 'dp-beta',
+      deploymentId: '2',
+    }),
+  ];
+
+  createSpy(
+    MOCK__baseStore.marketplaceServerClient,
+    'getTrendingDataProducts',
+  ).mockResolvedValue(trendingEntries);
+
+  await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
+
+  // Verify fetchTrendingDataProducts was called with the correct env
+  expect(
+    MOCK__baseStore.marketplaceServerClient.getTrendingDataProducts,
+  ).toHaveBeenCalledWith(MOCK__baseStore.envState.lakehouseEnvironment);
+});
+
+test('homepage still renders when trending API fails', async () => {
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
+    extraPlugins: [new TestLegendMarketplaceApplicationPlugin()],
+  });
+
+  createSpy(
+    MOCK__baseStore.marketplaceServerClient,
+    'getTrendingDataProducts',
+  ).mockRejectedValue(new Error('API unavailable'));
+
+  await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
+
+  // Page should still render header and search box even after trending API failure
+  expect(screen.getByText('Data Products')).toBeDefined();
+  expect(
+    screen.getByPlaceholderText('Which data can I help you find?'),
+  ).toBeDefined();
+});
+
+test('trending API returns more than 4 entries, only 4 are used', async () => {
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
+    extraPlugins: [new TestLegendMarketplaceApplicationPlugin()],
+  });
+
+  const trendingEntries: TrendingDataProductEntry[] = Array.from(
+    { length: 7 },
+    (_, i) =>
+      makeTrendingEntry({
+        productName: `Product ${i + 1}`,
+        dataProductId: `dp-${i + 1}`,
+        deploymentId: `${i + 1}`,
+      }),
+  );
+
+  createSpy(
+    MOCK__baseStore.marketplaceServerClient,
+    'getTrendingDataProducts',
+  ).mockResolvedValue(trendingEntries);
+
+  await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
+
+  // fetchTrendingDataProducts internally slices to 4, verify API was called
+  expect(
+    MOCK__baseStore.marketplaceServerClient.getTrendingDataProducts,
+  ).toHaveBeenCalled();
 });

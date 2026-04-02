@@ -47,6 +47,24 @@ import {
 import type { AutosuggestResponse } from './models/AutosuggestResult.js';
 import type { TaxonomyTreeResponse } from './models/Taxonomy.js';
 
+export interface TrendingDataProductEntry {
+  dataProductId?: string;
+  deploymentId?: string;
+  dataProductType: string;
+  productName: string;
+  productDescription?: string;
+  dataProductName?: string;
+  groupId?: string;
+  artifactId?: string;
+  versionId?: string;
+  dataProductPath?: string;
+  originType?: string;
+  producerEnvironmentName?: string;
+  producerEnvironmentType?: string;
+  dataProductSource?: string;
+  licenseTo?: string;
+}
+
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
   subscriptionUrl: string;
@@ -136,6 +154,18 @@ export class MarketplaceServerClient extends AbstractServerClient {
       signal ? { signal } : {},
       undefined,
       { query, limit },
+    );
+
+  // ------------------------------------------- Trending -------------------------------------------
+
+  private readonly _analytics = (): string => `${this.baseUrl}/v1/analytics`;
+  getTrendingDataProducts = async (
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+  ): Promise<TrendingDataProductEntry[]> =>
+    this.get<TrendingDataProductEntry[]>(
+      `${this._analytics()}/top-products/${lakehouseEnv}`,
+      undefined,
+      undefined,
     );
 
   // ------------------------------------------- Taxonomy -------------------------------------------

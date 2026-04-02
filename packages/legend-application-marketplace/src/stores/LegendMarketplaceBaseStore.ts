@@ -68,6 +68,7 @@ import { ProductCardState } from './lakehouse/dataProducts/ProductCardState.js';
 import {
   convertEntitlementsDataProductDetailsToSearchResult,
   convertLegacyDataProductToSearchResult,
+  convertTrendingEntryToSearchResult,
 } from '../utils/SearchUtils.js';
 import { LakehouseDataProductService } from './lakehouse/LakehouseDataProductService.js';
 
@@ -233,6 +234,36 @@ export class LegendMarketplaceBaseStore {
     return undefined;
   }
 
+  private buildVendorImageMap(): Map<string, string> {
+    const vendorImageMap = new Map<string, string>();
+    const assetsBaseUrl = this.applicationStore.config.assetsBaseUrl;
+    for (const [vendorName, filename] of Object.entries(
+      this.applicationStore.config.assetsProductImageMap,
+    )) {
+      vendorImageMap.set(vendorName, `${assetsBaseUrl}/${filename}`);
+    }
+    return vendorImageMap;
+  }
+
+  private async createInitializedGraphManager(): Promise<V1_PureGraphManager> {
+    const graphManager = new V1_PureGraphManager(
+      this.applicationStore.pluginManager,
+      this.applicationStore.logService,
+      this.remoteEngine,
+    );
+    await graphManager.initialize(
+      {
+        env: this.applicationStore.config.env,
+        tabSize: DEFAULT_TAB_SIZE,
+        clientConfig: {
+          baseUrl: this.applicationStore.config.engineServerUrl,
+        },
+      },
+      { engine: this.remoteEngine },
+    );
+    return graphManager;
+  }
+
   private parseDataProductEntries(
     entriesString: string,
   ): (
@@ -274,13 +305,7 @@ export class LegendMarketplaceBaseStore {
       return undefined;
     }
 
-    const vendorImageMap = new Map<string, string>();
-    const assetsBaseUrl = this.applicationStore.config.assetsBaseUrl;
-    for (const [vendorName, filename] of Object.entries(
-      this.applicationStore.config.assetsProductImageMap,
-    )) {
-      vendorImageMap.set(vendorName, `${assetsBaseUrl}/${filename}`);
-    }
+    const vendorImageMap = this.buildVendorImageMap();
 
     const getDataProductState = async (
       dataProductId: string,
@@ -345,21 +370,7 @@ export class LegendMarketplaceBaseStore {
       );
     };
 
-    const graphManager = new V1_PureGraphManager(
-      this.applicationStore.pluginManager,
-      this.applicationStore.logService,
-      this.remoteEngine,
-    );
-    await graphManager.initialize(
-      {
-        env: this.applicationStore.config.env,
-        tabSize: DEFAULT_TAB_SIZE,
-        clientConfig: {
-          baseUrl: this.applicationStore.config.engineServerUrl,
-        },
-      },
-      { engine: this.remoteEngine },
-    );
+    const graphManager = await this.createInitializedGraphManager();
 
     const result: Record<string, ProductCardState[]> = {};
     await Promise.all(
@@ -388,6 +399,32 @@ export class LegendMarketplaceBaseStore {
     );
 
     return result;
+  }
+
+  async fetchTrendingDataProducts(
+    token: string | undefined,
+  ): Promise<Record<string, ProductCardState[]> | undefined> {
+    const vendorImageMap = this.buildVendorImageMap();
+    const graphManager = await this.createInitializedGraphManager();
+
+    const trendingEntries =
+      await this.marketplaceServerClient.getTrendingDataProducts(
+        this.envState.lakehouseEnvironment,
+      );
+
+    const states = trendingEntries.slice(0, 4).map((entry) => {
+      const searchResult = convertTrendingEntryToSearchResult(entry);
+      return new ProductCardState(
+        this,
+        searchResult,
+        graphManager,
+        vendorImageMap,
+      );
+    });
+
+    states.forEach((state) => state.init(token));
+
+    return { Trending: states };
   }
 
   setDemoModal(val: boolean): void {
