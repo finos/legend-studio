@@ -101,29 +101,26 @@ export const V1_entitiesToPureModelContextData = async (
         TEMPORARY__entityPathIndex?.set(element.path, entity.path);
         return element;
       };
-      graph.elements = await Promise.all<V1_PackageableElement>(
-        entities.map(
-          (e) =>
-            new Promise((resolve, reject) =>
-              setTimeout(() => {
-                try {
-                  resolve(
-                    // NOTE: here we skip the check for classifier path, so there could be cases
-                    // where the classifier path is different from the actua element protocol path
-                    // we might need to do validation here. This can happen when the classifier
-                    // path is changed in the backend. If we are to check for this, we might consider
-                    // not throwing error but quitely print out warnings about elements that would not
-                    // be built.
-                    entityToElement(e),
-                  );
-                } catch (error) {
-                  assertErrorThrown(error);
-                  reject(error);
-                }
-              }, 0),
-            ),
-        ),
-      );
+      // Process entities in batches to avoid per-element setTimeout overhead.
+      // Each batch yields to the event loop to keep the UI responsive.
+      const DESERIALIZATION_BATCH_SIZE = 100;
+      const results: V1_PackageableElement[] = [];
+      for (let i = 0; i < entities.length; i += DESERIALIZATION_BATCH_SIZE) {
+        if (i > 0) {
+          await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        }
+        const end = Math.min(i + DESERIALIZATION_BATCH_SIZE, entities.length);
+        for (let j = i; j < end; j++) {
+          // NOTE: here we skip the check for classifier path, so there could be cases
+          // where the classifier path is different from the actua element protocol path
+          // we might need to do validation here. This can happen when the classifier
+          // path is changed in the backend. If we are to check for this, we might consider
+          // not throwing error but quitely print out warnings about elements that would not
+          // be built.
+          results.push(entityToElement(entities[j]!));
+        }
+      }
+      graph.elements = results;
     }
   } catch (error) {
     assertErrorThrown(error);
