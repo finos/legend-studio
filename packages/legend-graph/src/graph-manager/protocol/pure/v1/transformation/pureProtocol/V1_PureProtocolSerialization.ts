@@ -30,6 +30,7 @@ import {
   UnsupportedOperationError,
   assertErrorThrown,
   usingModelSchema,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 import { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer.js';
@@ -117,7 +118,7 @@ export const V1_entitiesToPureModelContextData = async (
           // path is changed in the backend. If we are to check for this, we might consider
           // not throwing error but quitely print out warnings about elements that would not
           // be built.
-          results.push(entityToElement(entities[j]!));
+          results.push(entityToElement(guaranteeNonNullable(entities[j])));
         }
       }
       graph.elements = results;

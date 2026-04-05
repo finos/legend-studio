@@ -1684,7 +1684,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
       const end = Math.min(i + GRAPH_BUILDER_BATCH_SIZE, items.length);
       for (let j = i; j < end; j++) {
-        process(items[j]!);
+        process(guaranteeNonNullable(items[j]));
       }
     }
   }

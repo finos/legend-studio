@@ -250,7 +250,7 @@ describe('Large graph build (batch processing)', () => {
         const cls = state.graph.getClass(`test::largebatch::TestClass_${i}`);
         expect(cls).toBeDefined();
         expect(cls.properties).toHaveLength(1);
-        expect(cls.properties[0]!.name).toBe('value');
+        expect(guaranteeNonNullable(cls.properties[0]).name).toBe('value');
       }
     },
   );

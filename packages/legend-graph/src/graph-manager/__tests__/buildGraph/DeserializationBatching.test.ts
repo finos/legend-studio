@@ -16,8 +16,11 @@
 
 import { test, expect, describe } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
+// eslint-disable-next-line @finos/legend/enforce-module-import-hierarchy
 import { V1_entitiesToPureModelContextData } from '../../protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
+// eslint-disable-next-line @finos/legend/enforce-module-import-hierarchy
 import { V1_PureModelContextData } from '../../protocol/pure/v1/model/context/V1_PureModelContextData.js';
 import { GraphDataDeserializationError } from '../../GraphManagerUtils.js';
 
@@ -74,8 +77,12 @@ describe('V1_entitiesToPureModelContextData batching', () => {
       await V1_entitiesToPureModelContextData(entities, graph, []);
       expect(graph.elements).toHaveLength(50);
       // verify first and last elements have correct paths
-      expect(graph.elements[0]!.path).toBe('test::batch::TestClass_0');
-      expect(graph.elements[49]!.path).toBe('test::batch::TestClass_49');
+      expect(guaranteeNonNullable(graph.elements[0]).path).toBe(
+        'test::batch::TestClass_0',
+      );
+      expect(guaranteeNonNullable(graph.elements[49]).path).toBe(
+        'test::batch::TestClass_49',
+      );
     },
   );
 
@@ -86,8 +93,12 @@ describe('V1_entitiesToPureModelContextData batching', () => {
       const graph = new V1_PureModelContextData();
       await V1_entitiesToPureModelContextData(entities, graph, []);
       expect(graph.elements).toHaveLength(100);
-      expect(graph.elements[0]!.path).toBe('test::batch::TestClass_0');
-      expect(graph.elements[99]!.path).toBe('test::batch::TestClass_99');
+      expect(guaranteeNonNullable(graph.elements[0]).path).toBe(
+        'test::batch::TestClass_0',
+      );
+      expect(guaranteeNonNullable(graph.elements[99]).path).toBe(
+        'test::batch::TestClass_99',
+      );
     },
   );
 
@@ -101,12 +112,24 @@ describe('V1_entitiesToPureModelContextData batching', () => {
       await V1_entitiesToPureModelContextData(entities, graph, []);
       expect(graph.elements).toHaveLength(250);
       // verify order is preserved across batch boundaries
-      expect(graph.elements[0]!.path).toBe('test::batch::TestClass_0');
-      expect(graph.elements[99]!.path).toBe('test::batch::TestClass_99');
-      expect(graph.elements[100]!.path).toBe('test::batch::TestClass_100');
-      expect(graph.elements[199]!.path).toBe('test::batch::TestClass_199');
-      expect(graph.elements[200]!.path).toBe('test::batch::TestClass_200');
-      expect(graph.elements[249]!.path).toBe('test::batch::TestClass_249');
+      expect(guaranteeNonNullable(graph.elements[0]).path).toBe(
+        'test::batch::TestClass_0',
+      );
+      expect(guaranteeNonNullable(graph.elements[99]).path).toBe(
+        'test::batch::TestClass_99',
+      );
+      expect(guaranteeNonNullable(graph.elements[100]).path).toBe(
+        'test::batch::TestClass_100',
+      );
+      expect(guaranteeNonNullable(graph.elements[199]).path).toBe(
+        'test::batch::TestClass_199',
+      );
+      expect(guaranteeNonNullable(graph.elements[200]).path).toBe(
+        'test::batch::TestClass_200',
+      );
+      expect(guaranteeNonNullable(graph.elements[249]).path).toBe(
+        'test::batch::TestClass_249',
+      );
     },
   );
 
