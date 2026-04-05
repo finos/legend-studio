@@ -1309,23 +1309,27 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       V1_PureGraphBuilderInput,
       Map<string, Package>
     >();
+
+    const createFirstPassBuilder = (
+      input: V1_PureGraphBuilderInput,
+      packageCache: Map<string, Package>,
+      element: V1_PackageableElement,
+    ): V1_ElementFirstPassBuilder =>
+      new V1_ElementFirstPassBuilder(
+        this.getBuilderContext(graph, input.model, element, options),
+        packageCache,
+        elementPathCache,
+      );
+
     for (const input of inputs) {
       const packageCache = new Map<string, Package>();
       packageCaches.set(input, packageCache);
-      const createFirstPassBuilder = (
-        element: V1_PackageableElement,
-      ): V1_ElementFirstPassBuilder =>
-        new V1_ElementFirstPassBuilder(
-          this.getBuilderContext(graph, input.model, element, options),
-          packageCache,
-          elementPathCache,
-        );
 
       // Phase 1: index native elements for this input
       await this.runBatchedLoop(input.data.nativeElements, (element) =>
         this.visitWithGraphBuilderErrorHandling(
           element,
-          createFirstPassBuilder(element),
+          createFirstPassBuilder(input, packageCache, element),
         ),
       );
     }
@@ -1334,14 +1338,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // now that all native elements have been indexed
     for (const input of inputs) {
       const packageCache = guaranteeNonNullable(packageCaches.get(input));
-      const createFirstPassBuilder = (
-        element: V1_PackageableElement,
-      ): V1_ElementFirstPassBuilder =>
-        new V1_ElementFirstPassBuilder(
-          this.getBuilderContext(graph, input.model, element, options),
-          packageCache,
-          elementPathCache,
-        );
 
       const otherElements =
         this.graphBuilderExtensions.sortedExtraElementBuilders.flatMap(
@@ -1350,7 +1346,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       await this.runBatchedLoop(otherElements, (element) =>
         this.visitWithGraphBuilderErrorHandling(
           element,
-          createFirstPassBuilder(element),
+          createFirstPassBuilder(input, packageCache, element),
         ),
       );
     }
