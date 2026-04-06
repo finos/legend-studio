@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.69
+
+### Patch Changes
+
+- [#5054](https://github.com/finos/legend-studio/pull/5054) [`18dd838`](https://github.com/finos/legend-studio/commit/18dd8384ae2b54eb9fc6b357d557e664bbdfbaa5) ([@jackp5150](https://github.com/jackp5150)) - Added a field in the data contract modal/page metadata that distinguishes whether the data product included in the contract is associated with the prod or prod-parallel environments
+
 ## 0.0.68
 
 ### Patch Changes

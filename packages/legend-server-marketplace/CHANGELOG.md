@@ -1,5 +1,14 @@
 # @finos/legend-server-marketplace
 
+## 0.1.57
+
+### Patch Changes
+
+- [#5056](https://github.com/finos/legend-studio/pull/5056) [`2bc8050`](https://github.com/finos/legend-studio/commit/2bc805026d297aeee27685f171fc6c6dae7fde0c) ([@nguyenqchi](https://github.com/nguyenqchi)) - Overwrite trending section in config with actual top clicked data products from Analytics Endpoint
+
+  Add `hygiene_score` and `meets_hygiene_threshold` fields to `DataProductSearchResult` model to filter search results by hygiene threshold, showing only qualifying data products by default.
+  Add "Show all data products" option on the last page for users who can't find their data product.
+
 ## 0.1.56
 
 ### Patch Changes

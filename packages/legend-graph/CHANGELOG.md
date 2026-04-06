@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.4.3
+
+### Patch Changes
+
+- [#5066](https://github.com/finos/legend-studio/pull/5066) [`d994cb5`](https://github.com/finos/legend-studio/commit/d994cb5724218439391a4e9231bf449d09748c8c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added V1s for ownership types and DetailsFromCache call to engine.
+
 ## 32.4.2
 
 ### Patch Changes
