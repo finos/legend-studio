@@ -2154,6 +2154,30 @@
     }
   }
 
+  .marketplace-legend-service-list-row {
+    &__name {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__pattern {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__description {
+      color: var(--color-dark-theme-text-primary);
+
+      &__toggle {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  .marketplace-data-apis {
+    &__search-container {
+      background: var(--color-dark-theme-bg-primary);
+    }
+  }
+
   .legend-marketplace-search-results__sort-bar {
     background-color: var(--color-dark-theme-bg-secondary);
     border-bottom: 1px solid var(--color-dark-theme-border);
@@ -2315,6 +2339,19 @@
 
     &__empty {
       color: var(--color-dark-theme-text-muted);
+    }
+
+    &__tag {
+      background-color: var(--color-dark-theme-bg-elevated) !important;
+      color: var(--color-dark-theme-text-primary) !important;
+
+      .MuiChip-deleteIcon {
+        color: var(--color-dark-theme-text-secondary);
+
+        &:hover {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
     }
 
     &__tree-node {

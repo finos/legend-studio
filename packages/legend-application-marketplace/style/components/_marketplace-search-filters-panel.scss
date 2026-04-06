@@ -153,6 +153,27 @@
     font-style: italic;
   }
 
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-top: 0.6rem;
+  }
+
+  &__tag {
+    font-size: 1.3rem;
+
+    &--owner {
+      color: var(--color-order-chip-addon-text) !important;
+      background: var(--color-order-chip-addon-bg) !important;
+    }
+
+    &--did {
+      color: var(--color-order-chip-price-text) !important;
+      background: var(--color-order-chip-price-bg) !important;
+    }
+  }
+
   &__tree {
     padding: 0.4rem 0;
   }

@@ -47,6 +47,10 @@ export enum LEGEND_MARKETPLACE_ENTITLEMENTS_QUERY_PARAM_TOKEN {
   SELECTED_TAB = 'selectedTab',
 }
 
+export enum LEGEND_MARKETPLACE_DATA_APIS_QUERY_PARAM_TOKEN {
+  QUERY = 'query',
+}
+
 export type LegendTerminalProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TERMINAL_ID]: string;
 };

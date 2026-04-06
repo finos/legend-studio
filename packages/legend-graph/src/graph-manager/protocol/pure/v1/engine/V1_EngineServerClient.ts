@@ -30,6 +30,7 @@ import type {
 } from './compilation/V1_LambdaReturnType.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
+import { ServiceDetail } from '../../../../action/service/ServiceDetail.js';
 import type { V1_CompileResult } from './compilation/V1_CompileResult.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 import type { V1_GenerateFileInput } from './generation/V1_FileGenerationInput.js';
@@ -1238,4 +1239,14 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._devMetadata()}`,
       request,
     );
+
+  // ------------------------------------------- Legend Services List -------------------------------------------
+
+  private readonly getServicesDetailsFromCache = (): Promise<PlainObject[]> =>
+    this.get(`${this._service()}/list/detailsFromCache`);
+
+  getServicesInfo = async (): Promise<ServiceDetail[]> => {
+    const raw = await this.getServicesDetailsFromCache();
+    return raw.map((r) => ServiceDetail.fromJson(r));
+  };
 }
