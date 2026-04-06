@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.303
+
+### Patch Changes
+
+- [#5060](https://github.com/finos/legend-studio/pull/5060) [`3ee8dae`](https://github.com/finos/legend-studio/commit/3ee8dae347fdc52232680c314d3e5a7876808a7f) ([@jackp5150](https://github.com/jackp5150)) - Make service execution context window scrollable
+
 ## 0.1.302
 
 ## 0.1.301

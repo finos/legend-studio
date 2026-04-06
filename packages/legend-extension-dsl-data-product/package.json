@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-data-product",
-  "version": "0.0.68",
+  "version": "0.0.69",
   "description": "Legend data product viewer core",
   "keywords": [
     "legend",

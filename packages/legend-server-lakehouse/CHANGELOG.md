@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.44
+
+### Patch Changes
+
+- [#5027](https://github.com/finos/legend-studio/pull/5027) [`ce3c032`](https://github.com/finos/legend-studio/commit/ce3c0323e8456345bf58fe8e4609d8275823ce38) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: changing lakehouse producer flow
+
 ## 0.3.43
 
 ### Patch Changes

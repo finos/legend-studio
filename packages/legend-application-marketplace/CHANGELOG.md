@@ -1,5 +1,24 @@
 # @finos/legend-application-marketplace
 
+## 0.2.0
+
+### Minor Changes
+
+- [#5066](https://github.com/finos/legend-studio/pull/5066) [`d994cb5`](https://github.com/finos/legend-studio/commit/d994cb5724218439391a4e9231bf449d09748c8c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Data APIs, services Page with filters and 2 views.
+
+### Patch Changes
+
+- [#5056](https://github.com/finos/legend-studio/pull/5056) [`2bc8050`](https://github.com/finos/legend-studio/commit/2bc805026d297aeee27685f171fc6c6dae7fde0c) ([@nguyenqchi](https://github.com/nguyenqchi)) - Overwrite trending section in config with actual top clicked data products from Analytics Endpoint
+
+  Add `hygiene_score` and `meets_hygiene_threshold` fields to `DataProductSearchResult` model to filter search results by hygiene threshold, showing only qualifying data products by default.
+  Add "Show all data products" option on the last page for users who can't find their data product.
+
+- [#5055](https://github.com/finos/legend-studio/pull/5055) [`42a0c7f`](https://github.com/finos/legend-studio/commit/42a0c7f0df0f200f15fbc539c39087fb5198ee1b) ([@jackp5150](https://github.com/jackp5150)) - Added url navigation for entitlement dashboard tabs
+
+- [#5054](https://github.com/finos/legend-studio/pull/5054) [`18dd838`](https://github.com/finos/legend-studio/commit/18dd8384ae2b54eb9fc6b357d557e664bbdfbaa5) ([@jackp5150](https://github.com/jackp5150)) - Adds a filter to only display contracts related to the current environment(prod vs prod-par) in entitlements pages. Auto redirects to correct environment via redirection if navigated to a contract in the other environment.
+
+- [#5064](https://github.com/finos/legend-studio/pull/5064) [`98ad0cf`](https://github.com/finos/legend-studio/commit/98ad0cfe791cd6c335349b1f0f187a8be1f213f9) ([@jackp5150](https://github.com/jackp5150)) - Add render tests for entitlement dashboards filter by env
+
 ## 0.1.85
 
 ### Patch Changes

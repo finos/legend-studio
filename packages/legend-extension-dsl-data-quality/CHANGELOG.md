@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.33
+
+### Patch Changes
+
+- [#5059](https://github.com/finos/legend-studio/pull/5059) [`6a949b4`](https://github.com/finos/legend-studio/commit/6a949b45ae38e68027f004d138e14ec7a86eeb85) ([@aormerod-gs](https://github.com/aormerod-gs)) - Add TDS cell selection stats bar to the query builder results grid. When two or
+  more cells are selected in the results grid, a stats bar is shown below the
+  grid displaying count, unique count, empty count, and type-specific statistics
+  (min, max, sum, avg for numeric; min/max dates for date columns; min/max length
+  for string columns) along with an inline distribution histogram.
+
 ## 2.1.32
 
 ### Patch Changes
