@@ -113,19 +113,13 @@ describe('LegendMarketplaceDataAPIs', () => {
     });
   });
 
-  describe('Default list view', () => {
-    test('renders list rows for each service', async () => {
+  describe('Default tile view', () => {
+    test('renders service cards for each service', async () => {
       await setupTestComponent();
       // Services have patterns, the title is derived from last path segment
       expect(screen.getByText('service1')).toBeDefined();
       expect(screen.getByText('service2')).toBeDefined();
       expect(screen.getByText('deployed')).toBeDefined();
-    });
-
-    test('renders service patterns in list rows', async () => {
-      await setupTestComponent();
-      expect(screen.getByText('/test/alloy/service1')).toBeDefined();
-      expect(screen.getByText('/test/alloy/service2')).toBeDefined();
     });
 
     test('fetchAllServices is called on mount', async () => {
@@ -137,51 +131,47 @@ describe('LegendMarketplaceDataAPIs', () => {
   });
 
   describe('View mode toggling', () => {
-    test('defaults to list view', async () => {
+    test('defaults to tile view', async () => {
       await setupTestComponent();
 
-      // List rows should be present
-      const listRows = screen
-        .getAllByText(/\/test\/alloy\//i)
-        .filter((el) => el.tagName !== 'BUTTON');
-      expect(listRows.length).toBeGreaterThan(0);
+      // Service titles should be present in tile cards
+      expect(screen.getByText('service1')).toBeDefined();
+      expect(screen.getByText('service2')).toBeDefined();
 
       // Grid table should not be present
       expect(screen.queryByRole('table')).toBeNull();
     });
 
-    test('clicking Tile View button switches to tile view', async () => {
+    test('clicking List View button switches to list view', async () => {
       await setupTestComponent();
-
-      await act(async () => {
-        fireEvent.click(screen.getByTitle('Tile View'));
-      });
-
-      // In tile view, service titles appear in cards
-      await waitFor(() =>
-        expect(screen.getAllByText('service1').length).toBeGreaterThan(0),
-      );
-      // No table in tile view
-      expect(screen.queryByRole('table')).toBeNull();
-    });
-
-    test('clicking List View after Tile View switches back to list', async () => {
-      await setupTestComponent();
-
-      await act(async () => {
-        fireEvent.click(screen.getByTitle('Tile View'));
-      });
-      await waitFor(() =>
-        expect(screen.getAllByText('service1').length).toBeGreaterThan(0),
-      );
 
       await act(async () => {
         fireEvent.click(screen.getByTitle('List View'));
       });
 
-      // list rows reappear
+      // list rows with patterns should appear
       await waitFor(() =>
         expect(screen.getByText('/test/alloy/service1')).toBeDefined(),
+      );
+    });
+
+    test('clicking Tile View after List View switches back to tile', async () => {
+      await setupTestComponent();
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('List View'));
+      });
+      await waitFor(() =>
+        expect(screen.getByText('/test/alloy/service1')).toBeDefined(),
+      );
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Tile View'));
+      });
+
+      // tile cards reappear
+      await waitFor(() =>
+        expect(screen.getAllByText('service1').length).toBeGreaterThan(0),
       );
     });
 
@@ -189,14 +179,14 @@ describe('LegendMarketplaceDataAPIs', () => {
       const { MOCK__baseStore } = await setupTestComponent();
 
       await act(async () => {
-        fireEvent.click(screen.getByTitle('Tile View'));
+        fireEvent.click(screen.getByTitle('List View'));
       });
 
       const persisted =
         MOCK__baseStore.applicationStore.settingService.getStringValue(
           'marketplace.data-apis.viewMode',
         );
-      expect(persisted).toBe(ServicesViewMode.TILE);
+      expect(persisted).toBe(ServicesViewMode.LIST);
     });
   });
 

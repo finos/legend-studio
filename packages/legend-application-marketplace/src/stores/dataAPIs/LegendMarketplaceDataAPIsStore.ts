@@ -156,7 +156,7 @@ export class LegendMarketplaceDataAPIsStore {
       persistedViewMode as ServicesViewMode,
     )
       ? (persistedViewMode as ServicesViewMode)
-      : ServicesViewMode.LIST;
+      : ServicesViewMode.TILE;
 
     const persistedShowOwn =
       this.marketplaceBaseStore.applicationStore.settingService.getBooleanValue(
