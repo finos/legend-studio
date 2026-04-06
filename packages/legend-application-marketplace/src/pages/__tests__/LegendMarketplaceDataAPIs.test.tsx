@@ -67,7 +67,7 @@ const setupTestComponent = async (initialQuery?: string) => {
   );
 
   // Wait for the services count to appear (data loaded)
-  await waitFor(() => screen.getByText(/Services/));
+  await waitFor(() => screen.getByText(/\d+ Services/));
 
   return { MOCK__baseStore, renderResult };
 };
@@ -332,6 +332,98 @@ describe('LegendMarketplaceDataAPIs', () => {
       ).mockRejectedValue(new Error('Network error'));
 
       await TEST__setUpMarketplaceLakehouse(MOCK__baseStore, DATA_APIS_ROUTE);
+
+      await waitFor(() => expect(screen.getByText('0 Services')).toBeDefined());
+    });
+  });
+
+  describe('My Services toggle', () => {
+    test('renders the My Services toggle', async () => {
+      await setupTestComponent();
+      expect(screen.getByLabelText('My Services')).toBeDefined();
+    });
+
+    test('toggle is off by default and shows all services', async () => {
+      await setupTestComponent();
+      const toggle: HTMLInputElement = screen.getByLabelText('My Services');
+      expect(toggle.checked).toBe(false);
+      expect(screen.getByText('4 Services')).toBeDefined();
+    });
+
+    test('toggling on filters to only services owned by current user', async () => {
+      const { MOCK__baseStore } = await setupTestComponent();
+
+      // Set current user to alice who owns service1
+      act(() => {
+        MOCK__baseStore.applicationStore.identityService.setCurrentUser(
+          'alice@example.com',
+        );
+      });
+
+      const toggle = screen.getByLabelText('My Services');
+
+      await act(async () => {
+        fireEvent.click(toggle);
+      });
+
+      await waitFor(() => expect(screen.getByText('1 Services')).toBeDefined());
+      expect(screen.getByText('service1')).toBeDefined();
+    });
+
+    test('toggling off restores all services', async () => {
+      const { MOCK__baseStore } = await setupTestComponent();
+
+      act(() => {
+        MOCK__baseStore.applicationStore.identityService.setCurrentUser(
+          'alice@example.com',
+        );
+      });
+
+      const toggle = screen.getByLabelText('My Services');
+
+      // Toggle on
+      await act(async () => {
+        fireEvent.click(toggle);
+      });
+      await waitFor(() => expect(screen.getByText('1 Services')).toBeDefined());
+
+      // Toggle off
+      await act(async () => {
+        fireEvent.click(toggle);
+      });
+      await waitFor(() => expect(screen.getByText('4 Services')).toBeDefined());
+    });
+
+    test('toggle state is persisted to settings', async () => {
+      const { MOCK__baseStore } = await setupTestComponent();
+
+      const toggle = screen.getByLabelText('My Services');
+
+      await act(async () => {
+        fireEvent.click(toggle);
+      });
+
+      const persisted =
+        MOCK__baseStore.applicationStore.settingService.getBooleanValue(
+          'marketplace.data-apis.showOwnServicesOnly',
+        );
+      expect(persisted).toBe(true);
+    });
+
+    test('shows no services when current user owns none', async () => {
+      const { MOCK__baseStore } = await setupTestComponent();
+
+      act(() => {
+        MOCK__baseStore.applicationStore.identityService.setCurrentUser(
+          'unknown-user',
+        );
+      });
+
+      const toggle = screen.getByLabelText('My Services');
+
+      await act(async () => {
+        fireEvent.click(toggle);
+      });
 
       await waitFor(() => expect(screen.getByText('0 Services')).toBeDefined());
     });

@@ -33,10 +33,12 @@ import {
 import {
   Container,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   MenuItem,
   Select,
+  Switch,
   Typography,
 } from '@mui/material';
 import {
@@ -215,6 +217,20 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
               {dataAPIsStore.totalFilteredCount} Services
             </Typography>
             <div className="legend-marketplace-search-results__sort-bar__controls">
+              <FormControlLabel
+                className="legend-marketplace-search-results__own-services-toggle"
+                control={
+                  <Switch
+                    checked={dataAPIsStore.showOwnServicesOnly}
+                    onChange={(e) => {
+                      dataAPIsStore.setShowOwnServicesOnly(e.target.checked);
+                    }}
+                    size="small"
+                  />
+                }
+                label="My Services"
+              />
+              <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
               <div className="legend-marketplace-search-results__view-toggle">
                 <div
                   className={clsx(
