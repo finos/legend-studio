@@ -25,7 +25,7 @@ import type {
   DataProductTDSSampleQueryTabConfiguration,
   DataProductRelationSampleQueryTabConfiguration,
 } from './DataProduct/DataProductSampleQueryTabState.js';
-import type { V1_RawWorkflowTaskType } from './DataProduct/DataAccess/WorkflowDataAccessRequestState.js';
+import type { V1_WorkflowTaskType } from './DataProduct/DataAccess/WorkflowDataAccessRequestState.js';
 import type { V1_WorkflowTask } from '@finos/legend-graph';
 
 export interface DataProductDataAccess_LegendApplicationPlugin_Extension
@@ -79,5 +79,5 @@ export interface DataProductDataAccess_LegendApplicationPlugin_Extension
    *
    * @param task raw workflow task ID
    */
-  getRawWorkflowTaskType?(task: V1_WorkflowTask): V1_RawWorkflowTaskType;
+  getRawWorkflowTaskType?(task: V1_WorkflowTask): V1_WorkflowTaskType;
 }

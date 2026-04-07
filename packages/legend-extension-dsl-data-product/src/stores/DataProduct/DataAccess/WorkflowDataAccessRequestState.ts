@@ -58,7 +58,7 @@ export interface WorkflowTasksState {
   dataOwnerTasks: V1_WorkflowTask[];
 }
 
-export enum V1_RawWorkflowTaskType {
+export enum V1_WorkflowTaskType {
   PRIVILEGE_MANAGER = 'PRIVILEGE_MAANGER',
   DATA_OWNER = 'DATA_OWNER',
 }
@@ -448,7 +448,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       };
 
       for (const task of tasks) {
-        let taskType: V1_RawWorkflowTaskType | undefined;
+        let taskType: V1_WorkflowTaskType | undefined;
         for (const plugin of plugins) {
           taskType = plugin.getRawWorkflowTaskType?.(task);
           if (taskType !== undefined) {
@@ -462,7 +462,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
 
         // Step 5 & 6: Determine target key and pick latest by createdDate
         const key: 'privilegeManagerTasks' | 'dataOwnerTasks' =
-          taskType === V1_RawWorkflowTaskType.PRIVILEGE_MANAGER
+          taskType === V1_WorkflowTaskType.PRIVILEGE_MANAGER
             ? 'privilegeManagerTasks'
             : 'dataOwnerTasks';
         const existing = result[key];
