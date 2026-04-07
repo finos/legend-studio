@@ -69,8 +69,11 @@ import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '../__lib__/LegendApplicati
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
 const VirtualAssistantDocumentationEntryViewer = observer(
-  (props: { entry: VirtualAssistantDocumentationEntry }) => {
-    const { entry } = props;
+  (props: {
+    entry: VirtualAssistantDocumentationEntry;
+    onAccess?: (key: string, action: string) => void;
+  }) => {
+    const { entry, onAccess } = props;
     const applicationStore = useApplicationStore();
     const toggleExpand = (): void => {
       if (!entry.isOpen) {
@@ -78,8 +81,10 @@ const VirtualAssistantDocumentationEntryViewer = observer(
           applicationStore.telemetryService,
           {
             key: entry.documentationKey,
+            action: 'expand',
           },
         );
+        onAccess?.(entry.documentationKey, 'expand');
       }
       entry.setIsOpen(!entry.isOpen);
     };
@@ -88,8 +93,10 @@ const VirtualAssistantDocumentationEntryViewer = observer(
         applicationStore.telemetryService,
         {
           key: entry.documentationKey,
+          action: 'clickLink',
         },
       );
+      onAccess?.(entry.documentationKey, 'clickLink');
     };
     const copyDocumentationKey = applicationStore.guardUnhandledError(() =>
       applicationStore.clipboardService.copyTextToClipboard(
@@ -279,11 +286,30 @@ const VirtualAssistantSearchPanel = observer(() => {
     () => debounce(() => assistantService.search(), 100),
     [assistantService],
   );
+  const debouncedSearchTelemetry = useMemo(
+    () =>
+      debounce(() => {
+        if (assistantService.searchText.length > 0) {
+          assistantService.telemetryCallbacks?.onSearchInitiated?.(
+            assistantService.searchText,
+          );
+        }
+      }, 1000),
+    [assistantService],
+  );
   const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
     assistantService.setSearchText(event.target.value);
     debouncedSearch();
+    debouncedSearchTelemetry();
+  };
+  const onSearchResultAccess = (key: string, action: string): void => {
+    assistantService.telemetryCallbacks?.onSearchResultAccess?.({
+      key,
+      searchText: assistantService.searchText,
+      action,
+    });
   };
   const clearSearchText = (): void => {
     assistantService.resetSearch();
@@ -466,6 +492,7 @@ const VirtualAssistantSearchPanel = observer(() => {
             <VirtualAssistantDocumentationEntryViewer
               key={assistantService.currentDocumentationEntry.uuid}
               entry={assistantService.currentDocumentationEntry}
+              onAccess={onSearchResultAccess}
             />
           </div>
         )}
@@ -477,6 +504,7 @@ const VirtualAssistantSearchPanel = observer(() => {
                   <VirtualAssistantDocumentationEntryViewer
                     key={result.uuid}
                     entry={result}
+                    onAccess={onSearchResultAccess}
                   />
                 ))}
               </div>
@@ -559,11 +587,22 @@ const VirtualAssistantPanel = observer(
 
     const toggleMaximize = (): void =>
       assistantService.setIsPanelMaximized(!assistantService.isPanelMaximized);
-    const selectSearch = (): void =>
+    const selectSearch = (): void => {
       assistantService.setSelectedTab(VIRTUAL_ASSISTANT_TAB.SEARCH);
-    const selectContextualDoc = (): void =>
+      assistantService.telemetryCallbacks?.onTabAccess?.(
+        VIRTUAL_ASSISTANT_TAB.SEARCH,
+      );
+    };
+    const selectContextualDoc = (): void => {
       assistantService.setSelectedTab(VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT);
-    const closeAssistantPanel = (): void => assistantService.setIsOpen(false);
+      assistantService.telemetryCallbacks?.onTabAccess?.(
+        VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT,
+      );
+    };
+    const closeAssistantPanel = (): void => {
+      assistantService.setIsOpen(false);
+      assistantService.telemetryCallbacks?.onPanelClose?.();
+    };
 
     return (
       /**
@@ -673,6 +712,9 @@ const VirtualAssistantPanel = observer(
                   })}
                   onClick={() => {
                     assistantService.setSelectedTab(config.key);
+                    assistantService.telemetryCallbacks?.onTabAccess?.(
+                      config.key,
+                    );
                     if (config.autoExpandOnOpen) {
                       assistantService.setIsPanelMaximized(true);
                     }
@@ -739,7 +781,17 @@ export const VirtualAssistant = observer(() => {
     if (newVal && currentContextualDocumentationEntry) {
       assistantService.setSelectedTab(VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT);
     }
-    assistantService.setIsOpen(!assistantService.isOpen);
+    assistantService.setIsOpen(newVal);
+    if (newVal) {
+      assistantService.telemetryCallbacks?.onPanelOpen?.();
+      if (currentContextualDocumentationEntry) {
+        assistantService.telemetryCallbacks?.onContextualInfoPresent?.(
+          currentContextualDocumentationEntry.context,
+        );
+      }
+    } else {
+      assistantService.telemetryCallbacks?.onPanelClose?.();
+    }
   };
   const hideAssistant = (): void =>
     applicationStore.assistantService.hideAssistant();

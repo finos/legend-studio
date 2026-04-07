@@ -43,6 +43,7 @@ import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/STO_R
 import { ShowcaseManager } from '../ShowcaseManager.js';
 import { CabinetIcon } from '@finos/legend-art';
 import { ShowcaseManagerState } from '../../stores/ShowcaseManagerState.js';
+import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
 
 export const SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY = 'showcase-manager';
@@ -56,10 +57,40 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
 
   override getExtraApplicationExtensionStateBuilders(): ApplicationExtensionStateBuilder[] {
     return [
-      (applicationStore) =>
-        new ShowcaseManagerState(
-          applicationStore as LegendStudioApplicationStore,
-        ),
+      (applicationStore) => {
+        const store = applicationStore as LegendStudioApplicationStore;
+        store.assistantService.telemetryCallbacks = {
+          onPanelOpen: () =>
+            LegendStudioTelemetryHelper.logEvent_VirtualAssistantPanelOpened(
+              store.telemetryService,
+            ),
+          onPanelClose: () =>
+            LegendStudioTelemetryHelper.logEvent_VirtualAssistantPanelClosed(
+              store.telemetryService,
+            ),
+          onTabAccess: (tab) =>
+            LegendStudioTelemetryHelper.logEvent_VirtualAssistantTabAccessed(
+              store.telemetryService,
+              tab,
+            ),
+          onSearchInitiated: (searchText) =>
+            LegendStudioTelemetryHelper.logEvent_VirtualAssistantDocumentationSearchInitiated(
+              store.telemetryService,
+              searchText,
+            ),
+          onSearchResultAccess: (data) =>
+            LegendStudioTelemetryHelper.logEvent_VirtualAssistantSearchResultAccessed(
+              store.telemetryService,
+              data,
+            ),
+          onContextualInfoPresent: (contextKey) =>
+            LegendStudioTelemetryHelper.logEvent_VirtualAssistantContextualInfoPresent(
+              store.telemetryService,
+              contextKey,
+            ),
+        };
+        return new ShowcaseManagerState(store);
+      },
     ];
   }
 

@@ -368,6 +368,11 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     }
     this.textSearchState.inProgress();
 
+    LegendStudioTelemetryHelper.logEvent_ShowcaseSearchInitiated(
+      this.applicationStore.telemetryService,
+      { searchText: this.searchText },
+    );
+
     try {
       const result = (yield this.client.search(
         this.searchText,

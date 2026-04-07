@@ -24,6 +24,13 @@ type ApplicationContextAccessed_TelemetryData = {
 
 type VirtualAssistantDocumentationEntryAccessed_TelemetryData = {
   key: string;
+  action: string;
+};
+
+export type VirtualAssistantSearchResultAccessed_TelemetryData = {
+  key: string;
+  searchText: string;
+  action: string;
 };
 
 export class LegendApplicationTelemetryHelper {
