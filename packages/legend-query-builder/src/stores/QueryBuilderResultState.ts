@@ -482,10 +482,12 @@ export class QueryBuilderResultState {
     try {
       this.setIsRunningQuery(true);
       const currentHashCode = this.queryBuilderState.hashCode;
-      guaranteeNonNullable(
-        this.queryBuilderState.executionContextState.mapping,
-        'Mapping is required to execute query',
-      );
+      if (this.queryBuilderState.requiresMappingForExecution) {
+        guaranteeNonNullable(
+          this.queryBuilderState.executionContextState.mapping,
+          'Mapping is required to execute query',
+        );
+      }
       guaranteeNonNullable(
         this.queryBuilderState.executionContextState.runtimeValue,
         `Runtime is required to execute query`,
@@ -590,10 +592,12 @@ export class QueryBuilderResultState {
   *generatePlan(debug: boolean): GeneratorFn<void> {
     try {
       this.isGeneratingPlan = true;
-      guaranteeNonNullable(
-        this.queryBuilderState.executionContextState.mapping,
-        'Mapping is required to execute query',
-      );
+      if (this.queryBuilderState.requiresMappingForExecution) {
+        guaranteeNonNullable(
+          this.queryBuilderState.executionContextState.mapping,
+          'Mapping is required to execute query',
+        );
+      }
       guaranteeNonNullable(
         this.queryBuilderState.executionContextState.runtimeValue,
         `Runtime is required to execute query`,

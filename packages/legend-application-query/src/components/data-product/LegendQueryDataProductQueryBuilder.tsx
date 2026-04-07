@@ -182,8 +182,8 @@ const LegendDataProductQueryBuilderSetupPanelContent = observer(
     // auto-select first class when none is chosen
     const classes = queryBuilderState.usableClasses;
     useEffect(() => {
-      if (!queryBuilderState.class && classes[0]) {
-        queryBuilderState.changeClass(classes[0]);
+      if (!queryBuilderState.sourceElement && classes[0]) {
+        queryBuilderState.changeSourceElement(classes[0]);
       }
     }, [classes, queryBuilderState]);
 

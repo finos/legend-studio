@@ -192,7 +192,7 @@ export const QueryBuilderExplorerTreeNodeContainer = observer(
             <div className="data-quality-validation-explorer-tree__node__actions">
               <QueryBuilderRootClassInfoTooltip
                 _class={guaranteeNonNullable(
-                  dataQualityQueryBuilderState.class,
+                  dataQualityQueryBuilderState.sourceClass,
                 )}
               >
                 <div

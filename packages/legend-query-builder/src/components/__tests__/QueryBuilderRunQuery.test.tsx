@@ -108,7 +108,7 @@ test(
       'model::pure::tests::model::simple::Person',
     );
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     await act(async () => {
       queryBuilderState.initializeWithQuery(
@@ -266,7 +266,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
       readOnly: false,

@@ -91,7 +91,7 @@ const packageableTypeModelSchema = createModelSchema(V1_PackageableType, {
   fullPath: primitive(),
 });
 
-const V1_relationTypeColumnModelSchema = createModelSchema(
+export const V1_relationTypeColumnModelSchema = createModelSchema(
   V1_RelationTypeColumn,
   {
     genericType: custom(

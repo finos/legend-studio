@@ -94,6 +94,39 @@ import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/classInst
 import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
 import { RelationColumn } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import { V1_createGenericTypeWithElementPath } from '../../../helpers/V1_DomainHelper.js';
+import {
+  type Accessor,
+  type AccessorInstanceValue,
+  DataProductAccessor,
+  IngestionAccessor,
+  RelationalStoreAccessor,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
+import {
+  type V1_Accessor,
+  V1_DataProductAccessor,
+  V1_IngestDefinitionAccessor,
+  V1_RelationStoreAccessor,
+} from '../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
+
+const transformAccessor = (accessor: Accessor): V1_Accessor => {
+  if (accessor instanceof DataProductAccessor) {
+    const v1Accessor = new V1_DataProductAccessor();
+    v1Accessor.path = accessor.path;
+    return v1Accessor;
+  } else if (accessor instanceof IngestionAccessor) {
+    const v1Accessor = new V1_IngestDefinitionAccessor();
+    v1Accessor.path = accessor.path;
+    return v1Accessor;
+  } else if (accessor instanceof RelationalStoreAccessor) {
+    const v1Accessor = new V1_RelationStoreAccessor();
+    v1Accessor.path = accessor.path;
+    return v1Accessor;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform accessor: unsupported accessor type`,
+    accessor,
+  );
+};
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -252,6 +285,20 @@ class V1_ValueSpecificationTransformer
       `Can't transform instance value`,
       valueSpecification,
     );
+  }
+
+  visit_AccessorInstanceValue(
+    valueAccessorInstanceValue: AccessorInstanceValue,
+  ): V1_ValueSpecification {
+    const accessor = guaranteeNonNullable(
+      valueAccessorInstanceValue.values[0],
+      'Accessor required in AccessorInstanceValue',
+    );
+    const v1Accessor = transformAccessor(accessor);
+    const classInstance = new V1_ClassInstance();
+    classInstance.type = v1Accessor.INSTANCE_TYPE;
+    classInstance.value = v1Accessor;
+    return classInstance;
   }
 
   visit_CollectionInstanceValue(
@@ -428,10 +475,10 @@ class V1_ValueSpecificationTransformer
         ),
       );
       if (fun1) {
-        colProtocol.function1 = guaranteeType(fun1, V1_Lambda);
+        colProtocol.function1 = fun1;
       }
       if (fun2) {
-        colProtocol.function2 = guaranteeType(fun2, V1_Lambda);
+        colProtocol.function2 = fun2;
       }
       return colProtocol;
     });

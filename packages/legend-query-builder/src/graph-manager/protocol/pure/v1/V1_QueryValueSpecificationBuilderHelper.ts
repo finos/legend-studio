@@ -697,10 +697,6 @@ const V1_buildTypedProjectFunctionExpression = (
           GenericTypeExplicitReference.create(new GenericType(returnType)),
         ),
       );
-    } else {
-      throw new UnsupportedOperationError(
-        'Unable to get return type for current lambda',
-      );
     }
     return pColSpec;
   });
@@ -1219,6 +1215,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
       .map((colSpec) => [colSpec.function1, colSpec.function2])
       .flat()
       .filter(isNonNullable)
+      .filter(filterByType(V1_Lambda))
       .map((value) => value.parameters)
       .flat();
   topLevelLambdaParameters.forEach((variable) => {

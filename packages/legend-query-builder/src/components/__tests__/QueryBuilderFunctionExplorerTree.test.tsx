@@ -171,7 +171,7 @@ test(
     const employeeClass =
       queryBuilderState.graphManagerState.graph.getClass('test::Employee');
     await act(async () => {
-      queryBuilderState.changeClass(employeeClass);
+      queryBuilderState.changeSourceElement(employeeClass);
     });
     fireEvent.click(renderResult.getByText('Advanced'));
     fireEvent.click(renderResult.getByText('Show Function(s)'));

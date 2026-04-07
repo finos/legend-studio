@@ -20,7 +20,7 @@ import {
   type V1_ValueSpecificationVisitor,
 } from '../model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_Variable } from '../model/valueSpecification/V1_Variable.js';
-import type { V1_Lambda } from '../model/valueSpecification/raw/V1_Lambda.js';
+import { V1_Lambda } from '../model/valueSpecification/raw/V1_Lambda.js';
 import type { V1_EnumValue } from '../model/valueSpecification/raw/V1_EnumValue.js';
 import type { V1_AppliedFunction } from '../model/valueSpecification/application/V1_AppliedFunction.js';
 import type { V1_Collection } from '../model/valueSpecification/raw/V1_Collection.js';
@@ -380,10 +380,10 @@ function _V1_observe_ColSpec(metamodel: V1_ColSpec): V1_ColSpec {
     function2: observable,
   });
 
-  if (metamodel.function1) {
+  if (metamodel.function1 && metamodel.function1 instanceof V1_Lambda) {
     V1_observe_Lambda(metamodel.function1);
   }
-  if (metamodel.function2) {
+  if (metamodel.function2 && metamodel.function2 instanceof V1_Lambda) {
     V1_observe_Lambda(metamodel.function2);
   }
 

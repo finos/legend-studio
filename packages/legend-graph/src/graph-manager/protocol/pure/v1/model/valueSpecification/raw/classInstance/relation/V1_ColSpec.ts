@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type { V1_Lambda } from '../../V1_Lambda.js';
+import type { V1_ValueSpecification } from '../../../V1_ValueSpecification.js';
 
 export class V1_ColSpec {
   name!: string;
   type?: string | undefined;
-  function1?: V1_Lambda | undefined;
-  function2?: V1_Lambda | undefined;
+  function1?: V1_ValueSpecification | undefined;
+  function2?: V1_ValueSpecification | undefined;
 }

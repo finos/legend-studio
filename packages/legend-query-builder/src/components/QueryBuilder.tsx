@@ -520,7 +520,7 @@ export const QueryBuilder = observer(
       // we use an empty RawLambda with an empty class and this useEffect is called earlier than initializeWithQuery()
       if (
         queryBuilderState.isQuerySupported &&
-        queryBuilderState.class &&
+        queryBuilderState.sourceElement &&
         queryBuilderState.canBuildQuery
       ) {
         const calculatedQuery = returnUndefOnError(() =>
@@ -676,6 +676,7 @@ export const QueryBuilder = observer(
                         onClick={toggleShowFilterPanel}
                         disabled={
                           !queryBuilderState.isQuerySupported ||
+                          queryBuilderState.sourceAccessor !== undefined ||
                           Array.from(
                             queryBuilderState.filterState.nodes.values(),
                           ).length > 0

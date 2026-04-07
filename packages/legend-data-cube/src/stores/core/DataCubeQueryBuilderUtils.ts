@@ -323,8 +323,8 @@ function _classInstance(type: string, value: unknown) {
 
 export function _colSpec(
   name: string,
-  function1?: V1_Lambda | undefined,
-  function2?: V1_Lambda | undefined,
+  function1?: V1_ValueSpecification | undefined,
+  function2?: V1_ValueSpecification | undefined,
   type?: string | undefined,
 ) {
   const colSpec = new V1_ColSpec();

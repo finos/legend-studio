@@ -97,8 +97,10 @@ export { SnowflakeM2MUdfDeploymentConfiguration } from './graph/metamodel/pure/f
 export { INTERNAL__UnknownElement } from './graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 export {
   V1_IngestDefinition,
-  type V1_IngestDataset,
-  type V1_IngestDefinitionContent,
+  V1_IngestDatasetSchema,
+  V1_IngestDatasetSource,
+  V1_IngestDataset,
+  V1_IngestDefinitionContent,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/ingest/V1_IngestDefinition.js';
 export {
   Ownership,
@@ -376,6 +378,10 @@ export { V1_transformDataContractToLiteDatacontract } from './graph-manager/prot
 export {
   V1_deserializeIngestEnvironment,
   V1_deserializeProducerEnvironment,
+  V1_IngestDatasetModelSchema,
+  V1_IngestDefinitionContentModelSchema,
+  V1_deserializeIngestDefinitionContent,
+  V1_serializeIngestDefinitionContent,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/model/lineage/V1_Lineage.js';
 
@@ -847,7 +853,17 @@ export {
   RelationType,
   RelationColumn,
 } from './graph/metamodel/pure/packageableElements/relation/RelationType.js';
+export {
+  Accessor,
+  DataProductAccessor,
+  IngestionAccessor,
+  RelationalStoreAccessor,
+  AccessorInstanceValue,
+  type AccessorOwner,
+} from './graph/metamodel/pure/packageableElements/relation/Accessor.js';
+export { V1_createAccessorFromPackageableElement as createAccessorFromPackageableElement } from './graph-manager/protocol/pure/v1/helpers/V1_AccessorHelper.js';
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
+export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 export {
   Runtime,

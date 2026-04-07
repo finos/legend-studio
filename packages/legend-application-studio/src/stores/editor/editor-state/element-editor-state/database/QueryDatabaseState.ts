@@ -113,7 +113,7 @@ export class IsolatedDatabaseBuilderState extends QueryBuilderState {
       'Compatible mapping expected',
     );
 
-    this.class = guaranteeNonNullable(
+    this.sourceElement = guaranteeNonNullable(
       getMappingCompatibleClasses(electedMapping, classes)[0],
       'Compatible class expected for mapping',
     );

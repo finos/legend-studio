@@ -132,7 +132,7 @@ describe(integrationTest('Query builder result state'), () => {
         queryBuilderState.graphManagerState.graph.getClass(_class);
 
       await act(async () => {
-        queryBuilderState.changeClass(_modelClass);
+        queryBuilderState.changeSourceElement(_modelClass);
       });
       const queryBuilderSetup = await waitFor(() =>
         renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -257,7 +257,7 @@ const testQueryBuilderStateSetup = async (): Promise<{
     queryBuilderState.graphManagerState.graph.getClass('model::Firm');
 
   await act(async () => {
-    queryBuilderState.changeClass(_modelClass);
+    queryBuilderState.changeSourceElement(_modelClass);
   });
   const queryBuilderSetup = await waitFor(() =>
     renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -481,7 +481,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const explorerPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),

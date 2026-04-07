@@ -1130,12 +1130,12 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           // if there is no chosen class or the chosen one is not compatible
           // with the mapping then pick a compatible class if possible
           if (
-            !dataSpaceQueryBuilderState.class ||
-            !compatibleClasses.includes(dataSpaceQueryBuilderState.class)
+            !dataSpaceQueryBuilderState.sourceClass ||
+            !compatibleClasses.includes(dataSpaceQueryBuilderState.sourceClass)
           ) {
             const possibleNewClass = compatibleClasses[0];
             if (possibleNewClass) {
-              dataSpaceQueryBuilderState.changeClass(possibleNewClass);
+              dataSpaceQueryBuilderState.changeSourceElement(possibleNewClass);
             }
           }
           dataSpaceQueryBuilderState.explorerState.refreshTreeData();

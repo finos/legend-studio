@@ -462,10 +462,10 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       );
       // if there is no chosen class or the chosen one is not compatible
       // with the mapping then pick a compatible class if possible
-      if (!this.class || !compatibleClasses.includes(this.class)) {
+      if (!this.sourceClass || !compatibleClasses.includes(this.sourceClass)) {
         const possibleNewClass = compatibleClasses[0];
         if (possibleNewClass) {
-          this.changeClass(possibleNewClass);
+          this.changeSourceElement(possibleNewClass);
         }
       }
     } catch (error) {
@@ -641,8 +641,8 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         this.graphManagerState,
         undefined,
       );
-      if (this.class && !classes.includes(this.class)) {
-        this.setClass(classes[0]);
+      if (this.sourceClass && !classes.includes(this.sourceClass)) {
+        this.setSourceElement(classes[0]);
       }
     }
   }

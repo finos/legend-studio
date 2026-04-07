@@ -163,7 +163,7 @@ export class QueryBuilderMilestoningState implements Hashable {
         } else if (node instanceof QueryBuilderFilterTreeExistsNodeData) {
           if (
             node.propertyExpressionState.derivedPropertyExpressionStates[0] &&
-            this.queryBuilderState.class?._generatedMilestonedProperties.includes(
+            this.queryBuilderState.sourceClass?._generatedMilestonedProperties.includes(
               node.propertyExpressionState.derivedPropertyExpressionStates[0]
                 .derivedProperty,
             )
@@ -192,7 +192,7 @@ export class QueryBuilderMilestoningState implements Hashable {
   }
 
   get isCurrentClassMilestoned(): boolean {
-    const currentclass = this.queryBuilderState.class;
+    const currentclass = this.queryBuilderState.sourceClass;
     if (currentclass !== undefined) {
       const stereotype = getMilestoneTemporalStereotype(
         currentclass,
@@ -204,7 +204,7 @@ export class QueryBuilderMilestoningState implements Hashable {
   }
 
   get isCurrentClassSupportsVersionsInRange(): boolean {
-    const currentclass = this.queryBuilderState.class;
+    const currentclass = this.queryBuilderState.sourceClass;
     if (currentclass !== undefined) {
       const stereotype = getMilestoneTemporalStereotype(
         currentclass,
@@ -412,7 +412,7 @@ export class QueryBuilderMilestoningState implements Hashable {
   }
 
   updateMilestoningConfiguration(): void {
-    const currentclass = this.queryBuilderState.class;
+    const currentclass = this.queryBuilderState.sourceClass;
     if (currentclass !== undefined) {
       const stereotype = getMilestoneTemporalStereotype(
         currentclass,

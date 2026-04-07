@@ -230,7 +230,7 @@ const buildDataProductState = (
   );
   state.initWithDataProduct(dataProduct, executionValue);
   // Manually set the class — the empty test mapping has no compatible classes
-  state.changeClass(graphManagerState.graph.getClass('model::Person'));
+  state.changeSourceElement(graphManagerState.graph.getClass('model::Person'));
   return state;
 };
 
@@ -515,7 +515,7 @@ describe(unitTest('DataSpace – buildQuery vs buildQueryForPersistence'), () =>
 
       // Set a class so buildQuery() has something to work with
       const covidClass = graphManagerState.graph.getClass('domain::COVIDData');
-      state.changeClass(covidClass);
+      state.changeSourceElement(covidClass);
 
       // Neither path embeds from() in the lambda
       const execJson =
@@ -571,7 +571,9 @@ describe(
         state.executionContextState.setMapping(
           graphManagerState.graph.getMapping('model::TestMapping'),
         );
-        state.changeClass(graphManagerState.graph.getClass('model::Person'));
+        state.changeSourceElement(
+          graphManagerState.graph.getClass('model::Person'),
+        );
 
         const execJson =
           graphManagerState.graphManager.serializeRawValueSpecification(

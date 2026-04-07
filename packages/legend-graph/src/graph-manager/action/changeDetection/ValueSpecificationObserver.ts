@@ -66,6 +66,7 @@ import type {
   ColSpecArrayInstance,
   ColSpecInstanceValue,
 } from '../../../graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
+import type { AccessorInstanceValue } from '../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 
 const observe_Abstract_ValueSpecification = (
   metamodel: ValueSpecification,
@@ -264,6 +265,11 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
 
   constructor(observerContext: ObserverContext) {
     this.observerContext = observerContext;
+  }
+  visit_AccessorInstanceValue(
+    valueAccessorInstanceValue: AccessorInstanceValue,
+  ): void {
+    return;
   }
 
   visit_KeyExpressionInstanceValue(

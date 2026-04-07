@@ -140,7 +140,7 @@ test(
       queryBuilderState.graphManagerState.graph.getClass(_class);
 
     await act(async () => {
-      queryBuilderState.changeClass(_modelClass);
+      queryBuilderState.changeSourceElement(_modelClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -269,7 +269,7 @@ test(
       queryBuilderState.graphManagerState.graph.getClass(_class);
 
     await act(async () => {
-      queryBuilderState.changeClass(_modelClass);
+      queryBuilderState.changeSourceElement(_modelClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -334,7 +334,7 @@ test(
       queryBuilderState.graphManagerState.graph.getClass(_class);
 
     await act(async () => {
-      queryBuilderState.changeClass(_modelClass);
+      queryBuilderState.changeSourceElement(_modelClass);
     });
 
     const filterPanel = await waitFor(() =>
@@ -427,7 +427,7 @@ test(
       queryBuilderState.graphManagerState.graph.getClass(_class);
 
     await act(async () => {
-      queryBuilderState.changeClass(_modelClass);
+      queryBuilderState.changeSourceElement(_modelClass);
     });
 
     const filterPanel = await waitFor(() =>

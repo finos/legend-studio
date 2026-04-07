@@ -296,7 +296,7 @@ export class QueryBuilderGraphFetchTreeState
     });
 
     // try to initialize the graph-fetch tree data using the setup class
-    this.updateTreeData(this.queryBuilderState.class);
+    this.updateTreeData(this.queryBuilderState.sourceClass);
     // we will default to standard pure serialization with no config
     this.serializationState = new GraphFetchPureSerializationState(this);
   }
@@ -426,8 +426,9 @@ export class QueryBuilderGraphFetchTreeState
     return;
   }
 
-  onClassChange(_class: Class | undefined): void {
-    this.updateTreeData(_class);
+  onClassChange(): void {
+    // graph-fetch is only applicable for Class sources
+    this.updateTreeData(this.queryBuilderState.sourceClass);
   }
 
   appendFetchStructure(

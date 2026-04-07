@@ -88,7 +88,7 @@ export const DataQualityResultPanel = observer(
         return;
       }
       const genericType = new GenericType(
-        guaranteeNonNullable(queryBuilderState.class),
+        guaranteeNonNullable(queryBuilderState.sourceClass),
       );
       const genericTypeReference =
         GenericTypeExplicitReference.create(genericType);

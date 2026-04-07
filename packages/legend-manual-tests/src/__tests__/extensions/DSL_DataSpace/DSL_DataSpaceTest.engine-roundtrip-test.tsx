@@ -338,7 +338,7 @@ describe(
         const _modelClass =
           queryBuilderState.graphManagerState.graph.getClass(classPath);
         await act(async () => {
-          queryBuilderState.changeClass(_modelClass);
+          queryBuilderState.changeSourceElement(_modelClass);
         });
         const explorerPanel = await waitFor(() =>
           renderResult.getByTestId(

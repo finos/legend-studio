@@ -60,6 +60,7 @@ import {
   getAllSubclasses,
   PropertyExplicitReference,
   reportGraphAnalytics,
+  type RelationColumn,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
@@ -80,6 +81,7 @@ export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   CLASS_PROPERTY = 'CLASS_PROPERTY',
   ENUM_PROPERTY = 'ENUM_PROPERTY',
   PRIMITIVE_PROPERTY = 'PRIMITIVE_PROPERTY',
+  RELATION_COLUMN = 'RELATION_COLUMN',
 }
 
 export const generateExplorerTreePropertyNodeID = (
@@ -94,6 +96,10 @@ export const generateExplorerTreeSubtypeNodeID = (
 
 export interface QueryBuilderExplorerTreeDragSource {
   node: QueryBuilderExplorerTreePropertyNodeData;
+}
+
+export interface QueryBuilderExplorerTreeRelationColumnDragSource {
+  node: QueryBuilderExplorerTreeRelationColumnNodeData;
 }
 
 export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
@@ -218,6 +224,24 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
     this.subclass = subclass;
     this.parentId = parentId;
     this.multiplicity = multiplicity;
+  }
+}
+
+export class QueryBuilderExplorerTreeRelationRootNodeData extends QueryBuilderExplorerTreeNodeData {}
+
+export class QueryBuilderExplorerTreeRelationColumnNodeData extends QueryBuilderExplorerTreeNodeData {
+  column: RelationColumn;
+
+  constructor(
+    id: string,
+    label: string,
+    dndText: string,
+    column: RelationColumn,
+    type: Type,
+    mappingData: QueryBuilderExplorerTreeNodeMappingData,
+  ) {
+    super(id, label, dndText, false, type, mappingData);
+    this.column = column;
   }
 }
 
@@ -807,7 +831,7 @@ export class QueryBuilderExplorerState {
   }
 
   refreshTreeData(): void {
-    const _class = this.queryBuilderState.class;
+    const _class = this.queryBuilderState.sourceClass;
     const _mapping = this.queryBuilderState.executionContextState.mapping;
     this.setTreeData(
       _class && _mapping && this.mappingModelCoverageAnalysisResult
@@ -984,7 +1008,7 @@ export class QueryBuilderExplorerState {
     }
     if (
       !node.mappingData.mapped ||
-      !this.queryBuilderState.class ||
+      !this.queryBuilderState.sourceClass ||
       !this.queryBuilderState.executionContextState.mapping
     ) {
       return;

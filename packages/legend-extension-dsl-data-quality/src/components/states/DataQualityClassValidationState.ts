@@ -157,12 +157,12 @@ export class DataQualityClassValidationState extends DataQualityState {
     this.initializeFilterState(this.constraintsConfigurationElement.filter);
 
     if (this.constraintsConfigurationElement.dataQualityRootGraphFetchTree) {
-      this.dataQualityQueryBuilderState.setClass(
+      this.dataQualityQueryBuilderState.setSourceElement(
         this.constraintsConfigurationElement.dataQualityRootGraphFetchTree.class
           .value,
       );
     } else {
-      this.dataQualityQueryBuilderState.setClass(classOptions[0]);
+      this.dataQualityQueryBuilderState.setSourceElement(classOptions[0]);
       this.dataQualityGraphFetchTreeState = new DataQualityGraphFetchTreeState(
         this,
       );
@@ -182,7 +182,7 @@ export class DataQualityClassValidationState extends DataQualityState {
       undefined,
     );
     this.dataQualityQueryBuilderState.explorerState.setTreeData(undefined);
-    this.dataQualityQueryBuilderState.setClass(undefined);
+    this.dataQualityQueryBuilderState.setSourceElement(undefined);
     this.dataQualityGraphFetchTreeState = new DataQualityGraphFetchTreeState(
       this,
     );
@@ -258,12 +258,12 @@ export class DataQualityClassValidationState extends DataQualityState {
     // if there is no chosen class or the chosen one is not compatible
     // with the mapping then pick a compatible class if possible
     if (
-      !this.dataQualityQueryBuilderState.class ||
-      !compatibleClasses.includes(this.dataQualityQueryBuilderState.class)
+      !this.dataQualityQueryBuilderState.sourceClass ||
+      !compatibleClasses.includes(this.dataQualityQueryBuilderState.sourceClass)
     ) {
       const possibleNewClass = compatibleClasses[0];
       if (possibleNewClass) {
-        this.changeClass(possibleNewClass);
+        this.changeSourceElement(possibleNewClass);
       }
     }
   }

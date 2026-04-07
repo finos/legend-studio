@@ -187,7 +187,7 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
         dataSpace.path,
         executionContext.name,
         runtimePath,
-        this.class?.path,
+        this.sourceClass?.path,
       );
     }
     const route =

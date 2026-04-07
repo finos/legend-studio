@@ -70,6 +70,8 @@ export {
   ModelAccessPointDataProductExecutionState,
 } from './stores/workflows/dataProduct/DataProductQueryBuilderState.js';
 export { DataProductQueryBuilderSetupFormContent } from './components/workflows/DataProductQueryBuilder.js';
+export { AccessorQueryBuilderState } from './stores/workflows/accessor/AccessorQueryBuilderState.js';
+export { getCompatibleRuntimesFromAccessorOwner } from './stores/workflows/accessor/AccessorQueryBuilderHelper.js';
 export { MappingQueryBuilderState } from './stores/workflows/MappingQueryBuilderState.js';
 export {
   type ServiceExecutionContext,

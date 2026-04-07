@@ -154,6 +154,7 @@ import {
   openDataCube,
 } from '../../../stores/editor/data-cube/LegendStudioDataCubeHelper.js';
 import { queryDataProduct } from '../editor-group/dataProduct/DataProductQueryBuilderHelper.js';
+import { queryAccessorSource } from '../editor-group/accessor/AccessorQueryBuilderHelper.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -562,6 +563,16 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const buildAccessorQuery = editorStore.applicationStore.guardUnhandledError(
+      async () => {
+        if (
+          node?.packageableElement instanceof IngestDefinition ||
+          node?.packageableElement instanceof Database
+        ) {
+          await queryAccessorSource(node.packageableElement, editorStore);
+        }
+      },
+    );
     const openCubeViewer = editorStore.applicationStore.guardUnhandledError(
       async () => {
         if (node?.packageableElement) {
@@ -895,6 +906,9 @@ const ExplorerContextMenu = observer(
         )}
         {node.packageableElement instanceof IngestDefinition && (
           <>
+            <MenuContentItem onClick={buildAccessorQuery}>
+              Query...
+            </MenuContentItem>
             <MenuContentItem onClick={openLegendSqlPlayground}>
               Run SQL...
             </MenuContentItem>
@@ -925,6 +939,9 @@ const ExplorerContextMenu = observer(
           <>
             <MenuContentItem onClick={generateModelsFromDatabaseSpecification}>
               Build Models
+            </MenuContentItem>
+            <MenuContentItem onClick={buildAccessorQuery}>
+              Query...
             </MenuContentItem>
             <MenuContentItem onClick={buildDatabaseQuery}>
               Query (Beta)...

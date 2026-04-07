@@ -21,17 +21,21 @@ import {
   flow,
   computed,
   flowResult,
+  override,
 } from 'mobx';
 import {
   type GeneratorFn,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
+  guaranteeType,
   assertTrue,
   assertNonEmptyString,
   type Hashable,
   hashArray,
   ActionState,
+  prettyCONSTName,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -45,7 +49,10 @@ import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import {
   type AbstractPropertyExpression,
   type Type,
+  type RelationColumn,
   type VariableExpression,
+  type RelationTypeMetadata,
+  type PureModel,
   PackageableElementExplicitReference,
   GRAPH_MANAGER_EVENT,
   buildSourceInformationSourceId,
@@ -56,6 +63,23 @@ import {
   stub_RawLambda,
   Multiplicity,
   PrimitiveType,
+  Accessor,
+  Class,
+  LambdaFunction,
+  FunctionType,
+  CORE_PURE_PATH,
+  AccessorInstanceValue,
+  SimpleFunctionExpression,
+  ColSpec,
+  extractElementNameFromPath,
+  ColSpecArrayInstance,
+  ColSpecArray,
+  INTERNAL__UnknownValueSpecification,
+  V1_serializeRawValueSpecification,
+  V1_transformRawLambda,
+  V1_GraphTransformerContextBuilder,
+  buildRawLambdaFromLambdaFunction,
+  type GraphManagerState,
 } from '@finos/legend-graph';
 import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
@@ -66,6 +90,74 @@ import {
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../QueryBuilderStateHashUtils.js';
 import { LambdaEditorState } from '../../../shared/LambdaEditorState.js';
 import { isValueExpressionReferencedInValue } from '../../../QueryBuilderValueSpecificationHelper.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
+
+export const _buildAccessorProjectRawLambda = (
+  graph: PureModel,
+  graphManagerState: GraphManagerState,
+  accessor: Accessor,
+  columns: ReadonlyMap<string, RawLambda>,
+): RawLambda => {
+  const lambdaFunction = new LambdaFunction(
+    new FunctionType(
+      PackageableElementExplicitReference.create(
+        graph.getType(CORE_PURE_PATH.ANY),
+      ),
+      Multiplicity.ONE,
+    ),
+  );
+  const accessorInstanceValue = new AccessorInstanceValue();
+  accessorInstanceValue.values = [accessor];
+  const projectFunction = new SimpleFunctionExpression(
+    extractElementNameFromPath(
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
+    ),
+  );
+  const instanceVal = new ColSpecArrayInstance(Multiplicity.ONE, undefined);
+  const colSpecArray = new ColSpecArray();
+  instanceVal.values = [colSpecArray];
+  const transformerContext = new V1_GraphTransformerContextBuilder(
+    // TODO?: do we need to include the plugins here?
+    [],
+  ).build();
+  columns.forEach((lambda, columnName) => {
+    const colSpec = new ColSpec();
+    colSpec.name = columnName;
+    colSpec.function1 = new INTERNAL__UnknownValueSpecification(
+      V1_serializeRawValueSpecification(
+        V1_transformRawLambda(lambda, transformerContext),
+      ),
+    );
+    colSpecArray.colSpecs.push(colSpec);
+  });
+  projectFunction.parametersValues = [accessorInstanceValue, instanceVal];
+  lambdaFunction.expressionSequence = [projectFunction];
+  return buildRawLambdaFromLambdaFunction(lambdaFunction, graphManagerState);
+};
+
+export const _decorateRawLambdaWithParametersAndLetExpressions = (
+  rawLambda: RawLambda,
+  parameters: PlainObject[],
+  letExpressions: PlainObject[],
+): RawLambda => {
+  let lambdaBody = rawLambda.body;
+  if (letExpressions.length) {
+    if (Array.isArray(rawLambda.body)) {
+      lambdaBody = [...letExpressions, ...(rawLambda.body as object[])];
+    } else {
+      lambdaBody = [...letExpressions, rawLambda.body];
+    }
+  }
+  return new RawLambda(
+    [
+      ...(Array.isArray(rawLambda.parameters)
+        ? (rawLambda.parameters as object[])
+        : []),
+      ...parameters,
+    ],
+    lambdaBody,
+  );
+};
 
 export const QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE = 'PROJECTION_COLUMN';
 
@@ -177,6 +269,54 @@ export class QueryBuilderSimpleProjectionColumnState
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.SIMPLE_PROJECTION_COLUMN_STATE,
       this.propertyExpressionState,
+      this.columnName,
+    ]);
+  }
+}
+
+export class QueryBuilderRelationColumnProjectionColumnState
+  extends QueryBuilderProjectionColumnState
+  implements Hashable
+{
+  lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
+
+  readonly column: RelationColumn;
+
+  constructor(
+    tdsState: QueryBuilderTDSState,
+    column: RelationColumn,
+    humanizePropertyName: boolean = true,
+  ) {
+    super(tdsState, column.name);
+
+    makeObservable(this, {
+      hashCode: override,
+      lambdaParameterName: observable,
+      setLambdaParameterName: action,
+    });
+
+    this.column = column;
+    this.columnName = humanizePropertyName
+      ? prettyCONSTName(column.name)
+      : column.name;
+  }
+
+  override getColumnType(): Type | undefined {
+    return this.column.genericType.value.rawType;
+  }
+
+  setLambdaParameterName(val: string): void {
+    this.lambdaParameterName = val;
+  }
+
+  isVariableUsed(_variable: VariableExpression): boolean {
+    return false;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.RELATION_COLUMN_PROJECTION_COLUMN_STATE,
+      this.column.name,
       this.columnName,
     ]);
   }
@@ -300,6 +440,7 @@ export class QueryBuilderDerivationProjectionColumnState
       returnType: observable,
       fetchingLambdaReturnTypeState: observable,
       setLambda: action,
+      setResolvedLambdaReturnType: action,
       fetchDerivationLambdaReturnType: flow,
       setLambdaReturnType: action,
     });
@@ -351,13 +492,29 @@ export class QueryBuilderDerivationProjectionColumnState
       }
       assertTrue(Array.isArray(this.lambda.parameters));
       const graph = this.tdsState.queryBuilderState.graphManagerState.graph;
-      const isolatedLambda = this.getIsolatedRawLambda();
-      const type =
-        (yield this.tdsState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
-          isolatedLambda,
-          graph,
-        )) as string;
-      this.setLambdaReturnType(type);
+      const sourceElement = this.tdsState.queryBuilderState.sourceElement;
+      if (sourceElement instanceof Class) {
+        const isolatedLambda = this.getIsolatedClassRawLambda();
+        const type =
+          (yield this.tdsState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
+            isolatedLambda,
+            graph,
+          )) as string;
+        this.setLambdaReturnType(type);
+      } else if (sourceElement instanceof Accessor) {
+        const isolatedLambda = this.getIsolatedAccessorRawLambda(sourceElement);
+        const relationTypeMetadata =
+          (yield this.tdsState.queryBuilderState.graphManagerState.graphManager.getLambdaRelationType(
+            isolatedLambda,
+            graph,
+          )) as RelationTypeMetadata;
+        const columnMetadata = relationTypeMetadata.columns.find(
+          (col) => col.name === this.columnName,
+        );
+        if (columnMetadata) {
+          this.setLambdaReturnType(columnMetadata.type);
+        }
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.tdsState.queryBuilderState.applicationStore.logService.info(
@@ -372,7 +529,28 @@ export class QueryBuilderDerivationProjectionColumnState
     }
   }
 
-  getIsolatedRawLambda(): RawLambda {
+  getIsolatedAccessorRawLambda(_accessor: Accessor): RawLambda {
+    const { graphManagerState } = this.tdsState.queryBuilderState;
+    const isolatedLambda = _buildAccessorProjectRawLambda(
+      graphManagerState.graph,
+      graphManagerState,
+      _accessor,
+      new Map([[this.columnName, this.lambda]]),
+    );
+    const enrichedLambda = _decorateRawLambdaWithParametersAndLetExpressions(
+      isolatedLambda,
+      this.tdsState.getParameters(),
+      this.tdsState.getLetExpressions(),
+    );
+    return enrichedLambda;
+  }
+
+  getIsolatedClassRawLambda(): RawLambda {
+    const _class = guaranteeType(
+      this.tdsState.queryBuilderState.sourceElement,
+      Class,
+      'Expected source element to be a class',
+    );
     assertTrue(Array.isArray(this.lambda.parameters));
     const projectionParameter = this.lambda.parameters as object[];
     assertTrue(projectionParameter.length === 1);
@@ -383,45 +561,26 @@ export class QueryBuilderDerivationProjectionColumnState
     const rawVariableExpression = new RawVariableExpression(
       variable.name,
       Multiplicity.ONE,
-      PackageableElementExplicitReference.create(
-        guaranteeNonNullable(queryBuilderState.class),
-      ),
+      PackageableElementExplicitReference.create(guaranteeNonNullable(_class)),
     );
     const _rawVariableExpression =
       queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
         rawVariableExpression,
       );
-    const parameters = queryBuilderState.parametersState.parameterStates.map(
-      (_param) =>
-        queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
-          _param.parameter,
-        ),
+    return _decorateRawLambdaWithParametersAndLetExpressions(
+      new RawLambda([_rawVariableExpression], this.lambda.body),
+      this.tdsState.getParameters(),
+      this.tdsState.getLetExpressions(),
     );
-    const letExpressions = queryBuilderState.constantState.constants
-      .map((_const) => _const.buildLetExpression())
-      .map((expres) =>
-        queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
-          expres,
-        ),
-      );
-    let lambdaBody = this.lambda.body;
-    if (letExpressions.length) {
-      if (Array.isArray(this.lambda.body)) {
-        lambdaBody = [...letExpressions, ...(this.lambda.body as object[])];
-      } else {
-        lambdaBody = [...letExpressions, this.lambda.body];
-      }
-    }
-    const isolatedLambda = new RawLambda(
-      [_rawVariableExpression, ...parameters],
-      lambdaBody,
-    );
-    return isolatedLambda;
   }
 
   setLambdaReturnType(type: string): void {
-    const resolvedType =
-      this.tdsState.queryBuilderState.graphManagerState.graph.getType(type);
+    this.setResolvedLambdaReturnType(
+      this.tdsState.queryBuilderState.graphManagerState.graph.getType(type),
+    );
+  }
+
+  setResolvedLambdaReturnType(resolvedType: Type): void {
     assertTrue(
       resolvedType instanceof PrimitiveType ||
         resolvedType instanceof Enumeration,

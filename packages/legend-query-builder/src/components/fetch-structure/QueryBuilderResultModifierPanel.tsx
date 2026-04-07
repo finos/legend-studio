@@ -481,10 +481,10 @@ export const QueryResultModifierModal = observer(
         let newParamStates: LambdaParameterState[] = [];
         if (
           (!businessDate || !processingDate) &&
-          milestoningState.queryBuilderState.class
+          milestoningState.queryBuilderState.sourceClass
         ) {
           const stereotype = getMilestoneTemporalStereotype(
-            milestoningState.queryBuilderState.class,
+            milestoningState.queryBuilderState.sourceClass,
             milestoningState.queryBuilderState.graphManagerState.graph,
           );
           if (stereotype) {
@@ -736,7 +736,7 @@ export const QueryResultModifierModal = observer(
       milestoningState.processingDate,
       milestoningState.startDate,
       milestoningState.endDate,
-      milestoningState.queryBuilderState.class,
+      milestoningState.queryBuilderState.sourceElement,
     ]);
 
     return (

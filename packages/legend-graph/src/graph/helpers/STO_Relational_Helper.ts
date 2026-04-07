@@ -59,6 +59,7 @@ import {
   RelationalDatabaseConnection,
 } from '../../STO_Relational_Exports.js';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
+import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { PackageableConnection } from '../metamodel/pure/packageableElements/connection/PackageableConnection.js';
 import {
   getOrCreateColumnFromGeneratedTable,
@@ -217,6 +218,49 @@ export function getColumn(relation: Table | View, name: string): Column {
   }
   return getOrCreateColumnFromGeneratedTable(name, relation);
 }
+
+export const mapRelationalDataTypeToPrimitiveType = (
+  dataType: RelationalDataType,
+): PrimitiveType => {
+  if (
+    dataType instanceof VarChar ||
+    dataType instanceof Char ||
+    dataType instanceof SemiStructured ||
+    dataType instanceof Json
+  ) {
+    return PrimitiveType.STRING;
+  }
+  if (
+    dataType instanceof Integer ||
+    dataType instanceof BigInt ||
+    dataType instanceof SmallInt ||
+    dataType instanceof TinyInt
+  ) {
+    return PrimitiveType.INTEGER;
+  }
+  if (dataType instanceof Float || dataType instanceof Real) {
+    return PrimitiveType.FLOAT;
+  }
+  if (dataType instanceof Double) {
+    return PrimitiveType.NUMBER;
+  }
+  if (dataType instanceof Decimal || dataType instanceof Numeric) {
+    return PrimitiveType.DECIMAL;
+  }
+  if (dataType instanceof Bit) {
+    return PrimitiveType.BOOLEAN;
+  }
+  if (dataType instanceof Timestamp) {
+    return PrimitiveType.DATETIME;
+  }
+  if (dataType instanceof Date) {
+    return PrimitiveType.STRICTDATE;
+  }
+  if (dataType instanceof Binary || dataType instanceof VarBinary) {
+    return PrimitiveType.BINARY;
+  }
+  return PrimitiveType.STRING;
+};
 
 export const stringifyDataType = (type: RelationalDataType): string => {
   if (type instanceof VarChar) {

@@ -295,7 +295,7 @@ export const appendProjection = (
     ];
     lambdaFunction.expressionSequence[0] = groupByFunction;
   } else if (tdsState.projectionColumns.length) {
-    if (!tdsState.queryBuilderState.isFetchStructureTyped) {
+    if (!queryBuilderState.useRelation) {
       // projection
       const projectFunction = new SimpleFunctionExpression(
         extractElementNameFromPath(

@@ -61,7 +61,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,

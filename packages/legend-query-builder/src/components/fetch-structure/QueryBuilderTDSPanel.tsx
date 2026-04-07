@@ -48,6 +48,7 @@ import {
   type QueryBuilderExplorerTreeDragSource,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
+  type QueryBuilderExplorerTreeRelationColumnNodeData,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import {
   type DropTargetMonitor,
@@ -60,6 +61,7 @@ import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
+  QueryBuilderRelationColumnProjectionColumnState,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import {
@@ -133,6 +135,7 @@ import { WavgParamDNDZone } from './QueryBuilderAggParam.js';
 const CAN_DROP_MAIN_GROUP_DND_TYPES = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN,
   QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
   QUERY_BUILDER_FUNCTION_DND_TYPE,
 ];
@@ -172,13 +175,22 @@ const QueryBuilderProjectionColumnContextMenu = observer(
         projectionColumnState.tdsState.transformSimpleProjectionToDerivation(
           projectionColumnState,
         );
+      } else if (
+        projectionColumnState instanceof
+        QueryBuilderRelationColumnProjectionColumnState
+      ) {
+        projectionColumnState.tdsState.transformRelationColumnProjectionToDerivation(
+          projectionColumnState,
+        );
       }
     };
 
     return (
       <MenuContent ref={ref}>
-        {projectionColumnState instanceof
-          QueryBuilderSimpleProjectionColumnState && (
+        {(projectionColumnState instanceof
+          QueryBuilderSimpleProjectionColumnState ||
+          projectionColumnState instanceof
+            QueryBuilderRelationColumnProjectionColumnState) && (
           <MenuContentItem onClick={convertToDerivation}>
             Convert To Derivation
           </MenuContentItem>
@@ -430,7 +442,7 @@ const QueryBuilderProjectionColumnEditor = observer(
 
     // calendar
     const aggregateCalendarFunctionDateColumns =
-      tdsState.queryBuilderState.class?.properties.filter((p) => {
+      tdsState.queryBuilderState.sourceClass?.properties.filter((p) => {
         const _type = p.genericType.value.rawType.name;
         if (
           _type === PRIMITIVE_TYPE.DATE ||
@@ -804,7 +816,9 @@ const QueryBuilderProjectionColumnEditor = observer(
           disabled={
             !(
               projectionColumnState instanceof
-              QueryBuilderSimpleProjectionColumnState
+                QueryBuilderSimpleProjectionColumnState ||
+              projectionColumnState instanceof
+                QueryBuilderRelationColumnProjectionColumnState
             )
           }
           className={clsx('query-builder__projection__column__context-menu', {
@@ -892,6 +906,35 @@ const QueryBuilderProjectionColumnEditor = observer(
                   />
                   <QueryBuilderDerivationProjectionColumnEditor
                     projectionColumnState={projectionColumnState}
+                  />
+                </div>
+              </>
+            )}
+            {projectionColumnState instanceof
+              QueryBuilderRelationColumnProjectionColumnState && (
+              <>
+                <QueryBuilderDerivationInfoTooltip
+                  title={projectionColumnState.columnName}
+                  type={projectionColumnState.getColumnType()}
+                  placement="bottom-start"
+                >
+                  <div className="query-builder-property-expression-badge__property__info">
+                    <InfoCircleIcon />
+                  </div>
+                </QueryBuilderDerivationInfoTooltip>
+                <div className="query-builder__projection__column__value">
+                  <QueryBuilderEditablePropertyName
+                    columnName={projectionColumnState.columnName}
+                    setColumnName={setColumnName}
+                    error={
+                      isDuplicatedColumnName
+                        ? 'Duplicated column'
+                        : projectionColumnState.columnName.length === 0
+                          ? 'Empty column name'
+                          : undefined
+                    }
+                    title={projectionColumnState.columnName}
+                    defaultColumnName="(column)"
                   />
                 </div>
               </>
@@ -1309,6 +1352,21 @@ export const QueryBuilderTDSPanel = observer(
               ),
             );
             break;
+          case QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN: {
+            const dragNode = (
+              item as unknown as {
+                node: QueryBuilderExplorerTreeRelationColumnNodeData;
+              }
+            ).node;
+            tdsState.addColumn(
+              new QueryBuilderRelationColumnProjectionColumnState(
+                tdsState,
+                dragNode.column,
+                true,
+              ),
+            );
+            break;
+          }
           case QUERY_BUILDER_FILTER_DND_TYPE.CONDITION:
             if (item.node instanceof QueryBuilderFilterTreeConditionNodeData) {
               const propertyExpression = isExistsNodeChild(item.node)

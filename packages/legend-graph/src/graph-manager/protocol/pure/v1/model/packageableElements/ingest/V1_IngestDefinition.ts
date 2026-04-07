@@ -30,18 +30,22 @@ export class V1_IngestDefinition extends V1_INTERNAL__UnknownPackageableElement 
     return visitor.visit_IngestDefinition(this);
   }
 }
-export interface V1_IngestDataset {
-  name: string;
-  primaryKey: string[];
-  source: {
-    _type: string;
-    schema: {
-      _type: string;
-      columns: V1_RelationTypeColumn[];
-    };
-  };
+export class V1_IngestDatasetSchema {
+  _type!: string;
+  columns: V1_RelationTypeColumn[] = [];
 }
 
-export interface V1_IngestDefinitionContent {
+export class V1_IngestDatasetSource {
+  _type!: string;
+  schema!: V1_IngestDatasetSchema;
+}
+
+export class V1_IngestDataset {
+  name!: string;
+  primaryKey: string[] = [];
+  source!: V1_IngestDatasetSource;
+}
+
+export class V1_IngestDefinitionContent {
   datasets?: V1_IngestDataset[];
 }

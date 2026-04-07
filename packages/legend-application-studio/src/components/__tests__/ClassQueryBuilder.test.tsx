@@ -126,7 +126,7 @@ describe(
         );
         const queryBuilderState =
           MOCK__editorStore.embeddedQueryBuilderState.queryBuilderState;
-        const _personClass = queryBuilderState?.class;
+        const _personClass = queryBuilderState?.sourceClass;
         await waitFor(() =>
           queryClass(guaranteeNonNullable(_personClass), MOCK__editorStore),
         );

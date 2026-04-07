@@ -119,6 +119,15 @@ import {
   ColSpecInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
 import { V1_ColSpec } from '../../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
+import {
+  V1_RelationStoreAccessor,
+  V1_IngestDefinitionAccessor,
+  V1_DataProductAccessor,
+} from '../../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
+import { AccessorInstanceValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
+import { V1_createAccessorFromPackageableElement } from '../../../../helpers/V1_AccessorHelper.js';
+import { Database } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
+import { IngestDefinition } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -474,6 +483,66 @@ export class V1_ValueSpecificationBuilder
         instanceValue.values = [value];
         return instanceValue;
       }
+      case V1_ClassInstanceType.RELATION_STORE_ACCESSOR: {
+        const protocol = guaranteeType(
+          valueSpecification.value,
+          V1_RelationStoreAccessor,
+        );
+        const dbPath = guaranteeNonNullable(protocol.path[0]);
+        const schemaName = protocol.path[1];
+        const tableName = protocol.path[2];
+        const db = guaranteeType(
+          this.context.resolveElement(dbPath, false).value,
+          Database,
+        );
+        const accessor = guaranteeNonNullable(
+          V1_createAccessorFromPackageableElement(db, this.context, {
+            schemaName,
+            tableName,
+          }),
+          `Can't build accessor for database '${dbPath}'`,
+        );
+        const accessorInstanceValue = new AccessorInstanceValue();
+        accessorInstanceValue.values = [accessor];
+        accessorInstanceValue.genericType = GenericTypeExplicitReference.create(
+          new GenericType(accessor.relationType),
+        );
+        return accessorInstanceValue;
+      }
+      case V1_ClassInstanceType.INGEST_ACCESSOR: {
+        const protocol = guaranteeType(
+          valueSpecification.value,
+          V1_IngestDefinitionAccessor,
+        );
+        const ingestPath = guaranteeNonNullable(protocol.path[0]);
+        const datasetName = protocol.path[1];
+        const ingestDef = guaranteeType(
+          this.context.resolveElement(ingestPath, false).value,
+          IngestDefinition,
+        );
+        const accessor = guaranteeNonNullable(
+          V1_createAccessorFromPackageableElement(ingestDef, this.context, {
+            tableName: datasetName,
+          }),
+          `Can't build accessor for ingest definition '${ingestPath}'`,
+        );
+        const accessorInstanceValue = new AccessorInstanceValue();
+        accessorInstanceValue.values = [accessor];
+        accessorInstanceValue.genericType = GenericTypeExplicitReference.create(
+          new GenericType(accessor.relationType),
+        );
+        return accessorInstanceValue;
+      }
+      case V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR: {
+        const protocol = guaranteeType(
+          valueSpecification.value,
+          V1_DataProductAccessor,
+        );
+        const _path = protocol.path;
+        throw new UnsupportedOperationError(
+          `Can't build accessor for data product with path '${_path.join('.')}': data product accessor building is not yet supported`,
+        );
+      }
       default: {
         const builders = this.context.extensions.plugins.flatMap(
           (plugin) => plugin.V1_getExtraClassInstanceValueBuilders?.() ?? [],
@@ -609,6 +678,7 @@ export function V1_processProperty(
     const _funcExp = new FunctionExpression(col.name);
     _funcExp.func = col;
     _funcExp.parametersValues = processedParameters;
+    _funcExp.genericType = col.genericType;
     return _funcExp;
   }
   throw new UnsupportedOperationError(

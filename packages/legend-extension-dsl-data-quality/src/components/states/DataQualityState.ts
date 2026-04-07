@@ -158,7 +158,7 @@ export abstract class DataQualityState extends ElementEditorState {
       setShowDateSelection: action,
       updateElementOnClassChange: action,
       checkConstraintsSelectedAtNode: action,
-      changeClass: action,
+      changeSourceElement: action,
       setProcessingDate: action,
       setBusinessDate: action,
       fetchStructuralValidations: flow,
@@ -220,7 +220,7 @@ export abstract class DataQualityState extends ElementEditorState {
   }
 
   get currentClassMilestoningStrategy(): MILESTONING_STEREOTYPE | undefined {
-    const currentclass = this.dataQualityQueryBuilderState.class;
+    const currentclass = this.dataQualityQueryBuilderState.sourceClass;
     if (currentclass !== undefined) {
       return getMilestoneTemporalStereotype(
         currentclass,
@@ -360,7 +360,7 @@ export abstract class DataQualityState extends ElementEditorState {
       return;
     }
     const genericType = new GenericType(
-      guaranteeNonNullable(this.dataQualityQueryBuilderState.class),
+      guaranteeNonNullable(this.dataQualityQueryBuilderState.sourceClass),
     );
     const genericTypeReference =
       GenericTypeExplicitReference.create(genericType);
@@ -409,14 +409,14 @@ export abstract class DataQualityState extends ElementEditorState {
       : 'data-quality-validation__setup__data-space';
   }
 
-  changeClass(val: Class): void {
-    this.dataQualityQueryBuilderState.changeClass(val);
+  changeSourceElement(val: Class): void {
+    this.dataQualityQueryBuilderState.changeSourceElement(val);
     this.structuralValidationsGraphFetchTreeState =
       new DataQualityGraphFetchTreeState(this);
     this.resultState = new DataQualityResultState(this);
     this.initializeGraphFetchTreeState(
       buildDefaultDataQualityRootGraphFetchTree(
-        guaranteeNonNullable(this.dataQualityQueryBuilderState.class),
+        guaranteeNonNullable(this.dataQualityQueryBuilderState.sourceClass),
       ),
     );
     this.updateElementOnClassChange();
