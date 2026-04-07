@@ -22,9 +22,6 @@ import {
 import {
   APPLICATION_EVENT,
   type TelemetryService,
-  type VirtualAssistantTabAccessed_TelemetryData,
-  type VirtualAssistantDocumentationSearchInitiated_TelemetryData,
-  type VirtualAssistantContextualInfoPresent_TelemetryData,
   type VirtualAssistantSearchResultAccessed_TelemetryData,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioEvent.js';
@@ -151,28 +148,28 @@ export class LegendStudioTelemetryHelper {
 
   static logEvent_VirtualAssistantTabAccessed(
     service: TelemetryService,
-    data: VirtualAssistantTabAccessed_TelemetryData,
+    tab: string,
   ): void {
-    service.logEvent(APPLICATION_EVENT.VIRTUAL_ASSISTANT_TAB__ACCESS, data);
+    service.logEvent(APPLICATION_EVENT.VIRTUAL_ASSISTANT_TAB__ACCESS, { tab });
   }
 
   static logEvent_VirtualAssistantDocumentationSearchInitiated(
     service: TelemetryService,
-    data: VirtualAssistantDocumentationSearchInitiated_TelemetryData,
+    searchText: string,
   ): void {
     service.logEvent(
       APPLICATION_EVENT.VIRTUAL_ASSISTANT_DOCUMENTATION_SEARCH__INITIATED,
-      data,
+      { searchText },
     );
   }
 
   static logEvent_VirtualAssistantContextualInfoPresent(
     service: TelemetryService,
-    data: VirtualAssistantContextualInfoPresent_TelemetryData,
+    contextKey: string,
   ): void {
     service.logEvent(
       APPLICATION_EVENT.VIRTUAL_ASSISTANT_CONTEXTUAL_INFO__PRESENT,
-      data,
+      { contextKey },
     );
   }
 

@@ -26,12 +26,7 @@ import {
   FuzzySearchAdvancedConfigState,
   type DocumentationEntry,
 } from '@finos/legend-shared';
-import type {
-  VirtualAssistantTabAccessed_TelemetryData,
-  VirtualAssistantDocumentationSearchInitiated_TelemetryData,
-  VirtualAssistantSearchResultAccessed_TelemetryData,
-  VirtualAssistantContextualInfoPresent_TelemetryData,
-} from '../__lib__/LegendApplicationTelemetry.js';
+import type { VirtualAssistantSearchResultAccessed_TelemetryData } from '../__lib__/LegendApplicationTelemetry.js';
 
 export enum VIRTUAL_ASSISTANT_TAB {
   SEARCH = 'SEARCH',
@@ -109,16 +104,12 @@ export const shouldDisplayVirtualAssistantDocumentationEntry = (
 export type VirtualAssistantTelemetryCallbacks = {
   onPanelOpen?(): void;
   onPanelClose?(): void;
-  onTabAccess?(data: VirtualAssistantTabAccessed_TelemetryData): void;
-  onSearchInitiated?(
-    data: VirtualAssistantDocumentationSearchInitiated_TelemetryData,
-  ): void;
+  onTabAccess?(tab: string): void;
+  onSearchInitiated?(searchText: string): void;
   onSearchResultAccess?(
     data: VirtualAssistantSearchResultAccessed_TelemetryData,
   ): void;
-  onContextualInfoPresent?(
-    data: VirtualAssistantContextualInfoPresent_TelemetryData,
-  ): void;
+  onContextualInfoPresent?(contextKey: string): void;
 };
 
 export class AssistantService {

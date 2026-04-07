@@ -290,9 +290,9 @@ const VirtualAssistantSearchPanel = observer(() => {
     () =>
       debounce(() => {
         if (assistantService.searchText.length > 0) {
-          assistantService.telemetryCallbacks?.onSearchInitiated?.({
-            searchText: assistantService.searchText,
-          });
+          assistantService.telemetryCallbacks?.onSearchInitiated?.(
+            assistantService.searchText,
+          );
         }
       }, 1000),
     [assistantService],
@@ -589,15 +589,15 @@ const VirtualAssistantPanel = observer(
       assistantService.setIsPanelMaximized(!assistantService.isPanelMaximized);
     const selectSearch = (): void => {
       assistantService.setSelectedTab(VIRTUAL_ASSISTANT_TAB.SEARCH);
-      assistantService.telemetryCallbacks?.onTabAccess?.({
-        tab: VIRTUAL_ASSISTANT_TAB.SEARCH,
-      });
+      assistantService.telemetryCallbacks?.onTabAccess?.(
+        VIRTUAL_ASSISTANT_TAB.SEARCH,
+      );
     };
     const selectContextualDoc = (): void => {
       assistantService.setSelectedTab(VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT);
-      assistantService.telemetryCallbacks?.onTabAccess?.({
-        tab: VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT,
-      });
+      assistantService.telemetryCallbacks?.onTabAccess?.(
+        VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT,
+      );
     };
     const closeAssistantPanel = (): void => {
       assistantService.setIsOpen(false);
@@ -712,9 +712,9 @@ const VirtualAssistantPanel = observer(
                   })}
                   onClick={() => {
                     assistantService.setSelectedTab(config.key);
-                    assistantService.telemetryCallbacks?.onTabAccess?.({
-                      tab: config.key,
-                    });
+                    assistantService.telemetryCallbacks?.onTabAccess?.(
+                      config.key,
+                    );
                     if (config.autoExpandOnOpen) {
                       assistantService.setIsPanelMaximized(true);
                     }
@@ -785,9 +785,9 @@ export const VirtualAssistant = observer(() => {
     if (newVal) {
       assistantService.telemetryCallbacks?.onPanelOpen?.();
       if (currentContextualDocumentationEntry) {
-        assistantService.telemetryCallbacks?.onContextualInfoPresent?.({
-          contextKey: currentContextualDocumentationEntry.context,
-        });
+        assistantService.telemetryCallbacks?.onContextualInfoPresent?.(
+          currentContextualDocumentationEntry.context,
+        );
       }
     } else {
       assistantService.telemetryCallbacks?.onPanelClose?.();

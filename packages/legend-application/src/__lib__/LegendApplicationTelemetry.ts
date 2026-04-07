@@ -27,18 +27,6 @@ type VirtualAssistantDocumentationEntryAccessed_TelemetryData = {
   action: string;
 };
 
-export type VirtualAssistantTabAccessed_TelemetryData = {
-  tab: string;
-};
-
-export type VirtualAssistantDocumentationSearchInitiated_TelemetryData = {
-  searchText: string;
-};
-
-export type VirtualAssistantContextualInfoPresent_TelemetryData = {
-  contextKey: string;
-};
-
 export type VirtualAssistantSearchResultAccessed_TelemetryData = {
   key: string;
   searchText: string;

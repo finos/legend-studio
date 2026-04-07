@@ -68,25 +68,25 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
             LegendStudioTelemetryHelper.logEvent_VirtualAssistantPanelClosed(
               store.telemetryService,
             ),
-          onTabAccess: (data) =>
+          onTabAccess: (tab) =>
             LegendStudioTelemetryHelper.logEvent_VirtualAssistantTabAccessed(
               store.telemetryService,
-              data,
+              tab,
             ),
-          onSearchInitiated: (data) =>
+          onSearchInitiated: (searchText) =>
             LegendStudioTelemetryHelper.logEvent_VirtualAssistantDocumentationSearchInitiated(
               store.telemetryService,
-              data,
+              searchText,
             ),
           onSearchResultAccess: (data) =>
             LegendStudioTelemetryHelper.logEvent_VirtualAssistantSearchResultAccessed(
               store.telemetryService,
               data,
             ),
-          onContextualInfoPresent: (data) =>
+          onContextualInfoPresent: (contextKey) =>
             LegendStudioTelemetryHelper.logEvent_VirtualAssistantContextualInfoPresent(
               store.telemetryService,
-              data,
+              contextKey,
             ),
         };
         return new ShowcaseManagerState(store);
