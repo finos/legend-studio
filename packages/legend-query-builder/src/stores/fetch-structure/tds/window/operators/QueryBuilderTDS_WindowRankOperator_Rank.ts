@@ -29,6 +29,10 @@ export class QueryBuilderTDS_WindowRankOperator_Rank extends QueryBuilderTDS_Win
     return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_RANK;
   }
 
+  get relationFunc(): string | undefined {
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_RANK;
+  }
+
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_RANK,

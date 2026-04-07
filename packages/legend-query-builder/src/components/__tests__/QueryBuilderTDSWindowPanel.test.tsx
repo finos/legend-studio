@@ -46,6 +46,9 @@ import {
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderTDS_WindowRankOperatorState } from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
+import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
+import { TEST_DATA_typedTDSRank } from '../../stores/__tests__/TEST_DATA__TypedTDSWindowFunctions.js';
 
 test(
   integrationTest('Window column editor shows correct placeholder text'),
@@ -692,5 +695,61 @@ test(
     // Open modal again to check that window column is applied
     fireEvent.click(editButton);
     expect(getByText(windowColumnContainer, 'Last Name')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest('Typed TDS rank operator is correctly parsed from grammar'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA_typedTDSRank.parameters,
+          TEST_DATA_typedTDSRank.body,
+        ),
+      );
+    });
+
+    // check state was built properly
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsState.showWindowFuncPanel).toBe(true);
+
+    expect(tdsState.windowState.windowColumns).toHaveLength(1);
+    const windowCol = guaranteeNonNullable(
+      tdsState.windowState.windowColumns[0],
+    );
+
+    expect(windowCol.columnName).toBe('rank');
+
+    expect(windowCol.operatorState).toBeInstanceOf(
+      QueryBuilderTDS_WindowRankOperatorState,
+    );
+
+    expect(windowCol.windowColumns).toHaveLength(1);
+    expect(windowCol.windowColumns[0]?.columnName).toBe('First Name');
+
+    expect(windowCol.sortByState).not.toBeUndefined();
+    expect(windowCol.sortByState?.columnState.columnName).toBe('Age');
+    expect(windowCol.sortByState?.sortType).toBe(COLUMN_SORT_TYPE.ASC);
+
+    //check that UI was rendered correctly
+    const windowFunctionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    expect(getByText(windowFunctionPanel, 'rank')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, '(1)')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, 'Age')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, 'asc')).not.toBeNull();
+    expect(getByDisplayValue(windowFunctionPanel, 'rank')).not.toBeNull();
   },
 );
