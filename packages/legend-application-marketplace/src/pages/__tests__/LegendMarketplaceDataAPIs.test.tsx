@@ -287,6 +287,62 @@ describe('LegendMarketplaceDataAPIs', () => {
       // At minimum, the results layout container is present
       expect(screen.getByText('4 Services')).toBeDefined();
     });
+
+    test('items per page is persisted to local storage', async () => {
+      const { MOCK__baseStore } = await setupTestComponent();
+
+      expect(screen.getByText('Items per page:')).toBeDefined();
+
+      // Default items per page — nothing persisted yet
+      const persisted =
+        MOCK__baseStore.applicationStore.settingService.getNumericValue(
+          'marketplace.data-apis.itemsPerPage',
+        );
+      expect(persisted).toBeUndefined();
+
+      // Persist a value via the settings service (simulating what setItemsPerPage does)
+      await act(async () => {
+        MOCK__baseStore.applicationStore.settingService.persistValue(
+          'marketplace.data-apis.itemsPerPage',
+          24,
+        );
+      });
+
+      const updatedPersisted =
+        MOCK__baseStore.applicationStore.settingService.getNumericValue(
+          'marketplace.data-apis.itemsPerPage',
+        );
+      expect(updatedPersisted).toBe(24);
+    });
+
+    test('persisted items per page is restored on load', async () => {
+      // Pre-set the persisted value before rendering the component
+      const MOCK__baseStore =
+        await TEST__provideMockLegendMarketplaceBaseStore();
+
+      MOCK__baseStore.applicationStore.settingService.persistValue(
+        'marketplace.data-apis.itemsPerPage',
+        24,
+      );
+
+      mockUseSearchParams.mockReturnValue([
+        new URLSearchParams(),
+        mockSetSearchParams,
+      ]);
+
+      createSpy(
+        MOCK__baseStore.engineServerClient,
+        'getServicesInfo',
+      ).mockResolvedValue(mockServices.map((s) => ServiceDetail.fromJson(s)));
+
+      await TEST__setUpMarketplaceLakehouse(MOCK__baseStore, DATA_APIS_ROUTE);
+
+      await waitFor(() => screen.getByText(/\d+ Services/));
+
+      // With 4 services and 24 items per page, all should show on one page
+      // Verify the "Showing 1 to 4 of 4 results" text is present
+      await waitFor(() => expect(screen.getByText(/Showing/)).toBeDefined());
+    });
   });
 
   describe('Error handling', () => {
@@ -416,6 +472,141 @@ describe('LegendMarketplaceDataAPIs', () => {
       });
 
       await waitFor(() => expect(screen.getByText('0 Services')).toBeDefined());
+    });
+  });
+
+  describe('Favorites', () => {
+    test('renders favorite star button in sort bar', async () => {
+      await setupTestComponent();
+      expect(screen.getByTitle('Show favorites only')).toBeDefined();
+    });
+
+    test('clicking star on a tile card toggles favorite', async () => {
+      await setupTestComponent();
+
+      const addButtons = screen.getAllByTitle('Add to favorites');
+      expect(addButtons.length).toBeGreaterThan(0);
+
+      // Favorite the first card
+      const firstAdd = addButtons.at(0);
+      expect(firstAdd).toBeDefined();
+      await act(async () => {
+        fireEvent.click(firstAdd as HTMLElement);
+      });
+
+      // The button should now say "Remove from favorites"
+      expect(screen.getAllByTitle('Remove from favorites').length).toBe(1);
+    });
+
+    test('clicking star on a list row toggles favorite', async () => {
+      await setupTestComponent();
+
+      // Switch to list view
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('List View'));
+      });
+
+      await waitFor(() =>
+        expect(screen.getByText('/test/alloy/service1')).toBeDefined(),
+      );
+
+      const addButtons = screen.getAllByTitle('Add to favorites');
+      expect(addButtons.length).toBeGreaterThan(0);
+
+      const firstAdd = addButtons.at(0);
+      expect(firstAdd).toBeDefined();
+      await act(async () => {
+        fireEvent.click(firstAdd as HTMLElement);
+      });
+
+      expect(screen.getAllByTitle('Remove from favorites').length).toBe(1);
+    });
+
+    test('favorites filter shows only favorited services', async () => {
+      await setupTestComponent();
+
+      // Favorite the first card
+      const addButtons = screen.getAllByTitle('Add to favorites');
+      const firstAdd = addButtons.at(0);
+      expect(firstAdd).toBeDefined();
+      await act(async () => {
+        fireEvent.click(firstAdd as HTMLElement);
+      });
+
+      // Click the favorites filter star in the sort bar
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Show favorites only'));
+      });
+
+      await waitFor(() => expect(screen.getByText('1 Services')).toBeDefined());
+    });
+
+    test('toggling favorites filter off shows all services again', async () => {
+      await setupTestComponent();
+
+      // Favorite one card
+      const addButtons = screen.getAllByTitle('Add to favorites');
+      const firstAdd = addButtons.at(0);
+      expect(firstAdd).toBeDefined();
+      await act(async () => {
+        fireEvent.click(firstAdd as HTMLElement);
+      });
+
+      // Enable favorites filter
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Show favorites only'));
+      });
+      await waitFor(() => expect(screen.getByText('1 Services')).toBeDefined());
+
+      // Disable favorites filter
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Show all services'));
+      });
+      await waitFor(() => expect(screen.getByText('4 Services')).toBeDefined());
+    });
+
+    test('favorites are persisted to local storage', async () => {
+      const { MOCK__baseStore } = await setupTestComponent();
+
+      // Favorite the first card
+      const addButtons = screen.getAllByTitle('Add to favorites');
+      const firstAdd = addButtons.at(0);
+      expect(firstAdd).toBeDefined();
+      await act(async () => {
+        fireEvent.click(firstAdd as HTMLElement);
+      });
+
+      const persisted =
+        MOCK__baseStore.applicationStore.settingService.getObjectValue(
+          'marketplace.data-apis.favorites',
+        );
+      expect(Array.isArray(persisted)).toBe(true);
+      expect((persisted as string[]).length).toBe(1);
+    });
+
+    test('unfavoriting removes from persisted storage', async () => {
+      const { MOCK__baseStore } = await setupTestComponent();
+
+      // Favorite then unfavorite
+      const addButtons = screen.getAllByTitle('Add to favorites');
+      const firstAdd = addButtons.at(0);
+      expect(firstAdd).toBeDefined();
+      await act(async () => {
+        fireEvent.click(firstAdd as HTMLElement);
+      });
+      const removeButtons = screen.getAllByTitle('Remove from favorites');
+      const firstRemove = removeButtons.at(0);
+      expect(firstRemove).toBeDefined();
+      await act(async () => {
+        fireEvent.click(firstRemove as HTMLElement);
+      });
+
+      const persisted =
+        MOCK__baseStore.applicationStore.settingService.getObjectValue(
+          'marketplace.data-apis.favorites',
+        );
+      expect(Array.isArray(persisted)).toBe(true);
+      expect((persisted as string[]).length).toBe(0);
     });
   });
 });

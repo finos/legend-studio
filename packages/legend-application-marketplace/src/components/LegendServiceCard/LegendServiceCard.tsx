@@ -15,8 +15,13 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { Box, Chip } from '@mui/material';
-import { clsx, MarkdownTextViewer } from '@finos/legend-art';
+import { Box, Chip, IconButton } from '@mui/material';
+import {
+  clsx,
+  MarkdownTextViewer,
+  StarIcon,
+  EmptyStarIcon,
+} from '@finos/legend-art';
 import { LegendMarketplaceCard } from '../MarketplaceCard/LegendMarketplaceCard.js';
 import { type LegendServiceCardState } from '../../stores/dataAPIs/LegendMarketplaceDataAPIsStore.js';
 import { ServiceOwnershipType } from '@finos/legend-graph';
@@ -27,8 +32,10 @@ export const LegendServiceCard = observer(
   (props: {
     serviceCardState: LegendServiceCardState;
     onClick: () => void;
+    isFavorite: boolean;
+    onToggleFavorite: () => void;
   }): React.ReactNode => {
-    const { serviceCardState, onClick } = props;
+    const { serviceCardState, onClick, isFavorite, onToggleFavorite } = props;
 
     const truncatedDescription =
       serviceCardState.description &&
@@ -43,6 +50,21 @@ export const LegendServiceCard = observer(
       <Box className="marketplace-legend-service-card__container">
         <Box className="marketplace-legend-service-card__content">
           <Box className="marketplace-legend-service-card__tags">
+            <IconButton
+              className={clsx(
+                'marketplace-legend-service-card__favorite-btn',
+                isFavorite &&
+                  'marketplace-legend-service-card__favorite-btn--active',
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite();
+              }}
+              size="small"
+              title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            >
+              {isFavorite ? <StarIcon /> : <EmptyStarIcon />}
+            </IconButton>
             {serviceCardState.ownershipType && (
               <Chip
                 size="small"

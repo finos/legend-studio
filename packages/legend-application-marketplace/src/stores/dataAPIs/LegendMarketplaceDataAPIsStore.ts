@@ -119,6 +119,10 @@ const LEGEND_MARKETPLACE_SETTING_KEY_SERVICES_VIEW_MODE =
   'marketplace.data-apis.viewMode';
 const LEGEND_MARKETPLACE_SETTING_KEY_SHOW_OWN_SERVICES =
   'marketplace.data-apis.showOwnServicesOnly';
+const LEGEND_MARKETPLACE_SETTING_KEY_FAVORITES =
+  'marketplace.data-apis.favorites';
+const LEGEND_MARKETPLACE_SETTING_KEY_ITEMS_PER_PAGE =
+  'marketplace.data-apis.itemsPerPage';
 
 export class LegendMarketplaceDataAPIsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
@@ -127,9 +131,11 @@ export class LegendMarketplaceDataAPIsStore {
   sort: LegendServiceSort = LegendServiceSort.DEFAULT;
   viewMode: ServicesViewMode;
   showOwnServicesOnly: boolean;
+  showFavoritesOnly = false;
+  favoritePatterns: Set<string>;
   serviceCardStates: LegendServiceCardState[] = [];
   page = 1;
-  itemsPerPage = 12;
+  itemsPerPage: number;
 
   ownerFilters: string[] = [];
   deploymentIdFilters: string[] = [];
@@ -164,11 +170,27 @@ export class LegendMarketplaceDataAPIsStore {
       );
     this.showOwnServicesOnly = persistedShowOwn ?? false;
 
+    const persistedFavorites =
+      this.marketplaceBaseStore.applicationStore.settingService.getObjectValue(
+        LEGEND_MARKETPLACE_SETTING_KEY_FAVORITES,
+      );
+    this.favoritePatterns = new Set(
+      Array.isArray(persistedFavorites) ? (persistedFavorites as string[]) : [],
+    );
+
+    const persistedItemsPerPage =
+      this.marketplaceBaseStore.applicationStore.settingService.getNumericValue(
+        LEGEND_MARKETPLACE_SETTING_KEY_ITEMS_PER_PAGE,
+      );
+    this.itemsPerPage = persistedItemsPerPage ?? 12;
+
     makeObservable(this, {
       searchQuery: observable,
       sort: observable,
       viewMode: observable,
       showOwnServicesOnly: observable,
+      showFavoritesOnly: observable,
+      favoritePatterns: observable,
       serviceCardStates: observable,
       page: observable,
       itemsPerPage: observable,
@@ -178,6 +200,8 @@ export class LegendMarketplaceDataAPIsStore {
       setSort: action,
       setViewMode: action,
       setShowOwnServicesOnly: action,
+      setShowFavoritesOnly: action,
+      toggleFavorite: action,
       setPage: action,
       setItemsPerPage: action,
       addOwnerFilter: action,
@@ -220,6 +244,27 @@ export class LegendMarketplaceDataAPIsStore {
     );
   }
 
+  setShowFavoritesOnly(value: boolean): void {
+    this.showFavoritesOnly = value;
+    this.page = 1;
+  }
+
+  isFavorite(pattern: string): boolean {
+    return this.favoritePatterns.has(pattern);
+  }
+
+  toggleFavorite(pattern: string): void {
+    if (this.favoritePatterns.has(pattern)) {
+      this.favoritePatterns.delete(pattern);
+    } else {
+      this.favoritePatterns.add(pattern);
+    }
+    this.marketplaceBaseStore.applicationStore.settingService.persistValue(
+      LEGEND_MARKETPLACE_SETTING_KEY_FAVORITES,
+      Array.from(this.favoritePatterns),
+    );
+  }
+
   setPage(value: number): void {
     this.page = value;
   }
@@ -227,6 +272,10 @@ export class LegendMarketplaceDataAPIsStore {
   setItemsPerPage(value: number): void {
     this.itemsPerPage = value;
     this.page = 1;
+    this.marketplaceBaseStore.applicationStore.settingService.persistValue(
+      LEGEND_MARKETPLACE_SETTING_KEY_ITEMS_PER_PAGE,
+      value,
+    );
   }
 
   private persistOwnerFilters(): void {
@@ -319,6 +368,12 @@ export class LegendMarketplaceDataAPIsStore {
 
   get filteredSortedServices(): LegendServiceCardState[] {
     let results = this.serviceCardStates;
+
+    if (this.showFavoritesOnly) {
+      results = results.filter((card) =>
+        this.favoritePatterns.has(card.service.pattern),
+      );
+    }
 
     if (this.showOwnServicesOnly) {
       const currentUser =

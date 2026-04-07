@@ -48,6 +48,27 @@
     gap: 0.5rem;
   }
 
+  &__favorite-btn {
+    color: var(--color-light-grey-300);
+    padding: 0.4rem;
+
+    svg {
+      font-size: 1.8rem;
+    }
+
+    &:hover {
+      color: var(--color-yellow-200);
+    }
+
+    &--active {
+      color: var(--color-yellow-200);
+
+      &:hover {
+        color: var(--color-yellow-100);
+      }
+    }
+  }
+
   &__type-chip {
     align-self: end;
     font-size: 1.3rem;
