@@ -33,10 +33,12 @@ import {
 import {
   Container,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   MenuItem,
   Select,
+  Switch,
   Typography,
 } from '@mui/material';
 import {
@@ -215,33 +217,28 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
               {dataAPIsStore.totalFilteredCount} Services
             </Typography>
             <div className="legend-marketplace-search-results__sort-bar__controls">
+              <FormControlLabel
+                className="legend-marketplace-search-results__own-services-toggle"
+                control={
+                  <Switch
+                    checked={dataAPIsStore.showOwnServicesOnly}
+                    onChange={(e) => {
+                      dataAPIsStore.setShowOwnServicesOnly(e.target.checked);
+                    }}
+                    size="small"
+                  />
+                }
+                label="My Services"
+              />
+              <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
               <div className="legend-marketplace-search-results__view-toggle">
                 <div
                   className={clsx(
                     'legend-marketplace-search-results__view-toggle__slider',
-                    `legend-marketplace-search-results__view-toggle__slider--${viewMode}`,
+                    viewMode === ServicesViewMode.LIST &&
+                      'legend-marketplace-search-results__view-toggle__slider--right',
                   )}
                 />
-                <IconButton
-                  className={clsx(
-                    'legend-marketplace-search-results__view-toggle__btn',
-                    viewMode === ServicesViewMode.LIST &&
-                      'legend-marketplace-search-results__view-toggle__btn--active',
-                  )}
-                  onClick={() => {
-                    dataAPIsStore.setViewMode(ServicesViewMode.LIST);
-                    dataAPIsStore.setItemsPerPage(12);
-                    dataAPIsStore.setPage(1);
-                    LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
-                      applicationStore.telemetryService,
-                      ServicesViewMode.LIST,
-                    );
-                  }}
-                  title="List View"
-                  size="small"
-                >
-                  <ViewHeadlineIcon />
-                </IconButton>
                 <IconButton
                   className={clsx(
                     'legend-marketplace-search-results__view-toggle__btn',
@@ -261,6 +258,26 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                   size="small"
                 >
                   <WindowIcon />
+                </IconButton>
+                <IconButton
+                  className={clsx(
+                    'legend-marketplace-search-results__view-toggle__btn',
+                    viewMode === ServicesViewMode.LIST &&
+                      'legend-marketplace-search-results__view-toggle__btn--active',
+                  )}
+                  onClick={() => {
+                    dataAPIsStore.setViewMode(ServicesViewMode.LIST);
+                    dataAPIsStore.setItemsPerPage(12);
+                    dataAPIsStore.setPage(1);
+                    LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
+                      applicationStore.telemetryService,
+                      ServicesViewMode.LIST,
+                    );
+                  }}
+                  title="List View"
+                  size="small"
+                >
+                  <ViewHeadlineIcon />
                 </IconButton>
               </div>
               <span className="legend-marketplace-search-results__sort-bar__controls-divider" />

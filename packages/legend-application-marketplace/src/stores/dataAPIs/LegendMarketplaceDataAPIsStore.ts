@@ -117,6 +117,8 @@ const LEGEND_MARKETPLACE_SETTING_KEY_DEPLOYMENT_ID_FILTERS =
   'marketplace.data-apis.deploymentIdFilters';
 const LEGEND_MARKETPLACE_SETTING_KEY_SERVICES_VIEW_MODE =
   'marketplace.data-apis.viewMode';
+const LEGEND_MARKETPLACE_SETTING_KEY_SHOW_OWN_SERVICES =
+  'marketplace.data-apis.showOwnServicesOnly';
 
 export class LegendMarketplaceDataAPIsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
@@ -124,6 +126,7 @@ export class LegendMarketplaceDataAPIsStore {
   searchQuery = '';
   sort: LegendServiceSort = LegendServiceSort.DEFAULT;
   viewMode: ServicesViewMode;
+  showOwnServicesOnly: boolean;
   serviceCardStates: LegendServiceCardState[] = [];
   page = 1;
   itemsPerPage = 12;
@@ -153,12 +156,19 @@ export class LegendMarketplaceDataAPIsStore {
       persistedViewMode as ServicesViewMode,
     )
       ? (persistedViewMode as ServicesViewMode)
-      : ServicesViewMode.LIST;
+      : ServicesViewMode.TILE;
+
+    const persistedShowOwn =
+      this.marketplaceBaseStore.applicationStore.settingService.getBooleanValue(
+        LEGEND_MARKETPLACE_SETTING_KEY_SHOW_OWN_SERVICES,
+      );
+    this.showOwnServicesOnly = persistedShowOwn ?? false;
 
     makeObservable(this, {
       searchQuery: observable,
       sort: observable,
       viewMode: observable,
+      showOwnServicesOnly: observable,
       serviceCardStates: observable,
       page: observable,
       itemsPerPage: observable,
@@ -167,6 +177,7 @@ export class LegendMarketplaceDataAPIsStore {
       setSearchQuery: action,
       setSort: action,
       setViewMode: action,
+      setShowOwnServicesOnly: action,
       setPage: action,
       setItemsPerPage: action,
       addOwnerFilter: action,
@@ -197,6 +208,15 @@ export class LegendMarketplaceDataAPIsStore {
     this.marketplaceBaseStore.applicationStore.settingService.persistValue(
       LEGEND_MARKETPLACE_SETTING_KEY_SERVICES_VIEW_MODE,
       mode,
+    );
+  }
+
+  setShowOwnServicesOnly(value: boolean): void {
+    this.showOwnServicesOnly = value;
+    this.page = 1;
+    this.marketplaceBaseStore.applicationStore.settingService.persistValue(
+      LEGEND_MARKETPLACE_SETTING_KEY_SHOW_OWN_SERVICES,
+      value,
     );
   }
 
@@ -299,6 +319,17 @@ export class LegendMarketplaceDataAPIsStore {
 
   get filteredSortedServices(): LegendServiceCardState[] {
     let results = this.serviceCardStates;
+
+    if (this.showOwnServicesOnly) {
+      const currentUser =
+        this.marketplaceBaseStore.applicationStore.identityService.currentUser;
+      if (currentUser) {
+        const userId = currentUser.toLowerCase();
+        results = results.filter((card) =>
+          card.owners.some((owner) => owner.toLowerCase() === userId),
+        );
+      }
+    }
 
     if (this.searchQuery) {
       const query = this.searchQuery.replace(/^\//u, '').toLowerCase();

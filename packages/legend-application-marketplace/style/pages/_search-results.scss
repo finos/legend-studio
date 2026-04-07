@@ -71,6 +71,22 @@
   }
 }
 
+.legend-marketplace-search-results__own-services-toggle {
+  margin: 0;
+
+  .MuiFormControlLabel-label {
+    font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--color-dark-grey-400);
+    white-space: nowrap;
+  }
+
+  .MuiSwitch-root {
+    margin-right: 0.4rem;
+  }
+}
+
 .legend-marketplace-search-results__view-toggle {
   display: flex;
   align-items: center;
@@ -93,7 +109,7 @@
     z-index: 0;
     box-shadow: 0 1px 3px rgb(27 76 140 / 30%);
 
-    &--tile {
+    &--right {
       transform: translateX(100%);
     }
   }
