@@ -32,7 +32,7 @@ import {
   serialize,
 } from 'serializr';
 import {
-  type V1_WorkflowTask,
+  type V1_DataAccessRequestWorkflowTask,
   type V1_Request,
   V1_CreateDataAccessRequestPayload,
   V1_DataOwnerApprovalTask,
@@ -40,7 +40,7 @@ import {
   V1_DataRequestsWithWorkflowResponse,
   V1_DataRequestWithWorkflow,
   V1_PrivilegeManagerApprovalTask,
-  V1_Workflow,
+  V1_DataAccessRequestWorkflow,
 } from '../../../../lakehouse/entitlements/V1_DataAccessRequest.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import {
@@ -176,9 +176,9 @@ export const V1_dataOwnerApprovalTaskModelSchema = (
   });
 
 const V1_serializeWorkflowTask = (
-  task: V1_WorkflowTask,
+  task: V1_DataAccessRequestWorkflowTask,
   plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_WorkflowTask> => {
+): PlainObject<V1_DataAccessRequestWorkflowTask> => {
   if (task instanceof V1_PrivilegeManagerApprovalTask) {
     return serialize(V1_privilegeManagerApprovalTaskModelSchema(plugins), task);
   } else if (task instanceof V1_DataOwnerApprovalTask) {
@@ -190,9 +190,9 @@ const V1_serializeWorkflowTask = (
 };
 
 const V1_deserializeWorkflowTask = (
-  json: PlainObject<V1_WorkflowTask>,
+  json: PlainObject<V1_DataAccessRequestWorkflowTask>,
   plugins: PureProtocolProcessorPlugin[],
-): V1_WorkflowTask => {
+): V1_DataAccessRequestWorkflowTask => {
   switch (json._type) {
     case V1_WorkflowTaskType.PrivilegeManagerApprovalTask:
       return deserialize(
@@ -213,13 +213,14 @@ const V1_deserializeWorkflowTask = (
 export const V1_workflowModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
-  createModelSchema(V1_Workflow, {
+  createModelSchema(V1_DataAccessRequestWorkflow, {
     workflowId: primitive(),
     dataRequestId: primitive(),
     status: primitive(),
     tasks: customList(
-      (val: V1_WorkflowTask) => V1_serializeWorkflowTask(val, plugins),
-      (val: PlainObject<V1_WorkflowTask>) =>
+      (val: V1_DataAccessRequestWorkflowTask) =>
+        V1_serializeWorkflowTask(val, plugins),
+      (val: PlainObject<V1_DataAccessRequestWorkflowTask>) =>
         V1_deserializeWorkflowTask(val, plugins),
     ),
     url: primitive(),

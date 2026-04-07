@@ -58,23 +58,23 @@ export class V1_DataRequest extends V1_Request {
 
 // ----------------------------------------- Workflow Tasks ---------------------------------------------
 
-export enum V1_WorkflowTaskStatus {
+export enum V1_DataAccessRequestWorkflowTaskStatus {
   OPEN = 'OPEN',
   COMPLETED = 'COMPLETED',
   CLOSED = 'CLOSED',
   OBSOLETE = 'OBSOLETE',
 }
 
-export enum V1_WorkflowTaskAction {
+export enum V1_DataAccessRequestWorkflowTaskAction {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
   ESCALATED = 'ESCALATED',
 }
 
-export abstract class V1_WorkflowTask {
+export abstract class V1_DataAccessRequestWorkflowTask {
   taskId!: string;
   workflowGuid!: string;
-  status!: V1_WorkflowTaskStatus;
+  status!: V1_DataAccessRequestWorkflowTaskStatus;
   createdOn!: Date;
   assignees: string[] = [];
   actionedOn?: Date;
@@ -82,17 +82,17 @@ export abstract class V1_WorkflowTask {
   url!: string;
   approveUrl?: string;
   denyUrl?: string;
-  action?: V1_WorkflowTaskAction;
+  action?: V1_DataAccessRequestWorkflowTaskAction;
   description?: string;
   consumer!: V1_OrganizationalScope;
 }
 
-export class V1_PrivilegeManagerApprovalTask extends V1_WorkflowTask {
+export class V1_PrivilegeManagerApprovalTask extends V1_DataAccessRequestWorkflowTask {
   resourceId!: string;
   accessPointGroup!: string;
 }
 
-export class V1_DataOwnerApprovalTask extends V1_WorkflowTask {
+export class V1_DataOwnerApprovalTask extends V1_DataAccessRequestWorkflowTask {
   resourceId!: string;
   deploymentId!: string;
   accessPointGroup!: string;
@@ -100,17 +100,17 @@ export class V1_DataOwnerApprovalTask extends V1_WorkflowTask {
 
 // -------------------------------------------- Workflows ----------------------------------------------
 
-export enum V1_WorkflowStatus {
+export enum V1_DataAccessRequestWorkflowStatus {
   OPEN = 'OPEN',
   COMPLETED = 'COMPLETED',
   CLOSED = 'CLOSED',
 }
 
-export class V1_Workflow {
+export class V1_DataAccessRequestWorkflow {
   workflowId!: string;
   dataRequestId!: string;
-  status!: V1_WorkflowStatus;
-  tasks: V1_WorkflowTask[] = [];
+  status!: V1_DataAccessRequestWorkflowStatus;
+  tasks: V1_DataAccessRequestWorkflowTask[] = [];
   url!: string;
 }
 
@@ -118,7 +118,7 @@ export class V1_Workflow {
 
 export class V1_DataRequestWithWorkflow {
   dataRequest!: V1_DataRequest;
-  workflows!: V1_Workflow[];
+  workflows!: V1_DataAccessRequestWorkflow[];
 }
 
 export class V1_DataRequestsWithWorkflowResponse {
@@ -126,5 +126,5 @@ export class V1_DataRequestsWithWorkflowResponse {
 }
 
 export class V1_DataRequestTasksResponse {
-  workflowTasks: V1_WorkflowTask[] = [];
+  workflowTasks: V1_DataAccessRequestWorkflowTask[] = [];
 }

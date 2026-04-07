@@ -31,11 +31,7 @@ import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useEffect, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import {
-  GraphManagerState,
-  V1_RawWorkflowTask,
-  V1_WorkflowTaskStatus,
-} from '@finos/legend-graph';
+import { GraphManagerState, type V1_WorkflowTask } from '@finos/legend-graph';
 import { Box, Button, TextField } from '@mui/material';
 import {
   CubesLoadingIndicator,
@@ -65,47 +61,26 @@ export const WorkflowDataAccessRequestTask =
         params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID],
       );
 
-      // Find the first OPEN task, preferring workflow server tasks as source of truth
-      const getActionableTask = (): V1_RawWorkflowTask | undefined => {
+      // Find the first OPEN task
+      const getActionableTask = (): V1_WorkflowTask | undefined => {
         if (!workflowState) {
           return undefined;
         }
-        // Prefer workflow server tasks
-        const { privilegeManagerTask, dataOwnerTask } =
+        const { privilegeManagerTasks, dataOwnerTasks } =
           workflowState.workflowTasks;
-        const workflowServerTask = [privilegeManagerTask, dataOwnerTask].find(
-          (task) => task !== undefined && task.status === 'OPEN',
-        );
+        const workflowServerTask = [
+          ...privilegeManagerTasks,
+          ...dataOwnerTasks,
+        ].find((task) => task !== undefined && task.status === 'OPEN');
         if (workflowServerTask) {
           return workflowServerTask;
-        }
-        // Fallback to dataRequestWithWorkflow tasks
-        const fallbackTask = workflowState.dataRequestWithWorkflow?.workflows
-          .flatMap((wf) => wf.tasks)
-          .find((task) => task.status === V1_WorkflowTaskStatus.OPEN);
-        if (fallbackTask) {
-          // Find the matching raw workflow task by taskId, or build a minimal one from the fallback
-          const matchingRaw = [privilegeManagerTask, dataOwnerTask].find(
-            (t) => t?.taskId === fallbackTask.taskId,
-          );
-          if (matchingRaw) {
-            return matchingRaw;
-          }
-          // Create a minimal V1_RawWorkflowTask from the fallback
-          const raw = new V1_RawWorkflowTask();
-          raw.taskId = fallbackTask.taskId;
-          raw.status = fallbackTask.status;
-          raw.potentialAssignees = fallbackTask.assignees;
-          raw.completed = false;
-          return raw;
         }
         return undefined;
       };
 
       const actionableTask = getActionableTask();
 
-      const userCanAction =
-        actionableTask?.potentialAssignees.includes(currentUser);
+      const userCanAction = actionableTask?.assignees.includes(currentUser);
 
       useEffect(() => {
         const fetchAndInitialize = async () => {
@@ -149,9 +124,10 @@ export const WorkflowDataAccessRequestTask =
         if (!actionableTask || !currentUser) {
           return;
         }
-        await marketplaceBaseStore.lakehouseWorkflowServerClient.approveTask(
+        await marketplaceBaseStore.lakehouseWorkflowServerClient.actionTask(
+          actionableTask.processInstanceId,
           actionableTask.taskId,
-          currentUser,
+          'APPROVE',
           justification,
           auth.user?.access_token,
         );
@@ -167,9 +143,10 @@ export const WorkflowDataAccessRequestTask =
         if (!actionableTask || !currentUser) {
           return;
         }
-        await marketplaceBaseStore.lakehouseWorkflowServerClient.rejectTask(
+        await marketplaceBaseStore.lakehouseWorkflowServerClient.actionTask(
+          actionableTask.processInstanceId,
           actionableTask.taskId,
-          currentUser,
+          'REJECT',
           justification,
           auth.user?.access_token,
         );
