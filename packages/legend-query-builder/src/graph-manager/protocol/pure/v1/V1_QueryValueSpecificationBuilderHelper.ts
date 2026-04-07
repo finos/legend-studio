@@ -1679,7 +1679,7 @@ export const V1_buildExtendFunctionExpression = (
     const topLevelLambdaParameters: V1_Variable[] = operatorExpression.colSpecs
       .flatMap((colSpec) => [colSpec.function1, colSpec.function2])
       .filter(isNonNullable)
-      .flatMap((value) => value.parameters);
+      .flatMap((value) => (value as V1_Lambda).parameters);
     topLevelLambdaParameters.forEach((variable) => {
       if (!variable.genericType) {
         const variableExpression = new VariableExpression(
