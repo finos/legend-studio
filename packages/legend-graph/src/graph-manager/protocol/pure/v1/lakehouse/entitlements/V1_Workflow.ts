@@ -14,34 +14,109 @@
  * limitations under the License.
  */
 
-export class V1_WorkflowChildProcessInstance {
-  processInstanceId!: string;
-  processVersion!: number;
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import {
+  createModelSchema,
+  list,
+  optional,
+  primitive,
+  raw,
+  custom,
+} from 'serializr';
+
+export class V1_WorkflowProcessDetails {
+  requestedFor?: string;
+  roleName?: string;
+  requestedBy?: string;
+  did?: string;
+  subjectId?: string;
+  resourceId?: string;
+  action?: string;
+  subjectType?: string;
+  resouceType?: string;
+  processId!: string;
+  processName!: string;
+  requestedCoverage?: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_WorkflowProcessDetails, {
+      action: optional(primitive()),
+      did: optional(primitive()),
+      processId: primitive(),
+      processName: primitive(),
+      requestedBy: optional(primitive()),
+      requestedCoverage: optional(raw()),
+      requestedFor: optional(primitive()),
+      resouceType: optional(primitive()),
+      resourceId: optional(primitive()),
+      roleName: optional(primitive()),
+      subjectId: optional(primitive()),
+      subjectType: optional(primitive()),
+    }),
+  );
 }
 
-export class V1_WorkflowTaskSummary {
-  completed!: boolean;
-  processInstanceId!: string;
-  reference!: string;
+export class V1_WorkflowTask {
   taskId!: string;
-  type!: string;
+  processInstanceId!: string;
+  workItemType!: string;
+  workItemName!: string;
+  status!: string;
+  assignees: string[] = [];
+  createdDate!: number;
+  completedDate?: number;
+  completedBy?: string;
+  completionReason?: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_WorkflowTask, {
+      assignees: list(primitive()),
+      completedBy: optional(primitive()),
+      completionReason: optional(primitive()),
+      completedDate: optional(primitive()),
+      createdDate: primitive(),
+      processInstanceId: primitive(),
+      status: primitive(),
+      taskId: primitive(),
+      workItemName: primitive(),
+      workItemType: primitive(),
+    }),
+  );
 }
 
-export class V1_WorkflowProcessInstance {
-  active!: boolean;
+export class V1_WorkflowInstance {
   processInstanceId!: string;
-  childProcessInstances: V1_WorkflowChildProcessInstance[] = [];
-  taskSummaries: V1_WorkflowTaskSummary[] = [];
-}
-
-export class V1_RawWorkflowTask {
-  completed!: boolean;
-  createdDate!: Date;
-  parentTaskId!: string;
-  potentialAssignees: string[] = [];
-  processInstanceId!: string;
-  reference!: string;
   status!: string;
   taskId!: string;
-  type!: string;
+  createdDate!: number;
+  completedDate?: number;
+  processDetails!: V1_WorkflowProcessDetails;
+  childProcesses?: V1_WorkflowInstance[] = [];
+  tasks?: V1_WorkflowTask[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_WorkflowInstance, {
+      childProcesses: optional(
+        list(
+          custom(
+            (val: V1_WorkflowInstance) =>
+              V1_WorkflowInstance.serialization.toJson(val),
+            (val: Record<PropertyKey, unknown>) =>
+              V1_WorkflowInstance.serialization.fromJson(val),
+          ),
+        ),
+      ),
+      completedDate: optional(primitive()),
+      createdDate: primitive(),
+      processDetails: usingModelSchema(
+        V1_WorkflowProcessDetails.serialization.schema,
+      ),
+      processInstanceId: primitive(),
+      status: primitive(),
+      taskId: primitive(),
+      tasks: optional(
+        list(usingModelSchema(V1_WorkflowTask.serialization.schema)),
+      ),
+    }),
+  );
 }

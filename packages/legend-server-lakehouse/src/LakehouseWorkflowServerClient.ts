@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  V1_RawWorkflowTask,
-  V1_WorkflowProcessInstance,
-} from '@finos/legend-graph';
+import type { V1_WorkflowInstance } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
 export interface LakehouseWorkflowServerClientConfig {
@@ -38,92 +35,31 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
 
   // ------------------------------------- Process Instances -------------------------------------
 
-  private _processInstances = (): string => `${this.baseUrl}/processinstances`;
+  private _workflow = (): string => `${this.baseUrl}/access/workflow`;
 
-  getProcessInstance = (
-    processInstanceId: string,
+  getWorkflowInstance = (
+    instanceId: string,
     token: string | undefined,
-  ): Promise<PlainObject<V1_WorkflowProcessInstance>> =>
+  ): Promise<PlainObject<V1_WorkflowInstance>> =>
     this.get(
-      `${this._processInstances()}/${encodeURIComponent(processInstanceId)}`,
+      `${this._workflow()}/${encodeURIComponent(instanceId)}`,
       {},
       this._token(token),
     );
 
-  // ------------------------------------------- Tasks -------------------------------------------
-
-  private _tasks = (): string => `${this.baseUrl}/tasks`;
-
-  getTask = (
+  actionTask = (
+    instanceId: string,
     taskId: string,
-    token: string | undefined,
-  ): Promise<PlainObject<V1_RawWorkflowTask>> =>
-    this.get(
-      `${this._tasks()}/${encodeURIComponent(taskId)}`,
-      {},
-      this._token(token),
-    );
-
-  approveTask = (
-    taskId: string,
-    actioningUserId: string,
+    action: 'APPROVE' | 'REJECT' | 'ESCALATE',
     justification: string,
     token: string | undefined,
   ): Promise<void> => {
     const requestBody = {
-      params: {
-        justificationApprove: {
-          businessJustification: justification,
-        },
-      },
-      userId: actioningUserId,
-      reasonCode: 'Approved',
+      justification,
     };
 
     return this.post(
-      `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
-      requestBody,
-      {},
-      this._token(token),
-    );
-  };
-
-  rejectTask = (
-    taskId: string,
-    actioningUserId: string,
-    justification: string,
-    token: string | undefined,
-  ): Promise<void> => {
-    const requestBody = {
-      params: {
-        justificationReject: {
-          businessJustification: justification,
-        },
-      },
-      userId: actioningUserId,
-      reasonCode: 'Rejected',
-    };
-
-    return this.post(
-      `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
-      requestBody,
-      {},
-      this._token(token),
-    );
-  };
-
-  escalateTask = (
-    taskId: string,
-    actioningUserId: string,
-    token: string | undefined,
-  ): Promise<void> => {
-    const requestBody = {
-      userId: actioningUserId,
-      reasonCode: 'Escalated',
-    };
-
-    return this.post(
-      `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
+      `${this._workflow()}/${encodeURIComponent(instanceId)}/task/${encodeURIComponent(taskId)}/${encodeURIComponent(action)}`,
       requestBody,
       {},
       this._token(token),
