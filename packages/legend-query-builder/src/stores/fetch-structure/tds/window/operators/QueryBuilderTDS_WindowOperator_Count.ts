@@ -32,6 +32,10 @@ export class QueryBuilderTDS_WindowOperator_Count extends QueryBuilderTDS_Window
     return QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT;
   }
 
+  get relationFunc(): string | undefined {
+    return undefined;
+  }
+
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_COUNT,

@@ -73,6 +73,7 @@ import {
 import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 import { TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables } from './TEST_DATA__QueryBuilder_ConstantExpression.js';
 import { TEST_DATA__projectionWithWAVGAggregation } from './TEST_DATA__QueryBuilder_Generic.js';
+import { TEST_DATA_typedTDSRank } from './TEST_DATA__TypedTDSWindowFunctions.js';
 import {
   TEST_DATA__QueryBuilder_Accessors,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
@@ -258,6 +259,8 @@ const cases: RoundtripTestCase[] = [
   ['Simple slice() function', relationalCtx, TEST_DATA__projectWithSlice],
   // aggregation
   ['wavg() function', projectionCtx, TEST_DATA__projectionWithWAVGAggregation],
+  //typed TDS
+  ['typed rank() function', olapGroupbyCtx, TEST_DATA_typedTDSRank],
   // accessor (ingest + database)
   [
     'Accessor — simple project() from IngestDefinition with post-filter',

@@ -32,6 +32,10 @@ export class QueryBuilderTDS_WindowOperator_Max extends QueryBuilderTDS_WindowOp
     return QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX;
   }
 
+  get relationFunc(): string | undefined {
+    return undefined;
+  }
+
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_MAX,

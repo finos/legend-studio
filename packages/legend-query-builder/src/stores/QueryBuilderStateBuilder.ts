@@ -90,7 +90,10 @@ import {
   QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from '../graph/QueryBuilderMetaModelConst.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
-import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/QueryBuilderWindowStateBuilder.js';
+import {
+  processTDS_ExtendExpression,
+  processTDS_OLAPGroupByExpression,
+} from './fetch-structure/tds/window/QueryBuilderWindowStateBuilder.js';
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 import {
   type QueryBuilderConstantExpressionState,
@@ -893,6 +896,18 @@ export class QueryBuilderValueSpecificationProcessor
       processWAVGRowMapperExpression(
         valueSpecification,
         this.parentExpression,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
+      return;
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_EXTEND,
+      )
+    ) {
+      processTDS_ExtendExpression(
+        valueSpecification,
         this.queryBuilderState,
         this.parentLambda,
       );

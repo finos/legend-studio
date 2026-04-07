@@ -29,6 +29,10 @@ export class QueryBuilderTDS_WindowRankOperator_RowNumber extends QueryBuilderTD
     return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_ROW_NUMBER;
   }
 
+  get relationFunc(): string | undefined {
+    return undefined;
+  }
+
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_ROW_NUMBER,

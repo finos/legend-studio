@@ -16,6 +16,9 @@
 
 import {
   CollectionInstanceValue,
+  type ColSpec,
+  ColSpecArrayInstance,
+  ColSpecInstanceValue,
   LambdaFunction,
   LambdaFunctionInstanceValue,
   matchFunctionName,
@@ -29,6 +32,7 @@ import {
   guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../../QueryBuilderState.js';
@@ -36,6 +40,7 @@ import { QueryBuilderValueSpecificationProcessor } from '../../../QueryBuilderSt
 import {
   getTDSColumnState,
   getTDSColSortTypeFromFunctionName,
+  getRelationSortColumnFromFunctionName,
 } from '../QueryBuilderTDSHelper.js';
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import {
@@ -45,6 +50,7 @@ import {
   QueryBuilderTDS_WindowAggreationOperatorState,
   QueryBuilderTDS_WindowRankOperatorState,
 } from './QueryBuilderWindowState.js';
+import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 
 export const processTDS_OLAPGroupByExpression = (
   expression: SimpleFunctionExpression,
@@ -179,13 +185,13 @@ export const processTDS_OLAPGroupByExpression = (
       operation,
       oppColumnState,
     );
-    operatorState.setLambdaParameterName(
+    operatorState.setLambdaParameterNames([
       guaranteeType(
         operationLambda.functionType.parameters[0],
         VariableExpression,
         `Can't process olapGroupBy() operation lambda: only support olapGroupBy() operation lambda with 1 parameter of type 'VariableExpression'`,
       ).name,
-    );
+    ]);
   } else {
     const operationLambda = guaranteeType(
       guaranteeType(olapOperationExpression, LambdaFunctionInstanceValue)
@@ -209,13 +215,13 @@ export const processTDS_OLAPGroupByExpression = (
       tdsState.windowState,
       operation,
     );
-    operatorState.setLambdaParameterName(
+    operatorState.setLambdaParameterNames([
       guaranteeType(
         operationLambda.functionType.parameters[0],
         VariableExpression,
         `Can't process olapGroupBy() operation lambda: only support olapGroupBy() operation lambda with 1 parameter of type 'VariableExpression'`,
       ).name,
-    );
+    ]);
   }
 
   // main col
@@ -236,4 +242,140 @@ export const processTDS_OLAPGroupByExpression = (
   );
   tdsState.windowState.addWindowColumn(olapGroupByColumnState);
   tdsState.setShowWindowFuncPanel(true);
+};
+
+const process_WindowOperatorState = (
+  colSpec: ColSpec,
+  tdsState: QueryBuilderTDSState,
+): QueryBuilderTDS_WindowOperatorState => {
+  //TODO: handle aggregation operators
+  const rankLambda = guaranteeType(
+    guaranteeType(colSpec.function1, LambdaFunctionInstanceValue).values[0],
+    LambdaFunction,
+  );
+  assertTrue(rankLambda.expressionSequence.length === 1);
+  const operationFunctionExp = guaranteeType(
+    rankLambda.expressionSequence[0],
+    SimpleFunctionExpression,
+  );
+
+  const operation = guaranteeNonNullable(
+    tdsState.windowState.findOperator(operationFunctionExp.functionName, true),
+    `Operator '${operationFunctionExp.functionName}' not supported yet for typed TDS`,
+  );
+
+  const operatorState = new QueryBuilderTDS_WindowRankOperatorState(
+    tdsState.windowState,
+    operation,
+  );
+
+  const operatorParameters: string[] = [];
+  rankLambda.functionType.parameters.forEach((param) => {
+    guaranteeType(param, VariableExpression);
+    operatorParameters.push(param.name);
+  });
+  operatorState.setLambdaParameterNames(operatorParameters);
+
+  return operatorState;
+};
+
+export const processTDS_ExtendExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  if (expression.parametersValues.length === 3) {
+    const relationExpression = guaranteeType(
+      expression.parametersValues[0],
+      SimpleFunctionExpression,
+      `Can't process extend() expression: only support extend() immediately following an expression`,
+    );
+    QueryBuilderValueSpecificationProcessor.process(
+      relationExpression,
+      parentLambda,
+      queryBuilderState,
+    );
+
+    const windowExpression = guaranteeType(
+      expression.parametersValues[1],
+      SimpleFunctionExpression,
+      `Can't process extend() expression: expects a window expression as the second parameter`,
+    );
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    //TODO: handle over() with ColSpec as the first parameter
+    const windowColumnsSpec = guaranteeType(
+      windowExpression.parametersValues[0],
+      ColSpecArrayInstance,
+      `Can't process over(): expects ColSpecArray for window columns`,
+    );
+
+    const windowColSpecArray = guaranteeNonNullable(
+      windowColumnsSpec.values[0],
+    );
+    const windowColumns: QueryBuilderTDSColumnState[] =
+      windowColSpecArray.colSpecs.map((colSpec) =>
+        getTDSColumnState(tdsState, colSpec.name),
+      );
+
+    let sortByState: WindowGroupByColumnSortByState | undefined;
+    if (
+      windowExpression.parametersValues[1] instanceof CollectionInstanceValue
+    ) {
+      const sortByExpression = guaranteeType(
+        windowExpression.parametersValues[1].values[0],
+        SimpleFunctionExpression,
+        `Can't process extend sortBy expression: only support function expression of 'ascending' or 'descending'`,
+      );
+
+      const sortByFunctionName = sortByExpression.functionName;
+      const colSortType =
+        getRelationSortColumnFromFunctionName(sortByFunctionName);
+      const colSortVal = guaranteeIsString(
+        guaranteeType(
+          sortByExpression.parametersValues[0],
+          ColSpecInstanceValue,
+          'Can`t process extend sort column : extend sort column should be a colspec instance value',
+        ).values[0]?.name,
+        'Can`t process extend sort column: extend sort column should be a string colspec instance value',
+      );
+      const sortColState = getTDSColumnState(tdsState, colSortVal);
+      sortByState = new WindowGroupByColumnSortByState(
+        sortColState,
+        colSortType,
+      );
+    }
+
+    //process third extend() parameter
+    const operatorColSpecInstance = guaranteeType(
+      expression.parametersValues[2],
+      ColSpecArrayInstance,
+      `Can't process extend(): expects ColSpecArrayInstance for aggregation columns`,
+    );
+    const operatorColSpecArray = guaranteeNonNullable(
+      operatorColSpecInstance.values[0],
+    );
+
+    operatorColSpecArray.colSpecs.forEach((colSpec) => {
+      const operatorState = process_WindowOperatorState(colSpec, tdsState);
+
+      const windowColumnState = new QueryBuilderWindowColumnState(
+        tdsState.windowState,
+        windowColumns,
+        sortByState,
+        operatorState,
+        colSpec.name,
+      );
+
+      tdsState.windowState.addWindowColumn(windowColumnState);
+      tdsState.setShowWindowFuncPanel(true);
+    });
+  } else {
+    throw new UnsupportedOperationError(
+      `Can't build relation extend() expression: extend() is not fully supported yet`,
+    );
+  }
 };

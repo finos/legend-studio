@@ -116,9 +116,12 @@ import {
 } from '../../../../helpers/V1_DomainHelper.js';
 import {
   ColSpec,
+  ColSpecArray,
+  ColSpecArrayInstance,
   ColSpecInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
 import { V1_ColSpec } from '../../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
+import { V1_ColSpecArray } from '../../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 import {
   V1_RelationStoreAccessor,
   V1_IngestDefinitionAccessor,
@@ -480,6 +483,62 @@ export class V1_ValueSpecificationBuilder
         const protocol = guaranteeType(valueSpecification.value, V1_ColSpec);
         const value = new ColSpec();
         value.name = protocol.name;
+        value.type = protocol.type;
+        value.function1 = protocol.function1
+          ? protocol.function1.accept_ValueSpecificationVisitor(
+              new V1_ValueSpecificationBuilder(
+                this.context,
+                this.processingContext,
+                this.openVariables,
+              ),
+            )
+          : undefined;
+        value.function2 = protocol.function2
+          ? protocol.function2.accept_ValueSpecificationVisitor(
+              new V1_ValueSpecificationBuilder(
+                this.context,
+                this.processingContext,
+                this.openVariables,
+              ),
+            )
+          : undefined;
+        instanceValue.values = [value];
+        return instanceValue;
+      }
+      case V1_ClassInstanceType.COL_SPEC_ARRAY: {
+        const instanceValue = new ColSpecArrayInstance(
+          Multiplicity.ONE,
+          undefined,
+        );
+        const protocol = guaranteeType(
+          valueSpecification.value,
+          V1_ColSpecArray,
+        );
+        const value = new ColSpecArray();
+        value.colSpecs = protocol.colSpecs.map((colSpec) => {
+          const colSpecInstance = new ColSpec();
+          colSpecInstance.name = colSpec.name;
+          colSpecInstance.type = colSpec.type;
+          colSpecInstance.function1 = colSpec.function1
+            ? colSpec.function1.accept_ValueSpecificationVisitor(
+                new V1_ValueSpecificationBuilder(
+                  this.context,
+                  this.processingContext,
+                  this.openVariables,
+                ),
+              )
+            : undefined;
+          colSpecInstance.function2 = colSpec.function2
+            ? colSpec.function2.accept_ValueSpecificationVisitor(
+                new V1_ValueSpecificationBuilder(
+                  this.context,
+                  this.processingContext,
+                  this.openVariables,
+                ),
+              )
+            : undefined;
+          return colSpecInstance;
+        });
         instanceValue.values = [value];
         return instanceValue;
       }

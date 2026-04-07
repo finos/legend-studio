@@ -27,6 +27,8 @@ export abstract class QueryBuilderTDS_WindowOperator implements Hashable {
 
   abstract get pureFunc(): string;
 
+  abstract get relationFunc(): string | undefined;
+
   abstract isCompatibleWithType(type: Type | undefined): boolean;
 
   isColumnAggregator(): boolean {

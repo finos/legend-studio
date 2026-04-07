@@ -29,6 +29,10 @@ export class QueryBuilderTDS_WindowRankOperator_DenseRank extends QueryBuilderTD
     return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_DENSE_RANK;
   }
 
+  get relationFunc(): string | undefined {
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_DENSE_RANK;
+  }
+
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_DENSE_RANK,

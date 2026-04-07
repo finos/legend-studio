@@ -47,7 +47,7 @@ import {
   buildPropertyExpressionChain,
   type LambdaFunctionBuilderOption,
 } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
-import { appendOLAPGroupByState } from '../window/QueryBuilderWindowValueSpecificationBuilder.js';
+import { appendWindowFunctionState } from '../window/QueryBuilderWindowValueSpecificationBuilder.js';
 import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
 import { buildRelationProjection } from './QueryBuilderRelationProjectValueSpecBuilder.js';
 import { QueryBuilderAggregateOperator_Wavg } from '../aggregation/operators/QueryBuilderAggregateOperator_Wavg.js';
@@ -409,7 +409,7 @@ export const appendProjection = (
     }
   }
   // build olapGroupBy
-  appendOLAPGroupByState(tdsState.windowState, lambdaFunction);
+  appendWindowFunctionState(tdsState.windowState, lambdaFunction);
 
   // build post-filter
   appendPostFilter(tdsState.postFilterState, lambdaFunction);

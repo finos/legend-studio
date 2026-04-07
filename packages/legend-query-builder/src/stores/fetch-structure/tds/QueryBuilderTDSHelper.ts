@@ -86,6 +86,48 @@ export const getFunctionNameFromTDSSortColumn = (
   }
 };
 
+export const getFunctionNameFromRelationSortColumn = (
+  columnSortType: COLUMN_SORT_TYPE,
+): string => {
+  switch (columnSortType) {
+    case COLUMN_SORT_TYPE.ASC:
+      return extractElementNameFromPath(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_ASC,
+      );
+    case COLUMN_SORT_TYPE.DESC:
+      return extractElementNameFromPath(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_DESC,
+      );
+    default:
+      throw new UnsupportedOperationError(
+        `Unsupported column sort type ${columnSortType}`,
+      );
+  }
+};
+
+export const getRelationSortColumnFromFunctionName = (
+  functionName: string,
+): COLUMN_SORT_TYPE => {
+  if (
+    matchFunctionName(
+      functionName,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_ASC,
+    )
+  ) {
+    return COLUMN_SORT_TYPE.ASC;
+  } else if (
+    matchFunctionName(
+      functionName,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_DESC,
+    )
+  ) {
+    return COLUMN_SORT_TYPE.DESC;
+  }
+  throw new UnsupportedOperationError(
+    `Unsupported relation sort function: ${functionName}`,
+  );
+};
+
 export const buildTDSSortTypeExpression = (
   sortType: COLUMN_SORT_TYPE,
   column: string,
