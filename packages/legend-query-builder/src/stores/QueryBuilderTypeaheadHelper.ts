@@ -180,9 +180,9 @@ const buildRawLambda = (
   );
 
   // build getAll function
-  const _class = guaranteeNonNullable(queryBuilderState.class);
+  const _class = guaranteeNonNullable(queryBuilderState.sourceClass);
   const getAllFn = buildGetAllFunction(
-    guaranteeNonNullable(queryBuilderState.class),
+    guaranteeNonNullable(queryBuilderState.sourceClass),
     Multiplicity.ONE,
   );
   const milestoningStereotype = getMilestoneTemporalStereotype(

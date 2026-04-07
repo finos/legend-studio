@@ -140,7 +140,7 @@ export const TEST__setUpQueryBuilderState = async (
   }
   if (executionContext) {
     const graph = queryBuilderState.graphManagerState.graph;
-    queryBuilderState.class = graph.getClass(executionContext._class);
+    queryBuilderState.sourceElement = graph.getClass(executionContext._class);
     queryBuilderState.executionContextState.mapping = graph.getMapping(
       executionContext.mapping,
     );

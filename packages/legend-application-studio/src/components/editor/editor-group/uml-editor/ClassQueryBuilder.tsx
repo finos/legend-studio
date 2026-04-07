@@ -348,7 +348,7 @@ const PromoteToServiceQueryBuilderAction = observer(
 
         return (
           <NewFunctionModal
-            _class={queryBuilderState.class}
+            _class={queryBuilderState.sourceClass}
             close={closeNewServiceModal}
             showModal={true}
             promoteToFunction={promoteToFunction}
@@ -410,7 +410,7 @@ export const queryClass = async (
           editorStore.applicationStore.config.options.queryBuilderConfig,
           editorStore.editorMode.getSourceInfo(),
         );
-        queryBuilderState.changeClass(_class);
+        queryBuilderState.changeSourceElement(_class);
         queryBuilderState.propagateClassChange(_class);
         return queryBuilderState;
       },

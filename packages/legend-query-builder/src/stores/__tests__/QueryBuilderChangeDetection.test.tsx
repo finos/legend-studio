@@ -41,7 +41,7 @@ test(integrationTest('Test change detection'), async () => {
   );
 
   await act(async () => {
-    queryBuilderState.changeClass(
+    queryBuilderState.changeSourceElement(
       queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
     );
   });

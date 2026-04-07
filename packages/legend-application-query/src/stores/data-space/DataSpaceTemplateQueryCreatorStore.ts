@@ -274,9 +274,11 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
         query.groupId = this.groupId;
         query.artifactId = this.artifactId;
         query.versionId = this.versionId;
-        if (this.queryBuilderState?.class) {
+        if (this.queryBuilderState?.sourceClass) {
           query.taggedValues = [
-            createQueryClassTaggedValue(this.queryBuilderState.class.path),
+            createQueryClassTaggedValue(
+              this.queryBuilderState.sourceClass.path,
+            ),
           ];
         }
       },

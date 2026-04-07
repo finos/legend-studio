@@ -55,10 +55,12 @@ import {
   type PackageableElement,
   type ValueSpecification,
   type Type,
+  type RelationType,
   type QueryGridConfig,
   type QueryExecutionContext,
   type FunctionAnalysisInfo,
   type GraphData,
+  Accessor,
   GRAPH_MANAGER_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
@@ -226,7 +228,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   lambdaWriteMode = QUERY_BUILDER_LAMBDA_WRITER_MODE.STANDARD;
 
-  class?: Class | undefined;
+  sourceElement?: Class | Accessor | undefined;
   getAllFunction: QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS =
     QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL;
   executionContextState: QueryBuilderExecutionContextState;
@@ -270,7 +272,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeDetectionState: observable,
       changeHistoryState: observable,
       executionContextState: observable,
-      class: observable,
+      sourceElement: observable,
       queryChatState: observable,
       isQueryChatOpened: observable,
       isLocalModeEnabled: observable,
@@ -280,9 +282,13 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       INTERNAL__enableInitializingDefaultSimpleExpressionValue: observable,
 
       sideBarClassName: computed,
+      sourceClass: computed,
+      sourceAccessor: computed,
+      sourceRelationType: computed,
       isQuerySupported: computed,
       allValidationIssues: computed,
       canBuildQuery: computed,
+      useRelation: computed,
 
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
@@ -291,7 +297,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setDataCubeViewerState: action,
       openDataCubeEngine: action,
       setIsCheckingEntitlments: action,
-      setClass: action,
+      setSourceElement: action,
       setIsQueryChatOpened: action,
       setIsLocalModeEnabled: action,
       setGetAllFunction: action,
@@ -301,7 +307,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
       resetQueryResult: action,
       resetQueryContent: action,
-      changeClass: action,
+      changeSourceElement: action,
       changeMapping: action,
       changeRuntime: action,
       setExecutionContextState: action,
@@ -356,6 +362,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       return context;
     }
     return new QueryBuilderExternalExecutionContextState(this);
+  }
+
+  get useRelation(): boolean {
+    return this.sourceElement instanceof Accessor || this.isFetchStructureTyped;
   }
 
   get isMappingReadOnly(): boolean {
@@ -415,6 +425,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     return this.isFetchStructureTyped;
   }
 
+  get requiresMappingForExecution(): boolean {
+    return true;
+  }
+
   setLambdaWriteMode(val: QUERY_BUILDER_LAMBDA_WRITER_MODE): void {
     this.lambdaWriteMode = val;
   }
@@ -463,7 +477,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
    */
   getStateInfo(): QueryableClassMappingRuntimeInfo | undefined {
     if (this.sourceInfo) {
-      const classPath = this.class?.path;
+      const classPath = this.sourceClass?.path;
       const mappingPath = this.executionContextState.mapping?.path;
       const runtimePath =
         this.executionContextState.runtimeValue instanceof RuntimePointer
@@ -528,8 +542,29 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.isCalendarEnabled = val;
   }
 
-  setClass(val: Class | undefined): void {
-    this.class = val;
+  /**
+   * Convenience getter that returns the class only when the source
+   * type is a Class (not a RelationType). Use this in code paths
+   * that are Class-specific (milestoning, explorer tree, graph-fetch, etc.).
+   */
+  get sourceClass(): Class | undefined {
+    return this.sourceElement instanceof Accessor
+      ? undefined
+      : this.sourceElement;
+  }
+
+  get sourceAccessor(): Accessor | undefined {
+    return this.sourceElement instanceof Accessor
+      ? this.sourceElement
+      : undefined;
+  }
+
+  get sourceRelationType(): RelationType | undefined {
+    return this.sourceAccessor?.relationType;
+  }
+
+  setSourceElement(val: Class | Accessor | undefined): void {
+    this.sourceElement = val;
   }
 
   setExecutionContextState(val: QueryBuilderExecutionContextState): void {
@@ -651,13 +686,13 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     }
   }
 
-  changeClass(val: Class): void {
+  changeSourceElement(val: Class | Accessor): void {
     this.resetQueryResult();
     this.resetQueryContent();
     this.setGetAllFunction(QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL);
-    this.setClass(val);
+    this.setSourceElement(val);
     this.explorerState.refreshTreeData();
-    this.fetchStructureState.implementation.onClassChange(val);
+    this.fetchStructureState.implementation.onClassChange();
     this.milestoningState.updateMilestoningConfiguration();
     this.changeHistoryState.cacheNewQuery(this.buildQuery());
   }
@@ -878,7 +913,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.resetQueryContent();
       this.unsupportedQueryState.setLambdaError(error);
       this.unsupportedQueryState.setRawLambda(query);
-      this.setClass(undefined);
+      this.setSourceElement(undefined);
       const parameters = buildLambdaVariableExpressions(
         query,
         this.graphManagerState,
@@ -1019,7 +1054,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.workflowState,
       undefined,
     );
-    basicState.class = this.class;
+    basicState.sourceElement = this.sourceElement;
     basicState.executionContextState.mapping =
       this.executionContextState.mapping;
     basicState.executionContextState.runtimeValue =

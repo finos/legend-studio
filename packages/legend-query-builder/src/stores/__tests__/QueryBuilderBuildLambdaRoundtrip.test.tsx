@@ -161,6 +161,11 @@ import {
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
 import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
+import {
+  TEST_DATA__QueryBuilder_Accessors,
+  TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+  TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
+} from './TEST_DATA__QueryBuilder_Accessors.js';
 
 type RoundtripTestCase = [
   string,
@@ -803,6 +808,19 @@ const cases: RoundtripTestCase[] = [
     'Simple projection with slice',
     projectionCtx,
     TEST_DATA__simpleProjectionWithSlice,
+    undefined,
+  ],
+  // accessor
+  [
+    'Simple accessor projection',
+    { entities: TEST_DATA__QueryBuilder_Accessors },
+    TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+    undefined,
+  ],
+  [
+    'Simple accessor projection with database',
+    { entities: TEST_DATA__QueryBuilder_Accessors },
+    TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
     undefined,
   ],
 ];

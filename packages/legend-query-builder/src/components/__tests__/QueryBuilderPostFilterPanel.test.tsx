@@ -46,6 +46,10 @@ import {
   TEST_DATA__simplePostFilterWithDateTimeWithSeconds,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
+  TEST_DATA__QueryBuilder_Accessors,
+  TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Accessors.js';
+import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
   TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
@@ -54,6 +58,7 @@ import {
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
 import {
+  Accessor,
   type DataType,
   type RawMappingModelCoverageAnalysisResult,
   Core_GraphManagerPreset,
@@ -716,7 +721,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,
@@ -837,7 +842,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,
@@ -940,7 +945,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,
@@ -1057,7 +1062,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,
@@ -1157,7 +1162,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,
@@ -1262,7 +1267,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,
@@ -1424,12 +1429,113 @@ test(
       const actualLambda = guaranteeNonNullable(
         derivedProjCols.find((col) => col.columnName === colName),
         `Unable to find derived projection column '${colName}'`,
-      ).getIsolatedRawLambda();
+      ).getIsolatedClassRawLambda();
       const jsonQuery =
         queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
           actualLambda,
         );
       expect(expectedLambda).toEqual(jsonQuery);
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Derivation Projection Accessor Lambda is built correctly to fetch relation type',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+    const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
+      applicationStore,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      undefined,
+    );
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(
+        undefined,
+        TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter.body,
+      ),
+    );
+    const accessor = guaranteeType(queryBuilderState.sourceElement, Accessor);
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+
+    // Create a derivation column with a simple lambda: x | 'hello'
+    const derivationLambda = new RawLambda(
+      [{ _type: 'var', name: 'x' }],
+      [{ _type: 'string', value: 'hello' }],
+    );
+    const derivedCol = new QueryBuilderDerivationProjectionColumnState(
+      tdsState,
+      derivationLambda,
+    );
+    derivedCol.setColumnName('myDerivedCol');
+    tdsState.projectionColumns.push(derivedCol);
+
+    const actualLambda = derivedCol.getIsolatedAccessorRawLambda(accessor);
+    const serialized =
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        actualLambda,
+      );
+
+    // The isolated lambda should wrap the derivation in accessor->project(...)
+    // with the column's lambda embedded in a colSpec
+    expect(serialized).toMatchObject({
+      _type: 'lambda',
+      parameters: [],
+      body: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'classInstance',
+              type: 'I',
+              value: {
+                path: [
+                  'ingestion::CARBON_DIOXIDE_EMISSIONS',
+                  'CARBON_DIOXIDE_EMISSIONS',
+                ],
+              },
+            },
+            {
+              _type: 'classInstance',
+              type: 'colSpecArray',
+              value: {
+                colSpecs: [
+                  {
+                    name: 'myDerivedCol',
+                    function1: {
+                      _type: 'lambda',
+                      body: [{ _type: 'string', value: 'hello' }],
+                      parameters: [{ _type: 'var', name: 'x' }],
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
     });
   },
 );
@@ -1551,7 +1657,7 @@ describe(integrationTest('Post-filter default values are properly set'), () => {
       const _class =
         queryBuilderState.graphManagerState.graph.getClass(testClass);
       await act(async () => {
-        queryBuilderState.changeClass(_class);
+        queryBuilderState.changeSourceElement(_class);
         const tdsState = guaranteeType(
           queryBuilderState.fetchStructureState.implementation,
           QueryBuilderTDSState,
@@ -1729,7 +1835,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,
@@ -1802,7 +1908,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,

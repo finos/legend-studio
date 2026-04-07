@@ -27,8 +27,8 @@ import {
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   AbstractPropertyExpression,
+  FunctionExpression,
   type EnumValueInstanceValue,
-  type FunctionExpression,
   type GraphFetchTreeInstanceValue,
   type ValueSpecificationVisitor,
   type LambdaFunction,
@@ -55,6 +55,8 @@ import {
   PackageableElementExplicitReference,
   MILESTONING_STEREOTYPE,
   type ColSpecInstanceValue,
+  type AccessorInstanceValue,
+  RelationColumn,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/tds/post-filter/QueryBuilderPostFilterStateBuilder.js';
 import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder.js';
@@ -76,6 +78,7 @@ import {
   processTDSProjectExpression,
   processTDSProjectionColumnPropertyExpression,
   processTDSProjectionDerivationExpression,
+  processTDSRelationColumn,
   processTDSSliceExpression,
   processTDSSortDirectionExpression,
   processTDSSortExpression,
@@ -117,7 +120,7 @@ const processGetAllExpression = (
     Class,
     `Can't process getAll() expression: getAll() return type is missing`,
   );
-  queryBuilderState.setClass(_class);
+  queryBuilderState.setSourceElement(_class);
   queryBuilderState.milestoningState.clearMilestoningDates();
   queryBuilderState.explorerState.refreshTreeData();
 
@@ -149,7 +152,7 @@ const processGetAllVersionsExpression = (
     Class,
     `Can't process getAllVersions() expression: getAllVersions() return type is missing`,
   );
-  queryBuilderState.setClass(_class);
+  queryBuilderState.setSourceElement(_class);
   queryBuilderState.milestoningState.clearMilestoningDates();
   queryBuilderState.explorerState.refreshTreeData();
 
@@ -183,7 +186,7 @@ const processGetAllVersionsInRangeExpression = (
     Class,
     `Can't process getAllVersionsInRange() expression: getAllVersionsInRange() return type is missing`,
   );
-  queryBuilderState.setClass(_class);
+  queryBuilderState.setSourceElement(_class);
   queryBuilderState.milestoningState.clearMilestoningDates();
   queryBuilderState.explorerState.refreshTreeData();
 
@@ -309,24 +312,34 @@ const processFromFunction = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
 ): void => {
-  // mapping
-  const mappingInstanceExpression = guaranteeType(
-    expression.parametersValues[1],
-    InstanceValue,
-    `Can't process from() expression: only support from() with 1st parameter as instance value`,
-  );
-  const mapping = guaranteeType(
-    guaranteeType(
-      mappingInstanceExpression.values[0],
-      PackageableElementReference,
-      `Can't process from() expression: only support from() with 1st parameter as packagableElement value`,
-    ).value,
-    Mapping,
-    `Can't process from() expression: only support from() with 1st parameter as mapping value`,
-  );
+  const mappingParameter =
+    expression.parametersValues[2] !== undefined
+      ? expression.parametersValues[1]
+      : undefined;
+  const runtimeParameter = mappingParameter
+    ? expression.parametersValues[2]
+    : expression.parametersValues[1];
+  let mapping: Mapping | undefined;
+  if (mappingParameter) {
+    // mapping
+    const mappingInstanceExpression = guaranteeType(
+      mappingParameter,
+      InstanceValue,
+      `Can't process from() expression: only support from() with 1st parameter as instance value`,
+    );
+    mapping = guaranteeType(
+      guaranteeType(
+        mappingInstanceExpression.values[0],
+        PackageableElementReference,
+        `Can't process from() expression: only support from() with 1st parameter as packagableElement value`,
+      ).value,
+      Mapping,
+      `Can't process from() expression: only support from() with 1st parameter as mapping value`,
+    );
+  }
   // runtime
   const runtimeInstanceExpression = guaranteeType(
-    expression.parametersValues[2],
+    runtimeParameter,
     InstanceValue,
     `Can't process from() expression: only support from() with 2nd parameter as instance value`,
   );
@@ -514,6 +527,16 @@ export class QueryBuilderValueSpecificationProcessor
 
   visit_FunctionExpression(valueSpecification: FunctionExpression): void {
     throw new UnsupportedOperationError();
+  }
+
+  visit_AccessorInstanceValue(
+    valueAccessorInstanceValue: AccessorInstanceValue,
+  ): void {
+    const value = guaranteeNonNullable(
+      valueAccessorInstanceValue.values[0],
+      `Accessor instance value must have a value`,
+    );
+    this.queryBuilderState.setSourceElement(value);
   }
 
   visit_SimpleFunctionExpression(
@@ -832,8 +855,8 @@ export class QueryBuilderValueSpecificationProcessor
     } else if (matchFunctionName(functionName, [SUPPORTED_FUNCTIONS.FROM])) {
       const parameters = valueSpecification.parametersValues;
       assertTrue(
-        parameters.length === 3,
-        'From function expects 2 parameters (mapping and runtime)',
+        parameters.length === 3 || parameters.length === 2,
+        'From function expects an optional mapping with required runtime',
       );
       processFromFunction(valueSpecification, this.queryBuilderState);
       QueryBuilderValueSpecificationProcessor.processChild(
@@ -983,38 +1006,64 @@ export class QueryBuilderValueSpecificationProcessor
         `Can't process col spec array instance: value expected to be of size 1`,
       );
       guaranteeNonNullable(spec[0]).colSpecs.forEach((col) => {
-        const _function1 = guaranteeType(
-          col.function1,
-          LambdaFunctionInstanceValue,
-          `Can't process col spec: function1 not a lambda function instance value`,
-        );
-        assertTrue(_function1.values.length === 1);
-        const lambdaVal = guaranteeNonNullable(_function1.values[0]);
-        assertTrue(lambdaVal.expressionSequence.length === 1);
-        const expression = guaranteeNonNullable(
-          lambdaVal.expressionSequence[0],
-        );
-
-        if (expression instanceof AbstractPropertyExpression) {
-          processTDSProjectionColumnPropertyExpression(
-            expression,
-            col.name,
-            this.queryBuilderState,
+        const _function1 = col.function1;
+        if (_function1 instanceof LambdaFunctionInstanceValue) {
+          assertTrue(_function1.values.length === 1);
+          const lambdaVal = guaranteeNonNullable(_function1.values[0]);
+          assertTrue(lambdaVal.expressionSequence.length === 1);
+          const expression = guaranteeNonNullable(
+            lambdaVal.expressionSequence[0],
           );
-        } else if (expression instanceof INTERNAL__UnknownValueSpecification) {
+          if (expression instanceof AbstractPropertyExpression) {
+            processTDSProjectionColumnPropertyExpression(
+              expression,
+              col.name,
+              this.queryBuilderState,
+            );
+          } else if (expression instanceof FunctionExpression) {
+            const func = expression.func;
+            const relationCol = guaranteeType(
+              func,
+              RelationColumn,
+              'Can`t process col spec: function1 lambda function does not contain a relation column',
+            );
+            processTDSRelationColumn(
+              expression,
+              col.name,
+              relationCol,
+              this.queryBuilderState,
+            );
+          } else if (
+            expression instanceof INTERNAL__UnknownValueSpecification
+          ) {
+            assertNonNullable(
+              this.parentExpression,
+              `Can't process unknown value: parent expression cannot be retrieved`,
+            );
+            processTDSProjectionDerivationExpression(
+              expression,
+              col.name,
+              this.parentExpression,
+              this.queryBuilderState,
+            );
+          }
+        } else if (_function1 instanceof INTERNAL__UnknownValueSpecification) {
           assertNonNullable(
             this.parentExpression,
             `Can't process unknown value: parent expression cannot be retrieved`,
           );
           processTDSProjectionDerivationExpression(
-            expression,
+            _function1,
             col.name,
             this.parentExpression,
             this.queryBuilderState,
           );
+        } else {
+          throw new UnsupportedOperationError(
+            `Can't process col spec: only support col spec with function lambda value`,
+          );
         }
       });
-
       return;
     } else if (
       matchFunctionName(this.parentExpression.functionName, [

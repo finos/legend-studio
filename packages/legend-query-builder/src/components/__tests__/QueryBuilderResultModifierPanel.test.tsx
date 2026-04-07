@@ -59,7 +59,7 @@ describe('QueryBuilderResultModifierPanel', () => {
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),

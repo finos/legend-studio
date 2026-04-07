@@ -151,7 +151,7 @@ describe(
           );
 
         await act(async () => {
-          queryBuilderState.changeClass(
+          queryBuilderState.changeSourceElement(
             queryBuilderState.graphManagerState.graph.getClass(_class),
           );
         });

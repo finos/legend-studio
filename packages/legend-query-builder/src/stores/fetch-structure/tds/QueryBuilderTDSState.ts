@@ -37,13 +37,13 @@ import {
   hashArray,
   UnsupportedOperationError,
   ContentType,
+  type PlainObject,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import {
   type CompilationError,
   type LambdaFunction,
   type ValueSpecification,
-  type VariableExpression,
   type EngineError,
   GRAPH_MANAGER_EVENT,
   extractSourceInformationCoordinates,
@@ -51,11 +51,16 @@ import {
   RawLambda,
   isStubbed_RawLambda,
   Class,
+  Accessor,
   AbstractPropertyExpression,
   matchFunctionName,
   SimpleFunctionExpression,
   getAllSuperclasses,
   EXECUTION_SERIALIZATION_FORMAT,
+  FunctionExpression,
+  VariableExpression,
+  Multiplicity,
+  type RelationTypeMetadata,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -78,8 +83,11 @@ import type { QueryBuilderAggregateOperator } from './aggregation/QueryBuilderAg
 import { getQueryBuilderCoreAggregrationOperators } from './aggregation/QueryBuilderAggregateOperatorLoader.js';
 import {
   QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderRelationColumnProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   type QueryBuilderProjectionColumnState,
+  _buildAccessorProjectRawLambda,
+  _decorateRawLambdaWithParametersAndLetExpressions,
 } from './projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderFetchStructureState } from '../QueryBuilderFetchStructureState.js';
 import {
@@ -284,6 +292,10 @@ export class QueryBuilderTDSState
         }
 
         nodeIDs = nodeIDs.concat(ids);
+      } else if (
+        column instanceof QueryBuilderRelationColumnProjectionColumnState
+      ) {
+        nodeIDs.push(column.column.name);
       }
     });
 
@@ -447,7 +459,7 @@ export class QueryBuilderTDSState
     );
   }
 
-  onClassChange(_class: Class | undefined): void {
+  onClassChange(): void {
     return;
   }
 
@@ -539,6 +551,55 @@ export class QueryBuilderTDSState
     derivationColumnState.setColumnName(simpleProjectionColumnState.columnName);
 
     this.replaceColumn(simpleProjectionColumnState, derivationColumnState);
+
+    // convert to grammar for display
+    flowResult(
+      derivationColumnState.derivationLambdaEditorState.convertLambdaObjectToGrammarString(
+        {
+          pretty: false,
+        },
+      ),
+    ).catch(this.queryBuilderState.applicationStore.alertUnhandledError);
+  }
+
+  transformRelationColumnProjectionToDerivation(
+    relationColumnProjectionColumnState: QueryBuilderRelationColumnProjectionColumnState,
+  ): void {
+    // setup new derivation column state
+    const column = relationColumnProjectionColumnState.column;
+    const funcExpression = new FunctionExpression(column.name);
+    funcExpression.func = column;
+    funcExpression.parametersValues = [
+      new VariableExpression(
+        relationColumnProjectionColumnState.lambdaParameterName,
+        Multiplicity.ONE,
+        undefined,
+      ),
+    ];
+    const columnColumnLambda = buildGenericLambdaFunctionInstanceValue(
+      relationColumnProjectionColumnState.lambdaParameterName,
+      [funcExpression],
+      this.queryBuilderState.graphManagerState.graph,
+    );
+    const derivationColumnState =
+      new QueryBuilderDerivationProjectionColumnState(
+        this,
+        guaranteeType(
+          this.queryBuilderState.graphManagerState.graphManager.transformValueSpecToRawValueSpec(
+            columnColumnLambda,
+            this.queryBuilderState.graphManagerState.graph,
+          ),
+          RawLambda,
+        ),
+      );
+    derivationColumnState.setColumnName(
+      relationColumnProjectionColumnState.columnName,
+    );
+
+    this.replaceColumn(
+      relationColumnProjectionColumnState,
+      derivationColumnState,
+    );
 
     // convert to grammar for display
     flowResult(
@@ -843,6 +904,25 @@ export class QueryBuilderTDSState
     );
   }
 
+  getParameters(): PlainObject[] {
+    return this.queryBuilderState.parametersState.parameterStates.map(
+      (_param) =>
+        this.queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
+          _param.parameter,
+        ),
+    );
+  }
+
+  getLetExpressions(): PlainObject[] {
+    return this.queryBuilderState.constantState.constants
+      .map((_const) => _const.buildLetExpression())
+      .map((expres) =>
+        this.queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
+          expres,
+        ),
+      );
+  }
+
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.PROJECTION_STATE,
@@ -855,28 +935,64 @@ export class QueryBuilderTDSState
 
   *fetchDerivedReturnTypes(): GeneratorFn<void> {
     try {
-      const input = new Map<string, RawLambda>();
       const graph = this.queryBuilderState.graphManagerState.graph;
       const derivedCols = this.projectionColumns.filter(
         filterByType(QueryBuilderDerivationProjectionColumnState),
       );
-      derivedCols.forEach((col) =>
-        input.set(col.columnName, col.getIsolatedRawLambda()),
-      );
-      const result =
-        (yield this.queryBuilderState.graphManagerState.graphManager.getLambdasReturnType(
-          input,
+      if (derivedCols.length === 0) {
+        return;
+      }
+      const sourceElement = this.queryBuilderState.sourceElement;
+      if (sourceElement instanceof Class) {
+        const input = new Map<string, RawLambda>();
+        derivedCols.forEach((col) =>
+          input.set(col.columnName, col.getIsolatedClassRawLambda()),
+        );
+        const result =
+          (yield this.queryBuilderState.graphManagerState.graphManager.getLambdasReturnType(
+            input,
+            graph,
+          )) as {
+            results: Map<string, string>;
+            errors: Map<string, EngineError>;
+          };
+        Array.from(result.results.entries()).forEach((res) => {
+          const col = derivedCols.find((d) => d.columnName === res[0]);
+          if (col) {
+            col.setLambdaReturnType(res[1]);
+          }
+        });
+      } else if (sourceElement instanceof Accessor) {
+        const columnsMap = new Map<string, RawLambda>();
+        derivedCols.forEach((col) =>
+          columnsMap.set(col.columnName, col.lambda),
+        );
+        const isolatedLambda = _buildAccessorProjectRawLambda(
           graph,
-        )) as {
-          results: Map<string, string>;
-          errors: Map<string, EngineError>;
-        };
-      Array.from(result.results.entries()).forEach((res) => {
-        const col = derivedCols.find((d) => d.columnName === res[0]);
-        if (col) {
-          col.setLambdaReturnType(res[1]);
-        }
-      });
+          this.queryBuilderState.graphManagerState,
+          sourceElement,
+          columnsMap,
+        );
+        const enrichedLambda =
+          _decorateRawLambdaWithParametersAndLetExpressions(
+            isolatedLambda,
+            this.getParameters(),
+            this.getLetExpressions(),
+          );
+        const relationTypeMetadata =
+          (yield this.queryBuilderState.graphManagerState.graphManager.getLambdaRelationType(
+            enrichedLambda,
+            graph,
+          )) as RelationTypeMetadata;
+        derivedCols.forEach((col) => {
+          const columnMeta = relationTypeMetadata.columns.find(
+            (c) => c.name === col.columnName,
+          );
+          if (columnMeta) {
+            col.setLambdaReturnType(columnMeta.type);
+          }
+        });
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.logService.info(

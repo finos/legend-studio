@@ -62,7 +62,7 @@ test(
     const _modelClass =
       queryBuilderState.graphManagerState.graph.getClass(_class);
     await act(async () => {
-      queryBuilderState.changeClass(_modelClass);
+      queryBuilderState.changeSourceElement(_modelClass);
     });
     const explorerPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
@@ -241,7 +241,7 @@ test(
     const _modelClass =
       queryBuilderState.graphManagerState.graph.getClass(_class);
     await act(async () => {
-      queryBuilderState.changeClass(_modelClass);
+      queryBuilderState.changeSourceElement(_modelClass);
     });
     const explorerPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),

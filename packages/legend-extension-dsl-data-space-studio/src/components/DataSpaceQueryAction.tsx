@@ -103,12 +103,12 @@ export const queryDataSpace = async (
         // if there is no chosen class or the chosen one is not compatible
         // with the mapping then pick a compatible class if possible
         if (
-          !queryBuilderState.class ||
-          !compatibleClasses.includes(queryBuilderState.class)
+          !queryBuilderState.sourceClass ||
+          !compatibleClasses.includes(queryBuilderState.sourceClass)
         ) {
           const possibleNewClass = compatibleClasses[0];
           if (possibleNewClass) {
-            queryBuilderState.changeClass(possibleNewClass);
+            queryBuilderState.changeSourceElement(possibleNewClass);
           }
         }
         return queryBuilderState;

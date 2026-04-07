@@ -131,6 +131,7 @@ import type { DeployProjectResponse } from './action/dev-metadata/DeployProjectR
 import type { DataProductAnalysisQueryResult } from './action/analytics/data-product/DataProductAnalysis.js';
 import type { MetadataRequestOptions } from './action/dev-metadata/MetadataRequestOptions.js';
 import type { DataProductAccessType } from '../graph/metamodel/pure/dataProduct/DataProduct.js';
+import type { Accessor } from '../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -436,6 +437,17 @@ export abstract class AbstractPureGraphManager {
     results: Map<string, string>;
     errors: Map<string, EngineError>;
   }>;
+
+  // ------------------------------------------- Relation -------------------------------------------
+
+  abstract createAccessorFromPackageableElement(
+    element: PackageableElement,
+    graph: PureModel,
+    options?: {
+      schemaName: string | undefined;
+      tableName: string | undefined;
+    },
+  ): Accessor | undefined;
 
   // ------------------------------------------- SDLC -------------------------------------------
 

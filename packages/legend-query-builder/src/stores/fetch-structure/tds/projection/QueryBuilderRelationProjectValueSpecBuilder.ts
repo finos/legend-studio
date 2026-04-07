@@ -31,10 +31,13 @@ import {
   Relation,
   RelationColumn,
   RelationType,
+  VariableExpression,
+  FunctionExpression,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import {
   QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderRelationColumnProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
@@ -85,6 +88,24 @@ export const buildRelationProjection = (
             options,
           ),
         ],
+        queryBuilderState.graphManagerState.graph,
+      );
+    } else if (
+      projectionColumnState instanceof
+      QueryBuilderRelationColumnProjectionColumnState
+    ) {
+      const real = projectionColumnState.column;
+      const simple = new FunctionExpression(real.name);
+      const variable = new VariableExpression(
+        projectionColumnState.lambdaParameterName,
+        Multiplicity.ONE,
+        undefined,
+      );
+      simple.func = real;
+      simple.parametersValues = [variable];
+      columnLambda = buildGenericLambdaFunctionInstanceValue(
+        projectionColumnState.lambdaParameterName,
+        [simple],
         queryBuilderState.graphManagerState.graph,
       );
     } else if (

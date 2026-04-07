@@ -48,7 +48,7 @@ export class DataQualityGraphFetchTreeState implements Hashable {
 
     this.dataQualityState = dataQualityState;
     this.updateTreeData(
-      this.dataQualityState.dataQualityQueryBuilderState.class,
+      this.dataQualityState.dataQualityQueryBuilderState.sourceClass,
     );
   }
   setGraphFetchTree(val: DataQualityGraphFetchTreeData | undefined): void {

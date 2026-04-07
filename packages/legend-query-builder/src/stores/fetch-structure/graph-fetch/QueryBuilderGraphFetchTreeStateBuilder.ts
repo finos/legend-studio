@@ -136,7 +136,7 @@ export const processInternalizeExpression = (
     `Can't process internalize() expression: internalize() return type is missing`,
   );
 
-  queryBuilderState.setClass(_class);
+  queryBuilderState.setSourceElement(_class);
   queryBuilderState.milestoningState.clearMilestoningDates();
   queryBuilderState.explorerState.refreshTreeData();
 

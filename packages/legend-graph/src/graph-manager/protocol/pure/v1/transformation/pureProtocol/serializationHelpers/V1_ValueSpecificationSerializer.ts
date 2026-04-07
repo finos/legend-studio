@@ -69,6 +69,7 @@ import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/classInst
 import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
 import {
   V1_DataProductAccessor,
+  V1_IngestDefinitionAccessor,
   V1_RelationStoreAccessor,
   V1_SQLAccessor,
 } from '../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
@@ -773,6 +774,14 @@ const relationStoreAccessorModelSchema = createModelSchema(
   },
 );
 
+const ingestAccessorModelSchema = createModelSchema(
+  V1_IngestDefinitionAccessor,
+  {
+    path: list(primitive()),
+    metadata: optional(primitive()),
+  },
+);
+
 const dataProductAccessorModelSchema = createModelSchema(
   V1_DataProductAccessor,
   {
@@ -789,8 +798,22 @@ const colSpecModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_ColSpec> =>
   createModelSchema(V1_ColSpec, {
-    function1: optional(usingModelSchema(V1_lambdaModelSchema(plugins))),
-    function2: optional(usingModelSchema(V1_lambdaModelSchema(plugins))),
+    function1: optional(
+      custom(
+        (val) => {
+          return val ? V1_serializeValueSpecification(val, plugins) : SKIP;
+        },
+        (val) => V1_deserializeValueSpecification(val, plugins),
+      ),
+    ),
+    function2: optional(
+      custom(
+        (val) => {
+          return val ? V1_serializeValueSpecification(val, plugins) : SKIP;
+        },
+        (val) => V1_deserializeValueSpecification(val, plugins),
+      ),
+    ),
     name: primitive(),
     type: optional(primitive()),
   });
@@ -856,8 +879,9 @@ export function V1_deserializeClassInstanceValue(
     case V1_ClassInstanceType.COL_SPEC_ARRAY:
       return deserialize(colSpecArrayModelSchema(plugins), json);
     case V1_ClassInstanceType.RELATION_STORE_ACCESSOR:
-    case V1_ClassInstanceType.INGEST_ACCESSOR:
       return deserialize(relationStoreAccessorModelSchema, json);
+    case V1_ClassInstanceType.INGEST_ACCESSOR:
+      return deserialize(ingestAccessorModelSchema, json);
     case V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR:
       return deserialize(dataProductAccessorModelSchema, json);
     case V1_ClassInstanceType.SQL_ACCESSOR:
@@ -920,6 +944,8 @@ export function V1_serializeClassInstanceValue(
     return serialize(dataProductAccessorModelSchema, protocol);
   } else if (protocol instanceof V1_SQLAccessor) {
     return serialize(sqlAccessorModelSchema, protocol);
+  } else if (protocol instanceof V1_IngestDefinitionAccessor) {
+    return serialize(ingestAccessorModelSchema, protocol);
   }
   const serializers = plugins.flatMap(
     (plugin) =>

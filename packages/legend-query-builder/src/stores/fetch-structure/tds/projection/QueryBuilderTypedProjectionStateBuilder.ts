@@ -19,9 +19,14 @@ import {
   SimpleFunctionExpression,
   matchFunctionName,
   ColSpecArrayInstance,
+  AccessorInstanceValue,
 } from '@finos/legend-graph';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../QueryBuilderFetchStructureImplementationState.js';
-import { assertTrue, assertType, guaranteeType } from '@finos/legend-shared';
+import {
+  assertTrue,
+  assertType,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import {
   QUERY_BUILDER_LAMBDA_WRITER_MODE,
   type QueryBuilderState,
@@ -47,24 +52,28 @@ export const processTypedTDSProjectExpression = (
     FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
   );
 
-  // check preceding expression
-  const precedingExpression = guaranteeType(
+  const _precedingExpression = guaranteeNonNullable(
     expression.parametersValues[0],
-    SimpleFunctionExpression,
-    `Can't process typed project() expression: only support typed project() immediately following an expression`,
+    `Can't process typed project() expression: missing preceding expression`,
   );
-  assertTrue(
-    matchFunctionName(precedingExpression.functionName, [
-      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
-      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
-      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
-    ]),
-    `Can't process typed project() expression: only support typed project() immediately following either getAll(), filter(), or forWatermark()`,
-  );
+  if (_precedingExpression instanceof SimpleFunctionExpression) {
+    assertTrue(
+      matchFunctionName(_precedingExpression.functionName, [
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
+      ]),
+      `Can't process typed project() expression: only support typed project() immediately following either getAll(), filter(), or forWatermark()`,
+    );
+  } else if (!(_precedingExpression instanceof AccessorInstanceValue)) {
+    throw new Error(
+      `Can't process typed project() expression: the first argument is expected to be either a function expression or a Accessor Instance Value`,
+    );
+  }
   QueryBuilderValueSpecificationProcessor.process(
-    precedingExpression,
+    _precedingExpression,
     parentLambda,
     queryBuilderState,
   );

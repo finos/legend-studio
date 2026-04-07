@@ -85,17 +85,18 @@ import {
   PrimitiveType,
   PrecisePrimitiveType,
   PRIMITIVE_TYPE,
+  PRECISE_PRIMITIVE_TYPE,
   Enumeration,
   TYPE_CAST_TOKEN,
   getMultiplicityDescription,
   isElementDeprecated,
+  extractElementNameFromPath,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   debounce,
   filterByType,
-  guaranteeNonNullable,
   isNonNullable,
   prettyCONSTName,
 } from '@finos/legend-shared';
@@ -107,6 +108,7 @@ import { getStandardPrimitiveTypeEquivalent } from '../../stores/QueryBuilderVal
 import { QueryBuilderRootClassInfoTooltip } from '../shared/QueryBuilderRootClassInfoTooltip.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import type { QueryBuilderPropertySearchState } from '../../stores/explorer/QueryBuilderPropertySearchState.js';
+import { QueryBuilderRelationExplorerPanel } from './QueryBuilderRelationExplorerPanel.js';
 
 export const checkForDeprecatedNode = (
   node: QueryBuilderExplorerTreeNodeData,
@@ -420,8 +422,34 @@ const QueryBuilderExplorerContextMenu = observer(
   }),
 );
 
+const PRECISE_PRIMITIVE_STRING_TYPES = new Set([
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.VARCHAR),
+]);
+
+const PRECISE_PRIMITIVE_NUMBER_TYPES = new Set([
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.INT),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.TINY_INT),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.U_TINY_INT),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.SMALL_INT),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.U_SMALL_INT),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.U_INT),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.BIG_INT),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.U_BIG_INT),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.FLOAT),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.DOUBLE),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.NUMERIC),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.DECIMAL),
+]);
+
+const PRECISE_PRIMITIVE_TIME_TYPES = new Set([
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.TIMESTAMP),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.STRICTDATE),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.DATETIME),
+  extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.STRICTTIME),
+]);
+
 export const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
-  if (type instanceof PrimitiveType || type instanceof PrecisePrimitiveType) {
+  if (type instanceof PrimitiveType || type instanceof PrimitiveType) {
     const typeName = getStandardPrimitiveTypeEquivalent(type) ?? type.path;
     if (typeName === PRIMITIVE_TYPE.STRING) {
       return (
@@ -445,6 +473,20 @@ export const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       typeName === PRIMITIVE_TYPE.DATETIME ||
       typeName === PRIMITIVE_TYPE.STRICTDATE
     ) {
+      return (
+        <ClockIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />
+      );
+    }
+  } else if (type instanceof PrecisePrimitiveType) {
+    if (PRECISE_PRIMITIVE_STRING_TYPES.has(type.name)) {
+      return (
+        <StringTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__string" />
+      );
+    } else if (PRECISE_PRIMITIVE_NUMBER_TYPES.has(type.name)) {
+      return (
+        <HashtagIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__number" />
+      );
+    } else if (PRECISE_PRIMITIVE_TIME_TYPES.has(type.name)) {
       return (
         <ClockIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />
       );
@@ -507,6 +549,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
       node.type instanceof PrimitiveType &&
       !node.isPartOfDerivedPropertyBranch;
+
     const nodeExpandIcon = isExpandable ? (
       node.isOpen ? (
         <ChevronDownIcon />
@@ -611,18 +654,20 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 {node.label}
               </div>
               <div className="query-builder-explorer-tree__node__actions">
-                <QueryBuilderRootClassInfoTooltip
-                  _class={guaranteeNonNullable(queryBuilderState.class)}
-                >
-                  <div
-                    className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info"
-                    data-testid={
-                      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TOOLTIP_ICON
-                    }
+                {queryBuilderState.sourceClass && (
+                  <QueryBuilderRootClassInfoTooltip
+                    _class={queryBuilderState.sourceClass}
                   >
-                    <InfoCircleIcon />
-                  </div>
-                </QueryBuilderRootClassInfoTooltip>
+                    <div
+                      className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info"
+                      data-testid={
+                        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TOOLTIP_ICON
+                      }
+                    >
+                      <InfoCircleIcon />
+                    </div>
+                  </QueryBuilderRootClassInfoTooltip>
+                )}
               </div>
             </>
           )}
@@ -1000,7 +1045,7 @@ const QueryBuilderExplorerSearchInput = observer(
   }),
 );
 
-export const QueryBuilderExplorerPanel = observer(
+const QueryBuilderClassExplorerPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const searchInputRef = useRef<HTMLInputElement>(null);
@@ -1156,6 +1201,24 @@ export const QueryBuilderExplorerPanel = observer(
           />
         </div>
       </div>
+    );
+  },
+);
+
+export const QueryBuilderExplorerPanel = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const accessor = queryBuilderState.sourceAccessor;
+    if (accessor) {
+      return (
+        <QueryBuilderRelationExplorerPanel
+          queryBuilderState={queryBuilderState}
+          accessor={accessor}
+        />
+      );
+    }
+    return (
+      <QueryBuilderClassExplorerPanel queryBuilderState={queryBuilderState} />
     );
   },
 );

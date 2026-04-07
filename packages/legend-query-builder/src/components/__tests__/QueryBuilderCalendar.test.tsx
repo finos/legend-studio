@@ -55,7 +55,7 @@ test(
     const employeeClass =
       queryBuilderState.graphManagerState.graph.getClass('test::Employee');
     await act(async () => {
-      queryBuilderState.changeClass(employeeClass);
+      queryBuilderState.changeSourceElement(employeeClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -121,7 +121,7 @@ test(
     const employeeClass =
       queryBuilderState.graphManagerState.graph.getClass('test::Employee');
     await act(async () => {
-      queryBuilderState.changeClass(employeeClass);
+      queryBuilderState.changeSourceElement(employeeClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -187,7 +187,7 @@ test(
     const employeeClass =
       queryBuilderState.graphManagerState.graph.getClass('test::Employee');
     await act(async () => {
-      queryBuilderState.changeClass(employeeClass);
+      queryBuilderState.changeSourceElement(employeeClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -261,7 +261,7 @@ test(
     const employeeClass =
       queryBuilderState.graphManagerState.graph.getClass('test::Employee');
     await act(async () => {
-      queryBuilderState.changeClass(employeeClass);
+      queryBuilderState.changeSourceElement(employeeClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -337,7 +337,7 @@ test(
     const employeeClass =
       queryBuilderState.graphManagerState.graph.getClass('test::Employee');
     await act(async () => {
-      queryBuilderState.changeClass(employeeClass);
+      queryBuilderState.changeSourceElement(employeeClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),

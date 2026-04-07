@@ -20,7 +20,7 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import {
-  type Class,
+  Class,
   Multiplicity,
   getMilestoneTemporalStereotype,
   extractElementNameFromPath,
@@ -34,6 +34,7 @@ import {
   SimpleFunctionExpression,
   SUPPORTED_FUNCTIONS,
   RuntimePointer,
+  AccessorInstanceValue,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecificationBuilder.js';
@@ -154,10 +155,6 @@ export const buildLambdaFunction = (
   queryBuilderState: QueryBuilderState,
   options?: LambdaFunctionBuilderOption,
 ): LambdaFunction => {
-  const _class = guaranteeNonNullable(
-    queryBuilderState.class,
-    'Class is required to build query',
-  );
   const lambdaFunction = new LambdaFunction(
     new FunctionType(
       PackageableElementExplicitReference.create(
@@ -167,70 +164,86 @@ export const buildLambdaFunction = (
     ),
   );
 
-  const milestoningStereotype = getMilestoneTemporalStereotype(
-    _class,
-    queryBuilderState.graphManagerState.graph,
+  const sourceElement = guaranteeNonNullable(
+    queryBuilderState.sourceElement,
+    'Source element of type class or accessor is required to build query',
   );
-
-  if (milestoningStereotype && options?.useAllVersionsForMilestoning) {
-    // build getAllVersions() when we preview data for milestoned classes
-    // because if we use getAll() we need to pass in data to execute the query
-    // but we don't give user that option in this flow.
-    const getAllVersionsFunction = buildGetAllVersionsFunction(
-      _class,
-      Multiplicity.ONE,
+  if (sourceElement instanceof Class) {
+    const _class = guaranteeNonNullable(
+      queryBuilderState.sourceClass,
+      'Class is required to build query',
     );
-    lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
-  } else {
-    switch (queryBuilderState.getAllFunction) {
-      case QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS: {
-        if (milestoningStereotype) {
-          const getAllVersionsFunction = buildGetAllVersionsFunction(
-            _class,
-            Multiplicity.ONE,
-          );
-          lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
-        } else {
-          throw new UnsupportedOperationError(
-            `Unable to build query lamdba: getAllVersions() expects source class to be milestoned`,
-          );
-        }
-        break;
-      }
-      case QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE: {
-        if (milestoningStereotype) {
-          const getAllVersionsInRangeFunction =
-            buildGetAllVersionsInRangeFunction(_class, Multiplicity.ONE);
-          queryBuilderState.milestoningState
-            .getMilestoningImplementation(milestoningStereotype)
-            .buildGetAllVersionsInRangeParameters(
-              getAllVersionsInRangeFunction,
+
+    const milestoningStereotype = getMilestoneTemporalStereotype(
+      _class,
+      queryBuilderState.graphManagerState.graph,
+    );
+
+    if (milestoningStereotype && options?.useAllVersionsForMilestoning) {
+      // build getAllVersions() when we preview data for milestoned classes
+      // because if we use getAll() we need to pass in data to execute the query
+      // but we don't give user that option in this flow.
+      const getAllVersionsFunction = buildGetAllVersionsFunction(
+        _class,
+        Multiplicity.ONE,
+      );
+      lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
+    } else {
+      switch (queryBuilderState.getAllFunction) {
+        case QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS: {
+          if (milestoningStereotype) {
+            const getAllVersionsFunction = buildGetAllVersionsFunction(
+              _class,
+              Multiplicity.ONE,
             );
-          lambdaFunction.expressionSequence[0] = getAllVersionsInRangeFunction;
-        } else {
+            lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
+          } else {
+            throw new UnsupportedOperationError(
+              `Unable to build query lamdba: getAllVersions() expects source class to be milestoned`,
+            );
+          }
+          break;
+        }
+        case QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE: {
+          if (milestoningStereotype) {
+            const getAllVersionsInRangeFunction =
+              buildGetAllVersionsInRangeFunction(_class, Multiplicity.ONE);
+            queryBuilderState.milestoningState
+              .getMilestoningImplementation(milestoningStereotype)
+              .buildGetAllVersionsInRangeParameters(
+                getAllVersionsInRangeFunction,
+              );
+            lambdaFunction.expressionSequence[0] =
+              getAllVersionsInRangeFunction;
+          } else {
+            throw new UnsupportedOperationError(
+              `Unable to build query lamdba: getAllVersionsInRange() expects source class to be milestoned`,
+            );
+          }
+          break;
+        }
+        case QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL: {
+          // build getAll()
+          const getAllFunction = buildGetAllFunction(_class, Multiplicity.ONE);
+          if (milestoningStereotype) {
+            // build milestoning parameter(s) for getAll()
+            queryBuilderState.milestoningState
+              .getMilestoningImplementation(milestoningStereotype)
+              .buildGetAllParameters(getAllFunction);
+          }
+          lambdaFunction.expressionSequence[0] = getAllFunction;
+          break;
+        }
+        default:
           throw new UnsupportedOperationError(
-            `Unable to build query lamdba: getAllVersionsInRange() expects source class to be milestoned`,
+            `Unable to build query lambda: unknown ${queryBuilderState.getAllFunction} function`,
           );
-        }
-        break;
       }
-      case QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL: {
-        // build getAll()
-        const getAllFunction = buildGetAllFunction(_class, Multiplicity.ONE);
-        if (milestoningStereotype) {
-          // build milestoning parameter(s) for getAll()
-          queryBuilderState.milestoningState
-            .getMilestoningImplementation(milestoningStereotype)
-            .buildGetAllParameters(getAllFunction);
-        }
-        lambdaFunction.expressionSequence[0] = getAllFunction;
-        break;
-      }
-      default:
-        throw new UnsupportedOperationError(
-          `Unable to build query lambda: unknown ${queryBuilderState.getAllFunction} function`,
-        );
     }
+  } else {
+    const accessorInstanceValue = new AccessorInstanceValue();
+    accessorInstanceValue.values = [sourceElement];
+    lambdaFunction.expressionSequence[0] = accessorInstanceValue;
   }
 
   // build watermark

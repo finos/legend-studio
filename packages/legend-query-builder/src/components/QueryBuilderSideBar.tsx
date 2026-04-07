@@ -115,17 +115,20 @@ export const QueryBuilderClassSelector = observer(
         value: _class,
         label: generateClassLabel(_class, queryBuilderState),
       })) as PackageableElementOption<Class>[];
-    const selectedClassOption = queryBuilderState.class
+    const selectedClassOption = queryBuilderState.sourceClass
       ? ({
-          value: queryBuilderState.class,
-          label: generateClassLabel(queryBuilderState.class, queryBuilderState),
+          value: queryBuilderState.sourceClass,
+          label: generateClassLabel(
+            queryBuilderState.sourceClass,
+            queryBuilderState,
+          ),
         } as PackageableElementOption<Class>)
       : null;
     const changeClass = (val: PackageableElementOption<Class>): void => {
-      if (val.value === queryBuilderState.class) {
+      if (val.value === queryBuilderState.sourceElement) {
         return;
       }
-      queryBuilderState.changeClass(val.value);
+      queryBuilderState.changeSourceElement(val.value);
       onClassChange?.(val.value);
     };
 
@@ -222,7 +225,7 @@ const BasicQueryBuilderSetup = observer(
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
       if (
-        !queryBuilderState.class ||
+        !queryBuilderState.sourceElement ||
         val.value === queryBuilderState.executionContextState.mapping ||
         queryBuilderState.isMappingReadOnly
       ) {
@@ -291,7 +294,8 @@ const BasicQueryBuilderSetup = observer(
                   : 'No mapping found'
               }
               disabled={
-                queryBuilderState.isMappingReadOnly || !queryBuilderState.class
+                queryBuilderState.isMappingReadOnly ||
+                !queryBuilderState.sourceElement
               }
               options={mappingOptions}
               onChange={changeMapping}
@@ -326,7 +330,7 @@ const BasicQueryBuilderSetup = observer(
               }
               disabled={
                 queryBuilderState.isRuntimeReadOnly ||
-                !queryBuilderState.class ||
+                !queryBuilderState.sourceElement ||
                 !queryBuilderState.executionContextState.mapping
               }
               options={runtimeOptions}

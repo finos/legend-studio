@@ -20,7 +20,13 @@ import {
   usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import {
+  V1_IngestDataset,
+  V1_IngestDatasetSchema,
+  V1_IngestDatasetSource,
+  V1_IngestDefinition,
+  V1_IngestDefinitionContent,
+} from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import { V1_AppDirNodeModelSchema } from './lakehouse/V1_CoreEntitlementsSerializationHelper.js';
@@ -28,9 +34,12 @@ import {
   createModelSchema,
   custom,
   deserialize,
+  list,
+  optional,
   primitive,
   serialize,
 } from 'serializr';
+import { V1_relationTypeColumnModelSchema } from './V1_TypeSerializationHelper.js';
 import {
   type V1_IngestEnvironment,
   V1_AWSSnowflakeIngestEnvironment,
@@ -167,3 +176,44 @@ export const V1_deserializeProducerEnvironment = (
       throw new Error(`Unknown V1_ProducerEnvironment type: ${json._type}`);
   }
 };
+
+// --------------------------------------------- Ingest Dataset Content ---------------------------------------------
+
+const V1_IngestDatasetSchemaModelSchema = createModelSchema(
+  V1_IngestDatasetSchema,
+  {
+    _type: primitive(),
+    columns: list(usingModelSchema(V1_relationTypeColumnModelSchema)),
+  },
+);
+
+const V1_IngestDatasetSourceModelSchema = createModelSchema(
+  V1_IngestDatasetSource,
+  {
+    _type: primitive(),
+    schema: usingModelSchema(V1_IngestDatasetSchemaModelSchema),
+  },
+);
+
+export const V1_IngestDatasetModelSchema = createModelSchema(V1_IngestDataset, {
+  name: primitive(),
+  primaryKey: list(primitive()),
+  source: usingModelSchema(V1_IngestDatasetSourceModelSchema),
+});
+
+export const V1_IngestDefinitionContentModelSchema = createModelSchema(
+  V1_IngestDefinitionContent,
+  {
+    datasets: optional(list(usingModelSchema(V1_IngestDatasetModelSchema))),
+  },
+);
+
+export const V1_deserializeIngestDefinitionContent = (
+  json: PlainObject<V1_IngestDefinitionContent>,
+): V1_IngestDefinitionContent =>
+  deserialize(V1_IngestDefinitionContentModelSchema, json);
+
+export const V1_serializeIngestDefinitionContent = (
+  content: V1_IngestDefinitionContent,
+): PlainObject<V1_IngestDefinitionContent> =>
+  serialize(V1_IngestDefinitionContentModelSchema, content);

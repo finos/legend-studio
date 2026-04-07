@@ -77,11 +77,11 @@ export const DataQualityClassSelector = observer(
       value: _class,
       label: generateClassLabel(_class, dataQualityState),
     }));
-    const selectedClassOption = dataQualityQueryBuilderState.class
+    const selectedClassOption = dataQualityQueryBuilderState.sourceClass
       ? {
-          value: dataQualityQueryBuilderState.class,
+          value: dataQualityQueryBuilderState.sourceClass,
           label: generateClassLabel(
-            dataQualityQueryBuilderState.class,
+            dataQualityQueryBuilderState.sourceClass,
             dataQualityState,
           ),
         }
@@ -90,10 +90,10 @@ export const DataQualityClassSelector = observer(
       label: React.ReactNode;
       value: Class;
     }): void => {
-      if (val.value === dataQualityQueryBuilderState.class) {
+      if (val.value === dataQualityQueryBuilderState.sourceElement) {
         return;
       }
-      dataQualityState.changeClass(val.value);
+      dataQualityState.changeSourceElement(val.value);
       dataQualityState.updateElementOnClassChange();
       onClassChange?.(val.value);
     };

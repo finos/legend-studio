@@ -15,7 +15,6 @@
  */
 
 import type {
-  Class,
   CompilationError,
   LambdaFunction,
   VariableExpression,
@@ -63,7 +62,7 @@ export abstract class QueryBuilderFetchStructureImplementationState
   abstract get fetchLabel(): string;
   abstract get canBeExportedToCube(): boolean;
 
-  abstract onClassChange(_class: Class | undefined): void;
+  abstract onClassChange(): void;
   abstract revealCompilationError(compilationError: CompilationError): boolean;
   abstract clearCompilationError(): void;
   abstract fetchProperty(node: QueryBuilderExplorerTreePropertyNodeData): void;

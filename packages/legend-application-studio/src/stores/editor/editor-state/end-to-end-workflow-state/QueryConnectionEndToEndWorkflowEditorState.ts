@@ -193,7 +193,7 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Con
         QueryBuilderAdvancedWorkflowState.INSTANCE,
         config,
       );
-      queryBuilderState.class = theClass;
+      queryBuilderState.sourceElement = theClass;
       queryBuilderState.executionContextState.mapping = at(
         this.workflowEditorState.workflowGraph.mappings,
         0,

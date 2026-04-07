@@ -30,6 +30,8 @@ import {
   PrimitiveInstanceValue,
   LambdaFunctionInstanceValue,
   ColSpecInstanceValue,
+  type RelationColumn,
+  type FunctionExpression,
 } from '@finos/legend-graph';
 import {
   assertNonNullable,
@@ -56,6 +58,7 @@ import {
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../QueryBuilderFetchStructureImplementationState.js';
 import {
   QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderRelationColumnProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
@@ -297,6 +300,33 @@ export const processTDSProjectionColumnPropertyExpression = (
     // some setup, so it's easier to do it here. The validation of this should have
     // already been taken care of by the builder.
     columnState.setLambdaParameterName(currentPropertyExpression.name);
+  }
+};
+
+export const processTDSRelationColumn = (
+  parentExpression: FunctionExpression,
+  columnName: string | undefined,
+  col: RelationColumn,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  if (
+    queryBuilderState.fetchStructureState.implementation instanceof
+    QueryBuilderTDSState
+  ) {
+    const tdsState = queryBuilderState.fetchStructureState.implementation;
+    const columnState = new QueryBuilderRelationColumnProjectionColumnState(
+      tdsState,
+      col,
+      false,
+    );
+    tdsState.addColumn(columnState, { skipSorting: true });
+    if (columnName) {
+      columnState.setColumnName(columnName);
+    }
+    const parameter = parentExpression.parametersValues[0];
+    if (parameter instanceof VariableExpression) {
+      columnState.setLambdaParameterName(parameter.name);
+    }
   }
 };
 

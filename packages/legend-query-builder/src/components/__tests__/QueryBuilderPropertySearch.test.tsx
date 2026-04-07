@@ -55,7 +55,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -114,7 +114,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -237,7 +237,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -311,7 +311,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -367,7 +367,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -443,7 +443,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -505,7 +505,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -570,7 +570,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -634,7 +634,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -697,7 +697,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
@@ -776,7 +776,7 @@ test(
     );
 
     await act(async () => {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });

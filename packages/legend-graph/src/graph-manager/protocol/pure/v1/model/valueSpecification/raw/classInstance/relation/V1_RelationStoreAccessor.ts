@@ -14,16 +14,41 @@
  * limitations under the License.
  */
 
-export class V1_RelationStoreAccessor {
+import { V1_ClassInstanceType } from '../../../../../transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+
+export abstract class V1_Accessor {
   path: string[] = [];
+
+  abstract INSTANCE_TYPE: V1_ClassInstanceType;
+}
+
+export class V1_RelationStoreAccessor extends V1_Accessor {
   metadata?: boolean;
+
+  get INSTANCE_TYPE(): V1_ClassInstanceType {
+    return V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
+  }
 }
 
-export class V1_DataProductAccessor {
-  path: string[] = [];
+export class V1_DataProductAccessor extends V1_Accessor {
   parameters: string[] = [];
+  get INSTANCE_TYPE(): V1_ClassInstanceType {
+    return V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR;
+  }
 }
 
-export class V1_SQLAccessor {
+export class V1_IngestDefinitionAccessor extends V1_Accessor {
+  metadata = false;
+
+  get INSTANCE_TYPE(): V1_ClassInstanceType {
+    return V1_ClassInstanceType.INGEST_ACCESSOR;
+  }
+}
+
+export class V1_SQLAccessor extends V1_Accessor {
   sql!: string;
+
+  get INSTANCE_TYPE(): V1_ClassInstanceType {
+    return V1_ClassInstanceType.SQL_ACCESSOR;
+  }
 }

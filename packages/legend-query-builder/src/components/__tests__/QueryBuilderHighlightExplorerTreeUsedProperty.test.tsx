@@ -196,7 +196,7 @@ describe(integrationTest('Build property mapping data'), () => {
       );
 
       await act(async () => {
-        queryBuilderState.changeClass(
+        queryBuilderState.changeSourceElement(
           queryBuilderState.graphManagerState.graph.getClass(classPath),
         );
       });
@@ -247,7 +247,7 @@ test(integrationTest('Query builder parameter default values'), async () => {
     TEST_DATA__ModelCoverageAnalysisResult_HighlightProperties,
   );
   await act(async () => {
-    queryBuilderState.changeClass(
+    queryBuilderState.changeSourceElement(
       queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
     );
   });

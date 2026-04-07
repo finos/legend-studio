@@ -73,6 +73,11 @@ import {
 import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 import { TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables } from './TEST_DATA__QueryBuilder_ConstantExpression.js';
 import { TEST_DATA__projectionWithWAVGAggregation } from './TEST_DATA__QueryBuilder_Generic.js';
+import {
+  TEST_DATA__QueryBuilder_Accessors,
+  TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+  TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
+} from './TEST_DATA__QueryBuilder_Accessors.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
 pluginManager
@@ -120,6 +125,10 @@ const identitfyM2MCtx = {
 
 const projectionCtx = {
   entities: TEST_DATA__ComplexRelationalModel,
+};
+
+const accessorCtx = {
+  entities: TEST_DATA__QueryBuilder_Accessors,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -249,6 +258,17 @@ const cases: RoundtripTestCase[] = [
   ['Simple slice() function', relationalCtx, TEST_DATA__projectWithSlice],
   // aggregation
   ['wavg() function', projectionCtx, TEST_DATA__projectionWithWAVGAggregation],
+  // accessor (ingest + database)
+  [
+    'Accessor — simple project() from IngestDefinition with post-filter',
+    accessorCtx,
+    TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+  ],
+  [
+    'Accessor — simple project() from Database table',
+    accessorCtx,
+    TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
+  ],
 ];
 
 describe(unitTest('Lambda processing roundtrip'), () => {

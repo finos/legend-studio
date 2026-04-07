@@ -120,7 +120,7 @@ describe(integrationTest('Milestoning query is properly built'), () => {
       const _personClass =
         queryBuilderState.graphManagerState.graph.getClass(classPath);
       await act(async () => {
-        queryBuilderState.changeClass(_personClass);
+        queryBuilderState.changeSourceElement(_personClass);
       });
 
       await act(async () => {
@@ -368,7 +368,7 @@ describe(
         const _personClass =
           queryBuilderState.graphManagerState.graph.getClass(classPath);
         await act(async () => {
-          queryBuilderState.changeClass(_personClass);
+          queryBuilderState.changeSourceElement(_personClass);
         });
 
         await act(async () => {
@@ -449,7 +449,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('my::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -532,7 +532,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -597,7 +597,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -739,7 +739,7 @@ describe(
         const _personClass =
           queryBuilderState.graphManagerState.graph.getClass(classPath);
         await act(async () => {
-          queryBuilderState.changeClass(_personClass);
+          queryBuilderState.changeSourceElement(_personClass);
         });
 
         await act(async () => {
@@ -843,7 +843,7 @@ describe(
         const _personClass =
           queryBuilderState.graphManagerState.graph.getClass(classPath);
         await act(async () => {
-          queryBuilderState.changeClass(_personClass);
+          queryBuilderState.changeSourceElement(_personClass);
         });
 
         await act(async () => {
@@ -895,7 +895,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -972,7 +972,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -1066,7 +1066,7 @@ test(
     const _person1Class =
       queryBuilderState.graphManagerState.graph.getClass('my::Person1');
     await act(async () => {
-      queryBuilderState.changeClass(_person1Class);
+      queryBuilderState.changeSourceElement(_person1Class);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
@@ -1161,7 +1161,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),

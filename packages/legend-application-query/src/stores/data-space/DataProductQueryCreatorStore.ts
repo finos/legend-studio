@@ -512,7 +512,7 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
 
     // set class if already chosen
     if (queryableDataSpace.classPath) {
-      queryBuilderState.changeClass(
+      queryBuilderState.changeSourceElement(
         this.graphManagerState.graph.getClass(queryableDataSpace.classPath),
       );
     }
@@ -661,9 +661,11 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
           query.artifactId = element.artifactId;
           query.versionId = element.versionId;
           const taggedValues = [];
-          if (this.queryBuilderState?.class) {
+          if (this.queryBuilderState?.sourceClass) {
             taggedValues.push(
-              createQueryClassTaggedValue(this.queryBuilderState.class.path),
+              createQueryClassTaggedValue(
+                this.queryBuilderState.sourceClass.path,
+              ),
             );
           }
           if (element instanceof QueryableDataProduct) {

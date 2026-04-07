@@ -398,6 +398,10 @@ import {
   V1_MetadatProject,
 } from './engine/dev-metadata/V1_DevMetadataPushRequest.js';
 import type { MetadataRequestOptions } from '../../../action/dev-metadata/MetadataRequestOptions.js';
+import type { Accessor } from '../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
+import { IngestDefinition } from '../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import { Database } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
+import { V1_createAccessorFromPackageableElement } from './helpers/V1_AccessorHelper.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2230,6 +2234,31 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         error,
       );
     }
+  }
+
+  //
+
+  override createAccessorFromPackageableElement(
+    element: PackageableElement,
+    graph: PureModel,
+    options?: {
+      schemaName?: string | undefined;
+      tableName?: string | undefined;
+    },
+  ): Accessor | undefined {
+    if (
+      !(element instanceof IngestDefinition) &&
+      !(element instanceof Database)
+    ) {
+      return undefined;
+    }
+    const context = new V1_GraphBuilderContextBuilder(
+      graph,
+      graph,
+      this.graphBuilderExtensions,
+      this.logService,
+    ).build();
+    return V1_createAccessorFromPackageableElement(element, context, options);
   }
 
   private buildLambdaReturnTypeInput(

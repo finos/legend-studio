@@ -93,7 +93,7 @@ export const DataQualityMappingAndRuntimeBuilder = observer(
         dataQualityState.graphManagerState.usableClasses,
       );
       if (runtimeOptions.length && classes.length) {
-        dataQualityState.changeClass(at(classes, 0));
+        dataQualityState.changeSourceElement(at(classes, 0));
         dataQualityState.updateElementOnClassChange();
       }
     };

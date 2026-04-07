@@ -64,9 +64,9 @@ const ClassQueryBuilderSetupPanelContent = observer(
 
     // mapping
     const mappingOptions = (
-      queryBuilderState.class
+      queryBuilderState.sourceClass
         ? getClassCompatibleMappings(
-            queryBuilderState.class,
+            queryBuilderState.sourceClass,
             queryBuilderState.graphManagerState.usableMappings,
           )
         : []
@@ -79,7 +79,7 @@ const ClassQueryBuilderSetupPanelContent = observer(
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
       if (
-        !queryBuilderState.class ||
+        !queryBuilderState.sourceElement ||
         val.value === queryBuilderState.executionContextState.mapping
       ) {
         return;
@@ -152,7 +152,7 @@ const ClassQueryBuilderSetupPanelContent = observer(
                   : 'No compatible mapping found for class'
               }
               noMatchMessage="No compatible mapping found for specified class"
-              disabled={!queryBuilderState.class}
+              disabled={!queryBuilderState.sourceElement}
               options={mappingOptions}
               onChange={changeMapping}
               value={selectedMappingOption}
@@ -182,7 +182,7 @@ const ClassQueryBuilderSetupPanelContent = observer(
               placeholder="Choose a runtime..."
               noMatchMessage="No compatible runtime found for specified mapping"
               disabled={
-                !queryBuilderState.class ||
+                !queryBuilderState.sourceElement ||
                 !queryBuilderState.executionContextState.mapping
               }
               options={runtimeOptions}

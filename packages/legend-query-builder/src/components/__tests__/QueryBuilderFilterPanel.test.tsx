@@ -382,7 +382,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -439,7 +439,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const fetchStructurePanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
@@ -545,7 +545,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const filterPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
@@ -606,7 +606,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const fetchStructurePanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
@@ -696,7 +696,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const filterPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
@@ -761,7 +761,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const filterPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
@@ -824,7 +824,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
       const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
         QueryBuilderTDSState,
@@ -934,7 +934,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -1293,7 +1293,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
 
     const filterPanel = await waitFor(() =>
@@ -1688,7 +1688,7 @@ describe(
         const _class =
           queryBuilderState.graphManagerState.graph.getClass(classPath);
         await act(async () => {
-          queryBuilderState.changeClass(_class);
+          queryBuilderState.changeSourceElement(_class);
         });
         const filterPanel = await waitFor(() =>
           renderResult.getByTestId(
@@ -1772,7 +1772,7 @@ test(
     const _class =
       queryBuilderState.graphManagerState.graph.getClass('my::Person1');
     await act(async () => {
-      queryBuilderState.changeClass(_class);
+      queryBuilderState.changeSourceElement(_class);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -1835,7 +1835,7 @@ test(
     const _class =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_class);
+      queryBuilderState.changeSourceElement(_class);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -1910,7 +1910,7 @@ test(
     const _class =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_class);
+      queryBuilderState.changeSourceElement(_class);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -1998,7 +1998,7 @@ test(
     const _class =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_class);
+      queryBuilderState.changeSourceElement(_class);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -2092,7 +2092,7 @@ test(
     const _class =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_class);
+      queryBuilderState.changeSourceElement(_class);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -2186,7 +2186,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -2251,7 +2251,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -2513,7 +2513,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -2627,7 +2627,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -2699,7 +2699,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -2797,7 +2797,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -2894,7 +2894,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -2995,7 +2995,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -3096,7 +3096,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -3204,7 +3204,7 @@ test(
     const _firmClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeSourceElement(_firmClass);
     });
     const filterPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -3286,7 +3286,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
 
     const explorerPanel = await renderResult.findByTestId(
@@ -3374,7 +3374,7 @@ test(
     const _personClass =
       queryBuilderState.graphManagerState.graph.getClass('model::Person');
     await act(async () => {
-      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.changeSourceElement(_personClass);
     });
 
     const explorerPanel = await renderResult.findByTestId(
@@ -3505,7 +3505,7 @@ test(
       'model::PrecisePrimitivePerson',
     );
     await act(async () => {
-      queryBuilderState.changeClass(_class);
+      queryBuilderState.changeSourceElement(_class);
     });
     const filterPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
@@ -3554,7 +3554,7 @@ test(
       'model::PrecisePrimitivePerson',
     );
     await act(async () => {
-      queryBuilderState.changeClass(_class);
+      queryBuilderState.changeSourceElement(_class);
     });
     const filterPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
@@ -3702,7 +3702,7 @@ test(
       'model::PrecisePrimitivePerson',
     );
     await act(async () => {
-      queryBuilderState.changeClass(_class);
+      queryBuilderState.changeSourceElement(_class);
     });
     const filterPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,

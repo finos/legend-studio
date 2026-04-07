@@ -38,6 +38,7 @@ import type {
   ColSpecArrayInstance,
   ColSpecInstanceValue,
 } from './RelationValueSpecification.js';
+import type { AccessorInstanceValue } from '../packageableElements/relation/Accessor.js';
 
 export interface ValueSpecificationVisitor<T> {
   visit_INTERNAL__UnknownValueSpecification(
@@ -71,6 +72,9 @@ export interface ValueSpecificationVisitor<T> {
   ): T;
   visit_KeyExpressionInstanceValue(
     valueSpeciciation: KeyExpressionInstanceValue,
+  ): T;
+  visit_AccessorInstanceValue(
+    valueAccessorInstanceValue: AccessorInstanceValue,
   ): T;
 }
 

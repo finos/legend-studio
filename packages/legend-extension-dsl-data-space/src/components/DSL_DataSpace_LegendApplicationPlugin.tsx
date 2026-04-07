@@ -98,11 +98,11 @@ export class DSL_DataSpace_LegendApplicationPlugin
         ): QuerySearchSpecification => {
           if (
             queryBuilderState instanceof DataSpaceQueryBuilderState &&
-            queryBuilderState.class
+            queryBuilderState.sourceClass
           ) {
             searchSpecification.taggedValues = [
               createQueryDataSpaceTaggedValue(queryBuilderState.dataSpace.path),
-              createQueryClassTaggedValue(queryBuilderState.class.path),
+              createQueryClassTaggedValue(queryBuilderState.sourceClass.path),
             ];
             searchSpecification.combineTaggedValuesCondition = true;
           }
