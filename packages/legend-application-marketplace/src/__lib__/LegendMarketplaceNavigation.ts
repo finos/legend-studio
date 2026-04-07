@@ -84,7 +84,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   OAUTH_CALLBACK: '/callback',
   // PRODUCTS
   DATA_PRODUCTS: '/dataproducts',
-  DATA_APIS: '/dataapis',
+  DATA_APIS: '/data-apis',
   AGENTS: '/agents',
   INVENTORY: '/inventory',
   SUBSCRIPTIONS: '/subscriptions',

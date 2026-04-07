@@ -46,7 +46,7 @@ jest.mock('@finos/legend-application/browser', () => {
 const mockUseSearchParams = useSearchParams as jest.Mock;
 const mockSetSearchParams = jest.fn();
 
-const DATA_APIS_ROUTE = '/dataapis';
+const DATA_APIS_ROUTE = '/data-apis';
 
 const setupTestComponent = async (initialQuery?: string) => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
