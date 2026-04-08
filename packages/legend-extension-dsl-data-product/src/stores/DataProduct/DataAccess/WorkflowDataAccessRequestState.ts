@@ -248,23 +248,6 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       return [];
     }
 
-    const workflow = guaranteeNonNullable(this.dataRequestWithWorkflow)
-      .workflows[0];
-    if (!workflow) {
-      return [
-        {
-          key: 'submitted',
-          status: 'complete' as const,
-          label: { title: 'Submitted' },
-        },
-        {
-          key: 'complete',
-          status: 'upcoming' as const,
-          label: { title: 'Complete' },
-        },
-      ];
-    }
-
     // Use workflow task with latest creation date.
     const pmWorkflowTask = this.workflowTasks.privilegeManagerTasks.sort(
       (a, b) => b.createdDate - a.createdDate,
@@ -422,15 +405,16 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       this.setDataRequestWithWorkflow(refreshed);
 
       // Fetch tasks associated with the workflow instance
-      const rawWorkflowInstance = (yield Promise.all(
-        refreshed.workflows.map((wf) =>
-          this.lakehouseWorkflowServerClient.getWorkflowInstance(
-            wf.workflowId,
-            token,
-          ),
-        ),
-      )) as PlainObject<V1_WorkflowInstance>;
-
+      // We use the first non-null workflow instance
+      const workflowInstanceId = guaranteeNonNullable(
+        refreshed.workflows.find((wf) => wf.workflowId),
+        `No workflow instance found for data access requestId ${this.dataAccessRequestId}`,
+      ).workflowId;
+      const rawWorkflowInstance =
+        (yield this.lakehouseWorkflowServerClient.getWorkflowInstance(
+          workflowInstanceId,
+          token,
+        )) as PlainObject<V1_WorkflowInstance>;
       const workflowInstance =
         V1_WorkflowInstance.serialization.fromJson(rawWorkflowInstance);
       const tasks =
@@ -460,7 +444,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
           continue;
         }
 
-        // Step 5 & 6: Determine target key and pick latest by createdDate
+        // Determine target key and append task
         const key: 'privilegeManagerTasks' | 'dataOwnerTasks' =
           taskType === V1_WorkflowTaskType.PRIVILEGE_MANAGER
             ? 'privilegeManagerTasks'
