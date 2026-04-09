@@ -73,17 +73,17 @@ export enum V1_DataAccessRequestWorkflowTaskAction {
 
 export abstract class V1_DataAccessRequestWorkflowTask {
   taskId!: string;
-  workflowGuid!: string;
+  processInstanceId!: string;
   status!: V1_DataAccessRequestWorkflowTaskStatus;
   createdOn!: Date;
   assignees: string[] = [];
-  actionedOn?: Date;
-  actionedBy?: string;
+  actionedOn?: Date | null;
+  actionedBy?: string | null;
   url!: string;
-  approveUrl?: string;
-  denyUrl?: string;
-  action?: V1_DataAccessRequestWorkflowTaskAction;
-  description?: string;
+  approveUrl?: string | null;
+  denyUrl?: string | null;
+  action?: V1_DataAccessRequestWorkflowTaskAction | null;
+  description?: string | null;
   consumer!: V1_OrganizationalScope;
 }
 
