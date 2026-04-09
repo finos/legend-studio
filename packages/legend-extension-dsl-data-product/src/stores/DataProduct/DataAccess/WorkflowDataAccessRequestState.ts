@@ -249,10 +249,10 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     }
 
     // Use workflow task with latest creation date.
-    const pmWorkflowTask = this.workflowTasks.privilegeManagerTasks.sort(
+    const pmWorkflowTask = this.workflowTasks.privilegeManagerTasks.toSorted(
       (a, b) => b.createdDate - a.createdDate,
     )[0];
-    const doWorkflowTask = this.workflowTasks.dataOwnerTasks.sort(
+    const doWorkflowTask = this.workflowTasks.dataOwnerTasks.toSorted(
       (a, b) => b.createdDate - a.createdDate,
     )[0];
 
