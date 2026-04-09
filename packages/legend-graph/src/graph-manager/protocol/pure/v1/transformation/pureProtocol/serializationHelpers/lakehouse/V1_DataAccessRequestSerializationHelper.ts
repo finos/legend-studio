@@ -59,7 +59,7 @@ export enum V1_RequestType {
 
 // ---------------------------------------- Workflow Task Types ----------------------------------------
 
-export enum V1_WorkflowTaskType {
+export enum V1_DataAccessRequestWorkflowTaskType {
   PrivilegeManagerApprovalTask = 'PrivilegeManagerApprovalTask',
   DataOwnerApprovalTask = 'DataOwnerApprovalTask',
 }
@@ -157,7 +157,7 @@ export const V1_privilegeManagerApprovalTaskModelSchema = (
 ) =>
   createModelSchema(V1_PrivilegeManagerApprovalTask, {
     _type: usingConstantValueSchema(
-      V1_WorkflowTaskType.PrivilegeManagerApprovalTask,
+      V1_DataAccessRequestWorkflowTaskType.PrivilegeManagerApprovalTask,
     ),
     ...V1_workflowTaskBaseProps(plugins),
     resourceId: primitive(),
@@ -168,7 +168,9 @@ export const V1_dataOwnerApprovalTaskModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
   createModelSchema(V1_DataOwnerApprovalTask, {
-    _type: usingConstantValueSchema(V1_WorkflowTaskType.DataOwnerApprovalTask),
+    _type: usingConstantValueSchema(
+      V1_DataAccessRequestWorkflowTaskType.DataOwnerApprovalTask,
+    ),
     ...V1_workflowTaskBaseProps(plugins),
     resourceId: primitive(),
     deploymentId: primitive(),
@@ -194,12 +196,12 @@ const V1_deserializeWorkflowTask = (
   plugins: PureProtocolProcessorPlugin[],
 ): V1_DataAccessRequestWorkflowTask => {
   switch (json._type) {
-    case V1_WorkflowTaskType.PrivilegeManagerApprovalTask:
+    case V1_DataAccessRequestWorkflowTaskType.PrivilegeManagerApprovalTask:
       return deserialize(
         V1_privilegeManagerApprovalTaskModelSchema(plugins),
         json,
       );
-    case V1_WorkflowTaskType.DataOwnerApprovalTask:
+    case V1_DataAccessRequestWorkflowTaskType.DataOwnerApprovalTask:
       return deserialize(V1_dataOwnerApprovalTaskModelSchema(plugins), json);
     default:
       throw new UnsupportedOperationError(
