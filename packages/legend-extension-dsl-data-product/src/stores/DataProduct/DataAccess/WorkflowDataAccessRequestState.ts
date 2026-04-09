@@ -435,7 +435,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       for (const task of tasks) {
         let taskType: V1_WorkflowTaskType | undefined;
         for (const plugin of plugins) {
-          taskType = plugin.getRawWorkflowTaskType?.(task);
+          taskType = plugin.getWorkflowTaskType?.(task);
           if (taskType !== undefined) {
             break;
           }

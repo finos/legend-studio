@@ -75,9 +75,9 @@ export interface DataProductDataAccess_LegendApplicationPlugin_Extension
   getExtraDataProductRelationSampleQueryTabConfiguration?(): DataProductRelationSampleQueryTabConfiguration[];
 
   /**
-   * Config to allow mapping raw workflow task to a workflow task type
+   * Config to allow mapping domain-specific workflow task to a more general type
    *
-   * @param task raw workflow task ID
+   * @param task workflow task ID
    */
-  getRawWorkflowTaskType?(task: V1_WorkflowTask): V1_WorkflowTaskType;
+  getWorkflowTaskType?(task: V1_WorkflowTask): V1_WorkflowTaskType;
 }
