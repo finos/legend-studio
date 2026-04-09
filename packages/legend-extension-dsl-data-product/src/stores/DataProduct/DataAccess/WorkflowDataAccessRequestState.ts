@@ -25,10 +25,10 @@ import {
   V1_AccessPointGroupReference,
   V1_RequestState,
   V1_ResourceType,
-  V1_DataAccessRequestWorkflowTaskAction,
-  V1_DataAccessRequestWorkflowTaskStatus,
   V1_deserializeDataRequestsWithWorkflowResponse,
   type V1_WorkflowTask,
+  V1_WorkflowTaskStatus,
+  V1_WorkflowTaskCompletionReason,
 } from '@finos/legend-graph';
 
 import {
@@ -264,18 +264,20 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       if (!task) {
         return fallback;
       }
-      if (task.status === V1_DataAccessRequestWorkflowTaskStatus.OPEN) {
+      if (task.status === V1_WorkflowTaskStatus.OPEN) {
         return 'active';
       }
-      if (task.status === V1_DataAccessRequestWorkflowTaskStatus.COMPLETED) {
-        if (task.completionReason === 'REJECTED') {
+      if (task.status === V1_WorkflowTaskStatus.COMPLETED) {
+        if (
+          task.completionReason === V1_WorkflowTaskCompletionReason.REJECTED
+        ) {
           return 'denied';
         }
         return 'complete';
       }
       if (
-        task.status === V1_DataAccessRequestWorkflowTaskStatus.CLOSED ||
-        task.status === V1_DataAccessRequestWorkflowTaskStatus.OBSOLETE
+        task.status === V1_WorkflowTaskStatus.CLOSED ||
+        task.status === V1_WorkflowTaskStatus.OBSOLETE
       ) {
         return 'complete';
       }
@@ -286,7 +288,8 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     const doStepStatus = getTaskStepStatus(doWorkflowTask, 'upcoming');
 
     const isEscalated = this.workflowTasks.privilegeManagerTasks.some(
-      (task) => task.status === 'ESCALATED',
+      (task) =>
+        task.completionReason === V1_WorkflowTaskCompletionReason.ESCALATED,
     );
     const showEscalateButton =
       pmStepStatus === 'active' &&
@@ -324,10 +327,11 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
           pmStepStatus !== 'skipped'
             ? {
                 status:
-                  pmWorkflowTask.status ===
-                  V1_DataAccessRequestWorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
+                  pmWorkflowTask.status === V1_WorkflowTaskStatus.COMPLETED &&
+                  pmWorkflowTask.completionReason ===
+                    V1_WorkflowTaskCompletionReason.REJECTED
+                    ? 'DENIED'
+                    : 'APPROVED',
                 approvalTimestamp: pmWorkflowTask.completedDate
                   ? new Date(pmWorkflowTask.completedDate).toISOString()
                   : undefined,
@@ -351,10 +355,11 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
           doStepStatus !== 'upcoming'
             ? {
                 status:
-                  doWorkflowTask.status ===
-                  V1_DataAccessRequestWorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
+                  doWorkflowTask.status === V1_WorkflowTaskStatus.COMPLETED &&
+                  doWorkflowTask.completionReason ===
+                    V1_WorkflowTaskCompletionReason.REJECTED
+                    ? 'DENIED'
+                    : 'APPROVED',
                 approvalTimestamp: doWorkflowTask.completedDate
                   ? new Date(doWorkflowTask.completedDate).toISOString()
                   : undefined,
@@ -365,8 +370,9 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       {
         key: 'complete',
         status:
-          doWorkflowTask?.status ===
-          V1_DataAccessRequestWorkflowTaskAction.APPROVED
+          doWorkflowTask?.status === V1_WorkflowTaskStatus.COMPLETED &&
+          doWorkflowTask?.completionReason ===
+            V1_WorkflowTaskCompletionReason.APPROVED
             ? ('complete' as const)
             : ('upcoming' as const),
         label: { title: 'Complete' },
