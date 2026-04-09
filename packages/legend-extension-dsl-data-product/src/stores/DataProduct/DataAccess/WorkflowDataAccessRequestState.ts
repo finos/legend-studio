@@ -289,7 +289,13 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     );
     const showEscalateButton =
       pmStepStatus === 'active' &&
-      _selectedTargetUser === this.applicationStore.identityService.currentUser;
+      (_selectedTargetUser ===
+        this.applicationStore.identityService.currentUser ||
+        this.dataRequestWithWorkflow?.dataRequest.createdBy ===
+          this.applicationStore.identityService.currentUser ||
+        pmWorkflowTask?.assignees.includes(
+          this.applicationStore.identityService.currentUser,
+        ));
     const isEscalatable = showEscalateButton && !isEscalated;
 
     return [
