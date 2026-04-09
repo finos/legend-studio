@@ -383,7 +383,9 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     try {
       this.initializationState.inProgress();
 
-      // Fetch the data request with workflow, retrying if workflows are empty
+      // Fetch the data request with workflow. It can take some time
+      // for the workflow to be created after the data request is created,
+      // so we poll until we get a workflow.
       let refreshed: V1_DataRequestWithWorkflow | undefined;
 
       while (true) {
