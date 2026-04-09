@@ -210,12 +210,13 @@ const RequestEscalationModal = (props: {
       viewerState.applicationStore.notificationService.notifySuccess(
         'Successfully escalated access request',
       );
-      onClose();
     } catch (error) {
       assertErrorThrown(error);
       viewerState.applicationStore.notificationService.notifyError(
         `Error escalating request: ${error.message}`,
       );
+    } finally {
+      onClose();
     }
   };
 

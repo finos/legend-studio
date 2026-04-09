@@ -483,7 +483,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       this.escalatingState.inProgress();
       const taskToEscalate = guaranteeNonNullable(
         this.workflowTasks.privilegeManagerTasks.find(
-          (t) => t.status === 'active',
+          (t) => t.status === 'OPEN',
         ),
         'Unable to find active privilege manager task to escalate',
       );
@@ -491,17 +491,11 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
         taskToEscalate.processInstanceId,
         taskToEscalate.taskId,
         'ESCALATE',
-        // TODO: allow user to pass in justification message for escalating
-        '',
+        '', // Justification not required for escalate requests
       );
 
       this.applicationStore.notificationService.notifySuccess(
         'Contract escalated successfully',
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
-        `Error escalating contract: ${error.message}`,
       );
     } finally {
       this.escalatingState.complete();
