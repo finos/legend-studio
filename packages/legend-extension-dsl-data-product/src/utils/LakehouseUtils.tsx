@@ -22,7 +22,7 @@ import {
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
-import { isNonNullable } from '@finos/legend-shared';
+import { isNonEmptyString, isNonNullable } from '@finos/legend-shared';
 import { Box, Typography } from '@mui/material';
 
 export const getOrganizationalScopeTypeName = (
@@ -92,6 +92,7 @@ export const getOrganizationalScopeTypeDetails = (
 
 export const stringifyOrganizationalScope = (
   scope: V1_OrganizationalScope,
+  plugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
 ): string => {
   if (scope instanceof V1_AppDirOrganizationalScope) {
     return scope.appDirNode
@@ -104,7 +105,16 @@ export const stringifyOrganizationalScope = (
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return JSON.stringify(scope.content);
   }
-  return JSON.stringify(scope);
+
+  const stringifiedValues = plugins
+    .flatMap((plugin) =>
+      plugin
+        .getContractConsumerTypeRendererConfigs?.()
+        .flatMap((config) => config.stringifyOrganizationalScope?.(scope)),
+    )
+    .filter(isNonEmptyString);
+
+  return stringifiedValues[0] ?? JSON.stringify(scope);
 };
 
 export const getHumanReadableIngestEnvName = (
