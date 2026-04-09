@@ -21,6 +21,7 @@ import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
+import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { createSpy } from '@finos/legend-shared/test';
 import { mockServices } from '../../components/__test-utils__/TEST_DATA__DataAPIs.js';
 import { ServiceDetail } from '@finos/legend-graph';
@@ -48,7 +49,10 @@ const mockSetSearchParams = jest.fn();
 
 const DATA_APIS_ROUTE = '/dataapis';
 
-const setupTestComponent = async (initialQuery?: string) => {
+const setupTestComponent = async (
+  initialQuery?: string,
+  preRenderSetup?: (baseStore: LegendMarketplaceBaseStore) => void,
+) => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
   mockUseSearchParams.mockReturnValue([
@@ -60,6 +64,8 @@ const setupTestComponent = async (initialQuery?: string) => {
     MOCK__baseStore.engineServerClient,
     'getServicesInfo',
   ).mockResolvedValue(mockServices.map((s) => ServiceDetail.fromJson(s)));
+
+  preRenderSetup?.(MOCK__baseStore);
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     MOCK__baseStore,
@@ -316,28 +322,12 @@ describe('LegendMarketplaceDataAPIs', () => {
     });
 
     test('persisted items per page is restored on load', async () => {
-      // Pre-set the persisted value before rendering the component
-      const MOCK__baseStore =
-        await TEST__provideMockLegendMarketplaceBaseStore();
-
-      MOCK__baseStore.applicationStore.settingService.persistValue(
-        'marketplace.data-apis.itemsPerPage',
-        24,
-      );
-
-      mockUseSearchParams.mockReturnValue([
-        new URLSearchParams(),
-        mockSetSearchParams,
-      ]);
-
-      createSpy(
-        MOCK__baseStore.engineServerClient,
-        'getServicesInfo',
-      ).mockResolvedValue(mockServices.map((s) => ServiceDetail.fromJson(s)));
-
-      await TEST__setUpMarketplaceLakehouse(MOCK__baseStore, DATA_APIS_ROUTE);
-
-      await waitFor(() => screen.getByText(/\d+ Services/));
+      await setupTestComponent(undefined, (baseStore) => {
+        baseStore.applicationStore.settingService.persistValue(
+          'marketplace.data-apis.itemsPerPage',
+          24,
+        );
+      });
 
       // With 4 services and 24 items per page, all should show on one page
       // Verify the "Showing 1 to 4 of 4 results" text is present
@@ -347,39 +337,23 @@ describe('LegendMarketplaceDataAPIs', () => {
 
   describe('Error handling', () => {
     test('handles empty service list gracefully', async () => {
-      const MOCK__baseStore =
-        await TEST__provideMockLegendMarketplaceBaseStore();
-      mockUseSearchParams.mockReturnValue([
-        new URLSearchParams(),
-        mockSetSearchParams,
-      ]);
-
-      createSpy(
-        MOCK__baseStore.engineServerClient,
-        'getServicesInfo',
-      ).mockResolvedValue([]);
-
-      await TEST__setUpMarketplaceLakehouse(MOCK__baseStore, DATA_APIS_ROUTE);
-
-      await waitFor(() => expect(screen.getByText('0 Services')).toBeDefined());
+      await setupTestComponent(undefined, (baseStore) => {
+        createSpy(
+          baseStore.engineServerClient,
+          'getServicesInfo',
+        ).mockResolvedValue([]);
+      });
+      expect(screen.getByText('0 Services')).toBeDefined();
     });
 
     test('handles fetch error without crashing', async () => {
-      const MOCK__baseStore =
-        await TEST__provideMockLegendMarketplaceBaseStore();
-      mockUseSearchParams.mockReturnValue([
-        new URLSearchParams(),
-        mockSetSearchParams,
-      ]);
-
-      createSpy(
-        MOCK__baseStore.engineServerClient,
-        'getServicesInfo',
-      ).mockRejectedValue(new Error('Network error'));
-
-      await TEST__setUpMarketplaceLakehouse(MOCK__baseStore, DATA_APIS_ROUTE);
-
-      await waitFor(() => expect(screen.getByText('0 Services')).toBeDefined());
+      await setupTestComponent(undefined, (baseStore) => {
+        createSpy(
+          baseStore.engineServerClient,
+          'getServicesInfo',
+        ).mockRejectedValue(new Error('Network error'));
+      });
+      expect(screen.getByText('0 Services')).toBeDefined();
     });
   });
 

@@ -171,11 +171,11 @@ export class LegendMarketplaceDataAPIsStore {
     this.showOwnServicesOnly = persistedShowOwn ?? false;
 
     const persistedFavorites =
-      this.marketplaceBaseStore.applicationStore.settingService.getObjectValue(
+      (this.marketplaceBaseStore.applicationStore.settingService.getObjectValue(
         LEGEND_MARKETPLACE_SETTING_KEY_FAVORITES,
-      );
+      ) as string[] | undefined) ?? [];
     this.favoritePatterns = new Set(
-      Array.isArray(persistedFavorites) ? (persistedFavorites as string[]) : [],
+      persistedFavorites.filter((v): v is string => typeof v === 'string'),
     );
 
     const persistedItemsPerPage =
@@ -190,7 +190,7 @@ export class LegendMarketplaceDataAPIsStore {
       viewMode: observable,
       showOwnServicesOnly: observable,
       showFavoritesOnly: observable,
-      favoritePatterns: observable,
+      favoritePatterns: observable.shallow,
       serviceCardStates: observable,
       page: observable,
       itemsPerPage: observable,
@@ -271,7 +271,6 @@ export class LegendMarketplaceDataAPIsStore {
 
   setItemsPerPage(value: number): void {
     this.itemsPerPage = value;
-    this.page = 1;
     this.marketplaceBaseStore.applicationStore.settingService.persistValue(
       LEGEND_MARKETPLACE_SETTING_KEY_ITEMS_PER_PAGE,
       value,

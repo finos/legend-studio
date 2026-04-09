@@ -284,7 +284,6 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                   )}
                   onClick={() => {
                     dataAPIsStore.setViewMode(ServicesViewMode.TILE);
-                    dataAPIsStore.setPage(1);
                     LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
                       applicationStore.telemetryService,
                       ServicesViewMode.TILE,
@@ -303,7 +302,6 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                   )}
                   onClick={() => {
                     dataAPIsStore.setViewMode(ServicesViewMode.LIST);
-                    dataAPIsStore.setPage(1);
                     LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
                       applicationStore.telemetryService,
                       ServicesViewMode.LIST,
