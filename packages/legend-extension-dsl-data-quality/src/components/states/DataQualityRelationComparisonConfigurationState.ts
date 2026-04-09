@@ -39,6 +39,7 @@ import {
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
+  ActionState,
   assertErrorThrown,
   guaranteeType,
   hashArray,
@@ -185,7 +186,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
   lastTargetQueryHash: string | undefined = undefined;
 
   // Column-fetch state
-  isFetchingColumns = false;
+  readonly fetchColumnsState = ActionState.create();
   sourceColumnFetchError: string | undefined = undefined;
   targetColumnFetchError: string | undefined = undefined;
 
@@ -230,7 +231,6 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
       targetLambdaEditorState: observable,
       fetchColumnsForLambda: flow,
       retryFetchColumns: flow,
-      isFetchingColumns: observable,
       sourceColumnFetchError: observable,
       targetColumnFetchError: observable,
       hasColumnFetchError: computed,
@@ -318,7 +318,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
 
   get hasNoOverlappingColumns(): boolean {
     return (
-      !this.isFetchingColumns &&
+      !this.fetchColumnsState.isInProgress &&
       !this.hasColumnFetchError &&
       this.sourceColumnOptions.length > 0 &&
       this.targetColumnOptions.length > 0 &&
@@ -457,7 +457,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
       return;
     }
 
-    this.isFetchingColumns = true;
+    this.fetchColumnsState.inProgress();
     try {
       const metadata = observe_RelationTypeMetadata(
         (yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
@@ -486,7 +486,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
         this.targetColumnFetchError = `Failed to fetch target relation columns: ${error.message}`;
       }
     } finally {
-      this.isFetchingColumns = false;
+      this.fetchColumnsState.complete();
     }
   }
 

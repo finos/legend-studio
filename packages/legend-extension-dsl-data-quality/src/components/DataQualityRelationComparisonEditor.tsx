@@ -93,7 +93,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
 
   const isRunning = state.isRunning;
   const executionResult = state.executionResult;
-  const isFetchingColumns = state.isFetchingColumns;
+  const isFetchingColumns = state.fetchColumnsState.isInProgress;
   const hasColumnFetchError = state.hasColumnFetchError;
   const columnFetchError = state.columnFetchError;
   const hasNoOverlappingColumns = state.hasNoOverlappingColumns;
