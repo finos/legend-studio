@@ -22,6 +22,7 @@ import {
   clsx,
   ControlledDropdownMenu,
   CustomSelectorInput,
+  ExclamationTriangleIcon,
   MenuContent,
   MenuContentItem,
   Panel,
@@ -31,6 +32,7 @@ import {
   PanelLoadingIndicator,
   PauseCircleIcon,
   PlayIcon,
+  RefreshIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -91,6 +93,11 @@ export const DataQualityRelationComparisonEditor = observer(() => {
 
   const isRunning = state.isRunning;
   const executionResult = state.executionResult;
+  const isFetchingColumns = state.isFetchingColumns;
+  const hasColumnFetchError = state.hasColumnFetchError;
+  const columnFetchError = state.columnFetchError;
+  const hasNoOverlappingColumns = state.hasNoOverlappingColumns;
+  const columnsDisabled = hasColumnFetchError || isFetchingColumns;
 
   // Execution handlers
   const cancelRun = applicationStore.guardUnhandledError(() =>
@@ -107,6 +114,10 @@ export const DataQualityRelationComparisonEditor = observer(() => {
 
   const runTargetQuery = applicationStore.guardUnhandledError(() =>
     flowResult(state.run(RECONCILIATION_EXECUTION_TYPE.TARGET_QUERY)),
+  );
+
+  const retryFetchColumns = applicationStore.guardUnhandledError(() =>
+    flowResult(state.retryFetchColumns()),
   );
 
   const getResultSetDescription = (
@@ -346,7 +357,16 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                       SOURCE QUERY
                     </div>
                   </div>
-                  <div className="data-quality-relation-comparison-editor__query-panel__content">
+                  <div
+                    className={clsx(
+                      'data-quality-relation-comparison-editor__query-panel__content',
+                      {
+                        backdrop__element: Boolean(
+                          state.sourceLambdaEditorState.parserError,
+                        ),
+                      },
+                    )}
+                  >
                     <LambdaEditor
                       className="data-quality-relation-comparison-editor__lambda-editor lambda-editor--dark"
                       disabled={
@@ -370,7 +390,16 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                       TARGET QUERY
                     </div>
                   </div>
-                  <div className="data-quality-relation-comparison-editor__query-panel__content">
+                  <div
+                    className={clsx(
+                      'data-quality-relation-comparison-editor__query-panel__content',
+                      {
+                        backdrop__element: Boolean(
+                          state.targetLambdaEditorState.parserError,
+                        ),
+                      },
+                    )}
+                  >
                     <LambdaEditor
                       className="data-quality-relation-comparison-editor__lambda-editor lambda-editor--dark"
                       disabled={
@@ -388,6 +417,33 @@ export const DataQualityRelationComparisonEditor = observer(() => {
           </div>
 
           <div className="data-quality-relation-comparison-editor__panel__content__form">
+            {hasColumnFetchError && (
+              <div className="data-quality-relation-comparison-editor__column-fetch-error">
+                <ExclamationTriangleIcon className="data-quality-relation-comparison-editor__column-fetch-error__icon" />
+                <span className="data-quality-relation-comparison-editor__column-fetch-error__message">
+                  {columnFetchError}
+                </span>
+                <button
+                  className="data-quality-relation-comparison-editor__column-fetch-error__retry-btn btn--dark btn--sm"
+                  onClick={retryFetchColumns}
+                  disabled={isFetchingColumns}
+                  tabIndex={-1}
+                >
+                  <RefreshIcon />
+                  <span>Retry</span>
+                </button>
+              </div>
+            )}
+            {hasNoOverlappingColumns && (
+              <div className="data-quality-relation-comparison-editor__column-overlap-warning">
+                <ExclamationTriangleIcon className="data-quality-relation-comparison-editor__column-overlap-warning__icon" />
+                <span className="data-quality-relation-comparison-editor__column-overlap-warning__message">
+                  No overlapping columns found between source and target
+                  queries. The Keys and Columns to Compare selectors require at
+                  least one common column name across both queries.
+                </span>
+              </div>
+            )}
             <PanelFormSection>
               <div className="panel__content__form__section__header__label">
                 Keys
@@ -402,7 +458,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                 }
                 options={combinedColumnOptions}
                 placeholder="Select keys..."
-                disabled={false}
+                disabled={columnsDisabled}
                 darkMode={darkMode}
               />
             </PanelFormSection>
@@ -420,7 +476,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                 }
                 options={combinedColumnOptions}
                 placeholder="Select columns to compare..."
-                disabled={false}
+                disabled={columnsDisabled}
                 darkMode={darkMode}
               />
             </PanelFormSection>
@@ -442,6 +498,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                 placeholder="Select source hash column..."
                 isClearable={true}
                 darkMode={darkMode}
+                disabled={columnsDisabled}
               />
             </PanelFormSection>
             <PanelFormSection>
@@ -461,6 +518,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                 placeholder="Select target hash column..."
                 isClearable={true}
                 darkMode={darkMode}
+                disabled={columnsDisabled}
               />
             </PanelFormSection>
             <PanelFormBooleanField

@@ -184,6 +184,11 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
   lastSourceQueryHash: string | undefined = undefined;
   lastTargetQueryHash: string | undefined = undefined;
 
+  // Column-fetch state
+  isFetchingColumns = false;
+  sourceColumnFetchError: string | undefined = undefined;
+  targetColumnFetchError: string | undefined = undefined;
+
   // Execution state
   currentExecutionType: RECONCILIATION_EXECUTION_TYPE | undefined = undefined;
   lastExecutionType: RECONCILIATION_EXECUTION_TYPE | undefined = undefined;
@@ -224,6 +229,13 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
       sourceLambdaEditorState: observable,
       targetLambdaEditorState: observable,
       fetchColumnsForLambda: flow,
+      retryFetchColumns: flow,
+      isFetchingColumns: observable,
+      sourceColumnFetchError: observable,
+      targetColumnFetchError: observable,
+      hasColumnFetchError: computed,
+      columnFetchError: computed,
+      hasNoOverlappingColumns: computed,
       sourceColumnOptions: computed,
       targetColumnOptions: computed,
       combinedColumnOptions: computed,
@@ -286,6 +298,31 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
   get combinedColumnOptions(): { value: string; label: string }[] {
     return this.sourceColumnOptions.filter((srcOpt) =>
       this.targetColumnOptions.some((tgtOpt) => tgtOpt.value === srcOpt.value),
+    );
+  }
+
+  get hasColumnFetchError(): boolean {
+    return (
+      this.sourceColumnFetchError !== undefined ||
+      this.targetColumnFetchError !== undefined
+    );
+  }
+
+  get columnFetchError(): string | undefined {
+    const errors = [
+      this.sourceColumnFetchError,
+      this.targetColumnFetchError,
+    ].filter(Boolean);
+    return errors.length > 0 ? errors.join('; ') : undefined;
+  }
+
+  get hasNoOverlappingColumns(): boolean {
+    return (
+      !this.isFetchingColumns &&
+      !this.hasColumnFetchError &&
+      this.sourceColumnOptions.length > 0 &&
+      this.targetColumnOptions.length > 0 &&
+      this.combinedColumnOptions.length === 0
     );
   }
 
@@ -420,6 +457,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
       return;
     }
 
+    this.isFetchingColumns = true;
     try {
       const metadata = observe_RelationTypeMetadata(
         (yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
@@ -430,16 +468,36 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
       if (side === 'source') {
         this.sourceColumnMetadata = metadata;
         this.lastSourceQueryHash = currentQueryHash;
+        this.sourceColumnFetchError = undefined;
       } else {
         this.targetColumnMetadata = metadata;
         this.lastTargetQueryHash = currentQueryHash;
+        this.targetColumnFetchError = undefined;
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(
-        `Error getting ${side} relation columns: ${error.message}`,
-      );
+      // Update the hash even on failure so that reverting to a previously
+      // successful query will see a different hash and trigger a refetch.
+      if (side === 'source') {
+        this.lastSourceQueryHash = currentQueryHash;
+        this.sourceColumnFetchError = `Failed to fetch source relation columns: ${error.message}`;
+      } else {
+        this.lastTargetQueryHash = currentQueryHash;
+        this.targetColumnFetchError = `Failed to fetch target relation columns: ${error.message}`;
+      }
+    } finally {
+      this.isFetchingColumns = false;
     }
+  }
+
+  *retryFetchColumns(): GeneratorFn<void> {
+    // Reset hashes to force a refetch
+    this.lastSourceQueryHash = undefined;
+    this.lastTargetQueryHash = undefined;
+    this.sourceColumnFetchError = undefined;
+    this.targetColumnFetchError = undefined;
+    yield flowResult(this.fetchColumnsForLambda(this.element.source, 'source'));
+    yield flowResult(this.fetchColumnsForLambda(this.element.target, 'target'));
   }
 
   override reprocess(

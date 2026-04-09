@@ -82,6 +82,82 @@
     }
   }
 
+  &__column-fetch-error {
+    @include flexVCenter;
+
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    margin: 0 1rem 1rem;
+    border-radius: 0.2rem;
+    background: var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-red-200);
+
+    &__icon {
+      flex-shrink: 0;
+      color: var(--color-red-200);
+      font-size: 1.6rem;
+    }
+
+    &__message {
+      flex: 1;
+      color: var(--color-red-100);
+      font-size: 1.2rem;
+    }
+
+    &__retry-btn {
+      @include flexVCenter;
+
+      flex-shrink: 0;
+      gap: 0.4rem;
+      height: 2.4rem;
+      min-width: 7rem;
+      padding: 0 0.8rem;
+      border: none;
+      border-radius: 0.2rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      white-space: nowrap;
+      color: var(--color-light-grey-200);
+      background: var(--color-dark-grey-300);
+
+      &:hover:not(:disabled) {
+        background: var(--color-dark-grey-350);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      svg {
+        font-size: 1.3rem;
+      }
+    }
+  }
+
+  &__column-overlap-warning {
+    @include flexVCenter;
+
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    margin: 0 1rem 1rem;
+    border-radius: 0.2rem;
+    background: var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-yellow-200);
+
+    &__icon {
+      flex-shrink: 0;
+      color: var(--color-yellow-200);
+      font-size: 1.6rem;
+    }
+
+    &__message {
+      flex: 1;
+      color: var(--color-yellow-100);
+      font-size: 1.2rem;
+    }
+  }
+
   &__queries {
     height: 25rem;
     min-height: 15rem;
