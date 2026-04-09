@@ -1573,3 +1573,225 @@ export const V1_buildSubTypePropertyExpressionTypeInference = (
   inferredVariable.parametersValues.filter(
     (param) => param instanceof InstanceValue,
   )[0]?.genericType?.value.rawType;
+
+export const V1_buildOverFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  assertTrue(
+    parameters.length >= 1 && parameters.length <= 2,
+    `Can't build over() expression: over() expects 1-2 arguments, got ${parameters.length}`,
+  );
+  //TODO: handle over() when first param is a ColSpec, and when only given SortInfo
+  const windowColumns = parameters[0];
+  assertType(
+    windowColumns,
+    V1_ClassInstance,
+    `Can't build over() expression with ColSpecArray: expects argument #1 to be a ClassInstance`,
+  );
+  const specArray = guaranteeType(
+    windowColumns.value,
+    V1_ColSpecArray,
+    `Can't build over() expression with ColSpecArray: expects ClassInstance to hold ColSpecArray`,
+  );
+
+  const windowColSpecArrayInst = new ColSpecArrayInstance(Multiplicity.ONE);
+  const windowColSpecArray = new ColSpecArray();
+  windowColSpecArrayInst.values = [windowColSpecArray];
+
+  windowColSpecArray.colSpecs = specArray.colSpecs.map((colSpec) => {
+    const windowColSpec = new ColSpec();
+    windowColSpec.name = colSpec.name;
+    windowColSpec.type = colSpec.type;
+    return windowColSpec;
+  });
+
+  const processedParams: ValueSpecification[] = [windowColSpecArrayInst];
+
+  if (parameters[1]) {
+    const sortBy = parameters[1].accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    );
+    processedParams.push(sortBy);
+  }
+
+  return V1_buildBaseSimpleFunctionExpression(
+    processedParams,
+    functionName,
+    compileContext,
+  );
+};
+
+export const V1_buildExtendFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  if (parameters.length === 3) {
+    const precedingExpression = guaranteeNonNullable(
+      parameters[0],
+      `Can't build relation extend() expression: preceding expression is missing`,
+    ).accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    );
+    assertNonNullable(
+      precedingExpression.genericType,
+      `Can't build relation extend() expression: preceding expression return type is missing`,
+    );
+
+    const overExpression = guaranteeNonNullable(
+      parameters[1],
+      `Can't build relation extend() expression: over() expression is missing`,
+    ).accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    );
+
+    const windowOperator = guaranteeNonNullable(
+      parameters[2],
+      `Can't build relation extend() expression: window operator is missing`,
+    );
+    assertType(
+      windowOperator,
+      V1_ClassInstance,
+      `Can't build relation extend() expression: extend() expects argument #3 to be a ClassInstance`,
+    );
+
+    //TODO: handle extend() where the third parameter is a ColSpec
+    const operatorExpression = windowOperator.value as V1_ColSpecArray;
+
+    const topLevelLambdaParameters: V1_Variable[] = operatorExpression.colSpecs
+      .flatMap((colSpec) => [colSpec.function1, colSpec.function2])
+      .filter(isNonNullable)
+      .flatMap((value) => (value as V1_Lambda).parameters);
+    topLevelLambdaParameters.forEach((variable) => {
+      if (!variable.genericType) {
+        const variableExpression = new VariableExpression(
+          variable.name,
+          precedingExpression.multiplicity,
+        );
+        variableExpression.genericType = precedingExpression.genericType;
+        processingContext.addInferredVariables(
+          variable.name,
+          variableExpression,
+        );
+      }
+    });
+
+    const builtOperatorExpressions = new ColSpecArrayInstance(Multiplicity.ONE);
+    const builtOperatorColSpecArray = new ColSpecArray();
+    builtOperatorExpressions.values = [builtOperatorColSpecArray];
+
+    const precedingRelationType =
+      precedingExpression.genericType.value.typeArguments?.[0]?.value.rawType;
+    const relationType = new RelationType(RelationType.ID);
+
+    if (precedingRelationType instanceof RelationType) {
+      precedingRelationType.columns.forEach((col) => {
+        relationType.columns.push(col);
+      });
+    }
+
+    builtOperatorColSpecArray.colSpecs = operatorExpression.colSpecs.map(
+      (colSpec) => {
+        const builtColSpec = new ColSpec();
+        builtColSpec.name = colSpec.name;
+        if (colSpec.function1) {
+          const function1 = guaranteeType(
+            colSpec.function1,
+            V1_Lambda,
+            `Can't build relation extend() col spec expression: expects function1 to be a lambda`,
+          );
+
+          const function1Lambda = guaranteeType(
+            function1.accept_ValueSpecificationVisitor(
+              new V1_ValueSpecificationBuilder(
+                compileContext,
+                processingContext,
+                openVariables,
+              ),
+            ),
+            LambdaFunctionInstanceValue,
+            `Can't build relation extend() col spec expression: expected function1 to be a lambda`,
+          );
+          builtColSpec.function1 = function1Lambda;
+        }
+
+        if (colSpec.function2) {
+          const function2 = guaranteeType(
+            colSpec.function2,
+            V1_Lambda,
+            `Can't build relation extend() col spec expression: expects function2 to be a lambda`,
+          );
+          const function2Lambda = guaranteeType(
+            function2.accept_ValueSpecificationVisitor(
+              new V1_ValueSpecificationBuilder(
+                compileContext,
+                processingContext,
+                openVariables,
+              ),
+            ),
+            LambdaFunctionInstanceValue,
+            `Can't build relation extend() col spec expression: expected aggregation function to be a lambda`,
+          );
+          builtColSpec.function2 = function2Lambda;
+        }
+
+        let returnType: Type | undefined;
+        if (builtColSpec.function2) {
+          returnType = getValueSpecificationReturnType(builtColSpec.function2);
+        } else if (builtColSpec.function1) {
+          returnType = getValueSpecificationReturnType(builtColSpec.function1);
+        }
+
+        if (returnType) {
+          relationType.columns.push(
+            new RelationColumn(
+              colSpec.name,
+              GenericTypeExplicitReference.create(new GenericType(returnType)),
+            ),
+          );
+        }
+
+        return builtColSpec;
+      },
+    );
+
+    //build extend()
+    const expression = V1_buildBaseSimpleFunctionExpression(
+      [precedingExpression, overExpression, builtOperatorExpressions],
+      functionName,
+      compileContext,
+    );
+
+    const relationGenericType = new GenericType(Relation.INSTANCE);
+    const relationTypeGenericType = new GenericType(relationType);
+    relationGenericType.typeArguments = [
+      GenericTypeExplicitReference.create(relationTypeGenericType),
+    ];
+    expression.genericType =
+      GenericTypeExplicitReference.create(relationGenericType);
+
+    return expression;
+  } else {
+    throw new UnsupportedOperationError(
+      `Can't build relation extend() expression: extend() on non window functions is not yet supported`,
+    );
+  }
+};

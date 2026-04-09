@@ -190,6 +190,12 @@ const TEST_CASES: QueryTestCase[] = [
       "|showcase::northwind::model::Order.all()->project(~['Ship To Name':x|$x.shipToName, 'Id (count)':x|$x.id])->filter(row|$row.'Id (count)' >= 5)->groupBy(~['Ship To Name'], ~['Id (count)':x|$x.'Id (count)':x|$x->count()])",
     isUnsupported: true,
   },
+  {
+    testName: '[WINDOW RANK] Simple rank() query with TDS 2.0',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[test:{p, w, r|$p->rank($w, $r)}])",
+  },
 ];
 
 const globalGraphManagerStates = new Map<string, GraphManagerState>();

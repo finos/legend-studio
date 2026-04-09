@@ -25,16 +25,29 @@ import {
   VariableExpression,
   Multiplicity,
   PrimitiveType,
+  ColSpec,
+  ColSpecArray,
+  ColSpecArrayInstance,
+  ColSpecInstanceValue,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
-import { getFunctionNameFromTDSSortColumn } from '../QueryBuilderTDSHelper.js';
+import {
+  getFunctionNameFromTDSSortColumn,
+  getFunctionNameFromRelationSortColumn,
+} from '../QueryBuilderTDSHelper.js';
 import {
   type QueryBuilderWindowColumnState,
   type QueryBuilderWindowState,
   QueryBuilderTDS_WindowAggreationOperatorState,
 } from './QueryBuilderWindowState.js';
+import { DEFAULT_LAMBDA_VARIABLE_NAME } from '@finos/legend-data-cube';
+import {
+  DEFAULT_WINDOW_FUNCTION_PARTITION_VAR_NAME,
+  DEFAULT_WINDOW_FUNCTION_ROW_VAR_NAME,
+  DEFAULT_WINDOW_FUNCTION_WINDOW_VAR_NAME,
+} from '../../../QueryBuilderConfig.js';
 
 const appendOLAPGroupByColumnState = (
   olapGroupByColumnState: QueryBuilderWindowColumnState,
@@ -78,16 +91,15 @@ const appendOLAPGroupByColumnState = (
 
   // create olap operation expression
   const operationState = olapGroupByColumnState.operatorState;
+  const lambdaParameterName =
+    operationState.lambdaParameterNames[0] ?? DEFAULT_LAMBDA_VARIABLE_NAME;
   const olapFunc = extractElementNameFromPath(operationState.operator.pureFunc);
   const olapFuncExpression = new SimpleFunctionExpression(olapFunc);
   olapFuncExpression.parametersValues = [
-    new VariableExpression(
-      operationState.lambdaParameterName,
-      Multiplicity.ONE,
-    ),
+    new VariableExpression(lambdaParameterName, Multiplicity.ONE),
   ];
   const olapLambdaFuncInstance = buildGenericLambdaFunctionInstanceValue(
-    operationState.lambdaParameterName,
+    lambdaParameterName,
     [olapFuncExpression],
     graph,
   );
@@ -132,12 +144,135 @@ const appendOLAPGroupByColumnState = (
   return lambda;
 };
 
-export const appendOLAPGroupByState = (
+export const appendOverExpression = (
+  extendColumnState: QueryBuilderWindowColumnState,
+): SimpleFunctionExpression => {
+  const overExpression = new SimpleFunctionExpression(
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_OVER),
+  );
+
+  //TODO: handle over() where the first parameter is a ColSpec
+  const colSpecArrayInstance = new ColSpecArrayInstance(
+    Multiplicity.ONE,
+    undefined,
+  );
+  const colSpecArray = new ColSpecArray();
+  colSpecArrayInstance.values = [colSpecArray];
+
+  extendColumnState.windowColumns.forEach((column) => {
+    const colSpec = new ColSpec();
+    colSpec.name = column.columnName;
+    colSpecArray.colSpecs.push(colSpec);
+  });
+  overExpression.parametersValues.push(colSpecArrayInstance);
+
+  if (extendColumnState.sortByState) {
+    const sortByState = extendColumnState.sortByState;
+    const sortByFunction = new SimpleFunctionExpression(
+      getFunctionNameFromRelationSortColumn(sortByState.sortType),
+    );
+    const sortColSpec = new ColSpecInstanceValue(Multiplicity.ONE, undefined);
+    const sortCol = new ColSpec();
+    sortCol.name = sortByState.columnState.columnName;
+    sortColSpec.values = [sortCol];
+    sortByFunction.parametersValues[0] = sortColSpec;
+
+    const sortByCollection = new CollectionInstanceValue(Multiplicity.ONE);
+    sortByCollection.values = [sortByFunction];
+
+    overExpression.parametersValues.push(sortByCollection);
+  }
+
+  return overExpression;
+};
+
+const appendExtendColumnState = (
+  extendColumnState: QueryBuilderWindowColumnState,
+  lambda: LambdaFunction,
+): LambdaFunction => {
+  const graph =
+    extendColumnState.windowState.tdsState.queryBuilderState.graphManagerState
+      .graph;
+
+  const overExpression = appendOverExpression(extendColumnState);
+
+  const operatorColSpecArrayInst = new ColSpecArrayInstance(
+    Multiplicity.ONE,
+    undefined,
+  );
+  const operatorColSpecArray = new ColSpecArray();
+  operatorColSpecArrayInst.values = [operatorColSpecArray];
+
+  const operatorColSpec = new ColSpec();
+  operatorColSpec.name = extendColumnState.columnName;
+
+  const operatorState = extendColumnState.operatorState;
+  if (operatorState.lambdaParameterNames.length === 1) {
+    //this was previously nontyped, so need to add window function parameters
+    operatorState.setLambdaParameterNames([
+      DEFAULT_WINDOW_FUNCTION_PARTITION_VAR_NAME,
+      DEFAULT_WINDOW_FUNCTION_WINDOW_VAR_NAME,
+      DEFAULT_WINDOW_FUNCTION_ROW_VAR_NAME,
+    ]);
+  }
+
+  //TODO: handle aggregation operators
+  const operatorFunc = extractElementNameFromPath(
+    operatorState.operator.pureFunc,
+  );
+  const operatorFuncExpression = new SimpleFunctionExpression(operatorFunc);
+
+  const lambdaParameters: VariableExpression[] = [];
+  operatorState.lambdaParameterNames.forEach((paramName) => {
+    lambdaParameters.push(new VariableExpression(paramName, Multiplicity.ONE));
+  });
+  operatorFuncExpression.parametersValues = lambdaParameters;
+
+  const rankLambda = buildGenericLambdaFunctionInstanceValue(
+    operatorState.lambdaParameterNames[0] ??
+      DEFAULT_WINDOW_FUNCTION_PARTITION_VAR_NAME,
+    [operatorFuncExpression],
+    graph,
+  );
+
+  //skip over the first parameter since it was added in buildGenericLambdaFunctionInstanceValue()
+  lambdaParameters.slice(1).forEach((param) => {
+    rankLambda.values[0]?.functionType.parameters.push(param);
+  });
+  operatorColSpec.function1 = rankLambda;
+  operatorColSpecArray.colSpecs.push(operatorColSpec);
+
+  const extendExpression = new SimpleFunctionExpression(
+    extractElementNameFromPath(
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_EXTEND,
+    ),
+  );
+
+  const currentExpression = guaranteeNonNullable(lambda.expressionSequence[0]);
+  extendExpression.parametersValues = [
+    currentExpression,
+    overExpression,
+    operatorColSpecArrayInst,
+  ];
+
+  lambda.expressionSequence[0] = extendExpression;
+  return lambda;
+};
+
+export const appendWindowFunctionState = (
   olapGroupByState: QueryBuilderWindowState,
   lambda: LambdaFunction,
 ): LambdaFunction => {
-  olapGroupByState.windowColumns.forEach((c) =>
-    appendOLAPGroupByColumnState(c, lambda),
-  );
+  const typedTds =
+    olapGroupByState.tdsState.queryBuilderState.isFetchStructureTyped;
+  if (typedTds) {
+    olapGroupByState.windowColumns.forEach((c) =>
+      appendExtendColumnState(c, lambda),
+    );
+  } else {
+    olapGroupByState.windowColumns.forEach((c) =>
+      appendOLAPGroupByColumnState(c, lambda),
+    );
+  }
   return lambda;
 };

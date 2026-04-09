@@ -26,6 +26,8 @@ import {
   V1_buildSubTypePropertyExpressionTypeInference,
   V1_buildWatermarkFunctionExpression,
   V1_buildGroupByFunctionExpression,
+  V1_buildOverFunctionExpression,
+  V1_buildExtendFunctionExpression,
 } from './v1/V1_QueryValueSpecificationBuilderHelper.js';
 import {
   type V1_GraphBuilderContext,
@@ -237,6 +239,32 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             new GenericType(PrimitiveType.DATE),
           );
           return expression;
+        } else if (
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_EXTEND,
+          )
+        ) {
+          return V1_buildExtendFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_OVER,
+          )
+        ) {
+          return V1_buildOverFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
         } else if (
           matchFunctionName(
             functionName,

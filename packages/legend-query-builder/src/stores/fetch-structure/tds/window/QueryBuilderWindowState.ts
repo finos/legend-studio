@@ -85,7 +85,7 @@ export class WindowGroupByColumnSortByState implements Hashable {
 
 export abstract class QueryBuilderTDS_WindowOperatorState implements Hashable {
   readonly windowState: QueryBuilderWindowState;
-  lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
+  lambdaParameterNames: string[] = [DEFAULT_LAMBDA_VARIABLE_NAME];
   operator: QueryBuilderTDS_WindowOperator;
 
   constructor(
@@ -96,8 +96,12 @@ export abstract class QueryBuilderTDS_WindowOperatorState implements Hashable {
     this.operator = operator;
   }
 
-  setLambdaParameterName(paramName: string): void {
-    this.lambdaParameterName = paramName;
+  setLambdaParameterNames(paramNames: string[]): void {
+    this.lambdaParameterNames = paramNames;
+  }
+
+  addParameterName(paramName: string): void {
+    this.lambdaParameterNames.push(paramName);
   }
 
   setOperator(val: QueryBuilderTDS_WindowOperator): void {
@@ -107,7 +111,7 @@ export abstract class QueryBuilderTDS_WindowOperatorState implements Hashable {
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_OPERATION_STATE,
-      this.lambdaParameterName,
+      hashArray(this.lambdaParameterNames),
       this.operator,
     ]);
   }
@@ -120,7 +124,7 @@ export class QueryBuilderTDS_WindowRankOperatorState extends QueryBuilderTDS_Win
   ) {
     super(windowState, operator);
     makeObservable(this, {
-      setLambdaParameterName: action,
+      setLambdaParameterNames: action,
     });
   }
 }
@@ -136,7 +140,7 @@ export class QueryBuilderTDS_WindowAggreationOperatorState extends QueryBuilderT
     makeObservable(this, {
       columnState: observable,
       setColumnState: action,
-      setLambdaParameterName: action,
+      setLambdaParameterNames: action,
     });
     this.columnState = columnState;
   }
@@ -148,7 +152,7 @@ export class QueryBuilderTDS_WindowAggreationOperatorState extends QueryBuilderT
   override get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_AGG_OPERATOR_STATE,
-      this.lambdaParameterName,
+      hashArray(this.lambdaParameterNames),
       this.operator,
       this.columnState.columnName,
     ]);
@@ -446,8 +450,18 @@ export class QueryBuilderWindowState implements Hashable {
     this.editColumn = col;
   }
 
-  findOperator(func: string): QueryBuilderTDS_WindowOperator | undefined {
-    return this.operators.find((o) => matchFunctionName(func, o.pureFunc));
+  findOperator(
+    func: string,
+    typed?: boolean,
+  ): QueryBuilderTDS_WindowOperator | undefined {
+    return this.operators.find((operator) => {
+      const operatorFunction = typed
+        ? operator.relationFunc
+        : operator.pureFunc;
+      return operatorFunction
+        ? matchFunctionName(func, operatorFunction)
+        : undefined;
+    });
   }
 
   addWindowColumn(windowCol: QueryBuilderWindowColumnState): void {

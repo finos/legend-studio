@@ -127,6 +127,11 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   RELATION_SORT = 'meta::pure::functions::relation::sort',
   RELATION_SLICE = 'meta::pure::functions::relation::slice',
   RELATION_GROUP_BY = 'meta::pure::functions::relation::groupBy',
+  RELATION_EXTEND = 'meta::pure::functions::relation::extend',
+  RELATION_OVER = 'meta::pure::functions::relation::over',
+  RELATION_RANK = 'meta::pure::functions::relation::rank',
+  RELATION_DENSE_RANK = 'meta::pure::functions::relation::denseRank',
+
   // filter
   CONTAINS = 'meta::pure::functions::string::contains',
   ENDS_WITH = 'meta::pure::functions::string::endsWith',
