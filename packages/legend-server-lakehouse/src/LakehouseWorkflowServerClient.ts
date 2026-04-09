@@ -28,31 +28,20 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     });
   }
 
-  // auth
-  private _token = (token?: string) => ({
-    Authorization: `Bearer ${token}`,
-  });
-
   // ------------------------------------- Process Instances -------------------------------------
 
   private _workflow = (): string => `${this.baseUrl}/access/workflow`;
 
   getWorkflowInstance = (
     instanceId: string,
-    token: string | undefined,
   ): Promise<PlainObject<V1_WorkflowInstance>> =>
-    this.get(
-      `${this._workflow()}/${encodeURIComponent(instanceId)}`,
-      {},
-      this._token(token),
-    );
+    this.get(`${this._workflow()}/${encodeURIComponent(instanceId)}`);
 
   actionTask = (
     instanceId: string,
     taskId: string,
     action: 'APPROVE' | 'REJECT' | 'ESCALATE',
     justification: string,
-    token: string | undefined,
   ): Promise<void> => {
     const requestBody = {
       justification,
@@ -61,8 +50,6 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     return this.post(
       `${this._workflow()}/${encodeURIComponent(instanceId)}/task/${encodeURIComponent(taskId)}/${encodeURIComponent(action)}`,
       requestBody,
-      {},
-      this._token(token),
     );
   };
 }

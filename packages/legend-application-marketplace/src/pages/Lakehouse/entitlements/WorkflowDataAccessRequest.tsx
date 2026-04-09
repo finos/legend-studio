@@ -129,7 +129,6 @@ export const WorkflowDataAccessRequestTask =
           actionableTask.taskId,
           'APPROVE',
           justification,
-          auth.user?.access_token,
         );
 
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
@@ -148,7 +147,6 @@ export const WorkflowDataAccessRequestTask =
           actionableTask.taskId,
           'REJECT',
           justification,
-          auth.user?.access_token,
         );
 
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(

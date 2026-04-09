@@ -415,7 +415,6 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       const rawWorkflowInstance =
         (yield this.lakehouseWorkflowServerClient.getWorkflowInstance(
           workflowInstanceId,
-          token,
         )) as PlainObject<V1_WorkflowInstance>;
       const workflowInstance =
         V1_WorkflowInstance.serialization.fromJson(rawWorkflowInstance);
