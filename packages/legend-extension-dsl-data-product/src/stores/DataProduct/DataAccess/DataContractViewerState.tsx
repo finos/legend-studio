@@ -387,12 +387,15 @@ export class DataContractViewerState implements DataAccessRequestState {
       ?.user.userType;
   }
 
-  *escalateRequest(user: string, token: string | undefined): GeneratorFn<void> {
+  *escalateRequest(
+    user: string | undefined,
+    token: string | undefined,
+  ): GeneratorFn<void> {
     try {
       this.escalatingState.inProgress();
       yield this.lakehouseContractServerClient.escalateUserOnContract(
         this.guid,
-        user,
+        guaranteeNonNullable(user, 'No user selected to escalate'),
         false,
         token,
       );

@@ -476,4 +476,34 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     return this.contractMembers.find((m) => m.user.name === _userId)?.user
       .userType;
   }
+
+  *escalateRequest(): GeneratorFn<void> {
+    try {
+      this.escalatingState.inProgress();
+      const taskToEscalate = guaranteeNonNullable(
+        this.workflowTasks.privilegeManagerTasks.find(
+          (t) => t.status === 'active',
+        ),
+        'Unable to find active privilege manager task to escalate',
+      );
+      yield this.lakehouseWorkflowServerClient.actionTask(
+        taskToEscalate.processInstanceId,
+        taskToEscalate.taskId,
+        'ESCALATE',
+        // TODO: allow user to pass in justification message for escalating
+        '',
+      );
+
+      this.applicationStore.notificationService.notifySuccess(
+        'Contract escalated successfully',
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Error escalating contract: ${error.message}`,
+      );
+    } finally {
+      this.escalatingState.complete();
+    }
+  }
 }
