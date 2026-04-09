@@ -458,6 +458,10 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       this.setWorkflowTasks(result);
     } catch (error) {
       assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Failed to load data access request with workflow`,
+        error.message,
+      );
     } finally {
       this.initializationState.complete();
     }
