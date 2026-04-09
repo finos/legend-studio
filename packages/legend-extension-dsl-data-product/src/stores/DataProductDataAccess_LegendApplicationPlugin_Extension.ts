@@ -25,6 +25,8 @@ import type {
   DataProductTDSSampleQueryTabConfiguration,
   DataProductRelationSampleQueryTabConfiguration,
 } from './DataProduct/DataProductSampleQueryTabState.js';
+import type { V1_WorkflowTaskType } from './DataProduct/DataAccess/WorkflowDataAccessRequestState.js';
+import type { V1_WorkflowTask } from '@finos/legend-graph';
 
 export interface DataProductDataAccess_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
@@ -71,4 +73,11 @@ export interface DataProductDataAccess_LegendApplicationPlugin_Extension
    * Config to add extra tabs for Relation Sample Query results in data products
    */
   getExtraDataProductRelationSampleQueryTabConfiguration?(): DataProductRelationSampleQueryTabConfiguration[];
+
+  /**
+   * Config to allow mapping domain-specific workflow task to a more general type
+   *
+   * @param task workflow task ID
+   */
+  getWorkflowTaskType?(task: V1_WorkflowTask): V1_WorkflowTaskType;
 }

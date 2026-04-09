@@ -21,17 +21,16 @@ import {
   type V1_DataRequestWithWorkflow,
   type V1_OrganizationalScope,
   type V1_UserType,
-  type V1_RawWorkflowTask,
+  V1_WorkflowInstance,
   V1_AccessPointGroupReference,
-  V1_DataOwnerApprovalTask,
-  V1_PrivilegeManagerApprovalTask,
   V1_RequestState,
   V1_ResourceType,
-  V1_WorkflowTaskAction,
-  V1_WorkflowTaskStatus,
   V1_deserializeDataRequestsWithWorkflowResponse,
-  V1_workflowTaskModelSchema,
+  type V1_WorkflowTask,
+  V1_WorkflowTaskStatus,
+  V1_WorkflowTaskCompletionReason,
 } from '@finos/legend-graph';
+
 import {
   type GeneratorFn,
   type PlainObject,
@@ -39,6 +38,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
@@ -46,16 +46,21 @@ import type {
   LakehouseContractServerClient,
   LakehouseWorkflowServerClient,
 } from '@finos/legend-server-lakehouse';
-import { deserialize } from 'serializr';
 import {
   DataAccessRequestStatus,
   type DataAccessRequestState,
   type TimelineStep,
 } from './DataAccessRequestState.js';
+import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 
 export interface WorkflowTasksState {
-  privilegeManagerTask: V1_RawWorkflowTask | undefined;
-  dataOwnerTask: V1_RawWorkflowTask | undefined;
+  privilegeManagerTasks: V1_WorkflowTask[];
+  dataOwnerTasks: V1_WorkflowTask[];
+}
+
+export enum V1_WorkflowTaskType {
+  PRIVILEGE_MANAGER = 'PRIVILEGE_MAANGER',
+  DATA_OWNER = 'DATA_OWNER',
 }
 
 export class WorkflowDataAccessRequestState implements DataAccessRequestState {
@@ -92,13 +97,14 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       isInTerminalState: computed,
       status: computed,
       init: flow,
+      escalateRequest: flow,
     });
 
     this.dataAccessRequestId = dataAccessRequestId;
     this.dataRequestWithWorkflow = undefined;
     this.workflowTasks = {
-      privilegeManagerTask: undefined,
-      dataOwnerTask: undefined,
+      privilegeManagerTasks: [],
+      dataOwnerTasks: [],
     };
     this.applicationStore = applicationStore;
     this.lakehouseContractServerClient = lakehouseContractServerClient;
@@ -213,18 +219,13 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
 
   get isInProgress(): boolean {
     // Use workflow server tasks as source of truth if available
-    const { privilegeManagerTask, dataOwnerTask } = this.workflowTasks;
-    if (privilegeManagerTask || dataOwnerTask) {
-      return [privilegeManagerTask, dataOwnerTask].some(
-        (task) => task !== undefined && !task.completed,
+    const { privilegeManagerTasks, dataOwnerTasks } = this.workflowTasks;
+    if (privilegeManagerTasks.length || dataOwnerTasks.length) {
+      return [...privilegeManagerTasks, ...dataOwnerTasks].some(
+        (task) => !task.completedDate,
       );
     }
-    const workflows = guaranteeNonNullable(
-      this.dataRequestWithWorkflow,
-    ).workflows;
-    return workflows.some((wf) =>
-      wf.tasks.some((task) => task.status === V1_WorkflowTaskStatus.OPEN),
-    );
+    return true;
   }
 
   get contractMembers(): V1_ContractUserMembership[] {
@@ -248,53 +249,16 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       return [];
     }
 
-    const workflow = guaranteeNonNullable(this.dataRequestWithWorkflow)
-      .workflows[0];
-    if (!workflow) {
-      return [
-        {
-          key: 'submitted',
-          status: 'complete' as const,
-          label: { title: 'Submitted' },
-        },
-        {
-          key: 'complete',
-          status: 'upcoming' as const,
-          label: { title: 'Complete' },
-        },
-      ];
-    }
-
-    const pmTask = workflow.tasks.find(
-      (t) => t instanceof V1_PrivilegeManagerApprovalTask,
-    );
-    const doTask = workflow.tasks.find(
-      (t) => t instanceof V1_DataOwnerApprovalTask,
-    );
-
-    // Look up workflow server tasks for source-of-truth status/assignees
-    const pmWorkflowTask = this.workflowTasks.privilegeManagerTask;
-    const doWorkflowTask = this.workflowTasks.dataOwnerTask;
-
-    // Helper to get effective assignees: prefer workflow server, fall back to dataRequestWithWorkflow
-    const getEffectiveAssignees = (
-      task:
-        | V1_PrivilegeManagerApprovalTask
-        | V1_DataOwnerApprovalTask
-        | undefined,
-      workflowTask: V1_RawWorkflowTask | undefined,
-    ): string[] | undefined => {
-      if (workflowTask && workflowTask.potentialAssignees.length > 0) {
-        return workflowTask.potentialAssignees;
-      }
-      return task?.assignees;
-    };
+    // Use workflow task with latest creation date.
+    const pmWorkflowTask = this.workflowTasks.privilegeManagerTasks.toSorted(
+      (a, b) => b.createdDate - a.createdDate,
+    )[0];
+    const doWorkflowTask = this.workflowTasks.dataOwnerTasks.toSorted(
+      (a, b) => b.createdDate - a.createdDate,
+    )[0];
 
     const getTaskStepStatus = (
-      task:
-        | V1_PrivilegeManagerApprovalTask
-        | V1_DataOwnerApprovalTask
-        | undefined,
+      task: V1_WorkflowTask | undefined,
       fallback: 'skipped' | 'upcoming',
     ): 'active' | 'complete' | 'denied' | 'skipped' | 'upcoming' => {
       if (!task) {
@@ -303,11 +267,13 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       if (task.status === V1_WorkflowTaskStatus.OPEN) {
         return 'active';
       }
-      if (task.action === V1_WorkflowTaskAction.APPROVED) {
+      if (task.status === V1_WorkflowTaskStatus.COMPLETED) {
+        if (
+          task.completionReason === V1_WorkflowTaskCompletionReason.REJECTED
+        ) {
+          return 'denied';
+        }
         return 'complete';
-      }
-      if (task.action === V1_WorkflowTaskAction.REJECTED) {
-        return 'denied';
       }
       if (
         task.status === V1_WorkflowTaskStatus.CLOSED ||
@@ -318,13 +284,22 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       return fallback;
     };
 
-    const pmStepStatus = getTaskStepStatus(pmTask, 'skipped');
-    const doStepStatus = getTaskStepStatus(doTask, 'upcoming');
+    const pmStepStatus = getTaskStepStatus(pmWorkflowTask, 'skipped');
+    const doStepStatus = getTaskStepStatus(doWorkflowTask, 'upcoming');
 
-    const isEscalated = pmTask?.action === V1_WorkflowTaskAction.ESCALATED;
+    const isEscalated = this.workflowTasks.privilegeManagerTasks.some(
+      (task) =>
+        task.completionReason === V1_WorkflowTaskCompletionReason.ESCALATED,
+    );
     const showEscalateButton =
       pmStepStatus === 'active' &&
-      _selectedTargetUser === this.applicationStore.identityService.currentUser;
+      (_selectedTargetUser ===
+        this.applicationStore.identityService.currentUser ||
+        this.dataRequestWithWorkflow?.dataRequest.createdBy ===
+          this.applicationStore.identityService.currentUser ||
+        pmWorkflowTask?.assignees.includes(
+          this.applicationStore.identityService.currentUser,
+        ));
     const isEscalatable = showEscalateButton && !isEscalated;
 
     return [
@@ -337,25 +312,30 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
         key: 'privilege-manager-approval',
         label: {
           title: 'Privilege Manager Approval',
-          link: pmStepStatus === 'active' ? pmTask?.url : undefined,
+          // TODO: build URL from task ID
+          link: undefined,
           showEscalateButton,
           isEscalatable,
           isEscalated,
         },
         status: pmStepStatus,
         assignees:
-          pmStepStatus === 'active'
-            ? getEffectiveAssignees(pmTask, pmWorkflowTask)
-            : undefined,
+          pmStepStatus === 'active' ? pmWorkflowTask?.assignees : undefined,
         approvalPayload:
-          pmTask && pmStepStatus !== 'active' && pmStepStatus !== 'skipped'
+          pmWorkflowTask &&
+          pmStepStatus !== 'active' &&
+          pmStepStatus !== 'skipped'
             ? {
                 status:
-                  pmTask.action === V1_WorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
-                approvalTimestamp: pmTask.actionedOn?.toISOString(),
-                approverId: pmTask.actionedBy,
+                  pmWorkflowTask.status === V1_WorkflowTaskStatus.COMPLETED &&
+                  pmWorkflowTask.completionReason ===
+                    V1_WorkflowTaskCompletionReason.REJECTED
+                    ? 'DENIED'
+                    : 'APPROVED',
+                approvalTimestamp: pmWorkflowTask.completedDate
+                  ? new Date(pmWorkflowTask.completedDate).toISOString()
+                  : undefined,
+                approverId: pmWorkflowTask.completedBy,
               }
             : undefined,
       },
@@ -363,29 +343,36 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
         key: 'data-producer-approval',
         label: {
           title: 'Data Producer Approval',
-          link: doStepStatus === 'active' ? doTask?.url : undefined,
+          // TODO: build URL from task ID
+          link: undefined,
         },
         status: doStepStatus,
         assignees:
-          doStepStatus === 'active'
-            ? getEffectiveAssignees(doTask, doWorkflowTask)
-            : undefined,
+          doStepStatus === 'active' ? doWorkflowTask?.assignees : undefined,
         approvalPayload:
-          doTask && doStepStatus !== 'active' && doStepStatus !== 'upcoming'
+          doWorkflowTask &&
+          doStepStatus !== 'active' &&
+          doStepStatus !== 'upcoming'
             ? {
                 status:
-                  doTask.action === V1_WorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
-                approvalTimestamp: doTask.actionedOn?.toISOString(),
-                approverId: doTask.actionedBy,
+                  doWorkflowTask.status === V1_WorkflowTaskStatus.COMPLETED &&
+                  doWorkflowTask.completionReason ===
+                    V1_WorkflowTaskCompletionReason.REJECTED
+                    ? 'DENIED'
+                    : 'APPROVED',
+                approvalTimestamp: doWorkflowTask.completedDate
+                  ? new Date(doWorkflowTask.completedDate).toISOString()
+                  : undefined,
+                approverId: doWorkflowTask.completedBy,
               }
             : undefined,
       },
       {
         key: 'complete',
         status:
-          doTask?.action === V1_WorkflowTaskAction.APPROVED
+          doWorkflowTask?.status === V1_WorkflowTaskStatus.COMPLETED &&
+          doWorkflowTask?.completionReason ===
+            V1_WorkflowTaskCompletionReason.APPROVED
             ? ('complete' as const)
             : ('upcoming' as const),
         label: { title: 'Complete' },
@@ -408,67 +395,85 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   *init(token: string | undefined): GeneratorFn<void> {
     try {
       this.initializationState.inProgress();
-      const [response, tasksResponse] = (yield Promise.all([
-        this.lakehouseContractServerClient.getDataAccessRequestWithWorkflow(
-          this.dataAccessRequestId,
-          token,
-        ),
-        this.lakehouseContractServerClient.getDataAccessRequestTasks(
-          this.dataAccessRequestId,
-          token,
-        ),
-      ])) as [PlainObject, PlainObject];
-      const dataRequests = V1_deserializeDataRequestsWithWorkflowResponse(
-        response,
-        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-      );
-      const refreshed = dataRequests[0];
-      if (refreshed) {
-        this.setDataRequestWithWorkflow(refreshed);
-      }
 
-      // Fetch latest task details from workflow server
-      const workflowTasks =
-        (tasksResponse as { workflowTasks?: { taskId: string }[] })
-          .workflowTasks ?? [];
-      const result: WorkflowTasksState = {
-        privilegeManagerTask: undefined,
-        dataOwnerTask: undefined,
-      };
-      if (workflowTasks.length > 0 && refreshed) {
-        const allWorkflowTaskEntries = refreshed.workflows.flatMap((wf) =>
-          wf.tasks.map((task) => {
-            let taskType: 'privilegeManagerTask' | 'dataOwnerTask' | undefined;
-            if (task instanceof V1_PrivilegeManagerApprovalTask) {
-              taskType = 'privilegeManagerTask';
-            } else if (task instanceof V1_DataOwnerApprovalTask) {
-              taskType = 'dataOwnerTask';
-            }
-            return { taskId: task.taskId, taskType };
-          }),
+      // Fetch the data request with workflow. It can take some time
+      // for the workflow to be created after the data request is created,
+      // so we poll until we get a workflow.
+      let refreshed: V1_DataRequestWithWorkflow | undefined;
+
+      while (true) {
+        const response =
+          (yield this.lakehouseContractServerClient.getDataAccessRequestWithWorkflow(
+            this.dataAccessRequestId,
+            token,
+          )) as PlainObject;
+        const dataRequests = V1_deserializeDataRequestsWithWorkflowResponse(
+          response,
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         );
+        refreshed = dataRequests[0];
+        if (refreshed && refreshed.workflows.length > 0) {
+          break;
+        }
+        yield new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      this.setDataRequestWithWorkflow(refreshed);
 
-        const rawTasks = (yield Promise.all(
-          workflowTasks.map((wt) =>
-            this.lakehouseWorkflowServerClient.getTask(wt.taskId),
-          ),
-        )) as PlainObject<V1_RawWorkflowTask>[];
+      // Fetch tasks associated with the workflow instance
+      // We use the first non-null workflow instance
+      const workflowInstanceId = guaranteeNonNullable(
+        refreshed.workflows.find((wf) => wf.workflowId),
+        `No workflow instance found for data access requestId ${this.dataAccessRequestId}`,
+      ).workflowId;
+      const rawWorkflowInstance =
+        (yield this.lakehouseWorkflowServerClient.getWorkflowInstance(
+          workflowInstanceId,
+        )) as PlainObject<V1_WorkflowInstance>;
+      const workflowInstance =
+        V1_WorkflowInstance.serialization.fromJson(rawWorkflowInstance);
+      const tasks =
+        workflowInstance.childProcesses
+          ?.flatMap((process) => process.tasks)
+          ?.filter(isNonNullable) ?? [];
 
-        for (const rawTask of rawTasks) {
-          const entry = allWorkflowTaskEntries.find(
-            (e) => e.taskId === (rawTask as { taskId?: string }).taskId,
-          );
-          if (entry?.taskType) {
-            result[entry.taskType] = deserialize(
-              V1_workflowTaskModelSchema,
-              rawTask,
-            );
+      // Categorize tasks using plugin extension
+      const plugins =
+        this.applicationStore.pluginManager.getApplicationPlugins() as DataProductDataAccess_LegendApplicationPlugin_Extension[];
+
+      const result: WorkflowTasksState = {
+        privilegeManagerTasks: [],
+        dataOwnerTasks: [],
+      };
+
+      for (const task of tasks) {
+        let taskType: V1_WorkflowTaskType | undefined;
+        for (const plugin of plugins) {
+          taskType = plugin.getWorkflowTaskType?.(task);
+          if (taskType !== undefined) {
+            break;
           }
         }
+
+        if (taskType === undefined) {
+          continue;
+        }
+
+        // Determine target key and append task
+        const key: 'privilegeManagerTasks' | 'dataOwnerTasks' =
+          taskType === V1_WorkflowTaskType.PRIVILEGE_MANAGER
+            ? 'privilegeManagerTasks'
+            : 'dataOwnerTasks';
+        const existing = result[key];
+        existing.push(task);
       }
+
       this.setWorkflowTasks(result);
     } catch (error) {
       assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Failed to load data access request with workflow`,
+        error.message,
+      );
     } finally {
       this.initializationState.complete();
     }
@@ -477,5 +482,29 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
   getContractUserType(_userId: string): V1_UserType | undefined {
     return this.contractMembers.find((m) => m.user.name === _userId)?.user
       .userType;
+  }
+
+  *escalateRequest(): GeneratorFn<void> {
+    try {
+      this.escalatingState.inProgress();
+      const taskToEscalate = guaranteeNonNullable(
+        this.workflowTasks.privilegeManagerTasks.find(
+          (t) => t.status === 'OPEN',
+        ),
+        'Unable to find active privilege manager task to escalate',
+      );
+      yield this.lakehouseWorkflowServerClient.actionTask(
+        taskToEscalate.processInstanceId,
+        taskToEscalate.taskId,
+        'ESCALATE',
+        '', // Justification not required for escalate requests
+      );
+
+      this.applicationStore.notificationService.notifySuccess(
+        'Contract escalated successfully',
+      );
+    } finally {
+      this.escalatingState.complete();
+    }
   }
 }

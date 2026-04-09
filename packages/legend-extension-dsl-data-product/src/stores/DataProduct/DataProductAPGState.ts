@@ -32,6 +32,7 @@ import {
   V1_DataSubscriptionResponseModelSchema,
   V1_deserializeDataContractResponse,
   V1_EnrichedUserApprovalStatus,
+  V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -53,6 +54,7 @@ import {
 } from '../../utils/DataContractUtils.js';
 import type { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import type { DataProductViewerState } from './DataProductViewerState.js';
+import { DataContractViewerState } from './DataAccess/DataContractViewerState.js';
 import {
   type LakehouseContractServerClient,
   LakehouseConsumerGrantResponse,
@@ -505,9 +507,19 @@ export class DataProductAPGState {
       case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
       case AccessPointGroupAccess.APPROVED:
         if (this.associatedUserContract) {
-          dataAccessState.setContractViewerContractAndSubscription({
-            dataContract: this.associatedUserContract,
-          });
+          const viewerState = new DataContractViewerState(
+            V1_transformDataContractToLiteDatacontract(
+              this.associatedUserContract,
+            ),
+            (contractId: string, taskId: string) =>
+              dataAccessState.getContractTaskUrl(contractId, taskId),
+            undefined,
+            this.applicationStore,
+            dataAccessState.lakehouseContractServerClient,
+            this.dataProductViewerState.graphManagerState,
+            this.dataProductViewerState.userSearchService,
+          );
+          dataAccessState.setDataAccessRequestViewerState(viewerState);
         }
         break;
       default:

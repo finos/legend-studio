@@ -87,6 +87,7 @@ import {
   DataAccessRequestStatus,
   type DataAccessRequestState,
 } from '../../../stores/DataProduct/DataAccess/DataAccessRequestState.js';
+import { DataContractViewerState } from '../../../stores/DataProduct/DataAccess/DataContractViewerState.js';
 
 const AssigneesList = (props: {
   userIds: string[];
@@ -175,7 +176,9 @@ const RequestEscalationModal = (props: {
 
   const auth = useAuth();
 
-  if (!selectedUser) {
+  // Contract-based data access requests require a user to be selected to escalate.
+  // Workflow-based requests do not require a selected user to escalate.
+  if (!selectedUser && viewerState instanceof DataContractViewerState) {
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
         <DialogContent className="marketplace-lakehouse-entitlements__data-access-request-viewer__escalation__content">
@@ -207,12 +210,13 @@ const RequestEscalationModal = (props: {
       viewerState.applicationStore.notificationService.notifySuccess(
         'Successfully escalated access request',
       );
-      onClose();
     } catch (error) {
       assertErrorThrown(error);
       viewerState.applicationStore.notificationService.notifyError(
         `Error escalating request: ${error.message}`,
       );
+    } finally {
+      onClose();
     }
   };
 
@@ -457,7 +461,10 @@ export const DataAccessRequestContent = observer(
               </Select>
             )
           ) : (
-            stringifyOrganizationalScope(consumer)
+            stringifyOrganizationalScope(
+              consumer,
+              viewerState.applicationStore.pluginManager.getApplicationPlugins(),
+            )
           )}
         </div>
         <div>

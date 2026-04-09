@@ -307,7 +307,6 @@ export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model
 export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_ConsumerEntitlements.js';
 export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_DataAccessRequest.js';
 export * from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_Workflow.js';
-export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_WorkflowSerializationHelper.js';
 export {
   V1_getEntitlementsEnvFromIngestEnv,
   V1_isIngestEnvsCompatibleWithEntitlements,

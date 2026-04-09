@@ -422,6 +422,7 @@ export class LegendMarketplaceProductViewerStore {
         this.marketplaceBaseStore.lakehouseContractServerClient,
         this.marketplaceBaseStore.lakehousePlatformServerClient,
         this.marketplaceBaseStore.lakehouseIngestServerClient,
+        this.marketplaceBaseStore.lakehouseWorkflowServerClient,
         this.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
         {
           getContractTaskUrl: (contractId: string, taskId: string) =>

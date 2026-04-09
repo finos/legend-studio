@@ -47,7 +47,6 @@ import {
 import {
   type V1_RelationTypeColumn,
   extractElementNameFromPath,
-  V1_AccessPointGroupReference,
   V1_AdHocDeploymentDataProductOrigin,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -65,7 +64,6 @@ import {
   V1_getGenericTypeFullPath,
   V1_LakehouseAccessPoint,
   V1_SdlcDeploymentDataProductOrigin,
-  V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
@@ -134,7 +132,6 @@ import {
   PRODUCT_INTEGRATION_TYPE,
 } from '../../__lib__/DataProductTelemetryHelper.js';
 import { flowResult } from 'mobx';
-import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/DataContractViewerState.js';
 import { DataAccessRequestViewer } from './DataContract/DataAccessRequestViewer.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
@@ -1257,8 +1254,13 @@ export const DataProductAccessPointGroupViewer = observer(
     const { apgState, dataAccessState } = props;
 
     const accessPointStates = apgState.accessPointStates;
-    const contractViewerContractAndSubscription =
-      dataAccessState?.contractViewerContractAndSubscription;
+    const dataAccessRequestViewerState =
+      dataAccessState?.dataAccessRequestViewerState;
+    const dataContractViewerState =
+      dataAccessRequestViewerState &&
+      dataAccessRequestViewerState.accessPointGroup === apgState.apg.id
+        ? dataAccessRequestViewerState
+        : undefined;
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
@@ -1278,34 +1280,6 @@ export const DataProductAccessPointGroupViewer = observer(
       return () =>
         apgState.dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [apgState, anchor]);
-
-    const dataContractViewerState = useMemo(() => {
-      return contractViewerContractAndSubscription &&
-        contractViewerContractAndSubscription.dataContract.resource instanceof
-          V1_AccessPointGroupReference &&
-        contractViewerContractAndSubscription.dataContract.resource
-          .accessPointGroup === apgState.apg.id
-        ? new DataContractViewerState(
-            V1_transformDataContractToLiteDatacontract(
-              contractViewerContractAndSubscription.dataContract,
-            ),
-            (contractId: string, taskId: string) =>
-              dataAccessState.getContractTaskUrl(contractId, taskId),
-            contractViewerContractAndSubscription.subscriptions?.[0],
-            apgState.applicationStore,
-            dataAccessState.lakehouseContractServerClient,
-            apgState.dataProductViewerState.graphManagerState,
-            apgState.dataProductViewerState.userSearchService,
-          )
-        : undefined;
-    }, [
-      apgState.apg.id,
-      apgState.applicationStore,
-      apgState.dataProductViewerState.graphManagerState,
-      apgState.dataProductViewerState.userSearchService,
-      contractViewerContractAndSubscription,
-      dataAccessState,
-    ]);
 
     useEffect(() => {
       if (
@@ -1587,9 +1561,7 @@ export const DataProductAccessPointGroupViewer = observer(
           <DataAccessRequestViewer
             open={true}
             onClose={() =>
-              dataAccessState.setContractViewerContractAndSubscription(
-                undefined,
-              )
+              dataAccessState.setDataAccessRequestViewerState(undefined)
             }
             viewerState={dataContractViewerState}
             onRefresh={() => {

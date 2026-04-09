@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { V1_RawWorkflowTask } from '@finos/legend-graph';
+import type { V1_WorkflowInstance } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
 export interface LakehouseWorkflowServerClientConfig {
@@ -28,63 +28,27 @@ export class LakehouseWorkflowServerClient extends AbstractServerClient {
     });
   }
 
-  // ------------------------------------------- Tasks -------------------------------------------
+  // ------------------------------------- Process Instances -------------------------------------
 
-  private _tasks = (): string => `${this.baseUrl}/tasks`;
+  private _workflow = (): string => `${this.baseUrl}/access/workflow`;
 
-  getTask = (taskId: string): Promise<PlainObject<V1_RawWorkflowTask>> =>
-    this.get(`${this._tasks()}/${encodeURIComponent(taskId)}`);
+  getWorkflowInstance = (
+    instanceId: string,
+  ): Promise<PlainObject<V1_WorkflowInstance>> =>
+    this.get(`${this._workflow()}/${encodeURIComponent(instanceId)}`);
 
-  approveTask = (
+  actionTask = (
+    instanceId: string,
     taskId: string,
-    actioningUserId: string,
+    action: 'APPROVE' | 'REJECT' | 'ESCALATE',
     justification: string,
   ): Promise<void> => {
     const requestBody = {
-      params: {
-        justificationApprove: {
-          businessJustification: justification,
-        },
-      },
-      userId: actioningUserId,
-      reasonCode: 'Approved',
+      justification,
     };
 
     return this.post(
-      `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
-      requestBody,
-    );
-  };
-
-  rejectTask = (
-    taskId: string,
-    actioningUserId: string,
-    justification: string,
-  ): Promise<void> => {
-    const requestBody = {
-      params: {
-        justificationReject: {
-          businessJustification: justification,
-        },
-      },
-      userId: actioningUserId,
-      reasonCode: 'Rejected',
-    };
-
-    return this.post(
-      `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
-      requestBody,
-    );
-  };
-
-  escalateTask = (taskId: string, actioningUserId: string): Promise<void> => {
-    const requestBody = {
-      userId: actioningUserId,
-      reasonCode: 'Escalated',
-    };
-
-    return this.post(
-      `${this._tasks()}/${encodeURIComponent(taskId)}/complete`,
+      `${this._workflow()}/${encodeURIComponent(instanceId)}/task/${encodeURIComponent(taskId)}/${encodeURIComponent(action)}`,
       requestBody,
     );
   };
