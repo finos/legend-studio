@@ -97,6 +97,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       isInTerminalState: computed,
       status: computed,
       init: flow,
+      escalateRequest: flow,
     });
 
     this.dataAccessRequestId = dataAccessRequestId;
