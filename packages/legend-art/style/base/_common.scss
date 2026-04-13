@@ -92,10 +92,13 @@
   background: var(--color-dark-shade-50);
   color: var(--color-light-grey-400);
   border-radius: 0.2rem;
-  // NOTE: here we use `move` instead of `grab` since grab requires
-  // a more sophisticated control, i.e. when dragging, the cursor should
-  // be changed
-  cursor: move;
+  // NOTE: here we use `grab` and `grabbing` when active to provide
+  // a more intuitive experience for dragging instead of `move`
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .dnd__entry-dropzone__placeholder {
@@ -183,7 +186,11 @@
 
 .dnd__entry__handle__container {
   float: left;
-  cursor: move;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
   // NOTE: we need to ensure drag handle needs to be at least above placeholder in the stacking context,
   // else while dragging and the placeholder is displayed, we would lose the handle
   position: relative;
