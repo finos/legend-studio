@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.2.1
+
+### Patch Changes
+
+- [#5067](https://github.com/finos/legend-studio/pull/5067) [`b8805a5`](https://github.com/finos/legend-studio/commit/b8805a5ec8070e09ae3f765aa5a669f35dee451f) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added My services toggle.
+
+- [#5070](https://github.com/finos/legend-studio/pull/5070) [`ee6e298`](https://github.com/finos/legend-studio/commit/ee6e298f6a133dcc21a674ca6dc526901898406c) ([@TharunRajeev](https://github.com/TharunRajeev)) - change Data APIs route path from /dataapis to /data-apis
+
 ## 0.2.0
 
 ### Minor Changes

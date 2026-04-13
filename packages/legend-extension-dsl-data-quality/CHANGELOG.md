@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.34
+
+### Patch Changes
+
+- [#5071](https://github.com/finos/legend-studio/pull/5071) [`5c7bbb0`](https://github.com/finos/legend-studio/commit/5c7bbb05743a6e9e6ddfb529a5a02ea9df2f7e0f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add accessor-backed query builder support across graph, query builder, and consuming applications/extensions, including relation column projection handling and the supporting protocol serialization updates. This also updates source-element usage from class-only assumptions and includes related fixes for relation/value-spec handling.
+
 ## 2.1.33
 
 ### Patch Changes

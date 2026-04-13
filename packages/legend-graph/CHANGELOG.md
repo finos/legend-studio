@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 32.5.0
+
+### Minor Changes
+
+- [#5071](https://github.com/finos/legend-studio/pull/5071) [`5c7bbb0`](https://github.com/finos/legend-studio/commit/5c7bbb05743a6e9e6ddfb529a5a02ea9df2f7e0f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add accessor-backed query builder support across graph, query builder, and consuming applications/extensions, including relation column projection handling and the supporting protocol serialization updates. This also updates source-element usage from class-only assumptions and includes related fixes for relation/value-spec handling.
+
+### Patch Changes
+
+- [#5074](https://github.com/finos/legend-studio/pull/5074) [`bc121f5`](https://github.com/finos/legend-studio/commit/bc121f5e2359d49bee73104edd4eef1b56571803) ([@kelly-thai](https://github.com/kelly-thai)) - Add builder for ColSpecArray
+
+- [#4998](https://github.com/finos/legend-studio/pull/4998) [`a77054d`](https://github.com/finos/legend-studio/commit/a77054d48c6108d5c58120bcedfae7d37b22c757) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: adding title to service specification
+
 ## 32.4.3
 
 ### Patch Changes
