@@ -367,3 +367,26 @@ test(
     getByText(editorGroup, 'CSV Values');
   },
 );
+
+test(integrationTest('Service General Editor'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore();
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    {
+      entities: TEST_DATA__serviceEntities,
+    },
+  );
+  await TEST__openElementFromExplorerTree(
+    'model::RelationalService',
+    renderResult,
+  );
+  const editorGroup = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+  );
+
+  fireEvent.click(getByText(editorGroup, 'General'));
+  await waitFor(() => getByText(editorGroup, 'Title'));
+  await waitFor(() => renderResult.getByDisplayValue('my service title'));
+  await waitFor(() => getByText(editorGroup, 'URL Pattern'));
+  await waitFor(() => getByText(editorGroup, 'Documentation'));
+});

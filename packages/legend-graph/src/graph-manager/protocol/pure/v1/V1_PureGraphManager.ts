@@ -3570,12 +3570,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       packageName: string;
       pattern: string;
       serviceOwners: string[];
+      title?: string | undefined;
     },
     graph: Entity[],
   ): Promise<Entity> {
     const service = new V1_Service();
     service.name = serviceConfig.name;
     service.package = serviceConfig.packageName;
+    service.title = serviceConfig.title;
     const owernship = new V1_UserListOwnership();
     owernship.users = serviceConfig.serviceOwners;
     service.ownership = owernship;

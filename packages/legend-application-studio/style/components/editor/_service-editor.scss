@@ -118,6 +118,13 @@
     padding-left: 2rem;
   }
 
+  &__general__warning-prompt {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--color-red-300);
+  }
+
   &__pattern {
     .panel__content__form__section {
       margin-bottom: 2rem;

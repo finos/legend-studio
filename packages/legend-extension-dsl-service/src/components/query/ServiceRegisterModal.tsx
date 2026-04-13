@@ -34,6 +34,7 @@ import {
   clsx,
   CustomSelectorInput,
   Dialog,
+  ErrorWarnIcon,
   Modal,
   ModalTitle,
   Panel,
@@ -92,6 +93,7 @@ export const ServiceRegisterModal = observer(
     );
     const [owners, setOwners] = useState<UserOption[]>([]);
     const [serviceDocumentation, setServiceDocumentation] = useState('');
+    const [title, setTitle] = useState<string | undefined>(undefined);
     const [serviceMcpServer, setServiceMcpServer] = useState<
       string | undefined
     >(undefined);
@@ -133,6 +135,12 @@ export const ServiceRegisterModal = observer(
       setIsServiceMcpServerValid(
         !validate_ServiceMcpServer(event.target.value),
       );
+    };
+
+    const onChangeServiceTitle: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setTitle(event.target.value);
     };
 
     const toggleEnableMcp = (): void => {
@@ -202,6 +210,7 @@ export const ServiceRegisterModal = observer(
           const service = await createServiceElement(
             'model::QueryService',
             servicePattern,
+            title,
             serviceDocumentation,
             serviceMcpServer,
             owners.map((o) => o.value),
@@ -297,6 +306,30 @@ export const ServiceRegisterModal = observer(
             <PanelFullContent>
               <div className="service-register-modal__group__content">
                 <div className="service-register-modal__input">
+                  <div
+                    className={clsx('service-register-modal__input__label', {
+                      'service-register-modal__input__label--warning': !title,
+                    })}
+                  >
+                    {!title && <ErrorWarnIcon style={{ fontSize: '1.2rem' }} />}
+                    TITLE
+                  </div>
+                  <div className="input-group service-register-modal__input__input">
+                    <input
+                      className={clsx('input input--dark input-group__input')}
+                      spellCheck={false}
+                      placeholder=""
+                      value={title}
+                      onChange={onChangeServiceTitle}
+                      style={{
+                        borderColor: !title
+                          ? 'var(--color-red-300)'
+                          : undefined,
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="service-register-modal__input">
                   <div className="service-register-modal__input__label">
                     URL
                   </div>
@@ -351,7 +384,15 @@ export const ServiceRegisterModal = observer(
                   </div>
                 </div>
                 <div className="service-register-modal__input">
-                  <div className="service-register-modal__input__label">
+                  <div
+                    className={clsx('service-register-modal__input__label', {
+                      'service-register-modal__input__label--warning':
+                        !serviceDocumentation,
+                    })}
+                  >
+                    {!serviceDocumentation && (
+                      <ErrorWarnIcon style={{ fontSize: '1.2rem' }} />
+                    )}
                     Documentation
                   </div>
                   <div className="input-group service-register-modal__input__input">
@@ -361,6 +402,11 @@ export const ServiceRegisterModal = observer(
                       placeholder=""
                       value={serviceDocumentation}
                       onChange={onChangeServiceDocumentation}
+                      style={{
+                        borderColor: !serviceDocumentation
+                          ? 'var(--color-red-300)'
+                          : undefined,
+                      }}
                     />
                   </div>
                 </div>

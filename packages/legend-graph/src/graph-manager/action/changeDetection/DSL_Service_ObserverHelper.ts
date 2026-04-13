@@ -349,6 +349,7 @@ export const observe_Service = skipObservedWithContext(
 
     makeObservable<Service, '_elementHashCode'>(metamodel, {
       pattern: observable,
+      title: observable,
       owners: observable,
       ownership: observable,
       documentation: observable,

@@ -710,6 +710,7 @@ export abstract class AbstractPureGraphManager {
       packageName: string;
       pattern: string;
       serviceOwners: string[];
+      title?: string | undefined;
     },
     graph: Entity[],
   ): Promise<Entity>;

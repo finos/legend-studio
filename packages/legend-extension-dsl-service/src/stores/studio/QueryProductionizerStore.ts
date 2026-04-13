@@ -98,6 +98,7 @@ const projectDependencyToProjectCoordinates = (
 export const createServiceElement = async (
   servicePath: string,
   servicePattern: string,
+  serviceTitle: string | undefined,
   serviceDocumentation: string,
   serviceMcpServer: string | undefined,
   serviceOwners: string[],
@@ -113,6 +114,7 @@ export const createServiceElement = async (
     servicePackagePath,
   );
   service.pattern = servicePattern;
+  service.title = serviceTitle;
   service.documentation = serviceDocumentation;
   service.mcpServer = serviceMcpServer;
   service.owners = serviceOwners;
@@ -177,6 +179,7 @@ export class QueryProductionizerStore {
   servicePath = 'model::QueryService';
   servicePattern = `/${uuid()}`;
   serviceOwners: string[] = [];
+  serviceTitle: string | undefined;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -198,11 +201,13 @@ export class QueryProductionizerStore {
       servicePath: observable,
       servicePattern: observable,
       serviceOwners: observable,
+      serviceTitle: observable,
       isWorkspaceNameValid: computed,
       isServicePathValid: computed,
       isServiceUrlPatternValid: computed,
       setIsAutoConfigurationEnabled: action,
       setShowQueryPreviewModal: action,
+      setServiceTitle: action,
       resetCurrentQuery: action,
       resetCurrentProject: action,
       setWorkspaceName: action,
@@ -244,6 +249,10 @@ export class QueryProductionizerStore {
 
   setServicePattern(val: string): void {
     this.servicePattern = val;
+  }
+
+  setServiceTitle(val: string | undefined): void {
+    this.serviceTitle = val;
   }
 
   setServiceOwners(val: string[]): void {
@@ -579,6 +588,7 @@ export class QueryProductionizerStore {
             packageName: servicePackagePath,
             pattern: this.servicePattern,
             serviceOwners: this.serviceOwners,
+            title: this.serviceTitle,
           },
           [...currentProjectEntities, ...dependencyEntities],
         )) as unknown as Entity;
