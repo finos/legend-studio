@@ -1,5 +1,13 @@
 # @finos/legend-application-query
 
+## 13.8.7
+
+### Patch Changes
+
+- [#5071](https://github.com/finos/legend-studio/pull/5071) [`5c7bbb0`](https://github.com/finos/legend-studio/commit/5c7bbb05743a6e9e6ddfb529a5a02ea9df2f7e0f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add accessor-backed query builder support across graph, query builder, and consuming applications/extensions, including relation column projection handling and the supporting protocol serialization updates. This also updates source-element usage from class-only assumptions and includes related fixes for relation/value-spec handling.
+
+- [#5076](https://github.com/finos/legend-studio/pull/5076) [`6de1b3e`](https://github.com/finos/legend-studio/commit/6de1b3e334c8b4ad8bcec948c6eadba6d1a05473) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added control panel BG for AG-grid
+
 ## 13.8.6
 
 ### Patch Changes

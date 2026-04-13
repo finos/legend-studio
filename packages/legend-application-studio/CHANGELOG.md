@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.19.114
+
+### Patch Changes
+
+- [#5072](https://github.com/finos/legend-studio/pull/5072) [`ace04e8`](https://github.com/finos/legend-studio/commit/ace04e8004eb61e91b52bdc2d69cc7ae82ce455f) ([@jackp5150](https://github.com/jackp5150)) - Added telemetry logging for studio assistant to track usage across tabs and searches. Added callbacks that other usages of assistant can provide to include logging for their assistant.
+
+- [#5071](https://github.com/finos/legend-studio/pull/5071) [`5c7bbb0`](https://github.com/finos/legend-studio/commit/5c7bbb05743a6e9e6ddfb529a5a02ea9df2f7e0f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add accessor-backed query builder support across graph, query builder, and consuming applications/extensions, including relation column projection handling and the supporting protocol serialization updates. This also updates source-element usage from class-only assumptions and includes related fixes for relation/value-spec handling.
+
+- [#4998](https://github.com/finos/legend-studio/pull/4998) [`a77054d`](https://github.com/finos/legend-studio/commit/a77054d48c6108d5c58120bcedfae7d37b22c757) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: adding title to service specification
+
 ## 28.19.113
 
 ## 28.19.112

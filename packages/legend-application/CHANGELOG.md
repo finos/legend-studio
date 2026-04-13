@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.104
+
+### Patch Changes
+
+- [#5072](https://github.com/finos/legend-studio/pull/5072) [`ace04e8`](https://github.com/finos/legend-studio/commit/ace04e8004eb61e91b52bdc2d69cc7ae82ce455f) ([@jackp5150](https://github.com/jackp5150)) - Added telemetry logging for studio assistant to track usage across tabs and searches. Added callbacks that other usages of assistant can provide to include logging for their assistant.
+
 ## 16.0.103
 
 ### Patch Changes

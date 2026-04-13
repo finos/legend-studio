@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.146
+
+### Patch Changes
+
+- [#4986](https://github.com/finos/legend-studio/pull/4986) [`97a90f6`](https://github.com/finos/legend-studio/commit/97a90f6dd6651f43b10d0025b068b78e11d3185a) ([@thebenmerlin](https://github.com/thebenmerlin)) - Change drag-and-drop components cursor from move to grab/grabbing to improve usability.
+
 ## 7.1.145
 
 ### Patch Changes

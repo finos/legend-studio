@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-service
 
+## 1.0.464
+
+### Patch Changes
+
+- [#4998](https://github.com/finos/legend-studio/pull/4998) [`a77054d`](https://github.com/finos/legend-studio/commit/a77054d48c6108d5c58120bcedfae7d37b22c757) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: adding title to service specification
+
 ## 1.0.463
 
 ## 1.0.462
