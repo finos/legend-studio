@@ -19,6 +19,7 @@ import {
   type ColSpec,
   ColSpecArrayInstance,
   ColSpecInstanceValue,
+  FunctionExpression,
   LambdaFunction,
   LambdaFunctionInstanceValue,
   matchFunctionName,
@@ -248,35 +249,94 @@ const process_WindowOperatorState = (
   colSpec: ColSpec,
   tdsState: QueryBuilderTDSState,
 ): QueryBuilderTDS_WindowOperatorState => {
-  //TODO: handle aggregation operators
-  const rankLambda = guaranteeType(
-    guaranteeType(colSpec.function1, LambdaFunctionInstanceValue).values[0],
-    LambdaFunction,
-  );
-  assertTrue(rankLambda.expressionSequence.length === 1);
-  const operationFunctionExp = guaranteeType(
-    rankLambda.expressionSequence[0],
-    SimpleFunctionExpression,
-  );
+  if (colSpec.function2) {
+    //process function 1
+    const function1Lambda = guaranteeType(
+      guaranteeType(colSpec.function1, LambdaFunctionInstanceValue).values[0],
+      LambdaFunction,
+    );
+    const function1Column = guaranteeType(
+      function1Lambda.expressionSequence[0],
+      FunctionExpression,
+      `Can't process typed window aggregation: expects function1 to be a Function Expression`,
+    );
+    const aggColumnState = getTDSColumnState(
+      tdsState,
+      function1Column.functionName,
+    );
 
-  const operation = guaranteeNonNullable(
-    tdsState.windowState.findOperator(operationFunctionExp.functionName, true),
-    `Operator '${operationFunctionExp.functionName}' not supported yet for typed TDS`,
-  );
+    //process function2
+    const aggLambda = guaranteeType(
+      guaranteeType(colSpec.function2, LambdaFunctionInstanceValue).values[0],
+      LambdaFunction,
+    );
+    const aggFunctionExp = guaranteeType(
+      aggLambda.expressionSequence[0],
+      SimpleFunctionExpression,
+    );
 
-  const operatorState = new QueryBuilderTDS_WindowRankOperatorState(
-    tdsState.windowState,
-    operation,
-  );
+    const operation = guaranteeNonNullable(
+      tdsState.windowState.findOperator(aggFunctionExp.functionName, true),
+      `Operator '${aggFunctionExp.functionName}' not supported yet for typed TDS`,
+    );
 
-  const operatorParameters: string[] = [];
-  rankLambda.functionType.parameters.forEach((param) => {
-    guaranteeType(param, VariableExpression);
-    operatorParameters.push(param.name);
-  });
-  operatorState.setLambdaParameterNames(operatorParameters);
+    const operatorState = new QueryBuilderTDS_WindowAggreationOperatorState(
+      tdsState.windowState,
+      operation,
+      aggColumnState,
+    );
 
-  return operatorState;
+    //add parameter vlaues
+    const lambdaParameters: string[] = [];
+    function1Lambda.functionType.parameters.forEach((param) => {
+      guaranteeType(param, VariableExpression);
+      lambdaParameters.push(param.name);
+    });
+    const aggLambdaParamName = guaranteeType(
+      aggLambda.functionType.parameters[0],
+      VariableExpression,
+    ).name;
+    lambdaParameters.push(aggLambdaParamName);
+    operatorState.setLambdaParameterNames(lambdaParameters);
+    return operatorState;
+  } else if (colSpec.function1) {
+    //TODO: implement rowNumber as part of rank functions
+    const rankLambda = guaranteeType(
+      guaranteeType(colSpec.function1, LambdaFunctionInstanceValue).values[0],
+      LambdaFunction,
+    );
+    assertTrue(rankLambda.expressionSequence.length === 1);
+    const operationFunctionExp = guaranteeType(
+      rankLambda.expressionSequence[0],
+      SimpleFunctionExpression,
+    );
+
+    const operation = guaranteeNonNullable(
+      tdsState.windowState.findOperator(
+        operationFunctionExp.functionName,
+        true,
+      ),
+      `Operator '${operationFunctionExp.functionName}' not supported yet for typed TDS`,
+    );
+
+    const operatorState = new QueryBuilderTDS_WindowRankOperatorState(
+      tdsState.windowState,
+      operation,
+    );
+
+    const operatorParameters: string[] = [];
+    rankLambda.functionType.parameters.forEach((param) => {
+      guaranteeType(param, VariableExpression);
+      operatorParameters.push(param.name);
+    });
+    operatorState.setLambdaParameterNames(operatorParameters);
+
+    return operatorState;
+  } else {
+    throw new UnsupportedOperationError(
+      `Only support aggregation and rank operators in extend() expression`,
+    );
+  }
 };
 
 export const processTDS_ExtendExpression = (

@@ -196,6 +196,12 @@ const TEST_CASES: QueryTestCase[] = [
     queryGrammar:
       "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[test:{p, w, r|$p->rank($w, $r)}])",
   },
+  {
+    testName: '[WINDOW RANK] Simple max() query with TDS 2.0',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[MAX:{p, w, r|$r.Id}:y|$y->max()])",
+  },
 ];
 
 const globalGraphManagerStates = new Map<string, GraphManagerState>();

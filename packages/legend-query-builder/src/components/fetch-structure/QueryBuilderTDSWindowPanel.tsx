@@ -233,6 +233,9 @@ const QueryBuilderWindowColumnModalEditor = observer(
 
     // Window operator
     const operators = windowState.operators;
+    const supportedOperators = tdsState.queryBuilderState.useRelation
+      ? operators.filter((op) => op.relationFunc !== undefined)
+      : operators;
     const operatorState = windowColumnState.operatorState;
     const [selectedOperatorState, setSelectedOperatorState] = useState(() => {
       if (
@@ -449,10 +452,10 @@ const QueryBuilderWindowColumnModalEditor = observer(
                     <ControlledDropdownMenu
                       className="query-builder__olap__column__operation__operator__dropdown"
                       title="Choose Window Function Operator..."
-                      disabled={!operators.length}
+                      disabled={!supportedOperators.length}
                       content={
                         <MenuContent>
-                          {operators.map((op) => (
+                          {supportedOperators.map((op) => (
                             <MenuContentItem
                               key={op.uuid}
                               className="query-builder__olap__column__operation__operator__dropdown__option"
@@ -779,6 +782,9 @@ const QueryBuilderWindowColumnEditor = observer(
     const windowState = windowColumnState.windowState;
     const tdsState = windowState.tdsState;
     const operators = windowState.operators;
+    const supportedOperators = tdsState.queryBuilderState.useRelation
+      ? operators.filter((op) => op.relationFunc !== undefined)
+      : operators;
     // state
     const ref = useRef<HTMLDivElement>(null);
     const handleRef = useRef<HTMLDivElement>(null);
@@ -1021,11 +1027,11 @@ const QueryBuilderWindowColumnEditor = observer(
               </div>
               <ControlledDropdownMenu
                 className="query-builder__olap__column__operation__operator__dropdown"
-                disabled={!operators.length}
+                disabled={!supportedOperators.length}
                 title="Choose Window Function Operator..."
                 content={
                   <MenuContent>
-                    {operators.map((op) => (
+                    {supportedOperators.map((op) => (
                       <MenuContentItem
                         key={op.uuid}
                         className="query-builder__olap__column__operation__operator__dropdown__option"

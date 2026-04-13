@@ -33,7 +33,7 @@ export class QueryBuilderTDS_WindowOperator_Sum extends QueryBuilderTDS_WindowOp
   }
 
   get relationFunc(): string | undefined {
-    return undefined;
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUM;
   }
 
   get hashCode(): string {

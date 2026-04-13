@@ -225,3 +225,228 @@ export const TEST_DATA_typedTDSRank = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA_typedTDSMax = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'extend',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::Person',
+                },
+              ],
+            },
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'colSpecArray',
+              value: {
+                colSpecs: [
+                  {
+                    function1: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'firstName',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    name: 'First Name',
+                  },
+                  {
+                    function1: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'lastName',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    name: 'Last Name',
+                  },
+                  {
+                    function1: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'age',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    name: 'Age',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          _type: 'func',
+          function: 'over',
+          parameters: [
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'colSpecArray',
+              value: {
+                colSpecs: [
+                  {
+                    name: 'First Name',
+                  },
+                ],
+              },
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [
+                {
+                  _type: 'func',
+                  function: 'ascending',
+                  parameters: [
+                    {
+                      _type: 'classInstance',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      type: 'colSpec',
+                      value: {
+                        name: 'Last Name',
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'colSpecArray',
+          value: {
+            colSpecs: [
+              {
+                function1: {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'r',
+                        },
+                      ],
+                      property: 'Age',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'p',
+                    },
+                    {
+                      _type: 'var',
+                      name: 'w',
+                    },
+                    {
+                      _type: 'var',
+                      name: 'r',
+                    },
+                  ],
+                },
+                function2: {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'max',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'y',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'y',
+                    },
+                  ],
+                },
+                name: 'MAX',
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

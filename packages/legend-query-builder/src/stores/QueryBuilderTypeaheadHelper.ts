@@ -220,7 +220,7 @@ const buildRawLambda = (
     colAliases.values.push(colAlias);
     const columnLambda = propertyExpression
       ? buildGenericLambdaFunctionInstanceValue(
-          DEFAULT_LAMBDA_VARIABLE_NAME,
+          [DEFAULT_LAMBDA_VARIABLE_NAME],
           [propertyExpression],
           queryBuilderState.graphManagerState.graph,
         )
@@ -229,7 +229,7 @@ const buildRawLambda = (
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG),
     );
     const aggregateLambda = buildGenericLambdaFunctionInstanceValue(
-      DEFAULT_LAMBDA_VARIABLE_NAME,
+      [DEFAULT_LAMBDA_VARIABLE_NAME],
       [
         aggregationOperator.buildAggregateExpression(
           propertyExpression,
@@ -267,7 +267,7 @@ const buildRawLambda = (
     colAliases.values.push(colAlias);
     const columnLambda = propertyExpression
       ? buildGenericLambdaFunctionInstanceValue(
-          DEFAULT_LAMBDA_VARIABLE_NAME,
+          [DEFAULT_LAMBDA_VARIABLE_NAME],
           [propertyExpression],
           queryBuilderState.graphManagerState.graph,
         )
@@ -322,7 +322,7 @@ const buildRawLambda = (
     postFilterExpression.parametersValues.push(value);
   }
   const filterLambda = buildGenericLambdaFunctionInstanceValue(
-    DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME,
+    [DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME],
     [postFilterExpression],
     queryBuilderState.graphManagerState.graph,
   );

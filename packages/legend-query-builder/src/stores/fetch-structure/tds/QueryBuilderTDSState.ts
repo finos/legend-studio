@@ -533,7 +533,7 @@ export class QueryBuilderTDSState
   ): void {
     // setup new derivation column state
     const columnColumnLambda = buildGenericLambdaFunctionInstanceValue(
-      simpleProjectionColumnState.lambdaParameterName,
+      [simpleProjectionColumnState.lambdaParameterName],
       [simpleProjectionColumnState.propertyExpressionState.propertyExpression],
       this.queryBuilderState.graphManagerState.graph,
     );
@@ -577,7 +577,7 @@ export class QueryBuilderTDSState
       ),
     ];
     const columnColumnLambda = buildGenericLambdaFunctionInstanceValue(
-      relationColumnProjectionColumnState.lambdaParameterName,
+      [relationColumnProjectionColumnState.lambdaParameterName],
       [funcExpression],
       this.queryBuilderState.graphManagerState.graph,
     );

@@ -67,7 +67,7 @@ const buildProjectColFunc = (
     projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
   ) {
     columnLambda = buildGenericLambdaFunctionInstanceValue(
-      projectionColumnState.lambdaParameterName,
+      [projectionColumnState.lambdaParameterName],
       [
         buildPropertyExpressionChain(
           projectionColumnState.propertyExpressionState.propertyExpression,
@@ -172,7 +172,7 @@ export const appendProjection = (
         projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
       ) {
         columnLambda = buildGenericLambdaFunctionInstanceValue(
-          projectionColumnState.lambdaParameterName,
+          [projectionColumnState.lambdaParameterName],
           [
             buildPropertyExpressionChain(
               projectionColumnState.propertyExpressionState.propertyExpression,
@@ -222,7 +222,7 @@ export const appendProjection = (
           extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG),
         );
         const aggregateLambda = buildGenericLambdaFunctionInstanceValue(
-          aggregateColumnState.lambdaParameterName,
+          [aggregateColumnState.lambdaParameterName],
           [
             aggregateColumnState.operator.buildAggregateExpressionFromState(
               aggregateColumnState,
@@ -242,8 +242,10 @@ export const appendProjection = (
           aggregateCalendarLambdaState instanceof SimpleFunctionExpression
         ) {
           aggregateCalendarLambda = buildGenericLambdaFunctionInstanceValue(
-            guaranteeNonNullable(aggregateColumnState.calendarFunction)
-              .lambdaParameterName,
+            [
+              guaranteeNonNullable(aggregateColumnState.calendarFunction)
+                .lambdaParameterName,
+            ],
             [aggregateCalendarLambdaState],
             aggregateColumnState.aggregationState.tdsState.queryBuilderState
               .graphManagerState.graph,
@@ -348,7 +350,7 @@ export const appendProjection = (
             QueryBuilderSimpleProjectionColumnState
           ) {
             columnLambda = buildGenericLambdaFunctionInstanceValue(
-              projectionColumnState.lambdaParameterName,
+              [projectionColumnState.lambdaParameterName],
               [
                 buildPropertyExpressionChain(
                   projectionColumnState.propertyExpressionState

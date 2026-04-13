@@ -161,7 +161,10 @@ import {
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
 import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
-import { TEST_DATA_typedTDSRank } from './TEST_DATA__TypedTDSWindowFunctions.js';
+import {
+  TEST_DATA_typedTDSMax,
+  TEST_DATA_typedTDSRank,
+} from './TEST_DATA__TypedTDSWindowFunctions.js';
 import {
   TEST_DATA__QueryBuilder_Accessors,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
@@ -816,6 +819,12 @@ const cases: RoundtripTestCase[] = [
     'Typed TDS rank() window function',
     olapGroupbyCtx,
     TEST_DATA_typedTDSRank,
+    undefined,
+  ],
+  [
+    'Typed TDS max() window function',
+    olapGroupbyCtx,
+    TEST_DATA_typedTDSMax,
     undefined,
   ],
   // accessor

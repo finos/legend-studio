@@ -46,9 +46,15 @@ import {
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
-import { QueryBuilderTDS_WindowRankOperatorState } from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
+import {
+  QueryBuilderTDS_WindowAggreationOperatorState,
+  QueryBuilderTDS_WindowRankOperatorState,
+} from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
-import { TEST_DATA_typedTDSRank } from '../../stores/__tests__/TEST_DATA__TypedTDSWindowFunctions.js';
+import {
+  TEST_DATA_typedTDSMax,
+  TEST_DATA_typedTDSRank,
+} from '../../stores/__tests__/TEST_DATA__TypedTDSWindowFunctions.js';
 
 test(
   integrationTest('Window column editor shows correct placeholder text'),
@@ -751,5 +757,98 @@ test(
     expect(getByText(windowFunctionPanel, 'Age')).not.toBeNull();
     expect(getByText(windowFunctionPanel, 'asc')).not.toBeNull();
     expect(getByDisplayValue(windowFunctionPanel, 'rank')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest('Typed TDS max operator is correctly parsed from grammar'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA_typedTDSMax.parameters,
+          TEST_DATA_typedTDSMax.body,
+        ),
+      );
+    });
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsState.showWindowFuncPanel).toBe(true);
+
+    expect(tdsState.windowState.windowColumns).toHaveLength(1);
+    const windowCol = guaranteeNonNullable(
+      tdsState.windowState.windowColumns[0],
+    );
+
+    expect(windowCol.columnName).toBe('MAX');
+
+    const operatorState = guaranteeType(
+      windowCol.operatorState,
+      QueryBuilderTDS_WindowAggreationOperatorState,
+    );
+    expect(operatorState.columnState.columnName).toBe('Age');
+
+    expect(windowCol.windowColumns).toHaveLength(1);
+    expect(windowCol.windowColumns[0]?.columnName).toBe('First Name');
+
+    expect(windowCol.sortByState).not.toBeUndefined();
+    expect(windowCol.sortByState?.columnState.columnName).toBe('Last Name');
+    expect(windowCol.sortByState?.sortType).toBe(COLUMN_SORT_TYPE.ASC);
+
+    const windowFunctionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    expect(getByText(windowFunctionPanel, 'max')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, '(1)')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, 'Age')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, 'Last Name')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, 'asc')).not.toBeNull();
+    expect(getByDisplayValue(windowFunctionPanel, 'MAX')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Typed TDS window function operator dropdown excludes operators unsupported by typed TDS',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA_typedTDSRank.parameters,
+          TEST_DATA_typedTDSRank.body,
+        ),
+      );
+    });
+
+    expect(queryBuilderState.useRelation).toBe(true);
+
+    const operatorDropdown = guaranteeNonNullable(
+      renderResult.getAllByTitle('Choose Window Function Operator...')[0],
+    );
+    fireEvent.click(operatorDropdown);
+
+    expect(renderResult.queryByText('average rank')).toBeNull();
+    expect(renderResult.queryByText('row number')).toBeNull();
+
+    expect(renderResult.queryByText('dense rank')).not.toBeNull();
+    expect(renderResult.queryByText('max')).not.toBeNull();
   },
 );

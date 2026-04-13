@@ -33,7 +33,7 @@ export class QueryBuilderTDS_WindowOperator_Min extends QueryBuilderTDS_WindowOp
   }
 
   get relationFunc(): string | undefined {
-    return undefined;
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.MIN;
   }
 
   get hashCode(): string {
