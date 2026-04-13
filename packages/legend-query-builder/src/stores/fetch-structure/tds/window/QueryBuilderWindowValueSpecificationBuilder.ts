@@ -22,6 +22,7 @@ import {
   GenericTypeExplicitReference,
   PrimitiveInstanceValue,
   SimpleFunctionExpression,
+  FunctionExpression,
   VariableExpression,
   Multiplicity,
   PrimitiveType,
@@ -29,8 +30,12 @@ import {
   ColSpecArray,
   ColSpecArrayInstance,
   ColSpecInstanceValue,
+  RelationColumn,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import {
@@ -41,6 +46,7 @@ import {
   type QueryBuilderWindowColumnState,
   type QueryBuilderWindowState,
   QueryBuilderTDS_WindowAggreationOperatorState,
+  QueryBuilderTDS_WindowRankOperatorState,
 } from './QueryBuilderWindowState.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '@finos/legend-data-cube';
 import {
@@ -99,7 +105,7 @@ const appendOLAPGroupByColumnState = (
     new VariableExpression(lambdaParameterName, Multiplicity.ONE),
   ];
   const olapLambdaFuncInstance = buildGenericLambdaFunctionInstanceValue(
-    lambdaParameterName,
+    [lambdaParameterName],
     [olapFuncExpression],
     graph,
   );
@@ -216,47 +222,127 @@ const appendExtendColumnState = (
     ]);
   }
 
-  //TODO: handle aggregation operators
-  const operatorFunc = extractElementNameFromPath(
-    operatorState.operator.pureFunc,
-  );
-  const operatorFuncExpression = new SimpleFunctionExpression(operatorFunc);
+  if (
+    operatorState instanceof QueryBuilderTDS_WindowAggreationOperatorState &&
+    operatorState.operator.relationFunc
+  ) {
+    const operatorFunc = extractElementNameFromPath(
+      operatorState.operator.relationFunc,
+    );
 
-  const lambdaParameters: VariableExpression[] = [];
-  operatorState.lambdaParameterNames.forEach((paramName) => {
-    lambdaParameters.push(new VariableExpression(paramName, Multiplicity.ONE));
-  });
-  operatorFuncExpression.parametersValues = lambdaParameters;
+    //parameters
+    const [
+      partitionParam = DEFAULT_WINDOW_FUNCTION_PARTITION_VAR_NAME,
+      windowParam = DEFAULT_WINDOW_FUNCTION_WINDOW_VAR_NAME,
+      rowParam = DEFAULT_WINDOW_FUNCTION_ROW_VAR_NAME,
+      aggParam = DEFAULT_LAMBDA_VARIABLE_NAME,
+    ] = operatorState.lambdaParameterNames;
 
-  const rankLambda = buildGenericLambdaFunctionInstanceValue(
-    operatorState.lambdaParameterNames[0] ??
-      DEFAULT_WINDOW_FUNCTION_PARTITION_VAR_NAME,
-    [operatorFuncExpression],
-    graph,
-  );
+    // Build function1: the map lambda {p, w, r|$r.SOURCE_COL}
+    const columnAccessExpression = new FunctionExpression(
+      operatorState.columnState.columnName,
+    );
+    columnAccessExpression.func = new RelationColumn(
+      operatorState.columnState.columnName,
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.STRING),
+      ),
+    );
+    columnAccessExpression.parametersValues = [
+      new VariableExpression(rowParam, Multiplicity.ONE),
+    ];
 
-  //skip over the first parameter since it was added in buildGenericLambdaFunctionInstanceValue()
-  lambdaParameters.slice(1).forEach((param) => {
-    rankLambda.values[0]?.functionType.parameters.push(param);
-  });
-  operatorColSpec.function1 = rankLambda;
-  operatorColSpecArray.colSpecs.push(operatorColSpec);
+    const mapLambda = buildGenericLambdaFunctionInstanceValue(
+      [partitionParam, windowParam, rowParam],
+      [columnAccessExpression],
+      graph,
+    );
 
-  const extendExpression = new SimpleFunctionExpression(
-    extractElementNameFromPath(
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_EXTEND,
-    ),
-  );
+    operatorColSpec.function1 = mapLambda;
 
-  const currentExpression = guaranteeNonNullable(lambda.expressionSequence[0]);
-  extendExpression.parametersValues = [
-    currentExpression,
-    overExpression,
-    operatorColSpecArrayInst,
-  ];
+    // Build function2: the reduce lambda x|$x->operatorFunc()
+    const operatorFuncExpression = new SimpleFunctionExpression(operatorFunc);
+    operatorFuncExpression.parametersValues = [
+      new VariableExpression(aggParam, Multiplicity.ONE),
+    ];
 
-  lambda.expressionSequence[0] = extendExpression;
-  return lambda;
+    //build col spec
+    const function2 = buildGenericLambdaFunctionInstanceValue(
+      [aggParam],
+      [operatorFuncExpression],
+      graph,
+    );
+
+    operatorColSpec.function2 = function2;
+
+    operatorColSpecArray.colSpecs.push(operatorColSpec);
+
+    const extendExpression = new SimpleFunctionExpression(
+      extractElementNameFromPath(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_EXTEND,
+      ),
+    );
+    const currentExpression = guaranteeNonNullable(
+      lambda.expressionSequence[0],
+    );
+    extendExpression.parametersValues = [
+      currentExpression,
+      overExpression,
+      operatorColSpecArrayInst,
+    ];
+    lambda.expressionSequence[0] = extendExpression;
+    return lambda;
+  } else if (
+    operatorState instanceof QueryBuilderTDS_WindowRankOperatorState &&
+    operatorState.operator.relationFunc
+  ) {
+    const operatorFunc = extractElementNameFromPath(
+      operatorState.operator.relationFunc,
+    );
+    const operatorFuncExpression = new SimpleFunctionExpression(operatorFunc);
+    const [
+      partitionParam = DEFAULT_WINDOW_FUNCTION_PARTITION_VAR_NAME,
+      windowParam = DEFAULT_WINDOW_FUNCTION_WINDOW_VAR_NAME,
+      rowParam = DEFAULT_WINDOW_FUNCTION_ROW_VAR_NAME,
+    ] = operatorState.lambdaParameterNames;
+
+    operatorFuncExpression.parametersValues = [
+      new VariableExpression(partitionParam, Multiplicity.ONE),
+      new VariableExpression(windowParam, Multiplicity.ONE),
+      new VariableExpression(rowParam, Multiplicity.ONE),
+    ];
+
+    const rankLambda = buildGenericLambdaFunctionInstanceValue(
+      [partitionParam, windowParam, rowParam],
+      [operatorFuncExpression],
+      graph,
+    );
+
+    operatorColSpec.function1 = rankLambda;
+    operatorColSpecArray.colSpecs.push(operatorColSpec);
+
+    const extendExpression = new SimpleFunctionExpression(
+      extractElementNameFromPath(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_EXTEND,
+      ),
+    );
+
+    const currentExpression = guaranteeNonNullable(
+      lambda.expressionSequence[0],
+    );
+    extendExpression.parametersValues = [
+      currentExpression,
+      overExpression,
+      operatorColSpecArrayInst,
+    ];
+
+    lambda.expressionSequence[0] = extendExpression;
+    return lambda;
+  } else {
+    throw new UnsupportedOperationError(
+      `Unsupported window function. Function must be supported for typed TDS and be an aggregation or rank function.`,
+    );
+  }
 };
 
 export const appendWindowFunctionState = (

@@ -156,7 +156,7 @@ export const buildFilterConditionExpression = (
     } else if (clauses.length === 1) {
       const lambdaFunctionInstanceValue =
         buildGenericLambdaFunctionInstanceValue(
-          node.lambdaParameterName ?? DEFAULT_LAMBDA_VARIABLE_NAME,
+          [node.lambdaParameterName ?? DEFAULT_LAMBDA_VARIABLE_NAME],
           clauses,
           filterState.queryBuilderState.graphManagerState.graph,
         );
@@ -175,7 +175,7 @@ export const buildFilterConditionExpression = (
     );
     simp.parametersValues = parametersValues;
     const lambdaFunctionInstanceValue = buildGenericLambdaFunctionInstanceValue(
-      node.lambdaParameterName ?? DEFAULT_LAMBDA_VARIABLE_NAME,
+      [node.lambdaParameterName ?? DEFAULT_LAMBDA_VARIABLE_NAME],
       [simp],
       filterState.queryBuilderState.graphManagerState.graph,
     );
@@ -209,7 +209,7 @@ export const buildFilterExpression = (
   // param [1]
   filterExpression.parametersValues.push(
     buildGenericLambdaFunctionInstanceValue(
-      filterState.lambdaParameterName,
+      [filterState.lambdaParameterName],
       filterConditionExpressions,
       filterState.queryBuilderState.graphManagerState.graph,
     ),

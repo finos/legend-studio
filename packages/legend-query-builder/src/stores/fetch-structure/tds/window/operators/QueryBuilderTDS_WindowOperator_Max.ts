@@ -33,7 +33,7 @@ export class QueryBuilderTDS_WindowOperator_Max extends QueryBuilderTDS_WindowOp
   }
 
   get relationFunc(): string | undefined {
-    return undefined;
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX;
   }
 
   get hashCode(): string {

@@ -79,7 +79,7 @@ export const buildRelationProjection = (
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
       columnLambda = buildGenericLambdaFunctionInstanceValue(
-        projectionColumnState.lambdaParameterName,
+        [projectionColumnState.lambdaParameterName],
         [
           buildPropertyExpressionChain(
             projectionColumnState.propertyExpressionState.propertyExpression,
@@ -104,7 +104,7 @@ export const buildRelationProjection = (
       simple.func = real;
       simple.parametersValues = [variable];
       columnLambda = buildGenericLambdaFunctionInstanceValue(
-        projectionColumnState.lambdaParameterName,
+        [projectionColumnState.lambdaParameterName],
         [simple],
         queryBuilderState.graphManagerState.graph,
       );

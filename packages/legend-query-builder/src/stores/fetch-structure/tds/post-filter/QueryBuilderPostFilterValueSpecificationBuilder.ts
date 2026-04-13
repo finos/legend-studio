@@ -100,7 +100,7 @@ export const appendPostFilter = (
     return lambdaFunction;
   }
   const filterLambda = buildGenericLambdaFunctionInstanceValue(
-    postFilterState.lambdaParameterName,
+    [postFilterState.lambdaParameterName],
     postFilterConditionExpressions,
     postFilterState.tdsState.queryBuilderState.graphManagerState.graph,
   );

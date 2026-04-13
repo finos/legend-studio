@@ -33,7 +33,7 @@ export class QueryBuilderTDS_WindowOperator_Average extends QueryBuilderTDS_Wind
   }
 
   get relationFunc(): string | undefined {
-    return undefined;
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE;
   }
 
   get hashCode(): string {

@@ -154,7 +154,7 @@ export const buildRelationAggregation = (
       new VariableExpression(DEFAULT_LAMBDA_VARIABLE_NAME, Multiplicity.ONE),
     ];
     const mapLambda = buildGenericLambdaFunctionInstanceValue(
-      DEFAULT_LAMBDA_VARIABLE_NAME,
+      [DEFAULT_LAMBDA_VARIABLE_NAME],
       [newPropertyExpression],
       queryBuilderState.graphManagerState.graph,
     );
@@ -162,7 +162,7 @@ export const buildRelationAggregation = (
 
     // Reduce function (function2)
     const reduceLambda = buildGenericLambdaFunctionInstanceValue(
-      aggregationColumnState.lambdaParameterName,
+      [aggregationColumnState.lambdaParameterName],
       [
         aggregationColumnState.operator.buildAggregateExpressionFromState(
           aggregationColumnState,

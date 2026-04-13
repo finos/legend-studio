@@ -299,7 +299,7 @@ export const generateDefaultValueForPrimitiveType = (
 };
 
 export const buildGenericLambdaFunctionInstanceValue = (
-  lambdaParameterName: string,
+  lambdaParameterNames: string[],
   lambdaBodyExpressions: ValueSpecification[],
   graph: PureModel,
 ): LambdaFunctionInstanceValue => {
@@ -310,9 +310,11 @@ export const buildGenericLambdaFunctionInstanceValue = (
     ),
     Multiplicity.ONE,
   );
-  functionType.parameters.push(
-    new VariableExpression(lambdaParameterName, Multiplicity.ONE),
+
+  functionType.parameters = lambdaParameterNames.map(
+    (parameterName) => new VariableExpression(parameterName, Multiplicity.ONE),
   );
+
   const lambdaFunction = new LambdaFunction(functionType);
   lambdaFunction.expressionSequence = lambdaBodyExpressions;
   functionInstanceValue.values.push(lambdaFunction);
