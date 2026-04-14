@@ -354,7 +354,7 @@ describe(
       }) as IngestionAccessor;
 
       expect(accessor.accessorOwnerLabel).toBe('Ingestion Source');
-      expect(accessor.accessorLabel).toBe('Ingestion Data Set');
+      expect(accessor.accessorLabel).toBe('Data Set');
       expect(accessor.schemaLabel).toBeUndefined();
       expect(accessor.path).toEqual(['MyIngest', 'myDataset']);
     });

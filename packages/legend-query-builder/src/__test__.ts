@@ -18,3 +18,4 @@ export {
   TEST__setUpQueryBuilder,
   TEST__setUpGraphManagerState,
 } from './components/__test-utils__/QueryBuilderComponentTestUtils.js';
+export { TEST_DATA__QueryBuilder_Accessors } from './stores/__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';

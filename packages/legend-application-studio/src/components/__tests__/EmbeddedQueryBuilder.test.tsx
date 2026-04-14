@@ -18,6 +18,7 @@ import { test } from '@jest/globals';
 import { fireEvent, getByText, waitFor } from '@testing-library/react';
 import { integrationTest, createMock } from '@finos/legend-shared/test';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
+import { TEST_DATA__QueryBuilder_Accessors } from '@finos/legend-query-builder/test';
 import {
   TEST__openElementFromExplorerTree,
   TEST__setUpEditorWithDefaultSDLCData,
@@ -330,6 +331,83 @@ test(
     await waitFor(() => renderResult.getByText('Edit Query'));
     fireEvent.click(renderResult.getByText('Edit Query'));
 
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'Open query builder by querying an IngestDefinition (accessor query)',
+  ),
+  async () => {
+    const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__QueryBuilder_Accessors },
+    );
+
+    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+      GraphCompilationOutcome.SUCCEEDED,
+    );
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+
+    await TEST__openElementFromExplorerTree(
+      'ingestion::CARBON_DIOXIDE_EMISSIONS',
+      renderResult,
+    );
+
+    const projectExplorer = renderResult.getByTestId(
+      LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+    );
+    const elementInExplorer = getByText(
+      projectExplorer,
+      'CARBON_DIOXIDE_EMISSIONS',
+    );
+    fireEvent.contextMenu(elementInExplorer);
+
+    const explorerContextMenu = renderResult.getByTestId(
+      LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU,
+    );
+
+    fireEvent.click(getByText(explorerContextMenu, 'Query...'));
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+    );
+  },
+);
+
+test(
+  integrationTest('Open query builder by querying a Database (accessor query)'),
+  async () => {
+    const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__QueryBuilder_Accessors },
+    );
+
+    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+      GraphCompilationOutcome.SUCCEEDED,
+    );
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+
+    await TEST__openElementFromExplorerTree(
+      'database::TestDatabase',
+      renderResult,
+    );
+
+    const projectExplorer = renderResult.getByTestId(
+      LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+    );
+    const elementInExplorer = getByText(projectExplorer, 'TestDatabase');
+    fireEvent.contextMenu(elementInExplorer);
+
+    const explorerContextMenu = renderResult.getByTestId(
+      LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU,
+    );
+
+    fireEvent.click(getByText(explorerContextMenu, 'Query...'));
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
     );

@@ -48,7 +48,7 @@ import {
 import {
   TEST_DATA__QueryBuilder_Accessors,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
-} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Accessors.js';
+} from '../../stores/__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
   TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities,

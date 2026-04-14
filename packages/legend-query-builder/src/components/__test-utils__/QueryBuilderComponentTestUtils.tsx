@@ -40,6 +40,7 @@ import {
   GraphManagerState,
   PackageableElementExplicitReference,
   RuntimePointer,
+  Core_GraphManagerPreset,
 } from '@finos/legend-graph';
 import {
   ApplicationStoreProvider,
@@ -61,7 +62,11 @@ import {
 } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
 import { STYLE_PREFIX, STYLE_PREFIX__DARK } from '@finos/legend-art';
 import { expect } from '@jest/globals';
-import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
+import {
+  QueryBuilderActionConfig,
+  QueryBuilderAdvancedWorkflowState,
+} from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
+import { AccessorQueryBuilderState } from '../../stores/workflows/accessor/AccessorQueryBuilderState.js';
 import { Route, Routes } from '@finos/legend-application/browser';
 import {
   BasicValueSpecificationEditor,
@@ -275,6 +280,73 @@ export const TEST__setUpQueryBuilder = async (
       ),
     );
   }
+
+  const renderResult = render(
+    <ApplicationStoreProvider store={MOCK__applicationStore}>
+      <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
+        <ApplicationFrameworkProvider>
+          <Routes>
+            <Route
+              path="*"
+              element={<QueryBuilder queryBuilderState={queryBuilderState} />}
+            />
+          </Routes>
+        </ApplicationFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
+
+  await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+  );
+
+  return {
+    renderResult,
+    queryBuilderState,
+  };
+};
+
+export const TEST__setUpAccessorQueryBuilder = async (
+  entities: Entity[],
+): Promise<{
+  renderResult: RenderResult;
+  queryBuilderState: AccessorQueryBuilderState;
+}> => {
+  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  pluginManager
+    .usePresets([
+      new Core_GraphManagerPreset(),
+      new QueryBuilder_GraphManagerPreset(),
+    ])
+    .install();
+  const graphManagerState = new GraphManagerState(
+    pluginManager,
+    new LogService(),
+  );
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
+  await graphManagerState.initializeSystem();
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities,
+    graphManagerState.graphBuildState,
+  );
+
+  const MOCK__applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
+  );
+
+  const queryBuilderState = new AccessorQueryBuilderState(
+    MOCK__applicationStore,
+    undefined,
+    graphManagerState,
+    QueryBuilderAdvancedWorkflowState.INSTANCE,
+    QueryBuilderActionConfig.INSTANCE,
+  );
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__applicationStore}>

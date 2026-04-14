@@ -151,12 +151,12 @@ const AccessorQueryBuilderSetupPanelContent = observer(
                 title="accessor"
                 htmlFor="query-builder__setup__accessor-selector"
               >
-                Accessor
+                {queryBuilderState.accessorLabel}
               </label>
               <CustomSelectorInput
                 inputId="query-builder__setup__accessor-selector"
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                placeholder="Choose an accessor..."
+                placeholder={`Choose a ${queryBuilderState.accessorLabel.toLocaleLowerCase()}...`}
                 options={accessorOptions}
                 onChange={changeAccessor}
                 value={selectedAccessorOption}

@@ -63,6 +63,7 @@ export class AccessorQueryBuilderState extends QueryBuilderState {
       changeAccessorOwner: action,
       changeAccessor: action,
       accessorOwnerOptions: computed,
+      accessorLabel: computed,
       compatibleRuntimes: computed,
     });
     this.workflowState.updateActionConfig(actionConfig);
@@ -81,6 +82,10 @@ export class AccessorQueryBuilderState extends QueryBuilderState {
       ...this.graphManagerState.graph.ingests,
       ...this.graphManagerState.usableDatabases,
     ];
+  }
+
+  get accessorLabel(): string {
+    return this.sourceAccessor?.accessorLabel ?? 'Accessor';
   }
 
   get accessorOwnerOptions(): AccessorOwnerOption[] {
