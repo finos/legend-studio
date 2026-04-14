@@ -148,7 +148,6 @@ import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { DatabaseBuilderWizard } from '../editor-group/connection-editor/DatabaseBuilderWizard.js';
 import { DatabaseModelBuilder } from '../editor-group/connection-editor/DatabaseModelBuilder.js';
 import { queryService } from '../editor-group/service-editor/ServiceExecutionQueryEditor.js';
-import { QueryDatabaseState } from '../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
 import {
   isElementSupportedByDataCube,
   openDataCube,
@@ -580,19 +579,6 @@ const ExplorerContextMenu = observer(
         }
       },
     );
-    const buildDatabaseQuery = editorStore.applicationStore.guardUnhandledError(
-      async () => {
-        if (node?.packageableElement instanceof Database) {
-          const state = new QueryDatabaseState(
-            node.packageableElement,
-            editorStore,
-          );
-          flowResult(state.init()).catch(
-            editorStore.applicationStore.alertUnhandledError,
-          );
-        }
-      },
-    );
     const generateSampleData = editorStore.applicationStore.guardUnhandledError(
       async () => {
         if (node?.packageableElement instanceof Class) {
@@ -937,14 +923,11 @@ const ExplorerContextMenu = observer(
         )}
         {isRelationalDatabase(node.packageableElement) && (
           <>
-            <MenuContentItem onClick={generateModelsFromDatabaseSpecification}>
-              Build Models
-            </MenuContentItem>
             <MenuContentItem onClick={buildAccessorQuery}>
               Query...
             </MenuContentItem>
-            <MenuContentItem onClick={buildDatabaseQuery}>
-              Query (Beta)...
+            <MenuContentItem onClick={generateModelsFromDatabaseSpecification}>
+              Build Models
             </MenuContentItem>
             <MenuContentDivider />
           </>
