@@ -144,7 +144,7 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
     expect(firstAccessorOpt.value.tableName).toBe('TEST0');
 
     // Accessor selector should be visible
-    expect(getByText(setupPanel, 'Data Set')).not.toBeNull();
+    expect(getByText(setupPanel, 'Table')).not.toBeNull();
   });
 
   test('compatible runtimes are computed for IngestDefinition', async () => {
@@ -203,7 +203,7 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
     expect(getByText(setupPanel, 'Source')).not.toBeNull();
-    expect(getByText(setupPanel, 'Table')).not.toBeNull();
+    expect(getByText(setupPanel, 'Data Set')).not.toBeNull();
     expect(getByText(setupPanel, 'Runtime')).not.toBeNull();
   });
 
