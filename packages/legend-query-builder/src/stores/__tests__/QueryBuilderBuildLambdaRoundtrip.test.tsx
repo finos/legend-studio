@@ -169,7 +169,7 @@ import {
   TEST_DATA__QueryBuilder_Accessors,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
-} from './TEST_DATA__QueryBuilder_Accessors.js';
+} from '../__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 
 type RoundtripTestCase = [
   string,
