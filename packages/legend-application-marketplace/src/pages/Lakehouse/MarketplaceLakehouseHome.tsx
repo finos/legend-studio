@@ -138,7 +138,10 @@ export const MarketplaceLakehouseHome = observer(() => {
         const result: Record<string, ProductCardState[]> = {
           ...configDataProducts,
         };
-        if (trendingDataProducts) {
+        if (
+          trendingDataProducts &&
+          Object.values(trendingDataProducts).flat().length >= 4
+        ) {
           Object.assign(result, trendingDataProducts);
         }
 
