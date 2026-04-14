@@ -524,6 +524,21 @@ export class LegendMarketplaceTelemetryHelper {
     );
   }
 
+  static logEvent_ShowAllDataProducts(
+    telemetryService: TelemetryService,
+    searchQuery: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.SHOW_ALL_DATA_PRODUCTS,
+      {
+        searchQuery,
+        ...session,
+      },
+    );
+  }
+
   static logEvent_SearchServices(
     telemetryService: TelemetryService,
     query: string,

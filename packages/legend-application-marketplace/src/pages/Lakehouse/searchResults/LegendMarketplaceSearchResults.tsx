@@ -145,7 +145,9 @@ const SearchResultsContent = observer(
           </div>
         )}
         {searchResultsStore.isOnLastPage &&
-          !searchResultsStore.showAllProducts && (
+          !searchResultsStore.showAllProducts &&
+          !searchResultsStore.useProducerSearch &&
+          searchResultsStore.hasFilteredDataProducts && (
             <div className="marketplace-lakehouse-search-results__show-all-container">
               <div className="marketplace-lakehouse-search-results__show-all-text-row">
                 <Typography
@@ -326,7 +328,18 @@ export const LegendMarketplaceSearchResults =
       );
       const handleShowAllProducts = useCallback(() => {
         searchResultsStore.setShowAllProducts(true);
-      }, [searchResultsStore]);
+        LegendMarketplaceTelemetryHelper.logEvent_ShowAllDataProducts(
+          applicationStore.telemetryService,
+          searchResultsStore.searchQuery,
+        );
+        flowResult(
+          searchResultsStore.executeSearch(
+            searchResultsStore.searchQuery ?? '',
+            searchResultsStore.useProducerSearch ?? false,
+            tokenRef.current,
+          ),
+        ).catch(applicationStore.alertUnhandledError);
+      }, [searchResultsStore, applicationStore]);
 
       return (
         <LegendMarketplacePage className="marketplace-lakehouse-search-results">

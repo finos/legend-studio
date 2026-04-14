@@ -135,11 +135,12 @@ export class MarketplaceServerClient extends AbstractServerClient {
     searchFilters: string[] = [],
     pageSize: number = 12,
     pageNumber: number = 1,
+    showAll: boolean = false,
   ): Promise<PlainObject<DataProductSearchResponse>> => {
     const filters = searchFilters.join('&search_filters=');
     const searchFilterParam = filters ? `&search_filters=${filters}` : '';
     return this.get<PlainObject<DataProductSearchResponse>>(
-      `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}${searchFilterParam}&page_size=${pageSize}&page_number=${pageNumber}&include_filter_metadata=true`,
+      `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}${searchFilterParam}&page_size=${pageSize}&page_number=${pageNumber}&include_filter_metadata=true&show_all=${showAll}`,
     );
   };
 

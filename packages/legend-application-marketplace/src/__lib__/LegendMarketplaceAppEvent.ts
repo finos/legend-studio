@@ -44,6 +44,7 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   CLICK_QUICKSTART_EXTENSION_TAB = 'marketplace.click.quickstart.extension.tab',
   APPLY_SEARCH_FILTER = 'marketplace.apply.search-filter',
   CLEAR_SEARCH_FILTERS = 'marketplace.clear.search-filters',
+  SHOW_ALL_DATA_PRODUCTS = 'marketplace.show-all.data-products',
   TOGGLE_VIEW_MODE = 'marketplace.toggle.view-mode',
   TOGGLE_SERVICES_VIEW_MODE = 'marketplace.toggle.services.view-mode',
   SEARCH_SERVICES = 'marketplace.search.services',

@@ -718,4 +718,21 @@ describe('LegendMarketplaceSearchResultsStore - Show All Products', () => {
     expect(store.isOnLastPage).toBe(true);
     expect(store.showAllProducts).toBe(true);
   });
+
+  test('show all button requires hasFilteredDataProducts to be true', async () => {
+    const { store } = await setupStore();
+
+    store.setItemsPerPage(12);
+    store.setTotalItems(12);
+    store.setPage(1);
+
+    // On last page, but no filtered products — button should not appear
+    expect(store.isOnLastPage).toBe(true);
+    expect(store.showAllProducts).toBe(false);
+    expect(store.hasFilteredDataProducts).toBe(false);
+
+    // After server indicates products were filtered — button should appear
+    store.setHasFilteredDataProducts(true);
+    expect(store.hasFilteredDataProducts).toBe(true);
+  });
 });
