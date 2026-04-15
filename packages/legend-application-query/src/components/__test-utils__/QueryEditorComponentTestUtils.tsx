@@ -790,7 +790,11 @@ export const TEST__setUpDataProductExistingQueryEditor = async (
       dataProduct: dataProductPath,
     },
   );
-  mockQueryBuilderState.initWithDataProduct(dataProduct, executionState);
+  mockQueryBuilderState.initWithDataProduct(
+    dataProduct,
+    undefined,
+    executionState,
+  );
 
   MOCK__editorStore.buildGraph = createMock();
   MOCK__editorStore.buildFullGraph = createMock();
@@ -992,7 +996,11 @@ export const TEST__setUpDataProductNativeExistingQueryEditor = async (
       dataProduct: dataProductPath,
     },
   );
-  mockQueryBuilderState.initWithDataProduct(dataProduct, executionState);
+  mockQueryBuilderState.initWithDataProduct(
+    dataProduct,
+    undefined,
+    executionState,
+  );
 
   MOCK__editorStore.buildGraph = createMock();
   MOCK__editorStore.buildFullGraph = createMock();

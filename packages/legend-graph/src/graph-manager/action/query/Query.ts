@@ -58,6 +58,10 @@ export class QueryDataProductModelAccessExecutionContext extends QueryDataProduc
   accessPointGroupId!: string;
 }
 
+export class QueryDataProductLakehouseExecutionContext extends QueryDataProductExecutionContext {
+  accessPointId!: string;
+}
+
 export interface QueryGridConfig {
   columns: object[];
   isPivotModeEnabled: boolean | undefined;
@@ -175,6 +179,11 @@ export class QueryDataProductNativeExecutionContextInfo extends QueryExecutionCo
 export class QueryDataProductModelAccessExecutionContextInfo extends QueryExecutionContextInfo {
   dataProductPath!: string;
   accessPointGroupId!: string;
+}
+
+export class QueryDataProductLakehouseExecutionContextInfo extends QueryExecutionContextInfo {
+  dataProductPath!: string;
+  accessPointId!: string;
 }
 
 export interface QueryInfo {

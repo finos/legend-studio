@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-import { type DataProduct, ModelAccessPointGroup } from '@finos/legend-graph';
+import {
+  type DataProduct,
+  type DataProductAccessor,
+  type NativeModelExecutionContext,
+  LakehouseAccessPoint,
+  ModelAccessPointGroup,
+} from '@finos/legend-graph';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { flowResult } from 'mobx';
 import {
   DataProductQueryBuilderState,
   QueryBuilderActionConfig,
   QueryBuilderAdvancedWorkflowState,
+  buildDataProductAccessor,
 } from '@finos/legend-query-builder';
 import type { DepotEntityWithOrigin } from '@finos/legend-storage';
 import {
@@ -36,8 +43,31 @@ const isQueryableDataProduct = (dataProduct: DataProduct): boolean => {
       dataProduct.nativeModelAccess?.nativeModelExecutionContexts.length,
     ) ||
     dataProduct.accessPointGroups.filter(filterByType(ModelAccessPointGroup))
-      .length > 0
+      .length > 0 ||
+    dataProduct.accessPointGroups
+      .map((group) => group.accessPoints)
+      .flat()
+      .filter(filterByType(LakehouseAccessPoint)).length > 0
   );
+};
+
+const resolveDefaultExecState = (
+  dataProduct: DataProduct,
+):
+  | ModelAccessPointGroup
+  | LakehouseAccessPoint
+  | NativeModelExecutionContext
+  | undefined => {
+  const nativeAccessPoints =
+    dataProduct.nativeModelAccess?.defaultExecutionContext;
+  const modeled = dataProduct.accessPointGroups.filter(
+    filterByType(ModelAccessPointGroup),
+  )[0];
+  const lakehouseAccessPoints = dataProduct.accessPointGroups
+    .map((group) => group.accessPoints)
+    .flat()
+    .filter(filterByType(LakehouseAccessPoint))[0];
+  return modeled ?? lakehouseAccessPoints ?? nativeAccessPoints;
 };
 
 export const queryDataProduct = async (
@@ -47,16 +77,27 @@ export const queryDataProduct = async (
   try {
     assertTrue(
       isQueryableDataProduct(dataProduct),
-      'Data Product is not queryable. Must have either native model execution contexts or model access point groups defined to be queryable.',
+      'Data Product is not queryable. Data Product must have either a lakehouse, model or native access point',
     );
     const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
     const defaultExecutionContext = guaranteeNonNullable(
-      dataProduct.nativeModelAccess?.defaultExecutionContext ??
-        dataProduct.accessPointGroups.filter(
-          filterByType(ModelAccessPointGroup),
-        )[0],
+      resolveDefaultExecState(dataProduct),
       'No execution context found for Data Product',
     );
+    let accessor: DataProductAccessor | undefined;
+    if (defaultExecutionContext instanceof LakehouseAccessPoint) {
+      const relationMetadata =
+        await editorStore.graphManagerState.graphManager.getLambdaRelationType(
+          defaultExecutionContext.func,
+          editorStore.graphManagerState.graph,
+        );
+      accessor = buildDataProductAccessor(
+        relationMetadata,
+        dataProduct,
+        defaultExecutionContext,
+        editorStore.graphManagerState.graph,
+      );
+    }
     await flowResult(
       embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
         setupQueryBuilderState: async () => {
@@ -82,7 +123,12 @@ export const queryDataProduct = async (
             editorStore.applicationStore.config.options.queryBuilderConfig,
             sourceInfo,
           );
-          queryBuilderState.initWithDataProduct(dataProduct);
+
+          queryBuilderState.initWithDataProduct(
+            dataProduct,
+            accessor,
+            defaultExecutionContext,
+          );
           return queryBuilderState;
         },
         disableCompile: true,

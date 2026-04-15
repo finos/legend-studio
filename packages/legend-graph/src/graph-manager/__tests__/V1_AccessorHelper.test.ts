@@ -639,7 +639,7 @@ describe(unitTest('Accessor model classes'), () => {
     expect(accessor.accessorOwnerLabel).toBe('Data Product');
     expect(accessor.accessorLabel).toBe('Access Point');
     expect(accessor.schemaLabel).toBe('Access Point Group');
-    expect(accessor.path).toEqual(['MyDP', 'myGroup', 'myAP']);
+    expect(accessor.path).toEqual(['MyDP', 'myAP']);
     expect(accessor.hashCode).toBeDefined();
     expect(typeof accessor.hashCode).toBe('string');
   });

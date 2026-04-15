@@ -79,6 +79,11 @@ export class DataProductAccessor extends Accessor {
   override get schemaLabel(): string | undefined {
     return 'Access Point Group';
   }
+
+  // for data product do not include schema in the path
+  override get path(): string[] {
+    return [this.accessorOwner, this.accessor].filter(isNonNullable);
+  }
 }
 
 export class IngestionAccessor extends Accessor {

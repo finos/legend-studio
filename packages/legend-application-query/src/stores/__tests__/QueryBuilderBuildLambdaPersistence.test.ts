@@ -38,6 +38,8 @@ import {
   DataProductQueryBuilderState,
   NativeModelDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
+  LakehouseDataProductExecutionState,
+  buildDataProductAccessor,
   INTERNAL__BasicQueryBuilderState,
   TEST__LegendApplicationPluginManager,
   TEST__getGenericApplicationConfig,
@@ -46,9 +48,13 @@ import {
 import {
   Core_GraphManagerPreset,
   ModelAccessPointGroup,
+  LakehouseAccessPoint,
   type NativeModelExecutionContext,
   PackageableElementExplicitReference,
   RuntimePointer,
+  RelationTypeMetadata,
+  RelationTypeColumnMetadata,
+  Multiplicity,
 } from '@finos/legend-graph';
 import {
   TEST__buildGraphWithEntities,
@@ -174,6 +180,36 @@ const TEST_DATA__DataProductEntities: Entity[] = [
     classifierPath:
       'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
   },
+  {
+    path: 'model::LakehouseDP',
+    content: {
+      _type: 'dataProduct',
+      name: 'LakehouseDP',
+      package: 'model',
+      accessPointGroups: [
+        {
+          _type: 'accessPointGroup',
+          id: 'lhGroup1',
+          accessPoints: [
+            {
+              _type: 'lakehouseAccessPoint',
+              id: 'lhAP1',
+              title: 'Lakehouse AP',
+              func: {
+                _type: 'lambda',
+                body: [{ _type: 'integer', value: 1 }],
+                parameters: [],
+              },
+              reproducible: false,
+              targetEnvironment: 'Snowflake',
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -211,7 +247,10 @@ const buildDataProductTestSetup = async () => {
 const buildDataProductState = (
   applicationStore: InstanceType<typeof ApplicationStore>,
   graphManagerState: ReturnType<typeof TEST__getTestGraphManagerState>,
-  executionValue: NativeModelExecutionContext | ModelAccessPointGroup,
+  executionValue:
+    | NativeModelExecutionContext
+    | ModelAccessPointGroup
+    | LakehouseAccessPoint,
   dataProductPath: string,
 ) => {
   const dataProduct = graphManagerState.graph.getDataProduct(dataProductPath);
@@ -228,9 +267,26 @@ const buildDataProductState = (
       /* no-op */
     },
   );
-  state.initWithDataProduct(dataProduct, executionValue);
+  state.initWithDataProduct(dataProduct, undefined, executionValue);
   // Manually set the class — the empty test mapping has no compatible classes
-  state.changeSourceElement(graphManagerState.graph.getClass('model::Person'));
+  // (skip for lakehouse which doesn't use class-based source)
+  if (executionValue instanceof LakehouseAccessPoint) {
+    const relationMetadata = new RelationTypeMetadata();
+    relationMetadata.columns = [
+      new RelationTypeColumnMetadata('String', 'col1', new Multiplicity(1, 1)),
+    ];
+    const accessor = buildDataProductAccessor(
+      relationMetadata,
+      dataProduct,
+      executionValue,
+      graphManagerState.graph,
+    );
+    state.setSourceElement(accessor);
+  } else {
+    state.changeSourceElement(
+      graphManagerState.graph.getClass('model::Person'),
+    );
+  }
   return state;
 };
 
@@ -585,6 +641,113 @@ describe(
           );
 
         expect(execJson).toEqual(persistJson);
+      },
+    );
+  },
+);
+
+describe(
+  unitTest('DataProduct LAKEHOUSE – buildQuery vs buildQueryForPersistence'),
+  () => {
+    test(
+      unitTest(
+        'Lakehouse state has no mapping and requiresMappingForExecution is false',
+      ),
+      async () => {
+        const { applicationStore, graphManagerState } =
+          await buildDataProductTestSetup();
+
+        const dataProduct =
+          graphManagerState.graph.getDataProduct('model::LakehouseDP');
+        const lakehouseAP = guaranteeNonNullable(
+          dataProduct.accessPointGroups
+            .flatMap((g) => g.accessPoints)
+            .find(filterByType(LakehouseAccessPoint)),
+        );
+
+        const state = buildDataProductState(
+          applicationStore,
+          graphManagerState,
+          lakehouseAP,
+          'model::LakehouseDP',
+        );
+
+        expect(state.executionState).toBeInstanceOf(
+          LakehouseDataProductExecutionState,
+        );
+
+        // Lakehouse mode should not require a mapping
+        expect(state.requiresMappingForExecution).toBe(false);
+        expect(state.executionState.mapping).toBeUndefined();
+      },
+    );
+
+    test(
+      unitTest(
+        'buildQueryForPersistence() produces a lambda without from()/with() wrapping',
+      ),
+      async () => {
+        const { applicationStore, graphManagerState } =
+          await buildDataProductTestSetup();
+
+        const dataProduct =
+          graphManagerState.graph.getDataProduct('model::LakehouseDP');
+        const lakehouseAP = guaranteeNonNullable(
+          dataProduct.accessPointGroups
+            .flatMap((g) => g.accessPoints)
+            .find(filterByType(LakehouseAccessPoint)),
+        );
+
+        const state = buildDataProductState(
+          applicationStore,
+          graphManagerState,
+          lakehouseAP,
+          'model::LakehouseDP',
+        );
+
+        const outerFn = getOuterFunctionName(
+          graphManagerState,
+          state.buildQueryForPersistence(),
+        );
+        expect(outerFn).not.toBe('from');
+        expect(outerFn).not.toBe('with');
+      },
+    );
+
+    test(
+      unitTest(
+        'getQueryExecutionContext() returns lakehouse context with correct fields',
+      ),
+      async () => {
+        const { applicationStore, graphManagerState } =
+          await buildDataProductTestSetup();
+
+        const dataProduct =
+          graphManagerState.graph.getDataProduct('model::LakehouseDP');
+        const lakehouseAP = guaranteeNonNullable(
+          dataProduct.accessPointGroups
+            .flatMap((g) => g.accessPoints)
+            .find(filterByType(LakehouseAccessPoint)),
+        );
+
+        const state = buildDataProductState(
+          applicationStore,
+          graphManagerState,
+          lakehouseAP,
+          'model::LakehouseDP',
+        );
+
+        const execCtx = state.getQueryExecutionContext();
+        expect(execCtx).toBeDefined();
+        expect(execCtx.constructor.name).toBe(
+          'QueryDataProductLakehouseExecutionContext',
+        );
+        expect((execCtx as { dataProductPath: string }).dataProductPath).toBe(
+          'model::LakehouseDP',
+        );
+        expect((execCtx as { accessPointId: string }).accessPointId).toBe(
+          'lhAP1',
+        );
       },
     );
   },

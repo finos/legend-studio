@@ -66,8 +66,11 @@ export {
   buildExecOptions,
   type ModelAccessPointGroupOption,
   buildModelAccessPointGroupOption,
+  type ExecutionIdOption,
+  buildDataProductAccessor,
   NativeModelDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
+  LakehouseDataProductExecutionState,
 } from './stores/workflows/dataProduct/DataProductQueryBuilderState.js';
 export { DataProductQueryBuilderSetupFormContent } from './components/workflows/DataProductQueryBuilder.js';
 export { AccessorQueryBuilderState } from './stores/workflows/accessor/AccessorQueryBuilderState.js';

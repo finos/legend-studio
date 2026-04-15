@@ -40,8 +40,19 @@ import {
   type QueryExecutionContext,
   QueryDataProductNativeExecutionContext,
   QueryDataProductModelAccessExecutionContext,
+  QueryDataProductLakehouseExecutionContext,
+  LakehouseAccessPoint,
   type RawLambda,
   buildRawLambdaFromLambdaFunction,
+  type Accessor,
+  type RelationTypeMetadata,
+  DataProductAccessor,
+  RelationType,
+  RelationColumn,
+  GenericType,
+  GenericTypeExplicitReference,
+  findLakehouseAccessPointGroup,
+  type PureModel,
 } from '@finos/legend-graph';
 import { QueryBuilderState } from '../../QueryBuilderState.js';
 
@@ -67,6 +78,35 @@ import {
 import { compareLabelFn } from '@finos/legend-art';
 import { QueryBuilderEmbeddedFromExecutionContextState } from '../../QueryBuilderExecutionContextState.js';
 import { buildLambdaFunction } from '../../QueryBuilderValueSpecificationBuilder.js';
+
+export const buildDataProductAccessor = (
+  relationMetadata: RelationTypeMetadata,
+  dataProduct: DataProduct,
+  accessPoint: LakehouseAccessPoint,
+  graph: PureModel,
+): DataProductAccessor => {
+  const relationType = new RelationType(accessPoint.title ?? accessPoint.id);
+  relationType.columns = relationMetadata.columns.map(
+    (col) =>
+      new RelationColumn(
+        col.name,
+        GenericTypeExplicitReference.create(
+          new GenericType(graph.getType(col.type)),
+        ),
+      ),
+  );
+  const groupResult = findLakehouseAccessPointGroup(
+    dataProduct,
+    accessPoint.id,
+  );
+  return new DataProductAccessor(
+    dataProduct.path,
+    groupResult?.group.id,
+    accessPoint.id,
+    relationType,
+    dataProduct,
+  );
+};
 
 export type DataProductOption = {
   label: string;
@@ -104,6 +144,15 @@ export const buildModelAccessPointGroupOption = (
   value,
 });
 
+export type ExecutionIdOption = {
+  label: string;
+  tag: string;
+  value:
+    | NativeModelExecutionContext
+    | ModelAccessPointGroup
+    | LakehouseAccessPoint;
+};
+
 export abstract class DataProductExecutionState<T> {
   readonly queryBuilderState: DataProductQueryBuilderState;
   exectionValue: T;
@@ -118,9 +167,13 @@ export abstract class DataProductExecutionState<T> {
 
   abstract get label(): string;
 
-  abstract get mapping(): Mapping;
+  abstract get mapping(): Mapping | undefined;
 
   abstract get featuredElements(): DataProductElementScope[] | undefined;
+
+  get showRuntimeOptions(): boolean {
+    return false;
+  }
 
   get selectedOption(): { label: string; value: T } {
     return {
@@ -196,7 +249,7 @@ export class ModelAccessPointDataProductExecutionState extends DataProductExecut
     return this.exectionValue.featuredElements;
   }
 
-  get showRuntimeOptions(): boolean {
+  override get showRuntimeOptions(): boolean {
     return this.compatibleRuntimes.length > 1;
   }
 
@@ -204,6 +257,46 @@ export class ModelAccessPointDataProductExecutionState extends DataProductExecut
     return this.queryBuilderState.graphManagerState.usableRuntimes.filter(
       (runtime) => runtime.runtimeValue instanceof LakehouseRuntime,
     );
+  }
+}
+
+export class LakehouseDataProductExecutionState extends DataProductExecutionState<LakehouseAccessPoint> {
+  selectedRuntime: PackageableRuntime | undefined;
+  adhocRuntime = false;
+  constructor(
+    executionState: LakehouseAccessPoint,
+    queryBuilderState: DataProductQueryBuilderState,
+  ) {
+    super(executionState, queryBuilderState);
+    makeObservable(this, {});
+    this.selectedRuntime = this.compatibleRuntimes[0];
+  }
+
+  changeSelectedRuntime(val: PackageableRuntime): void {
+    this.selectedRuntime = val;
+    this.queryBuilderState.changeRuntime(val);
+  }
+
+  override get label(): string {
+    return this.exectionValue.title ?? this.exectionValue.id;
+  }
+
+  get mapping(): Mapping | undefined {
+    return undefined;
+  }
+
+  get featuredElements(): DataProductElementScope[] | undefined {
+    return undefined;
+  }
+
+  get compatibleRuntimes(): PackageableRuntime[] {
+    return this.queryBuilderState.graphManagerState.usableRuntimes.filter(
+      (runtime) => runtime.runtimeValue instanceof LakehouseRuntime,
+    );
+  }
+
+  override get showRuntimeOptions(): boolean {
+    return this.compatibleRuntimes.length > 1;
   }
 }
 
@@ -218,7 +311,7 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
   dataProduct: DataProduct;
   dataProductArtifact: V1_DataProductArtifact | undefined;
   executionState: DataProductExecutionState<
-    NativeModelExecutionContext | ModelAccessPointGroup
+    NativeModelExecutionContext | ModelAccessPointGroup | LakehouseAccessPoint
   >;
   entities: DepotEntityWithOrigin[] | undefined;
 
@@ -234,7 +327,10 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     dataProduct: DataProduct,
     artifact: V1_DataProductArtifact | undefined,
     actionConfig: QueryBuilderActionConfig,
-    executionState: NativeModelExecutionContext | ModelAccessPointGroup,
+    executionState:
+      | NativeModelExecutionContext
+      | ModelAccessPointGroup
+      | LakehouseAccessPoint,
     prioritizeEntityFunc: ((val: DepotEntityWithOrigin) => boolean) | undefined,
     onDataProductChange: (val: DepotEntityWithOrigin) => Promise<void>,
     onExecutionContextChange?:
@@ -255,8 +351,12 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       isProductLinkable: computed,
       isNativeMode: computed,
       isModelAccessPointGroupMode: computed,
+      isLakehouseMode: computed,
       showExecutionContextOptions: computed,
       showModelAccessPointGroupSelector: computed,
+      showExecutionIdSelector: computed,
+      executionIdOptions: computed,
+      selectedExecutionIdOption: computed,
       selectedExecOption: computed,
       selectedModelAccessPointGroupOption: computed,
       usableClasses: computed,
@@ -277,11 +377,16 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     this.executionState =
       executionState instanceof NativeModelExecutionContext
         ? new NativeModelDataProductExecutionState(executionState, this)
-        : new ModelAccessPointDataProductExecutionState(executionState, this);
+        : executionState instanceof LakehouseAccessPoint
+          ? new LakehouseDataProductExecutionState(executionState, this)
+          : new ModelAccessPointDataProductExecutionState(executionState, this);
     this.prioritizeEntityFunc = prioritizeEntityFunc;
     this.onDataProductChange = onDataProductChange;
     this.onExecutionContextChange = onExecutionContextChange;
     this.onClassChange = onClassChange;
+    // force from.
+    this.executionContextState =
+      new QueryBuilderEmbeddedFromExecutionContextState(this);
   }
 
   get isProductLinkable(): boolean {
@@ -298,6 +403,10 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     );
   }
 
+  get isLakehouseMode(): boolean {
+    return this.executionState instanceof LakehouseDataProductExecutionState;
+  }
+
   get showExecutionContextOptions(): boolean {
     return this.isNativeMode && this.execOptions.length > 1;
   }
@@ -309,12 +418,88 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     );
   }
 
+  get executionIdOptions(): ExecutionIdOption[] {
+    const nativeOptions: ExecutionIdOption[] = (
+      this.dataProduct.nativeModelAccess?.nativeModelExecutionContexts ?? []
+    ).map((ctx) => ({
+      label: ctx.key,
+      tag: 'Native',
+      value: ctx,
+    }));
+    const modelOptions: ExecutionIdOption[] = this.modelAccessPointGroups.map(
+      (group) => ({
+        label: group.title ?? group.id,
+        tag: 'Model',
+        value: group,
+      }),
+    );
+    const lakehouseOptions: ExecutionIdOption[] =
+      this.dataProduct.accessPointGroups
+        .flatMap((group) => group.accessPoints)
+        .filter(filterByType(LakehouseAccessPoint))
+        .map((ap) => ({
+          label: ap.title ?? ap.id,
+          tag: 'Lakehouse',
+          value: ap,
+        }));
+    return [...modelOptions, ...lakehouseOptions, ...nativeOptions].sort(
+      compareLabelFn,
+    );
+  }
+
+  get selectedExecutionIdOption(): ExecutionIdOption | undefined {
+    const state = this.executionState;
+    if (state instanceof NativeModelDataProductExecutionState) {
+      return {
+        label: state.exectionValue.key,
+        tag: 'Native',
+        value: state.exectionValue,
+      };
+    } else if (state instanceof ModelAccessPointDataProductExecutionState) {
+      return {
+        label: state.exectionValue.title ?? state.exectionValue.id,
+        tag: 'Model',
+        value: state.exectionValue,
+      };
+    } else if (state instanceof LakehouseDataProductExecutionState) {
+      return {
+        label: state.exectionValue.title ?? state.exectionValue.id,
+        tag: 'Lakehouse',
+        value: state.exectionValue,
+      };
+    }
+    return undefined;
+  }
+
+  get showExecutionIdSelector(): boolean {
+    return this.executionIdOptions.length > 1;
+  }
+
+  async changeExecutionId(option: ExecutionIdOption): Promise<void> {
+    const val = option.value;
+    if (val === this.executionState.exectionValue) {
+      return;
+    }
+    await this.changeExecutionState(val);
+    await this.propagateExecutionContextChange();
+    if (val instanceof NativeModelExecutionContext) {
+      this.onExecutionContextChange?.(val);
+    }
+  }
+
   get selectedExecOption():
     | { label: string; value: NativeModelExecutionContext }
     | undefined {
     return this.executionState instanceof NativeModelDataProductExecutionState
       ? buildExecOptions(this.executionState.exectionValue)
       : undefined;
+  }
+
+  override get requiresMappingForExecution(): boolean {
+    if (this.executionState instanceof LakehouseDataProductExecutionState) {
+      return false;
+    }
+    return true;
   }
 
   get selectedModelAccessPointGroupOption():
@@ -390,6 +575,13 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       execContext.dataProductPath = this.dataProduct.path;
       execContext.accessPointGroupId = this.executionState.exectionValue.id;
       return execContext;
+    } else if (
+      this.executionState instanceof LakehouseDataProductExecutionState
+    ) {
+      const execContext = new QueryDataProductLakehouseExecutionContext();
+      execContext.dataProductPath = this.dataProduct.path;
+      execContext.accessPointId = this.executionState.exectionValue.id;
+      return execContext;
     }
     return super.getQueryExecutionContext();
   }
@@ -403,7 +595,7 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
           val.path,
         );
       if (dataProduct) {
-        this.initWithDataProduct(dataProduct);
+        this.initWithDataProduct(dataProduct, undefined, undefined);
         this.loadDataProductModelState.pass();
       } else if (this.onDataProductChange) {
         // data product not in current graph — trigger full rebuild
@@ -430,7 +622,11 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
 
   initWithDataProduct(
     dataProduct: DataProduct,
-    preResolvedState?: NativeModelExecutionContext | ModelAccessPointGroup,
+    accessor: Accessor | undefined,
+    preResolvedState?:
+      | NativeModelExecutionContext
+      | ModelAccessPointGroup
+      | LakehouseAccessPoint,
   ): void {
     try {
       const execValue =
@@ -439,8 +635,13 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       this.executionState =
         execValue instanceof NativeModelExecutionContext
           ? new NativeModelDataProductExecutionState(execValue, this)
-          : new ModelAccessPointDataProductExecutionState(execValue, this);
-      this.changeMapping(this.executionState.mapping);
+          : execValue instanceof LakehouseAccessPoint
+            ? new LakehouseDataProductExecutionState(execValue, this)
+            : new ModelAccessPointDataProductExecutionState(execValue, this);
+      const mapping = this.executionState.mapping;
+      if (mapping) {
+        this.changeMapping(mapping);
+      }
       if (this.executionState instanceof NativeModelDataProductExecutionState) {
         const runtime = guaranteeNonNullable(
           this.executionState.exectionValue.runtime,
@@ -453,19 +654,37 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         this.executionState.selectedRuntime instanceof PackageableRuntime
       ) {
         this.changeRuntime(this.executionState.selectedRuntime);
+      } else if (
+        this.executionState instanceof LakehouseDataProductExecutionState &&
+        accessor &&
+        this.executionState.selectedRuntime instanceof PackageableRuntime
+      ) {
+        this.setSourceElement(accessor);
+        this.changeRuntime(
+          new RuntimePointer(
+            PackageableElementExplicitReference.create(
+              this.executionState.selectedRuntime,
+            ),
+          ),
+        );
       }
-      const compatibleClasses = resolveUsableDataProductClasses(
-        this.activeFeaturedElements,
-        this.executionState.mapping,
-        this.graphManagerState,
-        undefined,
-      );
-      // if there is no chosen class or the chosen one is not compatible
-      // with the mapping then pick a compatible class if possible
-      if (!this.sourceClass || !compatibleClasses.includes(this.sourceClass)) {
-        const possibleNewClass = compatibleClasses[0];
-        if (possibleNewClass) {
-          this.changeSourceElement(possibleNewClass);
+      if (mapping) {
+        const compatibleClasses = resolveUsableDataProductClasses(
+          this.activeFeaturedElements,
+          mapping,
+          this.graphManagerState,
+          undefined,
+        );
+        // if there is no chosen class or the chosen one is not compatible
+        // with the mapping then pick a compatible class if possible
+        if (
+          !this.sourceClass ||
+          !compatibleClasses.includes(this.sourceClass)
+        ) {
+          const possibleNewClass = compatibleClasses[0];
+          if (possibleNewClass) {
+            this.changeSourceElement(possibleNewClass);
+          }
         }
       }
     } catch (error) {
@@ -489,12 +708,40 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
   }
 
   setExecutionState(
-    val: NativeModelExecutionContext | ModelAccessPointGroup,
+    val:
+      | NativeModelExecutionContext
+      | ModelAccessPointGroup
+      | LakehouseAccessPoint,
   ): void {
     this.executionState =
       val instanceof NativeModelExecutionContext
         ? new NativeModelDataProductExecutionState(val, this)
-        : new ModelAccessPointDataProductExecutionState(val, this);
+        : val instanceof LakehouseAccessPoint
+          ? new LakehouseDataProductExecutionState(val, this)
+          : new ModelAccessPointDataProductExecutionState(val, this);
+  }
+
+  async changeExecutionState(
+    val:
+      | NativeModelExecutionContext
+      | ModelAccessPointGroup
+      | LakehouseAccessPoint,
+  ): Promise<void> {
+    this.setExecutionState(val);
+    if (val instanceof LakehouseAccessPoint) {
+      const relationMetadata =
+        await this.graphManagerState.graphManager.getLambdaRelationType(
+          val.func,
+          this.graphManagerState.graph,
+        );
+      const accessor = buildDataProductAccessor(
+        relationMetadata,
+        this.dataProduct,
+        val,
+        this.graphManagerState.graph,
+      );
+      this.setSourceElement(accessor);
+    }
   }
 
   get modelAccessPointGroups(): ModelAccessPointGroup[] {
@@ -613,7 +860,11 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       // contains model access point group
       this.dataProduct.accessPointGroups.filter(
         filterByType(ModelAccessPointGroup),
-      ).length > 0
+      ).length > 0 ||
+      // contains lakehouse access point
+      this.dataProduct.accessPointGroups.some((group) =>
+        group.accessPoints.some((ap) => ap instanceof LakehouseAccessPoint),
+      )
     );
   }
 

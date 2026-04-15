@@ -211,17 +211,19 @@ export const QueryEditorDataProductInfoModal = observer(
                   </div>
                 </div>
               )}
-              <div className="dataspace-info-modal__field">
-                <div className="dataspace-info-modal__field__label">
-                  Mapping
+              {mapping && (
+                <div className="dataspace-info-modal__field">
+                  <div className="dataspace-info-modal__field__label">
+                    Mapping
+                  </div>
+                  <div
+                    className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
+                    onClick={() => flowResult(visitElement(mapping.path))}
+                  >
+                    {mapping.name}
+                  </div>
                 </div>
-                <div
-                  className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
-                  onClick={() => flowResult(visitElement(mapping.path))}
-                >
-                  {mapping.name}
-                </div>
-              </div>
+              )}
               {selectedRuntime &&
                 selectedRuntime.runtimeValue instanceof LakehouseRuntime && (
                   <>
