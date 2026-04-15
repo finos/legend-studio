@@ -22,9 +22,16 @@ import {
   clsx,
   ControlledDropdownMenu,
   CustomSelectorInput,
+  Dialog,
   ExclamationTriangleIcon,
   MenuContent,
   MenuContentItem,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalFooterButton,
+  ModalFooterStatus,
+  ModalHeader,
   Panel,
   PanelContent,
   PanelFormBooleanField,
@@ -41,6 +48,7 @@ import {
 import { MD5HashStrategy } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
   DataQualityRelationComparisonConfigurationState,
+  DEFAULT_LIMIT,
   RECONCILIATION_EXECUTION_TYPE,
 } from './states/DataQualityRelationComparisonConfigurationState.js';
 import { useEditorStore } from '@finos/legend-application-studio';
@@ -49,7 +57,10 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import {
+  BasicValueSpecificationEditor,
   LambdaEditor,
+  LambdaParameterValuesEditor,
+  type LambdaParameterState,
   getTDSColumnCustomizations,
   getFilterTDSColumnCustomizations,
 } from '@finos/legend-query-builder';
@@ -57,13 +68,18 @@ import { flowResult } from 'mobx';
 import { DataQualityMultiCustomSelector } from './DataQualityCustomSelector.js';
 import {
   type ExecutionResult,
+  type ObserverContext,
+  PrimitiveType,
+  type PureModel,
   TDSExecutionResult,
   RawExecutionResult,
+  type ValueSpecification,
   extractExecutionResultValues,
 } from '@finos/legend-graph';
 import {
   guaranteeType,
   prettyDuration,
+  prettyCONSTName,
   returnUndefOnError,
 } from '@finos/legend-shared';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
@@ -76,6 +92,155 @@ import {
   type DataGridColumnDefinition,
   DataGrid,
 } from '@finos/legend-lego/data-grid';
+
+const ComparisonParameterSection = observer(
+  (props: {
+    title: string;
+    graph: PureModel;
+    observerContext: ObserverContext;
+    parameterStates: LambdaParameterState[];
+  }) => {
+    const { title, graph, observerContext, parameterStates } = props;
+
+    if (!parameterStates.length) {
+      return null;
+    }
+
+    return (
+      <div className="data-quality-relation-comparison-editor__parameters-modal__section">
+        <div className="data-quality-relation-comparison-editor__parameters-modal__section__title">
+          {title}
+        </div>
+        <div className="data-quality-relation-comparison-editor__parameters-modal__section__body">
+          {parameterStates.map((paramState) => {
+            const variableType =
+              paramState.variableType ?? PrimitiveType.STRING;
+            return (
+              <div
+                key={paramState.uuid}
+                className="panel__content__form__section"
+              >
+                <div className="lambda-parameter-values__value__label">
+                  <div className="lambda-parameter-values__value__label__name">
+                    {paramState.parameter.name}
+                  </div>
+                  <div className="lambda-parameter-values__value__label__type">
+                    {variableType.name}
+                  </div>
+                </div>
+                {paramState.value && (
+                  <BasicValueSpecificationEditor
+                    valueSpecification={paramState.value}
+                    setValueSpecification={(val: ValueSpecification): void => {
+                      paramState.setValue(val);
+                    }}
+                    graph={graph}
+                    observerContext={observerContext}
+                    typeCheckOption={{
+                      expectedType: variableType,
+                      match: variableType === PrimitiveType.DATETIME,
+                    }}
+                    className="query-builder__parameters__value__editor"
+                    resetValue={(): void => undefined}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  },
+);
+
+const DataQualityRelationComparisonParametersEditor = observer(
+  (props: { state: DataQualityRelationComparisonConfigurationState }) => {
+    const { state } = props;
+    const applicationStore = useApplicationStore();
+    const [isSubmitAction, setIsSubmitAction] = React.useState(false);
+    const [isClosingAction, setIsClosingAction] = React.useState(false);
+    const valuesEditorState = state.comparisonParametersEditorState;
+    const submitAction = valuesEditorState.submitAction;
+
+    const close = (): void => {
+      setIsClosingAction(true);
+      valuesEditorState.close();
+    };
+
+    const submit = applicationStore.guardUnhandledError(async () => {
+      if (submitAction) {
+        setIsSubmitAction(true);
+        close();
+        await submitAction.handler();
+      }
+    });
+
+    return (
+      <Dialog
+        open={Boolean(valuesEditorState.showModal)}
+        onClose={close}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal lambda-parameter-values__modal data-quality-relation-comparison-editor__parameters-modal"
+        >
+          <ModalHeader title="Set Comparison Parameter Values" />
+          <ModalBody className="lambda-parameter-values__modal__body data-quality-relation-comparison-editor__parameters-modal__body">
+            <div className="data-quality-relation-comparison-editor__parameters-modal__description">
+              Source and target parameters are submitted independently for the
+              reconciliation run.
+            </div>
+            <div className="data-quality-relation-comparison-editor__parameters-modal__sections">
+              <ComparisonParameterSection
+                title="Source Query"
+                graph={state.editorStore.graphManagerState.graph}
+                observerContext={
+                  state.editorStore.changeDetectionState.observerContext
+                }
+                parameterStates={state.sourceParametersState.parameterStates}
+              />
+              <ComparisonParameterSection
+                title="Target Query"
+                graph={state.editorStore.graphManagerState.graph}
+                observerContext={
+                  state.editorStore.changeDetectionState.observerContext
+                }
+                parameterStates={state.targetParametersState.parameterStates}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            {isClosingAction && (
+              <ModalFooterStatus>Closing...</ModalFooterStatus>
+            )}
+            {submitAction && (
+              <ModalFooterButton
+                inProgressText={
+                  isSubmitAction ? `${submitAction.label}...` : undefined
+                }
+                onClick={submit}
+                text={prettyCONSTName(submitAction.label)}
+              />
+            )}
+            <ModalFooterButton
+              inProgressText={isClosingAction ? 'Closing...' : undefined}
+              onClick={close}
+              text="Close"
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
 
 export const DataQualityRelationComparisonEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -105,15 +270,15 @@ export const DataQualityRelationComparisonEditor = observer(() => {
   );
 
   const runReconciliation = applicationStore.guardUnhandledError(() =>
-    flowResult(state.run(RECONCILIATION_EXECUTION_TYPE.RECONCILIATION)),
+    flowResult(state.handleRun(RECONCILIATION_EXECUTION_TYPE.RECONCILIATION)),
   );
 
   const runSourceQuery = applicationStore.guardUnhandledError(() =>
-    flowResult(state.run(RECONCILIATION_EXECUTION_TYPE.SOURCE_QUERY)),
+    flowResult(state.handleRun(RECONCILIATION_EXECUTION_TYPE.SOURCE_QUERY)),
   );
 
   const runTargetQuery = applicationStore.guardUnhandledError(() =>
-    flowResult(state.run(RECONCILIATION_EXECUTION_TYPE.TARGET_QUERY)),
+    flowResult(state.handleRun(RECONCILIATION_EXECUTION_TYPE.TARGET_QUERY)),
   );
 
   const retryFetchColumns = applicationStore.guardUnhandledError(() =>
@@ -145,6 +310,37 @@ export const DataQualityRelationComparisonEditor = observer(() => {
 
   const darkMode =
     !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
+  const [limitValue, setLimitValue] = React.useState(state.limit);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  const changeLimit: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    setLimitValue(parseInt(event.target.value, 10));
+  };
+
+  const getLimit = (): void => {
+    if (isNaN(limitValue) || limitValue === 0) {
+      setLimitValue(1000);
+      state.setLimit(1000);
+    } else {
+      state.setLimit(limitValue);
+    }
+  };
+
+  const onLimitKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    if (event.code === 'Enter') {
+      getLimit();
+      inputRef.current?.focus();
+    } else if (event.code === 'Escape') {
+      setLimitValue(state.limit);
+      inputRef.current?.select();
+    }
+  };
+
+  useEffect(() => {
+    setLimitValue(state.limit);
+  }, [state.limit]);
 
   const renderResult = (): React.ReactNode => {
     if (executionResult instanceof TDSExecutionResult) {
@@ -283,6 +479,23 @@ export const DataQualityRelationComparisonEditor = observer(() => {
           </div>
         </div>
         <div className="data-quality-relation-comparison-editor__actions-bar">
+          <div className="data-quality-relation-comparison-editor__actions-bar__limit">
+            <div className="data-quality-relation-comparison-editor__actions-bar__limit__label">
+              preview row limit
+            </div>
+            <input
+              ref={inputRef}
+              className="input--dark data-quality-relation-comparison-editor__actions-bar__limit__input"
+              spellCheck={false}
+              type="number"
+              value={Number.isNaN(limitValue) ? '' : limitValue}
+              min={1}
+              placeholder={DEFAULT_LIMIT.toString()}
+              onChange={changeLimit}
+              onBlur={getLimit}
+              onKeyDown={onLimitKeyDown}
+            />
+          </div>
           <div className="btn__dropdown-combo btn__dropdown-combo--primary">
             {state.isRunning ? (
               <button
@@ -560,6 +773,23 @@ export const DataQualityRelationComparisonEditor = observer(() => {
           </div>
         </PanelContent>
       </Panel>
+      {state.sourceParametersState.parameterValuesEditorState.showModal && (
+        <LambdaParameterValuesEditor
+          graph={editorStore.graphManagerState.graph}
+          observerContext={editorStore.changeDetectionState.observerContext}
+          lambdaParametersState={state.sourceParametersState}
+        />
+      )}
+      {state.targetParametersState.parameterValuesEditorState.showModal && (
+        <LambdaParameterValuesEditor
+          graph={editorStore.graphManagerState.graph}
+          observerContext={editorStore.changeDetectionState.observerContext}
+          lambdaParametersState={state.targetParametersState}
+        />
+      )}
+      {state.comparisonParametersEditorState.showModal && (
+        <DataQualityRelationComparisonParametersEditor state={state} />
+      )}
     </div>
   );
 });

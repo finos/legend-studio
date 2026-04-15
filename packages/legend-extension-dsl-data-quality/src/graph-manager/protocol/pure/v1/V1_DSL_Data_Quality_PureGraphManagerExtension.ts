@@ -28,6 +28,7 @@ import {
   type V1_PureModelContext,
   type V1_RootGraphFetchTree,
   type RawLambda,
+  type V1_RawLambda,
   V1_getEngineSerializationFormat,
   LegendSDLC,
   PureClientVersion,
@@ -35,6 +36,7 @@ import {
   V1_buildExecutionResult,
   V1_ExecutionError,
   V1_GraphBuilderContextBuilder,
+  V1_GraphTransformerContextBuilder,
   V1_LegendSDLC,
   V1_ProcessingContext,
   V1_Protocol,
@@ -44,9 +46,9 @@ import {
   V1_deserializeExecutionResult,
   V1_parameterValueModelSchema,
   V1_transformParameterValue,
+  V1_transformRawLambda,
   V1_RemoteEngine,
   V1_rawLambdaModelSchema,
-  V1_RawLambda,
 } from '@finos/legend-graph';
 import { createModelSchema, list, optional, primitive } from 'serializr';
 import {
@@ -128,12 +130,15 @@ export class V1_DQReconciliationInput {
   target!: V1_RawLambda;
   keys: string[] = [];
   colsForHash: string[] = [];
+  defectLimit: number | undefined;
   aggregatedHash: boolean | undefined;
   sourceHashCol: string | undefined;
   targetHashCol: string | undefined;
   includeColumnValues: boolean | undefined;
   runSourceQuery: boolean | undefined;
   runTargetQuery: boolean | undefined;
+  sourceLambdaParameterValues: V1_ParameterValue[] = [];
+  targetLambdaParameterValues: V1_ParameterValue[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DQReconciliationInput, {
@@ -143,12 +148,19 @@ export class V1_DQReconciliationInput {
       target: usingModelSchema(V1_rawLambdaModelSchema),
       keys: list(primitive()),
       colsForHash: list(primitive()),
+      defectLimit: optional(primitive()),
       aggregatedHash: optional(primitive()),
       sourceHashCol: optional(primitive()),
       targetHashCol: optional(primitive()),
       includeColumnValues: optional(primitive()),
       runSourceQuery: optional(primitive()),
       runTargetQuery: optional(primitive()),
+      sourceLambdaParameterValues: customListWithSchema(
+        V1_parameterValueModelSchema,
+      ),
+      targetLambdaParameterValues: customListWithSchema(
+        V1_parameterValueModelSchema,
+      ),
     }),
   );
 }
@@ -600,10 +612,12 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
   };
 
   private rawLambdaToV1(lambda: RawLambda): V1_RawLambda {
-    const v1Lambda = new V1_RawLambda();
-    v1Lambda.body = lambda.body;
-    v1Lambda.parameters = lambda.parameters;
-    return v1Lambda;
+    return V1_transformRawLambda(
+      lambda,
+      new V1_GraphTransformerContextBuilder(
+        this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
   }
 
   private createReconciliationInput(
@@ -621,12 +635,21 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     input.target = this.rawLambdaToV1(options.target);
     input.keys = options.keys;
     input.colsForHash = options.colsForHash;
+    input.defectLimit = options.limit;
     input.aggregatedHash = options.aggregatedHash;
     input.sourceHashCol = options.sourceHashCol;
     input.targetHashCol = options.targetHashCol;
     input.includeColumnValues = options.includeColumnValues;
     input.runSourceQuery = options.runSourceQuery;
     input.runTargetQuery = options.runTargetQuery;
+    if (options.sourceLambdaParameterValues) {
+      input.sourceLambdaParameterValues =
+        options.sourceLambdaParameterValues.map(V1_transformParameterValue);
+    }
+    if (options.targetLambdaParameterValues) {
+      input.targetLambdaParameterValues =
+        options.targetLambdaParameterValues.map(V1_transformParameterValue);
+    }
     return input;
   }
 

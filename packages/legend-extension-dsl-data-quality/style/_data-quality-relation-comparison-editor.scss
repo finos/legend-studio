@@ -51,14 +51,46 @@
 
   &__actions-bar {
     display: flex;
+    align-items: center;
     justify-content: end;
+    gap: 1rem;
     background: var(--color-dark-grey-50);
     margin-top: 2rem;
     height: 4rem;
     padding-top: 0.5rem;
 
+    &__limit {
+      @include flexVCenter;
+
+      flex-shrink: 0;
+      height: 2.8rem;
+    }
+
+    &__limit__label {
+      @include flexVCenter;
+
+      height: 100%;
+      padding: 0 1rem;
+      background: var(--color-dark-grey-280);
+      border-radius: 0.2rem 0 0 0.2rem;
+      color: var(--color-light-grey-300);
+      font-size: 1.2rem;
+      text-transform: lowercase;
+      white-space: nowrap;
+    }
+
+    &__limit__input {
+      width: 7rem;
+      height: 2.8rem;
+      padding: 0 0.8rem;
+      color: var(--color-light-grey-150);
+      background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-300);
+      border-radius: 0.2rem;
+    }
+
     &__cancel-btn {
-      padding-right: 2rem;
+      padding-right: 2.8rem;
     }
 
     &__cancel-label {
@@ -68,7 +100,7 @@
     &__run-group {
       display: flex;
       gap: 0.02rem;
-      padding-right: 2rem;
+      padding-right: 2.8rem;
     }
 
     &__run-btn {
@@ -262,6 +294,68 @@
     &__viewer {
       height: 35rem !important;
       border: 0.1rem solid var(--color-dark-grey-280);
+    }
+  }
+
+  &__parameters-modal {
+    width: 96rem;
+    max-width: calc(100vw - 4rem);
+
+    &__body {
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+      max-height: 70vh;
+    }
+
+    &__description {
+      color: var(--color-light-grey-300);
+      font-size: 1.2rem;
+      line-height: 1.8rem;
+    }
+
+    &__sections {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.6rem;
+      align-items: start;
+    }
+
+    &__section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      padding: 1.2rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      border-radius: 0.2rem;
+      background: var(--color-dark-grey-50);
+    }
+
+    &__section__title {
+      color: var(--color-light-grey-100);
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.04rem;
+      text-transform: uppercase;
+    }
+
+    &__section__body {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .value-spec-editor__reset-btn,
+    .value-spec-editor__variable__reset-btn {
+      display: none;
+    }
+
+    @media (width <= 1000px) {
+      width: calc(100vw - 4rem);
+
+      &__sections {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
   }
 }

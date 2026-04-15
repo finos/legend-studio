@@ -57,12 +57,15 @@ export interface DQReconciliationInputOptions {
   target: RawLambda;
   keys: string[];
   colsForHash: string[];
+  limit?: number | undefined;
   aggregatedHash?: boolean | undefined;
   sourceHashCol?: string | undefined;
   targetHashCol?: string | undefined;
   includeColumnValues?: boolean | undefined;
   runSourceQuery?: boolean | undefined;
   runTargetQuery?: boolean | undefined;
+  sourceLambdaParameterValues?: ParameterValue[];
+  targetLambdaParameterValues?: ParameterValue[];
 }
 
 export abstract class DataQualityExecutionContext implements Hashable {
