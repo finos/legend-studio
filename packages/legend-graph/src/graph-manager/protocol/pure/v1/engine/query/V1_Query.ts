@@ -67,6 +67,7 @@ export enum V1_QueryExecutionContextType {
   QUERY_DATASAPCE_EXECUTION_CONTEXT = 'dataSpaceExecutionContext',
   QUERY_DATAPRODUCT_NATIVE_EXECUTION_CONTEXT = 'dataProductNativeExecutionContext',
   QUERY_DATAPRODUCT_MODEL_ACCESS_EXECUTION_CONTEXT = 'dataProductModelAccessExecutionContext',
+  QUERY_DATAPRODUCT_LAKEHOUSE_EXECUTION_CONTEXT = 'dataProductLakehouseExecutionContext',
 }
 
 export class V1_QueryExplicitExecutionContext extends V1_QueryExecutionContext {
@@ -143,6 +144,23 @@ export class V1_DataProductModelAccessExecutionContext extends V1_QueryDataProdu
   );
 }
 
+export class V1_DataProductLakehouseExecutionContext extends V1_QueryDataProductExecutionContext {
+  accessPointId!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataProductLakehouseExecutionContext, {
+      _type: usingConstantValueSchema(
+        V1_QueryExecutionContextType.QUERY_DATAPRODUCT_LAKEHOUSE_EXECUTION_CONTEXT,
+      ),
+      dataProductPath: primitive(),
+      accessPointId: primitive(),
+    }),
+    {
+      deserializeNullAsUndefined: true,
+    },
+  );
+}
+
 export const V1_deserializeQueryExecutionContext = (
   json: PlainObject<V1_QueryExecutionContext>,
 ): V1_QueryExecutionContext => {
@@ -165,6 +183,11 @@ export const V1_deserializeQueryExecutionContext = (
     case V1_QueryExecutionContextType.QUERY_DATAPRODUCT_MODEL_ACCESS_EXECUTION_CONTEXT:
       return deserialize(
         V1_DataProductModelAccessExecutionContext.serialization.schema,
+        json,
+      );
+    case V1_QueryExecutionContextType.QUERY_DATAPRODUCT_LAKEHOUSE_EXECUTION_CONTEXT:
+      return deserialize(
+        V1_DataProductLakehouseExecutionContext.serialization.schema,
         json,
       );
     default: {
@@ -196,6 +219,11 @@ export const V1_serializeQueryExecutionContext = (
   } else if (protocol instanceof V1_DataProductModelAccessExecutionContext) {
     return serialize(
       V1_DataProductModelAccessExecutionContext.serialization.schema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_DataProductLakehouseExecutionContext) {
+    return serialize(
+      V1_DataProductLakehouseExecutionContext.serialization.schema,
       protocol,
     );
   }

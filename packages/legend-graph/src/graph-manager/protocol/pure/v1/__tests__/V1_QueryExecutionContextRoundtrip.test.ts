@@ -22,6 +22,7 @@ import {
   V1_QueryDataSpaceExecutionContext,
   V1_DataProductNativeExecutionContext,
   V1_DataProductModelAccessExecutionContext,
+  V1_DataProductLakehouseExecutionContext,
   V1_deserializeQueryExecutionContext,
   V1_serializeQueryExecutionContext,
 } from '../engine/query/V1_Query.js';
@@ -87,6 +88,20 @@ const TEST_DATA__dataProductModelAccessExecutionContextQueryJson = {
   },
 };
 
+const TEST_DATA__dataProductLakehouseExecutionContextQueryJson = {
+  name: 'MyDataProductLakehouseQuery',
+  id: 'test-query-id-5',
+  groupId: 'com.example',
+  artifactId: 'test-artifact',
+  versionId: '1.0.0',
+  content: '|model::Person.all()->project()',
+  executionContext: {
+    _type: 'dataProductLakehouseExecutionContext',
+    dataProductPath: 'model::MyDataProduct',
+    accessPointId: 'my-lakehouse-access-point',
+  },
+};
+
 // --------------------------------
 // Execution context roundtrip tests
 // --------------------------------
@@ -142,6 +157,21 @@ describe(unitTest('Query execution context serialization roundtrip'), () => {
     const modelAccess = context as V1_DataProductModelAccessExecutionContext;
     expect(modelAccess.dataProductPath).toBe('model::MyDataProduct');
     expect(modelAccess.accessPointGroupId).toBe('my-access-point-group');
+    const reserialized = V1_serializeQueryExecutionContext(context);
+    expect(reserialized).toEqual(json);
+  });
+
+  test('DataProduct lakehouse execution context roundtrip', () => {
+    const json: PlainObject = {
+      _type: 'dataProductLakehouseExecutionContext',
+      dataProductPath: 'model::MyDataProduct',
+      accessPointId: 'my-lakehouse-access-point',
+    };
+    const context = V1_deserializeQueryExecutionContext(json);
+    expect(context).toBeInstanceOf(V1_DataProductLakehouseExecutionContext);
+    const lakehouse = context as V1_DataProductLakehouseExecutionContext;
+    expect(lakehouse.dataProductPath).toBe('model::MyDataProduct');
+    expect(lakehouse.accessPointId).toBe('my-lakehouse-access-point');
     const reserialized = V1_serializeQueryExecutionContext(context);
     expect(reserialized).toEqual(json);
   });
@@ -216,6 +246,24 @@ describe(unitTest('V1_Query serialization roundtrip'), () => {
     const reserialized = V1_Query.serialization.toJson(v1Query);
     expect(reserialized).toEqual(
       TEST_DATA__dataProductModelAccessExecutionContextQueryJson,
+    );
+  });
+
+  test('V1_Query with dataProduct lakehouse execution context roundtrip', () => {
+    const v1Query = V1_Query.serialization.fromJson(
+      TEST_DATA__dataProductLakehouseExecutionContextQueryJson,
+    );
+    expect(v1Query.name).toBe('MyDataProductLakehouseQuery');
+    expect(v1Query.executionContext).toBeInstanceOf(
+      V1_DataProductLakehouseExecutionContext,
+    );
+    const exec =
+      v1Query.executionContext as V1_DataProductLakehouseExecutionContext;
+    expect(exec.dataProductPath).toBe('model::MyDataProduct');
+    expect(exec.accessPointId).toBe('my-lakehouse-access-point');
+    const reserialized = V1_Query.serialization.toJson(v1Query);
+    expect(reserialized).toEqual(
+      TEST_DATA__dataProductLakehouseExecutionContextQueryJson,
     );
   });
 

@@ -36,6 +36,8 @@ import {
   QueryDataProductModelAccessExecutionContext,
   QueryDataProductNativeExecutionContextInfo,
   QueryDataProductModelAccessExecutionContextInfo,
+  QueryDataProductLakehouseExecutionContext,
+  QueryDataProductLakehouseExecutionContextInfo,
 } from '../../../../../graph-manager/action/query/Query.js';
 import {
   type V1_LightQuery,
@@ -46,6 +48,7 @@ import {
   type V1_QueryExecutionContext,
   V1_DataProductNativeExecutionContext,
   V1_DataProductModelAccessExecutionContext,
+  V1_DataProductLakehouseExecutionContext,
 } from './query/V1_Query.js';
 import type { PureModel } from '../../../../../graph/PureModel.js';
 import { DEPRECATED__ServiceTestResult } from '../../../../../graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
@@ -220,6 +223,13 @@ export const V1_buildExecutionContext = (
     exec.dataProductPath = protocolExecContext.dataProductPath;
     exec.accessPointGroupId = protocolExecContext.accessPointGroupId;
     return exec;
+  } else if (
+    protocolExecContext instanceof V1_DataProductLakehouseExecutionContext
+  ) {
+    const exec = new QueryDataProductLakehouseExecutionContext();
+    exec.dataProductPath = protocolExecContext.dataProductPath;
+    exec.accessPointId = protocolExecContext.accessPointId;
+    return exec;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');
 };
@@ -262,6 +272,13 @@ export const V1_buildExecutionContextInfo = (
     const exec = new QueryDataProductModelAccessExecutionContextInfo();
     exec.dataProductPath = v1_execContext.dataProductPath;
     exec.accessPointGroupId = v1_execContext.accessPointGroupId;
+    return exec;
+  } else if (
+    v1_execContext instanceof V1_DataProductLakehouseExecutionContext
+  ) {
+    const exec = new QueryDataProductLakehouseExecutionContextInfo();
+    exec.dataProductPath = v1_execContext.dataProductPath;
+    exec.accessPointId = v1_execContext.accessPointId;
     return exec;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');
@@ -381,6 +398,11 @@ export const V1_transformQueryExecutionContext = (
     const protocol = new V1_DataProductModelAccessExecutionContext();
     protocol.dataProductPath = execContext.dataProductPath;
     protocol.accessPointGroupId = execContext.accessPointGroupId;
+    return protocol;
+  } else if (execContext instanceof QueryDataProductLakehouseExecutionContext) {
+    const protocol = new V1_DataProductLakehouseExecutionContext();
+    protocol.dataProductPath = execContext.dataProductPath;
+    protocol.accessPointId = execContext.accessPointId;
     return protocol;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');

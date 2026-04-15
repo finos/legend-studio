@@ -18,6 +18,8 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   type DataProductOption,
   type DataProductQueryBuilderState,
+  type ExecutionIdOption,
+  LakehouseDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
 } from '../../stores/workflows/dataProduct/DataProductQueryBuilderState.js';
 import {
@@ -27,11 +29,7 @@ import {
 import { CustomSelectorInput } from '@finos/legend-art';
 import { QueryBuilderClassSelector } from '../QueryBuilderSideBar.js';
 import { observer } from 'mobx-react-lite';
-import type {
-  PackageableRuntime,
-  NativeModelExecutionContext,
-  ModelAccessPointGroup,
-} from '@finos/legend-graph';
+import type { PackageableRuntime } from '@finos/legend-graph';
 import { useEffect } from 'react';
 import { flowResult } from 'mobx';
 
@@ -95,29 +93,35 @@ export const DataProductQueryBuilderSetupFormContent = observer(
             {...(formatOptionLabel ? { formatOptionLabel } : {})}
           />
         </div>
-        {Boolean(queryBuilderState.showExecutionContextOptions) && (
+        {Boolean(queryBuilderState.showExecutionIdSelector) && (
           <div className="query-builder__setup__config-group__item">
             <label
               className="btn--sm query-builder__setup__config-group__item__label"
-              title="execution context"
-              htmlFor="query-builder__setup__context-selector"
+              title="execution id"
+              htmlFor="query-builder__setup__execution-id-selector"
             >
-              Context
+              Execution ID
             </label>
             <CustomSelectorInput
-              inputId="query-builder__setup__context-selector"
+              inputId="query-builder__setup__execution-id-selector"
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-              placeholder="Choose an execution context..."
-              options={queryBuilderState.execOptions}
-              disabled={
-                queryBuilderState.execOptions.length < 1 ||
-                (queryBuilderState.execOptions.length === 1 &&
-                  Boolean(queryBuilderState.selectedExecOption))
-              }
-              onChange={(option: { value: NativeModelExecutionContext }) =>
-                queryBuilderState.changeNativeExecutionContext(option.value)
-              }
-              value={queryBuilderState.selectedExecOption}
+              placeholder="Choose an execution id..."
+              options={queryBuilderState.executionIdOptions}
+              disabled={queryBuilderState.executionIdOptions.length < 2}
+              onChange={(option: ExecutionIdOption) => {
+                queryBuilderState
+                  .changeExecutionId(option)
+                  .catch(applicationStore.alertUnhandledError);
+              }}
+              value={queryBuilderState.selectedExecutionIdOption}
+              formatOptionLabel={(option: ExecutionIdOption) => (
+                <div className="query-builder__setup__config-group__item__selector__option">
+                  <span>{option.label}</span>
+                  <span className="query-builder__setup__config-group__item__selector__option__tag">
+                    {option.tag}
+                  </span>
+                </div>
+              )}
               darkMode={
                 !applicationStore.layoutService
                   .TEMPORARY__isLightColorThemeEnabled
@@ -125,42 +129,16 @@ export const DataProductQueryBuilderSetupFormContent = observer(
             />
           </div>
         )}
-        {Boolean(queryBuilderState.showModelAccessPointGroupSelector) && (
+        {!queryBuilderState.isLakehouseMode && (
           <div className="query-builder__setup__config-group__item">
-            <label
-              className="btn--sm query-builder__setup__config-group__item__label"
-              title="access point group"
-              htmlFor="query-builder__setup__access-point-group-selector"
-            >
-              Access Point Group
-            </label>
-            <CustomSelectorInput
-              inputId="query-builder__setup__access-point-group-selector"
-              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-              placeholder="Choose an access point group..."
-              options={queryBuilderState.modelAccessPointGroupOptions}
-              disabled={
-                queryBuilderState.modelAccessPointGroupOptions.length < 1
-              }
-              onChange={(option: { value: ModelAccessPointGroup }) =>
-                queryBuilderState.changeModelAccessPointGroupValue(option.value)
-              }
-              value={queryBuilderState.selectedModelAccessPointGroupOption}
-              darkMode={
-                !applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
+            <QueryBuilderClassSelector
+              queryBuilderState={queryBuilderState}
+              classes={queryBuilderState.usableClasses}
+              onClassChange={queryBuilderState.onClassChange}
+              noMatchMessage="No compatible entity found for specified execution context"
             />
           </div>
         )}
-        <div className="query-builder__setup__config-group__item">
-          <QueryBuilderClassSelector
-            queryBuilderState={queryBuilderState}
-            classes={queryBuilderState.usableClasses}
-            onClassChange={queryBuilderState.onClassChange}
-            noMatchMessage="No compatible entity found for specified execution context"
-          />
-        </div>
       </>
     );
   },
@@ -173,23 +151,23 @@ const DataProductQueryBuilderSetupPanelContent = observer(
     const executionState = queryBuilderState.executionState;
 
     // runtime options (only for model access point group)
+    const runtimeRequired =
+      executionState instanceof ModelAccessPointDataProductExecutionState ||
+      executionState instanceof LakehouseDataProductExecutionState;
     const showRuntimeSelector =
-      executionState instanceof ModelAccessPointDataProductExecutionState &&
-      executionState.showRuntimeOptions;
-    const runtimeOptions =
-      executionState instanceof ModelAccessPointDataProductExecutionState
-        ? executionState.compatibleRuntimes.map(buildElementOption)
-        : [];
+      runtimeRequired && executionState.showRuntimeOptions;
+    const runtimeOptions = runtimeRequired
+      ? executionState.compatibleRuntimes.map(buildElementOption)
+      : [];
     const selectedRuntimeOption =
-      executionState instanceof ModelAccessPointDataProductExecutionState &&
-      executionState.selectedRuntime
+      runtimeRequired && executionState.selectedRuntime
         ? buildElementOption(executionState.selectedRuntime)
         : null;
 
     const onRuntimeOptionChange = (
       option: PackageableElementOption<PackageableRuntime>,
     ): void => {
-      if (executionState instanceof ModelAccessPointDataProductExecutionState) {
+      if (runtimeRequired) {
         if (option.value === executionState.selectedRuntime) {
           return;
         }

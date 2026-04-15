@@ -33,15 +33,6 @@ export const resolveDefaultDataProductAccessType = (
       id: modelAcessGroup.id,
     };
   }
-
-  // const native =
-  //   dataProductArtifact.nativeModelAccess?.nativeModelExecutionContexts[0];
-  // if (native) {
-  //   return {
-  //     type: DataProductAccessType.NATIVE,
-  //     id: native.key,
-  //   };
-  // }
   throw new Error(
     `Data Product not supported for querying on legend query ${dataProductArtifact.dataProduct.path}. Must contain a model access point or native model access.`,
   );

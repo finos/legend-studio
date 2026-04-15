@@ -27,6 +27,8 @@ import {
   type DataProductElement,
   type ElementScope,
   type NativeModelExecutionContext,
+  LakehouseAccessPoint,
+  type AccessPointGroup,
 } from '../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import type { Mapping } from '../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { GraphManagerState } from '../GraphManagerState.js';
@@ -119,9 +121,26 @@ export const resolveUsableDataProductClasses = (
   return compatibleClasses;
 };
 
+export const resolveLakehouseAccessPoint = (
+  dataProduct: DataProduct,
+): LakehouseAccessPoint | undefined => {
+  for (const group of dataProduct.accessPointGroups) {
+    const lakehouseAp = group.accessPoints.find(
+      (ap): ap is LakehouseAccessPoint => ap instanceof LakehouseAccessPoint,
+    );
+    if (lakehouseAp) {
+      return lakehouseAp;
+    }
+  }
+  return undefined;
+};
+
 export const resolveDataProductExecutionState = (
   dataProduct: DataProduct,
-): NativeModelExecutionContext | ModelAccessPointGroup => {
+):
+  | NativeModelExecutionContext
+  | ModelAccessPointGroup
+  | LakehouseAccessPoint => {
   if (isDataProductNative(dataProduct)) {
     return getModelGroupFromNativeDataProduct(dataProduct)
       .defaultExecutionContext;
@@ -129,9 +148,33 @@ export const resolveDataProductExecutionState = (
     const modelAccessGroup = dataProduct.accessPointGroups.filter(
       filterByType(ModelAccessPointGroup),
     )[0];
-    return guaranteeNonNullable(
-      modelAccessGroup,
-      'No native model access group or model access group on data product',
+    if (modelAccessGroup) {
+      return modelAccessGroup;
+    }
+    const lakehouseAccessPoint = resolveLakehouseAccessPoint(dataProduct);
+    if (lakehouseAccessPoint) {
+      return lakehouseAccessPoint;
+    }
+    throw new Error(
+      'No native model access, model access group, or lakehouse access point on data product',
     );
   }
+};
+
+export const findLakehouseAccessPointGroup = (
+  dataProduct: DataProduct,
+  accessPointId: string,
+):
+  | { group: AccessPointGroup; accessPoint: LakehouseAccessPoint }
+  | undefined => {
+  for (const group of dataProduct.accessPointGroups) {
+    const ap = group.accessPoints.find(
+      (a): a is LakehouseAccessPoint =>
+        a instanceof LakehouseAccessPoint && a.id === accessPointId,
+    );
+    if (ap) {
+      return { group, accessPoint: ap };
+    }
+  }
+  return undefined;
 };

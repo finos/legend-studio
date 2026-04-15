@@ -1231,7 +1231,11 @@ export abstract class QueryEditorStore {
       sourceInfo,
     );
     // Pass pre-resolved state to avoid double-resolution
-    queryBuilderState.initWithDataProduct(dataProduct, resolvedState);
+    queryBuilderState.initWithDataProduct(
+      dataProduct,
+      undefined,
+      resolvedState,
+    );
 
     // 7. Wire in mapping coverage result
     const mappingCoverageResult =
@@ -1252,7 +1256,9 @@ export abstract class QueryEditorStore {
             execValue,
             queryBuilderState,
           ).withAdhocRuntime();
-    queryBuilderState.changeMapping(queryBuilderState.executionState.mapping);
+    if (queryBuilderState.executionState.mapping) {
+      queryBuilderState.changeMapping(queryBuilderState.executionState.mapping);
+    }
     queryBuilderState.changeRuntime(
       new RuntimePointer(
         PackageableElementExplicitReference.create(packageableRuntime),
