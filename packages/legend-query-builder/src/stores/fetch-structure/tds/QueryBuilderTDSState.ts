@@ -930,6 +930,7 @@ export class QueryBuilderTDSState
       this.aggregationState,
       this.postFilterState,
       this.resultSetModifierState,
+      this.windowState,
     ]);
   }
 

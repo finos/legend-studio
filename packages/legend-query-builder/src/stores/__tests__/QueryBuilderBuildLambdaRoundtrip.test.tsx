@@ -163,7 +163,9 @@ import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../store
 import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
 import {
   TEST_DATA_typedTDSMax,
+  TEST_DATA_typedTDSPercentRank,
   TEST_DATA_typedTDSRank,
+  TEST_DATA_typedTDSRowNumber,
 } from './TEST_DATA__TypedTDSWindowFunctions.js';
 import {
   TEST_DATA__QueryBuilder_Accessors,
@@ -825,6 +827,18 @@ const cases: RoundtripTestCase[] = [
     'Typed TDS max() window function',
     olapGroupbyCtx,
     TEST_DATA_typedTDSMax,
+    undefined,
+  ],
+  [
+    'Typed TDS rowNumber() window function',
+    olapGroupbyCtx,
+    TEST_DATA_typedTDSRowNumber,
+    undefined,
+  ],
+  [
+    'percentRank() window function',
+    olapGroupbyCtx,
+    TEST_DATA_typedTDSPercentRank,
     undefined,
   ],
   // accessor

@@ -131,6 +131,8 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   RELATION_OVER = 'meta::pure::functions::relation::over',
   RELATION_RANK = 'meta::pure::functions::relation::rank',
   RELATION_DENSE_RANK = 'meta::pure::functions::relation::denseRank',
+  RELATION_ROW_NUMBER = 'meta::pure::functions::relation::rowNumber',
+  RELATION_PERCENT_RANK = 'meta::pure::functions::relation::percentRank',
 
   // filter
   CONTAINS = 'meta::pure::functions::string::contains',
