@@ -687,6 +687,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
         [],
         12,
         2,
+        false,
       );
     });
 
@@ -722,7 +723,15 @@ describe('MarketplaceLakehouseSearchResults', () => {
       ).toHaveBeenCalledTimes(1);
       expect(
         MOCK__baseStore.marketplaceServerClient.dataProductSearch,
-      ).toHaveBeenCalledWith('data', expect.anything(), 'hybrid', [], 48, 1);
+      ).toHaveBeenCalledWith(
+        'data',
+        expect.anything(),
+        'hybrid',
+        [],
+        48,
+        1,
+        false,
+      );
     });
 
     test('Pagination controls render for producer search', async () => {
@@ -899,6 +908,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
         ['data_product_type=lakehouse'],
         12,
         1,
+        false,
       );
     });
 
@@ -981,7 +991,15 @@ describe('MarketplaceLakehouseSearchResults', () => {
       // Search should be re-triggered with empty filters
       expect(
         MOCK__baseStore.marketplaceServerClient.dataProductSearch,
-      ).toHaveBeenCalledWith('data', expect.anything(), 'hybrid', [], 12, 1);
+      ).toHaveBeenCalledWith(
+        'data',
+        expect.anything(),
+        'hybrid',
+        [],
+        12,
+        1,
+        false,
+      );
 
       // "Clear all" should disappear
       expect(panel.queryByText('Clear all')).toBeNull();
