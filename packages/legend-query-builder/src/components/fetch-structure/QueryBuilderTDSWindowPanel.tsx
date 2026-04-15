@@ -235,7 +235,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
     const operators = windowState.operators;
     const supportedOperators = tdsState.queryBuilderState.useRelation
       ? operators.filter((op) => op.relationFunc !== undefined)
-      : operators;
+      : operators.filter((op) => op.pureFunc !== undefined);
     const operatorState = windowColumnState.operatorState;
     const [selectedOperatorState, setSelectedOperatorState] = useState(() => {
       if (
@@ -784,7 +784,7 @@ const QueryBuilderWindowColumnEditor = observer(
     const operators = windowState.operators;
     const supportedOperators = tdsState.queryBuilderState.useRelation
       ? operators.filter((op) => op.relationFunc !== undefined)
-      : operators;
+      : operators.filter((op) => op.pureFunc !== undefined);
     // state
     const ref = useRef<HTMLDivElement>(null);
     const handleRef = useRef<HTMLDivElement>(null);

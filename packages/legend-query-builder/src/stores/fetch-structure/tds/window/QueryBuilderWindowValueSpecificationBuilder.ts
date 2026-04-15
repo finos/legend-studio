@@ -99,7 +99,12 @@ const appendOLAPGroupByColumnState = (
   const operationState = olapGroupByColumnState.operatorState;
   const lambdaParameterName =
     operationState.lambdaParameterNames[0] ?? DEFAULT_LAMBDA_VARIABLE_NAME;
-  const olapFunc = extractElementNameFromPath(operationState.operator.pureFunc);
+  const olapFunc = extractElementNameFromPath(
+    guaranteeNonNullable(
+      operationState.operator.pureFunc,
+      `Operator '${operationState.operator.getLabel()}' does not have a compatible OLAP function`,
+    ),
+  );
   const olapFuncExpression = new SimpleFunctionExpression(olapFunc);
   olapFuncExpression.parametersValues = [
     new VariableExpression(lambdaParameterName, Multiplicity.ONE),
@@ -306,11 +311,23 @@ const appendExtendColumnState = (
       rowParam = DEFAULT_WINDOW_FUNCTION_ROW_VAR_NAME,
     ] = operatorState.lambdaParameterNames;
 
-    operatorFuncExpression.parametersValues = [
-      new VariableExpression(partitionParam, Multiplicity.ONE),
-      new VariableExpression(windowParam, Multiplicity.ONE),
-      new VariableExpression(rowParam, Multiplicity.ONE),
-    ];
+    if (
+      operatorFunc ===
+      extractElementNameFromPath(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_ROW_NUMBER,
+      )
+    ) {
+      operatorFuncExpression.parametersValues = [
+        new VariableExpression(partitionParam, Multiplicity.ONE),
+        new VariableExpression(rowParam, Multiplicity.ONE),
+      ];
+    } else {
+      operatorFuncExpression.parametersValues = [
+        new VariableExpression(partitionParam, Multiplicity.ONE),
+        new VariableExpression(windowParam, Multiplicity.ONE),
+        new VariableExpression(rowParam, Multiplicity.ONE),
+      ];
+    }
 
     const rankLambda = buildGenericLambdaFunctionInstanceValue(
       [partitionParam, windowParam, rowParam],

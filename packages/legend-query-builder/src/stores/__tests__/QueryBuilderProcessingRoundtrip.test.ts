@@ -75,7 +75,9 @@ import { TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables
 import { TEST_DATA__projectionWithWAVGAggregation } from './TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA_typedTDSMax,
+  TEST_DATA_typedTDSPercentRank,
   TEST_DATA_typedTDSRank,
+  TEST_DATA_typedTDSRowNumber,
 } from './TEST_DATA__TypedTDSWindowFunctions.js';
 import {
   TEST_DATA__QueryBuilder_Accessors,
@@ -265,6 +267,8 @@ const cases: RoundtripTestCase[] = [
   //typed TDS
   ['typed rank() function', olapGroupbyCtx, TEST_DATA_typedTDSRank],
   ['typed max() function', olapGroupbyCtx, TEST_DATA_typedTDSMax],
+  ['typed rowNumber() function', olapGroupbyCtx, TEST_DATA_typedTDSRowNumber],
+  ['percentRank() function', olapGroupbyCtx, TEST_DATA_typedTDSPercentRank],
   // accessor (ingest + database)
   [
     'Accessor — simple project() from IngestDefinition with post-filter',

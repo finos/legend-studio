@@ -53,7 +53,9 @@ import {
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
 import {
   TEST_DATA_typedTDSMax,
+  TEST_DATA_typedTDSPercentRank,
   TEST_DATA_typedTDSRank,
+  TEST_DATA_typedTDSRowNumber,
 } from '../../stores/__tests__/TEST_DATA__TypedTDSWindowFunctions.js';
 
 test(
@@ -819,6 +821,128 @@ test(
 
 test(
   integrationTest(
+    'Typed TDS rowNumber operator is correctly parsed from grammar',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA_typedTDSRowNumber.parameters,
+          TEST_DATA_typedTDSRowNumber.body,
+        ),
+      );
+    });
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsState.showWindowFuncPanel).toBe(true);
+
+    expect(tdsState.windowState.windowColumns).toHaveLength(1);
+    const windowCol = guaranteeNonNullable(
+      tdsState.windowState.windowColumns[0],
+    );
+
+    expect(windowCol.columnName).toBe('ROW');
+
+    const operatorState = guaranteeType(
+      windowCol.operatorState,
+      QueryBuilderTDS_WindowRankOperatorState,
+    );
+    expect(operatorState.operator.getLabel()).toBe('row number');
+
+    expect(windowCol.windowColumns).toHaveLength(1);
+    expect(windowCol.windowColumns[0]?.columnName).toBe('First Name');
+
+    expect(windowCol.sortByState).not.toBeUndefined();
+    expect(windowCol.sortByState?.columnState.columnName).toBe('Last Name');
+    expect(windowCol.sortByState?.sortType).toBe(COLUMN_SORT_TYPE.ASC);
+
+    const windowFunctionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    expect(getByText(windowFunctionPanel, 'row number')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, '(1)')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, 'Last Name')).not.toBeNull();
+    expect(getByText(windowFunctionPanel, 'asc')).not.toBeNull();
+    expect(getByDisplayValue(windowFunctionPanel, 'ROW')).not.toBeNull();
+  },
+);
+
+test(integrationTest('Editing a percentRank Query'), async () => {
+  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+    stub_RawLambda(),
+    'model::RelationalMapping',
+    'model::Runtime',
+    TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+  );
+  await act(async () => {
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(
+        TEST_DATA_typedTDSPercentRank.parameters,
+        TEST_DATA_typedTDSPercentRank.body,
+      ),
+    );
+  });
+
+  const tdsState = guaranteeType(
+    queryBuilderState.fetchStructureState.implementation,
+    QueryBuilderTDSState,
+  );
+  const percentRankOperator = guaranteeNonNullable(
+    tdsState.windowState.operators.find(
+      (operator) => operator.getLabel() === 'percent rank',
+    ),
+  );
+
+  expect(
+    tdsState.projectionColumns.every((column) =>
+      percentRankOperator.isCompatibleWithType(column.getColumnType()),
+    ),
+  ).toBe(true);
+  expect(
+    percentRankOperator.isCompatibleWithType(
+      queryBuilderState.graphManagerState.graph.getClass('model::Person'),
+    ),
+  ).toBe(false);
+
+  const initialHash = queryBuilderState.hashCode;
+  const windowFunctionPanel = await renderResult.findByTestId(
+    QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+  );
+  expect(getByText(windowFunctionPanel, 'percent rank')).not.toBeNull();
+  expect(getByDisplayValue(windowFunctionPanel, 'percent rank')).not.toBeNull();
+
+  const editButton = guaranteeNonNullable(
+    getByDisplayValue(windowFunctionPanel, 'percent rank').parentElement
+      ?.parentElement?.nextElementSibling?.firstElementChild,
+  );
+  fireEvent.click(editButton);
+  await renderResult.findByText('Update Window Function Column');
+
+  const operatorDropdown = guaranteeNonNullable(
+    renderResult.getAllByTitle('Choose Window Function Operator...')[1],
+  );
+  fireEvent.click(operatorDropdown);
+  fireEvent.click(renderResult.getByText('dense rank'));
+  fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
+
+  expect(getByText(windowFunctionPanel, 'dense rank')).not.toBeNull();
+  expect(getByDisplayValue(windowFunctionPanel, 'dense rank')).not.toBeNull();
+  expect(queryBuilderState.hashCode).not.toBe(initialHash);
+});
+
+test(
+  integrationTest(
     'Typed TDS window function operator dropdown excludes operators unsupported by typed TDS',
   ),
   async () => {
@@ -846,8 +970,57 @@ test(
     fireEvent.click(operatorDropdown);
 
     expect(renderResult.queryByText('average rank')).toBeNull();
-    expect(renderResult.queryByText('row number')).toBeNull();
 
+    expect(renderResult.queryByText('dense rank')).not.toBeNull();
+    expect(renderResult.queryByText('max')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Untyped TDS window function operator dropdown excludes unsupported operators',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowWindowFuncPanel(true);
+    });
+
+    expect(queryBuilderState.useRelation).toBe(false);
+
+    await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    const windowFunctionPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+
+    fireEvent.click(
+      getByTitle(windowFunctionPanel, 'Create Window Function Column'),
+    );
+    await renderResult.findByText('Create Window Function Column');
+
+    const operatorDropdown = guaranteeNonNullable(
+      renderResult.getAllByTitle('Choose Window Function Operator...')[0],
+    );
+    fireEvent.click(operatorDropdown);
+
+    expect(renderResult.queryByText('percent rank')).toBeNull();
+
+    expect(renderResult.queryByText('average rank')).not.toBeNull();
     expect(renderResult.queryByText('dense rank')).not.toBeNull();
     expect(renderResult.queryByText('max')).not.toBeNull();
   },

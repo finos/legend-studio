@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2026-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,31 +15,28 @@
  */
 
 import { PRIMITIVE_TYPE, type Type } from '@finos/legend-graph';
+import { QueryBuilderTDS_WindowOperator } from './QueryBuilderTDS_WindowOperator.js';
 import { hashArray } from '@finos/legend-shared';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
-import { QueryBuilderTDS_WindowOperator } from './QueryBuilderTDS_WindowOperator.js';
 
-export class QueryBuilderTDS_WindowRankOperator_RowNumber extends QueryBuilderTDS_WindowOperator {
-  getLabel(): string {
-    return 'row number';
+export class QueryBuilderTDS_WindowRankOperator_PercentRank extends QueryBuilderTDS_WindowOperator {
+  override getLabel(): string {
+    return 'percent rank';
   }
-
-  get pureFunc(): string {
-    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_ROW_NUMBER;
+  override get pureFunc(): string | undefined {
+    // percentRank() is only supported for typed TDS
+    return undefined;
   }
-
-  get relationFunc(): string | undefined {
-    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_ROW_NUMBER;
+  override get relationFunc(): string | undefined {
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PERCENT_RANK;
   }
-
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_ROW_NUMBER,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_OPERATOR_PERCENT_RANK,
     ]);
   }
-
-  isCompatibleWithType(type: Type | undefined): boolean {
+  override isCompatibleWithType(type: Type | undefined): boolean {
     if (type) {
       return (
         [

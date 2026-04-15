@@ -25,7 +25,7 @@ export abstract class QueryBuilderTDS_WindowOperator implements Hashable {
 
   abstract get hashCode(): string;
 
-  abstract get pureFunc(): string;
+  abstract get pureFunc(): string | undefined;
 
   abstract get relationFunc(): string | undefined;
 

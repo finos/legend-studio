@@ -24,6 +24,7 @@ import { QueryBuilderTDS_WindowOperator_Count } from './operators/QueryBuilderTD
 import { QueryBuilderTDS_WindowOperator_Max } from './operators/QueryBuilderTDS_WindowOperator_Max.js';
 import { QueryBuilderTDS_WindowOperator_Min } from './operators/QueryBuilderTDS_WindowOperator_Min.js';
 import { QueryBuilderTDS_WindowOperator_Average } from './operators/QueryBuilderTDS_WindowOperator_Average.js';
+import { QueryBuilderTDS_WindowRankOperator_PercentRank } from './operators/QueryBuilderTDS_WindowOperator_PercentRank.js';
 
 export const getQueryBuilderCoreWindowOperators =
   (): QueryBuilderTDS_WindowOperator[] => [
@@ -36,4 +37,5 @@ export const getQueryBuilderCoreWindowOperators =
     new QueryBuilderTDS_WindowRankOperator_DenseRank(),
     new QueryBuilderTDS_WindowRankOperator_Rank(),
     new QueryBuilderTDS_WindowRankOperator_RowNumber(),
+    new QueryBuilderTDS_WindowRankOperator_PercentRank(),
   ];
