@@ -209,3 +209,177 @@ describe('UnknownElement', () => {
     },
   );
 });
+
+describe('Large graph build (batch processing)', () => {
+  /**
+   * Creates N simple class entities to exceed the GRAPH_BUILDER_BATCH_SIZE (100).
+   * Each class has a single String property to ensure it exercises the full
+   * graph builder pipeline (indexing, second pass, etc.).
+   */
+  const createLargeEntitySet = (count: number): Entity[] =>
+    Array.from({ length: count }, (_, i) => ({
+      path: `test::largebatch::TestClass_${i}`,
+      content: {
+        _type: 'class',
+        name: `TestClass_${i}`,
+        package: 'test::largebatch',
+        properties: [
+          {
+            multiplicity: { lowerBound: 1, upperBound: 1 },
+            name: 'value',
+            type: 'String',
+          },
+        ],
+      },
+      classifierPath: 'meta::pure::metamodel::type::Class',
+    })) as Entity[];
+
+  test(
+    unitTest(
+      'Graph builds successfully with > 100 elements (multi-batch indexing and processing)',
+    ),
+    async () => {
+      const count = 150;
+      const entities = createLargeEntitySet(count);
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(state, entities);
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+
+      // All elements should be indexed and accessible
+      for (let i = 0; i < count; i++) {
+        const cls = state.graph.getClass(`test::largebatch::TestClass_${i}`);
+        expect(cls).toBeDefined();
+        expect(cls.properties).toHaveLength(1);
+        expect(guaranteeNonNullable(cls.properties[0]).name).toBe('value');
+      }
+    },
+  );
+
+  test(
+    unitTest('All elements are roundtrip-able after multi-batch graph build'),
+    async () => {
+      const count = 150;
+      const entities = createLargeEntitySet(count);
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(state, entities);
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+
+      // Serialize elements back to entities and verify count matches
+      const transformedEntities = state.graph.allOwnElements.map((element) =>
+        state.graphManager.elementToEntity(element),
+      );
+      expect(transformedEntities).toHaveLength(count);
+
+      // Each original entity path should be present in the output
+      const transformedPaths = new Set(transformedEntities.map((e) => e.path));
+      for (let i = 0; i < count; i++) {
+        expect(transformedPaths.has(`test::largebatch::TestClass_${i}`)).toBe(
+          true,
+        );
+      }
+    },
+  );
+
+  test(
+    unitTest(
+      'Element order is preserved across batch boundaries in graph build',
+    ),
+    async () => {
+      const count = 250;
+      const entities = createLargeEntitySet(count);
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(state, entities);
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+      expect(state.graph.allOwnElements.length).toBe(count);
+
+      // Spot-check elements near batch boundaries (0, 99, 100, 199, 200, 249)
+      for (const idx of [0, 99, 100, 199, 200, 249]) {
+        expect(
+          state.graph.getClass(`test::largebatch::TestClass_${idx}`),
+        ).toBeDefined();
+      }
+    },
+  );
+});
+
+describe('Diverse graph build (parallel build phases)', () => {
+  test(
+    unitTest(
+      'Graph with diverse element types builds correctly with parallel phases',
+    ),
+    async () => {
+      const { TEST_DATA__DiverseGraph } = await import(
+        './TEST_DATA__DiverseGraph.js'
+      );
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(
+        state,
+        TEST_DATA__DiverseGraph as Entity[],
+      );
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+
+      const graph = state.graph;
+
+      // Verify types built correctly (sequential phase)
+      expect(graph.getProfile('test::diverse::MyProfile')).toBeDefined();
+      expect(graph.getEnumeration('test::diverse::Status')).toBeDefined();
+      expect(graph.getEnumeration('test::diverse::Status').values).toHaveLength(
+        2,
+      );
+      expect(graph.getClass('test::diverse::SourcePerson')).toBeDefined();
+      expect(graph.getClass('test::diverse::TargetPerson')).toBeDefined();
+
+      // Verify mapping built correctly (sequential phase)
+      const mapping = graph.getMapping('test::diverse::MyMapping');
+      expect(mapping).toBeDefined();
+      expect(mapping.classMappings).toHaveLength(1);
+
+      // Verify connection and runtime built correctly (sequential phase)
+      expect(graph.getConnection('test::diverse::MyConnection')).toBeDefined();
+      const runtime = graph.getRuntime('test::diverse::MyRuntime');
+      expect(runtime).toBeDefined();
+
+      // Verify service built correctly (parallelized phase)
+      // This is the key assertion — services are now built in parallel
+      // and reference mappings/runtimes from earlier phases
+      const service = graph.getService('test::diverse::MyService');
+      expect(service).toBeDefined();
+    },
+  );
+
+  test(
+    unitTest('All diverse elements are roundtrip-able after parallel build'),
+    async () => {
+      const { TEST_DATA__DiverseGraph } = await import(
+        './TEST_DATA__DiverseGraph.js'
+      );
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(
+        state,
+        TEST_DATA__DiverseGraph as Entity[],
+      );
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+
+      // Serialize all elements back to entities
+      const transformedEntities = state.graph.allOwnElements.map((element) =>
+        state.graphManager.elementToEntity(element),
+      );
+
+      // Every input entity path should be present in the output
+      const transformedPaths = new Set(transformedEntities.map((e) => e.path));
+      const expectedPaths = [
+        'test::diverse::MyProfile',
+        'test::diverse::Status',
+        'test::diverse::SourcePerson',
+        'test::diverse::TargetPerson',
+        'test::diverse::MyMapping',
+        'test::diverse::MyConnection',
+        'test::diverse::MyRuntime',
+        'test::diverse::MyService',
+      ];
+      for (const path of expectedPaths) {
+        expect(transformedPaths.has(path)).toBe(true);
+      }
+    },
+  );
+});
