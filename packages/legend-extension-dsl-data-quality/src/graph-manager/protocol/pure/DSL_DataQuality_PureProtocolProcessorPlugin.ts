@@ -21,31 +21,38 @@ import {
   V1_DataQualityServiceValidationsConfiguration,
   V1_DataQualityRelationValidationsConfiguration,
   V1_DataQualityValidationsConfiguration,
+  V1_DataQualityRelationComparisonConfiguration,
 } from './v1/V1_DataQualityValidationConfiguration.js';
 import {
   DataQualityClassValidationsConfiguration,
   DataQualityServiceValidationConfiguration,
   DataQualityRelationValidationConfiguration,
+  DataQualityRelationComparisonConfiguration,
 } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
   V1_DATA_QUALITY_PROTOCOL_TYPE,
   V1_DATA_QUALITY_SERVICE_PROTOCOL_TYPE,
   V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE,
+  V1_DATA_QUALITY_RELATION_COMPARISON_PROTOCOL_TYPE,
   V1_deserializeDataQualityClassValidation,
   V1_deserializeDataQualityServiceValidation,
   V1_deserializeDataQualityRelationValidation,
   V1_serializeDataQualityClassValidation,
   V1_serializeDataQualityServiceValidation,
   V1_serializeDataQualityRelationValidation,
+  V1_serializeDataQualityRelationComparison,
+  V1_deserializeDataQualityRelationComparison,
 } from './v1/transformation/pureProtocol/V1_DSL_DataQuality_ProtocolHelper.js';
 import {
   V1_transformDataQualityClassValidationConfiguration,
   V1_transformDataQualityRelationValidationConfiguration,
+  V1_transformDataQualityRelationComparisonConfiguration,
 } from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationTransformer.js';
 import {
   V1_buildDataQualityClassValidationConfiguration,
   V1_buildDataQualityRelationValidationConfiguration,
   V1_buildDataQualityServiceValidationConfiguration,
+  V1_buildDataQualityRelationComparisonConfiguration,
 } from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationBuilderHelper.js';
 import { V1_DataQualityRootGraphFetchTree } from './v1/model/graphFetch/V1_DataQualityRootGraphFetchTree.js';
 import {
@@ -81,6 +88,8 @@ import { V1_buildValidationFunctionExpression } from './v1/V1_DataQualityValidat
 const DATA_QUALITY_CLASSIFIER_PATH = 'meta::external::dataquality::DataQuality';
 const DATA_QUALITY_RELATION_VALIDATION_CLASSIFIER_PATH =
   'meta::external::dataquality::DataQualityRelationValidation';
+const DATA_QUALITY_RELATION_COMPARISON_CLASSIFIER_PATH =
+  'meta::external::dataquality::DataQualityRelationComparison';
 
 export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
@@ -210,6 +219,46 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
           );
         },
       }),
+
+      new V1_ElementBuilder<V1_DataQualityRelationComparisonConfiguration>({
+        elementClassName: V1_DATA_QUALITY_RELATION_COMPARISON_PROTOCOL_TYPE,
+        _class: V1_DataQualityRelationComparisonConfiguration,
+        firstPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): PackageableElement => {
+          assertType(
+            elementProtocol,
+            V1_DataQualityRelationComparisonConfiguration,
+          );
+          const element = new DataQualityRelationComparisonConfiguration(
+            elementProtocol.name,
+          );
+          const path = V1_buildFullPath(
+            elementProtocol.package,
+            elementProtocol.name,
+          );
+          context.currentSubGraph.setOwnElementInExtension(
+            path,
+            element,
+            DataQualityRelationComparisonConfiguration,
+          );
+          return element;
+        },
+        secondPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): void => {
+          assertType(
+            elementProtocol,
+            V1_DataQualityRelationComparisonConfiguration,
+          );
+          V1_buildDataQualityRelationComparisonConfiguration(
+            elementProtocol,
+            context,
+          );
+        },
+      }),
     ];
   }
 
@@ -220,6 +269,10 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
           protocol instanceof V1_DataQualityRelationValidationsConfiguration
         ) {
           return DATA_QUALITY_RELATION_VALIDATION_CLASSIFIER_PATH;
+        } else if (
+          protocol instanceof V1_DataQualityRelationComparisonConfiguration
+        ) {
+          return DATA_QUALITY_RELATION_COMPARISON_CLASSIFIER_PATH;
         } else if (protocol instanceof V1_DataQualityValidationsConfiguration) {
           return DATA_QUALITY_CLASSIFIER_PATH;
         }
@@ -244,6 +297,9 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
           protocol instanceof V1_DataQualityRelationValidationsConfiguration
         ) {
           return V1_serializeDataQualityRelationValidation(protocol, plugins);
+        }
+        if (protocol instanceof V1_DataQualityRelationComparisonConfiguration) {
+          return V1_serializeDataQualityRelationComparison(protocol, plugins);
         }
         return undefined;
       },
@@ -304,6 +360,9 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
         if (json._type === V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE) {
           return V1_deserializeDataQualityRelationValidation(json, plugins);
         }
+        if (json._type === V1_DATA_QUALITY_RELATION_COMPARISON_PROTOCOL_TYPE) {
+          return V1_deserializeDataQualityRelationComparison(json, plugins);
+        }
         return undefined;
       },
     ];
@@ -323,6 +382,12 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
         }
         if (metamodel instanceof DataQualityRelationValidationConfiguration) {
           return V1_transformDataQualityRelationValidationConfiguration(
+            metamodel,
+            context,
+          );
+        }
+        if (metamodel instanceof DataQualityRelationComparisonConfiguration) {
+          return V1_transformDataQualityRelationComparisonConfiguration(
             metamodel,
             context,
           );

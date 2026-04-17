@@ -38,8 +38,11 @@ import {
   DataQualityServiceValidationConfiguration,
   DataQualityRelationValidationConfiguration,
   DataQualityValidationConfiguration,
+  DataQualityRelationComparisonConfiguration,
+  DataQualityRelationQueryLambda,
+  MD5HashStrategy,
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
-import { EyeIcon } from '@finos/legend-art';
+import { CompareIcon, EyeIcon } from '@finos/legend-art';
 import { DataQualityClassValidationEditor } from './DataQualityClassValidationEditor.js';
 import { DataQuality_ElementDriver } from './DSL_DataQuality_ElementDriver.js';
 import { DataQualityServiceValidationEditor } from './DataQualityServiceValidationEditor.js';
@@ -49,9 +52,16 @@ import { DataQualityServiceValidationState } from './states/DataQualityServiceVa
 import { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
 import { DataQualityRelationValidationConfigurationEditor } from './DataQualityRelationValidationConfigurationEditor.js';
 import { DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/studio/DSL_DataQuality_LegendStudioApplicationNavigationContext.js';
+import { DataQualityRelationComparisonConfigurationState } from './states/DataQualityRelationComparisonConfigurationState.js';
+import { DataQualityRelationComparisonEditor } from './DataQualityRelationComparisonEditor.js';
 
-const DATA_QUALITY_ELEMENT_TYPE = 'DATAQUALITYVALIDATION';
-const DATA_QUALITY_ELEMENT_TYPE_LABEL = 'Data Quality Validation';
+const DATA_QUALITY_VALIDATION_ELEMENT_TYPE = 'DATAQUALITYVALIDATION';
+const DATA_QUALITY_VALIDATION_ELEMENT_TYPE_LABEL = 'Data Quality Validation';
+
+const DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE =
+  'DATAQUALITYRELATIONCOMPARISON';
+const DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE_LABEL =
+  'Data Quality Relation Comparison';
 
 export class DSL_DataQuality_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -62,13 +72,17 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
   }
 
   getExtraSupportedElementTypes(): string[] {
-    return [DATA_QUALITY_ELEMENT_TYPE];
+    return [
+      DATA_QUALITY_VALIDATION_ELEMENT_TYPE,
+      DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE,
+    ];
   }
 
   getExtraSupportedElementTypesWithCategory(): Map<string, string[]> {
     const elementTypeswithCategory = new Map<string, string[]>();
     elementTypeswithCategory.set(PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.OTHER, [
-      DATA_QUALITY_ELEMENT_TYPE,
+      DATA_QUALITY_VALIDATION_ELEMENT_TYPE,
+      DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE,
     ]);
     return elementTypeswithCategory;
   }
@@ -77,7 +91,10 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof DataQualityValidationConfiguration) {
-          return DATA_QUALITY_ELEMENT_TYPE;
+          return DATA_QUALITY_VALIDATION_ELEMENT_TYPE;
+        }
+        if (element instanceof DataQualityRelationComparisonConfiguration) {
+          return DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE;
         }
         return undefined;
       },
@@ -87,10 +104,16 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
   getExtraElementIconGetters(): ElementIconGetter[] {
     return [
       (type: string): React.ReactNode | undefined => {
-        if (type === DATA_QUALITY_ELEMENT_TYPE) {
+        if (type === DATA_QUALITY_VALIDATION_ELEMENT_TYPE) {
           return (
             <div className="icon icon--dataQuality">
               <EyeIcon />
+            </div>
+          );
+        } else if (type === DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE) {
+          return (
+            <div className="icon icon--dataQuality">
+              <CompareIcon />
             </div>
           );
         }
@@ -102,8 +125,11 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
   getExtraElementTypeLabelGetters(): ElementTypeLabelGetter[] {
     return [
       (type: string): string | undefined => {
-        if (type === DATA_QUALITY_ELEMENT_TYPE) {
-          return DATA_QUALITY_ELEMENT_TYPE_LABEL;
+        if (type === DATA_QUALITY_VALIDATION_ELEMENT_TYPE) {
+          return DATA_QUALITY_VALIDATION_ELEMENT_TYPE_LABEL;
+        }
+        if (type === DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE) {
+          return DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE_LABEL;
         }
         return undefined;
       },
@@ -117,10 +143,20 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
         name: string,
         state: NewElementState,
       ): PackageableElement | undefined => {
-        if (type === DATA_QUALITY_ELEMENT_TYPE) {
+        if (type === DATA_QUALITY_VALIDATION_ELEMENT_TYPE) {
           return state
             .getNewElementDriver(DataQuality_ElementDriver)
             .createElement(name);
+        }
+        if (type === DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE) {
+          const comparison = new DataQualityRelationComparisonConfiguration(
+            name,
+          );
+          comparison.source = new DataQualityRelationQueryLambda();
+          comparison.target = new DataQualityRelationQueryLambda();
+          // default currently
+          comparison.strategy = new MD5HashStrategy();
+          return comparison;
         }
         return undefined;
       },
@@ -150,6 +186,16 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
             />
           );
         }
+        if (
+          elementEditorState instanceof
+          DataQualityRelationComparisonConfigurationState
+        ) {
+          return (
+            <DataQualityRelationComparisonEditor
+              key={elementEditorState.uuid}
+            />
+          );
+        }
         return undefined;
       },
     ];
@@ -173,6 +219,12 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
             element,
           );
         }
+        if (element instanceof DataQualityRelationComparisonConfiguration) {
+          return new DataQualityRelationComparisonConfigurationState(
+            editorStore,
+            element,
+          );
+        }
         return undefined;
       },
     ];
@@ -181,7 +233,7 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
   getExtraNewElementDriverEditorRenderers(): NewElementDriverEditorRenderer[] {
     return [
       (type: string): React.ReactNode | undefined => {
-        if (type === DATA_QUALITY_ELEMENT_TYPE) {
+        if (type === DATA_QUALITY_VALIDATION_ELEMENT_TYPE) {
           return <NewDataQualityValidationElementEditor />;
         }
         return undefined;
@@ -195,7 +247,7 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
         editorStore: EditorStore,
         type: string,
       ): NewElementDriver<PackageableElement> | undefined => {
-        if (type === DATA_QUALITY_ELEMENT_TYPE) {
+        if (type === DATA_QUALITY_VALIDATION_ELEMENT_TYPE) {
           return new DataQuality_ElementDriver(editorStore);
         }
         return undefined;

@@ -165,3 +165,52 @@ export class V1_DataQualityRelationValidationsConfiguration
     return visitor.visit_PackageableElement(this);
   }
 }
+
+export abstract class V1_ReconStrategy implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class V1_MD5HashStrategy extends V1_ReconStrategy {
+  sourceHashColumn?: string | undefined;
+  targetHashColumn?: string | undefined;
+  aggregatedHash?: boolean | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_MD5_HASH_STRATEGY,
+      this.sourceHashColumn ?? '',
+      this.targetHashColumn ?? '',
+      this.aggregatedHash ?? false,
+    ]);
+  }
+}
+
+export class V1_DataQualityRelationComparisonConfiguration
+  extends V1_DataQualityValidationsConfiguration
+  implements Hashable
+{
+  source!: V1_DataQualityRelationQueryLambda;
+  target!: V1_DataQualityRelationQueryLambda;
+  keys: string[] = [];
+  columnsToCompare: string[] = [];
+  strategy!: V1_ReconStrategy;
+  expectedMatch?: number | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_COMPARISON_HASH_STRUCTURE,
+      this.source,
+      this.target,
+      hashArray(this.keys),
+      hashArray(this.columnsToCompare),
+      String(this.expectedMatch ?? ''),
+      this.strategy,
+    ]);
+  }
+
+  accept_PackageableElementVisitor<T>(
+    visitor: V1_PackageableElementVisitor<T>,
+  ): T {
+    return visitor.visit_PackageableElement(this);
+  }
+}

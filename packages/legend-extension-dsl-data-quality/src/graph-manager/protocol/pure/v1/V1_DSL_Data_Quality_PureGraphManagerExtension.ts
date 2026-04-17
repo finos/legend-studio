@@ -27,6 +27,8 @@ import {
   type V1_ParameterValue,
   type V1_PureModelContext,
   type V1_RootGraphFetchTree,
+  type RawLambda,
+  type V1_RawLambda,
   V1_getEngineSerializationFormat,
   LegendSDLC,
   PureClientVersion,
@@ -34,6 +36,7 @@ import {
   V1_buildExecutionResult,
   V1_ExecutionError,
   V1_GraphBuilderContextBuilder,
+  V1_GraphTransformerContextBuilder,
   V1_LegendSDLC,
   V1_ProcessingContext,
   V1_Protocol,
@@ -43,9 +46,11 @@ import {
   V1_deserializeExecutionResult,
   V1_parameterValueModelSchema,
   V1_transformParameterValue,
+  V1_transformRawLambda,
   V1_RemoteEngine,
+  V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
-import { createModelSchema, optional, primitive } from 'serializr';
+import { createModelSchema, list, optional, primitive } from 'serializr';
 import {
   type PlainObject,
   assertErrorThrown,
@@ -56,6 +61,7 @@ import {
   returnUndefOnError,
   SerializationFactory,
   UnsupportedOperationError,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import { DSL_DataQuality_PureGraphManagerExtension } from '../DSL_DataQuality_PureGraphManagerExtension.js';
 import {
@@ -66,6 +72,7 @@ import type { DataQualityRootGraphFetchTree } from '../../../../graph/metamodel/
 import type {
   DataQualityRelationValidation,
   DQExecuteInputOptions,
+  DQReconciliationInputOptions,
   DQValidationSuggestionInputOptions,
 } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
@@ -75,6 +82,7 @@ const DQ_EXECUTE_DATA_PROFILING = 'execute data profiling';
 const DQ_FETCH_RULE_SUGGESTIONS = 'fetch rule suggestions';
 const DQ_DEBUG_EXECUTION_PLAN = 'debug execution plan';
 const DQ_FETCH_PROPERTY_PATH_TREE = 'dq fetch property path tree';
+const DQ_EXECUTE_RECONCILIATION = 'execute reconciliation';
 
 export class V1_DQExecuteInput {
   clientVersion: string | undefined;
@@ -111,6 +119,48 @@ export class V1_DQRuleSuggestionInput {
       model: V1_pureModelContextPropSchema,
       lambdaParameterValues: customListWithSchema(V1_parameterValueModelSchema),
       packagePath: primitive(),
+    }),
+  );
+}
+
+export class V1_DQReconciliationInput {
+  clientVersion: string | undefined;
+  model!: V1_PureModelContext;
+  source!: V1_RawLambda;
+  target!: V1_RawLambda;
+  keys: string[] = [];
+  colsForHash: string[] = [];
+  defectLimit: number | undefined;
+  aggregatedHash: boolean | undefined;
+  sourceHashCol: string | undefined;
+  targetHashCol: string | undefined;
+  includeColumnValues: boolean | undefined;
+  runSourceQuery: boolean | undefined;
+  runTargetQuery: boolean | undefined;
+  sourceLambdaParameterValues: V1_ParameterValue[] = [];
+  targetLambdaParameterValues: V1_ParameterValue[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DQReconciliationInput, {
+      clientVersion: optional(primitive()),
+      model: V1_pureModelContextPropSchema,
+      source: usingModelSchema(V1_rawLambdaModelSchema),
+      target: usingModelSchema(V1_rawLambdaModelSchema),
+      keys: list(primitive()),
+      colsForHash: list(primitive()),
+      defectLimit: optional(primitive()),
+      aggregatedHash: optional(primitive()),
+      sourceHashCol: optional(primitive()),
+      targetHashCol: optional(primitive()),
+      includeColumnValues: optional(primitive()),
+      runSourceQuery: optional(primitive()),
+      runTargetQuery: optional(primitive()),
+      sourceLambdaParameterValues: customListWithSchema(
+        V1_parameterValueModelSchema,
+      ),
+      targetLambdaParameterValues: customListWithSchema(
+        V1_parameterValueModelSchema,
+      ),
     }),
   );
 }
@@ -560,4 +610,124 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       {},
     );
   };
+
+  private rawLambdaToV1(lambda: RawLambda): V1_RawLambda {
+    return V1_transformRawLambda(
+      lambda,
+      new V1_GraphTransformerContextBuilder(
+        this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
+  }
+
+  private createReconciliationInput(
+    graph: PureModel,
+    options: DQReconciliationInputOptions,
+  ): V1_DQReconciliationInput {
+    const input = new V1_DQReconciliationInput();
+    input.clientVersion =
+      options.clientVersion ??
+      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION;
+    input.model = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+      : this.graphManager.getFullGraphModelData(graph);
+    input.source = this.rawLambdaToV1(options.source);
+    input.target = this.rawLambdaToV1(options.target);
+    input.keys = options.keys;
+    input.colsForHash = options.colsForHash;
+    input.defectLimit = options.limit;
+    input.aggregatedHash = options.aggregatedHash;
+    input.sourceHashCol = options.sourceHashCol;
+    input.targetHashCol = options.targetHashCol;
+    input.includeColumnValues = options.includeColumnValues;
+    input.runSourceQuery = options.runSourceQuery;
+    input.runTargetQuery = options.runTargetQuery;
+    if (options.sourceLambdaParameterValues) {
+      input.sourceLambdaParameterValues =
+        options.sourceLambdaParameterValues.map(V1_transformParameterValue);
+    }
+    if (options.targetLambdaParameterValues) {
+      input.targetLambdaParameterValues =
+        options.targetLambdaParameterValues.map(V1_transformParameterValue);
+    }
+    return input;
+  }
+
+  runReconciliation = async (
+    graph: PureModel,
+    options: DQReconciliationInputOptions,
+  ): Promise<ExecutionResult> => {
+    const input = this.createReconciliationInput(graph, options);
+
+    return this.runReconciliationWithInput(input);
+  };
+
+  runReconciliationSourceQuery = async (
+    graph: PureModel,
+    options: DQReconciliationInputOptions,
+  ): Promise<ExecutionResult> => {
+    const input = this.createReconciliationInput(graph, {
+      ...options,
+      runSourceQuery: true,
+      runTargetQuery: undefined,
+    });
+    return this.runReconciliationWithInput(input);
+  };
+
+  runReconciliationTargetQuery = async (
+    graph: PureModel,
+    options: DQReconciliationInputOptions,
+  ): Promise<ExecutionResult> => {
+    const input = this.createReconciliationInput(graph, {
+      ...options,
+      runSourceQuery: undefined,
+      runTargetQuery: true,
+    });
+    return this.runReconciliationWithInput(input);
+  };
+
+  private async runReconciliationWithInput(
+    input: V1_DQReconciliationInput,
+  ): Promise<ExecutionResult> {
+    try {
+      const engineServerClient = guaranteeType(
+        this.graphManager.engine,
+        V1_RemoteEngine,
+        'runReconciliation is only supported by remote engine',
+      ).getEngineServerClient();
+
+      const result = await engineServerClient.postWithTracing(
+        engineServerClient.getTraceData(DQ_EXECUTE_RECONCILIATION),
+        `${engineServerClient._pure()}/dataquality/reconciliation`,
+        V1_DQReconciliationInput.serialization.toJson(input),
+        {},
+        undefined,
+        undefined,
+        { enableCompression: true },
+        { skipProcessing: true },
+      );
+
+      const resultInText = await (result as Response).text();
+      const rawExecutionResult =
+        returnUndefOnError(() =>
+          this.graphManager.engine.parseExecutionResults(
+            resultInText,
+            undefined,
+          ),
+        ) ?? resultInText;
+      const v1_executionResult =
+        V1_deserializeExecutionResult(rawExecutionResult);
+      return V1_buildExecutionResult(v1_executionResult);
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        throw V1_buildExecutionError(
+          V1_ExecutionError.serialization.fromJson(
+            error.payload as PlainObject<V1_ExecutionError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  }
 }

@@ -15,8 +15,9 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { useMemo } from 'react';
 import type { DataQualityRelationValidationState } from './states/DataQualityRelationValidationState.js';
-import { RenderColumns } from './DataQualityRelationLambdaGUIDataTypeHandlers.js';
+import { DataQualityMultiCustomSelector } from './DataQualityCustomSelector.js';
 import {
   ColSpec,
   ColSpecArray,
@@ -48,6 +49,15 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
     }
 
     const { assertion, otherFunction } = dataQualityValidationLambdaFormState;
+    const selectedColumns = useMemo(
+      () =>
+        columnOptions.filter(({ value }) =>
+          assertion.parameters.columns.values[0]?.colSpecs.some(
+            (col) => col.name === value,
+          ),
+        ),
+      [assertion.parameters.columns.values, columnOptions],
+    );
 
     return (
       <div
@@ -82,11 +92,12 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
           <div className="data-quality-uml-element-editor__lambda__label data-quality-validation-gui-editor__function--assert-helper--description">
             Columns to persist
           </div>
-          <RenderColumns
-            columns={assertion.parameters.columns}
-            onChange={(values: string[]) => {
+          <DataQualityMultiCustomSelector
+            value={selectedColumns}
+            options={columnOptions}
+            onChange={(values) => {
               const colSpecArray = new ColSpecArray();
-              colSpecArray.colSpecs = values.map((value) => {
+              colSpecArray.colSpecs = values.map(({ value }) => {
                 const colSpecValue = new ColSpec();
                 colSpecValue.name = value;
                 return colSpecValue;
@@ -100,7 +111,6 @@ export const DataQualityRelationLambdaGUIValidationEditor = observer(
               assertion.parameters.columns = colSpecArrayInstance;
               validationState.debouncedHandleValidationFormChange();
             }}
-            options={columnOptions}
             placeholder="Select Columns"
             disabled={disabled}
             darkMode={darkMode}
