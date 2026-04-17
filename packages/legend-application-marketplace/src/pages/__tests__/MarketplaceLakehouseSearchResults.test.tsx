@@ -47,9 +47,9 @@ import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehous
 import { getSearchResultProjectGAV } from '../../utils/SearchUtils.js';
 import {
   DataProductSearchResult,
-  DataProductSearchResponse,
   LakehouseDataProductSearchResultDetails,
   LakehouseSDLCDataProductSearchResultOrigin,
+  type DataProductSearchResponse,
 } from '@finos/legend-server-marketplace';
 
 jest.mock('react-oidc-context', () => {
@@ -1020,21 +1020,28 @@ describe('MarketplaceLakehouseSearchResults', () => {
   describe('Show All Products', () => {
     const createShowAllMockResponse = (
       hasFilteredProducts: boolean,
-    ): PlainObject<DataProductSearchResponse> => ({
-      results: mockProdSearchResultResponse.results,
-      metadata: {
-        ...mockProdSearchResultResponse.metadata,
-        total_count: (mockProdSearchResultResponse.results as unknown[]).length,
-        num_pages: 1,
-        page_size: 12,
-        page_number: 1,
-        next_page_number: null,
-        prev_page_number: null,
-        has_filtered_products: hasFilteredProducts,
-      },
-      filters_metadata: mockProdSearchResultResponse.filters_metadata,
-      as_of_time: '2026-01-27T00:00:00.000Z',
-    });
+    ): PlainObject<DataProductSearchResponse> => {
+      const metadata = Object.assign(
+        {},
+        mockProdSearchResultResponse.metadata,
+        {
+          total_count: (mockProdSearchResultResponse.results as unknown[])
+            .length,
+          num_pages: 1,
+          page_size: 12,
+          page_number: 1,
+          next_page_number: null,
+          prev_page_number: null,
+          has_filtered_products: hasFilteredProducts,
+        },
+      );
+      return {
+        results: mockProdSearchResultResponse.results,
+        metadata,
+        filters_metadata: mockProdSearchResultResponse.filters_metadata,
+        as_of_time: '2026-01-27T00:00:00.000Z',
+      };
+    };
 
     test('Show all button appears on last page when has_filtered_products is true', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
