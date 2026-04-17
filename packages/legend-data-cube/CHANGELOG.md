@@ -1,5 +1,7 @@
 # @finos/legend-data-cube
 
+## 0.3.82
+
 ## 0.3.81
 
 ### Patch Changes
