@@ -259,3 +259,45 @@ test('trending API returns more than 4 entries, only 4 are used', async () => {
     MOCK__baseStore.marketplaceServerClient.getTrendingDataProducts,
   ).toHaveBeenCalled();
 });
+
+test('trending section is skipped when API returns fewer than 4 data products', async () => {
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
+    extraPlugins: [new TestLegendMarketplaceApplicationPlugin()],
+  });
+
+  // Only 3 trending entries — below the threshold of 4
+  const trendingEntries: TrendingDataProductEntry[] = [
+    makeTrendingEntry({
+      productName: 'Trending A',
+      dataProductId: 'dp-a',
+      deploymentId: '1',
+    }),
+    makeTrendingEntry({
+      productName: 'Trending B',
+      dataProductId: 'dp-b',
+      deploymentId: '2',
+    }),
+    makeTrendingEntry({
+      productName: 'Trending C',
+      dataProductId: 'dp-c',
+      deploymentId: '3',
+    }),
+  ];
+
+  createSpy(
+    MOCK__baseStore.marketplaceServerClient,
+    'getTrendingDataProducts',
+  ).mockResolvedValue(trendingEntries);
+
+  await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
+
+  // API was still called
+  expect(
+    MOCK__baseStore.marketplaceServerClient.getTrendingDataProducts,
+  ).toHaveBeenCalled();
+
+  // But trending products should not be displayed since < 4 results
+  expect(screen.queryByText('Trending A')).toBeNull();
+  expect(screen.queryByText('Trending B')).toBeNull();
+  expect(screen.queryByText('Trending C')).toBeNull();
+});

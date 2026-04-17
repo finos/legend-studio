@@ -47,6 +47,7 @@ import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehous
 import { getSearchResultProjectGAV } from '../../utils/SearchUtils.js';
 import {
   DataProductSearchResult,
+  DataProductSearchResponse,
   LakehouseDataProductSearchResultDetails,
   LakehouseSDLCDataProductSearchResultOrigin,
 } from '@finos/legend-server-marketplace';
@@ -1013,6 +1014,126 @@ describe('MarketplaceLakehouseSearchResults', () => {
       // Filter panel should not be present
       expect(screen.queryByText('Data Product Type')).toBeNull();
       expect(screen.queryByText('Source')).toBeNull();
+    });
+  });
+
+  describe('Show All Products', () => {
+    const createShowAllMockResponse = (
+      hasFilteredProducts: boolean,
+    ): PlainObject<DataProductSearchResponse> => ({
+      results: mockProdSearchResultResponse.results,
+      metadata: {
+        ...mockProdSearchResultResponse.metadata,
+        total_count: (mockProdSearchResultResponse.results as unknown[]).length,
+        num_pages: 1,
+        page_size: 12,
+        page_number: 1,
+        next_page_number: null,
+        prev_page_number: null,
+        has_filtered_products: hasFilteredProducts,
+      },
+      filters_metadata: mockProdSearchResultResponse.filters_metadata,
+      as_of_time: '2026-01-27T00:00:00.000Z',
+    });
+
+    test('Show all button appears on last page when has_filtered_products is true', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+      await screen.findByText('4 Products');
+
+      // Re-mock with has_filtered_products: true
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockImplementation(async () => createShowAllMockResponse(true));
+
+      const searchInput = screen.getByDisplayValue('data');
+      fireEvent.change(searchInput, { target: { value: 'filtered' } });
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Search'));
+        await flushMicrotasks();
+      });
+
+      // On last page (single page) with has_filtered_products: true
+      expect(
+        screen.getByText("Can't find what you're looking for?"),
+      ).toBeDefined();
+      expect(screen.getByText('Show all data products')).toBeDefined();
+    });
+
+    test('Show all button is hidden when has_filtered_products is false', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+      await screen.findByText('4 Products');
+
+      // Re-mock with has_filtered_products: false
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockImplementation(async () => createShowAllMockResponse(false));
+
+      const searchInput = screen.getByDisplayValue('data');
+      fireEvent.change(searchInput, { target: { value: 'nofiltered' } });
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Search'));
+        await flushMicrotasks();
+      });
+
+      expect(
+        screen.queryByText("Can't find what you're looking for?"),
+      ).toBeNull();
+      expect(screen.queryByText('Show all data products')).toBeNull();
+    });
+
+    test('Show all button is hidden for producer search', async () => {
+      await setupTestComponent('data', 'prod', true);
+      await screen.findByText('3 Products');
+
+      expect(
+        screen.queryByText("Can't find what you're looking for?"),
+      ).toBeNull();
+      expect(screen.queryByText('Show all data products')).toBeNull();
+    });
+
+    test('Clicking show all triggers re-search with show_all=true', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+      await screen.findByText('4 Products');
+
+      // Re-mock with has_filtered_products: true
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockImplementation(async () => createShowAllMockResponse(true));
+
+      const searchInput = screen.getByDisplayValue('data');
+      fireEvent.change(searchInput, { target: { value: 'showalltest' } });
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Search'));
+        await flushMicrotasks();
+      });
+
+      await screen.findByText('Show all data products');
+
+      // Clear mock call history to isolate the "show all" click
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockImplementation(async () => createShowAllMockResponse(false));
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Show all data products'));
+        await flushMicrotasks();
+      });
+
+      // Should have been called with show_all=true (last param)
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenCalledWith(
+        'showalltest',
+        expect.anything(),
+        'hybrid',
+        [],
+        12,
+        expect.any(Number),
+        true,
+      );
     });
   });
 
