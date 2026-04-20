@@ -19,6 +19,7 @@ import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.j
 import {
   ActionState,
   assertErrorThrown,
+  isString,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
@@ -174,9 +175,7 @@ export class LegendMarketplaceDataAPIsStore {
       (this.marketplaceBaseStore.applicationStore.settingService.getObjectValue(
         LEGEND_MARKETPLACE_SETTING_KEY_FAVORITES,
       ) as string[] | undefined) ?? [];
-    this.favoritePatterns = new Set(
-      persistedFavorites.filter((v): v is string => typeof v === 'string'),
-    );
+    this.favoritePatterns = new Set(persistedFavorites.filter(isString));
 
     const persistedItemsPerPage =
       this.marketplaceBaseStore.applicationStore.settingService.getNumericValue(
