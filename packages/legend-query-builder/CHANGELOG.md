@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.18.1
+
+### Patch Changes
+
+- [#5089](https://github.com/finos/legend-studio/pull/5089) [`e5aed26`](https://github.com/finos/legend-studio/commit/e5aed26fa0b13e0d595d602a4ff209ed3e70fad4) ([@kelly-thai](https://github.com/kelly-thai)) - Add percentRank() as a window operator and support rowNumber() for typed TDS in query
+
+- [#5085](https://github.com/finos/legend-studio/pull/5085) [`7e01fe7`](https://github.com/finos/legend-studio/commit/7e01fe7e72fd5b0c1d960dfccf7231e82cb50e80) ([@kelly-thai](https://github.com/kelly-thai)) - Support average, count, max, min, sum window functions for typed TDS in query
+
 ## 4.18.0
 
 ### Minor Changes
