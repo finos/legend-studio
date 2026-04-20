@@ -16,8 +16,13 @@
 
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { Chip } from '@mui/material';
-import { MarkdownTextViewer } from '@finos/legend-art';
+import { Chip, IconButton } from '@mui/material';
+import {
+  clsx,
+  MarkdownTextViewer,
+  StarIcon,
+  EmptyStarIcon,
+} from '@finos/legend-art';
 import type { LegendServiceCardState } from '../../stores/dataAPIs/LegendMarketplaceDataAPIsStore.js';
 import { ServiceOwnershipType } from '@finos/legend-graph';
 import { LegendMarketplaceListItem } from '../MarketplaceCard/LegendMarketplaceListItem.js';
@@ -28,8 +33,10 @@ export const LegendServiceListRow = observer(
   (props: {
     serviceCardState: LegendServiceCardState;
     onClick: () => void;
+    isFavorite: boolean;
+    onToggleFavorite: () => void;
   }): React.ReactNode => {
-    const { serviceCardState, onClick } = props;
+    const { serviceCardState, onClick, isFavorite, onToggleFavorite } = props;
     const [expanded, setExpanded] = useState(false);
     const description = serviceCardState.description;
     const isTruncatable = description.length > MAX_DESCRIPTION_LENGTH;
@@ -46,6 +53,23 @@ export const LegendServiceListRow = observer(
         content={
           <div className="marketplace-legend-service-list-row__body">
             <div className="marketplace-legend-service-list-row__header">
+              <IconButton
+                className={clsx(
+                  'marketplace-legend-service-list-row__favorite-btn',
+                  isFavorite &&
+                    'marketplace-legend-service-list-row__favorite-btn--active',
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite();
+                }}
+                size="small"
+                title={
+                  isFavorite ? 'Remove from favorites' : 'Add to favorites'
+                }
+              >
+                {isFavorite ? <StarIcon /> : <EmptyStarIcon />}
+              </IconButton>
               <div className="marketplace-legend-service-list-row__title-block">
                 <div className="marketplace-legend-service-list-row__name">
                   {serviceCardState.title}

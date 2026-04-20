@@ -446,6 +446,7 @@ import {
   FaRegLightbulb,
   FaRegSadTear,
   FaRegSquare,
+  FaRegStar,
   FaRegStopCircle,
   FaRegUserCircle,
   FaRegWindowMaximize,
@@ -611,6 +612,7 @@ export const SortDownIcon = FaSortAlphaDown;
 export const SortIcon = FaSort;
 export const SquareIcon = FaSquare;
 export const StarIcon = FaStar;
+export const EmptyStarIcon = FaRegStar;
 export const StickArrowCircleRightIcon = FaArrowCircleRight;
 export const TagIcon = FaTag;
 export const TagsIcon = FaTags;

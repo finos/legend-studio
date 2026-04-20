@@ -26,6 +26,7 @@ import {
   CheckIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  StarIcon,
   ViewHeadlineIcon,
   WindowIcon,
   clsx,
@@ -68,7 +69,6 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
     );
 
     useEffect(() => {
-      dataAPIsStore.setItemsPerPage(12);
       if (queryFromUrl) {
         dataAPIsStore.setSearchQuery(queryFromUrl);
       }
@@ -150,6 +150,14 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                     key={serviceCardState.guid}
                     serviceCardState={serviceCardState}
                     onClick={() => handleServiceClick(serviceCardState)}
+                    isFavorite={dataAPIsStore.isFavorite(
+                      serviceCardState.service.pattern,
+                    )}
+                    onToggleFavorite={() =>
+                      dataAPIsStore.toggleFavorite(
+                        serviceCardState.service.pattern,
+                      )
+                    }
                   />
                 ))}
               </div>
@@ -176,6 +184,14 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                   <LegendServiceCard
                     serviceCardState={serviceCardState}
                     onClick={() => handleServiceClick(serviceCardState)}
+                    isFavorite={dataAPIsStore.isFavorite(
+                      serviceCardState.service.pattern,
+                    )}
+                    onToggleFavorite={() =>
+                      dataAPIsStore.toggleFavorite(
+                        serviceCardState.service.pattern,
+                      )
+                    }
                   />
                 </Grid>
               ))}
@@ -231,6 +247,27 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                 label="My Services"
               />
               <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
+              <IconButton
+                className={clsx(
+                  'legend-marketplace-search-results__favorites-toggle',
+                  dataAPIsStore.showFavoritesOnly &&
+                    'legend-marketplace-search-results__favorites-toggle--active',
+                )}
+                onClick={() =>
+                  dataAPIsStore.setShowFavoritesOnly(
+                    !dataAPIsStore.showFavoritesOnly,
+                  )
+                }
+                title={
+                  dataAPIsStore.showFavoritesOnly
+                    ? 'Show all services'
+                    : 'Show favorites only'
+                }
+                size="small"
+              >
+                <StarIcon />
+              </IconButton>
+              <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
               <div className="legend-marketplace-search-results__view-toggle">
                 <div
                   className={clsx(
@@ -247,8 +284,6 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                   )}
                   onClick={() => {
                     dataAPIsStore.setViewMode(ServicesViewMode.TILE);
-                    dataAPIsStore.setItemsPerPage(12);
-                    dataAPIsStore.setPage(1);
                     LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
                       applicationStore.telemetryService,
                       ServicesViewMode.TILE,
@@ -267,8 +302,6 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                   )}
                   onClick={() => {
                     dataAPIsStore.setViewMode(ServicesViewMode.LIST);
-                    dataAPIsStore.setItemsPerPage(12);
-                    dataAPIsStore.setPage(1);
                     LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
                       applicationStore.telemetryService,
                       ServicesViewMode.LIST,

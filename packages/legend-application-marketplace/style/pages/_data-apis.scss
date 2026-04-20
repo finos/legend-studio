@@ -84,6 +84,29 @@
     gap: 1.2rem;
   }
 
+  &__favorite-btn {
+    color: var(--color-dark-grey-500);
+    padding: 0.4rem;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+
+    svg {
+      font-size: 1.8rem;
+    }
+
+    &:hover {
+      color: var(--color-yellow-200);
+    }
+
+    &--active {
+      color: var(--color-yellow-200);
+
+      &:hover {
+        color: var(--color-yellow-100);
+      }
+    }
+  }
+
   &__title-block {
     min-width: 0;
     flex: 1;
