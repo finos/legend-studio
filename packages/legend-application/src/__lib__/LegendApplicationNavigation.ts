@@ -36,16 +36,27 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
     versionId,
   )}${entityPath ? `/entity/${entityPath}` : ''}`;
 
+export const btoaURLSafe = (value: string): string =>
+  btoa(value).replace(/\+/g, '-').replace(/\//g, '_');
+
 /**
  * @external_application_navigation This depends on Legend DataCube routing and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl = (
   dataCubeApplicationUrl: string,
   sourceData: object,
-): string =>
-  `${dataCubeApplicationUrl}?sourceData=${encodeURIComponent(
-    btoa(JSON.stringify(sourceData)),
+  options?: {
+    addUrlSafeBase64Characters?: boolean | undefined;
+  },
+): string => {
+  const sourceDataString = JSON.stringify(sourceData);
+  const encodedSourceData = options?.addUrlSafeBase64Characters
+    ? btoaURLSafe(sourceDataString)
+    : btoa(sourceDataString);
+  return `${dataCubeApplicationUrl}?sourceData=${encodeURIComponent(
+    encodedSourceData,
   )}`;
+};
 
 /**
  * @external_application_navigation This depends on Registry routing and is hardcoded so it's potentially brittle
