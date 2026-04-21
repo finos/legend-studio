@@ -26,6 +26,7 @@ import {
   SquareIcon,
 } from '@finos/legend-art';
 import { prettyDuration } from '@finos/legend-shared';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   PlaygroundSQLCodeEditor,
   type SQLPlaygroundPanelProps,
@@ -51,6 +52,10 @@ export const SQLPlaygroundEditorResultPanel = observer(
       accessorExplorerState,
       showAccessorExplorer = false,
     } = props;
+    const applicationStore = useApplicationStore();
+    const isGlobalDarkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
+    const effectiveDarkMode = enableDarkMode || isGlobalDarkMode;
 
     const executeRawSQL = (): void => {
       playgroundState.executeRawSQL();
@@ -91,14 +96,14 @@ export const SQLPlaygroundEditorResultPanel = observer(
                   playgroundState={playgroundState}
                   advancedMode={advancedMode}
                   disableDragDrop={disableDragDrop}
-                  enableDarkMode={enableDarkMode}
+                  enableDarkMode={effectiveDarkMode}
                 />
               </ResizablePanel>
               <ResizablePanelSplitter />
               <ResizablePanel size={300}>
                 <div
                   className={clsx('panel__header', {
-                    'panel__header--dark': enableDarkMode,
+                    'panel__header--dark': effectiveDarkMode,
                   })}
                 >
                   <div className="panel__header__title">
@@ -115,7 +120,7 @@ export const SQLPlaygroundEditorResultPanel = observer(
                         (resultDescription ?? '')}
                     </div>
                   </div>
-                  <div className={!enableDarkMode ? 'light-mode' : ''}>
+                  <div className={!effectiveDarkMode ? 'light-mode' : ''}>
                     <div className="panel__header__actions query-builder__result__header__actions">
                       {advancedMode && (
                         <div className="query-builder__result__advanced__mode">
@@ -166,7 +171,7 @@ export const SQLPlaygroundEditorResultPanel = observer(
                     result={playgroundState.sqlExecutionResult.value}
                     useAdvancedGrid={advancedMode}
                     useLocalMode={playgroundState.isLocalModeEnabled}
-                    enableDarkMode={enableDarkMode}
+                    enableDarkMode={effectiveDarkMode}
                   />
                 )}
                 {playgroundState.sqlExecutionResult instanceof
@@ -177,7 +182,7 @@ export const SQLPlaygroundEditorResultPanel = observer(
                       result={playgroundState.sqlExecutionResult.result}
                       useAdvancedGrid={advancedMode}
                       useLocalMode={playgroundState.isLocalModeEnabled}
-                      enableDarkMode={enableDarkMode}
+                      enableDarkMode={effectiveDarkMode}
                     />
                   )}
               </ResizablePanel>
