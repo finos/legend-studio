@@ -109,7 +109,11 @@ jest.mock('react-dnd', () => ({
 
 jest.mock('@finos/legend-application', () => ({
   ...jest.requireActual<typeof LegendApplication>('@finos/legend-application'),
-  useApplicationStore: jest.fn(),
+  useApplicationStore: jest.fn().mockReturnValue({
+    layoutService: {
+      TEMPORARY__isLightColorThemeEnabled: true,
+    },
+  }),
 }));
 
 (global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
