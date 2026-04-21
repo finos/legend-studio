@@ -367,7 +367,7 @@ export const QueryBuilderSidebar = observer(
   }) => {
     const { queryBuilderState, children } = props;
     const applicationStore = useApplicationStore();
-    const extraTemplateQueryPanelContentRenderer =
+    const extraTemplateQueryPanelContentRenderers =
       applicationStore.pluginManager
         .getApplicationPlugins()
         .flatMap(
@@ -376,12 +376,15 @@ export const QueryBuilderSidebar = observer(
               plugin as QueryBuilder_LegendApplicationPlugin_Extension
             ).getExtraTemplateQueryPanelContentRenderer?.() ?? [],
         );
-    const templateQueryPanelContentTab =
-      extraTemplateQueryPanelContentRenderer[0] ? (
-        extraTemplateQueryPanelContentRenderer[0](queryBuilderState)
-      ) : (
-        <></>
-      );
+    // Try each renderer until one returns a non-undefined result.
+    let templateQueryPanelContentTab: React.ReactNode = <></>;
+    for (const renderer of extraTemplateQueryPanelContentRenderers) {
+      const result = renderer(queryBuilderState);
+      if (result !== undefined) {
+        templateQueryPanelContentTab = result;
+        break;
+      }
+    }
 
     return (
       <div

@@ -14,36 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  type Query,
-  type QuerySearchSpecification,
-  type RawLambda,
-  type ValueSpecification,
-  QueryProjectCoordinates,
-  extractElementNameFromPath,
-} from '@finos/legend-graph';
-import { type DepotServerClient } from '@finos/legend-server-depot';
-import {
-  assertErrorThrown,
-  IllegalStateError,
-  LogEvent,
-  uuid,
-  type GeneratorFn,
-} from '@finos/legend-shared';
+import { IllegalStateError } from '@finos/legend-shared';
 import {
   type QueryBuilderState,
   QueryBuilderDataBrowserWorkflow,
 } from '@finos/legend-query-builder';
-import {
-  type ProjectGAVCoordinates,
-  parseGACoordinates,
-} from '@finos/legend-storage';
-import {
-  type QueryPersistConfiguration,
-  QueryBuilderActionConfig_QueryApplication,
-  QueryEditorStore,
-} from '../QueryEditorStore.js';
+import { QueryBuilderActionConfig_QueryApplication } from '../QueryEditorStore.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
+import type { DepotServerClient } from '@finos/legend-server-depot';
 import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import {
   DataSpacePackageableElementExecutable,
@@ -53,22 +31,14 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   type ResolvedDataSpaceEntityWithOrigin,
-  createQueryClassTaggedValue,
   createQueryDataSpaceTaggedValue,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryDataSpaceQueryBuilderState } from './query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 import { DataProductSelectorState } from './DataProductSelectorState.js';
-import { processQueryParameters } from '../../components/utils/QueryParameterUtils.js';
-import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
+import { BaseTemplateQueryCreatorStore } from '../BaseTemplateQueryCreatorStore.js';
 
-export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
-  readonly groupId: string;
-  readonly artifactId: string;
-  readonly versionId: string;
+export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreatorStore {
   readonly dataSpacePath: string;
-  readonly templateQueryId: string;
-  templateQueryTitle?: string;
-  urlQueryParamValues: Record<string, string> | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -80,22 +50,16 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     templateQueryId: string,
     urlQueryParamValues: Record<string, string> | undefined,
   ) {
-    super(applicationStore, depotServerClient);
-
-    this.groupId = groupId;
-    this.artifactId = artifactId;
-    this.versionId = versionId;
+    super(
+      applicationStore,
+      depotServerClient,
+      groupId,
+      artifactId,
+      versionId,
+      templateQueryId,
+      urlQueryParamValues,
+    );
     this.dataSpacePath = dataSpacePath;
-    this.templateQueryId = templateQueryId;
-    this.urlQueryParamValues = urlQueryParamValues;
-  }
-
-  getProjectInfo(): ProjectGAVCoordinates {
-    return {
-      groupId: this.groupId,
-      artifactId: this.artifactId,
-      versionId: this.versionId,
-    };
   }
 
   override getEditorRoute(): string {
@@ -108,8 +72,22 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     );
   }
 
-  override *buildGraph(): GeneratorFn<void> {
-    // do nothing
+  override getEntityPath(): string {
+    return this.dataSpacePath;
+  }
+
+  override getSearchTaggedValues(): {
+    profile: string;
+    tag: string;
+    value: string;
+  }[] {
+    return [createQueryDataSpaceTaggedValue(this.dataSpacePath)];
+  }
+
+  override getQueryDecoratorTaggedValues():
+    | { profile: string; tag: string; value: string }[]
+    | undefined {
+    return undefined;
   }
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
@@ -232,81 +210,8 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     queryBuilderState.setExecutionContext(executionContext);
     await queryBuilderState.propagateExecutionContextChange(true);
 
-    let defaultParameters: Map<string, ValueSpecification> | undefined =
-      undefined;
-    const processedQueryParamValues = processQueryParameters(
-      query,
-      undefined,
-      this.urlQueryParamValues,
-      this.graphManagerState,
-    );
-    if (processedQueryParamValues?.size) {
-      try {
-        defaultParameters =
-          await this.graphManagerState.graphManager.pureCodeToValueSpecifications(
-            processedQueryParamValues,
-            this.graphManagerState.graph,
-          );
-      } catch (error) {
-        assertErrorThrown(error);
-        this.applicationStore.logService.error(
-          LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
-          `Error resolving preset query param values: ${error.message}`,
-        );
-      }
-    }
+    const defaultParameters = await this.resolveDefaultParameters(query);
     queryBuilderState.initializeWithQuery(query, defaultParameters);
     return queryBuilderState;
-  }
-
-  getPersistConfiguration(
-    lambda: RawLambda,
-    options?: { update?: boolean | undefined },
-  ): QueryPersistConfiguration {
-    return {
-      defaultName: options?.update
-        ? `${extractElementNameFromPath(this.dataSpacePath)}`
-        : `New Query for ${extractElementNameFromPath(this.dataSpacePath)}[${
-            this.templateQueryId
-          }]`,
-      decorator: (query: Query): void => {
-        query.id = uuid();
-        query.groupId = this.groupId;
-        query.artifactId = this.artifactId;
-        query.versionId = this.versionId;
-        if (this.queryBuilderState?.sourceClass) {
-          query.taggedValues = [
-            createQueryClassTaggedValue(
-              this.queryBuilderState.sourceClass.path,
-            ),
-          ];
-        }
-      },
-    };
-  }
-
-  override decorateSearchSpecification(
-    val: QuerySearchSpecification,
-  ): QuerySearchSpecification {
-    const currentProjectCoordinates = new QueryProjectCoordinates();
-    currentProjectCoordinates.groupId = this.groupId;
-    currentProjectCoordinates.artifactId = this.artifactId;
-    val.projectCoordinates = [
-      // either get queries for the current project
-      currentProjectCoordinates,
-      // or any of its dependencies
-      ...Array.from(
-        this.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.keys(),
-      ).map((dependencyKey) => {
-        const { groupId, artifactId } = parseGACoordinates(dependencyKey);
-        const coordinates = new QueryProjectCoordinates();
-        coordinates.groupId = groupId;
-        coordinates.artifactId = artifactId;
-        return coordinates;
-      }),
-    ];
-    val.taggedValues = [createQueryDataSpaceTaggedValue(this.dataSpacePath)];
-    val.combineTaggedValuesCondition = true;
-    return val;
   }
 }

@@ -155,7 +155,7 @@ export class QueryableDataProduct extends LegendQueryableElement {
   ) {
     super(groupId, artifactId, versionId);
     this.dataProductPath = dataProductPath;
-    this.dataProductType = dataProductType;
+    this.dataProductType = dataProductType.toLowerCase();
     this.id = id;
   }
 

@@ -33,6 +33,19 @@ export const resolveDefaultDataProductAccessType = (
       id: modelAcessGroup.id,
     };
   }
+
+  // start on ModelAPG if it exists, then fallback to native access
+  const nativeAccess = dataProductArtifact.nativeModelAccess;
+  if (nativeAccess) {
+    const defaultKey = nativeAccess.defaultExecutionContext;
+    const native =
+      nativeAccess.nativeModelExecutionContexts.find(
+        (ctx) => ctx.key === defaultKey,
+      ) ?? nativeAccess.nativeModelExecutionContexts[0];
+    if (native) {
+      return { type: DataProductAccessType.NATIVE, id: native.key };
+    }
+  }
   throw new Error(
     `Data Product not supported for querying on legend query ${dataProductArtifact.dataProduct.path}. Must contain a model access point or native model access.`,
   );

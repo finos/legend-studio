@@ -51,8 +51,9 @@ import {
   type ExecutionOptions,
   type ServiceRegistrationOptions,
 } from '../../../../graph-manager/AbstractPureGraphManager.js';
-import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+import { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
+import { PackageableRuntime } from '../../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import type { PackageableElement } from '../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import {
   type SystemModel,
@@ -348,6 +349,7 @@ import { V1_UserListOwnership } from './model/packageableElements/service/V1_Ser
 import { V1_PureSingleExecution } from './model/packageableElements/service/V1_ServiceExecution.js';
 import {
   type V1_Runtime,
+  V1_EngineRuntime,
   V1_RuntimePointer,
 } from './model/packageableElements/runtime/V1_Runtime.js';
 import type { TestDebug } from '../../../../graph/metamodel/pure/test/result/DebugTestsResult.js';
@@ -380,9 +382,11 @@ import {
 } from '../../../action/analytics/data-product/DataProductAnalysis.js';
 import {
   DataProductAccessType,
+  DataProductElementScope,
   ModelAccessPointGroup,
   NativeModelAccess,
   NativeModelExecutionContext,
+  type DataProductElement,
 } from '../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_MemSQLFunction } from './model/packageableElements/function/V1_MemSQLFunction.js';
 import { LineageModel } from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
@@ -3840,6 +3844,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  private resolveArtifactElements(
+    elementPaths: string[],
+    pureGraph: PureModel,
+  ): DataProductElementScope[] {
+    const scopes: DataProductElementScope[] = [];
+    for (const path of elementPaths) {
+      const el = pureGraph.getNullableElement(path, true);
+      if (el) {
+        const scope = new DataProductElementScope();
+        scope.element = PackageableElementExplicitReference.create(
+          el as DataProductElement,
+        );
+        scopes.push(scope);
+      }
+    }
+    return scopes;
+  }
+
   async buildDataProductAnalysis(
     artifact: V1_DataProductArtifact,
     dataProductPath: string,
@@ -3849,30 +3871,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     projectInfo: ProjectGAVCoordinates,
     graphReport?: GraphManagerOperationReport,
   ): Promise<DataProductAnalysisQueryResult> {
-    // Collect all mapping generation infos from model access point groups and native model access
-    const allMappingGenInfos = new Map<string, V1_MappingGenerationInfo>();
-
     const modelAccessPointGroups = artifact.accessPointGroups.filter(
       (group): group is V1_ModelAccessPointGroupInfo =>
         group instanceof V1_ModelAccessPointGroupInfo,
     );
-    for (const group of modelAccessPointGroups) {
-      allMappingGenInfos.set(
-        group.mappingGeneration.path,
-        group.mappingGeneration,
-      );
-    }
 
-    if (artifact.nativeModelAccess?.mappingGenerations) {
-      for (const [path, genInfo] of artifact.nativeModelAccess
-        .mappingGenerations) {
-        if (!allMappingGenInfos.has(path)) {
-          allMappingGenInfos.set(path, genInfo);
-        }
-      }
-    }
-
-    // Resolve mapping path from accessPointId and dataProductAccessType
+    // Resolve the target access group and mapping path
     let mappingPath: string | undefined;
     let accessGroup:
       | V1_ModelAccessPointGroupInfo
@@ -3894,32 +3898,67 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         accessGroup = nativeCtx;
       }
     }
-
-    if (!mappingPath) {
-      throw new Error(
-        `Can't resolve mapping path for access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
-      );
-    }
     if (!accessGroup) {
       throw new Error(
-        `Can't resolve access group for access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
+        `Can't resolve access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
       );
     }
-    // Build the minimal graph using ONLY the elements from the resolved mapping
-    const resolvedMappingGenInfo = mappingPath
-      ? allMappingGenInfos.get(mappingPath)
-      : undefined;
-
-    if (!resolvedMappingGenInfo) {
+    if (!mappingPath) {
       throw new Error(
-        `Can't find mapping generation info for access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
+        `Can't resolve mapping path '${mappingPath}' for access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
       );
     }
 
-    // Create a dummy mapping for the resolved mapping path
-    const dummyMapping = new V1_Mapping();
-    dummyMapping.package = extractPackagePathFromPath(mappingPath) ?? '';
-    dummyMapping.name = extractElementNameFromPath(mappingPath);
+    // prevent refetching artifact
+    const includedGenInfos = new Map<string, V1_MappingGenerationInfo>();
+
+    if (artifact.nativeModelAccess?.mappingGenerations) {
+      for (const [path, genInfo] of artifact.nativeModelAccess
+        .mappingGenerations) {
+        includedGenInfos.set(path, genInfo);
+      }
+    }
+    for (const group of modelAccessPointGroups) {
+      if (!includedGenInfos.has(group.mappingGeneration.path)) {
+        includedGenInfos.set(
+          group.mappingGeneration.path,
+          group.mappingGeneration,
+        );
+      }
+    }
+
+    const nativeRuntimePaths = new Map<string, string>();
+    if (artifact.nativeModelAccess?.nativeModelExecutionContexts) {
+      for (const ctx of artifact.nativeModelAccess
+        .nativeModelExecutionContexts) {
+        const rtPath = ctx.runtimeGeneration?.path;
+        if (rtPath) {
+          nativeRuntimePaths.set(ctx.key, rtPath);
+        }
+      }
+    }
+
+    // Only add a stub for the resolved mapping to the graph
+    const resolvedMappingStub = new V1_Mapping();
+    resolvedMappingStub.package = extractPackagePathFromPath(mappingPath) ?? '';
+    resolvedMappingStub.name = extractElementNameFromPath(mappingPath);
+
+    // Only add a runtime stub for the resolved native context (if applicable)
+    const resolvedRuntimePath =
+      dataProductAccessType === DataProductAccessType.NATIVE
+        ? nativeRuntimePaths.get(accessPointId)
+        : undefined;
+    let resolvedRuntimeStub: V1_PackageableRuntime | undefined;
+    if (resolvedRuntimePath) {
+      resolvedRuntimeStub = new V1_PackageableRuntime();
+      resolvedRuntimeStub.package =
+        extractPackagePathFromPath(resolvedRuntimePath) ?? '';
+      resolvedRuntimeStub.name =
+        extractElementNameFromPath(resolvedRuntimePath);
+      resolvedRuntimeStub.runtimeValue = new V1_EngineRuntime();
+    }
+
+    // Create a dummy data product element
 
     // Create a dummy data product element
     const dummyDataProduct = new V1_DataProduct();
@@ -3928,9 +3967,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     dummyDataProduct.name = extractElementNameFromPath(dataProductPath);
     dummyDataProduct.title = artifact.dataProduct.title;
     dummyDataProduct.description = artifact.dataProduct.description;
-    // Build the minimal graph from the resolved mapping's model elements + dummy mapping + dummy data product
-    const graphEntities = resolvedMappingGenInfo.model.elements
-      .concat([dummyMapping])
+
+    // Only load model elements for the resolved mapping
+    const allModelElements: V1_PackageableElement[] =
+      includedGenInfos.get(mappingPath)?.model.elements ?? [];
+
+    const graphEntities = allModelElements
+      .concat(resolvedMappingStub)
+      .concat(resolvedRuntimeStub ? [resolvedRuntimeStub] : [])
       .concat(dummyDataProduct)
       .filter((el) => !pureGraph.getNullableElement(el.path, false))
       .map((el) => this.elementProtocolToEntity(el));
@@ -3949,45 +3993,115 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
 
     const data = pureGraph.getDataProduct(dataProductPath);
-    // build access point group
-    let exec: ModelAccessPointGroup | NativeModelExecutionContext;
-    if (accessGroup instanceof V1_ModelAccessPointGroupInfo) {
-      const group = new ModelAccessPointGroup();
-      group.id = accessGroup.id;
-      data.accessPointGroups = [group];
-      group.mapping = PackageableElementExplicitReference.create(
-        pureGraph.getMapping(mappingPath),
-      );
-      exec = group;
-    } else {
-      const nativeAccess = new NativeModelExecutionContext();
-      nativeAccess.key = accessGroup.key;
-      nativeAccess.mapping = PackageableElementExplicitReference.create(
-        pureGraph.getMapping(mappingPath),
-      );
+
+    let exec: ModelAccessPointGroup | NativeModelExecutionContext | undefined;
+
+    if (
+      artifact.nativeModelAccess?.defaultExecutionContext &&
+      artifact.nativeModelAccess.nativeModelExecutionContexts.length
+    ) {
       const na = new NativeModelAccess();
-      na.nativeModelExecutionContexts = [nativeAccess];
+      na.nativeModelExecutionContexts =
+        artifact.nativeModelAccess.nativeModelExecutionContexts.map(
+          (ctxInfo) => {
+            const ctx = new NativeModelExecutionContext();
+            ctx.key = ctxInfo.key;
+            const ctxMappingPath = ctxInfo.mapping;
+            const ctxMapping =
+              ctxMappingPath === mappingPath
+                ? pureGraph.getMapping(ctxMappingPath)
+                : new Mapping(ctxMappingPath);
+            ctx.mapping =
+              PackageableElementExplicitReference.create(ctxMapping);
+            const rtPath = nativeRuntimePaths.get(ctxInfo.key);
+            if (rtPath) {
+              const ctxRuntime =
+                rtPath === resolvedRuntimePath
+                  ? pureGraph.getRuntime(rtPath)
+                  : new PackageableRuntime(rtPath);
+              ctx.runtime =
+                PackageableElementExplicitReference.create(ctxRuntime);
+            }
+            ctx.__owner = na;
+            return ctx;
+          },
+        );
+      const defaultExecutionContext = na.nativeModelExecutionContexts.find(
+        (ctx) =>
+          ctx.key === artifact.nativeModelAccess?.defaultExecutionContext,
+      );
+      if (!defaultExecutionContext) {
+        throw new Error(
+          `Can't find execution context matching default context in '${dataProductPath}'`,
+        );
+      }
+      na.defaultExecutionContext = defaultExecutionContext;
+      na.featuredElements = this.resolveArtifactElements(
+        artifact.nativeModelAccess.elements,
+        pureGraph,
+      );
       data.nativeModelAccess = na;
-      exec = nativeAccess;
     }
 
-    // Build MappingModelCoverageAnalysisResult for the resolved mapping only
+    if (modelAccessPointGroups.length > 0) {
+      data.accessPointGroups = modelAccessPointGroups.map((groupInfo) => {
+        const group = new ModelAccessPointGroup();
+        group.id = groupInfo.id;
+        const groupMappingPath = groupInfo.mappingGeneration.path;
+        const groupMapping =
+          groupMappingPath === mappingPath
+            ? pureGraph.getMapping(groupMappingPath)
+            : new Mapping(groupMappingPath);
+        group.mapping =
+          PackageableElementExplicitReference.create(groupMapping);
+        group.featuredElements = this.resolveArtifactElements(
+          groupInfo.elements,
+          pureGraph,
+        );
+        return group;
+      });
+    }
+
+    // Resolve the target exec state
+    if (accessGroup instanceof V1_ModelAccessPointGroupInfo) {
+      exec = data.accessPointGroups.find(
+        (g) => g instanceof ModelAccessPointGroup && g.id === accessGroup.id,
+      ) as ModelAccessPointGroup;
+    } else {
+      exec = data.nativeModelAccess?.nativeModelExecutionContexts.find(
+        (ctx) => ctx.key === accessGroup.key,
+      );
+    }
+
+    if (!exec) {
+      throw new Error(
+        `Can't find execution matching access id in '${dataProductPath}'`,
+      );
+    }
+
+    // Build MappingModelCoverageAnalysisResult for all included mappings
     const mappingToMappingCoverageResult = new Map<
       string,
       MappingModelCoverageAnalysisResult
     >();
-    const v1Result = new V1_MappingModelCoverageAnalysisResult();
-    v1Result.mappedEntities = resolvedMappingGenInfo.mappedEntities;
-    v1Result.model = resolvedMappingGenInfo.model;
-    mappingToMappingCoverageResult.set(
-      mappingPath,
-      V1_buildModelCoverageAnalysisResult(
-        v1Result,
-        this,
-        pureGraph.getMapping(mappingPath),
-        resolvedMappingGenInfo.model,
-      ),
-    );
+    for (const [mPath, genInfo] of includedGenInfos) {
+      const v1Result = new V1_MappingModelCoverageAnalysisResult();
+      v1Result.mappedEntities = genInfo.mappedEntities;
+      v1Result.model = genInfo.model;
+      const coverageMapping =
+        mPath === mappingPath
+          ? pureGraph.getMapping(mPath)
+          : new Mapping(mPath);
+      mappingToMappingCoverageResult.set(
+        mPath,
+        V1_buildModelCoverageAnalysisResult(
+          v1Result,
+          this,
+          coverageMapping,
+          genInfo.model,
+        ),
+      );
+    }
 
     // Build the analysis result
     const result = new DataProductAnalysis();

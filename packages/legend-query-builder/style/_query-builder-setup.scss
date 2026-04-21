@@ -88,6 +88,24 @@
       }
     }
 
+    &__item__selector__option {
+      @include flexVCenter;
+
+      justify-content: space-between;
+      width: 100%;
+
+      &__tag {
+        font-size: 1rem;
+        font-weight: 700;
+        padding: 0 0.4rem;
+        border-radius: 0.2rem;
+        background: var(--color-dark-grey-280);
+        color: var(--color-light-grey-200);
+        margin-left: 0.5rem;
+        white-space: nowrap;
+      }
+    }
+
     &__item + &__item {
       margin-top: 0.5rem;
     }

@@ -41,6 +41,7 @@ import { flowResult } from 'mobx';
 import { LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceTemplateQueryCreator } from './data-space/DataSpaceTemplateQueryCreator.js';
 import { QueryCreator } from './data-space/DataProductQueryCreator.js';
+import { DataProductSampleQueryCreator } from './data-product/DataProductSampleQueryCreator.js';
 import { ExistingQueryDataCubeViewer } from './data-cube/ExistingQueryDataCubeViewer.js';
 import {
   AuthProvider,
@@ -102,6 +103,10 @@ const LegendQueryWebApplicationRouter = observer(() => {
           <Route
             path={LEGEND_QUERY_ROUTE_PATTERN.DATA_CUBE_EXISTING_QUERY}
             element={<ExistingQueryDataCubeViewer />}
+          />
+          <Route
+            path={LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT_SAMPLE_QUERY}
+            element={<DataProductSampleQueryCreator />}
           />
           <Route
             path={LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT}

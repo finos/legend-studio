@@ -32,6 +32,7 @@ import {
   SimpleFunctionExpression,
   InstanceValue,
   Multiplicity,
+  type MappingModelCoverageAnalysisResult,
   extractElementNameFromPath,
   SUPPORTED_FUNCTIONS,
   PackageableElementExplicitReference,
@@ -53,6 +54,8 @@ import {
   GenericTypeExplicitReference,
   findLakehouseAccessPointGroup,
   type PureModel,
+  DataProductAccessType,
+  LegendSDLC,
 } from '@finos/legend-graph';
 import { QueryBuilderState } from '../../QueryBuilderState.js';
 
@@ -74,6 +77,7 @@ import { action, computed, flow, makeObservable, observable } from 'mobx';
 import {
   DepotEntityWithOrigin,
   type QueryableSourceInfo,
+  type ProjectGAVCoordinates,
 } from '@finos/legend-storage';
 import { compareLabelFn } from '@finos/legend-art';
 import { QueryBuilderEmbeddedFromExecutionContextState } from '../../QueryBuilderExecutionContextState.js';
@@ -303,9 +307,6 @@ export class LakehouseDataProductExecutionState extends DataProductExecutionStat
 export class DataProductQueryBuilderState extends QueryBuilderState {
   readonly onClassChange?: ((val: Class) => void) | undefined;
   readonly onDataProductChange?: (val: DepotEntityWithOrigin) => Promise<void>;
-  readonly onExecutionContextChange?:
-    | ((val: NativeModelExecutionContext) => void)
-    | undefined;
 
   loadDataProductModelState = ActionState.create();
   dataProduct: DataProduct;
@@ -314,6 +315,10 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     NativeModelExecutionContext | ModelAccessPointGroup | LakehouseAccessPoint
   >;
   entities: DepotEntityWithOrigin[] | undefined;
+  mappingToMappingCoverageResult?: Map<
+    string,
+    MappingModelCoverageAnalysisResult
+  >;
 
   prioritizeEntityFunc?: ((val: DepotEntityWithOrigin) => boolean) | undefined;
 
@@ -333,9 +338,6 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       | LakehouseAccessPoint,
     prioritizeEntityFunc: ((val: DepotEntityWithOrigin) => boolean) | undefined,
     onDataProductChange: (val: DepotEntityWithOrigin) => Promise<void>,
-    onExecutionContextChange?:
-      | ((val: NativeModelExecutionContext) => void)
-      | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
     config?: QueryBuilderConfig | undefined,
     sourceInfo?: QueryableSourceInfo | undefined,
@@ -357,6 +359,11 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       showExecutionIdSelector: computed,
       executionIdOptions: computed,
       selectedExecutionIdOption: computed,
+      hasNativeModelAccess: computed,
+      hasBothAccessModes: computed,
+      showContextSelector: computed,
+      allContextOptions: computed,
+      selectedContextOption: computed,
       selectedExecOption: computed,
       selectedModelAccessPointGroupOption: computed,
       usableClasses: computed,
@@ -382,11 +389,31 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
           : new ModelAccessPointDataProductExecutionState(executionState, this);
     this.prioritizeEntityFunc = prioritizeEntityFunc;
     this.onDataProductChange = onDataProductChange;
-    this.onExecutionContextChange = onExecutionContextChange;
     this.onClassChange = onClassChange;
     // force from.
     this.executionContextState =
       new QueryBuilderEmbeddedFromExecutionContextState(this);
+  }
+
+  async prepareAccessForExecution(): Promise<void> {
+    if (this.executionState instanceof NativeModelDataProductExecutionState) {
+      const runtime = this.executionState.exectionValue.runtime;
+      if (runtime) {
+        this.changeRuntime(new RuntimePointer(runtime));
+      }
+    } else if (
+      this.executionState instanceof
+        ModelAccessPointDataProductExecutionState &&
+      this.executionState.selectedRuntime
+    ) {
+      this.changeRuntime(
+        new RuntimePointer(
+          PackageableElementExplicitReference.create(
+            this.executionState.selectedRuntime,
+          ),
+        ),
+      );
+    }
   }
 
   get isProductLinkable(): boolean {
@@ -417,19 +444,40 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       this.modelAccessPointGroupOptions.length > 1
     );
   }
+  get hasNativeModelAccess(): boolean {
+    return this.dataProduct.nativeModelAccess !== undefined;
+  }
+
+  get hasBothAccessModes(): boolean {
+    return this.hasModelAccessPointGroups && this.hasNativeModelAccess;
+  }
+
+  // showContextSelector / allContextOptions / selectedContextOption are aliases
+  // over the upstream ExecutionIdOption API so existing UI code keeps working.
+  get showContextSelector(): boolean {
+    return this.showExecutionIdSelector;
+  }
+
+  get allContextOptions(): ExecutionIdOption[] {
+    return this.executionIdOptions;
+  }
+
+  get selectedContextOption(): ExecutionIdOption | undefined {
+    return this.selectedExecutionIdOption;
+  }
 
   get executionIdOptions(): ExecutionIdOption[] {
     const nativeOptions: ExecutionIdOption[] = (
       this.dataProduct.nativeModelAccess?.nativeModelExecutionContexts ?? []
     ).map((ctx) => ({
       label: ctx.key,
-      tag: 'Native',
+      tag: 'NATIVE',
       value: ctx,
     }));
     const modelOptions: ExecutionIdOption[] = this.modelAccessPointGroups.map(
       (group) => ({
         label: group.title ?? group.id,
-        tag: 'Model',
+        tag: 'MODEL',
         value: group,
       }),
     );
@@ -439,7 +487,7 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         .filter(filterByType(LakehouseAccessPoint))
         .map((ap) => ({
           label: ap.title ?? ap.id,
-          tag: 'Lakehouse',
+          tag: 'LAKEHOUSE',
           value: ap,
         }));
     return [...modelOptions, ...lakehouseOptions, ...nativeOptions].sort(
@@ -452,19 +500,19 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     if (state instanceof NativeModelDataProductExecutionState) {
       return {
         label: state.exectionValue.key,
-        tag: 'Native',
+        tag: 'NATIVE',
         value: state.exectionValue,
       };
     } else if (state instanceof ModelAccessPointDataProductExecutionState) {
       return {
         label: state.exectionValue.title ?? state.exectionValue.id,
-        tag: 'Model',
+        tag: 'MODEL',
         value: state.exectionValue,
       };
     } else if (state instanceof LakehouseDataProductExecutionState) {
       return {
         label: state.exectionValue.title ?? state.exectionValue.id,
-        tag: 'Lakehouse',
+        tag: 'LAKEHOUSE',
         value: state.exectionValue,
       };
     }
@@ -480,11 +528,20 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     if (val === this.executionState.exectionValue) {
       return;
     }
+    const switchingToModel = val instanceof ModelAccessPointGroup;
+    const switchingToNative = val instanceof NativeModelExecutionContext;
+    const wasModeSwitch =
+      (switchingToModel && this.isNativeMode) ||
+      (switchingToNative && this.isModelAccessPointGroupMode);
+
+    if (wasModeSwitch) {
+      this.changeHistoryState.querySnapshotBuffer = [];
+      this.changeHistoryState.pointer = -1;
+      this.changeHistoryState.setCurrentQuery(undefined);
+    }
+
     await this.changeExecutionState(val);
     await this.propagateExecutionContextChange();
-    if (val instanceof NativeModelExecutionContext) {
-      this.onExecutionContextChange?.(val);
-    }
   }
 
   get selectedExecOption():
@@ -521,29 +578,6 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
           this.explorerState.mappingModelCoverageAnalysisResult,
         )
       : [];
-  }
-
-  changeNativeExecutionContext(val: NativeModelExecutionContext): void {
-    if (this.isNativeMode && val === this.executionState.exectionValue) {
-      return;
-    }
-    this.setExecutionState(val);
-    this.propagateExecutionContextChange()
-      .then(() => this.onExecutionContextChange?.(val))
-      .catch(this.applicationStore.alertUnhandledError);
-  }
-
-  changeModelAccessPointGroupValue(val: ModelAccessPointGroup): void {
-    if (
-      this.isModelAccessPointGroupMode &&
-      val === this.executionState.exectionValue
-    ) {
-      return;
-    }
-    this.setExecutionState(val);
-    this.propagateExecutionContextChange().catch(
-      this.applicationStore.alertUnhandledError,
-    );
   }
 
   override buildQueryForPersistence(): RawLambda {
@@ -632,12 +666,7 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       const execValue =
         preResolvedState ?? resolveDataProductExecutionState(dataProduct);
       this.dataProduct = dataProduct;
-      this.executionState =
-        execValue instanceof NativeModelExecutionContext
-          ? new NativeModelDataProductExecutionState(execValue, this)
-          : execValue instanceof LakehouseAccessPoint
-            ? new LakehouseDataProductExecutionState(execValue, this)
-            : new ModelAccessPointDataProductExecutionState(execValue, this);
+      this.setExecutionState(execValue);
       const mapping = this.executionState.mapping;
       if (mapping) {
         this.changeMapping(mapping);
@@ -669,11 +698,18 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         );
       }
       if (mapping) {
+        const coverageResult = this.mappingToMappingCoverageResult?.get(
+          mapping.path,
+        );
+        if (coverageResult) {
+          this.explorerState.mappingModelCoverageAnalysisResult =
+            coverageResult;
+        }
         const compatibleClasses = resolveUsableDataProductClasses(
           this.activeFeaturedElements,
           mapping,
           this.graphManagerState,
-          undefined,
+          coverageResult,
         );
         // if there is no chosen class or the chosen one is not compatible
         // with the mapping then pick a compatible class if possible
@@ -882,19 +918,87 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
   ): Promise<void> {
     const currentMapping = this.executionContextState.mapping;
     const newMapping = this.activeMapping;
-    if (newMapping && newMapping !== currentMapping) {
-      this.changeMapping(newMapping, {
-        keepQueryContent: true,
-      });
-      const classes = resolveUsableDataProductClasses(
-        this.activeFeaturedElements,
-        newMapping,
-        this.graphManagerState,
-        undefined,
-      );
-      if (this.sourceClass && !classes.includes(this.sourceClass)) {
-        this.setSourceElement(classes[0]);
+    if (!newMapping || newMapping === currentMapping) {
+      return;
+    }
+
+    const coverageResult = this.mappingToMappingCoverageResult?.get(
+      newMapping.path,
+    );
+
+    if (coverageResult && this.dataProductArtifact) {
+      const origin = this.graphManagerState.graph.origin;
+      if (origin instanceof LegendSDLC) {
+        const newGraph = this.graphManagerState.createNewGraph();
+        const projectInfo: ProjectGAVCoordinates = {
+          groupId: origin.groupId,
+          artifactId: origin.artifactId,
+          versionId: origin.versionId,
+        };
+        let accessPointId: string;
+        let dataProductAccessType: DataProductAccessType;
+        if (
+          this.executionState instanceof NativeModelDataProductExecutionState
+        ) {
+          accessPointId = this.executionState.exectionValue.key;
+          dataProductAccessType = DataProductAccessType.NATIVE;
+        } else {
+          accessPointId = (
+            this.executionState as ModelAccessPointDataProductExecutionState
+          ).exectionValue.id;
+          dataProductAccessType = DataProductAccessType.MODEL;
+        }
+        const analysisResult =
+          await this.graphManagerState.graphManager.buildDataProductAnalysis(
+            this.dataProductArtifact,
+            this.dataProduct.path,
+            newGraph,
+            accessPointId,
+            dataProductAccessType,
+            projectInfo,
+          );
+        this.graphManagerState.graph = newGraph;
+
+        this.dataProduct = newGraph.getDataProduct(this.dataProduct.path);
+        this.setExecutionState(analysisResult.targetExecState);
+        if (analysisResult.dataProductAnalysis.mappingToMappingCoverageResult) {
+          this.mappingToMappingCoverageResult =
+            analysisResult.dataProductAnalysis.mappingToMappingCoverageResult;
+        }
+        const newCoverageResult = this.mappingToMappingCoverageResult?.get(
+          newMapping.path,
+        );
+        if (newCoverageResult) {
+          this.explorerState.mappingModelCoverageAnalysisResult =
+            newCoverageResult;
+        }
+      } else {
+        this.explorerState.mappingModelCoverageAnalysisResult = coverageResult;
+      }
+    } else if (coverageResult) {
+      this.explorerState.mappingModelCoverageAnalysisResult = coverageResult;
+    }
+
+    await this.prepareAccessForExecution();
+
+    this.changeMapping(newMapping, {
+      keepQueryContent: true,
+    });
+    const classes = resolveUsableDataProductClasses(
+      this.activeFeaturedElements,
+      newMapping,
+      this.graphManagerState,
+      this.explorerState.mappingModelCoverageAnalysisResult,
+    );
+    if (
+      !this.sourceClass ||
+      (!classes.includes(this.sourceClass) && classes.length)
+    ) {
+      const possibleNewClass = classes[0];
+      if (possibleNewClass) {
+        this.changeSourceElement(possibleNewClass);
       }
     }
+    this.explorerState.refreshTreeData();
   }
 }

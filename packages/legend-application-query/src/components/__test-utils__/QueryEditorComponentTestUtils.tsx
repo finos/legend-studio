@@ -42,6 +42,7 @@ import {
   QueryDataProductNativeExecutionContextInfo,
   ModelAccessPointGroup,
   V1_PureGraphManager,
+  type V1_DataProductArtifact,
 } from '@finos/legend-graph';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -76,6 +77,7 @@ import {
 } from '@finos/legend-application/browser';
 import {
   generateExistingQueryEditorRoute,
+  generateDataProductSampleQueryRoute,
   LEGEND_QUERY_ROUTE_PATTERN,
 } from '../../__lib__/LegendQueryNavigation.js';
 import {
@@ -90,6 +92,8 @@ import {
 import { LegendQueryDataProductQueryBuilderState } from '../../stores/data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
 import { DataProductSelectorState } from '../../stores/data-space/DataProductSelectorState.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
+import { DataProductSampleQueryCreatorStore } from '../../stores/data-product/DataProductSampleQueryCreatorStore.js';
+import { DataProductSampleQueryCreator } from '../data-product/DataProductSampleQueryCreator.js';
 
 const TEST_QUERY_ID = 'test-query-id';
 const TEST_GROUP_ID = 'test-group';
@@ -97,6 +101,8 @@ const TEST_ARTIFACT_ID = 'test-artifact';
 const TEST_VERSION_ID = 'test-version';
 const TEST_TEMPLATE_QUERY_ID = 'templateQuery';
 const TEST_DATA_SPACE_PATH = 'domain::COVIDDatapace';
+const TEST_SAMPLE_QUERY_ID = 'sampleQuery';
+const TEST_DATA_PRODUCT_PATH = 'test::MyDataProduct';
 export const TEST_QUERY_NAME = 'MyTestQuery';
 
 export const TEST__provideMockedQueryEditorStore = (customization?: {
@@ -775,11 +781,13 @@ export const TEST__setUpDataProductExistingQueryEditor = async (
     async () => {
       /* no-op for tests */
     },
+    async () => {
+      throw new Error('Not implemented in tests');
+    },
     new DataProductSelectorState(
       MOCK__editorStore.depotServerClient,
       MOCK__editorStore.applicationStore,
     ),
-    undefined,
     undefined,
     undefined,
     MOCK__editorStore.applicationStore.config.options.queryBuilderConfig,
@@ -845,6 +853,7 @@ export const TEST__setUpDataProductNativeExistingQueryEditor = async (
   executionKey: string,
   lambda: RawLambda,
   entities: PlainObject<Entity>[],
+  artifact?: V1_DataProductArtifact | undefined,
 ): Promise<{
   renderResult: RenderResult;
   queryBuilderState: QueryBuilderState;
@@ -974,18 +983,20 @@ export const TEST__setUpDataProductNativeExistingQueryEditor = async (
     QueryBuilderDataBrowserWorkflow.INSTANCE,
     new QueryBuilderActionConfig_QueryApplication(MOCK__editorStore),
     dataProduct,
-    undefined,
+    artifact,
     executionState,
     MOCK__editorStore.depotServerClient,
     { groupId: 'test.group', artifactId: 'test-artifact', versionId: '0.0.0' },
     async () => {
       /* no-op for tests */
     },
+    async () => {
+      throw new Error('Not implemented in tests');
+    },
     new DataProductSelectorState(
       MOCK__editorStore.depotServerClient,
       MOCK__editorStore.applicationStore,
     ),
-    undefined,
     undefined,
     undefined,
     MOCK__editorStore.applicationStore.config.options.queryBuilderConfig,
@@ -1026,6 +1037,219 @@ export const TEST__setUpDataProductNativeExistingQueryEditor = async (
             <Route
               path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
               element={<ExistingQueryEditor />}
+            />
+          </Routes>
+        </LegendQueryFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
+  await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+  );
+
+  return {
+    renderResult,
+    queryBuilderState: guaranteeNonNullable(
+      MOCK__editorStore.queryBuilderState,
+      `Query builder state should have been initialized`,
+    ),
+  };
+};
+
+export const TEST__provideMockedDataProductSampleQueryCreatorStore =
+  (customization?: {
+    mock?: DataProductSampleQueryCreatorStore;
+    applicationStore?: LegendQueryApplicationStore;
+    pluginManager?: LegendQueryPluginManager;
+    extraPlugins?: AbstractPlugin[];
+    extraPresets?: AbstractPreset[];
+  }): DataProductSampleQueryCreatorStore => {
+    const pluginManager =
+      customization?.pluginManager ?? LegendQueryPluginManager.create();
+    pluginManager
+      .usePlugins([
+        new Core_LegendQueryApplicationPlugin(),
+        ...(customization?.extraPlugins ?? []),
+      ])
+      .usePresets([...(customization?.extraPresets ?? [])])
+      .install();
+    const applicationStore =
+      customization?.applicationStore ??
+      new ApplicationStore(
+        TEST__getTestLegendQueryApplicationConfig(),
+        pluginManager,
+      );
+    const depotServerClient = new DepotServerClient({
+      serverUrl: applicationStore.config.depotServerUrl,
+    });
+    depotServerClient.setTracerService(applicationStore.tracerService);
+    const value =
+      customization?.mock ??
+      new DataProductSampleQueryCreatorStore(
+        applicationStore,
+        depotServerClient,
+        TEST_GROUP_ID,
+        TEST_ARTIFACT_ID,
+        TEST_VERSION_ID,
+        TEST_DATA_PRODUCT_PATH,
+        TEST_SAMPLE_QUERY_ID,
+        { fips: 'value' },
+      );
+    const MOCK__QueryEditorStoreProvider = require('../QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-require-imports,@typescript-eslint/no-unsafe-assignment
+    MOCK__QueryEditorStoreProvider.useQueryEditorStore = createMock();
+    MOCK__QueryEditorStoreProvider.useQueryEditorStore.mockReturnValue(value);
+    return value;
+  };
+
+export const TEST__setUpDataProductSampleQueryEditor = async (
+  MOCK__editorStore: DataProductSampleQueryCreatorStore,
+  dataProductPath: string,
+  executionKey: string,
+  lambda: RawLambda,
+  entities: PlainObject<Entity>[],
+  artifact: V1_DataProductArtifact,
+): Promise<{
+  renderResult: RenderResult;
+  queryBuilderState: QueryBuilderState;
+}> => {
+  const projectData = {
+    id: 'test-id',
+    groupId: MOCK__editorStore.groupId,
+    artifactId: MOCK__editorStore.artifactId,
+    projectId: 'test-project-id',
+    versions: [MOCK__editorStore.versionId],
+    latestVersion: MOCK__editorStore.versionId,
+  };
+
+  const graphManagerState = MOCK__editorStore.graphManagerState;
+
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
+  await graphManagerState.initializeSystem();
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities as unknown as Entity[],
+    graphManagerState.graphBuildState,
+  );
+
+  const dataProduct = graphManagerState.graph.getDataProduct(dataProductPath);
+  const nativeAccess = guaranteeNonNullable(
+    dataProduct.nativeModelAccess,
+    `Data product '${dataProductPath}' has no native model access`,
+  );
+  const executionState = guaranteeNonNullable(
+    nativeAccess.nativeModelExecutionContexts.find(
+      (ctx) => ctx.key === executionKey,
+    ),
+    `Can't find native execution context '${executionKey}'`,
+  );
+
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getProject',
+  ).mockResolvedValue(projectData);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntities',
+  ).mockResolvedValue(entities);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntitiesByClassifier',
+  ).mockResolvedValue([]);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntitiesSummaryByClassifier',
+  ).mockResolvedValue([]);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getVersions',
+  ).mockResolvedValue([projectData.latestVersion]);
+  createSpy(
+    graphManagerState.graphManager,
+    'pureCodeToLambda',
+  ).mockResolvedValue(new RawLambda(lambda.parameters, lambda.body));
+  createSpy(
+    graphManagerState.graphManager,
+    'analyzeMappingModelCoverage',
+  ).mockResolvedValue(
+    graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+      { mappedEntities: [] },
+      executionState.mapping.value,
+    ),
+  );
+
+  const mockQueryBuilderState = new LegendQueryDataProductQueryBuilderState(
+    MOCK__editorStore.applicationStore,
+    graphManagerState,
+    QueryBuilderDataBrowserWorkflow.INSTANCE,
+    new QueryBuilderActionConfig_QueryApplication(MOCK__editorStore),
+    dataProduct,
+    artifact,
+    executionState,
+    MOCK__editorStore.depotServerClient,
+    {
+      groupId: MOCK__editorStore.groupId,
+      artifactId: MOCK__editorStore.artifactId,
+      versionId: MOCK__editorStore.versionId,
+    },
+    async () => {
+      /* no-op for tests */
+    },
+    async () => {
+      throw new Error('Not implemented in tests');
+    },
+    new DataProductSelectorState(
+      MOCK__editorStore.depotServerClient,
+      MOCK__editorStore.applicationStore,
+    ),
+    undefined,
+    undefined,
+    MOCK__editorStore.applicationStore.config.options.queryBuilderConfig,
+    {
+      groupId: MOCK__editorStore.groupId,
+      artifactId: MOCK__editorStore.artifactId,
+      versionId: MOCK__editorStore.versionId,
+      dataProduct: dataProductPath,
+    },
+  );
+  mockQueryBuilderState.initWithDataProduct(
+    dataProduct,
+    undefined,
+    executionState,
+  );
+
+  MOCK__editorStore.buildGraph = createMock();
+  MOCK__editorStore.fetchDataProductArtifact = createMock();
+  (
+    MOCK__editorStore.fetchDataProductArtifact as ReturnType<typeof createMock>
+  ).mockResolvedValue(artifact);
+  MOCK__editorStore.buildDataProductQueryBuilderState = createMock();
+  (
+    MOCK__editorStore.buildDataProductQueryBuilderState as ReturnType<
+      typeof createMock
+    >
+  ).mockResolvedValue(mockQueryBuilderState);
+  graphManagerState.graphManager.initialize = createMock();
+
+  const sampleQueryRoute = generateDataProductSampleQueryRoute(
+    MOCK__editorStore.groupId,
+    MOCK__editorStore.artifactId,
+    MOCK__editorStore.versionId,
+    dataProductPath,
+    MOCK__editorStore.templateQueryId,
+  );
+
+  const renderResult = render(
+    <ApplicationStoreProvider store={MOCK__editorStore.applicationStore}>
+      <TEST__BrowserEnvironmentProvider initialEntries={[sampleQueryRoute]}>
+        <LegendQueryFrameworkProvider>
+          <Routes>
+            <Route
+              path={LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT_SAMPLE_QUERY}
+              element={<DataProductSampleQueryCreator />}
             />
           </Routes>
         </LegendQueryFrameworkProvider>
