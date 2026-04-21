@@ -207,12 +207,6 @@ export class LegendMarketplaceSearchResultsStore {
     let filtered = productCardStates.filter((productCardState) =>
       this.marketplaceBaseStore.envState.filterDataProduct(productCardState),
     );
-    if (!this.showAllProducts) {
-      filtered = filtered.filter(
-        (productCardState) =>
-          productCardState.searchResult.meets_hygiene_threshold !== false,
-      );
-    }
     if (this.useProducerSearch && this.selectedTaxonomyNodeIds.size > 0) {
       filtered = filtered.filter((productCardState) => {
         const productTaxonomyPaths =

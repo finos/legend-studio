@@ -1021,20 +1021,16 @@ describe('MarketplaceLakehouseSearchResults', () => {
     const createShowAllMockResponse = (
       hasFilteredProducts: boolean,
     ): PlainObject<DataProductSearchResponse> => {
-      const metadata = Object.assign(
-        {},
-        mockProdSearchResultResponse.metadata,
-        {
-          total_count: (mockProdSearchResultResponse.results as unknown[])
-            .length,
-          num_pages: 1,
-          page_size: 12,
-          page_number: 1,
-          next_page_number: null,
-          prev_page_number: null,
-          has_filtered_products: hasFilteredProducts,
-        },
-      );
+      const metadata = {
+        ...(mockProdSearchResultResponse.metadata as Record<string, unknown>),
+        total_count: (mockProdSearchResultResponse.results as unknown[]).length,
+        num_pages: 1,
+        page_size: 12,
+        page_number: 1,
+        next_page_number: null,
+        prev_page_number: null,
+        has_filtered_products: hasFilteredProducts,
+      };
       return {
         results: mockProdSearchResultResponse.results,
         metadata,
@@ -1141,6 +1137,42 @@ describe('MarketplaceLakehouseSearchResults', () => {
         expect.any(Number),
         true,
       );
+    });
+
+    test('hasFilteredDataProducts is reset between searches', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+      await screen.findByText('4 Products');
+
+      // First search: API returns has_filtered_products: true
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockImplementation(async () => createShowAllMockResponse(true));
+
+      const searchInput = screen.getByDisplayValue('data');
+      fireEvent.change(searchInput, { target: { value: 'filtered' } });
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Search'));
+        await flushMicrotasks();
+      });
+
+      // "Show all" button should be visible
+      expect(screen.getByText('Show all data products')).toBeDefined();
+
+      // Second search: API returns has_filtered_products: false
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockImplementation(async () => createShowAllMockResponse(false));
+
+      fireEvent.change(screen.getByDisplayValue('filtered'), {
+        target: { value: 'unfiltered' },
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Search'));
+        await flushMicrotasks();
+      });
+
+      // "Show all" button should no longer be visible
+      expect(screen.queryByText('Show all data products')).toBeNull();
     });
   });
 

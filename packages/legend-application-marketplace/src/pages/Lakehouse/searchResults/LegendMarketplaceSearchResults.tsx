@@ -327,11 +327,11 @@ export const LegendMarketplaceSearchResults =
         [applicationStore],
       );
       const handleShowAllProducts = useCallback(() => {
-        searchResultsStore.setShowAllProducts(true);
         LegendMarketplaceTelemetryHelper.logEvent_ShowAllDataProducts(
           applicationStore.telemetryService,
           searchResultsStore.searchQuery,
         );
+        searchResultsStore.setShowAllProducts(true);
         flowResult(
           searchResultsStore.executeSearch(
             searchResultsStore.searchQuery ?? '',

@@ -46,6 +46,8 @@ import { logClickingDataProductCard } from '../../utils/LogUtils.js';
 import { LakehouseProductCard } from '../../components/LakehouseProductCard/LakehouseProductCard.js';
 import type { HomePageBannerConfig } from '../../application/LegendMarketplaceApplicationPlugin.js';
 
+const TRENDING_DATA_PRODUCTS = 4;
+
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = legendMarketplaceBaseStore.applicationStore;
@@ -140,7 +142,8 @@ export const MarketplaceLakehouseHome = observer(() => {
         };
         if (
           trendingDataProducts &&
-          Object.values(trendingDataProducts).flat().length >= 4
+          Object.values(trendingDataProducts).flat().length >=
+            TRENDING_DATA_PRODUCTS
         ) {
           Object.assign(result, trendingDataProducts);
         }
