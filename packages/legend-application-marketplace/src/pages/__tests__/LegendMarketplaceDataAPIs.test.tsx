@@ -104,8 +104,9 @@ describe('LegendMarketplaceDataAPIs', () => {
 
     test('renders view toggle buttons', async () => {
       await setupTestComponent();
-      expect(screen.getByTitle('List View')).toBeDefined();
       expect(screen.getByTitle('Tile View')).toBeDefined();
+      expect(screen.getByTitle('List View')).toBeDefined();
+      expect(screen.getByTitle('Grid View')).toBeDefined();
     });
 
     test('shows correct total service count', async () => {
@@ -161,6 +162,17 @@ describe('LegendMarketplaceDataAPIs', () => {
       );
     });
 
+    test('clicking Grid View button switches to grid view', async () => {
+      await setupTestComponent();
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Grid View'));
+      });
+
+      // AG Grid renders a grid role
+      await waitFor(() => expect(screen.getByRole('grid')).toBeDefined());
+    });
+
     test('clicking Tile View after List View switches back to tile', async () => {
       await setupTestComponent();
 
@@ -187,12 +199,20 @@ describe('LegendMarketplaceDataAPIs', () => {
       await act(async () => {
         fireEvent.click(screen.getByTitle('List View'));
       });
-
-      const persisted =
+      expect(
         MOCK__baseStore.applicationStore.settingService.getStringValue(
           'marketplace.data-apis.viewMode',
-        );
-      expect(persisted).toBe(ServicesViewMode.LIST);
+        ),
+      ).toBe(ServicesViewMode.LIST);
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Grid View'));
+      });
+      expect(
+        MOCK__baseStore.applicationStore.settingService.getStringValue(
+          'marketplace.data-apis.viewMode',
+        ),
+      ).toBe(ServicesViewMode.GRID);
     });
   });
 
@@ -322,12 +342,28 @@ describe('LegendMarketplaceDataAPIs', () => {
     });
 
     test('persisted items per page is restored on load', async () => {
-      await setupTestComponent(undefined, (baseStore) => {
-        baseStore.applicationStore.settingService.persistValue(
-          'marketplace.data-apis.itemsPerPage',
-          24,
-        );
-      });
+      // Pre-set the persisted value before rendering the component
+      const MOCK__baseStore =
+        await TEST__provideMockLegendMarketplaceBaseStore();
+
+      MOCK__baseStore.applicationStore.settingService.persistValue(
+        'marketplace.data-apis.itemsPerPage',
+        24,
+      );
+
+      mockUseSearchParams.mockReturnValue([
+        new URLSearchParams(),
+        mockSetSearchParams,
+      ]);
+
+      createSpy(
+        MOCK__baseStore.engineServerClient,
+        'getServicesInfo',
+      ).mockResolvedValue(mockServices.map((s) => ServiceDetail.fromJson(s)));
+
+      await TEST__setUpMarketplaceLakehouse(MOCK__baseStore, DATA_APIS_ROUTE);
+
+      await waitFor(() => screen.getByText(/\d+ Services/));
 
       // With 4 services and 24 items per page, all should show on one page
       // Verify the "Showing 1 to 4 of 4 results" text is present

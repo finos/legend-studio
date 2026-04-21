@@ -39,6 +39,7 @@ export enum LegendServiceSort {
 export enum ServicesViewMode {
   LIST = 'list',
   TILE = 'tile',
+  GRID = 'grid',
 }
 
 export class LegendServiceCardState {
@@ -140,6 +141,7 @@ export class LegendMarketplaceDataAPIsStore {
 
   ownerFilters: string[] = [];
   deploymentIdFilters: string[] = [];
+  favorites: Set<string> = new Set();
 
   readonly fetchingServicesState = ActionState.create();
 
@@ -195,6 +197,7 @@ export class LegendMarketplaceDataAPIsStore {
       itemsPerPage: observable,
       ownerFilters: observable,
       deploymentIdFilters: observable,
+      favorites: observable,
       setSearchQuery: action,
       setSort: action,
       setViewMode: action,
