@@ -3831,7 +3831,7 @@ __metadata:
     http-status-codes: "npm:2.3.0"
     jest: "npm:29.7.0"
     lodash: "npm:4.17.21"
-    lodash-es: "npm:4.18.0"
+    lodash-es: "npm:4.18.1"
     lossless-json: "npm:4.0.2"
     mobx: "npm:6.13.6"
     npm-run-all: "npm:4.1.5"
@@ -14346,10 +14346,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash-es@npm:4.18.0":
-  version: 4.18.0
-  resolution: "lodash-es@npm:4.18.0"
-  checksum: 10/a74d83e86b43f6d25ed750a5ea07768bf3ac472ff9daf7b9f2301ce0c9767107bf7a10d4e85f9b8ec87354c1decc63cafa5d85ab72fd88fd338b9abd1ba7ec86
+"lodash-es@npm:4.18.1":
+  version: 4.18.1
+  resolution: "lodash-es@npm:4.18.1"
+  checksum: 10/8bfad225ef09ef42b04283cdaf7830efcc2ba29ae41b56501c74422155ee1ccaa1f0f6e8319def3451a1fe54dec501c8e4bee622bae2b2d98ac993731e0a5cce
   languageName: node
   linkType: hard
 
