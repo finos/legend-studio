@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { PanelDropZone } from '@finos/legend-art';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useApplicationStore, useCommands } from '@finos/legend-application';
+import { useCommands } from '@finos/legend-application';
 import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
@@ -66,10 +66,6 @@ export const PlaygroundSQLCodeEditor = observer(
       disableDragDrop = false,
       enableDarkMode = false,
     } = props;
-    const applicationStore = useApplicationStore();
-    const isGlobalDarkMode =
-      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
-    const effectiveDarkMode = enableDarkMode || isGlobalDarkMode;
     const codeEditorRef = useRef<HTMLDivElement>(null);
     const sqlIdentifierSuggestionProviderDisposer = useRef<
       IDisposable | undefined
@@ -80,7 +76,7 @@ export const PlaygroundSQLCodeEditor = observer(
     useEffect(() => {
       if (!editor && codeEditorRef.current) {
         const element = codeEditorRef.current;
-        playgroundState.setTheme(effectiveDarkMode ? 'dark' : 'light');
+        playgroundState.setTheme(enableDarkMode ? 'dark' : 'light');
         const newEditor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
           theme:
@@ -105,7 +101,7 @@ export const PlaygroundSQLCodeEditor = observer(
         playgroundState.setSQLEditor(newEditor);
         setEditor(newEditor);
       }
-    }, [playgroundState, editor, effectiveDarkMode]);
+    }, [playgroundState, editor, enableDarkMode]);
     useCommands(playgroundState);
     if (editor) {
       sqlIdentifierSuggestionProviderDisposer.current?.dispose();
