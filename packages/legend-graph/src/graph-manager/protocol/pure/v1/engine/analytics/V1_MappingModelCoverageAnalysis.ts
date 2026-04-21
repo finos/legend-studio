@@ -103,6 +103,13 @@ const V1_deserializeMappedProperty = (
     case V1_MappedPropertyType.ENUM:
       return deserialize(V1_EnumMappedProperty.serialization.schema, json);
     default: {
+      // fix: data product artifacts omit type
+      if (json.entityPath !== undefined) {
+        return deserialize(V1_EntityMappedProperty.serialization.schema, json);
+      }
+      if (json.enumPath !== undefined) {
+        return deserialize(V1_EnumMappedProperty.serialization.schema, json);
+      }
       return deserialize(V1_MappedProperty.serialization.schema, json);
     }
   }

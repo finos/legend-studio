@@ -36,6 +36,7 @@ import type {
 } from '@finos/legend-storage';
 import {
   LegendSDLC,
+  type PackageableRuntime,
   type Class,
   type DataProduct,
   type GraphManagerState,
@@ -62,6 +63,10 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     | ((val: ResolvedDataSpaceEntityWithOrigin) => void)
     | undefined;
   productSelectorState: DataProductSelectorState;
+  createLakehousePackageableRuntime: (
+    dataProductPath: string,
+    gav: { groupId: string; artifactId: string; versionId: string },
+  ) => Promise<PackageableRuntime>;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -74,12 +79,13 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     depotServerClient: DepotServerClient,
     project: ProjectGAVCoordinates,
     onDataProductChange: (val: DepotEntityWithOrigin) => Promise<void>,
+    createLakehousePackageableRuntime: (
+      dataProductPath: string,
+      gav: { groupId: string; artifactId: string; versionId: string },
+    ) => Promise<PackageableRuntime>,
     productSelectorState: DataProductSelectorState,
     onLegacyDataSpaceChange?:
       | ((val: ResolvedDataSpaceEntityWithOrigin) => void)
-      | undefined,
-    onExecutionContextChange?:
-      | ((val: NativeModelExecutionContext) => void)
       | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
     config?: QueryBuilderConfig | undefined,
@@ -95,7 +101,6 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
       executionState,
       undefined,
       onDataProductChange,
-      onExecutionContextChange,
       onClassChange,
       config,
       sourceInfo,
@@ -104,6 +109,7 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     this.depotServerClient = depotServerClient;
     this.productSelectorState = productSelectorState;
     this.onLegacyDataSpaceChange = onLegacyDataSpaceChange;
+    this.createLakehousePackageableRuntime = createLakehousePackageableRuntime;
   }
 
   override handleDataProductChange(val: DepotEntityWithOrigin): void {
@@ -115,6 +121,32 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     } else {
       super.handleDataProductChange(val);
     }
+  }
+
+  override async prepareAccessForExecution(): Promise<void> {
+    const origin = this.graphManagerState.graph.origin;
+    if (
+      this.executionState instanceof
+        ModelAccessPointDataProductExecutionState &&
+      origin instanceof LegendSDLC
+    ) {
+      const packageableRuntime = await this.createLakehousePackageableRuntime(
+        this.dataProduct.path,
+        {
+          groupId: origin.groupId,
+          artifactId: origin.artifactId,
+          versionId: origin.versionId,
+        },
+      );
+      this.graphManagerState.graph.addElement(packageableRuntime, '_internal_');
+
+      if (!this.executionState.adhocRuntime) {
+        this.executionState.withAdhocRuntime();
+      }
+
+      this.executionState.changeSelectedRuntime(packageableRuntime);
+    }
+    await super.prepareAccessForExecution();
   }
 
   override get dataProductOptions(): DataProductOption[] {

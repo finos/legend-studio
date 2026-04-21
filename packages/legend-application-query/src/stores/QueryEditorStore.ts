@@ -42,7 +42,7 @@ import {
 } from '@finos/legend-shared';
 import {
   type LightQuery,
-  NativeModelExecutionContext,
+  type NativeModelExecutionContext,
   type RawLambda,
   type Runtime,
   type Service,
@@ -83,6 +83,7 @@ import {
   V1_ModelAccessPointGroupInfo,
   DataProductAccessType,
   type DataProductAnalysisQueryResult,
+  V1_AccessPointGroupInfo,
 } from '@finos/legend-graph';
 import {
   generateExistingQueryEditorRoute,
@@ -128,7 +129,6 @@ import {
   QueryBuilderDataBrowserWorkflow,
   QueryBuilderActionConfig,
   QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT,
-  NativeModelDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
 } from '@finos/legend-query-builder';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
@@ -1050,19 +1050,30 @@ export abstract class QueryEditorStore {
     const modelGroups = dataProduct.accessPointGroups.filter(
       filterByType(ModelAccessPointGroup),
     );
-    if (!modelGroups.length) {
-      throw new UnsupportedOperationError(
-        `Only Data Product with Model Access Points are currently supported in Query. ${dataProduct.path} does not have any Model Access Point Groups.`,
-      );
-    }
     if (accessId) {
       const matchingGroup = modelGroups.find((g) => g.id === accessId);
       if (matchingGroup) {
         return matchingGroup;
       }
     }
-    throw new UnsupportedOperationError(
-      `Can't resolve execution state for data product '${dataProduct.path}'${accessId ? ` with access ID '${accessId}'` : ''}`,
+    // Search native model execution contexts
+    const nativeAccess = dataProduct.nativeModelAccess;
+    if (nativeAccess && accessId) {
+      const matchingContext = nativeAccess.nativeModelExecutionContexts.find(
+        (ctx) => ctx.key === accessId,
+      );
+      if (matchingContext) {
+        return matchingContext;
+      }
+    }
+    // Fall back: prioritize first model access point group over native default
+    const firstGroup = modelGroups[0];
+    if (firstGroup) {
+      return firstGroup;
+    }
+    return guaranteeNonNullable(
+      modelGroups[0] ?? nativeAccess?.defaultExecutionContext,
+      `Can't resolve execution state for data product '${dataProduct.path}'${accessId ? ` with access ID '${accessId}'` : ''}. Data product must have model access point groups or native model access.`,
     );
   }
 
@@ -1089,7 +1100,7 @@ export abstract class QueryEditorStore {
     );
 
     let userEnvironment: string | undefined = persistedInfo?.env;
-    const userWarehouse: string | undefined =
+    const userWarehouse: string =
       persistedInfo?.snowflakeWarehouse ?? 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
     // 2. If no persisted environment, fetch from the server
     if (userEnvironment === undefined && this.lakehouseState) {
@@ -1180,16 +1191,23 @@ export abstract class QueryEditorStore {
         accessId,
         artifact,
       );
-    // 3.5. Create a LakehouseRuntime and add it to the graph
-    const packageableRuntime = await this.createLakehousePackageableRuntime(
-      dataProductPath,
-      {
-        groupId,
-        artifactId,
-        versionId,
-      },
+    // 3.5. Create LakehouseRuntime only if the data product has at least one
+    // model access point group.
+    const hasAPGs = artifact.accessPointGroups.some(
+      (g) => g instanceof V1_AccessPointGroupInfo,
     );
-    this.graphManagerState.graph.addElement(packageableRuntime, '_internal_');
+    let packageableRuntime: PackageableRuntime | undefined;
+    if (hasAPGs) {
+      packageableRuntime = await this.createLakehousePackageableRuntime(
+        dataProductPath,
+        {
+          groupId,
+          artifactId,
+          versionId,
+        },
+      );
+      this.graphManagerState.graph.addElement(packageableRuntime, '_internal_');
+    }
     // 4. Get the data product from the built graph
     const dataProduct =
       this.graphManagerState.graph.getDataProduct(dataProductPath);
@@ -1219,6 +1237,7 @@ export abstract class QueryEditorStore {
       this.depotServerClient,
       projectInfo,
       onDataProductChange,
+      (path, gav) => this.createLakehousePackageableRuntime(path, gav),
       productSelectorState ??
         new DataProductSelectorState(
           this.depotServerClient,
@@ -1226,10 +1245,18 @@ export abstract class QueryEditorStore {
         ),
       onLegacyDataSpaceChange,
       undefined,
-      undefined,
       this.applicationStore.config.options.queryBuilderConfig,
       sourceInfo,
     );
+
+    if (
+      dataProductAnalysisResult.dataProductAnalysis
+        .mappingToMappingCoverageResult
+    ) {
+      queryBuilderState.mappingToMappingCoverageResult =
+        dataProductAnalysisResult.dataProductAnalysis.mappingToMappingCoverageResult;
+    }
+
     // Pass pre-resolved state to avoid double-resolution
     queryBuilderState.initWithDataProduct(
       dataProduct,
@@ -1237,33 +1264,20 @@ export abstract class QueryEditorStore {
       resolvedState,
     );
 
-    // 7. Wire in mapping coverage result
-    const mappingCoverageResult =
-      dataProductAnalysisResult.dataProductAnalysis.mappingToMappingCoverageResult?.get(
-        dataProductAnalysisResult.targetMappingPath,
-      );
-    if (mappingCoverageResult) {
-      queryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
-        mappingCoverageResult;
+    // 8. Wire in lakehouse runtime and adhoc-runtime flag for MODEL mode
+    if (
+      queryBuilderState.executionState instanceof
+      ModelAccessPointDataProductExecutionState
+    ) {
+      queryBuilderState.executionState.withAdhocRuntime();
+      if (packageableRuntime) {
+        queryBuilderState.changeRuntime(
+          new RuntimePointer(
+            PackageableElementExplicitReference.create(packageableRuntime),
+          ),
+        );
+      }
     }
-
-    // init
-    const execValue = dataProductAnalysisResult.targetExecState;
-    queryBuilderState.executionState =
-      execValue instanceof NativeModelExecutionContext
-        ? new NativeModelDataProductExecutionState(execValue, queryBuilderState)
-        : new ModelAccessPointDataProductExecutionState(
-            execValue,
-            queryBuilderState,
-          ).withAdhocRuntime();
-    if (queryBuilderState.executionState.mapping) {
-      queryBuilderState.changeMapping(queryBuilderState.executionState.mapping);
-    }
-    queryBuilderState.changeRuntime(
-      new RuntimePointer(
-        PackageableElementExplicitReference.create(packageableRuntime),
-      ),
-    );
     return queryBuilderState;
   }
 }

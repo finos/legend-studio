@@ -119,7 +119,6 @@ export const queryDataProduct = async (
             undefined,
             async (val: DepotEntityWithOrigin) => {},
             undefined,
-            undefined,
             editorStore.applicationStore.config.options.queryBuilderConfig,
             sourceInfo,
           );

@@ -17,7 +17,10 @@
 import { test, expect, describe } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import { TEST__getTestGraphManagerState } from '../__test-utils__/GraphManagerTestUtils.js';
-import { TEST_DATA__DataProductArtifact } from './TEST_DATA__DataProductAnalysis.js';
+import {
+  TEST_DATA__DataProductArtifact,
+  TEST_DATA__DataProductArtifactContainingModelAPGAndNativeModelAccess,
+} from './TEST_DATA__DataProductAnalysis.js';
 import { DataProductAccessType } from '../../graph/metamodel/pure/dataProduct/DataProduct.js';
 
 const setupGraphManagerState = async () => {
@@ -33,7 +36,7 @@ const setupGraphManagerState = async () => {
 
 describe('analyzeDataProductAndBuildMinimalGraph', () => {
   test(
-    unitTest('builds minimal graph and coverage results for specified mapping'),
+    unitTest(`builds graph and coverage results for all modelAPG's mappings`),
     async () => {
       const graphManagerState = await setupGraphManagerState();
       const result =
@@ -57,26 +60,33 @@ describe('analyzeDataProductAndBuildMinimalGraph', () => {
         'A data product for testing',
       );
 
-      // Coverage result built for the resolved mapping only
+      // Coverage result built for all modelAPG's mappings
       expect(
         result.dataProductAnalysis.mappingToMappingCoverageResult,
       ).toBeDefined();
       expect(
         result.dataProductAnalysis.mappingToMappingCoverageResult?.size,
-      ).toBe(1);
+      ).toBe(2);
       expect(
         result.dataProductAnalysis.mappingToMappingCoverageResult?.has(
           'test::MappingA',
         ),
       ).toBe(true);
+      expect(
+        result.dataProductAnalysis.mappingToMappingCoverageResult?.has(
+          'test::MappingB',
+        ),
+      ).toBe(true);
 
-      // The graph should contain the elements from MappingA's model (PersonClass)
-      // plus dummy mapping and dummy data product
+      // The graph should contain only elements from the resolved mapping's model (MappingA -> PersonClass)
+      // plus a stub for the resolved mapping only.
       const graph = graphManagerState.graph;
       expect(
         graph.getNullableElement('test::PersonClass', false),
       ).toBeDefined();
+      // Only the resolved mapping stub is in the graph
       expect(graph.getNullableElement('test::MappingA', false)).toBeDefined();
+      expect(graph.getNullableElement('test::MappingB', false)).toBeUndefined();
       expect(
         graph.getNullableElement('test::MyDataProduct', false),
       ).toBeDefined();
@@ -89,6 +99,15 @@ describe('analyzeDataProductAndBuildMinimalGraph', () => {
       expect(coverageA).toBeDefined();
       expect(coverageA?.mappedEntities.length).toBe(1);
       expect(coverageA?.mappedEntities[0]?.path).toBe('test::PersonClass');
+
+      // MappingB coverage result should have mapped entities
+      const coverageB =
+        result.dataProductAnalysis.mappingToMappingCoverageResult?.get(
+          'test::MappingB',
+        );
+      expect(coverageB).toBeDefined();
+      expect(coverageB?.mappedEntities.length).toBe(1);
+      expect(coverageB?.mappedEntities[0]?.path).toBe('test::FirmClass');
     },
   );
 
@@ -117,30 +136,27 @@ describe('analyzeDataProductAndBuildMinimalGraph', () => {
           },
         ),
       ).rejects.toThrow(
-        `Can't resolve mapping path for access point 'non-existent-group' (type: model) in data product 'test::MyDataProduct'`,
+        `Can't resolve access point 'non-existent-group' (type: model) in data product 'test::MyDataProduct'`,
       );
     },
   );
 
   test(
-    unitTest('builds graph with elements from specified mapping only'),
+    unitTest(
+      'builds graph from DataProduct artifact containing both model and native model access',
+    ),
     async () => {
-      // Use MappingB this time — the graph should contain FirmClass, not PersonClass
-      const newGraphManagerState = TEST__getTestGraphManagerState();
-      await newGraphManagerState.graphManager.initialize({
-        env: 'test',
-        tabSize: 2,
-        clientConfig: {},
-      });
-      await newGraphManagerState.initializeSystem();
-
+      const graphManagerState = await setupGraphManagerState();
       const result =
-        await newGraphManagerState.graphManager.analyzeDataProductAndBuildMinimalGraph(
+        await graphManagerState.graphManager.analyzeDataProductAndBuildMinimalGraph(
           'test::MyDataProduct',
-          () => Promise.resolve(TEST_DATA__DataProductArtifact),
-          newGraphManagerState.graph,
-          'group-b',
-          DataProductAccessType.MODEL,
+          () =>
+            Promise.resolve(
+              TEST_DATA__DataProductArtifactContainingModelAPGAndNativeModelAccess,
+            ),
+          graphManagerState.graph,
+          'native-ctx-2',
+          DataProductAccessType.NATIVE,
           {
             groupId: 'org.finos.test',
             artifactId: 'test-data-product',
@@ -148,31 +164,76 @@ describe('analyzeDataProductAndBuildMinimalGraph', () => {
           },
         );
 
-      const graph = newGraphManagerState.graph;
+      // Basic result properties
+      expect(result.dataProductAnalysis.path).toBe('test::MyDataProduct');
+      expect(result.dataProductAnalysis.title).toBe('My Test Data Product');
+      expect(result.dataProductAnalysis.description).toBe(
+        'A data product for testing',
+      );
 
-      // FirmClass should be in graph (from MappingB's model)
-      expect(graph.getNullableElement('test::FirmClass', false)).toBeDefined();
-
-      // PersonClass should NOT be in graph (it's only in MappingA's model)
+      // Coverage result built for all modelAPG's and native model access mappings
       expect(
-        graph.getNullableElement('test::PersonClass', false),
-      ).toBeUndefined();
-
-      // Dummy mapping and data product should be present
-      expect(graph.getNullableElement('test::MappingB', false)).toBeDefined();
-      expect(
-        graph.getNullableElement('test::MyDataProduct', false),
+        result.dataProductAnalysis.mappingToMappingCoverageResult,
       ).toBeDefined();
-
-      // Coverage result built for the resolved mapping only
       expect(
         result.dataProductAnalysis.mappingToMappingCoverageResult?.size,
-      ).toBe(1);
+      ).toBe(3);
+      expect(
+        result.dataProductAnalysis.mappingToMappingCoverageResult?.has(
+          'test::MappingA',
+        ),
+      ).toBe(true);
       expect(
         result.dataProductAnalysis.mappingToMappingCoverageResult?.has(
           'test::MappingB',
         ),
       ).toBe(true);
+      expect(
+        result.dataProductAnalysis.mappingToMappingCoverageResult?.has(
+          'test::MappingC',
+        ),
+      ).toBe(true);
+
+      // The graph should contain only elements for the resolved mapping (native-ctx-2 -> MappingC -> EmployeeClass)
+      // plus a stub for the resolved mapping and runtime only.
+      const graph = graphManagerState.graph;
+      expect(
+        graph.getNullableElement('test::EmployeeClass', false),
+      ).toBeDefined();
+      // Only the resolved mapping (MappingC) stub is in the graph
+      expect(graph.getNullableElement('test::MappingA', false)).toBeUndefined();
+      expect(graph.getNullableElement('test::MappingB', false)).toBeUndefined();
+      expect(graph.getNullableElement('test::MappingC', false)).toBeDefined();
+      expect(
+        graph.getNullableElement('test::MyDataProduct', false),
+      ).toBeDefined();
+
+      // MappingA coverage result should have mapped entities
+      const coverageA =
+        result.dataProductAnalysis.mappingToMappingCoverageResult?.get(
+          'test::MappingA',
+        );
+      expect(coverageA).toBeDefined();
+      expect(coverageA?.mappedEntities.length).toBe(1);
+      expect(coverageA?.mappedEntities[0]?.path).toBe('test::PersonClass');
+
+      // MappingB coverage result should have mapped entities
+      const coverageB =
+        result.dataProductAnalysis.mappingToMappingCoverageResult?.get(
+          'test::MappingB',
+        );
+      expect(coverageB).toBeDefined();
+      expect(coverageB?.mappedEntities.length).toBe(1);
+      expect(coverageB?.mappedEntities[0]?.path).toBe('test::FirmClass');
+
+      // MappingC coverage result should have mapped entities
+      const coverageC =
+        result.dataProductAnalysis.mappingToMappingCoverageResult?.get(
+          'test::MappingC',
+        );
+      expect(coverageC).toBeDefined();
+      expect(coverageC?.mappedEntities.length).toBe(1);
+      expect(coverageC?.mappedEntities[0]?.path).toBe('test::EmployeeClass');
     },
   );
 });
