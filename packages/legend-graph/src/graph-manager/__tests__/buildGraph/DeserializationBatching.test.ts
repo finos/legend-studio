@@ -15,14 +15,25 @@
  */
 
 import { test, expect, describe } from '@jest/globals';
-import { unitTest } from '@finos/legend-shared/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
-// eslint-disable-next-line @finos/legend/enforce-module-import-hierarchy
-import { V1_entitiesToPureModelContextData } from '../../protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
-// eslint-disable-next-line @finos/legend/enforce-module-import-hierarchy
-import { V1_PureModelContextData } from '../../protocol/pure/v1/model/context/V1_PureModelContextData.js';
 import { GraphDataDeserializationError } from '../../GraphManagerUtils.js';
+
+const loadPureProtocolSerialization = async () => {
+  const [{ V1_entitiesToPureModelContextData }, { V1_PureModelContextData }] =
+    await Promise.all([
+      import(
+        '../../protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js'
+      ),
+      import('../../protocol/pure/v1/model/context/V1_PureModelContextData.js'),
+    ]);
+
+  return {
+    V1_entitiesToPureModelContextData,
+    V1_PureModelContextData,
+  };
+};
 
 /**
  * Creates a minimal class entity for testing deserialization batching.
@@ -54,6 +65,8 @@ describe('V1_entitiesToPureModelContextData batching', () => {
   test(
     unitTest('handles 0 entities (graph.elements stays empty)'),
     async () => {
+      const { V1_entitiesToPureModelContextData, V1_PureModelContextData } =
+        await loadPureProtocolSerialization();
       const graph = new V1_PureModelContextData();
       await V1_entitiesToPureModelContextData([], graph, []);
       expect(graph.elements).toHaveLength(0);
@@ -63,6 +76,8 @@ describe('V1_entitiesToPureModelContextData batching', () => {
   test(
     unitTest('handles undefined entities (graph.elements stays empty)'),
     async () => {
+      const { V1_entitiesToPureModelContextData, V1_PureModelContextData } =
+        await loadPureProtocolSerialization();
       const graph = new V1_PureModelContextData();
       await V1_entitiesToPureModelContextData(undefined, graph, []);
       expect(graph.elements).toHaveLength(0);
@@ -72,11 +87,12 @@ describe('V1_entitiesToPureModelContextData batching', () => {
   test(
     unitTest('deserializes < 100 entities in a single batch (no yield needed)'),
     async () => {
+      const { V1_entitiesToPureModelContextData, V1_PureModelContextData } =
+        await loadPureProtocolSerialization();
       const entities = createEntities(50);
       const graph = new V1_PureModelContextData();
       await V1_entitiesToPureModelContextData(entities, graph, []);
       expect(graph.elements).toHaveLength(50);
-      // verify first and last elements have correct paths
       expect(guaranteeNonNullable(graph.elements[0]).path).toBe(
         'test::batch::TestClass_0',
       );
@@ -89,6 +105,8 @@ describe('V1_entitiesToPureModelContextData batching', () => {
   test(
     unitTest('deserializes exactly 100 entities (one full batch)'),
     async () => {
+      const { V1_entitiesToPureModelContextData, V1_PureModelContextData } =
+        await loadPureProtocolSerialization();
       const entities = createEntities(100);
       const graph = new V1_PureModelContextData();
       await V1_entitiesToPureModelContextData(entities, graph, []);
@@ -107,11 +125,12 @@ describe('V1_entitiesToPureModelContextData batching', () => {
       'deserializes > 100 entities across multiple batches (250 entities)',
     ),
     async () => {
+      const { V1_entitiesToPureModelContextData, V1_PureModelContextData } =
+        await loadPureProtocolSerialization();
       const entities = createEntities(250);
       const graph = new V1_PureModelContextData();
       await V1_entitiesToPureModelContextData(entities, graph, []);
       expect(graph.elements).toHaveLength(250);
-      // verify order is preserved across batch boundaries
       expect(guaranteeNonNullable(graph.elements[0]).path).toBe(
         'test::batch::TestClass_0',
       );
@@ -138,14 +157,14 @@ describe('V1_entitiesToPureModelContextData batching', () => {
       'all elements are unique and present after multi-batch processing',
     ),
     async () => {
+      const { V1_entitiesToPureModelContextData, V1_PureModelContextData } =
+        await loadPureProtocolSerialization();
       const count = 250;
       const entities = createEntities(count);
       const graph = new V1_PureModelContextData();
       await V1_entitiesToPureModelContextData(entities, graph, []);
       const paths = graph.elements.map((el) => el.path);
-      // all paths should be unique
       expect(new Set(paths).size).toBe(count);
-      // every input entity should have a corresponding element
       for (let i = 0; i < count; i++) {
         expect(paths).toContain(`test::batch::TestClass_${i}`);
       }
@@ -155,6 +174,8 @@ describe('V1_entitiesToPureModelContextData batching', () => {
   test(
     unitTest('populates TEMPORARY__entityPathIndex across batch boundaries'),
     async () => {
+      const { V1_entitiesToPureModelContextData, V1_PureModelContextData } =
+        await loadPureProtocolSerialization();
       const count = 150;
       const entities = createEntities(count);
       const graph = new V1_PureModelContextData();
@@ -168,7 +189,6 @@ describe('V1_entitiesToPureModelContextData batching', () => {
         pathIndex,
       );
       expect(pathIndex.size).toBe(count);
-      // check entries from the first batch and the second batch
       expect(pathIndex.get('test::batch::TestClass_0')).toBe(
         'test::batch::TestClass_0',
       );
@@ -189,13 +209,14 @@ describe('V1_entitiesToPureModelContextData batching', () => {
       'throws GraphDataDeserializationError for malformed entity content',
     ),
     async () => {
+      const { V1_entitiesToPureModelContextData, V1_PureModelContextData } =
+        await loadPureProtocolSerialization();
       const entities: Entity[] = [
         ...createEntities(5),
         {
           path: 'test::batch::BadEntity',
           content: {
             _type: 'class',
-            // missing required 'name' and 'package' fields causes deserialization to throw
           },
           classifierPath: 'meta::pure::metamodel::type::Class',
         },
