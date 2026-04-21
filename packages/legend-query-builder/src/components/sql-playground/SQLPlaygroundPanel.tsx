@@ -120,7 +120,7 @@ export const SQLPlaygroundEditorResultPanel = observer(
                         (resultDescription ?? '')}
                     </div>
                   </div>
-                  <div className={!effectiveDarkMode ? 'light-mode' : ''}>
+                  <div className={effectiveDarkMode ? '' : 'light-mode'}>
                     <div className="panel__header__actions query-builder__result__header__actions">
                       {advancedMode && (
                         <div className="query-builder__result__advanced__mode">
