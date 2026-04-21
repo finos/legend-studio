@@ -280,7 +280,17 @@ export const QueryBuilderTDSCellSelectionStatsBar = observer(
           <span className="query-builder__result__tds-grid__stats-bar__item__label">
             Count:
           </span>
-          <span className="query-builder__result__tds-grid__stats-bar__item__value">
+          <span
+            className={clsx(
+              'query-builder__result__tds-grid__stats-bar__item__value',
+              {
+                'query-builder__result__tds-grid__stats-bar__item__value--with-chart':
+                  !loading &&
+                  stats.valueFrequencies !== undefined &&
+                  stats.valueFrequencies.length > 0,
+              },
+            )}
+          >
             {countReady ? cellCount : <StatsSpinner />}
           </span>
           {!loading &&
@@ -305,7 +315,17 @@ export const QueryBuilderTDSCellSelectionStatsBar = observer(
           <span className="query-builder__result__tds-grid__stats-bar__item__label">
             Unique Count:
           </span>
-          <span className="query-builder__result__tds-grid__stats-bar__item__value">
+          <span
+            className={clsx(
+              'query-builder__result__tds-grid__stats-bar__item__value',
+              {
+                'query-builder__result__tds-grid__stats-bar__item__value--with-chart':
+                  !loading &&
+                  stats.valueFrequencies !== undefined &&
+                  stats.valueFrequencies.length > 0,
+              },
+            )}
+          >
             {loading ? <StatsSpinner /> : stats.uniqueCount}
           </span>
           {!loading &&
@@ -330,7 +350,17 @@ export const QueryBuilderTDSCellSelectionStatsBar = observer(
           <span className="query-builder__result__tds-grid__stats-bar__item__label">
             Empty Count:
           </span>
-          <span className="query-builder__result__tds-grid__stats-bar__item__value">
+          <span
+            className={clsx(
+              'query-builder__result__tds-grid__stats-bar__item__value',
+              {
+                'query-builder__result__tds-grid__stats-bar__item__value--with-chart':
+                  !loading &&
+                  stats.valueFrequencies !== undefined &&
+                  stats.valueFrequencies.length > 0,
+              },
+            )}
+          >
             {loading ? <StatsSpinner /> : stats.nullCount}
           </span>
           {!loading &&
