@@ -289,6 +289,37 @@ describe('QueryBuilderTDSCellSelectionStatsBar', () => {
     expect(screen.queryByText('beta')).toBeNull();
   });
 
+  test('applies --with-chart class to Count, Unique Count and Empty Count values when frequencies are provided', () => {
+    const { container } = render(
+      <QueryBuilderTDSCellSelectionStatsBar
+        stats={STATS_WITH_FREQ}
+        cellCount={10}
+        countReady={true}
+        darkMode={false}
+      />,
+    );
+    const withChartValues = container.querySelectorAll(
+      '.query-builder__result__tds-grid__stats-bar__item__value--with-chart',
+    );
+    // Count, Unique Count, and Empty Count should all have the blue-underline cue
+    expect(withChartValues.length).toBe(3);
+  });
+
+  test('does not apply --with-chart class to value spans when no frequencies', () => {
+    const { container } = render(
+      <QueryBuilderTDSCellSelectionStatsBar
+        stats={BASE_STATS}
+        cellCount={10}
+        countReady={true}
+        darkMode={false}
+      />,
+    );
+    const withChartValues = container.querySelectorAll(
+      '.query-builder__result__tds-grid__stats-bar__item__value--with-chart',
+    );
+    expect(withChartValues.length).toBe(0);
+  });
+
   // --- Dark mode ---
 
   test('applies dark mode class', () => {

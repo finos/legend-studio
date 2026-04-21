@@ -1675,7 +1675,7 @@
         position: relative;
 
         &--has-tooltip {
-          cursor: default;
+          cursor: pointer;
 
           &:hover .query-builder__result__tds-grid__stats-bar__freq-tooltip {
             display: block;
@@ -1689,6 +1689,17 @@
 
         &__value {
           color: var(--color-dark-grey-500);
+
+          &--with-chart {
+            color: var(--color-blue-40);
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            cursor: pointer;
+
+            &:hover {
+              text-decoration-style: solid;
+            }
+          }
         }
 
         // Inline spinner shown for each value while stats are being computed
