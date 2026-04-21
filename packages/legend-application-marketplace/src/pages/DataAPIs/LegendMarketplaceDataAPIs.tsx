@@ -27,6 +27,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   StarIcon,
+  TableIcon,
   ViewHeadlineIcon,
   WindowIcon,
   clsx,
@@ -49,6 +50,7 @@ import {
 } from '../../stores/dataAPIs/LegendMarketplaceDataAPIsStore.js';
 import { LegendServiceCard } from '../../components/LegendServiceCard/LegendServiceCard.js';
 import { LegendServiceListRow } from '../../components/LegendServiceCard/LegendServiceListRow.js';
+import { LegendServiceGridView } from '../../components/LegendServiceCard/LegendServiceGrid.js';
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 import { DataAPIsFiltersPanel } from '../../components/DataAPIsFiltersPanel/DataAPIsFiltersPanel.js';
 import { useSearchParams } from '@finos/legend-application/browser';
@@ -171,6 +173,14 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
               )}
             </>
           );
+        case ServicesViewMode.GRID:
+          return (
+            <LegendServiceGridView
+              services={dataAPIsStore.filteredSortedServices}
+              store={dataAPIsStore}
+              onRowClick={handleServiceClick}
+            />
+          );
         case ServicesViewMode.TILE:
           return (
             <Grid
@@ -268,11 +278,13 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                 <StarIcon />
               </IconButton>
               <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
-              <div className="legend-marketplace-search-results__view-toggle">
+              <div className="legend-marketplace-search-results__view-toggle legend-marketplace-search-results__view-toggle--three">
                 <div
                   className={clsx(
                     'legend-marketplace-search-results__view-toggle__slider',
                     viewMode === ServicesViewMode.LIST &&
+                      'legend-marketplace-search-results__view-toggle__slider--middle',
+                    viewMode === ServicesViewMode.GRID &&
                       'legend-marketplace-search-results__view-toggle__slider--right',
                   )}
                 />
@@ -311,6 +323,24 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                   size="small"
                 >
                   <ViewHeadlineIcon />
+                </IconButton>
+                <IconButton
+                  className={clsx(
+                    'legend-marketplace-search-results__view-toggle__btn',
+                    viewMode === ServicesViewMode.GRID &&
+                      'legend-marketplace-search-results__view-toggle__btn--active',
+                  )}
+                  onClick={() => {
+                    dataAPIsStore.setViewMode(ServicesViewMode.GRID);
+                    LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
+                      applicationStore.telemetryService,
+                      ServicesViewMode.GRID,
+                    );
+                  }}
+                  title="Grid View"
+                  size="small"
+                >
+                  <TableIcon />
                 </IconButton>
               </div>
               <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
@@ -382,14 +412,16 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                   >
                     {renderServiceView()}
                   </div>
-                  <PaginationControls
-                    totalItems={dataAPIsStore.totalFilteredCount}
-                    itemsPerPage={dataAPIsStore.itemsPerPage}
-                    page={dataAPIsStore.page}
-                    onPageChange={handlePageChange}
-                    onItemsPerPageChange={handleItemsPerPageChange}
-                    disabled={dataAPIsStore.isLoading}
-                  />
+                  {viewMode !== ServicesViewMode.GRID && (
+                    <PaginationControls
+                      totalItems={dataAPIsStore.totalFilteredCount}
+                      itemsPerPage={dataAPIsStore.itemsPerPage}
+                      page={dataAPIsStore.page}
+                      onPageChange={handlePageChange}
+                      onItemsPerPageChange={handleItemsPerPageChange}
+                      disabled={dataAPIsStore.isLoading}
+                    />
+                  )}
                 </>
               )}
             </div>

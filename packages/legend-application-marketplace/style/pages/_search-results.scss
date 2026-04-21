@@ -135,7 +135,23 @@
     }
   }
 
+  &--three &__slider {
+    width: calc(33.333% - 0.2rem);
+
+    &--middle {
+      transform: translateX(100%);
+    }
+
+    &--right {
+      transform: translateX(200%);
+    }
+  }
+
   &__btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.5rem 0.8rem;
     border-radius: 0.5rem;
     color: var(--color-dark-grey-400);
