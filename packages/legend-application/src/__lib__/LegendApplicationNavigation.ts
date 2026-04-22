@@ -37,7 +37,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
   )}${entityPath ? `/entity/${entityPath}` : ''}`;
 
 export const btoaURLSafe = (value: string): string =>
-  btoa(value).replace(/\+/g, '-').replace(/\//g, '_');
+  btoa(value).replaceAll('+', '-').replaceAll('/', '_');
 
 /**
  * @external_application_navigation This depends on Legend DataCube routing and is hardcoded so it's potentially brittle
