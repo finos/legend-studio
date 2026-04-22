@@ -420,6 +420,7 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                       onPageChange={handlePageChange}
                       onItemsPerPageChange={handleItemsPerPageChange}
                       disabled={dataAPIsStore.isLoading}
+                      pageSizeOptions={[12, 25, 50, 100]}
                     />
                   )}
                 </>
