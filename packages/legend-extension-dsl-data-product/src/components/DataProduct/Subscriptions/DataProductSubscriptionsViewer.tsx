@@ -47,7 +47,7 @@ import {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { guaranteeNonNullable, isType } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -548,6 +548,32 @@ export const DataProductSubscriptionViewer = observer(
         apgState.dataProductViewerState.userSearchService,
       ],
     );
+
+    useEffect(() => {
+      if (
+        open &&
+        apgState.apgContracts.length > 0 &&
+        apgState.fetchingSubscriptionsState.isInInitialState
+      ) {
+        //ensure subscription loading screen appears before fetching subscriptions
+        const rafId = requestAnimationFrame(() => {
+          apgState.fetchSubscriptions(
+            apgState.apgContracts,
+            dataAccessState.lakehouseContractServerClient,
+            auth.user?.access_token,
+          );
+        });
+        return () => cancelAnimationFrame(rafId);
+      }
+      return undefined;
+    }, [
+      apgState,
+      apgState.fetchingSubscriptionsState,
+      apgState.apgContracts,
+      auth.user?.access_token,
+      dataAccessState.lakehouseContractServerClient,
+      open,
+    ]);
 
     return (
       <>

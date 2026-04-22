@@ -32,6 +32,7 @@ import {
   V1_DataSubscriptionResponseModelSchema,
   V1_deserializeDataContractResponse,
   V1_EnrichedUserApprovalStatus,
+  V1_liteDataContractWithUserStatusModelSchema,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -48,7 +49,6 @@ import { makeAutoObservable, action, observable, flow, computed } from 'mobx';
 import { deserialize, serialize } from 'serializr';
 import {
   dataContractContainsAccessGroup,
-  isMemberOfContract,
   contractContainsSystemAccount,
 } from '../../utils/DataContractUtils.js';
 import type { DataProductDataAccessState } from './DataProductDataAccessState.js';
@@ -362,56 +362,53 @@ export class DataProductAPGState {
     try {
       this.handlingContractsState.inProgress();
 
+      const rawUserContracts =
+        await lakehouseContractServerClient.getContractsForUser(
+          this.applicationStore.identityService.currentUser,
+          tokenProvider(),
+        );
+      const userLiteContract = rawUserContracts
+        .map((rawContract) =>
+          deserialize(
+            V1_liteDataContractWithUserStatusModelSchema(
+              this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+            ),
+            rawContract,
+          ),
+        )
+        .filter((contract) =>
+          dataContractContainsAccessGroup(
+            this.apg,
+            contract.contractResultLite,
+          ),
+        )
+        .find(isNonNullable);
+
+      const userContract = userLiteContract
+        ? V1_deserializeDataContractResponse(
+            await lakehouseContractServerClient.getDataContract(
+              userLiteContract.contractResultLite.guid,
+              true,
+              tokenProvider(),
+            ),
+            this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+          )[0]?.dataContract
+        : undefined;
+
+      this.setAssociatedUserContract(
+        userContract,
+        lakehouseContractServerClient,
+        tokenProvider,
+      );
+
       const accessPointGroupContracts = contracts.filter((_contract) =>
         dataContractContainsAccessGroup(this.apg, _contract),
       );
 
       this.setApgContracts(accessPointGroupContracts);
 
-      const rawAccessPointGroupContractsWithMembers = await Promise.all(
-        accessPointGroupContracts.map((_contract) =>
-          lakehouseContractServerClient.getDataContract(
-            _contract.guid,
-            true,
-            tokenProvider(),
-          ),
-        ),
-      );
-
-      const accessPointGroupContractsWithMembers =
-        rawAccessPointGroupContractsWithMembers.flatMap((_response) =>
-          V1_deserializeDataContractResponse(
-            _response,
-            this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-          ).map(
-            (_contractAndSubscription) => _contractAndSubscription.dataContract,
-          ),
-        );
-      const userContracts = (
-        await Promise.all(
-          accessPointGroupContractsWithMembers.map(async (_contract) => {
-            const isMember = await isMemberOfContract(
-              this.applicationStore.identityService.currentUser,
-              _contract,
-              lakehouseContractServerClient,
-              tokenProvider(),
-            );
-            return isMember ? _contract : undefined;
-          }),
-        )
-      ).filter(isNonNullable);
       const systemAccountContracts = accessPointGroupContracts.filter(
         contractContainsSystemAccount,
-      );
-      const userContract = await this.getContractLatestInApprovalProcess(
-        userContracts,
-        lakehouseContractServerClient,
-        tokenProvider(),
-      );
-      this.setAssociatedUserContract(
-        userContract,
-        lakehouseContractServerClient,
-        tokenProvider,
       );
       this.fetchAndSetAssociatedSystemAccountContracts(
         systemAccountContracts,
