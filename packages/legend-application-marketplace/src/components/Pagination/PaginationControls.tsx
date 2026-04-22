@@ -33,6 +33,7 @@ export const PaginationControls = observer(
     onPageChange: (page: number) => void;
     onItemsPerPageChange: (itemsPerPage: number) => void;
     disabled?: boolean;
+    pageSizeOptions?: number[] | undefined;
   }) => {
     const {
       totalItems,
@@ -41,6 +42,7 @@ export const PaginationControls = observer(
       onPageChange,
       onItemsPerPageChange,
       disabled = false,
+      pageSizeOptions = [12, 24, 36, 48],
     } = props;
 
     const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -75,10 +77,11 @@ export const PaginationControls = observer(
             size="medium"
             disabled={disabled}
           >
-            <MenuItem value={12}>12</MenuItem>
-            <MenuItem value={24}>24</MenuItem>
-            <MenuItem value={36}>36</MenuItem>
-            <MenuItem value={48}>48</MenuItem>
+            {pageSizeOptions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
           </Select>
         </Box>
         <Box className="legend-marketplace-pagination-info">
