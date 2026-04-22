@@ -24,16 +24,6 @@ import {
 } from '../lakehouse/LegendMarketplaceSearchResultsStore.js';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import { mockTaxonomyTreeResponse } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
-import { ProductCardState } from '../lakehouse/dataProducts/ProductCardState.js';
-import {
-  DataProductSearchResult,
-  LakehouseDataProductSearchResultDetails,
-  LakehouseAdHocDataProductSearchResultOrigin,
-} from '@finos/legend-server-marketplace';
-import {
-  V1_EntitlementsLakehouseEnvironmentType,
-  type V1_PureGraphManager,
-} from '@finos/legend-graph';
 
 const setupStore = async (): Promise<{
   store: LegendMarketplaceSearchResultsStore;
@@ -584,124 +574,7 @@ describe('LegendMarketplaceSearchResultsStore - ViewMode', () => {
   });
 });
 
-const createProductCardState = (
-  baseStore: LegendMarketplaceBaseStore,
-  graphManager: V1_PureGraphManager,
-  overrides: {
-    title: string;
-    meetsHygieneThreshold?: boolean | undefined;
-  },
-): ProductCardState => {
-  const searchResult = new DataProductSearchResult();
-  searchResult.dataProductTitle = overrides.title;
-  searchResult.dataProductDescription = 'test description';
-  searchResult.tags1 = [];
-  searchResult.tags2 = [];
-  searchResult.tag_score = 0;
-  searchResult.similarity = 0;
-  searchResult.meets_hygiene_threshold = overrides.meetsHygieneThreshold;
-
-  const details = new LakehouseDataProductSearchResultDetails();
-  details.dataProductId = `dp-${overrides.title}`;
-  details.deploymentId = 1;
-  details.producerEnvironmentName = 'test-prod';
-  details.producerEnvironmentType =
-    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION;
-  details.origin = new LakehouseAdHocDataProductSearchResultOrigin();
-  searchResult.dataProductDetails = details;
-
-  return new ProductCardState(baseStore, searchResult, graphManager, new Map());
-};
-
 describe('LegendMarketplaceSearchResultsStore - Show All Products', () => {
-  const setupWithGraphManager = async () => {
-    const { store, baseStore } = await setupStore();
-    const graphManager = {} as V1_PureGraphManager;
-    return { store, baseStore, graphManager };
-  };
-
-  test('filterSortProducts hides products below hygiene threshold by default', async () => {
-    const { store, baseStore, graphManager } = await setupWithGraphManager();
-
-    const cleanProduct = createProductCardState(baseStore, graphManager, {
-      title: 'Clean Product',
-      meetsHygieneThreshold: true,
-    });
-    const dirtyProduct = createProductCardState(baseStore, graphManager, {
-      title: 'Dirty Product',
-      meetsHygieneThreshold: false,
-    });
-    const unknownProduct = createProductCardState(baseStore, graphManager, {
-      title: 'Unknown Product',
-      meetsHygieneThreshold: undefined,
-    });
-
-    store.setSemanticSearchProductCardStates([
-      cleanProduct,
-      dirtyProduct,
-      unknownProduct,
-    ]);
-    store.setUseProducerSearch(false);
-
-    const results = store.filterSortProducts;
-    expect(results).toHaveLength(2);
-    expect(results?.map((r) => r.title)).toEqual(
-      expect.arrayContaining(['Clean Product', 'Unknown Product']),
-    );
-    expect(results?.map((r) => r.title)).not.toContain('Dirty Product');
-  });
-
-  test('filterSortProducts shows all products when showAllProducts is true', async () => {
-    const { store, baseStore, graphManager } = await setupWithGraphManager();
-
-    const cleanProduct = createProductCardState(baseStore, graphManager, {
-      title: 'Clean Product',
-      meetsHygieneThreshold: true,
-    });
-    const dirtyProduct = createProductCardState(baseStore, graphManager, {
-      title: 'Dirty Product',
-      meetsHygieneThreshold: false,
-    });
-
-    store.setSemanticSearchProductCardStates([cleanProduct, dirtyProduct]);
-    store.setUseProducerSearch(false);
-    store.setShowAllProducts(true);
-
-    const results = store.filterSortProducts;
-    expect(results).toHaveLength(2);
-    expect(results?.map((r) => r.title)).toEqual(
-      expect.arrayContaining(['Clean Product', 'Dirty Product']),
-    );
-  });
-
-  test('toggling showAllProducts from false to true reveals hidden products', async () => {
-    const { store, baseStore, graphManager } = await setupWithGraphManager();
-
-    const product1 = createProductCardState(baseStore, graphManager, {
-      title: 'Visible',
-      meetsHygieneThreshold: true,
-    });
-    const product2 = createProductCardState(baseStore, graphManager, {
-      title: 'Hidden QA Duplicate',
-      meetsHygieneThreshold: false,
-    });
-    const product3 = createProductCardState(baseStore, graphManager, {
-      title: 'Hidden DEV Copy',
-      meetsHygieneThreshold: false,
-    });
-
-    store.setSemanticSearchProductCardStates([product1, product2, product3]);
-    store.setUseProducerSearch(false);
-
-    // Default: only hygiene-passing products shown
-    expect(store.filterSortProducts).toHaveLength(1);
-    expect(store.filterSortProducts?.[0]?.title).toBe('Visible');
-
-    // After show all: all products visible
-    store.setShowAllProducts(true);
-    expect(store.filterSortProducts).toHaveLength(3);
-  });
-
   test('isOnLastPage combined with showAllProducts reflects correct state', async () => {
     const { store } = await setupStore();
 
@@ -717,5 +590,16 @@ describe('LegendMarketplaceSearchResultsStore - Show All Products', () => {
     store.setShowAllProducts(true);
     expect(store.isOnLastPage).toBe(true);
     expect(store.showAllProducts).toBe(true);
+  });
+
+  test('hasFilteredDataProducts defaults to false and can be set', async () => {
+    const { store } = await setupStore();
+    expect(store.hasFilteredDataProducts).toBe(false);
+
+    store.setHasFilteredDataProducts(true);
+    expect(store.hasFilteredDataProducts).toBe(true);
+
+    store.setHasFilteredDataProducts(false);
+    expect(store.hasFilteredDataProducts).toBe(false);
   });
 });

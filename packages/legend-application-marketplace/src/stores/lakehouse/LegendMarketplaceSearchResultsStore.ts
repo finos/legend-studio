@@ -112,6 +112,7 @@ export class LegendMarketplaceSearchResultsStore {
   itemsPerPage = 12;
   totalItems = 0;
   showAllProducts = false;
+  hasFilteredDataProducts = false;
 
   readonly executingSemanticSearchState = ActionState.create();
   readonly fetchingProducerSearchDataProductsState = ActionState.create();
@@ -152,6 +153,7 @@ export class LegendMarketplaceSearchResultsStore {
         itemsPerPage: observable,
         totalItems: observable,
         showAllProducts: observable,
+        hasFilteredDataProducts: observable,
         setSemanticSearchProductCardStates: action,
         setProducerSearchDataProductCardStates: action,
         setProducerSearchLegacyDataProductCardStates: action,
@@ -161,6 +163,7 @@ export class LegendMarketplaceSearchResultsStore {
         setItemsPerPage: action,
         setTotalItems: action,
         setShowAllProducts: action,
+        setHasFilteredDataProducts: action,
         setTaxonomyTree: action,
         setFilterCounts: action,
         setSelectedTaxonomyNodeIds: action,
@@ -204,12 +207,6 @@ export class LegendMarketplaceSearchResultsStore {
     let filtered = productCardStates.filter((productCardState) =>
       this.marketplaceBaseStore.envState.filterDataProduct(productCardState),
     );
-    if (!this.showAllProducts) {
-      filtered = filtered.filter(
-        (productCardState) =>
-          productCardState.searchResult.meets_hygiene_threshold !== false,
-      );
-    }
     if (this.useProducerSearch && this.selectedTaxonomyNodeIds.size > 0) {
       filtered = filtered.filter((productCardState) => {
         const productTaxonomyPaths =
@@ -262,6 +259,10 @@ export class LegendMarketplaceSearchResultsStore {
 
   setShowAllProducts(value: boolean): void {
     this.showAllProducts = value;
+  }
+
+  setHasFilteredDataProducts(value: boolean): void {
+    this.hasFilteredDataProducts = value;
   }
 
   setSemanticSearchProductCardStates(
@@ -610,6 +611,7 @@ export class LegendMarketplaceSearchResultsStore {
         filters,
         this.itemsPerPage,
         this.page,
+        this.showAllProducts,
       );
 
       const { productCardStates, response } = this.processRawSearchResults(
@@ -619,6 +621,9 @@ export class LegendMarketplaceSearchResultsStore {
       );
 
       this.setTotalItems(response.metadata.total_count);
+      this.setHasFilteredDataProducts(
+        response.metadata.has_filtered_products ?? false,
+      );
       this.setSemanticSearchProductCardStates(productCardStates);
 
       const isNewQuery = query !== this._lastTaxonomyQuery;

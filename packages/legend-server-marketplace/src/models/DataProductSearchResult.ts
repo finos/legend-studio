@@ -146,6 +146,7 @@ export class DataProductSearchResultMetadata {
   lakehouse_count: number | undefined;
   legacy_count: number | undefined;
   external_source_count: number | undefined;
+  has_filtered_products: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductSearchResultMetadata, {
@@ -158,6 +159,7 @@ export class DataProductSearchResultMetadata {
       lakehouse_count: optional(primitive()),
       legacy_count: optional(primitive()),
       external_source_count: optional(primitive()),
+      has_filtered_products: optional(primitive()),
     }),
   );
 }

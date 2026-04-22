@@ -397,3 +397,64 @@ describe('Home Page Banner Telemetry', () => {
     expect((calls[1] as unknown[])[1]).toMatchObject({ eventId: 2 });
   });
 });
+
+describe('Show All Data Products Telemetry', () => {
+  let mockTelemetryService: ReturnType<typeof createMockTelemetryService>;
+
+  beforeEach(() => {
+    mockStorage.clear();
+    jest.clearAllMocks();
+    mockStorage.getItem.mockClear();
+    mockStorage.setItem.mockClear();
+    mockStorage.removeItem.mockClear();
+    mockTelemetryService = createMockTelemetryService();
+  });
+
+  test('logs show all data products event with search query', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_ShowAllDataProducts(
+      mockTelemetryService,
+      'test query',
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as unknown[])[0]).toBe(
+      'marketplace.show-all.data-products',
+    );
+    expect((calls[0] as unknown[])[1]).toMatchObject({
+      searchQuery: 'test query',
+      eventId: 1,
+    });
+  });
+
+  test('logs show all data products event with undefined search query', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_ShowAllDataProducts(
+      mockTelemetryService,
+      undefined,
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as unknown[])[1]).toMatchObject({
+      searchQuery: undefined,
+      eventId: 1,
+    });
+  });
+
+  test('increments event ID across show all interactions', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_ShowAllDataProducts(
+      mockTelemetryService,
+      'first query',
+    );
+
+    LegendMarketplaceTelemetryHelper.logEvent_ShowAllDataProducts(
+      mockTelemetryService,
+      'second query',
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(2);
+    expect((calls[0] as unknown[])[1]).toMatchObject({ eventId: 1 });
+    expect((calls[1] as unknown[])[1]).toMatchObject({ eventId: 2 });
+  });
+});
