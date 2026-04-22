@@ -1307,28 +1307,6 @@ export const DataProductAccessPointGroupViewer = observer(
       dataAccessState,
     ]);
 
-    useEffect(() => {
-      if (
-        !apgState.isCollapsed &&
-        dataAccessState?.lakehouseContractServerClient &&
-        apgState.apgContracts.length > 0 &&
-        apgState.fetchingSubscriptionsState.isInInitialState
-      ) {
-        apgState.fetchSubscriptions(
-          apgState.apgContracts,
-          dataAccessState.lakehouseContractServerClient,
-          auth.user?.access_token,
-        );
-      }
-    }, [
-      apgState,
-      apgState.isCollapsed,
-      apgState.fetchingSubscriptionsState,
-      apgState.apgContracts,
-      auth.user?.access_token,
-      dataAccessState?.lakehouseContractServerClient,
-    ]);
-
     const handleContractsClick = (): void => {
       if (dataAccessState) {
         const dataProductPath =

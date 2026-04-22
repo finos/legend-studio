@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { describe, expect, jest, test } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test,
+} from '@jest/globals';
 import {
   act,
   fireEvent,
@@ -123,6 +130,20 @@ jest.mock('@finos/legend-application', () => ({
     disconnect: jest.fn(),
   }));
 
+const createdViewerStates: Awaited<
+  ReturnType<typeof TEST__getDataProductViewerState>
+>[] = [];
+
+afterEach(() => {
+  createdViewerStates
+    .splice(0)
+    .forEach((viewerState) =>
+      viewerState.apgStates.forEach((apgState) =>
+        apgState.stopPollingConsumerGrant(),
+      ),
+    );
+});
+
 const setupLakehouseDataProductTest = async (
   dataProduct: V1_DataProduct,
   entitlementsDataProductDetails: V1_EntitlementsDataProductDetails | undefined,
@@ -135,6 +156,7 @@ const setupLakehouseDataProductTest = async (
     dataProduct,
     projectGAVCoordinates,
   );
+  createdViewerStates.push(dataProductViewerState);
 
   const dataProductDataAccessState = entitlementsDataProductDetails
     ? TEST__getDataProductDataAccessState(
@@ -170,6 +192,38 @@ const setupLakehouseDataProductTest = async (
           : [],
       };
     });
+
+    createSpy(
+      dataProductDataAccessState.lakehouseContractServerClient,
+      'getContractsForUser',
+    ).mockResolvedValue(
+      mockLiteContracts
+        .filter((contract) => {
+          const consumer = contract.consumer as
+            | {
+                users?: {
+                  name: string;
+                }[];
+              }
+            | undefined;
+          return (
+            Array.isArray(consumer?.users) &&
+            consumer.users.some(
+              (user: { name: string }) => user.name === 'test-consumer-user-id',
+            )
+          );
+        })
+        .map((contract) => ({
+          contractResultLite: contract,
+          status: V1_EnrichedUserApprovalStatus.APPROVED,
+          user: 'test-consumer-user-id',
+        })),
+    );
+
+    createSpy(
+      dataProductDataAccessState.lakehouseContractServerClient,
+      'getSubscriptionsForContract',
+    ).mockResolvedValue([]);
 
     // Mock environment API call
     const mockEnvironment: PlainObject<IngestDeploymentServerConfig> = {
@@ -1276,7 +1330,13 @@ describe('DataProductViewer', () => {
           state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
           members: [],
           consumer: {
-            _type: 'unknown',
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
           },
           createdBy: 'test-user',
           createdAt: '2025-12-22T15:18:41.998+00:00',
@@ -1295,7 +1355,13 @@ describe('DataProductViewer', () => {
           state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
           members: [],
           consumer: {
-            _type: 'unknown',
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
           },
           createdBy: 'test-user',
           createdAt: '2025-12-22T15:18:41.998+00:00',
@@ -1407,7 +1473,7 @@ describe('DataProductViewer', () => {
             users: [
               {
                 name: 'test-consumer-user-id',
-                userType: V1_UserType.WORKFORCE_USER,
+                type: V1_UserType.WORKFORCE_USER,
               },
             ],
             _type: V1_OrganizationalScopeType.AdHocTeam,
@@ -1432,7 +1498,7 @@ describe('DataProductViewer', () => {
             users: [
               {
                 name: 'test-consumer-user-id',
-                userType: V1_UserType.WORKFORCE_USER,
+                type: V1_UserType.WORKFORCE_USER,
               },
             ],
             _type: V1_OrganizationalScopeType.AdHocTeam,
@@ -2109,6 +2175,20 @@ describe('DataProductViewer', () => {
   });
 
   describe('Subscriptions', () => {
+    beforeEach(() => {
+      jest
+        .spyOn(window, 'requestAnimationFrame')
+        .mockImplementation((callback: FrameRequestCallback) => {
+          callback(performance.now());
+          return 0;
+        });
+      jest.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
     test('Manage Subscriptions button opens subscriptions modal', async () => {
       await setupLakehouseDataProductTest(
         mockEnterpriseDataProduct,
@@ -2127,6 +2207,240 @@ describe('DataProductViewer', () => {
       fireEvent.click(manageSubscriptionsButton);
 
       await screen.findByText('Data Product Subscriptions');
+    });
+
+    test('fetches subscriptions only when the modal is first opened', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      const getSubscriptionsForContractSpy = createSpy(
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
+        'getSubscriptionsForContract',
+      ).mockResolvedValue([]);
+
+      expect(getSubscriptionsForContractSpy).not.toHaveBeenCalled();
+
+      await screen.findByText('Main Group Test');
+      fireEvent.click(await screen.findByTitle('More options'));
+      fireEvent.click(await screen.findByText('Manage Subscriptions'));
+
+      await screen.findByText('Data Product Subscriptions');
+      await waitFor(() => {
+        expect(getSubscriptionsForContractSpy).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe('Contract fetch optimization', () => {
+    test('fetches the full contract only for the user contract returned by getContractsForUser', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+        {
+          description: 'Test system account contract',
+          guid: 'test-system-account-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-system-account',
+                type: V1_UserType.SYSTEM_ACCOUNT,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+        {
+          description: 'Test system account contract',
+          guid: 'test-system-account-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-system-account',
+                type: V1_UserType.SYSTEM_ACCOUNT,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      const getDataContractSpy = createSpy(
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
+        'getDataContract',
+      ).mockImplementation(async (id: string) => {
+        const matchingContract = mockDataContracts.find(
+          (_contract) => _contract.guid === id,
+        );
+        return {
+          dataContracts: matchingContract
+            ? [{ dataContract: matchingContract }]
+            : [],
+        };
+      });
+
+      await act(async () => {
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(getDataContractSpy).toHaveBeenCalledWith(
+        'test-approved-contract-id',
+        true,
+        undefined,
+      );
+      expect(getDataContractSpy).not.toHaveBeenCalledWith(
+        'test-system-account-contract-id',
+        true,
+        undefined,
+      );
     });
   });
 
