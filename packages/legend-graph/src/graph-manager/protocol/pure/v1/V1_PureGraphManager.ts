@@ -407,6 +407,12 @@ import { IngestDefinition } from '../../../../graph/metamodel/pure/packageableEl
 import { Database } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { V1_createAccessorFromPackageableElement } from './helpers/V1_AccessorHelper.js';
 
+/**
+ * Number of elements to process synchronously before yielding to the event loop.
+ * This avoids per-element setTimeout overhead while keeping the UI responsive.
+ */
+const GRAPH_BUILDER_BATCH_SIZE = 100;
+
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
   nativeElements: V1_PackageableElement[] = [];
@@ -1301,46 +1307,57 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graph.allElements.map((el) => el.path),
     );
 
-    await Promise.all(
-      inputs.flatMap(async (input) => {
-        // create the package cache
-        const packageCache = new Map<string, Package>();
-        await Promise.all(
-          input.data.nativeElements.map((element) => {
-            return this.visitWithGraphBuilderErrorHandling(
-              element,
-              new V1_ElementFirstPassBuilder(
-                this.getBuilderContext(graph, input.model, element, options),
-                packageCache,
-                elementPathCache,
-              ),
-            );
-          }),
+    // NOTE: We must index ALL native elements across ALL inputs before indexing
+    // plugin-contributed ("other") elements. Plugin elements
+    // may resolve references to native elements (e.g. Mapping, Runtime) from
+    // other inputs during their first pass. If we process each input fully
+    // (native + other) before moving to the next, a plugin element in input[0]
+    // could fail to find a native element that only exists in input[1].
+    const packageCaches = new Map<
+      V1_PureGraphBuilderInput,
+      Map<string, Package>
+    >();
+
+    const createFirstPassBuilder = (
+      input: V1_PureGraphBuilderInput,
+      packageCache: Map<string, Package>,
+      element: V1_PackageableElement,
+    ): V1_ElementFirstPassBuilder =>
+      new V1_ElementFirstPassBuilder(
+        this.getBuilderContext(graph, input.model, element, options),
+        packageCache,
+        elementPathCache,
+      );
+
+    for (const input of inputs) {
+      const packageCache = new Map<string, Package>();
+      packageCaches.set(input, packageCache);
+
+      // Phase 1: index native elements for this input
+      await this.runBatchedLoop(input.data.nativeElements, (element) =>
+        this.visitWithGraphBuilderErrorHandling(
+          element,
+          createFirstPassBuilder(input, packageCache, element),
+        ),
+      );
+    }
+
+    // Phase 2: index other (plugin-contributed) elements across all inputs,
+    // now that all native elements have been indexed
+    for (const input of inputs) {
+      const packageCache = guaranteeNonNullable(packageCaches.get(input));
+
+      const otherElements =
+        this.graphBuilderExtensions.sortedExtraElementBuilders.flatMap(
+          (builder) => input.data.otherElementsByBuilder.get(builder) ?? [],
         );
-        await Promise.all(
-          this.graphBuilderExtensions.sortedExtraElementBuilders.flatMap(
-            (builder) =>
-              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-                (element) => {
-                  return this.visitWithGraphBuilderErrorHandling(
-                    element,
-                    new V1_ElementFirstPassBuilder(
-                      this.getBuilderContext(
-                        graph,
-                        input.model,
-                        element,
-                        options,
-                      ),
-                      packageCache,
-                      elementPathCache,
-                    ),
-                  );
-                },
-              ),
-          ),
-        );
-      }),
-    );
+      await this.runBatchedLoop(otherElements, (element) =>
+        this.visitWithGraphBuilderErrorHandling(
+          element,
+          createFirstPassBuilder(input, packageCache, element),
+        ),
+      );
+    }
   }
 
   private async buildTypes(
@@ -1349,128 +1366,78 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     // Second pass
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.profiles.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.profiles,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.classes.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.classes,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.enumerations.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.enumerations,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.measures.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.measures,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.functions.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.functions,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
     // Third pass
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.classes.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementThirdPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.classes,
+      (ctx) => new V1_ElementThirdPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.associations.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementThirdPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.associations,
+      (ctx) => new V1_ElementThirdPassBuilder(ctx),
+      options,
     );
     // Fourth Pass
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.classes.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementFourthPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.classes,
+      (ctx) => new V1_ElementFourthPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.associations.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementFourthPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.associations,
+      (ctx) => new V1_ElementFourthPassBuilder(ctx),
+      options,
     );
     // Fifth pass
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.classes.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementFifthPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.classes,
+      (ctx) => new V1_ElementFifthPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1479,17 +1446,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.functionActivators.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.functionActivators,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1498,53 +1460,33 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.stores.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.stores,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.stores.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementThirdPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.stores,
+      (ctx) => new V1_ElementThirdPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.stores.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementFourthPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.stores,
+      (ctx) => new V1_ElementFourthPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.stores.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementFifthPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.stores,
+      (ctx) => new V1_ElementFifthPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1553,41 +1495,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.mappings.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.mappings,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.mappings.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementThirdPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.mappings,
+      (ctx) => new V1_ElementThirdPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.mappings.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementFourthPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.mappings,
+      (ctx) => new V1_ElementFourthPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1597,29 +1524,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     // NOTE: connections must be built before runtimes
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.connections.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.connections,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.runtimes.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.runtimes,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1628,29 +1545,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.services.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.services,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.executionEnvironments.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.executionEnvironments,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1659,17 +1566,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.dataElements.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.dataElements,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1678,17 +1580,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.products.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.products,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1697,17 +1594,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.fileGenerations.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.fileGenerations,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1716,17 +1608,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.generationSpecifications.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.generationSpecifications,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1735,17 +1622,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.sectionIndices.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ElementSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.sectionIndices,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
     );
   }
 
@@ -1754,82 +1636,90 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    await Promise.all(
-      this.graphBuilderExtensions.sortedExtraElementBuilders.map(
-        async (builder) => {
-          await Promise.all(
-            inputs.flatMap((input) =>
-              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-                (element) =>
-                  this.visitWithGraphBuilderErrorHandling(
-                    element,
-                    new V1_ElementSecondPassBuilder(
-                      this.getBuilderContext(
-                        graph,
-                        input.model,
-                        element,
-                        options,
-                      ),
-                    ),
-                  ),
-              ),
-            ),
-          );
-          await Promise.all(
-            inputs.flatMap((input) =>
-              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-                (element) =>
-                  this.visitWithGraphBuilderErrorHandling(
-                    element,
-                    new V1_ElementThirdPassBuilder(
-                      this.getBuilderContext(
-                        graph,
-                        input.model,
-                        element,
-                        options,
-                      ),
-                    ),
-                  ),
-              ),
-            ),
-          );
-          await Promise.all(
-            inputs.flatMap((input) =>
-              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-                (element) =>
-                  this.visitWithGraphBuilderErrorHandling(
-                    element,
-                    new V1_ElementFourthPassBuilder(
-                      this.getBuilderContext(
-                        graph,
-                        input.model,
-                        element,
-                        options,
-                      ),
-                    ),
-                  ),
-              ),
-            ),
-          );
-          await Promise.all(
-            inputs.flatMap((input) =>
-              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-                (element) =>
-                  this.visitWithGraphBuilderErrorHandling(
-                    element,
-                    new V1_ElementFifthPassBuilder(
-                      this.getBuilderContext(
-                        graph,
-                        input.model,
-                        element,
-                        options,
-                      ),
-                    ),
-                  ),
-              ),
-            ),
-          );
-        },
+    for (const builder of this.graphBuilderExtensions
+      .sortedExtraElementBuilders) {
+      const getElements = (
+        data: V1_PureModelContextDataIndex,
+      ): V1_PackageableElement[] =>
+        data.otherElementsByBuilder.get(builder) ?? [];
+      await this.processElementsInBatches(
+        graph,
+        inputs,
+        getElements,
+        (ctx) => new V1_ElementSecondPassBuilder(ctx),
+        options,
+      );
+      await this.processElementsInBatches(
+        graph,
+        inputs,
+        getElements,
+        (ctx) => new V1_ElementThirdPassBuilder(ctx),
+        options,
+      );
+      await this.processElementsInBatches(
+        graph,
+        inputs,
+        getElements,
+        (ctx) => new V1_ElementFourthPassBuilder(ctx),
+        options,
+      );
+      await this.processElementsInBatches(
+        graph,
+        inputs,
+        getElements,
+        (ctx) => new V1_ElementFifthPassBuilder(ctx),
+        options,
+      );
+    }
+  }
+
+  /**
+   * Run a callback for each item in the array, processing items in batches
+   * of {@link GRAPH_BUILDER_BATCH_SIZE} and yielding to the event loop between
+   * batches to keep the UI responsive.
+   */
+  private async runBatchedLoop<T>(
+    items: T[],
+    process: (item: T) => void,
+  ): Promise<void> {
+    for (let i = 0; i < items.length; i += GRAPH_BUILDER_BATCH_SIZE) {
+      if (i > 0) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      }
+      const end = Math.min(i + GRAPH_BUILDER_BATCH_SIZE, items.length);
+      for (let j = i; j < end; j++) {
+        process(guaranteeNonNullable(items[j]));
+      }
+    }
+  }
+
+  /**
+   * Process elements from inputs in batches, yielding to the event loop
+   * between batches to keep the UI responsive.
+   */
+  private async processElementsInBatches(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    getElements: (
+      data: V1_PureModelContextDataIndex,
+    ) => V1_PackageableElement[],
+    createVisitor: (
+      ctx: V1_GraphBuilderContext,
+    ) => V1_PackageableElementVisitor<unknown>,
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    const allItems = inputs.flatMap((input) =>
+      getElements(input.data).map((element) => ({
+        element,
+        model: input.model,
+      })),
+    );
+    await this.runBatchedLoop(allItems, (item) =>
+      this.visitWithGraphBuilderErrorHandling(
+        item.element,
+        createVisitor(
+          this.getBuilderContext(graph, item.model, item.element, options),
+        ),
       ),
     );
   }
@@ -1837,9 +1727,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   private visitWithGraphBuilderErrorHandling<T>(
     element: V1_PackageableElement,
     visitor: V1_PackageableElementVisitor<T>,
-  ): Promise<T> {
+  ): T {
     try {
-      return promisify(() => element.accept_PackageableElementVisitor(visitor));
+      return element.accept_PackageableElementVisitor(visitor);
     } catch (err) {
       assertErrorThrown(err);
       const error =
