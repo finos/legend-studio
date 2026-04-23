@@ -1223,3 +1223,32 @@
     width: 2rem;
   }
 }
+
+.service-editor__deployment-link {
+  @include flexCenter;
+
+  height: 2rem;
+  border-radius: 0.2rem;
+  padding: 0 1rem;
+  background: var(--color-blue-200);
+  color: var(--color-light-grey-0);
+  text-decoration: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  gap: 0.5rem;
+
+  &:hover {
+    background: var(--color-blue-180);
+    color: var(--color-light-grey-0);
+  }
+
+  svg {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+}
+
+.service-editor__deployment-link__env {
+  font-weight: 400;
+  letter-spacing: 0.05rem;
+}

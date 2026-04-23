@@ -22,6 +22,7 @@ import {
   CustomSelectorInput,
   CheckSquareIcon,
   SquareIcon,
+  ExternalLinkSquareIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
@@ -30,7 +31,10 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { MASTER_SNAPSHOT_ALIAS } from '@finos/legend-server-depot';
-import { LATEST_PROJECT_REVISION } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
+import {
+  LATEST_PROJECT_REVISION,
+  generateServiceManagementUrl,
+} from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 
 export const ServiceRegistrationEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -146,6 +150,31 @@ export const ServiceRegistrationEditor = observer(() => {
           <div className="panel__header__title__label">Register Service</div>
         </div>
         <div className="panel__header__actions">
+          {registrationState.serviceEnv &&
+            (() => {
+              const envConfig = registrationState.options.find(
+                (e) => e.env === registrationState.serviceEnv,
+              );
+              return envConfig ? (
+                <div className="panel__header__action">
+                  <a
+                    className="service-editor__deployment-link"
+                    href={generateServiceManagementUrl(
+                      envConfig.managementUrl,
+                      serviceState.service.pattern,
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`Open in ${envConfig.env}`}
+                  >
+                    <span className="service-editor__deployment-link__env">
+                      {envConfig.env.toUpperCase()}
+                    </span>
+                    <ExternalLinkSquareIcon />
+                  </a>
+                </div>
+              ) : null;
+            })()}
           <div className="panel__header__action">
             <button
               className="btn--dark model-loader__header__load-btn"
