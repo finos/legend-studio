@@ -24,6 +24,12 @@ import {
   AbstractServerClient,
   HttpHeader,
   ContentType,
+  type RequestHeaders,
+  type RequestProcessConfig,
+  type ResponseProcessConfig,
+  type TraceData,
+  type HttpMethod,
+  type Parameters as NetworkClientParameters,
 } from '@finos/legend-shared';
 import type { V1_PureModelContextData } from '@finos/legend-graph';
 import type { DepotScope } from './models/DepotScope.js';
@@ -44,13 +50,45 @@ import type { DependencyResolutionResponse } from './models/DependencyResolution
 
 export interface DepotServerClientConfig {
   serverUrl: string;
+  getOAuthToken?: (() => string | undefined) | undefined;
 }
 
 export class DepotServerClient extends AbstractServerClient {
+  private _getOAuthToken?: (() => string | undefined) | undefined;
+
   constructor(config: DepotServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
     });
+    this._getOAuthToken = config.getOAuthToken;
+  }
+
+  override request<T>(
+    method: HttpMethod,
+    url: string,
+    data: unknown,
+    options: RequestInit,
+    headers?: RequestHeaders | undefined,
+    parameters?: NetworkClientParameters | undefined,
+    requestProcessConfig?: RequestProcessConfig | undefined,
+    responseProcessConfig?: ResponseProcessConfig | undefined,
+    traceData?: TraceData | undefined,
+  ): Promise<T> {
+    const token = this._getOAuthToken?.();
+    const headersWithToken: RequestHeaders | undefined = token
+      ? { ...(headers ?? {}), Authorization: `Bearer ${token}` }
+      : headers;
+    return super.request(
+      method,
+      url,
+      data,
+      options,
+      headersWithToken,
+      parameters,
+      requestProcessConfig,
+      responseProcessConfig,
+      traceData,
+    );
   }
 
   // ------------------------------------------- Projects -------------------------------------------

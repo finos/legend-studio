@@ -82,6 +82,9 @@ export class LegendStudioBaseStore {
     // depot
     this.depotServerClient = new DepotServerClient({
       serverUrl: this.applicationStore.config.depotServerUrl,
+      getOAuthToken: this.applicationStore.config.options.enableOauthFlow
+        ? (): string | undefined => this.applicationStore.getAccessToken()
+        : undefined,
     });
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
