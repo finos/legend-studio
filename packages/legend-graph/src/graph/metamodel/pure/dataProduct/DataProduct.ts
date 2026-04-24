@@ -47,9 +47,11 @@ export abstract class AccessPoint implements Hashable {
   title: string | undefined;
   description: string | undefined;
   stereotypes: StereotypeReference[] = [];
+  __owner: AccessPointGroup;
 
-  constructor(id: string) {
+  constructor(id: string, owner: AccessPointGroup) {
     this.id = id;
+    this.__owner = owner;
   }
 
   get hashCode(): string {
@@ -66,8 +68,8 @@ export abstract class AccessPoint implements Hashable {
 export class FunctionAccessPoint extends AccessPoint {
   query: RawLambda;
 
-  constructor(id: string, query: RawLambda) {
-    super(id);
+  constructor(id: string, query: RawLambda, owner: AccessPointGroup) {
+    super(id, owner);
     this.query = query;
   }
 
@@ -99,8 +101,13 @@ export class LakehouseAccessPoint extends AccessPoint {
   func: RawLambda;
   reproducible: boolean | undefined;
 
-  constructor(id: string, targetEnv: string, func: RawLambda) {
-    super(id);
+  constructor(
+    id: string,
+    targetEnv: string,
+    func: RawLambda,
+    owner: AccessPointGroup,
+  ) {
+    super(id, owner);
     this.targetEnvironment = targetEnv;
     this.func = func;
   }
@@ -119,6 +126,7 @@ export class LakehouseAccessPoint extends AccessPoint {
 
 export class UnknownAccessPoint extends AccessPoint {
   content!: PlainObject;
+
   override get hashCode(): string {
     return hashArray([
       super.hashCode,
