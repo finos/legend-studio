@@ -559,6 +559,7 @@ const ProjectAdvancedEditor = observer(
     const embeddedToManaged =
       'You are about to change from embedded to managed project type. Your build will now be managed by our SDLC sever in addition to your element folder structure. Your current build files will all be deleted and replaces with our own. Please ensure you understand the risks of changing over before continuing.';
     const runDependencyMessage = `In addition to running your own tests, you can also configure to run all tests in your dependency projects.  This should be rarely used and mostly helped mitigate when you have override your dependencies. You should aim to have most of your tests in your current project.`;
+    const produceShadedServiceJarMessage = `Do you want to create the shaded jar for all the services, which you can then use from java application`;
     const toggleRunDependency = (): void => {
       const newVal = !projectConfig.runDependencyTests;
       if (
@@ -568,6 +569,17 @@ const ProjectAdvancedEditor = observer(
         projectConfig.setRunDependencyTests(undefined);
       } else {
         projectConfig.setRunDependencyTests(newVal);
+      }
+    };
+    const toggleProduceShadedServiceJar = (): void => {
+      const newVal = !projectConfig.produceShadedServiceJar;
+      if (
+        !newVal &&
+        configState.originalConfig.produceShadedServiceJar === undefined
+      ) {
+        projectConfig.setProduceShadedServiceJar(undefined);
+      } else {
+        projectConfig.setProduceShadedServiceJar(newVal);
       }
     };
     const changeProjectType = (): void => {
@@ -633,6 +645,49 @@ const ProjectAdvancedEditor = observer(
                   </button>
                   <div className="platform-configurations-editor__toggler__prompt">
                     {`Run Dependency Tests`}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </PanelForm>
+        <PanelForm>
+          <div className="panel__content__form__section__header__label">
+            {`Shaded Service jar`}
+          </div>
+          <div className="documentation-preview">
+            <div className="documentation-preview__text">
+              <div className="project-configuration-editor__advanced__project-type__info">
+                {produceShadedServiceJarMessage}
+              </div>
+            </div>
+          </div>
+          <div className="platform-configurations-editor__dependencies">
+            <div className="platform-configurations-editor__dependencies__header">
+              <div className="platform-configurations-editor__dependencies__header__left">
+                <div
+                  className="platform-configurations-editor__toggler"
+                  onClick={toggleProduceShadedServiceJar}
+                >
+                  <button
+                    className={clsx(
+                      'platform-configurations-editor__toggler__btn',
+                      {
+                        'platform-configurations-editor__toggler__btn--toggled':
+                          Boolean(projectConfig.produceShadedServiceJar),
+                      },
+                    )}
+                    disabled={isReadOnly}
+                    tabIndex={-1}
+                  >
+                    {projectConfig.produceShadedServiceJar ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="platform-configurations-editor__toggler__prompt">
+                    {`Produce Shaded Service Jar`}
                   </div>
                 </div>
               </div>
