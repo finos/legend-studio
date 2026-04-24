@@ -1106,16 +1106,17 @@ export class DataProductEditorState extends ElementEditorState {
     description: string | undefined,
     accessPointGroup: AccessPointGroupState | string,
   ): void {
-    const accesspoint = new LakehouseAccessPoint(
-      id,
-      LakehouseTargetEnv.Snowflake,
-      stub_RawLambda(),
-    );
-    accesspoint.description = description;
     const groupState =
       accessPointGroup instanceof AccessPointGroupState
         ? accessPointGroup
         : this.createGroupAndAdd(accessPointGroup);
+    const accesspoint = new LakehouseAccessPoint(
+      id,
+      LakehouseTargetEnv.Snowflake,
+      stub_RawLambda(),
+      groupState.value,
+    );
+    accesspoint.description = description;
     groupState.addAccessPoint(accesspoint);
     addUniqueEntry(this.accessPointGroupStates, groupState);
   }

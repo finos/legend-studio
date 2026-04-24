@@ -76,7 +76,12 @@ const createLakehouseDataProduct = (): DataProduct => {
   const dp = new DataProduct('LakehouseDP');
   const group = new AccessPointGroup();
   group.id = 'lhGroup1';
-  const ap = new LakehouseAccessPoint('lhAP1', 'Snowflake', stubRawLambda());
+  const ap = new LakehouseAccessPoint(
+    'lhAP1',
+    'Snowflake',
+    stubRawLambda(),
+    group,
+  );
   ap.title = 'Lakehouse AP';
   group.accessPoints = [ap];
   dp.accessPointGroups = [group];
@@ -93,7 +98,12 @@ const createMixedDataProduct = (): DataProduct => {
 
   const lhGroup = new AccessPointGroup();
   lhGroup.id = 'lhGroup';
-  const lhAP = new LakehouseAccessPoint('lhAP1', 'Snowflake', stubRawLambda());
+  const lhAP = new LakehouseAccessPoint(
+    'lhAP1',
+    'Snowflake',
+    stubRawLambda(),
+    lhGroup,
+  );
   lhAP.title = 'Lake AP';
   lhGroup.accessPoints = [lhAP];
 
@@ -125,6 +135,8 @@ describe(unitTest('resolveDataProductExecutionState'), () => {
     const result = resolveDataProductExecutionState(dp);
     expect(result).toBeInstanceOf(LakehouseAccessPoint);
     expect((result as LakehouseAccessPoint).id).toBe('lhAP1');
+    expect((result as LakehouseAccessPoint).__owner).toBeDefined();
+    expect((result as LakehouseAccessPoint).__owner.id).toBe('lhGroup1');
   });
 
   test('prefers ModelAccessPointGroup over LakehouseAccessPoint in mixed product', () => {
@@ -153,6 +165,8 @@ describe(unitTest('resolveLakehouseAccessPoint'), () => {
     expect(result).toBeDefined();
     expect(result).toBeInstanceOf(LakehouseAccessPoint);
     expect(result?.id).toBe('lhAP1');
+    expect(result?.__owner).toBeDefined();
+    expect(result?.__owner.id).toBe('lhGroup1');
   });
 
   test('returns undefined when no lakehouse access points exist', () => {
@@ -172,6 +186,8 @@ describe(unitTest('resolveLakehouseAccessPoint'), () => {
     const result = resolveLakehouseAccessPoint(dp);
     expect(result).toBeDefined();
     expect(result?.id).toBe('lhAP1');
+    expect(result?.__owner).toBeDefined();
+    expect(result?.__owner.id).toBe('lhGroup');
   });
 });
 
@@ -187,6 +203,7 @@ describe(unitTest('findLakehouseAccessPointGroup'), () => {
     expect(result?.group.id).toBe('lhGroup1');
     expect(result?.accessPoint.id).toBe('lhAP1');
     expect(result?.accessPoint).toBeInstanceOf(LakehouseAccessPoint);
+    expect(result?.accessPoint.__owner).toBe(result?.group);
   });
 
   test('returns undefined for non-existent access point id', () => {
@@ -207,6 +224,7 @@ describe(unitTest('findLakehouseAccessPointGroup'), () => {
     expect(result).toBeDefined();
     expect(result?.group.id).toBe('lhGroup');
     expect(result?.accessPoint.id).toBe('lhAP1');
+    expect(result?.accessPoint.__owner).toBe(result?.group);
   });
 
   test('does not match non-lakehouse access points', () => {

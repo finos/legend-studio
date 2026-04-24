@@ -85,6 +85,7 @@ export const V1_buildDataProductLink = (
 export const V1_buildAccessPoint = (
   ap: V1_AccessPoint,
   context: V1_GraphBuilderContext,
+  owner: AccessPointGroup,
 ): AccessPoint => {
   if (ap instanceof V1_LakehouseAccessPoint) {
     const lakeAccessPoint = new LakehouseAccessPoint(
@@ -95,6 +96,7 @@ export const V1_buildAccessPoint = (
         ap.func.body,
         context,
       ),
+      owner,
     );
     lakeAccessPoint.reproducible = ap.reproducible;
     lakeAccessPoint.classification = ap.classification;
@@ -112,6 +114,7 @@ export const V1_buildAccessPoint = (
         ap.query.body,
         context,
       ),
+      owner,
     );
     functionAccessPoint.description = ap.description;
     functionAccessPoint.title = ap.title;
@@ -120,7 +123,7 @@ export const V1_buildAccessPoint = (
       .filter(isNonNullable);
     return functionAccessPoint;
   } else if (ap instanceof V1_UnknownAccessPoint) {
-    const unknown = new UnknownAccessPoint(ap.id);
+    const unknown = new UnknownAccessPoint(ap.id, owner);
     unknown.description = ap.description;
     unknown.title = ap.title;
     unknown.content = ap.content;
@@ -178,7 +181,7 @@ export const V1_buildAccessPointGroup = (
     group.title = elementGroup.title;
     group.description = elementGroup.description;
     group.accessPoints = elementGroup.accessPoints.map((ep) =>
-      V1_buildAccessPoint(ep, context),
+      V1_buildAccessPoint(ep, context, group),
     );
     group.stereotypes = elementGroup.stereotypes
       .map((stereotype) => context.resolveStereotype(stereotype))
@@ -225,7 +228,7 @@ export const V1_buildAccessPointGroup = (
     group.title = elementGroup.title;
     group.description = elementGroup.description;
     group.accessPoints = elementGroup.accessPoints.map((ep) =>
-      V1_buildAccessPoint(ep, context),
+      V1_buildAccessPoint(ep, context, group),
     );
     group.stereotypes = elementGroup.stereotypes
       .map((stereotype) => context.resolveStereotype(stereotype))
