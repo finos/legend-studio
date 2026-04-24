@@ -15,6 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 import { ServiceEditorState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
   clsx,
@@ -140,6 +141,12 @@ export const ServiceRegistrationEditor = observer(() => {
     !selectedServiceType ||
     registrationState.registrationState.isInProgress;
 
+  useEffect(() => {
+    flowResult(registrationState.checkServiceRegistration()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  }, [registrationState, applicationStore]);
+
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR}
@@ -150,31 +157,30 @@ export const ServiceRegistrationEditor = observer(() => {
           <div className="panel__header__title__label">Register Service</div>
         </div>
         <div className="panel__header__actions">
-          {registrationState.serviceEnv &&
-            (() => {
-              const envConfig = registrationState.options.find(
-                (e) => e.env === registrationState.serviceEnv,
-              );
-              return envConfig ? (
-                <div className="panel__header__action">
-                  <a
-                    className="service-editor__deployment-link"
-                    href={generateServiceManagementUrl(
-                      envConfig.managementUrl,
-                      serviceState.service.pattern,
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`Open in ${envConfig.env}`}
-                  >
-                    <span className="service-editor__deployment-link__env">
-                      {envConfig.env.toUpperCase()}
-                    </span>
-                    <ExternalLinkSquareIcon />
-                  </a>
-                </div>
-              ) : null;
-            })()}
+          {registrationState.registeredEnvs.map((env) => {
+            const envConfig = registrationState.registrationOptions.find(
+              (e) => e.env === env,
+            );
+            return envConfig ? (
+              <div key={env} className="panel__header__action">
+                <a
+                  className="service-editor__deployment-link"
+                  href={generateServiceManagementUrl(
+                    envConfig.managementUrl,
+                    serviceState.service.pattern,
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={`Open in ${env}`}
+                >
+                  <span className="service-editor__deployment-link__env">
+                    {env.toUpperCase()}
+                  </span>
+                  <ExternalLinkSquareIcon />
+                </a>
+              </div>
+            ) : null;
+          })}
           <div className="panel__header__action">
             <button
               className="btn--dark model-loader__header__load-btn"

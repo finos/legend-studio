@@ -1142,6 +1142,14 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
+  async getServicesDetailsByServerUrl(
+    serviceServerUrl: string,
+  ): Promise<PlainObject[]> {
+    return this.engineServerClient.getServicesDetailsFromCacheByUrl(
+      serviceServerUrl,
+    );
+  }
+
   async runServicePostVal(
     servicePath: string,
     input: V1_PureModelContext,

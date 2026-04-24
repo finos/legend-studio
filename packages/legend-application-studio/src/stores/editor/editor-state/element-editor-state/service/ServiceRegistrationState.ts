@@ -36,6 +36,7 @@ import {
   type Service,
   type PureExecution,
   type ServiceRegistrationSuccess,
+  type ServiceDetail,
   ServiceExecutionMode,
   buildLambdaVariableExpressions,
   VariableExpression,
@@ -256,6 +257,7 @@ export class ServiceConfigState {
 export class ServiceRegistrationState extends ServiceConfigState {
   readonly service: Service;
   activatePostRegistration = true;
+  registeredEnvs: string[] = [];
 
   constructor(
     editorStore: EditorStore,
@@ -267,14 +269,39 @@ export class ServiceRegistrationState extends ServiceConfigState {
 
     makeObservable(this, {
       activatePostRegistration: observable,
+      registeredEnvs: observable,
       setActivatePostRegistration: action,
+      setRegisteredEnvs: action,
       registerService: flow,
+      checkServiceRegistration: flow,
     });
 
     this.service = service;
   }
   setActivatePostRegistration(val: boolean): void {
     this.activatePostRegistration = val;
+  }
+
+  setRegisteredEnvs(envs: string[]): void {
+    this.registeredEnvs = envs;
+  }
+
+  *checkServiceRegistration(): GeneratorFn<void> {
+    const envs: string[] = [];
+    for (const envConfig of this.registrationOptions) {
+      try {
+        const services =
+          (yield this.editorStore.graphManagerState.graphManager.getServicesByServerUrl(
+            envConfig.executionUrl,
+          )) as ServiceDetail[];
+        if (services.some((s) => s.pattern === this.service.pattern)) {
+          envs.push(envConfig.env);
+        }
+      } catch {
+        // env unreachable — skip
+      }
+    }
+    this.setRegisteredEnvs(envs);
   }
 
   *registerService(): GeneratorFn<void> {

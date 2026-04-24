@@ -43,6 +43,7 @@ import {
   DeploymentOwnership,
   ServiceExecutionMode,
   ServiceRegistrationSuccess,
+  ServiceDetail,
 } from '@finos/legend-graph';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import {
@@ -385,5 +386,176 @@ test(
       'Service with pattern /myservice registered and activated',
     );
     fireEvent.click(renderResult.getByText('Close'));
+  },
+);
+
+test(
+  integrationTest(
+    'Service Registration tab shows deployment links for environments where service is registered',
+  ),
+  async () => {
+    const MOCK__editorStore = await setup(
+      TEST_DATA__DefaultSDLCInfo.project,
+      TEST_DATA__DefaultSDLCInfo.workspace,
+    );
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+
+    // Mock getServicesByServerUrl to return a matching service for 'int' and 'dev', but not 'prod'
+    const matchingService = new ServiceDetail();
+    matchingService.name = 'TestService';
+    matchingService.pattern = '/example/myTestUrl/{myParam}';
+    matchingService.documentation = 'test';
+
+    const nonMatchingService = new ServiceDetail();
+    nonMatchingService.name = 'OtherService';
+    nonMatchingService.pattern = '/other/service';
+    nonMatchingService.documentation = 'other';
+
+    const getServicesByServerUrlSpy = createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'getServicesByServerUrl',
+    );
+    getServicesByServerUrlSpy.mockImplementation(
+      (serverUrl: string): Promise<ServiceDetail[]> => {
+        if (
+          serverUrl === 'int.dummyUrl.com' ||
+          serverUrl === 'dev.dummyUrl.com'
+        ) {
+          return Promise.resolve([matchingService, nonMatchingService]);
+        }
+        // 'prod' returns only non-matching services
+        return Promise.resolve([nonMatchingService]);
+      },
+    );
+
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'registerService',
+    ).mockResolvedValue(
+      new ServiceRegistrationSuccess(
+        undefined,
+        'https://legend.org/exec',
+        '/myservice',
+        'id1',
+      ),
+    );
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'activateService',
+    ).mockResolvedValue();
+
+    await TEST__openElementFromExplorerTree(
+      'model::RelationalService',
+      renderResult,
+    );
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+
+    // Navigate to Registration tab — this triggers useEffect -> checkServiceRegistration
+    fireEvent.click(getByText(editorGroup, 'Registration'));
+
+    const registrationEditor = await waitFor(() =>
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR,
+      ),
+    );
+
+    // Verify registeredEnvs state is populated after checkServiceRegistration completes
+    const serviceEditorState =
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        ServiceEditorState,
+      );
+    await waitFor(() => {
+      expect(serviceEditorState.registrationState.registeredEnvs).toContain(
+        'int',
+      );
+      expect(serviceEditorState.registrationState.registeredEnvs).toContain(
+        'dev',
+      );
+      expect(serviceEditorState.registrationState.registeredEnvs).not.toContain(
+        'prod',
+      );
+    });
+
+    // Verify the spy was called for each env
+    expect(getServicesByServerUrlSpy).toHaveBeenCalledWith('int.dummyUrl.com');
+    expect(getServicesByServerUrlSpy).toHaveBeenCalledWith('dev.dummyUrl.com');
+    expect(getServicesByServerUrlSpy).toHaveBeenCalledWith('exec.dummyUrl.com');
+
+    // 'INT' and 'DEV' should appear as deployment links since they had matching patterns
+    await waitFor(() => {
+      const links = registrationEditor.querySelectorAll(
+        '.service-editor__deployment-link__env',
+      );
+      const linkTexts = Array.from(links).map((el) => el.textContent);
+      expect(linkTexts).toContain('INT');
+      expect(linkTexts).toContain('DEV');
+      expect(linkTexts).not.toContain('PROD');
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Service Registration tab handles unreachable environments gracefully',
+  ),
+  async () => {
+    const MOCK__editorStore = await setup(
+      TEST_DATA__DefaultSDLCInfo.project,
+      TEST_DATA__DefaultSDLCInfo.workspace,
+    );
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+
+    // Mock getServicesByServerUrl to reject for all environments
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'getServicesByServerUrl',
+    ).mockRejectedValue(new Error('Network error'));
+
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'registerService',
+    ).mockResolvedValue(
+      new ServiceRegistrationSuccess(
+        undefined,
+        'https://legend.org/exec',
+        '/myservice',
+        'id1',
+      ),
+    );
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'activateService',
+    ).mockResolvedValue();
+
+    await TEST__openElementFromExplorerTree(
+      'model::RelationalService',
+      renderResult,
+    );
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    fireEvent.click(getByText(editorGroup, 'Registration'));
+
+    // Wait for the registration editor to render
+    const registrationEditor = await waitFor(() =>
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR,
+      ),
+    );
+
+    // No deployment links should appear since all envs were unreachable
+    const serviceEditorState =
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        ServiceEditorState,
+      );
+    await waitFor(() => {
+      expect(serviceEditorState.registrationState.registeredEnvs).toEqual([]);
+    });
+
+    // The registration form should still be functional
+    await waitFor(() => getByText(registrationEditor, 'Execution Server'));
+    await waitFor(() => getByText(registrationEditor, 'Service Type'));
   },
 );

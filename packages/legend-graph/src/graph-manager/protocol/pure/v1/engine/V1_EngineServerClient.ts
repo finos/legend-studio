@@ -1245,6 +1245,11 @@ export class V1_EngineServerClient extends AbstractServerClient {
   private readonly getServicesDetailsFromCache = (): Promise<PlainObject[]> =>
     this.get(`${this._service()}/list/detailsFromCache`);
 
+  getServicesDetailsFromCacheByUrl = (
+    serviceServerUrl: string,
+  ): Promise<PlainObject[]> =>
+    this.get(`${this._service(serviceServerUrl)}/list/detailsFromCache`);
+
   getServicesInfo = async (): Promise<ServiceDetail[]> => {
     const raw = await this.getServicesDetailsFromCache();
     return raw.map((r) => ServiceDetail.fromJson(r));
