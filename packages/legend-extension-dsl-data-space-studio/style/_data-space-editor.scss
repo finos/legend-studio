@@ -156,6 +156,10 @@
     background-color: var(--color-dark-grey-50);
   }
 
+  .panel__header__actions {
+    gap: 0.5rem;
+  }
+
   &__general {
     .panel__content__form__section__list__item {
       height: fit-content;

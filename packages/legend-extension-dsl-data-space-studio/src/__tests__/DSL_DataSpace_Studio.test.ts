@@ -46,7 +46,10 @@ import {
   DataSpacePackageableElementExecutable,
   DSL_DataSpace_GraphManagerPreset,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { convertDataSpaceToDataProduct } from '../stores/DataSpaceToDataProductConverter.js';
+import {
+  convertDataSpaceToDataProduct,
+  convertDataSpaceToNativeModelAccess,
+} from '../stores/DataSpaceToDataProductConverter.js';
 
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager.usePresets([new DSL_DataSpace_GraphManagerPreset()]).install();
@@ -432,5 +435,152 @@ describe(unitTest('DataSpace to DataProduct Conversion Tests'), () => {
     const dataProduct = convertDataSpaceToDataProduct(testDataSpace);
     expect(dataProduct.stereotypes).toEqual(testDataSpace.stereotypes);
     expect(dataProduct.taggedValues).toEqual(testDataSpace.taggedValues);
+  });
+});
+
+const createTestDataProduct = (
+  graphManagerState: GraphManagerState,
+): DataProduct => {
+  const dataProduct = new DataProduct('TestDataProduct');
+  dataProduct.title = 'Test DataProduct Title';
+  dataProduct.description = 'Test DataProduct Description';
+
+  const testPackage = new Package('dataProduct');
+  graphManagerState.graph.addElement(testPackage, 'test');
+  dataProduct.package = testPackage;
+
+  return dataProduct;
+};
+
+describe(unitTest('Merge DataSpace to DataProduct Tests'), () => {
+  let graphManagerState: GraphManagerState;
+  let testDataSpace: DataSpace;
+  let testDataProduct: DataProduct;
+
+  beforeEach(async () => {
+    graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await graphManagerState.graphManager.initialize({
+      env: 'test',
+      tabSize: 2,
+      clientConfig: {},
+    });
+    await graphManagerState.initializeSystem();
+
+    testDataSpace = createTestDataSpace(graphManagerState);
+    graphManagerState.graph.addElement(
+      testDataSpace,
+      testDataSpace.package?.path,
+    );
+
+    testDataProduct = createTestDataProduct(graphManagerState);
+    graphManagerState.graph.addElement(
+      testDataProduct,
+      testDataProduct.package?.path,
+    );
+  });
+
+  test('Target DataProduct starts without nativeModelAccess', () => {
+    expect(testDataProduct.nativeModelAccess).toBeUndefined();
+    expect(testDataProduct.title).toBe('Test DataProduct Title');
+    expect(testDataProduct.description).toBe('Test DataProduct Description');
+  });
+
+  test('Merge sets nativeModelAccess on target DataProduct', () => {
+    const nativeModelAccess =
+      convertDataSpaceToNativeModelAccess(testDataSpace);
+    testDataProduct.nativeModelAccess = nativeModelAccess;
+
+    expect(testDataProduct.nativeModelAccess).toBeDefined();
+    expect(testDataProduct.nativeModelAccess).toBeInstanceOf(NativeModelAccess);
+
+    const nma = guaranteeType(
+      testDataProduct.nativeModelAccess,
+      NativeModelAccess,
+    );
+    expect(nma.defaultExecutionContext.key).toBe(
+      testDataSpace.defaultExecutionContext.name,
+    );
+    expect(nma.nativeModelExecutionContexts).toHaveLength(1);
+    expect(nma.sampleQueries).toHaveLength(2);
+  });
+
+  test('Merge preserves existing DataProduct title and description', () => {
+    testDataProduct.nativeModelAccess =
+      convertDataSpaceToNativeModelAccess(testDataSpace);
+
+    expect(testDataProduct.title).toBe('Test DataProduct Title');
+    expect(testDataProduct.description).toBe('Test DataProduct Description');
+    expect(testDataProduct.name).toBe('TestDataProduct');
+  });
+
+  test('Merge flow removes DataSpace and cleans up empty package', async () => {
+    const mockEditorStore = {
+      graphManagerState: graphManagerState,
+      tabManagerState: {
+        closeTab: jest.fn(),
+        openTab: jest.fn(),
+      },
+      explorerTreeState: {
+        build: jest.fn(() => Promise.resolve()),
+      },
+      applicationStore: {
+        notificationService: {
+          notifySuccess: jest.fn(),
+          notifyError: jest.fn(),
+        },
+        alertUnhandledError: jest.fn(),
+      },
+    };
+
+    const originalDataSpacePath = testDataSpace.path;
+    const originalPackagePath = testDataSpace.package?.path;
+
+    expect(
+      graphManagerState.graph.getNullableElement(originalDataSpacePath),
+    ).toBe(testDataSpace);
+
+    // Simulate the merge flow
+    testDataProduct.nativeModelAccess =
+      convertDataSpaceToNativeModelAccess(testDataSpace);
+
+    graphManagerState.graph.deleteElement(testDataSpace);
+
+    const dataSpacePackage = testDataSpace.package;
+    if (dataSpacePackage && dataSpacePackage.children.length === 0) {
+      graphManagerState.graph.deleteElement(dataSpacePackage);
+    }
+
+    await mockEditorStore.explorerTreeState.build();
+
+    mockEditorStore.applicationStore.notificationService.notifySuccess(
+      `Successfully merged DataSpace ${testDataSpace.name} into Data Product ${testDataProduct.path}`,
+    );
+
+    // DataSpace should be removed
+    expect(
+      graphManagerState.graph.getNullableElement(originalDataSpacePath),
+    ).toBeUndefined();
+
+    // Empty DataSpace package should be cleaned up
+    expect(
+      graphManagerState.graph.getNullableElement(originalPackagePath ?? ''),
+    ).toBeUndefined();
+
+    // DataProduct should still exist with nativeModelAccess
+    const existingProduct = graphManagerState.graph.getNullableElement(
+      testDataProduct.path,
+    );
+    expect(existingProduct).toBeDefined();
+    expect(existingProduct).toBeInstanceOf(DataProduct);
+    expect((existingProduct as DataProduct).nativeModelAccess).toBeInstanceOf(
+      NativeModelAccess,
+    );
+
+    expect(mockEditorStore.explorerTreeState.build).toHaveBeenCalled();
+    expect(
+      mockEditorStore.applicationStore.notificationService.notifySuccess,
+    ).toHaveBeenCalledWith(
+      `Successfully merged DataSpace TestDataSpace into Data Product ${testDataProduct.path}`,
+    );
   });
 });
