@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.72
+
+### Patch Changes
+
+- [#5105](https://github.com/finos/legend-studio/pull/5105) [`691bff1`](https://github.com/finos/legend-studio/commit/691bff10a07a4a789de2a9fe0a2b822b3b5886e0) ([@kelly-thai](https://github.com/kelly-thai)) - Clean up contract fetch by getting contracts by user then filter by apg, move fetchSubscription to DataProductSubscriptionViewer for lazy loading
+
 ## 0.0.71
 
 ## 0.0.70

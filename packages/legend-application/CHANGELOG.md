@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.105
+
+### Patch Changes
+
+- [#5094](https://github.com/finos/legend-studio/pull/5094) [`48a9736`](https://github.com/finos/legend-studio/commit/48a973610b0bc0f2e11fe93f2ce587a0b7042a77) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding helper function to adding base64 safe characters
+
 ## 16.0.104
 
 ### Patch Changes

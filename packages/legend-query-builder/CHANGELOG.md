@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.18.2
+
+### Patch Changes
+
+- [#5096](https://github.com/finos/legend-studio/pull/5096) [`896ba30`](https://github.com/finos/legend-studio/commit/896ba3099018c225b76d8d731704b98a7777a467) ([@aormerod-gs](https://github.com/aormerod-gs)) - feat(query-builder): add dotted-underline UX cue on stats bar count values with frequency chart
+
+- [#5103](https://github.com/finos/legend-studio/pull/5103) [`c8d9898`](https://github.com/finos/legend-studio/commit/c8d9898ee750fa43222fc40d20475e1d60d3225c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Dark Mode to Sql Playground.
+
+- [#5098](https://github.com/finos/legend-studio/pull/5098) [`57f6f8a`](https://github.com/finos/legend-studio/commit/57f6f8af88e153a2ef2a945b7867be0fed520c4c) ([@yash0024](https://github.com/yash0024)) - Allow switching between Model Access Point Group and Native Model Access modes in Legend Query
+
 ## 4.18.1
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @finos/legend-application-marketplace
 
+## 0.2.3
+
+### Patch Changes
+
+- [#5104](https://github.com/finos/legend-studio/pull/5104) [`fdb0673`](https://github.com/finos/legend-studio/commit/fdb0673075c636a626dc22c0dd51200d4648631c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Data APIs Items per Page options are 12/25/50/100.
+
+- [#5100](https://github.com/finos/legend-studio/pull/5100) [`567d56c`](https://github.com/finos/legend-studio/commit/567d56c02d98e328c02cb2ef7d8efd883c8d81d4) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added grid view to Data APIs tab - Marketplace
+
+- [#5077](https://github.com/finos/legend-studio/pull/5077) [`140cd1a`](https://github.com/finos/legend-studio/commit/140cd1afb040df2411ee391f36b02e305498a2c1) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added "Add to Favorites" feature to Legend Services Page.
+
+- [#5101](https://github.com/finos/legend-studio/pull/5101) [`c689f24`](https://github.com/finos/legend-studio/commit/c689f24490481dc3d0a1154a1b6649c9ea7eca4d) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add `show_all` parameter to data product search API and set to False by default, `has_filtered_products` metadata field, and "Show all data products" telemetry event. Fall back to config file when trending endpoint returns fewer than 4 data products.
+
 ## 0.2.2
 
 ## 0.2.1

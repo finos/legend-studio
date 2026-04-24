@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.306
+
+### Patch Changes
+
+- [#5110](https://github.com/finos/legend-studio/pull/5110) [`38923f9`](https://github.com/finos/legend-studio/commit/38923f9d89a4199c38fb0271fb403e9d33578743) ([@yash0024](https://github.com/yash0024)) - Allow merging DataSpaces to existing DataProducts without nativeModelAccess
+
 ## 0.1.305
 
 ## 0.1.304
