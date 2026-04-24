@@ -162,23 +162,22 @@ export const ServiceRegistrationEditor = observer(() => {
               (e) => e.env === env,
             );
             return envConfig ? (
-              <div key={env} className="panel__header__action">
-                <a
-                  className="service-editor__deployment-link"
-                  href={generateServiceManagementUrl(
-                    envConfig.managementUrl,
-                    serviceState.service.pattern,
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={`Open in ${env}`}
-                >
-                  <span className="service-editor__deployment-link__env">
-                    {env.toUpperCase()}
-                  </span>
-                  <ExternalLinkSquareIcon />
-                </a>
-              </div>
+              <a
+                key={env}
+                className="service-editor__deployment-link"
+                href={generateServiceManagementUrl(
+                  envConfig.managementUrl,
+                  serviceState.service.pattern,
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Open in ${env}`}
+              >
+                <span className="service-editor__deployment-link__env">
+                  {env.toUpperCase()}
+                </span>
+                <ExternalLinkSquareIcon />
+              </a>
             ) : null;
           })}
           <div className="panel__header__action">
