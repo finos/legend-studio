@@ -50,8 +50,48 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import { DataSpaceExecutionContextState } from './DataSpaceExecutionContextState.js';
-import { convertDataSpaceToDataProduct } from '../stores/DataSpaceToDataProductConverter.js';
+import {
+  convertDataSpaceToDataProduct,
+  convertDataSpaceToNativeModelAccess,
+} from '../stores/DataSpaceToDataProductConverter.js';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_LOGGING_CONTEXT_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
+
+export const onMergeDataSpaceToDataProduct = flow(function* (
+  dataSpace: DataSpace,
+  targetDataProduct: DataProduct,
+  editorStore: EditorStore,
+  dataSpaceEditorState: DataSpaceEditorState,
+): GeneratorFn<void> {
+  try {
+    targetDataProduct.nativeModelAccess =
+      convertDataSpaceToNativeModelAccess(dataSpace);
+
+    editorStore.graphManagerState.graph.deleteElement(dataSpace);
+
+    const dataSpacePackage = dataSpace.package;
+    if (dataSpacePackage && dataSpacePackage.children.length === 0) {
+      editorStore.graphManagerState.graph.deleteElement(dataSpacePackage);
+    }
+
+    const dataProductEditorState = new DataProductEditorState(
+      editorStore,
+      targetDataProduct,
+    );
+
+    editorStore.tabManagerState.closeTab(dataSpaceEditorState);
+    editorStore.tabManagerState.openTab(dataProductEditorState);
+    yield flowResult(editorStore.explorerTreeState.build());
+
+    editorStore.applicationStore.notificationService.notifySuccess(
+      `Successfully merged DataSpace ${dataSpace.name} into Data Product ${targetDataProduct.path}`,
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    editorStore.applicationStore.notificationService.notifyError(
+      `Failed to merge DataSpace into Data Product: ${error.message}`,
+    );
+  }
+});
 
 export const onConvertDataSpaceToDataProduct = flow(function* (
   dataSpace: DataSpace,

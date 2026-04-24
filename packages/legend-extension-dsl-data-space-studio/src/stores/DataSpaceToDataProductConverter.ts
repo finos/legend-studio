@@ -192,7 +192,7 @@ const convertDataSpaceExecutionContextsToNativeModelExecutionContexts = (
   });
 };
 
-const convertDataSpaceToNativeModelAccess = (
+export const convertDataSpaceToNativeModelAccess = (
   dataSpace: DataSpace,
 ): NativeModelAccess => {
   const nativeModelAccess = new NativeModelAccess();
