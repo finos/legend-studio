@@ -55,7 +55,7 @@ import {
   PackageableElementExplicitReference,
   MILESTONING_STEREOTYPE,
   type ColSpecInstanceValue,
-  type AccessorInstanceValue,
+  AccessorInstanceValue,
   RelationColumn,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/tds/post-filter/QueryBuilderPostFilterStateBuilder.js';
@@ -606,8 +606,21 @@ export class QueryBuilderValueSpecificationProcessor
       );
 
       // check preceding expression
+      // For accessor queries, the preceding expression is an AccessorInstanceValue (table reference),
+      // not a SimpleFunctionExpression
+      const precedingValueSpec = valueSpecification.parametersValues[0];
+      if (precedingValueSpec instanceof AccessorInstanceValue) {
+        QueryBuilderValueSpecificationProcessor.process(
+          precedingValueSpec,
+          this.parentLambda,
+          this.queryBuilderState,
+        );
+        processFilterExpression(valueSpecification, this.queryBuilderState);
+        return;
+      }
+
       const precedingExpression = guaranteeType(
-        valueSpecification.parametersValues[0],
+        precedingValueSpec,
         SimpleFunctionExpression,
         `Can't process filter() expression: only support filter() immediately following an expression`,
       );

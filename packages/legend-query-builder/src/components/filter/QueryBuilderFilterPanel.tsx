@@ -69,10 +69,13 @@ import {
   isCollectionProperty,
   type QueryBuilderFilterValueDropTarget,
   isExistsNodeChild,
+  FilterPropertyExpressionSourceState,
+  FilterRelationColumnSourceState,
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { useDrag, useDragLayer, useDrop } from 'react-dnd';
 import {
   type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreeRelationColumnDragSource,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
@@ -146,11 +149,13 @@ export const CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN,
 ];
 
 export const CAN_DROP_MAIN_GROUP_DND_TYPES = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN,
 ];
 
 export const CAN_DROP_FILTER_NODE_DND_TYPES_FETCH_SUPPORTED = [
@@ -158,12 +163,14 @@ export const CAN_DROP_FILTER_NODE_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN,
 ];
 
 export const CAN_DROP_FILTER_NODE_DND_TYPES = [
   QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN,
 ];
 
 export const CAN_DROP_FILTER_VALUE_DND_TYPES = [
@@ -810,9 +817,7 @@ const canDropTypeOntoNodeValue = (
   condition: FilterConditionState,
 ): boolean => {
   const conditionOperator = condition.operator;
-  const conditionValueType =
-    condition.propertyExpressionState.propertyExpression.func.value.genericType
-      .value.rawType;
+  const conditionValueType = condition.leftConditionType;
   return (
     !(conditionOperator instanceof QueryBuilderFilterOperator_In) &&
     !(conditionOperator instanceof QueryBuilderFilterOperator_NotIn) &&
@@ -922,9 +927,7 @@ const QueryBuilderFilterConditionEditor = observer(
             return;
           }
         } else {
-          const conditionValueType =
-            node.condition.propertyExpressionState.propertyExpression.func.value
-              .genericType.value.rawType;
+          const conditionValueType = node.condition.leftConditionType;
           applicationStore.notificationService.notifyWarning(
             `Incompatible parameter type ${itemType?.name}. ${itemType?.name} is not compatible with type ${conditionValueType.name}.`,
           );
@@ -1041,9 +1044,7 @@ const QueryBuilderFilterConditionEditor = observer(
                 graph={graph}
                 observerContext={queryBuilderState.observerContext}
                 typeCheckOption={{
-                  expectedType:
-                    node.condition.propertyExpressionState.propertyExpression
-                      .func.value.genericType.value.rawType,
+                  expectedType: node.condition.leftConditionType,
                 }}
                 resetValue={resetNode}
                 selectorSearchConfig={selectorConfig}
@@ -1097,9 +1098,18 @@ const QueryBuilderFilterConditionEditor = observer(
         >
           <div className="query-builder-filter-tree__condition-node">
             <div className="query-builder-filter-tree__condition-node__property">
-              <QueryBuilderPropertyExpressionBadge
-                propertyExpressionState={node.condition.propertyExpressionState}
-              />
+              {node.condition.sourceState instanceof
+              FilterPropertyExpressionSourceState ? (
+                <QueryBuilderPropertyExpressionBadge
+                  propertyExpressionState={
+                    node.condition.sourceState.propertyExpressionState
+                  }
+                />
+              ) : (
+                <div className="query-builder-filter-tree__condition-node__property__label">
+                  {node.condition.sourceState.label}
+                </div>
+              )}
             </div>
             <ControlledDropdownMenu
               className="query-builder-filter-tree__condition-node__operator"
@@ -1260,36 +1270,50 @@ const QueryBuilderFilterTreeNodeContainer = observer(
         } else {
           let filterConditionState: FilterConditionState;
           try {
-            let propertyExpression;
-            if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
-              if (
-                (item as QueryBuilderProjectionColumnDragSource)
-                  .columnState instanceof
-                QueryBuilderSimpleProjectionColumnState
-              ) {
-                propertyExpression = cloneAbstractPropertyExpression(
-                  (
-                    (item as QueryBuilderProjectionColumnDragSource)
-                      .columnState as QueryBuilderSimpleProjectionColumnState
-                  ).propertyExpressionState.propertyExpression,
-                  queryBuilderState.observerContext,
-                );
-              } else {
-                throw new UnsupportedOperationError(
-                  `Dragging and Dropping derivation projection column is not supported.`,
-                );
-              }
+            if (type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN) {
+              const columnNode = (
+                item as QueryBuilderExplorerTreeRelationColumnDragSource
+              ).node;
+              const sourceState = new FilterRelationColumnSourceState(
+                columnNode.column.name,
+                columnNode.type,
+              );
+              filterConditionState = new FilterConditionState(
+                filterState,
+                sourceState,
+              );
             } else {
-              propertyExpression =
-                buildPropertyExpressionFromExplorerTreeNodeData(
-                  (item as QueryBuilderExplorerTreeDragSource).node,
-                  filterState.queryBuilderState.explorerState,
-                );
+              let propertyExpression;
+              if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
+                if (
+                  (item as QueryBuilderProjectionColumnDragSource)
+                    .columnState instanceof
+                  QueryBuilderSimpleProjectionColumnState
+                ) {
+                  propertyExpression = cloneAbstractPropertyExpression(
+                    (
+                      (item as QueryBuilderProjectionColumnDragSource)
+                        .columnState as QueryBuilderSimpleProjectionColumnState
+                    ).propertyExpressionState.propertyExpression,
+                    queryBuilderState.observerContext,
+                  );
+                } else {
+                  throw new UnsupportedOperationError(
+                    `Dragging and Dropping derivation projection column is not supported.`,
+                  );
+                }
+              } else {
+                propertyExpression =
+                  buildPropertyExpressionFromExplorerTreeNodeData(
+                    (item as QueryBuilderExplorerTreeDragSource).node,
+                    filterState.queryBuilderState.explorerState,
+                  );
+              }
+              filterConditionState = new FilterConditionState(
+                filterState,
+                propertyExpression,
+              );
             }
-            filterConditionState = new FilterConditionState(
-              filterState,
-              propertyExpression,
-            );
           } catch (error) {
             assertErrorThrown(error);
             applicationStore.notificationService.notifyWarning(error.message);
@@ -1300,11 +1324,34 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             node instanceof QueryBuilderFilterTreeConditionNodeData ||
             node instanceof QueryBuilderFilterTreeBlankConditionNodeData
           ) {
-            buildFilterTree(
-              filterConditionState.propertyExpressionState.propertyExpression,
-              filterState,
-              node,
-            );
+            if (
+              filterConditionState.sourceState instanceof
+              FilterRelationColumnSourceState
+            ) {
+              // Relation columns don't support exists handling, just add directly
+              const treeNode = new QueryBuilderFilterTreeConditionNodeData(
+                undefined,
+                filterConditionState,
+              );
+              treeNode.setIsNewlyAdded(true);
+              if (
+                node instanceof QueryBuilderFilterTreeBlankConditionNodeData
+              ) {
+                filterState.replaceBlankNodeWithNode(treeNode, node);
+              } else if (
+                node instanceof QueryBuilderFilterTreeConditionNodeData
+              ) {
+                filterState.newGroupWithConditionFromNode(treeNode, node);
+              } else {
+                filterState.addNodeFromNode(treeNode, node);
+              }
+            } else {
+              buildFilterTree(
+                filterConditionState.propertyExpressionState.propertyExpression,
+                filterState,
+                node,
+              );
+            }
           }
         }
       },
@@ -1652,34 +1699,56 @@ export const QueryBuilderFilterPanel = observer(
     const handleDrop = useCallback(
       (item: QueryBuilderFilterNodeDropTarget, type: string): void => {
         try {
-          let propertyExpression;
-          if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
-            if (
-              (item as QueryBuilderProjectionColumnDragSource)
-                .columnState instanceof QueryBuilderSimpleProjectionColumnState
-            ) {
-              propertyExpression = cloneAbstractPropertyExpression(
-                (
-                  (item as QueryBuilderProjectionColumnDragSource)
-                    .columnState as QueryBuilderSimpleProjectionColumnState
-                ).propertyExpressionState.propertyExpression,
-                queryBuilderState.observerContext,
-              );
-            } else {
-              throw new UnsupportedOperationError(
-                `Dragging and Dropping derivation projection column is not supported.`,
-              );
-            }
+          if (type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN) {
+            const columnNode = (
+              item as QueryBuilderExplorerTreeRelationColumnDragSource
+            ).node;
+            const sourceState = new FilterRelationColumnSourceState(
+              columnNode.column.name,
+              columnNode.type,
+            );
+            const filterConditionState = new FilterConditionState(
+              filterState,
+              sourceState,
+            );
+            const treeNode = new QueryBuilderFilterTreeConditionNodeData(
+              undefined,
+              filterConditionState,
+            );
+            treeNode.setIsNewlyAdded(true);
+            filterState.setSelectedNode(undefined);
+            filterState.addNodeFromNode(treeNode, undefined);
           } else {
-            propertyExpression =
-              buildPropertyExpressionFromExplorerTreeNodeData(
-                (item as QueryBuilderExplorerTreeDragSource).node,
-                filterState.queryBuilderState.explorerState,
-              );
+            let propertyExpression;
+            if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
+              if (
+                (item as QueryBuilderProjectionColumnDragSource)
+                  .columnState instanceof
+                QueryBuilderSimpleProjectionColumnState
+              ) {
+                propertyExpression = cloneAbstractPropertyExpression(
+                  (
+                    (item as QueryBuilderProjectionColumnDragSource)
+                      .columnState as QueryBuilderSimpleProjectionColumnState
+                  ).propertyExpressionState.propertyExpression,
+                  queryBuilderState.observerContext,
+                );
+              } else {
+                throw new UnsupportedOperationError(
+                  `Dragging and Dropping derivation projection column is not supported.`,
+                );
+              }
+            } else {
+              propertyExpression =
+                buildPropertyExpressionFromExplorerTreeNodeData(
+                  (item as QueryBuilderExplorerTreeDragSource).node,
+                  filterState.queryBuilderState.explorerState,
+                );
+            }
+            // NOTE: unfocus the current node when DnD a new node to the tree
+            filterState.setSelectedNode(undefined);
+            buildFilterTree(propertyExpression, filterState);
           }
-          // NOTE: unfocus the current node when DnD a new node to the tree
-          filterState.setSelectedNode(undefined);
-          buildFilterTree(propertyExpression, filterState);
         } catch (error) {
           assertErrorThrown(error);
           applicationStore.notificationService.notifyWarning(error.message);

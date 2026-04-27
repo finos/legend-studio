@@ -32,7 +32,10 @@ import {
   hashArray,
   isNonNullable,
 } from '@finos/legend-shared';
-import type { QueryBuilderExplorerTreeDragSource } from '../explorer/QueryBuilderExplorerState.js';
+import type {
+  QueryBuilderExplorerTreeDragSource,
+  QueryBuilderExplorerTreeRelationColumnDragSource,
+} from '../explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderPropertyExpressionState } from '../QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import {
@@ -46,6 +49,9 @@ import {
   InstanceValue,
   SimpleFunctionExpression,
   matchFunctionName,
+  FunctionExpression,
+  Multiplicity,
+  VariableExpression as VariableExpressionClass,
 } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
 import type { QueryBuilderProjectionColumnDragSource } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
@@ -66,6 +72,7 @@ import {
 import { instanceValue_setValues } from '../shared/ValueSpecificationModifierHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderVariableDragSource } from '../../components/shared/BasicValueSpecificationEditor.js';
+import { buildPropertyExpressionChain } from '../QueryBuilderValueSpecificationBuilderHelper.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'QUERY_BUILDER_FILTER_DND_TYPE.GROUP_CONDITION',
@@ -79,6 +86,7 @@ export interface QueryBuilderFilterConditionDragSource {
 
 export type QueryBuilderFilterNodeDropTarget =
   | QueryBuilderExplorerTreeDragSource
+  | QueryBuilderExplorerTreeRelationColumnDragSource
   | QueryBuilderProjectionColumnDragSource
   | QueryBuilderFilterConditionDragSource;
 
@@ -229,9 +237,137 @@ export class FilterPropertyExpressionStateConditionValueState extends FilterCond
   }
 }
 
+/**
+ * Abstract base class for the left-hand side (source) of a filter condition.
+ * This allows filtering on different source types (class properties, relation columns)
+ * without operators needing to know the specifics of the source.
+ */
+export abstract class FilterConditionSourceState implements Hashable {
+  abstract get type(): Type;
+  abstract get label(): string;
+  abstract get title(): string;
+  abstract get isValid(): boolean;
+  abstract get requiresExistsHandling(): boolean;
+  abstract buildLeftExpression(
+    queryBuilderState: QueryBuilderState,
+    lambdaParameterName: string,
+  ): ValueSpecification;
+  abstract get hashCode(): string;
+}
+
+export class FilterPropertyExpressionSourceState extends FilterConditionSourceState {
+  readonly propertyExpressionState: QueryBuilderPropertyExpressionState;
+
+  constructor(propertyExpressionState: QueryBuilderPropertyExpressionState) {
+    super();
+    this.propertyExpressionState = propertyExpressionState;
+  }
+
+  get type(): Type {
+    return this.propertyExpressionState.propertyExpression.func.value
+      .genericType.value.rawType;
+  }
+
+  get label(): string {
+    return this.propertyExpressionState.title;
+  }
+
+  get title(): string {
+    return this.propertyExpressionState.title;
+  }
+
+  get isValid(): boolean {
+    return this.propertyExpressionState.isValid;
+  }
+
+  get requiresExistsHandling(): boolean {
+    return this.propertyExpressionState.requiresExistsHandling;
+  }
+
+  buildLeftExpression(
+    queryBuilderState: QueryBuilderState,
+    lambdaParameterName: string,
+  ): ValueSpecification {
+    return guaranteeNonNullable(
+      buildPropertyExpressionChain(
+        this.propertyExpressionState.propertyExpression,
+        queryBuilderState,
+        lambdaParameterName,
+      ),
+    );
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_SOURCE_PROPERTY_EXPRESSION,
+      this.propertyExpressionState,
+    ]);
+  }
+}
+
+export class FilterRelationColumnSourceState extends FilterConditionSourceState {
+  readonly columnName: string;
+  readonly columnType: Type;
+
+  constructor(columnName: string, columnType: Type) {
+    super();
+    this.columnName = columnName;
+    this.columnType = columnType;
+  }
+
+  get type(): Type {
+    return this.columnType;
+  }
+
+  get label(): string {
+    return this.columnName;
+  }
+
+  get title(): string {
+    return this.columnName;
+  }
+
+  get isValid(): boolean {
+    return true;
+  }
+
+  get requiresExistsHandling(): boolean {
+    return false;
+  }
+
+  buildLeftExpression(
+    queryBuilderState: QueryBuilderState,
+    lambdaParameterName: string,
+  ): ValueSpecification {
+    const relationType = queryBuilderState.sourceRelationType;
+    if (relationType) {
+      const col = guaranteeNonNullable(
+        relationType.columns.find((c) => c.name === this.columnName),
+        `Can't find column '${this.columnName}' in relation`,
+      );
+      const funcExp = new FunctionExpression(col.name);
+      funcExp.func = col;
+      funcExp.parametersValues = [
+        new VariableExpressionClass(lambdaParameterName, Multiplicity.ONE),
+      ];
+      return funcExp;
+    }
+    throw new IllegalStateError(
+      `Can't build expression for relation column '${this.columnName}': no source relation type`,
+    );
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_SOURCE_RELATION_COLUMN,
+      this.columnName,
+    ]);
+  }
+}
+
 export class FilterConditionState implements Hashable {
   readonly filterState: QueryBuilderFilterState;
-  propertyExpressionState: QueryBuilderPropertyExpressionState;
+  sourceState: FilterConditionSourceState;
   operator!: QueryBuilderFilterOperator;
   rightConditionValue?: FilterConditionValueState | undefined;
   existsLambdaParamNames: string[] = [];
@@ -240,11 +376,11 @@ export class FilterConditionState implements Hashable {
 
   constructor(
     filterState: QueryBuilderFilterState,
-    propertyExpression: AbstractPropertyExpression,
+    source: AbstractPropertyExpression | FilterConditionSourceState,
     operator?: QueryBuilderFilterOperator,
   ) {
     makeObservable(this, {
-      propertyExpressionState: observable,
+      sourceState: observable,
       operator: observable,
       rightConditionValue: observable,
       existsLambdaParamNames: observable,
@@ -261,10 +397,16 @@ export class FilterConditionState implements Hashable {
     });
 
     this.filterState = filterState;
-    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
-      filterState.queryBuilderState,
-      propertyExpression,
-    );
+    if (source instanceof AbstractPropertyExpression) {
+      this.sourceState = new FilterPropertyExpressionSourceState(
+        new QueryBuilderPropertyExpressionState(
+          filterState.queryBuilderState,
+          source,
+        ),
+      );
+    } else {
+      this.sourceState = source;
+    }
 
     // operator
     if (operator) {
@@ -272,13 +414,32 @@ export class FilterConditionState implements Hashable {
     } else {
       assertTrue(
         this.operators.length !== 0,
-        `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
+        `Can't find an operator for property '${this.sourceState.title}': no operators registered`,
       );
       this.operator = this.operators[0] as QueryBuilderFilterOperator;
     }
     this.buildRightConditionValueFromValueSpec(
       this.operator.getDefaultFilterConditionValue(this),
     );
+  }
+
+  /**
+   * Backward-compatible accessor for the property expression state.
+   * Only valid when the source is a property expression.
+   */
+  get propertyExpressionState(): QueryBuilderPropertyExpressionState {
+    return guaranteeType(
+      this.sourceState,
+      FilterPropertyExpressionSourceState,
+      `Filter condition source is not a property expression`,
+    ).propertyExpressionState;
+  }
+
+  /**
+   * The raw type of the left-hand side of the filter condition.
+   */
+  get leftConditionType(): Type {
+    return this.sourceState.type;
   }
 
   get operators(): QueryBuilderFilterOperator[] {
@@ -412,7 +573,7 @@ export class FilterConditionState implements Hashable {
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_STATE,
-      this.propertyExpressionState,
+      this.sourceState,
       this.rightConditionValue ?? '',
       this.operator,
     ]);
@@ -636,7 +797,7 @@ export class QueryBuilderFilterTreeConditionNodeData
   }
 
   get dragPreviewLabel(): string {
-    return this.condition.propertyExpressionState.title;
+    return this.condition.sourceState.title;
   }
 
   get hashCode(): string {
@@ -1181,7 +1342,7 @@ export class QueryBuilderFilterState
   ): boolean {
     return (
       node instanceof QueryBuilderFilterTreeConditionNodeData &&
-      !node.condition.propertyExpressionState.isValid
+      !node.condition.sourceState.isValid
     );
   }
 
@@ -1212,12 +1373,12 @@ export class QueryBuilderFilterState
       if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
         if (this.isInvalidValueSpecFilterValue(node)) {
           validationIssues.push(
-            `Filter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
+            `Filter value for ${node.condition.sourceState.title} is missing or invalid`,
           );
         }
         if (this.isInvalidFilterPropertyExpressionState(node)) {
           validationIssues.push(
-            `Derived property parameter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
+            `Derived property parameter value for ${node.condition.sourceState.title} is missing or invalid`,
           );
         }
         if (

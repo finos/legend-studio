@@ -14,6 +14,163 @@
  * limitations under the License.
  */
 
+export const TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithFilter = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'from',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'filter',
+              parameters: [
+                {
+                  _type: 'classInstance',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  type: '>',
+                  value: {
+                    path: ['database::TestDatabase', 'default', 'TEST0'],
+                  },
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'and',
+                      parameters: [
+                        {
+                          _type: 'func',
+                          function: 'equal',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'FIRSTNAME',
+                            },
+                            {
+                              _type: 'string',
+                              value: 'John',
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'func',
+                          function: 'equal',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'LASTNAME',
+                            },
+                            {
+                              _type: 'string',
+                              value: 'Doe',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'colSpecArray',
+              value: {
+                colSpecs: [
+                  {
+                    function1: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'FIRSTNAME',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    name: 'Firstname',
+                  },
+                  {
+                    function1: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'LASTNAME',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    name: 'Lastname',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'runtime::TestRuntime',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter =
   {
     _type: 'lambda',

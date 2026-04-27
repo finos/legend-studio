@@ -22,15 +22,14 @@ import {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
   LambdaFunction,
+  FunctionExpression,
+  RelationColumn,
 } from '@finos/legend-graph';
-import {
-  guaranteeType,
-  guaranteeNonNullable,
-  assertTrue,
-} from '@finos/legend-shared';
+import { guaranteeType, assertTrue } from '@finos/legend-shared';
 import {
   FilterConditionState,
   FilterPropertyExpressionStateConditionValueState,
+  FilterRelationColumnSourceState,
   FilterValueSpecConditionValueState,
   type QueryBuilderFilterState,
 } from '../QueryBuilderFilterState.js';
@@ -48,12 +47,13 @@ export const buildFilterConditionExpression = (
   const expression = new SimpleFunctionExpression(
     extractElementNameFromPath(operatorFunctionFullPath),
   );
-  const propertyExpression = buildPropertyExpressionChain(
-    filterConditionState.propertyExpressionState.propertyExpression,
-    filterConditionState.propertyExpressionState.queryBuilderState,
-    lambdaParameterName ?? filterConditionState.filterState.lambdaParameterName,
+  const resolvedLambdaParameterName =
+    lambdaParameterName ?? filterConditionState.filterState.lambdaParameterName;
+  const leftExpression = filterConditionState.sourceState.buildLeftExpression(
+    filterConditionState.filterState.queryBuilderState,
+    resolvedLambdaParameterName,
   );
-  expression.parametersValues.push(guaranteeNonNullable(propertyExpression));
+  expression.parametersValues.push(leftExpression);
   // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
   if (
     filterConditionState.rightConditionValue &&
@@ -72,13 +72,33 @@ export const buildFilterConditionExpression = (
     const rightConditionPropertyExpression = buildPropertyExpressionChain(
       filterConditionState.rightConditionValue.propertyExpressionState
         .propertyExpression,
-      filterConditionState.propertyExpressionState.queryBuilderState,
-      lambdaParameterName ??
-        filterConditionState.filterState.lambdaParameterName,
+      filterConditionState.filterState.queryBuilderState,
+      resolvedLambdaParameterName,
     );
     expression.parametersValues.push(rightConditionPropertyExpression);
   }
   return expression;
+};
+
+/**
+ * Extracts the raw type path from the left-hand side of a filter expression.
+ * Handles both AbstractPropertyExpression (class properties) and
+ * FunctionExpression with RelationColumn (relation column properties).
+ */
+export const getFilterExpressionLeftSideTypePath = (
+  expression: SimpleFunctionExpression,
+): string | undefined => {
+  const leftSide = expression.parametersValues[0];
+  if (leftSide instanceof AbstractPropertyExpression) {
+    return leftSide.func.value.genericType.value.rawType.path;
+  }
+  if (
+    leftSide instanceof FunctionExpression &&
+    leftSide.func instanceof RelationColumn
+  ) {
+    return leftSide.func.genericType.value.rawType.path;
+  }
+  return undefined;
 };
 
 export const buildFilterConditionState = (
@@ -109,18 +129,29 @@ export const buildFilterConditionState = (
       )}() expects ${hasNoValue ? 'no argument' : '1 argument'}`,
     );
 
-    const propertyExpression = guaranteeType(
-      expression.parametersValues[0],
-      AbstractPropertyExpression,
-      `Can't process ${extractElementNameFromPath(
-        operatorFunctionFullPath,
-      )}() expression: expects property expression in lambda body`,
-    );
+    const leftSide = expression.parametersValues[0];
+    if (leftSide instanceof AbstractPropertyExpression) {
+      filterConditionState = new FilterConditionState(filterState, leftSide);
+    } else if (
+      leftSide instanceof FunctionExpression &&
+      leftSide.func instanceof RelationColumn
+    ) {
+      const col = leftSide.func;
+      filterConditionState = new FilterConditionState(
+        filterState,
+        new FilterRelationColumnSourceState(
+          col.name,
+          col.genericType.value.rawType,
+        ),
+      );
+    } else {
+      throw new Error(
+        `Can't process ${extractElementNameFromPath(
+          operatorFunctionFullPath,
+        )}() expression: expects property expression or relation column in lambda body`,
+      );
+    }
 
-    filterConditionState = new FilterConditionState(
-      filterState,
-      propertyExpression,
-    );
     mainExpressionWithOperator = expression;
   } else if (
     matchFunctionName(

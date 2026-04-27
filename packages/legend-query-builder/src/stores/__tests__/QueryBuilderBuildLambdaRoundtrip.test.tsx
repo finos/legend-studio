@@ -170,6 +170,7 @@ import {
 import {
   TEST_DATA__QueryBuilder_Accessors,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+  TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithFilter,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
 } from '../__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 
@@ -846,6 +847,12 @@ const cases: RoundtripTestCase[] = [
     'Simple accessor projection',
     { entities: TEST_DATA__QueryBuilder_Accessors },
     TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+    undefined,
+  ],
+  [
+    'Simple accessor projection with pre filter',
+    { entities: TEST_DATA__QueryBuilder_Accessors },
+    TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithFilter,
     undefined,
   ],
   [

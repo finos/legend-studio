@@ -23,6 +23,7 @@ import {
   SimpleFunctionExpression,
   type ValueSpecification,
   VariableExpression,
+  FunctionExpression,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -42,6 +43,7 @@ import {
   QueryBuilderFilterTreeGroupNodeData,
   QueryBuilderFilterTreeExistsNodeData,
   QueryBuilderFilterTreeOperationNodeData,
+  FilterRelationColumnSourceState,
 } from './QueryBuilderFilterState.js';
 
 const getPropertyExpressionChainVariable = (
@@ -321,9 +323,28 @@ const processFilterTree = (
         operator.buildFilterConditionState(filterState, expression),
       );
       if (filterConditionState) {
-        const variableName = getPropertyExpressionChainVariable(
-          filterConditionState.propertyExpressionState.propertyExpression,
-        ).name;
+        // Extract the variable name from the filter condition's left side.
+        // For relation column sources, the variable comes from the FunctionExpression's parameter;
+        // for property expression sources, it comes from the property expression chain.
+        let variableName: string;
+        if (
+          filterConditionState.sourceState instanceof
+          FilterRelationColumnSourceState
+        ) {
+          const leftSide = expression.parametersValues[0];
+          const varExpr = guaranteeType(
+            leftSide instanceof FunctionExpression
+              ? leftSide.parametersValues[0]
+              : undefined,
+            VariableExpression,
+            `Can't process filter expression: relation column filter must reference a variable`,
+          );
+          variableName = varExpr.name;
+        } else {
+          variableName = getPropertyExpressionChainVariable(
+            filterConditionState.propertyExpressionState.propertyExpression,
+          ).name;
+        }
         const parentLambdaVariableName =
           parentNode instanceof QueryBuilderFilterTreeOperationNodeData &&
           parentNode.lambdaParameterName

@@ -22,7 +22,6 @@ import { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import {
   type ValueSpecification,
   type SimpleFunctionExpression,
-  type AbstractPropertyExpression,
   Enumeration,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
@@ -30,6 +29,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
+  getFilterExpressionLeftSideTypePath,
 } from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
@@ -52,9 +52,7 @@ export class QueryBuilderFilterOperator_Equal
   isCompatibleWithFilterConditionProperty(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType;
+    const propertyType = filterConditionState.leftConditionType;
     const normalizedType = getStandardPrimitiveTypeEquivalent(propertyType);
     return (
       (normalizedType !== undefined &&
@@ -84,17 +82,14 @@ export class QueryBuilderFilterOperator_Equal
         !filterConditionState.rightConditionValue.isCollection
         ? filterConditionState.rightConditionValue.type
         : undefined,
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType,
+      filterConditionState.leftConditionType,
     );
   }
 
   getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType;
+    const propertyType = filterConditionState.leftConditionType;
     return buildDefaultInstanceValue(
       filterConditionState.filterState.queryBuilderState.graphManagerState
         .graph,
@@ -111,8 +106,7 @@ export class QueryBuilderFilterOperator_Equal
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
+      filterConditionState.leftConditionType.path === PRIMITIVE_TYPE.DATETIME &&
         filterConditionState.rightConditionValue?.type?.path !==
           PRIMITIVE_TYPE.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_DAY
@@ -128,8 +122,8 @@ export class QueryBuilderFilterOperator_Equal
     return buildFilterConditionState(
       filterState,
       expression,
-      (expression.parametersValues[0] as AbstractPropertyExpression).func.value
-        .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
+      getFilterExpressionLeftSideTypePath(expression) ===
+        PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_DAY

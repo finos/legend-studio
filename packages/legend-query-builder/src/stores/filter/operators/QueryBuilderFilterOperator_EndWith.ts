@@ -55,8 +55,7 @@ export class QueryBuilderFilterOperator_EndWith
   ): boolean {
     return (
       getStandardPrimitiveTypeEquivalent(
-        filterConditionState.propertyExpressionState.propertyExpression.func
-          .value.genericType.value.rawType,
+        filterConditionState.leftConditionType,
       ) === PRIMITIVE_TYPE.STRING
     );
   }
@@ -78,9 +77,7 @@ export class QueryBuilderFilterOperator_EndWith
   getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType;
+    const propertyType = filterConditionState.leftConditionType;
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING: {
         return buildDefaultInstanceValue(

@@ -51,6 +51,7 @@ import { QueryBuilderAggregateColumnState } from '../fetch-structure/tds/aggrega
 import {
   QueryBuilderFilterTreeConditionNodeData,
   QueryBuilderFilterTreeExistsNodeData,
+  FilterPropertyExpressionSourceState,
 } from '../filter/QueryBuilderFilterState.js';
 
 export class QueryBuilderMilestoningState implements Hashable {
@@ -153,13 +154,18 @@ export class QueryBuilderMilestoningState implements Hashable {
       }
       this.queryBuilderState.filterState.nodes.forEach((node) => {
         if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-          node.condition.propertyExpressionState.derivedPropertyExpressionStates[0]?.parameterValues.forEach(
-            (p) => {
-              if (p instanceof INTERNAL__PropagatedValue) {
-                p.isPropagatedValue = false;
-              }
-            },
-          );
+          if (
+            node.condition.sourceState instanceof
+            FilterPropertyExpressionSourceState
+          ) {
+            node.condition.sourceState.propertyExpressionState.derivedPropertyExpressionStates[0]?.parameterValues.forEach(
+              (p) => {
+                if (p instanceof INTERNAL__PropagatedValue) {
+                  p.isPropagatedValue = false;
+                }
+              },
+            );
+          }
         } else if (node instanceof QueryBuilderFilterTreeExistsNodeData) {
           if (
             node.propertyExpressionState.derivedPropertyExpressionStates[0] &&

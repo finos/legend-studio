@@ -290,12 +290,12 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
       queryBuilderState.changeAccessorOwner(ingest);
     });
 
-    // Verify filter panel is NOT shown (accessor mode hides it)
+    // Verify filter panel IS shown (accessor mode now supports it)
     expect(
       renderResult.queryByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
       ),
-    ).toBeNull();
+    ).not.toBeNull();
 
     const explorerPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
