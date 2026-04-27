@@ -40,8 +40,11 @@ import {
 } from './TerminalProductAccess.js';
 import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerState.js';
 import { Chip, Stack } from '@mui/material';
-import { V1_ExternalDataProductType } from '@finos/legend-graph';
-import { prettyCONSTName } from '@finos/legend-shared';
+import {
+  DataProductAccessType,
+  V1_ExternalDataProductType,
+} from '@finos/legend-graph';
+import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 import { DataProductSampleQueries } from './DataProduct/DataProductSampleQueries.js';
 import { DataProductNativeModelAccessDataAccess } from './DataProduct/DataProductNativeModelAccessDataAccess.js';
@@ -276,8 +279,17 @@ export const ProductWiki = observer(
                   }
                   applicationStore={productViewerState.applicationStore}
                   queryModel={
-                    productViewerState.openQuery
-                      ? () => productViewerState.openQuery?.()
+                    productViewerState.openQuery &&
+                    productViewerState.projectGAV &&
+                    productViewerState.product.accessPointGroups[0]
+                      ?.accessPoints[0]?.id
+                      ? () =>
+                          productViewerState.openQuery?.(
+                            guaranteeNonNullable(productViewerState.projectGAV),
+                            DataProductAccessType.MODEL,
+                            productViewerState.product.accessPointGroups[0]
+                              ?.accessPoints[0]?.id,
+                          )
                       : undefined
                   }
                 />
@@ -292,9 +304,18 @@ export const ProductWiki = observer(
                   actions={{
                     onQueryClass:
                       productViewerState.projectGAV &&
-                      productViewerState.openQuery
+                      productViewerState.openQuery &&
+                      productViewerState.product.accessPointGroups[0]
+                        ?.accessPoints[0]?.id
                         ? (_class) => {
-                            productViewerState.openQuery?.();
+                            productViewerState.openQuery?.(
+                              guaranteeNonNullable(
+                                productViewerState.projectGAV,
+                              ),
+                              DataProductAccessType.MODEL,
+                              productViewerState.product.accessPointGroups[0]
+                                ?.accessPoints[0]?.id,
+                            );
                           }
                         : undefined,
                     onViewClassDocumentation: (classPath) =>

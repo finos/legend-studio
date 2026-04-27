@@ -15,6 +15,7 @@
  */
 
 import { generatePath } from '@finos/legend-application/browser';
+import type { DataProductAccessType } from '@finos/legend-graph';
 import {
   addQueryParametersToUrl,
   stringifyQueryParams,
@@ -240,10 +241,11 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl =
     groupId: string,
     artifactId: string,
     versionId: string,
+    type: DataProductAccessType,
     dataProductPath: string,
     accessPointId: string,
   ): string =>
-    `${queryApplicationUrl}/data-product/model/${generateGAVCoordinates(
+    `${queryApplicationUrl}/data-product/${type}/${generateGAVCoordinates(
       groupId,
       artifactId,
       versionId,

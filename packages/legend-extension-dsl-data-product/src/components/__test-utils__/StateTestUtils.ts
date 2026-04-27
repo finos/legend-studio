@@ -119,6 +119,7 @@ export const TEST__getGenericApplicationConfig = (
 export const TEST__getDataProductViewerState = async (
   dataProduct: V1_DataProduct,
   projectGAVCoordinates?: ProjectGAVCoordinates,
+  extraActions?: Record<string, unknown>,
 ): Promise<DataProductViewerState> => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   const MOCK__applicationStore = new ApplicationStore(
@@ -192,6 +193,7 @@ export const TEST__getDataProductViewerState = async (
       viewDataProductSource: jest.fn(),
       openLineage: jest.fn(),
       openGovernance: jest.fn(),
+      ...extraActions,
     },
     registryServerClient,
   );

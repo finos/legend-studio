@@ -55,7 +55,6 @@ import {
   V1_DataProductArtifact,
   V1_dataProductModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
-  V1_ModelAccessPointGroup,
   V1_PureGraphManager,
   V1_SdlcDeploymentDataProductOrigin,
   V1_TerminalModelSchema,
@@ -393,26 +392,22 @@ export class LegendMarketplaceProductViewerStore {
               }
             : undefined,
           // TODO: improve with class opening
-          openQuery: projectGAV
-            ? (): void => {
-                const modelAPG = v1DataProduct.accessPointGroups.find(
-                  (apg) => apg instanceof V1_ModelAccessPointGroup,
-                );
-                if (modelAPG) {
-                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
-                    EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl(
-                      this.marketplaceBaseStore.applicationStore.config
-                        .queryApplicationUrl,
-                      projectGAV.groupId,
-                      projectGAV.artifactId,
-                      projectGAV.versionId,
-                      v1DataProduct.path,
-                      modelAPG.id,
-                    ),
-                  );
-                }
-              }
-            : undefined,
+          openQuery: (gav, type, id) => {
+            if (id) {
+              this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl(
+                  this.marketplaceBaseStore.applicationStore.config
+                    .queryApplicationUrl,
+                  gav.groupId,
+                  gav.artifactId,
+                  gav.versionId,
+                  type,
+                  v1DataProduct.path,
+                  id,
+                ),
+              );
+            }
+          },
         },
         this.marketplaceBaseStore.registryServerClient,
       );
@@ -616,20 +611,18 @@ export class LegendMarketplaceProductViewerStore {
                     ),
                   );
                 },
-                openQuery: (): void => {
-                  const modelAPG = v1DataProduct.accessPointGroups.find(
-                    (apg) => apg instanceof V1_ModelAccessPointGroup,
-                  );
-                  if (modelAPG) {
+                openQuery: (_gav, type, id): void => {
+                  if (id) {
                     this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                       EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl(
                         this.marketplaceBaseStore.applicationStore.config
                           .queryApplicationUrl,
-                        projectData.groupId,
-                        projectData.artifactId,
-                        projectData.versionId,
+                        _gav.groupId,
+                        _gav.artifactId,
+                        _gav.versionId,
+                        type,
                         v1DataProduct.path,
-                        modelAPG.id,
+                        id,
                       ),
                     );
                   }

@@ -46,6 +46,7 @@ import {
 } from '@finos/legend-lego/data-grid';
 import {
   type V1_RelationTypeColumn,
+  DataProductAccessType,
   extractElementNameFromPath,
   V1_AccessPointGroupReference,
   V1_AdHocDeploymentDataProductOrigin,
@@ -596,6 +597,62 @@ const DataCubeScreen = observer(
   },
 );
 
+const LegendQueryScreen = observer(
+  (props: {
+    accessPointState: DataProductAccessPointState;
+    dataAccessState: DataProductDataAccessState | undefined;
+  }) => {
+    const { accessPointState, dataAccessState } = props;
+    if (!dataAccessState) {
+      return <TabMessageScreen message={NOT_SUPPORTED} />;
+    }
+    const sdlcDataProductOrigin =
+      dataAccessState.entitlementsDataProductDetails.origin instanceof
+      V1_SdlcDeploymentDataProductOrigin
+        ? dataAccessState.entitlementsDataProductDetails.origin
+        : undefined;
+    if (
+      !sdlcDataProductOrigin ||
+      !accessPointState.apgState.dataProductViewerState.openQuery
+    ) {
+      return <TabMessageScreen message={WORK_IN_PROGRESS} />;
+    }
+
+    const loadLegendQuery = (): void => {
+      try {
+        const accessPointId = accessPointState.accessPoint.id;
+        accessPointState.apgState.dataProductViewerState.openQuery?.(
+          {
+            groupId: sdlcDataProductOrigin.group,
+            artifactId: sdlcDataProductOrigin.artifact,
+            versionId: sdlcDataProductOrigin.version,
+          },
+          DataProductAccessType.LAKEHOUSE,
+          accessPointId,
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        accessPointState.apgState.applicationStore.notificationService.notifyError(
+          error,
+        );
+      }
+    };
+
+    return (
+      <div className="data-product__viewer__tab-screen">
+        <button
+          onClick={loadLegendQuery}
+          tabIndex={-1}
+          className="data-product__viewer__tab-screen__btn"
+          title="Open in Legend Query"
+        >
+          Open in Legend Query
+        </button>
+      </div>
+    );
+  },
+);
+
 const GovernanceScreen = observer(
   (props: {
     accessPointState: DataProductAccessPointState;
@@ -752,6 +809,7 @@ const GovernanceScreen = observer(
 
 const enum DataProductAccessPointTabs {
   COLUMNS = 'Columns',
+  QUERY = 'Query',
   GRAMMAR = 'Grammar',
   GOVERNANCE = 'Governance',
   DATACUBE = 'Datacube',
@@ -1063,6 +1121,13 @@ const AccessPointTable = observer(
               dataAccessState={dataAccessState}
             />
           );
+        case DataProductAccessPointTabs.QUERY:
+          return (
+            <LegendQueryScreen
+              accessPointState={accessPointState}
+              dataAccessState={dataAccessState}
+            />
+          );
         case DataProductAccessPointTabs.POWER_BI:
           return (
             <PowerBiScreen
@@ -1099,14 +1164,19 @@ const AccessPointTable = observer(
         icon: null,
       },
       {
-        key: DataProductAccessPointTabs.GOVERNANCE,
-        label: 'Governance',
-        icon: <GitBranchIcon />,
+        key: DataProductAccessPointTabs.QUERY,
+        label: 'Query',
+        icon: null,
       },
       {
         key: DataProductAccessPointTabs.DATACUBE,
         label: 'Datacube',
         icon: <DataCubeIcon.Cube />,
+      },
+      {
+        key: DataProductAccessPointTabs.GOVERNANCE,
+        label: 'Governance',
+        icon: <GitBranchIcon />,
       },
       {
         key: DataProductAccessPointTabs.POWER_BI,

@@ -67,7 +67,7 @@ export {
   type ModelAccessPointGroupOption,
   buildModelAccessPointGroupOption,
   type ExecutionIdOption,
-  buildDataProductAccessor,
+  resolveDataProductAccessor,
   NativeModelDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
   LakehouseDataProductExecutionState,

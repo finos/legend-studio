@@ -27,7 +27,7 @@ import {
   DataProductQueryBuilderState,
   QueryBuilderActionConfig,
   QueryBuilderAdvancedWorkflowState,
-  buildDataProductAccessor,
+  resolveDataProductAccessor,
 } from '@finos/legend-query-builder';
 import type { DepotEntityWithOrigin } from '@finos/legend-storage';
 import {
@@ -91,11 +91,12 @@ export const queryDataProduct = async (
           defaultExecutionContext.func,
           editorStore.graphManagerState.graph,
         );
-      accessor = buildDataProductAccessor(
-        relationMetadata,
+      accessor = resolveDataProductAccessor(
         dataProduct,
         defaultExecutionContext,
         editorStore.graphManagerState.graph,
+        undefined,
+        relationMetadata,
       );
     }
     await flowResult(

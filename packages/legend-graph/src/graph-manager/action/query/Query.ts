@@ -60,6 +60,7 @@ export class QueryDataProductModelAccessExecutionContext extends QueryDataProduc
 
 export class QueryDataProductLakehouseExecutionContext extends QueryDataProductExecutionContext {
   accessPointId!: string;
+  accessGroupId!: string;
 }
 
 export interface QueryGridConfig {
@@ -184,6 +185,7 @@ export class QueryDataProductModelAccessExecutionContextInfo extends QueryExecut
 export class QueryDataProductLakehouseExecutionContextInfo extends QueryExecutionContextInfo {
   dataProductPath!: string;
   accessPointId!: string;
+  accessGroupId!: string;
 }
 
 export interface QueryInfo {
