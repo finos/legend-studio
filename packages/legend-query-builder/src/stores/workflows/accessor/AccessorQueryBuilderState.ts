@@ -147,11 +147,9 @@ export class AccessorQueryBuilderState extends QueryBuilderState {
   }
 
   /**
-   * In accessor mode, the filter panel does not support relation columns,
-   * so we hide it and show the post-filter panel instead.
+   * In accessor mode, configure both filter and post-filter panels to be visible.
    */
   private configureFilterPanelsForAccessor(): void {
-    this.filterState.setShowPanel(false);
     const tdsState = this.fetchStructureState.implementation;
     if (tdsState instanceof QueryBuilderTDSState) {
       tdsState.setShowPostFilterPanel(true);

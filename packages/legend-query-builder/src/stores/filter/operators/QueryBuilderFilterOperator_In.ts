@@ -56,9 +56,7 @@ export class QueryBuilderFilterOperator_In
   isCompatibleWithFilterConditionProperty(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType;
+    const propertyType = filterConditionState.leftConditionType;
     const normalizedType = getStandardPrimitiveTypeEquivalent(propertyType);
     return (
       (normalizedType !== undefined &&
@@ -82,9 +80,7 @@ export class QueryBuilderFilterOperator_In
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType;
+    const propertyType = filterConditionState.leftConditionType;
     const rightSide = filterConditionState.rightConditionValue;
     // `in`/`not in` does not support right hand value being column state as the multipliticy for columns are [0..1]
     if (rightSide instanceof FilterValueSpecConditionValueState) {
@@ -147,9 +143,7 @@ export class QueryBuilderFilterOperator_In
   getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType;
+    const propertyType = filterConditionState.leftConditionType;
     return new CollectionInstanceValue(
       Multiplicity.ONE,
       GenericTypeExplicitReference.create(new GenericType(propertyType)),

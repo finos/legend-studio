@@ -82,6 +82,7 @@ import {
 import {
   TEST_DATA__QueryBuilder_Accessors,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+  TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithFilter,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
 } from '../__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 
@@ -274,6 +275,11 @@ const cases: RoundtripTestCase[] = [
     'Accessor — simple project() from IngestDefinition with post-filter',
     accessorCtx,
     TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+  ],
+  [
+    'Accessor — simple project() from IngestDefinition with pre-filter',
+    accessorCtx,
+    TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithFilter,
   ],
   [
     'Accessor — simple project() from Database table',

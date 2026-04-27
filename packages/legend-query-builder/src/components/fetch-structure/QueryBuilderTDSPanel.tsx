@@ -126,6 +126,7 @@ import {
   QUERY_BUILDER_FILTER_DND_TYPE,
   QueryBuilderFilterTreeConditionNodeData,
   type QueryBuilderFilterConditionDragSource,
+  FilterPropertyExpressionSourceState,
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { cloneAbstractPropertyExpression } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import { buildPropertyExpressionFromExistsNode } from '../filter/QueryBuilderFilterPanel.js';
@@ -1368,7 +1369,11 @@ export const QueryBuilderTDSPanel = observer(
             break;
           }
           case QUERY_BUILDER_FILTER_DND_TYPE.CONDITION:
-            if (item.node instanceof QueryBuilderFilterTreeConditionNodeData) {
+            if (
+              item.node instanceof QueryBuilderFilterTreeConditionNodeData &&
+              item.node.condition.sourceState instanceof
+                FilterPropertyExpressionSourceState
+            ) {
               const propertyExpression = isExistsNodeChild(item.node)
                 ? buildPropertyExpressionFromExistsNode(
                     tdsState.queryBuilderState.filterState,
@@ -1378,7 +1383,7 @@ export const QueryBuilderTDSPanel = observer(
                     item.node,
                   )
                 : cloneAbstractPropertyExpression(
-                    item.node.condition.propertyExpressionState
+                    item.node.condition.sourceState.propertyExpressionState
                       .propertyExpression,
                     tdsState.queryBuilderState.observerContext,
                   );

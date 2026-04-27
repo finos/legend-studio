@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import type {
-  QueryBuilderFilterState,
-  FilterConditionState,
+import {
+  type QueryBuilderFilterState,
+  type FilterConditionState,
+  FilterPropertyExpressionSourceState,
 } from '../QueryBuilderFilterState.js';
 import { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import {
@@ -50,11 +51,13 @@ export class QueryBuilderFilterOperator_IsEmpty
   isCompatibleWithFilterConditionProperty(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType;
+    const propertyType = filterConditionState.leftConditionType;
     // First check if property is optional
     if (
+      !(
+        filterConditionState.sourceState instanceof
+        FilterPropertyExpressionSourceState
+      ) ||
       !isPropertyExpressionChainOptional(
         filterConditionState.propertyExpressionState.propertyExpression,
       )

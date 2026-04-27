@@ -88,6 +88,7 @@ import {
   FilterValueSpecConditionValueState,
   isCollectionProperty,
   QueryBuilderFilterTreeConditionNodeData,
+  FilterPropertyExpressionSourceState,
 } from '../../../stores/filter/QueryBuilderFilterState.js';
 import { QueryBuilderAggregateColumnState } from '../../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import type { QueryBuilderFilterOperator } from '../../../stores/filter/QueryBuilderFilterOperator.js';
@@ -188,7 +189,9 @@ const getExistingFilterNode = (
     .filter(filterByType(QueryBuilderFilterTreeConditionNodeData))
     .filter(
       (node) =>
-        node.condition.propertyExpressionState.path ===
+        node.condition.sourceState instanceof
+          FilterPropertyExpressionSourceState &&
+        node.condition.sourceState.propertyExpressionState.path ===
           propertyExpressionState?.path &&
         operators
           .map((op) => op.getLabel())

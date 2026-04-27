@@ -676,7 +676,6 @@ export const QueryBuilder = observer(
                         onClick={toggleShowFilterPanel}
                         disabled={
                           !queryBuilderState.isQuerySupported ||
-                          queryBuilderState.sourceAccessor !== undefined ||
                           Array.from(
                             queryBuilderState.filterState.nodes.values(),
                           ).length > 0
