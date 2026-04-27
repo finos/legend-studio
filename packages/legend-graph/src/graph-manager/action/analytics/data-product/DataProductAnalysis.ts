@@ -15,6 +15,7 @@
  */
 
 import type {
+  LakehouseAccessPoint,
   ModelAccessPointGroup,
   NativeModelExecutionContext,
 } from '../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
@@ -31,14 +32,20 @@ export class DataProductAnalysis {
 }
 
 export class DataProductAnalysisQueryResult {
-  targetMappingPath: string;
+  targetMappingPath: string | undefined;
   dataProductAnalysis: DataProductAnalysis;
-  targetExecState: NativeModelExecutionContext | ModelAccessPointGroup;
+  targetExecState:
+    | NativeModelExecutionContext
+    | ModelAccessPointGroup
+    | LakehouseAccessPoint;
 
   constructor(
-    targetMappingPath: string,
+    targetMappingPath: string | undefined,
     dataProductAnalysis: DataProductAnalysis,
-    targetExecState: NativeModelExecutionContext | ModelAccessPointGroup,
+    targetExecState:
+      | NativeModelExecutionContext
+      | ModelAccessPointGroup
+      | LakehouseAccessPoint,
   ) {
     this.targetMappingPath = targetMappingPath;
     this.dataProductAnalysis = dataProductAnalysis;

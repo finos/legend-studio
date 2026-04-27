@@ -49,6 +49,7 @@ import {
   V1_MultiExecutionServiceExecutableInfo,
   GraphDataWithOrigin,
   LegendSDLC,
+  type DataProductAccessType,
 } from '@finos/legend-graph';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
@@ -129,7 +130,13 @@ export class DataProductViewerState extends BaseViewerState<
     | ((dataProductName: string, accessPointName: string) => void)
     | undefined;
   readonly openGovernance?: ((id: string) => void) | undefined;
-  readonly openQuery?: (() => void) | undefined;
+  readonly openQuery?:
+    | ((
+        gav: ProjectGAVCoordinates,
+        accessType: DataProductAccessType,
+        accessId: string | undefined,
+      ) => void)
+    | undefined;
   readonly fetchingDataProductArtifactState = ActionState.create();
 
   constructor(
@@ -150,7 +157,13 @@ export class DataProductViewerState extends BaseViewerState<
         | ((dataProductName: string, accessPointName: string) => void)
         | undefined;
       openGovernance?: ((id: string) => void) | undefined;
-      openQuery?: (() => void) | undefined;
+      openQuery?:
+        | ((
+            gav: ProjectGAVCoordinates,
+            accessType: DataProductAccessType,
+            accessId: string | undefined,
+          ) => void)
+        | undefined;
     },
     registryServerClient?: RegistryServerClient | undefined,
   ) {

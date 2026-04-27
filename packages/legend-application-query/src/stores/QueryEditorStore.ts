@@ -83,7 +83,8 @@ import {
   V1_ModelAccessPointGroupInfo,
   DataProductAccessType,
   type DataProductAnalysisQueryResult,
-  V1_AccessPointGroupInfo,
+  LakehouseAccessPoint,
+  type Accessor,
 } from '@finos/legend-graph';
 import {
   generateExistingQueryEditorRoute,
@@ -130,6 +131,8 @@ import {
   QueryBuilderActionConfig,
   QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT,
   ModelAccessPointDataProductExecutionState,
+  LakehouseDataProductExecutionState,
+  resolveDataProductAccessor,
 } from '@finos/legend-query-builder';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
@@ -1045,7 +1048,10 @@ export abstract class QueryEditorStore {
   resolveDataProductExecutionState(
     dataProduct: DataProduct,
     accessId: string | undefined,
-  ): NativeModelExecutionContext | ModelAccessPointGroup {
+  ):
+    | NativeModelExecutionContext
+    | ModelAccessPointGroup
+    | LakehouseAccessPoint {
     // Search model access point groups
     const modelGroups = dataProduct.accessPointGroups.filter(
       filterByType(ModelAccessPointGroup),
@@ -1066,11 +1072,26 @@ export abstract class QueryEditorStore {
         return matchingContext;
       }
     }
+
     // Fall back: prioritize first model access point group over native default
     const firstGroup = modelGroups[0];
     if (firstGroup) {
       return firstGroup;
     }
+
+    // Search lakehouse access points
+    const lakehouseAccessPoints = dataProduct.accessPointGroups
+      .flatMap((group) => group.accessPoints)
+      .filter(filterByType(LakehouseAccessPoint));
+    if (accessId) {
+      const matchingLakehouseAP = lakehouseAccessPoints.find(
+        (ap) => ap.id === accessId,
+      );
+      if (matchingLakehouseAP) {
+        return matchingLakehouseAP;
+      }
+    }
+
     return guaranteeNonNullable(
       modelGroups[0] ?? nativeAccess?.defaultExecutionContext,
       `Can't resolve execution state for data product '${dataProduct.path}'${accessId ? ` with access ID '${accessId}'` : ''}. Data product must have model access point groups or native model access.`,
@@ -1191,13 +1212,22 @@ export abstract class QueryEditorStore {
         accessId,
         artifact,
       );
-    // 3.5. Create LakehouseRuntime only if the data product has at least one
-    // model access point group.
-    const hasAPGs = artifact.accessPointGroups.some(
-      (g) => g instanceof V1_AccessPointGroupInfo,
+    // 4. Get the data product from the built graph
+    const dataProduct =
+      this.graphManagerState.graph.getDataProduct(dataProductPath);
+    // 5. Resolve execution state from accessId
+    const resolvedState = this.resolveDataProductExecutionState(
+      dataProduct,
+      accessId,
     );
+
+    // 5.5. Create LakehouseRuntime if the resolved state is a model access
+    // point group or a lakehouse access point
     let packageableRuntime: PackageableRuntime | undefined;
-    if (hasAPGs) {
+    if (
+      resolvedState instanceof ModelAccessPointGroup ||
+      resolvedState instanceof LakehouseAccessPoint
+    ) {
       packageableRuntime = await this.createLakehousePackageableRuntime(
         dataProductPath,
         {
@@ -1208,15 +1238,6 @@ export abstract class QueryEditorStore {
       );
       this.graphManagerState.graph.addElement(packageableRuntime, '_internal_');
     }
-    // 4. Get the data product from the built graph
-    const dataProduct =
-      this.graphManagerState.graph.getDataProduct(dataProductPath);
-    // 5. Resolve execution state from accessId
-    const resolvedState = this.resolveDataProductExecutionState(
-      dataProduct,
-      accessId,
-    );
-
     // 6. Create query builder state
     const projectInfo = { groupId, artifactId, versionId };
     const sourceInfo = {
@@ -1257,20 +1278,39 @@ export abstract class QueryEditorStore {
         dataProductAnalysisResult.dataProductAnalysis.mappingToMappingCoverageResult;
     }
 
+    let accessor: Accessor | undefined;
+    if (resolvedState instanceof LakehouseAccessPoint) {
+      accessor = resolveDataProductAccessor(
+        dataProduct,
+        resolvedState,
+        this.graphManagerState.graph,
+        artifact,
+        undefined,
+      );
+    }
     // Pass pre-resolved state to avoid double-resolution
-    queryBuilderState.initWithDataProduct(
-      dataProduct,
-      undefined,
-      resolvedState,
-    );
+    queryBuilderState.initWithDataProduct(dataProduct, accessor, resolvedState);
 
-    // 8. Wire in lakehouse runtime and adhoc-runtime flag for MODEL mode
+    // 8. Wire in lakehouse runtime and adhoc-runtime flag for MODEL or LAKEHOUSE mode
     if (
       queryBuilderState.executionState instanceof
       ModelAccessPointDataProductExecutionState
     ) {
       queryBuilderState.executionState.withAdhocRuntime();
       if (packageableRuntime) {
+        queryBuilderState.changeRuntime(
+          new RuntimePointer(
+            PackageableElementExplicitReference.create(packageableRuntime),
+          ),
+        );
+      }
+    } else if (
+      queryBuilderState.executionState instanceof
+      LakehouseDataProductExecutionState
+    ) {
+      queryBuilderState.executionState.withAdhocRuntime();
+      if (packageableRuntime) {
+        queryBuilderState.executionState.selectedRuntime = packageableRuntime;
         queryBuilderState.changeRuntime(
           new RuntimePointer(
             PackageableElementExplicitReference.create(packageableRuntime),

@@ -381,8 +381,10 @@ import {
   DataProductAnalysis,
 } from '../../../action/analytics/data-product/DataProductAnalysis.js';
 import {
+  AccessPointGroup,
   DataProductAccessType,
   DataProductElementScope,
+  LakehouseAccessPoint,
   ModelAccessPointGroup,
   NativeModelAccess,
   NativeModelExecutionContext,
@@ -3761,45 +3763,221 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     projectInfo: ProjectGAVCoordinates,
     graphReport?: GraphManagerOperationReport,
   ): Promise<DataProductAnalysisQueryResult> {
+    switch (dataProductAccessType) {
+      case DataProductAccessType.MODEL:
+        return this.buildModelAccessDataProductAnalysis(
+          artifact,
+          dataProductPath,
+          pureGraph,
+          accessPointId,
+          projectInfo,
+          graphReport,
+        );
+      case DataProductAccessType.NATIVE:
+        return this.buildNativeAccessDataProductAnalysis(
+          artifact,
+          dataProductPath,
+          pureGraph,
+          accessPointId,
+          projectInfo,
+          graphReport,
+        );
+      case DataProductAccessType.LAKEHOUSE:
+        return this.buildLakehouseAccessDataProductAnalysis(
+          artifact,
+          dataProductPath,
+          pureGraph,
+          accessPointId,
+          projectInfo,
+          graphReport,
+        );
+      default:
+        throw new UnsupportedOperationError(
+          `Unsupported data product access type: '${dataProductAccessType}'`,
+        );
+    }
+  }
+
+  private async buildModelAccessDataProductAnalysis(
+    artifact: V1_DataProductArtifact,
+    dataProductPath: string,
+    pureGraph: PureModel,
+    accessPointId: string,
+    projectInfo: ProjectGAVCoordinates,
+    graphReport?: GraphManagerOperationReport,
+  ): Promise<DataProductAnalysisQueryResult> {
+    const modelAccessPointGroups = artifact.accessPointGroups.filter(
+      (group): group is V1_ModelAccessPointGroupInfo =>
+        group instanceof V1_ModelAccessPointGroupInfo,
+    );
+    const accessGroup = modelAccessPointGroups.find(
+      (g) => g.id === accessPointId,
+    );
+    if (!accessGroup) {
+      throw new Error(
+        `Can't resolve access point '${accessPointId}' (type: ${DataProductAccessType.MODEL}) in data product '${dataProductPath}'`,
+      );
+    }
+    const mappingPath = accessGroup.mappingGeneration.path;
+
+    return this.buildDataProductAnalysisCore(
+      artifact,
+      dataProductPath,
+      pureGraph,
+      mappingPath,
+      accessGroup,
+      undefined, // no resolved runtime path for MODEL access
+      projectInfo,
+      graphReport,
+    );
+  }
+
+  private async buildNativeAccessDataProductAnalysis(
+    artifact: V1_DataProductArtifact,
+    dataProductPath: string,
+    pureGraph: PureModel,
+    accessPointId: string,
+    projectInfo: ProjectGAVCoordinates,
+    graphReport?: GraphManagerOperationReport,
+  ): Promise<DataProductAnalysisQueryResult> {
+    const nativeCtx =
+      artifact.nativeModelAccess?.nativeModelExecutionContexts.find(
+        (ctx) => ctx.key === accessPointId,
+      );
+    if (!nativeCtx) {
+      throw new Error(
+        `Can't resolve access point '${accessPointId}' (type: ${DataProductAccessType.NATIVE}) in data product '${dataProductPath}'`,
+      );
+    }
+    const mappingPath = nativeCtx.mapping;
+    if (!mappingPath) {
+      throw new Error(
+        `Can't resolve mapping path for access point '${accessPointId}' (type: ${DataProductAccessType.NATIVE}) in data product '${dataProductPath}'`,
+      );
+    }
+
+    // Resolve runtime path for the native context
+    const resolvedRuntimePath = nativeCtx.runtimeGeneration?.path;
+
+    return this.buildDataProductAnalysisCore(
+      artifact,
+      dataProductPath,
+      pureGraph,
+      mappingPath,
+      nativeCtx,
+      resolvedRuntimePath,
+      projectInfo,
+      graphReport,
+    );
+  }
+
+  private async buildLakehouseAccessDataProductAnalysis(
+    artifact: V1_DataProductArtifact,
+    dataProductPath: string,
+    pureGraph: PureModel,
+    accessPointId: string,
+    projectInfo: ProjectGAVCoordinates,
+    graphReport?: GraphManagerOperationReport,
+  ): Promise<DataProductAnalysisQueryResult> {
+    // Create a dummy data product element
+    const dummyDataProduct = new V1_DataProduct();
+    dummyDataProduct.package =
+      extractPackagePathFromPath(dataProductPath) ?? '';
+    dummyDataProduct.name = extractElementNameFromPath(dataProductPath);
+    dummyDataProduct.title = artifact.dataProduct.title;
+    dummyDataProduct.description = artifact.dataProduct.description;
+
+    // Build graph with only the data product
+    const graphEntities = [dummyDataProduct]
+      .filter((el) => !pureGraph.getNullableElement(el.path, false))
+      .map((el) => this.elementProtocolToEntity(el));
+    await this.buildGraph(
+      pureGraph,
+      graphEntities,
+      ActionState.create(),
+      {
+        origin: new LegendSDLC(
+          projectInfo.groupId,
+          projectInfo.artifactId,
+          projectInfo.versionId,
+        ),
+      },
+      graphReport,
+    );
+
+    const data = pureGraph.getDataProduct(dataProductPath);
+
+    // Create access point groups with LakehouseAccessPoints from artifact data
+    data.accessPointGroups = artifact.accessPointGroups
+      .filter(
+        (groupInfo) => !(groupInfo instanceof V1_ModelAccessPointGroupInfo),
+      )
+      .map((groupInfo) => {
+        const apGroup = new AccessPointGroup();
+        apGroup.id = groupInfo.id;
+        apGroup.description = groupInfo.description;
+        apGroup.accessPoints = groupInfo.accessPointImplementations.map(
+          (apImpl) => {
+            const lakehouseAP = new LakehouseAccessPoint(
+              apImpl.id,
+              '', // targetEnvironment is not available in the artifact
+              new RawLambda(undefined, undefined),
+              apGroup,
+            );
+            lakehouseAP.description = apImpl.description;
+            return lakehouseAP;
+          },
+        );
+        return apGroup;
+      });
+
+    // Find the lakehouse access point matching the requested id
+    const lakehouseResult = data.accessPointGroups
+      .flatMap((group) => group.accessPoints)
+      .find(
+        (ap): ap is LakehouseAccessPoint =>
+          ap instanceof LakehouseAccessPoint && ap.id === accessPointId,
+      );
+    if (!lakehouseResult) {
+      throw new Error(
+        `Can't resolve lakehouse access point '${accessPointId}' in data product '${dataProductPath}'`,
+      );
+    }
+
+    const result = new DataProductAnalysis();
+    result.path = dataProductPath;
+    result.title = artifact.dataProduct.title;
+    result.description = artifact.dataProduct.description;
+
+    return new DataProductAnalysisQueryResult(
+      undefined,
+      result,
+      lakehouseResult,
+    );
+  }
+
+  /**
+   * Shared core logic for building data product analysis after the access type
+   * specific resolution has been performed.
+   */
+  private async buildDataProductAnalysisCore(
+    artifact: V1_DataProductArtifact,
+    dataProductPath: string,
+    pureGraph: PureModel,
+    mappingPath: string,
+    accessGroup:
+      | V1_ModelAccessPointGroupInfo
+      | V1_NativeModelExecutionContextInfo,
+    resolvedRuntimePath: string | undefined,
+    projectInfo: ProjectGAVCoordinates,
+    graphReport?: GraphManagerOperationReport,
+  ): Promise<DataProductAnalysisQueryResult> {
     const modelAccessPointGroups = artifact.accessPointGroups.filter(
       (group): group is V1_ModelAccessPointGroupInfo =>
         group instanceof V1_ModelAccessPointGroupInfo,
     );
 
-    // Resolve the target access group and mapping path
-    let mappingPath: string | undefined;
-    let accessGroup:
-      | V1_ModelAccessPointGroupInfo
-      | V1_NativeModelExecutionContextInfo
-      | undefined = undefined;
-    if (dataProductAccessType === DataProductAccessType.MODEL) {
-      const group = modelAccessPointGroups.find((g) => g.id === accessPointId);
-      if (group) {
-        mappingPath = group.mappingGeneration.path;
-        accessGroup = group;
-      }
-    } else if (dataProductAccessType === DataProductAccessType.NATIVE) {
-      const nativeCtx =
-        artifact.nativeModelAccess?.nativeModelExecutionContexts.find(
-          (ctx) => ctx.key === accessPointId,
-        );
-      if (nativeCtx) {
-        mappingPath = nativeCtx.mapping;
-        accessGroup = nativeCtx;
-      }
-    }
-    if (!accessGroup) {
-      throw new Error(
-        `Can't resolve access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
-      );
-    }
-    if (!mappingPath) {
-      throw new Error(
-        `Can't resolve mapping path '${mappingPath}' for access point '${accessPointId}' (type: ${dataProductAccessType}) in data product '${dataProductPath}'`,
-      );
-    }
-
-    // prevent refetching artifact
+    // Collect mapping generation infos from all sources
     const includedGenInfos = new Map<string, V1_MappingGenerationInfo>();
 
     if (artifact.nativeModelAccess?.mappingGenerations) {
@@ -3834,10 +4012,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     resolvedMappingStub.name = extractElementNameFromPath(mappingPath);
 
     // Only add a runtime stub for the resolved native context (if applicable)
-    const resolvedRuntimePath =
-      dataProductAccessType === DataProductAccessType.NATIVE
-        ? nativeRuntimePaths.get(accessPointId)
-        : undefined;
     let resolvedRuntimeStub: V1_PackageableRuntime | undefined;
     if (resolvedRuntimePath) {
       resolvedRuntimeStub = new V1_PackageableRuntime();
@@ -3847,8 +4021,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         extractElementNameFromPath(resolvedRuntimePath);
       resolvedRuntimeStub.runtimeValue = new V1_EngineRuntime();
     }
-
-    // Create a dummy data product element
 
     // Create a dummy data product element
     const dummyDataProduct = new V1_DataProduct();

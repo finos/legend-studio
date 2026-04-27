@@ -22,6 +22,7 @@ import {
   type QueryBuilderActionConfig,
   type QueryBuilderConfig,
   type QueryBuilderWorkflowState,
+  LakehouseDataProductExecutionState,
 } from '@finos/legend-query-builder';
 import { renderLegendDataProductQueryBuilderSetupPanelContent } from '../../../components/data-product/LegendQueryDataProductQueryBuilder.js';
 import type { LegendQueryApplicationStore } from '../../LegendQueryBaseStore.js';
@@ -44,10 +45,12 @@ import {
   type NativeModelExecutionContext,
   type PackageableElement,
   type V1_DataProductArtifact,
+  type LakehouseAccessPoint,
 } from '@finos/legend-graph';
 import {
   generateDataProductNativeRoute,
   generateDataProductModelRoute,
+  generateDataProductLakehouseRoute,
 } from '../../../__lib__/LegendQueryNavigation.js';
 import { compareLabelFn } from '@finos/legend-art';
 import type { DataProductSelectorState } from '../../data-space/DataProductSelectorState.js';
@@ -75,7 +78,10 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     actionConfig: QueryBuilderActionConfig,
     dataProduct: DataProduct,
     artifact: V1_DataProductArtifact | undefined,
-    executionState: NativeModelExecutionContext | ModelAccessPointGroup,
+    executionState:
+      | NativeModelExecutionContext
+      | ModelAccessPointGroup
+      | LakehouseAccessPoint,
     depotServerClient: DepotServerClient,
     project: ProjectGAVCoordinates,
     onDataProductChange: (val: DepotEntityWithOrigin) => Promise<void>,
@@ -145,6 +151,20 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
       }
 
       this.executionState.changeSelectedRuntime(packageableRuntime);
+    } else if (
+      this.executionState instanceof LakehouseDataProductExecutionState &&
+      origin instanceof LegendSDLC
+    ) {
+      const packageableRuntime = await this.createLakehousePackageableRuntime(
+        this.dataProduct.path,
+        {
+          groupId: origin.groupId,
+          artifactId: origin.artifactId,
+          versionId: origin.versionId,
+        },
+      );
+      this.graphManagerState.graph.addElement(packageableRuntime, '_internal_');
+      this.executionState.changeSelectedRuntime(packageableRuntime);
     }
     await super.prepareAccessForExecution();
   }
@@ -186,8 +206,9 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
 
   override get floatingExecutionElements(): PackageableElement[] | undefined {
     if (
-      this.executionState instanceof
-        ModelAccessPointDataProductExecutionState &&
+      (this.executionState instanceof
+        ModelAccessPointDataProductExecutionState ||
+        this.executionState instanceof LakehouseDataProductExecutionState) &&
       this.executionState.adhocRuntime &&
       this.graphManagerState.graph.origin !== undefined &&
       this.executionState.selectedRuntime !== undefined
@@ -214,6 +235,16 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     } else if (execState instanceof ModelAccessPointDataProductExecutionState) {
       route = this.applicationStore.navigationService.navigator.generateAddress(
         generateDataProductModelRoute(
+          this.project.groupId,
+          this.project.artifactId,
+          this.project.versionId,
+          dataProduct.path,
+          execState.exectionValue.id,
+        ),
+      );
+    } else if (execState instanceof LakehouseDataProductExecutionState) {
+      route = this.applicationStore.navigationService.navigator.generateAddress(
+        generateDataProductLakehouseRoute(
           this.project.groupId,
           this.project.artifactId,
           this.project.versionId,

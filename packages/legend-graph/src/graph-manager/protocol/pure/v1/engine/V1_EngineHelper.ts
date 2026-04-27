@@ -229,6 +229,7 @@ export const V1_buildExecutionContext = (
     const exec = new QueryDataProductLakehouseExecutionContext();
     exec.dataProductPath = protocolExecContext.dataProductPath;
     exec.accessPointId = protocolExecContext.accessPointId;
+    exec.accessGroupId = protocolExecContext.accessGroupId;
     return exec;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');
@@ -279,6 +280,7 @@ export const V1_buildExecutionContextInfo = (
     const exec = new QueryDataProductLakehouseExecutionContextInfo();
     exec.dataProductPath = v1_execContext.dataProductPath;
     exec.accessPointId = v1_execContext.accessPointId;
+    exec.accessGroupId = v1_execContext.accessGroupId;
     return exec;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');
@@ -403,6 +405,7 @@ export const V1_transformQueryExecutionContext = (
     const protocol = new V1_DataProductLakehouseExecutionContext();
     protocol.dataProductPath = execContext.dataProductPath;
     protocol.accessPointId = execContext.accessPointId;
+    protocol.accessGroupId = execContext.accessGroupId;
     return protocol;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');

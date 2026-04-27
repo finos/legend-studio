@@ -43,6 +43,7 @@ import {
   type V1_LiteDataContract,
   type V1_RelationElement,
   type V1_TaskResponse,
+  DataProductAccessType,
   V1_AccessPointGroupReferenceType,
   V1_ContractState,
   V1_EnrichedUserApprovalStatus,
@@ -143,6 +144,8 @@ afterEach(() => {
       ),
     );
 });
+const WORK_IN_PROGRESS = 'Work in progress';
+const NOT_SUPPORTED = 'Not Supported';
 
 const setupLakehouseDataProductTest = async (
   dataProduct: V1_DataProduct,
@@ -151,10 +154,12 @@ const setupLakehouseDataProductTest = async (
   mockDataContracts: V1_DataContract[],
   projectGAVCoordinates?: ProjectGAVCoordinates,
   mockGenerationFiles?: StoredFileGeneration[],
+  extraActions?: Record<string, unknown>,
 ) => {
   const dataProductViewerState = await TEST__getDataProductViewerState(
     dataProduct,
     projectGAVCoordinates,
+    extraActions,
   );
   createdViewerStates.push(dataProductViewerState);
 
@@ -3291,6 +3296,168 @@ describe('DataProductViewer', () => {
       expect(apState.relationElement).toEqual(artifactEle);
       expect(artifactSpy).toHaveBeenCalled();
       expect(engineSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('LegendQueryScreen', () => {
+    test('shows "Not Supported" when dataAccessState is undefined', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        undefined,
+        [],
+        [],
+        undefined,
+        undefined,
+        { openQuery: jest.fn() },
+      );
+
+      await screen.findByText('Customer Demographics');
+
+      // Click on the Query tab
+      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      await act(async () => {
+        fireEvent.click(queryTab);
+      });
+
+      await screen.findByText(NOT_SUPPORTED);
+    });
+
+    test('shows "Work in progress" for ad-hoc data product origin', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsAdHocDataProduct,
+        [],
+        [],
+        undefined,
+        undefined,
+        { openQuery: jest.fn() },
+      );
+
+      await screen.findByText('Customer Demographics');
+
+      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      await act(async () => {
+        fireEvent.click(queryTab);
+      });
+
+      await screen.findByText(WORK_IN_PROGRESS);
+    });
+
+    test('shows "Work in progress" when openQuery action is not provided', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Customer Demographics');
+
+      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      await act(async () => {
+        fireEvent.click(queryTab);
+      });
+
+      await screen.findByText(WORK_IN_PROGRESS);
+    });
+
+    test('renders "Open in Legend Query" button for SDLC data product with openQuery provided', async () => {
+      const mockOpenQuery = jest.fn();
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        undefined,
+        undefined,
+        { openQuery: mockOpenQuery },
+      );
+
+      await screen.findByText('Customer Demographics');
+
+      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      await act(async () => {
+        fireEvent.click(queryTab);
+      });
+
+      const openButton = await screen.findByRole('button', {
+        name: 'Open in Legend Query',
+      });
+      expect(openButton).toBeDefined();
+    });
+
+    test('clicking "Open in Legend Query" calls openQuery with correct parameters', async () => {
+      const mockOpenQuery = jest.fn();
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        undefined,
+        undefined,
+        { openQuery: mockOpenQuery },
+      );
+
+      await screen.findByText('Customer Demographics');
+
+      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      await act(async () => {
+        fireEvent.click(queryTab);
+      });
+
+      const openButton = await screen.findByRole('button', {
+        name: 'Open in Legend Query',
+      });
+      await act(async () => {
+        fireEvent.click(openButton);
+      });
+
+      expect(mockOpenQuery).toHaveBeenCalledWith(
+        {
+          groupId: 'com.example.analytics',
+          artifactId: 'customer-analytics',
+          versionId: '1.2.0',
+        },
+        DataProductAccessType.LAKEHOUSE,
+        'customer_demographics',
+      );
+    });
+
+    test('handles error thrown by openQuery gracefully', async () => {
+      const mockOpenQuery = jest.fn().mockImplementation(() => {
+        throw new Error('Query open failed');
+      });
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        undefined,
+        undefined,
+        { openQuery: mockOpenQuery },
+      );
+
+      const notifyErrorSpy = jest.spyOn(
+        dataProductViewerState.applicationStore.notificationService,
+        'notifyError',
+      );
+
+      await screen.findByText('Customer Demographics');
+
+      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      await act(async () => {
+        fireEvent.click(queryTab);
+      });
+
+      const openButton = await screen.findByRole('button', {
+        name: 'Open in Legend Query',
+      });
+      await act(async () => {
+        fireEvent.click(openButton);
+      });
+
+      expect(mockOpenQuery).toHaveBeenCalled();
+      expect(notifyErrorSpy).toHaveBeenCalled();
     });
   });
 });

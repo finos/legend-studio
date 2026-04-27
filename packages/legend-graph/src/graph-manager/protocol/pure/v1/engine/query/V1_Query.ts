@@ -67,7 +67,7 @@ export enum V1_QueryExecutionContextType {
   QUERY_DATASAPCE_EXECUTION_CONTEXT = 'dataSpaceExecutionContext',
   QUERY_DATAPRODUCT_NATIVE_EXECUTION_CONTEXT = 'dataProductNativeExecutionContext',
   QUERY_DATAPRODUCT_MODEL_ACCESS_EXECUTION_CONTEXT = 'dataProductModelAccessExecutionContext',
-  QUERY_DATAPRODUCT_LAKEHOUSE_EXECUTION_CONTEXT = 'dataProductLakehouseExecutionContext',
+  QUERY_DATAPRODUCT_LAKEHOUSE_EXECUTION_CONTEXT = 'dataProductLakehouseAccessExecutionContext',
 }
 
 export class V1_QueryExplicitExecutionContext extends V1_QueryExecutionContext {
@@ -146,6 +146,7 @@ export class V1_DataProductModelAccessExecutionContext extends V1_QueryDataProdu
 
 export class V1_DataProductLakehouseExecutionContext extends V1_QueryDataProductExecutionContext {
   accessPointId!: string;
+  accessGroupId!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DataProductLakehouseExecutionContext, {
@@ -154,6 +155,7 @@ export class V1_DataProductLakehouseExecutionContext extends V1_QueryDataProduct
       ),
       dataProductPath: primitive(),
       accessPointId: primitive(),
+      accessGroupId: primitive(),
     }),
     {
       deserializeNullAsUndefined: true,

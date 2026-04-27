@@ -54,8 +54,10 @@ import {
   GenericTypeExplicitReference,
   findLakehouseAccessPointGroup,
   type PureModel,
-  DataProductAccessType,
+  V1_RelationType,
+  V1_getGenericTypeFullPath,
   LegendSDLC,
+  DataProductAccessType,
 } from '@finos/legend-graph';
 import { QueryBuilderState } from '../../QueryBuilderState.js';
 
@@ -83,22 +85,58 @@ import { compareLabelFn } from '@finos/legend-art';
 import { QueryBuilderEmbeddedFromExecutionContextState } from '../../QueryBuilderExecutionContextState.js';
 import { buildLambdaFunction } from '../../QueryBuilderValueSpecificationBuilder.js';
 
-export const buildDataProductAccessor = (
-  relationMetadata: RelationTypeMetadata,
+export const resolveDataProductAccessor = (
   dataProduct: DataProduct,
   accessPoint: LakehouseAccessPoint,
   graph: PureModel,
+  artifact: V1_DataProductArtifact | undefined,
+  relationMetadata?: RelationTypeMetadata | undefined,
 ): DataProductAccessor => {
   const relationType = new RelationType(accessPoint.title ?? accessPoint.id);
-  relationType.columns = relationMetadata.columns.map(
-    (col) =>
-      new RelationColumn(
-        col.name,
-        GenericTypeExplicitReference.create(
-          new GenericType(graph.getType(col.type)),
-        ),
+  if (artifact) {
+    const artifactGroup = artifact.accessPointGroups.find((apg) =>
+      apg.accessPointImplementations.some(
+        (apImpl) => apImpl.id === accessPoint.id,
       ),
-  );
+    );
+    const artifactImpl = artifactGroup?.accessPointImplementations.find(
+      (apImpl) => apImpl.id === accessPoint.id,
+    );
+    const v1RelationType = artifactImpl?.lambdaGenericType?.typeArguments
+      .map((typeArg) => typeArg.rawType)
+      .find((rawType) => rawType instanceof V1_RelationType);
+    if (v1RelationType) {
+      relationType.columns = v1RelationType.columns.map(
+        (col) =>
+          new RelationColumn(
+            col.name,
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                graph.getType(V1_getGenericTypeFullPath(col.genericType)),
+              ),
+            ),
+          ),
+      );
+      return new DataProductAccessor(
+        dataProduct.path,
+        artifactGroup?.id,
+        accessPoint.id,
+        relationType,
+        dataProduct,
+      );
+    }
+  }
+  if (relationMetadata) {
+    relationType.columns = relationMetadata.columns.map(
+      (col) =>
+        new RelationColumn(
+          col.name,
+          GenericTypeExplicitReference.create(
+            new GenericType(graph.getType(col.type)),
+          ),
+        ),
+    );
+  }
   const groupResult = findLakehouseAccessPointGroup(
     dataProduct,
     accessPoint.id,
@@ -272,13 +310,20 @@ export class LakehouseDataProductExecutionState extends DataProductExecutionStat
     queryBuilderState: DataProductQueryBuilderState,
   ) {
     super(executionState, queryBuilderState);
-    makeObservable(this, {});
+    makeObservable(this, {
+      withAdhocRuntime: observable,
+    });
     this.selectedRuntime = this.compatibleRuntimes[0];
   }
 
   changeSelectedRuntime(val: PackageableRuntime): void {
     this.selectedRuntime = val;
     this.queryBuilderState.changeRuntime(val);
+  }
+
+  withAdhocRuntime(): LakehouseDataProductExecutionState {
+    this.adhocRuntime = true;
+    return this;
   }
 
   override get label(): string {
@@ -404,6 +449,17 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     } else if (
       this.executionState instanceof
         ModelAccessPointDataProductExecutionState &&
+      this.executionState.selectedRuntime
+    ) {
+      this.changeRuntime(
+        new RuntimePointer(
+          PackageableElementExplicitReference.create(
+            this.executionState.selectedRuntime,
+          ),
+        ),
+      );
+    } else if (
+      this.executionState instanceof LakehouseDataProductExecutionState &&
       this.executionState.selectedRuntime
     ) {
       this.changeRuntime(
@@ -614,7 +670,9 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     ) {
       const execContext = new QueryDataProductLakehouseExecutionContext();
       execContext.dataProductPath = this.dataProduct.path;
+      execContext.accessGroupId = this.executionState.exectionValue.__owner.id;
       execContext.accessPointId = this.executionState.exectionValue.id;
+
       return execContext;
     }
     return super.getQueryExecutionContext();
@@ -765,16 +823,18 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
   ): Promise<void> {
     this.setExecutionState(val);
     if (val instanceof LakehouseAccessPoint) {
-      const relationMetadata =
-        await this.graphManagerState.graphManager.getLambdaRelationType(
-          val.func,
-          this.graphManagerState.graph,
-        );
-      const accessor = buildDataProductAccessor(
-        relationMetadata,
+      const relationMetadata = !this.dataProductArtifact
+        ? await this.graphManagerState.graphManager.getLambdaRelationType(
+            val.func,
+            this.graphManagerState.graph,
+          )
+        : undefined;
+      const accessor = resolveDataProductAccessor(
         this.dataProduct,
         val,
         this.graphManagerState.graph,
+        this.dataProductArtifact,
+        relationMetadata,
       );
       this.setSourceElement(accessor);
     }
@@ -942,6 +1002,11 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         ) {
           accessPointId = this.executionState.exectionValue.key;
           dataProductAccessType = DataProductAccessType.NATIVE;
+        } else if (
+          this.executionState instanceof LakehouseDataProductExecutionState
+        ) {
+          accessPointId = this.executionState.exectionValue.id;
+          dataProductAccessType = DataProductAccessType.LAKEHOUSE;
         } else {
           accessPointId = (
             this.executionState as ModelAccessPointDataProductExecutionState
