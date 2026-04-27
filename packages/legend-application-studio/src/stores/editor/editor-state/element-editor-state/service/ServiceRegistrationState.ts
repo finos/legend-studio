@@ -36,7 +36,6 @@ import {
   type Service,
   type PureExecution,
   type ServiceRegistrationSuccess,
-  type ServiceDetail,
   ServiceExecutionMode,
   buildLambdaVariableExpressions,
   VariableExpression,
@@ -288,17 +287,27 @@ export class ServiceRegistrationState extends ServiceConfigState {
 
   *checkServiceRegistration(): GeneratorFn<void> {
     const envs: string[] = [];
+    const servicePattern = this.service.pattern.startsWith('/')
+      ? this.service.pattern.substring(1)
+      : this.service.pattern;
     for (const envConfig of this.registrationOptions) {
       try {
-        const services =
-          (yield this.editorStore.graphManagerState.graphManager.getServicesByServerUrl(
+        const isRegistered =
+          (yield this.editorStore.graphManagerState.graphManager.checkServiceRegisteredByPattern(
             envConfig.executionUrl,
-          )) as ServiceDetail[];
-        if (services.some((s) => s.pattern === this.service.pattern)) {
+            servicePattern,
+          )) as boolean;
+        if (isRegistered) {
           envs.push(envConfig.env);
         }
-      } catch {
-        // env unreachable — skip
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.logService.warn(
+          LogEvent.create(
+            LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_CHECK_FAILURE,
+          ),
+          `Can't check registration status for env '${envConfig.env}': ${error.message}`,
+        );
       }
     }
     this.setRegisteredEnvs(envs);

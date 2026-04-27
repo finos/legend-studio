@@ -121,6 +121,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   REGISTER_SERVICE = 'register service',
   GET_SERVICE_VERSION = 'get service version',
   ACTIVATE_SERVICE_GENERATION_ID = 'activate service generation id',
+  GET_SERVICE_METADATA = 'get service metadata',
   VALIDATE_SERVICE_ASSERTION_ID = 'validate service assertion id',
   RUN_SERVICE_TESTS = 'run service tests',
   GENERATE_TEST_DATA_WITH_DEFAULT_SEED = 'generate test data with default seed',
@@ -1240,15 +1241,27 @@ export class V1_EngineServerClient extends AbstractServerClient {
       request,
     );
 
+  getServiceMetadataByPattern = async (
+    serviceServerUrl: string,
+    servicePattern: string,
+  ): Promise<boolean> => {
+    try {
+      await this.getWithTracing(
+        this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_METADATA),
+        `${this._service(
+          this.baseUrlForServiceRegistration ?? serviceServerUrl,
+        )}/serviceMetadata/${encodeURIComponent(servicePattern)}`,
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   // ------------------------------------------- Legend Services List -------------------------------------------
 
   private readonly getServicesDetailsFromCache = (): Promise<PlainObject[]> =>
     this.get(`${this._service()}/list/detailsFromCache`);
-
-  getServicesDetailsFromCacheByUrl = (
-    serviceServerUrl: string,
-  ): Promise<PlainObject[]> =>
-    this.get(`${this._service(serviceServerUrl)}/list/detailsFromCache`);
 
   getServicesInfo = async (): Promise<ServiceDetail[]> => {
     const raw = await this.getServicesDetailsFromCache();

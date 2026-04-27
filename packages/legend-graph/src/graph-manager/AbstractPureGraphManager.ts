@@ -23,7 +23,6 @@ import type {
   ServiceRegistrationResult,
   ServiceRegistrationSuccess,
 } from './action/service/ServiceRegistrationResult.js';
-import type { ServiceDetail } from './action/service/ServiceDetail.js';
 import type { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
 import type { FileGenerationSpecification } from '../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { GenerationOutput } from './action/generation/GenerationOutput.js';
@@ -862,9 +861,10 @@ export abstract class AbstractPureGraphManager {
     serviceUrl: string,
     serviceId: string,
   ): Promise<void>;
-  abstract getServicesByServerUrl(
+  abstract checkServiceRegisteredByPattern(
     serviceServerUrl: string,
-  ): Promise<ServiceDetail[]>;
+    servicePattern: string,
+  ): Promise<boolean>;
   abstract runServicePostValidations(
     service: Service,
     graph: PureModel,

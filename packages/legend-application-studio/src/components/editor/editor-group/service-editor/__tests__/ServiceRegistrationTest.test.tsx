@@ -43,7 +43,6 @@ import {
   DeploymentOwnership,
   ServiceExecutionMode,
   ServiceRegistrationSuccess,
-  ServiceDetail,
 } from '@finos/legend-graph';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import {
@@ -400,31 +399,21 @@ test(
     );
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
 
-    // Mock getServicesByServerUrl to return a matching service for 'int' and 'dev', but not 'prod'
-    const matchingService = new ServiceDetail();
-    matchingService.name = 'TestService';
-    matchingService.pattern = '/example/myTestUrl/{myParam}';
-    matchingService.documentation = 'test';
-
-    const nonMatchingService = new ServiceDetail();
-    nonMatchingService.name = 'OtherService';
-    nonMatchingService.pattern = '/other/service';
-    nonMatchingService.documentation = 'other';
-
-    const getServicesByServerUrlSpy = createSpy(
+    // Mock checkServiceRegisteredByPattern to return true for 'int' and 'dev', but false for 'prod'
+    const checkServiceRegisteredByPatternSpy = createSpy(
       MOCK__editorStore.graphManagerState.graphManager,
-      'getServicesByServerUrl',
+      'checkServiceRegisteredByPattern',
     );
-    getServicesByServerUrlSpy.mockImplementation(
-      (serverUrl: string): Promise<ServiceDetail[]> => {
+    checkServiceRegisteredByPatternSpy.mockImplementation(
+      (serverUrl: string, _servicePattern: string): Promise<boolean> => {
         if (
           serverUrl === 'int.dummyUrl.com' ||
           serverUrl === 'dev.dummyUrl.com'
         ) {
-          return Promise.resolve([matchingService, nonMatchingService]);
+          return Promise.resolve(true);
         }
-        // 'prod' returns only non-matching services
-        return Promise.resolve([nonMatchingService]);
+        // 'prod' returns false
+        return Promise.resolve(false);
       },
     );
 
@@ -479,9 +468,18 @@ test(
     });
 
     // Verify the spy was called for each env
-    expect(getServicesByServerUrlSpy).toHaveBeenCalledWith('int.dummyUrl.com');
-    expect(getServicesByServerUrlSpy).toHaveBeenCalledWith('dev.dummyUrl.com');
-    expect(getServicesByServerUrlSpy).toHaveBeenCalledWith('exec.dummyUrl.com');
+    expect(checkServiceRegisteredByPatternSpy).toHaveBeenCalledWith(
+      'int.dummyUrl.com',
+      'example/myTestUrl/{myParam}',
+    );
+    expect(checkServiceRegisteredByPatternSpy).toHaveBeenCalledWith(
+      'dev.dummyUrl.com',
+      'example/myTestUrl/{myParam}',
+    );
+    expect(checkServiceRegisteredByPatternSpy).toHaveBeenCalledWith(
+      'exec.dummyUrl.com',
+      'example/myTestUrl/{myParam}',
+    );
 
     // 'INT' and 'DEV' should appear as deployment links since they had matching patterns
     await waitFor(() => {
@@ -507,10 +505,10 @@ test(
     );
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
 
-    // Mock getServicesByServerUrl to reject for all environments
+    // Mock checkServiceRegisteredByPattern to reject for all environments
     createSpy(
       MOCK__editorStore.graphManagerState.graphManager,
-      'getServicesByServerUrl',
+      'checkServiceRegisteredByPattern',
     ).mockRejectedValue(new Error('Network error'));
 
     createSpy(

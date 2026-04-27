@@ -1142,11 +1142,13 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
-  async getServicesDetailsByServerUrl(
+  async getServiceMetadataByPattern(
     serviceServerUrl: string,
-  ): Promise<PlainObject[]> {
-    return this.engineServerClient.getServicesDetailsFromCacheByUrl(
+    servicePattern: string,
+  ): Promise<boolean> {
+    return this.engineServerClient.getServiceMetadataByPattern(
       serviceServerUrl,
+      servicePattern,
     );
   }
 

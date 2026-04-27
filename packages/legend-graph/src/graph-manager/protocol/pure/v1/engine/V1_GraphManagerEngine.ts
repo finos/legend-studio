@@ -328,9 +328,10 @@ export interface V1_GraphManagerEngine {
     generationId: string,
   ) => Promise<void>;
 
-  getServicesDetailsByServerUrl: (
+  getServiceMetadataByPattern: (
     serviceServerUrl: string,
-  ) => Promise<PlainObject[]>;
+    servicePattern: string,
+  ) => Promise<boolean>;
 
   runServicePostVal: (
     servicePath: string,

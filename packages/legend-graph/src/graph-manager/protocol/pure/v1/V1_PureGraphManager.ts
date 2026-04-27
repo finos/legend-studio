@@ -79,7 +79,6 @@ import {
 import type { GenerationOutput } from '../../../../graph-manager/action/generation/GenerationOutput.js';
 import type { ValueSpecification } from '../../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
 import { ServiceExecutionMode } from '../../../../graph-manager/action/service/ServiceExecutionMode.js';
-import { ServiceDetail } from '../../../../graph-manager/action/service/ServiceDetail.js';
 import {
   PureMultiExecution,
   PureSingleExecution,
@@ -4500,12 +4499,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async getServicesByServerUrl(
+  async checkServiceRegisteredByPattern(
     serviceServerUrl: string,
-  ): Promise<ServiceDetail[]> {
-    const raw =
-      await this.engine.getServicesDetailsByServerUrl(serviceServerUrl);
-    return raw.map((r) => ServiceDetail.fromJson(r));
+    servicePattern: string,
+  ): Promise<boolean> {
+    return this.engine.getServiceMetadataByPattern(
+      serviceServerUrl,
+      servicePattern,
+    );
   }
 
   async runServicePostValidations(
