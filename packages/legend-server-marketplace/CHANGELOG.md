@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.60
+
+### Patch Changes
+
+- [#5101](https://github.com/finos/legend-studio/pull/5101) [`c689f24`](https://github.com/finos/legend-studio/commit/c689f24490481dc3d0a1154a1b6649c9ea7eca4d) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add `show_all` parameter to data product search API and set to False by default, `has_filtered_products` metadata field, and "Show all data products" telemetry event. Fall back to config file when trending endpoint returns fewer than 4 data products.
+
 ## 0.1.59
 
 ## 0.1.58

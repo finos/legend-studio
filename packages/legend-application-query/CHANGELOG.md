@@ -1,5 +1,13 @@
 # @finos/legend-application-query
 
+## 13.8.9
+
+### Patch Changes
+
+- [#5098](https://github.com/finos/legend-studio/pull/5098) [`57f6f8a`](https://github.com/finos/legend-studio/commit/57f6f8af88e153a2ef2a945b7867be0fed520c4c) ([@yash0024](https://github.com/yash0024)) - Support NativeModelAccess in Legend Query. Add support for NativeModelAccess sampleQueries in Legend Query. Add new /data-product/gav/path route (chooses first modelAPG if present or the defaultExecutionContext), and nativeModelAccess sampleQuery routes. Create BaseTemplateQueryCreatorStore for common dataspace template/nativeModelAccess sample query logic
+
+- [#5094](https://github.com/finos/legend-studio/pull/5094) [`48a9736`](https://github.com/finos/legend-studio/commit/48a973610b0bc0f2e11fe93f2ce587a0b7042a77) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding helper function to adding base64 safe characters
+
 ## 13.8.8
 
 ## 13.8.7

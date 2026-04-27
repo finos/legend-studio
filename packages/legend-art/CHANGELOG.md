@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.147
+
+### Patch Changes
+
+- [#5077](https://github.com/finos/legend-studio/pull/5077) [`140cd1a`](https://github.com/finos/legend-studio/commit/140cd1afb040df2411ee391f36b02e305498a2c1) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Star, Empty Star Icon.
+
 ## 7.1.146
 
 ### Patch Changes

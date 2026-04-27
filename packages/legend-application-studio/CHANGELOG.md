@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.116
+
+### Patch Changes
+
+- [#5109](https://github.com/finos/legend-studio/pull/5109) [`2688ab1`](https://github.com/finos/legend-studio/commit/2688ab1976bed967fbf72b5323d27891a67f6760) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - add \_\_OWNER to AccessPointGroup to AccessPoint
+
 ## 28.19.115
 
 ## 28.19.114

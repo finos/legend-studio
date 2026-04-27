@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 32.5.2
+
+### Patch Changes
+
+- [#5102](https://github.com/finos/legend-studio/pull/5102) [`846a004`](https://github.com/finos/legend-studio/commit/846a00491bb6632159c483cc148f87ceb8cff229) ([@Rakan1837](https://github.com/Rakan1837)) - Optimize graph builder performance by batching element processing. Instead of scheduling a separate `setTimeout` macrotask per element (which incurs ~4ms minimum delay each), elements are now processed synchronously in batches of 100 with a single event-loop yield between batches. This applies to both entity deserialization (`V1_entitiesToPureModelContextData`) and all graph builder passes (`initializeAndIndexElements`, `buildTypes`, `buildStores`, `buildMappings`, etc.). For large projects this reduces graph build time significantly while still keeping the UI responsive.
+
+  Fix cross-dependency resolution in `initializeAndIndexElements`: split the element indexing into two phases — first index all native elements (mappings, stores, runtimes, etc.) across all inputs, then index all plugin-contributed elements. This ensures plugin elements that resolve references to native elements from other dependencies during their first pass can find them reliably, regardless of input ordering.
+
+  Add regression coverage for cross-dependency resolution where a plugin element depends on native elements from another dependency input, and remove test import-hierarchy suppressions in deserialization batching coverage.
+
+- [#5098](https://github.com/finos/legend-studio/pull/5098) [`57f6f8a`](https://github.com/finos/legend-studio/commit/57f6f8af88e153a2ef2a945b7867be0fed520c4c) ([@yash0024](https://github.com/yash0024)) - Update building graph form data product artifact (add elements from all unique mappings between model access point groups and native execution contexts)
+
+- [#5109](https://github.com/finos/legend-studio/pull/5109) [`2688ab1`](https://github.com/finos/legend-studio/commit/2688ab1976bed967fbf72b5323d27891a67f6760) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - add \_\_OWNER to AccessPointGroup to AccessPoint
+
 ## 32.5.1
 
 ## 32.5.0

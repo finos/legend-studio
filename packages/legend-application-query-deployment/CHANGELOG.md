@@ -1,5 +1,11 @@
 # @finos/legend-application-query-deployment
 
+## 13.211.0
+
+### Patch Changes
+
+- [#5096](https://github.com/finos/legend-studio/pull/5096) [`896ba30`](https://github.com/finos/legend-studio/commit/896ba3099018c225b76d8d731704b98a7777a467) ([@aormerod-gs](https://github.com/aormerod-gs)) - feat(query-builder): add dotted-underline UX cue on stats bar count values with frequency chart
+
 ## 13.210.0
 
 ## 13.209.0

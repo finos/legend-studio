@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.24
+
+### Patch Changes
+
+- [#5099](https://github.com/finos/legend-studio/pull/5099) [`2a69263`](https://github.com/finos/legend-studio/commit/2a6926333fd9c755e1f642bebf8a468a58628fea) ([@phong-gs](https://github.com/phong-gs)) - Upgrade lodash-es to 4.18.0 to fix security vulnerability
+
 ## 11.0.23
 
 ### Patch Changes
