@@ -2227,6 +2227,67 @@
     }
   }
 
+  .marketplace-lakehouse-field-search-results {
+    &__list {
+      border: 1px solid var(--color-dark-theme-border-light);
+      background: var(--color-dark-theme-bg-secondary);
+    }
+
+    &__list-header {
+      border-bottom-color: var(--color-dark-theme-border-light);
+      background: var(--color-dark-theme-bg-tertiary);
+    }
+
+    &__list-header-cell {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__list-item-text {
+      color: var(--color-dark-theme-text-primary);
+
+      &--empty {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__data-product-link {
+      &.MuiChip-root {
+        background-color: var(--color-dark-theme-bg-tertiary);
+        color: var(--color-dark-theme-text-primary);
+        border: 1px solid var(--color-dark-theme-border-light);
+
+        &:hover {
+          background-color: var(
+            --color-dark-theme-bg-hover,
+            rgb(255 255 255 / 8%)
+          );
+        }
+      }
+    }
+
+    &__chip-secondary,
+    &__chip-separator,
+    &__chip-icon {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__chip-secondary-text {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__data-product-toggle {
+      &.MuiChip-root {
+        border-color: var(--color-dark-theme-border-light);
+        color: var(--color-dark-theme-blue-primary);
+        background: transparent;
+
+        &:hover {
+          background-color: rgb(255 255 255 / 8%);
+        }
+      }
+    }
+  }
+
   .legend-marketplace-list-item {
     background: var(--color-dark-theme-bg-secondary);
     border-color: var(--color-dark-theme-border-light);

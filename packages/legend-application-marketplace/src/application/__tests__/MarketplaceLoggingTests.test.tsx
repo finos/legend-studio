@@ -458,3 +458,45 @@ describe('Show All Data Products Telemetry', () => {
     expect((calls[1] as unknown[])[1]).toMatchObject({ eventId: 2 });
   });
 });
+
+describe('Field Search Toggle Telemetry', () => {
+  let mockTelemetryService: ReturnType<typeof createMockTelemetryService>;
+
+  beforeEach(() => {
+    mockStorage.clear();
+    jest.clearAllMocks();
+    mockStorage.getItem.mockClear();
+    mockStorage.setItem.mockClear();
+    mockTelemetryService = createMockTelemetryService();
+  });
+
+  test('logs field search toggle enabled event', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_ToggleFieldSearch(
+      mockTelemetryService,
+      true,
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as unknown[])[0]).toBe('marketplace.field.search.toggle');
+    expect((calls[0] as unknown[])[1]).toMatchObject({
+      toggleAction: 'enabled',
+      eventId: 1,
+    });
+  });
+
+  test('logs field search toggle disabled event', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_ToggleFieldSearch(
+      mockTelemetryService,
+      false,
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as unknown[])[0]).toBe('marketplace.field.search.toggle');
+    expect((calls[0] as unknown[])[1]).toMatchObject({
+      toggleAction: 'disabled',
+      eventId: 1,
+    });
+  });
+});
