@@ -24,6 +24,7 @@ export * from './models/Order.js';
 export * from './models/Feedback.js';
 export * from './models/TerminalProductOrder.js';
 export * from './models/Registry.js';
+export * from './models/FieldSearch.js';
 export {
   MarketplaceServerClient,
   type TrendingDataProductEntry,
