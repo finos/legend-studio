@@ -861,6 +861,10 @@ export abstract class AbstractPureGraphManager {
     serviceUrl: string,
     serviceId: string,
   ): Promise<void>;
+  abstract checkServiceRegisteredByPattern(
+    serviceServerUrl: string,
+    servicePattern: string,
+  ): Promise<boolean>;
   abstract runServicePostValidations(
     service: Service,
     graph: PureModel,

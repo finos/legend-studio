@@ -715,6 +715,44 @@
     font-size: 1.2rem;
     user-select: none;
   }
+
+  &__deployment-status {
+    margin-top: 0.5rem;
+    min-height: 2.8rem;
+
+    &__loading {
+      @include flexVCenter;
+
+      gap: 0.8rem;
+      color: var(--color-dark-grey-500);
+      font-size: 1.2rem;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__loading-icon {
+      animation: spin 1s linear infinite;
+      font-size: 1.4rem;
+    }
+
+    &__empty {
+      color: var(--color-dark-grey-500);
+      font-size: 1.2rem;
+      font-style: italic;
+    }
+
+    &__envs {
+      @include flexVCenter;
+
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    &__label {
+      color: var(--color-light-grey-400);
+      font-size: 1.2rem;
+      margin-right: 0.3rem;
+    }
+  }
 }
 
 .service-query-importer {
@@ -1222,4 +1260,36 @@
     cursor: pointer;
     width: 2rem;
   }
+}
+
+.service-editor__deployment-link {
+  @include flexCenter;
+
+  height: 2.2rem;
+  border-radius: 0.2rem;
+  padding: 0 0.8rem;
+  margin-right: 0.3rem;
+  background: none;
+  border: 0.1rem solid var(--color-blue-200);
+  color: var(--color-blue-200);
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  gap: 0.4rem;
+
+  &:hover {
+    background: var(--color-blue-200);
+    color: var(--color-light-grey-50);
+  }
+
+  svg {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+}
+
+.service-editor__deployment-link__env {
+  font-weight: 500;
+  letter-spacing: 0.05rem;
 }

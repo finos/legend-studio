@@ -1142,6 +1142,16 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
+  async getServiceMetadataByPattern(
+    serviceServerUrl: string,
+    servicePattern: string,
+  ): Promise<PlainObject> {
+    return this.engineServerClient.getServiceMetadataByPattern(
+      serviceServerUrl,
+      servicePattern,
+    );
+  }
+
   async runServicePostVal(
     servicePath: string,
     input: V1_PureModelContext,

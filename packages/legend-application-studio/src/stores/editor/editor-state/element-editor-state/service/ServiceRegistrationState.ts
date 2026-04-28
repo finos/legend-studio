@@ -255,7 +255,9 @@ export class ServiceConfigState {
 
 export class ServiceRegistrationState extends ServiceConfigState {
   readonly service: Service;
+  readonly deploymentCheckState = ActionState.create();
   activatePostRegistration = true;
+  registeredEnvs: string[] = [];
 
   constructor(
     editorStore: EditorStore,
@@ -267,14 +269,51 @@ export class ServiceRegistrationState extends ServiceConfigState {
 
     makeObservable(this, {
       activatePostRegistration: observable,
+      registeredEnvs: observable,
       setActivatePostRegistration: action,
+      setRegisteredEnvs: action,
       registerService: flow,
+      checkServiceRegistration: flow,
     });
 
     this.service = service;
   }
   setActivatePostRegistration(val: boolean): void {
     this.activatePostRegistration = val;
+  }
+
+  setRegisteredEnvs(envs: string[]): void {
+    this.registeredEnvs = envs;
+  }
+
+  *checkServiceRegistration(): GeneratorFn<void> {
+    this.deploymentCheckState.inProgress();
+    const envs: string[] = [];
+    const servicePattern = this.service.pattern.startsWith('/')
+      ? this.service.pattern.substring(1)
+      : this.service.pattern;
+    for (const envConfig of this.registrationOptions) {
+      try {
+        const isRegistered =
+          (yield this.editorStore.graphManagerState.graphManager.checkServiceRegisteredByPattern(
+            envConfig.executionUrl,
+            servicePattern,
+          )) as boolean;
+        if (isRegistered) {
+          envs.push(envConfig.env);
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.logService.warn(
+          LogEvent.create(
+            LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_CHECK_FAILURE,
+          ),
+          `Can't check registration status for env '${envConfig.env}': ${error.message}`,
+        );
+      }
+    }
+    this.setRegisteredEnvs(envs);
+    this.deploymentCheckState.complete();
   }
 
   *registerService(): GeneratorFn<void> {

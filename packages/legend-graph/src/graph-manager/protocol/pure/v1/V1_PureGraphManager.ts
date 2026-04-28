@@ -4671,6 +4671,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async checkServiceRegisteredByPattern(
+    serviceServerUrl: string,
+    servicePattern: string,
+  ): Promise<boolean> {
+    try {
+      await this.engine.getServiceMetadataByPattern(
+        serviceServerUrl,
+        servicePattern,
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async runServicePostValidations(
     service: Service,
     graph: PureModel,

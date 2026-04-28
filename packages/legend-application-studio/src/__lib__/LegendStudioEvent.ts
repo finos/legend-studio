@@ -32,6 +32,7 @@ export enum LEGEND_STUDIO_APP_EVENT {
   DATABASE_BUILDER_FAILURE = 'editor.database-builder.failure',
   DATABASE_MODEL_BUILDER_FAILURE = 'editor.database-model-builder.failure',
   SERVICE_REGISTRATION_FAILURE = 'editor.service-editor.registration.failure',
+  SERVICE_REGISTRATION_CHECK_FAILURE = 'editor.service-editor.registration-check.failure',
   SERVICE_TEST_RUNNER_FAILURE = 'editor.service-editor.test-runner.failure',
   SERVICE_TEST_SETUP_FAILURE = 'editor.service-editor.test-setup.failure',
   GENERATION_FAILURE = 'editor.generation.failure',
