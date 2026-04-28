@@ -4503,10 +4503,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     serviceServerUrl: string,
     servicePattern: string,
   ): Promise<boolean> {
-    return this.engine.getServiceMetadataByPattern(
-      serviceServerUrl,
-      servicePattern,
-    );
+    try {
+      await this.engine.getServiceMetadataByPattern(
+        serviceServerUrl,
+        servicePattern,
+      );
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async runServicePostValidations(

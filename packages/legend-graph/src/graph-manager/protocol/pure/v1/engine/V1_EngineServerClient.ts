@@ -1241,22 +1241,16 @@ export class V1_EngineServerClient extends AbstractServerClient {
       request,
     );
 
-  getServiceMetadataByPattern = async (
+  getServiceMetadataByPattern = (
     serviceServerUrl: string,
     servicePattern: string,
-  ): Promise<boolean> => {
-    try {
-      await this.getWithTracing(
-        this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_METADATA),
-        `${this._service(
-          this.baseUrlForServiceRegistration ?? serviceServerUrl,
-        )}/serviceMetadata/${encodeURIComponent(servicePattern)}`,
-      );
-      return true;
-    } catch {
-      return false;
-    }
-  };
+  ): Promise<PlainObject> =>
+    this.getWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_METADATA),
+      `${this._service(
+        this.baseUrlForServiceRegistration ?? serviceServerUrl,
+      )}/serviceMetadata/${encodeURIComponent(servicePattern)}`,
+    );
 
   // ------------------------------------------- Legend Services List -------------------------------------------
 

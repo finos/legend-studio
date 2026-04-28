@@ -255,6 +255,7 @@ export class ServiceConfigState {
 
 export class ServiceRegistrationState extends ServiceConfigState {
   readonly service: Service;
+  readonly deploymentCheckState = ActionState.create();
   activatePostRegistration = true;
   registeredEnvs: string[] = [];
 
@@ -286,6 +287,7 @@ export class ServiceRegistrationState extends ServiceConfigState {
   }
 
   *checkServiceRegistration(): GeneratorFn<void> {
+    this.deploymentCheckState.inProgress();
     const envs: string[] = [];
     const servicePattern = this.service.pattern.startsWith('/')
       ? this.service.pattern.substring(1)
@@ -311,6 +313,7 @@ export class ServiceRegistrationState extends ServiceConfigState {
       }
     }
     this.setRegisteredEnvs(envs);
+    this.deploymentCheckState.complete();
   }
 
   *registerService(): GeneratorFn<void> {

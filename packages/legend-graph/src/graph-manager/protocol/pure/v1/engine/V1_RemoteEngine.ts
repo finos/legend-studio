@@ -1145,7 +1145,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   async getServiceMetadataByPattern(
     serviceServerUrl: string,
     servicePattern: string,
-  ): Promise<boolean> {
+  ): Promise<PlainObject> {
     return this.engineServerClient.getServiceMetadataByPattern(
       serviceServerUrl,
       servicePattern,

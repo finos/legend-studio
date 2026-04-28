@@ -24,6 +24,7 @@ import {
   CheckSquareIcon,
   SquareIcon,
   ExternalLinkSquareIcon,
+  CircleNotchIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
@@ -157,29 +158,6 @@ export const ServiceRegistrationEditor = observer(() => {
           <div className="panel__header__title__label">Register Service</div>
         </div>
         <div className="panel__header__actions">
-          {registrationState.registeredEnvs.map((env) => {
-            const envConfig = registrationState.registrationOptions.find(
-              (e) => e.env === env,
-            );
-            return envConfig ? (
-              <a
-                key={env}
-                className="service-editor__deployment-link"
-                href={generateServiceManagementUrl(
-                  envConfig.managementUrl,
-                  serviceState.service.pattern,
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={`Open in ${env}`}
-              >
-                <span className="service-editor__deployment-link__env">
-                  {env.toUpperCase()}
-                </span>
-                <ExternalLinkSquareIcon />
-              </a>
-            ) : null;
-          })}
           <div className="panel__header__action">
             <button
               className="btn--dark model-loader__header__load-btn"
@@ -203,6 +181,60 @@ export const ServiceRegistrationEditor = observer(() => {
               {`${registrationState.registrationState.message}...`}
             </div>
           )}
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Deployment Status
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              Environments where this service is currently deployed
+            </div>
+            <div className="service-registration-editor__deployment-status">
+              {registrationState.deploymentCheckState.isInProgress && (
+                <div className="service-registration-editor__deployment-status__loading">
+                  <CircleNotchIcon className="service-registration-editor__deployment-status__loading-icon" />
+                  <span>Fetching deployment status...</span>
+                </div>
+              )}
+              {registrationState.deploymentCheckState.hasCompleted &&
+                registrationState.registeredEnvs.length === 0 && (
+                  <div className="service-registration-editor__deployment-status__empty">
+                    Service is not deployed to any environment
+                  </div>
+                )}
+              {registrationState.deploymentCheckState.hasCompleted &&
+                registrationState.registeredEnvs.length > 0 && (
+                  <div className="service-registration-editor__deployment-status__envs">
+                    <span className="service-registration-editor__deployment-status__label">
+                      Service is deployed to
+                    </span>
+                    {registrationState.registeredEnvs.map((env) => {
+                      const envConfig =
+                        registrationState.registrationOptions.find(
+                          (e) => e.env === env,
+                        );
+                      return envConfig ? (
+                        <a
+                          key={env}
+                          className="service-editor__deployment-link"
+                          href={generateServiceManagementUrl(
+                            envConfig.managementUrl,
+                            serviceState.service.pattern,
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={`Open in ${env}`}
+                        >
+                          <span className="service-editor__deployment-link__env">
+                            {env.toUpperCase()}
+                          </span>
+                          <ExternalLinkSquareIcon />
+                        </a>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+            </div>
+          </div>
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
               Activate Service

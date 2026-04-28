@@ -331,7 +331,7 @@ export interface V1_GraphManagerEngine {
   getServiceMetadataByPattern: (
     serviceServerUrl: string,
     servicePattern: string,
-  ) => Promise<boolean>;
+  ) => Promise<PlainObject>;
 
   runServicePostVal: (
     servicePath: string,

@@ -715,6 +715,44 @@
     font-size: 1.2rem;
     user-select: none;
   }
+
+  &__deployment-status {
+    margin-top: 0.5rem;
+    min-height: 2.8rem;
+
+    &__loading {
+      @include flexVCenter;
+
+      gap: 0.8rem;
+      color: var(--color-dark-grey-500);
+      font-size: 1.2rem;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__loading-icon {
+      animation: spin 1s linear infinite;
+      font-size: 1.4rem;
+    }
+
+    &__empty {
+      color: var(--color-dark-grey-500);
+      font-size: 1.2rem;
+      font-style: italic;
+    }
+
+    &__envs {
+      @include flexVCenter;
+
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    &__label {
+      color: var(--color-light-grey-400);
+      font-size: 1.2rem;
+      margin-right: 0.3rem;
+    }
+  }
 }
 
 .service-query-importer {
