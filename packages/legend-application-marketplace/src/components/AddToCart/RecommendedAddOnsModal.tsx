@@ -69,7 +69,9 @@ interface RecommendedAddOnsModalProps {
     selectedTerminal: TerminalResult,
     recommendations: TerminalResult[],
     responseMessage: string,
+    totalCount?: number | null,
   ) => void;
+  totalCount?: number | null | undefined;
 }
 
 const MAX_DISPLAY_ITEMS_COUNT = 10;
@@ -115,11 +117,12 @@ export const RecommendedAddOnsModal = observer(
       setShowModal,
       onViewCart,
       onTerminalSelected,
+      totalCount: initialTotalCount,
     } = props;
 
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const applicationStore = legendMarketplaceBaseStore.applicationStore;
-    const currentUser = applicationStore.identityService.currentUser;
+    const cartUser = legendMarketplaceBaseStore.cartStore.cartUser;
 
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState<SortOrder | undefined>();
@@ -127,6 +130,9 @@ export const RecommendedAddOnsModal = observer(
     const [itemsPerPage, setItemsPerPage] = useState(15);
     const [terminalSearchResults, setTerminalSearchResults] = useState<
       TerminalResult[] | undefined
+    >(undefined);
+    const [searchTotalCount, setSearchTotalCount] = useState<
+      number | undefined
     >(undefined);
     const [isSearching, setIsSearching] = useState(false);
     const [isAssociating, setIsAssociating] = useState(false);
@@ -143,12 +149,16 @@ export const RecommendedAddOnsModal = observer(
       const hasCartItems = recommendedItems.some(
         (item) => item.source === RecommendationSource.CART,
       );
-      const hasMarketplaceItems = recommendedItems.some(
-        (item) =>
-          item.source === RecommendationSource.MARKETPLACE ||
-          item.source === RecommendationSource.INVENTORY,
+      const hasInventoryItems = recommendedItems.some(
+        (item) => item.source === RecommendationSource.INVENTORY,
       );
-      return hasCartItems && hasMarketplaceItems;
+      const hasMarketplaceItems = recommendedItems.some(
+        (item) => item.source === RecommendationSource.MARKETPLACE,
+      );
+      return (
+        [hasCartItems, hasInventoryItems, hasMarketplaceItems].filter(Boolean)
+          .length >= 2
+      );
     }, [recommendedItems]);
 
     const cartSourceItems = useMemo(
@@ -158,12 +168,17 @@ export const RecommendedAddOnsModal = observer(
         ),
       [recommendedItems],
     );
+    const inventorySourceItems = useMemo(
+      () =>
+        recommendedItems.filter(
+          (item) => item.source === RecommendationSource.INVENTORY,
+        ),
+      [recommendedItems],
+    );
     const marketplaceSourceItems = useMemo(
       () =>
         recommendedItems.filter(
-          (item) =>
-            item.source === RecommendationSource.MARKETPLACE ||
-            item.source === RecommendationSource.INVENTORY,
+          (item) => item.source === RecommendationSource.MARKETPLACE,
         ),
       [recommendedItems],
     );
@@ -181,7 +196,7 @@ export const RecommendedAddOnsModal = observer(
         try {
           const response =
             await legendMarketplaceBaseStore.marketplaceServerClient.searchVendorAddons(
-              currentUser,
+              cartUser,
               terminal.providerName,
               {
                 // SERVER_SEARCH_PAGE_SIZE is set high enough to cover all expected results and paginate client-side.
@@ -196,6 +211,7 @@ export const RecommendedAddOnsModal = observer(
             setTerminalSearchResults(
               response.marketplace_addons as TerminalResult[],
             );
+            setSearchTotalCount(response.total_count as number | undefined);
           }
         } catch (error) {
           assertErrorThrown(error);
@@ -218,7 +234,7 @@ export const RecommendedAddOnsModal = observer(
       [
         terminal,
         isTerminalAdded,
-        currentUser,
+        cartUser,
         legendMarketplaceBaseStore.marketplaceServerClient,
         applicationStore.logService,
       ],
@@ -232,6 +248,7 @@ export const RecommendedAddOnsModal = observer(
 
         if (!isTerminalAdded || !query.trim()) {
           setTerminalSearchResults(undefined);
+          setSearchTotalCount(undefined);
           setIsSearching(false);
           return;
         }
@@ -300,6 +317,7 @@ export const RecommendedAddOnsModal = observer(
       setSortOrder(undefined);
       setCurrentPage(1);
       setTerminalSearchResults(undefined);
+      setSearchTotalCount(undefined);
       setIsSearching(false);
       setIsAssociating(false);
       setAssociatingItemId(undefined);
@@ -336,6 +354,7 @@ export const RecommendedAddOnsModal = observer(
                 selectedTerminal,
                 result.recommendations,
                 result.message,
+                result.totalCount,
               );
             } else {
               closeModal();
@@ -526,6 +545,45 @@ export const RecommendedAddOnsModal = observer(
               )}
 
               {cartSourceItems.length > 0 &&
+                (inventorySourceItems.length > 0 ||
+                  marketplaceSourceItems.length > 0) && (
+                  <Divider sx={{ my: 2 }} />
+                )}
+
+              {inventorySourceItems.length > 0 && (
+                <Box className="recommended-addons-modal__source-section">
+                  <Box className="recommended-addons-modal__source-header">
+                    <Typography
+                      variant="h6"
+                      className="recommended-addons-modal__source-title"
+                    >
+                      From Your Inventory
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      className="recommended-addons-modal__source-description"
+                    >
+                      Select a terminal from your existing inventory to
+                      associate
+                    </Typography>
+                  </Box>
+                  <Box className="recommended-addons-modal__list">
+                    <ListHeader headerName={headerName} />
+                    {inventorySourceItems.map((item) => (
+                      <RecommendedItemsCard
+                        key={item.id}
+                        recommendedItem={item}
+                        onSelect={handleAssociateTerminal}
+                        isSelecting={isAssociating}
+                        selectedItemId={associatingItemId}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              {(cartSourceItems.length > 0 ||
+                inventorySourceItems.length > 0) &&
                 marketplaceSourceItems.length > 0 && <Divider sx={{ my: 2 }} />}
 
               {marketplaceSourceItems.length > 0 && (
@@ -576,6 +634,7 @@ export const RecommendedAddOnsModal = observer(
                     setCurrentPage(1);
                     if (!e.target.value.trim()) {
                       setTerminalSearchResults(undefined);
+                      setSearchTotalCount(undefined);
                       setIsSearching(false);
                       abortControllerRef.current?.abort();
                     }
@@ -705,24 +764,27 @@ export const RecommendedAddOnsModal = observer(
                         currentPage * itemsPerPage,
                         filteredAndSortedItems.length,
                       )}{' '}
-                      of {filteredAndSortedItems.length} items
+                      of{' '}
+                      {(terminalSearchResults
+                        ? searchTotalCount
+                        : initialTotalCount) ??
+                        filteredAndSortedItems.length}{' '}
+                      items
                     </Typography>
                   </Box>
                   <Box className="recommended-addons-modal__list">
                     <ListHeader headerName={headerName} />
-                    {paginatedItems
-                      .filter((item) => !item.isMandatory)
-                      .map((item) => (
-                        <RecommendedItemsCard
-                          key={item.id}
-                          recommendedItem={item}
-                          {...(isAddOnAssociation && {
-                            onSelect: handleAssociateTerminal,
-                            isSelecting: isAssociating,
-                            selectedItemId: associatingItemId,
-                          })}
-                        />
-                      ))}
+                    {paginatedItems.map((item) => (
+                      <RecommendedItemsCard
+                        key={item.id}
+                        recommendedItem={item}
+                        {...(isAddOnAssociation && {
+                          onSelect: handleAssociateTerminal,
+                          isSelecting: isAssociating,
+                          selectedItemId: associatingItemId,
+                        })}
+                      />
+                    ))}
                   </Box>
                   {totalPages > 1 && (
                     <Box className="recommended-addons-modal__pagination">

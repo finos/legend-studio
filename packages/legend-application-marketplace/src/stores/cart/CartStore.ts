@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { makeObservable, observable, action, flow, flowResult } from 'mobx';
+import {
+  makeObservable,
+  observable,
+  action,
+  flow,
+  flowResult,
+  computed,
+} from 'mobx';
 import {
   LogEvent,
   type GeneratorFn,
@@ -22,6 +29,7 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import {
+  TerminalItemType,
   type CartItem,
   type CartItemRequest,
   type CartItemResponse,
@@ -64,8 +72,10 @@ export class CartStore {
       businessReason: observable,
       open: observable,
       cartSummary: observable,
+      cartUser: computed,
+      cartItemIds: computed,
       setOpen: action,
-      setTargetUser: action,
+      setTargetUser: flow,
       setBusinessReason: action,
       initialize: flow,
       submitOrder: flow,
@@ -81,12 +91,50 @@ export class CartStore {
     return this.baseStore.applicationStore.identityService.currentUser;
   }
 
+  get cartUser(): string {
+    return this.targetUser ?? this.currentUser;
+  }
+
+  get cartItemIds(): Set<number> {
+    const ids = new Set<number>();
+    for (const vendorProfileId in this.items) {
+      if (Object.prototype.hasOwnProperty.call(this.items, vendorProfileId)) {
+        const cartItems = this.items[Number(vendorProfileId)];
+        if (cartItems) {
+          for (const item of cartItems) {
+            ids.add(item.id);
+          }
+        }
+      }
+    }
+    return ids;
+  }
+
   setOpen(val: boolean): void {
     this.open = val;
   }
 
-  setTargetUser(val: string | undefined): void {
+  *setTargetUser(val: string | undefined): GeneratorFn<void> {
+    this.loadingState.inProgress();
     this.targetUser = val;
+    this.items = {};
+    this.cartSummary = {
+      total_items: 0,
+      total_cost: 0,
+      formatted_total_cost: '$0.00',
+    };
+    this.businessReason = undefined;
+    try {
+      yield flowResult(this.refresh());
+      this.loadingState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.baseStore.applicationStore.logService.error(
+        LogEvent.create(APPLICATION_EVENT.IDENTITY_AUTO_FETCH__FAILURE),
+        `Failed to load cart for user: ${error.message}`,
+      );
+      this.loadingState.fail();
+    }
   }
 
   setBusinessReason(val: string | undefined): void {
@@ -94,23 +142,39 @@ export class CartStore {
   }
 
   isItemInCart(itemId: number): boolean {
+    return this.cartItemIds.has(itemId);
+  }
+
+  /**
+   * Returns the add-on items that depend on the given cart item.
+   * When a Terminal is deleted, its associated add-ons (same vendor) must also be removed.
+   */
+  getDependentAddOns(cartId: number): CartItem[] {
     for (const vendorProfileId in this.items) {
       if (Object.prototype.hasOwnProperty.call(this.items, vendorProfileId)) {
         const cartItems = this.items[Number(vendorProfileId)];
-        if (cartItems?.some((item) => item.id === itemId)) {
-          return true;
+        if (cartItems) {
+          const target = cartItems.find((item) => item.cartId === cartId);
+          if (target && target.category === TerminalItemType.TERMINAL) {
+            return cartItems.filter(
+              (item) =>
+                item.cartId !== cartId &&
+                item.category === TerminalItemType.ADD_ON,
+            );
+          }
         }
       }
     }
-    return false;
+    return [];
   }
 
   *addToCartWithAPI(cartItemData: CartItemRequest): GeneratorFn<{
     success: boolean;
     recommendations?: TerminalResult[];
     message: string;
+    totalCount?: number | null;
   }> {
-    const user = this.currentUser;
+    const user = this.cartUser;
 
     if (!user) {
       const message = 'User not authenticated';
@@ -124,11 +188,6 @@ export class CartStore {
         user,
         cartItemData,
       )) as CartItemResponse;
-
-      this.cartSummary =
-        (yield this.baseStore.marketplaceServerClient.getCartSummary(
-          user,
-        )) as CartSummary;
 
       yield flowResult(this.refresh());
 
@@ -159,6 +218,7 @@ export class CartStore {
         success: true,
         recommendations,
         message: responseMessage,
+        totalCount: response.total_count,
       };
     } catch (error) {
       assertErrorThrown(error);
@@ -195,7 +255,7 @@ export class CartStore {
     }
     this.initState.inProgress();
     try {
-      this.refresh();
+      yield flowResult(this.refresh());
       this.initState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -208,7 +268,7 @@ export class CartStore {
   }
 
   *refresh(): GeneratorFn<void> {
-    const user = this.currentUser;
+    const user = this.cartUser;
     if (!user) {
       return;
     }
@@ -227,31 +287,6 @@ export class CartStore {
       this.baseStore.applicationStore.logService.error(
         LogEvent.create(APPLICATION_EVENT.IDENTITY_AUTO_FETCH__FAILURE),
         `Failed to refresh cart: ${error.message}`,
-      );
-    }
-  }
-
-  *getCartSummary(): GeneratorFn<void> {
-    const user = this.currentUser;
-    if (!user) {
-      return;
-    }
-    try {
-      const cartSummary =
-        (yield this.baseStore.marketplaceServerClient.getCartSummary(
-          user,
-        )) as CartSummary;
-      this.cartSummary = cartSummary;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.cartSummary = {
-        total_items: 0,
-        total_cost: 0,
-        formatted_total_cost: '$0.00',
-      };
-      this.baseStore.applicationStore.logService.error(
-        LogEvent.create(APPLICATION_EVENT.IDENTITY_AUTO_FETCH__FAILURE),
-        `Failed to get cart summary: ${error.message}`,
       );
     }
   }
@@ -277,18 +312,16 @@ export class CartStore {
     try {
       const orderData: OrderDetails = {
         ordered_by: user,
-        kerberos: this.targetUser ?? user,
+        kerberos: this.cartUser,
         order_items: this.items,
         business_justification: this.businessReason,
       };
 
       yield this.baseStore.marketplaceServerClient.submitOrder(user, orderData);
 
-      this.getCartSummary();
-
       toastManager.notify('Order created successfully!', 'success');
 
-      this.refresh();
+      yield flowResult(this.refresh());
       this.setBusinessReason(undefined);
       this.open = false;
       this.submitState.complete();
@@ -301,7 +334,7 @@ export class CartStore {
   }
 
   *clearCart(): GeneratorFn<void> {
-    const user = this.currentUser;
+    const user = this.cartUser;
     if (!user) {
       toastManager.error('User not authenticated');
       return;
@@ -310,8 +343,7 @@ export class CartStore {
     this.loadingState.inProgress();
     try {
       yield this.baseStore.marketplaceServerClient.clearCart(user);
-      this.refresh();
-      this.getCartSummary();
+      yield flowResult(this.refresh());
       toastManager.success('Cart cleared successfully');
       this.loadingState.complete();
     } catch (error) {
@@ -322,8 +354,8 @@ export class CartStore {
     }
   }
 
-  *deleteCartItem(cartId: number): GeneratorFn<void> {
-    const user = this.currentUser;
+  *deleteCartItem(cartId: number, confirmDelete?: boolean): GeneratorFn<void> {
+    const user = this.cartUser;
     if (!user) {
       toastManager.error('User not authenticated');
       return;
@@ -331,10 +363,13 @@ export class CartStore {
 
     this.loadingState.inProgress();
     try {
-      yield this.baseStore.marketplaceServerClient.deleteCartItem(user, cartId);
+      yield this.baseStore.marketplaceServerClient.deleteCartItem(
+        user,
+        cartId,
+        confirmDelete,
+      );
 
-      this.getCartSummary();
-      this.refresh();
+      yield flowResult(this.refresh());
       toastManager.success('Item removed successfully');
       this.loadingState.complete();
     } catch (error) {

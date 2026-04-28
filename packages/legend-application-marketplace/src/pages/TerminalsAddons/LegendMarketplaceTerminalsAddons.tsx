@@ -311,10 +311,14 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
                 setUserValue={(_user: LegendUser): void => {
                   if (!_user.id) {
                     marketPlaceVendorDataStore.resetSelectedUser();
-                    cartStore.setTargetUser(undefined);
+                    flowResult(cartStore.setTargetUser(undefined)).catch(
+                      marketplaceStore.applicationStore.alertUnhandledError,
+                    );
                   } else {
                     marketPlaceVendorDataStore.setSelectedUser(_user);
-                    cartStore.setTargetUser(_user.id);
+                    flowResult(cartStore.setTargetUser(_user.id)).catch(
+                      marketplaceStore.applicationStore.alertUnhandledError,
+                    );
                   }
                 }}
                 userSearchService={marketplaceStore.userSearchService}

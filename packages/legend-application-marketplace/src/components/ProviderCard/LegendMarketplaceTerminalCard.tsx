@@ -48,6 +48,9 @@ export const LegendMarketplaceTerminalCard = observer(
     );
 
     const [modalMessage, setModalMessage] = useState<string>('');
+    const [modalTotalCount, setModalTotalCount] = useState<
+      number | null | undefined
+    >(undefined);
 
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const applicationStore = legendMarketplaceBaseStore.applicationStore;
@@ -72,6 +75,7 @@ export const LegendMarketplaceTerminalCard = observer(
         if (result.recommendations && result.recommendations.length > 0) {
           setRecommendedItems(result.recommendations);
           setModalMessage(result.message);
+          setModalTotalCount(result.totalCount);
           setShowRecommendationsModal(true);
         }
       } catch (error) {
@@ -97,9 +101,11 @@ export const LegendMarketplaceTerminalCard = observer(
         _selectedTerminal: TerminalResult,
         recommendations: TerminalResult[],
         responseMessage: string,
+        totalCount?: number | null,
       ) => {
         setRecommendedItems(recommendations);
         setModalMessage(responseMessage);
+        setModalTotalCount(totalCount);
         setShowRecommendationsModal(true);
       },
       [],
@@ -203,6 +209,7 @@ export const LegendMarketplaceTerminalCard = observer(
           setShowModal={setShowRecommendationsModal}
           onViewCart={handleViewCart}
           onTerminalSelected={handleTerminalSelected}
+          totalCount={modalTotalCount}
         />
       </Card>
     );
