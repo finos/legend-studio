@@ -1265,25 +1265,26 @@
 .service-editor__deployment-link {
   @include flexCenter;
 
-  height: 2rem;
+  height: 2.2rem;
   border-radius: 0.2rem;
-  padding: 0 1rem;
+  padding: 0 0.8rem;
   margin-right: 0.3rem;
-  background: var(--color-dark-grey-280);
-  color: var(--color-light-grey-50);
+  background: none;
+  border: 0.1rem solid var(--color-blue-200);
+  color: var(--color-blue-200);
   text-decoration: none;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 500;
   cursor: pointer;
-  gap: 0.5rem;
+  gap: 0.4rem;
 
   &:hover {
-    background: var(--color-dark-grey-300);
+    background: var(--color-blue-200);
     color: var(--color-light-grey-50);
   }
 
   svg {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     flex-shrink: 0;
   }
 }
