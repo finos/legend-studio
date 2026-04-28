@@ -4,10 +4,10 @@ Data data::RelationalData
   Relation
   #{
     default.PersonTable:
-      id,firm_id,firstName,lastName,employeeType
-      1,1,I'm John,"Doe\, Jr",FTO\n
-      2,1,Nicole,Smith,FTC
-      3,2,Time,Smith,FTE;
+        id, firm_id, firstName, lastName , employeeType
+        1 , 1      , I'm John , "Doe, Jr", FTO\n
+        2 , 1      , Nicole   , Smith    , FTC
+        3 , 2      , Time     , Smith    , FTE;
   }#
 }
 
@@ -64,10 +64,10 @@ function model::PersonQuery(): meta::pure::tds::TabularDataSet[1]
         Relation
         #{
           default.PersonTable:
-            id,firm_id,firstName,lastName,employeeType
-            1,1,I'm John,"Doe\, Jr",FTO
-            2,1,Nicole,Smith,FTC
-            3,2,Time,Smith,FTE;
+              id, firm_id, firstName, lastName , employeeType
+              1 , 1      , I'm John , "Doe, Jr", FTO
+              2 , 1      , Nicole   , Smith    , FTC
+              3 , 2      , Time     , Smith    , FTE;
         }#;
     test_1 | PersonQuery() => (JSON) '[ {\n  "First Name" : "I\'m John",\n  "Last Name" : "Doe, Jr"\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
   )
