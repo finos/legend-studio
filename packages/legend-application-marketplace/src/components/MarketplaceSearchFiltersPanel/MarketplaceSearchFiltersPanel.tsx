@@ -181,7 +181,7 @@ const TaxonomyTreeNode: React.FC<{
   );
 });
 
-const FilterSection: React.FC<{
+export const FilterSection: React.FC<{
   title: string;
   children: React.ReactNode;
 }> = ({ title, children }) => (
@@ -195,7 +195,7 @@ const FilterSection: React.FC<{
   </div>
 );
 
-const FilterCheckboxOption: React.FC<{
+export const FilterCheckboxOption: React.FC<{
   label: string;
   checked: boolean;
   onChange: () => void;

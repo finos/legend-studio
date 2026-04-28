@@ -120,6 +120,13 @@ const LegendMarketplaceSearchResults = React.lazy(() =>
     default: module.LegendMarketplaceSearchResults,
   })),
 );
+const LegendMarketplaceFieldSearchResults = React.lazy(() =>
+  import(
+    '../pages/Lakehouse/searchResults/LegendMarketplaceFieldSearchResults.js'
+  ).then((module) => ({
+    default: module.LegendMarketplaceFieldSearchResults,
+  })),
+);
 const LegacyDataProduct = React.lazy(() =>
   import('../pages/Lakehouse/dataProduct/LegacyDataProduct.js').then(
     (module) => ({
@@ -274,6 +281,12 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               }
               element={React.createElement(
                 useProtectedPage(LegendMarketplaceSearchResults),
+              )}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.FIELD_SEARCH_RESULTS}
+              element={React.createElement(
+                useProtectedPage(LegendMarketplaceFieldSearchResults),
               )}
             />
             <Route
