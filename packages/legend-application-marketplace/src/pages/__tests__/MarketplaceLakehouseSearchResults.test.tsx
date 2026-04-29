@@ -51,6 +51,8 @@ import {
   LakehouseSDLCDataProductSearchResultOrigin,
   type DataProductSearchResponse,
 } from '@finos/legend-server-marketplace';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import { generateFieldSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -234,6 +236,42 @@ describe('MarketplaceLakehouseSearchResults', () => {
     const params2 = new URLSearchParams();
     const newParams2 = setParamsFn2(params2);
     expect(newParams2.get('query')).toBe('new search');
+  });
+
+  test('Field search navigates to the dedicated field results page and logs telemetry', async () => {
+    const telemetrySpy = jest
+      .spyOn(LegendMarketplaceTelemetryHelper, 'logEvent_SearchQuery')
+      .mockImplementation(jest.fn());
+    const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+    const mockGoToLocation = jest.fn();
+    MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
+      mockGoToLocation;
+
+    const searchInput = await screen.findByDisplayValue('data');
+    fireEvent.change(searchInput, { target: { value: 'field metadata' } });
+
+    fireEvent.click(screen.getByTitle('Search settings'));
+    fireEvent.click(
+      screen.getByRole('switch', {
+        name: /Field Search/,
+      }),
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByTitle('Search'));
+      await flushMicrotasks();
+    });
+
+    expect(mockGoToLocation).toHaveBeenCalledWith(
+      generateFieldSearchResultsRoute('field metadata'),
+    );
+    expect(telemetrySpy).toHaveBeenCalledWith(
+      MOCK__baseStore.applicationStore.telemetryService,
+      'field metadata',
+      false,
+      'Search Results Page',
+      true,
+    );
   });
 
   test('Toggling useProducerSearch and clicking search button updates URL', async () => {

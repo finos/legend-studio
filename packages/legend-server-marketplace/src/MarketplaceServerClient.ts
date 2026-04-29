@@ -47,6 +47,11 @@ import {
 } from './models/TerminalProductOrder.js';
 import type { AutosuggestResponse } from './models/AutosuggestResult.js';
 import type { TaxonomyTreeResponse } from './models/Taxonomy.js';
+import {
+  FieldSearchType,
+  type FieldSearchRequest,
+  type GroupedFieldSearchResponse,
+} from './models/FieldSearch.js';
 
 export interface TrendingDataProductEntry {
   dataProductId?: string;
@@ -144,6 +149,26 @@ export class MarketplaceServerClient extends AbstractServerClient {
       `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}${searchFilterParam}&page_size=${pageSize}&page_number=${pageNumber}&include_filter_metadata=true&show_all=${showAll}`,
     );
   };
+
+  fieldSearch = async (
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+    params: FieldSearchRequest,
+    signal?: AbortSignal,
+  ): Promise<PlainObject<GroupedFieldSearchResponse>> =>
+    this.get<PlainObject<GroupedFieldSearchResponse>>(
+      `${this._search()}/fields/${lakehouseEnv}/grouped`,
+      signal ? { signal } : {},
+      undefined,
+      {
+        query: params.query,
+        search_type: params.searchType ?? FieldSearchType.HYBRID,
+        page_size: params.pageSize ?? 12,
+        page_number: params.pageNumber ?? 1,
+        ...(params.dataProductTypes?.length
+          ? { data_product_types: params.dataProductTypes }
+          : {}),
+      },
+    );
 
   getAutosuggestions = async (
     query: string,

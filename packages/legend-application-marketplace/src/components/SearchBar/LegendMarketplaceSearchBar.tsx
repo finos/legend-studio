@@ -63,13 +63,18 @@ export interface Vendor {
 
 export const LegendMarketplaceSearchBar = observer(
   (props: {
-    onSearch?: (query: string | undefined, useProducerSearch: boolean) => void;
+    onSearch?: (
+      query: string | undefined,
+      useProducerSearch: boolean,
+      useFieldSearch: boolean,
+    ) => void;
     stateSearchQuery?: string | undefined;
     placeholder?: string;
     onChange?: (query: string) => void;
     className?: string | undefined;
     showSettings?: boolean;
     stateUseProducerSearch?: boolean | undefined;
+    stateUseFieldSearch?: boolean;
     enableAutosuggest?: boolean;
   }): JSX.Element => {
     const {
@@ -80,6 +85,7 @@ export const LegendMarketplaceSearchBar = observer(
       className,
       showSettings,
       stateUseProducerSearch,
+      stateUseFieldSearch,
       enableAutosuggest = true,
     } = props;
 
@@ -91,6 +97,9 @@ export const LegendMarketplaceSearchBar = observer(
     );
     const [useProducerSearch, setUseProducerSearch] = useState(
       stateUseProducerSearch ?? false,
+    );
+    const [useFieldSearch, setUseFieldSearch] = useState(
+      stateUseFieldSearch ?? false,
     );
     const [searchMenuAnchorEl, setSearchMenuAnchorEl] =
       useState<HTMLElement | null>();
@@ -182,6 +191,10 @@ export const LegendMarketplaceSearchBar = observer(
     }, [stateUseProducerSearch]);
 
     useEffect(() => {
+      setUseFieldSearch(stateUseFieldSearch ?? false);
+    }, [stateUseFieldSearch]);
+
+    useEffect(() => {
       const abortController = new AbortController();
 
       if (isAutosuggestPopupOpen) {
@@ -241,7 +254,7 @@ export const LegendMarketplaceSearchBar = observer(
         selectedSuggestion.type === SearchSuggestionType.SEARCH_QUERY ||
         selectedSuggestion.type === SearchSuggestionType.DEFAULT
       ) {
-        onSearch?.(selectedQuery, useProducerSearch);
+        onSearch?.(selectedQuery, useProducerSearch, useFieldSearch);
         LegendMarketplaceTelemetryHelper.logEvent_SearchAutosuggestSelection(
           applicationStore.telemetryService,
           selectedQuery,
@@ -274,7 +287,7 @@ export const LegendMarketplaceSearchBar = observer(
 
     const handleSubmit = (event: React.FormEvent): void => {
       event.preventDefault();
-      onSearch?.(searchQuery, useProducerSearch);
+      onSearch?.(searchQuery, useProducerSearch, useFieldSearch);
     };
 
     const getOptionLabel = (option: SearchSuggestion | string): string =>
@@ -525,6 +538,9 @@ export const LegendMarketplaceSearchBar = observer(
                     checked={useProducerSearch}
                     onChange={(event) => {
                       setUseProducerSearch(event.target.checked);
+                      if (event.target.checked) {
+                        setUseFieldSearch(false);
+                      }
                       LegendMarketplaceTelemetryHelper.logEvent_ToggleProducerSearch(
                         applicationStore.telemetryService,
                         event.target.checked,
@@ -536,6 +552,31 @@ export const LegendMarketplaceSearchBar = observer(
                   <>
                     Producer Search{' '}
                     <LegendMarketplaceInfoTooltip title="Use this search if you have just created a data product and would like to immediately see it" />
+                  </>
+                }
+              />
+            </MenuItem>
+            <MenuItem>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={useFieldSearch}
+                    onChange={(event) => {
+                      setUseFieldSearch(event.target.checked);
+                      if (event.target.checked) {
+                        setUseProducerSearch(false);
+                      }
+                      LegendMarketplaceTelemetryHelper.logEvent_ToggleFieldSearch(
+                        applicationStore.telemetryService,
+                        event.target.checked,
+                      );
+                    }}
+                  />
+                }
+                label={
+                  <>
+                    Field Search{' '}
+                    <LegendMarketplaceInfoTooltip title="Use this search to discover data products and datasets that contain a specific field" />
                   </>
                 }
               />

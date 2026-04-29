@@ -45,7 +45,10 @@ import {
   SearchResultsViewMode,
   type LegendMarketplaceSearchResultsStore,
 } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
-import { LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN } from '../../../__lib__/LegendMarketplaceNavigation.js';
+import {
+  generateFieldSearchResultsRoute,
+  LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
@@ -265,8 +268,22 @@ export const LegendMarketplaceSearchResults =
       const handleSearch = (
         _query: string | undefined,
         _useProducerSearch: boolean,
+        _useFieldSearch: boolean,
       ): void => {
         if (isNonEmptyString(_query)) {
+          if (_useFieldSearch) {
+            applicationStore.navigationService.navigator.goToLocation(
+              generateFieldSearchResultsRoute(_query),
+            );
+            LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
+              applicationStore.telemetryService,
+              _query,
+              false,
+              LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
+              true,
+            );
+            return;
+          }
           searchResultsStore.setSearchQuery(_query);
           searchResultsStore.setUseProducerSearch(_useProducerSearch);
           LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
@@ -349,6 +366,7 @@ export const LegendMarketplaceSearchResults =
               onSearch={handleSearch}
               stateSearchQuery={searchResultsStore.searchQuery}
               stateUseProducerSearch={searchResultsStore.useProducerSearch}
+              stateUseFieldSearch={false}
               placeholder="Search Legend Marketplace"
               className="marketplace-lakehouse-search-results__search-bar"
               enableAutosuggest={false}

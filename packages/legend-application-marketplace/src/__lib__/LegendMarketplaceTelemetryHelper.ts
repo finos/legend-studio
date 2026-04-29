@@ -142,6 +142,7 @@ export class LegendMarketplaceTelemetryHelper {
     query: string | undefined,
     useProducerSearch: boolean,
     searchedFrom: LEGEND_MARKETPLACE_PAGE,
+    useFieldSearch: boolean = false,
   ): void {
     this.updateSearchSessionId(uuid());
     this.updateEventId();
@@ -149,6 +150,7 @@ export class LegendMarketplaceTelemetryHelper {
     telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SEARCH_QUERY, {
       query,
       useProducerSearch,
+      useFieldSearch,
       searchedFrom,
       ...session,
     });
@@ -313,7 +315,21 @@ export class LegendMarketplaceTelemetryHelper {
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.PRODUCER_SEARCH_TOGGLE,
       {
-        isEnabled: isEnabled,
+        toggleAction: isEnabled ? 'enabled' : 'disabled',
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ToggleFieldSearch(
+    telemetryService: TelemetryService,
+    isEnabled: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.FIELD_SEARCH_TOGGLE,
+      {
         toggleAction: isEnabled ? 'enabled' : 'disabled',
         ...session,
       },
