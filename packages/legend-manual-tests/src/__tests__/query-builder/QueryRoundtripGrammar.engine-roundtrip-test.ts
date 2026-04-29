@@ -202,6 +202,18 @@ const TEST_CASES: QueryTestCase[] = [
     queryGrammar:
       "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[MAX:{p, w, r|$r.Id}:y|$y->max()])",
   },
+  {
+    testName: '[Accessor] Simple Accessor',
+    model: 'Northwind',
+    queryGrammar:
+      "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->filter(x|$x.COMPANY_NAME == 'google')->project(~[name:x|$x.COMPANY_NAME])->filter(row|$row.name == 'google')",
+  },
+  {
+    testName: '[Accessor] Store Accessor with pre/post filter nodes',
+    model: 'Northwind',
+    queryGrammar:
+      "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->filter(x|($x.COMPANY_NAME == 'Google') && (($x.CONTACT_NAME == 'Tim') || ($x.CONTACT_TITLE == 'President')))->project(~['Customer Id':x|$x.CUSTOMER_ID, 'Company Name':x|$x.COMPANY_NAME, 'Contact Name':x|$x.CONTACT_NAME, 'Contact Title':x|$x.CONTACT_TITLE, Address:x|$x.ADDRESS, City:x|$x.CITY, Region:x|$x.REGION, 'Postal Code':x|$x.POSTAL_CODE, Country:x|$x.COUNTRY, Phone:x|$x.PHONE, Fax:x|$x.FAX])->filter(row|($row.City == 'NYC') || (($row.Region == 'EMEA') && ($row.'Contact Name' == 'Tim')))",
+  },
 ];
 
 const globalGraphManagerStates = new Map<string, GraphManagerState>();
