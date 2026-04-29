@@ -1478,6 +1478,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.26.10":
+  version: 7.29.2
+  resolution: "@babel/runtime@npm:7.29.2"
+  checksum: 10/f55ba4052aa0255055b34371a145fbe69c29b37b49eaea14805b095bfb4153701486416e89392fd27ec8abafa53868be86e960b9f8f959fff91f2c8ac2a14b02
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.26.9, @babel/template@npm:^7.27.1, @babel/template@npm:^7.27.2, @babel/template@npm:^7.3.3":
   version: 7.27.2
   resolution: "@babel/template@npm:7.27.2"
@@ -2978,7 +2985,7 @@ __metadata:
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     jest: "npm:29.7.0"
-    mathjs: "npm:14.3.1"
+    mathjs: "npm:15.2.0"
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     monaco-editor: "npm:0.52.2"
@@ -3672,7 +3679,7 @@ __metadata:
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     jest: "npm:29.7.0"
-    mathjs: "npm:14.3.1"
+    mathjs: "npm:15.2.0"
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     monaco-editor: "npm:0.52.2"
@@ -14589,11 +14596,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mathjs@npm:14.3.1":
-  version: 14.3.1
-  resolution: "mathjs@npm:14.3.1"
+"mathjs@npm:15.2.0":
+  version: 15.2.0
+  resolution: "mathjs@npm:15.2.0"
   dependencies:
-    "@babel/runtime": "npm:^7.25.7"
+    "@babel/runtime": "npm:^7.26.10"
     complex.js: "npm:^2.2.5"
     decimal.js: "npm:^10.4.3"
     escape-latex: "npm:^1.2.0"
@@ -14604,7 +14611,7 @@ __metadata:
     typed-function: "npm:^4.2.1"
   bin:
     mathjs: bin/cli.js
-  checksum: 10/1f111c84ea0972f676f1afdc52bc853cf3dea76839ce2f93788235a1f9f57dc2636fe82ff033e7f6c4501dfcd18f887d000ab404555a177a0f3caeecf539ef20
+  checksum: 10/2a6ab1326a38e2048939a515ab797319685cd127354854235bdf4095d0fdcf292f31e794a064dc31121f027b670fb3248783ac5cda117fbd68f168115b50b50f
   languageName: node
   linkType: hard
 
