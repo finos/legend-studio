@@ -19,10 +19,12 @@ import {
   type PackageableRuntime,
   type AccessorOwner,
   type Accessor,
+  type RawLambda,
   IngestDefinition,
   Database,
   PackageableElementExplicitReference,
   RuntimePointer,
+  buildRawLambdaFromLambdaFunction,
   type TEMPORARY_IngestContent,
 } from '@finos/legend-graph';
 import { QueryBuilderState } from '../../QueryBuilderState.js';
@@ -39,6 +41,7 @@ import { buildElementOption } from '@finos/legend-lego/graph-editor';
 import { getCompatibleRuntimesFromAccessorOwner } from './AccessorQueryBuilderHelper.js';
 import { QueryBuilderEmbeddedFromExecutionContextState } from '../../QueryBuilderExecutionContextState.js';
 import { QueryBuilderTDSState } from '../../fetch-structure/tds/QueryBuilderTDSState.js';
+import { buildLambdaFunction } from '../../QueryBuilderValueSpecificationBuilder.js';
 
 export interface AccessorOwnerOption {
   label: string;
@@ -193,6 +196,19 @@ export class AccessorQueryBuilderState extends QueryBuilderState {
   changeSelectedRuntime(val: PackageableRuntime): void {
     this.changeRuntime(
       new RuntimePointer(PackageableElementExplicitReference.create(val)),
+    );
+  }
+
+  override buildQueryForPersistence(): RawLambda {
+    if (!this.isQuerySupported) {
+      return this.buildQuery();
+    }
+    return buildRawLambdaFromLambdaFunction(
+      buildLambdaFunction(this, {
+        skipExecutionContext: true,
+        useTypedRelationFunctions: this.isFetchStructureTyped,
+      }),
+      this.graphManagerState,
     );
   }
 }

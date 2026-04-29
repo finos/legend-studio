@@ -91,6 +91,7 @@ export {
   TEST__LegendApplicationPluginManager,
   TEST__getGenericApplicationConfig,
 } from './stores/__test-utils__/QueryBuilderStateTestUtils.js';
+export { TEST_DATA__QueryBuilder_Accessors } from './stores/__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 export { getQueryBuilderGraphManagerExtension } from './graph-manager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 export type { ServiceExecutionAnalysisResult } from './graph-manager/action/analytics/ServiceExecutionAnalysis.js';
 export type { MappingRuntimeCompatibilityAnalysisResult } from './graph-manager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';

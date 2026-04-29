@@ -444,6 +444,29 @@
     gap: 0.25rem;
   }
 
+  &__sample-values-btn {
+    border: 1px solid var(--color-blue-200);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-blue-200);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    font-size: 1.2rem;
+    white-space: nowrap;
+  }
+
+  &__query-builder-btn {
+    @extend .access-point-editor__sample-values-btn;
+
+    margin-left: 0.5rem;
+    height: 3rem;
+    align-self: flex-start;
+    flex: 0 0 auto;
+  }
+
   &__type {
     display: flex;
     height: 2.8rem;
@@ -583,6 +606,7 @@
     display: flex;
     flex-wrap: wrap;
     width: 100%;
+    gap: 0.5rem;
   }
 
   &__entry__id {

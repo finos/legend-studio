@@ -20,6 +20,7 @@ import {
   findByPlaceholderText,
   findByRole,
   findByText,
+  findByTitle,
   fireEvent,
   getAllByRole,
   getAllByText,
@@ -41,7 +42,10 @@ import {
   Core_GraphManagerPreset,
   DataProductLibraryIcon,
 } from '@finos/legend-graph';
-import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
+import {
+  QUERY_BUILDER_TEST_ID,
+  QueryBuilder_GraphManagerPreset,
+} from '@finos/legend-query-builder';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -209,6 +213,47 @@ test(integrationTest('Editing access points'), async () => {
   fireEvent.click(await screen.findByText('Confirm'));
   expect(screen.queryByText('ap1')).toBeNull();
 });
+
+test(
+  integrationTest('Editing access point lambda opens embedded query builder'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__LHDataProduct },
+    );
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    await TEST__openElementFromExplorerTree(
+      'model::sampleDataProduct',
+      renderResult,
+    );
+
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+
+    fireEvent.click(await findByText(editorGroup, 'APG'));
+    fireEvent.click(
+      await findByTitle(editorGroup, 'Edit lambda with query builder'),
+    );
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+    );
+    await screen.findByRole('button', { name: 'Save Lambda' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save Lambda' }));
+
+    await waitFor(() => {
+      expect(
+        renderResult.queryByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+      ).toBeNull();
+    });
+  },
+);
 
 test(integrationTest('Editing data product icon'), async () => {
   const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
