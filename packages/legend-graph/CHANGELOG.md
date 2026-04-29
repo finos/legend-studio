@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.5.3
+
+### Patch Changes
+
+- [#5122](https://github.com/finos/legend-studio/pull/5122) [`7e77d89`](https://github.com/finos/legend-studio/commit/7e77d89bedf1b1e3a888bb5615cd86d13c9a78be) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add `getServiceMetadataByPattern` to engine server client and remote engine, and `checkServiceRegisteredByPattern` to graph manager for checking service registration status via the `/serviceMetadata` endpoint.
+
+- [#5114](https://github.com/finos/legend-studio/pull/5114) [`9927f7b`](https://github.com/finos/legend-studio/commit/9927f7b74f181c9faf592262e2e4f65625733b25) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support Querying LakehouseAccessPoints in Legend Query. Link from marketplace to query.
+
 ## 32.5.2
 
 ### Patch Changes

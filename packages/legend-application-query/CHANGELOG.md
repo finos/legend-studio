@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.10
+
+### Patch Changes
+
+- [#5114](https://github.com/finos/legend-studio/pull/5114) [`9927f7b`](https://github.com/finos/legend-studio/commit/9927f7b74f181c9faf592262e2e4f65625733b25) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support Querying LakehouseAccessPoints in Legend Query. Link from marketplace to query.
+
 ## 13.8.9
 
 ### Patch Changes

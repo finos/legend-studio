@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.73
+
+### Patch Changes
+
+- [#5114](https://github.com/finos/legend-studio/pull/5114) [`9927f7b`](https://github.com/finos/legend-studio/commit/9927f7b74f181c9faf592262e2e4f65625733b25) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support Querying LakehouseAccessPoints in Legend Query. Link from marketplace to query.
+
 ## 0.0.72
 
 ### Patch Changes
