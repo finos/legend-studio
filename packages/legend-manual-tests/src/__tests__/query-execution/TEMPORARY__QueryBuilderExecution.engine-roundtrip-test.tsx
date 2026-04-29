@@ -357,7 +357,9 @@ test(
     await act(async () => {
       fireEvent.click(getByText(queryBuilderResultPanel, 'Run Query'));
     });
-    await waitFor(() => findByText(queryBuilderResultPanel, 'Age'));
+    await findByText(queryBuilderResultPanel, 'Age', undefined, {
+      timeout: 8000,
+    });
 
     // `runQuery` clears the cell selection — populate it after the grid renders.
     const selectedCells: TDSResultCellData[] = [
@@ -447,12 +449,18 @@ test(
       queryBuilderState.resultState.setPreviewLimit(overflowLimit);
     });
 
+    // Mirror the runQuery flow's `withDataOverflowCheck: true` so the lambda
+    // sent to the engine resolves to take(previewLimit + 1) — i.e. one row
+    // beyond the limit, which is what processExecutionResult uses to detect
+    // overflow.
     const executionInput = await (
       queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
     ).createExecutionInput(
       queryBuilderState.graphManagerState.graph,
       guaranteeNonNullable(queryBuilderState.executionContextState.mapping),
-      queryBuilderState.resultState.buildExecutionRawLambda(),
+      queryBuilderState.resultState.buildExecutionRawLambda({
+        withDataOverflowCheck: true,
+      }),
       guaranteeNonNullable(
         queryBuilderState.executionContextState.runtimeValue,
       ),
@@ -476,17 +484,17 @@ test(
     await act(async () => {
       fireEvent.click(getByText(queryBuilderResultPanel, 'Run Query'));
     });
-    await waitFor(() => findByText(queryBuilderResultPanel, 'Age'));
+    await findByText(queryBuilderResultPanel, 'Age', undefined, {
+      timeout: 8000,
+    });
 
     expect(queryBuilderState.resultState.isExecutionResultOverflowing).toBe(
       true,
     );
 
-    await waitFor(() =>
-      findByText(
-        queryBuilderResultPanel,
-        'Data below is not complete - query produces more rows than the set grid preview limit',
-      ),
+    await findByText(
+      queryBuilderResultPanel,
+      'Data below is not complete - query produces more rows than the set grid preview limit',
     );
 
     // The info-icon title surfaces the active preview limit
