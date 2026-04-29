@@ -91,11 +91,22 @@ import {
   useState,
 } from 'react';
 import {
+  assertErrorThrown,
   filterByType,
+  guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
   UserSearchService,
 } from '@finos/legend-shared';
-import { InlineLambdaEditor, LineageViewer } from '@finos/legend-query-builder';
+import {
+  AccessorQueryBuilderState,
+  getCompatibleRuntimesFromAccessorOwner,
+  InlineLambdaEditor,
+  LineageViewer,
+  QueryBuilderActionConfig,
+  QueryBuilderAdvancedWorkflowState,
+  type QueryBuilderState,
+} from '@finos/legend-query-builder';
 import { action, autorun, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
@@ -802,6 +813,90 @@ export const LakehouseDataProductAccessPointEditor = observer(
     const generateLineage = editorStore.applicationStore.guardUnhandledError(
       () => flowResult(accessPointState.generateLineage()),
     );
+
+    const editLambdaInQueryBuilder =
+      editorStore.applicationStore.guardUnhandledError(async () => {
+        const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
+        const applicationStore = editorStore.applicationStore;
+        const ingestDefinition =
+          editorStore.graphManagerState.graph.ownIngests.find(isNonNullable);
+        if (!ingestDefinition) {
+          applicationStore.notificationService.notifyError(
+            'No ingest definition found in this project',
+          );
+          return;
+        }
+        await flowResult(
+          embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
+            setupQueryBuilderState: async (): Promise<QueryBuilderState> => {
+              const queryBuilderState = new AccessorQueryBuilderState(
+                applicationStore,
+                undefined,
+                editorStore.graphManagerState,
+                QueryBuilderAdvancedWorkflowState.INSTANCE,
+                QueryBuilderActionConfig.INSTANCE,
+                applicationStore.config.options.queryBuilderConfig,
+                editorStore.editorMode.getSourceInfo(),
+              );
+              queryBuilderState.changeAccessorOwner(ingestDefinition);
+              const compatibleRuntimes = getCompatibleRuntimesFromAccessorOwner(
+                ingestDefinition,
+                editorStore.graphManagerState,
+              );
+              if (compatibleRuntimes.length > 0) {
+                queryBuilderState.changeSelectedRuntime(
+                  guaranteeNonNullable(compatibleRuntimes[0]),
+                );
+              }
+              queryBuilderState.initializeWithQuery(accessPoint.func);
+              return queryBuilderState;
+            },
+            actionConfigs: [
+              {
+                key: 'save-query-btn',
+                renderer: (
+                  queryBuilderState: QueryBuilderState,
+                ): React.ReactNode => {
+                  const save = applicationStore.guardUnhandledError(
+                    async () => {
+                      try {
+                        const rawLambda =
+                          queryBuilderState.buildQueryForPersistence();
+                        accessPoint.func = rawLambda;
+                        embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
+                          undefined,
+                        );
+                        await flowResult(
+                          lambdaEditorState.convertLambdaObjectToGrammarString({
+                            pretty: true,
+                          }),
+                        );
+                      } catch (error) {
+                        assertErrorThrown(error);
+                        applicationStore.notificationService.notifyError(
+                          `Can't save access point lambda: ${error.message}`,
+                        );
+                      }
+                    },
+                  );
+                  return (
+                    <button
+                      className="query-builder__dialog__header__custom-action"
+                      tabIndex={-1}
+                      disabled={props.isReadOnly}
+                      onClick={save}
+                    >
+                      Save Lambda
+                    </button>
+                  );
+                },
+              },
+            ],
+            disableCompile: true,
+          }),
+        );
+      });
+
     return (
       <PanelDnDEntry
         ref={ref}
@@ -866,17 +961,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     disabled={props.isReadOnly}
                     title="Edit sample values"
                     style={{
-                      border: '1px solid var(--color-blue-200)',
-                      borderRadius: '4px',
-                      padding: '0.5rem 0.75rem',
-                      background: 'var(--color-blue-200)',
                       cursor: props.isReadOnly ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      color: 'white',
-                      fontSize: '1.2rem',
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     <PencilEditIcon />
@@ -894,16 +979,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
                       border: accessPointState.hasRelationElementMismatch
                         ? '2px solid var(--color-red-300)'
                         : '1px solid var(--color-blue-200)',
-                      borderRadius: '4px',
-                      padding: '0.5rem 0.75rem',
-                      background: 'var(--color-blue-200)',
                       cursor: props.isReadOnly ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      color: 'white',
-                      fontSize: '1.2rem',
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     <PencilEditIcon />
@@ -918,17 +994,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     disabled={props.isReadOnly}
                     title="Add sample values"
                     style={{
-                      border: '1px solid var(--color-blue-200)',
-                      borderRadius: '4px',
-                      padding: '0.5rem 0.75rem',
-                      background: 'var(--color-blue-200)',
                       cursor: props.isReadOnly ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      color: 'white',
-                      fontSize: '1.2rem',
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     <PlusIcon />
@@ -1138,6 +1204,15 @@ export const LakehouseDataProductAccessPointEditor = observer(
               <div className="access-point-editor__generic-entry">
                 <div className="access-point-editor__entry__container">
                   <div className="access-point-editor__entry">
+                    <button
+                      className="access-point-editor__query-builder-btn"
+                      onClick={editLambdaInQueryBuilder}
+                      disabled={props.isReadOnly}
+                      title="Edit lambda with query builder"
+                    >
+                      <PencilEditIcon />
+                      <span>Query Builder</span>
+                    </button>
                     <InlineLambdaEditor
                       className={'access-point-editor__lambda-editor'}
                       disabled={

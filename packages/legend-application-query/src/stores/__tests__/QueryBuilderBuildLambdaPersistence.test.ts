@@ -23,6 +23,8 @@
  *                          buildQueryForPersistence() emits a plain lambda.
  *  - DataProduct MODEL   – buildQuery() embeds `with(query, dataProduct)` + `from(…, runtime)`,
  *                          buildQueryForPersistence() emits a plain lambda.
+ *  - Accessor            – buildQuery() embeds `from(query, runtime)`,
+ *                          buildQueryForPersistence() emits a plain lambda.
  *  - DataSpace           – neither path embeds execution context in the lambda;
  *                          buildQuery() === buildQueryForPersistence().
  *  - Regular (mapping)   – same contract as DataSpace.
@@ -44,6 +46,8 @@ import {
   TEST__LegendApplicationPluginManager,
   TEST__getGenericApplicationConfig,
   QueryBuilder_GraphManagerPreset,
+  AccessorQueryBuilderState,
+  TEST_DATA__QueryBuilder_Accessors,
 } from '@finos/legend-query-builder';
 import {
   Core_GraphManagerPreset,
@@ -55,6 +59,7 @@ import {
   RelationTypeMetadata,
   RelationTypeColumnMetadata,
   Multiplicity,
+  type RawLambda,
 } from '@finos/legend-graph';
 import {
   TEST__buildGraphWithEntities,
@@ -67,7 +72,6 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
 import type { Entity } from '@finos/legend-storage';
-
 // ---------------------------------------------------------------------------
 // Shared inline entities
 // ---------------------------------------------------------------------------
@@ -240,6 +244,26 @@ const buildDataProductTestSetup = async () => {
   return { applicationStore, graphManagerState };
 };
 
+const buildAccessorTestSetup = async () => {
+  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  pluginManager
+    .usePresets([
+      new Core_GraphManagerPreset(),
+      new QueryBuilder_GraphManagerPreset(),
+    ])
+    .install();
+  const applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
+  );
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
+    TEST_DATA__QueryBuilder_Accessors,
+  );
+  return { applicationStore, graphManagerState };
+};
+
 /**
  * Creates a `DataProductQueryBuilderState` for a given execution value and
  * ensures the class is set to `model::Person`.
@@ -301,7 +325,7 @@ const buildDataProductState = (
  */
 const getOuterFunctionName = (
   graphManagerState: ReturnType<typeof TEST__getTestGraphManagerState>,
-  rawLambda: ReturnType<DataProductQueryBuilderState['buildQuery']>,
+  rawLambda: RawLambda,
 ): string | undefined => {
   const json = graphManagerState.graphManager.serializeRawValueSpecification(
     rawLambda,
@@ -753,3 +777,70 @@ describe(
     );
   },
 );
+
+describe(unitTest('Accessor – buildQuery vs buildQueryForPersistence'), () => {
+  test(
+    unitTest('buildQuery() wraps lambda with from(query, runtime)'),
+    async () => {
+      const { applicationStore, graphManagerState } =
+        await buildAccessorTestSetup();
+
+      const state = new AccessorQueryBuilderState(
+        applicationStore,
+        undefined,
+        graphManagerState,
+        QueryBuilderAdvancedWorkflowState.INSTANCE,
+        QueryBuilderActionConfig.INSTANCE,
+      );
+
+      const ingest = guaranteeNonNullable(graphManagerState.graph.ingests[0]);
+      state.changeAccessorOwner(ingest);
+      state.changeSelectedRuntime(
+        guaranteeNonNullable(state.compatibleRuntimes[0]),
+      );
+
+      expect(state.isQuerySupported).toBe(true);
+      expect(getOuterFunctionName(graphManagerState, state.buildQuery())).toBe(
+        'from',
+      );
+    },
+  );
+
+  test(
+    unitTest('buildQueryForPersistence() omits from() wrapping'),
+    async () => {
+      const { applicationStore, graphManagerState } =
+        await buildAccessorTestSetup();
+
+      const state = new AccessorQueryBuilderState(
+        applicationStore,
+        undefined,
+        graphManagerState,
+        QueryBuilderAdvancedWorkflowState.INSTANCE,
+        QueryBuilderActionConfig.INSTANCE,
+      );
+
+      const ingest = guaranteeNonNullable(graphManagerState.graph.ingests[0]);
+      state.changeAccessorOwner(ingest);
+      state.changeSelectedRuntime(
+        guaranteeNonNullable(state.compatibleRuntimes[0]),
+      );
+
+      const outerFn = getOuterFunctionName(
+        graphManagerState,
+        state.buildQueryForPersistence(),
+      );
+      expect(outerFn).not.toBe('from');
+
+      const execJson =
+        graphManagerState.graphManager.serializeRawValueSpecification(
+          state.buildQuery(),
+        );
+      const persistJson =
+        graphManagerState.graphManager.serializeRawValueSpecification(
+          state.buildQueryForPersistence(),
+        );
+      expect(execJson).not.toEqual(persistJson);
+    },
+  );
+});
