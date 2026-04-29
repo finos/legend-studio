@@ -40,6 +40,7 @@ import {
   V1_PureGraphManager,
   V1_buildExecutionResult,
   V1_deserializeExecutionResult,
+  type TDSResultCellData,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { integrationTest, createSpy } from '@finos/legend-shared/test';
@@ -297,3 +298,212 @@ test(integrationTest('test preview-data query execution'), async () => {
     );
   }
 });
+
+test(
+  integrationTest(
+    'test cell selection stats bar computes numeric stats for selected cells',
+  ),
+  async () => {
+    const { mappingPath, runtimePath, modelFileDir, modelFilePath, rawLambda } =
+      {
+        mappingPath: 'model::RelationalMapping',
+        runtimePath: 'model::Runtime',
+        modelFileDir: 'model',
+        modelFilePath: 'TEST_DATA_QueryBuilder_Query_Execution_model.pure',
+        rawLambda: TEST_DATA_QueryExecution_PreviewData_ExecutionInput,
+      };
+    const entities = await generateModelEntitesFromModelGrammar(
+      resolve(__dirname, modelFileDir),
+      modelFilePath,
+      undefined,
+    );
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      entities,
+      stub_RawLambda(),
+      mappingPath,
+      runtimePath,
+      TEST_DATA_QueryExecution_MappingAnalysisResult,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(rawLambda.parameters, rawLambda.body),
+      );
+    });
+    const executionInput = await (
+      queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
+    ).createExecutionInput(
+      queryBuilderState.graphManagerState.graph,
+      guaranteeNonNullable(queryBuilderState.executionContextState.mapping),
+      queryBuilderState.resultState.buildExecutionRawLambda(),
+      guaranteeNonNullable(
+        queryBuilderState.executionContextState.runtimeValue,
+      ),
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
+    const executionResult = await ENGINE_TEST_SUPPORT__execute(executionInput);
+    createSpy(
+      queryBuilderState.graphManagerState.graphManager,
+      'runQuery',
+    ).mockResolvedValue({
+      executionResult: V1_buildExecutionResult(
+        V1_deserializeExecutionResult(executionResult),
+      ),
+    });
+    const queryBuilderResultPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+      ),
+    );
+    await act(async () => {
+      fireEvent.click(getByText(queryBuilderResultPanel, 'Run Query'));
+    });
+    await findByText(queryBuilderResultPanel, 'Age', undefined, {
+      timeout: 8000,
+    });
+
+    // `runQuery` clears the cell selection — populate it after the grid renders.
+    const selectedCells: TDSResultCellData[] = [
+      {
+        value: 10,
+        columnName: 'Age',
+        coordinates: { rowIndex: 0, colIndex: 0 },
+      },
+      {
+        value: 20,
+        columnName: 'Age',
+        coordinates: { rowIndex: 1, colIndex: 0 },
+      },
+      {
+        value: 30,
+        columnName: 'Age',
+        coordinates: { rowIndex: 2, colIndex: 0 },
+      },
+      {
+        value: 40,
+        columnName: 'Age',
+        coordinates: { rowIndex: 3, colIndex: 0 },
+      },
+    ];
+    await act(async () => {
+      queryBuilderState.resultState.setSelectedCells(selectedCells);
+    });
+
+    // Wait for Phase 2 (200ms debounce + rAF) to populate numeric stats
+    const statsBar = await waitFor(
+      () => {
+        const el = queryBuilderResultPanel.querySelector(
+          '.query-builder__result__tds-grid__stats-bar',
+        );
+        expect(el).not.toBeNull();
+        expect(el?.textContent).toContain('Sum:');
+        return el as HTMLElement;
+      },
+      { timeout: 2000 },
+    );
+
+    const text = statsBar.textContent ?? '';
+    expect(text).toContain('Count:4');
+    expect(text).toContain('Unique Count:4');
+    expect(text).toContain('Empty Count:0');
+    expect(text).toContain('Min:10');
+    expect(text).toContain('Max:40');
+    expect(text).toContain('Sum:100');
+    expect(text).toContain('Avg:25');
+  },
+);
+
+test(
+  integrationTest(
+    'test result overflow warning when query produces more rows than preview limit',
+  ),
+  async () => {
+    const { mappingPath, runtimePath, modelFileDir, modelFilePath, rawLambda } =
+      {
+        mappingPath: 'model::RelationalMapping',
+        runtimePath: 'model::Runtime',
+        modelFileDir: 'model',
+        modelFilePath: 'TEST_DATA_QueryBuilder_Query_Execution_model.pure',
+        rawLambda: TEST_DATA_QueryExecution_PreviewData_ExecutionInput,
+      };
+    const entities = await generateModelEntitesFromModelGrammar(
+      resolve(__dirname, modelFileDir),
+      modelFilePath,
+      undefined,
+    );
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      entities,
+      stub_RawLambda(),
+      mappingPath,
+      runtimePath,
+      TEST_DATA_QueryExecution_MappingAnalysisResult,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(rawLambda.parameters, rawLambda.body),
+      );
+    });
+    // Lower the preview limit below the engine row count (the test data
+    // contains 11 Person rows) so processExecutionResult flags overflow.
+    const overflowLimit = 2;
+    await act(async () => {
+      queryBuilderState.resultState.setPreviewLimit(overflowLimit);
+    });
+
+    // Mirror the runQuery flow's `withDataOverflowCheck: true` so the lambda
+    // sent to the engine resolves to take(previewLimit + 1) — i.e. one row
+    // beyond the limit, which is what processExecutionResult uses to detect
+    // overflow.
+    const executionInput = await (
+      queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
+    ).createExecutionInput(
+      queryBuilderState.graphManagerState.graph,
+      guaranteeNonNullable(queryBuilderState.executionContextState.mapping),
+      queryBuilderState.resultState.buildExecutionRawLambda({
+        withDataOverflowCheck: true,
+      }),
+      guaranteeNonNullable(
+        queryBuilderState.executionContextState.runtimeValue,
+      ),
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
+    const executionResult = await ENGINE_TEST_SUPPORT__execute(executionInput);
+    createSpy(
+      queryBuilderState.graphManagerState.graphManager,
+      'runQuery',
+    ).mockResolvedValue({
+      executionResult: V1_buildExecutionResult(
+        V1_deserializeExecutionResult(executionResult),
+      ),
+    });
+
+    const queryBuilderResultPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+      ),
+    );
+    await act(async () => {
+      fireEvent.click(getByText(queryBuilderResultPanel, 'Run Query'));
+    });
+    await findByText(queryBuilderResultPanel, 'Age', undefined, {
+      timeout: 8000,
+    });
+
+    expect(queryBuilderState.resultState.isExecutionResultOverflowing).toBe(
+      true,
+    );
+
+    await findByText(
+      queryBuilderResultPanel,
+      'Data below is not complete - query produces more rows than the set grid preview limit',
+    );
+
+    // The info-icon title surfaces the active preview limit
+    const infoIcon = queryBuilderResultPanel.querySelector(
+      '[title*="The preview limit is set to"]',
+    );
+    expect(infoIcon).not.toBeNull();
+    expect(infoIcon?.getAttribute('title')).toContain(
+      `The preview limit is set to ${overflowLimit}`,
+    );
+  },
+);
