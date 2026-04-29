@@ -1,5 +1,13 @@
 # @finos/legend-server-marketplace
 
+## 0.1.61
+
+### Patch Changes
+
+- [#5121](https://github.com/finos/legend-studio/pull/5121) [`3d5d602`](https://github.com/finos/legend-studio/commit/3d5d602989bf9af9d7e01a0dc0d651383c5ff7b8) ([@bojja-gs](https://github.com/bojja-gs)) - Terminals and addons fixes and new implementations
+
+- [#5124](https://github.com/finos/legend-studio/pull/5124) [`de7c62d`](https://github.com/finos/legend-studio/commit/de7c62d6d703765598cb9a84bef69cdb4cd85605) ([@bojja-gs](https://github.com/bojja-gs)) - Add field search UI for Marketplace
+
 ## 0.1.60
 
 ### Patch Changes

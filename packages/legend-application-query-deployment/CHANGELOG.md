@@ -1,5 +1,7 @@
 # @finos/legend-application-query-deployment
 
+## 13.212.0
+
 ## 13.211.0
 
 ### Patch Changes

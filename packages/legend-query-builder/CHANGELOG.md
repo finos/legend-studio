@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.18.3
+
+### Patch Changes
+
+- [#5114](https://github.com/finos/legend-studio/pull/5114) [`9927f7b`](https://github.com/finos/legend-studio/commit/9927f7b74f181c9faf592262e2e4f65625733b25) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support Querying LakehouseAccessPoints in Legend Query. Link from marketplace to query.
+
+- [#5117](https://github.com/finos/legend-studio/pull/5117) [`0acff55`](https://github.com/finos/legend-studio/commit/0acff55b2c0d90b28d3fdbe07e9377822941312d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support filtering on accessor relation columns. Introduced `FilterConditionSourceState` abstraction with `FilterPropertyExpressionSourceState` and `FilterRelationColumnSourceState` implementations, enabling the filter panel for accessor queries. Added drag-and-drop support for relation columns in the filter panel and lambda roundtrip processing for accessor filter expressions.
+
 ## 4.18.2
 
 ### Patch Changes
