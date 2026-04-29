@@ -64,7 +64,7 @@
     "query-string": "9.1.1",
     "seedrandom": "3.0.5",
     "serializr": "3.0.3",
-    "uuid": "11.1.0"
+    "uuid": "14.0.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
