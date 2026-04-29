@@ -1,0 +1,403 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.database-editor {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__content {
+    height: 100%;
+    width: 100%;
+    position: relative;
+  }
+
+  &__modal {
+    width: 45rem;
+  }
+
+  // ------------------------------------------
+  // Header action buttons
+  // ------------------------------------------
+
+  &__header__action {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2.8rem;
+    padding: 0 1rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  // ------------------------------------------
+  // Explorer panel (left side - schema tree)
+  // ------------------------------------------
+
+  &__explorer {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-dark-grey-50);
+
+    &__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0.5rem;
+      height: 3.4rem;
+      min-height: 3.4rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-dark-grey-100);
+
+      &__title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--color-light-grey-300);
+        text-transform: uppercase;
+      }
+    }
+  }
+
+  // ------------------------------------------
+  // Tree nodes
+  // ------------------------------------------
+
+  &__tree {
+    padding: 0.5rem 0;
+    overflow-y: auto;
+    height: 100%;
+
+    &__empty {
+      padding: 1rem;
+      color: var(--color-dark-grey-500);
+      font-size: 1.2rem;
+      text-align: center;
+    }
+  }
+
+  &__tree__node {
+    user-select: none;
+
+    &__container {
+      display: flex;
+      align-items: center;
+      height: 2.8rem;
+      padding: 0 0.5rem;
+      cursor: pointer;
+      color: var(--color-light-grey-400);
+
+      &:hover {
+        background: var(--color-dark-grey-200);
+      }
+
+      &--selected {
+        background: var(--color-dark-grey-250);
+      }
+    }
+
+    &__expand-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.8rem;
+      min-width: 1.8rem;
+
+      svg {
+        font-size: 1rem;
+        color: var(--color-light-grey-400);
+      }
+    }
+
+    &__type-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 0.5rem;
+    }
+
+    &__label {
+      font-size: 1.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__info {
+      margin-left: auto;
+      font-size: 1rem;
+      color: var(--color-dark-grey-500);
+      padding-left: 0.5rem;
+      white-space: nowrap;
+    }
+
+    &__rename-input {
+      background: var(--color-dark-grey-300);
+      border: 0.1rem solid var(--color-blue-200);
+      color: var(--color-light-grey-200);
+      font-size: 1.2rem;
+      padding: 0.2rem 0.5rem;
+      height: 2.2rem;
+      width: 100%;
+      outline: none;
+    }
+
+    &__children {
+      // indentation for child nodes
+    }
+
+    &__empty {
+      padding: 0.4rem 0.5rem 0.4rem 3.6rem;
+      color: var(--color-dark-grey-500);
+      font-size: 1.1rem;
+      font-style: italic;
+    }
+
+    &__context-menu {
+      display: contents;
+    }
+  }
+
+  // ------------------------------------------
+  // Column grid (right side - SSMS-style table designer)
+  // ------------------------------------------
+
+  &__column-grid {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    &__header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      height: 3.4rem;
+      min-height: 3.4rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-dark-grey-100);
+    }
+
+    &__header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--color-light-grey-300);
+      font-size: 1.2rem;
+      font-weight: 600;
+
+      &__text {
+        text-transform: none;
+      }
+    }
+
+    &__placeholder {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &__text {
+        color: var(--color-dark-grey-500);
+        font-size: 1.4rem;
+      }
+    }
+
+    &__table {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      height: 3rem;
+      min-height: 3rem;
+      background: var(--color-dark-grey-200);
+      border-bottom: 0.1rem solid var(--color-dark-grey-300);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    &__body {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    &__row {
+      display: flex;
+      align-items: center;
+      height: 3rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-100);
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-dark-grey-200);
+      }
+
+      &--selected {
+        background: var(--color-dark-blue-300);
+
+        &:hover {
+          background: var(--color-dark-blue-300);
+        }
+      }
+
+      &-context {
+        display: contents;
+      }
+    }
+
+    &__cell {
+      display: flex;
+      align-items: center;
+      padding: 0 0.8rem;
+      font-size: 1.2rem;
+      color: var(--color-light-grey-400);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+
+      &--header {
+        font-weight: 600;
+        color: var(--color-light-grey-300);
+        text-transform: uppercase;
+        font-size: 1.1rem;
+      }
+
+      &--pk {
+        width: 4rem;
+        min-width: 4rem;
+        justify-content: center;
+      }
+
+      &--name {
+        flex: 2;
+        min-width: 15rem;
+      }
+
+      &--type {
+        flex: 2;
+        min-width: 15rem;
+        gap: 0.5rem;
+      }
+
+      &--nullable {
+        width: 8rem;
+        min-width: 8rem;
+      }
+    }
+
+    &__pk-icon {
+      color: var(--color-yellow-200);
+      font-size: 1.2rem;
+    }
+
+    &__type-icon {
+      display: flex;
+      align-items: center;
+
+      svg {
+        font-size: 1.2rem;
+      }
+    }
+
+    &__empty {
+      padding: 2rem;
+      color: var(--color-dark-grey-500);
+      font-size: 1.2rem;
+      text-align: center;
+    }
+  }
+
+  // ------------------------------------------
+  // Column form (used in modals)
+  // ------------------------------------------
+
+  &__column-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 0.5rem 0;
+
+    &__field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      &--checkbox {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+
+        input[type='checkbox'] {
+          width: 1.6rem;
+          height: 1.6rem;
+          cursor: pointer;
+        }
+      }
+    }
+
+    &__label {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--color-light-grey-400);
+    }
+
+    &__input {
+      height: 2.8rem;
+      padding: 0 0.8rem;
+      font-size: 1.2rem;
+      width: 100%;
+
+      &--number {
+        width: 12rem;
+      }
+    }
+
+    &__select {
+      height: 2.8rem;
+      padding: 0 0.5rem;
+      font-size: 1.2rem;
+      background: var(--color-dark-grey-300);
+      color: var(--color-light-grey-200);
+      border: 0.1rem solid var(--color-dark-grey-400);
+      cursor: pointer;
+      width: 100%;
+      outline: none;
+
+      &:focus {
+        border-color: var(--color-blue-200);
+      }
+    }
+  }
+}
