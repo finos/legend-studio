@@ -711,3 +711,17 @@ Runtime showcase::northwind::mapping::ModelNorthWindRuntime
     ]
   ];
 }
+
+Runtime showcase::northwind::mapping::StoreRuntime
+{
+  mappings:
+  [
+  ];
+  connections:
+  [
+    showcase::northwind::store::NorthwindDatabase:
+    [
+      connection_1: showcase::northwind::connection::NorthwindConnection
+    ]
+  ];
+}
