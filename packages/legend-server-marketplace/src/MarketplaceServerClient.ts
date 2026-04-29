@@ -34,6 +34,7 @@ import type {
   CartItemRequest,
   CartItemResponse,
   CartSummary,
+  DeleteCartItemResponse,
   VendorAddonsSearchParams,
   VendorAddonsSearchResponse,
 } from './models/Cart.js';
@@ -225,8 +226,18 @@ export class MarketplaceServerClient extends AbstractServerClient {
   clearCart = async (user: string): Promise<void> =>
     this.delete(this._cart(user));
 
-  deleteCartItem = async (user: string, cartId: number): Promise<void> =>
-    this.delete(`${this._cart(user)}/item/${cartId}`);
+  deleteCartItem = async (
+    user: string,
+    cartId: number,
+    confirmDelete?: boolean,
+  ): Promise<PlainObject<DeleteCartItemResponse>> =>
+    this.delete(
+      `${this._cart(user)}/item/${cartId}`,
+      {},
+      {},
+      undefined,
+      confirmDelete ? { confirm_delete: true } : undefined,
+    );
 
   addToCart = async (
     user: string,

@@ -19,8 +19,15 @@ import {
   RecommendationSource,
   type TerminalResult,
 } from '@finos/legend-server-marketplace';
-import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { flowResult } from 'mobx';
+import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { toastManager } from '../Toast/CartToast.js';
@@ -33,166 +40,182 @@ interface RecommendedItemsCardProps {
   selectedItemId?: number | undefined;
 }
 
-export const RecommendedItemsCard = (props: RecommendedItemsCardProps) => {
-  const { recommendedItem, onSelect, isSelecting, selectedItemId } = props;
-  const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [inCart, setInCart] = useState(() =>
-    legendMarketplaceBaseStore.cartStore.isItemInCart(recommendedItem.id),
-  );
+export const RecommendedItemsCard = observer(
+  (props: RecommendedItemsCardProps) => {
+    const { recommendedItem, onSelect, isSelecting, selectedItemId } = props;
+    const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const inCart = legendMarketplaceBaseStore.cartStore.isItemInCart(
+      recommendedItem.id,
+    );
 
-  const isAssociationFlow = onSelect !== undefined;
-  const isCurrentlySelecting =
-    isAssociationFlow &&
-    Boolean(isSelecting) &&
-    selectedItemId === recommendedItem.id;
-  const isMarketplaceItem =
-    recommendedItem.source === RecommendationSource.MARKETPLACE;
+    const isAssociationFlow = onSelect !== undefined;
+    const isCurrentlySelecting =
+      isAssociationFlow &&
+      Boolean(isSelecting) &&
+      selectedItemId === recommendedItem.id;
+    const isMarketplaceItem =
+      recommendedItem.source === RecommendationSource.MARKETPLACE;
 
-  const handleAddAddonToCart = (addon: TerminalResult) => {
-    setIsAddingToCart(true);
-    const cartItemRequest =
-      legendMarketplaceBaseStore.cartStore.providerToCartRequest(addon);
+    const handleAddAddonToCart = (addon: TerminalResult) => {
+      setIsAddingToCart(true);
+      const cartItemRequest =
+        legendMarketplaceBaseStore.cartStore.providerToCartRequest(addon);
 
-    flowResult(
-      legendMarketplaceBaseStore.cartStore.addToCartWithAPI(cartItemRequest),
-    )
-      .then((result) => {
-        if (result.success) {
-          setInCart(true);
-        }
-        setIsAddingToCart(false);
-      })
-      .catch((error) => {
-        assertErrorThrown(error);
-        toastManager.error(
-          `Failed to add ${addon.productName} to cart: ${error.message}`,
-        );
-        setIsAddingToCart(false);
-      });
-  };
+      flowResult(
+        legendMarketplaceBaseStore.cartStore.addToCartWithAPI(cartItemRequest),
+      )
+        .catch((error) => {
+          assertErrorThrown(error);
+          toastManager.error(
+            `Failed to add ${addon.productName} to cart: ${error.message}`,
+          );
+        })
+        .finally(() => {
+          setIsAddingToCart(false);
+        });
+    };
 
-  const renderAction = () => {
-    if (isAssociationFlow) {
-      if (recommendedItem.isOwned) {
-        return (
-          <Box className="recommended-addons-modal__owned-badge">
-            <CheckCircleIcon />
-            <Typography variant="body2">Owned</Typography>
-          </Box>
-        );
-      }
-
-      if (isMarketplaceItem) {
-        if (inCart) {
+    const renderAction = () => {
+      if (isAssociationFlow) {
+        if (recommendedItem.isOwned) {
           return (
-            <Box className="recommended-addons-modal__in-cart-badge">
-              <Typography variant="body2">In Cart</Typography>
+            <Box className="recommended-addons-modal__owned-badge">
               <CheckCircleIcon />
+              <Typography variant="body2">Owned</Typography>
             </Box>
           );
         }
+
+        if (isMarketplaceItem) {
+          if (inCart) {
+            return (
+              <Box className="recommended-addons-modal__in-cart-badge">
+                <Typography variant="body2">In Cart</Typography>
+                <CheckCircleIcon />
+              </Box>
+            );
+          }
+          return (
+            <Button
+              variant="outlined"
+              onClick={() => onSelect(recommendedItem)}
+              disabled={Boolean(isSelecting)}
+              size="small"
+              className="recommended-addons-modal__add-btn"
+            >
+              {isCurrentlySelecting ? (
+                <>
+                  Adding... &nbsp;
+                  <CircularProgress size={14} />
+                </>
+              ) : (
+                <>
+                  Add to Cart &nbsp;
+                  <PlusIcon />
+                </>
+              )}
+            </Button>
+          );
+        }
+
         return (
           <Button
             variant="outlined"
             onClick={() => onSelect(recommendedItem)}
             disabled={Boolean(isSelecting)}
             size="small"
-            className="recommended-addons-modal__add-btn"
+            className="recommended-addons-modal__select-btn"
           >
             {isCurrentlySelecting ? (
               <>
-                Adding... &nbsp;
+                Selecting... &nbsp;
                 <CircularProgress size={14} />
               </>
             ) : (
               <>
-                Add to Cart &nbsp;
-                <PlusIcon />
+                Select &nbsp;
+                <CheckIcon />
               </>
             )}
           </Button>
         );
       }
 
-      return (
+      const button = (
         <Button
           variant="outlined"
-          onClick={() => onSelect(recommendedItem)}
-          disabled={Boolean(isSelecting)}
+          onClick={() => handleAddAddonToCart(recommendedItem)}
+          disabled={inCart || isAddingToCart}
           size="small"
-          className="recommended-addons-modal__select-btn"
+          className={clsx('recommended-addons-modal__add-btn', {
+            'recommended-addons-modal__add-btn--added': inCart,
+          })}
         >
-          {isCurrentlySelecting ? (
+          {isAddingToCart ? (
             <>
-              Selecting... &nbsp;
+              Adding... &nbsp;
               <CircularProgress size={14} />
             </>
+          ) : inCart ? (
+            'Added to Cart'
           ) : (
             <>
-              Select &nbsp;
-              <CheckIcon />
+              Add to Cart &nbsp;
+              <PlusIcon />
             </>
           )}
         </Button>
       );
-    }
+
+      if (inCart) {
+        return (
+          <Tooltip
+            title={
+              recommendedItem.isMandatory
+                ? 'This is a mandatory item which needs to be associated with this order.'
+                : 'This item is already in your cart.'
+            }
+            arrow={true}
+            placement="top"
+          >
+            <span>{button}</span>
+          </Tooltip>
+        );
+      }
+
+      return button;
+    };
 
     return (
-      <Button
-        variant="outlined"
-        onClick={() => handleAddAddonToCart(recommendedItem)}
-        disabled={inCart || isAddingToCart}
-        size="small"
-        className={clsx('recommended-addons-modal__add-btn', {
-          'recommended-addons-modal__add-btn--added': inCart,
-        })}
-      >
-        {isAddingToCart ? (
-          <>
-            Adding... &nbsp;
-            <CircularProgress size={14} />
-          </>
-        ) : inCart ? (
-          'Added to Cart'
-        ) : (
-          <>
-            Add to Cart &nbsp;
-            <PlusIcon />
-          </>
-        )}
-      </Button>
-    );
-  };
-
-  return (
-    <Box className="recommended-addons-modal__list-item">
-      <Typography
-        variant="body1"
-        className="recommended-addons-modal__item-name"
-      >
-        {recommendedItem.productName}
-      </Typography>
-      <Typography
-        variant="body2"
-        className="recommended-addons-modal__item-provider"
-      >
-        {recommendedItem.providerName}
-      </Typography>
-      <Typography
-        variant="body2"
-        className="recommended-addons-modal__item-price"
-      >
-        {recommendedItem.price.toLocaleString('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
-      </Typography>
-      <Box className="recommended-addons-modal__item-action">
-        {renderAction()}
+      <Box className="recommended-addons-modal__list-item">
+        <Typography
+          variant="body1"
+          className="recommended-addons-modal__item-name"
+        >
+          {recommendedItem.productName}
+        </Typography>
+        <Typography
+          variant="body2"
+          className="recommended-addons-modal__item-provider"
+        >
+          {recommendedItem.providerName}
+        </Typography>
+        <Typography
+          variant="body2"
+          className="recommended-addons-modal__item-price"
+        >
+          {recommendedItem.price.toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </Typography>
+        <Box className="recommended-addons-modal__item-action">
+          {renderAction()}
+        </Box>
       </Box>
-    </Box>
-  );
-};
+    );
+  },
+);

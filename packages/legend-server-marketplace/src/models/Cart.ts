@@ -26,6 +26,7 @@ export interface CartItemRequest {
   description: string;
   isOwned: string;
   skipWorkflow?: boolean;
+  isMandatory?: boolean;
   vendorProfileId?: number;
   cartId?: number;
   source?: string;
@@ -47,12 +48,18 @@ export interface CartItemResponse {
   vendor_profile_id: number;
   marketplace_addons: TerminalResult[] | null;
   marketplace_terminals: TerminalResult[] | null;
-  total_count: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-  has_next: boolean;
-  has_previous: boolean;
+  total_count: number | null;
+  page: number | null;
+  page_size: number | null;
+  total_pages: number | null;
+  has_next: boolean | null;
+  has_previous: boolean | null;
+}
+
+export interface DeleteCartItemResponse {
+  message?: string;
+  detail?: string;
+  status_code?: number;
 }
 
 export enum SortOrder {

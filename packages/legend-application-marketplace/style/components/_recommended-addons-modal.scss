@@ -117,22 +117,24 @@
   &__alert {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.2rem;
+    gap: 1.2rem;
+    padding: 1.6rem 2rem;
     background-color: var(--color-hclight-green-10, #e8f5e9);
     border-left: 4px solid var(--color-hclight-green-50);
-    border-radius: 4px;
-    margin-bottom: 2rem;
-    margin-top: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 2px 8px rgb(46 125 50 / 10%);
 
     svg {
       color: var(--color-hclight-green-50);
-      font-size: 2.4rem;
+      font-size: 2.8rem;
       flex-shrink: 0;
     }
 
     .MuiTypography-root {
       font-size: 1.8rem;
+      line-height: 1.5;
     }
 
     strong {

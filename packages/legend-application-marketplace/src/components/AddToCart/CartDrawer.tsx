@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { flowResult } from 'mobx';
 import {
   Drawer,
@@ -70,7 +70,9 @@ export const CartDrawer = observer((): React.ReactNode => {
           label: 'Clear Cart',
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
           handler: (): void => {
-            cart.clearCart();
+            flowResult(cart.clearCart()).catch(
+              applicationStore.alertUnhandledError,
+            );
           },
         },
         {
@@ -81,6 +83,45 @@ export const CartDrawer = observer((): React.ReactNode => {
       ],
     });
   };
+
+  const handleDeleteItem = useCallback(
+    (cartId: number, productName: string) => {
+      const dependentAddOns = cart.getDependentAddOns(cartId);
+      if (dependentAddOns.length > 0) {
+        const addOnNames = dependentAddOns
+          .map((item) => item.productName)
+          .join(', ');
+        applicationStore.alertService.setActionAlertInfo({
+          title: 'Confirm Deletion',
+          message: `Delete '${productName}'?`,
+          messageClass: 'legend-marketplace-cart-drawer__alert-message',
+          prompt: `This will also remove ${dependentAddOns.length} associated add-on${dependentAddOns.length > 1 ? 's' : ''}: ${addOnNames}.`,
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Delete All',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void => {
+                flowResult(cart.deleteCartItem(cartId, true)).catch(
+                  applicationStore.alertUnhandledError,
+                );
+              },
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      } else {
+        flowResult(cart.deleteCartItem(cartId)).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
+    },
+    [applicationStore.alertService, applicationStore.alertUnhandledError, cart],
+  );
 
   return (
     <Drawer
@@ -202,7 +243,9 @@ export const CartDrawer = observer((): React.ReactNode => {
                       </Box>
                       <IconButton
                         size="small"
-                        onClick={() => cart.deleteCartItem(item.cartId)}
+                        onClick={() =>
+                          handleDeleteItem(item.cartId, item.productName)
+                        }
                         className="legend-marketplace-cart-drawer__item-card__remove-btn"
                         disabled={cart.loadingState.isInProgress}
                       >
@@ -261,7 +304,9 @@ export const CartDrawer = observer((): React.ReactNode => {
             cart.submitState.isInProgress
           }
           onClick={() => {
-            cart.submitOrder();
+            flowResult(cart.submitOrder()).catch(
+              applicationStore.alertUnhandledError,
+            );
           }}
           size="small"
           className="legend-marketplace-cart-drawer__order-button"
