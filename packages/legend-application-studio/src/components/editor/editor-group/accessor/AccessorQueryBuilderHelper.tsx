@@ -22,8 +22,10 @@ import {
   QueryBuilderActionConfig,
   QueryBuilderAdvancedWorkflowState,
   getCompatibleRuntimesFromAccessorOwner,
+  type QueryBuilderState,
 } from '@finos/legend-query-builder';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
+import { PromoteAccessorQueryToFunctionAction } from './AccessorQueryBuilder.js';
 
 export const queryAccessorSource = async (
   element: IngestDefinition | Database,
@@ -56,7 +58,18 @@ export const queryAccessorSource = async (
           return queryBuilderState;
         },
         disableCompile: true,
-        actionConfigs: [],
+        actionConfigs: [
+          {
+            key: 'promote-accessor-query-to-function-btn',
+            renderer: (
+              queryBuilderState: QueryBuilderState,
+            ): React.ReactNode => (
+              <PromoteAccessorQueryToFunctionAction
+                queryBuilderState={queryBuilderState}
+              />
+            ),
+          },
+        ],
       }),
     );
   } catch (error) {
