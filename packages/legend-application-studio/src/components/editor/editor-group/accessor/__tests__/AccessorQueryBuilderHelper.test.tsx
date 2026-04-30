@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect, beforeAll, afterAll } from '@jest/globals';
+import { cleanup } from '@testing-library/react';
 import { integrationTest, createMock } from '@finos/legend-shared/test';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
@@ -35,15 +36,25 @@ import { GraphCompilationOutcome } from '../../../../../stores/editor/EditorGrap
 import { promoteQueryToFunction } from '../../uml-editor/ClassQueryBuilder.js';
 
 describe(integrationTest('Promote accessor query to function'), () => {
-  test('promotes IngestDefinition accessor query to a ConcreteFunctionDefinition', async () => {
-    const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
+  let MOCK__editorStore: ReturnType<
+    typeof TEST__buildQueryBuilderMockedEditorStore
+  >;
+
+  afterAll(() => {
+    cleanup();
+  });
+
+  beforeAll(async () => {
+    MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
     await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
       entities: TEST_DATA__QueryBuilder_Accessors,
     });
     MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
       GraphCompilationOutcome.SUCCEEDED,
     );
+  });
 
+  test('promotes IngestDefinition accessor query to a ConcreteFunctionDefinition', async () => {
     const ingest = guaranteeType(
       MOCK__editorStore.graphManagerState.graph.getElement(
         'ingestion::CARBON_DIOXIDE_EMISSIONS',
@@ -104,14 +115,6 @@ describe(integrationTest('Promote accessor query to function'), () => {
   });
 
   test('promotes Database accessor query to a ConcreteFunctionDefinition', async () => {
-    const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
-    await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
-      entities: TEST_DATA__QueryBuilder_Accessors,
-    });
-    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-      GraphCompilationOutcome.SUCCEEDED,
-    );
-
     const database = guaranteeType(
       MOCK__editorStore.graphManagerState.graph.getElement(
         'database::TestDatabase',
