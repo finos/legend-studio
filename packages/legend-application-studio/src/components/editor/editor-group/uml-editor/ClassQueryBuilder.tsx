@@ -183,7 +183,9 @@ enum PROMOTE_QUERY_TYPE {
 
 export const NewFunctionModal = observer(
   (props: {
-    _class: Class | undefined;
+    _class?: Class | undefined;
+    defaultFunctionName?: string | undefined;
+    defaultPackagePath?: string | undefined;
     close: () => void;
     showModal: boolean;
     promoteToFunction: (
@@ -192,18 +194,26 @@ export const NewFunctionModal = observer(
     ) => Promise<void>;
     isReadOnly?: boolean;
   }) => {
-    const { isReadOnly, close, _class, showModal, promoteToFunction } = props;
+    const {
+      isReadOnly,
+      close,
+      _class,
+      defaultFunctionName,
+      defaultPackagePath,
+      showModal,
+      promoteToFunction,
+    } = props;
     const editorStore = useEditorStore();
     const applicationStore = editorStore.applicationStore;
     const nameRef = useRef<HTMLInputElement>(null);
-    const defaultFunctionname = _class
-      ? `${_class.name}_QueryFunction`
-      : `QueryFunction`;
+    const defaultFunctionname =
+      defaultFunctionName ??
+      (_class ? `${_class.name}_QueryFunction` : `QueryFunction`);
     const [functionPath, setFunctionPath] =
       useState<string>(defaultFunctionname);
     const [packagePath, funcName] = resolvePackagePathAndElementName(
       functionPath,
-      _class?.package?.path ?? 'model::functions',
+      defaultPackagePath ?? _class?.package?.path ?? 'model::functions',
     );
     const [isValid, setIsValid] = useState(true);
 

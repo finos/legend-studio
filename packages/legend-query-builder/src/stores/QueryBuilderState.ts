@@ -809,13 +809,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     if (
       this.fetchStructureState.implementation instanceof QueryBuilderTDSState
     ) {
-      const lambdaWriteMode = this.lambdaWriteMode;
-      return lambdaWriteMode === QUERY_BUILDER_LAMBDA_WRITER_MODE.STANDARD
-        ? this.graphManagerState.graph.getClass(
+      return this.useRelation
+        ? this.graphManagerState.graph.getType(QUERY_BUILDER_PURE_PATH.RELATION)
+        : this.graphManagerState.graph.getClass(
             QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET,
-          )
-        : this.graphManagerState.graph.getType(
-            QUERY_BUILDER_PURE_PATH.RELATION,
           );
     }
     return PrimitiveType.STRING;
