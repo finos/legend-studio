@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.18.4
+
+### Patch Changes
+
+- [#5126](https://github.com/finos/legend-studio/pull/5126) [`a09b2a3`](https://github.com/finos/legend-studio/commit/a09b2a3623db87a37711f3a28fcf4b67e594d694) ([@kelly-thai](https://github.com/kelly-thai)) - Implement buildQueryForPersistence in AccessorQueryBuilderState
+
+- [#5128](https://github.com/finos/legend-studio/pull/5128) [`5f8f974`](https://github.com/finos/legend-studio/commit/5f8f97448b6b26800a608cc10ca39514a9942665) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support saving queries coming from query-builder in functions
+
 ## 4.18.3
 
 ### Patch Changes
