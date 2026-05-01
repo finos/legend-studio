@@ -144,6 +144,7 @@ import {
   V1_buildDataProductLink,
   V1_buildDataProductOperationalMetadata,
   V1_buildNativeModelAccess,
+  V1_buildDataProductOwner,
 } from './helpers/V1_DataProductBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { IncludeStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';
@@ -808,5 +809,8 @@ export class V1_ElementSecondPassBuilder
     dataProduct.taggedValues = element.taggedValues
       .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
+    if (element.owner) {
+      dataProduct.owner = V1_buildDataProductOwner(element.owner);
+    }
   }
 }

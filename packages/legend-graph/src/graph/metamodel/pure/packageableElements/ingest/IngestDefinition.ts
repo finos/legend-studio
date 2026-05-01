@@ -14,13 +14,31 @@
  * limitations under the License.
  */
 
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 import { INTERNAL__UnknownPackageableElement } from '../INTERNAL__UnknownPackageableElement.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
+import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 
-export class AppDirNode {
+export enum AppDirLevel {
+  BUSINESS_UNIT = 'BUSINESS_UNIT',
+  SUB_BUSINESS_UNIT = 'SUB_BUSINESS_UNIT',
+  FAMILY = 'FAMILY',
+  APPLICATION = 'APPLICATION',
+  DEPLOYMENT = 'DEPLOYMENT',
+}
+
+export class AppDirNode implements Hashable {
   appDirId!: number;
-  level!: string;
+  level!: AppDirLevel;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.APP_DIR_NODE,
+      this.appDirId.toString(),
+      this.level,
+    ]);
+  }
 }
 
 export interface TEMPORARY_IngestLambdaFunction {

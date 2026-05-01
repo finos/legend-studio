@@ -30,6 +30,7 @@ import {
   FunctionAccessPoint,
   PackageableElementSampleQuery,
   InLineSampleQuery,
+  AppDirOwner,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   type V1_AccessPoint,
@@ -57,6 +58,7 @@ import {
   V1_PackageableElementSampleQuery,
   V1_InLineSampleQuery,
   V1_NativeModelExecutionContext,
+  V1_AppDirOwner,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
@@ -69,6 +71,7 @@ import { V1_PackageableElementPointer } from '../../../model/packageableElements
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
+import { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 
 const transformAccessPoint = (
   ap: AccessPoint,
@@ -342,6 +345,27 @@ export const V1_transformDataProduct = (
   product.taggedValues = element.taggedValues.map((taggedValue) =>
     V1_transformTaggedValue(taggedValue),
   );
+
+  if (element.owner instanceof AppDirOwner) {
+    const v1Owner = new V1_AppDirOwner();
+    if (element.owner.production) {
+      const v1Node = new V1_AppDirNode();
+      v1Node.appDirId = element.owner.production.appDirId;
+      v1Node.level = element.owner.production.level;
+      v1Owner.production = v1Node;
+    }
+    if (element.owner.prodParallel) {
+      const v1Node = new V1_AppDirNode();
+      v1Node.appDirId = element.owner.prodParallel.appDirId;
+      v1Node.level = element.owner.prodParallel.level;
+      v1Owner.prodParallel = v1Node;
+    }
+    product.owner = v1Owner;
+  } else if (element.owner !== undefined) {
+    throw new UnsupportedOperationError(
+      `Unable to transform data product owner`,
+    );
+  }
 
   return product;
 };

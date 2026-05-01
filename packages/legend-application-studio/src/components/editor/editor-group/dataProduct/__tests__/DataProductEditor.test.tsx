@@ -39,6 +39,7 @@ import TEST_DATA__LHDataProduct from './TEST_DATA__LHDataProduct.json' with { ty
 import TEST_DATA__ModelApgDataProduct from './TEST_DATA__ModelApgDataProduct.json' with { type: 'json' };
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
 import {
+  AppDirOwner,
   Core_GraphManagerPreset,
   DataProductLibraryIcon,
 } from '@finos/legend-graph';
@@ -793,3 +794,82 @@ test(
     });
   },
 );
+
+test(integrationTest('Editing data product ownership'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    { entities: TEST_DATA__LHDataProduct },
+  );
+  MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+    readOnly: true,
+  });
+
+  await TEST__openElementFromExplorerTree(
+    'model::sampleDataProduct',
+    renderResult,
+  );
+
+  const editorGroup = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+  );
+
+  // Verify ownership section renders with empty placeholders
+  await findByText(editorGroup, 'Ownership');
+  await findByText(
+    editorGroup,
+    'Set the AppDir ownership for this Data Product.',
+  );
+  const productionInput = await findByPlaceholderText(
+    editorGroup,
+    'Enter production AppDir ID',
+  );
+  const prodParallelInput = await findByPlaceholderText(
+    editorGroup,
+    'Enter prod parallel AppDir ID',
+  );
+  expect((productionInput as HTMLInputElement).value).toBe('');
+  expect((prodParallelInput as HTMLInputElement).value).toBe('');
+
+  const dataProduct =
+    MOCK__editorStore.graphManagerState.graph.getOwnDataProduct(
+      'model::sampleDataProduct',
+    );
+  expect(dataProduct.owner).toBeUndefined();
+
+  // Type a production AppDir ID — owner should be created lazily
+  fireEvent.change(productionInput, { target: { value: '12345' } });
+  expect((productionInput as HTMLInputElement).value).toBe('12345');
+  expect(dataProduct.owner).toBeDefined();
+  expect(dataProduct.owner instanceof AppDirOwner).toBe(true);
+  expect((dataProduct.owner as AppDirOwner).production?.appDirId).toBe(12345);
+  expect((dataProduct.owner as AppDirOwner).prodParallel).toBeUndefined();
+
+  // Type a prod parallel AppDir ID
+  fireEvent.change(prodParallelInput, { target: { value: '67890' } });
+  expect((prodParallelInput as HTMLInputElement).value).toBe('67890');
+  expect((dataProduct.owner as AppDirOwner).prodParallel?.appDirId).toBe(67890);
+
+  // Change production from one value to another
+  fireEvent.change(productionInput, { target: { value: '99999' } });
+  expect((productionInput as HTMLInputElement).value).toBe('99999');
+  expect((dataProduct.owner as AppDirOwner).production?.appDirId).toBe(99999);
+
+  // Change prod parallel from one value to another
+  fireEvent.change(prodParallelInput, { target: { value: '11111' } });
+  expect((prodParallelInput as HTMLInputElement).value).toBe('11111');
+  expect((dataProduct.owner as AppDirOwner).prodParallel?.appDirId).toBe(11111);
+
+  // Clear the production field
+  fireEvent.change(productionInput, { target: { value: '' } });
+  expect((productionInput as HTMLInputElement).value).toBe('');
+  expect((dataProduct.owner as AppDirOwner).production).toBeUndefined();
+
+  // Prod parallel should still be set
+  expect((dataProduct.owner as AppDirOwner).prodParallel?.appDirId).toBe(11111);
+
+  // Clear prod parallel as well — both fields now empty
+  fireEvent.change(prodParallelInput, { target: { value: '' } });
+  expect((prodParallelInput as HTMLInputElement).value).toBe('');
+  expect(dataProduct.owner).toBeUndefined();
+});

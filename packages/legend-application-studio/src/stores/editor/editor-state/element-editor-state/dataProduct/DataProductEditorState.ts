@@ -63,6 +63,8 @@ import {
   DataProductDiagram,
   observe_DataProductDiagram,
   stub_Mapping,
+  AppDirOwner,
+  type AppDirNode,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -1192,7 +1194,7 @@ export class DataProductEditorState extends ElementEditorState {
         this.ingestionManager,
       ).deployDataProduct(
         grammar,
-        guaranteeNonNullable(this.associatedIngest?.appDirDeployment),
+        guaranteeNonNullable(this.appDirDeployment),
         (val: string) =>
           this.editorStore.applicationStore.alertService.setBlockingAlert({
             message: val,
@@ -1261,9 +1263,7 @@ export class DataProductEditorState extends ElementEditorState {
   }
 
   get validForDeployment(): boolean {
-    return Boolean(
-      this.associatedIngest?.appDirDeployment && this.ingestionManager,
-    );
+    return Boolean(this.appDirDeployment && this.ingestionManager);
   }
 
   get accessPoints(): AccessPoint[] {
@@ -1275,12 +1275,21 @@ export class DataProductEditorState extends ElementEditorState {
   }
 
   get deployValidationMessage(): string {
-    if (!this.associatedIngest?.appDirDeployment) {
+    if (!this.appDirDeployment) {
       return 'No app dir deployment found';
     } else if (!this.ingestionManager) {
       return 'No ingestion manager found';
     }
     return 'Deploy';
+  }
+
+  // Use explicit owner from the data product if available, otherwise fall back to the associated ingest's app dir deployment
+  get appDirDeployment(): AppDirNode | undefined {
+    const owner = this.product.owner;
+    if (owner instanceof AppDirOwner) {
+      return owner.production;
+    }
+    return this.associatedIngest?.appDirDeployment;
   }
 
   // We need to get the associated Ingest to get the app dir deployment

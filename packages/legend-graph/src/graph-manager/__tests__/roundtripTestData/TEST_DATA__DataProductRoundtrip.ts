@@ -2792,3 +2792,78 @@ export const TEST_DATA__DATAPRODUCT__MAPPING__INCLUDE = [
       'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
   },
 ];
+
+export const TEST_DATA__DATAPRODUCT_WITH_OWNER = [
+  {
+    path: 'x::B',
+    content: {
+      _type: 'dataProduct',
+      accessPointGroups: [
+        {
+          _type: 'defaultAccessPointGroup',
+          accessPoints: [
+            {
+              _type: 'lakehouseAccessPoint',
+              description: 'Description',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 1,
+                  },
+                ],
+                parameters: [],
+              },
+              id: 'ap',
+              reproducible: false,
+              targetEnvironment: 'Snowflake',
+            },
+          ],
+          description: 'The default access group',
+          id: 'default',
+        },
+      ],
+      description: 'Test description',
+      name: 'B',
+      owner: {
+        _type: 'appDir',
+        prodParallel: {
+          appDirId: 67890,
+          level: 'DEPLOYMENT',
+        },
+        production: {
+          appDirId: 12345,
+          level: 'DEPLOYMENT',
+        },
+      },
+      package: 'x',
+      title: 'Test title',
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          elements: [],
+          imports: [],
+          parserName: 'Pure',
+        },
+        {
+          _type: 'importAware',
+          elements: ['x::B'],
+          imports: [],
+          parserName: 'DataProduct',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];

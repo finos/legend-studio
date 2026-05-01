@@ -18,6 +18,7 @@ import {
   type V1_EntitlementsDataProductDetailsResponse,
   CORE_PURE_PATH,
   V1_AppDirLevel,
+  type V1_AppDirNode,
   V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
@@ -53,7 +54,7 @@ export const mockEntitlementsSDLCDataProduct: V1_EntitlementsDataProductDetailsR
           owner: {
             appDirId: 12345,
             level: V1_AppDirLevel.DEPLOYMENT,
-          },
+          } as V1_AppDirNode,
         },
         fullPath: 'com::example::analytics::Mock_SDLC_DataProduct',
       },
@@ -164,7 +165,7 @@ export const mockEntitlementsAdHocDataProduct: V1_EntitlementsDataProductDetails
           owner: {
             appDirId: 22222,
             level: V1_AppDirLevel.DEPLOYMENT,
-          },
+          } as V1_AppDirNode,
         },
         fullPath: 'com::example::analytics::Mock_AdHoc_DataProduct',
       },

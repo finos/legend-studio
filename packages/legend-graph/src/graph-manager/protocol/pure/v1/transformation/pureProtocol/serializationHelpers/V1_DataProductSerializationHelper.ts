@@ -53,6 +53,9 @@ import {
   V1_PackageableElementSampleQuery,
   V1_InLineSampleQuery,
   V1_NativeModelExecutionContext,
+  V1_AppDirOwner,
+  V1_DataProductOwnerType,
+  type V1_DataProductOwner,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   UnsupportedOperationError,
@@ -78,6 +81,7 @@ import {
   V1_serializeEmbeddedDataType,
 } from './V1_DataElementSerializationHelper.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import { V1_AppDirNodeModelSchema } from './lakehouse/V1_CoreEntitlementsSerializationHelper.js';
 import type { V1_EmbeddedData } from '../../../model/data/V1_EmbeddedData.js';
 
 export enum V1_AccessPointType {
@@ -458,6 +462,32 @@ export const V1_serializeDataProductType = (
   throw new Error(`Unknown V1_DataProductType instance: ${value}`);
 };
 
+// ---------------------------------------- Owner -----------------------------------------
+
+const V1_AppDirOwnerModelSchema = createModelSchema(V1_AppDirOwner, {
+  _type: usingConstantValueSchema(V1_DataProductOwnerType.APP_DIR),
+  prodParallel: optionalCustomUsingModelSchema(V1_AppDirNodeModelSchema),
+  production: optionalCustomUsingModelSchema(V1_AppDirNodeModelSchema),
+});
+
+const V1_deserializeDataProductOwner = (
+  json: PlainObject<V1_DataProductOwner>,
+): V1_DataProductOwner => {
+  if (json._type === V1_DataProductOwnerType.APP_DIR) {
+    return deserialize(V1_AppDirOwnerModelSchema, json);
+  }
+  throw new Error(`Unknown V1_DataProductOwner type: ${json._type}`);
+};
+
+const V1_serializeDataProductOwner = (
+  value: V1_DataProductOwner,
+): PlainObject<V1_DataProductOwner> => {
+  if (value instanceof V1_AppDirOwner) {
+    return serialize(V1_AppDirOwnerModelSchema, value);
+  }
+  throw new Error(`Unknown V1_DataProductOwner instance`);
+};
+
 export const V1_dataProductModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataProduct> =>
@@ -483,6 +513,10 @@ export const V1_dataProductModelSchema = (
     ),
     operationalMetadata: optionalCustomUsingModelSchema(
       V1_DataProductOperationalMetadataModelSchema,
+    ),
+    owner: optionalCustom(
+      V1_serializeDataProductOwner,
+      V1_deserializeDataProductOwner,
     ),
     package: primitive(),
     type: optionalCustom(

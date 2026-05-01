@@ -43,6 +43,9 @@ import {
   DataProductOperationalMetadata,
   type DataProduct_DeliveryFrequency,
   type DataProduct_Region,
+  type DataProductOwner,
+  type AppDirOwner,
+  type AppDirNode,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, swapEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -407,5 +410,29 @@ export const operationalMetadata_deleteCoverageRegion = action(
     if (operationalMetadata.coverageRegions) {
       deleteEntry(operationalMetadata.coverageRegions, region);
     }
+  },
+);
+
+export const dataProduct_setOwner = action(
+  (product: DataProduct, owner: DataProductOwner | undefined) => {
+    product.owner = owner;
+  },
+);
+
+export const appDirOwner_setProduction = action(
+  (owner: AppDirOwner, appDirNode: AppDirNode | undefined) => {
+    owner.production = appDirNode;
+  },
+);
+
+export const appDirOwner_setProdParallel = action(
+  (owner: AppDirOwner, appDirNode: AppDirNode | undefined) => {
+    owner.prodParallel = appDirNode;
+  },
+);
+
+export const appDirNode_setAppDirId = action(
+  (node: AppDirNode, appDirId: number) => {
+    node.appDirId = appDirId;
   },
 );

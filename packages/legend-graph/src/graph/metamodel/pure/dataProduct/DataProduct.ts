@@ -41,6 +41,7 @@ import type { EmbeddedData } from '../data/EmbeddedData.js';
 import { ConcreteFunctionDefinition } from '../packageableElements/function/ConcreteFunctionDefinition.js';
 import { generateFunctionPrettyName } from '../../../helpers/PureLanguageHelper.js';
 import type { StereotypeReference } from '../packageableElements/domain/StereotypeReference.js';
+import type { AppDirNode } from '../packageableElements/ingest/IngestDefinition.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
@@ -487,6 +488,25 @@ export class DataProductOperationalMetadata implements Hashable {
   }
 }
 
+// ---------------------------------------- Owner -----------------------------------------
+
+export abstract class DataProductOwner implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class AppDirOwner extends DataProductOwner implements Hashable {
+  production: AppDirNode | undefined;
+  prodParallel: AppDirNode | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_OWNER,
+      this.production?.hashCode ?? '',
+      this.prodParallel?.hashCode ?? '',
+    ]);
+  }
+}
+
 export class DataProduct extends PackageableElement {
   title: string | undefined;
   description: string | undefined;
@@ -497,6 +517,7 @@ export class DataProduct extends PackageableElement {
   type: DataProductType | undefined;
   sampleValues: EmbeddedData[] | undefined;
   operationalMetadata: DataProductOperationalMetadata | undefined;
+  owner: DataProductOwner | undefined;
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -518,6 +539,7 @@ export class DataProduct extends PackageableElement {
       hashArray(this.taggedValues),
       hashArray(this.sampleValues ?? []),
       this.operationalMetadata ?? '',
+      this.owner ?? '',
     ]);
   }
 }
