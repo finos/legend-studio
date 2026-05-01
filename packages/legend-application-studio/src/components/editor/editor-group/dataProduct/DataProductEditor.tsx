@@ -126,6 +126,11 @@ import {
   observer_DataProductLink,
   DataProduct_Region,
   DataProduct_DeliveryFrequency,
+  AppDirOwner,
+  AppDirNode,
+  observe_AppDirOwner,
+  observe_AppDirNode,
+  AppDirLevel,
 } from '@finos/legend-graph';
 import {
   accessPoint_setClassification,
@@ -159,6 +164,10 @@ import {
   dataProductDiagram_setTitle,
   dataProductDiagram_setDescription,
   operationalMetadata_setUpdateFrequency,
+  dataProduct_setOwner,
+  appDirOwner_setProduction,
+  appDirOwner_setProdParallel,
+  appDirNode_setAppDirId,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -2370,6 +2379,112 @@ const DataProductIconEditor = observer(
   },
 );
 
+const DataProductOwnershipEditor = observer(
+  (props: { product: DataProduct; isReadOnly: boolean }) => {
+    const { product, isReadOnly } = props;
+    const owner =
+      product.owner instanceof AppDirOwner ? product.owner : undefined;
+
+    const ensureOwner = (): AppDirOwner => {
+      if (owner) {
+        return owner;
+      }
+      const newOwner = observe_AppDirOwner(new AppDirOwner());
+      dataProduct_setOwner(product, newOwner);
+      return newOwner;
+    };
+
+    const handleProductionChange: ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      const currentOwner = ensureOwner();
+      const val = event.target.value;
+      if (val === '') {
+        appDirOwner_setProduction(currentOwner, undefined);
+        if (!currentOwner.prodParallel) {
+          dataProduct_setOwner(product, undefined);
+        }
+        return;
+      }
+      const num = Number(val);
+      if (Number.isNaN(num)) {
+        return;
+      }
+      if (currentOwner.production) {
+        appDirNode_setAppDirId(currentOwner.production, num);
+        return;
+      }
+      const node = observe_AppDirNode(new AppDirNode());
+      node.appDirId = num;
+      node.level = AppDirLevel.DEPLOYMENT;
+      appDirOwner_setProduction(currentOwner, node);
+    };
+
+    const handleProdParallelChange: ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      const currentOwner = ensureOwner();
+      const val = event.target.value;
+      if (val === '') {
+        appDirOwner_setProdParallel(currentOwner, undefined);
+        if (!currentOwner.production) {
+          dataProduct_setOwner(product, undefined);
+        }
+        return;
+      }
+      const num = Number(val);
+      if (Number.isNaN(num)) {
+        return;
+      }
+      if (currentOwner.prodParallel) {
+        appDirNode_setAppDirId(currentOwner.prodParallel, num);
+        return;
+      }
+      const node = observe_AppDirNode(new AppDirNode());
+      node.appDirId = num;
+      node.level = AppDirLevel.DEPLOYMENT;
+      appDirOwner_setProdParallel(currentOwner, node);
+    };
+
+    return (
+      <>
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Ownership
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Set the AppDir ownership for this Data Product.
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Production AppDir ID
+          </div>
+          <input
+            className="input input-group__input panel__content__form__section__input input--dark input--small"
+            type="number"
+            disabled={isReadOnly}
+            value={owner?.production?.appDirId ?? ''}
+            onChange={handleProductionChange}
+            placeholder="Enter production AppDir ID"
+          />
+        </div>
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__prompt">
+            Prod Parallel AppDir ID
+          </div>
+          <input
+            className="input input-group__input panel__content__form__section__input input--dark input--small"
+            type="number"
+            disabled={isReadOnly}
+            value={owner?.prodParallel?.appDirId ?? ''}
+            onChange={handleProdParallelChange}
+            placeholder="Enter prod parallel AppDir ID"
+          />
+        </div>
+      </>
+    );
+  },
+);
+
 const HomeTab = observer(
   (props: {
     dataProductEditorState: DataProductEditorState;
@@ -2543,6 +2658,10 @@ const HomeTab = observer(
             )}
           </div>
           <DataProductIconEditor product={product} isReadOnly={isReadOnly} />
+          <DataProductOwnershipEditor
+            product={product}
+            isReadOnly={isReadOnly}
+          />
         </div>
       </div>
     );
@@ -3341,10 +3460,7 @@ export const DataProductEditor = observer(() => {
           </PanelHeaderActions>
         </div>
 
-        <div
-          className="panel"
-          style={{ padding: '1rem', flexDirection: 'row' }}
-        >
+        <div className="panel data-product-editor__content-panel">
           <DataProductSidebar dataProductEditorState={dataProductEditorState} />
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel>{renderActivivtyBarTab()}</ResizablePanel>

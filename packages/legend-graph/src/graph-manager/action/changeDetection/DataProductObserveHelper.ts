@@ -33,7 +33,9 @@ import {
   UnknownDataProductIcon,
   type Expertise,
   type DataProductOperationalMetadata,
+  AppDirOwner,
 } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import { type AppDirNode } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
   observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
@@ -225,6 +227,31 @@ export const observe_DataProductIcon = skipObserved(
   },
 );
 
+export const observe_AppDirNode = skipObserved(
+  (metamodel: AppDirNode): AppDirNode => {
+    makeObservable(metamodel, {
+      appDirId: observable,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_AppDirOwner = skipObserved(
+  (metamodel: AppDirOwner): AppDirOwner => {
+    makeObservable(metamodel, {
+      production: observable,
+      prodParallel: observable,
+    });
+    if (metamodel.production) {
+      observe_AppDirNode(metamodel.production);
+    }
+    if (metamodel.prodParallel) {
+      observe_AppDirNode(metamodel.prodParallel);
+    }
+    return metamodel;
+  },
+);
+
 export const observe_DataProduct = skipObserved(
   (metamodel: DataProduct): DataProduct => {
     observe_Abstract_PackageableElement(metamodel);
@@ -238,6 +265,7 @@ export const observe_DataProduct = skipObserved(
       icon: observable,
       type: observable,
       operationalMetadata: observable,
+      owner: observable,
     });
 
     if (metamodel.supportInfo) {
@@ -248,6 +276,9 @@ export const observe_DataProduct = skipObserved(
     }
     if (metamodel.operationalMetadata) {
       observe_OperationalMetadata(metamodel.operationalMetadata);
+    }
+    if (metamodel.owner instanceof AppDirOwner) {
+      observe_AppDirOwner(metamodel.owner);
     }
     metamodel.accessPointGroups.forEach(observe_APG);
     return metamodel;

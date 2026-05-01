@@ -43,7 +43,10 @@ import {
   InLineSampleQuery,
   DataProductDiagram,
   NativeModelExecutionContext,
+  type DataProductOwner,
+  AppDirOwner,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import { AppDirNode } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
   type V1_AccessPoint,
   type V1_AccessPointGroup,
@@ -63,6 +66,8 @@ import {
   V1_PackageableElementSampleQuery,
   V1_InLineSampleQuery,
   type V1_NativeModelExecutionContext,
+  V1_AppDirOwner,
+  type V1_DataProductOwner,
 } from '../../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
@@ -386,4 +391,29 @@ export const V1_buildNativeModelAccess = (
   }
 
   return metamodelNativeModelAccess;
+};
+
+export const V1_buildDataProductOwner = (
+  v1Owner: V1_DataProductOwner,
+): DataProductOwner => {
+  if (v1Owner instanceof V1_AppDirOwner) {
+    const owner = new AppDirOwner();
+    if (v1Owner.production) {
+      const production = new AppDirNode();
+      production.appDirId = v1Owner.production.appDirId;
+      production.level = v1Owner.production.level;
+      owner.production = production;
+    }
+    if (v1Owner.prodParallel) {
+      const prodParallel = new AppDirNode();
+      prodParallel.appDirId = v1Owner.prodParallel.appDirId;
+      prodParallel.level = v1Owner.prodParallel.level;
+      owner.prodParallel = prodParallel;
+    }
+    return owner;
+  }
+  throw new UnsupportedOperationError(
+    `Unsupported data product owner type`,
+    v1Owner,
+  );
 };

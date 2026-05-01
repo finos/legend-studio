@@ -25,6 +25,7 @@ import {
   type V1_EntitlementsLakehouseEnvironmentType,
   V1_ApprovalType,
   V1_AppDirLevel,
+  type V1_AppDirNode,
   V1_ContractEventPayloadType,
   V1_ContractState,
   V1_dataContractModelSchema,
@@ -457,7 +458,7 @@ export const mockDataProductDetailsResponse = (
         owner: {
           appDirId: 12345,
           level: V1_AppDirLevel.DEPLOYMENT,
-        },
+        } as V1_AppDirNode,
       },
       fullPath: 'com::example::Mock_DataProduct',
     },
