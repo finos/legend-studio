@@ -282,13 +282,13 @@ export const ProductWiki = observer(
                     productViewerState.openQuery &&
                     productViewerState.projectGAV &&
                     productViewerState.product.accessPointGroups[0]
-                      ?.accessPoints[0]?.id
                       ? () =>
                           productViewerState.openQuery?.(
                             guaranteeNonNullable(productViewerState.projectGAV),
                             DataProductAccessType.MODEL,
-                            productViewerState.product.accessPointGroups[0]
-                              ?.accessPoints[0]?.id,
+                            guaranteeNonNullable(
+                              productViewerState.product.accessPointGroups[0],
+                            ).id,
                           )
                       : undefined
                   }
