@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.0
+
+### Minor Changes
+
+- [#5130](https://github.com/finos/legend-studio/pull/5130) [`d54f9c8`](https://github.com/finos/legend-studio/commit/d54f9c81bbee92b97ccac855abeb635cd7ff3985) ([@ad-gs](https://github.com/ad-gs)) - Add Data Product owner to metamodel. Add owner management UI to the Data Product editor.
+
 ## 32.5.3
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 28.20.0
+
+### Minor Changes
+
+- [#5130](https://github.com/finos/legend-studio/pull/5130) [`d54f9c8`](https://github.com/finos/legend-studio/commit/d54f9c81bbee92b97ccac855abeb635cd7ff3985) ([@ad-gs](https://github.com/ad-gs)) - Add Data Product owner to metamodel. Add owner management UI to the Data Product editor.
+
+### Patch Changes
+
+- [#5126](https://github.com/finos/legend-studio/pull/5126) [`a09b2a3`](https://github.com/finos/legend-studio/commit/a09b2a3623db87a37711f3a28fcf4b67e594d694) ([@kelly-thai](https://github.com/kelly-thai)) - Enable editing access point lambdas with query builder, clean up DataProductEditor CSS
+
+- [#5128](https://github.com/finos/legend-studio/pull/5128) [`5f8f974`](https://github.com/finos/legend-studio/commit/5f8f97448b6b26800a608cc10ca39514a9942665) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support saving queries coming from query-builder in functions
+
 ## 28.19.117
 
 ### Patch Changes
