@@ -64,6 +64,10 @@ import {
   mockMultiGroupLargeSDLCDataProduct,
   mockSDLCDataProduct,
   mockSDLCDataProductNoSupportInfo,
+  buildMockDataProductArtifactWithSampleQueries,
+  MOCK__TDS_SAMPLE_QUERY_ID,
+  MOCK__RELATION_SAMPLE_QUERY_ID,
+  MOCK__TDS_COLUMN_SAMPLE_VALUES,
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
 import { createSpy } from '@finos/legend-shared/test';
 import { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
@@ -120,6 +124,9 @@ jest.mock('@finos/legend-application', () => ({
   useApplicationStore: jest.fn().mockReturnValue({
     layoutService: {
       TEMPORARY__isLightColorThemeEnabled: true,
+    },
+    pluginManager: {
+      getApplicationPlugins: jest.fn().mockReturnValue([]),
     },
   }),
 }));
@@ -3458,6 +3465,184 @@ describe('DataProductViewer', () => {
 
       expect(mockOpenQuery).toHaveBeenCalled();
       expect(notifyErrorSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Sample Queries — Open in Query', () => {
+    test('"Open in Query" button is disabled when openSampleQuery is not provided', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        { groupId: 'com.example', artifactId: 'test', versionId: '1.0.0' },
+      );
+
+      await act(async () => {
+        dataProductViewerState.dataProductArtifact =
+          buildMockDataProductArtifactWithSampleQueries();
+      });
+
+      // Confirm sample queries rendered
+      await screen.findByText('Sample TDS Query');
+
+      // Navigate to the "Query" tab within the sample query card
+      const queryButtons = await screen.findAllByRole('button', {
+        name: 'Query',
+      });
+
+      const sampleQueryTabButtons = queryButtons.filter(
+        (btn) => btn.getAttribute('role') !== 'tab',
+      );
+      expect(sampleQueryTabButtons.length).toBeGreaterThan(0);
+      await act(async () => {
+        fireEvent.click(sampleQueryTabButtons[0] as HTMLElement);
+      });
+
+      const openInQueryButton = await screen.findByRole('button', {
+        name: 'Open in Query',
+      });
+      expect((openInQueryButton as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    test('"Open in Query" button is enabled when openSampleQuery is provided', async () => {
+      const mockOpenSampleQuery = jest.fn();
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        { groupId: 'com.example', artifactId: 'test', versionId: '1.0.0' },
+        undefined,
+        { openSampleQuery: mockOpenSampleQuery },
+      );
+
+      await act(async () => {
+        dataProductViewerState.dataProductArtifact =
+          buildMockDataProductArtifactWithSampleQueries();
+      });
+
+      await screen.findByText('Sample TDS Query');
+
+      const queryButtons = await screen.findAllByRole('button', {
+        name: 'Query',
+      });
+      const sampleQueryTabButtons = queryButtons.filter(
+        (btn) => btn.getAttribute('role') !== 'tab',
+      );
+      await act(async () => {
+        fireEvent.click(sampleQueryTabButtons[0] as HTMLElement);
+      });
+
+      const openInQueryButton = await screen.findByRole('button', {
+        name: 'Open in Query',
+      });
+      expect((openInQueryButton as HTMLButtonElement).disabled).toBe(false);
+    });
+
+    test('clicking "Open in Query" calls openSampleQuery with the correct id for TDS query', async () => {
+      const mockOpenSampleQuery = jest.fn();
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        { groupId: 'com.example', artifactId: 'test', versionId: '1.0.0' },
+        undefined,
+        { openSampleQuery: mockOpenSampleQuery },
+      );
+
+      await act(async () => {
+        dataProductViewerState.dataProductArtifact =
+          buildMockDataProductArtifactWithSampleQueries();
+      });
+
+      await screen.findByText('Sample TDS Query');
+
+      const queryButtons = await screen.findAllByRole('button', {
+        name: 'Query',
+      });
+      const sampleQueryTabButtons = queryButtons.filter(
+        (btn) => btn.getAttribute('role') !== 'tab',
+      );
+      await act(async () => {
+        fireEvent.click(sampleQueryTabButtons[0] as HTMLElement);
+      });
+
+      const openInQueryButton = await screen.findByRole('button', {
+        name: 'Open in Query',
+      });
+      await act(async () => {
+        fireEvent.click(openInQueryButton);
+      });
+
+      expect(mockOpenSampleQuery).toHaveBeenCalledWith(
+        MOCK__TDS_SAMPLE_QUERY_ID,
+      );
+    });
+
+    test('clicking "Open in Query" calls openSampleQuery with the correct id for Relation query', async () => {
+      const mockOpenSampleQuery = jest.fn();
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        { groupId: 'com.example', artifactId: 'test', versionId: '1.0.0' },
+        undefined,
+        { openSampleQuery: mockOpenSampleQuery },
+      );
+
+      await act(async () => {
+        dataProductViewerState.dataProductArtifact =
+          buildMockDataProductArtifactWithSampleQueries();
+      });
+
+      await screen.findByText('Sample Relation Query');
+
+      const queryButtons = await screen.findAllByRole('button', {
+        name: 'Query',
+      });
+      const sampleQueryTabButtons = queryButtons.filter(
+        (btn) => btn.getAttribute('role') !== 'tab',
+      );
+      await act(async () => {
+        fireEvent.click(sampleQueryTabButtons[1] as HTMLElement);
+      });
+
+      const openInQueryButton = await screen.findByRole('button', {
+        name: 'Open in Query',
+      });
+      await act(async () => {
+        fireEvent.click(openInQueryButton);
+      });
+
+      expect(mockOpenSampleQuery).toHaveBeenCalledWith(
+        MOCK__RELATION_SAMPLE_QUERY_ID,
+      );
+    });
+
+    test('Column Specifications tab shows "Sample Values" column with parsed values for TDS sample query', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        { groupId: 'com.example', artifactId: 'test', versionId: '1.0.0' },
+      );
+
+      await act(async () => {
+        dataProductViewerState.dataProductArtifact =
+          buildMockDataProductArtifactWithSampleQueries();
+      });
+
+      await screen.findByText('Sample TDS Query');
+
+      // Column Specifications is the default tab — the "Sample Values" header should be visible
+      await screen.findByText('Sample Values');
+
+      // The parsed sample values content should appear in the grid
+      await screen.findByText(MOCK__TDS_COLUMN_SAMPLE_VALUES);
     });
   });
 });

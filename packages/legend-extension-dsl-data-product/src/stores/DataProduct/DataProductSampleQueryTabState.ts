@@ -28,6 +28,7 @@ export enum TDSSampleQueryTabKey {
 
 export enum RelationSampleQueryTabKey {
   COLUMN_SPECIFICATIONS = 'column-specifications',
+  QUERY = 'query',
   GRAMMAR = 'grammar',
 }
 

@@ -72,6 +72,7 @@ import {
 import { deserialize } from 'serializr';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateDataProductSampleQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
@@ -408,6 +409,21 @@ export class LegendMarketplaceProductViewerStore {
               );
             }
           },
+          openSampleQuery: projectGAV
+            ? (sampleQueryId: string): void => {
+                this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                  EXTERNAL_APPLICATION_NAVIGATION__generateDataProductSampleQueryUrl(
+                    this.marketplaceBaseStore.applicationStore.config
+                      .queryApplicationUrl,
+                    projectGAV.groupId,
+                    projectGAV.artifactId,
+                    projectGAV.versionId,
+                    v1DataProduct.path,
+                    sampleQueryId,
+                  ),
+                );
+              }
+            : undefined,
         },
         this.marketplaceBaseStore.registryServerClient,
       );
@@ -626,6 +642,19 @@ export class LegendMarketplaceProductViewerStore {
                       ),
                     );
                   }
+                },
+                openSampleQuery: (sampleQueryId: string): void => {
+                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                    EXTERNAL_APPLICATION_NAVIGATION__generateDataProductSampleQueryUrl(
+                      this.marketplaceBaseStore.applicationStore.config
+                        .queryApplicationUrl,
+                      projectData.groupId,
+                      projectData.artifactId,
+                      projectData.versionId,
+                      v1DataProduct.path,
+                      sampleQueryId,
+                    ),
+                  );
                 },
               },
               this.marketplaceBaseStore.registryServerClient,
