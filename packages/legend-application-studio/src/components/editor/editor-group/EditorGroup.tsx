@@ -63,6 +63,8 @@ import { EntityChangeConflictEditorState } from '../../../stores/editor/editor-s
 import { EntityChangeConflictEditor } from './diff-editor/EntityChangeConflictEditor.js';
 import { UnsupportedElementEditorState } from '../../../stores/editor/editor-state/UnsupportedElementEditorState.js';
 import { UnsupportedElementEditor } from './UnsupportedElementEditor.js';
+import { DatabaseEditorState } from '../../../stores/editor/editor-state/element-editor-state/DatabaseEditorState.js';
+import { DatabaseEditor } from './database-editor/DatabaseEditor.js';
 import { getPrettyLabelForRevision } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { GenerationSpecificationEditorState } from '../../../stores/editor/editor-state/GenerationSpecificationEditorState.js';
 import { GenerationSpecificationEditor } from './GenerationSpecificationEditor.js';
@@ -330,6 +332,8 @@ export const EditorGroup = observer(() => {
             currentTabState instanceof MemSQLFunctionActivatorEdtiorState
           ) {
             return <MemSQLFunctionActivatorEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof DatabaseEditorState) {
+            return <DatabaseEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof UnsupportedElementEditorState) {
             return <UnsupportedElementEditor key={currentTabState.uuid} />;
           } else if (

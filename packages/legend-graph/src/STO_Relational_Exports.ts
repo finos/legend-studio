@@ -26,6 +26,7 @@ export { Column } from './graph/metamodel/pure/packageableElements/store/relatio
 export { Schema } from './graph/metamodel/pure/packageableElements/store/relational/model/Schema.js';
 export { View } from './graph/metamodel/pure/packageableElements/store/relational/model/View.js';
 export { Join } from './graph/metamodel/pure/packageableElements/store/relational/model/Join.js';
+export { Filter } from './graph/metamodel/pure/packageableElements/store/relational/model/Filter.js';
 export {
   ViewReference,
   ViewExplicitReference,

@@ -1953,6 +1953,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dagrejs/dagre@npm:1.1.4":
+  version: 1.1.4
+  resolution: "@dagrejs/dagre@npm:1.1.4"
+  dependencies:
+    "@dagrejs/graphlib": "npm:2.2.4"
+  checksum: 10/0b3744b170c68ae0666e03aca19c3100d5131feafeb54b3ea096b749a9f0fe5385b8bd8889c11a49493cfab945b2486b9e30bc41b321755ed718e9f5cb4b74f1
+  languageName: node
+  linkType: hard
+
+"@dagrejs/graphlib@npm:2.2.4":
+  version: 2.2.4
+  resolution: "@dagrejs/graphlib@npm:2.2.4"
+  checksum: 10/1fc5393525a3d666284ca740867d082768bc87ff61f5f181eb5c1a73c1a6e328ad23581f7415c81df2614171b8a4b4a8e6a417eefd7f9fca74a4a625ec3aa848
+  languageName: node
+  linkType: hard
+
 "@discoveryjs/json-ext@npm:0.5.7":
   version: 0.5.7
   resolution: "@discoveryjs/json-ext@npm:0.5.7"
@@ -2795,6 +2811,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-studio@workspace:packages/legend-application-studio"
   dependencies:
+    "@dagrejs/dagre": "npm:1.1.4"
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-code-editor": "workspace:*"
@@ -2816,6 +2833,7 @@ __metadata:
     "@testing-library/react": "npm:16.2.0"
     "@types/react": "npm:19.0.10"
     "@types/react-dom": "npm:19.0.4"
+    "@xyflow/react": "npm:12.4.4"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     fast-xml-parser: "npm:5.0.8"
@@ -6104,7 +6122,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-drag@npm:*, @types/d3-drag@npm:^3.0.1":
+"@types/d3-drag@npm:*, @types/d3-drag@npm:^3.0.1, @types/d3-drag@npm:^3.0.7":
   version: 3.0.7
   resolution: "@types/d3-drag@npm:3.0.7"
   dependencies:
@@ -6219,7 +6237,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-selection@npm:*, @types/d3-selection@npm:^3.0.3":
+"@types/d3-selection@npm:*, @types/d3-selection@npm:^3.0.10, @types/d3-selection@npm:^3.0.3":
   version: 3.0.11
   resolution: "@types/d3-selection@npm:3.0.11"
   checksum: 10/2d2d993b9e9553d066566cb22916c632e5911090db99e247bd8c32855a344e6b7c25b674f3c27956c367a6b3b1214b09931ce854788c3be2072003e01f2c75d7
@@ -6256,7 +6274,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-transition@npm:*":
+"@types/d3-transition@npm:*, @types/d3-transition@npm:^3.0.8":
   version: 3.0.9
   resolution: "@types/d3-transition@npm:3.0.9"
   dependencies:
@@ -6265,7 +6283,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-zoom@npm:*, @types/d3-zoom@npm:^3.0.1":
+"@types/d3-zoom@npm:*, @types/d3-zoom@npm:^3.0.1, @types/d3-zoom@npm:^3.0.8":
   version: 3.0.8
   resolution: "@types/d3-zoom@npm:3.0.8"
   dependencies:
@@ -7200,6 +7218,35 @@ __metadata:
   version: 4.2.2
   resolution: "@xtuc/long@npm:4.2.2"
   checksum: 10/7217bae9fe240e0d804969e7b2af11cb04ec608837c78b56ca88831991b287e232a0b7fce8d548beaff42aaf0197ffa471d81be6ac4c4e53b0148025a2c076ec
+  languageName: node
+  linkType: hard
+
+"@xyflow/react@npm:12.4.4":
+  version: 12.4.4
+  resolution: "@xyflow/react@npm:12.4.4"
+  dependencies:
+    "@xyflow/system": "npm:0.0.52"
+    classcat: "npm:^5.0.3"
+    zustand: "npm:^4.4.0"
+  peerDependencies:
+    react: ">=17"
+    react-dom: ">=17"
+  checksum: 10/980b4284af9775c472a2532b362d97a73ff2f5210daf309c5243b88669120dffc77ce38121caf3879e9b2de51484f2b2ddb933b398957acb4b49c721a0b422e4
+  languageName: node
+  linkType: hard
+
+"@xyflow/system@npm:0.0.52":
+  version: 0.0.52
+  resolution: "@xyflow/system@npm:0.0.52"
+  dependencies:
+    "@types/d3-drag": "npm:^3.0.7"
+    "@types/d3-selection": "npm:^3.0.10"
+    "@types/d3-transition": "npm:^3.0.8"
+    "@types/d3-zoom": "npm:^3.0.8"
+    d3-drag: "npm:^3.0.0"
+    d3-selection: "npm:^3.0.0"
+    d3-zoom: "npm:^3.0.0"
+  checksum: 10/f973ad96df0f3021b77caf351e36930710d058a1c0384a53aef4515517481043e7a6a94c587ee78daf25831e6c02b77f08b158ba297e00e0bc15c6a50b7cf390
   languageName: node
   linkType: hard
 
@@ -21844,7 +21891,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand@npm:^4.4.1":
+"zustand@npm:^4.4.0, zustand@npm:^4.4.1":
   version: 4.5.7
   resolution: "zustand@npm:4.5.7"
   dependencies:
