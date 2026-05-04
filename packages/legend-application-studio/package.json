@@ -68,6 +68,7 @@
     "@types/react-dom": "19.0.4",
     "@xyflow/react": "12.4.4",
     "fast-xml-parser": "5.0.8",
+    "html-to-image": "1.11.13",
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
     "mobx-utils": "6.1.0",
