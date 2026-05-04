@@ -93,12 +93,12 @@ const buildSassAll = async () => {
     `yarn`,
     [
       'sass',
-      ...entries.map((entry) => `${entry.inputPath}:${entry.outputPath}`),
+      ...entries.map((entry) => `"${entry.inputPath}:${entry.outputPath}"`),
       // This is where we put all the shared Sass stylesheets
       // NOTE: `node_modules` path here must be resolvable from `cwd`, which is
       // the root directory in this case due to the way we set up this script in Yarn
       // else, `sass` might fail this silently, and we get no feedback about it
-      `--load-path=${resolve(ROOT_DIR, 'node_modules/@finos/legend-art/scss')}`,
+      `"--load-path=${resolve(ROOT_DIR, 'node_modules/@finos/legend-art/scss')}"`,
       compressed ? `--style=compressed` : undefined,
       enableWatch ? `--watch` : undefined,
     ].filter(Boolean),
@@ -112,11 +112,11 @@ const buildSassAll = async () => {
   if (compressed) {
     execSync(
       `yarn sass ${entries
-        .map((entry) => `${entry.inputPath}:${entry.outputPath}`)
-        .join(' ')} --style=compressed --load-path=${resolve(
+        .map((entry) => `"${entry.inputPath}:${entry.outputPath}"`)
+        .join(' ')} --style=compressed "--load-path=${resolve(
         ROOT_DIR,
         'node_modules/@finos/legend-art/scss',
-      )}`,
+      )}"`,
     );
 
     entries.forEach((entry) =>
@@ -146,15 +146,15 @@ const buildSassAll = async () => {
       `yarn`,
       [
         'sass',
-        ...entries.map((entry) => `${entry.inputPath}:${entry.outputPath}`),
+        ...entries.map((entry) => `"${entry.inputPath}:${entry.outputPath}"`),
         // This is where we put all the shared Sass stylesheets
         // NOTE: `node_modules` path here must be resolvable from `cwd`, which is
         // the root directory in this case due to the way we set up this script in Yarn
         // else, `sass` might fail this silently, and we get no feedback about it
-        `--load-path=${resolve(
+        `"--load-path=${resolve(
           ROOT_DIR,
           'node_modules/@finos/legend-art/scss',
-        )}`,
+        )}"`,
         enableWatch ? `--watch` : undefined,
       ].filter(Boolean),
       {
