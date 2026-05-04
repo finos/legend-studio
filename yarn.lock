@@ -2837,6 +2837,7 @@ __metadata:
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     fast-xml-parser: "npm:5.0.8"
+    html-to-image: "npm:1.11.13"
     jest: "npm:29.7.0"
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
@@ -12309,6 +12310,13 @@ __metadata:
   version: 3.3.1
   resolution: "html-tags@npm:3.3.1"
   checksum: 10/d0e808544b92d8b999cbcc86d539577255a2f0f2f4f73110d10749d1d36e6fe6ad706a0355a8477afb6e000ecdc93d8455b3602951f9a2b694ac9e28f1b52878
+  languageName: node
+  linkType: hard
+
+"html-to-image@npm:1.11.13":
+  version: 1.11.13
+  resolution: "html-to-image@npm:1.11.13"
+  checksum: 10/f5950a0221b4ed4e59853db09917606309ebe3ddd2051c2f89aed3e37026d1893880f76e61bc2ca2280e3f1bbc0ad5b9ea5325188ff339987c8eeccbe8284f3f
   languageName: node
   linkType: hard
 

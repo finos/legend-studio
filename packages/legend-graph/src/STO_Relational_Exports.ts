@@ -19,7 +19,11 @@ export { INTERNAL__UnknownAuthenticationStrategy } from './graph/metamodel/pure/
 export { INTERNAL__UnknownDatasourceSpecification } from './graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownDatasourceSpecification.js';
 export { INTERNAL__UnknownPostProcessor } from './graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/INTERNAL__UnknownPostProcessor.js';
 
-export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
+export {
+  Database,
+  INTERNAL__LakehouseGeneratedDatabase,
+} from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
+export { IncludeStore } from './graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';
 export { Table } from './graph/metamodel/pure/packageableElements/store/relational/model/Table.js';
 export { TabularFunction } from './graph/metamodel/pure/packageableElements/store/relational/model/TabularFunction.js';
 export { Column } from './graph/metamodel/pure/packageableElements/store/relational/model/Column.js';
@@ -27,6 +31,8 @@ export { Schema } from './graph/metamodel/pure/packageableElements/store/relatio
 export { View } from './graph/metamodel/pure/packageableElements/store/relational/model/View.js';
 export { Join } from './graph/metamodel/pure/packageableElements/store/relational/model/Join.js';
 export { Filter } from './graph/metamodel/pure/packageableElements/store/relational/model/Filter.js';
+export { FilterMapping } from './graph/metamodel/pure/packageableElements/store/relational/mapping/FilterMapping.js';
+export { GroupByMapping } from './graph/metamodel/pure/packageableElements/store/relational/mapping/GroupByMapping.js';
 export {
   ViewReference,
   ViewExplicitReference,
@@ -48,7 +54,14 @@ export {
 export { PostProcessor } from './graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
 export { MapperPostProcessor } from './graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/MapperPostProcessor.js';
 
-export { Milestoning } from './graph/metamodel/pure/packageableElements/store/relational/model/milestoning/Milestoning.js';
+export {
+  Milestoning,
+  TemporalMilestoning,
+} from './graph/metamodel/pure/packageableElements/store/relational/model/milestoning/Milestoning.js';
+export { BusinessMilestoning } from './graph/metamodel/pure/packageableElements/store/relational/model/milestoning/BusinessMilestoning.js';
+export { BusinessSnapshotMilestoning } from './graph/metamodel/pure/packageableElements/store/relational/model/milestoning/BusinessSnapshotMilestoning.js';
+export { ProcessingMilestoning } from './graph/metamodel/pure/packageableElements/store/relational/model/milestoning/ProcessingMilestoning.js';
+export { ProcessingSnapshotMilestoning } from './graph/metamodel/pure/packageableElements/store/relational/model/milestoning/ProcessingSnapshotMilestoning.js';
 export * from './graph/metamodel/pure/packageableElements/store/relational/model/RelationalDataType.js';
 export * from './graph/metamodel/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
 export * from './graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
