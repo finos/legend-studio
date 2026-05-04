@@ -88,6 +88,26 @@ export const getViewColumnFormulaKey = (
 export const getFilterFormulaKey = (filterName: string): string => filterName;
 
 /**
+ * Stable key used to look up the Pure-code formula for a single join. Join
+ * names are unique within a Database (they live as a flat
+ * `Database.joins: Join[]`), so the name alone is sufficient. Mirrors the
+ * filter helper above.
+ */
+export const getJoinFormulaKey = (joinName: string): string => joinName;
+
+/**
+ * Stable key used to look up the Pure-code formula for a single view's
+ * groupBy column expression. Views are scoped to a schema and groupBy
+ * positions matter (the engine renders them in declaration order), so the
+ * key includes both the schema-qualified view name and the position index.
+ */
+export const getViewGroupByFormulaKey = (
+  schemaName: string,
+  viewName: string,
+  index: number,
+): string => `${schemaName}.${viewName}.groupBy[${index}]`;
+
+/**
  * Walk the V1-shaped Database entity content and collect every view's column
  * mapping operations into a Map keyed by `<schema>.<view>.<column>`. The
  * traversal mirrors the V1_Database / V1_Schema / V1_View / V1_ColumnMapping
@@ -146,6 +166,64 @@ const collectRawViewColumnOperations = (
 };
 
 /**
+ * Walk the V1-shaped Database entity content and collect every view's
+ * groupBy column expressions into a Map keyed by
+ * `<schema>.<view>.groupBy[<index>]`. The V1 shape is
+ *   `schemas[].views[].groupBy.columns[]: RawRelationalOperationElement`.
+ * Anything that doesn't match that shape is skipped silently. Same loose
+ * typing as the column-mapping walker above.
+ */
+const collectRawViewGroupByOperations = (
+  content: unknown,
+): Map<string, RawRelationalOperationElement> => {
+  const out = new Map<string, RawRelationalOperationElement>();
+  const dbContent = content as { schemas?: unknown[] } | undefined;
+  if (!dbContent || !Array.isArray(dbContent.schemas)) {
+    return out;
+  }
+  for (const schemaJson of dbContent.schemas) {
+    const schema = schemaJson as
+      | { name?: string; views?: unknown[] }
+      | undefined;
+    if (!schema || typeof schema.name !== 'string') {
+      continue;
+    }
+    const views = Array.isArray(schema.views) ? schema.views : [];
+    for (const viewJson of views) {
+      // V1 protocol stores `View.groupBy` as a flat array of operation
+      // elements (see `V1_View.groupBy: V1_RelationalOperationElement[]`),
+      // NOT wrapped in `{ columns: [...] }` like the metamodel side. The
+      // serializer drops the field entirely when there are no group-by
+      // columns, so `view.groupBy` may legitimately be undefined.
+      const view = viewJson as
+        | { name?: string; groupBy?: unknown[] }
+        | undefined;
+      if (
+        !view ||
+        typeof view.name !== 'string' ||
+        !Array.isArray(view.groupBy)
+      ) {
+        continue;
+      }
+      view.groupBy.forEach((opJson, index) => {
+        if (typeof opJson !== 'object' || opJson === null) {
+          return;
+        }
+        out.set(
+          getViewGroupByFormulaKey(
+            schema.name as string,
+            view.name as string,
+            index,
+          ),
+          opJson,
+        );
+      });
+    }
+  }
+  return out;
+};
+
+/**
  * Walk the V1-shaped Database entity content and collect every filter's
  * operation into a Map keyed by filter name. Filters live at the database
  * level (a flat `filters[]` on the V1 root), unlike views which are nested
@@ -182,6 +260,36 @@ const collectRawFilterOperations = (
 };
 
 /**
+ * Walk the V1-shaped Database entity content and collect every join's
+ * operation into a Map keyed by join name. Joins live at the database level
+ * (a flat `joins[]` on the V1 root) under the shape `{ name, operation }`,
+ * mirroring filters. Anything that doesn't match the expected shape is
+ * skipped silently.
+ */
+const collectRawJoinOperations = (
+  content: unknown,
+): Map<string, RawRelationalOperationElement> => {
+  const out = new Map<string, RawRelationalOperationElement>();
+  const dbContent = content as { joins?: unknown[] } | undefined;
+  if (!dbContent || !Array.isArray(dbContent.joins)) {
+    return out;
+  }
+  for (const joinJson of dbContent.joins) {
+    const join = joinJson as { name?: string; operation?: unknown } | undefined;
+    if (
+      !join ||
+      typeof join.name !== 'string' ||
+      typeof join.operation !== 'object' ||
+      join.operation === null
+    ) {
+      continue;
+    }
+    out.set(getJoinFormulaKey(join.name), join.operation);
+  }
+  return out;
+};
+
+/**
  * View-only form mode for `Database` elements. Renders an ERD-style canvas
  * (tables as nodes, joins as edges) plus a side-panel tree of schemas/tables/
  * columns. A second tab shows the same grammar that Text Mode would show.
@@ -212,6 +320,13 @@ export class DatabaseEditorState extends ElementEditorState {
   selectedJoin: Join | undefined;
   selectedFilter: Filter | undefined;
 
+  // For views (which have `columnMappings`, not `Column` instances), column
+  // selection is tracked by name. Mutually exclusive with `selectedColumn`
+  // — a relation is either a Table (use `selectedColumn`) or a View (use
+  // `selectedViewColumnName`); never both. Always `undefined` when the
+  // selected relation is a Table.
+  selectedViewColumnName: string | undefined;
+
   // ---- Side-panel expansion -----------------------------------------------
   // Schemas default to expanded so users immediately see their relations;
   // tables/views default to collapsed so the tree isn't overwhelming on
@@ -226,6 +341,21 @@ export class DatabaseEditorState extends ElementEditorState {
   // we increment this counter on side-panel actions and let the canvas
   // observe it via `useEffect`.
   panToSelectedRequestCounter = 0;
+
+  // ---- Canvas action triggers --------------------------------------------
+  // Same counter pattern as `panToSelectedRequestCounter` for one-shot
+  // actions the side-panel header / canvas toolbar fire and the canvas
+  // executes. Counters (rather than booleans) so identical successive
+  // requests still trigger.
+  fitAllRequestCounter = 0;
+  resetLayoutRequestCounter = 0;
+
+  // ---- Tree search --------------------------------------------------------
+  // User-entered filter applied to the schema tree (schema / table / view /
+  // column names). Empty string = no filter. Lowercase comparison is done
+  // at the consumer side via `searchTextLowerCase` so we don't pay the
+  // toLowerCase cost in every row render.
+  searchText = '';
 
   // ---- View-column Pure-code formulas -------------------------------------
   // Populated lazily by `loadViewColumnFormulas()` (one batched engine call
@@ -243,6 +373,29 @@ export class DatabaseEditorState extends ElementEditorState {
   filterFormulas = new Map<string, string>();
   isLoadingFilterFormulas = false;
 
+  // ---- Join Pure-code formulas --------------------------------------------
+  // Same pattern as `viewColumnFormulas` and `filterFormulas` but for
+  // `Database.joins[].operation`. Populated lazily by `loadJoinFormulas()` in
+  // a single batched engine call. Surfaced in the side panel under each join
+  // row and in the canvas "selected join" floating card.
+  joinFormulas = new Map<string, string>();
+  isLoadingJoinFormulas = false;
+
+  // ---- View groupBy Pure-code formulas ------------------------------------
+  // Same pattern as `viewColumnFormulas` but for `View.groupBy.columns`.
+  // Populated lazily by `loadViewGroupByFormulas()` in a single batched
+  // engine call. Keyed by `<schema>.<view>.groupBy[<index>]` so positional
+  // order is preserved (groupBy expressions are positional).
+  viewGroupByFormulas = new Map<string, string>();
+  isLoadingViewGroupByFormulas = false;
+
+  // ---- Layout -------------------------------------------------------------
+  // Side-panel (schema tree) is user-resizable on the canvas. We keep its
+  // collapsed state on the editor state so it survives tab switches and so
+  // a future toggle button outside the panel can drive it. Width is owned
+  // by `react-reflex` and not tracked here — only the binary collapse flag.
+  isSidePanelCollapsed = false;
+
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
@@ -250,20 +403,30 @@ export class DatabaseEditorState extends ElementEditorState {
       selectedTab: observable,
       selectedRelation: observable,
       selectedColumn: observable,
+      selectedViewColumnName: observable,
       selectedJoin: observable,
       selectedFilter: observable,
       expandedSchemaIds: observable,
       expandedRelationIds: observable,
       panToSelectedRequestCounter: observable,
+      fitAllRequestCounter: observable,
+      resetLayoutRequestCounter: observable,
+      searchText: observable,
       viewColumnFormulas: observable,
       isLoadingViewColumnFormulas: observable,
       filterFormulas: observable,
       isLoadingFilterFormulas: observable,
+      joinFormulas: observable,
+      isLoadingJoinFormulas: observable,
+      viewGroupByFormulas: observable,
+      isLoadingViewGroupByFormulas: observable,
+      isSidePanelCollapsed: observable,
       database: computed,
       setSelectedTab: action,
       setSelectedRelation: action,
       focusOnRelation: action,
       focusOnColumn: action,
+      focusOnViewColumn: action,
       focusOnJoin: action,
       focusOnFilter: action,
       clearSelection: action,
@@ -271,9 +434,16 @@ export class DatabaseEditorState extends ElementEditorState {
       toggleRelationExpanded: action,
       expandAllSchemas: action,
       collapseAll: action,
+      setSidePanelCollapsed: action,
+      toggleSidePanelCollapsed: action,
+      setSearchText: action,
+      requestFitAll: action,
+      requestResetLayout: action,
       generateGrammarText: flow,
       loadViewColumnFormulas: flow,
       loadFilterFormulas: flow,
+      loadJoinFormulas: flow,
+      loadViewGroupByFormulas: flow,
     });
 
     // Default: every schema starts expanded so the tree is immediately useful.
@@ -290,6 +460,16 @@ export class DatabaseEditorState extends ElementEditorState {
     // Same for filter formulas — independent batched engine call so the two
     // loads run in parallel.
     flowResult(this.loadFilterFormulas()).catch(noop());
+
+    // And join formulas — third independent batched engine call. All three
+    // are fire-and-forget on construction; consumers fall back to the
+    // placeholder text until they resolve.
+    flowResult(this.loadJoinFormulas()).catch(noop());
+
+    // And view-groupBy formulas — fourth independent batched engine call.
+    // Only fires for databases that actually have at least one view with a
+    // groupBy; the loader bails out otherwise.
+    flowResult(this.loadViewGroupByFormulas()).catch(noop());
   }
 
   get database(): Database {
@@ -428,6 +608,95 @@ export class DatabaseEditorState extends ElementEditorState {
     }
   }
 
+  /**
+   * Render every join's relational operation as Pure code, in a single
+   * batched engine call. Same strategy as `loadFilterFormulas`: serialize
+   * the database to its V1 JSON via `elementToEntity` and walk the
+   * `joins[]` array on the root for `{ name, operation }` pairs. Join
+   * names are unique within a Database, so the lookup key is just the
+   * join name.
+   *
+   * On any failure (network/server/serialization), the partial map
+   * (possibly empty) stays in place and consumers fall back to the
+   * placeholder.
+   */
+  *loadJoinFormulas(): GeneratorFn<void> {
+    if (this.database.joins.length === 0) {
+      return;
+    }
+    this.isLoadingJoinFormulas = true;
+    try {
+      const entity =
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
+          this.database,
+          { pruneSourceInformation: true },
+        );
+      const operations = collectRawJoinOperations(entity.content);
+      if (operations.size === 0) {
+        return;
+      }
+      const rendered =
+        (yield this.editorStore.graphManagerState.graphManager.relationalOperationElementToPureCode(
+          operations,
+        )) as Map<string, string>;
+      this.joinFormulas = new Map(rendered);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+        `Couldn't render join formulas for database ${this.database.path}`,
+        error,
+      );
+    } finally {
+      this.isLoadingJoinFormulas = false;
+    }
+  }
+
+  /**
+   * Render every view's groupBy column expressions as Pure code, in a
+   * single batched engine call. Same strategy as `loadViewColumnFormulas`:
+   * serialize the database to its V1 JSON via `elementToEntity` and walk
+   * the `schemas[].views[].groupBy.columns[]` arrays for raw operations.
+   *
+   * Skips the round-trip entirely when no view declares a groupBy. On any
+   * failure the partial map (possibly empty) stays in place and consumers
+   * fall back to the static placeholder.
+   */
+  *loadViewGroupByFormulas(): GeneratorFn<void> {
+    const hasAnyGroupBy = this.database.schemas.some((schema) =>
+      schema.views.some((view) => Boolean(view.groupBy)),
+    );
+    if (!hasAnyGroupBy) {
+      return;
+    }
+    this.isLoadingViewGroupByFormulas = true;
+    try {
+      const entity =
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
+          this.database,
+          { pruneSourceInformation: true },
+        );
+      const operations = collectRawViewGroupByOperations(entity.content);
+      if (operations.size === 0) {
+        return;
+      }
+      const rendered =
+        (yield this.editorStore.graphManagerState.graphManager.relationalOperationElementToPureCode(
+          operations,
+        )) as Map<string, string>;
+      this.viewGroupByFormulas = new Map(rendered);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+        `Couldn't render view-groupBy formulas for database ${this.database.path}`,
+        error,
+      );
+    } finally {
+      this.isLoadingViewGroupByFormulas = false;
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Selection
   // -------------------------------------------------------------------------
@@ -441,6 +710,7 @@ export class DatabaseEditorState extends ElementEditorState {
   setSelectedRelation(relation: Table | View | undefined): void {
     this.selectedRelation = relation;
     this.selectedColumn = undefined;
+    this.selectedViewColumnName = undefined;
     this.selectedJoin = undefined;
     this.selectedFilter = undefined;
   }
@@ -452,6 +722,7 @@ export class DatabaseEditorState extends ElementEditorState {
   focusOnRelation(relation: Table | View): void {
     this.selectedRelation = relation;
     this.selectedColumn = undefined;
+    this.selectedViewColumnName = undefined;
     this.selectedJoin = undefined;
     this.selectedFilter = undefined;
     this.panToSelectedRequestCounter++;
@@ -466,6 +737,22 @@ export class DatabaseEditorState extends ElementEditorState {
   focusOnColumn(table: Table, column: Column): void {
     this.selectedRelation = table;
     this.selectedColumn = column;
+    this.selectedViewColumnName = undefined;
+    this.selectedJoin = undefined;
+    this.selectedFilter = undefined;
+    this.panToSelectedRequestCounter++;
+  }
+
+  /**
+   * Side-panel view column-mapping click \u2014 selects the parent view AND
+   * the specific column-mapping by name (views don't have `Column` refs).
+   * Drives the per-row highlight inside the view's canvas node, mirroring
+   * how `focusOnColumn` works for tables.
+   */
+  focusOnViewColumn(view: View, columnMappingName: string): void {
+    this.selectedRelation = view;
+    this.selectedColumn = undefined;
+    this.selectedViewColumnName = columnMappingName;
     this.selectedJoin = undefined;
     this.selectedFilter = undefined;
     this.panToSelectedRequestCounter++;
@@ -481,6 +768,7 @@ export class DatabaseEditorState extends ElementEditorState {
   focusOnJoin(join: Join): void {
     this.selectedRelation = undefined;
     this.selectedColumn = undefined;
+    this.selectedViewColumnName = undefined;
     this.selectedJoin = join;
     this.selectedFilter = undefined;
     this.panToSelectedRequestCounter++;
@@ -496,6 +784,7 @@ export class DatabaseEditorState extends ElementEditorState {
   focusOnFilter(filter: Filter): void {
     this.selectedRelation = undefined;
     this.selectedColumn = undefined;
+    this.selectedViewColumnName = undefined;
     this.selectedJoin = undefined;
     this.selectedFilter = filter;
   }
@@ -508,6 +797,7 @@ export class DatabaseEditorState extends ElementEditorState {
   clearSelection(): void {
     this.selectedRelation = undefined;
     this.selectedColumn = undefined;
+    this.selectedViewColumnName = undefined;
     this.selectedJoin = undefined;
     this.selectedFilter = undefined;
   }
@@ -543,6 +833,48 @@ export class DatabaseEditorState extends ElementEditorState {
     this.expandedRelationIds.clear();
   }
 
+  /**
+   * Set the side panel's collapsed state directly. Useful for syncing the
+   * state when the user drags the splitter all the way down (i.e., the
+   * panel sets itself to collapsed in response to a resize event).
+   */
+  setSidePanelCollapsed(collapsed: boolean): void {
+    this.isSidePanelCollapsed = collapsed;
+  }
+
+  /**
+   * Flip the side panel's collapsed state. Driven by the explicit toggle
+   * button in the panel header (and the chevron rendered when collapsed).
+   */
+  toggleSidePanelCollapsed(): void {
+    this.isSidePanelCollapsed = !this.isSidePanelCollapsed;
+  }
+
+  /**
+   * Set the tree search/filter text. Empty string means \u201cno filter\u201d.
+   * The schema-tree consumer derives a lowercase form per render rather
+   * than computing it here so identical successive sets stay cheap.
+   */
+  setSearchText(text: string): void {
+    this.searchText = text;
+  }
+
+  /**
+   * Bump the fit-all counter. The canvas observes this and runs
+   * `fitView()` over the full graph (no `nodes` filter).
+   */
+  requestFitAll(): void {
+    this.fitAllRequestCounter++;
+  }
+
+  /**
+   * Bump the reset-layout counter. The canvas observes this and re-runs
+   * dagre over the current nodes/edges, undoing any user-initiated drags.
+   */
+  requestResetLayout(): void {
+    this.resetLayoutRequestCounter++;
+  }
+
   override reprocess(
     newElement: Database,
     editorStore: EditorStore,
@@ -553,6 +885,7 @@ export class DatabaseEditorState extends ElementEditorState {
     next.selectedTab = this.selectedTab;
     next.expandedSchemaIds = new Set(this.expandedSchemaIds);
     next.expandedRelationIds = new Set(this.expandedRelationIds);
+    next.isSidePanelCollapsed = this.isSidePanelCollapsed;
     // Note: `viewColumnFormulas` and `filterFormulas` deliberately do NOT
     // carry over. They're derived from operations on the new element and may
     // have changed; the constructor's `loadViewColumnFormulas()` and
