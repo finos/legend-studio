@@ -1,0 +1,813 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+// Top-level shell: vertical stack of tab strip + content area. The tab strip
+// switches between the interactive diagram (VIEW) and the read-only Pure
+// grammar (GRAMMAR). Tab styles mirror `.uml-element-editor__tab` for
+// consistency with other Legend Studio form-mode editors.
+.database-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+  color: var(--color-light-grey-300);
+
+  // Dark-themed tab strip — matches the side panel's dark background so the
+  // header reads as part of the editor surface, not a contrasting lighter
+  // strip. Bottom border gives a thin separator from the content below.
+  &__tabs__header {
+    @include flexVCenter;
+
+    flex-shrink: 0;
+    height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  &__tabs {
+    flex: 1;
+    height: 100%;
+    z-index: 1;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  &__tab {
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.6rem;
+    background: transparent;
+    border: none;
+    border-right: 0.1rem solid var(--color-dark-grey-200);
+    color: var(--color-light-grey-400);
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 1.1rem;
+
+    &:hover {
+      color: var(--color-light-grey-200);
+    }
+  }
+
+  &__tab--active,
+  &__tab--active:hover {
+    color: var(--color-light-grey-0);
+    position: relative;
+  }
+
+  // Yellow underline matches the active-tab cue used in `.uml-element-editor`.
+  &__tab--active::after {
+    content: '';
+    height: 0.3rem;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: var(--color-yellow-200);
+  }
+
+  // Read-only sticker on the right of the tab strip. Yellow-tinted to read
+  // as a status indicator — explicit and obvious, but small enough not to
+  // compete with the tabs themselves.
+  &__read-only-badge {
+    @include flexVCenter;
+
+    gap: 0.4rem;
+    margin-right: 1rem;
+    padding: 0.2rem 0.6rem;
+    border: 0.1rem solid var(--color-yellow-200);
+    border-radius: 0.2rem;
+    color: var(--color-yellow-200);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.05rem;
+    user-select: none;
+
+    svg {
+      font-size: 0.9rem;
+    }
+
+    &__label {
+      white-space: nowrap;
+    }
+  }
+
+  // Fills the remaining vertical space below the tab strip. The diagram and
+  // grammar children both expect to flex into the full available area.
+  &__content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+  }
+
+  &__grammar {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    background: var(--color-dark-grey-50);
+  }
+}
+
+.database-diagram {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+  color: var(--color-light-grey-300);
+
+  // ------------------------------------------------------------------------
+  // Schema tree (Schema → Table → Column). Each level is offset by indent —
+  // we use padding-left rather than margin-left so the hover/selection
+  // backgrounds extend across the full row width.
+  //
+  // Caret + icons are vertically centered via flexVCenter on the row button.
+  // Column rows are buttons (not divs) so they get keyboard focus rings for
+  // free.
+  // ------------------------------------------------------------------------
+  &__tree {
+    &__caret {
+      @include flexCenter;
+
+      width: 1.2rem;
+      height: 1.2rem;
+      flex-shrink: 0;
+      color: var(--color-dark-grey-400);
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+
+    &__schema {
+      &__row {
+        @include flexVCenter;
+
+        gap: 0.6rem;
+        width: 100%;
+        padding: 0.3rem 1rem;
+        background: transparent;
+        border: none;
+        color: var(--color-purple-400);
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04rem;
+        cursor: pointer;
+        text-align: left;
+
+        svg {
+          flex-shrink: 0;
+        }
+
+        &:hover {
+          background: var(--color-dark-grey-100);
+        }
+      }
+
+      &__name {
+        flex: 1;
+        @include ellipsisTextOverflow;
+      }
+
+      &__count {
+        color: var(--color-dark-grey-400);
+        font-size: 1rem;
+      }
+
+      &__children {
+        // No additional indent — table rows pad-left themselves so PK icons
+        // line up under the schema's icon column.
+      }
+    }
+
+    &__table {
+      &__row {
+        @include flexVCenter;
+
+        gap: 0.6rem;
+        width: 100%;
+        padding: 0.3rem 1rem 0.3rem 2.4rem;
+        background: transparent;
+        border: none;
+        color: var(--color-light-grey-300);
+        font-size: 1.1rem;
+        cursor: pointer;
+        text-align: left;
+
+        svg {
+          color: var(--color-yellow-200);
+          flex-shrink: 0;
+        }
+
+        &:hover {
+          background: var(--color-dark-grey-100);
+        }
+
+        &--selected,
+        &--selected:hover {
+          background: var(--color-blue-200);
+          color: var(--color-light-grey-0);
+        }
+      }
+
+      // Views reuse the table row layout but tint the icon purple so users
+      // can tell views and tables apart in the tree at a glance. Same
+      // selected/hover behavior — the parent button styles still apply.
+      &--view &__row svg {
+        color: var(--color-purple-400);
+      }
+
+      &__name {
+        flex: 1;
+        @include ellipsisTextOverflow;
+      }
+
+      &__count {
+        color: var(--color-dark-grey-400);
+        font-size: 1rem;
+      }
+    }
+
+    &__column {
+      @include flexVCenter;
+
+      gap: 0.6rem;
+      width: 100%;
+      padding: 0.2rem 1rem 0.2rem 4.4rem;
+      background: transparent;
+      border: none;
+      color: var(--color-light-grey-300);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: left;
+
+      &:hover {
+        background: var(--color-dark-grey-100);
+      }
+
+      &--selected,
+      &--selected:hover {
+        background: var(--color-blue-200);
+        color: var(--color-light-grey-0);
+      }
+
+      &--pk &__name {
+        color: var(--color-yellow-200);
+      }
+
+      &--selected &__name,
+      &--selected &__type {
+        color: var(--color-light-grey-0);
+      }
+
+      &__icon {
+        @include flexCenter;
+
+        width: 1.4rem;
+        flex-shrink: 0;
+        color: var(--color-yellow-200);
+
+        svg {
+          width: 1rem;
+          height: 1rem;
+        }
+      }
+
+      &__bullet {
+        color: var(--color-dark-grey-400);
+      }
+
+      &__name {
+        flex: 1;
+        @include ellipsisTextOverflow;
+      }
+
+      &__type {
+        color: var(--color-medium-green-450);
+        font-size: 0.95rem;
+      }
+
+      // View column rows: secondary text is a Pure-code formula placeholder
+      // ("calculate [...]" for now). Italicize it so it reads as "expression"
+      // rather than "type" — distinct visual cue without changing the layout.
+      &--view &__type {
+        font-style: italic;
+        color: var(--color-purple-400);
+      }
+    }
+  }
+
+  &__side-panel {
+    width: 28rem;
+    flex-shrink: 0;
+    background: var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-dark-grey-200);
+    overflow: auto;
+    padding: 0.4rem 0;
+
+    &__section {
+      padding-bottom: 0.8rem;
+
+      &__header {
+        padding: 0.8rem 1rem 0.4rem;
+        font-size: 1rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05rem;
+        color: var(--color-light-grey-400);
+      }
+
+      &__count {
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    &__schema {
+      padding-bottom: 0.4rem;
+
+      &__header {
+        @include flexVCenter;
+
+        gap: 0.6rem;
+        padding: 0.3rem 1rem;
+        color: var(--color-purple-400);
+        font-size: 1.1rem;
+      }
+
+      &__name {
+        flex: 1;
+        @include ellipsisTextOverflow;
+      }
+
+      &__count {
+        color: var(--color-dark-grey-400);
+        font-size: 1rem;
+      }
+    }
+
+    &__table {
+      @include flexVCenter;
+
+      gap: 0.6rem;
+      width: 100%;
+      padding: 0.3rem 1rem 0.3rem 2.4rem;
+      background: transparent;
+      border: none;
+      color: var(--color-light-grey-300);
+      cursor: pointer;
+      font-size: 1.1rem;
+      text-align: left;
+
+      svg {
+        color: var(--color-yellow-200);
+        flex-shrink: 0;
+      }
+
+      &:hover {
+        background: var(--color-dark-grey-100);
+      }
+
+      &--selected,
+      &--selected:hover {
+        background: var(--color-blue-200);
+        color: var(--color-light-grey-0);
+      }
+
+      &__name {
+        flex: 1;
+        @include ellipsisTextOverflow;
+      }
+    }
+
+    // Join rows are buttons (clickable) — they select the join, which the
+    // canvas mirrors by highlighting the matching edge in yellow and ringing
+    // both endpoint tables. We use yellow here too for consistency with the
+    // canvas treatment of join-mode focus.
+    &__join {
+      @include flexVCenter;
+
+      gap: 0.6rem;
+      width: 100%;
+      padding: 0.3rem 1rem 0.3rem 2.4rem;
+      background: transparent;
+      border: none;
+      color: var(--color-light-grey-300);
+      font-size: 1.1rem;
+      cursor: pointer;
+      text-align: left;
+
+      svg {
+        color: var(--color-medium-green-450);
+        flex-shrink: 0;
+      }
+
+      &:hover {
+        background: var(--color-dark-grey-100);
+      }
+
+      &--selected,
+      &--selected:hover {
+        background: var(--color-yellow-200);
+        color: var(--color-dark-grey-50);
+
+        svg {
+          color: var(--color-dark-grey-50);
+        }
+      }
+
+      &__name {
+        flex: 1;
+        @include ellipsisTextOverflow;
+      }
+    }
+
+    // Filter rows are two-line buttons: the filter name on top and the
+    // rendered Pure code as italic secondary text below. The icon column is
+    // top-aligned so it sits next to the name (not centered between the two
+    // lines). Selected state uses orange to stay distinct from blue (table
+    // selection) and yellow (join selection).
+    &__filter {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      width: 100%;
+      padding: 0.4rem 1rem 0.4rem 2.4rem;
+      background: transparent;
+      border: none;
+      color: var(--color-light-grey-300);
+      font-size: 1.1rem;
+      cursor: pointer;
+      text-align: left;
+
+      &:hover {
+        background: var(--color-dark-grey-100);
+      }
+
+      &--selected,
+      &--selected:hover {
+        background: var(--color-orange-100);
+        color: var(--color-light-grey-0);
+
+        svg {
+          color: var(--color-light-grey-0);
+        }
+
+        .database-diagram__side-panel__filter__formula {
+          color: var(--color-light-grey-50);
+        }
+      }
+
+      &__icon {
+        @include flexVCenter;
+
+        height: 1.6rem;
+        flex-shrink: 0;
+
+        svg {
+          color: var(--color-orange-200);
+          font-size: 1rem;
+        }
+      }
+
+      &__body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        min-width: 0;
+        flex: 1;
+      }
+
+      &__name {
+        @include ellipsisTextOverflow;
+      }
+
+      // The Pure-code expression underneath. Italicized to read as
+      // "expression" rather than identifier — same visual treatment as the
+      // view-column formula display, so the two stay visually consistent
+      // across the panel.
+      &__formula {
+        @include ellipsisTextOverflow;
+
+        font-family: var(--font-code);
+        font-style: italic;
+        font-size: 1rem;
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    // Included-store entries are clickable buttons — clicking opens the
+    // referenced database as its own element editor (new tab in the editor
+    // group). The trailing `ExternalLinkIcon` only appears on hover so the
+    // resting state stays calm; on hover the row brightens and the
+    // open-icon becomes visible to signal the navigation affordance.
+    &__included-store {
+      @include flexVCenter;
+
+      width: 100%;
+      gap: 0.6rem;
+      padding: 0.3rem 1rem 0.3rem 2.4rem;
+      background: transparent;
+      border: none;
+      color: var(--color-dark-grey-400);
+      font-size: 1.1rem;
+      cursor: pointer;
+      text-align: left;
+
+      svg {
+        color: var(--color-dark-grey-400);
+        flex-shrink: 0;
+        font-size: 1.2rem;
+      }
+
+      &:hover {
+        background: var(--color-dark-grey-100);
+        color: var(--color-light-grey-200);
+
+        svg {
+          color: var(--color-light-grey-200);
+        }
+
+        .database-diagram__side-panel__included-store__open {
+          opacity: 1;
+        }
+      }
+
+      &__path {
+        @include ellipsisTextOverflow;
+
+        flex: 1;
+        font-family: var(--font-code);
+        font-size: 1rem;
+      }
+
+      &__open {
+        @include flexVCenter;
+
+        flex-shrink: 0;
+        opacity: 0;
+        transition: opacity 0.1s ease-in-out;
+
+        svg {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+
+  &__canvas-container {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    background: var(--color-dark-grey-50);
+  }
+
+  &__canvas {
+    width: 100%;
+    height: 100%;
+
+    .react-flow__background {
+      background: var(--color-dark-grey-50);
+    }
+
+    .react-flow__controls {
+      background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-250);
+      box-shadow: none;
+
+      button {
+        background: var(--color-dark-grey-100);
+        border-bottom: 0.1rem solid var(--color-dark-grey-250);
+        color: var(--color-light-grey-300);
+
+        svg {
+          fill: currentcolor;
+        }
+
+        &:hover {
+          background: var(--color-dark-grey-200);
+        }
+      }
+    }
+
+    .react-flow__edge-path {
+      stroke: var(--color-dark-grey-400);
+      stroke-width: 1.2;
+    }
+
+    .react-flow__edge.selected .react-flow__edge-path,
+    .react-flow__edge:focus .react-flow__edge-path,
+    .react-flow__edge:focus-visible .react-flow__edge-path {
+      stroke: var(--color-blue-200);
+    }
+
+    .react-flow__edge-text {
+      fill: var(--color-light-grey-200);
+      font-size: 1rem;
+    }
+
+    .react-flow__edge-textbg {
+      fill: var(--color-dark-grey-100);
+    }
+
+    .react-flow__attribution {
+      display: none;
+    }
+  }
+
+  &__minimap {
+    background: var(--color-dark-grey-100) !important;
+    border: 0.1rem solid var(--color-dark-grey-250) !important;
+  }
+
+  &__table-node {
+    min-width: 22rem;
+    background: var(--color-dark-grey-80);
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.4rem;
+    box-shadow: 0 0.2rem 0.6rem rgb(0 0 0 / 40%);
+    font-size: 1.1rem;
+    color: var(--color-light-grey-300);
+
+    // Two visually-distinct rings, never both at once:
+    //   --selected (blue): single-table focus
+    //   --join-endpoint (yellow): one of two endpoints of the selected join
+    &--selected {
+      border-color: var(--color-blue-200);
+      box-shadow:
+        0 0 0 0.2rem var(--color-blue-200),
+        0 0.2rem 0.6rem rgb(0 0 0 / 40%);
+    }
+
+    &--join-endpoint {
+      border-color: var(--color-yellow-200);
+      box-shadow:
+        0 0 0 0.2rem var(--color-yellow-200),
+        0 0.2rem 0.6rem rgb(0 0 0 / 40%);
+    }
+
+    // Views are visually distinguished from tables via a purple-tinted header
+    // and a small "VIEW" tag in the title bar. The body still looks the same
+    // (column rows on dark) so the layout is consistent and joins read the
+    // same way regardless of which kind sits at each endpoint.
+    &--view {
+      .database-diagram__table-node__header {
+        background: rgb(197 134 192 / 18%);
+        border-bottom-color: var(--color-purple-400);
+      }
+
+      .database-diagram__table-node__header__icon {
+        color: var(--color-purple-400);
+      }
+    }
+
+    &__handle {
+      // The two handles are decorative anchors for edge routing — keep them
+      // hidden so users don't think they're interactive.
+      opacity: 0;
+      pointer-events: none;
+      width: 0.1rem !important;
+      height: 0.1rem !important;
+    }
+
+    &__header {
+      @include flexVCenter;
+
+      gap: 0.6rem;
+      padding: 0.6rem 0.8rem;
+      background: var(--color-dark-grey-100);
+      border-bottom: 0.1rem solid var(--color-dark-grey-300);
+      border-radius: 0.4rem 0.4rem 0 0;
+
+      &__icon {
+        @include flexVCenter;
+
+        color: var(--color-yellow-200);
+
+        svg {
+          width: 1.4rem;
+          height: 1.4rem;
+        }
+      }
+
+      &__name {
+        flex: 1;
+        font-weight: 500;
+        color: var(--color-light-grey-100);
+        @include ellipsisTextOverflow;
+      }
+
+      &__schema {
+        padding: 0.1rem 0.6rem;
+        border-radius: 1rem;
+        background: rgb(197 134 192 / 12%);
+        color: var(--color-purple-400);
+        font-size: 0.95rem;
+      }
+
+      // "VIEW" tag — only rendered for view nodes, sits next to the schema
+      // badge so users can tell tables and views apart at a glance even when
+      // the icon is small.
+      &__kind-tag {
+        padding: 0.1rem 0.5rem;
+        border-radius: 0.2rem;
+        background: var(--color-purple-400);
+        color: var(--color-dark-grey-50);
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.05rem;
+      }
+    }
+
+    &__columns {
+      padding: 0.2rem 0;
+    }
+
+    &__column {
+      display: grid;
+      grid-template-columns: 1.6rem 1fr auto;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.2rem 0.8rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1rem;
+
+      &--pk &__name {
+        color: var(--color-yellow-200);
+        font-weight: 500;
+      }
+
+      &--fk &__name {
+        color: var(--color-blue-200);
+      }
+
+      &--nullable:not(&--pk, &--fk) &__name {
+        color: var(--color-dark-grey-400);
+      }
+
+      // The column the user clicked in the side-panel tree gets a strong
+      // background so it's findable at a glance even on a large table card.
+      // We override the PK/FK text colors so contrast stays readable on the
+      // blue background.
+      &--focused {
+        background: var(--color-blue-200);
+
+        // stylelint-disable-next-line no-descending-specificity
+        .database-diagram__table-node__column__name,
+        .database-diagram__table-node__column__type,
+        .database-diagram__table-node__column__key {
+          color: var(--color-light-grey-0);
+        }
+      }
+
+      &__key {
+        @include flexVCenter;
+
+        justify-content: center;
+        color: var(--color-yellow-200);
+
+        svg {
+          width: 1rem;
+          height: 1rem;
+        }
+      }
+
+      &__name {
+        @include ellipsisTextOverflow;
+
+        color: var(--color-light-grey-300);
+      }
+
+      &__type {
+        color: var(--color-medium-green-450);
+        font-size: 0.95rem;
+      }
+
+      // View column rows on the canvas table-node: italic purple formula text,
+      // matching the tree treatment so the two surfaces feel coherent.
+      &--view &__type {
+        font-style: italic;
+        color: var(--color-purple-400);
+      }
+    }
+  }
+}

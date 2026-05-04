@@ -49,6 +49,7 @@ import {
 import { makeObservable, action, observable } from 'mobx';
 import type { EditorState } from './editor-state/EditorState.js';
 import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState.js';
+import { DatabaseEditorState } from './editor-state/element-editor-state/DatabaseEditorState.js';
 import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
@@ -169,11 +170,9 @@ export class EditorTabManagerState extends TabManagerState {
       return new UMLEditorState(this.editorStore, element);
     } else if (element instanceof ConcreteFunctionDefinition) {
       return new FunctionEditorState(this.editorStore, element);
-    } else if (
-      element instanceof Measure ||
-      element instanceof Database ||
-      element instanceof FlatData
-    ) {
+    } else if (element instanceof Database) {
+      return new DatabaseEditorState(this.editorStore, element);
+    } else if (element instanceof Measure || element instanceof FlatData) {
       return new UnsupportedElementEditorState(this.editorStore, element);
     } else if (element instanceof PackageableRuntime) {
       return new PackageableRuntimeEditorState(this.editorStore, element);
