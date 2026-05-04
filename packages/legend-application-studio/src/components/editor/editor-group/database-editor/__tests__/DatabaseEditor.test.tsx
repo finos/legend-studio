@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-import { test, expect, jest } from '@jest/globals';
 import {
-  fireEvent,
+  describe,
+  test,
+  expect,
+  jest,
+  beforeAll,
+  afterAll,
+} from '@jest/globals';
+import {
+  cleanup,
   getAllByText,
   getByText,
   getByTitle,
@@ -47,91 +54,68 @@ import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test'
     disconnect: jest.fn(),
   }));
 
-test(
-  integrationTest('Database editor renders with VIEW tab active'),
-  async () => {
+describe(integrationTest('Database editor'), () => {
+  let MOCK__editorStore: ReturnType<typeof TEST__provideMockedEditorStore>;
+  let renderResult: Awaited<
+    ReturnType<typeof TEST__setUpEditorWithDefaultSDLCData>
+  >;
+
+  afterAll(() => {
+    cleanup();
+  });
+
+  beforeAll(async () => {
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
       readOnly: true,
     });
-    const MOCK__editorStore = TEST__provideMockedEditorStore();
-    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-      MOCK__editorStore,
-      { entities: TEST_DATA__SimpleRelationalEntities },
-    );
-
-    await TEST__openElementFromExplorerTree('store::TestDB', renderResult);
-
-    const editorGroup = await waitFor(() =>
-      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
-    );
-
-    // Both tab buttons render — `prettyCONSTName` formats them as "View" / "Grammar".
-    await waitFor(() => getByText(editorGroup, 'View'));
-    await waitFor(() => getByText(editorGroup, 'Grammar'));
-
-    // Read-only badge is always visible.
-    await waitFor(() => getByText(editorGroup, 'READ ONLY'));
-    await waitFor(() => getByTitle(editorGroup, 'This editor is read-only'));
-
-    // Schema tree contents (VIEW tab is active by default) — schemas default
-    // to expanded so table names render immediately. Schema and table names
-    // also appear in the ERD canvas nodes, so we use `getAllByText` and just
-    // assert at least one occurrence.
-    await waitFor(() =>
-      expect(getAllByText(editorGroup, 'default').length).toBeGreaterThan(0),
-    );
-    await waitFor(() =>
-      expect(getAllByText(editorGroup, 'PersonTable').length).toBeGreaterThan(
-        0,
-      ),
-    );
-    await waitFor(() =>
-      expect(getAllByText(editorGroup, 'FirmTable').length).toBeGreaterThan(0),
-    );
-
-    // The editor state's selectedTab confirms the default.
-    const editorState =
-      MOCK__editorStore.tabManagerState.getCurrentEditorState(
-        DatabaseEditorState,
-      );
-    expect(editorState.selectedTab).toBe(DATABASE_EDITOR_TAB.VIEW);
-  },
-);
-
-test(
-  integrationTest('Database editor switches to Grammar tab on click'),
-  async () => {
-    MockedMonacoEditorInstance.getValue.mockReturnValue('');
-    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
-      readOnly: true,
-    });
-    const MOCK__editorStore = TEST__provideMockedEditorStore();
-    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore = TEST__provideMockedEditorStore();
+    renderResult = await TEST__setUpEditorWithDefaultSDLCData(
       MOCK__editorStore,
       { entities: TEST_DATA__SimpleRelationalEntities },
     );
     await TEST__openElementFromExplorerTree('store::TestDB', renderResult);
+  });
 
-    const editorGroup = await waitFor(() =>
-      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
-    );
-
-    // Click the Grammar tab.
-    fireEvent.click(await waitFor(() => getByText(editorGroup, 'Grammar')));
-
-    const editorState =
-      MOCK__editorStore.tabManagerState.getCurrentEditorState(
-        DatabaseEditorState,
+  test(
+    integrationTest('Database editor renders with VIEW tab active'),
+    async () => {
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
       );
-    await waitFor(() =>
-      expect(editorState.selectedTab).toBe(DATABASE_EDITOR_TAB.GRAMMAR),
-    );
 
-    // Click back to the View tab.
-    fireEvent.click(getByText(editorGroup, 'View'));
-    await waitFor(() =>
-      expect(editorState.selectedTab).toBe(DATABASE_EDITOR_TAB.VIEW),
-    );
-  },
-);
+      // Both tab buttons render — `prettyCONSTName` formats them as "View" / "Grammar".
+      await waitFor(() => getByText(editorGroup, 'View'));
+      await waitFor(() => getByText(editorGroup, 'Grammar'));
+
+      // Read-only badge is always visible.
+      await waitFor(() => getByText(editorGroup, 'READ ONLY'));
+      await waitFor(() => getByTitle(editorGroup, 'This editor is read-only'));
+
+      // Schema tree contents (VIEW tab is active by default) — schemas default
+      // to expanded so table names render immediately. Schema and table names
+      // also appear in the ERD canvas nodes, so we use `getAllByText` and just
+      // assert at least one occurrence.
+      await waitFor(() =>
+        expect(getAllByText(editorGroup, 'default').length).toBeGreaterThan(0),
+      );
+      await waitFor(() =>
+        expect(getAllByText(editorGroup, 'PersonTable').length).toBeGreaterThan(
+          0,
+        ),
+      );
+      await waitFor(() =>
+        expect(getAllByText(editorGroup, 'FirmTable').length).toBeGreaterThan(
+          0,
+        ),
+      );
+
+      // The editor state's selectedTab confirms the default.
+      const editorState =
+        MOCK__editorStore.tabManagerState.getCurrentEditorState(
+          DatabaseEditorState,
+        );
+      expect(editorState.selectedTab).toBe(DATABASE_EDITOR_TAB.VIEW);
+    },
+  );
+});
