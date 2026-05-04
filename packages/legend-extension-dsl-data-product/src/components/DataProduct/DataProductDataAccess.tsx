@@ -190,6 +190,10 @@ const PowerBiScreen = observer(
       );
     }
 
+    const hasNoAccess =
+      accessPointState.apgState.access === AccessPointGroupAccess.NO_ACCESS ||
+      accessPointState.apgState.access === AccessPointGroupAccess.DENIED;
+
     const loadPowerBi = (): void => {
       if (dataAccessState.dataProductViewerState.openPowerBi) {
         const apg = accessPointState.apgState.apg.id;
@@ -234,8 +238,13 @@ const PowerBiScreen = observer(
         <button
           onClick={loadPowerBi}
           tabIndex={-1}
+          disabled={hasNoAccess}
           className="data-product__viewer__tab-screen__btn"
-          title="Open in Power BI"
+          title={
+            hasNoAccess
+              ? 'You do not have access to this access point group. Please request access first.'
+              : 'Open in Power BI'
+          }
         >
           Open in Power BI
         </button>
@@ -342,13 +351,21 @@ export const SqlPlaygroundScreen = observer(
           .catch(dataAccessState.applicationStore.alertUnhandledError);
       }
     }, [isSqlModalOpen, playgroundState, dataAccessState]);
+    const hasNoAccess =
+      accessPointState.apgState.access === AccessPointGroupAccess.NO_ACCESS ||
+      accessPointState.apgState.access === AccessPointGroupAccess.DENIED;
     return (
       <div className="data-product__viewer__tab-screen">
         <button
           onClick={loadSqlQuery}
           tabIndex={-1}
+          disabled={hasNoAccess}
           className="data-product__viewer__tab-screen__btn"
-          title="Open SQL Playground"
+          title={
+            hasNoAccess
+              ? 'You do not have access to this access point group. Please request access first.'
+              : 'Open SQL Playground'
+          }
         >
           Open SQL Playground
         </button>
@@ -563,6 +580,10 @@ const DataCubeScreen = observer(
       }
     };
 
+    const hasNoAccess =
+      accessPointState.apgState.access === AccessPointGroupAccess.NO_ACCESS ||
+      accessPointState.apgState.access === AccessPointGroupAccess.DENIED;
+
     return (
       <div className="data-product__viewer__tab-screen">
         {!resolvedUserEnv && (
@@ -586,9 +607,13 @@ const DataCubeScreen = observer(
         <button
           onClick={loadDataCube}
           tabIndex={-1}
-          disabled={!(selectedEnvironment ?? resolvedUserEnv)}
+          disabled={hasNoAccess || !(selectedEnvironment ?? resolvedUserEnv)}
           className="data-product__viewer__tab-screen__btn"
-          title="Open in Datacube"
+          title={
+            hasNoAccess
+              ? 'You do not have access to this access point group. Please request access first.'
+              : 'Open in Datacube'
+          }
         >
           Open in Datacube
         </button>
