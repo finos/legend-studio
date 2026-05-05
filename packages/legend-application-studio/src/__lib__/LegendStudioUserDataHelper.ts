@@ -18,6 +18,17 @@ import { returnUndefOnError } from '@finos/legend-shared';
  */
 export enum LEGEND_STUDIO_USER_DATA_KEY {
   GLOBAL_TEST_RUNNER_SHOW_DEPENDENCIES = 'studio-editor.global-test-runner-showDependencyPanel',
+  // Per-user theme preference for the database editor. Scoped to this one
+  // editor since the wider Studio app is dark-mode-only today — the rest of
+  // the app does not honor this value.
+  // TODO: when Studio adopts app-wide theming via `LayoutService` (the
+  // mechanism Query already uses with setting key
+  // `application.layout.colorTheme`), retire this key and have the database
+  // editor inherit `applicationStore.layoutService.currentColorTheme`
+  // instead. Migration is mechanical: delete this key + the helper getters,
+  // drop the toggle button in the tab header, and retarget the SCSS
+  // `.database-editor--light` block at the framework's color-theme tokens.
+  DATABASE_EDITOR_THEME = 'studio-editor.database-editor.theme',
 }
 
 export class LegendStudioUserDataHelper {
@@ -37,6 +48,25 @@ export class LegendStudioUserDataHelper {
   ): void {
     service.persistValue(
       LEGEND_STUDIO_USER_DATA_KEY.GLOBAL_TEST_RUNNER_SHOW_DEPENDENCIES,
+      val,
+    );
+  }
+
+  static databaseEditor_getTheme(
+    service: UserDataService,
+  ): 'dark' | 'light' | undefined {
+    const val = returnUndefOnError(() =>
+      service.getStringValue(LEGEND_STUDIO_USER_DATA_KEY.DATABASE_EDITOR_THEME),
+    );
+    return val === 'light' || val === 'dark' ? val : undefined;
+  }
+
+  static databaseEditor_setTheme(
+    service: UserDataService,
+    val: 'dark' | 'light',
+  ): void {
+    service.persistValue(
+      LEGEND_STUDIO_USER_DATA_KEY.DATABASE_EDITOR_THEME,
       val,
     );
   }

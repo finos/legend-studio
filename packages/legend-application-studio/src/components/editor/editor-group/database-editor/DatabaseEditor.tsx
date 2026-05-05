@@ -20,10 +20,12 @@ import {
   ChevronRightIcon,
   InfoCircleIcon,
   LockIcon,
+  MoonIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  SunIcon,
   clsx,
   getCollapsiblePanelGroupProps,
 } from '@finos/legend-art';
@@ -88,7 +90,14 @@ export const DatabaseEditor = observer(() => {
   );
 
   return (
-    <div className="database-editor">
+    <div
+      className={clsx('database-editor', {
+        // Local light-theme opt-in. Scoped to this editor only — the rest
+        // of Studio remains in its configured theme. SCSS overrides hang
+        // off this modifier class.
+        'database-editor--light': editorState.theme === 'light',
+      })}
+    >
       <div className="database-editor__tabs__header">
         <div className="database-editor__tabs">
           {TABS.map((tab) => (
@@ -119,6 +128,24 @@ export const DatabaseEditor = observer(() => {
             READ ONLY
           </span>
         </div>
+        {/*
+         * Light/dark theme toggle. Scoped to this editor only — see
+         * `DatabaseEditorState.toggleTheme`. Icon switches to surface the
+         * mode the user would jump TO if they clicked (current=dark shows
+         * a sun, current=light shows a moon).
+         */}
+        <button
+          type="button"
+          className="database-editor__theme-toggle"
+          onClick={() => editorState.toggleTheme()}
+          title={
+            editorState.theme === 'dark'
+              ? 'Switch to light theme (this editor only)'
+              : 'Switch to dark theme'
+          }
+        >
+          {editorState.theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+        </button>
       </div>
       <div className="database-editor__content">
         {database instanceof INTERNAL__LakehouseGeneratedDatabase && (
