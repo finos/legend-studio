@@ -57,6 +57,34 @@ describe('LakehouseUtils', () => {
     expect(dataContractContainsAccessGroup(group, dataContract)).toBe(false);
   });
 
+  test('dataContractContainsAccessGroup should return false if the access group matches but data product name does not', () => {
+    const group = new V1_AccessPointGroup();
+    group.id = 'group1';
+
+    const dataContract = new V1_LiteDataContract();
+    dataContract.resourceType = V1_ResourceType.ACCESS_POINT_GROUP;
+    dataContract.accessPointGroup = 'group1';
+    dataContract.resourceId = 'OTHER_DATAPRODUCT';
+
+    expect(
+      dataContractContainsAccessGroup(group, dataContract, 'MY_DATAPRODUCT'),
+    ).toBe(false);
+  });
+
+  test('dataContractContainsAccessGroup should return true if both the access group and data product name match', () => {
+    const group = new V1_AccessPointGroup();
+    group.id = 'group1';
+
+    const dataContract = new V1_LiteDataContract();
+    dataContract.resourceType = V1_ResourceType.ACCESS_POINT_GROUP;
+    dataContract.accessPointGroup = 'group1';
+    dataContract.resourceId = 'MY_DATAPRODUCT';
+
+    expect(
+      dataContractContainsAccessGroup(group, dataContract, 'MY_DATAPRODUCT'),
+    ).toBe(true);
+  });
+
   test('isMemberOfContract should return true if the user is a member of an ad-hoc team contract', async () => {
     const lakehouseContractServerClient = new LakehouseContractServerClient({
       baseUrl: 'http://test-lakehouse-contract-server-client',

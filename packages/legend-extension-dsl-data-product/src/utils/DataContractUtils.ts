@@ -63,13 +63,22 @@ export const dataContractContainsDataProduct = (
   return false;
 };
 
-// Assume contract already part of data product
 export const dataContractContainsAccessGroup = (
   group: V1_AccessPointGroup,
   dataContract: V1_LiteDataContract,
+  dataProductName?: string | undefined,
 ): boolean => {
   if (dataContract.resourceType === V1_ResourceType.ACCESS_POINT_GROUP) {
-    return dataContract.accessPointGroup === group.id;
+    if (dataContract.accessPointGroup !== group.id) {
+      return false;
+    }
+    if (
+      dataProductName !== undefined &&
+      dataContract.resourceId !== dataProductName
+    ) {
+      return false;
+    }
+    return true;
   }
   return false;
 };

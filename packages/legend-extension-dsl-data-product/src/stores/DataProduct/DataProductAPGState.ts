@@ -367,6 +367,8 @@ export class DataProductAPGState {
           this.applicationStore.identityService.currentUser,
           tokenProvider(),
         );
+      const entitlementsDataProductDetails =
+        this.dataProductViewerState.entitlementsDataProductDetails;
       const userLiteContract = rawUserContracts
         .map((rawContract) =>
           deserialize(
@@ -380,6 +382,7 @@ export class DataProductAPGState {
           dataContractContainsAccessGroup(
             this.apg,
             contract.contractResultLite,
+            entitlementsDataProductDetails?.dataProduct.name,
           ),
         )
         .find(isNonNullable);

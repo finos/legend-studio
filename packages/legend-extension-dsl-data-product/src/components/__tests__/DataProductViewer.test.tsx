@@ -2835,6 +2835,93 @@ describe('DataProductViewer', () => {
         undefined,
       );
     });
+
+    test('does not pick up user contract from a different data product with the same access point group', async () => {
+      // Lite contract returned by `getDataContractsForDataProduct` (already
+      // scoped to the current data product) - none for the current user.
+      const mockLiteContracts: V1_LiteDataContract[] = [];
+
+      // The user has a contract for a *different* data product but with the
+      // same access point group name. This contract is what
+      // `getContractsForUser` will return.
+      const otherDataProductUserContract: V1_LiteDataContract = {
+        description: 'User contract for a different data product',
+        guid: 'other-data-product-user-contract-id',
+        version: 0,
+        state: V1_ContractState.COMPLETED,
+        members: [],
+        consumer: {
+          _type: V1_OrganizationalScopeType.AdHocTeam,
+          users: [
+            {
+              name: 'test-consumer-user-id',
+              type: V1_UserType.WORKFORCE_USER,
+            },
+          ],
+        },
+        createdBy: 'test-user',
+        createdAt: '2025-12-22T15:18:41.998+00:00',
+        resourceId: 'OTHER_DATAPRODUCT',
+        resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+        deploymentId: 99999,
+        accessPointGroup: 'GROUP1',
+      };
+
+      const mockDataContracts: V1_DataContract[] = [];
+
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      const lakehouseContractServerClient = guaranteeNonNullable(
+        dataProductDataAccessState,
+      ).lakehouseContractServerClient;
+
+      // Override `getContractsForUser` to return the contract belonging to a
+      // different data product but with a matching access point group name.
+      createSpy(
+        lakehouseContractServerClient,
+        'getContractsForUser',
+      ).mockResolvedValue([
+        {
+          contractResultLite: otherDataProductUserContract,
+          status: V1_EnrichedUserApprovalStatus.APPROVED,
+          user: 'test-consumer-user-id',
+        },
+      ]);
+
+      const getDataContractSpy = createSpy(
+        lakehouseContractServerClient,
+        'getDataContract',
+      ).mockResolvedValue({ dataContracts: [] });
+
+      await act(async () => {
+        await guaranteeNonNullable(dataProductDataAccessState).fetchContracts(
+          () => undefined,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      // The user's contract belongs to a different data product, so we should
+      // NOT fetch the full contract for it.
+      expect(getDataContractSpy).not.toHaveBeenCalledWith(
+        'other-data-product-user-contract-id',
+        true,
+        undefined,
+      );
+
+      // No associated user contract should have been resolved for any APG of
+      // the current data product.
+      const apgStates = guaranteeNonNullable(dataProductDataAccessState)
+        .dataProductViewerState.apgStates;
+      apgStates.forEach((apgState) => {
+        expect(apgState.associatedUserContract).toBeUndefined();
+      });
+    });
   });
 
   describe('Support info rendering', () => {
