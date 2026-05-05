@@ -22,7 +22,6 @@ import {
   DATA_PRODUCT_TAB,
   DATA_PRODUCT_TYPE,
   DataProductEditorState,
-  generateUrlToDeployOnOpen,
   LakehouseAccessPointState,
   ModelAccessPointGroupState,
 } from '../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
@@ -68,7 +67,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
-  RocketIcon,
   Switch,
   TimesIcon,
   Tooltip,
@@ -108,7 +106,6 @@ import {
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 import { action, autorun, flowResult } from 'mobx';
-import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
@@ -3352,34 +3349,9 @@ export const DataProductEditor = observer(() => {
     editorStore.tabManagerState.getCurrentEditorState(DataProductEditorState);
   const product = dataProductEditorState.product;
   const isReadOnly = dataProductEditorState.isReadOnly;
-  const auth = useAuth();
   const [showPreview, setShowPreview] = useState(false);
   const [dataProductViewerState, setDataProductViewerState] =
     useState<DataProductViewerState>();
-
-  const deployDataProduct = (): void => {
-    // Trigger OAuth flow if not authenticated
-    if (!auth.isAuthenticated) {
-      // remove this redirect if we move to do oauth at the beginning of opening studio
-      auth
-        .signinRedirect({
-          state: generateUrlToDeployOnOpen(dataProductEditorState),
-        })
-        .catch(editorStore.applicationStore.alertUnhandledError);
-      return;
-    }
-    // Use the token for deployment
-    const token = auth.user?.access_token;
-    if (token) {
-      flowResult(dataProductEditorState.deploy(token)).catch(
-        editorStore.applicationStore.alertUnhandledError,
-      );
-    } else {
-      editorStore.applicationStore.notificationService.notifyError(
-        'Authentication failed. No token available.',
-      );
-    }
-  };
 
   const selectedActivity = dataProductEditorState.selectedTab;
   const renderActivivtyBarTab = (): React.ReactNode => {
@@ -3426,18 +3398,6 @@ export const DataProductEditor = observer(() => {
       dataProductEditorState.editorStore.applicationStore.alertUnhandledError,
     );
   }, [dataProductEditorState]);
-
-  useEffect(() => {
-    if (dataProductEditorState.deployOnOpen) {
-      flowResult(dataProductEditorState.deploy(auth.user?.access_token)).catch(
-        editorStore.applicationStore.alertUnhandledError,
-      );
-    }
-  }, [
-    auth,
-    editorStore.applicationStore.alertUnhandledError,
-    dataProductEditorState,
-  ]);
 
   useEffect(
     () =>
@@ -3518,18 +3478,6 @@ export const DataProductEditor = observer(() => {
                     </div>
                   </>
                 )}
-              </button>
-            </div>
-            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-              <button
-                className="btn__dropdown-combo__label"
-                onClick={deployDataProduct}
-                title={dataProductEditorState.deployValidationMessage}
-                tabIndex={-1}
-                disabled={!dataProductEditorState.deployValidationMessage}
-              >
-                <RocketIcon className="btn__dropdown-combo__label__icon" />
-                <div className="btn__dropdown-combo__label__title">Deploy</div>
               </button>
             </div>
           </PanelHeaderActions>
