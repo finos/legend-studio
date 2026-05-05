@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.75
+
+### Patch Changes
+
+- [#5143](https://github.com/finos/legend-studio/pull/5143) [`bb78bb6`](https://github.com/finos/legend-studio/commit/bb78bb6017f096b42fc370897499c783991d97f8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix filtering of user lite contracts on the current data product so that contracts are matched on both the access point group name and the data product name (not just the access point group name).
+
+- [#5140](https://github.com/finos/legend-studio/pull/5140) [`af56117`](https://github.com/finos/legend-studio/commit/af5611740c55f5145848b714caa12c26181f8524) ([@yash0024](https://github.com/yash0024)) - Add openSampleQuery in DataProductViewerState
+
+- [#5139](https://github.com/finos/legend-studio/pull/5139) [`8069dcc`](https://github.com/finos/legend-studio/commit/8069dcc7658bc59a4500dde7b6d2daa8b3c4c6da) ([@arpithpotti-gs](https://github.com/arpithpotti-gs)) - Disable Open in SQL Playground, Open in Power BI, and Open in Datacube buttons when user does not have access to the APG.
+
 ## 0.0.74
 
 ## 0.0.73

@@ -1,5 +1,7 @@
 # @finos/legend-data-cube
 
+## 0.3.86
+
 ## 0.3.85
 
 ## 0.3.84

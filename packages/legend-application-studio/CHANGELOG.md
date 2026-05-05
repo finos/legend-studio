@@ -1,5 +1,20 @@
 # @finos/legend-application-studio
 
+## 28.21.0
+
+### Minor Changes
+
+- [#5135](https://github.com/finos/legend-studio/pull/5135) [`d7704e0`](https://github.com/finos/legend-studio/commit/d7704e08f18ae3f0acb657affd03bab69367665e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - MVP of Database Viewer:
+  View database in react flow canvas. Support Schema/Tables/Views and Simple Joins (Table to Table).
+
+### Patch Changes
+
+- [#5138](https://github.com/finos/legend-studio/pull/5138) [`6f05aee`](https://github.com/finos/legend-studio/commit/6f05aee03a774b3c755e703db0e9302e10fa9167) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Database viewer improvements:
+
+  - **Theme**: optional light theme toggle (sun/moon button in the tab header) scoped to this editor only, including the ReactFlow canvas; preference persists per-user via `UserDataService`.
+
+- [#5142](https://github.com/finos/legend-studio/pull/5142) [`27a3d78`](https://github.com/finos/legend-studio/commit/27a3d7881a463ba493ce048fc91560a4b1599f45) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove deploy button from Ingest Definition Editor and Data Product Editor
+
 ## 28.20.0
 
 ### Minor Changes

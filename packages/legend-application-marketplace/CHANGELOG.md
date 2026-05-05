@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.2.6
+
+### Patch Changes
+
+- [#5140](https://github.com/finos/legend-studio/pull/5140) [`af56117`](https://github.com/finos/legend-studio/commit/af5611740c55f5145848b714caa12c26181f8524) ([@yash0024](https://github.com/yash0024)) - Add query navigation from sample queries on marketplace and split sample values from documentation
+
 ## 0.2.5
 
 ## 0.2.4
