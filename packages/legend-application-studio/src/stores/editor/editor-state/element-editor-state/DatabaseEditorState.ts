@@ -42,6 +42,7 @@ import {
   type View,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../EditorStore.js';
+import { LegendStudioUserDataHelper } from '../../../../__lib__/LegendStudioUserDataHelper.js';
 
 /**
  * Top-level tabs inside the Database form-mode editor. `VIEW` shows the ERD
@@ -396,6 +397,19 @@ export class DatabaseEditorState extends ElementEditorState {
   // by `react-reflex` and not tracked here — only the binary collapse flag.
   isSidePanelCollapsed = false;
 
+  // ---- Theme --------------------------------------------------------------
+  // The wider Studio app is dark-mode-only today. We allow this editor (and
+  // only this editor) to opt into a light theme via a toolbar toggle. The
+  // setting lives on the editor state so it survives tab switches and
+  // recompiles within the same session, and is persisted per-user via
+  // `UserDataService` (localStorage) so the choice survives reloads.
+  // TODO: when Studio adopts app-wide theming via `LayoutService` (Query
+  // already does this with `setColorTheme(..., { persist: true })`), drop
+  // this local observable + persistence and react to
+  // `applicationStore.layoutService.currentColorTheme` instead so this
+  // editor stays in sync with the rest of the app.
+  theme: 'dark' | 'light' = 'dark';
+
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
@@ -421,6 +435,7 @@ export class DatabaseEditorState extends ElementEditorState {
       viewGroupByFormulas: observable,
       isLoadingViewGroupByFormulas: observable,
       isSidePanelCollapsed: observable,
+      theme: observable,
       database: computed,
       setSelectedTab: action,
       setSelectedRelation: action,
@@ -436,6 +451,7 @@ export class DatabaseEditorState extends ElementEditorState {
       collapseAll: action,
       setSidePanelCollapsed: action,
       toggleSidePanelCollapsed: action,
+      toggleTheme: action,
       setSearchText: action,
       requestFitAll: action,
       requestResetLayout: action,
@@ -450,6 +466,16 @@ export class DatabaseEditorState extends ElementEditorState {
     this.database.schemas.forEach((schema) => {
       this.expandedSchemaIds.add(getSchemaNodeId(schema.name));
     });
+
+    // Hydrate the persisted theme preference (if any). Falls through to the
+    // default 'dark' when the user has never set it. Done synchronously in
+    // the constructor so the first render already reflects the stored choice.
+    const persistedTheme = LegendStudioUserDataHelper.databaseEditor_getTheme(
+      this.editorStore.applicationStore.userDataService,
+    );
+    if (persistedTheme) {
+      this.theme = persistedTheme;
+    }
 
     // Kick off the formula load eagerly. The flow is async and writes into
     // `viewColumnFormulas` when ready — components render with the placeholder
@@ -851,6 +877,21 @@ export class DatabaseEditorState extends ElementEditorState {
   }
 
   /**
+   * Flip the editor's local theme between dark (the Studio default) and
+   * light. Scoped to this editor only — the rest of Studio remains in its
+   * configured theme. The toggle is exposed via a button in the editor's
+   * tab header. The new value is persisted to `UserDataService` so the
+   * choice survives reloads.
+   */
+  toggleTheme(): void {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    LegendStudioUserDataHelper.databaseEditor_setTheme(
+      this.editorStore.applicationStore.userDataService,
+      this.theme,
+    );
+  }
+
+  /**
    * Set the tree search/filter text. Empty string means \u201cno filter\u201d.
    * The schema-tree consumer derives a lowercase form per render rather
    * than computing it here so identical successive sets stay cheap.
@@ -886,6 +927,7 @@ export class DatabaseEditorState extends ElementEditorState {
     next.expandedSchemaIds = new Set(this.expandedSchemaIds);
     next.expandedRelationIds = new Set(this.expandedRelationIds);
     next.isSidePanelCollapsed = this.isSidePanelCollapsed;
+    next.theme = this.theme;
     // Note: `viewColumnFormulas` and `filterFormulas` deliberately do NOT
     // carry over. They're derived from operations on the new element and may
     // have changed; the constructor's `loadViewColumnFormulas()` and

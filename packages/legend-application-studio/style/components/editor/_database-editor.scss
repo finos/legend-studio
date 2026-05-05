@@ -1671,3 +1671,164 @@
   width: auto;
   padding: 0 0.6rem;
 }
+
+// =============================================================================
+// Theme toggle button (lives in the tab header strip)
+// =============================================================================
+
+.database-editor__theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  margin-right: 0.6rem;
+  background: transparent;
+  border: 0.1rem solid var(--color-dark-grey-250);
+  border-radius: 0.3rem;
+  color: var(--color-light-grey-300);
+  cursor: pointer;
+
+  svg {
+    font-size: 1.4rem;
+  }
+
+  &:hover {
+    background: var(--color-dark-grey-200);
+    color: var(--color-light-grey-50);
+  }
+}
+
+// =============================================================================
+// Light theme overrides — scoped to this editor only.
+//
+// Strategy: rather than rewriting every existing rule, we remap the legend
+// dark/light palette tokens at the `.database-editor--light` ancestor scope.
+// CSS custom properties cascade by inheritance, so any `var(--color-*)` use
+// inside the editor subtree automatically resolves to the light value here
+// while the rest of Studio (outside this subtree) keeps its dark tokens
+// intact.
+//
+// Accent tokens (blue/yellow/purple/orange/lime/green) are intentionally
+// left untouched so kind-tags and badges stay recognizable across themes.
+// We only flip the structural greys.
+//
+// TODO: when Studio adopts app-wide theming via `LayoutService` color
+// themes, retarget this block at the framework's color-theme tokens (or
+// delete it entirely if those tokens already cover the surfaces below).
+// The hex values here are a stop-gap until that infrastructure exists.
+// =============================================================================
+
+.database-editor--light {
+  // Backgrounds (was: dark grey scale → now: warm whites/light greys)
+  --color-dark-grey-50: #fff;
+  --color-dark-grey-80: #f7f7f8;
+  --color-dark-grey-100: #fff;
+  --color-dark-grey-200: #eceef1;
+  --color-dark-grey-250: #dfe2e7;
+  --color-dark-grey-300: #d2d6dc;
+  --color-dark-grey-400: #6b7280;
+
+  // Foregrounds (was: light grey scale → now: dark text on light bg)
+  --color-light-grey-0: #111827;
+  --color-light-grey-50: #1f2937;
+  --color-light-grey-100: #1f2937;
+  --color-light-grey-200: #2d333b;
+  --color-light-grey-300: #374151;
+  --color-light-grey-400: #6b7280;
+
+  // Editor root surface — explicit so the outer chrome reads as light.
+  background: #fff;
+  color: #1f2937;
+
+  // The "READ ONLY" yellow badge keeps its accent color but the soft
+  // bg behind the lock+text label needs a lighter wash so the yellow
+  // border isn't fighting a near-black surface anymore.
+  .database-editor__read-only-badge {
+    background: #fffbeb;
+  }
+
+  // Theme toggle picks up its own light styling.
+  .database-editor__theme-toggle {
+    border-color: #d2d6dc;
+    color: #374151;
+
+    &:hover {
+      background: #f3f4f6;
+      color: #111827;
+    }
+  }
+
+  // The amber "generated from grammar" banner — keep accent text but
+  // lighten the wash so it doesn't punch a yellow hole.
+  .database-editor__generated-banner {
+    background: #fef9c3;
+  }
+
+  // Active tab underline — purple-on-purple-tint reads fine on light too,
+  // but the wash needs to be a touch deeper to hold the purple text.
+  .database-editor__tab--active {
+    background: rgb(139 92 246 / 12%) !important;
+    color: #6d28d9 !important;
+  }
+
+  .database-editor__tab--active::after,
+  .database-editor__tab--active {
+    border-bottom-color: #6d28d9;
+  }
+
+  // Milestoning / annotation accent washes that used purple-with-alpha
+  // need their alpha bumped because they're now sitting on white.
+  .database-diagram__node__milestoning,
+  .database-diagram__node__annotations {
+    background: rgb(139 92 246 / 8%);
+    border-top-color: #d2d6dc;
+  }
+
+  // ============================================================
+  // ReactFlow canvas (CSS variable overrides scoped to this subtree)
+  // ============================================================
+  .react-flow {
+    --xy-background-color: #fafbfc;
+    --xy-background-pattern-color: #c7cdd6;
+    --xy-edge-stroke: #6b7280;
+    --xy-edge-stroke-selected: #6d28d9;
+    --xy-edge-stroke-width: 1.2;
+    --xy-controls-button-background-color: #fff;
+    --xy-controls-button-background-color-hover: #f3f4f6;
+    --xy-controls-button-color: #374151;
+    --xy-controls-button-color-hover: #111827;
+    --xy-controls-button-border-color: #d2d6dc;
+    --xy-controls-box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+    --xy-minimap-background-color: #fff;
+    --xy-minimap-mask-background-color: rgb(17 24 39 / 6%);
+    --xy-minimap-mask-stroke-color: rgb(17 24 39 / 18%);
+    --xy-node-color: #1f2937;
+    --xy-node-background-color: #fff;
+    --xy-node-border: 1px solid #d2d6dc;
+  }
+
+  // The dotted background's host element also reads our token — keep it
+  // aligned with `--xy-background-color` for a seamless surface.
+  .react-flow__background {
+    background: #fafbfc;
+  }
+
+  // Table-node card sits on a near-white canvas; its own white-on-white
+  // bg would disappear, so give it the faintest grey wash and a crisper
+  // shadow so cards still float above the dotted background.
+  .database-diagram__node__table {
+    background: #fff !important;
+    border: 0.1rem solid #d2d6dc !important;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+  }
+
+  // Selected/hover ring — keep accent but on light it needs darker stroke.
+  .database-diagram__node__table--hovered {
+    border-color: #2563eb !important;
+  }
+
+  .database-diagram__node__table--focused {
+    border-color: #b45309 !important;
+  }
+}
