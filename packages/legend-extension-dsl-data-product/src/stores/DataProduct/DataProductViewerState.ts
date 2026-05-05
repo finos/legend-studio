@@ -137,6 +137,7 @@ export class DataProductViewerState extends BaseViewerState<
         accessId: string | undefined,
       ) => void)
     | undefined;
+  readonly openSampleQuery?: ((sampleQueryId: string) => void) | undefined;
   readonly fetchingDataProductArtifactState = ActionState.create();
 
   constructor(
@@ -164,6 +165,7 @@ export class DataProductViewerState extends BaseViewerState<
             accessId: string | undefined,
           ) => void)
         | undefined;
+      openSampleQuery?: ((sampleQueryId: string) => void) | undefined;
     },
     registryServerClient?: RegistryServerClient | undefined,
   ) {
@@ -222,6 +224,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.openLineage = actions.openLineage;
     this.openGovernance = actions.openGovernance;
     this.openQuery = actions.openQuery;
+    this.openSampleQuery = actions.openSampleQuery;
   }
 
   protected getValidSections(): string[] {

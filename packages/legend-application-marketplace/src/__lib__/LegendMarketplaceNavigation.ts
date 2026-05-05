@@ -265,3 +265,21 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl =
       artifactId,
       versionId,
     )}/${dataProductPath}/${accessPointId}`;
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateDataProductSampleQueryUrl =
+  (
+    queryApplicationUrl: string,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataProductPath: string,
+    sampleQueryId: string,
+  ): string =>
+    `${queryApplicationUrl}/data-product/native/sample-query/${generateGAVCoordinates(
+      groupId,
+      artifactId,
+      versionId,
+    )}/${dataProductPath}/${sampleQueryId}`;

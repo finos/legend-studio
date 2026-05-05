@@ -21,6 +21,18 @@ import {
   type V1_EntitlementsDataProductDetails,
   V1_EntitlementsDataProductDetailsModelSchema,
   V1_EntitlementsLakehouseEnvironmentType,
+  V1_DataProductArtifact,
+  V1_NativeModelAccessInfo,
+  V1_SampleQuery,
+  V1_TemplateExecutableInfo,
+  V1_ExecutableTDSResult,
+  V1_ExecutableTDSResultInfo,
+  V1_ExecutableTDSResultColumn,
+  V1_ExecutableRelationResult,
+  V1_GenericType,
+  V1_RelationType,
+  V1_RelationTypeColumn,
+  V1_PackageableType,
 } from '@finos/legend-graph';
 import { type StoredFileGeneration } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
@@ -543,3 +555,69 @@ export const getMockDataProductGenerationFilesByType = (
     },
   },
 ];
+
+export const MOCK__TDS_SAMPLE_QUERY_ID = 'test-tds-sample-query-id';
+export const MOCK__RELATION_SAMPLE_QUERY_ID = 'test-relation-sample-query-id';
+export const MOCK__TDS_COLUMN_SAMPLE_VALUES = 'id1, id2';
+
+export const buildMockDataProductArtifactWithSampleQueries =
+  (): V1_DataProductArtifact => {
+    // --- TDS sample query ---
+    const tdsQueryInfo = new V1_TemplateExecutableInfo();
+    tdsQueryInfo.id = MOCK__TDS_SAMPLE_QUERY_ID;
+    tdsQueryInfo.query = '';
+
+    const tdsColumn = new V1_ExecutableTDSResultColumn();
+    tdsColumn.name = 'id';
+    tdsColumn.type = 'String';
+    tdsColumn.doc = `The identifier column -- e.g. ${MOCK__TDS_COLUMN_SAMPLE_VALUES}`;
+
+    const tdsTdsResultInfo = new V1_ExecutableTDSResultInfo();
+    tdsTdsResultInfo.tdsColumns = [tdsColumn];
+
+    const tdsTdsResult = new V1_ExecutableTDSResult();
+    tdsTdsResult.tdsResult = tdsTdsResultInfo;
+
+    const tdsSampleQuery = new V1_SampleQuery();
+    tdsSampleQuery.title = 'Sample TDS Query';
+    tdsSampleQuery.description = 'A test TDS sample query';
+    tdsSampleQuery.info = tdsQueryInfo;
+    tdsSampleQuery.result = tdsTdsResult;
+
+    // --- Relation sample query ---
+    const relationQueryInfo = new V1_TemplateExecutableInfo();
+    relationQueryInfo.id = MOCK__RELATION_SAMPLE_QUERY_ID;
+    relationQueryInfo.query = '#>{test::Store}#->select(~[id])';
+
+    const colGenericType = new V1_GenericType();
+    const colType = new V1_PackageableType();
+    colType.fullPath = 'String';
+    colGenericType.rawType = colType;
+
+    const relationColumn = new V1_RelationTypeColumn();
+    relationColumn.name = 'id';
+    relationColumn.genericType = colGenericType;
+
+    const relationType = new V1_RelationType();
+    relationType.columns = [relationColumn];
+
+    const relationGenericType = new V1_GenericType();
+    relationGenericType.rawType = relationType;
+
+    const relationResult = new V1_ExecutableRelationResult();
+    relationResult.genericType = relationGenericType;
+
+    const relationSampleQuery = new V1_SampleQuery();
+    relationSampleQuery.title = 'Sample Relation Query';
+    relationSampleQuery.description = 'A test Relation sample query';
+    relationSampleQuery.info = relationQueryInfo;
+    relationSampleQuery.result = relationResult;
+
+    // --- Assemble artifact ---
+    const nativeModelAccess = new V1_NativeModelAccessInfo();
+    nativeModelAccess.sampleQueries = [tdsSampleQuery, relationSampleQuery];
+
+    const artifact = new V1_DataProductArtifact();
+    artifact.nativeModelAccess = nativeModelAccess;
+    return artifact;
+  };

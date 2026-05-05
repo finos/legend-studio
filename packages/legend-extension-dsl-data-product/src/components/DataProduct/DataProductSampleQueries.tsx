@@ -57,11 +57,14 @@ import {
   type RelationSampleQueryTabContext,
 } from '../../stores/DataProduct/DataProductSampleQueryTabState.js';
 
+const TDS_SAMPLE_VALUES_DELIMITER = '-- e.g.';
+
 interface SampleQueryColumnData {
   id: string;
   name: string;
   type?: string | undefined;
   doc?: string | undefined;
+  sampleValues?: string | undefined;
 }
 
 const TDSColumnDocumentationCellRenderer = (
@@ -80,6 +83,54 @@ const TDSColumnDocumentationCellRenderer = (
   );
 };
 
+const TDSColumnSampleValuesCellRenderer = (
+  params: DataGridCellRendererParams<SampleQueryColumnData>,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  }
+  return data.sampleValues?.trim() ? (
+    data.sampleValues
+  ) : (
+    <div className="data-product__viewer__grid__empty-cell">
+      No sample values provided
+    </div>
+  );
+};
+
+const buildOpenInQueryContent = (
+  sampleQuery: V1_SampleQuery,
+  viewerState: DataProductViewerState,
+): React.ReactNode => {
+  const sampleQueryId = sampleQuery.info.id;
+  return (
+    <div className="data-product__viewer__sample-query__item__tds__query">
+      <div className="data-product__viewer__sample-query__item__tds__query__actions">
+        <button
+          className="data-product__viewer__sample-query__item__tds__query__action btn--dark"
+          tabIndex={-1}
+          disabled={!viewerState.openSampleQuery || !sampleQueryId}
+          onClick={() => {
+            if (viewerState.openSampleQuery && sampleQueryId) {
+              viewerState.openSampleQuery(sampleQueryId);
+            }
+          }}
+        >
+          Open in Query
+        </button>
+        <button
+          className="data-product__viewer__sample-query__item__tds__query__action btn--dark"
+          tabIndex={-1}
+          disabled={true}
+        >
+          Open in Query with Test Data
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const getTDSSampleQueryTabs =
   (): DataProductTDSSampleQueryTabConfiguration[] => [
     {
@@ -88,12 +139,28 @@ const getTDSSampleQueryTabs =
       renderer: (context: TDSSampleQueryTabContext) => {
         const tdsResult = context.sampleQuery.result as V1_ExecutableTDSResult;
         const columnData: SampleQueryColumnData[] =
-          tdsResult.tdsResult.tdsColumns.map((col) => ({
-            id: uuid(),
-            name: col.name,
-            type: col.type,
-            doc: col.doc,
-          }));
+          tdsResult.tdsResult.tdsColumns.map((col) => {
+            let doc = col.doc;
+            let sampleValues: string | undefined;
+            if (col.doc?.includes(TDS_SAMPLE_VALUES_DELIMITER)) {
+              doc = col.doc
+                .substring(0, col.doc.indexOf(TDS_SAMPLE_VALUES_DELIMITER))
+                .trim();
+              sampleValues = col.doc
+                .substring(
+                  col.doc.indexOf(TDS_SAMPLE_VALUES_DELIMITER) +
+                    TDS_SAMPLE_VALUES_DELIMITER.length,
+                )
+                .trim();
+            }
+            return {
+              id: uuid(),
+              name: col.name,
+              type: col.type,
+              doc,
+              sampleValues,
+            };
+          });
         return (
           <div
             className={clsx(
@@ -135,10 +202,18 @@ const getTDSSampleQueryTabs =
                 {
                   minWidth: 50,
                   sortable: false,
-                  resizable: false,
-                  headerClass: 'data-product__viewer__grid__last-column-header',
+                  resizable: true,
                   field: 'type',
                   headerName: 'Type',
+                  flex: 1,
+                },
+                {
+                  minWidth: 50,
+                  sortable: false,
+                  resizable: false,
+                  headerClass: 'data-product__viewer__grid__last-column-header',
+                  cellRenderer: TDSColumnSampleValuesCellRenderer,
+                  headerName: 'Sample Values',
                   flex: 1,
                 },
               ]}
@@ -153,26 +228,11 @@ const getTDSSampleQueryTabs =
       icon: (
         <LegendLogo className="data-product__viewer__sample-query__item__content__tab__icon--query" />
       ),
-      renderer: (_context: TDSSampleQueryTabContext) => (
-        <div className="data-product__viewer__sample-query__item__tds__query">
-          <div className="data-product__viewer__sample-query__item__tds__query__actions">
-            <button
-              className="data-product__viewer__sample-query__item__tds__query__action btn--dark"
-              tabIndex={-1}
-              disabled={true}
-            >
-              Open in Query
-            </button>
-            <button
-              className="data-product__viewer__sample-query__item__tds__query__action btn--dark"
-              tabIndex={-1}
-              disabled={true}
-            >
-              Open in Query with Test Data
-            </button>
-          </div>
-        </div>
-      ),
+      renderer: (context: TDSSampleQueryTabContext) =>
+        buildOpenInQueryContent(
+          context.sampleQuery,
+          context.dataProductViewerState,
+        ),
     },
     {
       key: TDSSampleQueryTabKey.DATA_ACCESS,
@@ -306,6 +366,18 @@ const getRelationSampleQueryTabs =
           </div>
         );
       },
+    },
+    {
+      key: RelationSampleQueryTabKey.QUERY,
+      label: 'Query',
+      icon: (
+        <LegendLogo className="data-product__viewer__sample-query__item__content__tab__icon--query" />
+      ),
+      renderer: (context: RelationSampleQueryTabContext) =>
+        buildOpenInQueryContent(
+          context.sampleQuery,
+          context.dataProductViewerState,
+        ),
     },
     {
       key: RelationSampleQueryTabKey.GRAMMAR,
