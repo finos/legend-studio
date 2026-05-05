@@ -1139,12 +1139,68 @@ describe('DataProductViewer', () => {
     });
 
     test('Access point sql tab has a open sql playground button to open editor to run queries.', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
       const { dataProductDataAccessState } =
         await setupLakehouseDataProductTest(
           mockSDLCDataProduct,
           mockEntitlementsSDLCDataProduct,
-          [],
-          [],
+          mockLiteContracts,
+          mockDataContracts,
           {
             groupId: 'test.group',
             artifactId: 'test-artifact',
@@ -1264,6 +1320,331 @@ describe('DataProductViewer', () => {
       const infoIcon = await screen.findByTitle('See Documentation');
       expect(infoIcon).toBeDefined();
       fireEvent.click(infoIcon);
+    });
+
+    test('Access point SQL, Power BI, and Datacube buttons are disabled when user has no access', async () => {
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          [],
+          [],
+          {
+            groupId: 'test.group',
+            artifactId: 'test-artifact',
+            versionId: '1.0.0',
+          },
+          getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
+          { openPowerBi: jest.fn(), openDataCube: jest.fn() },
+        );
+
+      await screen.findByText('Mock SDLC Data Product');
+      await screen.findByText('Customer demographics data access point');
+
+      act(() => {
+        dataProductDataAccessState?.setLakehouseIngestEnvironmentSummaries([
+          IngestDeploymentServerConfig.serialization.fromJson({
+            ingestServerUrl: 'https://dev-test.example.com',
+            ingestEnvironmentUrn: 'urn:dev:test',
+            environmentName: 'Development',
+            environmentClassification: 'FULL',
+          }),
+        ]);
+      });
+
+      // Check SQL tab button is disabled
+      const sqlTab = await screen.findByRole('tab', { name: 'SQL' });
+      fireEvent.click(sqlTab);
+      await waitFor(() => {
+        const openSqlPlaygroundBtn = screen.getByTitle(
+          'You do not have access to this access point group. Please request access first.',
+        );
+        expect(openSqlPlaygroundBtn.hasAttribute('disabled')).toBe(true);
+      });
+
+      // Check Power BI tab button is disabled
+      const powerBiTab = await screen.findByRole('tab', {
+        name: 'Power BI',
+      });
+      fireEvent.click(powerBiTab);
+      await waitFor(() => {
+        const openPowerBiBtn = screen.getByTitle(
+          'You do not have access to this access point group. Please request access first.',
+        );
+        expect(openPowerBiBtn.hasAttribute('disabled')).toBe(true);
+      });
+
+      // Check Datacube tab button is disabled
+      const dataCubeTab = await screen.findByRole('tab', {
+        name: 'Datacube',
+      });
+      fireEvent.click(dataCubeTab);
+      await waitFor(() => {
+        const openDataCubeBtn = screen.getByTitle(
+          'You do not have access to this access point group. Please request access first.',
+        );
+        expect(openDataCubeBtn.hasAttribute('disabled')).toBe(true);
+      });
+    });
+
+    test('Access point Power BI tab button is enabled when user has access', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const openPowerBiMock = jest.fn();
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        mockLiteContracts,
+        mockDataContracts,
+        {
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '1.0.0',
+        },
+        getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
+        { openPowerBi: openPowerBiMock },
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      await screen.findByText('Customer demographics data access point');
+
+      const powerBiTab = await screen.findByRole('tab', {
+        name: 'Power BI',
+      });
+      fireEvent.click(powerBiTab);
+      const openPowerBiBtn = await screen.findByRole('button', {
+        name: 'Open in Power BI',
+      });
+      expect(openPowerBiBtn).toBeDefined();
+      expect(openPowerBiBtn.hasAttribute('disabled')).toBe(false);
+      fireEvent.click(openPowerBiBtn);
+      expect(openPowerBiMock).toHaveBeenCalledWith('GROUP1');
+    });
+
+    test('Access point Power BI tab button is disabled when user has no access', async () => {
+      const openPowerBiMock = jest.fn();
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        {
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '1.0.0',
+        },
+        getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
+        { openPowerBi: openPowerBiMock },
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      await screen.findByText('Customer demographics data access point');
+
+      const powerBiTab = await screen.findByRole('tab', {
+        name: 'Power BI',
+      });
+      fireEvent.click(powerBiTab);
+      const openPowerBiBtn = await screen.findByTitle(
+        'You do not have access to this access point group. Please request access first.',
+      );
+      expect(openPowerBiBtn).toBeDefined();
+      expect(openPowerBiBtn.hasAttribute('disabled')).toBe(true);
+      fireEvent.click(openPowerBiBtn);
+      expect(openPowerBiMock).not.toHaveBeenCalled();
+    });
+
+    test('Access point Datacube tab button is enabled when user has access', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 12345,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const openDataCubeMock = jest.fn();
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+          {
+            groupId: 'test.group',
+            artifactId: 'test-artifact',
+            versionId: '1.0.0',
+          },
+          getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
+          { openDataCube: openDataCubeMock },
+        );
+
+      await screen.findByText('Mock SDLC Data Product');
+      await screen.findByText('Customer demographics data access point');
+
+      act(() => {
+        dataProductDataAccessState?.setLakehouseIngestEnvironmentSummaries([
+          IngestDeploymentServerConfig.serialization.fromJson({
+            ingestServerUrl: 'https://dev-test.example.com',
+            ingestEnvironmentUrn: 'urn:dev:test',
+            environmentName: 'Development',
+            environmentClassification: 'FULL',
+          }),
+        ]);
+      });
+
+      const dataCubeTab = await screen.findByRole('tab', {
+        name: 'Datacube',
+      });
+      fireEvent.click(dataCubeTab);
+      const openDataCubeBtn = await screen.findByRole('button', {
+        name: 'Open in Datacube',
+      });
+      expect(openDataCubeBtn).toBeDefined();
+      expect(openDataCubeBtn.hasAttribute('disabled')).toBe(false);
+    });
+
+    test('Access point Datacube tab button is disabled when user has no access', async () => {
+      const openDataCubeMock = jest.fn();
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          [],
+          [],
+          {
+            groupId: 'test.group',
+            artifactId: 'test-artifact',
+            versionId: '1.0.0',
+          },
+          getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
+          { openDataCube: openDataCubeMock },
+        );
+
+      await screen.findByText('Mock SDLC Data Product');
+      await screen.findByText('Customer demographics data access point');
+
+      act(() => {
+        dataProductDataAccessState?.setLakehouseIngestEnvironmentSummaries([
+          IngestDeploymentServerConfig.serialization.fromJson({
+            ingestServerUrl: 'https://dev-test.example.com',
+            ingestEnvironmentUrn: 'urn:dev:test',
+            environmentName: 'Development',
+            environmentClassification: 'FULL',
+          }),
+        ]);
+      });
+
+      const dataCubeTab = await screen.findByRole('tab', {
+        name: 'Datacube',
+      });
+      fireEvent.click(dataCubeTab);
+      const openDataCubeBtn = await screen.findByTitle(
+        'You do not have access to this access point group. Please request access first.',
+      );
+      expect(openDataCubeBtn).toBeDefined();
+      expect(openDataCubeBtn.hasAttribute('disabled')).toBe(true);
     });
 
     test('displays ENTITLED button for contract in APPROVED status', async () => {
