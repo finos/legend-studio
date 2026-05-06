@@ -39,6 +39,7 @@ import {
   V1_deserializeIngestEnvironment,
   V1_isIngestEnvsCompatibleWithEntitlements,
   V1_liteDataContractsResponseModelSchemaToContracts,
+  V1_liteDataContractWithUserStatusModelSchema,
   V1_ResourceType,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
@@ -51,7 +52,7 @@ import {
   LogEvent,
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
-import { serialize } from 'serializr';
+import { deserialize, serialize } from 'serializr';
 import {
   type LakehouseIngestServerClient,
   type LakehouseContractServerClient,
@@ -295,13 +296,22 @@ export class DataProductDataAccessState {
       didNode.appDirId = this.entitlementsDataProductDetails.deploymentId;
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
 
-      const _contracts =
-        await this.lakehouseContractServerClient.getDataContractsForDataProduct(
+      // Fetch data product contracts and current user's contracts in parallel.
+      // The user contracts call is fetched ONCE per data product (rather than
+      // once per APG) for performance reasons. The result is shared across all
+      // APG states.
+      const [_contracts, rawUserContracts] = await Promise.all([
+        this.lakehouseContractServerClient.getDataContractsForDataProduct(
           V1_ResourceType.ACCESS_POINT_GROUP,
           this.entitlementsDataProductDetails.dataProduct.name,
           this.entitlementsDataProductDetails.deploymentId,
           tokenProvider(),
-        );
+        ),
+        this.lakehouseContractServerClient.getContractsForUser(
+          this.applicationStore.identityService.currentUser,
+          tokenProvider(),
+        ),
+      ]);
 
       const dataProductContracts =
         V1_liteDataContractsResponseModelSchemaToContracts(
@@ -309,11 +319,21 @@ export class DataProductDataAccessState {
           this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         );
 
+      const userContracts = rawUserContracts.map((rawContract) =>
+        deserialize(
+          V1_liteDataContractWithUserStatusModelSchema(
+            this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
+          rawContract,
+        ),
+      );
+
       this.setAssociatedContracts(dataProductContracts);
       this.dataProductViewerState.apgStates.forEach((e) => {
         // eslint-disable-next-line no-void
         void e.handleDataProductContracts(
           dataProductContracts,
+          userContracts,
           this.lakehouseContractServerClient,
           tokenProvider,
         );

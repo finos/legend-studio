@@ -22,6 +22,7 @@ import {
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
   type V1_LiteDataContract,
+  type V1_LiteDataContractWithUserStatus,
   type V1_User,
   V1_ContractUserStatusResponseModelSchema,
   V1_CreateSubscriptionInput,
@@ -32,7 +33,6 @@ import {
   V1_DataSubscriptionResponseModelSchema,
   V1_deserializeDataContractResponse,
   V1_EnrichedUserApprovalStatus,
-  V1_liteDataContractWithUserStatusModelSchema,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -356,28 +356,16 @@ export class DataProductAPGState {
 
   async handleDataProductContracts(
     contracts: V1_LiteDataContract[],
+    userContracts: V1_LiteDataContractWithUserStatus[],
     lakehouseContractServerClient: LakehouseContractServerClient,
     tokenProvider: () => string | undefined,
   ): Promise<void> {
     try {
       this.handlingContractsState.inProgress();
 
-      const rawUserContracts =
-        await lakehouseContractServerClient.getContractsForUser(
-          this.applicationStore.identityService.currentUser,
-          tokenProvider(),
-        );
       const entitlementsDataProductDetails =
         this.dataProductViewerState.entitlementsDataProductDetails;
-      const userLiteContract = rawUserContracts
-        .map((rawContract) =>
-          deserialize(
-            V1_liteDataContractWithUserStatusModelSchema(
-              this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-            ),
-            rawContract,
-          ),
-        )
+      const userLiteContract = userContracts
         .filter((contract) =>
           dataContractContainsAccessGroup(
             this.apg,
