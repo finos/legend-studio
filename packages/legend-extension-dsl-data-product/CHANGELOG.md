@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.76
+
+### Patch Changes
+
+- [#5147](https://github.com/finos/legend-studio/pull/5147) [`9f10362`](https://github.com/finos/legend-studio/commit/9f10362e053e752d639c770ea57d00989f092cc0) ([@kelly-thai](https://github.com/kelly-thai)) - Improve performance by fetching the user's lite contracts only once per data product (shared across all access point groups) instead of once per access point group.
+
 ## 0.0.75
 
 ### Patch Changes
