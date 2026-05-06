@@ -15,10 +15,16 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
-import { CaretUpIcon, clsx, OpenIcon } from '@finos/legend-art';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  CaretUpIcon,
+  clsx,
+  OpenIcon,
+  SparkleStarsIcon,
+} from '@finos/legend-art';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
+import { LEGEND_AI_ANCHOR_ID } from '@finos/legend-lego/legend-ai';
 import {
   type V1_Terminal,
   type V1_DataProduct,
@@ -187,8 +193,16 @@ const ProductHeader = observer(
       | TerminalProductDataAccessState
       | undefined;
     showFullHeader: boolean;
+    showAIButton?: boolean;
+    onLegendAI?: () => void;
   }) => {
-    const { productViewerState, dataAccessState, showFullHeader } = props;
+    const {
+      productViewerState,
+      dataAccessState,
+      showFullHeader,
+      showAIButton,
+      onLegendAI,
+    } = props;
     const headerRef = useRef<HTMLDivElement>(null);
 
     const productTitle =
@@ -236,6 +250,16 @@ const ProductHeader = observer(
             </div>
           </div>
 
+          {showAIButton && onLegendAI && (
+            <button
+              className="legend-ai-floating-btn__trigger"
+              onClick={onLegendAI}
+              title="Ask Marketplace"
+            >
+              <SparkleStarsIcon />
+              <span>Ask Marketplace</span>
+            </button>
+          )}
           {dataAccessState instanceof DataProductDataAccessState && (
             <DataProductEnvironmentLabel dataAccessState={dataAccessState} />
           )}
@@ -293,6 +317,22 @@ export const ProductViewer = observer(
       }
     };
 
+    const scrollToQueryAI = useCallback((): void => {
+      const anchor = frame.current?.querySelector(`#${LEGEND_AI_ANCHOR_ID}`);
+      if (anchor) {
+        anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (frame.current) {
+        frame.current.scrollTo({
+          top: frame.current.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+    }, []);
+
+    const showAIButton =
+      isDataProductViewerState(productViewerState) &&
+      productViewerState.legendAIConfig.enabled;
+
     useEffect(() => {
       if (frame.current) {
         productViewerState.layoutState.setFrame(frame.current);
@@ -310,6 +350,8 @@ export const ProductViewer = observer(
             productViewerState={productViewerState}
             dataAccessState={productDataAccessState}
             showFullHeader={showFullHeader}
+            showAIButton={showAIButton}
+            onLegendAI={scrollToQueryAI}
           />
           {productViewerState.layoutState.isTopScrollerVisible && (
             <div className="data-product__viewer__scroller">

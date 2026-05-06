@@ -531,7 +531,6 @@ const DataCubeScreen = observer(
       try {
         const dataCubeEnv = selectedEnvironment ?? resolvedUserEnv;
         assertNonNullable(dataCubeEnv, 'Env required to Open Data Cube');
-        //paths
         const path =
           accessPointState.apgState.dataProductViewerState.product.path;
         const accessPointName = accessPointState.accessPoint.id;

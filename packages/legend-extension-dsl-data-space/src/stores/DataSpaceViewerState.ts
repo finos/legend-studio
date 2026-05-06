@@ -45,6 +45,10 @@ import {
   generateAnchorForActivity,
 } from './DataSpaceViewerNavigation.js';
 import { DataAccessState } from '@finos/legend-query-builder';
+import {
+  DEFAULT_LEGEND_AI_CONFIG,
+  type LegendAIConfig,
+} from '@finos/legend-lego/legend-ai';
 import { DataSpaceQuickStartState } from './DataSpaceQuickStartState.js';
 import { DataSpaceViewerExecutableState } from './DataSpaceViewerExecutableState.js';
 
@@ -73,6 +77,7 @@ export class DataSpaceViewerState {
   readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
   readonly quickStartState: DataSpaceQuickStartState;
+  legendAIConfig: LegendAIConfig;
   executableStates: DataSpaceViewerExecutableState[] = [];
 
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
@@ -106,6 +111,7 @@ export class DataSpaceViewerState {
       currentRuntime: observable,
       currentDataAccessState: observable,
       executableStates: observable,
+      legendAIConfig: observable,
       isVerified: computed,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
@@ -152,6 +158,7 @@ export class DataSpaceViewerState {
     );
     this.diagramViewerState = new DataSpaceViewerDiagramViewerState(this);
     this.quickStartState = new DataSpaceQuickStartState(this);
+    this.legendAIConfig = DEFAULT_LEGEND_AI_CONFIG;
   }
 
   get isVerified(): boolean {
