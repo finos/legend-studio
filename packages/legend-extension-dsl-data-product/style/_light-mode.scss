@@ -97,15 +97,16 @@
     }
 
     &__header__title {
-      background: var(--color-hclight-blue-60);
+      background: none;
+      color: var(--color-hclight-grey-90);
     }
 
     &__header__title__label {
-      color: var(--color-hclight-white);
+      color: var(--color-hclight-grey-90);
     }
 
     &__header__title__verified-badge {
-      color: var(--color-hclight-white);
+      color: var(--color-hclight-blue-60);
     }
 
     &__header__actions {

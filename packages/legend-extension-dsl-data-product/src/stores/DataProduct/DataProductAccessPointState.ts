@@ -341,7 +341,6 @@ export class DataProductAccessPointState {
     } catch (error) {
       assertErrorThrown(error);
       if (error instanceof AggregateError) {
-        // Default to showing the relation type from engine error
         this.apgState.applicationStore.notificationService.notifyError(
           `Error fetching access point sample data: ${error.errors[1] ?? error.errors[0] ?? error.message}`,
         );

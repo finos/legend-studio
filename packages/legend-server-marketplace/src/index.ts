@@ -15,6 +15,7 @@
  */
 
 export * from './models/DataProductSearchResult.js';
+export * from './models/DatasetSearchResult.js';
 export * from './models/AutosuggestResult.js';
 export * from './models/Taxonomy.js';
 export * from './models/Provider.js';

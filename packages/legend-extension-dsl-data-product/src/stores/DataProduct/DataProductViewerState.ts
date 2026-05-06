@@ -88,6 +88,10 @@ import type { ViewerModelsDocumentationState } from '@finos/legend-lego/model-do
 import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramViewerState.js';
 import type { RegistryServerClient } from '@finos/legend-server-marketplace';
 import { DataAccessState } from '@finos/legend-query-builder';
+import {
+  DEFAULT_LEGEND_AI_CONFIG,
+  type LegendAIConfig,
+} from '@finos/legend-lego/legend-ai';
 
 export const APG_AUTO_COLLAPSE_THRESHOLD = 20;
 
@@ -121,8 +125,8 @@ export class DataProductViewerState extends BaseViewerState<
   sampleQueryDataAccessStateIndex = new Map<V1_SampleQuery, DataAccessState>();
   apgSearchText = '';
   nativeModelAccessDataAccessState: DataAccessState | undefined;
+  legendAIConfig: LegendAIConfig;
 
-  // actions
   readonly viewDataProductSource?: (() => void) | undefined;
   readonly openPowerBi?: ((apg: string) => void) | undefined;
   readonly openDataCube?: ((sourceData: object) => void) | undefined;
@@ -186,6 +190,7 @@ export class DataProductViewerState extends BaseViewerState<
       nativeModelAccessDocumentationState: observable,
       nativeModelAccessDiagramViewerState: observable,
       nativeModelAccessDataAccessState: observable,
+      legendAIConfig: observable,
       init: flow,
       isAllApgsCollapsed: computed,
       toggleAllApgGroupCollapse: action,
@@ -217,7 +222,8 @@ export class DataProductViewerState extends BaseViewerState<
     this.projectGAV = projectGAV;
     this.registryServerClient = registryServerClient;
 
-    // actions
+    this.legendAIConfig = DEFAULT_LEGEND_AI_CONFIG;
+
     this.viewDataProductSource = actions.viewDataProductSource;
     this.openPowerBi = actions.openPowerBi;
     this.openDataCube = actions.openDataCube;

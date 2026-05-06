@@ -447,6 +447,8 @@ export class LegendMarketplaceProductViewerStore {
       );
       this.setDataProductViewer(dataProductViewerState);
       this.setDataProductDataAccess(dataProductDataAccessState);
+      dataProductViewerState.legendAIConfig =
+        this.marketplaceBaseStore.applicationStore.config.legendAIConfig;
       dataProductViewerState.init(entitlementsDataProductDetails);
       dataProductDataAccessState.init(tokenProvider);
       this.loadingProductState.complete();
@@ -664,6 +666,8 @@ export class LegendMarketplaceProductViewerStore {
               dataProductViewerState.init(undefined, dataProductArtifact),
             );
 
+            dataProductViewerState.legendAIConfig =
+              this.marketplaceBaseStore.applicationStore.config.legendAIConfig;
             this.setDataProductViewer(dataProductViewerState);
             this.loadingProductState.complete();
             LegendMarketplaceTelemetryHelper.logEvent_LoadSDLCDataProduct(
@@ -914,6 +918,8 @@ export class LegendMarketplaceProductViewerStore {
             },
           },
         );
+        dataSpaceViewerState.legendAIConfig =
+          this.marketplaceBaseStore.applicationStore.config.legendAIConfig;
         this.setLegacyDataProductViewer(dataSpaceViewerState);
         this.loadingProductState.complete();
         LegendMarketplaceTelemetryHelper.logEvent_LoadLegacyDataProduct(

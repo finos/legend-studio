@@ -50,6 +50,7 @@ import { DataProductSampleQueries } from './DataProduct/DataProductSampleQueries
 import { DataProductNativeModelAccessDataAccess } from './DataProduct/DataProductNativeModelAccessDataAccess.js';
 import { DiagramViewer } from '@finos/legend-extension-dsl-diagram';
 import { useNavigationZone } from '@finos/legend-application/browser';
+import { DataProductLegendAIIntegration } from './DataProduct/DataProductLegendAIIntegration.js';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
@@ -419,6 +420,13 @@ export const ProductWiki = observer(
               )}
               <DataProductSupportInfo
                 dataProductViewerState={productViewerState}
+              />
+              <DataProductLegendAIIntegration
+                dataProductViewerState={productViewerState}
+                config={productViewerState.legendAIConfig}
+                {...(productDataAccessState === undefined
+                  ? {}
+                  : { dataProductDataAccessState: productDataAccessState })}
               />
             </>
           )}

@@ -3611,6 +3611,8 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": "npm:29.7.0"
+    "@testing-library/dom": "npm:10.4.0"
+    "@testing-library/react": "npm:16.2.0"
     "@types/css-font-loading-module": "npm:0.0.14"
     "@types/react": "npm:19.0.10"
     "@types/react-dom": "npm:19.0.4"

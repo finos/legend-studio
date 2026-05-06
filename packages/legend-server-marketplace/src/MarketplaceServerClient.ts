@@ -52,6 +52,10 @@ import {
   type FieldSearchRequest,
   type GroupedFieldSearchResponse,
 } from './models/FieldSearch.js';
+import type {
+  DatasetSearchResponse,
+  FieldSearchResponse,
+} from './models/DatasetSearchResult.js';
 
 export interface TrendingDataProductEntry {
   dataProductId?: string;
@@ -181,6 +185,54 @@ export class MarketplaceServerClient extends AbstractServerClient {
       signal ? { signal } : {},
       undefined,
       { query, limit },
+    );
+
+  datasetSearch = async (
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    path: string,
+    query: string,
+    options?: { searchType?: string; pageSize?: number; pageNumber?: number },
+  ): Promise<PlainObject<DatasetSearchResponse>> =>
+    this.get<PlainObject<DatasetSearchResponse>>(
+      `${this._search()}/datasets/${lakehouseEnv}/legacy`,
+      undefined,
+      undefined,
+      {
+        group_id: groupId,
+        artifact_id: artifactId,
+        version_id: versionId,
+        path,
+        query,
+        search_type: options?.searchType ?? 'hybrid',
+        page_size: options?.pageSize ?? 20,
+        page_number: options?.pageNumber ?? 1,
+      },
+    );
+
+  legacyFieldSearch = async (
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    path: string,
+    options?: { searchType?: string; pageSize?: number; pageNumber?: number },
+  ): Promise<PlainObject<FieldSearchResponse>> =>
+    this.get<PlainObject<FieldSearchResponse>>(
+      `${this._search()}/fields/${lakehouseEnv}/legacy`,
+      undefined,
+      undefined,
+      {
+        group_id: groupId,
+        artifact_id: artifactId,
+        version_id: versionId,
+        path,
+        search_type: options?.searchType ?? 'hybrid',
+        page_size: options?.pageSize ?? 20,
+        page_number: options?.pageNumber ?? 1,
+      },
     );
 
   // ------------------------------------------- Trending -------------------------------------------

@@ -25,6 +25,7 @@ import {
   MoreVerticalIcon,
   PlayIcon,
   VerifiedIcon,
+  SparkleStarsIcon,
   clsx,
 } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
@@ -33,7 +34,7 @@ import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
 import { DataSpaceSupportPanel } from './DataSpaceSupportPanel.js';
 import { DataSpaceWiki } from './DataSpaceWiki.js';
 import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { DATA_SPACE_WIKI_PAGE_SECTIONS } from '../stores/DataSpaceLayoutState.js';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
@@ -41,13 +42,17 @@ import {
 } from '../stores/DataSpaceViewerNavigation.js';
 import { DataSpacePlaceholderPanel } from './DataSpacePlaceholder.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { LEGEND_AI_ANCHOR_ID } from '@finos/legend-lego/legend-ai';
 
 const DataSpaceHeader = observer(
   (props: {
     dataSpaceViewerState: DataSpaceViewerState;
     showFullHeader: boolean;
+    showAIButton?: boolean;
+    onLegendAI?: () => void;
   }) => {
-    const { dataSpaceViewerState, showFullHeader } = props;
+    const { dataSpaceViewerState, showFullHeader, showAIButton, onLegendAI } =
+      props;
     const applicationStore = useApplicationStore();
     const headerRef = useRef<HTMLDivElement>(null);
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
@@ -87,6 +92,16 @@ const DataSpaceHeader = observer(
               </div>
             )}
           </div>
+          {showAIButton && onLegendAI && (
+            <button
+              className="legend-ai-floating-btn__trigger"
+              onClick={onLegendAI}
+              title="Ask Marketplace"
+            >
+              <SparkleStarsIcon />
+              <span>Ask Marketplace</span>
+            </button>
+          )}
           <div className="data-space__viewer__header__actions">
             <ControlledDropdownMenu
               className="data-space__viewer__header__execution-context-selector"
@@ -238,9 +253,24 @@ export const DataSpaceViewer = observer(
       }
     };
 
+    const scrollToQueryAI = useCallback((): void => {
+      const anchor = frame.current?.querySelector(`#${LEGEND_AI_ANCHOR_ID}`);
+      if (anchor) {
+        anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (frame.current) {
+        frame.current.scrollTo({
+          top: frame.current.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+    }, []);
+
     const isShowingWiki = DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
       dataSpaceViewerState.currentActivity,
     );
+
+    const showAIButton =
+      dataSpaceViewerState.legendAIConfig.enabled && isShowingWiki;
 
     useEffect(() => {
       if (frame.current) {
@@ -261,6 +291,8 @@ export const DataSpaceViewer = observer(
           <DataSpaceHeader
             dataSpaceViewerState={dataSpaceViewerState}
             showFullHeader={showFullHeader}
+            showAIButton={showAIButton}
+            onLegendAI={scrollToQueryAI}
           />
           {dataSpaceViewerState.layoutState.isTopScrollerVisible && (
             <div className="data-space__viewer__scroller">

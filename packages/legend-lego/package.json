@@ -26,6 +26,8 @@
     "./code-editor/test/MockedMonacoEditor.js": "./lib/code-editor/__test-utils__/MockedMonacoEditor.js",
     "./data-grid": "./lib/data-grid/index.js",
     "./graph-editor": "./lib/graph-editor/index.js",
+    "./legend-ai": "./lib/legend-ai/index.js",
+    "./legend-ai/test": "./lib/legend-ai/__test-utils__/LegendAITestUtils.js",
     "./model-documentation": "./lib/model-documentation/index.js",
     "./lib/index.css": "./lib/index.css"
   },
@@ -69,6 +71,8 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "29.7.0",
+    "@testing-library/dom": "10.4.0",
+    "@testing-library/react": "16.2.0",
     "cross-env": "7.0.3",
     "eslint": "9.22.0",
     "jest": "29.7.0",

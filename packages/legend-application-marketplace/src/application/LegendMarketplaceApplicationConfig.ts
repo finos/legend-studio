@@ -37,6 +37,10 @@ import {
 import type { AuthProviderProps } from 'react-oidc-context';
 import { DataProductConfig } from '@finos/legend-extension-dsl-data-product';
 import { LegendMarketplaceEnv } from '../stores/LegendMarketplaceEnvState.js';
+import {
+  type LegendAIConfig,
+  DEFAULT_LEGEND_AI_CONFIG,
+} from '@finos/legend-lego/legend-ai';
 
 class LegendMarketplaceApplicationCoreOptions {
   dataProductConfig: DataProductConfig | undefined;
@@ -143,6 +147,16 @@ export interface LegendMarketplaceApplicationConfigurationData
   legendServices?: {
     url: string;
   };
+  legendAI?: {
+    enabled: boolean;
+    llmServiceUrl?: string;
+    llmModelName?: string;
+    sqlExecutionUrl?: string;
+    orchestratorUrl?: string;
+    orchestratorAuthToken?: string;
+    maxJudgeAttempts?: number;
+    lakehouseEnvironment?: string;
+  };
 }
 
 export class LegendLakehouseEntitlementsConfig {
@@ -184,6 +198,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly powerBiUrl: string;
   readonly assetsBaseUrl: string;
   readonly assetsProductImageMap: Record<string, string>;
+  readonly legendAIConfig: LegendAIConfig;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendMarketplaceApplicationConfigurationData>,
@@ -403,6 +418,31 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         input.configData.legendServices.url,
       );
     }
+
+    const legendAIData = input.configData.legendAI;
+    this.legendAIConfig = legendAIData
+      ? {
+          ...DEFAULT_LEGEND_AI_CONFIG,
+          enabled: legendAIData.enabled,
+          llmServiceUrl: legendAIData.llmServiceUrl,
+          llmModelName: legendAIData.llmModelName,
+          sqlExecutionUrl: legendAIData.sqlExecutionUrl,
+          orchestratorUrl: legendAIData.orchestratorUrl
+            ? LegendApplicationConfig.resolveAbsoluteUrl(
+                legendAIData.orchestratorUrl,
+              )
+            : undefined,
+          marketplaceSearchUrl: this.marketplaceServerUrl,
+          engineUrl: this.engineServerUrl,
+          ...(legendAIData.orchestratorAuthToken === undefined
+            ? {}
+            : { orchestratorAuthToken: legendAIData.orchestratorAuthToken }),
+          ...(legendAIData.maxJudgeAttempts === undefined
+            ? {}
+            : { maxJudgeAttempts: legendAIData.maxJudgeAttempts }),
+          lakehouseEnvironment: legendAIData.lakehouseEnvironment ?? this.env,
+        }
+      : DEFAULT_LEGEND_AI_CONFIG;
 
     // options
     this.options = LegendMarketplaceApplicationCoreOptions.create(

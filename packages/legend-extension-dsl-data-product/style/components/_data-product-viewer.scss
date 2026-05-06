@@ -123,9 +123,10 @@
       align-self: start;
       justify-content: flex-start;
       height: 5rem;
-      font-weight: 400;
-      color: var(--color-hclight-blue-60);
-      background: unset !important;
+      font-weight: 600;
+      color: var(--color-light-grey-100);
+      background: none !important;
+      letter-spacing: -0.02rem;
     }
 
     &__actions {
