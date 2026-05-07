@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.216
+
+### Patch Changes
+
+- [#5149](https://github.com/finos/legend-studio/pull/5149) [`1c1342e`](https://github.com/finos/legend-studio/commit/1c1342eb1e13f8d6758e04adfa62b56a6900bf6f) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented Legend Marketplace AI in Data Space and Data Product viewer with Legend AI LLM integration.
+
 ## 10.4.215
 
 ## 10.4.214
