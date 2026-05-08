@@ -821,7 +821,32 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       | ModelAccessPointGroup
       | LakehouseAccessPoint,
   ): Promise<void> {
+    // preserve runtime selection when switching between Lakehouse access points
+    // (or between Model access point groups) so users don't lose their chosen
+    // runtime / adhoc runtime flag on every selector change.
+    const previousState = this.executionState;
+    let preservedRuntime: PackageableRuntime | undefined;
+    let preservedAdhocRuntime = false;
+    if (
+      previousState instanceof LakehouseDataProductExecutionState ||
+      previousState instanceof ModelAccessPointDataProductExecutionState
+    ) {
+      preservedRuntime = previousState.selectedRuntime;
+      preservedAdhocRuntime = previousState.adhocRuntime;
+    }
+
     this.setExecutionState(val);
+
+    if (
+      this.executionState instanceof LakehouseDataProductExecutionState ||
+      this.executionState instanceof ModelAccessPointDataProductExecutionState
+    ) {
+      if (preservedRuntime) {
+        this.executionState.selectedRuntime = preservedRuntime;
+      }
+      this.executionState.adhocRuntime = preservedAdhocRuntime;
+    }
+
     if (val instanceof LakehouseAccessPoint) {
       const relationMetadata = !this.dataProductArtifact
         ? await this.graphManagerState.graphManager.getLambdaRelationType(
@@ -836,7 +861,7 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         this.dataProductArtifact,
         relationMetadata,
       );
-      this.setSourceElement(accessor);
+      this.changeSourceElement(accessor);
     }
   }
 
