@@ -18,6 +18,7 @@ import type { Hashable } from '@finos/legend-shared';
 import type { AtomicTest } from '../Test.js';
 import type { EqualTo } from './EqualTo.js';
 import type { EqualToJson } from './EqualToJson.js';
+import type { EqualToRelation } from './EqualToRelation.js';
 import type { EqualToTDS } from './EqualToTDS.js';
 
 export abstract class TestAssertion implements Hashable {
@@ -33,4 +34,5 @@ export interface TestAssertionVisitor<T> {
   visit_EqualTo(equal: EqualTo): T;
   visit_EqualToJSON(equal: EqualToJson): T;
   visit_EqualToTDS(equal: EqualToTDS): T;
+  visit_EqualToRelation(equal: EqualToRelation): T;
 }

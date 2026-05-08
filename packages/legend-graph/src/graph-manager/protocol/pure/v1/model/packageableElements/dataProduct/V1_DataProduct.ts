@@ -34,6 +34,7 @@ import type { V1_StereotypePtr } from '../domain/V1_StereotypePtr.js';
 import type { V1_TaggedValue } from '../domain/V1_TaggedValue.js';
 import type { V1_EmbeddedData } from '../../data/V1_EmbeddedData.js';
 import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
+import type { V1_DataProductTestSuite } from './test/V1_DataProductTestSuite.js';
 
 export const V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE = 'dataProduct';
 
@@ -441,6 +442,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   sampleValues: V1_EmbeddedData[] | undefined;
   operationalMetadata: V1_DataProductOperationalMetadata | undefined;
   owner: V1_DataProductOwner | undefined;
+  testSuites: V1_DataProductTestSuite[] | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -457,6 +459,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       hashArray(this.sampleValues ?? []),
       this.operationalMetadata ?? '',
       this.owner ?? '',
+      hashArray(this.testSuites ?? []),
     ]);
   }
 

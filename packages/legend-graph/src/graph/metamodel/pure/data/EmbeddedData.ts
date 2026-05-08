@@ -135,15 +135,15 @@ export class RelationRowTestData implements Hashable {
 }
 
 export class RelationElement implements Hashable {
-  paths!: string[];
   columns!: string[];
+  paths!: string[];
   rows: RelationRowTestData[] = [];
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATION_ELEMENT,
-      hashArray(this.paths),
       hashArray(this.columns),
+      hashArray(this.paths),
       hashArray(this.rows),
     ]);
   }

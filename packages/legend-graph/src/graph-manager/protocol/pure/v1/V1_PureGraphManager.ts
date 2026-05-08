@@ -382,6 +382,7 @@ import {
 } from '../../../action/analytics/data-product/DataProductAnalysis.js';
 import {
   AccessPointGroup,
+  type DataProduct,
   DataProductAccessType,
   DataProductElementScope,
   LakehouseAccessPoint,
@@ -404,10 +405,22 @@ import {
   V1_MetadatProject,
 } from './engine/dev-metadata/V1_DevMetadataPushRequest.js';
 import type { MetadataRequestOptions } from '../../../action/dev-metadata/MetadataRequestOptions.js';
-import type { Accessor } from '../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
+import type {
+  Accessor,
+  DataProductAccessor,
+} from '../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import { IngestDefinition } from '../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { Database } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
-import { V1_createAccessorFromPackageableElement } from './helpers/V1_AccessorHelper.js';
+import {
+  V1_createAccessorFromPackageableElement,
+  V1_buildDataProductAccessor,
+  V1_resolveAccessorsFromRawLambda,
+} from './helpers/V1_AccessorHelper.js';
+import {
+  V1_DataProductAccessor,
+  V1_IngestDefinitionAccessor,
+  V1_RelationStoreAccessor,
+} from './model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 
 /**
  * Number of elements to process synchronously before yielding to the event loop.
@@ -2155,6 +2168,68 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.logService,
     ).build();
     return V1_createAccessorFromPackageableElement(element, context, options);
+  }
+
+  override async buildDataProductAccessor(
+    element: DataProduct,
+    graph: PureModel,
+    options?: {
+      tableName?: string | undefined;
+    },
+  ): Promise<DataProductAccessor | undefined> {
+    const context = new V1_GraphBuilderContextBuilder(
+      graph,
+      graph,
+      this.graphBuilderExtensions,
+      this.logService,
+    ).build();
+    return V1_buildDataProductAccessor(element, context, this, options);
+  }
+
+  override async collectAccessorsInRawLambda(
+    rawLambda: RawLambda,
+    graph: PureModel,
+  ): Promise<Accessor[]> {
+    const v1Accessors = V1_resolveAccessorsFromRawLambda(
+      rawLambda,
+      this,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+      graph,
+    );
+    if (!v1Accessors) {
+      return [];
+    }
+    const results = await Promise.all(
+      v1Accessors.map(async (v1Accessor) => {
+        const elementPath = v1Accessor.path[0];
+        if (!elementPath) {
+          return undefined;
+        }
+        const element = graph.getNullableElement(elementPath);
+        if (!element) {
+          return undefined;
+        }
+        if (v1Accessor instanceof V1_DataProductAccessor) {
+          return this.buildDataProductAccessor(element as DataProduct, graph, {
+            tableName: v1Accessor.path[1],
+          });
+        }
+        if (v1Accessor instanceof V1_IngestDefinitionAccessor) {
+          return this.createAccessorFromPackageableElement(element, graph, {
+            schemaName: undefined,
+            tableName: v1Accessor.path[1],
+          });
+        }
+        if (v1Accessor instanceof V1_RelationStoreAccessor) {
+          return this.createAccessorFromPackageableElement(element, graph, {
+            schemaName: v1Accessor.path[1],
+            tableName: v1Accessor.path[2],
+          });
+        }
+        return undefined;
+      }),
+    );
+    return results.filter(isNonNullable);
   }
 
   private buildLambdaReturnTypeInput(

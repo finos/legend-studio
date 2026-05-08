@@ -516,6 +516,174 @@ export const TEST_DATA__DATAPRODUCT__FUNCTION_ACCESS_POINT = [
   },
 ];
 
+export const TEST_DATA__DATAPRODUCT__TEST_SUITES = [
+  {
+    path: 'x::A',
+    content: {
+      _type: 'dataProduct',
+      accessPointGroups: [
+        {
+          _type: 'modelAccessPointGroup',
+          accessPoints: [
+            {
+              _type: 'functionAccessPoint',
+              id: 'persons',
+              query: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 1,
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'functionAccessPoint',
+              id: 'employees',
+              query: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 2,
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          id: 'grp',
+          mapping: {
+            path: 'model::dummyMapping',
+          },
+        },
+      ],
+      name: 'A',
+      package: 'x',
+      testSuites: [
+        {
+          id: 'suite_1',
+          testData: [
+            {
+              _type: 'baseDataResolver',
+              data: {
+                _type: 'relationElementsData',
+                relationElements: [
+                  {
+                    _type: 'relationElement',
+                    columns: ['id', 'name'],
+                    paths: ['persons'],
+                    rows: [
+                      {
+                        values: ['1', 'Alice'],
+                      },
+                    ],
+                  },
+                  {
+                    _type: 'relationElement',
+                    columns: ['id', 'name'],
+                    paths: ['employees'],
+                    rows: [
+                      {
+                        values: ['2', 'Bob'],
+                      },
+                    ],
+                  },
+                ],
+              },
+              elementPointer: {
+                path: 'x::A',
+              },
+            },
+          ],
+          tests: [
+            {
+              _type: 'accessPointTest',
+              accessPointId: 'persons',
+              assertions: [
+                {
+                  _type: 'equalToRelation',
+                  expected: {
+                    columns: ['id', 'name'],
+                    paths: ['persons'],
+                    rows: [
+                      {
+                        values: ['1', 'Alice'],
+                      },
+                    ],
+                  },
+                  id: 'assert_1',
+                },
+              ],
+              id: 'test_1',
+            },
+            {
+              _type: 'accessPointTest',
+              accessPointId: 'employees',
+              assertions: [
+                {
+                  _type: 'equalToRelation',
+                  expected: {
+                    columns: ['id', 'name'],
+                    paths: ['employees'],
+                    rows: [
+                      {
+                        values: ['2', 'Bob'],
+                      },
+                    ],
+                  },
+                  id: 'assert_1',
+                },
+              ],
+              id: 'test_2',
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+  {
+    path: 'model::dummyMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'dummyMapping',
+      package: 'model',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          elements: [],
+          imports: [],
+          parserName: 'Pure',
+        },
+        {
+          _type: 'importAware',
+          elements: ['x::A'],
+          imports: [],
+          parserName: 'DataProduct',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];
+
 export const TEST_DATA__DATAPRODUCT__NATIVE_MODEL_ACCESS = [
   {
     path: 'model::animal::reptile::Reptile',

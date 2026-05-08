@@ -79,6 +79,7 @@ import {
   ListIcon,
   PanelLoadingIndicator,
   GearSuggestIcon,
+  FlaskIcon,
 } from '@finos/legend-art';
 import {
   type ChangeEventHandler,
@@ -106,6 +107,7 @@ import {
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 import { action, autorun, flowResult } from 'mobx';
+import { DataProductTestableEditor } from './testable/DataProductTestableEditor.js';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
@@ -2245,6 +2247,11 @@ const DataProductSidebar = observer(
         icon: <GearSuggestIcon />,
       },
       {
+        label: DATA_PRODUCT_TAB.TESTING,
+        title: 'Testing',
+        icon: <FlaskIcon />,
+      },
+      {
         label: DATA_PRODUCT_TAB.SUPPORT,
         icon: <QuestionCircleIcon />,
       },
@@ -3380,6 +3387,13 @@ export const DataProductEditor = observer(() => {
       case DATA_PRODUCT_TAB.OPERATIONAL:
         return (
           <OperationalTab
+            dataProductEditorState={dataProductEditorState}
+            isReadOnly={isReadOnly}
+          />
+        );
+      case DATA_PRODUCT_TAB.TESTING:
+        return (
+          <DataProductTestableEditor
             dataProductEditorState={dataProductEditorState}
             isReadOnly={isReadOnly}
           />

@@ -35,6 +35,7 @@ import {
   NativeModelAccess,
   NativeModelExecutionContext,
   PackageableElementSampleQuery,
+  ObserverContext,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -218,6 +219,7 @@ export const convertDataSpaceToNativeModelAccess = (
 
 export const convertDataSpaceToDataProduct = (
   dataSpace: DataSpace,
+  observerContext: ObserverContext = new ObserverContext([]),
 ): DataProduct => {
   const name = dataSpace.name.replace(/dataspace/i, 'DataProduct');
   const dataProduct = new DataProduct(name);
@@ -233,5 +235,5 @@ export const convertDataSpaceToDataProduct = (
   dataProduct.supportInfo = convertDataSpaceToSupportInfo(dataSpace);
   dataProduct.type = new InternalDataProductType();
 
-  return observe_DataProduct(dataProduct);
+  return observe_DataProduct(dataProduct, observerContext);
 };

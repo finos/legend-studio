@@ -17,6 +17,7 @@
 import type { Hashable } from '@finos/legend-shared';
 import type { V1_EqualTo } from './V1_EqualTo.js';
 import type { V1_EqualToJson } from './V1_EqualToJson.js';
+import type { V1_EqualToRelation } from './V1_EqualToRelation.js';
 import type { V1_EqualToTDS } from './V1_EqualToTDS.js';
 
 export interface V1_TestAssertionVisitor<T> {
@@ -24,6 +25,7 @@ export interface V1_TestAssertionVisitor<T> {
   visit_EqualToTDS(testAssertion: V1_EqualToTDS): T;
   visit_EqualTo(testAssertion: V1_EqualTo): T;
   visit_EqualToJSON(testAssertion: V1_EqualToJson): T;
+  visit_EqualToRelation(testAssertion: V1_EqualToRelation): T;
 }
 
 export abstract class V1_TestAssertion implements Hashable {

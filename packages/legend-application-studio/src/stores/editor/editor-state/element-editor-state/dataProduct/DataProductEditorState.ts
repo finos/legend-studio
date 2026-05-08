@@ -109,6 +109,7 @@ import {
   modelAccessPointGroup_setMapping,
   dataProduct_setSupportInfoIfAbsent,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
+import { DataProductTestableState } from './testable/DataProductTestableState.js';
 import { LambdaEditorState, LineageState } from '@finos/legend-query-builder';
 import {
   DataProductElementEditorInitialConfiguration,
@@ -129,6 +130,7 @@ export enum DATA_PRODUCT_TAB {
   SUPPORT = 'Support',
   APG = 'APG',
   OPERATIONAL = 'Operational',
+  TESTING = 'Testing',
 }
 
 export enum DATA_PRODUCT_TYPE {
@@ -966,6 +968,7 @@ export class DataProductEditorState extends ElementEditorState {
   selectedGroupState: AccessPointGroupState | undefined;
   selectedTab: DATA_PRODUCT_TAB;
   modelledDataProduct = false;
+  testableState: DataProductTestableState;
 
   constructor(
     editorStore: EditorStore,
@@ -1015,6 +1018,7 @@ export class DataProductEditorState extends ElementEditorState {
       this.deployOnOpen = elementConfig.deployOnOpen ?? false;
     }
     this.selectedTab = DATA_PRODUCT_TAB.HOME;
+    this.testableState = new DataProductTestableState(this);
   }
 
   setDeployOnOpen(value: boolean): void {

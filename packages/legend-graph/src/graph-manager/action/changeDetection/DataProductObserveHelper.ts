@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeObservable, observable, override } from 'mobx';
+import { computed, makeObservable, observable, override } from 'mobx';
 import {
   type AccessPoint,
   type AccessPointGroup,
@@ -35,16 +35,26 @@ import {
   type DataProductOperationalMetadata,
   AppDirOwner,
 } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
-import { type AppDirNode } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import type { AppDirNode } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import {
+  type DataResolver,
+  BaseDataResolver,
+  ReferenceDataResolver,
+} from '../../../graph/metamodel/pure/data/DataResolver.js';
+import type { DataProductTestSuite } from '../../../graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
 import {
   observe_Abstract_PackageableElement,
+  type ObserverContext,
   observe_PackageableElementReference,
   skipObserved,
+  skipObservedWithContext,
 } from './CoreObserverHelper.js';
 import {
   observe_StereotypeReference,
   observe_TaggedValue,
 } from './DomainObserverHelper.js';
+import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
+import { observe_AtomicTest } from './Testable_ObserverHelper.js';
 
 export const observe_AccessPoint = skipObserved(
   (metamodel: AccessPoint): AccessPoint => {
@@ -252,8 +262,48 @@ export const observe_AppDirOwner = skipObserved(
   },
 );
 
-export const observe_DataProduct = skipObserved(
-  (metamodel: DataProduct): DataProduct => {
+export const observe_DataResolver = skipObservedWithContext(
+  (metamodel: DataResolver, context: ObserverContext) => {
+    if (metamodel instanceof BaseDataResolver) {
+      makeObservable(metamodel, {
+        element: observable,
+        data: observable,
+        hashCode: computed,
+      });
+      observe_PackageableElementReference(metamodel.element);
+      observe_EmbeddedData(metamodel.data, context);
+    } else if (metamodel instanceof ReferenceDataResolver) {
+      makeObservable(metamodel, {
+        element: observable,
+        hashCode: computed,
+      });
+      observe_PackageableElementReference(metamodel.element);
+    }
+    return metamodel;
+  },
+);
+
+export const observe_DataProductTestSuite = skipObservedWithContext(
+  (
+    metamodel: DataProductTestSuite,
+    context: ObserverContext,
+  ): DataProductTestSuite => {
+    makeObservable(metamodel, {
+      id: observable,
+      tests: observable,
+      testData: observable,
+      hashCode: computed,
+    });
+    metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
+    metamodel.testData?.forEach((testData) =>
+      observe_DataResolver(testData, context),
+    );
+    return metamodel;
+  },
+);
+
+export const observe_DataProduct = skipObservedWithContext(
+  (metamodel: DataProduct, context: ObserverContext): DataProduct => {
     observe_Abstract_PackageableElement(metamodel);
 
     makeObservable<DataProduct, '_elementHashCode'>(metamodel, {
@@ -266,6 +316,7 @@ export const observe_DataProduct = skipObserved(
       type: observable,
       operationalMetadata: observable,
       owner: observable,
+      tests: observable,
     });
 
     if (metamodel.supportInfo) {
@@ -281,6 +332,9 @@ export const observe_DataProduct = skipObserved(
       observe_AppDirOwner(metamodel.owner);
     }
     metamodel.accessPointGroups.forEach(observe_APG);
+    metamodel.tests.forEach((testSuite) =>
+      observe_DataProductTestSuite(testSuite, context),
+    );
     return metamodel;
   },
 );

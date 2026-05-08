@@ -130,8 +130,14 @@ import type {
 import type { DeployProjectResponse } from './action/dev-metadata/DeployProjectResponse.js';
 import type { DataProductAnalysisQueryResult } from './action/analytics/data-product/DataProductAnalysis.js';
 import type { MetadataRequestOptions } from './action/dev-metadata/MetadataRequestOptions.js';
-import type { DataProductAccessType } from '../graph/metamodel/pure/dataProduct/DataProduct.js';
-import type { Accessor } from '../graph/metamodel/pure/packageableElements/relation/Accessor.js';
+import type {
+  DataProduct,
+  DataProductAccessType,
+} from '../graph/metamodel/pure/dataProduct/DataProduct.js';
+import type {
+  Accessor,
+  DataProductAccessor,
+} from '../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -448,6 +454,19 @@ export abstract class AbstractPureGraphManager {
       tableName: string | undefined;
     },
   ): Accessor | undefined;
+
+  abstract buildDataProductAccessor(
+    element: DataProduct,
+    graph: PureModel,
+    options?: {
+      tableName: string | undefined;
+    },
+  ): Promise<DataProductAccessor | undefined>;
+
+  abstract collectAccessorsInRawLambda(
+    rawLambda: RawLambda,
+    graph: PureModel,
+  ): Promise<Accessor[]>;
 
   // ------------------------------------------- SDLC -------------------------------------------
 
@@ -797,7 +816,7 @@ export abstract class AbstractPureGraphManager {
     sql: string,
   ): Promise<string>;
 
-  // ------------------------------------------- Function -------------------------------------------
+  // ------------------------------------------- Function ------------------------------------createDataProductAccessor-------
 
   abstract getAvailableFunctionActivatorConfigurations(
     coreModel: CoreModel,

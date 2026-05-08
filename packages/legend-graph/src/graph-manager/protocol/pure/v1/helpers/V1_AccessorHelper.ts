@@ -19,6 +19,7 @@ import {
   IngestionAccessor,
   RelationalStoreAccessor,
   type AccessorOwner,
+  DataProductAccessor,
 } from '../../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import {
   RelationType,
@@ -35,8 +36,34 @@ import type { V1_IngestDataset } from '../model/packageableElements/ingest/V1_In
 import type { V1_GraphBuilderContext } from '../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import { V1_GenericType as V1_GenericTypeProtocol } from '../model/packageableElements/type/V1_GenericType.js';
 import { V1_PackageableType } from '../model/packageableElements/type/V1_PackageableType.js';
-import { returnUndefOnError } from '@finos/legend-shared';
+import { returnUndefOnError, type PlainObject } from '@finos/legend-shared';
+import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
 import { V1_deserializeIngestDefinitionContent } from '../transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
+import {
+  RelationElement,
+  RelationElementsData,
+} from '../../../../../graph/metamodel/pure/data/EmbeddedData.js';
+import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
+import type { AbstractPureGraphManager } from '../../../../AbstractPureGraphManager.js';
+import type { PureModel } from '../../../../../graph/PureModel.js';
+import type { ConcreteFunctionDefinition } from '../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
+import { V1_deserializeValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin.js';
+import { V1_Lambda } from '../model/valueSpecification/raw/V1_Lambda.js';
+import { V1_AppliedFunction } from '../model/valueSpecification/application/V1_AppliedFunction.js';
+import { V1_ClassInstance } from '../model/valueSpecification/raw/V1_ClassInstance.js';
+import { V1_Collection } from '../model/valueSpecification/raw/V1_Collection.js';
+import {
+  type V1_Accessor,
+  V1_DataProductAccessor,
+  V1_IngestDefinitionAccessor,
+  V1_RelationStoreAccessor,
+} from '../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
+import type { V1_ValueSpecification } from '../model/valueSpecification/V1_ValueSpecification.js';
+import {
+  type DataProduct,
+  LakehouseAccessPoint,
+} from '../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 
 const buildV1GenericType = (fullPath: string): V1_GenericTypeProtocol => {
   // Strip package prefix — primitive types are indexed by simple name
@@ -153,4 +180,213 @@ export const V1_createAccessorFromPackageableElement = (
     );
   }
   return undefined;
+};
+
+const buildRelationTypeFromMetadata = (
+  metadata: RelationTypeMetadata,
+  context: V1_GraphBuilderContext,
+): RelationType => {
+  const relationType = new RelationType('__data_product__');
+  relationType.columns = metadata.columns.map((col) => {
+    const v1GenericType = buildV1GenericType(col.type);
+    const resolvedGenericType =
+      returnUndefOnError(() =>
+        context.resolveGenericTypeFromProtocolWithRelationType(v1GenericType),
+      ) ??
+      context.resolveGenericTypeFromProtocolWithRelationType(
+        buildV1GenericType('String'),
+      );
+    return new RelationColumn(col.name, resolvedGenericType);
+  });
+  return relationType;
+};
+
+export const V1_buildDataProductAccessor = async (
+  element: DataProduct,
+  context: V1_GraphBuilderContext,
+  graphManager: AbstractPureGraphManager,
+  options?: {
+    tableName?: string | undefined;
+  },
+): Promise<DataProductAccessor | undefined> => {
+  const accessPointId = options?.tableName;
+  const accessPoint = element.accessPointGroups
+    .flatMap((g) => g.accessPoints)
+    .filter(
+      (ap): ap is LakehouseAccessPoint => ap instanceof LakehouseAccessPoint,
+    )
+    .find((ap) => ap.id === accessPointId);
+  if (!accessPoint) {
+    return undefined;
+  }
+  const relationTypeMetadata = await graphManager.getLambdaRelationType(
+    accessPoint.func,
+    context.graph,
+  );
+  const relationType = buildRelationTypeFromMetadata(
+    relationTypeMetadata,
+    context,
+  );
+  return new DataProductAccessor(
+    element.path,
+    undefined,
+    accessPoint.id,
+    relationType,
+    element,
+  );
+};
+
+const collectV1AccessorsFromValueSpecification = (
+  valueSpec: V1_ValueSpecification,
+  accessors: V1_Accessor[],
+  visited: Set<V1_ValueSpecification>,
+  plugins: PureProtocolProcessorPlugin[],
+  graph: PureModel | undefined,
+  visitedFunctions: Set<ConcreteFunctionDefinition>,
+): void => {
+  if (visited.has(valueSpec)) {
+    return;
+  }
+  visited.add(valueSpec);
+
+  if (valueSpec instanceof V1_ClassInstance) {
+    const val = valueSpec.value;
+    if (
+      val instanceof V1_DataProductAccessor ||
+      val instanceof V1_IngestDefinitionAccessor ||
+      val instanceof V1_RelationStoreAccessor
+    ) {
+      if (!accessors.includes(val)) {
+        accessors.push(val);
+      }
+    }
+  } else if (valueSpec instanceof V1_AppliedFunction) {
+    // Walk parameters in case they contain inline accessors
+    for (const param of valueSpec.parameters) {
+      collectV1AccessorsFromValueSpecification(
+        param,
+        accessors,
+        visited,
+        plugins,
+        graph,
+        visitedFunctions,
+      );
+    }
+    // Also follow the function body if it's a user-defined function in the graph
+    if (graph) {
+      const funcPath = valueSpec.function;
+      // ConcreteFunctionDefinition paths include the signature suffix; strip it
+      // by matching functions whose path starts with the applied function name
+      const funcDef = returnUndefOnError(() =>
+        graph.functions.find(
+          (f) => f.path === funcPath || f.path.startsWith(`${funcPath}_`),
+        ),
+      );
+      if (funcDef && !visitedFunctions.has(funcDef)) {
+        visitedFunctions.add(funcDef);
+        // expressionSequence is stored as raw JSON on ConcreteFunctionDefinition
+        for (const rawExpr of funcDef.expressionSequence) {
+          try {
+            const exprSpec = V1_deserializeValueSpecification(
+              rawExpr as PlainObject<V1_ValueSpecification>,
+              plugins,
+            );
+            collectV1AccessorsFromValueSpecification(
+              exprSpec,
+              accessors,
+              visited,
+              plugins,
+              graph,
+              visitedFunctions,
+            );
+          } catch {
+            // ignore
+          }
+        }
+      }
+    }
+  } else if (valueSpec instanceof V1_Lambda) {
+    for (const expr of valueSpec.body) {
+      collectV1AccessorsFromValueSpecification(
+        expr,
+        accessors,
+        visited,
+        plugins,
+        graph,
+        visitedFunctions,
+      );
+    }
+  } else if (valueSpec instanceof V1_Collection) {
+    for (const val of valueSpec.values) {
+      collectV1AccessorsFromValueSpecification(
+        val,
+        accessors,
+        visited,
+        plugins,
+        graph,
+        visitedFunctions,
+      );
+    }
+  }
+};
+
+export const V1_buildRelationElementsDataFromAccessors = (
+  accessorsForParent: Accessor[],
+): RelationElementsData => {
+  const relationElementsData = new RelationElementsData();
+  relationElementsData.relationElements = accessorsForParent.map((accessor) => {
+    const relationElement = new RelationElement();
+    if (accessor instanceof RelationalStoreAccessor) {
+      const schema = accessor.schema;
+      relationElement.paths =
+        schema !== undefined ? [schema, accessor.accessor] : ['UNKNOWN'];
+    } else {
+      relationElement.paths = [accessor.accessor || 'UNKNOWN'];
+    }
+    relationElement.columns = accessor.relationType.columns.map(
+      (column) => column.name,
+    );
+    relationElement.rows = [];
+    return relationElement;
+  });
+  return relationElementsData;
+};
+
+export const V1_resolveAccessorsFromRawLambda = (
+  rawLambda: RawLambda,
+  graphManager: AbstractPureGraphManager,
+  plugins: PureProtocolProcessorPlugin[],
+  graph?: PureModel | undefined,
+): V1_Accessor[] | undefined => {
+  try {
+    const json = graphManager.serializeRawValueSpecification(rawLambda);
+    const v1ValueSpec = V1_deserializeValueSpecification(json, plugins);
+    const accessors: V1_Accessor[] = [];
+    const visited = new Set<V1_ValueSpecification>();
+    const visitedFunctions = new Set<ConcreteFunctionDefinition>();
+    if (v1ValueSpec instanceof V1_Lambda) {
+      for (const expr of v1ValueSpec.body) {
+        collectV1AccessorsFromValueSpecification(
+          expr,
+          accessors,
+          visited,
+          plugins,
+          graph,
+          visitedFunctions,
+        );
+      }
+    } else {
+      collectV1AccessorsFromValueSpecification(
+        v1ValueSpec,
+        accessors,
+        visited,
+        plugins,
+        graph,
+        visitedFunctions,
+      );
+    }
+    return accessors;
+  } catch {
+    return undefined;
+  }
 };

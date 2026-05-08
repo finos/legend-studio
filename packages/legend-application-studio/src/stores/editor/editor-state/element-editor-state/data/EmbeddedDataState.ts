@@ -382,12 +382,21 @@ export class RelationElementState {
   }
 }
 
+export interface RelationElementAccessorOption {
+  label: string;
+  value: string;
+  columns: string[];
+}
+
 export class RelationElementsDataState extends EmbeddedDataState {
   override embeddedData: RelationElementsData;
   showImportCSVModal = false;
   showNewRelationElementModal = false;
   activeRelationElement: RelationElementState | undefined;
   relationElementStates: RelationElementState[];
+  accessorOptions: RelationElementAccessorOption[] | undefined;
+  accessorTypeLabel: string | undefined;
+  refreshAccessorOptions: (() => Promise<void>) | undefined;
 
   constructor(editorStore: EditorStore, embeddedData: RelationElementsData) {
     super(editorStore, embeddedData);
@@ -396,10 +405,15 @@ export class RelationElementsDataState extends EmbeddedDataState {
       showImportCSVModal: observable,
       showNewRelationElementModal: observable,
       activeRelationElement: observable,
+      relationElementStates: observable,
+      accessorOptions: observable,
+      accessorTypeLabel: observable,
       setActiveRelationElement: action,
       setShowImportCSVModal: action,
       setShowNewRelationElementModal: action,
       addRelationElement: action,
+      deleteRelationElement: action,
+      setAccessorOptions: action,
     });
     this.embeddedData = embeddedData;
     this.relationElementStates = embeddedData.relationElements.map(
@@ -423,12 +437,46 @@ export class RelationElementsDataState extends EmbeddedDataState {
     this.setActiveRelationElement(newElementState);
   }
 
+  deleteRelationElement(relationElementState: RelationElementState): void {
+    const idx = this.relationElementStates.indexOf(relationElementState);
+    if (idx === -1) {
+      return;
+    }
+    this.relationElementStates.splice(idx, 1);
+    this.embeddedData.relationElements.splice(idx, 1);
+    if (this.activeRelationElement === relationElementState) {
+      this.setActiveRelationElement(this.relationElementStates[0]);
+    }
+  }
+
   setShowImportCSVModal(show: boolean): void {
     this.showImportCSVModal = show;
   }
 
   setShowNewRelationElementModal(show: boolean): void {
     this.showNewRelationElementModal = show;
+  }
+
+  setAccessorOptions(
+    options: RelationElementAccessorOption[] | undefined,
+    typeLabel: string | undefined,
+  ): void {
+    this.accessorOptions = options;
+    this.accessorTypeLabel = typeLabel;
+  }
+
+  setRefreshAccessorOptions(fn: (() => Promise<void>) | undefined): void {
+    this.refreshAccessorOptions = fn;
+  }
+
+  get availableAccessorOptions(): RelationElementAccessorOption[] {
+    if (!this.accessorOptions) {
+      return [];
+    }
+    const existingPaths = new Set(
+      this.relationElementStates.map((s) => s.relationElement.paths.join('.')),
+    );
+    return this.accessorOptions.filter((opt) => !existingPaths.has(opt.value));
   }
 }
 

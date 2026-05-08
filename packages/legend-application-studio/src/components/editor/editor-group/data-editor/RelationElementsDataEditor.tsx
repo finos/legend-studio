@@ -48,6 +48,14 @@ const NewRelationElementModal = observer(
   (props: { dataState: RelationElementsDataState; isReadOnly: boolean }) => {
     const { isReadOnly, dataState } = props;
     const applicationStore = dataState.editorStore.applicationStore;
+    const availableAccessorOptions = dataState.availableAccessorOptions;
+    const hasAccessorOptions =
+      dataState.accessorOptions !== undefined &&
+      availableAccessorOptions.length > 0;
+
+    const [selectedAccessor, setSelectedAccessor] = useState<
+      string | undefined
+    >(availableAccessorOptions[0]?.value);
 
     enum PathType {
       SCHEMA_TABLE = 'Schema and Table',
@@ -83,17 +91,29 @@ const NewRelationElementModal = observer(
     const closeModal = (): void =>
       dataState.setShowNewRelationElementModal(false);
     const handleSubmit = (): void => {
-      const path: string[] = [];
-      if (pathType && schemaName && tableName) {
-        path.push(schemaName);
-        path.push(tableName);
+      if (hasAccessorOptions && selectedAccessor) {
+        const option = availableAccessorOptions.find(
+          (o) => o.value === selectedAccessor,
+        );
+        if (option) {
+          const relationElement = new RelationElement();
+          relationElement.paths = [option.value];
+          relationElement.columns = option.columns;
+          relationElement.rows = [];
+          dataState.addRelationElement(relationElement);
+        }
+      } else {
+        const path: string[] = [];
+        if (pathType && schemaName && tableName) {
+          path.push(schemaName);
+          path.push(tableName);
+        }
+        const relationElement = new RelationElement();
+        relationElement.columns = [];
+        relationElement.rows = [];
+        relationElement.paths = path;
+        dataState.addRelationElement(relationElement);
       }
-      const relationElement = new RelationElement();
-      relationElement.columns = [];
-      relationElement.rows = [];
-      relationElement.paths = path;
-
-      dataState.addRelationElement(relationElement);
       closeModal();
     };
 
@@ -112,48 +132,84 @@ const NewRelationElementModal = observer(
           onSubmit={(event) => {
             event.preventDefault();
             handleSubmit();
-            closeModal();
           }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">Add Relation Element</div>
           <div className="relational-data-editor__identifier">
-            <div className="relational-data-editor__identifier__values">
-              <CustomSelectorInput
-                className="explorer__new-element-modal__driver__dropdown"
-                options={pathTypeOptions}
-                onChange={onPathTypeChange}
-                value={pathType}
-                isClearable={false}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-              />
-            </div>
-            <>
+            {hasAccessorOptions ? (
               <div className="relational-data-editor__identifier__values">
-                <input
-                  className="panel__content__form__section__input"
-                  disabled={isReadOnly}
-                  placeholder="schemaName"
-                  value={schemaName}
-                  onChange={changeSchemaValue}
+                <div className="panel__content__form__section__header__label">
+                  {dataState.accessorTypeLabel}
+                </div>
+                <CustomSelectorInput
+                  className="explorer__new-element-modal__driver__dropdown"
+                  options={availableAccessorOptions.map((o) => ({
+                    value: o.value,
+                    label: o.label,
+                  }))}
+                  onChange={(
+                    val: { value: string; label: string } | null,
+                  ): void => {
+                    setSelectedAccessor(val?.value);
+                  }}
+                  value={
+                    selectedAccessor
+                      ? {
+                          value: selectedAccessor,
+                          label: selectedAccessor,
+                        }
+                      : null
+                  }
+                  placeholder={`Select ${dataState.accessorTypeLabel ?? 'option'}...`}
+                  isClearable={false}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                 />
               </div>
-              <div className="relational-data-editor__identifier__values">
-                <input
-                  className="relational-data-editor__identifier__values panel__content__form__section__input"
-                  disabled={isReadOnly}
-                  placeholder="tableName"
-                  value={tableName}
-                  onChange={changeTableValue}
-                />
-              </div>
-            </>
+            ) : (
+              <>
+                <div className="relational-data-editor__identifier__values">
+                  <CustomSelectorInput
+                    className="explorer__new-element-modal__driver__dropdown"
+                    options={pathTypeOptions}
+                    onChange={onPathTypeChange}
+                    value={pathType}
+                    isClearable={false}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
+                  />
+                </div>
+                <div className="relational-data-editor__identifier__values">
+                  <input
+                    className="panel__content__form__section__input"
+                    disabled={isReadOnly}
+                    placeholder="schemaName"
+                    value={schemaName}
+                    onChange={changeSchemaValue}
+                  />
+                </div>
+                <div className="relational-data-editor__identifier__values">
+                  <input
+                    className="relational-data-editor__identifier__values panel__content__form__section__input"
+                    disabled={isReadOnly}
+                    placeholder="tableName"
+                    value={tableName}
+                    onChange={changeTableValue}
+                  />
+                </div>
+              </>
+            )}
           </div>
           <div className="search-modal__actions">
-            <button className="btn btn--dark" disabled={isReadOnly}>
+            <button
+              className="btn btn--dark"
+              disabled={isReadOnly || (hasAccessorOptions && !selectedAccessor)}
+            >
               Add
             </button>
           </div>
@@ -165,32 +221,50 @@ const NewRelationElementModal = observer(
 
 export const RelationElementEditor = observer(
   (props: {
-    relationElementState: RelationElementState;
+    relationElementState: {
+      relationElement: RelationElement;
+      supportsColumnEditing?: boolean;
+      addColumn(name: string): void;
+      removeColumn(index: number): void;
+      updateColumn(index: number, name: string): void;
+      addRow(): void;
+      removeRow(index: number): void;
+      updateRow(rowIndex: number, columnIndex: number, value: string): void;
+      clearAllData(): void;
+      exportJSON(): string;
+      exportCSV(): string;
+      exportSQL(): string;
+      importCSV(csvContent: string): void;
+    };
     isReadOnly: boolean;
   }) => {
     const { relationElementState, isReadOnly } = props;
     const editorStore = useEditorStore();
     const embeddedData = relationElementState.relationElement;
+    const canEditColumns =
+      !isReadOnly &&
+      (!('supportsColumnEditing' in relationElementState) ||
+        relationElementState.supportsColumnEditing !== false);
     const [exportFormat, setExportFormat] = useState<'json' | 'csv' | 'sql'>(
       'json',
     );
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const addColumn = (): void => {
-      if (!isReadOnly) {
+      if (canEditColumns) {
         const columnName = `column_${embeddedData.columns.length + 1}`;
         relationElementState.addColumn(columnName);
       }
     };
 
     const removeColumn = (index: number): void => {
-      if (!isReadOnly) {
+      if (canEditColumns) {
         relationElementState.removeColumn(index);
       }
     };
 
     const updateColumn = (index: number, value: string): void => {
-      if (!isReadOnly) {
+      if (canEditColumns) {
         const column = embeddedData.columns[index];
         if (column) {
           relationElementState.updateColumn(index, value);
@@ -309,7 +383,7 @@ export const RelationElementEditor = observer(
             <button
               className="btn--icon btn--dark btn--sm"
               onClick={addColumn}
-              disabled={isReadOnly}
+              disabled={!canEditColumns}
               title="Add Column"
             >
               <PlusIcon />
@@ -327,12 +401,12 @@ export const RelationElementEditor = observer(
                   value={column}
                   onChange={(e) => updateColumn(index, e.target.value)}
                   placeholder="Column Name"
-                  disabled={isReadOnly}
+                  disabled={!canEditColumns}
                 />
                 <button
                   className="btn--icon btn--caution btn--dark btn--sm"
                   onClick={() => removeColumn(index)}
-                  disabled={isReadOnly}
+                  disabled={!canEditColumns}
                   title="Remove Column"
                 >
                   <TimesIcon />
@@ -488,7 +562,23 @@ export const RelationElementsDataEditor = observer(
     );
 
     const addRelationElement = (): void => {
-      dataState.setShowNewRelationElementModal(true);
+      const doAdd = (): void => {
+        if (
+          dataState.accessorOptions !== undefined &&
+          dataState.availableAccessorOptions.length === 0
+        ) {
+          dataState.editorStore.applicationStore.notificationService.notifyWarning(
+            `All referenced ${dataState.accessorTypeLabel === 'Dataset' ? 'dataset' : 'access point'}s' data is already present`,
+          );
+          return;
+        }
+        dataState.setShowNewRelationElementModal(true);
+      };
+      if (dataState.refreshAccessorOptions) {
+        dataState.refreshAccessorOptions().then(doAdd).catch(doAdd);
+      } else {
+        doAdd();
+      }
     };
 
     const changeRelationElement = (
@@ -531,6 +621,18 @@ export const RelationElementsDataEditor = observer(
                     </span>
                   ) : (
                     <span>{relationElementState.relationElement.paths[0]}</span>
+                  )}
+                  {!isReadOnly && (
+                    <button
+                      className="service-editor__tab__close-btn"
+                      onClick={(e): void => {
+                        e.stopPropagation();
+                        dataState.deleteRelationElement(relationElementState);
+                      }}
+                      title="Delete"
+                    >
+                      <TimesIcon />
+                    </button>
                   )}
                 </div>
               ))}

@@ -99,7 +99,10 @@ export const onConvertDataSpaceToDataProduct = flow(function* (
   dataSpaceEditorState: DataSpaceEditorState,
 ): GeneratorFn<void> {
   try {
-    const dataProduct = convertDataSpaceToDataProduct(dataSpace);
+    const dataProduct = convertDataSpaceToDataProduct(
+      dataSpace,
+      editorStore.changeDetectionState.observerContext,
+    );
 
     editorStore.graphManagerState.graph.deleteElement(dataSpace);
 
@@ -116,7 +119,10 @@ export const onConvertDataSpaceToDataProduct = flow(function* (
       dataProduct.path,
     );
     if (addedElement) {
-      observe_DataProduct(addedElement as DataProduct);
+      observe_DataProduct(
+        addedElement as DataProduct,
+        editorStore.changeDetectionState.observerContext,
+      );
     }
     const dataProductEditorState = new DataProductEditorState(
       editorStore,
