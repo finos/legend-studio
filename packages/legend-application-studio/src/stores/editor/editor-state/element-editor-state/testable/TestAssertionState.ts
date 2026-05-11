@@ -25,10 +25,13 @@ import {
   EqualToJson,
   ExternalFormatData,
   EqualToJsonAssertFail,
+  EqualToRelationAssertFail,
   MultiExecutionServiceTestResult,
   AssertPass,
   TestExecutionStatus,
   EqualTo,
+  EqualToRelation,
+  RelationElement,
   observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
@@ -53,6 +56,7 @@ import {
   TESTABLE_RESULT,
 } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import type { TestableTestEditorState } from './TestableEditorState.js';
+import { RelationElementState } from '../data/EmbeddedDataState.js';
 import { isTestPassing } from '../../../utils/TestableUtils.js';
 import { equalTo_setExpected } from '../../../../graph-modifier/Testable_GraphModifierHelper.js';
 
@@ -120,6 +124,27 @@ export class EqualToJsonAssertFailState extends AssertFailState {
   }
 }
 
+export class EqualToRelationAssertFailState extends AssertFailState {
+  declare status: EqualToRelationAssertFail;
+  diffModal = false;
+
+  constructor(
+    resultState: TestAssertionResultState,
+    status: EqualToRelationAssertFail,
+  ) {
+    super(resultState, status);
+    this.status = status;
+    makeObservable(this, {
+      diffModal: observable,
+      setDiffModal: action,
+    });
+  }
+
+  setDiffModal(val: boolean): void {
+    this.diffModal = val;
+  }
+}
+
 export class UnsupportedAssertionStatusState extends TestAssertionStatusState {}
 
 export class TestAssertionResultState {
@@ -171,6 +196,9 @@ export class TestAssertionResultState {
     if (val) {
       if (val instanceof EqualToJsonAssertFail) {
         return new EqualToJsonAssertFailState(this, val);
+      }
+      if (val instanceof EqualToRelationAssertFail) {
+        return new EqualToRelationAssertFailState(this, val);
       }
       if (val instanceof AssertFail) {
         if (this.assertionState.assertion instanceof EqualTo) {
@@ -295,6 +323,42 @@ export class EqualToJsonAssertionState extends TestAssertionState {
 
   label(): string {
     return 'EqualToJSON';
+  }
+}
+
+export class EqualToRelationAssertionState extends TestAssertionState {
+  declare assertion: EqualToRelation;
+  expectedRelationElementState: RelationElementState;
+
+  constructor(
+    editorStore: EditorStore,
+    assertionState: TestAssertionEditorState,
+  ) {
+    super(editorStore, assertionState);
+    this.expectedRelationElementState = new RelationElementState(
+      this.assertion.expected,
+    );
+  }
+
+  override get supportsGeneratingAssertion(): boolean {
+    return false;
+  }
+
+  generateExpected(_status: AssertFail): boolean {
+    return false;
+  }
+
+  generateBare(): TestAssertion {
+    const bareAssertion = new EqualToRelation();
+    bareAssertion.expected = new RelationElement();
+    bareAssertion.expected.columns = [];
+    bareAssertion.expected.paths = [];
+    bareAssertion.expected.rows = [];
+    return bareAssertion;
+  }
+
+  label(): string {
+    return 'EqualToRelation';
   }
 }
 
@@ -466,6 +530,8 @@ export class TestAssertionEditorState {
   buildAssertionState(assertion: TestAssertion): TestAssertionState {
     if (assertion instanceof EqualToJson) {
       return new EqualToJsonAssertionState(this.editorStore, this);
+    } else if (assertion instanceof EqualToRelation) {
+      return new EqualToRelationAssertionState(this.editorStore, this);
     } else if (assertion instanceof EqualTo) {
       const val = returnUndefOnError(() =>
         this.editorStore.graphManagerState.graphManager.buildValueSpecification(

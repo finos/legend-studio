@@ -185,7 +185,7 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
   }
 
   visit_DataProduct(element: DataProduct): void {
-    observe_DataProduct(element);
+    observe_DataProduct(element, this.observerContext);
   }
 
   visit_Mapping(element: Mapping): void {

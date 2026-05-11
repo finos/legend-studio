@@ -82,6 +82,7 @@ import {
   TEST_DATA__DATAPRODUCT__FUNCTION_ACCESS_POINT,
   TEST_DATA__DATAPRODUCT__NATIVE_MODEL_ACCESS,
   TEST_DATA__DATAPRODUCT_WITH_OWNER,
+  TEST_DATA__DATAPRODUCT__TEST_SUITES,
 } from './roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
 import { TEST_DATA__Function_genericType } from './roundtripTestData/TEST_DATA__Function-generictype.js';
 
@@ -279,6 +280,7 @@ describe(unitTest('DSL Data product'), () => {
       TEST_DATA__DATAPRODUCT__MAPPING__INCLUDE,
     ],
     ['DSL Data Product with Owner', TEST_DATA__DATAPRODUCT_WITH_OWNER],
+    ['DSL Data Product Test Suites', TEST_DATA__DATAPRODUCT__TEST_SUITES],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
   });

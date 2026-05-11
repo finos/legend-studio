@@ -85,6 +85,7 @@ export enum ATOMIC_TEST_TYPE {
   Service_Test = 'serviceTest',
   Mapping_Test = 'mappingTest',
   Function_Test = 'functionTest',
+  DataProduct_AccessPoint_Test = 'accessPointTest',
 }
 
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
@@ -210,6 +211,9 @@ export const DATE_FORMAT = 'yyyy-MM-dd';
 
 // Generation Const
 export const DEFAULT_GENERATION_PACKAGE = 'generated';
+
+// System column added to all batch-milestoned ingest datasets.
+export const INGEST_LAKE_IN_ID = 'LAKE_IN_ID';
 // Query
 export const QUERY_PROFILE_TAG_CLASS = 'class';
 export const QUERY_PROFILE_PATH = 'meta::pure::profiles::query';

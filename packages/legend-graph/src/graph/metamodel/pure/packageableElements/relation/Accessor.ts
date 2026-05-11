@@ -16,8 +16,8 @@
 
 import { hashArray, isNonNullable, type Hashable } from '@finos/legend-shared';
 import type { RelationType } from './RelationType.js';
-import type { DataProduct } from '../../dataProduct/DataProduct.js';
-import type { IngestDefinition } from '../ingest/IngestDefinition.js';
+import { DataProduct } from '../../dataProduct/DataProduct.js';
+import { IngestDefinition } from '../ingest/IngestDefinition.js';
 import type { Database } from '../store/relational/model/Database.js';
 import { InstanceValue } from '../../valueSpecification/InstanceValue.js';
 import { Multiplicity } from '../domain/Multiplicity.js';
@@ -115,6 +115,24 @@ export class RelationalStoreAccessor extends Accessor implements Hashable {
     return 'Schema';
   }
 }
+
+/**
+ * Returns the accessor item label for the given element owner.
+ * Labels mirror the corresponding Accessor subclass `accessorLabel` getters,
+ * which are the authoritative source but require a full Accessor instance to
+ * call. Use this helper when only the owner element is available.
+ */
+export const getAccessorItemLabelForElement = (
+  element: AccessorOwner,
+): string => {
+  if (element instanceof DataProduct) {
+    return 'Access Point'; // DataProductAccessor.accessorLabel
+  }
+  if (element instanceof IngestDefinition) {
+    return 'Data Set'; // IngestionAccessor.accessorLabel
+  }
+  return 'Table'; // RelationalStoreAccessor.accessorLabel
+};
 
 export class AccessorInstanceValue extends InstanceValue implements Hashable {
   override values: Accessor[] = [];

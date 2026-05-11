@@ -15,6 +15,7 @@
  */
 
 import { computed, makeObservable, observable } from 'mobx';
+import { DataProductAccessPointTest } from '../../../graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
 import { MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import { MappingTestSuite } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 import { ServiceTest } from '../../../graph/metamodel/pure/packageableElements/service/ServiceTest.js';
@@ -40,6 +41,20 @@ import {
 } from './DSL_Service_ObserverHelper.js';
 import { FunctionTest } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
 import { observe_FunctionTest } from './DomainObserverHelper.js';
+
+export const observe_DataProductAccessPointTest = skipObserved(
+  (metamodel: DataProductAccessPointTest): DataProductAccessPointTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      doc: observable,
+      accessPointId: observable,
+      assertions: observable,
+      hashCode: computed,
+    });
+    metamodel.assertions.forEach(observe_TestAssertion);
+    return metamodel;
+  },
+);
 
 export const observe_EqualTo = skipObserved((metamodel: EqualTo): EqualTo => {
   makeObservable(metamodel, {
@@ -87,6 +102,8 @@ export function observe_AtomicTest(
     return observe_MappingTest(metamodel, context);
   } else if (metamodel instanceof FunctionTest) {
     return observe_FunctionTest(metamodel);
+  } else if (metamodel instanceof DataProductAccessPointTest) {
+    return observe_DataProductAccessPointTest(metamodel);
   }
   const extraAtomicTestBuilder = context.plugins.flatMap(
     (plugin) =>

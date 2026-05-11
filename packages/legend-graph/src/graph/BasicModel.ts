@@ -270,6 +270,7 @@ export abstract class BasicModel {
     const coreTestables = [
       ...this.ownServices,
       ...this.ownMappings,
+      ...this.ownDataProducts,
       // TODO: re-add functions once function test runner has been completed in backend
       // ...this.ownFunctions,
     ];

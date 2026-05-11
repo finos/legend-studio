@@ -15,9 +15,14 @@
  */
 
 import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
-import { ExternalFormatData } from '../../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
+import {
+  ExternalFormatData,
+  RelationElement,
+  RelationRowTestData,
+} from '../../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import { EqualTo } from '../../../../../../../../graph/metamodel/pure/test/assertion/EqualTo.js';
 import { EqualToJson } from '../../../../../../../../graph/metamodel/pure/test/assertion/EqualToJson.js';
+import { EqualToRelation } from '../../../../../../../../graph/metamodel/pure/test/assertion/EqualToRelation.js';
 import { EqualToTDS } from '../../../../../../../../graph/metamodel/pure/test/assertion/EqualToTDS.js';
 import type { TestAssertion } from '../../../../../../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
 import type {
@@ -29,6 +34,7 @@ import { V1_MappingTestSuite } from '../../../../model/packageableElements/mappi
 import { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite.js';
 import { V1_EqualTo } from '../../../../model/test/assertion/V1_EqualTo.js';
 import { V1_EqualToJson } from '../../../../model/test/assertion/V1_EqualToJson.js';
+import { V1_EqualToRelation } from '../../../../model/test/assertion/V1_EqualToRelation.js';
 import { V1_EqualToTDS } from '../../../../model/test/assertion/V1_EqualToTDS.js';
 import type { V1_TestAssertion } from '../../../../model/test/assertion/V1_TestAssertion.js';
 import type { V1_TestSuite } from '../../../../model/test/V1_TestSuite.js';
@@ -80,6 +86,25 @@ const buildEqualToTDS = (
   return equalToTDS;
 };
 
+const buildEqualToRelation = (
+  element: V1_EqualToRelation,
+  parentTest: AtomicTest | undefined,
+): EqualToRelation => {
+  const equalToRelation = new EqualToRelation();
+  equalToRelation.id = element.id;
+  equalToRelation.parentTest = parentTest;
+  const rel = new RelationElement();
+  rel.columns = element.expected.columns;
+  rel.paths = element.expected.paths;
+  rel.rows = element.expected.rows.map((row) => {
+    const r = new RelationRowTestData();
+    r.values = row.values;
+    return r;
+  });
+  equalToRelation.expected = rel;
+  return equalToRelation;
+};
+
 export const V1_buildTestAssertion = (
   value: V1_TestAssertion,
   parentTest: AtomicTest | undefined,
@@ -91,6 +116,8 @@ export const V1_buildTestAssertion = (
     return V1_buildEqualToJson(value, parentTest, context);
   } else if (value instanceof V1_EqualToTDS) {
     return buildEqualToTDS(value, parentTest, context);
+  } else if (value instanceof V1_EqualToRelation) {
+    return buildEqualToRelation(value, parentTest);
   }
   throw new UnsupportedOperationError(`Can't build test assertion`, value);
 };

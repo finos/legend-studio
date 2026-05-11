@@ -15,6 +15,7 @@
  */
 
 import {
+  BlankPanelPlaceholder,
   clsx,
   CompareIcon,
   ContextMenu,
@@ -38,6 +39,7 @@ import {
 } from '@finos/legend-art';
 import {
   type DataElement,
+  DataProduct,
   type ValueSpecification,
   type VariableExpression,
   type PrimitiveInstanceValue,
@@ -61,6 +63,8 @@ import {
   type TestAssertionState,
   EqualToAssertionState,
   EqualToAssertFailState,
+  EqualToRelationAssertionState,
+  EqualToRelationAssertFailState,
 } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
 import { externalFormatData_setData } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { TESTABLE_RESULT } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
@@ -76,11 +80,13 @@ import {
   getPackageableElementOptionFormatter,
 } from '@finos/legend-lego/graph-editor';
 import type { TestParamContentType } from '../../../../stores/editor/utils/TestableUtils.js';
+import { RelationElementEditor } from '../data-editor/RelationElementsDataEditor.js';
 import {
   BasicValueSpecificationEditor,
   buildDefaultInstanceValue,
 } from '@finos/legend-query-builder';
 import { useApplicationStore } from '@finos/legend-application';
+import type { DataProductTestState } from '../../../../stores/editor/editor-state/element-editor-state/dataProduct/testable/DataProductTestableState.js';
 
 export const SharedDataElementModal = observer(
   (props: {
@@ -575,6 +581,132 @@ const TestErrorViewer = observer((props: { testError: TestError }) => {
   );
 });
 
+const EqualToRelationAsssertionEditor = observer(
+  (props: {
+    testAssertionEditorState: TestAssertionEditorState;
+    equalToRelationAssertionState: EqualToRelationAssertionState;
+  }) => {
+    const { equalToRelationAssertionState, testAssertionEditorState } = props;
+    const isReadOnly = testAssertionEditorState.testState.isReadOnly;
+
+    return (
+      <RelationElementEditor
+        relationElementState={
+          equalToRelationAssertionState.expectedRelationElementState
+        }
+        isReadOnly={isReadOnly}
+      />
+    );
+  },
+);
+
+const DataProductEqualToRelationAssertionEditor = observer(
+  (props: { testAssertionEditorState: TestAssertionEditorState }) => {
+    const { testAssertionEditorState } = props;
+    const testState =
+      testAssertionEditorState.testState as DataProductTestState;
+    const isReadOnly = testAssertionEditorState.testState.isReadOnly;
+    const relationElementState = testState.testDataRelationState;
+
+    return (
+      <div className="service-test-data-editor panel">
+        <div className="function-testable-editor__header">
+          <div className="function-testable-editor__header__title">
+            <div className="function-testable-editor__header__title__label">
+              expected
+            </div>
+          </div>
+        </div>
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Access Point
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            {testState.accessPointLabel}
+          </div>
+        </div>
+        {relationElementState ? (
+          <RelationElementEditor
+            relationElementState={relationElementState}
+            isReadOnly={isReadOnly}
+          />
+        ) : (
+          <BlankPanelPlaceholder
+            text="No expected columns"
+            tooltipText="No expected columns configured for this test"
+          />
+        )}
+      </div>
+    );
+  },
+);
+
+const EqualToRelationAssertFailViewer = observer(
+  (props: {
+    equalToRelationAssertFailState: EqualToRelationAssertFailState;
+  }) => {
+    const { equalToRelationAssertFailState } = props;
+    const applicationStore =
+      equalToRelationAssertFailState.resultState.editorStore.applicationStore;
+    const open = (): void => equalToRelationAssertFailState.setDiffModal(true);
+    const close = (): void =>
+      equalToRelationAssertFailState.setDiffModal(false);
+    const expected = equalToRelationAssertFailState.status.expected;
+    const actual = equalToRelationAssertFailState.status.actual;
+
+    return (
+      <>
+        <div className="equal-to-json-editor__message" onClick={open}>
+          {`<Click to see difference>`}
+        </div>
+        {equalToRelationAssertFailState.diffModal && (
+          <Dialog
+            open={Boolean(equalToRelationAssertFailState.diffModal)}
+            onClose={close}
+            classes={{
+              root: 'editor-modal__root-container',
+              container: 'editor-modal__container',
+              paper: 'editor-modal__content',
+            }}
+          >
+            <Modal
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              className="editor-modal"
+            >
+              <ModalHeader>
+                <div className="equal-to-json-result__diff__summary">
+                  <div className="equal-to-json-result__diff__header__label">
+                    expected
+                  </div>
+                  <div className="equal-to-json-result__diff__icon">
+                    <CompareIcon />
+                  </div>
+                  <div className="equal-to-json-result__diff__header__label">
+                    actual
+                  </div>
+                </div>
+              </ModalHeader>
+              <ModalBody>
+                <JSONDiffView from={expected} to={actual} lossless={false} />
+              </ModalBody>
+              <ModalFooter>
+                <ModalFooterButton
+                  text="Close"
+                  onClick={close}
+                  type="secondary"
+                />
+              </ModalFooter>
+            </Modal>
+          </Dialog>
+        )}
+      </>
+    );
+  },
+);
+
 const AssertFailViewer = observer(
   (props: { assertFailState: AssertFailState }) => {
     const { assertFailState } = props;
@@ -605,6 +737,10 @@ const AssertFailViewer = observer(
         {assertFailState instanceof EqualToJsonAssertFailState ? (
           <EqualToJsonAssertFailViewer
             equalToJsonAssertFailState={assertFailState}
+          />
+        ) : assertFailState instanceof EqualToRelationAssertFailState ? (
+          <EqualToRelationAssertFailViewer
+            equalToRelationAssertFailState={assertFailState}
           />
         ) : assertFailState instanceof EqualToAssertFailState ? (
           <EqualToAssertFailViewer equalToAssertFailState={assertFailState} />
@@ -849,6 +985,8 @@ export const TestAssertionEditor = observer(
     const { testAssertionState } = props;
     const selectedTab = testAssertionState.selectedTab;
     const isReadOnly = testAssertionState.testState.isReadOnly;
+    const isDataProductTest =
+      testAssertionState.testState.testable instanceof DataProduct;
     const isDisabled =
       isReadOnly ||
       !testAssertionState.assertionState.supportsGeneratingAssertion ||
@@ -867,6 +1005,20 @@ export const TestAssertionEditor = observer(
         return (
           <EqualToAsssertionEditor
             equalToAssertionState={state}
+            testAssertionEditorState={testAssertionState}
+          />
+        );
+      } else if (state instanceof EqualToRelationAssertionState) {
+        if (isDataProductTest) {
+          return (
+            <DataProductEqualToRelationAssertionEditor
+              testAssertionEditorState={testAssertionState}
+            />
+          );
+        }
+        return (
+          <EqualToRelationAsssertionEditor
+            equalToRelationAssertionState={state}
             testAssertionEditorState={testAssertionState}
           />
         );
@@ -901,22 +1053,24 @@ export const TestAssertionEditor = observer(
               </div>
             ))}
           </div>
-          <div className="testable-test-assertion-editor__header__actions">
-            <button
-              className="panel__header__action service-execution-editor__test-data__generate-btn"
-              onClick={generate}
-              title="Generate expected result if possible"
-              disabled={isDisabled}
-              tabIndex={-1}
-            >
-              <div className="service-execution-editor__test-data__generate-btn__label">
-                <RefreshIcon className="service-execution-editor__test-data__generate-btn__label__icon" />
-                <div className="service-execution-editor__test-data__generate-btn__label__title">
-                  Generate
+          {!isDataProductTest && (
+            <div className="testable-test-assertion-editor__header__actions">
+              <button
+                className="panel__header__action service-execution-editor__test-data__generate-btn"
+                onClick={generate}
+                title="Generate expected result if possible"
+                disabled={isDisabled}
+                tabIndex={-1}
+              >
+                <div className="service-execution-editor__test-data__generate-btn__label">
+                  <RefreshIcon className="service-execution-editor__test-data__generate-btn__label__icon" />
+                  <div className="service-execution-editor__test-data__generate-btn__label__title">
+                    Generate
+                  </div>
                 </div>
-              </div>
-            </button>
-          </div>
+              </button>
+            </div>
+          )}
         </div>
         <div className="testable-test-assertion-editor__content">
           {selectedTab === TEST_ASSERTION_TAB.EXPECTED && (

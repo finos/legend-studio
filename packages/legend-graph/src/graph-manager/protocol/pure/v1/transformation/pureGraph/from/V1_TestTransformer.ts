@@ -17,8 +17,10 @@
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { V1_EqualTo } from '../../../model/test/assertion/V1_EqualTo.js';
 import { V1_EqualToJson } from '../../../model/test/assertion/V1_EqualToJson.js';
+import { V1_EqualToRelation } from '../../../model/test/assertion/V1_EqualToRelation.js';
 import { EqualTo } from '../../../../../../../graph/metamodel/pure/test/assertion/EqualTo.js';
 import { EqualToJson } from '../../../../../../../graph/metamodel/pure/test/assertion/EqualToJson.js';
+import { EqualToRelation } from '../../../../../../../graph/metamodel/pure/test/assertion/EqualToRelation.js';
 import { V1_transformExternalFormatData } from './V1_DataElementTransformer.js';
 import type { V1_AtomicTest } from '../../../model/test/V1_AtomicTest.js';
 import { ServiceTest } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceTest.js';
@@ -37,6 +39,10 @@ import type {
 } from '../../../../../../../graph/metamodel/pure/test/Test.js';
 import { EqualToTDS } from '../../../../../../../graph/metamodel/pure/test/assertion/EqualToTDS.js';
 import { V1_EqualToTDS } from '../../../model/test/assertion/V1_EqualToTDS.js';
+import {
+  V1_RelationElement,
+  V1_RelationRowTestData,
+} from '../../../model/data/V1_EmbeddedData.js';
 import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/Testable_PureProtocolProcessorPlugin_Extension.js';
 import {
   V1_transformMappingTest,
@@ -64,6 +70,23 @@ const transformEqualToTDS = (element: EqualToTDS): V1_EqualToTDS => {
   equalToTDS.id = element.id;
   equalToTDS.expected = V1_transformExternalFormatData(element.expected);
   return equalToTDS;
+};
+
+const transformEqualToRelation = (
+  element: EqualToRelation,
+): V1_EqualToRelation => {
+  const v1 = new V1_EqualToRelation();
+  v1.id = element.id;
+  const rel = new V1_RelationElement();
+  rel.columns = element.expected.columns;
+  rel.paths = element.expected.paths;
+  rel.rows = element.expected.rows.map((row) => {
+    const r = new V1_RelationRowTestData();
+    r.values = row.values;
+    return r;
+  });
+  v1.expected = rel;
+  return v1;
 };
 
 export const V1_transformAtomicTest = (
@@ -103,6 +126,8 @@ export const V1_transformTestAssertion = (
     return transformEqualToJson(value);
   } else if (value instanceof EqualToTDS) {
     return transformEqualToTDS(value);
+  } else if (value instanceof EqualToRelation) {
+    return transformEqualToRelation(value);
   }
   throw new UnsupportedOperationError(`Can't transform test assertion`, value);
 };

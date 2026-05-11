@@ -40,12 +40,36 @@ export class V1_IngestDatasetSource {
   schema!: V1_IngestDatasetSchema;
 }
 
+export enum V1_WriteModeType {
+  APPEND_ONLY = 'append_only',
+  BATCH_MILESTONED = 'batch_milestoned',
+  BATCH_MILESTONED_BUSINESS_TEMPORAL = 'batch_milestoned_business_temporal',
+}
+
+export class V1_WriteMode {
+  _type!: V1_WriteModeType;
+}
+
+export class V1_AppendOnly extends V1_WriteMode {
+  override _type = V1_WriteModeType.APPEND_ONLY;
+}
+
+export class V1_BatchMilestoned extends V1_WriteMode {
+  override _type = V1_WriteModeType.BATCH_MILESTONED;
+}
+
+export class V1_BatchMilestonedBusinessTemporal extends V1_WriteMode {
+  override _type = V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL;
+}
+
 export class V1_IngestDataset {
   name!: string;
   primaryKey: string[] = [];
   source!: V1_IngestDatasetSource;
+  writeMode?: V1_WriteMode;
 }
 
 export class V1_IngestDefinitionContent {
   datasets?: V1_IngestDataset[];
+  writeMode?: V1_WriteMode;
 }

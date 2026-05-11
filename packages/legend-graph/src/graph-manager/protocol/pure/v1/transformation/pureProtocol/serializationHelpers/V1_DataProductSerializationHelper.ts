@@ -16,6 +16,7 @@
 
 import {
   createModelSchema,
+  custom,
   deserialize,
   list,
   optional,
@@ -83,6 +84,17 @@ import {
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import { V1_AppDirNodeModelSchema } from './lakehouse/V1_CoreEntitlementsSerializationHelper.js';
 import type { V1_EmbeddedData } from '../../../model/data/V1_EmbeddedData.js';
+import { V1_AccessPointTest } from '../../../model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
+import { V1_DataProductTestSuite } from '../../../model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
+import {
+  V1_deserializeTestAssertion,
+  V1_serializeTestAssertion,
+} from './V1_TestSerializationHelper.js';
+import type { V1_DataResolver } from '../../../model/data/V1_DataResolver.js';
+import {
+  V1_deserializeDataResolver,
+  V1_serializeDataResolver,
+} from './V1_DataResolverSerializationHelper.js';
 
 export enum V1_AccessPointType {
   LAKEHOUSE = 'lakehouseAccessPoint',
@@ -109,6 +121,41 @@ export enum V1_DataProductIconType {
 export enum V1_DataProductIconLibraryId {
   REACT_ICONS = 'react-icons',
 }
+
+const V1_accessPointTestModelSchema = createModelSchema(V1_AccessPointTest, {
+  _type: usingConstantValueSchema('accessPointTest'),
+  accessPointId: primitive(),
+  assertions: list(
+    custom(
+      (val) => V1_serializeTestAssertion(val),
+      (val) => V1_deserializeTestAssertion(val),
+    ),
+  ),
+  doc: optional(primitive()),
+  id: primitive(),
+});
+
+const V1_dataProductTestSuiteModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataProductTestSuite> =>
+  createModelSchema(V1_DataProductTestSuite, {
+    doc: optional(primitive()),
+    id: primitive(),
+    testData: customList(
+      (value: V1_DataResolver) => V1_serializeDataResolver(value, plugins),
+      (value) => V1_deserializeDataResolver(value, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
+    tests: list(
+      custom(
+        (val) =>
+          serialize(V1_accessPointTestModelSchema, val as V1_AccessPointTest),
+        (val) => deserialize(V1_accessPointTestModelSchema, val),
+      ),
+    ),
+  });
 
 export const V1_lakehouseAccessPointModelSchema = createModelSchema(
   V1_LakehouseAccessPoint,
@@ -498,11 +545,6 @@ export const V1_dataProductModelSchema = (
       V1_deserializeAccessPointGroup,
     ),
     description: optional(primitive()),
-    sampleValues: optionalCustomList(
-      (data: V1_EmbeddedData) => V1_serializeEmbeddedDataType(data, plugins),
-      (data) => V1_deserializeEmbeddedDataType(data, plugins),
-      { INTERNAL__forceReturnEmptyInTest: true },
-    ),
     icon: optionalCustom(
       V1_serializeDataProductIcon,
       V1_deserializeDataProductIcon,
@@ -519,9 +561,10 @@ export const V1_dataProductModelSchema = (
       V1_deserializeDataProductOwner,
     ),
     package: primitive(),
-    type: optionalCustom(
-      V1_serializeDataProductType,
-      V1_deserializeDataProductType,
+    sampleValues: optionalCustomList(
+      (data: V1_EmbeddedData) => V1_serializeEmbeddedDataType(data, plugins),
+      (data) => V1_deserializeEmbeddedDataType(data, plugins),
+      { INTERNAL__forceReturnEmptyInTest: true },
     ),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
@@ -530,7 +573,20 @@ export const V1_dataProductModelSchema = (
     taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
+    testSuites: customList(
+      (value: V1_DataProductTestSuite) =>
+        serialize(V1_dataProductTestSuiteModelSchema(plugins), value),
+      (value) =>
+        deserialize(V1_dataProductTestSuiteModelSchema(plugins), value),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
     title: optional(primitive()),
+    type: optionalCustom(
+      V1_serializeDataProductType,
+      V1_deserializeDataProductType,
+    ),
   });
 
 export const V1_MAPPING_INCLUDE_DATAPRODUCT_TYPE = 'mappingIncludeDataProduct';

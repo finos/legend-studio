@@ -80,6 +80,13 @@ import { Class } from '../../../../../../../../graph/metamodel/pure/packageableE
 import { Enumeration } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
 import { Association } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
 import { generateFunctionPrettyName } from '../../../../../../../../graph/helpers/PureLanguageHelper.js';
+import { DataProductAccessPointTest } from '../../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
+import { DataProductTestSuite } from '../../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
+import { V1_AccessPointTest } from '../../../../model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
+import type { V1_DataProductTestSuite } from '../../../../model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
+import { V1_buildDataResolver } from './V1_DataResolverBuilderHelper.js';
+import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
+import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
 
 export const V1_buildDataProductLink = (
   link: V1_DataProductLink,
@@ -419,4 +426,43 @@ export const V1_buildDataProductOwner = (
     `Unsupported data product owner type`,
     v1Owner,
   );
+};
+
+const V1_buildDataProductAccessPointTest = (
+  element: V1_AccessPointTest,
+  parentSuite: TestSuite,
+  context: V1_GraphBuilderContext,
+): DataProductAccessPointTest => {
+  const accessPointTest = new DataProductAccessPointTest();
+  accessPointTest.id = element.id;
+  accessPointTest.__parent = parentSuite;
+  accessPointTest.doc = element.doc;
+  accessPointTest.accessPointId = element.accessPointId;
+  accessPointTest.assertions = element.assertions.map((assertion) =>
+    V1_buildTestAssertion(assertion, accessPointTest, context),
+  );
+  return accessPointTest;
+};
+
+export const V1_buildDataProductTestSuite = (
+  element: V1_DataProductTestSuite,
+  context: V1_GraphBuilderContext,
+): DataProductTestSuite => {
+  const testSuite = new DataProductTestSuite();
+  testSuite.id = element.id;
+  testSuite.doc = element.doc;
+  if (element.testData?.length) {
+    testSuite.testData = element.testData.map((dataResolver) =>
+      V1_buildDataResolver(dataResolver, context),
+    );
+  }
+  testSuite.tests = element.tests.map((test) => {
+    if (test instanceof V1_AccessPointTest) {
+      return V1_buildDataProductAccessPointTest(test, testSuite, context);
+    }
+    throw new UnsupportedOperationError(
+      'Unable to build data product test: Unsupported data product test type',
+    );
+  });
+  return testSuite;
 };

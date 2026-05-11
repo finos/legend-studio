@@ -38,6 +38,8 @@ import type { Class } from '../packageableElements/domain/Class.js';
 import type { Enumeration } from '../packageableElements/domain/Enumeration.js';
 import type { Association } from '../packageableElements/domain/Association.js';
 import type { EmbeddedData } from '../data/EmbeddedData.js';
+import type { DataProductTestSuite } from './test/DataProductTestSuite.js';
+import type { Testable } from '../test/Testable.js';
 import { ConcreteFunctionDefinition } from '../packageableElements/function/ConcreteFunctionDefinition.js';
 import { generateFunctionPrettyName } from '../../../helpers/PureLanguageHelper.js';
 import type { StereotypeReference } from '../packageableElements/domain/StereotypeReference.js';
@@ -507,7 +509,7 @@ export class AppDirOwner extends DataProductOwner implements Hashable {
   }
 }
 
-export class DataProduct extends PackageableElement {
+export class DataProduct extends PackageableElement implements Testable {
   title: string | undefined;
   description: string | undefined;
   icon: DataProductIcon | undefined;
@@ -518,6 +520,7 @@ export class DataProduct extends PackageableElement {
   sampleValues: EmbeddedData[] | undefined;
   operationalMetadata: DataProductOperationalMetadata | undefined;
   owner: DataProductOwner | undefined;
+  tests: DataProductTestSuite[] = [];
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -540,6 +543,7 @@ export class DataProduct extends PackageableElement {
       hashArray(this.sampleValues ?? []),
       this.operationalMetadata ?? '',
       this.owner ?? '',
+      hashArray(this.tests),
     ]);
   }
 }

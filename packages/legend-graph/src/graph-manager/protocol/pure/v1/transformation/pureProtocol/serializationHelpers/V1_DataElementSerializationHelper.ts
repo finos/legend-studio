@@ -145,8 +145,8 @@ export const V1_relationRowTestDataModelSchema = createModelSchema(
 export const V1_relationElementModelSchema = createModelSchema(
   V1_RelationElement,
   {
-    paths: list(primitive()),
     columns: list(primitive()),
+    paths: list(primitive()),
     rows: list(usingModelSchema(V1_relationRowTestDataModelSchema)),
   },
 );

@@ -143,6 +143,7 @@ import {
   V1_buildDataProductIcon,
   V1_buildDataProductLink,
   V1_buildDataProductOperationalMetadata,
+  V1_buildDataProductTestSuite,
   V1_buildNativeModelAccess,
   V1_buildDataProductOwner,
 } from './helpers/V1_DataProductBuilder.js';
@@ -798,6 +799,11 @@ export class V1_ElementSecondPassBuilder
     dataProduct.sampleValues = element.sampleValues?.map((data) =>
       V1_buildEmbeddedData(data, this.context),
     );
+    if (element.testSuites?.length) {
+      dataProduct.tests = element.testSuites.map((testSuite) =>
+        V1_buildDataProductTestSuite(testSuite, this.context),
+      );
+    }
     if (element.operationalMetadata) {
       dataProduct.operationalMetadata = V1_buildDataProductOperationalMetadata(
         element.operationalMetadata,

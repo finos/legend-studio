@@ -26,6 +26,11 @@ import {
   V1_IngestDatasetSource,
   V1_IngestDefinition,
   V1_IngestDefinitionContent,
+  type V1_WriteMode,
+  V1_WriteModeType,
+  V1_AppendOnly,
+  V1_BatchMilestoned,
+  V1_BatchMilestonedBusinessTemporal,
 } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
@@ -195,16 +200,75 @@ const V1_IngestDatasetSourceModelSchema = createModelSchema(
   },
 );
 
+const V1_AppendOnlyModelSchema = createModelSchema(V1_AppendOnly, {
+  _type: usingConstantValueSchema(V1_WriteModeType.APPEND_ONLY),
+});
+
+const V1_BatchMilestonedModelSchema = createModelSchema(V1_BatchMilestoned, {
+  _type: usingConstantValueSchema(V1_WriteModeType.BATCH_MILESTONED),
+});
+
+const V1_BatchMilestonedBusinessTemporalModelSchema = createModelSchema(
+  V1_BatchMilestonedBusinessTemporal,
+  {
+    _type: usingConstantValueSchema(
+      V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL,
+    ),
+  },
+);
+
+export const V1_deserializeWriteMode = (
+  json: PlainObject<V1_WriteMode>,
+): V1_WriteMode => {
+  switch (json._type) {
+    case V1_WriteModeType.APPEND_ONLY:
+      return deserialize(V1_AppendOnlyModelSchema, json);
+    case V1_WriteModeType.BATCH_MILESTONED:
+      return deserialize(V1_BatchMilestonedModelSchema, json);
+    case V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL:
+      return deserialize(V1_BatchMilestonedBusinessTemporalModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Unknown write mode type: ${json._type}`,
+      );
+  }
+};
+
+export const V1_serializeWriteMode = (
+  protocol: V1_WriteMode,
+): PlainObject<V1_WriteMode> => {
+  if (protocol instanceof V1_AppendOnly) {
+    return serialize(V1_AppendOnlyModelSchema, protocol);
+  } else if (protocol instanceof V1_BatchMilestoned) {
+    return serialize(V1_BatchMilestonedModelSchema, protocol);
+  } else if (protocol instanceof V1_BatchMilestonedBusinessTemporal) {
+    return serialize(V1_BatchMilestonedBusinessTemporalModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(`Unknown write mode type`, protocol);
+};
+
 export const V1_IngestDatasetModelSchema = createModelSchema(V1_IngestDataset, {
   name: primitive(),
   primaryKey: list(primitive()),
   source: usingModelSchema(V1_IngestDatasetSourceModelSchema),
+  writeMode: optional(
+    custom(
+      (val) => (val ? V1_serializeWriteMode(val) : undefined),
+      (val) => (val ? V1_deserializeWriteMode(val) : undefined),
+    ),
+  ),
 });
 
 export const V1_IngestDefinitionContentModelSchema = createModelSchema(
   V1_IngestDefinitionContent,
   {
     datasets: optional(list(usingModelSchema(V1_IngestDatasetModelSchema))),
+    writeMode: optional(
+      custom(
+        (val) => (val ? V1_serializeWriteMode(val) : undefined),
+        (val) => (val ? V1_deserializeWriteMode(val) : undefined),
+      ),
+    ),
   },
 );
 

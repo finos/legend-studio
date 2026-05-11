@@ -72,6 +72,12 @@ import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 import { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
+import { DataProductAccessPointTest } from '../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
+import type { DataProductTestSuite } from '../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
+import { V1_AccessPointTest } from '../../../model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
+import { V1_DataProductTestSuite } from '../../../model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
+import { V1_transformDataResolver } from './V1_DataResolverTransformer.js';
+import { V1_transformTestAssertion } from './V1_TestTransformer.js';
 
 const transformAccessPoint = (
   ap: AccessPoint,
@@ -129,6 +135,42 @@ const transformDataProductIcon = (
   throw new UnsupportedOperationError(
     `Can't transform data product icon type: ${icon}`,
   );
+};
+
+export const V1_transformDataProductAccessPointTest = (
+  element: DataProductAccessPointTest,
+): V1_AccessPointTest => {
+  const accessPointTest = new V1_AccessPointTest();
+  accessPointTest.id = element.id;
+  accessPointTest.doc = element.doc;
+  accessPointTest.accessPointId = element.accessPointId;
+  accessPointTest.assertions = element.assertions.map(
+    V1_transformTestAssertion,
+  );
+  return accessPointTest;
+};
+
+export const V1_transformDataProductTestSuite = (
+  element: DataProductTestSuite,
+  context: V1_GraphTransformerContext,
+): V1_DataProductTestSuite => {
+  const testSuite = new V1_DataProductTestSuite();
+  testSuite.id = element.id;
+  testSuite.doc = element.doc;
+  if (element.testData?.length) {
+    testSuite.testData = element.testData.map((dataResolver) =>
+      V1_transformDataResolver(dataResolver, context),
+    );
+  }
+  testSuite.tests = element.tests.map((test) => {
+    if (test instanceof DataProductAccessPointTest) {
+      return V1_transformDataProductAccessPointTest(test);
+    }
+    throw new UnsupportedOperationError(
+      'Unsupported data product test to transform',
+    );
+  });
+  return testSuite;
 };
 
 export const V1_transformDataProduct = (
@@ -345,6 +387,11 @@ export const V1_transformDataProduct = (
   product.taggedValues = element.taggedValues.map((taggedValue) =>
     V1_transformTaggedValue(taggedValue),
   );
+  if (element.tests.length) {
+    product.testSuites = element.tests.map((testSuite) =>
+      V1_transformDataProductTestSuite(testSuite, context),
+    );
+  }
 
   if (element.owner instanceof AppDirOwner) {
     const v1Owner = new V1_AppDirOwner();

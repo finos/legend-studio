@@ -101,6 +101,11 @@ export {
   V1_IngestDatasetSource,
   V1_IngestDataset,
   V1_IngestDefinitionContent,
+  V1_WriteMode,
+  V1_WriteModeType,
+  V1_AppendOnly,
+  V1_BatchMilestoned,
+  V1_BatchMilestonedBusinessTemporal,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/ingest/V1_IngestDefinition.js';
 export {
   Ownership,
@@ -216,6 +221,9 @@ export {
   V1_AppDirOwner,
   V1_DataProductOwnerType,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_DataProduct.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
+export * from './graph-manager/protocol/pure/v1/model/data/V1_DataResolver.js';
 export {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
@@ -302,8 +310,10 @@ export { V1_RelationalDatabaseConnection } from './graph-manager/protocol/pure/v
 export { V1_DuckDBDatasourceSpecification } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 export {
+  V1_Accessor,
   V1_RelationStoreAccessor,
   V1_DataProductAccessor,
+  V1_IngestDefinitionAccessor,
   V1_SQLAccessor,
 } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
@@ -385,6 +395,8 @@ export {
   V1_IngestDefinitionContentModelSchema,
   V1_deserializeIngestDefinitionContent,
   V1_serializeIngestDefinitionContent,
+  V1_deserializeWriteMode,
+  V1_serializeWriteMode,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/model/lineage/V1_Lineage.js';
 
@@ -682,14 +694,18 @@ export * from './graph/metamodel/pure/test/assertion/status/AssertionStatus.js';
 export * from './graph/metamodel/pure/test/assertion/status/AssertFail.js';
 export * from './graph/metamodel/pure/test/assertion/status/AssertPass.js';
 export * from './graph/metamodel/pure/test/assertion/status/EqualToJsonAssertFail.js';
+export * from './graph/metamodel/pure/test/assertion/status/EqualToRelationAssertFail.js';
 export * from './graph/metamodel/pure/test/assertion/TestAssertion.js';
 export * from './graph/metamodel/pure/test/Test.js';
 export * from './graph/metamodel/pure/test/assertion/EqualTo.js';
 export * from './graph/metamodel/pure/test/assertion/EqualToJson.js';
 export * from './graph/metamodel/pure/test/assertion/EqualToTDS.js';
+export * from './graph/metamodel/pure/test/assertion/EqualToRelation.js';
 export * from './graph/metamodel/pure/test/result/UniqueTestId.js';
 export * from './graph-manager/protocol/pure/v1/model/test/V1_AtomicTest.js';
 export * from './graph-manager/protocol/pure/v1/model/test/assertion/V1_EqualToJson.js';
+export * from './graph-manager/protocol/pure/v1/model/test/assertion/V1_EqualToRelation.js';
+export * from './graph-manager/protocol/pure/v1/model/test/assertion/status/V1_EqualToRelationAssertFail.js';
 export * from './graph-manager/protocol/pure/v1/model/test/assertion/V1_TestAssertion.js';
 export * from './graph-manager/protocol/pure/v1/model/test/assertion/status/V1_AssertionStatus.js';
 export * from './graph-manager/extensions/Testable_PureGraphManagerPlugin_Extension.js';
@@ -753,6 +769,9 @@ export {
   DataProductOwner,
   AppDirOwner,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
+export * from './graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
+export * from './graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
+export * from './graph/metamodel/pure/data/DataResolver.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
 
 // ------------------------------------- DSL Data --------------------------------------------
@@ -865,8 +884,13 @@ export {
   RelationalStoreAccessor,
   AccessorInstanceValue,
   type AccessorOwner,
+  getAccessorItemLabelForElement,
 } from './graph/metamodel/pure/packageableElements/relation/Accessor.js';
-export { V1_createAccessorFromPackageableElement as createAccessorFromPackageableElement } from './graph-manager/protocol/pure/v1/helpers/V1_AccessorHelper.js';
+export {
+  V1_createAccessorFromPackageableElement,
+  V1_resolveAccessorsFromRawLambda,
+  V1_buildRelationElementsDataFromAccessors,
+} from './graph-manager/protocol/pure/v1/helpers/V1_AccessorHelper.js';
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapping.js';

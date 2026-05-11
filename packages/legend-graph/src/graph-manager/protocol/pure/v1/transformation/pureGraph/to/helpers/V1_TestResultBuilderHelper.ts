@@ -25,6 +25,7 @@ import { AssertFail } from '../../../../../../../../graph/metamodel/pure/test/as
 import type { AssertionStatus } from '../../../../../../../../graph/metamodel/pure/test/assertion/status/AssertionStatus.js';
 import { AssertPass } from '../../../../../../../../graph/metamodel/pure/test/assertion/status/AssertPass.js';
 import { EqualToJsonAssertFail } from '../../../../../../../../graph/metamodel/pure/test/assertion/status/EqualToJsonAssertFail.js';
+import { EqualToRelationAssertFail } from '../../../../../../../../graph/metamodel/pure/test/assertion/status/EqualToRelationAssertFail.js';
 import {
   type TestResult,
   TestError,
@@ -40,6 +41,7 @@ import { V1_AssertFail } from '../../../../model/test/assertion/status/V1_Assert
 import type { V1_AssertionStatus } from '../../../../model/test/assertion/status/V1_AssertionStatus.js';
 import { V1_AssertPass } from '../../../../model/test/assertion/status/V1_AssertPass.js';
 import { V1_EqualToJsonAssertFail } from '../../../../model/test/assertion/status/V1_EqualToJsonAssertFail.js';
+import { V1_EqualToRelationAssertFail } from '../../../../model/test/assertion/status/V1_EqualToRelationAssertFail.js';
 import {
   type V1_TestResult,
   V1_TestExecuted,
@@ -176,12 +178,49 @@ const buildEqualToJsonAssertFail = (
   );
 };
 
+const buildEqualToRelationAssertFail = (
+  element: V1_EqualToRelationAssertFail,
+  atomicTest: AtomicTest,
+  plugins: PureProtocolProcessorPlugin[],
+): EqualToRelationAssertFail => {
+  let assertion = atomicTest.assertions.find((a) => a.id === element.id);
+  const extraAssertionBuilder = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTestableAssertionBuilders?.() ?? [],
+  );
+
+  for (const builder of extraAssertionBuilder) {
+    const assertionBuilder = builder(atomicTest, element);
+    if (assertionBuilder) {
+      assertion = assertionBuilder;
+    }
+  }
+
+  if (assertion) {
+    const equalToRelationAssertFail = new EqualToRelationAssertFail(
+      assertion,
+      element.message,
+    );
+    equalToRelationAssertFail.expected = element.expected;
+    equalToRelationAssertFail.actual = element.actual;
+    return equalToRelationAssertFail;
+  }
+  throw new UnsupportedOperationError(
+    `Can't build EqualToRelationAssertFail: no compatible builder available from plugins`,
+    element,
+  );
+};
+
 const buildAssertionStatus = (
   value: V1_AssertionStatus,
   atomicTest: AtomicTest,
   plugins: PureProtocolProcessorPlugin[],
 ): AssertionStatus => {
-  if (value instanceof V1_EqualToJsonAssertFail) {
+  if (value instanceof V1_EqualToRelationAssertFail) {
+    return buildEqualToRelationAssertFail(value, atomicTest, plugins);
+  } else if (value instanceof V1_EqualToJsonAssertFail) {
     return buildEqualToJsonAssertFail(value, atomicTest, plugins);
   } else if (value instanceof V1_AssertFail) {
     return buildAssertFail(value, atomicTest, plugins);
