@@ -18,7 +18,6 @@ import { isNonNullable } from '@finos/legend-shared';
 import type { PureModel } from '../../graph/PureModel.js';
 import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
 import { PackageableElement } from '../../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import { DataProduct } from '../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import type { Testable } from '../../graph/metamodel/pure/test/Testable.js';
 import type { Testable_PureGraphManagerPlugin_Extension } from '../extensions/Testable_PureGraphManagerPlugin_Extension.js';
 
@@ -36,11 +35,6 @@ export const getNullableTestable = (
   [...graph.ownTestables, ...graph.ownFunctions].find(
     (e) => e instanceof PackageableElement && e.path === id,
   ) ??
-  // DataProduct test results from the engine return the element's simple name
-  // (not the full path) as the testable identifier. This is inconsistent with
-  // all other testable types and should be fixed if we want to not have to have a hard check here
-  // TODO: remove once engine returns full path for DataProduct test results.
-  graph.ownTestables.find((e) => e instanceof DataProduct && e.name === id) ??
   plugins
     .flatMap(
       (plugin) =>
