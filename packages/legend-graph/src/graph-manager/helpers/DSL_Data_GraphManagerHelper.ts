@@ -38,7 +38,7 @@ export const getNullableTestable = (
   ) ??
   // DataProduct test results from the engine return the element's simple name
   // (not the full path) as the testable identifier. This is inconsistent with
-  // all other testable types and should be fixed on the engine side.
+  // all other testable types and should be fixed if we want to not have to have a hard check here
   // TODO: remove once engine returns full path for DataProduct test results.
   graph.ownTestables.find((e) => e instanceof DataProduct && e.name === id) ??
   plugins
