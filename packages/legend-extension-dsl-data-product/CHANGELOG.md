@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.79
+
 ## 0.0.78
 
 ## 0.0.77
