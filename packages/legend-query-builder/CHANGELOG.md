@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.18.7
+
+### Patch Changes
+
+- [#5152](https://github.com/finos/legend-studio/pull/5152) [`b3d1ede`](https://github.com/finos/legend-studio/commit/b3d1edece69648037909f98c3e248d02d8f1d441) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix error when switching between `LakehouseAccessPoint`s in the data product query builder. The new `LakehouseDataProductExecutionState` now preserves the user's `selectedRuntime` and `adhocRuntime` from the previous execution state, and the source element is updated through `changeSourceElement` so the query content, explorer tree, and fetch-structure are properly reset to match the new access point's relation type.
+
 ## 4.18.6
 
 ## 4.18.5
