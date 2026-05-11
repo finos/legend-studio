@@ -32,11 +32,16 @@ import { Database } from '../../../../../graph/metamodel/pure/packageableElement
 import { Column } from '../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Column.js';
 import type { Table } from '../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Table.js';
 import { mapRelationalDataTypeToPrimitiveType } from '../../../../../graph/helpers/STO_Relational_Helper.js';
-import type { V1_IngestDataset } from '../model/packageableElements/ingest/V1_IngestDefinition.js';
+import {
+  type V1_IngestDataset,
+  type V1_WriteMode,
+  V1_WriteModeType,
+} from '../model/packageableElements/ingest/V1_IngestDefinition.js';
 import type { V1_GraphBuilderContext } from '../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import { V1_GenericType as V1_GenericTypeProtocol } from '../model/packageableElements/type/V1_GenericType.js';
 import { V1_PackageableType } from '../model/packageableElements/type/V1_PackageableType.js';
 import { returnUndefOnError, type PlainObject } from '@finos/legend-shared';
+import { INGEST_LAKE_IN_ID } from '../../../../../graph/MetaModelConst.js';
 import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
 import { V1_deserializeIngestDefinitionContent } from '../transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 import {
@@ -80,7 +85,9 @@ const buildV1GenericType = (fullPath: string): V1_GenericTypeProtocol => {
 const buildRelationTypeFromIngestDataset = (
   dataset: V1_IngestDataset,
   context: V1_GraphBuilderContext,
+  effectiveWriteMode?: V1_WriteMode | undefined,
 ): RelationType => {
+  const writeMode = dataset.writeMode ?? effectiveWriteMode;
   const relationType = new RelationType('__ingest_dataset__');
   relationType.columns = dataset.source.schema.columns.map((col) => {
     const rawTypePath =
@@ -97,6 +104,21 @@ const buildRelationTypeFromIngestDataset = (
       );
     return new RelationColumn(col.name, resolvedGenericType);
   });
+  // For batch-milestoned write modes, LAKE_IN_ID is a system column added by the
+  // lake infrastructure and required by the physical table (NOT NULL).
+  if (
+    writeMode?._type === V1_WriteModeType.BATCH_MILESTONED ||
+    writeMode?._type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL
+  ) {
+    relationType.columns.push(
+      new RelationColumn(
+        INGEST_LAKE_IN_ID,
+        context.resolveGenericTypeFromProtocolWithRelationType(
+          buildV1GenericType('Integer'),
+        ),
+      ),
+    );
+  }
   return relationType;
 };
 
@@ -145,7 +167,11 @@ export const V1_createAccessorFromPackageableElement = (
     if (!dataset) {
       return undefined;
     }
-    const relationType = buildRelationTypeFromIngestDataset(dataset, context);
+    const relationType = buildRelationTypeFromIngestDataset(
+      dataset,
+      context,
+      content.writeMode,
+    );
     return new IngestionAccessor(
       element.path,
       undefined,
