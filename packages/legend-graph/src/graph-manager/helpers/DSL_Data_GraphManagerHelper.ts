@@ -37,7 +37,9 @@ export const getNullableTestable = (
     (e) => e instanceof PackageableElement && e.path === id,
   ) ??
   // DataProduct test results from the engine return the element's simple name
-  // (not the full path). Fall back to DataProduct-specific name-based lookup.
+  // (not the full path) as the testable identifier. This is inconsistent with
+  // all other testable types and should be fixed on the engine side.
+  // TODO: remove once engine returns full path for DataProduct test results.
   graph.ownTestables.find((e) => e instanceof DataProduct && e.name === id) ??
   plugins
     .flatMap(
