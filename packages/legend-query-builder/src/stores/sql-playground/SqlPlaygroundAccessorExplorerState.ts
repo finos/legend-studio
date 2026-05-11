@@ -24,6 +24,7 @@ import {
   type V1_AccessPoint,
   type V1_DataProductArtifact,
   type V1_IngestDataset,
+  type V1_IngestDefinitionContent,
   V1_PureModelContextData,
   V1_DataProduct,
   V1_RelationType,
@@ -33,7 +34,6 @@ import {
   type PureProtocolProcessorPlugin,
   V1_PackageableType,
   V1_GenericType,
-  V1_deserializeIngestDefinitionContent,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -466,9 +466,7 @@ export class SQLPlaygroundAccessorExplorerState {
   protected getIngestChildren(
     node: AccessorExplorerTreeIngestNodeData,
   ): AccessorExplorerTreeNodeData[] {
-    const content = V1_deserializeIngestDefinitionContent(
-      node.ingestDefinition.content,
-    );
+    const content = node.ingestDefinition.content as V1_IngestDefinitionContent;
     const datasets = content.datasets ?? [];
     return datasets.map((dataset) => {
       const datasetId = `${node.id}::${dataset.name}`;
