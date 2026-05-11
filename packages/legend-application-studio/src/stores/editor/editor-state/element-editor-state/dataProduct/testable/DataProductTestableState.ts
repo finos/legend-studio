@@ -20,6 +20,7 @@ import {
   type PackageableElement,
   type TestSuite,
   type RawLambda,
+  type AccessorOwner,
   DataProduct,
   FunctionAccessPoint,
   LakehouseAccessPoint,
@@ -37,6 +38,7 @@ import {
   observe_RelationElementsData,
   observe_DataProductTestSuite,
   IngestDefinition,
+  getAccessorItemLabelForElement,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -137,17 +139,6 @@ const getElementDataItems = (
     }));
   }
   return [];
-};
-
-// Labels sourced from Accessor subclasses (DataProductAccessor.accessorLabel, IngestionAccessor.accessorLabel)
-const getElementItemLabel = (element: PackageableElement): string => {
-  if (element instanceof DataProduct) {
-    return 'access point';
-  }
-  if (element instanceof IngestDefinition) {
-    return 'data set';
-  }
-  return 'item';
 };
 
 const inferDataProductItemColumns = async (
@@ -298,7 +289,7 @@ export class DataProductElementTestDataState {
   }
 
   get itemLabel(): string {
-    return getElementItemLabel(this.element);
+    return getAccessorItemLabelForElement(this.element as AccessorOwner);
   }
 
   get configuredItemIds(): string[] {

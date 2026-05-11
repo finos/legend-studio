@@ -116,6 +116,24 @@ export class RelationalStoreAccessor extends Accessor implements Hashable {
   }
 }
 
+/**
+ * Returns the accessor item label for the given element owner.
+ * Labels mirror the corresponding Accessor subclass `accessorLabel` getters,
+ * which are the authoritative source but require a full Accessor instance to
+ * call. Use this helper when only the owner element is available.
+ */
+export const getAccessorItemLabelForElement = (
+  element: AccessorOwner,
+): string => {
+  if (element instanceof DataProduct) {
+    return 'Access Point'; // DataProductAccessor.accessorLabel
+  }
+  if (element instanceof IngestDefinition) {
+    return 'Data Set'; // IngestionAccessor.accessorLabel
+  }
+  return 'Table'; // RelationalStoreAccessor.accessorLabel
+};
+
 export class AccessorInstanceValue extends InstanceValue implements Hashable {
   override values: Accessor[] = [];
 

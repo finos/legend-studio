@@ -884,6 +884,7 @@ export {
   RelationalStoreAccessor,
   AccessorInstanceValue,
   type AccessorOwner,
+  getAccessorItemLabelForElement,
 } from './graph/metamodel/pure/packageableElements/relation/Accessor.js';
 export {
   V1_createAccessorFromPackageableElement,
