@@ -16,8 +16,8 @@
 
 import { hashArray, isNonNullable, type Hashable } from '@finos/legend-shared';
 import type { RelationType } from './RelationType.js';
-import type { DataProduct } from '../../dataProduct/DataProduct.js';
-import type { IngestDefinition } from '../ingest/IngestDefinition.js';
+import { DataProduct } from '../../dataProduct/DataProduct.js';
+import { IngestDefinition } from '../ingest/IngestDefinition.js';
 import type { Database } from '../store/relational/model/Database.js';
 import { InstanceValue } from '../../valueSpecification/InstanceValue.js';
 import { Multiplicity } from '../domain/Multiplicity.js';
