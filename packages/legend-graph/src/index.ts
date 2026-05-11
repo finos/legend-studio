@@ -886,7 +886,7 @@ export {
   type AccessorOwner,
 } from './graph/metamodel/pure/packageableElements/relation/Accessor.js';
 export {
-  V1_createAccessorFromPackageableElement as createAccessorFromPackageableElement,
+  V1_createAccessorFromPackageableElement,
   V1_resolveAccessorsFromRawLambda,
   V1_buildRelationElementsDataFromAccessors,
 } from './graph-manager/protocol/pure/v1/helpers/V1_AccessorHelper.js';
