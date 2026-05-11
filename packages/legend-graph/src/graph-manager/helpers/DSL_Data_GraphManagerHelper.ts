@@ -29,29 +29,13 @@ export const getNullableTestable = (
   id: string,
   graph: PureModel,
   plugins: PureGraphManagerPlugin[],
-): Testable | undefined => {
+): Testable | undefined =>
   // TODO: REMOVE functions once function test runner has been completed in backend
   // ...this.ownFunctions,
-  const packageableTestables = [
-    ...graph.ownTestables,
-    ...graph.ownFunctions,
-  ].filter(
-    (e): e is Testable & PackageableElement => e instanceof PackageableElement,
-  );
-  const resolvedByPath = packageableTestables.find((e) => e.path === id);
-  if (resolvedByPath) {
-    return resolvedByPath;
-  }
-
-  // Some backend runners return the bare packageable element name instead of
-  // the full package path in test results. Accept that form if it resolves
-  // unambiguously within the current graph.
-  const resolvedByName = packageableTestables.filter((e) => e.name === id);
-  if (resolvedByName.length === 1) {
-    return resolvedByName[0];
-  }
-
-  return plugins
+  [...graph.ownTestables, ...graph.ownFunctions].find(
+    (e) => e instanceof PackageableElement && e.path === id,
+  ) ??
+  plugins
     .flatMap(
       (plugin) =>
         (
@@ -60,7 +44,6 @@ export const getNullableTestable = (
     )
     .map((getter) => getter(id, graph))
     .filter(isNonNullable)[0];
-};
 
 export const getNullableIDFromTestable = (
   testable: Testable,

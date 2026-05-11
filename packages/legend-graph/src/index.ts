@@ -887,8 +887,8 @@ export {
 } from './graph/metamodel/pure/packageableElements/relation/Accessor.js';
 export {
   V1_createAccessorFromPackageableElement as createAccessorFromPackageableElement,
-  V1_resolveAccessorsFromRawLambda as resolveAccessorsFromRawLambda,
-  V1_buildRelationElementsDataFromAccessors as buildRelationElementsDataFromAccessors,
+  V1_resolveAccessorsFromRawLambda,
+  V1_buildRelationElementsDataFromAccessors,
 } from './graph-manager/protocol/pure/v1/helpers/V1_AccessorHelper.js';
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';

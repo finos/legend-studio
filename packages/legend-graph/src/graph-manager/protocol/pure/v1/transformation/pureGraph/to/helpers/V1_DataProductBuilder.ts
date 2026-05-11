@@ -83,7 +83,7 @@ import { generateFunctionPrettyName } from '../../../../../../../../graph/helper
 import { DataProductAccessPointTest } from '../../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
 import { DataProductTestSuite } from '../../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
 import { V1_AccessPointTest } from '../../../../model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
-import type { V1_DataProductTestSuite as V1_DataProductTestSuiteProtocol } from '../../../../model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
+import type { V1_DataProductTestSuite } from '../../../../model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
 import { V1_buildDataResolver } from './V1_DataResolverBuilderHelper.js';
 import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
 import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
@@ -445,7 +445,7 @@ const V1_buildDataProductAccessPointTest = (
 };
 
 export const V1_buildDataProductTestSuite = (
-  element: V1_DataProductTestSuiteProtocol,
+  element: V1_DataProductTestSuite,
   context: V1_GraphBuilderContext,
 ): DataProductTestSuite => {
   const testSuite = new DataProductTestSuite();

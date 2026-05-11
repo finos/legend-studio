@@ -40,7 +40,7 @@ import type {
 import { EqualToTDS } from '../../../../../../../graph/metamodel/pure/test/assertion/EqualToTDS.js';
 import { V1_EqualToTDS } from '../../../model/test/assertion/V1_EqualToTDS.js';
 import {
-  V1_RelationElement as V1_RelationElementProtocol,
+  V1_RelationElement,
   V1_RelationRowTestData,
 } from '../../../model/data/V1_EmbeddedData.js';
 import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/Testable_PureProtocolProcessorPlugin_Extension.js';
@@ -77,7 +77,7 @@ const transformEqualToRelation = (
 ): V1_EqualToRelation => {
   const v1 = new V1_EqualToRelation();
   v1.id = element.id;
-  const rel = new V1_RelationElementProtocol();
+  const rel = new V1_RelationElement();
   rel.columns = element.expected.columns;
   rel.paths = element.expected.paths;
   rel.rows = element.expected.rows.map((row) => {

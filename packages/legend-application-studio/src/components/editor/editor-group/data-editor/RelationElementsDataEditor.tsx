@@ -221,30 +221,14 @@ const NewRelationElementModal = observer(
 
 export const RelationElementEditor = observer(
   (props: {
-    relationElementState: {
-      relationElement: RelationElement;
-      supportsColumnEditing?: boolean;
-      addColumn(name: string): void;
-      removeColumn(index: number): void;
-      updateColumn(index: number, name: string): void;
-      addRow(): void;
-      removeRow(index: number): void;
-      updateRow(rowIndex: number, columnIndex: number, value: string): void;
-      clearAllData(): void;
-      exportJSON(): string;
-      exportCSV(): string;
-      exportSQL(): string;
-      importCSV(csvContent: string): void;
-    };
+    relationElementState: RelationElementState;
     isReadOnly: boolean;
   }) => {
     const { relationElementState, isReadOnly } = props;
     const editorStore = useEditorStore();
     const embeddedData = relationElementState.relationElement;
     const canEditColumns =
-      !isReadOnly &&
-      (!('supportsColumnEditing' in relationElementState) ||
-        relationElementState.supportsColumnEditing !== false);
+      !isReadOnly && relationElementState.supportsColumnEditing;
     const [exportFormat, setExportFormat] = useState<'json' | 'csv' | 'sql'>(
       'json',
     );
@@ -568,7 +552,7 @@ export const RelationElementsDataEditor = observer(
           dataState.availableAccessorOptions.length === 0
         ) {
           dataState.editorStore.applicationStore.notificationService.notifyWarning(
-            `All referenced ${dataState.accessorTypeLabel === 'Dataset' ? 'dataset' : 'access point'}s' data is already present`,
+            `All referenced ${dataState.accessorTypeLabel ?? 'item'}s' data is already present`,
           );
           return;
         }

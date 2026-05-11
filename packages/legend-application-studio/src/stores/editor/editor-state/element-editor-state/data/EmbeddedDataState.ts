@@ -211,8 +211,12 @@ export class ModelStoreDataState extends EmbeddedDataState {
 
 export class RelationElementState {
   relationElement: RelationElement;
+  supportsColumnEditing: boolean;
 
-  constructor(relationElement: RelationElement) {
+  constructor(
+    relationElement: RelationElement,
+    options?: { supportsColumnEditing?: boolean },
+  ) {
     makeObservable(this, {
       relationElement: observable,
       addColumn: action,
@@ -224,6 +228,7 @@ export class RelationElementState {
       clearAllData: action,
       importCSV: action,
     });
+    this.supportsColumnEditing = options?.supportsColumnEditing ?? true;
     this.relationElement = relationElement;
     this.relationElement = observe_RelationElement(relationElement);
   }

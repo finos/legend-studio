@@ -139,12 +139,13 @@ const getElementDataItems = (
   return [];
 };
 
+// Labels sourced from Accessor subclasses (DataProductAccessor.accessorLabel, IngestionAccessor.accessorLabel)
 const getElementItemLabel = (element: PackageableElement): string => {
   if (element instanceof DataProduct) {
     return 'access point';
   }
   if (element instanceof IngestDefinition) {
-    return 'dataset';
+    return 'data set';
   }
   return 'item';
 };
