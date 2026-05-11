@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.2
+
+### Patch Changes
+
+- [#5159](https://github.com/finos/legend-studio/pull/5159) [`d86894d`](https://github.com/finos/legend-studio/commit/d86894dc3571c0fccc851e9b4336ab5022415471) ([@Rakan1837](https://github.com/Rakan1837)) - Roundtrip for DataProduct testSuites. Added DataResolvers and subclasses. Added IngestDefinition writeMode. Added helper methods to resolve V1_Accessors from RawLambda
+
 ## 32.6.1
 
 ## 32.6.0

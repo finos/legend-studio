@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.21.4
+
+### Patch Changes
+
+- [#5159](https://github.com/finos/legend-studio/pull/5159) [`d86894d`](https://github.com/finos/legend-studio/commit/d86894dc3571c0fccc851e9b4336ab5022415471) ([@Rakan1837](https://github.com/Rakan1837)) - Add DataProduct test suite support with relation assertions. Update Function testSuites form mode -- support adding test data for functions with ingest/dataProduct accessors irrespective of whether runtime is present or not (infer ingest and dataProduct accessors and add columns from ingest dataset or engine api for access points). Use Relation assertions for new tests on functions with Relation and TabularDataset return types. For Relation in particular, also fetch the RelationType columns from engine and them to the expected table
+
 ## 28.21.3
 
 ## 28.21.2
