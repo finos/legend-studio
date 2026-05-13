@@ -312,10 +312,37 @@ describe('MarketplaceLakehouseSearchResults', () => {
     });
   });
 
+  test('clicking the Data Fields tab navigates to field search with current query', async () => {
+    const { MOCK__baseStore } = await setupTestComponent('customer', 'prod');
+    const mockGoToLocation = jest.fn();
+    MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
+      mockGoToLocation;
+
+    await screen.findByText('4 Products');
+    fireEvent.click(screen.getByText('Data Fields'));
+
+    expect(mockGoToLocation).toHaveBeenCalledWith(
+      generateFieldSearchResultsRoute('customer'),
+    );
+  });
+
+  test('clicking the Data Fields tab with no query navigates to field search with undefined', async () => {
+    const { MOCK__baseStore } = await setupTestComponent('', 'prod');
+    const mockGoToLocation = jest.fn();
+    MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
+      mockGoToLocation;
+
+    await screen.findByText('Data Fields');
+    fireEvent.click(screen.getByText('Data Fields'));
+
+    expect(mockGoToLocation).toHaveBeenCalledWith(
+      generateFieldSearchResultsRoute(undefined),
+    );
+  });
+
   describe('Semantic search', () => {
     test('Semantic search only calls semantic search endpoint', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
-
       await screen.findByText('4 Products');
 
       expect(
