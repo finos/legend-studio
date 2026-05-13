@@ -256,7 +256,7 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     // Both columns render a "+1 More" chip when collapsed; click the first one
     const showMoreButtons = await screen.findAllByText('+1 More');
     expect(showMoreButtons.length).toBeGreaterThan(0);
-    fireEvent.click(showMoreButtons[0]!);
+    fireEvent.click(guaranteeNonNullable(showMoreButtons[0]));
 
     expect(await screen.findByText('CustomerKyc')).toBeDefined();
     expect(screen.getByText('Show Less')).toBeDefined();
@@ -274,7 +274,9 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     // index [0] is the Data Products column chip (first in DOM order)
     await screen.findAllByText('CustomerProfile');
     const lakehouseChip = guaranteeNonNullable(
-      screen.getAllByText('CustomerProfile')[0]!.closest('.MuiChip-root'),
+      guaranteeNonNullable(screen.getAllByText('CustomerProfile')[0]).closest(
+        '.MuiChip-root',
+      ),
     );
     fireEvent.click(lakehouseChip);
 
@@ -287,7 +289,9 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     // LEGACY: has executionContextKey, navigates to Legend Query DataSpace editor
     await screen.findAllByText('LegacyCustomerProduct');
     const legacyChip = guaranteeNonNullable(
-      screen.getAllByText('LegacyCustomerProduct')[0]!.closest('.MuiChip-root'),
+      guaranteeNonNullable(
+        screen.getAllByText('LegacyCustomerProduct')[0],
+      ).closest('.MuiChip-root'),
     );
     fireEvent.click(legacyChip);
 
