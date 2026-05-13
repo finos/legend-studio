@@ -2178,6 +2178,21 @@
     }
   }
 
+  .legend-marketplace-search-results__search-type-tab {
+    color: var(--color-dark-theme-text-primary);
+
+    &:hover {
+      color: var(--color-blue-100);
+      border-color: var(--color-blue-100);
+    }
+
+    &--active {
+      color: var(--color-blue-100);
+      border-color: var(--color-blue-100);
+      background-color: rgb(100 140 255 / 12%);
+    }
+  }
+
   .legend-marketplace-search-results__sort-bar {
     background-color: var(--color-dark-theme-bg-secondary);
     border-bottom: 1px solid var(--color-dark-theme-border);

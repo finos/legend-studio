@@ -42,6 +42,8 @@ export class GroupedFieldSearchDataProduct {
   path!: string;
   productType!: DataProductSearchResultDetailsType;
   datasetName?: string;
+  datasetDescription?: string;
+  defaultExecutionContext?: string;
   groupId?: string;
   artifactId?: string;
   versionId?: string;
@@ -54,6 +56,8 @@ export class GroupedFieldSearchDataProduct {
       path: primitive(),
       productType: primitive(),
       datasetName: optional(primitive()),
+      datasetDescription: optional(primitive()),
+      defaultExecutionContext: optional(primitive()),
       groupId: optional(primitive()),
       artifactId: optional(primitive()),
       versionId: optional(primitive()),

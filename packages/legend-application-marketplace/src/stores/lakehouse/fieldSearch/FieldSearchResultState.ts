@@ -71,6 +71,8 @@ const getOwningDataProductPath = (
 export class FieldSearchDataProductEntry {
   readonly name: string;
   readonly datasetName: string | undefined;
+  readonly datasetDescription: string | undefined;
+  readonly executionContextKey: string | undefined;
   readonly modelPath: string | undefined;
   readonly path: string;
   readonly entityPath: string;
@@ -87,6 +89,8 @@ export class FieldSearchDataProductEntry {
 
     this.name = dataProductName;
     this.datasetName = dataProduct.datasetName;
+    this.datasetDescription = dataProduct.datasetDescription;
+    this.executionContextKey = dataProduct.defaultExecutionContext;
     this.modelPath = dataProduct.modelPath;
     this.path = getOwningDataProductPath(dataProduct);
     this.entityPath = dataProduct.path;
@@ -118,5 +122,19 @@ export class FieldSearchResultState {
     this.dataProducts = result.dataProducts.map(
       (dp) => new FieldSearchDataProductEntry(dp),
     );
+  }
+
+  /**
+   * Distinct data products (deduped by path) across all dataset entries.
+   */
+  get distinctDataProducts(): FieldSearchDataProductEntry[] {
+    const seen = new Set<string>();
+    return this.dataProducts.filter((dp) => {
+      if (seen.has(dp.path)) {
+        return false;
+      }
+      seen.add(dp.path);
+      return true;
+    });
   }
 }

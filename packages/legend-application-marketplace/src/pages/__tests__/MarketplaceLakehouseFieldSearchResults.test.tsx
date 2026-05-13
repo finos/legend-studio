@@ -100,10 +100,12 @@ const mockFieldSearchResponse: PlainObject<GroupedFieldSearchResponse> = {
           path: 'test::LegacyCustomerProduct',
           productType: DataProductSearchResultDetailsType.LEGACY,
           datasetName: 'legacy_dataset',
+          datasetDescription: 'The legacy dataset for status tracking',
           modelPath: 'test::LegacyCustomerProduct::legacyStatus',
           groupId: 'com.example.legacy',
           artifactId: 'legacy-customer-product',
           versionId: '2.1.0',
+          defaultExecutionContext: 'legacyContext',
         },
       ],
     },
@@ -233,6 +235,7 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     expect(within(listHeader).getByText('Type')).toBeDefined();
     expect(within(listHeader).getByText('Description')).toBeDefined();
     expect(within(listHeader).getByText('Data Products')).toBeDefined();
+    expect(within(listHeader).getByText('Datasets')).toBeDefined();
 
     expect(screen.getByText('customerId')).toBeDefined();
     expect(screen.getByText('STRING')).toBeDefined();
@@ -255,13 +258,14 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     expect(screen.getByText('Show Less')).toBeDefined();
   });
 
-  test('clicking a data product chip navigates to the owning data product', async () => {
+  test('clicking a data product chip navigates to Legend Query for legacy or marketplace for lakehouse', async () => {
     const { MOCK__baseStore } = await setupFieldSearchTestComponent('customer');
 
     const mockVisitAddress = jest.fn();
     MOCK__baseStore.applicationStore.navigationService.navigator.visitAddress =
       mockVisitAddress;
 
+    // LAKEHOUSE: no executionContextKey, falls back to marketplace product page
     await screen.findByText('CustomerProfile');
     const lakehouseChip = guaranteeNonNullable(
       screen.getByText('CustomerProfile').closest('.MuiChip-root'),
@@ -274,6 +278,7 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
       ),
     );
 
+    // LEGACY: has executionContextKey, navigates to Legend Query DataSpace editor
     await screen.findByText('LegacyCustomerProduct');
     const legacyChip = guaranteeNonNullable(
       screen.getByText('LegacyCustomerProduct').closest('.MuiChip-root'),
@@ -282,9 +287,26 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
 
     expect(mockVisitAddress).toHaveBeenCalledWith(
       expect.stringContaining(
-        '/dataProduct/legacy/com.example.legacy:legacy-customer-product:2.1.0/test::LegacyCustomerProduct',
+        '/extensions/dataspace/com.example.legacy:legacy-customer-product:2.1.0/test::LegacyCustomerProduct/legacyContext',
       ),
     );
+  });
+
+  test('hovering over a dataset chip shows the datasetDescription tooltip', async () => {
+    await setupFieldSearchTestComponent('customer');
+
+    // The legacy dataset chip has a datasetDescription set in mock data
+    await screen.findByText('legacy_dataset');
+    const datasetChip = guaranteeNonNullable(
+      screen.getByText('legacy_dataset').closest('.MuiChip-root'),
+    );
+    fireEvent.mouseOver(datasetChip);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('The legacy dataset for status tracking'),
+      ).toBeDefined();
+    });
   });
 
   test('filters field results by selected product type', async () => {
