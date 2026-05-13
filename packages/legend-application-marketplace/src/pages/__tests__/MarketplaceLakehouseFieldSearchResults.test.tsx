@@ -242,17 +242,21 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     expect(screen.getByText('Unique customer identifier')).toBeDefined();
     expect(screen.getByText('legacyStatus')).toBeDefined();
 
-    expect(screen.getByText('CustomerProfile')).toBeDefined();
-    expect(screen.getByText('CustomerOrders')).toBeDefined();
-    expect(screen.queryByText('CustomerKyc')).toBeNull();
-    expect(screen.getByText('+1 More')).toBeDefined();
+    // Each chip name appears in both the Data Products column and the Datasets column
+    expect(screen.getAllByText('CustomerProfile').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('CustomerOrders').length).toBeGreaterThan(0);
+    expect(screen.queryAllByText('CustomerKyc')).toHaveLength(0);
+    // Both columns have a "+1 More" toggle when collapsed
+    expect(screen.getAllByText('+1 More').length).toBeGreaterThan(0);
   });
 
   test('shows additional data product chips when clicking show more', async () => {
     await setupFieldSearchTestComponent('customer');
 
-    expect(await screen.findByText('+1 More')).toBeDefined();
-    fireEvent.click(screen.getByText('+1 More'));
+    // Both columns render a "+1 More" chip when collapsed; click the first one
+    const showMoreButtons = await screen.findAllByText('+1 More');
+    expect(showMoreButtons.length).toBeGreaterThan(0);
+    fireEvent.click(showMoreButtons[0]!);
 
     expect(await screen.findByText('CustomerKyc')).toBeDefined();
     expect(screen.getByText('Show Less')).toBeDefined();
@@ -266,9 +270,11 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
       mockVisitAddress;
 
     // LAKEHOUSE: no executionContextKey, falls back to marketplace product page
-    await screen.findByText('CustomerProfile');
+    // getAllByText because the name appears in both Data Products and Datasets columns;
+    // index [0] is the Data Products column chip (first in DOM order)
+    await screen.findAllByText('CustomerProfile');
     const lakehouseChip = guaranteeNonNullable(
-      screen.getByText('CustomerProfile').closest('.MuiChip-root'),
+      screen.getAllByText('CustomerProfile')[0]!.closest('.MuiChip-root'),
     );
     fireEvent.click(lakehouseChip);
 
@@ -279,9 +285,9 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     );
 
     // LEGACY: has executionContextKey, navigates to Legend Query DataSpace editor
-    await screen.findByText('LegacyCustomerProduct');
+    await screen.findAllByText('LegacyCustomerProduct');
     const legacyChip = guaranteeNonNullable(
-      screen.getByText('LegacyCustomerProduct').closest('.MuiChip-root'),
+      screen.getAllByText('LegacyCustomerProduct')[0]!.closest('.MuiChip-root'),
     );
     fireEvent.click(legacyChip);
 
@@ -320,7 +326,10 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     });
     expect(screen.getByText('legacyStatus')).toBeDefined();
     expect(screen.queryByText('CustomerProfile')).toBeNull();
-    expect(screen.getByText('LegacyCustomerProduct')).toBeDefined();
+    // LegacyCustomerProduct appears in both Data Products and Datasets columns
+    expect(screen.getAllByText('LegacyCustomerProduct').length).toBeGreaterThan(
+      0,
+    );
   });
 
   test('shows empty state when field search returns no results', async () => {
