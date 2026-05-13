@@ -25,7 +25,6 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { DATAPRODUCT_TYPE } from '@finos/legend-extension-dsl-data-product';
 import {
   LEGEND_MARKETPLACE_FIELD_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
   generateLakehouseSearchResultsRoute,
