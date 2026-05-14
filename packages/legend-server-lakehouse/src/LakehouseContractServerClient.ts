@@ -279,6 +279,17 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       this._token(token),
     );
 
+  createPermitDataRequest = (
+    payload: PlainObject,
+    token: string | undefined,
+  ): Promise<PlainObject> =>
+    this.post(
+      `${this._dataAccessRequests()}`,
+      payload,
+      undefined,
+      this._token(token),
+    );
+
   getDataAccessRequestsCreatedBy = (
     userId: string,
     token: string | undefined,
@@ -306,6 +317,29 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     this.get(
       `${this.baseUrl}/datarequests/${encodeURIComponent(accessRequestId)}/tasks`,
       {},
+      this._token(token),
+    );
+
+  getDataRequestWorkflows = (
+    accessRequestId: string,
+    token: string | undefined,
+  ): Promise<PlainObject> =>
+    this.get(
+      `${this._dataAccessRequests()}/${encodeURIComponent(accessRequestId)}/workflows`,
+      {},
+      this._token(token),
+    );
+
+  escalateDataRequest = (
+    requestId: string,
+    taskId: string,
+    justification: string,
+    token: string | undefined,
+  ): Promise<PlainObject> =>
+    this.post(
+      `${this._dataAccessRequests()}/${encodeURIComponent(requestId)}/tasks/${encodeURIComponent(taskId)}/escalate?justification=${encodeURIComponent(justification)}`,
+      {},
+      undefined,
       this._token(token),
     );
 

@@ -32,12 +32,15 @@ import {
   type V1_TaskStatus,
   type V1_ContractUserEventRecord,
   type V1_TaskStatusChangeResponse,
+  type V1_DataRequestWithWorkflow,
   V1_dataContractsResponseModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_pendingTasksResponseModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
   V1_transformDataContractToLiteDatacontract,
+  V1_deserializeDataRequestsWithWorkflowResponse,
+  type V1_DataRequestsWithWorkflowResponse,
 } from '@finos/legend-graph';
 import {
   makeObservable,
@@ -97,12 +100,14 @@ export class EntitlementsDashboardState {
   // consolidated user information from the tasks.
   allContractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails> =
     new Map();
+  dataRequestsCreatedByUser: V1_DataRequestWithWorkflow[] | undefined;
   selectedTaskIds: Set<string> = new Set();
 
   readonly initializationState = ActionState.create();
   readonly fetchingPendingTasksState = ActionState.create();
   readonly fetchingContractsForUserState = ActionState.create();
   readonly fetchingContractsByUserState = ActionState.create();
+  readonly fetchingDataRequestsCreatedByUserState = ActionState.create();
   readonly changingState = ActionState.create();
 
   constructor(state: LakehouseEntitlementsStore) {
@@ -114,6 +119,7 @@ export class EntitlementsDashboardState {
       allContractsCreatedByUserMap: observable,
       pendingTaskContractMap: observable,
       selectedTaskIds: observable,
+      dataRequestsCreatedByUser: observable,
       pendingTaskContracts: computed,
       allContractsCreatedByUser: computed,
       setSelectedTaskIds: action,
@@ -126,6 +132,7 @@ export class EntitlementsDashboardState {
       fetchContractsCreatedByUser: flow,
       fetchContractDeploymentEnvironments: flow,
       updateContract: flow,
+      fetchDataRequestsCreatedByUser: flow,
     });
   }
 
@@ -148,37 +155,44 @@ export class EntitlementsDashboardState {
       this.fetchingPendingTasksState.inProgress();
       this.fetchingContractsForUserState.inProgress();
       this.fetchingContractsByUserState.inProgress();
+      this.fetchingDataRequestsCreatedByUserState.inProgress();
 
-      const [pendingTasksData, contractsForUser, contractsCreatedByUserMap] =
-        (yield Promise.all([
-          (async () => {
-            try {
-              const tasks = await flowResult(this.fetchPendingTasks(token));
-              const taskContractMap = await flowResult(
-                this.fetchPendingTaskContracts(token, tasks),
-              );
-              return { tasks, taskContractMap };
-            } catch (error) {
-              assertErrorThrown(error);
-              this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError(
-                error,
-              );
-              return {
-                tasks: [] as V1_ContractUserEventRecord[],
-                taskContractMap: new Map<string, V1_LiteDataContract>(),
-              };
-            }
-          })(),
-          flowResult(this.fetchContractsForUser(token)),
-          flowResult(this.fetchContractsCreatedByUser(token)),
-        ])) as [
-          {
-            tasks: V1_ContractUserEventRecord[];
-            taskContractMap: Map<string, V1_LiteDataContract>;
-          },
-          V1_LiteDataContractWithUserStatus[],
-          Map<string, ContractCreatedByUserDetails>,
-        ];
+      const [
+        pendingTasksData,
+        contractsForUser,
+        contractsCreatedByUserMap,
+        dataRequestsCreatedByUser,
+      ] = (yield Promise.all([
+        (async () => {
+          try {
+            const tasks = await flowResult(this.fetchPendingTasks(token));
+            const taskContractMap = await flowResult(
+              this.fetchPendingTaskContracts(token, tasks),
+            );
+            return { tasks, taskContractMap };
+          } catch (error) {
+            assertErrorThrown(error);
+            this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError(
+              error,
+            );
+            return {
+              tasks: [] as V1_ContractUserEventRecord[],
+              taskContractMap: new Map<string, V1_LiteDataContract>(),
+            };
+          }
+        })(),
+        flowResult(this.fetchContractsForUser(token)),
+        flowResult(this.fetchContractsCreatedByUser(token)),
+        flowResult(this.fetchDataRequestsCreatedByUser(token)),
+      ])) as [
+        {
+          tasks: V1_ContractUserEventRecord[];
+          taskContractMap: Map<string, V1_LiteDataContract>;
+        },
+        V1_LiteDataContractWithUserStatus[],
+        Map<string, ContractCreatedByUserDetails>,
+        V1_DataRequestWithWorkflow[],
+      ];
 
       const allContracts: V1_LiteDataContract[] = [
         ...Array.from(pendingTasksData.taskContractMap.values()),
@@ -205,10 +219,12 @@ export class EntitlementsDashboardState {
       this.pendingTasks = filteredTasks;
       this.allContractsForUser = filteredContractsForUser;
       this.allContractsCreatedByUserMap = filteredCreatedByUserMap;
+      this.dataRequestsCreatedByUser = dataRequestsCreatedByUser;
 
       this.fetchingPendingTasksState.complete();
       this.fetchingContractsForUserState.complete();
       this.fetchingContractsByUserState.complete();
+      this.fetchingDataRequestsCreatedByUserState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError(
@@ -343,6 +359,29 @@ export class EntitlementsDashboardState {
         `Error fetching data contracts created by user: ${error.message}`,
       );
       return new Map();
+    }
+  }
+
+  *fetchDataRequestsCreatedByUser(
+    token: string | undefined,
+  ): GeneratorFn<V1_DataRequestWithWorkflow[]> {
+    try {
+      const raw =
+        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getDataAccessRequestsCreatedBy(
+          this.lakehouseEntitlementsStore.applicationStore.identityService
+            .currentUser,
+          token,
+        )) as PlainObject<V1_DataRequestsWithWorkflowResponse>;
+      return V1_deserializeDataRequestsWithWorkflowResponse(
+        raw,
+        this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
+        `Error fetching data requests created by user: ${error.message}`,
+      );
+      return [];
     }
   }
 

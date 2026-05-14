@@ -32,6 +32,7 @@ export type TimelineStep = {
   label: {
     title: string;
     link?: string | undefined;
+    externalLink?: string | undefined;
     showEscalateButton?: boolean | undefined;
     isEscalatable?: boolean | undefined;
     isEscalated?: boolean | undefined;
