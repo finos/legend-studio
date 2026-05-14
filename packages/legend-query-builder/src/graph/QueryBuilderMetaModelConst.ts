@@ -120,6 +120,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
 
   // Relation
   RELATION_PROJECT = 'meta::pure::functions::relation::project',
+  RELATION_SELECT = 'meta::pure::functions::relation::select',
   RELATION_LIMIT = 'meta::pure::functions::relation::limit',
   RELATION_ASC = 'meta::pure::functions::relation::ascending',
   RELATION_DESC = 'meta::pure::functions::relation::descending',

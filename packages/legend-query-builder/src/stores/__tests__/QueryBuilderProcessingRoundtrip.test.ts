@@ -84,6 +84,7 @@ import {
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithFilter,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
+  TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest,
 } from '../__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
@@ -285,6 +286,11 @@ const cases: RoundtripTestCase[] = [
     'Accessor — simple project() from Database table',
     accessorCtx,
     TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
+  ],
+  [
+    'Accessor — simple select() from Ingest table',
+    accessorCtx,
+    TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest,
   ],
 ];
 

@@ -212,8 +212,11 @@ export const DATE_FORMAT = 'yyyy-MM-dd';
 // Generation Const
 export const DEFAULT_GENERATION_PACKAGE = 'generated';
 
-// System column added to all batch-milestoned ingest datasets.
-export const INGEST_LAKE_IN_ID = 'LAKE_IN_ID';
+export enum MILESTONE_INGEST_COLUMNS {
+  INGEST_LAKE_IN_ID = 'LAKE_IN_ID',
+  INGEST_LAKE_OUT_ID = 'LAKE_OUT_ID',
+}
+
 // Query
 export const QUERY_PROFILE_TAG_CLASS = 'class';
 export const QUERY_PROFILE_PATH = 'meta::pure::profiles::query';

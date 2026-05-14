@@ -498,6 +498,80 @@ export const TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_With
     parameters: [],
   };
 
+export const TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'from',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'select',
+          parameters: [
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'I',
+              value: {
+                path: [
+                  'ingestion::CARBON_DIOXIDE_EMISSIONS',
+                  'CARBON_DIOXIDE_EMISSIONS',
+                ],
+                metadata: false,
+              },
+            },
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'colSpecArray',
+              value: {
+                colSpecs: [
+                  {
+                    name: 'country',
+                  },
+                  {
+                    name: 'year',
+                  },
+                  {
+                    name: 'iso_code',
+                  },
+                  {
+                    name: 'population',
+                  },
+                  {
+                    name: 'gdp',
+                  },
+                  {
+                    name: 'trade_co2_share',
+                  },
+                  {
+                    name: 'LAKE_IN_ID',
+                  },
+                  {
+                    name: 'LAKE_OUT_ID',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'runtime::LakehouseRuntime',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__QueryBuilder_Accessors = [
   {
     path: 'database::TestDatabase',

@@ -19,7 +19,9 @@ import {
   type ValueSpecification,
   type LambdaFunction,
   AbstractPropertyExpression,
+  AccessorInstanceValue,
   CollectionInstanceValue,
+  ColSpecArrayInstance,
   DerivedProperty,
   matchFunctionName,
   RawLambda,
@@ -61,7 +63,10 @@ import {
   QueryBuilderRelationColumnProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
-import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
+import {
+  QueryBuilderTDSState,
+  TDS_PROJECTION_MODE,
+} from '../QueryBuilderTDSState.js';
 import { SortColumnState } from '../QueryResultSetModifierState.js';
 
 const validateTDSProjectPrecedingExpression = (
@@ -398,8 +403,100 @@ export const processTDSColExpression = (
     QueryBuilderTDSState
   ) {
     const tdsState = queryBuilderState.fetchStructureState.implementation;
-    tdsState.setUseColFunc(true);
+    tdsState.setProjectionMode(TDS_PROJECTION_MODE.PROJECT_COL);
   }
+};
+
+/**
+ * Process `precedingExpr->select(~[a, b])` — relation-style column
+ * selection. Each ColSpec in the array provides only a column name; the
+ * actual `RelationColumn` is resolved against the source relation type.
+ */
+export const processTDSSelectExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  // update fetch-structure
+  queryBuilderState.fetchStructureState.changeImplementation(
+    FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
+  );
+
+  // check parameters
+  assertTrue(
+    expression.parametersValues.length === 2,
+    `Can't process select() expression: select() expects 2 arguments`,
+  );
+
+  // process preceding expression first so the source element is resolved
+  const precedingExpression = guaranteeNonNullable(
+    expression.parametersValues[0],
+    `Can't process select() expression: missing preceding expression`,
+  );
+  if (
+    !(precedingExpression instanceof SimpleFunctionExpression) &&
+    !(precedingExpression instanceof AccessorInstanceValue)
+  ) {
+    throw new Error(
+      `Can't process select() expression: the first argument is expected to be either a function expression or an Accessor Instance Value`,
+    );
+  }
+  QueryBuilderValueSpecificationProcessor.process(
+    precedingExpression,
+    parentLambda,
+    queryBuilderState,
+  );
+
+  // resolve column refs against the source relation
+  const colSpecArrayInstance = guaranteeType(
+    expression.parametersValues[1],
+    ColSpecArrayInstance,
+    `Can't process select() expression: select() expects argument #1 to be a ColSpec array`,
+  );
+  const colSpecArrays = colSpecArrayInstance.values;
+  assertTrue(
+    colSpecArrays.length === 1,
+    `Can't process select() expression: expected exactly one ColSpec array`,
+  );
+  const colSpecs = guaranteeNonNullable(colSpecArrays[0]).colSpecs;
+
+  if (
+    !(
+      queryBuilderState.fetchStructureState.implementation instanceof
+      QueryBuilderTDSState
+    )
+  ) {
+    return;
+  }
+  const tdsState = queryBuilderState.fetchStructureState.implementation;
+
+  const sourceColumns = queryBuilderState.sourceRelationType?.columns;
+  assertNonNullable(
+    sourceColumns,
+    `Can't process select() expression: source relation type is not available`,
+  );
+  colSpecs.forEach((colSpec) => {
+    assertTrue(
+      colSpec.function1 === undefined && colSpec.function2 === undefined,
+      `Can't process select() expression: ColSpec '${colSpec.name}' is expected to be a bare column reference`,
+    );
+    const relationColumn = guaranteeNonNullable(
+      sourceColumns.find((c) => c.name === colSpec.name),
+      `Can't process select() expression: column '${colSpec.name}' is not found in source relation`,
+    );
+    processTDSRelationColumn(
+      // synthesize a parent FunctionExpression-like carrier is not needed
+      // here because processTDSRelationColumn only reads
+      // `parametersValues[0]` to set the lambda parameter name, which has
+      // no meaningful value in the select() form. Inline the column add
+      // instead to avoid fabricating expressions.
+      expression,
+      colSpec.name,
+      relationColumn,
+      queryBuilderState,
+    );
+  });
+  tdsState.setProjectionMode(TDS_PROJECTION_MODE.SELECT);
 };
 
 export const processTDSTakeExpression = (
