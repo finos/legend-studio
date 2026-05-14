@@ -54,7 +54,7 @@ import {
   getCodeEditorValue,
   normalizeLineEnding,
   clearMarkers,
-  CODE_EDITOR_THEME,
+  getCodeEditorThemeForAppTheme,
   CODE_EDITOR_LANGUAGE,
 } from '@finos/legend-code-editor';
 import {
@@ -154,6 +154,7 @@ export const EntityChangeConflictSideBarItem = observer(
 const MergeConflictEditor = observer(
   (props: { conflictEditorState: EntityChangeConflictEditorState }) => {
     const { conflictEditorState } = props;
+    const applicationStore = useApplicationStore();
     const isReadOnly = conflictEditorState.isReadOnly;
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
@@ -189,7 +190,10 @@ const MergeConflictEditor = observer(
         const element = textInputRef.current;
         const _editor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
-          theme: CODE_EDITOR_THEME.DEFAULT_DARK,
+          // Match the active app theme — see GrammarTextEditor for the rationale.
+          theme: getCodeEditorThemeForAppTheme(
+            applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+          ),
           language: CODE_EDITOR_LANGUAGE.PURE,
           minimap: { enabled: false },
           formatOnType: true,
@@ -198,7 +202,10 @@ const MergeConflictEditor = observer(
         _editor.focus(); // focus on the editor initially so we can correctly compute next/prev conflict chunks
         setEditor(_editor);
       }
-    }, [editor]);
+    }, [
+      editor,
+      applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+    ]);
 
     if (editor) {
       // dispose the old editor content setter in case the `updateInput` handler changes

@@ -194,11 +194,7 @@ export const TaggedValueEditor = observer(
           dragSourceConnector={handleRef}
           isDragging={isBeingDragged}
         />
-        <div
-          className={clsx('tagged-value-editor', {
-            'tagged-value-editor--dark': darkTheme,
-          })}
-        >
+        <div className="tagged-value-editor">
           <div className="tagged-value-editor__profile">
             <CustomSelectorInput
               className="tagged-value-editor__profile__selector"

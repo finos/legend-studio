@@ -16,6 +16,17 @@
 
 @use 'mixins' as *;
 
+/* ============================================================================
+ * react-select input styling
+ * ----------------------------------------------------------------------------
+ * Two parallel rule sets: `.selector-input` (the default) and
+ * `.selector-input--dark` (legacy modifier for forced-dark usage in dark
+ * contexts). Both now use semantic tokens — the two render identically in
+ * the same theme. The `--dark` variant is preserved as a backward-compat
+ * alias for consumers passing `darkMode={true}`; new code should drop the
+ * prop and the className and rely on the base class + active theme.
+ * ============================================================================ */
+
 .selector-input {
   &__indicator {
     cursor: pointer;
@@ -68,7 +79,7 @@
 
     svg {
       animation: spin 1s infinite ease;
-      color: var(--color-blue-200);
+      color: var(--color-accent);
     }
   }
 
@@ -77,13 +88,13 @@
 
     width: 1.5rem;
     font-size: 1.3rem;
-    background: var(--color-light-grey-0);
-    color: var(--color-dark-grey-300);
+    background: var(--color-bg-input);
+    color: var(--color-text-secondary);
   }
 
   &__clear-indicator {
     width: 2.6rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__value-container > div:last-child {
@@ -124,13 +135,13 @@
     &:hover,
     &--is-focused:hover,
     &--is-focused {
-      background-color: var(--color-light-blue-0) !important;
+      background-color: var(--color-accent-subtle) !important;
     }
 
     &--is-selected:hover,
     &--is-selected {
-      background-color: var(--color-blue-100) !important;
-      color: var(--color-white);
+      background-color: var(--color-bg-selected) !important;
+      color: var(--color-text-primary);
     }
   }
 
@@ -139,13 +150,14 @@
   }
 }
 
+// Legacy `--dark` menu container. Now uses semantic bg.
 .selector-menu--dark {
-  background: var(--color-dark-grey-100);
+  background: var(--color-bg-panel);
 
   .packageable-element-option-label__tag {
-    color: var(--color-light-grey-100);
-    background: var(--color-dark-grey-300);
-    border: 0.1rem solid var(--color-dark-grey-300);
+    color: var(--color-text-primary);
+    background: var(--color-bg-tag);
+    border: 0.1rem solid var(--color-bg-tag);
   }
 }
 
@@ -156,13 +168,16 @@
   overflow-y: hidden;
   height: 2.8rem;
   white-space: nowrap;
-  color: var(--color-dark-grey-500);
+  color: var(--color-text-disabled);
   padding: 0.5rem;
   cursor: default;
   font-size: 1.2rem;
   font-weight: 500;
 }
 
+// Legacy `--dark` modifier — body migrated to semantic tokens so it produces
+// theme-aware styling. Backward-compat alias only; drop `darkMode` prop in
+// new code and let the active theme drive.
 .selector-input--dark,
 .selector-menu--dark .selector-input--dark,
 .selector-input--dark .selector-input--dark {
@@ -172,9 +187,9 @@
   }
 
   .packageable-element-option-label__tag {
-    color: var(--color-light-grey-100);
-    background: var(--color-dark-grey-300);
-    border: 0.1rem solid var(--color-dark-grey-300);
+    color: var(--color-text-primary);
+    background: var(--color-bg-tag);
+    border: 0.1rem solid var(--color-bg-tag);
   }
 
   &__control {
@@ -185,25 +200,25 @@
 
     @include flexVCenter;
 
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-300);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-input);
+    border: 0.1rem solid var(--color-border-strong);
+    color: var(--color-text-secondary);
   }
 
   &__control:hover {
-    border: 0.1rem solid var(--color-blue-100);
+    border: 0.1rem solid var(--color-accent-hover);
   }
 
   &__control--is-focused,
   &__control--is-focused:hover {
-    border: 0.1rem solid var(--color-blue-100);
+    border: 0.1rem solid var(--color-accent-hover);
     box-shadow: none;
   }
 
   &__control--is-disabled {
     cursor: not-allowed;
-    border: 0.1rem solid var(--color-dark-grey-100) !important;
-    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-bg-input) !important;
+    background: var(--color-bg-input);
 
     .selector-input__dropdown-indicator {
       visibility: hidden;
@@ -211,14 +226,14 @@
 
     .selector-input--dark__placeholder {
       white-space: nowrap;
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
   }
 
   &__indicator-separator {
     margin-top: 0;
     margin-bottom: 0;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-input);
   }
 
   &__indicator {
@@ -229,22 +244,22 @@
     @include flexCenter;
 
     padding: 0;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__loading-indicator {
     width: initial;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
 
     svg {
       animation: spin 1s infinite ease;
-      color: var(--color-blue-200);
+      color: var(--color-accent);
     }
   }
 
   .selector-menu--no-match {
-    color: var(--color-dark-grey-350);
+    color: var(--color-text-disabled);
   }
 
   .selector-input__dropdown-indicator {
@@ -252,13 +267,13 @@
 
     width: 1.5rem;
     font-size: 1.3rem;
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-input);
+    color: var(--color-text-secondary);
   }
 
   &__clear-indicator {
     width: 2.6rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__value-container > div:last-child {
@@ -269,15 +284,15 @@
   &__value-container {
     height: 2.6rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__value-container > * {
-    color: var(--color-light-grey-200) !important;
+    color: var(--color-text-secondary) !important;
   }
 
   &__single-value {
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     margin-left: 0;
     margin-right: 0;
   }
@@ -292,81 +307,83 @@
 
   &__placeholder {
     white-space: nowrap;
-    color: var(--color-dark-grey-500) !important;
+    color: var(--color-text-disabled) !important;
   }
 
   &__single-value--is-disabled {
     cursor: not-allowed;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__menu {
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-bg-panel);
+    color: var(--color-text-secondary);
     margin: 0 !important;
   }
 
   &__option {
     height: 100%;
-    color: var(--color-light-grey-200) !important;
+    color: var(--color-text-secondary) !important;
 
     &--is-focused {
-      background-color: var(--color-dark-blue-shade-100);
+      background-color: var(--color-accent-subtle);
     }
 
     &--is-selected {
-      background-color: var(--color-light-blue-450);
+      background-color: var(--color-bg-selected);
     }
 
     &--is-disabled {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
   }
 
   &__option:active {
-    background-color: var(--color-light-blue-450) !important;
+    background-color: var(--color-bg-selected) !important;
   }
 
+  // Multi-value chip — bright neutral chip pattern.
   &__multi-value {
-    color: var(--color-dark-grey-250);
-    background: var(--color-dark-grey-400);
+    color: var(--color-text-inverted);
+    background: var(--color-bg-tag);
 
     &__remove {
-      color: var(--color-dark-grey-250);
+      color: var(--color-text-inverted);
     }
 
     &__remove:hover {
-      background: var(--color-dark-grey-500);
+      background: var(--color-bg-hover);
     }
   }
 }
 
+// Error state — red border + red-tinted value container/indicators.
 .selector-input--has-error .selector-input--dark {
   &__control,
   &__control:hover {
-    border-color: var(--color-red-300);
+    border-color: var(--color-status-error);
   }
 
   &__control--is-focused,
   &__control--is-focused:hover {
-    border-color: var(--color-blue-200);
+    border-color: var(--color-border-focus);
   }
 
   &__value-container {
-    background: var(--color-red-500);
+    background: var(--color-status-error-bg);
   }
 
   &__indicators {
-    background: var(--color-red-500);
+    background: var(--color-status-error-bg);
 
     svg {
-      color: var(--color-red-100);
+      color: var(--color-status-error);
     }
   }
 
   &__indicator-separator {
-    background: var(--color-red-100);
+    background: var(--color-status-error);
   }
 }
 

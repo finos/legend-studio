@@ -14,12 +14,27 @@
  * limitations under the License.
  */
 
+/* ============================================================================
+ * Testable category brand colors
+ * ----------------------------------------------------------------------------
+ * This file uses several direct palette tokens (pink-200, pink-500, purple-200,
+ * purple-400, yellow-500) for entity-type labels and tab indicators. These are
+ * a Legend domain palette signaling "what kind of test/data entity am I in"
+ * — pink-200 for parameters, pink-500 for test suites, purple for tests,
+ * yellow-500 for assertions. They are intentionally kept stable across themes
+ * (same way --color-category-generation works) and should not be folded into
+ * the standard semantic vocabulary.
+ *
+ * TODO(theming): promote to --color-category-test-* tokens once the same
+ * palette is encountered in legend-query-builder and a few more places.
+ * ============================================================================ */
+
 @use 'mixins' as *;
 
 .service-editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   .panel {
     height: 100%;
@@ -27,26 +42,26 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -82,9 +97,9 @@
 
     display: inline-flex;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -99,7 +114,7 @@
     width: 100%;
     position: absolute;
     bottom: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 
   &__tab__hint {
@@ -107,7 +122,7 @@
 
     border-radius: 0.2rem;
     margin-left: 1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
 
     svg {
       font-size: 1.2rem;
@@ -122,7 +137,7 @@
     display: flex;
     align-items: center;
     gap: 0.3rem;
-    color: var(--color-red-300);
+    color: var(--color-status-error);
   }
 
   &__pattern {
@@ -130,11 +145,13 @@
       margin-bottom: 2rem;
     }
 
+    // Parameter highlight — category brand color (see file header).
     &__example__param {
       color: var(--color-pink-200);
     }
   }
 
+  // Parameter list border accent — category brand color (see file header).
   &__parameters {
     cursor: default;
     padding-bottom: 0.5rem;
@@ -150,10 +167,10 @@
 
       height: 4rem;
       width: 100%;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
       font-weight: 500;
       user-select: none;
-      border: 0.2rem dashed var(--color-dark-grey-200);
+      border: 0.2rem dashed var(--color-border-default);
     }
   }
 
@@ -163,7 +180,7 @@
 
     padding-left: 0.5rem;
     height: 2.2rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     font-weight: 500;
 
     &__actions {
@@ -178,16 +195,16 @@
       width: 2.2rem;
 
       svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-disabled);
       }
 
       &:hover svg {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
     }
 
     &:hover {
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-hover);
     }
 
     &:hover &__actions {
@@ -278,10 +295,12 @@
     }
   }
 
+  // Execution type labels — blue is the standard "info/query" color so we
+  // route it through --color-accent. Pink (test) stays as category brand.
   &__execution {
     &__label {
       &--query {
-        background: var(--color-blue-200) !important;
+        background: var(--color-accent) !important;
       }
 
       &--test {
@@ -291,7 +310,7 @@
 
     &__sub-label {
       &--query {
-        border-left: 0.5rem solid var(--color-blue-200);
+        border-left: 0.5rem solid var(--color-accent);
       }
 
       &--test {
@@ -307,7 +326,7 @@
 
     svg {
       font-size: 1.2rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
   }
 
@@ -329,14 +348,14 @@
       cursor: help;
 
       svg {
-        color: var(--color-red-100);
+        color: var(--color-status-error);
         stroke-width: 0.4;
-        stroke: var(--color-red-100);
+        stroke: var(--color-status-error);
       }
     }
 
     &__validation-label {
-      color: var(--color-red-100);
+      color: var(--color-status-error);
       margin-left: 0.5rem;
     }
   }
@@ -356,7 +375,7 @@
   }
 
   &__content {
-    border-top: 0.1rem solid var(--color-dark-grey-100);
+    border-top: 0.1rem solid var(--color-border-subtle);
     height: 100%;
     width: 100%;
   }
@@ -385,7 +404,7 @@
   &__configuration__item__label {
     @include flexCenter;
 
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     margin-right: 0.5rem;
   }
 
@@ -415,14 +434,14 @@
     cursor: help;
 
     &__label {
-      color: var(--color-red-100);
+      color: var(--color-status-error);
       margin-right: 0.5rem;
     }
 
     svg {
-      color: var(--color-red-100);
+      color: var(--color-status-error);
       stroke-width: 0.4;
-      stroke: var(--color-red-100);
+      stroke: var(--color-status-error);
     }
   }
 
@@ -430,7 +449,7 @@
     @include flexVCenter;
 
     svg {
-      color: var(--color-blue-100);
+      color: var(--color-text-link);
     }
 
     &__label {
@@ -451,6 +470,8 @@
       max-width: calc(100% - 2.5rem);
     }
 
+    // Warning icon — orange-50 originally. Folded into status-warn (yellow);
+    // documented color shift (orange → yellow) carried over from explorer.
     &__warning {
       @include flexCenter;
 
@@ -459,13 +480,13 @@
       margin: 0 0.5rem;
 
       svg {
-        color: var(--color-orange-50);
+        color: var(--color-status-warn);
       }
     }
   }
 
   &__test {
-    border-top: 0.1rem solid var(--color-dark-grey-100);
+    border-top: 0.1rem solid var(--color-border-subtle);
     height: calc(100% - 12.1rem) !important;
     position: relative;
     width: 100%;
@@ -489,10 +510,10 @@
   }
 
   &__test-data__anonymize-btn {
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-disabled);
 
     &--active {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
   }
 
@@ -507,19 +528,19 @@
       @include flexVCenter;
 
       height: 2.2rem;
-      background: var(--color-blue-200);
+      background: var(--color-accent);
       padding: 1rem;
       border-radius: 0.2rem;
     }
 
     &__label__icon {
       font-size: 1.6rem;
-      color: var(--color-light-grey-180);
+      color: var(--color-text-on-accent);
     }
 
     &__label__title {
       margin-left: 0.5rem;
-      color: var(--color-light-grey-180);
+      color: var(--color-text-on-accent);
       font-size: 1.2rem;
       font-weight: 500;
     }
@@ -527,7 +548,7 @@
     &__label:hover &__label__icon,
     &__label:hover &__label__title,
     &__dropdown-btn:hover svg {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-on-accent);
     }
 
     &__option {
@@ -536,13 +557,13 @@
 
     &[disabled] &__label,
     &[disabled] &__dropdown-btn {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &[disabled] &__label__icon,
     &[disabled] &__label__title,
     &[disabled] &__dropdown-btn svg {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -550,9 +571,9 @@
     padding: 0.5rem;
     height: 2.8rem;
     line-height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-300);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-input);
+    border: 0.1rem solid var(--color-border-strong);
+    color: var(--color-text-secondary);
   }
 
   &__change {
@@ -580,7 +601,7 @@
     @include flexCenter;
 
     background: transparent;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     cursor: pointer;
     width: 2.8rem;
 
@@ -601,10 +622,10 @@
       &__label {
         @include flexCenter;
 
-        background: var(--color-dark-grey-100);
+        background: var(--color-bg-panel);
 
         svg {
-          color: var(--color-light-grey-50);
+          color: var(--color-text-primary);
           font-size: 1.2rem;
         }
       }
@@ -615,8 +636,8 @@
         padding: 0.5rem;
         height: 2.8rem;
         width: 100%;
-        background: var(--color-dark-grey-85);
-        border: 0.1rem solid var(--color-dark-grey-100);
+        background: var(--color-bg-elevated);
+        border: 0.1rem solid var(--color-border-subtle);
       }
     }
   }
@@ -628,19 +649,19 @@
     .panel {
       &__header {
         min-width: 9rem;
-        color: var(--color-light-grey-200);
-        background: var(--color-dark-grey-100);
+        color: var(--color-text-secondary);
+        background: var(--color-bg-panel);
         padding-left: 1rem;
       }
 
       &__header__action {
         height: 100%;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
 
       &__header__action[disabled],
       &__header__action[disabled] svg {
-        color: var(--color-dark-grey-300) !important;
+        color: var(--color-text-disabled) !important;
       }
 
       &__header__title {
@@ -650,7 +671,7 @@
       &__content {
         height: 100%;
         padding: 0.5rem 0;
-        background: var(--color-dark-grey-100);
+        background: var(--color-bg-panel);
       }
     }
   }
@@ -660,18 +681,18 @@
     @include flexHSpaceBetween;
 
     height: 2.4rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__item:hover {
-    background: var(--color-dark-blue-shade-100);
+    background: var(--color-accent-subtle);
   }
 
   &__item--active,
   &__item--active svg,
   &__item--active:hover {
-    background: var(--color-light-blue-450);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-selected);
+    color: var(--color-text-primary);
   }
 
   &__item__label {
@@ -694,7 +715,7 @@
   &__item__action {
     height: 100%;
     width: 2.8rem;
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-disabled);
   }
 }
 
@@ -704,14 +725,14 @@
   position: relative;
 
   .panel__content {
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     position: relative;
   }
 
   &__content {
     width: 100%;
     height: 100%;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     cursor: pointer;
   }
 }
@@ -727,10 +748,10 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__action {
@@ -740,20 +761,20 @@
       background: rgb(0 0 0 / 0%);
       cursor: pointer;
       width: 10rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -786,7 +807,7 @@
 
   &__progress-msg {
     line-height: 2rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     font-family: 'Roboto Mono', monospace;
     font-size: 1.2rem;
     user-select: none;
@@ -800,7 +821,7 @@
       @include flexVCenter;
 
       gap: 0.8rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       font-size: 1.2rem;
       font-family: 'Roboto Mono', monospace;
     }
@@ -811,7 +832,7 @@
     }
 
     &__empty {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       font-size: 1.2rem;
       font-style: italic;
     }
@@ -824,7 +845,7 @@
     }
 
     &__label {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-size: 1.2rem;
       margin-right: 0.3rem;
     }
@@ -839,6 +860,9 @@
       width: calc(100% - 5rem);
     }
 
+    // "User" chip — was a dark grey chip with dim text; mine variant is a
+    // bright light-grey chip. Both folded to bg-tag with text-inverted.
+    // Visible shift: brightness gap between owner/mine variants flattens.
     &__user {
       @include flexCenter;
 
@@ -847,12 +871,12 @@
       border-radius: 0.2rem;
       font-size: 1rem;
       font-weight: 500;
-      background: var(--color-dark-grey-250);
-      color: var(--color-dark-grey-500);
+      background: var(--color-bg-tag);
+      color: var(--color-text-muted);
 
       &--mine {
-        background: var(--color-light-grey-400);
-        color: var(--color-dark-shade-800);
+        background: var(--color-bg-tag);
+        color: var(--color-text-inverted);
       }
     }
   }
@@ -861,7 +885,7 @@
     height: 30rem;
     position: relative;
     margin: 1rem 0;
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-border-default);
   }
 }
 
@@ -870,27 +894,29 @@
   flex-direction: column;
   height: 100%;
 
+  // NOTE: --color-light-shade-280 in the original is a typo (only dark-shade
+  // goes to 280). Substituted with --color-shadow.
   &__header {
     @include flexVCenter;
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__header--with-tabs {
     padding-left: 0.5rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     font-weight: bold;
-    background: var(--color-dark-grey-50);
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-app);
+    border-bottom: 0.1rem solid var(--color-border-default);
   }
 
   &__tab {
@@ -898,9 +924,9 @@
 
     display: inline-flex;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -909,6 +935,7 @@
     position: relative;
   }
 
+  // Test-suite tab underline — category brand color (see file header).
   &__tab--active::after {
     content: '';
     height: 0.2rem;
@@ -927,11 +954,13 @@
     @include flexCenter;
 
     background: transparent;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     cursor: pointer;
     width: 2.8rem;
   }
 
+  // NOTE: lock bg was --color-light-grey-100 (bright grey). Folded to bg-tag
+  // for theme-awareness; same shift pattern as project-overview chips.
   &__header__lock {
     @include flexCenter;
 
@@ -939,11 +968,11 @@
     min-width: 4rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    background: var(--color-light-grey-100);
+    background: var(--color-bg-tag);
   }
 
   &__header__action[disabled] svg {
-    color: var(--color-dark-grey-400) !important;
+    color: var(--color-text-disabled) !important;
   }
 
   &__header__title {
@@ -958,26 +987,27 @@
     word-break: normal;
     overflow-wrap: anywhere;
     font-size: 1.4rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     line-height: 2rem;
     margin-bottom: 0.8rem;
     cursor: default;
   }
 
+  // Testable category labels — direct palette refs (see file header).
   &__header__title__label {
     height: 1.8rem;
     line-height: 1.8rem;
     border-radius: 0.1rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-250);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tag);
     font-size: 1.1rem;
     cursor: default;
     margin-right: 0.5rem;
     white-space: nowrap;
 
     &--data {
-      background: var(--color-blue-200) !important;
+      background: var(--color-accent) !important;
     }
 
     &--tests {
@@ -1000,15 +1030,15 @@
   }
 
   &__explorer {
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
 
     &-tree__node__container:hover {
-      background: var(--color-dark-blue-shade-100);
+      background: var(--color-accent-subtle);
     }
 
     &-tree__node__container--selected,
     &-tree__node__container--selected:hover {
-      background: var(--color-light-blue-450);
+      background: var(--color-bg-selected);
     }
 
     &-tree__node__icon {
@@ -1033,16 +1063,16 @@
   }
 
   &__node-selected {
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
   }
 
   &__item__link {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     text-decoration: none;
   }
 
   &__item__link__content__id {
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__selected {
@@ -1052,7 +1082,7 @@
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
   }
 }
@@ -1061,12 +1091,12 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-bottom: 0.1rem solid var(--color-dark-grey-200) !important;
+  border-bottom: 0.1rem solid var(--color-border-default) !important;
   overflow-y: auto !important;
 
   &__connection {
     width: 100%;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     padding: 1rem;
     height: 13rem;
 
@@ -1079,7 +1109,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--color-dark-grey-100);
+        background: var(--color-bg-panel);
         margin-right: 0.5rem;
       }
 
@@ -1097,7 +1127,7 @@
   &__data {
     width: 100%;
     height: calc(100% - 2.8rem);
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     overflow: auto;
   }
 
@@ -1122,30 +1152,31 @@
 
   &__content {
     height: calc(100% - 2.8rem);
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
+  // NOTE: --color-light-shade-280 typo → --color-shadow.
   &__header {
     @include flexVCenter;
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__header--with-tabs {
     padding-left: 0.5rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     font-weight: bold;
-    background: var(--color-dark-grey-50);
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-app);
+    border-bottom: 0.1rem solid var(--color-border-default);
   }
 
   &__tab {
@@ -1153,9 +1184,9 @@
 
     display: inline-flex;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -1164,6 +1195,7 @@
     position: relative;
   }
 
+  // Test tab underline — category brand color (see file header).
   &__tab--active::after {
     content: '';
     height: 0.2rem;
@@ -1207,10 +1239,10 @@
 
           height: 8rem;
           width: 2.8rem;
-          background: var(--color-dark-grey-280);
-          border-left: 0.1rem solid var(--color-dark-grey-280);
-          border-right: 0.1rem solid var(--color-dark-grey-280);
-          color: var(--color-light-grey-100);
+          background: var(--color-border-default);
+          border-left: 0.1rem solid var(--color-border-default);
+          border-right: 0.1rem solid var(--color-border-default);
+          color: var(--color-text-primary);
           border-radius: 0;
           cursor: pointer;
         }
@@ -1244,10 +1276,10 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__action {
@@ -1256,20 +1288,20 @@
       justify-content: center;
       background: rgb(0 0 0 / 0%);
       cursor: pointer;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -1285,12 +1317,12 @@
   }
 
   &__lambda-editor {
-    border: 0.1rem solid var(--color-dark-grey-280);
+    border: 0.1rem solid var(--color-border-default);
 
     .monaco-editor {
       .margin,
       .monaco-editor-background {
-        background: var(--color-dark-grey-50) !important;
+        background: var(--color-bg-app) !important;
       }
     }
 
@@ -1321,7 +1353,7 @@
 
         padding-left: 0.5rem;
         font-weight: 500;
-        color: var(--color-light-grey-50);
+        color: var(--color-text-primary);
         line-height: 2.2rem;
         cursor: default;
       }
@@ -1334,7 +1366,7 @@
         justify-content: center;
         background: rgb(0 0 0 / 0%);
         cursor: pointer;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
     }
   }
@@ -1344,8 +1376,8 @@
 
     flex: 2.8rem 0 0;
     height: 2.8rem;
-    color: var(--color-light-grey-0);
-    background: var(--color-dark-grey-300);
+    color: var(--color-text-primary);
+    background: var(--color-bg-tag);
     border-radius: 0.2rem;
     margin-left: 0.5rem;
     cursor: pointer;
@@ -1361,8 +1393,8 @@
   padding: 0 0.8rem;
   margin-right: 0.3rem;
   background: none;
-  border: 0.1rem solid var(--color-blue-200);
-  color: var(--color-blue-200);
+  border: 0.1rem solid var(--color-accent);
+  color: var(--color-accent);
   text-decoration: none;
   font-size: 1.1rem;
   font-weight: 500;
@@ -1370,8 +1402,8 @@
   gap: 0.4rem;
 
   &:hover {
-    background: var(--color-blue-200);
-    color: var(--color-light-grey-50);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
   }
 
   svg {

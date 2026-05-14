@@ -15,7 +15,7 @@
  */
 
 .mui-menu__paper {
-  background: var(--color-dark-grey-100);
+  background: var(--color-bg-elevated);
   border-radius: 0;
 }
 
@@ -25,7 +25,7 @@
 }
 
 .mui-popover__paper {
-  background: var(--color-dark-grey-100);
+  background: var(--color-bg-elevated);
   // NOTE: this is needed in order to have elements display go beyond
   // the boundary of the popover, e.g. elements shown with `display: relative`
   // such as validation error for inputs
@@ -44,7 +44,7 @@
   padding: 1rem;
 
   &__group {
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     height: 2rem;
 
     &__column {
@@ -53,7 +53,7 @@
     }
 
     &__item__radio-btn {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
       padding: 0;
       margin-right: 0.5rem;
     }
@@ -66,13 +66,13 @@
   }
 
   .Mui-checked {
-    color: var(--color-blue-100);
+    color: var(--color-accent);
   }
 }
 
 .mui-stepper {
   height: 4rem;
-  background-color: var(--color-dark-grey-250);
+  background-color: var(--color-bg-panel-header);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -83,7 +83,7 @@
     &__step-label {
       &__label {
         padding: 0 0.5rem;
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
         font-size: 1.1rem;
         cursor: default;
         margin-right: 0.5rem;
@@ -101,8 +101,13 @@
   margin-right: 0;
 }
 
+// Card surface — neutral chip-like surface. Uses theme-aware bg-tag for the
+// background AND theme-aware text-primary for the body/header text. Originally
+// the text was `--color-text-on-accent` (always-light) which read fine on the
+// dark-grey card in dark theme but produced near-white text on a light-grey
+// card in light theme — unreadable. Pairing two theme-aware tokens fixes that.
 .mui-card {
-  background-color: var(--color-dark-grey-400);
+  background-color: var(--color-bg-tag);
   width: 16rem;
   height: 24rem;
   display: flex;
@@ -123,7 +128,7 @@
     font-weight: 500;
     height: 20%;
     font-size: 2rem;
-    color: white;
+    color: var(--color-text-primary);
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -131,19 +136,19 @@
 
   &__content {
     font-size: 1.5rem;
-    color: white;
+    color: var(--color-text-primary);
     height: 80%;
     overflow-y: scroll;
     flex: 1 1 auto;
   }
 
   &:hover {
-    background: var(--color-dark-grey-500);
+    background: var(--color-bg-hover);
     cursor: pointer;
   }
 
   &__card-action {
-    color: var(--color-light-blue-50);
+    color: var(--color-text-link);
     height: 100%;
     padding: 0;
     margin-bottom: 1.5vh;
@@ -162,18 +167,18 @@
 }
 
 .mui-card--disable {
-  background-color: var(--color-dark-grey-100) !important;
+  background-color: var(--color-bg-panel) !important;
   cursor: not-allowed !important;
   border: none !important;
 }
 
 .mui-card--active {
-  background: var(--color-dark-grey-500);
-  border: 0.2rem solid var(--color-light-blue-200);
+  background: var(--color-bg-hover);
+  border: 0.2rem solid var(--color-accent);
 }
 
 .mui-card--stable {
-  background-color: var(--color-dark-grey-85) !important;
+  background-color: var(--color-bg-elevated) !important;
   border: none !important;
 }
 
@@ -184,7 +189,7 @@
 }
 
 .MuiSvgIcon-root {
-  color: var(--color-dark-grey-500);
+  color: var(--color-text-disabled);
   font-size: 2.5rem;
 }
 
@@ -202,8 +207,8 @@
 }
 
 .MuiTooltip-tooltip {
-  background: var(--color-dark-grey-100);
-  color: var(--color-light-grey-100);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
   font-size: 1.2rem;
   max-width: inherit;
 }

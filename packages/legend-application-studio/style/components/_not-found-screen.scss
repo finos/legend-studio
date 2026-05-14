@@ -21,7 +21,7 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
   overflow: auto;
   padding: 5rem;
 }
@@ -42,7 +42,7 @@
   animation: ghostbounce 0.9s alternate ease infinite !important;
 
   svg {
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     font-size: 12rem;
   }
 }
@@ -66,7 +66,7 @@
   font-family: 'Roboto Condensed', sans-serif;
   font-size: 3.5rem;
   font-weight: 700;
-  color: var(--color-light-grey-50);
+  color: var(--color-text-primary);
   height: 6rem;
 }
 
@@ -76,24 +76,25 @@
   align-items: center;
   width: 100%;
   font-family: 'Roboto Mono', monospace;
-  color: var(--color-yellow-100);
+  color: var(--color-status-warn);
 }
 
 .not-found-screen__text-content__detail__url {
   margin: 0 0.5rem;
   font-weight: 700;
-  color: var(--color-blue-40);
+  color: var(--color-text-link);
 }
 
+// Illustration shadow — repurposing border-subtle for its near-bg value.
 .not-found-screen__icon__shadow__inner {
-  fill: var(--color-dark-grey-100);
+  fill: var(--color-border-subtle);
   animation: shadowgrow 0.9s alternate ease infinite !important;
 }
 
 .not-found-screen__documentation {
   margin-top: 3rem;
   border-radius: 0.2rem;
-  border: 0.1rem solid var(--color-dark-grey-200);
+  border: 0.1rem solid var(--color-border-default);
 }
 
 @keyframes ghostbounce {

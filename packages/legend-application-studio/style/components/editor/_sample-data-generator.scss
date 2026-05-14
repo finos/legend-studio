@@ -27,8 +27,8 @@
 
     height: 2.8rem;
     width: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-280);
+    background: var(--color-bg-input);
+    border: 0.1rem solid var(--color-border-default);
     border-right: none;
   }
 
@@ -46,21 +46,21 @@
 
       height: 2.8rem;
       width: 5rem;
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-280);
+      background: var(--color-bg-input);
+      border: 0.1rem solid var(--color-border-default);
       border-right: none;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
     }
 
     &__dropdown-indicator {
       @include flexCenter;
 
       height: 2.8rem;
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-280);
+      background: var(--color-bg-input);
+      border: 0.1rem solid var(--color-border-default);
       border-left: none;
       width: 1.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
     }
 
     &__options {
@@ -71,9 +71,9 @@
       @include flexCenter;
 
       height: 2.8rem;
-      background: var(--color-dark-grey-100);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
-      color: var(--color-light-grey-300);
+      background: var(--color-bg-input);
+      border-bottom: 0.1rem solid var(--color-border-default);
+      color: var(--color-text-secondary);
       border-top: none;
       cursor: pointer;
     }
@@ -81,12 +81,12 @@
 
   &__controller__depth {
     width: 7rem;
-    border: 0.1rem solid var(--color-dark-grey-280);
+    border: 0.1rem solid var(--color-border-default);
   }
 
   &__result {
     margin: 0.5rem 0;
-    border: 0.1rem solid var(--color-dark-grey-280);
+    border: 0.1rem solid var(--color-border-default);
     height: 25rem;
     width: 100%;
   }

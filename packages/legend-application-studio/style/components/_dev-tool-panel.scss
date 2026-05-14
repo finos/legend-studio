@@ -25,7 +25,7 @@
 
       svg {
         font-size: 2rem;
-        color: var(--color-dark-grey-250);
+        color: var(--color-text-disabled);
       }
 
       &--loading svg {
@@ -39,7 +39,7 @@
       word-break: normal;
       overflow-wrap: anywhere;
       margin-left: 0.8rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       line-height: 2rem;
       user-select: none;
       cursor: pointer;

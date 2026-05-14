@@ -18,6 +18,7 @@ import type { ColorTheme } from '../stores/LayoutService.js';
 
 export enum LEGEND_APPLICATION_COLOR_THEME {
   DEFAULT_DARK = 'default-dark',
+  DEFAULT_LIGHT = 'default-light',
   LEGACY_LIGHT = 'legacy-light',
   HIGH_CONTRAST_LIGHT = 'hc-light',
   HIGH_CONTRAST_DARK = 'hc-dark',
@@ -34,6 +35,12 @@ export const DEFAULT_DARK_COLOR_THEME: ColorTheme = {
     'data-access-overview.chart.access-not-granted': '#ea4646',
     'data-access-overview.chart.unsupported-access': '#2d2d2d',
   },
+};
+
+export const DEFAULT_LIGHT_COLOR_THEME: ColorTheme = {
+  name: 'Default Light',
+  key: LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT,
+  TEMPORARY__globalCSSClassName: 'theme__default-light',
 };
 
 export const LEGACY_LIGHT_COLOR_THEME: ColorTheme = {

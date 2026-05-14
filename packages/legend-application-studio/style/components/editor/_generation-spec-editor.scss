@@ -19,7 +19,7 @@
 .generation-spec-editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   .panel {
     height: 100%;
@@ -27,27 +27,27 @@
 
     &__header {
       padding: 0 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
       position: relative;
     }
 
@@ -69,7 +69,7 @@
       height: 100%;
       width: 100%;
       padding: 2rem !important;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
   }
 
@@ -86,16 +86,17 @@
   }
 
   &__item:hover {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-hover);
   }
 
+  // Non-editable warning badge — yellow status surface, dark text.
   &__non-editable {
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    color: var(--color-dark-grey-280);
-    background: var(--color-yellow-200);
+    color: var(--color-text-inverted);
+    background: var(--color-status-warn);
     height: 2rem;
     margin-right: 0.5rem;
     border-radius: 0.3rem;
@@ -105,14 +106,14 @@
   }
 
   &__dnd__placeholder {
-    border: 0.2rem dashed var(--color-dark-grey-250);
+    border: 0.2rem dashed var(--color-border-default);
     height: 100%;
     width: 100%;
   }
 }
 
 .generation-spec-file-generation-editor {
-  border-top: 0.1rem solid var(--color-dark-grey-200);
+  border-top: 0.1rem solid var(--color-border-default);
 
   &__items {
     padding: 1.5rem 1rem 1rem;
@@ -128,7 +129,7 @@
     &__label {
       @include flexCenter;
 
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel);
       margin-right: 0.5rem;
     }
 
@@ -143,8 +144,8 @@
       justify-content: center;
       flex: 2.8rem 0 0;
       height: 2.8rem;
-      color: var(--color-light-grey-200);
-      background: var(--color-dark-grey-200);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-panel-header);
       border-radius: 0.2rem;
       margin-left: 0.5rem;
       cursor: pointer;
@@ -164,7 +165,7 @@
     @include flexHSpaceBetween;
 
     height: 2.8rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     margin-bottom: 0.5rem;
 
     &__id {
@@ -172,26 +173,26 @@
       width: 50%;
       height: 2.8rem;
       line-height: 2.2rem;
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
-      color: var(--color-light-grey-200);
+      background: var(--color-bg-panel);
+      border: 0.1rem solid var(--color-border-strong);
+      color: var(--color-text-secondary);
       margin-right: 0.5rem;
     }
 
     &__id--has-error {
-      background: var(--color-dark-red-shade-100);
-      border-color: var(--color-red-100);
+      background: var(--color-status-error-bg);
+      border-color: var(--color-status-error);
     }
 
     &:hover {
       display: flex;
-      background: var(--color-dark-blue-shade-100);
+      background: var(--color-accent-subtle);
     }
 
     &__label {
       @include flexCenter;
 
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel);
       margin-right: 0.5rem;
     }
 
@@ -206,8 +207,8 @@
       justify-content: center;
       flex: 2.8rem 0 0;
       height: 2.8rem;
-      color: var(--color-light-grey-200);
-      background: var(--color-dark-grey-200);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-panel-header);
       border-radius: 0.2rem;
       margin-left: 0.5rem;
       cursor: pointer;

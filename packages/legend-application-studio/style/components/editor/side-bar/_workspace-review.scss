@@ -48,8 +48,8 @@
         padding: 0.5rem;
         height: 2.8rem;
         width: 100%;
-        background: var(--color-dark-grey-250);
-        border: 0.1rem solid var(--color-dark-grey-250);
+        background: var(--color-bg-input);
+        border: 0.1rem solid var(--color-bg-input);
 
         &--with-link {
           padding: 0;
@@ -58,7 +58,7 @@
         &__link {
           @include flexVCenter;
 
-          color: var(--color-light-grey-200);
+          color: var(--color-text-secondary);
           text-decoration: none;
           width: 100%;
           padding-left: 0.5rem;
@@ -76,18 +76,18 @@
             min-width: 2.8rem;
 
             svg {
-              color: var(--color-light-grey-200);
+              color: var(--color-text-secondary);
             }
           }
         }
 
         &:hover &__link,
         &:hover &__link__btn svg {
-          color: var(--color-light-grey-0);
+          color: var(--color-text-primary);
         }
 
         &:hover &__link__review-created-time {
-          color: var(--color-dark-grey-500);
+          color: var(--color-text-disabled);
         }
       }
 
@@ -97,7 +97,7 @@
         margin: 0 0.5rem 0.6rem;
         cursor: default;
         user-select: none;
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
         font-size: 1.1rem;
         height: 1.1rem;
         min-height: 1.1rem;

@@ -21,8 +21,8 @@
   @include flexHSpaceBetween;
 
   height: 2.2rem;
-  background: var(--color-blue-100);
-  color: var(--color-light-grey-0);
+  background: var(--color-status-info);
+  color: var(--color-text-on-accent);
   padding: 0 0.5rem 0 1rem;
 
   &--conflict-resolution {
@@ -46,12 +46,15 @@
   &__problems {
     @include flexCenter;
 
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
     height: 100%;
     padding: 0 0.5rem;
 
+    // NOTE: previously a fixed lighter blue (--color-blue-50). Switched to the
+    // generic translucent overlay so it works on any accent surface and tracks
+    // the theme. Visual shift is minor.
     &:hover {
-      background: var(--color-blue-50);
+      background: var(--color-state-hover-on-accent);
     }
 
     &__icon {
@@ -74,8 +77,8 @@
     height: 1.6rem;
     cursor: pointer;
     font-size: 1rem;
-    background: var(--color-dark-shade-300);
-    color: var(--color-light-grey-0);
+    background: var(--color-state-disabled-on-accent);
+    color: var(--color-text-on-accent);
     border-radius: 0.3rem;
     padding: 0 0.5rem;
     margin: 0 0.5rem;
@@ -89,7 +92,7 @@
   &__workspace__project,
   &__workspace__workspace {
     padding: 0 0.5rem;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
   }
 
   &__action {
@@ -102,17 +105,17 @@
   }
 
   &__action:hover {
-    background: var(--color-light-shade-50);
+    background: var(--color-state-hover-on-accent);
   }
 
   &__action__toggler,
   &__action__toggler svg {
-    color: var(--color-dark-shade-300);
+    color: var(--color-state-disabled-on-accent);
   }
 
   &__action__toggler--active,
   &__action__toggler--active svg {
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
   }
 
   &__workspace-sync {
@@ -130,7 +133,7 @@
     @include flexCenter;
 
     background: none;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
     cursor: pointer;
     padding: 0 0.5rem;
     margin-left: 0.5rem;
@@ -140,7 +143,7 @@
     }
 
     &[disabled] {
-      color: var(--color-dark-shade-300);
+      color: var(--color-state-disabled-on-accent);
     }
 
     svg {
@@ -152,12 +155,12 @@
     @include flexCenter;
 
     background: none;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
     cursor: pointer;
     padding: 0 0.5rem;
 
     &[disabled] {
-      color: var(--color-dark-shade-300);
+      color: var(--color-state-disabled-on-accent);
     }
 
     &--wiggling svg {
@@ -170,12 +173,12 @@
     @include flexCenter;
 
     background: none;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
     cursor: pointer;
     padding: 0 0.5rem;
 
     &[disabled] {
-      color: var(--color-dark-shade-300);
+      color: var(--color-state-disabled-on-accent);
     }
 
     &--wiggling svg {
@@ -188,12 +191,12 @@
     @include flexCenter;
 
     background: none;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
     cursor: pointer;
     padding: 0 0.5rem;
 
     &[disabled] {
-      color: var(--color-dark-shade-300);
+      color: var(--color-state-disabled-on-accent);
     }
 
     &--wiggling svg {
@@ -204,7 +207,7 @@
 }
 
 .lazy-text-editor__status-bar {
-  background: var(--color-green-200);
+  background: var(--color-status-success-bg);
 }
 
 @keyframes flame-rise {

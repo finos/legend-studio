@@ -18,14 +18,14 @@
 
 .activity-bar {
   width: 5rem;
-  background: var(--color-dark-grey-250);
+  background: var(--color-bg-chrome);
   height: 100%;
   overflow-x: hidden;
   overflow-y: hidden;
 
   &__menu {
     height: 3.4rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    border-bottom: 0.1rem solid var(--color-border-default);
   }
 
   &__menu-item {
@@ -33,7 +33,7 @@
 
     height: 3.4rem;
     width: 100%;
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-muted);
 
     svg {
       font-size: 2.3rem;
@@ -51,7 +51,7 @@
 
     height: 5rem;
     width: 5rem;
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-muted);
     cursor: pointer;
     position: relative;
   }
@@ -65,12 +65,12 @@
   }
 
   &__item:hover {
-    color: var(--color-light-grey-0);
+    color: var(--color-text-primary);
     cursor: pointer;
   }
 
   &__item--active {
-    color: var(--color-light-grey-0);
+    color: var(--color-text-primary);
   }
 
   &__item__icon-with-indicator {
@@ -86,8 +86,8 @@
   &__local-change-counter {
     @include flexCenter;
 
-    background: var(--color-blue-100);
-    color: var(--color-light-grey-50);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
     bottom: -0.5rem;
     right: -0.7rem;
     padding: 0 0.5rem;
@@ -108,7 +108,7 @@
     @include flexCenter;
 
     background: var(--color-conflict);
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     bottom: -0.4rem;
     right: -0.3rem;
     padding: 0 0.5rem;
@@ -133,7 +133,7 @@
   }
 
   &__item__icon__project-latest-changes__indicator {
-    background: var(--color-blue-100);
+    background: var(--color-accent);
     bottom: -0.4rem;
     right: -0.4rem;
 
@@ -143,7 +143,7 @@
   }
 
   &__item__icon__review-changes__indicator {
-    background: var(--color-yellow-300);
+    background: var(--color-status-warn);
     bottom: -0.3rem;
     right: -0.3rem;
   }

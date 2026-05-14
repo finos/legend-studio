@@ -1,0 +1,91 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* ============================================================================
+ * Default Dark theme — semantic token mapping
+ * ----------------------------------------------------------------------------
+ * Maps the semantic token vocabulary (see `_semantic-tokens.scss`) to physical
+ * palette values (see `_variables.scss`) for the default-dark theme.
+ *
+ * Scoped to `.theme__default-dark`, which is set on the <html> element by
+ * `LayoutService` when the user picks this theme. Mirrors the `:root`
+ * defaults in `_semantic-tokens.scss` so explicit theme selection produces
+ * identical output to the unstyled fallback.
+ *
+ * Palette source values are chosen to match current studio dark UI exactly,
+ * so that Phase-2 component migrations (replacing physical → semantic tokens)
+ * produce zero visual diff.
+ * ============================================================================ */
+
+.theme__default-dark {
+  /* ---- Surfaces --------------------------------------------------------- */
+  --color-bg-app: var(--color-dark-grey-50);
+  --color-bg-panel: var(--color-dark-grey-100);
+  --color-bg-panel-header: var(--color-dark-grey-200);
+  --color-bg-chrome: var(--color-dark-grey-250);
+  --color-bg-elevated: var(--color-dark-grey-80);
+  --color-bg-input: var(--color-dark-grey-100);
+  --color-bg-hover: var(--color-dark-grey-250);
+  --color-bg-selected: var(--color-light-blue-450);
+  --color-bg-tag: var(--color-dark-grey-300);
+  --color-bg-overlay: var(--color-dark-shade-300);
+
+  /* ---- Text ------------------------------------------------------------- */
+  --color-text-primary: var(--color-light-grey-0);
+  --color-text-secondary: var(--color-light-grey-200);
+  --color-text-muted: var(--color-light-grey-400);
+  --color-text-disabled: var(--color-dark-grey-400);
+  --color-text-inverted: var(--color-dark-grey-50);
+  --color-text-on-accent: var(--color-light-grey-50);
+  --color-text-link: var(--color-blue-100);
+
+  /* ---- Borders ---------------------------------------------------------- */
+  --color-border-subtle: var(--color-dark-grey-100);
+  --color-border-default: var(--color-dark-grey-200);
+  --color-border-strong: var(--color-dark-grey-300);
+  --color-border-focus: var(--color-blue-200);
+
+  /* ---- Accents ---------------------------------------------------------- */
+  --color-accent: var(--color-blue-200);
+  --color-accent-hover: var(--color-blue-100);
+  --color-accent-subtle: var(--color-dark-blue-shade-100);
+
+  /* ---- Status ----------------------------------------------------------- */
+  --color-status-error: var(--color-red-100);
+  --color-status-error-bg: var(--color-dark-red-shade-100);
+  --color-status-warn: var(--color-yellow-200);
+  --color-status-warn-bg: var(--color-dark-yellow-500);
+  --color-status-success: var(--color-green-100);
+  --color-status-success-bg: var(--color-green-200);
+  --color-status-info: var(--color-blue-100);
+
+  /* ---- Interaction states on accent surfaces ---------------------------- */
+  --color-state-hover-on-accent: var(--color-light-shade-50);
+  --color-state-disabled-on-accent: var(--color-dark-shade-300);
+
+  /* ---- Active indicator (tab underlines, focused rails) ---------------- */
+  --color-active-indicator: var(--color-yellow-200);
+
+  /* ---- Category / brand colors ----------------------------------------- */
+  --color-category-generation: var(--color-pink-300);
+  --color-category-experimental: var(--color-mauve-50);
+  --color-category-class: var(--color-purple-400);
+  --color-category-enumeration: var(--color-medium-green-450);
+  --color-category-primitive: var(--color-blue-200);
+
+  /* ---- Misc ------------------------------------------------------------- */
+  --color-shadow: var(--color-dark-shade-280);
+}

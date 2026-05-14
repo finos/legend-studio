@@ -58,6 +58,7 @@ import {
   resolveJoinFormula,
 } from './DatabaseDiagramHelper.js';
 import type { DatabaseEditorState } from '../../../../stores/editor/editor-state/element-editor-state/DatabaseEditorState.js';
+import { useApplicationStore } from '@finos/legend-application';
 
 const NODE_TYPES = {
   table: DatabaseTableNode,
@@ -107,6 +108,7 @@ const findRelationById = (
 const DatabaseDiagramCanvasInner = observer(
   (props: { editorState: DatabaseEditorState }) => {
     const { editorState } = props;
+    const applicationStore = useApplicationStore();
     const {
       database,
       selectedRelation,
@@ -521,6 +523,15 @@ const DatabaseDiagramCanvasInner = observer(
       <div className="database-diagram__canvas-shell">
         <ReactFlow
           className="database-diagram__canvas"
+          // Drive ReactFlow's built-in light/dark variant from the active app
+          // theme. The chrome (canvas bg, controls, minimap, edges, dot pattern)
+          // then tracks studio's theme without us having to override individual
+          // `--xy-*` variables.
+          colorMode={
+            applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+              ? 'light'
+              : 'dark'
+          }
           nodes={selectionAwareNodes}
           edges={selectionAwareEdges}
           nodeTypes={NODE_TYPES}

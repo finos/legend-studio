@@ -23,16 +23,18 @@
   &__section {
     flex-direction: column;
 
+    // Blue is the doc viewer's accent color (section header rail, query trigger,
+    // documentation links). `--color-text-link` keeps that intent and is theme-aware.
     &__header {
       @include flexVCenter;
 
       justify-content: space-between;
       height: 3rem;
-      border-bottom: 0.2rem solid var(--color-blue-100);
+      border-bottom: 0.2rem solid var(--color-text-link);
       margin-bottom: 2rem;
       margin-top: 4rem;
       user-select: none;
-      color: var(--color-blue-100);
+      color: var(--color-text-link);
 
       &__label {
         @include ellipsisTextOverflow;
@@ -50,11 +52,11 @@
         cursor: pointer;
 
         svg {
-          color: var(--color-dark-grey-300);
+          color: var(--color-text-secondary);
         }
 
         &:hover svg {
-          color: var(--color-dark-grey-400);
+          color: var(--color-text-muted);
         }
       }
 
@@ -71,8 +73,8 @@
         border-radius: 0.2rem;
         font-size: 1.2rem;
         font-weight: 500;
-        color: var(--color-blue-100);
-        border: 0.1rem solid var(--color-blue-100);
+        color: var(--color-text-link);
+        border: 0.1rem solid var(--color-text-link);
         cursor: pointer;
 
         svg {
@@ -80,13 +82,13 @@
         }
 
         &:hover {
-          background: var(--color-blue-100);
-          color: var(--color-white);
+          background: var(--color-text-link);
+          color: var(--color-text-on-accent);
         }
       }
 
       &__documentation {
-        color: var(--color-blue-100);
+        color: var(--color-text-link);
       }
     }
 
@@ -101,7 +103,7 @@
     justify-content: flex-start;
     width: 100%;
     border-radius: 0.2rem;
-    color: var(--color-dark-grey-300);
+    color: var(--color-text-secondary);
     user-select: none;
     height: auto;
     background: transparent;
@@ -132,13 +134,13 @@
     padding: 1rem 1.5rem;
     font-weight: 500;
     border-radius: 0.5rem;
-    background: var(--color-dark-grey-50);
-    color: var(--color-dark-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
   }
 
   &__empty-cell {
     font-size: 1.2rem;
-    color: var(--color-dark-grey-280);
+    color: var(--color-text-muted);
   }
 
   &__header-cell {
@@ -230,6 +232,8 @@
       width: calc(100% - 4rem);
     }
 
+    // Entity-type icon backgrounds — domain colors encoding the kind of
+    // model element. Kept stable across themes (encode meaning, not style).
     &__label__icon {
       @include flexCenter;
       @include flexConstantDimension;
@@ -237,21 +241,23 @@
       height: 1.8rem;
       width: 1.8rem;
       border-radius: 0.2rem;
-      background: var(--color-dark-grey-100);
-      color: var(--color-light-grey-200);
+      background: var(--color-bg-panel);
+      color: var(--color-text-primary);
       font-size: 1.2rem;
       font-family: 'Roboto Mono', monospace;
       font-weight: 900;
       margin-right: 0.5rem;
 
       &--class {
-        background: var(--color-purple-400);
+        background: var(--color-category-class);
       }
 
       &--enumeration {
-        background: var(--color-pink-300);
+        background: var(--color-category-enumeration);
       }
 
+      // green/blue/orange: keep direct palette tokens (no semantic equivalent;
+      // these are entity-type brand colors).
       &--association {
         background: var(--color-green-200);
       }
@@ -279,8 +285,8 @@
       padding: 0 0.2rem;
       height: 2rem;
       border-radius: 0.2rem;
-      background: var(--color-dark-grey-100);
-      color: var(--color-blue-100);
+      background: var(--color-bg-panel);
+      color: var(--color-text-link);
     }
 
     &__label__milestoning-badge {
@@ -291,6 +297,7 @@
       margin-right: 1rem;
 
       svg {
+        // blue-150 kept as palette: milestoning brand color, no semantic match.
         color: var(--color-blue-150);
         font-size: 1.2rem;
       }
@@ -306,12 +313,12 @@
       @include flexCenter;
       @include flexConstantDimension;
 
-      color: var(--color-dark-grey-350);
+      color: var(--color-text-muted);
       width: 2rem;
       height: 2rem;
 
       &:hover {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-secondary);
       }
     }
 
@@ -320,8 +327,12 @@
     }
   }
 
+  // "Current element" row highlight — yellow signals the focused row, kept
+  // stable across themes (matches the active-indicator semantic). The action
+  // color uses `dark-shade-*` (translucent black) so it adapts on top of the
+  // fixed yellow bg in either theme.
   &__element-row {
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
     color: var(--color-dark-grey-100);
 
     --ag-row-hover-color: var(--color-yellow-100);
@@ -344,18 +355,18 @@
     @include flexConstantDimension;
 
     height: 2.8rem;
-    border: 0.1rem solid var(--color-dark-grey-280);
-    color: var(--color-dark-grey-350);
+    border: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-muted);
     margin-right: 0.5rem;
 
     &:hover {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
     }
 
     &__icon {
       @include flexCenter;
 
-      border-left: 0.1rem solid var(--color-dark-grey-280);
+      border-left: 0.1rem solid var(--color-border-default);
       width: 2.8rem;
       height: 2.8rem;
     }
@@ -371,8 +382,8 @@
     width: 25rem;
     margin-right: 0.5rem;
     border-radius: 0.2rem;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    color: var(--color-light-grey-200);
+    border: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-secondary);
   }
 
   &__group {
@@ -381,7 +392,7 @@
   }
 
   &__group + &__group {
-    border-top: 0.1rem solid var(--color-dark-grey-200);
+    border-top: 0.1rem solid var(--color-border-default);
   }
 
   &__group--by-type {
@@ -406,7 +417,7 @@
     @include ellipsisTextOverflow;
 
     font-weight: 500;
-    color: var(--color-dark-grey-350);
+    color: var(--color-text-muted);
   }
 
   &__group__header__actions {
@@ -416,16 +427,16 @@
   &__group__header__reset {
     font-family: 'Roboto Mono', monospace;
     font-size: 1.1rem;
-    color: var(--color-blue-150);
+    color: var(--color-text-link);
     margin-left: 0.5rem;
 
     &:hover {
-      color: var(--color-blue-100);
+      color: var(--color-accent-hover);
     }
 
     &[disabled],
     &[disabled]:hover {
-      color: var(--color-dark-grey-350);
+      color: var(--color-text-muted);
     }
   }
 
@@ -448,7 +459,7 @@
     height: 2.2rem;
 
     &:hover {
-      background: var(--color-dark-blue-shade-100);
+      background: var(--color-accent-subtle);
     }
   }
 
@@ -466,27 +477,29 @@
     height: 1.4rem;
     width: 1.4rem;
     border-radius: 0.2rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-on-accent);
     font-size: 1rem;
     font-family: 'Roboto Mono', monospace;
     font-weight: 700;
     user-select: none;
     margin-left: 0.5rem;
 
+    // Entity-type category colors — stable across themes.
     &--class {
-      background: var(--color-purple-400);
+      background: var(--color-category-class);
     }
 
     &--enumeration {
-      background: var(--color-pink-300);
+      background: var(--color-category-enumeration);
     }
 
+    // green-200 kept as palette (association brand color).
     &--association {
       background: var(--color-green-200);
     }
 
     &--package {
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-muted);
     }
   }
 
@@ -498,12 +511,12 @@
     height: 100%;
 
     svg {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       font-size: 1.2rem;
     }
 
     &:hover svg {
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -515,14 +528,14 @@
     height: 100%;
 
     svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-size: 1.2rem;
     }
   }
 
   &__node__label {
     font-size: 1.2rem;
-    color: var(--color-dark-grey-350);
+    color: var(--color-text-muted);
     user-select: none;
     margin-left: 0.5rem;
   }
@@ -533,8 +546,8 @@
     font-family: 'Roboto Mono', monospace;
     margin-left: 0.5rem;
     height: 1.4rem;
-    background: var(--color-light-grey-400);
-    color: var(--color-dark-grey-400);
+    background: var(--color-bg-tag);
+    color: var(--color-text-primary);
     padding: 0 0.3rem;
     border-radius: 0.2rem;
     font-size: 0.8rem;
@@ -552,7 +565,7 @@
     padding-left: 1rem;
     width: 25rem;
     border-radius: 0.2rem;
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-border-default);
 
     &__search__icon {
       @include flexCenter;
@@ -564,6 +577,7 @@
       width: 2.8rem;
 
       svg {
+        // light-shade-100 is a translucent overlay token — works on any bg.
         color: var(--color-light-shade-100);
       }
     }
@@ -578,11 +592,11 @@
       width: 2.8rem;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
 
       &:hover svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-secondary);
       }
     }
 
@@ -597,16 +611,17 @@
       cursor: pointer;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
 
       &--toggled svg,
       &:hover svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-secondary);
       }
 
       &--active svg,
       &--active:hover svg {
+        // blue-150 kept as palette: active-state brand color for search config.
         color: var(--color-blue-150);
       }
     }
@@ -615,7 +630,7 @@
 
 .models-documentation__tooltip {
   border-radius: 0.2rem !important;
-  background: var(--color-dark-grey-200) !important;
+  background: var(--color-bg-elevated) !important;
   opacity: 0.9 !important;
   transition: none;
   // as this tooltip can contain long documentation, it's best we limit its dimension
@@ -640,7 +655,7 @@
     font-size: 1.3rem;
     user-select: none;
     cursor: default;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-muted);
   }
 
   &__item__value {

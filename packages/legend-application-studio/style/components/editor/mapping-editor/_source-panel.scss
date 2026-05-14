@@ -19,17 +19,17 @@
 .source-panel {
   .panel {
     &__header {
-      box-shadow: var(--color-dark-shade-280) 0.2rem 0.1rem 0.3rem 0.1rem;
-      background: var(--color-light-grey-100);
-      color: var(--color-dark-grey-300);
+      box-shadow: var(--color-shadow) 0.2rem 0.1rem 0.3rem 0.1rem;
+      background: var(--color-bg-elevated);
+      color: var(--color-text-secondary);
     }
 
     &__header__action svg {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-secondary);
     }
 
     &__content {
-      background: var(--color-light-grey-100);
+      background: var(--color-bg-elevated);
     }
 
     &__content > div:first-child {

@@ -25,14 +25,14 @@
     font-weight: 500;
     font-size: 1.1rem;
     margin-bottom: 0.8rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__info-content {
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     padding: 1rem;
     border-radius: 0.4rem;
-    border: 1px solid var(--color-dark-grey-300);
+    border: 1px solid var(--color-border-strong);
   }
 
   &__info-row {
@@ -48,15 +48,15 @@
 
   &__info-label {
     font-weight: 500;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     font-size: 0.9rem;
   }
 
   &__info-value {
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     font-size: 0.9rem;
     font-family: 'Roboto Mono', monospace;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-panel-header);
     padding: 0.2rem 0.5rem;
     border-radius: 0.2rem;
     max-width: 60%;
@@ -74,7 +74,7 @@
     border: 1px solid rgb(59 130 246 / 35%);
     border-left: 3px solid var(--color-blue-200);
     border-radius: 0.4rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     font-size: 1.3rem;
     line-height: 1.6;
 
@@ -90,7 +90,7 @@
       padding: 0.6rem 0.8rem;
       background: none;
       border: none;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
       font-weight: 600;
       font-size: 1.3rem;
       text-align: left;
@@ -103,7 +103,7 @@
       &__chevron {
         display: flex;
         align-items: center;
-        color: var(--color-light-grey-300);
+        color: var(--color-text-muted);
 
         svg {
           font-size: 1.2rem;
@@ -125,7 +125,7 @@
     }
 
     &__body {
-      color: var(--color-light-grey-300);
+      color: var(--color-text-muted);
 
       & + & {
         margin-top: 0.5rem;
@@ -137,8 +137,8 @@
       padding: 0 0.4rem;
       font-family: 'Roboto Mono', monospace;
       font-size: 1.2rem;
-      background: var(--color-dark-grey-200);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-tag);
+      color: var(--color-text-primary);
       border-radius: 0.2rem;
     }
   }
@@ -149,7 +149,7 @@
 
   &__push-description {
     font-size: 0.85rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     margin-top: 0.5rem;
     font-style: italic;
     transition: color 0.3s ease;
@@ -185,6 +185,8 @@
     }
   }
 
+  // Loading overlay backdrop: kept as hard rgba so it stays opaque-dark in
+  // both themes (you want the same blocking effect either way).
   &__loading-overlay {
     position: absolute;
     top: 0;
@@ -204,14 +206,14 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
   }
 
   &__loading-spinner {
     animation: spin 1s linear infinite;
     width: 2rem;
     height: 2rem;
-    color: var(--color-blue-200);
+    color: var(--color-accent);
   }
 
   &__loading-text {
@@ -236,15 +238,15 @@
   &__settings-btn {
     background: none;
     border: none;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 0.25rem;
     transition: all 0.1s ease;
 
     &:hover {
-      color: var(--color-light-grey-50);
-      background-color: var(--color-dark-grey-200);
+      color: var(--color-text-primary);
+      background-color: var(--color-bg-panel-header);
     }
 
     &:disabled {
@@ -261,9 +263,9 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    background: var(--color-dark-grey-200);
-    border: 1px solid var(--color-dark-grey-300);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-tag);
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text-primary);
     cursor: pointer;
     padding: 0.4rem 0.8rem;
     border-radius: 0.3rem;
@@ -272,8 +274,8 @@
     transition: all 0.1s ease;
 
     &:hover:not(:disabled) {
-      background: var(--color-dark-grey-300);
-      color: var(--color-light-grey-50);
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
       border-color: var(--color-blue-200);
     }
 
@@ -288,6 +290,12 @@
   }
 }
 
+// Deployment-status colors. Status foregrounds are mapped to the bright
+// status tokens; not-started inherits text-muted. Original used green-200,
+// red-200, blue-200, yellow-200 — these were deeper/darker shades whose
+// contrast against the panel was marginal. Migration brightens them (using
+// status-*, which map to the standard severity hues). Visual shift: deployment
+// status text becomes more legible in dark theme.
 .deployment-status-panel {
   &__header {
     display: flex;
@@ -299,7 +307,7 @@
   &__title {
     font-weight: 600;
     font-size: 1.1rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__final-status {
@@ -309,23 +317,23 @@
     font-weight: 500;
 
     &--success {
-      color: var(--color-green-80);
+      color: var(--color-status-success);
     }
 
     &--fail {
-      color: var(--color-red-200);
+      color: var(--color-status-error);
     }
 
     &--in_progress {
-      color: var(--color-blue-200);
+      color: var(--color-status-info);
     }
 
     &--not_started {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &--skipped {
-      color: var(--color-yellow-200);
+      color: var(--color-status-warn);
     }
   }
 
@@ -336,7 +344,7 @@
   &__section-title {
     font-weight: 500;
     font-size: 1rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     margin-bottom: 0.75rem;
   }
 
@@ -352,15 +360,15 @@
 
       .detail-label {
         font-size: 0.9rem;
-        color: var(--color-light-grey-300);
+        color: var(--color-text-secondary);
         font-weight: 500;
       }
 
       .detail-value {
         font-size: 0.9rem;
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
         font-family: 'Roboto Mono', monospace;
-        background: var(--color-dark-grey-200);
+        background: var(--color-bg-panel-header);
         padding: 0.2rem 0.5rem;
         border-radius: 0.2rem;
       }
@@ -384,9 +392,9 @@
     align-items: flex-start;
     gap: 0.75rem;
     padding: 0.75rem;
-    border: 1px solid var(--color-dark-grey-300);
+    border: 1px solid var(--color-border-strong);
     border-radius: 0.4rem;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     cursor: default;
     transition: all 0.2s ease;
   }
@@ -395,8 +403,8 @@
     cursor: pointer;
 
     &:hover {
-      background: var(--color-dark-grey-200);
-      border-color: var(--color-dark-grey-400);
+      background: var(--color-bg-hover);
+      border-color: var(--color-text-disabled);
     }
   }
 
@@ -417,7 +425,7 @@
   &__node__title {
     font-weight: 500;
     font-size: 0.95rem;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
   }
 
@@ -427,6 +435,9 @@
     gap: 0.25rem;
   }
 
+  // Status badges: translucent rgb() bgs paired with status-* fg. Backdrop
+  // values intentionally use hardcoded translucent rgb so they render
+  // correctly on top of any theme; only the foregrounds switch with theme.
   &__status {
     font-size: 0.8rem;
     font-weight: 500;
@@ -435,34 +446,34 @@
     align-self: flex-start;
 
     &--success {
-      background: rgb(52 168 83 / 20%);
-      color: var(--color-green-80);
+      background: rgb(16 185 129 / 20%);
+      color: var(--color-status-success);
     }
 
     &--fail {
       background: rgb(220 38 38 / 20%);
-      color: var(--color-red-200);
+      color: var(--color-status-error);
     }
 
     &--in_progress {
       background: rgb(59 130 246 / 20%);
-      color: var(--color-blue-200);
+      color: var(--color-status-info);
     }
 
     &--not_started {
       background: rgb(156 163 175 / 20%);
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &--skipped {
       background: rgb(245 158 11 / 20%);
-      color: var(--color-yellow-200);
+      color: var(--color-status-warn);
     }
   }
 
   &__message {
     font-size: 0.85rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     font-style: italic;
   }
 
@@ -478,17 +489,17 @@
 
       &--error {
         background: rgb(220 38 38 / 20%);
-        color: var(--color-red-200);
+        color: var(--color-status-error);
       }
 
       &--warn {
         background: rgb(245 158 11 / 20%);
-        color: var(--color-yellow-200);
+        color: var(--color-status-warn);
       }
 
       &--total {
-        background: var(--color-dark-grey-300);
-        color: var(--color-light-grey-300);
+        background: var(--color-bg-tag);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -501,15 +512,15 @@
     height: 1.5rem;
 
     &--success {
-      color: var(--color-green-80);
+      color: var(--color-status-success);
     }
 
     &--failed {
-      color: var(--color-red-200);
+      color: var(--color-status-error);
     }
 
     &--in-progress {
-      color: var(--color-blue-200);
+      color: var(--color-status-info);
 
       svg {
         animation: spin 1s linear infinite;
@@ -517,15 +528,15 @@
     }
 
     &--not-started {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &--skipped {
-      color: var(--color-yellow-200);
+      color: var(--color-status-warn);
     }
 
     &--unknown {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
   }
 }
@@ -555,14 +566,14 @@
 
   &__title {
     font-weight: 500;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     display: block;
     margin-bottom: 0.25rem;
   }
 
   &__description {
     font-size: 0.85rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__list {
@@ -575,36 +586,36 @@
     gap: 0.5rem;
     margin-bottom: 0.75rem;
     padding: 0.75rem;
-    background-color: var(--color-dark-grey-100);
+    background-color: var(--color-bg-panel);
     border-radius: 0.25rem;
+  }
 
-    &__fields {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      align-items: end;
+  &__item__fields {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    align-items: end;
 
-      .panel__content__form__section {
-        padding: 0;
-        margin: 0;
-        min-width: 0;
-      }
+    .panel__content__form__section {
+      padding: 0;
+      margin: 0;
+      min-width: 0;
     }
   }
 
   &__delete-btn {
     background: none;
     border: none;
-    color: var(--color-red-200);
+    color: var(--color-status-error);
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 0.25rem;
     transition: all 0.1s ease;
 
     &:hover {
-      color: var(--color-red-100);
-      background-color: var(--color-red-500);
+      color: var(--color-status-error);
+      background-color: var(--color-status-error-bg);
     }
 
     svg {
@@ -613,13 +624,13 @@
   }
 
   &__add {
-    border-top: 1px solid var(--color-dark-grey-200);
+    border-top: 1px solid var(--color-border-default);
     padding-top: 1rem;
 
     &__title {
       font-size: 0.9rem;
       font-weight: 500;
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
       margin-bottom: 0.75rem;
     }
 
@@ -641,10 +652,13 @@
     }
   }
 
+  // NOTE: original used --color-primary-200 / --color-primary-100 which are
+  // not defined in the palette (typo — likely intended accent). Substituted
+  // with accent / accent-hover.
   &__add-btn {
-    background: var(--color-primary-200);
+    background: var(--color-accent);
     border: none;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-on-accent);
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 0.25rem;
@@ -652,13 +666,13 @@
     height: 2.8rem;
 
     &:hover:not(:disabled) {
-      background: var(--color-primary-100);
+      background: var(--color-accent-hover);
     }
 
     &:disabled {
       cursor: not-allowed;
       opacity: 0.5;
-      background: var(--color-dark-grey-300);
+      background: var(--color-bg-tag);
     }
 
     svg {
@@ -683,7 +697,7 @@
     justify-content: center;
     gap: 0.75rem;
     height: 100%;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-muted);
     font-size: 1.4rem;
 
     &__spinner {
@@ -702,7 +716,7 @@
     border: 1px solid rgb(59 130 246 / 35%);
     border-left: 3px solid var(--color-blue-200);
     border-radius: 0.4rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
 
     svg {
       color: var(--color-blue-100);
@@ -713,13 +727,13 @@
 
     &__title {
       font-weight: 600;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
       margin-bottom: 0.5rem;
       font-size: 1.4rem;
     }
 
     &__body {
-      color: var(--color-light-grey-300);
+      color: var(--color-text-muted);
       font-size: 1.3rem;
       line-height: 1.6;
 
@@ -728,8 +742,8 @@
         padding: 0 0.4rem;
         font-family: 'Roboto Mono', monospace;
         font-size: 1.2rem;
-        background: var(--color-dark-grey-200);
-        color: var(--color-light-grey-100);
+        background: var(--color-bg-tag);
+        color: var(--color-text-primary);
         border-radius: 0.2rem;
       }
     }
@@ -747,8 +761,8 @@
       display: flex;
       font-size: 1.2rem;
       font-weight: 500;
-      border-bottom: 1px solid var(--color-dark-grey-200);
-      background: var(--color-dark-grey-100);
+      border-bottom: 1px solid var(--color-border-default);
+      background: var(--color-bg-panel-header);
       z-index: 1;
 
       &__side {
@@ -757,10 +771,10 @@
         align-items: center;
         gap: 0.6rem;
         padding: 0.7rem 1rem;
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
 
         &--from {
-          border-right: 1px solid var(--color-dark-grey-200);
+          border-right: 1px solid var(--color-border-default);
           background: rgb(59 130 246 / 6%);
         }
 
@@ -791,7 +805,7 @@
 
       &__label {
         font-weight: 600;
-        color: var(--color-light-grey-50);
+        color: var(--color-text-primary);
       }
 
       &__version {
@@ -799,8 +813,8 @@
         padding: 0.15rem 0.5rem;
         font-family: 'Roboto Mono', monospace;
         font-size: 1.1rem;
-        background: var(--color-dark-grey-200);
-        color: var(--color-light-grey-200);
+        background: var(--color-bg-tag);
+        color: var(--color-text-secondary);
         border-radius: 0.2rem;
       }
     }

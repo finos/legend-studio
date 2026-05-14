@@ -63,6 +63,23 @@ export enum CODE_EDITOR_THEME {
   BUILT_IN__VSCODE_HC_LIGHT = 'hc-light',
 }
 
+/**
+ * Pick the Monaco code-editor theme matching the active application theme.
+ *
+ * Use this everywhere a Monaco editor is created so the editor's syntax
+ * highlighting follows the app's light/dark theme. Driven by the boolean
+ * from `layoutService.TEMPORARY__isLightColorThemeEnabled` (or any other
+ * "is light" signal); intentionally narrow to keep the mapping decision in
+ * one place — if we add more code-editor light themes later, only this
+ * helper needs to change.
+ */
+export const getCodeEditorThemeForAppTheme = (
+  isLightTheme: boolean,
+): CODE_EDITOR_THEME =>
+  isLightTheme
+    ? CODE_EDITOR_THEME.GITHUB_LIGHT
+    : CODE_EDITOR_THEME.DEFAULT_DARK;
+
 export const DEFAULT_DARK_THEME: monacoEditorAPI.IStandaloneThemeData = {
   base: 'vs-dark',
   inherit: true,

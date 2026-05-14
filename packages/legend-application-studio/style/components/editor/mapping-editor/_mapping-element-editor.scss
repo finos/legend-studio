@@ -26,13 +26,13 @@
       @include flexVCenter;
       @include flexHSpaceBetween;
 
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-light-grey-100);
+      background: var(--color-bg-panel);
     }
 
     &__content {
-      background: var(--color-light-grey-0);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -45,8 +45,8 @@
 
     height: 5rem;
     padding: 0 1rem;
-    background: var(--color-light-grey-100);
-    border-bottom: 0.1rem solid var(--color-light-grey-300);
+    background: var(--color-bg-panel);
+    border-bottom: 0.1rem solid var(--color-border-default);
   }
 
   &__metadata__chunk {
@@ -67,7 +67,7 @@
   }
 
   &__metadata__overview-chunk {
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
   }
 
   &__metadata__overview__id {
@@ -75,10 +75,10 @@
 
     height: 2.4rem;
     cursor: default;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     padding: 0 0.7rem;
     font-size: 1.4rem;
-    background: var(--color-light-shade-150);
+    background: var(--color-bg-tag);
     border-radius: 0.2rem;
     font-weight: 500;
   }
@@ -95,13 +95,13 @@
   &__metadata__target__type {
     @include flexCenter;
 
-    background: var(--color-dark-shade-100);
+    background: var(--color-state-disabled-on-accent);
     height: 2.4rem;
     width: 2.4rem;
     border-radius: 0.2rem 0 0 0.2rem;
 
     & .icon {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-on-accent);
     }
   }
 
@@ -109,23 +109,25 @@
     @include flexCenter;
 
     padding: 0 1rem;
-    border: 0.1rem solid var(--color-dark-shade-100);
+    border: 0.1rem solid var(--color-state-disabled-on-accent);
     height: 2.4rem;
     font-weight: 500;
   }
 
+  // Source chunk — accent-colored chip identifying the source binding.
+  // `background--primitive` falls back to category-primitive when applied.
   &__metadata__source-chunk {
-    color: var(--color-light-grey-50);
-    background: var(--color-blue-150);
+    color: var(--color-text-on-accent);
+    background: var(--color-accent);
 
     &--primitive {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-on-accent);
       padding: 0 1rem;
     }
 
     &--none {
       padding: 0 1rem;
-      background: var(--color-dark-grey-300);
+      background: var(--color-bg-tag);
     }
   }
 
@@ -141,13 +143,13 @@
   &__metadata__source__type {
     @include flexCenter;
 
-    background: var(--color-dark-shade-100);
+    background: var(--color-state-disabled-on-accent);
     height: 2.4rem;
     width: 2.4rem;
     border-radius: 0.2rem 0 0 0.2rem;
 
     & .icon {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-on-accent);
     }
   }
 
@@ -155,7 +157,7 @@
     @include flexCenter;
 
     padding: 0 1rem;
-    border: 0.1rem solid var(--color-dark-shade-100);
+    border: 0.1rem solid var(--color-state-disabled-on-accent);
     height: 2.4rem;
     font-weight: 500;
   }
@@ -170,8 +172,8 @@
 
     margin-left: auto; // create float right effect on this flex item
     margin-right: 0;
-    background: var(--color-light-grey-200);
-    color: var(--color-dark-grey-400);
+    background: var(--color-bg-tag);
+    color: var(--color-text-muted);
     padding: 0 0.7rem;
     border-radius: 0.2rem;
     font-size: 1.4rem;
@@ -185,21 +187,21 @@
   }
 
   &__metadata__root-chunk--checked {
-    background: var(--color-light-blue-200);
-    color: var(--color-light-grey-100);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
 
     svg {
-      color: var(--color-light-grey-100);
+      color: var(--color-text-on-accent);
     }
   }
 
   &__metadata__root-chunk[disabled] {
-    background: var(--color-light-grey-400);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-hover);
+    color: var(--color-text-disabled);
     cursor: not-allowed;
 
     svg {
-      color: var(--color-light-grey-100);
+      color: var(--color-text-disabled);
     }
   }
 

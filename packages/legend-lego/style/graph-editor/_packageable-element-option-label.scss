@@ -22,9 +22,9 @@
   &__tag {
     @include flexVCenter;
 
-    color: var(--color-dark-grey-500);
-    background: var(--color-light-grey-50);
-    border: 0.1rem solid var(--color-light-grey-180);
+    color: var(--color-text-muted);
+    background: var(--color-bg-tag);
+    border: 0.1rem solid var(--color-border-default);
     margin-left: 1rem;
     border-radius: 0.2rem;
     font-size: 1rem;
@@ -46,6 +46,8 @@
   padding-left: 0.5rem;
   background: transparent;
 
+  // Category colors (system/generated/dependency element provenance) — stable
+  // across themes since they encode meaning, not just style.
   &--system {
     background: var(--color-system);
   }
@@ -59,6 +61,8 @@
   }
 }
 
+// Legacy `--dark` modifier — backward-compat alias for consumers that force a
+// dark look regardless of theme. Uses direct palette tokens (escape hatch).
 .packageable-element-option-label--dark {
   @include flexVCenter;
 

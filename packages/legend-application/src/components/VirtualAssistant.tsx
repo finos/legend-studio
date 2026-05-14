@@ -390,7 +390,7 @@ const VirtualAssistantSearchPanel = observer(() => {
               assistantService.refreshPanelRendering();
             }
           }}
-          className={clsx('virtual-assistant__search__input input--dark', {
+          className={clsx('virtual-assistant__search__input', {
             'virtual-assistant__search__input--searching': searchText,
           })}
           spellCheck={false}

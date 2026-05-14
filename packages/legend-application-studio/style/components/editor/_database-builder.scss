@@ -38,27 +38,27 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -78,12 +78,12 @@
   }
 
   &__node--selected {
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
   }
 
   &__config {
     height: 100%;
-    border-right: 0.1rem solid var(--color-dark-grey-100);
+    border-right: 0.1rem solid var(--color-border-subtle);
 
     &__content {
       height: 100%;
@@ -103,21 +103,22 @@
     }
 
     &__preview {
-      border-top: 0.1rem solid var(--color-dark-grey-100);
+      border-top: 0.1rem solid var(--color-border-subtle);
       height: calc(100% - 8rem);
       width: 100%;
       position: relative;
 
+      // Preview "DRAFT" indicator — yellow status surface.
       &__header {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--color-yellow-300);
+        background: var(--color-status-warn);
         height: 1.8rem;
         margin-left: 0.5rem;
         margin-top: 0.5rem;
         border-radius: 0.2rem;
-        color: var(--color-light-grey-0);
+        color: var(--color-text-inverted);
         white-space: nowrap;
         width: 5rem;
         font-size: 1.1rem;
@@ -134,8 +135,8 @@
       &__content {
         height: 100% !important;
         overflow-x: hidden;
-        background: var(--color-dark-grey-50);
-        color: var(--color-light-grey-400);
+        background: var(--color-bg-app);
+        color: var(--color-text-muted);
         position: relative;
         overflow-y: hidden;
       }
@@ -161,7 +162,7 @@
     height: 2.8rem;
 
     &:hover {
-      background: var(--color-dark-blue-shade-100);
+      background: var(--color-accent-subtle);
     }
   }
 
@@ -186,7 +187,7 @@
   &__node__label {
     display: flex;
     user-select: none;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     font-size: 1.3rem;
   }
 
@@ -201,7 +202,7 @@
 
     svg {
       font-size: 1.2rem;
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -214,11 +215,12 @@
     padding: 0 0.5rem;
     height: 1.6rem;
     font-weight: 500;
-    background: var(--color-dark-grey-250);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-tag);
+    color: var(--color-text-secondary);
     user-select: none;
   }
 
+  // Icons use domain palette colors (lime for schema, magenta for table).
   &__icon {
     &--schema svg {
       color: var(--color-lime-75);

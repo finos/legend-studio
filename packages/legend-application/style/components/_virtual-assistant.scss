@@ -69,7 +69,7 @@
     }
 
     &__glasses {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
     }
 
     &__beard {
@@ -88,7 +88,7 @@
     height: 2.8rem;
     width: 2.8rem;
     border-radius: 50%;
-    background: var(--color-dark-grey-85);
+    background: var(--color-bg-panel);
     margin: 0.3rem 0 0.3rem 0.2rem;
 
     @keyframes opacity-pulse {
@@ -152,7 +152,7 @@
 
   @keyframes border-flash {
     from {
-      border-color: var(--color-dark-grey-50);
+      border-color: var(--color-border-subtle);
     }
 
     to {
@@ -162,7 +162,7 @@
 
   @keyframes background-flash {
     from {
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     to {
@@ -175,13 +175,16 @@
   height: 40rem;
   width: 30rem;
   border-radius: 0.2rem;
-  background: var(--color-dark-grey-100);
-  border: 0.1rem solid var(--color-dark-grey-200);
+  background: var(--color-bg-panel);
+  border: 0.1rem solid var(--color-border-default);
+  // Shadow uses the theme-aware `--color-shadow` token (translucent black) so
+  // the panel lifts off both light and dark surfaces. Previously this was a
+  // translucent-white shadow that produced a glow on dark surfaces but went
+  // invisible against light backgrounds.
   box-shadow:
-    0 1.1rem 1.5rem -0.7rem,
-    var(--color-light-shade-280),
-    0 2.4rem 3.8rem 0.3rem var(--color-light-shade-280),
-    0 0.9rem 4.6rem 0.8rem var(--color-light-shade-280);
+    0 1.1rem 1.5rem -0.7rem var(--color-shadow),
+    0 2.4rem 3.8rem 0.3rem var(--color-shadow),
+    0 0.9rem 4.6rem 0.8rem var(--color-shadow);
 
   // make sure we cancel the effect of the `pointer-events: none` set
   // on the container of the panel so we could interact with the panel
@@ -212,7 +215,7 @@
     @include flexVCenter;
 
     justify-content: space-between;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-hover);
     height: 2.8rem;
 
     &__actions {
@@ -226,11 +229,11 @@
       height: 2.8rem;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
 
       &:hover svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -238,15 +241,15 @@
   &__header__tabs {
     display: flex;
     height: 2.8rem;
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__header__tab {
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-100);
+    border-right: 0.1rem solid var(--color-border-subtle);
 
     &:hover {
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-elevated);
     }
   }
 
@@ -256,13 +259,13 @@
     cursor: pointer;
     height: 2.8rem;
     width: 6rem;
-    border-bottom: 0.3rem solid var(--color-dark-grey-300);
+    border-bottom: 0.3rem solid var(--color-border-strong);
     padding-top: 0.1rem;
     position: relative;
 
     svg {
       font-size: 1.5rem;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-muted);
     }
   }
 
@@ -277,7 +280,7 @@
   }
 
   &__header__tab:hover &__header__tab__content svg {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-secondary);
   }
 
   &__header__tab--active:hover &__header__tab__content,
@@ -285,7 +288,7 @@
     border-bottom: 0.3rem solid var(--color-yellow-300);
 
     svg {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -310,7 +313,7 @@
     &__message {
       font-family: 'Roboto Mono', monospace;
       font-size: 1.3rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       margin-top: 1rem;
     }
 
@@ -318,7 +321,7 @@
       font-family: 'Roboto Mono', monospace;
       font-size: 1.3rem;
       font-weight: 700;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
       margin-top: 0.5rem;
     }
   }
@@ -331,7 +334,7 @@
     @include flexCenter;
 
     padding: 0.3rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-250);
+    border-bottom: 0.1rem solid var(--color-border-default);
     height: 3.4rem;
     position: relative;
   }
@@ -342,9 +345,9 @@
     padding-right: 2.8rem;
     padding-left: 0.5rem;
     width: 100%;
-    background: var(--color-dark-grey-85);
+    background: var(--color-bg-panel);
     border-radius: 0.2rem;
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-border-default);
 
     &--searching {
       padding-right: 9rem; // account for the count badge
@@ -361,7 +364,7 @@
       font-size: 1.1rem;
       font-weight: 700;
       background: var(--color-yellow-100);
-      color: var(--color-dark-grey-280);
+      color: var(--color-text-muted);
       user-select: none;
       cursor: default;
     }
@@ -388,11 +391,11 @@
       width: 2.8rem;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
 
       &:hover svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-secondary);
       }
     }
 
@@ -406,12 +409,12 @@
       cursor: pointer;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
 
       &--toggled svg,
       &:hover svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-secondary);
       }
 
       &--active svg,
@@ -440,14 +443,14 @@
 
   &__input__advanced-config__panel {
     width: 100%;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-hover);
 
     &__header__label {
       @include flexVCenter;
 
       font-weight: 500;
-      color: var(--color-light-grey-50);
-      background: var(--color-dark-grey-300);
+      color: var(--color-text-primary);
+      background: var(--color-bg-tag);
       padding: 0 1rem;
       line-height: 2rem;
       font-size: 1.2rem;
@@ -458,7 +461,7 @@
     &__header__label__hint {
       display: inline-flex;
       align-self: center;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       cursor: pointer;
       margin-left: 0.5rem;
 
@@ -482,7 +485,7 @@
   &__results__placeholder {
     font-family: 'Roboto Mono', monospace;
     font-size: 1.3rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 }
 
@@ -503,20 +506,20 @@
     padding-top: 0.3rem;
 
     svg {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
     }
   }
 
   &__expand-icon--disabled {
     svg {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
     }
   }
 
   &__title {
     line-height: 1.5;
     font-weight: 500;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     cursor: pointer;
     user-select: none;
   }
@@ -532,9 +535,9 @@
   }
 
   &__content__text {
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     line-height: 1.5;
-    background: var(--color-dark-grey-80);
+    background: var(--color-bg-panel-header);
     border-radius: 0.2rem;
     padding: 1rem;
   }
@@ -561,7 +564,7 @@
   &__greeting {
     font-family: 'Roboto Mono', monospace;
     font-size: 1.3rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     margin-top: 0.6rem;
     cursor: default;
     user-select: none;
@@ -571,7 +574,7 @@
     font-family: 'Roboto Mono', monospace;
     font-size: 1.3rem;
     font-weight: 700;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
     margin-top: 0.6rem;
     cursor: default;
     user-select: none;
@@ -595,7 +598,7 @@
   &__glasses {
     position: absolute;
     font-size: 8rem;
-    color: var(--color-dark-grey-300);
+    color: var(--color-text-muted);
     top: 6rem;
   }
 
@@ -619,7 +622,7 @@
   &__title {
     line-height: 1.5;
     font-weight: 700;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     cursor: pointer;
     user-select: none;
     font-size: 1.5rem;
@@ -627,9 +630,9 @@
   }
 
   &__text {
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     line-height: 1.5;
-    background: var(--color-dark-grey-80);
+    background: var(--color-bg-panel-header);
     border-radius: 0.2rem;
     padding: 1rem;
     margin-bottom: 1rem;
@@ -643,7 +646,7 @@
 
   &__relevant-entries {
     &__title {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       font-family: 'Roboto Mono', monospace;
       font-size: 1.3rem;
       margin-bottom: 1rem;

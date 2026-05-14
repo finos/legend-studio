@@ -26,17 +26,21 @@
     font-size: 1.2rem;
     font-weight: 500;
 
+    // Diff status icons. Mapped to status tokens — small hue/shade shifts
+    // from the originals (yellow-80 → status-warn, red-150 → status-error,
+    // lime-150 → status-success) but semantically aligned with modify/delete/
+    // create severities.
     &--rename,
     &--modify {
-      color: var(--color-yellow-80);
+      color: var(--color-status-warn);
     }
 
     &--delete {
-      color: var(--color-red-150);
+      color: var(--color-status-error);
     }
 
     &--create {
-      color: var(--color-lime-150);
+      color: var(--color-status-success);
     }
 
     &--conflict {
@@ -48,13 +52,13 @@
     @include ellipsisTextOverflow;
 
     max-width: calc(100% - 2.2rem);
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
   }
 
   &__item__info-name {
     font-weight: 500;
     padding-right: 0.5rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
 
     &--delete {
       text-decoration: line-through 0.1rem;
@@ -63,23 +67,23 @@
 
   &__item__info-path {
     font-size: 1.2rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
   }
 
   .side-bar__panel__item--selected &__item__info-name,
   .side-bar__panel__item--selected &__item__type {
-    color: var(--color-light-grey-50);
+    color: var(--color-text-on-accent);
   }
 
   .side-bar__panel__item--selected &__item__info,
   .side-bar__panel__item--selected &__item__info-path {
-    color: var(--color-light-grey-50);
+    color: var(--color-text-on-accent);
   }
 
   &__item-section-separator {
     height: 0.1rem;
     width: 100%;
-    background: var(--color-dark-grey-250);
+    background: var(--color-border-default);
     margin: 0.5rem 0;
   }
 }

@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+/* ============================================================================
+ * Mapping editor
+ * ----------------------------------------------------------------------------
+ * Historically authored light-first with a `.mapping__theme__dark` wrapper
+ * unconditionally applied at the root for studio's dark-only UI. With the
+ * global theme system, the wrapper has been removed from the React component
+ * and base styles use semantic tokens that adapt to the active theme.
+ * ============================================================================ */
+
 @use 'mixins' as *;
 
 @forward 'mapping-editor/mapping-explorer';
@@ -34,13 +43,14 @@
 .mapping-editor {
   position: relative;
   height: 100%;
+  background: var(--color-bg-app);
 
   ::-webkit-scrollbar-thumb {
-    background: var(--color-light-grey-400);
+    background: var(--color-border-default);
   }
 
   &__header {
-    background: var(--color-light-grey-200);
+    background: var(--color-bg-panel);
     padding-left: 0;
   }
 
@@ -62,12 +72,14 @@
 
     padding: 0 1rem;
     cursor: pointer;
-    border-right: 0.1rem solid var(--color-light-grey-300);
-    background: var(--color-light-grey-200);
+    color: var(--color-text-muted);
+    border-right: 0.1rem solid var(--color-border-subtle);
+    background: var(--color-bg-app);
   }
 
   &__header__tab--active {
-    background: var(--color-light-grey-50);
+    background: var(--color-bg-elevated);
+    border-bottom: 0.2rem solid var(--color-active-indicator);
   }
 
   &__header__tab__content {
@@ -75,6 +87,10 @@
 
     height: 100%;
     width: 100%;
+
+    button {
+      color: var(--color-text-muted);
+    }
   }
 
   &__header__tab__icon--test {
@@ -82,6 +98,9 @@
     color: var(--color-test);
   }
 
+  // Execution tab icon — orange brand color distinguishes execution from
+  // test tabs visually. Kept as physical token (same pattern as other
+  // brand/category colors documented in THEMING.md).
   &__header__tab__icon--execution {
     font-size: 1.3rem;
     color: var(--color-orange-50);
@@ -102,7 +121,7 @@
     @include flexVCenter;
 
     svg {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
       font-size: 1.2rem;
     }
   }
@@ -113,7 +132,7 @@
   }
 
   &__content {
-    background: var(--color-white);
+    background: var(--color-bg-app);
   }
 
   &__splash-screen {
@@ -126,7 +145,7 @@
 
     &__logo svg {
       font-size: 26rem;
-      color: var(--color-light-grey-100);
+      color: var(--color-border-default);
     }
 
     &__logo--hidden {
@@ -139,206 +158,13 @@
   }
 }
 
-.mapping__theme__dark {
-  background: var(--color-dark-grey-50);
-
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-dark-grey-200);
-  }
-
-  .mapping-editor__splash-screen__logo svg {
-    color: var(--color-dark-grey-200);
-  }
-
-  .mapping-explorer,
-  .mapping-test-explorer {
-    background: var(--color-dark-grey-85);
-    border-right: 0.1rem solid var(--color-dark-grey-200);
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
-  }
-
-  .mapping-explorer__content,
-  .mapping-test-explorer__content,
-  .mapping-test-explorer .panel__header,
-  .mapping-explorer .panel__header,
-  .source-panel .panel__content,
-  .source-panel .panel__header,
-  .source-panel {
-    background: var(--color-dark-grey-85);
-  }
-
-  .mapping-explorer__item__label__text {
-    color: var(--color-light-grey-400);
-  }
-
-  .mapping-element-editor__metadata {
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
-  }
-
-  .mapping-editor__header__tab {
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-400);
-    border-right: 0.1rem solid var(--color-dark-grey-100);
-  }
-
-  .mapping-test-explorer__header__progress-bar__bar--none,
-  .mapping-test-explorer__header__progress-bar--none {
-    background: var(--color-dark-grey-100) !important;
-  }
-
-  .mapping-editor__header__tab--active {
-    background: var(--color-dark-grey-85);
-    border-bottom: 0.2rem solid var(--color-yellow-200);
-  }
-
-  .mapping-editor__header__tab__content button {
-    color: var(--color-light-grey-400);
-  }
-
-  .mapping-test-editor .panel__header__title__label {
-    color: var(--color-light-grey-100);
-    background: var(--color-dark-grey-250);
-  }
-
-  .type-tree__node__type__label {
-    background: var(--color-dark-grey-250);
-    color: var(--color-light-grey-400);
-  }
-
-  .tree-view__node__container {
-    .tree-view__node__expand-icon svg {
-      color: var(--color-light-grey-100);
-    }
-  }
-
-  .tree-view__node__label button {
-    color: var(--color-light-grey-400);
-  }
-
-  .mapping-test-explorer__item:hover {
-    background: var(--color-dark-grey-200);
-  }
-
-  .mapping-test-explorer__item__label__text {
-    color: var(--color-light-grey-400);
-  }
-
-  .mapping-test-explorer__item__label__text:active {
-    color: var(--color-light-grey-400);
-  }
-
-  .mapping-explorer__item--active,
-  .mapping-explorer__item--active svg,
-  .mapping-explorer__item--active:hover,
-  .mapping-test-explorer__item--active,
-  .mapping-test-explorer__item--active svg,
-  .mapping-test-explorer__item--active:hover {
-    background: var(--color-light-blue-450);
-    color: var(--color-light-grey-0);
-  }
-
-  .enumeration-mapping-editor__enum-value {
-    background: unset;
-  }
-
-  .enumeration-mapping-editor__enum-value__source-value__input,
-  .enumeration-mapping-editor__enum-value__source-value__info,
-  .enumeration-mapping-editor__enum-value__name {
-    background: var(--color-dark-grey-100);
-  }
-
-  .enumeration-mapping-editor__enum-value__source-value__expected-return-type {
-    color: var(--color-light-grey-100);
-    background: var(--color-dark-grey-300);
-    border-color: var(--color-dark-grey-300);
-  }
-
-  // ---------------------------- Modal  -------------------------------
-
-  .mapping-modal {
-    background: var(--color-dark-grey-100) !important;
-  }
-
-  // ---------------------------- Property Editor -------------------------------
-
-  .property-mapping-editor,
-  .mapping-element-editor__metadata {
-    background: var(--color-dark-grey-50);
-  }
-
-  .property-mapping-editor__entry {
-    .selector-input__control {
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-input-border--dark);
-    }
-
-    .selector-input__indicators {
-      border-left: 0.1rem solid var(--color-dark-grey-250);
-    }
-
-    .selector-input__indicator-separator,
-    .selector-input__indicator,
-    .selector-input__dropdown-indicator {
-      background: var(--color-dark-grey-100);
-    }
-  }
-
-  .property-mapping-editor__name,
-  .property-mapping-editor__entry--empty {
-    background: var(--color-dark-grey-100);
-  }
-
-  .lambda-editor .monaco-editor .margin,
-  .lambda-editor .monaco-editor .monaco-editor-background,
-  .lambda-editor__editor__info {
-    background: var(--color-dark-grey-100) !important;
-
-    .lambda-editor__editor__expected-return-type {
-      color: var(--color-light-grey-100);
-      background: var(--color-dark-grey-300);
-      border: 0.1rem solid var(--color-dark-grey-300);
-    }
-  }
-
-  .class-mapping-editor__property-panel {
-    border-right: 0.1rem solid var(--color-dark-grey-200);
-  }
-
-  .property-mapping-editor__entry__id {
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-200);
-  }
-
-  .property-mapping-editor__entry__visit-btn {
-    background: var(--color-dark-grey-200);
-  }
-
-  .property-mapping-editor__entry__id__label__default-badge {
-    background: var(--color-dark-grey-250);
-    color: var(--color-light-grey-400);
-  }
-
-  .background--primitive,
-  .mapping-element-editor__metadata__source-chunk {
-    background: var(--color-blue-200);
-  }
-
-  // ---------------------------- Blank Panel -------------------------------
-
-  .blank-panel-placeholder__action,
-  .blank-panel-placeholder__action svg {
-    color: var(--color-dark-grey-200) !important;
-    border-color: var(--color-dark-grey-200) !important;
-  }
-}
-
 .mapping-testable-editor {
   height: 100%;
   width: 100%;
 
   &__content {
     height: 100%;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__doc {
