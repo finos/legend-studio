@@ -444,6 +444,7 @@ export class LegendMarketplaceProductViewerStore {
               generateLakehouseDataProductPath(_dataProductId, _deploymentId),
             ),
         },
+        this.marketplaceBaseStore.permitWorkflowServerClient,
       );
       this.setDataProductViewer(dataProductViewerState);
       this.setDataProductDataAccess(dataProductDataAccessState);

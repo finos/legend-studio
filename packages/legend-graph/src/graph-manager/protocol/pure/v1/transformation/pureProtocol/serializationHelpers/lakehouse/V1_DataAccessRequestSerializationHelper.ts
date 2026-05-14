@@ -39,6 +39,7 @@ import {
   V1_DataRequest,
   V1_DataRequestsWithWorkflowResponse,
   V1_DataRequestWithWorkflow,
+  V1_GenericWorkflowTask,
   V1_PrivilegeManagerApprovalTask,
   V1_Workflow,
 } from '../../../../lakehouse/entitlements/V1_DataAccessRequest.js';
@@ -62,6 +63,7 @@ export enum V1_RequestType {
 export enum V1_WorkflowTaskType {
   PrivilegeManagerApprovalTask = 'PrivilegeManagerApprovalTask',
   DataOwnerApprovalTask = 'DataOwnerApprovalTask',
+  GenericWorkflowTask = 'GenericWorkflowTask',
 }
 
 // --------------------------------- Create Data Access Request Payload ---------------------------------
@@ -175,6 +177,18 @@ export const V1_dataOwnerApprovalTaskModelSchema = (
     accessPointGroup: primitive(),
   });
 
+/**
+ * Fallback schema for task types not explicitly modelled.
+ * Deserializes all base V1_WorkflowTask fields plus the raw _type string.
+ */
+const V1_genericWorkflowTaskModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_GenericWorkflowTask, {
+    _type: primitive(),
+    ...V1_workflowTaskBaseProps(plugins),
+  });
+
 const V1_serializeWorkflowTask = (
   task: V1_WorkflowTask,
   plugins: PureProtocolProcessorPlugin[],
@@ -183,6 +197,8 @@ const V1_serializeWorkflowTask = (
     return serialize(V1_privilegeManagerApprovalTaskModelSchema(plugins), task);
   } else if (task instanceof V1_DataOwnerApprovalTask) {
     return serialize(V1_dataOwnerApprovalTaskModelSchema(plugins), task);
+  } else if (task instanceof V1_GenericWorkflowTask) {
+    return serialize(V1_genericWorkflowTaskModelSchema(plugins), task);
   }
   throw new UnsupportedOperationError(
     `Can't serialize unsupported workflow task type: ${task.constructor.name}`,
@@ -201,6 +217,8 @@ const V1_deserializeWorkflowTask = (
       );
     case V1_WorkflowTaskType.DataOwnerApprovalTask:
       return deserialize(V1_dataOwnerApprovalTaskModelSchema(plugins), json);
+    case V1_WorkflowTaskType.GenericWorkflowTask:
+      return deserialize(V1_genericWorkflowTaskModelSchema(plugins), json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize unsupported workflow task type: ${json._type}`,

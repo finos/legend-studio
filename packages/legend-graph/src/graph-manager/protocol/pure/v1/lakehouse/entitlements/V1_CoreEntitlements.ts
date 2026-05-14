@@ -74,6 +74,10 @@ export class V1_ProducerScope extends V1_OrganizationalScope {
   did!: string;
 }
 
+export class V1_RMS extends V1_OrganizationalScope {
+  rmsNode!: string;
+}
+
 export class V1_UnknownOrganizationalScopeType extends V1_OrganizationalScope {
   content!: PlainObject;
 }

@@ -596,25 +596,97 @@ export const DataAccessRequestContent = observer(
                   >
                     {step.label.link ? (
                       <>
-                        <Link
-                          href={step.label.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {step.label.title}
-                        </Link>
-                        <IconButton
-                          onClick={() =>
-                            onCopyToClipboard(step.label.link ?? '')
-                          }
-                          className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
-                          title="Copy Task Link"
-                        >
-                          <CopyFilledIcon />
-                          <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
-                            Copy
-                          </div>
-                        </IconButton>
+                        {step.label.externalLink ? (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'flex-end',
+                              gap: '0.25rem',
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                              }}
+                            >
+                              <Link
+                                href={step.label.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{ fontWeight: 600 }}
+                              >
+                                {step.label.title}
+                              </Link>
+                              <IconButton
+                                onClick={() =>
+                                  onCopyToClipboard(step.label.link ?? '')
+                                }
+                                size="medium"
+                                title="Copy Task Link"
+                                sx={{ padding: '4px' }}
+                              >
+                                <CopyFilledIcon />
+                              </IconButton>
+                            </Box>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                fontSize: '0.85rem',
+                                color: 'text.secondary',
+                              }}
+                            >
+                              <span>or</span>
+                              <Link
+                                href={step.label.externalLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{
+                                  fontSize: '0.85rem',
+                                  color: 'text.secondary',
+                                }}
+                              >
+                                action via eTask
+                              </Link>
+                              <IconButton
+                                onClick={() =>
+                                  onCopyToClipboard(step.label.externalLink ?? '')
+                                }
+                                size="medium"
+                                title="Copy eTask Link"
+                                sx={{ padding: '4px' }}
+                              >
+                                <CopyFilledIcon />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                        ) : (
+                          <>
+                            <Link
+                              href={step.label.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {step.label.title}
+                            </Link>
+                            <IconButton
+                              onClick={() =>
+                                onCopyToClipboard(step.label.link ?? '')
+                              }
+                              className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
+                              title="Copy Task Link"
+                            >
+                              <CopyFilledIcon />
+                              <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
+                                Copy
+                              </div>
+                            </IconButton>
+                          </>
+                        )}
                       </>
                     ) : (
                       step.label.title
@@ -785,7 +857,7 @@ export const DataAccessRequestContent = observer(
           open={showEscalationModal}
           onClose={() => setShowEscalationModal(false)}
           viewerState={viewerState}
-          selectedUser={selectedTargetUser}
+          selectedUser={selectedTargetUser ?? viewerState.createdBy}
           refresh={refresh}
         />
       </>
