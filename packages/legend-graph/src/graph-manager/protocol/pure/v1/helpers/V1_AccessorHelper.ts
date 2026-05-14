@@ -41,7 +41,7 @@ import type { V1_GraphBuilderContext } from '../transformation/pureGraph/to/V1_G
 import { V1_GenericType as V1_GenericTypeProtocol } from '../model/packageableElements/type/V1_GenericType.js';
 import { V1_PackageableType } from '../model/packageableElements/type/V1_PackageableType.js';
 import { returnUndefOnError, type PlainObject } from '@finos/legend-shared';
-import { INGEST_LAKE_IN_ID } from '../../../../../graph/MetaModelConst.js';
+import { MILESTONE_INGEST_COLUMNS } from '../../../../../graph/MetaModelConst.js';
 import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
 import { V1_deserializeIngestDefinitionContent } from '../transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 import {
@@ -112,9 +112,17 @@ const buildRelationTypeFromIngestDataset = (
   ) {
     relationType.columns.push(
       new RelationColumn(
-        INGEST_LAKE_IN_ID,
+        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_IN_ID,
         context.resolveGenericTypeFromProtocolWithRelationType(
-          buildV1GenericType('Integer'),
+          buildV1GenericType('Int'),
+        ),
+      ),
+    );
+    relationType.columns.push(
+      new RelationColumn(
+        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_OUT_ID,
+        context.resolveGenericTypeFromProtocolWithRelationType(
+          buildV1GenericType('Int'),
         ),
       ),
     );

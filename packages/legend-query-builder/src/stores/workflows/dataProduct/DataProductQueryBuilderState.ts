@@ -271,7 +271,9 @@ export class ModelAccessPointDataProductExecutionState extends DataProductExecut
 
   changeSelectedRuntime(val: PackageableRuntime): void {
     this.selectedRuntime = val;
-    this.queryBuilderState.changeRuntime(val);
+    this.queryBuilderState.changeRuntime(
+      new RuntimePointer(PackageableElementExplicitReference.create(val)),
+    );
   }
 
   withAdhocRuntime(): ModelAccessPointDataProductExecutionState {
@@ -312,13 +314,19 @@ export class LakehouseDataProductExecutionState extends DataProductExecutionStat
     super(executionState, queryBuilderState);
     makeObservable(this, {
       withAdhocRuntime: observable,
+      selectedRuntime: observable,
+      changeSelectedRuntime: action,
+      compatibleRuntimes: computed,
+      showRuntimeOptions: computed,
     });
     this.selectedRuntime = this.compatibleRuntimes[0];
   }
 
   changeSelectedRuntime(val: PackageableRuntime): void {
     this.selectedRuntime = val;
-    this.queryBuilderState.changeRuntime(val);
+    this.queryBuilderState.changeRuntime(
+      new RuntimePointer(PackageableElementExplicitReference.create(val)),
+    );
   }
 
   withAdhocRuntime(): LakehouseDataProductExecutionState {

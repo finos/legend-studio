@@ -79,6 +79,7 @@ import {
   processTDSProjectionColumnPropertyExpression,
   processTDSProjectionDerivationExpression,
   processTDSRelationColumn,
+  processTDSSelectExpression,
   processTDSSliceExpression,
   processTDSSortDirectionExpression,
   processTDSSortExpression,
@@ -708,6 +709,18 @@ export class QueryBuilderValueSpecificationProcessor
           this.parentLambda,
         );
       }
+      return;
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_SELECT,
+      )
+    ) {
+      processTDSSelectExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     } else if (
       matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_COL)

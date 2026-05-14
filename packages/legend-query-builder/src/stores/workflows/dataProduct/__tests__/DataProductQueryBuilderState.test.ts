@@ -20,7 +20,10 @@ import { ApplicationStore } from '@finos/legend-application';
 import {
   Core_GraphManagerPreset,
   LakehouseAccessPoint,
+  RuntimePointer,
+  SimpleFunctionExpression,
   V1_DataProductArtifact,
+  type PackageableRuntime,
 } from '@finos/legend-graph';
 import {
   TEST__buildGraphWithEntities,
@@ -41,6 +44,7 @@ import {
   LakehouseDataProductExecutionState,
 } from '../DataProductQueryBuilderState.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { buildLambdaFunction } from '../../../QueryBuilderValueSpecificationBuilder.js';
 
 /**
  * Minimal entity set: a data product with two LakehouseAccessPoints in the
@@ -273,6 +277,101 @@ describe(
         expect(newExecState.exectionValue).toBe(ap2);
         expect(newExecState.adhocRuntime).toBe(false);
         expect(newExecState.selectedRuntime).toBeDefined();
+      },
+    );
+  },
+);
+
+describe(
+  unitTest(
+    'DataProductQueryBuilderState - changeSelectedRuntime for Lakehouse',
+  ),
+  () => {
+    test(
+      unitTest(
+        'changeSelectedRuntime wraps the PackageableRuntime in a RuntimePointer on executionContextState',
+      ),
+      async () => {
+        const { state, ap1, graphManagerState } =
+          await buildLakehouseDataProductState();
+
+        // initialize the source element / runtimeValue by entering ap1
+        await state.changeExecutionState(ap1);
+
+        const execState = guaranteeType(
+          state.executionState,
+          LakehouseDataProductExecutionState,
+        );
+        const runtime2 = guaranteeNonNullable(
+          graphManagerState.graph.getRuntime('model::LakehouseRuntime2'),
+        );
+
+        execState.changeSelectedRuntime(runtime2);
+
+        // selectedRuntime should be tracked on the execution state
+        expect(execState.selectedRuntime).toBe(runtime2);
+
+        // and propagated to the execution context as a RuntimePointer (not a
+        // bare PackageableRuntime) so downstream lambda building works.
+        const runtimeValue = state.executionContextState.runtimeValue;
+        expect(runtimeValue).toBeInstanceOf(RuntimePointer);
+        expect(
+          guaranteeType(runtimeValue, RuntimePointer).packageableRuntime.value,
+        ).toBe(runtime2);
+      },
+    );
+
+    test(
+      unitTest(
+        'buildQuery() reflects the runtime selected via changeSelectedRuntime',
+      ),
+      async () => {
+        const { state, ap1, graphManagerState } =
+          await buildLakehouseDataProductState();
+
+        await state.changeExecutionState(ap1);
+
+        const execState = guaranteeType(
+          state.executionState,
+          LakehouseDataProductExecutionState,
+        );
+        const runtime1 = guaranteeNonNullable(
+          graphManagerState.graph.getRuntime('model::LakehouseRuntime1'),
+        );
+        const runtime2 = guaranteeNonNullable(
+          graphManagerState.graph.getRuntime('model::LakehouseRuntime2'),
+        );
+
+        // start with runtime1, then switch to runtime2
+        execState.changeSelectedRuntime(runtime1);
+        execState.changeSelectedRuntime(runtime2);
+
+        // build the lambda function (rather than the RawLambda) so we can
+        // inspect the resolved runtime reference inside the from() expression.
+        const lambdaFunction = buildLambdaFunction(state);
+        const fromExpression = guaranteeType(
+          lambdaFunction.expressionSequence[0],
+          SimpleFunctionExpression,
+          'Expected top-level expression to be a from() function call',
+        );
+        expect(fromExpression.functionName).toContain('from');
+
+        // the runtime parameter is the last param to from(); its first value
+        // should be a reference to the runtime we just selected. Without the
+        // fix the runtime would be missing from the from() expression because
+        // executionContextState.runtimeValue would not be a RuntimePointer.
+        const runtimeParam = guaranteeNonNullable(
+          fromExpression.parametersValues[
+            fromExpression.parametersValues.length - 1
+          ],
+          'Expected from() to receive a runtime parameter',
+        );
+        const runtimeRef = (
+          runtimeParam as unknown as {
+            values: { value: PackageableRuntime }[];
+          }
+        ).values[0];
+        expect(guaranteeNonNullable(runtimeRef).value).toBe(runtime2);
       },
     );
   },

@@ -118,6 +118,23 @@ export enum TDS_EXECUTION_SERIALIZATION_FORMAT {
   CSV = 'CSV',
 }
 
+/**
+ * Controls how the projection step is emitted in Pure when building the
+ * query lambda back out from the in-memory state. Recorded on read-in so
+ * round-tripping preserves the author's chosen form.
+ *
+ * - PROJECT (default): `precedingExpr->project([x|..., x|...], ['a','b'])`
+ * - PROJECT_COL: `precedingExpr->project([col(x|..., 'a'), col(x|..., 'b')])`
+ * - SELECT: `precedingExpr->select(~[a, b])` (column reference form;
+ *   only valid when every projection column is a simple reference to an
+ *   existing relation column, with no derivations).
+ */
+export enum TDS_PROJECTION_MODE {
+  PROJECT = 'PROJECT',
+  PROJECT_COL = 'PROJECT_COL',
+  SELECT = 'SELECT',
+}
+
 export class QueryBuilderTDSState
   extends QueryBuilderFetchStructureImplementationState
   implements Hashable
@@ -130,7 +147,7 @@ export class QueryBuilderTDSState
   isConvertDerivationProjectionObjects = false;
   showPostFilterPanel: boolean;
   showWindowFuncPanel = false;
-  useColFunc = false;
+  projectionMode: TDS_PROJECTION_MODE = TDS_PROJECTION_MODE.PROJECT;
 
   postFilterOperators: QueryBuilderPostFilterOperator[] =
     getQueryBuilderCorePostFilterOperators();
@@ -153,11 +170,12 @@ export class QueryBuilderTDSState
       isConvertDerivationProjectionObjects: observable,
       showPostFilterPanel: observable,
       showWindowFuncPanel: observable,
-      useColFunc: observable,
+      projectionMode: observable,
       TEMPORARY__showPostFetchStructurePanel: computed,
       derivations: computed,
       hasParserError: computed,
       isQueryOptionsSet: computed,
+      resolveProjectionMode: computed,
       addColumn: action,
       moveColumn: action,
       removeAllColumns: action,
@@ -167,7 +185,7 @@ export class QueryBuilderTDSState
       initializeWithQuery: action,
       setShowPostFilterPanel: action,
       setShowWindowFuncPanel: action,
-      setUseColFunc: action,
+      setProjectionMode: action,
       checkBeforeChangingImplementation: action,
       convertDerivationProjectionObjects: flow,
       fetchDerivedReturnTypes: flow,
@@ -478,8 +496,32 @@ export class QueryBuilderTDSState
     this.showWindowFuncPanel = val;
   }
 
-  setUseColFunc(val: boolean): void {
-    this.useColFunc = val;
+  setProjectionMode(val: TDS_PROJECTION_MODE): void {
+    this.projectionMode = val;
+  }
+
+  /**
+   * Returns the effective projection mode used when emitting the query.
+   *
+   * The user-selected `projectionMode` is treated as a preference. The
+   * `SELECT` form (`->select(~[a, b])`) cannot represent column aliases or
+   * non-relation columns, so if any column has been renamed away from its
+   * underlying relation column name (or is not a
+   * `QueryBuilderRelationColumnProjectionColumnState`) we silently fall back
+   * to `PROJECT`.
+   */
+  get resolveProjectionMode(): TDS_PROJECTION_MODE {
+    if (this.projectionMode === TDS_PROJECTION_MODE.SELECT) {
+      const allColumnsAreBareRelationRefs = this.projectionColumns.every(
+        (col) =>
+          col instanceof QueryBuilderRelationColumnProjectionColumnState &&
+          col.columnName === col.column.name,
+      );
+      if (!allColumnsAreBareRelationRefs) {
+        return TDS_PROJECTION_MODE.PROJECT;
+      }
+    }
+    return this.projectionMode;
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {
