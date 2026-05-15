@@ -17,9 +17,11 @@
 import { observer } from 'mobx-react-lite';
 import {
   BlankPanelPlaceholder,
+  BlankPanelContent,
   ContextMenu,
   CustomSelectorInput,
   Dialog,
+  ErrorWarnIcon,
   FilledWindowMaximizeIcon,
   MenuContent,
   MenuContentItem,
@@ -29,8 +31,11 @@ import {
   ModalFooterButton,
   ModalHeader,
   ModalTitle,
-  PanelContent,
+  Panel,
   PanelFormTextField,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
   PlayIcon,
   PlusIcon,
   RefreshIcon,
@@ -68,7 +73,6 @@ import {
 import {
   TESTABLE_RESULT,
   getTestableResultFromTestResult,
-  getTestableResultFromTestResults,
 } from '../../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { flowResult } from 'mobx';
 import { getTestableResultIcon } from '../../../side-bar/testable/GlobalTestRunner.js';
@@ -129,97 +133,6 @@ const FunctionTestableContextMenu = observer(
       </MenuContent>
     );
   }),
-);
-
-const FunctionTestSuiteItem = observer(
-  (props: {
-    suite: FunctionTestSuite;
-    functionTestableState: FunctionTestableState;
-  }) => {
-    const { suite, functionTestableState } = props;
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
-      useState(false);
-    const isReadOnly = functionTestableState.functionEditorState.isReadOnly;
-    const openSuite = (): void => functionTestableState.changeSuite(suite);
-    const results = functionTestableState.testableResults?.filter(
-      (t) => t.parentSuite?.id === suite.id,
-    );
-    const isRunning =
-      functionTestableState.isRunningTestableSuitesState.isInProgress ||
-      (functionTestableState.isRunningFailingSuitesState.isInProgress &&
-        functionTestableState.failingSuites.includes(suite)) ||
-      functionTestableState.runningSuite === suite;
-    const isActive = functionTestableState.selectedTestSuite?.suite === suite;
-    const _testableResult = getTestableResultFromTestResults(results);
-    const testableResult = isRunning
-      ? TESTABLE_RESULT.IN_PROGRESS
-      : _testableResult;
-    const resultIcon = getTestableResultIcon(testableResult);
-    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
-    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
-    const add = (): void => {
-      // TODO
-    };
-    const _delete = (): void => {
-      functionTestableState.deleteTestSuite(suite);
-    };
-    const rename = (): void => {
-      functionTestableState.setRenameComponent(suite);
-    };
-    const runSuite = (): void => {
-      flowResult(functionTestableState.runSuite(suite)).catch(
-        functionTestableState.editorStore.applicationStore.alertUnhandledError,
-      );
-    };
-    return (
-      <ContextMenu
-        className={clsx(
-          'testable-test-explorer__item',
-          {
-            'testable-test-explorer__item--selected-from-context-menu':
-              !isActive && isSelectedFromContextMenu,
-          },
-          { 'testable-test-explorer__item--active': isActive },
-        )}
-        disabled={isReadOnly}
-        content={
-          <FunctionTestableContextMenu
-            addName="Suite"
-            add={add}
-            _delete={_delete}
-            rename={rename}
-          />
-        }
-        menuProps={{ elevation: 7 }}
-        onOpen={onContextMenuOpen}
-        onClose={onContextMenuClose}
-      >
-        <div
-          className={clsx('testable-test-explorer__item__label')}
-          onClick={openSuite}
-          tabIndex={-1}
-        >
-          <div className="testable-test-explorer__item__label__icon">
-            {resultIcon}
-          </div>
-          <div className="testable-test-explorer__item__label__text">
-            {suite.id}
-          </div>
-          <div className="mapping-test-explorer__item__actions">
-            <button
-              className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
-              onClick={runSuite}
-              disabled={isRunning}
-              tabIndex={-1}
-              title={`Run ${suite.id}`}
-            >
-              {<PlayIcon />}
-            </button>
-          </div>
-        </div>
-      </ContextMenu>
-    );
-  },
 );
 
 const FunctionTestDataStateEditor = observer(
@@ -813,8 +726,11 @@ const CreateTestModal = observer(
     const close = (): void => functionSuiteState.setShowModal(false);
     const create = (): void => {
       if (id) {
-        functionSuiteState.addNewTest(id);
-        close();
+        flowResult(functionSuiteState.addNewTest(id))
+          .then(() => close())
+          .catch(
+            functionSuiteState.editorStore.applicationStore.alertUnhandledError,
+          );
       }
     };
 
@@ -859,11 +775,215 @@ const CreateTestModal = observer(
     );
   },
 );
-const FunctionTestSuiteEditorInner = observer(
+// ──────────────────────────────────────────────────────────────────────────────
+// Add Element Modal
+// ──────────────────────────────────────────────────────────────────────────────
+
+const AddDataElementModal = observer(
+  (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
+    const { functionTestSuiteState } = props;
+    const dataState = functionTestSuiteState.dataState;
+    const applicationStore =
+      functionTestSuiteState.editorStore.applicationStore;
+    const options = dataState.availableElementsToAdd.map((e) => ({
+      value: e.path,
+      label: e.path,
+    }));
+    const [selectedPath, setSelectedPath] = useState<string | undefined>(
+      options[0]?.value,
+    );
+    const close = (): void => dataState.setShowAddElementModal(false);
+    const add = (): void => {
+      if (selectedPath) {
+        dataState.addDataElement(selectedPath);
+        close();
+      }
+    };
+    const onChange = (val: { label: string; value: string } | null): void => {
+      setSelectedPath(val?.value);
+    };
+
+    return (
+      <Dialog
+        open={dataState.showAddElementModal}
+        onClose={close}
+        classes={{ container: 'search-modal__container' }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
+          <ModalHeader>
+            <ModalTitle title="Add Element" />
+          </ModalHeader>
+          <ModalBody>
+            <CustomSelectorInput
+              className="panel__content__form__section__dropdown"
+              options={options}
+              onChange={onChange}
+              value={
+                selectedPath
+                  ? { value: selectedPath, label: selectedPath }
+                  : null
+              }
+              placeholder="Select element..."
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+            />
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              disabled={!selectedPath}
+              onClick={add}
+              text="Add"
+            />
+            <ModalFooterButton onClick={close} text="Close" type="secondary" />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Test Data Editor (left panel) — elements list + per-element data editor
+// ──────────────────────────────────────────────────────────────────────────────
+
+const FunctionTestDataPanel = observer(
+  (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
+    const { functionTestSuiteState } = props;
+    const dataState = functionTestSuiteState.dataState;
+    const hasIngestOrDataProductAccessors =
+      functionTestSuiteState.functionTestableState
+        .resolvedIngestOrDataProductAccessors.length > 0;
+    const hasTestData = Boolean(dataState.dataHolder.testData?.length);
+
+    const addStoreTestData = (): void => {
+      if (!dataState.availableElementsToAdd.length) {
+        functionTestSuiteState.editorStore.applicationStore.notificationService.notifyWarning(
+          hasIngestOrDataProductAccessors
+            ? `All referenced elements' data is already present`
+            : `No elements available to add`,
+        );
+        return;
+      }
+      dataState.setShowAddElementModal(true);
+    };
+
+    return (
+      <div
+        className={clsx('service-test-data-editor panel', {
+          'service-test-data-editor--no-data': !hasTestData,
+        })}
+      >
+        <div className="service-test-data-editor__data">
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel minSize={100} size={180}>
+              <div className="binding-editor__header">
+                <div className="binding-editor__header__title">
+                  <div className="panel__header__title__content">Test Data</div>
+                </div>
+                <div className="panel__header__actions">
+                  <button
+                    className="panel__header__action"
+                    tabIndex={-1}
+                    onClick={addStoreTestData}
+                    title="Add Element"
+                  >
+                    <PlusIcon />
+                  </button>
+                </div>
+              </div>
+              {!hasTestData ? (
+                <div className="service-test-data-editor__warning">
+                  <ErrorWarnIcon />
+                  <span>Add an element to configure test data</span>
+                </div>
+              ) : (
+                <div>
+                  {(dataState.dataHolder.testData ?? []).map((td) => (
+                    <div
+                      key={td.element.value.path}
+                      className={clsx('testable-test-explorer__item', {
+                        'testable-test-explorer__item--active':
+                          dataState.selectedDataState?.storeTestData === td,
+                      })}
+                    >
+                      <div
+                        className="testable-test-explorer__item__label"
+                        onClick={(): void => dataState.openStoreTestData(td)}
+                        tabIndex={-1}
+                      >
+                        <div className="testable-test-explorer__item__label__text">
+                          {td.element.value.path}
+                        </div>
+                        <div className="mapping-test-explorer__item__actions">
+                          <button
+                            className="mapping-test-explorer__item__action"
+                            onClick={(e): void => {
+                              e.stopPropagation();
+                              dataState.deleteStoreTestData(td);
+                            }}
+                            tabIndex={-1}
+                            title="Delete"
+                          >
+                            <TimesIcon />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel minSize={200}>
+              {dataState.selectedDataState ? (
+                <FunctionTestDataStateEditor
+                  functionTestSuiteState={functionTestSuiteState}
+                  storeTestDataState={dataState.selectedDataState}
+                />
+              ) : (
+                <BlankPanelContent>
+                  Select an element to configure its test data
+                </BlankPanelContent>
+              )}
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+        {dataState.showAddElementModal && (
+          <AddDataElementModal
+            functionTestSuiteState={functionTestSuiteState}
+          />
+        )}
+      </div>
+    );
+  },
+);
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Tests Editor (right panel) — tests list + test detail (assertion/setup)
+// ──────────────────────────────────────────────────────────────────────────────
+
+const FunctionTestsPanel = observer(
   (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
     const { functionTestSuiteState } = props;
     const editorStore = functionTestSuiteState.editorStore;
+    const isReadOnly =
+      functionTestSuiteState.functionTestableState.functionEditorState
+        .isReadOnly;
     const selectedTestState = functionTestSuiteState.selectTestState;
+
     const addTest = (): void => {
       functionTestSuiteState.setShowModal(true);
     };
@@ -877,134 +997,160 @@ const FunctionTestSuiteEditorInner = observer(
         editorStore.applicationStore.alertUnhandledError,
       );
     };
-    const renderFunctionTestEditor = (): React.ReactNode => {
-      if (selectedTestState) {
-        return <FunctionTestEditor functionTestState={selectedTestState} />;
-      } else if (!functionTestSuiteState.suite.tests.length) {
-        return (
-          <BlankPanelPlaceholder
-            text="Add Function Test"
-            onClick={addTest}
-            clickActionType="add"
-            tooltipText="Click to add function test"
-          />
-        );
-      }
-      return null;
-    };
 
     return (
-      <ResizablePanelGroup orientation="vertical">
-        <ResizablePanel size={200} minSize={28}>
-          <div className="binding-editor__header">
-            <div className="binding-editor__header__title">
-              <div className="panel__header__title__content">Tests</div>
-            </div>
-            <div className="panel__header__actions">
-              <button
-                className="panel__header__action testable-test-explorer__play__all__icon"
-                tabIndex={-1}
-                onClick={runTests}
-                title="Run All Tests"
-              >
-                <RunAllIcon />
-              </button>
-              <button
-                className="panel__header__action testable-test-explorer__play__all__icon"
-                tabIndex={-1}
-                onClick={runFailingTests}
-                title="Run All Failing Tests"
-              >
-                <RunErrorsIcon />
-              </button>
-              <button
-                className="panel__header__action"
-                tabIndex={-1}
-                onClick={addTest}
-                title="Add Function Test"
-              >
-                <PlusIcon />
-              </button>
-            </div>
-          </div>
-          <PanelContent>
-            {functionTestSuiteState.testStates.map((test) => (
-              <FunctionTestItem
-                key={test.uuid}
-                functionTestState={test}
-                suiteState={functionTestSuiteState}
-              />
-            ))}
-            {functionTestSuiteState.showCreateModal && (
-              <CreateTestModal functionSuiteState={functionTestSuiteState} />
-            )}
-          </PanelContent>
-        </ResizablePanel>
-        <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-        </ResizablePanelSplitter>
-        <ResizablePanel minSize={28}>
-          {renderFunctionTestEditor()}
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      <div className="panel service-test-editor">
+        <div className="service-test-editor__content">
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel minSize={100} size={200}>
+              <div className="binding-editor__header">
+                <div className="binding-editor__header__title">
+                  <div className="panel__header__title__content">Tests</div>
+                </div>
+                <div className="panel__header__actions">
+                  <button
+                    className="panel__header__action testable-test-explorer__play__all__icon"
+                    tabIndex={-1}
+                    onClick={runTests}
+                    title="Run All Tests"
+                  >
+                    <RunAllIcon />
+                  </button>
+                  <button
+                    className="panel__header__action testable-test-explorer__play__all__icon"
+                    tabIndex={-1}
+                    onClick={runFailingTests}
+                    title="Run All Failing Tests"
+                  >
+                    <RunErrorsIcon />
+                  </button>
+                  {!isReadOnly && (
+                    <button
+                      className="panel__header__action"
+                      tabIndex={-1}
+                      onClick={addTest}
+                      title="Add Function Test"
+                    >
+                      <PlusIcon />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div>
+                {functionTestSuiteState.testStates.map((test) => (
+                  <FunctionTestItem
+                    key={test.uuid}
+                    functionTestState={test}
+                    suiteState={functionTestSuiteState}
+                  />
+                ))}
+              </div>
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel minSize={56}>
+              {selectedTestState ? (
+                <FunctionTestEditor functionTestState={selectedTestState} />
+              ) : (
+                <BlankPanelPlaceholder
+                  text="Select a test"
+                  tooltipText="Select a test from the list above"
+                />
+              )}
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+        {functionTestSuiteState.showCreateModal && (
+          <CreateTestModal functionSuiteState={functionTestSuiteState} />
+        )}
+      </div>
     );
   },
 );
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Suite Editor — horizontal split: test data (left) + tests (right)
+// ──────────────────────────────────────────────────────────────────────────────
 
 const FunctionTestSuiteEditor = observer(
   (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
     const { functionTestSuiteState } = props;
-    const dataState = functionTestSuiteState.dataState;
-    const addStoreTestData = (): void => {
-      // TODO
-    };
+    const hasTestData = Boolean(
+      functionTestSuiteState.dataState.dataHolder.testData?.length,
+    );
+    const hasIngestOrDataProductAccessors =
+      functionTestSuiteState.functionTestableState
+        .resolvedIngestOrDataProductAccessors.length > 0;
+    const showTestDataPanel =
+      functionTestSuiteState.functionTestableState.containsRuntime ||
+      hasIngestOrDataProductAccessors ||
+      hasTestData;
 
-    if (!functionTestSuiteState.functionTestableState.containsRuntime) {
+    if (!showTestDataPanel) {
+      // No test data — just show the tests panel full width
       return (
-        <FunctionTestSuiteEditorInner
-          functionTestSuiteState={functionTestSuiteState}
-        />
+        <div className="service-test-suite-editor">
+          <FunctionTestsPanel functionTestSuiteState={functionTestSuiteState} />
+        </div>
       );
     }
+
     return (
-      <ResizablePanelGroup orientation="horizontal">
-        <ResizablePanel size={300} minSize={28}>
-          <div className="service-test-data-editor panel">
-            {functionTestSuiteState.dataState.dataHolder.testData?.length ? (
-              <>
-                {dataState.selectedDataState && (
-                  <FunctionTestDataStateEditor
-                    functionTestSuiteState={functionTestSuiteState}
-                    storeTestDataState={dataState.selectedDataState}
-                  />
-                )}
-              </>
-            ) : (
-              <BlankPanelPlaceholder
-                text="Add Store Test Data"
-                onClick={addStoreTestData}
-                clickActionType="add"
-                tooltipText="Click to add store test data"
-              />
-            )}
-          </div>
-        </ResizablePanel>
-        <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-        </ResizablePanelSplitter>
-        <ResizablePanel minSize={56}>
-          {
-            <FunctionTestSuiteEditorInner
+      <div className="service-test-suite-editor">
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={300} minSize={28}>
+            <FunctionTestDataPanel
               functionTestSuiteState={functionTestSuiteState}
             />
-          }
-        </ResizablePanel>
-      </ResizablePanelGroup>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={56}>
+            <FunctionTestsPanel
+              functionTestSuiteState={functionTestSuiteState}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     );
   },
 );
 
-const CreateFucntionTestSuiteModal = observer(
+// ──────────────────────────────────────────────────────────────────────────────
+// Suite Tab Context Menu (rename/delete)
+// ──────────────────────────────────────────────────────────────────────────────
+
+const SuiteHeaderTabContextMenu = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      suite: FunctionTestSuite;
+      functionTestableState: FunctionTestableState;
+    }
+  >(function SuiteHeaderTabContextMenu(props, ref) {
+    const { suite, functionTestableState } = props;
+    const deleteSuite = (): void => {
+      functionTestableState.deleteTestSuite(suite);
+    };
+    const rename = (): void => {
+      functionTestableState.setRenameComponent(suite);
+    };
+    return (
+      <MenuContent ref={ref}>
+        <MenuContentItem onClick={rename}>Rename</MenuContentItem>
+        <MenuContentItem onClick={deleteSuite}>Delete</MenuContentItem>
+      </MenuContent>
+    );
+  }),
+);
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Create Suite Modal
+// ──────────────────────────────────────────────────────────────────────────────
+
+const CreateFunctionTestSuiteModal = observer(
   (props: { functionTestableEditorState: FunctionTestableState }) => {
     const { functionTestableEditorState } = props;
     const applicationStore =
@@ -1015,11 +1161,15 @@ const CreateFucntionTestSuiteModal = observer(
     const [testName, setTestName] = useState<string | undefined>(undefined);
     const isValid = suiteName && testName;
 
-    // model
     const close = (): void => functionTestableEditorState.setCreateSuite(false);
     const create = (): void => {
       if (suiteName && testName) {
-        functionTestableEditorState.createSuite(suiteName, testName);
+        flowResult(
+          functionTestableEditorState.createSuite(suiteName, testName),
+        ).catch(
+          functionTestableEditorState.editorStore.applicationStore
+            .alertUnhandledError,
+        );
       }
     };
     return (
@@ -1086,6 +1236,10 @@ const CreateFucntionTestSuiteModal = observer(
   },
 );
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Main Testing Tab — suite tabs at top, suite editor below
+// ──────────────────────────────────────────────────────────────────────────────
+
 export const FunctionTestableEditor = observer(
   (props: { functionTestableState: FunctionTestableState }) => {
     const { functionTestableState } = props;
@@ -1093,128 +1247,91 @@ export const FunctionTestableEditor = observer(
     const functionEditorState = functionTestableState.functionEditorState;
     const isReadOnly = functionEditorState.isReadOnly;
     const selectedSuiteState = functionTestableState.selectedTestSuite;
-    // use effect
+
     useEffect(() => {
       functionTestableState.init();
     }, [functionTestableState]);
+
+    const addSuite = (): void => {
+      functionTestableState.setCreateSuite(true);
+    };
+
+    const changeSuite = (suite: FunctionTestSuite): void => {
+      functionTestableState.changeSuite(suite);
+    };
 
     const runSuites = (): void => {
       functionTestableState.runTestable();
     };
 
-    const runFailingTests = (): void => {
-      functionTestableState.runAllFailingSuites();
-    };
-    const addSuite = (): void => {
-      functionTestableState.setCreateSuite(true);
-    };
-
-    const renderSuiteState = (): React.ReactNode => {
-      if (selectedSuiteState) {
-        return (
-          <FunctionTestSuiteEditor
-            functionTestSuiteState={selectedSuiteState}
-          />
-        );
-      } else if (!suites.length) {
-        return (
-          <BlankPanelPlaceholder
-            text="Add Test Suite"
-            onClick={addSuite}
-            clickActionType="add"
-            tooltipText="Click to add test suite"
-          />
-        );
-      }
-      return null;
-    };
-
     const renameTestingComponent = (val: string): void => {
       functionTestableState.renameTestableComponent(val);
     };
+
     useApplicationNavigationContext(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.FUNCTION_EDITOR_TEST,
     );
 
     return (
-      <div className="function-testable-editor panel">
-        <div className="function-testable-editor">
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel size={200} minSize={28}>
-              <div className="binding-editor__header">
-                <div className="binding-editor__header__title">
-                  <div className="panel__header__title__content">
-                    Test Suites
-                  </div>
-                </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action testable-test-explorer__play__all__icon"
-                    tabIndex={-1}
-                    onClick={runSuites}
-                    title="Run All Suites"
-                  >
-                    <RunAllIcon />
-                  </button>
-                  <button
-                    className="panel__header__action testable-test-explorer__play__all__icon"
-                    tabIndex={-1}
-                    onClick={runFailingTests}
-                    title="Run All Failing Tests"
-                  >
-                    <RunErrorsIcon />
-                  </button>
-                  <button
-                    className="panel__header__action"
-                    tabIndex={-1}
-                    onClick={addSuite}
-                    title="Add Function Suite"
-                  >
-                    <PlusIcon />
-                  </button>
-                </div>
-              </div>
-              <PanelContent>
+      <Panel className="service-test-suite-editor">
+        {functionTestableState.createSuiteModal && (
+          <CreateFunctionTestSuiteModal
+            functionTestableEditorState={functionTestableState}
+          />
+        )}
+
+        <PanelHeader>
+          {suites.length ? (
+            <PanelHeader className="service-test-suite-editor__header service-test-suite-editor__header--with-tabs">
+              <div className="uml-element-editor__tabs">
                 {suites.map((suite) => (
-                  <FunctionTestSuiteItem
+                  <div
                     key={suite.id}
-                    functionTestableState={functionTestableState}
-                    suite={suite}
-                  />
+                    onClick={(): void => changeSuite(suite)}
+                    className={clsx('service-test-suite-editor__tab', {
+                      'service-test-suite-editor__tab--active':
+                        selectedSuiteState?.suite === suite,
+                    })}
+                  >
+                    <ContextMenu
+                      className="mapping-editor__header__tab__content"
+                      content={
+                        <SuiteHeaderTabContextMenu
+                          functionTestableState={functionTestableState}
+                          suite={suite}
+                        />
+                      }
+                    >
+                      {suite.id}
+                    </ContextMenu>
+                  </div>
                 ))}
-                {!suites.length && (
-                  <BlankPanelPlaceholder
-                    text="Add Test Suite"
-                    onClick={addSuite}
-                    clickActionType="add"
-                    tooltipText="Click to add test suite"
-                  />
-                )}
-                {!suites.length && (
-                  <BlankPanelPlaceholder
-                    disabled={functionEditorState.isReadOnly}
-                    onClick={addSuite}
-                    text="Add a Test Suite"
-                    clickActionType="add"
-                    tooltipText="Click to add a new function test suite"
-                  />
-                )}
-              </PanelContent>
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={56}>
-              <div className="function-test-suite-editor">
-                <div className="function-test-suite-editor__content">
-                  {renderSuiteState()}
-                </div>
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-          {functionTestableState.createSuiteModal && (
-            <CreateFucntionTestSuiteModal
-              functionTestableEditorState={functionTestableState}
+            </PanelHeader>
+          ) : (
+            <div></div>
+          )}
+          <PanelHeaderActions>
+            <PanelHeaderActionItem onClick={runSuites} title="Run All Suites">
+              <RunAllIcon />
+            </PanelHeaderActionItem>
+            <PanelHeaderActionItem onClick={addSuite} title="Add Test Suite">
+              <PlusIcon />
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
+        <Panel className="service-test-suite-editor">
+          {selectedSuiteState && (
+            <FunctionTestSuiteEditor
+              functionTestSuiteState={selectedSuiteState}
+            />
+          )}
+          {!suites.length && (
+            <BlankPanelPlaceholder
+              text="Add Test Suite"
+              onClick={addSuite}
+              clickActionType="add"
+              tooltipText="Click to add test suite"
             />
           )}
           {functionTestableState.testableComponentToRename && (
@@ -1231,8 +1348,8 @@ export const FunctionTestableEditor = observer(
               }
             />
           )}
-        </div>
-      </div>
+        </Panel>
+      </Panel>
     );
   },
 );

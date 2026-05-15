@@ -32,6 +32,10 @@ import {
 } from '@finos/legend-graph';
 import {
   ContentType,
+  csvDecodeValue,
+  csvEncodeValue,
+  csvStringify,
+  parseCSVContent,
   guaranteeNonEmptyString,
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
@@ -273,8 +277,14 @@ export class RelationElementState {
 
   updateRow(rowIndex: number, columnIndex: number, value: string): void {
     if (this.relationElement.rows[rowIndex]) {
-      this.relationElement.rows[rowIndex].values[columnIndex] = value;
+      this.relationElement.rows[rowIndex].values[columnIndex] =
+        csvEncodeValue(value);
     }
+  }
+
+  getDisplayValue(rowIndex: number, columnIndex: number): string {
+    const value = this.relationElement.rows[rowIndex]?.values[columnIndex];
+    return value !== undefined ? csvDecodeValue(value) : '';
   }
 
   clearAllData(): void {
@@ -285,7 +295,9 @@ export class RelationElementState {
     return JSON.stringify(
       {
         columns: this.relationElement.columns,
-        data: this.relationElement.rows,
+        data: this.relationElement.rows.map((row) => ({
+          values: row.values.map((v) => csvDecodeValue(v)),
+        })),
       },
       null,
       2,
@@ -310,7 +322,7 @@ export class RelationElementState {
     const insertStatements = this.relationElement.rows.map((row) => {
       const values = this.relationElement.columns
         .map((col, colIndex) => {
-          const value = row.values[colIndex] ?? '';
+          const value = csvDecodeValue(row.values[colIndex] ?? '');
           if (value !== '') {
             return `'${value.replace(/'/g, "''")}'`;
           }
@@ -324,64 +336,30 @@ export class RelationElementState {
   }
 
   exportCSV(): string {
-    const headers = this.relationElement.columns.map((col) => col);
-    const csvLines = [headers.join(',')];
-
-    this.relationElement.rows.forEach((row) => {
-      const values = headers.map((header, headerIndex) => {
-        const value = row.values[headerIndex] ?? '';
-        if (value.includes(',') || value.includes('"')) {
-          return `"${value.replace(/"/g, '""')}"`;
-        }
-        return value;
-      });
-      csvLines.push(values.join(','));
-    });
-
-    return csvLines.join('\n');
-  }
-
-  private parseCSVLine(line: string): string[] {
-    const result: string[] = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        result.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    result.push(current.trim());
-    return result;
+    // decode so that csvStringify does not double encode
+    const data = this.relationElement.rows.map((row) =>
+      row.values.map((v) => csvDecodeValue(v)),
+    );
+    return csvStringify([this.relationElement.columns, ...data]);
   }
 
   importCSV(csvContent: string): void {
-    const lines = csvContent.trim().split('\n');
-    if (lines.length === 0) {
+    const parsed = parseCSVContent(csvContent);
+    if (parsed.length === 0) {
       return;
     }
 
-    const firstLine = lines[0];
-    if (!firstLine) {
+    const headers = parsed[0];
+    if (!headers) {
       return;
     }
 
-    const headers = this.parseCSVLine(firstLine);
     this.relationElement.columns = headers;
-
-    this.relationElement.rows = lines.slice(1).map((line) => {
-      const values = this.parseCSVLine(line);
+    this.relationElement.rows = parsed.slice(1).map((values) => {
       const row = new RelationRowTestData();
-      row.values = [];
-      headers.forEach((header, index) => {
-        row.values[index] = values[index] ?? '';
-      });
+      row.values = headers.map((_, index) =>
+        csvEncodeValue(values[index] ?? ''),
+      );
       return observe_RelationRowTestData(row);
     });
   }

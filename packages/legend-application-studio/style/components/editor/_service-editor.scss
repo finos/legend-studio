@@ -1024,6 +1024,20 @@
     background: var(--color-dark-grey-50);
     overflow: auto;
   }
+
+  &__warning {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-red-300);
+    padding: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  &--no-data {
+    border: 0.1rem solid var(--color-red-300);
+    border-radius: 0.2rem;
+  }
 }
 
 .service-test-editor {

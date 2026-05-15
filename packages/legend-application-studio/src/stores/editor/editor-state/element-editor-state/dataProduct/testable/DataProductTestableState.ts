@@ -26,6 +26,7 @@ import {
   LakehouseAccessPoint,
   DataProductTestSuite,
   BaseDataResolver,
+  ReferenceDataResolver,
   DataProductAccessPointTest,
   RelationElementsData,
   RelationElement,
@@ -39,6 +40,7 @@ import {
   observe_DataProductTestSuite,
   IngestDefinition,
   getAccessorItemLabelForElement,
+  type AbstractPureGraphManager,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -59,7 +61,10 @@ import {
 } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
 import type { DataProductEditorState } from '../DataProductEditorState.js';
-import { RelationElementState } from '../../data/EmbeddedDataState.js';
+import {
+  RelationElementsDataState,
+  RelationElementState,
+} from '../../data/EmbeddedDataState.js';
 import { TESTABLE_RESULT } from '../../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import { testSuite_addTest } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
 import {
@@ -123,6 +128,7 @@ interface ElementDataItem {
 
 const getElementDataItems = (
   element: PackageableElement,
+  graphManager: AbstractPureGraphManager,
 ): ElementDataItem[] => {
   if (element instanceof DataProduct) {
     return element.accessPointGroups
@@ -133,10 +139,12 @@ const getElementDataItems = (
       }));
   }
   if (element instanceof IngestDefinition) {
-    return (element.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS ?? []).map((ds) => ({
-      id: ds.name,
-      label: ds.name,
-    }));
+    return graphManager
+      .getIngestDefinitionDatasetNames(element)
+      .map((name) => ({
+        id: name,
+        label: name,
+      }));
   }
   return [];
 };
@@ -252,31 +260,21 @@ export class DataProductElementTestDataState {
   readonly testDataState: DataProductTestDataState;
   readonly testData: BaseDataResolver;
   readonly editorStore: EditorStore;
-
-  /** Currently selected dataset/item within this element's RelationElementsData */
-  selectedItemId: string | undefined;
-  /** RelationElementState for the currently selected item */
-  relationElementState: RelationElementState | undefined;
+  readonly relationElementsDataState: RelationElementsDataState | undefined;
 
   constructor(
     testDataState: DataProductTestDataState,
     testData: BaseDataResolver,
   ) {
-    makeObservable(this, {
-      selectedItemId: observable,
-      relationElementState: observable,
-      setSelectedItem: action,
-    });
     this.testDataState = testDataState;
     this.testData = testData;
     this.editorStore = testDataState.editorStore;
-    // Select the first item that has data
     if (testData.data instanceof RelationElementsData) {
-      const firstRel = testData.data.relationElements[0];
-      if (firstRel) {
-        this.selectedItemId = firstRel.paths[0];
-        this.relationElementState = new RelationElementState(firstRel);
-      }
+      this.relationElementsDataState = new RelationElementsDataState(
+        this.editorStore,
+        testData.data,
+      );
+      this.initAccessorOptions();
     }
   }
 
@@ -292,35 +290,81 @@ export class DataProductElementTestDataState {
     return getAccessorItemLabelForElement(this.element as AccessorOwner);
   }
 
-  get configuredItemIds(): string[] {
-    if (this.testData.data instanceof RelationElementsData) {
-      return this.testData.data.relationElements.map((re) => re.paths[0] ?? '');
+  private initAccessorOptions(): void {
+    const dataState = this.relationElementsDataState;
+    if (!dataState) {
+      return;
     }
-    return [];
-  }
-
-  get configuredItems(): ElementDataItem[] {
-    const availableItemsById = new Map(
-      getElementDataItems(this.element).map((item) => [item.id, item.label]),
+    this.refreshAccessorOptions(dataState).catch(noop);
+    dataState.setRefreshAccessorOptions(() =>
+      this.refreshAccessorOptions(dataState),
     );
-    return this.configuredItemIds.map((id) => ({
-      id,
-      label: availableItemsById.get(id) ?? id,
-    }));
   }
 
-  setSelectedItem(itemId: string | undefined): void {
-    this.selectedItemId = itemId;
-    if (itemId && this.testData.data instanceof RelationElementsData) {
-      const relEl = this.testData.data.relationElements.find(
-        (re) => re.paths[0] === itemId,
-      );
-      this.relationElementState = relEl
-        ? new RelationElementState(relEl)
-        : undefined;
-    } else {
-      this.relationElementState = undefined;
+  private async refreshAccessorOptions(
+    dataState: RelationElementsDataState,
+  ): Promise<void> {
+    const element = this.element;
+    const graphManager = this.editorStore.graphManagerState.graphManager;
+    const graph = this.editorStore.graphManagerState.graph;
+    const items = getElementDataItems(element, graphManager);
+    if (items.length === 0) {
+      dataState.setAccessorOptions(undefined, undefined);
+      return;
     }
+    const typeLabel = this.itemLabel;
+    const options = await Promise.all(
+      items.map(async (item) => {
+        let columns: string[] = [];
+        try {
+          if (element instanceof IngestDefinition) {
+            const accessor = graphManager.createAccessorFromPackageableElement(
+              element,
+              graph,
+              { schemaName: undefined, tableName: item.id },
+            );
+            if (accessor) {
+              columns = accessor.relationType.columns.map((c) => c.name);
+            }
+          } else if (element instanceof DataProduct) {
+            const accessor = await graphManager.buildDataProductAccessor(
+              element,
+              graph,
+              { tableName: item.id },
+            );
+            if (accessor) {
+              columns = accessor.relationType.columns.map((c) => c.name);
+            }
+          }
+        } catch {
+          // best-effort column resolution
+        }
+        return {
+          label: item.label,
+          value: item.id,
+          columns,
+        };
+      }),
+    );
+    runInAction(() => {
+      dataState.setAccessorOptions(options, typeLabel);
+      // Back-fill columns on existing relation elements that have none
+      const columnsByItem = new Map(
+        options
+          .filter((o) => o.columns.length > 0)
+          .map((o) => [o.value, o.columns]),
+      );
+      for (const relState of dataState.relationElementStates) {
+        const rel = relState.relationElement;
+        if (rel.columns.length === 0) {
+          const key = rel.paths[rel.paths.length - 1];
+          const cols = key ? columnsByItem.get(key) : undefined;
+          if (cols) {
+            rel.columns = cols;
+          }
+        }
+      }
+    });
   }
 }
 
@@ -332,6 +376,7 @@ export class DataProductTestDataState {
 
   elementTestDataStates: DataProductElementTestDataState[] = [];
   selectedElementTestDataState: DataProductElementTestDataState | undefined;
+  showAddElementModal = false;
 
   constructor(
     suiteState: DataProductTestSuiteState,
@@ -343,7 +388,11 @@ export class DataProductTestDataState {
     makeObservable(this, {
       elementTestDataStates: observable,
       selectedElementTestDataState: observable,
+      showAddElementModal: observable,
       setSelectedElementTestDataState: action,
+      setShowAddElementModal: action,
+      addElement: action,
+      deleteElement: action,
       refreshElementTestDataStates: action,
     });
     this.editorStore = suiteState.editorStore;
@@ -351,16 +400,64 @@ export class DataProductTestDataState {
     this.refreshElementTestDataStates(options);
   }
 
+  get availableElementsToAdd(): PackageableElement[] {
+    const suite = this.suiteState.suite;
+    const existingPaths = new Set(
+      (suite.testData ?? [])
+        .filter(
+          (td): td is BaseDataResolver | ReferenceDataResolver =>
+            td instanceof BaseDataResolver ||
+            td instanceof ReferenceDataResolver,
+        )
+        .map((td) => td.element.value.path),
+    );
+    const graph = this.editorStore.graphManagerState.graph;
+    const currentDpPath = this.suiteState.testableState.dataProduct.path;
+    const candidates: PackageableElement[] = [
+      ...graph.ingests,
+      ...graph.allElements.filter(
+        (e) => e instanceof DataProduct && e.path !== currentDpPath,
+      ),
+    ];
+    return candidates.filter((e) => !existingPaths.has(e.path));
+  }
+
+  setShowAddElementModal(val: boolean): void {
+    this.showAddElementModal = val;
+  }
+
+  addElement(path: string): void {
+    const element =
+      this.editorStore.graphManagerState.graph.getNullableElement(path);
+    if (!element) {
+      return;
+    }
+    const resolver = new BaseDataResolver();
+    resolver.element = PackageableElementExplicitReference.create(element);
+    const relData = new RelationElementsData();
+    relData.relationElements = [];
+    observe_RelationElementsData(relData);
+    resolver.data = relData;
+    const suite = this.suiteState.suite;
+    suite.testData = [...(suite.testData ?? []), resolver];
+    this.refreshElementTestDataStates({ selectedElementPath: path });
+  }
+
+  deleteElement(elementState: DataProductElementTestDataState): void {
+    const suite = this.suiteState.suite;
+    if (suite.testData) {
+      const idx = suite.testData.indexOf(elementState.testData);
+      suite.testData.splice(idx, 1);
+    }
+    this.refreshElementTestDataStates();
+  }
+
   refreshElementTestDataStates(options?: {
     selectedElementPath?: string | undefined;
-    selectedItemId?: string | undefined;
   }): void {
     const previouslySelectedElementPath =
       options?.selectedElementPath ??
       this.selectedElementTestDataState?.element.path;
-    const previouslySelectedItemId =
-      options?.selectedItemId ??
-      this.selectedElementTestDataState?.selectedItemId;
     const suite = this.suiteState.suite;
     this.elementTestDataStates = (suite.testData ?? [])
       .filter((td): td is BaseDataResolver => td instanceof BaseDataResolver)
@@ -370,14 +467,6 @@ export class DataProductTestDataState {
       this.elementTestDataStates.find(
         (state) => state.element.path === previouslySelectedElementPath,
       ) ?? this.elementTestDataStates[0];
-
-    if (this.selectedElementTestDataState && previouslySelectedItemId) {
-      const nextSelectedItemId =
-        this.selectedElementTestDataState.configuredItemIds.find(
-          (itemId) => itemId === previouslySelectedItemId,
-        ) ?? this.selectedElementTestDataState.configuredItemIds[0];
-      this.selectedElementTestDataState.setSelectedItem(nextSelectedItemId);
-    }
   }
 
   setSelectedElementTestDataState(
@@ -427,8 +516,6 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
     this.testDataState = new DataProductTestDataState(this, {
       selectedElementPath:
         this.testDataState.selectedElementTestDataState?.element.path,
-      selectedItemId:
-        this.testDataState.selectedElementTestDataState?.selectedItemId,
     });
   }
 
@@ -540,34 +627,9 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
         }
       }
     } else {
-      // Fallback: single resolver on current DP
-      let relationData = this.suite.testData?.find(
-        (td): td is BaseDataResolver =>
-          td instanceof BaseDataResolver &&
-          td.element.value === this.testableState.dataProduct &&
-          td.data instanceof RelationElementsData,
-      )?.data as RelationElementsData | undefined;
-
-      if (!relationData) {
-        const testData = new BaseDataResolver();
-        testData.element = PackageableElementExplicitReference.create(
-          this.testableState.dataProduct,
-        );
-        relationData = new RelationElementsData();
-        relationData.relationElements = [];
-        observe_RelationElementsData(relationData);
-        testData.data = relationData;
-        this.suite.testData = [...(this.suite.testData ?? []), testData];
-      }
-      if (
-        !relationData.relationElements.find(
-          (re) => re.paths[0] === accessPointId,
-        )
-      ) {
-        relationData.relationElements.push(
-          createEmptyRelationElement(accessPointId, inferredColumns),
-        );
-      }
+      this.editorStore.applicationStore.notificationService.notifyWarning(
+        'Access Point accessors cannot be resolved',
+      );
     }
 
     const assertion = new EqualToRelation();
@@ -792,17 +854,11 @@ export class DataProductTestableState {
         suite.testData.push(resolver);
       }
     }
-    // Fallback: no external sources resolved — seed a single resolver on current DP
+    // If no external sources were resolved, notify the user and leave test data empty
     if (suite.testData.length === 0) {
-      const testData = new BaseDataResolver();
-      testData.element = PackageableElementExplicitReference.create(dp);
-      const relData = new RelationElementsData();
-      relData.relationElements = [
-        createEmptyRelationElement(accessPointId, inferredColumns),
-      ];
-      observe_RelationElementsData(relData);
-      testData.data = relData;
-      suite.testData = [testData];
+      this.editorStore.applicationStore.notificationService.notifyWarning(
+        'Access Point accessors cannot be resolved',
+      );
     }
 
     // Create one initial test with EqualToRelation assertion

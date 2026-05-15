@@ -42,6 +42,7 @@ import {
   guaranteeType,
   guaranteeNonEmptyString,
   uuid,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -422,6 +423,7 @@ import {
   V1_IngestDefinitionAccessor,
   V1_RelationStoreAccessor,
 } from './model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
+import { V1_deserializeIngestDefinitionContent } from './transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 
 /**
  * Number of elements to process synchronously before yielding to the event loop.
@@ -4413,6 +4415,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     input.model = this.prepareExecutionContextGraphData(graphData);
     const result = await this.engine.publishFunctionActivatorToSandbox(input);
     return result;
+  }
+
+  // --------------------------------------------- Ingeset Defintion --------------------------------------
+
+  getIngestDefinitionDatasetNames(
+    ingestDefinition: IngestDefinition,
+  ): string[] {
+    const content = returnUndefOnError(() =>
+      V1_deserializeIngestDefinitionContent(ingestDefinition.content),
+    );
+    if (!content?.datasets) {
+      return [];
+    }
+    return content.datasets.map((ds) => ds.name);
   }
 
   // --------------------------------------------- Relational ---------------------------------------------
