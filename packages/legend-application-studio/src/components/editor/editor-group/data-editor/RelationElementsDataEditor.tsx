@@ -502,6 +502,9 @@ export const RelationElementEditor = observer(
             </button>
 
             <div className="relation-test-data-editor__import-controls">
+              <span className="relation-test-data-editor__import-controls__label">
+                Upload CSV
+              </span>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -531,8 +534,10 @@ export const RelationElementsDataEditor = observer(
     dataState: RelationElementsDataState;
     isReadOnly: boolean;
     isSharedData?: boolean | undefined;
+    hideColumnDefinitions?: boolean;
   }) => {
-    const { dataState, isReadOnly, isSharedData } = props;
+    const { dataState, isReadOnly, isSharedData, hideColumnDefinitions } =
+      props;
 
     useApplicationNavigationContext(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_RELATIONAL_EDITOR,
@@ -637,6 +642,9 @@ export const RelationElementsDataEditor = observer(
             <RelationElementEditor
               relationElementState={dataState.activeRelationElement}
               isReadOnly={isReadOnly}
+              {...(hideColumnDefinitions !== undefined
+                ? { hideColumnDefinitions }
+                : {})}
             />
           )}
         </PanelContent>

@@ -902,6 +902,13 @@
     align-items: center;
     gap: 0.8rem;
 
+    &__label {
+      color: var(--color-light-grey-200);
+      font-size: 1.3rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
     .btn {
       white-space: nowrap;
     }
