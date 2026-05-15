@@ -20,8 +20,12 @@ import { TEST__getTestGraphManagerState } from '../__test-utils__/GraphManagerTe
 import {
   TEST_DATA__DataProductArtifact,
   TEST_DATA__DataProductArtifactContainingModelAPGAndNativeModelAccess,
+  TEST_DATA__DataProductArtifactWithLakehouseAccessPoints,
 } from './TEST_DATA__DataProductAnalysis.js';
-import { DataProductAccessType } from '../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import {
+  DataProductAccessType,
+  LakehouseAccessPoint,
+} from '../../graph/metamodel/pure/dataProduct/DataProduct.js';
 
 const setupGraphManagerState = async () => {
   const state = TEST__getTestGraphManagerState();
@@ -234,6 +238,113 @@ describe('analyzeDataProductAndBuildMinimalGraph', () => {
       expect(coverageC).toBeDefined();
       expect(coverageC?.mappedEntities.length).toBe(1);
       expect(coverageC?.mappedEntities[0]?.path).toBe('test::EmployeeClass');
+    },
+  );
+
+  test(
+    unitTest(
+      'caches __internal__RelationType on LakehouseAccessPoint when artifact lambda generic type carries a relation type',
+    ),
+    async () => {
+      const graphManagerState = await setupGraphManagerState();
+      const result =
+        await graphManagerState.graphManager.analyzeDataProductAndBuildMinimalGraph(
+          'test::LakehouseDataProduct',
+          () =>
+            Promise.resolve(
+              TEST_DATA__DataProductArtifactWithLakehouseAccessPoints,
+            ),
+          graphManagerState.graph,
+          'ap-with-relation',
+          DataProductAccessType.LAKEHOUSE,
+          {
+            groupId: 'org.finos.test',
+            artifactId: 'test-lakehouse-data-product',
+            versionId: '1.0.0',
+          },
+        );
+
+      // Basic result properties
+      expect(result.dataProductAnalysis.path).toBe(
+        'test::LakehouseDataProduct',
+      );
+      expect(result.targetMappingPath).toBeUndefined();
+      expect(result.targetExecState).toBeInstanceOf(LakehouseAccessPoint);
+
+      const lakehouseAP = result.targetExecState as LakehouseAccessPoint;
+      expect(lakehouseAP.id).toBe('ap-with-relation');
+
+      // The cached relation type should be derived from the artifact's
+      // lambdaGenericType.typeArguments
+      const relationType = lakehouseAP.__internal__RelationType;
+      expect(relationType).toBeDefined();
+      expect(relationType?.columns.length).toBe(2);
+
+      const idColumn = relationType?.columns.find((c) => c.name === 'id');
+      expect(idColumn).toBeDefined();
+      expect(idColumn?.genericType.value.rawType.name).toBe('Integer');
+
+      const nameColumn = relationType?.columns.find((c) => c.name === 'name');
+      expect(nameColumn).toBeDefined();
+      expect(nameColumn?.genericType.value.rawType.name).toBe('String');
+    },
+  );
+
+  test(
+    unitTest(
+      'leaves __internal__RelationType undefined on LakehouseAccessPoint when artifact lambda generic type does not carry a relation type',
+    ),
+    async () => {
+      const graphManagerState = await setupGraphManagerState();
+      const result =
+        await graphManagerState.graphManager.analyzeDataProductAndBuildMinimalGraph(
+          'test::LakehouseDataProduct',
+          () =>
+            Promise.resolve(
+              TEST_DATA__DataProductArtifactWithLakehouseAccessPoints,
+            ),
+          graphManagerState.graph,
+          'ap-without-relation',
+          DataProductAccessType.LAKEHOUSE,
+          {
+            groupId: 'org.finos.test',
+            artifactId: 'test-lakehouse-data-product',
+            versionId: '1.0.0',
+          },
+        );
+
+      expect(result.targetExecState).toBeInstanceOf(LakehouseAccessPoint);
+      const lakehouseAP = result.targetExecState as LakehouseAccessPoint;
+      expect(lakehouseAP.id).toBe('ap-without-relation');
+      expect(lakehouseAP.__internal__RelationType).toBeUndefined();
+    },
+  );
+
+  test(
+    unitTest(
+      'throws error when lakehouse access point id is not found in artifact',
+    ),
+    async () => {
+      const graphManagerState = await setupGraphManagerState();
+      await expect(
+        graphManagerState.graphManager.analyzeDataProductAndBuildMinimalGraph(
+          'test::LakehouseDataProduct',
+          () =>
+            Promise.resolve(
+              TEST_DATA__DataProductArtifactWithLakehouseAccessPoints,
+            ),
+          graphManagerState.graph,
+          'non-existent-ap',
+          DataProductAccessType.LAKEHOUSE,
+          {
+            groupId: 'org.finos.test',
+            artifactId: 'test-lakehouse-data-product',
+            versionId: '1.0.0',
+          },
+        ),
+      ).rejects.toThrow(
+        `Can't resolve lakehouse access point 'non-existent-ap' in data product 'test::LakehouseDataProduct'`,
+      );
     },
   );
 });

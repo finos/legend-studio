@@ -75,6 +75,7 @@ import {
   QueryExplicitExecutionContextInfo,
   QueryDataProductNativeExecutionContextInfo,
   QueryDataProductModelAccessExecutionContextInfo,
+  QueryDataProductLakehouseExecutionContextInfo,
   ModelAccessPointGroup,
   type DataProduct,
   LakehouseRuntime,
@@ -496,10 +497,12 @@ export abstract class QueryEditorStore {
         this.queryBuilderState,
         'Query builder state required to build query to edit',
       );
-      assertNonNullable(
-        this.queryBuilderState.executionContextState.mapping,
-        'Query required mapping to update',
-      );
+      if (this.queryBuilderState.requiresMappingForExecution) {
+        assertNonNullable(
+          this.queryBuilderState.executionContextState.mapping,
+          'Query required mapping to update',
+        );
+      }
       query.executionContext =
         this.queryBuilderState.getQueryExecutionContext();
       query.content =
@@ -1920,7 +1923,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         queryInfo?.executionContext instanceof
           QueryDataProductNativeExecutionContextInfo ||
         queryInfo?.executionContext instanceof
-          QueryDataProductModelAccessExecutionContextInfo
+          QueryDataProductModelAccessExecutionContextInfo ||
+        queryInfo?.executionContext instanceof
+          QueryDataProductLakehouseExecutionContextInfo
       )
     ) {
       yield flowResult(this.buildFullGraph());
@@ -2147,16 +2152,23 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       return classQueryBuilderState;
     } else if (
       exec instanceof QueryDataProductNativeExecutionContextInfo ||
-      exec instanceof QueryDataProductModelAccessExecutionContextInfo
+      exec instanceof QueryDataProductModelAccessExecutionContextInfo ||
+      exec instanceof QueryDataProductLakehouseExecutionContextInfo
     ) {
-      const executionContextId =
-        exec instanceof QueryDataProductNativeExecutionContextInfo
-          ? exec.executionKey
-          : exec.accessPointGroupId;
-      const accessType =
-        exec instanceof QueryDataProductNativeExecutionContextInfo
-          ? DataProductAccessType.NATIVE
-          : DataProductAccessType.MODEL;
+      let executionContextId: string;
+      let accessType: DataProductAccessType;
+      if (exec instanceof QueryDataProductNativeExecutionContextInfo) {
+        executionContextId = exec.executionKey;
+        accessType = DataProductAccessType.NATIVE;
+      } else if (
+        exec instanceof QueryDataProductModelAccessExecutionContextInfo
+      ) {
+        executionContextId = exec.accessPointGroupId;
+        accessType = DataProductAccessType.MODEL;
+      } else {
+        executionContextId = exec.accessPointId;
+        accessType = DataProductAccessType.LAKEHOUSE;
+      }
       const artifact = await this.fetchDataProductArtifact(
         queryInfo.groupId,
         queryInfo.artifactId,

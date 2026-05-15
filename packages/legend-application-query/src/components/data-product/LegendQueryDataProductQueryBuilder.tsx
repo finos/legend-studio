@@ -17,6 +17,7 @@
 import { useApplicationStore } from '@finos/legend-application';
 import {
   ModelAccessPointDataProductExecutionState,
+  LakehouseDataProductExecutionState,
   DataProductQueryBuilderSetupFormContent,
 } from '@finos/legend-query-builder';
 import {
@@ -53,7 +54,9 @@ import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelp
  */
 const LakehouseRuntimeConfigModal = observer(
   (props: {
-    executionState: ModelAccessPointDataProductExecutionState;
+    executionState:
+      | ModelAccessPointDataProductExecutionState
+      | LakehouseDataProductExecutionState;
     open: boolean;
     onClose: () => void;
     darkMode: boolean;
@@ -174,7 +177,8 @@ const LegendDataProductQueryBuilderSetupPanelContent = observer(
 
     // lakehouse runtime config modal
     const showLakehouseConfigButton =
-      executionState instanceof ModelAccessPointDataProductExecutionState &&
+      (executionState instanceof ModelAccessPointDataProductExecutionState ||
+        executionState instanceof LakehouseDataProductExecutionState) &&
       executionState.selectedRuntime?.runtimeValue instanceof LakehouseRuntime;
     const [isLakehouseConfigModalOpen, setIsLakehouseConfigModalOpen] =
       useState(false);
@@ -249,8 +253,8 @@ const LegendDataProductQueryBuilderSetupPanelContent = observer(
             }
           />
         </div>
-        {executionState instanceof
-          ModelAccessPointDataProductExecutionState && (
+        {(executionState instanceof ModelAccessPointDataProductExecutionState ||
+          executionState instanceof LakehouseDataProductExecutionState) && (
           <LakehouseRuntimeConfigModal
             executionState={executionState}
             open={isLakehouseConfigModalOpen}

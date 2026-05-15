@@ -318,3 +318,90 @@ export const TEST_DATA__DataProductArtifactContainingModelAPGAndNativeModelAcces
       diagrams: [],
     },
   };
+
+/**
+ * Test data for the Lakehouse access type analysis path.
+ *
+ * Contains a data product at 'test::LakehouseDataProduct' with a single
+ * non-model access point group ('lakehouse-group-a') containing two
+ * `accessPointImplementations`:
+ *   - 'ap-with-relation' has a `lambdaGenericType` whose `typeArguments`
+ *     carry a `V1_RelationType` with two columns. The lakehouse builder
+ *     should derive `__internal__RelationType` from this.
+ *   - 'ap-without-relation' has a `lambdaGenericType` that is a plain
+ *     packageable type (no relation type). `__internal__RelationType` should
+ *     remain undefined.
+ */
+export const TEST_DATA__DataProductArtifactWithLakehouseAccessPoints = {
+  dataProduct: {
+    path: 'test::LakehouseDataProduct',
+    deploymentId: 'deployment-lakehouse-1',
+    title: 'Lakehouse Data Product',
+    description: 'A lakehouse data product for testing',
+  },
+  accessPointGroups: [
+    {
+      id: 'lakehouse-group-a',
+      description: 'Lakehouse Group A',
+      accessPointImplementations: [
+        {
+          id: 'ap-with-relation',
+          description: 'AP backed by a relation',
+          resourceBuilder: {
+            _type: 'functionAccessPoint',
+            functionGrammar: '|1',
+          },
+          lambdaGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'meta::pure::metamodel::relation::Relation',
+            },
+            typeArguments: [
+              {
+                rawType: {
+                  _type: 'relationType',
+                  columns: [
+                    {
+                      name: 'id',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'Integer',
+                        },
+                      },
+                      multiplicity: { lowerBound: 1, upperBound: 1 },
+                    },
+                    {
+                      name: 'name',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'String',
+                        },
+                      },
+                      multiplicity: { lowerBound: 0, upperBound: 1 },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        {
+          id: 'ap-without-relation',
+          description: 'AP without a relation type',
+          resourceBuilder: {
+            _type: 'functionAccessPoint',
+            functionGrammar: '|1',
+          },
+          lambdaGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+        },
+      ],
+    },
+  ],
+};

@@ -890,6 +890,7 @@ export {
   V1_createAccessorFromPackageableElement,
   V1_resolveAccessorsFromRawLambda,
   V1_buildRelationElementsDataFromAccessors,
+  V1_buildRelationTypeFromAccessPointImplementation,
 } from './graph-manager/protocol/pure/v1/helpers/V1_AccessorHelper.js';
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
