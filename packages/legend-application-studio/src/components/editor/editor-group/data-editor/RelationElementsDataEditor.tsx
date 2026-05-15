@@ -223,15 +223,13 @@ export const RelationElementEditor = observer(
   (props: {
     relationElementState: RelationElementState;
     isReadOnly: boolean;
+    hideColumnDefinitions?: boolean;
   }) => {
-    const { relationElementState, isReadOnly } = props;
+    const { relationElementState, isReadOnly, hideColumnDefinitions } = props;
     const editorStore = useEditorStore();
     const embeddedData = relationElementState.relationElement;
     const canEditColumns =
       !isReadOnly && relationElementState.supportsColumnEditing;
-    const [exportFormat, setExportFormat] = useState<'json' | 'csv' | 'sql'>(
-      'json',
-    );
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const addColumn = (): void => {
@@ -297,39 +295,13 @@ export const RelationElementEditor = observer(
       }
     };
 
-    const exportData = (): void => {
-      let content = '';
-      let filename = '';
-      let mimeType = '';
-
-      switch (exportFormat) {
-        case 'json':
-          content = relationElementState.exportJSON();
-          filename = 'test_data.json';
-          mimeType = 'application/json';
-          break;
-        case 'csv':
-          content = relationElementState.exportCSV();
-          filename = 'test_data.csv';
-          mimeType = 'text/csv';
-          break;
-        case 'sql':
-          content = relationElementState.exportSQL();
-          filename = 'test_data.sql';
-          mimeType = 'text/sql';
-          break;
-        default:
-          content = relationElementState.exportJSON();
-          filename = 'test_data.json';
-          mimeType = 'application/json';
-          break;
-      }
-
-      const blob = new Blob([content], { type: mimeType });
+    const exportCSV = (): void => {
+      const content = relationElementState.exportCSV();
+      const blob = new Blob([content], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = filename;
+      a.download = 'test_data.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -359,53 +331,66 @@ export const RelationElementEditor = observer(
 
     return (
       <div className="relation-test-data-editor__content">
-        <div className="relation-test-data-editor__columns">
-          <div className="relation-test-data-editor__section-header">
-            <div className="relation-test-data-editor__section-title">
-              Column Definitions
-            </div>
-            <button
-              className="btn--icon btn--dark btn--sm"
-              onClick={addColumn}
-              disabled={!canEditColumns}
-              title="Add Column"
-            >
-              <PlusIcon />
-            </button>
-          </div>
-          <div className="relation-test-data-editor__columns-grid">
-            {embeddedData.columns.map((column, index) => (
-              <div
-                key={`column-${guaranteeNonNullable(index)}`}
-                className="relation-test-data-editor__column-row"
-              >
-                <input
-                  className="relation-test-data-editor__column-input"
-                  type="text"
-                  value={column}
-                  onChange={(e) => updateColumn(index, e.target.value)}
-                  placeholder="Column Name"
-                  disabled={!canEditColumns}
-                />
-                <button
-                  className="btn--icon btn--caution btn--dark btn--sm"
-                  onClick={() => removeColumn(index)}
-                  disabled={!canEditColumns}
-                  title="Remove Column"
-                >
-                  <TimesIcon />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <div className="relation-test-data-editor__data">
           <div className="relation-test-data-editor__section-header">
-            <div className="relation-test-data-editor__section-title">
-              Test Data ({embeddedData.rows.length} rows)
+            <div className="relation-test-data-editor__section-header__left">
+              <div className="relation-test-data-editor__section-title">
+                Test Data ({embeddedData.rows.length} rows)
+              </div>
             </div>
+            {hideColumnDefinitions ? (
+              <button
+                className="btn--icon btn--dark btn--sm"
+                onClick={addColumn}
+                disabled={!canEditColumns}
+                title="Add Column"
+              >
+                <PlusIcon />
+              </button>
+            ) : null}
           </div>
+          {!hideColumnDefinitions ? (
+            <div className="relation-test-data-editor__columns">
+              <div className="relation-test-data-editor__section-header">
+                <div className="relation-test-data-editor__section-title">
+                  Column Definitions
+                </div>
+                <button
+                  className="btn--icon btn--dark btn--sm"
+                  onClick={addColumn}
+                  disabled={!canEditColumns}
+                  title="Add Column"
+                >
+                  <PlusIcon />
+                </button>
+              </div>
+              <div className="relation-test-data-editor__columns-grid">
+                {embeddedData.columns.map((column, index) => (
+                  <div
+                    key={`column-${guaranteeNonNullable(index)}`}
+                    className="relation-test-data-editor__column-row"
+                  >
+                    <input
+                      className="relation-test-data-editor__column-input"
+                      type="text"
+                      value={column}
+                      onChange={(e) => updateColumn(index, e.target.value)}
+                      placeholder="Column Name"
+                      disabled={!canEditColumns}
+                    />
+                    <button
+                      className="btn--icon btn--caution btn--dark btn--sm"
+                      onClick={() => removeColumn(index)}
+                      disabled={!canEditColumns}
+                      title="Remove Column"
+                    >
+                      <TimesIcon />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
           {embeddedData.rows.length === 0 ? (
             <div className="relation-test-data-editor__empty-data">
               <div className="relation-test-data-editor__empty-text">
@@ -415,58 +400,75 @@ export const RelationElementEditor = observer(
             </div>
           ) : (
             <div className="relation-test-data-editor__data-grid">
-              <div className="relation-test-data-editor__data-header">
-                {embeddedData.columns.map((column) => (
-                  <div
-                    key={column}
-                    className="relation-test-data-editor__data-header-cell"
-                  >
-                    {column}
-                    {/* <span className="relation-test-data-editor__data-type">
-                  ({column.type})
-                </span> */}
-                  </div>
-                ))}
-                <div className="relation-test-data-editor__data-header-cell relation-test-data-editor__data-actions">
-                  Actions
-                </div>
-              </div>
-              {embeddedData.rows.map((row, rowIndex) => (
-                <div
-                  key={`row-${guaranteeNonNullable(rowIndex)}`}
-                  className="relation-test-data-editor__data-row"
-                >
-                  {embeddedData.columns.map((column, columnIndex) => (
-                    <div
-                      key={column}
-                      className="relation-test-data-editor__data-cell"
+              <table className="relation-test-data-editor__table">
+                <thead>
+                  <tr>
+                    {embeddedData.columns.map((column, columnIndex) => (
+                      <th
+                        key={column}
+                        className="relation-test-data-editor__th"
+                      >
+                        <div className="relation-test-data-editor__th__inner">
+                          <span className="relation-test-data-editor__th__label">
+                            {column}
+                          </span>
+                          <button
+                            className="btn--icon btn--caution btn--dark btn--sm relation-test-data-editor__th__delete"
+                            onClick={() => removeColumn(columnIndex)}
+                            disabled={!canEditColumns}
+                            title={`Remove column ${column}`}
+                          >
+                            <TimesIcon />
+                          </button>
+                        </div>
+                      </th>
+                    ))}
+                    <th className="relation-test-data-editor__th relation-test-data-editor__th--actions" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {embeddedData.rows.map((_row, rowIndex) => (
+                    <tr
+                      key={`row-${guaranteeNonNullable(rowIndex)}`}
+                      className="relation-test-data-editor__tr"
                     >
-                      <input
-                        type="text"
-                        value={relationElementState.getDisplayValue(
-                          rowIndex,
-                          columnIndex,
-                        )}
-                        onChange={(e) =>
-                          updateCellValue(rowIndex, columnIndex, e.target.value)
-                        }
-                        disabled={isReadOnly}
-                        className="relation-test-data-editor__data-input"
-                      />
-                    </div>
+                      {embeddedData.columns.map((column, columnIndex) => (
+                        <td
+                          key={column}
+                          className="relation-test-data-editor__td"
+                        >
+                          <input
+                            type="text"
+                            value={relationElementState.getDisplayValue(
+                              rowIndex,
+                              columnIndex,
+                            )}
+                            onChange={(e) =>
+                              updateCellValue(
+                                rowIndex,
+                                columnIndex,
+                                e.target.value,
+                              )
+                            }
+                            disabled={isReadOnly}
+                            className="relation-test-data-editor__data-input"
+                          />
+                        </td>
+                      ))}
+                      <td className="relation-test-data-editor__td relation-test-data-editor__td--actions">
+                        <button
+                          className="btn--icon btn--caution btn--dark btn--sm relation-test-data-editor__icon-button--compact"
+                          onClick={() => removeRow(rowIndex)}
+                          disabled={isReadOnly}
+                          title="Remove Row"
+                        >
+                          <TimesIcon />
+                        </button>
+                      </td>
+                    </tr>
                   ))}
-                  <div className="relation-test-data-editor__data-cell relation-test-data-editor__data-actions">
-                    <button
-                      className="btn--icon btn--caution btn--dark btn--sm"
-                      onClick={() => removeRow(rowIndex)}
-                      disabled={isReadOnly}
-                      title="Remove Row"
-                    >
-                      <TimesIcon />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -482,7 +484,7 @@ export const RelationElementEditor = observer(
               </button>
 
               <button
-                className="btn--icon btn--caution btn--dark btn--sm"
+                className="btn--icon btn--dark btn--sm"
                 onClick={handleClearData}
                 disabled={isReadOnly || embeddedData.rows.length === 0}
                 title="Clear All Data"
@@ -490,30 +492,14 @@ export const RelationElementEditor = observer(
                 <TrashIcon />
               </button>
             </div>
-            <div className="relation-test-data-editor__export-format">
-              <label htmlFor="exportFormat">Export as:</label>
-              <select
-                id="exportFormat"
-                value={exportFormat}
-                onChange={(e) =>
-                  setExportFormat(e.target.value as 'json' | 'csv' | 'sql')
-                }
-                disabled={isReadOnly}
-                className="relation-test-data-editor__export-select"
-              >
-                <option value="json">JSON</option>
-                <option value="csv">CSV</option>
-                <option value="sql">SQL INSERT</option>
-              </select>
-              <button
-                className="btn--icon btn--dark btn--sm"
-                onClick={exportData}
-                disabled={isReadOnly}
-                title={`Export as ${exportFormat.toUpperCase()}`}
-              >
-                <FileImportIcon />
-              </button>
-            </div>
+            <button
+              className="btn--icon btn--dark btn--sm"
+              onClick={exportCSV}
+              disabled={isReadOnly}
+              title="Export as CSV"
+            >
+              <FileImportIcon />
+            </button>
 
             <div className="relation-test-data-editor__import-controls">
               <input
@@ -528,7 +514,7 @@ export const RelationElementEditor = observer(
                 className="btn--icon btn--dark btn--sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isReadOnly}
-                title="Upload a file of CSV"
+                title="Upload CSV"
               >
                 <UploadIcon />
               </button>

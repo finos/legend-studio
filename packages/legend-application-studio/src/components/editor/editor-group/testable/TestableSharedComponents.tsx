@@ -610,13 +610,6 @@ const DataProductEqualToRelationAssertionEditor = observer(
 
     return (
       <div className="service-test-data-editor panel">
-        <div className="function-testable-editor__header">
-          <div className="function-testable-editor__header__title">
-            <div className="function-testable-editor__header__title__label">
-              expected
-            </div>
-          </div>
-        </div>
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
             Access Point: {testState.accessPointLabel}
@@ -626,6 +619,7 @@ const DataProductEqualToRelationAssertionEditor = observer(
           <RelationElementEditor
             relationElementState={relationElementState}
             isReadOnly={isReadOnly}
+            hideColumnDefinitions={true}
           />
         ) : (
           <BlankPanelPlaceholder

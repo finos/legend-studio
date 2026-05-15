@@ -387,6 +387,7 @@ const ElementTestDataEditor = observer(
       <RelationElementsDataEditor
         dataState={dataState}
         isReadOnly={isReadOnly}
+        hideColumnDefinitions={true}
       />
     );
   },
@@ -764,7 +765,7 @@ const DataProductTestSuiteEditor = observer(
     return (
       <div className="service-test-suite-editor">
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel size={300} minSize={28}>
+          <ResizablePanel size={580} minSize={28}>
             <DataProductTestDataEditor
               testDataState={suiteState.testDataState}
               isReadOnly={isReadOnly}
