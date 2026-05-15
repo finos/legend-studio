@@ -115,7 +115,7 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
 
     // Should show accessor options (the dataset CARBON_DIOXIDE_EMISSIONS)
     expect(queryBuilderState.accessorsOptions.length).toBeGreaterThan(0);
-    expect(getByText(setupPanel, 'Data Set')).not.toBeNull();
+    expect(getByText(setupPanel, 'Dataset')).not.toBeNull();
 
     // Runtime should be enabled (source is selected)
     expect(queryBuilderState.selectedAccessorOwner).not.toBeUndefined();
@@ -203,7 +203,7 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
     expect(getByText(setupPanel, 'Source')).not.toBeNull();
-    expect(getByText(setupPanel, 'Data Set')).not.toBeNull();
+    expect(getByText(setupPanel, 'Dataset')).not.toBeNull();
     expect(getByText(setupPanel, 'Runtime')).not.toBeNull();
   });
 
@@ -274,7 +274,7 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
     expect(getByText(setupPanel, 'Source')).not.toBeNull();
-    expect(getByText(setupPanel, 'Data Set')).not.toBeNull();
+    expect(getByText(setupPanel, 'Dataset')).not.toBeNull();
     expect(getByText(setupPanel, 'Runtime')).not.toBeNull();
   });
 

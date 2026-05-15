@@ -165,6 +165,21 @@ export const csvStringify = (
   config?: UnparseConfig,
 ): string => CSVParser.unparse(value, config);
 
+export const parseCSVContent = (content: string): string[][] => {
+  const result = CSVParser.parse<string[]>(content.trim(), {
+    delimiter: ',',
+  });
+  return result.data;
+};
+
+export const csvEncodeValue = (value: string): string =>
+  CSVParser.unparse([[value]]);
+
+export const csvDecodeValue = (value: string): string => {
+  const result = CSVParser.parse<string[]>(value, { delimiter: ',' });
+  return result.data[0]?.[0] ?? value;
+};
+
 /**
  * One very common use case is that we get the JSON as response from the server than we will convert this to a string and persist
  * in the protocol. As such, we have to make sure this string is safe in PURE grammar format, i.e. it will escape single quotes

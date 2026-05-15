@@ -443,7 +443,10 @@ export const RelationElementEditor = observer(
                     >
                       <input
                         type="text"
-                        value={row.values[columnIndex] ?? ''}
+                        value={relationElementState.getDisplayValue(
+                          rowIndex,
+                          columnIndex,
+                        )}
                         onChange={(e) =>
                           updateCellValue(rowIndex, columnIndex, e.target.value)
                         }
@@ -538,8 +541,12 @@ export const RelationElementEditor = observer(
 );
 
 export const RelationElementsDataEditor = observer(
-  (props: { dataState: RelationElementsDataState; isReadOnly: boolean }) => {
-    const { dataState, isReadOnly } = props;
+  (props: {
+    dataState: RelationElementsDataState;
+    isReadOnly: boolean;
+    isSharedData?: boolean | undefined;
+  }) => {
+    const { dataState, isReadOnly, isSharedData } = props;
 
     useApplicationNavigationContext(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_RELATIONAL_EDITOR,
@@ -606,7 +613,7 @@ export const RelationElementsDataEditor = observer(
                   ) : (
                     <span>{relationElementState.relationElement.paths[0]}</span>
                   )}
-                  {!isReadOnly && (
+                  {!isReadOnly && !isSharedData && (
                     <button
                       className="service-editor__tab__close-btn"
                       onClick={(e): void => {
@@ -621,13 +628,15 @@ export const RelationElementsDataEditor = observer(
                 </div>
               ))}
             </div>
-            <button
-              onClick={addRelationElement}
-              disabled={isReadOnly}
-              title="Add Relation Element"
-            >
-              <PlusIcon />
-            </button>
+            {!isSharedData && (
+              <button
+                onClick={addRelationElement}
+                disabled={isReadOnly}
+                title="Add Relation Element"
+              >
+                <PlusIcon />
+              </button>
+            )}
           </div>
           {dataState.relationElementStates.length === 0 ||
           dataState.activeRelationElement === undefined ? (

@@ -93,7 +93,7 @@ export class IngestionAccessor extends Accessor {
     return 'Ingestion Source';
   }
   override get accessorLabel(): string {
-    return 'Data Set';
+    return 'Dataset';
   }
 
   override get schemaLabel(): string | undefined {

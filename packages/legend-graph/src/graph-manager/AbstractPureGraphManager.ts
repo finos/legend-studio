@@ -138,6 +138,7 @@ import type {
   Accessor,
   DataProductAccessor,
 } from '../graph/metamodel/pure/packageableElements/relation/Accessor.js';
+import type { IngestDefinition } from '../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -837,6 +838,12 @@ export abstract class AbstractPureGraphManager {
     functionActivator: FunctionActivator,
     graphData: GraphData,
   ): Promise<DeploymentResult>;
+
+  // --------------------------------------------- Ingeset Defintion --------------------------------------
+
+  abstract getIngestDefinitionDatasetNames(
+    ingestDefinition: IngestDefinition,
+  ): string[];
 
   // --------------------------------------------- Relational ---------------------------------------------
 

@@ -23,6 +23,7 @@ import {
   ContextMenu,
   CustomSelectorInput,
   Dialog,
+  ErrorWarnIcon,
   MenuContent,
   MenuContentItem,
   Modal,
@@ -61,7 +62,7 @@ import {
   TESTABLE_RESULT,
   getTestableResultFromTestResult,
 } from '../../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
-import { RelationElementEditor } from '../../data-editor/RelationElementsDataEditor.js';
+import { RelationElementsDataEditor } from '../../data-editor/RelationElementsDataEditor.js';
 import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -108,7 +109,7 @@ const CreateSuiteModal = observer(
     const accessPointOptions: ItemOption[] = testableState.ownAccessPoints.map(
       (ap) => ({
         value: ap.id,
-        label: ap.title ? `${ap.title} (${ap.id})` : ap.id,
+        label: ap.id,
       }),
     );
     const selectedApOption =
@@ -171,9 +172,7 @@ const CreateSuiteModal = observer(
               </div>
               <div className="panel__content__form__section__header__prompt">
                 Select the access point of the current DataProduct that the
-                first test in this suite will verify. Input data will be
-                inferred automatically from the access point&apos;s data
-                sources.
+                first test in this suite will verify
               </div>
               <CustomSelectorInput
                 options={accessPointOptions}
@@ -228,7 +227,7 @@ const CreateTestModal = observer(
     const accessPointOptions: ItemOption[] =
       suiteState.testableState.ownAccessPoints.map((ap) => ({
         value: ap.id,
-        label: ap.title ? `${ap.title} (${ap.id})` : ap.id,
+        label: ap.id,
       }));
     const selectedApOption =
       accessPointOptions.find((o) => o.value === selectedAccessPointId) ?? null;
@@ -326,8 +325,9 @@ const ElementTestDataItem = observer(
   (props: {
     elementState: DataProductElementTestDataState;
     testDataState: DataProductTestDataState;
+    isReadOnly: boolean;
   }) => {
-    const { elementState, testDataState } = props;
+    const { elementState, testDataState, isReadOnly } = props;
     const isActive =
       testDataState.selectedElementTestDataState === elementState;
 
@@ -346,17 +346,28 @@ const ElementTestDataItem = observer(
           tabIndex={-1}
         >
           <div className="testable-test-explorer__item__label__text">
-            {elementState.elementName}
+            {elementState.element.path}
           </div>
+          {!isReadOnly && (
+            <div className="mapping-test-explorer__item__actions">
+              <button
+                className="mapping-test-explorer__item__action"
+                onClick={(e): void => {
+                  e.stopPropagation();
+                  testDataState.deleteElement(elementState);
+                }}
+                tabIndex={-1}
+                title="Delete"
+              >
+                <TimesIcon />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
   },
 );
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Element Test Data Editor — dataset tabs + CSV editor
-// ──────────────────────────────────────────────────────────────────────────────
 
 const ElementTestDataEditor = observer(
   (props: {
@@ -364,59 +375,19 @@ const ElementTestDataEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { elementState, isReadOnly } = props;
-    const configuredItems = elementState.configuredItems;
-    const itemLabel = elementState.itemLabel;
+    const dataState = elementState.relationElementsDataState;
+
+    if (!dataState) {
+      return (
+        <BlankPanelContent>No relation data for this element</BlankPanelContent>
+      );
+    }
 
     return (
-      <div className="service-test-data-editor panel">
-        <div className="service-test-suite-editor__header">
-          <div className="service-test-suite-editor__header__title">
-            <div className="service-test-suite-editor__header__title__label">
-              data
-            </div>
-          </div>
-        </div>
-        <div className="panel__content">
-          {configuredItems.length > 0 ? (
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                {itemLabel}s
-              </div>
-              <div className="uml-element-editor__tabs">
-                {configuredItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className={clsx('service-test-suite-editor__tab', {
-                      'service-test-suite-editor__tab--active':
-                        item.id === elementState.selectedItemId,
-                    })}
-                  >
-                    <div
-                      className="mapping-editor__header__tab__content"
-                      onClick={(): void =>
-                        elementState.setSelectedItem(item.id)
-                      }
-                      tabIndex={-1}
-                    >
-                      <div>{item.label}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <BlankPanelContent>No {itemLabel}s configured</BlankPanelContent>
-          )}
-          {elementState.relationElementState && (
-            <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-              <RelationElementEditor
-                relationElementState={elementState.relationElementState}
-                isReadOnly={isReadOnly}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+      <RelationElementsDataEditor
+        dataState={dataState}
+        isReadOnly={isReadOnly}
+      />
     );
   },
 );
@@ -425,34 +396,126 @@ const ElementTestDataEditor = observer(
 // Test Data Editor (top panel) — always-visible elements sidebar + per-element editor
 // ──────────────────────────────────────────────────────────────────────────────
 
+const AddElementModal = observer(
+  (props: { testDataState: DataProductTestDataState }) => {
+    const { testDataState } = props;
+    const applicationStore = testDataState.editorStore.applicationStore;
+    const options = testDataState.availableElementsToAdd.map((e) => ({
+      value: e.path,
+      label: e.path,
+    }));
+    const [selectedPath, setSelectedPath] = useState<string | undefined>(
+      options[0]?.value,
+    );
+    const close = (): void => testDataState.setShowAddElementModal(false);
+    const add = (): void => {
+      if (selectedPath) {
+        testDataState.addElement(selectedPath);
+        close();
+      }
+    };
+    const onChange = (val: { label: string; value: string } | null): void => {
+      setSelectedPath(val?.value);
+    };
+
+    return (
+      <Dialog
+        open={testDataState.showAddElementModal}
+        onClose={close}
+        classes={{ container: 'search-modal__container' }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
+          <ModalHeader>
+            <ModalTitle title="Add Element" />
+          </ModalHeader>
+          <ModalBody>
+            <CustomSelectorInput
+              className="panel__content__form__section__dropdown"
+              options={options}
+              onChange={onChange}
+              value={
+                selectedPath
+                  ? { value: selectedPath, label: selectedPath }
+                  : null
+              }
+              placeholder="Select element..."
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+            />
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              disabled={!selectedPath}
+              onClick={add}
+              text="Add"
+            />
+            <ModalFooterButton onClick={close} text="Close" type="secondary" />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 const DataProductTestDataEditor = observer(
   (props: { testDataState: DataProductTestDataState; isReadOnly: boolean }) => {
     const { testDataState, isReadOnly } = props;
 
+    const addElement = (): void => {
+      if (testDataState.availableElementsToAdd.length === 0) {
+        testDataState.editorStore.applicationStore.notificationService.notifyWarning(
+          'No elements available to add',
+        );
+        return;
+      }
+      testDataState.setShowAddElementModal(true);
+    };
+
+    const hasTestData = testDataState.elementTestDataStates.length > 0;
+
     return (
-      <div className="service-test-data-editor panel">
-        <div className="service-test-suite-editor__header">
-          <div className="service-test-suite-editor__header__title">
-            <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--data">
-              Test Data
-            </div>
-          </div>
-        </div>
+      <div
+        className={clsx('service-test-data-editor panel', {
+          'service-test-data-editor--no-data': !hasTestData,
+        })}
+      >
         <div className="service-test-data-editor__data">
           <ResizablePanelGroup orientation="vertical">
             {/* Left: elements list — always visible */}
             <ResizablePanel minSize={100} size={180}>
               <div className="binding-editor__header">
                 <div className="binding-editor__header__title">
-                  <div className="binding-editor__header__title__label">
-                    elements
-                  </div>
+                  <div className="panel__header__title__content">Test Data</div>
                 </div>
+                {!isReadOnly && (
+                  <div className="panel__header__actions">
+                    <button
+                      className="panel__header__action"
+                      tabIndex={-1}
+                      onClick={addElement}
+                      title="Add Element"
+                    >
+                      <PlusIcon />
+                    </button>
+                  </div>
+                )}
               </div>
-              {testDataState.elementTestDataStates.length === 0 ? (
-                <BlankPanelContent>
-                  No data sources configured
-                </BlankPanelContent>
+              {!hasTestData ? (
+                <div className="service-test-data-editor__warning">
+                  <ErrorWarnIcon />
+                  <span>Add an element to configure test data</span>
+                </div>
               ) : (
                 <div>
                   {testDataState.elementTestDataStates.map((elementState) => (
@@ -460,6 +523,7 @@ const DataProductTestDataEditor = observer(
                       key={elementState.element.path}
                       elementState={elementState}
                       testDataState={testDataState}
+                      isReadOnly={isReadOnly}
                     />
                   ))}
                 </div>
@@ -483,6 +547,9 @@ const DataProductTestDataEditor = observer(
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
+        {testDataState.showAddElementModal && (
+          <AddElementModal testDataState={testDataState} />
+        )}
       </div>
     );
   },
@@ -611,13 +678,6 @@ const DataProductTestsEditor = observer(
 
     return (
       <div className="panel service-test-editor">
-        <div className="service-test-suite-editor__header">
-          <div className="service-test-suite-editor__header__title">
-            <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--tests">
-              tests
-            </div>
-          </div>
-        </div>
         <div className="service-test-editor__content">
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={100} size={200}>
