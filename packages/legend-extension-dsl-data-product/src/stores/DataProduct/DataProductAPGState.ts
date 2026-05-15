@@ -371,6 +371,7 @@ export class DataProductAPGState {
             this.apg,
             contract.contractResultLite,
             entitlementsDataProductDetails?.dataProduct.name,
+            entitlementsDataProductDetails?.deploymentId,
           ),
         )
         .find(isNonNullable);
@@ -393,7 +394,12 @@ export class DataProductAPGState {
       );
 
       const accessPointGroupContracts = contracts.filter((_contract) =>
-        dataContractContainsAccessGroup(this.apg, _contract),
+        dataContractContainsAccessGroup(
+          this.apg,
+          _contract,
+          entitlementsDataProductDetails?.dataProduct.name,
+          entitlementsDataProductDetails?.deploymentId,
+        ),
       );
 
       this.setApgContracts(accessPointGroupContracts);

@@ -85,6 +85,58 @@ describe('LakehouseUtils', () => {
     ).toBe(true);
   });
 
+  test('dataContractContainsAccessGroup should return false if access group and name match but deploymentId does not', () => {
+    const group = new V1_AccessPointGroup();
+    group.id = 'group1';
+
+    const dataContract = new V1_LiteDataContract();
+    dataContract.resourceType = V1_ResourceType.ACCESS_POINT_GROUP;
+    dataContract.accessPointGroup = 'group1';
+    dataContract.resourceId = 'MY_DATAPRODUCT';
+    dataContract.deploymentId = 343234;
+
+    expect(
+      dataContractContainsAccessGroup(
+        group,
+        dataContract,
+        'MY_DATAPRODUCT',
+        170962,
+      ),
+    ).toBe(false);
+  });
+
+  test('dataContractContainsAccessGroup should return true if access group, name, and deploymentId all match', () => {
+    const group = new V1_AccessPointGroup();
+    group.id = 'group1';
+
+    const dataContract = new V1_LiteDataContract();
+    dataContract.resourceType = V1_ResourceType.ACCESS_POINT_GROUP;
+    dataContract.accessPointGroup = 'group1';
+    dataContract.resourceId = 'MY_DATAPRODUCT';
+    dataContract.deploymentId = 170962;
+
+    expect(
+      dataContractContainsAccessGroup(
+        group,
+        dataContract,
+        'MY_DATAPRODUCT',
+        170962,
+      ),
+    ).toBe(true);
+  });
+
+  test('dataContractContainsAccessGroup should return true if deploymentId is not provided (undefined)', () => {
+    const group = new V1_AccessPointGroup();
+    group.id = 'group1';
+
+    const dataContract = new V1_LiteDataContract();
+    dataContract.resourceType = V1_ResourceType.ACCESS_POINT_GROUP;
+    dataContract.accessPointGroup = 'group1';
+    dataContract.deploymentId = 343234;
+
+    expect(dataContractContainsAccessGroup(group, dataContract)).toBe(true);
+  });
+
   test('isMemberOfContract should return true if the user is a member of an ad-hoc team contract', async () => {
     const lakehouseContractServerClient = new LakehouseContractServerClient({
       baseUrl: 'http://test-lakehouse-contract-server-client',
