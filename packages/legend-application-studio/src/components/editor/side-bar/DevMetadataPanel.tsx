@@ -46,9 +46,13 @@ import {
   TrashIcon,
   PlusIcon,
   CogIcon,
+  InfoCircleIcon,
+  CompareIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
 } from '@finos/legend-art';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { CodeDiffView, CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type BuildLog,
   type BuildPhaseActionState,
@@ -338,6 +342,103 @@ const getPhaseStatusIcon = (status: BuildPhaseStatus): ReactNode => {
   }
 };
 
+const DevMetadataCompareModal = observer(() => {
+  const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
+  const devMetadataState = editorStore.devMetadataState;
+  const isOpen = devMetadataState.isCompareModalOpen;
+  const isLoading = devMetadataState.compareState.isInProgress;
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <Dialog
+      open={isOpen}
+      onClose={() => devMetadataState.closeCompareModal()}
+      classes={{
+        root: 'editor-modal__root-container',
+        container: 'editor-modal__container',
+        paper: 'editor-modal__content',
+      }}
+    >
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="editor-modal dev-metadata-compare-modal"
+      >
+        <ModalHeader>
+          <ModalTitle title="Compare Workspace with Dev Snapshot" />
+        </ModalHeader>
+        <ModalBody className="dev-metadata-compare-modal__body">
+          {isLoading && (
+            <div className="dev-metadata-compare-modal__loading">
+              <CircleNotchIcon className="dev-metadata-compare-modal__loading__spinner" />
+              <span>Loading diff…</span>
+            </div>
+          )}
+          {!isLoading && devMetadataState.snapshotNotAvailable && (
+            <div className="dev-metadata-compare-modal__empty">
+              <InfoCircleIcon />
+              <div>
+                <div className="dev-metadata-compare-modal__empty__title">
+                  Dev snapshot not available
+                </div>
+                <div className="dev-metadata-compare-modal__empty__body">
+                  No deployed metadata was found for this project at version{' '}
+                  <code>1.0.0-SNAPSHOT</code>. Push to dev first to create a
+                  snapshot to compare against.
+                </div>
+              </div>
+            </div>
+          )}
+          {!isLoading && !devMetadataState.snapshotNotAvailable && (
+            <div className="dev-metadata-compare-modal__diff">
+              <div className="dev-metadata-compare-modal__diff__legend">
+                <div className="dev-metadata-compare-modal__diff__legend__side dev-metadata-compare-modal__diff__legend__side--from">
+                  <span className="dev-metadata-compare-modal__diff__legend__badge dev-metadata-compare-modal__diff__legend__badge--from">
+                    Deployed
+                  </span>
+                  <span className="dev-metadata-compare-modal__diff__legend__label">
+                    Dev Snapshot
+                  </span>
+                  <code className="dev-metadata-compare-modal__diff__legend__version">
+                    1.0.0-SNAPSHOT
+                  </code>
+                </div>
+                <div className="dev-metadata-compare-modal__diff__legend__side dev-metadata-compare-modal__diff__legend__side--to">
+                  <span className="dev-metadata-compare-modal__diff__legend__badge dev-metadata-compare-modal__diff__legend__badge--to">
+                    Local
+                  </span>
+                  <span className="dev-metadata-compare-modal__diff__legend__label">
+                    Current Workspace
+                  </span>
+                </div>
+              </div>
+              <div className="dev-metadata-compare-modal__diff__view">
+                <CodeDiffView
+                  language={CODE_EDITOR_LANGUAGE.PURE}
+                  from={devMetadataState.snapshotCode ?? ''}
+                  to={devMetadataState.currentWorkspaceCode ?? ''}
+                />
+              </div>
+            </div>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <ModalFooterButton
+            text="Close"
+            onClick={() => devMetadataState.closeCompareModal()}
+            type="secondary"
+          />
+        </ModalFooter>
+      </Modal>
+    </Dialog>
+  );
+});
+
 const PhaseLogsViewer = observer(
   (props: { phase: BuildPhaseActionState; onClose: () => void }) => {
     const { phase, onClose } = props;
@@ -355,6 +456,17 @@ const PhaseLogsViewer = observer(
     };
 
     const logs = phase.logs ? formatLogs(phase.logs) : 'No logs available';
+
+    const handleCopyLogs = (): void => {
+      applicationStore.clipboardService
+        .copyTextToClipboard(logs)
+        .then(() =>
+          applicationStore.notificationService.notifySuccess(
+            'Logs copied to clipboard',
+          ),
+        )
+        .catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <Dialog
@@ -386,6 +498,11 @@ const PhaseLogsViewer = observer(
             />
           </ModalBody>
           <ModalFooter>
+            <ModalFooterButton
+              text="Copy Logs"
+              onClick={handleCopyLogs}
+              type="secondary"
+            />
             <ModalFooterButton
               text="Close"
               onClick={onClose}
@@ -444,7 +561,13 @@ const DeploymentPhaseNode = observer(
         }
         menuProps={{ elevation: 7 }}
       >
-        <div className="deployment-phase__node">
+        <div
+          className={clsx('deployment-phase__node', {
+            'deployment-phase__node--clickable': hasLogs,
+          })}
+          onClick={hasLogs ? () => onViewLogs(phase) : undefined}
+          title={hasLogs ? 'Click to view logs' : undefined}
+        >
           <div className="deployment-phase__node__icon">{statusIcon}</div>
           <div className="deployment-phase__node__content">
             <div className="deployment-phase__node__title">{phase.phase}</div>
@@ -578,6 +701,7 @@ export const DevMetadataPanel = observer(() => {
   const editorStore = useEditorStore();
   const devMetadataState = editorStore.devMetadataState;
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false);
 
   const handlePush = (): void => {
     flowResult(devMetadataState.push()).catch(
@@ -589,7 +713,15 @@ export const DevMetadataPanel = observer(() => {
     devMetadataState.setOptions(newOptions);
   };
 
+  const handleCompare = (): void => {
+    devMetadataState.openCompareModal();
+    flowResult(devMetadataState.compareWithSnapshot()).catch(
+      editorStore.applicationStore.alertUnhandledError,
+    );
+  };
+
   const isPushing = devMetadataState.pushState.isInProgress;
+  const isComparing = devMetadataState.compareState.isInProgress;
 
   return (
     <Panel>
@@ -629,20 +761,71 @@ export const DevMetadataPanel = observer(() => {
 
         <PanelDivider />
         <PanelFormSection>
+          <div
+            className={clsx('dev-metadata-panel__info-callout', {
+              'dev-metadata-panel__info-callout--collapsed': !isInfoExpanded,
+            })}
+          >
+            <button
+              type="button"
+              className="dev-metadata-panel__info-callout__header"
+              onClick={() => setIsInfoExpanded(!isInfoExpanded)}
+              title={isInfoExpanded ? 'Hide details' : 'Show details'}
+            >
+              <span className="dev-metadata-panel__info-callout__header__chevron">
+                {isInfoExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
+              </span>
+              <InfoCircleIcon />
+              <span className="dev-metadata-panel__info-callout__header__title">
+                Heads up — you&apos;re using Dev Mode
+              </span>
+            </button>
+            {isInfoExpanded && (
+              <div className="dev-metadata-panel__info-callout__content">
+                <div className="dev-metadata-panel__info-callout__body">
+                  This pushes your current workspace straight to your dev branch
+                  (
+                  <code className="dev-metadata-panel__info-callout__code">
+                    1.0.0-SNAPSHOT
+                  </code>
+                  ), bypassing the GitLab build pipeline so you can iterate and
+                  test changes faster.
+                </div>
+                <div className="dev-metadata-panel__info-callout__body">
+                  Any Lakehouse elements in your workspace — including ingests,
+                  materialized views, and data products — will be deployed by
+                  default.
+                </div>
+              </div>
+            )}
+          </div>
+        </PanelFormSection>
+        <PanelFormSection>
           <div className="dev-metadata-panel__push-section">
             <div className="dev-metadata-panel__push-header">
               <div className="dev-metadata-panel__push-title-row">
                 <div className="panel__content__form__section__header__label">
                   Deploy Metadata
                 </div>
-                <button
-                  className="dev-metadata-panel__settings-btn"
-                  onClick={() => setIsOptionsModalOpen(true)}
-                  title="Configure deployment options"
-                  disabled={isPushing}
-                >
-                  <CogIcon />
-                </button>
+                <div className="dev-metadata-panel__push-title-row__actions">
+                  <button
+                    className="dev-metadata-panel__compare-btn"
+                    onClick={handleCompare}
+                    title="Compare current workspace with the deployed dev snapshot"
+                    disabled={isPushing || isComparing}
+                  >
+                    <CompareIcon />
+                    <span>Compare with Dev</span>
+                  </button>
+                  <button
+                    className="dev-metadata-panel__settings-btn"
+                    onClick={() => setIsOptionsModalOpen(true)}
+                    title="Configure deployment options"
+                    disabled={isPushing}
+                  >
+                    <CogIcon />
+                  </button>
+                </div>
               </div>
               <div className="dev-metadata-panel__push-description">
                 {isPushing
@@ -702,6 +885,7 @@ export const DevMetadataPanel = observer(() => {
           options={devMetadataState.options}
           onSave={handleSaveOptions}
         />
+        <DevMetadataCompareModal />
       </PanelContent>
     </Panel>
   );
