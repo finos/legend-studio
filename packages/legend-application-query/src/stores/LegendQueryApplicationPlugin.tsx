@@ -79,6 +79,11 @@ export type QueryEditorHelpMenuActionConfiguration = {
   icon?: React.ReactNode;
 };
 
+export type QueryTitleDescriptionSuggestion = {
+  title: string;
+  description: string;
+};
+
 export class LegendQueryApplicationPlugin
   extends LegendApplicationPlugin
   implements QueryBuilder_LegendApplicationPlugin_Extension
@@ -97,4 +102,15 @@ export class LegendQueryApplicationPlugin
    * Get the list of actions (configurations) for query setup.
    */
   getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
+
+  /**
+   * Get a function that uses AI to suggest a title and description for the current query.
+   * The function receives the current query builder state (which contains the query lambda,
+   * execution context, etc.) and should return a promise that resolves to the suggested
+   * name and description. Return undefined to indicate no AI suggestion capability.
+   */
+  getExtraQueryTitleDescriptionAISuggester?(): (
+    queryBuilderState: QueryBuilderState,
+    legendAIUrl: string,
+  ) => Promise<QueryTitleDescriptionSuggestion>;
 }
