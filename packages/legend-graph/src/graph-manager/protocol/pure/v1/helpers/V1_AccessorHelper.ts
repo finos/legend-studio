@@ -69,6 +69,9 @@ import {
   type DataProduct,
   LakehouseAccessPoint,
 } from '../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import type { V1_AccessPointImplementation } from '../lakehouse/deploy/V1_DataProductArtifact.js';
+import { V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
+import { V1_getGenericTypeFullPath } from './V1_DomainHelper.js';
 
 const buildV1GenericType = (fullPath: string): V1_GenericTypeProtocol => {
   // Strip package prefix — primitive types are indexed by simple name
@@ -146,6 +149,42 @@ const buildRelationTypeFromTable = (table: Table): RelationType => {
   return relationType;
 };
 // TODO: move to pure graph
+/**
+ * Builds a metamodel `RelationType` from the cached `lambdaGenericType` on a
+ * `V1_AccessPointImplementation`. Returns `undefined` if the implementation
+ * does not carry a relation-typed generic type.
+ *
+ * Column types are resolved against the supplied `PureModel`.
+ */
+export const V1_buildRelationTypeFromAccessPointImplementation = (
+  apImpl: V1_AccessPointImplementation,
+  graph: PureModel,
+  relationTypeName?: string | undefined,
+): RelationType | undefined => {
+  const v1RelationType = apImpl.lambdaGenericType?.typeArguments
+    .map((typeArg) => typeArg.rawType)
+    .find(
+      (rawType): rawType is V1_RelationType =>
+        rawType instanceof V1_RelationType,
+    );
+  if (!v1RelationType) {
+    return undefined;
+  }
+  const relationType = new RelationType(relationTypeName ?? apImpl.id);
+  relationType.columns = v1RelationType.columns.map(
+    (col) =>
+      new RelationColumn(
+        col.name,
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            graph.getType(V1_getGenericTypeFullPath(col.genericType)),
+          ),
+        ),
+      ),
+  );
+  return relationType;
+};
+
 /**
  * Creates an appropriate Accessor from a packageable element.
  *

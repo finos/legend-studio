@@ -415,6 +415,7 @@ import {
   V1_createAccessorFromPackageableElement,
   V1_buildDataProductAccessor,
   V1_resolveAccessorsFromRawLambda,
+  V1_buildRelationTypeFromAccessPointImplementation,
 } from './helpers/V1_AccessorHelper.js';
 import {
   V1_DataProductAccessor,
@@ -3980,10 +3981,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graphReport,
     );
 
-    const data = pureGraph.getDataProduct(dataProductPath);
+    const dataProduct = pureGraph.getDataProduct(dataProductPath);
 
     // Create access point groups with LakehouseAccessPoints from artifact data
-    data.accessPointGroups = artifact.accessPointGroups
+    dataProduct.accessPointGroups = artifact.accessPointGroups
       .filter(
         (groupInfo) => !(groupInfo instanceof V1_ModelAccessPointGroupInfo),
       )
@@ -4000,6 +4001,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               apGroup,
             );
             lakehouseAP.description = apImpl.description;
+            // Cache the relation type derived from the artifact's lambda
+            // generic type so downstream consumers can avoid re-computing it.
+            lakehouseAP.__internal__RelationType =
+              V1_buildRelationTypeFromAccessPointImplementation(
+                apImpl,
+                pureGraph,
+              );
             return lakehouseAP;
           },
         );
@@ -4007,7 +4015,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       });
 
     // Find the lakehouse access point matching the requested id
-    const lakehouseResult = data.accessPointGroups
+    const lakehouseResult = dataProduct.accessPointGroups
       .flatMap((group) => group.accessPoints)
       .find(
         (ap): ap is LakehouseAccessPoint =>
