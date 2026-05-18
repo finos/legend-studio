@@ -77,6 +77,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
   generateContractPagePath,
+  generatePermitDataAccessRequestPagePath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import {
   DataSpaceViewerState,
@@ -442,6 +443,10 @@ export class LegendMarketplaceProductViewerStore {
           getDataProductUrl: (_dataProductId: string, _deploymentId: number) =>
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
               generateLakehouseDataProductPath(_dataProductId, _deploymentId),
+            ),
+          getTaskPageUrl: (id: string) =>
+            this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+              generatePermitDataAccessRequestPagePath(id),
             ),
         },
         this.marketplaceBaseStore.permitWorkflowServerClient,

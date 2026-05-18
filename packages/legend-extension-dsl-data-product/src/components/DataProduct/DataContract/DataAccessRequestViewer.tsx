@@ -594,22 +594,49 @@ export const DataAccessRequestContent = observer(
                           </>
                         )}
                       </>
+                    ) : step.label.externalLink ? (
+                      <>
+                        <Link
+                          href={step.label.externalLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {step.label.title}
+                        </Link>
+                        <IconButton
+                          onClick={() =>
+                            copyToClipboard(step.label.externalLink ?? '')
+                          }
+                          className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
+                          title="Copy eTask Link"
+                        >
+                          <CopyFilledIcon />
+                          <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
+                            Copy
+                          </div>
+                        </IconButton>
+                      </>
                     ) : (
                       step.label.title
                     )}
                     {step.label.showEscalateButton && (
                       <span
                         title={
-                          step.label.isEscalatable
-                            ? 'Escalate request'
-                            : step.label.isEscalated
-                              ? 'Request has already been escalated'
-                              : 'Cannot escalate request'
+                          viewerState.escalatingState.isInProgress
+                            ? 'Escalating...'
+                            : step.label.isEscalatable
+                              ? 'Escalate request'
+                              : step.label.isEscalated
+                                ? 'Request has already been escalated'
+                                : 'Cannot escalate request'
                         }
                       >
                         <IconButton
                           onClick={() => setShowEscalationModal(true)}
-                          disabled={!step.label.isEscalatable}
+                          disabled={
+                            !step.label.isEscalatable ||
+                            viewerState.escalatingState.isInProgress
+                          }
                           className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
                         >
                           <ArrowUpFromBracketIcon />
