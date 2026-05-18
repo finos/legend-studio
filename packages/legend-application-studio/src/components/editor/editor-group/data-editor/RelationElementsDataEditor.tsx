@@ -338,16 +338,59 @@ export const RelationElementEditor = observer(
                 Test Data ({embeddedData.rows.length} rows)
               </div>
             </div>
-            {hideColumnDefinitions ? (
-              <button
-                className="btn--icon btn--dark btn--sm"
-                onClick={addColumn}
-                disabled={!canEditColumns}
-                title="Add Column"
-              >
-                <PlusIcon />
-              </button>
-            ) : null}
+            <div className="relation-test-data-editor__toolbar">
+              <div className="relation-test-data-editor__toolbar__left">
+                <div className="relation-test-data-editor__action-control">
+                  <span className="relation-test-data-editor__action-control__label">
+                    Add Column
+                  </span>
+                  <button
+                    className="btn--icon btn--dark btn--sm"
+                    onClick={addColumn}
+                    disabled={!canEditColumns}
+                    title="Add Column"
+                  >
+                    <PlusIcon />
+                  </button>
+                </div>
+                <div className="relation-test-data-editor__action-control">
+                  <span className="relation-test-data-editor__action-control__label">
+                    Add Row
+                  </span>
+                  <button
+                    className="btn--icon btn--dark btn--sm"
+                    onClick={addRow}
+                    disabled={isReadOnly || embeddedData.columns.length === 0}
+                    title="Add Row"
+                  >
+                    <PlusIcon />
+                  </button>
+                </div>
+              </div>
+              <div className="relation-test-data-editor__toolbar__right">
+                <div className="relation-test-data-editor__import-controls">
+                  <span className="relation-test-data-editor__import-controls__label">
+                    Upload CSV
+                  </span>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileUpload}
+                    style={{ display: 'none' }}
+                    disabled={isReadOnly}
+                  />
+                  <button
+                    className="btn--icon btn--dark btn--sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isReadOnly}
+                    title="Upload CSV"
+                  >
+                    <UploadIcon />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           {!hideColumnDefinitions ? (
             <div className="relation-test-data-editor__columns">
@@ -355,14 +398,6 @@ export const RelationElementEditor = observer(
                 <div className="relation-test-data-editor__section-title">
                   Column Definitions
                 </div>
-                <button
-                  className="btn--icon btn--dark btn--sm"
-                  onClick={addColumn}
-                  disabled={!canEditColumns}
-                  title="Add Column"
-                >
-                  <PlusIcon />
-                </button>
               </div>
               <div className="relation-test-data-editor__columns-grid">
                 {embeddedData.columns.map((column, index) => (
@@ -472,17 +507,8 @@ export const RelationElementEditor = observer(
             </div>
           )}
 
-          <div className="relation-test-data-editor__export-controls">
-            <div className="relation-test-data-editor__export-controls__btn-group">
-              <button
-                className="btn--icon btn--dark btn--sm"
-                onClick={addRow}
-                disabled={isReadOnly || embeddedData.columns.length === 0}
-                title="Add Row"
-              >
-                <PlusIcon />
-              </button>
-
+          <div className="relation-test-data-editor__footer-actions">
+            <div className="relation-test-data-editor__footer-actions__left">
               <button
                 className="btn--icon btn--dark btn--sm"
                 onClick={handleClearData}
@@ -492,35 +518,20 @@ export const RelationElementEditor = observer(
                 <TrashIcon />
               </button>
             </div>
-            <button
-              className="btn--icon btn--dark btn--sm"
-              onClick={exportCSV}
-              disabled={isReadOnly}
-              title="Export as CSV"
-            >
-              <FileImportIcon />
-            </button>
-
-            <div className="relation-test-data-editor__import-controls">
-              <span className="relation-test-data-editor__import-controls__label">
-                Upload CSV
-              </span>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv"
-                onChange={handleFileUpload}
-                style={{ display: 'none' }}
-                disabled={isReadOnly}
-              />
-              <button
-                className="btn--icon btn--dark btn--sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isReadOnly}
-                title="Upload CSV"
-              >
-                <UploadIcon />
-              </button>
+            <div className="relation-test-data-editor__footer-actions__right">
+              <div className="relation-test-data-editor__action-control">
+                <span className="relation-test-data-editor__action-control__label">
+                  Export CSV
+                </span>
+                <button
+                  className="btn--icon btn--dark btn--sm"
+                  onClick={exportCSV}
+                  disabled={isReadOnly}
+                  title="Export as CSV"
+                >
+                  <FileImportIcon />
+                </button>
+              </div>
             </div>
           </div>
         </div>

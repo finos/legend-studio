@@ -35,7 +35,9 @@ import {
   TestError,
   TestExecutionStatus,
   EqualToRelation,
+  RelationRowTestData,
   observe_RelationElement,
+  observe_RelationRowTestData,
   observe_RelationElementsData,
   observe_DataProductTestSuite,
   IngestDefinition,
@@ -76,10 +78,12 @@ const createEmptyRelationElement = (
   itemId: string,
   columns: string[] = [],
 ): RelationElement => {
+  const row = observe_RelationRowTestData(new RelationRowTestData());
+  row.values = columns.map(() => '');
   const relationElement = new RelationElement();
   relationElement.paths = [itemId];
   relationElement.columns = columns;
-  relationElement.rows = [];
+  relationElement.rows = [row];
   return observe_RelationElement(relationElement);
 };
 
@@ -635,9 +639,11 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
     const assertion = new EqualToRelation();
     assertion.id = 'assert_1';
     const expectedRelElement = new RelationElement();
+    const expectedRow = observe_RelationRowTestData(new RelationRowTestData());
+    expectedRow.values = inferredColumns.map(() => '');
     expectedRelElement.paths = [accessPointId];
     expectedRelElement.columns = inferredColumns;
-    expectedRelElement.rows = [];
+    expectedRelElement.rows = [expectedRow];
     observe_RelationElement(expectedRelElement);
     assertion.expected = expectedRelElement;
     test.assertions = [assertion];
@@ -870,9 +876,11 @@ export class DataProductTestableState {
     const assertion = new EqualToRelation();
     assertion.id = 'assert_1';
     const expectedRelElement = new RelationElement();
+    const expectedRow = observe_RelationRowTestData(new RelationRowTestData());
+    expectedRow.values = inferredColumns.map(() => '');
     expectedRelElement.paths = [accessPointId];
     expectedRelElement.columns = inferredColumns;
-    expectedRelElement.rows = [];
+    expectedRelElement.rows = [expectedRow];
     observe_RelationElement(expectedRelElement);
     assertion.expected = expectedRelElement;
     test.assertions = [assertion];

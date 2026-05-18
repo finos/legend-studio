@@ -346,7 +346,9 @@ const ElementTestDataItem = observer(
           tabIndex={-1}
         >
           <div className="testable-test-explorer__item__label__text">
-            {elementState.element.path}
+            <span title={elementState.element.path}>
+              {elementState.element.name}
+            </span>
           </div>
           {!isReadOnly && (
             <div className="mapping-test-explorer__item__actions">

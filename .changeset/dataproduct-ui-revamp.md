@@ -2,4 +2,4 @@
 '@finos/legend-application-studio': patch
 ---
 
-DataProduct UI revamp: replace flex-div grid with a table layout, add hover-reveal column delete buttons, simplify export to CSV-only, add "Upload CSV" label, and hide column definitions in test/assertion contexts.
+DataProduct test-data editor refresh: use table-based row/column rendering with hover-reveal column delete, move top controls to written label-plus-icon actions (Add Column/Add Row/Upload CSV), keep Export CSV written out at the footer right, keep clear-data at the footer left, and streamline column-definition visibility for test/assertion flows.
