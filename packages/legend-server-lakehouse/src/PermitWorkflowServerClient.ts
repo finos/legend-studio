@@ -42,13 +42,14 @@ export class PermitWorkflowServerClient extends AbstractServerClient {
     this.workflowBaseUrl = config.workflowBaseUrl;
   }
 
-  private _authToken = (token?: string) => ({
+  private readonly _authToken = (token?: string) => ({
     Authorization: `Bearer ${token}`,
   });
 
   // -------------------------------- Data Requests (auth server) --------------------------------
 
-  private _dataRequests = (): string => `${this.authBaseUrl}/datarequests`;
+  private readonly _dataRequests = (): string =>
+    `${this.authBaseUrl}/datarequests`;
 
   createDataRequest = (
     payload: V1_CreatePermitDataRequestPayload,
@@ -90,7 +91,8 @@ export class PermitWorkflowServerClient extends AbstractServerClient {
 
   // -------------------------------- Workflow Service --------------------------------
 
-  private _workflow = (): string => `${this.workflowBaseUrl}/access/workflow`;
+  private readonly _workflow = (): string =>
+    `${this.workflowBaseUrl}/access/workflow`;
 
   getProcessInstanceDetail = (
     instanceId: string,

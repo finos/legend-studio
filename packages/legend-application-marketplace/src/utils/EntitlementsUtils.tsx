@@ -129,9 +129,11 @@ export const getCommonEntitlementsColDefs = (
         }
         const c = (row as { data: V1_DataRequestWithWorkflow }).data
           .workflows[0]?.tasks[0]?.createdOn;
-        return c
-          ? new Date(c instanceof Date ? c.toISOString() : String(c)).getTime()
-          : 0;
+        if (!c) {
+          return 0;
+        }
+        const dateStr = c instanceof Date ? c.toISOString() : String(c);
+        return new Date(dateStr).getTime();
       };
       return getTime(val1.data) - getTime(val2.data);
     },

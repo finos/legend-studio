@@ -189,7 +189,7 @@ export const EntitlementsClosedContractsDashboard = observer(
     }, [selectedRowId]);
 
     const getInitialUserForViewer = (): string | undefined => {
-      if (!selectedRow || selectedRow.kind !== ROW_KIND_CONTRACT) {
+      if (selectedRow?.kind !== ROW_KIND_CONTRACT) {
         return undefined;
       }
       const contract = selectedRow.data.contractResultLite;
