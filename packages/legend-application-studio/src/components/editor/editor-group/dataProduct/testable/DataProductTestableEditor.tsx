@@ -346,7 +346,9 @@ const ElementTestDataItem = observer(
           tabIndex={-1}
         >
           <div className="testable-test-explorer__item__label__text">
-            {elementState.element.path}
+            <span title={elementState.element.path}>
+              {elementState.element.name}
+            </span>
           </div>
           {!isReadOnly && (
             <div className="mapping-test-explorer__item__actions">
@@ -387,6 +389,7 @@ const ElementTestDataEditor = observer(
       <RelationElementsDataEditor
         dataState={dataState}
         isReadOnly={isReadOnly}
+        hideColumnDefinitions={true}
       />
     );
   },
@@ -764,7 +767,7 @@ const DataProductTestSuiteEditor = observer(
     return (
       <div className="service-test-suite-editor">
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel size={300} minSize={28}>
+          <ResizablePanel size={580} minSize={28}>
             <DataProductTestDataEditor
               testDataState={suiteState.testDataState}
               isReadOnly={isReadOnly}
