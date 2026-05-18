@@ -66,10 +66,16 @@ export type PermitDataAccessRequestStateOptions = {
 
 const collectPermitTasks = (
   detail: V1_PermitProcessInstanceDetail,
-): V1_PermitProcessInstanceTask[] => [
-  ...detail.tasks,
-  ...detail.childProcesses.flatMap((cp) => cp.tasks),
-];
+): V1_PermitProcessInstanceTask[] => {
+  const raw = detail as Partial<{
+    tasks: V1_PermitProcessInstanceTask[];
+    childProcesses: { tasks?: V1_PermitProcessInstanceTask[] }[];
+  }>;
+  return [
+    ...(raw.tasks ?? []),
+    ...(raw.childProcesses ?? []).flatMap((cp) => cp.tasks ?? []),
+  ];
+};
 
 const mapCompletionReasonToAction = (
   reason: string | undefined,
@@ -119,6 +125,48 @@ const toTimestamp = (
     return undefined;
   }
   return val instanceof Date ? val.toISOString() : val;
+};
+
+const buildApprovalPayload = (
+  task: V1_WorkflowTask | undefined,
+  stepStatus: string,
+  excludedStatuses: string[],
+):
+  | { status: string; approvalTimestamp?: string; approverId?: string }
+  | undefined => {
+  if (!task || excludedStatuses.includes(stepStatus)) {
+    return undefined;
+  }
+  const payload: {
+    status: string;
+    approvalTimestamp?: string;
+    approverId?: string;
+  } = {
+    status:
+      task.action === V1_WorkflowTaskAction.APPROVED ? 'APPROVED' : 'DENIED',
+  };
+  const ts = toTimestamp(task.actionedOn);
+  if (ts !== undefined) {
+    payload.approvalTimestamp = ts;
+  }
+  if (task.actionedBy !== undefined) {
+    payload.approverId = task.actionedBy;
+  }
+  return payload;
+};
+
+const buildStepLink = (
+  stepStatus: string,
+  taskPageUrl: string | undefined,
+  taskUrl: string | undefined,
+): { link?: string | undefined; externalLink?: string | undefined } => {
+  if (stepStatus !== 'active') {
+    return {};
+  }
+  return {
+    link: taskPageUrl,
+    externalLink: taskUrl,
+  };
 };
 
 // -------------------------------- State --------------------------------
@@ -344,58 +392,39 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       ? this.getTaskPageUrl(this.dataAccessRequestId)
       : undefined;
 
+    const pmLinks = buildStepLink(pmStepStatus, taskPageUrl, pmTask?.url);
+    const doLinks = buildStepLink(doStepStatus, taskPageUrl, doTask?.url);
+
     const steps: TimelineStep[] = [
       { key: 'submitted', status: 'complete', label: { title: 'Submitted' } },
       {
         key: 'privilege-manager-approval',
         label: {
           title: 'Privilege Manager Approval',
-          link:
-            pmStepStatus === 'active'
-              ? (taskPageUrl ?? pmTask?.url)
-              : undefined,
-          externalLink: pmStepStatus === 'active' ? pmTask?.url : undefined,
+          ...pmLinks,
           showEscalateButton,
           isEscalatable,
           isEscalated,
         },
         status: pmStepStatus,
         assignees: pmStepStatus === 'active' ? pmTask?.assignees : undefined,
-        approvalPayload:
-          pmTask && pmStepStatus !== 'active' && pmStepStatus !== 'skipped'
-            ? {
-                status:
-                  pmTask.action === V1_WorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
-                approvalTimestamp: toTimestamp(pmTask.actionedOn),
-                approverId: pmTask.actionedBy,
-              }
-            : undefined,
+        approvalPayload: buildApprovalPayload(pmTask, pmStepStatus, [
+          'active',
+          'skipped',
+        ]),
       },
       {
         key: 'data-producer-approval',
         label: {
           title: 'Data Producer Approval',
-          link:
-            doStepStatus === 'active'
-              ? (taskPageUrl ?? doTask?.url)
-              : undefined,
-          externalLink: doStepStatus === 'active' ? doTask?.url : undefined,
+          ...doLinks,
         },
         status: doStepStatus,
         assignees: doStepStatus === 'active' ? doTask?.assignees : undefined,
-        approvalPayload:
-          doTask && doStepStatus !== 'active' && doStepStatus !== 'upcoming'
-            ? {
-                status:
-                  doTask.action === V1_WorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
-                approvalTimestamp: toTimestamp(doTask.actionedOn),
-                approverId: doTask.actionedBy,
-              }
-            : undefined,
+        approvalPayload: buildApprovalPayload(doTask, doStepStatus, [
+          'active',
+          'upcoming',
+        ]),
       },
       {
         key: 'complete',
@@ -473,9 +502,9 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
                     const taskAction = mapCompletionReasonToAction(
                       pt.completionReason,
                     );
-                    return taskAction !== undefined
-                      ? { action: taskAction }
-                      : {};
+                    return taskAction === undefined
+                      ? {}
+                      : { action: taskAction };
                   })(),
                 },
               );

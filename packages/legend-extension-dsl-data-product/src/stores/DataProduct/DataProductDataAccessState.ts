@@ -101,6 +101,7 @@ export type ContractConsumerTypeRendererConfig = {
 export type DataProductDataAccessStateActions = {
   getContractTaskUrl: (contractId: string, taskId: string) => string;
   getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
+  getTaskPageUrl?: (dataAccessRequestId: string) => string;
 };
 
 export type DataProductAccessPointCodeConfiguration = {
@@ -131,6 +132,9 @@ export class DataProductDataAccessState {
     dataProductId: string,
     deploymentId: number,
   ) => string;
+  readonly getTaskPageUrl:
+    | ((dataAccessRequestId: string) => string)
+    | undefined;
 
   // state
   associatedContracts: V1_LiteDataContract[] | undefined = undefined;
@@ -205,6 +209,7 @@ export class DataProductDataAccessState {
     // actions
     this.getContractTaskUrl = actions.getContractTaskUrl;
     this.getDataProductUrl = actions.getDataProductUrl;
+    this.getTaskPageUrl = actions.getTaskPageUrl;
   }
 
   get product(): V1_DataProduct {
@@ -588,6 +593,9 @@ export class DataProductDataAccessState {
                 pluginManager.getPureProtocolProcessorPlugins(),
               )[0];
             },
+            ...(this.getTaskPageUrl
+              ? { getTaskPageUrl: this.getTaskPageUrl }
+              : {}),
           },
         );
         this.setPermitRequestViewerState(viewerState);
