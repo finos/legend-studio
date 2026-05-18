@@ -1,5 +1,16 @@
 # @finos/legend-application-studio
 
+## 28.21.5
+
+### Patch Changes
+
+- [#5173](https://github.com/finos/legend-studio/pull/5173) [`da94187`](https://github.com/finos/legend-studio/commit/da9418732563c5f9f855cf1f36e04e6b54387bae) ([@Rakan1837](https://github.com/Rakan1837)) - DataProduct test-data editor refresh: use table-based row/column rendering with hover-reveal column delete, move top controls to written label-plus-icon actions (Add Column/Add Row/Upload CSV), keep Export CSV written out at the footer right, keep clear-data at the footer left, and streamline column-definition visibility for test/assertion flows.
+
+- [#5167](https://github.com/finos/legend-studio/pull/5167) [`7aa5924`](https://github.com/finos/legend-studio/commit/7aa59247dbf1b542adbe4536438b0fcff4960cc4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Improve Push to Dev panel UX: collapsible info callout, "Compare with Dev" button to diff the current workspace against the deployed `1.0.0-SNAPSHOT` snapshot, copy-to-clipboard for deployment phase logs, clickable phase nodes, brighter success status color, fixed key/value alignment in the build override editor, and a more visible deployment status legend.
+
+- [#5172](https://github.com/finos/legend-studio/pull/5172) [`b92003f`](https://github.com/finos/legend-studio/commit/b92003fea0a76de4b6c83d64a897974118e29a85) ([@yash0024](https://github.com/yash0024)) - Changes to FunctionTestableEditor and DataProductTestableEditor -- use same componants for test data and test assertions. Show red warning when no elements are added to test data. Allow users to add/delete elements
+  and datasets/access points to test data. For FunctionTestableEditor, new tests use the new Relation assertion if the return type is TDS/Relation
+
 ## 28.21.4
 
 ### Patch Changes

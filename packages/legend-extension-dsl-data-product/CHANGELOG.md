@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.80
+
+### Patch Changes
+
+- [#5168](https://github.com/finos/legend-studio/pull/5168) [`c141ad8`](https://github.com/finos/legend-studio/commit/c141ad8b51c815e54a7f4d047b0b5b3c36106c9c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Deployment check while displaying entitlements on a data product.
+
 ## 0.0.79
 
 ## 0.0.78

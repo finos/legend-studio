@@ -1,5 +1,19 @@
 # @finos/legend-query-builder
 
+## 4.18.9
+
+### Patch Changes
+
+- [#5171](https://github.com/finos/legend-studio/pull/5171) [`54ddbe8`](https://github.com/finos/legend-studio/commit/54ddbe83ed784d530f70c55fa97b3ad4ee6678ee) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix Filter By and Filter Out not applying from AG Grid context menu. The cell selection stats refactor removed the `resultState.setSelectedCells()` call from `onCellSelectionChanged`, leaving `selectedCells` empty when `filterByOrOutValues` runs. The fix syncs the grid's cell-range selection into `resultState.selectedCells` at context-menu build time.
+
+- [#5169](https://github.com/finos/legend-studio/pull/5169) [`02d1963`](https://github.com/finos/legend-studio/commit/02d1963ec4a28de0601e448235fab2be2cfd55ee) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix opening saved queries that target a `LakehouseAccessPoint`:
+
+  - `@finos/legend-graph`: Add `__internal__RelationType` to `LakehouseAccessPoint` and cache it during `buildLakehouseAccessDataProductAnalysis` so downstream consumers can avoid re-deriving it. Extract `V1_buildRelationTypeFromAccessPointImplementation` into `V1_AccessorHelper` for reuse, and use the cached relation type in the `DATA_PRODUCT_ACCESSOR` value-specification builder (fail-fast when missing).
+  - `@finos/legend-query-builder`: Use the shared helper in `DataProductQueryBuilderState.resolveDataProductAccessor` to remove duplicated relation-type derivation logic.
+  - `@finos/legend-application-query`: Route saved queries with `QueryDataProductLakehouseExecutionContextInfo` through the minimal-graph path (instead of falling through to `buildFullGraph`), and map them to a `LegendQueryDataProductQueryBuilderState` with `DataProductAccessType.LAKEHOUSE` in `initQueryBuildStateFromQuery`. Gate the mapping assertion in `buildQueryForPersistence` on `requiresMappingForExecution` so Lakehouse queries (which have no mapping) can be saved. Make the Lakehouse runtime configuration modal available for `LakehouseDataProductExecutionState` in `LegendQueryDataProductQueryBuilder`, matching the existing behaviour for `ModelAccessPointDataProductExecutionState`.
+
+- [#5165](https://github.com/finos/legend-studio/pull/5165) [`e7b330d`](https://github.com/finos/legend-studio/commit/e7b330d2a1a8708dd51545a4614d8dccfe82a16f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Replace `QueryBuilderTDSState.useColFunc` with a `TDS_PROJECTION_MODE` enum (`PROJECT`, `PROJECT_COL`, `SELECT`) so the projection step can be emitted in three forms. Adds round-trip support for relation `select(~[...])` queries (`RELATION_SELECT`).
+
 ## 4.18.8
 
 ## 4.18.7

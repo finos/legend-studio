@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 32.6.3
+
+### Patch Changes
+
+- [#5169](https://github.com/finos/legend-studio/pull/5169) [`02d1963`](https://github.com/finos/legend-studio/commit/02d1963ec4a28de0601e448235fab2be2cfd55ee) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix opening saved queries that target a `LakehouseAccessPoint`:
+
+  - `@finos/legend-graph`: Add `__internal__RelationType` to `LakehouseAccessPoint` and cache it during `buildLakehouseAccessDataProductAnalysis` so downstream consumers can avoid re-deriving it. Extract `V1_buildRelationTypeFromAccessPointImplementation` into `V1_AccessorHelper` for reuse, and use the cached relation type in the `DATA_PRODUCT_ACCESSOR` value-specification builder (fail-fast when missing).
+  - `@finos/legend-query-builder`: Use the shared helper in `DataProductQueryBuilderState.resolveDataProductAccessor` to remove duplicated relation-type derivation logic.
+  - `@finos/legend-application-query`: Route saved queries with `QueryDataProductLakehouseExecutionContextInfo` through the minimal-graph path (instead of falling through to `buildFullGraph`), and map them to a `LegendQueryDataProductQueryBuilderState` with `DataProductAccessType.LAKEHOUSE` in `initQueryBuildStateFromQuery`. Gate the mapping assertion in `buildQueryForPersistence` on `requiresMappingForExecution` so Lakehouse queries (which have no mapping) can be saved. Make the Lakehouse runtime configuration modal available for `LakehouseDataProductExecutionState` in `LegendQueryDataProductQueryBuilder`, matching the existing behaviour for `ModelAccessPointDataProductExecutionState`.
+
+- [#5165](https://github.com/finos/legend-studio/pull/5165) [`e7b330d`](https://github.com/finos/legend-studio/commit/e7b330d2a1a8708dd51545a4614d8dccfe82a16f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `LAKE_OUT_ID` in ingest columns accessor for milestoned dataasets
+
+- [#5172](https://github.com/finos/legend-studio/pull/5172) [`b92003f`](https://github.com/finos/legend-studio/commit/b92003fea0a76de4b6c83d64a897974118e29a85) ([@yash0024](https://github.com/yash0024)) - Minor refactoring and adding new milestoning columns for ingest dataset test data
+
 ## 32.6.2
 
 ### Patch Changes
