@@ -18,27 +18,43 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  guaranteeType,
   isNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
-  type V1_DataContract,
+  type V1_DataProduct,
   type V1_EnrichedUserApprovalStatus,
+  type V1_EntitlementsDataProductDetails,
   type V1_LiteDataContract,
   type V1_LiteDataContractWithUserStatus,
   type V1_PendingTasksResponse,
   type V1_TaskStatus,
   type V1_ContractUserEventRecord,
   type V1_TaskStatusChangeResponse,
-  V1_dataContractsResponseModelSchema,
+  type PureProtocolProcessorPlugin,
+  RawLambda,
+  V1_DataProductAccessor,
+  V1_deserializeDataContractResponse,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_IngestDefinitionAccessor,
+  V1_LakehouseAccessPoint,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_pendingTasksResponseModelSchema,
+  V1_PureGraphManager,
+  V1_resolveAccessorsFromRawLambda,
+  V1_ResourceType,
+  V1_SdlcDeploymentDataProductOrigin,
   V1_TaskStatusChangeResponseModelSchema,
   V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import {
+  type LakehouseContractServerClient,
+  type IngestDeploymentServerConfig,
+} from '@finos/legend-server-lakehouse';
 import {
   makeObservable,
   flow,
@@ -51,6 +67,7 @@ import {
   TEST_USER,
   type LakehouseEntitlementsStore,
 } from './LakehouseEntitlementsStore.js';
+import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
 
 export class ContractCreatedByUserDetails {
   readonly contractResultLite: V1_LiteDataContract;
@@ -125,6 +142,7 @@ export class EntitlementsDashboardState {
       fetchContractsForUser: flow,
       fetchContractsCreatedByUser: flow,
       fetchContractDeploymentEnvironments: flow,
+      getUnverifiedIngestDefinitions: flow,
       updateContract: flow,
     });
   }
@@ -246,30 +264,18 @@ export class EntitlementsDashboardState {
     const pendingTaskContractIds = Array.from(
       new Set(pendingTasks.map((t) => t.dataContractId)),
     );
-    const pendingTaskContracts = (
-      (yield Promise.all(
-        pendingTaskContractIds.map(async (contractId) => {
-          const rawContractResponse =
-            await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getDataContract(
-              contractId,
-              false,
-              token,
-            );
-          const contractResponse = deserialize(
-            V1_dataContractsResponseModelSchema(
-              this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
-            ),
-            rawContractResponse,
-          );
-          return contractResponse.dataContracts?.[0]?.dataContract;
-        }),
-      )) as (V1_DataContract | undefined)[]
-    )
-      .filter(isNonNullable)
-      .map(V1_transformDataContractToLiteDatacontract);
+    const contractClient =
+      this.lakehouseEntitlementsStore.lakehouseContractServerClient;
+    const plugins =
+      this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins();
+    const pendingTaskContracts = (yield Promise.all(
+      pendingTaskContractIds.map((contractId) =>
+        fetchLiteContract(contractId, token, contractClient, plugins),
+      ),
+    )) as (V1_LiteDataContract | undefined)[];
     const resultMap = new Map<string, V1_LiteDataContract>();
-    pendingTaskContractIds.forEach((contractId) => {
-      const contract = pendingTaskContracts.find((c) => c.guid === contractId);
+    pendingTaskContractIds.forEach((contractId, idx) => {
+      const contract = pendingTaskContracts[idx];
       if (contract) {
         resultMap.set(contractId, contract);
       }
@@ -356,34 +362,149 @@ export class EntitlementsDashboardState {
     }
 
     const didToEnvType = new Map<number, string>();
+    const contractClient =
+      this.lakehouseEntitlementsStore.lakehouseContractServerClient;
     yield Promise.all(
       Array.from(uniqueDIDToDataProduct.entries()).map(
         async ([deploymentId, resourceId]) => {
-          try {
-            const raw =
-              await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getDataProductByIdAndDID(
-                resourceId,
-                deploymentId,
-                token,
-              );
-            const details =
-              V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-                raw,
-              );
-            const env = details[0]?.lakehouseEnvironment?.type;
-            if (env) {
-              didToEnvType.set(deploymentId, env);
-            }
-          } catch (error) {
-            assertErrorThrown(error);
-            this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
-              `Error fetching deployment environment for deployment ${deploymentId}: ${error.message}`,
-            );
+          const details = await fetchDataProductDetails(
+            resourceId,
+            deploymentId,
+            token,
+            contractClient,
+          );
+          const env = details?.lakehouseEnvironment?.type;
+          if (env) {
+            didToEnvType.set(deploymentId, env);
           }
         },
       ),
     );
     return didToEnvType;
+  }
+
+  *getUnverifiedIngestDefinitions(
+    contractId: string,
+    token: string | undefined,
+  ): GeneratorFn<string[] | undefined> {
+    const entitlementsStore = this.lakehouseEntitlementsStore;
+    const baseStore = entitlementsStore.marketplaceBaseStore;
+    const applicationStore = entitlementsStore.applicationStore;
+    const plugins =
+      applicationStore.pluginManager.getPureProtocolProcessorPlugins();
+
+    const PROD_ENV = 'prod';
+    const SDLC_DEPLOYMENT = 'alloy-git';
+
+    try {
+      const liteContract = (yield fetchLiteContract(
+        contractId,
+        token,
+        entitlementsStore.lakehouseContractServerClient,
+        plugins,
+      )) as V1_LiteDataContract | undefined;
+      if (!liteContract) {
+        return [];
+      }
+
+      const accessPointGroupId =
+        liteContract.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
+          ? (liteContract.accessPointGroup ?? undefined)
+          : undefined;
+      if (!accessPointGroupId) {
+        return [];
+      }
+
+      const dpDetails = (yield fetchDataProductDetails(
+        liteContract.resourceId,
+        liteContract.deploymentId,
+        token,
+        entitlementsStore.lakehouseContractServerClient,
+      )) as V1_EntitlementsDataProductDetails | undefined;
+      if (!dpDetails) {
+        return [];
+      }
+
+      if (!(dpDetails.origin instanceof V1_SdlcDeploymentDataProductOrigin)) {
+        return [];
+      }
+
+      const graphManager = new V1_PureGraphManager(
+        applicationStore.pluginManager,
+        applicationStore.logService,
+        baseStore.remoteEngine,
+      );
+      yield graphManager.initialize(
+        {
+          env: applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl: applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: baseStore.remoteEngine },
+      );
+
+      const v1DataProduct = (yield getDataProductFromDetails(
+        dpDetails,
+        graphManager,
+        baseStore,
+      )) as V1_DataProduct | undefined;
+      if (!v1DataProduct) {
+        return [];
+      }
+
+      const specs = collectIngestSpecPathsFromOriginDp(
+        v1DataProduct,
+        accessPointGroupId,
+        graphManager,
+        plugins,
+      );
+      if (specs.size === 0) {
+        return [];
+      }
+
+      const ingestEnvironment =
+        (yield baseStore.lakehouseDataProductService.getOrFetchEnvironmentForDID(
+          liteContract.deploymentId,
+          token,
+        )) as IngestDeploymentServerConfig | undefined;
+      const ingestServerUrl = ingestEnvironment?.ingestServerUrl;
+      if (ingestServerUrl === undefined) {
+        return [];
+      }
+
+      const sdlcOrigin = guaranteeType(
+        dpDetails.origin,
+        V1_SdlcDeploymentDataProductOrigin,
+      );
+      const gav = `${sdlcOrigin.group}~${sdlcOrigin.artifact}`;
+      const specsToVerify = Array.from(specs, (specPath) => ({
+        specPath,
+        urn: `urn:lakehouse:${PROD_ENV}:ingest:definition:${SDLC_DEPLOYMENT}:${gav}~${specPath}`,
+      }));
+
+      const ingestClient = baseStore.lakehouseIngestServerClient;
+      const settled = (yield Promise.all(
+        specsToVerify.map(async (entry) => {
+          try {
+            await ingestClient.getIngestDefinitionDetail(
+              entry.urn,
+              ingestServerUrl,
+              token,
+            );
+            return undefined;
+          } catch (error) {
+            assertErrorThrown(error);
+            return entry.specPath;
+          }
+        }),
+      )) as (string | undefined)[];
+      return settled.filter(isNonNullable);
+    } catch (error) {
+      assertErrorThrown(error);
+      return undefined;
+    }
   }
 
   private filterByUserEnvironment(
@@ -578,4 +699,126 @@ export class EntitlementsDashboardState {
       );
     }
   }
+}
+
+async function fetchLiteContract(
+  contractId: string,
+  token: string | undefined,
+  contractClient: LakehouseContractServerClient,
+  plugins: PureProtocolProcessorPlugin[],
+): Promise<V1_LiteDataContract | undefined> {
+  try {
+    const rawContractResponse = await contractClient.getDataContract(
+      contractId,
+      false,
+      token,
+    );
+    const dataContract = V1_deserializeDataContractResponse(
+      rawContractResponse,
+      plugins,
+    )[0]?.dataContract;
+    if (!dataContract) {
+      return undefined;
+    }
+    return V1_transformDataContractToLiteDatacontract(dataContract);
+  } catch (error) {
+    assertErrorThrown(error);
+    return undefined;
+  }
+}
+
+async function fetchDataProductDetails(
+  resourceId: string,
+  deploymentId: number,
+  token: string | undefined,
+  contractClient: LakehouseContractServerClient,
+): Promise<V1_EntitlementsDataProductDetails | undefined> {
+  try {
+    const raw = await contractClient.getDataProductByIdAndDID(
+      resourceId,
+      deploymentId,
+      token,
+    );
+    return V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+      raw,
+    )[0];
+  } catch (error) {
+    assertErrorThrown(error);
+    return undefined;
+  }
+}
+
+function collectIngestSpecPathsFromOriginDp(
+  rootDataProduct: V1_DataProduct,
+  accessPointGroupId: string,
+  graphManager: V1_PureGraphManager,
+  plugins: PureProtocolProcessorPlugin[],
+): Set<string> {
+  const dpPath = `${rootDataProduct.package}::${rootDataProduct.name}`;
+  const targetApg = rootDataProduct.accessPointGroups.find(
+    (apg) => apg.id === accessPointGroupId,
+  );
+  if (!targetApg) {
+    throw new Error(
+      `Access point group '${accessPointGroupId}' not found in data product '${dpPath}'`,
+    );
+  }
+  const specs = new Set<string>();
+  const visited = new Set<string>();
+  const worklist: string[] = [accessPointGroupId];
+
+  const collectFromApg = (apgId: string): void => {
+    const apg = rootDataProduct.accessPointGroups.find((g) => g.id === apgId);
+    if (!apg) {
+      return;
+    }
+    for (const accessPoint of apg.accessPoints) {
+      if (!(accessPoint instanceof V1_LakehouseAccessPoint)) {
+        continue;
+      }
+      const visitKey = `${dpPath}::${accessPoint.id}`;
+      if (visited.has(visitKey)) {
+        continue;
+      }
+      visited.add(visitKey);
+
+      const rawLambda = new RawLambda(
+        accessPoint.func.parameters,
+        accessPoint.func.body,
+      );
+      const accessors =
+        V1_resolveAccessorsFromRawLambda(rawLambda, graphManager, plugins) ??
+        [];
+      for (const accessor of accessors) {
+        if (accessor instanceof V1_IngestDefinitionAccessor) {
+          const specPath = accessor.path[0];
+          if (specPath) {
+            specs.add(specPath);
+          }
+        } else if (accessor instanceof V1_DataProductAccessor) {
+          const refDpPath = accessor.path[0];
+          const refApId = accessor.path[1];
+          if (!refDpPath || !refApId) {
+            continue;
+          }
+          if (refDpPath !== dpPath) {
+            continue;
+          }
+          const refApg = rootDataProduct.accessPointGroups.find((g) =>
+            g.accessPoints.some((ap) => ap.id === refApId),
+          );
+          if (refApg && !worklist.includes(refApg.id)) {
+            worklist.push(refApg.id);
+          }
+        }
+      }
+    }
+  };
+
+  while (worklist.length > 0) {
+    const apgId = guaranteeNonNullable(worklist.shift());
+    collectFromApg(apgId);
+  }
+
+  return specs;
 }

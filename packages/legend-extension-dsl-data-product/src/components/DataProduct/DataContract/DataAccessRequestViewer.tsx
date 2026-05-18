@@ -70,6 +70,7 @@ import {
   RefreshIcon,
   TimesIcon,
   TrashIcon,
+  WarningIcon,
 } from '@finos/legend-art';
 import {
   getOrganizationalScopeTypeDetails,
@@ -707,20 +708,57 @@ export const DataAccessRequestViewer = observer(
     onRefresh?: (() => void) | (() => Promise<void>);
     isReadOnly?: boolean | undefined;
     dataProductEnvironment?: string | undefined;
+    unverifiedIngestDefinitions?: string[] | undefined;
   }) => {
-    const { open, onClose, viewerState, ...contentProps } = props;
+    const {
+      open,
+      onClose,
+      viewerState,
+      unverifiedIngestDefinitions,
+      ...contentProps
+    } = props;
 
     const isRequestInProgress = viewerState.isInProgress;
-
+    const hasUnverifiedIngestDefinitions =
+      unverifiedIngestDefinitions !== undefined &&
+      unverifiedIngestDefinitions.length > 0;
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>
-          {isRequestInProgress ? 'Pending ' : ''}Data Access Request
+          <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__title">
+            <span>
+              {isRequestInProgress ? 'Pending ' : ''}Data Access Request
+            </span>
+            {hasUnverifiedIngestDefinitions && (
+              <WarningIcon className="marketplace-lakehouse-entitlements__data-access-request-viewer__title__warning-icon" />
+            )}
+          </Box>
         </DialogTitle>
         <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
           <CloseIcon />
         </IconButton>
         <DialogContent className="marketplace-lakehouse-entitlements__data-access-request-viewer__content">
+          {hasUnverifiedIngestDefinitions && (
+            <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests-wrapper">
+              <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests">
+                <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__heading">
+                  {unverifiedIngestDefinitions.length === 1
+                    ? 'Ingest Not Found:'
+                    : 'Ingests Not Found:'}
+                </Box>
+                <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__list">
+                  {unverifiedIngestDefinitions.map((specPath) => (
+                    <Box
+                      key={specPath}
+                      className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item"
+                    >
+                      {specPath}
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+          )}
           <DataAccessRequestContent
             viewerState={viewerState}
             {...contentProps}
