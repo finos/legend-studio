@@ -18,6 +18,7 @@ import {
   type V1_LiteDataContract,
   GraphManagerState,
   V1_AdhocTeam,
+  V1_ContractState,
   V1_LiteDataContractWithUserStatus,
 } from '@finos/legend-graph';
 import {
@@ -41,6 +42,7 @@ import { useLegendMarketplaceBaseStore } from '../../../application/providers/Le
 import { observer } from 'mobx-react-lite';
 import { useAuth } from 'react-oidc-context';
 import {
+  type ContractErrorLayer,
   DataAccessRequestViewer,
   DataContractViewerState,
   isApprovalStatusTerminal,
@@ -84,10 +86,9 @@ export const EntitlementsClosedContractsDashboard = observer(
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
     >();
-    const [unverifiedIngestDefinitions, setUnverifiedIngestDefinitions] =
-      useState<string[] | undefined>(undefined);
-    const [ingestVerificationInProgress, setIngestVerificationInProgress] =
-      useState(false);
+    const [contractErrors, setContractErrors] = useState<
+      ContractErrorLayer | undefined
+    >(undefined);
     const [showForOthers, setShowForOthers] = useState<boolean>(
       myClosedContracts.length === 0 && closedContractsForOthers.length > 0,
     );
@@ -99,17 +100,15 @@ export const EntitlementsClosedContractsDashboard = observer(
     ) => {
       const contract = event.data?.contractResultLite;
       setSelectedContract(contract);
-      setUnverifiedIngestDefinitions(undefined);
+      setContractErrors(undefined);
       if (contract !== undefined) {
-        setIngestVerificationInProgress(true);
-        const result = await flowResult(
-          dashboardState.getUnverifiedIngestDefinitions(
-            contract.guid,
-            auth.user?.access_token,
-          ),
+        const isCompleted = contract.state === V1_ContractState.COMPLETED;
+        const result = await dashboardState.getContractErrors(
+          contract.guid,
+          auth.user?.access_token,
+          isCompleted,
         );
-        setUnverifiedIngestDefinitions(result);
-        setIngestVerificationInProgress(false);
+        setContractErrors(result);
       }
     };
 
@@ -227,15 +226,14 @@ export const EntitlementsClosedContractsDashboard = observer(
             overlayLoadingTemplate="Loading contracts"
           />
         </Box>
-        {selectedContract !== undefined && !ingestVerificationInProgress && (
+        {selectedContract !== undefined && (
           <DataAccessRequestViewer
             open={true}
             onClose={() => {
               setSelectedContract(undefined);
-              setUnverifiedIngestDefinitions(undefined);
-              setIngestVerificationInProgress(false);
+              setContractErrors(undefined);
             }}
-            unverifiedIngestDefinitions={unverifiedIngestDefinitions}
+            contractErrors={contractErrors}
             viewerState={
               new DataContractViewerState(
                 selectedContract,

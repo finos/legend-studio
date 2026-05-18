@@ -19,7 +19,9 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  HttpStatus,
   isNonNullable,
+  NetworkClientError,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -28,7 +30,6 @@ import {
   type PureProtocolProcessorPlugin,
   type V1_DataProduct,
   type V1_EnrichedUserApprovalStatus,
-  type V1_EntitlementsDataProductDetails,
   type V1_LiteDataContract,
   type V1_LiteDataContractWithUserStatus,
   type V1_PendingTasksResponse,
@@ -51,7 +52,7 @@ import {
   V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import { type IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
+import type { ContractErrorLayer } from '@finos/legend-extension-dsl-data-product';
 import {
   makeObservable,
   flow,
@@ -65,6 +66,18 @@ import {
   type LakehouseEntitlementsStore,
 } from './LakehouseEntitlementsStore.js';
 import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
+
+export enum ContractSyncStatus {
+  NEVER_SYNCED = 'NEVER_SYNCED',
+  NOT_FULLY_SYNCED = 'NOT_FULLY_SYNCED',
+}
+
+export type LakehouseContractSyncStatusResponse = {
+  status: string;
+  unsyncedUsers?: { username: string }[];
+  unsyncedAccessPoints?: { accessPointName: string }[];
+  unsyncedTargetAccounts?: string[];
+};
 
 const collectIngestSpecPathsFromOriginDp = (
   rootDataProduct: V1_DataProduct,
@@ -214,7 +227,6 @@ export class EntitlementsDashboardState {
       fetchContractsForUser: flow,
       fetchContractsCreatedByUser: flow,
       fetchContractDeploymentEnvironments: flow,
-      getUnverifiedIngestDefinitions: flow,
       updateContract: flow,
     });
   }
@@ -478,10 +490,10 @@ export class EntitlementsDashboardState {
     return didToEnvType;
   }
 
-  *getUnverifiedIngestDefinitions(
+  async getUnverifiedIngestDefinitions(
     contractId: string,
     token: string | undefined,
-  ): GeneratorFn<string[] | undefined> {
+  ): Promise<string[]> {
     const entitlementsStore = this.lakehouseEntitlementsStore;
     const baseStore = entitlementsStore.marketplaceBaseStore;
     const applicationStore = entitlementsStore.applicationStore;
@@ -493,7 +505,7 @@ export class EntitlementsDashboardState {
     const SDLC_DEPLOYMENT = 'alloy-git';
 
     try {
-      const liteContract = (yield (async () => {
+      const liteContract = await (async () => {
         try {
           const rawContractResponse = await contractClient.getDataContract(
             contractId,
@@ -512,7 +524,7 @@ export class EntitlementsDashboardState {
           assertErrorThrown(error);
           return undefined;
         }
-      })()) as V1_LiteDataContract | undefined;
+      })();
       if (!liteContract) {
         return [];
       }
@@ -525,7 +537,7 @@ export class EntitlementsDashboardState {
         return [];
       }
 
-      const dpDetails = (yield (async () => {
+      const dpDetails = await (async () => {
         try {
           const raw = await contractClient.getDataProductByIdAndDID(
             liteContract.resourceId,
@@ -539,7 +551,7 @@ export class EntitlementsDashboardState {
           assertErrorThrown(error);
           return undefined;
         }
-      })()) as V1_EntitlementsDataProductDetails | undefined;
+      })();
       if (!dpDetails) {
         return [];
       }
@@ -553,7 +565,7 @@ export class EntitlementsDashboardState {
         applicationStore.logService,
         baseStore.remoteEngine,
       );
-      yield graphManager.initialize(
+      await graphManager.initialize(
         {
           env: applicationStore.config.env,
           tabSize: DEFAULT_TAB_SIZE,
@@ -564,11 +576,11 @@ export class EntitlementsDashboardState {
         { engine: baseStore.remoteEngine },
       );
 
-      const v1DataProduct = (yield getDataProductFromDetails(
+      const v1DataProduct = await getDataProductFromDetails(
         dpDetails,
         graphManager,
         baseStore,
-      )) as V1_DataProduct | undefined;
+      );
       if (!v1DataProduct) {
         return [];
       }
@@ -584,10 +596,10 @@ export class EntitlementsDashboardState {
       }
 
       const ingestEnvironment =
-        (yield baseStore.lakehouseDataProductService.getOrFetchEnvironmentForDID(
+        await baseStore.lakehouseDataProductService.getOrFetchEnvironmentForDID(
           liteContract.deploymentId,
           token,
-        )) as IngestDeploymentServerConfig | undefined;
+        );
       const ingestServerUrl = ingestEnvironment?.ingestServerUrl;
       if (ingestServerUrl === undefined) {
         return [];
@@ -604,7 +616,7 @@ export class EntitlementsDashboardState {
       }));
 
       const ingestClient = baseStore.lakehouseIngestServerClient;
-      const settled = (yield Promise.all(
+      const settled = await Promise.all(
         specsToVerify.map(async (entry) => {
           try {
             await ingestClient.getIngestDefinitionDetail(
@@ -615,18 +627,100 @@ export class EntitlementsDashboardState {
             return undefined;
           } catch (error) {
             assertErrorThrown(error);
-            return entry.specPath;
+            if (
+              error instanceof NetworkClientError &&
+              error.response.status === HttpStatus.NOT_FOUND
+            ) {
+              return entry.specPath;
+            }
+            return undefined;
           }
         }),
-      )) as (string | undefined)[];
+      );
       return settled.filter(isNonNullable);
+    } catch (error) {
+      assertErrorThrown(error);
+      return [];
+    }
+  }
+
+  async getContractSyncErrors(
+    contractId: string,
+    token: string | undefined,
+  ): Promise<ContractErrorLayer | undefined> {
+    try {
+      const response =
+        (await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getContractSyncStatus(
+          contractId,
+          token,
+        )) as LakehouseContractSyncStatusResponse;
+
+      const status = response.status.toUpperCase();
+
+      if (status === ContractSyncStatus.NEVER_SYNCED) {
+        return { title: 'Sync Error: Contract Never Synced' };
+      }
+
+      if (status === ContractSyncStatus.NOT_FULLY_SYNCED) {
+        const unsyncedUsers =
+          response.unsyncedUsers?.map((user) => user.username) ?? [];
+        const unsyncedAccessPoints =
+          response.unsyncedAccessPoints?.map(
+            (accessPoint) => accessPoint.accessPointName,
+          ) ?? [];
+        const unsyncedTargetAccounts = response.unsyncedTargetAccounts ?? [];
+
+        const syncGroupingLayers: ContractErrorLayer[] = [
+          { title: 'Users', errorItems: unsyncedUsers },
+          { title: 'Target Accounts', errorItems: unsyncedTargetAccounts },
+          { title: 'Access Points', errorItems: unsyncedAccessPoints },
+        ].filter((layer) => layer.errorItems.length > 0);
+
+        if (syncGroupingLayers.length === 0) {
+          return undefined;
+        }
+
+        return {
+          title: 'Unsynced Entities',
+          childLayers: syncGroupingLayers,
+        };
+      }
+
+      return undefined;
     } catch (error) {
       assertErrorThrown(error);
       return undefined;
     }
   }
 
-  private filterByUserEnvironment(
+  async getContractErrors(
+    contractId: string,
+    token: string | undefined,
+    checkSyncStatus = false,
+  ): Promise<ContractErrorLayer | undefined> {
+    const [unverifiedIngestDefinitions, syncErrorsLayer] = await Promise.all([
+      this.getUnverifiedIngestDefinitions(contractId, token),
+      checkSyncStatus
+        ? this.getContractSyncErrors(contractId, token)
+        : Promise.resolve(undefined),
+    ]);
+
+    const childLayers: ContractErrorLayer[] = [
+      unverifiedIngestDefinitions.length > 0
+        ? {
+            title: `Ingest${unverifiedIngestDefinitions.length === 1 ? '' : 's'} Not Found`,
+            errorItems: unverifiedIngestDefinitions,
+          }
+        : undefined,
+      syncErrorsLayer,
+    ].filter(isNonNullable);
+
+    return childLayers.length > 0
+      ? { title: 'Contract Errors', childLayers }
+      : undefined;
+  }
+
+  filterByUserEnvironment(
     pendingData: {
       tasks: V1_ContractUserEventRecord[];
       taskContractMap: Map<string, V1_LiteDataContract>;
