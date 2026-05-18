@@ -237,6 +237,7 @@ export const DataElementReferenceDataEditor = observer(
             {renderEmbeddedDataEditor(
               dataElementReferenceState.embeddedDataValueState,
               isReadOnly,
+              true,
             )}
           </div>
         </div>
@@ -377,6 +378,7 @@ export const EmbeddedDataEditor = observer(
 export function renderEmbeddedDataEditor(
   embeddedDataState: EmbeddedDataState,
   isReadOnly: boolean,
+  isSharedData?: boolean,
 ): React.ReactNode {
   if (embeddedDataState instanceof ExternalFormatDataState) {
     return (
@@ -397,6 +399,7 @@ export function renderEmbeddedDataEditor(
       <RelationElementsDataEditor
         dataState={embeddedDataState}
         isReadOnly={isReadOnly}
+        isSharedData={isSharedData}
       />
     );
   } else if (embeddedDataState instanceof DataElementReferenceState) {

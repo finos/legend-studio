@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
 import type { FunctionEditorState } from '../../FunctionEditorState.js';
 import {
@@ -31,6 +31,8 @@ import {
   filterByType,
   deleteEntry,
   UnsupportedOperationError,
+  noop,
+  type GeneratorFn,
 } from '@finos/legend-shared';
 import {
   type ConcreteFunctionDefinition,
@@ -40,6 +42,7 @@ import {
   type ObserverContext,
   type ValueSpecification,
   type TestAssertion,
+  type AccessorOwner,
   FunctionParameterValue,
   VariableExpression,
   FunctionTest,
@@ -58,9 +61,17 @@ import {
   observe_ValueSpecification,
   buildLambdaVariableExpressions,
   EqualTo,
+  EqualToRelation,
+  RelationElement,
+  observe_RelationElement,
   ModelStore,
   RelationElementsData,
   CORE_PURE_PATH,
+  type Accessor,
+  DataProductAccessor,
+  IngestionAccessor,
+  RelationalStoreAccessor,
+  V1_buildRelationElementsDataFromAccessors,
 } from '@finos/legend-graph';
 import {
   TestablePackageableElementEditorState,
@@ -68,6 +79,7 @@ import {
   TestableTestSuiteEditorState,
 } from '../../testable/TestableEditorState.js';
 import { EmbeddedDataEditorState } from '../../data/DataEditorState.js';
+import { RelationElementsDataState } from '../../data/EmbeddedDataState.js';
 import {
   functionTestable_deleteDataStore,
   functionTestable_setEmbeddedData,
@@ -207,6 +219,69 @@ export class FunctionStoreTestDataState {
         hideSource: true,
       },
     );
+    this.initAccessorOptions();
+  }
+
+  private initAccessorOptions(): void {
+    const embeddedDataState = this.embeddedEditorState.embeddedDataState;
+    if (!(embeddedDataState instanceof RelationElementsDataState)) {
+      return;
+    }
+    this.refreshAccessorOptions(embeddedDataState).catch(noop());
+    embeddedDataState.setRefreshAccessorOptions(() =>
+      this.refreshAccessorOptions(embeddedDataState),
+    );
+  }
+
+  private async refreshAccessorOptions(
+    embeddedDataState: RelationElementsDataState,
+  ): Promise<void> {
+    const parentElement = this.storeTestData.element.value;
+    const accessors =
+      this.testDataState.functionTestableState
+        .resolvedIngestOrDataProductAccessors;
+    const parentAccessors = accessors.filter(
+      (a) => a.accessorOwner === parentElement.path,
+    );
+    if (!parentAccessors.length) {
+      embeddedDataState.setAccessorOptions(undefined, undefined);
+      return;
+    }
+    const firstAccessor = parentAccessors[0];
+    if (!firstAccessor) {
+      embeddedDataState.setAccessorOptions(undefined, undefined);
+      return;
+    }
+
+    const columnOverrides = new Map<string, string[]>();
+    for (const accessor of parentAccessors) {
+      const cols = accessor.relationType.columns.map((col) => col.name);
+      if (cols.length > 0) {
+        columnOverrides.set(accessor.accessor, cols);
+      }
+    }
+
+    const typeLabel = firstAccessor.accessorLabel;
+    const options = parentAccessors.map((a) => ({
+      label: a.accessor,
+      value: a.accessor,
+      columns: columnOverrides.get(a.accessor) ?? [],
+    }));
+
+    if (columnOverrides.size > 0) {
+      for (const relState of embeddedDataState.relationElementStates) {
+        const rel = relState.relationElement;
+        if (rel.columns.length === 0) {
+          const key = rel.paths[rel.paths.length - 1];
+          const cols = key ? columnOverrides.get(key) : undefined;
+          if (cols) {
+            rel.columns = cols;
+          }
+        }
+      }
+    }
+
+    embeddedDataState.setAccessorOptions(options, typeLabel);
   }
 
   setDataElementModal(val: boolean): void {
@@ -532,6 +607,7 @@ class FunctionTestDataState {
   selectedDataState: FunctionStoreTestDataState | undefined;
   dataHolder: FunctionTestSuite;
   showNewModal = false;
+  showAddElementModal = false;
 
   constructor(
     editorStore: EditorStore,
@@ -542,9 +618,12 @@ class FunctionTestDataState {
       selectedDataState: observable,
       dataHolder: observable,
       showNewModal: observable,
+      showAddElementModal: observable,
       initDefaultStore: action,
       setShowModal: action,
+      setShowAddElementModal: action,
       deleteStoreTestData: action,
+      addDataElement: action,
       openStoreTestData: action,
     });
     this.editorStore = editorStore;
@@ -566,6 +645,49 @@ class FunctionTestDataState {
     this.showNewModal = val;
   }
 
+  setShowAddElementModal(val: boolean): void {
+    this.showAddElementModal = val;
+  }
+
+  get existingElementPaths(): string[] {
+    return (this.dataHolder.testData ?? []).map((td) => td.element.value.path);
+  }
+
+  get availableElementsToAdd(): { path: string }[] {
+    const accessors =
+      this.functionTestableState.resolvedIngestOrDataProductAccessors;
+    const existingPaths = new Set(this.existingElementPaths);
+    const parentPaths = new Set<string>();
+    for (const accessor of accessors) {
+      const parentPath = accessor.path[0];
+      if (parentPath && !existingPaths.has(parentPath)) {
+        parentPaths.add(parentPath);
+      }
+    }
+    return Array.from(parentPaths).map((path) => ({ path }));
+  }
+
+  addDataElement(elementPath: string): void {
+    const accessors =
+      this.functionTestableState.resolvedIngestOrDataProductAccessors;
+    const group = accessors.filter((a) => a.path[0] === elementPath);
+    if (!group.length) {
+      return;
+    }
+    const element =
+      this.editorStore.graphManagerState.graph.getElement(elementPath);
+    const data = new FunctionTestData();
+    data.element = PackageableElementExplicitReference.create(
+      element as AccessorOwner,
+    );
+    data.data = V1_buildRelationElementsDataFromAccessors(group);
+    if (!this.dataHolder.testData) {
+      this.dataHolder.testData = [];
+    }
+    this.dataHolder.testData.push(data);
+    this.openStoreTestData(data);
+  }
+
   deleteStoreTestData(val: FunctionTestData): void {
     functionTestable_deleteDataStore(this.dataHolder, val);
     this.initDefaultStore();
@@ -580,26 +702,60 @@ class FunctionTestDataState {
   }
 }
 
-export const createFunctionTest = (
+export const createFunctionTest = async (
   id: string,
   observerContext: ObserverContext,
   containsRuntime: boolean,
   functionDefinition: ConcreteFunctionDefinition,
   editorStore: EditorStore,
   suite?: FunctionTestSuite | undefined,
-): FunctionTest => {
+): Promise<FunctionTest> => {
   const funcionTest = new FunctionTest();
   funcionTest.id = id;
   funcionTest.assertions = [];
   let _assertion: TestAssertion;
-  if (containsRuntime) {
+  const type = functionDefinition.returnType.value.rawType;
+  if (
+    type.path === CORE_PURE_PATH.RELATION ||
+    type.path === CORE_PURE_PATH.TABULAR_DATASET
+  ) {
+    const assertion = new EqualToRelation();
+    assertion.id = DEFAULT_TEST_ASSERTION_ID;
+    const expectedRelElement = new RelationElement();
+    expectedRelElement.paths = [];
+    expectedRelElement.rows = [];
+    let inferredColumns: string[] = [];
+    if (type.path === CORE_PURE_PATH.RELATION) {
+      try {
+        const rawLambda = new RawLambda(
+          functionDefinition.parameters.map((_param) =>
+            editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+              _param,
+            ),
+          ),
+          functionDefinition.expressionSequence,
+        );
+        const relationTypeMetadata =
+          await editorStore.graphManagerState.graphManager.getLambdaRelationType(
+            rawLambda,
+            editorStore.graphManagerState.graph,
+          );
+        inferredColumns = relationTypeMetadata.columns.map((col) => col.name);
+      } catch {
+        // best-effort: leave columns empty
+      }
+    }
+    expectedRelElement.columns = inferredColumns;
+    observe_RelationElement(expectedRelElement);
+    assertion.expected = expectedRelElement;
+    _assertion = assertion;
+  } else if (containsRuntime) {
     _assertion = createDefaultEqualToJSONTestAssertion(
       DEFAULT_TEST_ASSERTION_ID,
     );
   } else {
     const equalTo = new EqualTo();
     equalTo.id = DEFAULT_TEST_ASSERTION_ID;
-    const type = functionDefinition.returnType.value.rawType;
     const valSpec = buildDefaultInstanceValue(
       editorStore.graphManagerState.graph,
       type,
@@ -652,7 +808,7 @@ export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
       deleteTest: action,
       buildTestStates: action,
       setShowModal: action,
-      addNewTest: action,
+      addNewTest: flow,
     });
     this.functionTestableState = functionTestableState;
     this.suite = suite;
@@ -682,15 +838,15 @@ export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
     return undefined;
   }
 
-  addNewTest(id: string): void {
-    const test = createFunctionTest(
+  *addNewTest(id: string): GeneratorFn<void> {
+    const test = (yield createFunctionTest(
       id,
       this.editorStore.changeDetectionState.observerContext,
       this.functionTestableState.containsRuntime,
       this.functionTestableState.function,
       this.editorStore,
       this.suite,
-    );
+    )) as FunctionTest;
     testSuite_addTest(
       this.suite,
       test,
@@ -711,6 +867,7 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
   declare runningSuite: FunctionTestSuite | undefined;
 
   createSuiteModal = false;
+  cachedAccessors: Accessor[] = [];
 
   constructor(functionEditorState: FunctionEditorState) {
     super(functionEditorState, functionEditorState.functionElement);
@@ -722,6 +879,7 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
       runningSuite: observable,
       testableComponentToRename: observable,
       createSuiteModal: observable,
+      cachedAccessors: observable,
       init: action,
       buildTestSuiteState: action,
       deleteTestSuite: action,
@@ -730,6 +888,8 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
       setRenameComponent: action,
       clearTestResultsForSuite: action,
       setCreateSuite: action,
+      resolveAccessors: flow,
+      createSuite: flow,
       runTestable: flow,
       runSuite: flow,
       runAllFailingSuites: flow,
@@ -750,6 +910,36 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
     return Boolean(this.associatedRuntimes?.length);
   }
 
+  get resolvedIngestOrDataProductAccessors(): Accessor[] {
+    return this.cachedAccessors.filter(
+      (a) => a instanceof DataProductAccessor || a instanceof IngestionAccessor,
+    );
+  }
+
+  private buildRawLambdaFromFunction(): RawLambda {
+    return new RawLambda(
+      this.function.parameters.map((_param) =>
+        this.editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+          _param,
+        ),
+      ),
+      this.function.expressionSequence,
+    );
+  }
+
+  *resolveAccessors(): GeneratorFn<void> {
+    try {
+      const rawLambda = this.buildRawLambdaFromFunction();
+      this.cachedAccessors =
+        (yield this.editorStore.graphManagerState.graphManager.collectAccessorsInRawLambda(
+          rawLambda,
+          this.editorStore.graphManagerState.graph,
+        )) as Accessor[];
+    } catch {
+      this.cachedAccessors = [];
+    }
+  }
+
   override init(): void {
     if (!this.selectedTestSuite) {
       const suite = this.function.tests[0];
@@ -757,84 +947,125 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
         ? this.buildTestSuiteState(suite)
         : undefined;
     }
+    flowResult(this.resolveAccessors()).catch(noop);
   }
 
   setCreateSuite(val: boolean): void {
     this.createSuiteModal = val;
   }
 
-  createSuite(suiteName: string, testName: string): void {
+  *createSuite(suiteName: string, testName: string): GeneratorFn<void> {
     const functionSuite = new FunctionTestSuite();
     functionSuite.id = suiteName;
-    const engineRuntimes = this.associatedRuntimes;
-    if (!engineRuntimes?.length) {
-      const type = this.function.returnType.value.rawType;
-      if (
-        type.path === CORE_PURE_PATH.RELATION ||
-        type.path === CORE_PURE_PATH.TABULAR_DATASET
-      ) {
-        this.editorStore.applicationStore.notificationService.notifyWarning(
-          `Unable to find runtime or function contains accessors incompatible for test suite creation`,
-        );
-        return;
-      }
-    } else {
-      try {
-        assertTrue(
-          engineRuntimes.length === 1,
-          `Function Test Suite Only supports One Runtime at this time. Found ${engineRuntimes.length}`,
-        );
-        const engineRuntime = guaranteeNonNullable(engineRuntimes[0]);
-        assertTrue(
-          !(
-            engineRuntime.connectionStores.length &&
-            engineRuntime.connections.length
-          ),
-          `Runtime found has two connection types defined. Please use connection stores only`,
-        );
-        const stores = [
-          ...engineRuntime.connections
-            .map((e) =>
-              e.storeConnections.map((s) => s.connection.store?.value).flat(),
-            )
-            .flat(),
-          ...engineRuntime.connectionStores
-            .map((e) => e.storePointers.map((sPt) => sPt.value))
-            .flat(),
-        ].filter(isNonNullable);
-        assertTrue(Boolean(stores.length), 'No runtime store found');
-        assertTrue(
-          stores.length === 1,
-          'Only one store supported in runtime for function tests',
-        );
-        const store = guaranteeNonNullable(stores[0]);
-        const data = new FunctionTestData();
-        if (store instanceof Database) {
-          const relation = new RelationElementsData();
-          data.element = PackageableElementExplicitReference.create(store);
-          data.data = relation;
-        } else if (store instanceof ModelStore) {
-          const modelStoreData = createBareExternalFormat();
-          data.element = PackageableElementExplicitReference.create(store);
-          data.data = modelStoreData;
-        } else {
-          throw new UnsupportedOperationError(
-            `function test store data does not support store: ${store.path}`,
-          );
+
+    yield flowResult(this.resolveAccessors());
+
+    const ingestOrDataProductAccessors =
+      this.resolvedIngestOrDataProductAccessors;
+    const databaseAccessors = this.cachedAccessors.filter(
+      (a) => a instanceof RelationalStoreAccessor,
+    );
+
+    try {
+      if (ingestOrDataProductAccessors.length) {
+        // Group by parent element path and create test data per parent
+        const parentElementMap = new Map<string, Accessor[]>();
+        for (const accessor of ingestOrDataProductAccessors) {
+          const key = accessor.accessorOwner;
+          if (key) {
+            const group = parentElementMap.get(key) ?? [];
+            group.push(accessor);
+            parentElementMap.set(key, group);
+          }
         }
-        functionSuite.testData = [data];
-      } catch (error) {
-        assertErrorThrown(error);
-        this.editorStore.applicationStore.notificationService.notifyError(
-          `Unable to create function test suite: ${error.message}`,
+        functionSuite.testData = Array.from(parentElementMap.entries()).map(
+          ([parentPath, group]) => {
+            const data = new FunctionTestData();
+            const element =
+              this.editorStore.graphManagerState.graph.getElement(parentPath);
+            data.element = PackageableElementExplicitReference.create(
+              element as AccessorOwner,
+            );
+            data.data = V1_buildRelationElementsDataFromAccessors(group);
+            return data;
+          },
         );
-        return;
+      } else {
+        // No ingest/data product accessors found — try runtime-based approach
+        const engineRuntimes = this.associatedRuntimes;
+        if (engineRuntimes?.length) {
+          assertTrue(
+            engineRuntimes.length === 1,
+            `Function Test Suite Only supports One Runtime at this time. Found ${engineRuntimes.length}`,
+          );
+          const engineRuntime = guaranteeNonNullable(engineRuntimes[0]);
+          assertTrue(
+            !(
+              engineRuntime.connectionStores.length &&
+              engineRuntime.connections.length
+            ),
+            `Runtime found has two connection types defined. Please use connection stores only`,
+          );
+          const stores = [
+            ...engineRuntime.connections
+              .map((e) =>
+                e.storeConnections.map((s) => s.connection.store?.value).flat(),
+              )
+              .flat(),
+            ...engineRuntime.connectionStores
+              .map((e) => e.storePointers.map((sPt) => sPt.value))
+              .flat(),
+          ].filter(isNonNullable);
+          assertTrue(Boolean(stores.length), 'No runtime store found');
+          assertTrue(
+            stores.length === 1,
+            'Only one store supported in runtime for function tests',
+          );
+          const store = guaranteeNonNullable(stores[0]);
+          const data = new FunctionTestData();
+          if (store instanceof Database) {
+            const relation = new RelationElementsData();
+            data.element = PackageableElementExplicitReference.create(store);
+            data.data = relation;
+          } else if (store instanceof ModelStore) {
+            const modelStoreData = createBareExternalFormat();
+            data.element = PackageableElementExplicitReference.create(store);
+            data.data = modelStoreData;
+          } else {
+            throw new UnsupportedOperationError(
+              `function test store data does not support store: ${store.path}`,
+            );
+          }
+          functionSuite.testData = [data];
+        } else {
+          const type = this.function.returnType.value.rawType;
+          if (
+            type.path === CORE_PURE_PATH.RELATION ||
+            type.path === CORE_PURE_PATH.TABULAR_DATASET
+          ) {
+            this.editorStore.applicationStore.notificationService.notifyError(
+              `Unable to create function test suite: no runtime or accessors found, or they could not be resolved`,
+            );
+            return;
+          }
+        }
       }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to create function test suite: ${error.message}`,
+      );
+      return;
     }
-    createFunctionTest(
+
+    const hasTestData =
+      this.containsRuntime ||
+      ingestOrDataProductAccessors.length > 0 ||
+      databaseAccessors.length > 0;
+    yield createFunctionTest(
       testName,
       this.editorStore.changeDetectionState.observerContext,
-      this.containsRuntime,
+      hasTestData,
       this.function,
       this.editorStore,
       functionSuite,

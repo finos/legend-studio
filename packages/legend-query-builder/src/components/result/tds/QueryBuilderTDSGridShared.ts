@@ -20,10 +20,65 @@ import type {
   DataGridGetContextMenuItemsParams,
   DataGridMenuItemDef,
 } from '@finos/legend-lego/data-grid';
-import type { TDSRowDataType } from '@finos/legend-graph';
+import type {
+  TDSResultCellData,
+  TDSResultCellDataType,
+  TDSRowDataType,
+} from '@finos/legend-graph';
 import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { filterByOrOutValues } from './QueryBuilderTDSResultShared.js';
 import type { QueryBuilderResultState } from '../../../stores/QueryBuilderResultState.js';
+
+/**
+ * Sync AG Grid's current cell-range selection into
+ * `resultState.selectedCells` so that `filterByOrOutValues` can iterate
+ * over them.  Falls back to the single right-clicked cell when no range
+ * is active.
+ */
+const syncSelectedCellsFromGrid = (
+  params: DataGridGetContextMenuItemsParams<TDSRowDataType>,
+  resultState: QueryBuilderResultState,
+): void => {
+  const cells: TDSResultCellData[] = [];
+  const ranges = params.api.getCellRanges() ?? [];
+  for (const range of ranges) {
+    const startRow = Math.min(
+      range.startRow?.rowIndex ?? 0,
+      range.endRow?.rowIndex ?? 0,
+    );
+    const endRow = Math.max(
+      range.startRow?.rowIndex ?? 0,
+      range.endRow?.rowIndex ?? 0,
+    );
+    for (let r = startRow; r <= endRow; r++) {
+      const node = params.api.getDisplayedRowAtIndex(r);
+      range.columns.forEach((col, ci) => {
+        const colId = col.getColId();
+        const rawValue = (node?.data as Record<string, unknown> | undefined)?.[
+          colId
+        ];
+        cells.push({
+          value: (rawValue ?? null) as TDSResultCellDataType,
+          columnName: colId,
+          coordinates: { rowIndex: r, colIndex: ci },
+        });
+      });
+    }
+  }
+  // Fallback: use the right-clicked cell itself
+  if (cells.length === 0 && params.node && params.column) {
+    const colId = params.column.getColId();
+    cells.push({
+      value: (params.value ?? null) as TDSResultCellDataType,
+      columnName: colId,
+      coordinates: { rowIndex: params.node.rowIndex ?? 0, colIndex: 0 },
+    });
+  }
+  resultState.setSelectedCells(cells);
+  if (cells.length > 0) {
+    resultState.setMouseOverCell(cells[0] ?? null);
+  }
+};
 
 /**
  * Build the shared context-menu items used by both the enterprise and
@@ -39,6 +94,7 @@ export const buildTDSGridContextMenuItems = (
   const fetchStructureImplementation =
     resultState.queryBuilderState.fetchStructureState.implementation;
   if (fetchStructureImplementation instanceof QueryBuilderTDSState) {
+    syncSelectedCellsFromGrid(params, resultState);
     return [
       {
         name: 'Filter By',

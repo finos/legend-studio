@@ -41,7 +41,11 @@ import type { V1_GraphBuilderContext } from '../transformation/pureGraph/to/V1_G
 import { V1_GenericType as V1_GenericTypeProtocol } from '../model/packageableElements/type/V1_GenericType.js';
 import { V1_PackageableType } from '../model/packageableElements/type/V1_PackageableType.js';
 import { returnUndefOnError, type PlainObject } from '@finos/legend-shared';
-import { MILESTONE_INGEST_COLUMNS } from '../../../../../graph/MetaModelConst.js';
+import {
+  MILESTONE_INGEST_COLUMNS,
+  PRECISE_PRIMITIVE_TYPE,
+  PRIMITIVE_TYPE,
+} from '../../../../../graph/MetaModelConst.js';
 import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
 import { V1_deserializeIngestDefinitionContent } from '../transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 import {
@@ -69,6 +73,9 @@ import {
   type DataProduct,
   LakehouseAccessPoint,
 } from '../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import type { V1_AccessPointImplementation } from '../lakehouse/deploy/V1_DataProductArtifact.js';
+import { V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
+import { V1_getGenericTypeFullPath } from './V1_DomainHelper.js';
 
 const buildV1GenericType = (fullPath: string): V1_GenericTypeProtocol => {
   // Strip package prefix — primitive types are indexed by simple name
@@ -82,6 +89,62 @@ const buildV1GenericType = (fullPath: string): V1_GenericTypeProtocol => {
   return genericType;
 };
 
+const addMilestonedColumnsForWriteMode = (
+  relationType: RelationType,
+  writeMode: V1_WriteMode | undefined,
+  context: V1_GraphBuilderContext,
+): void => {
+  if (
+    writeMode?._type === V1_WriteModeType.BATCH_MILESTONED ||
+    writeMode?._type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL
+  ) {
+    relationType.columns.push(
+      new RelationColumn(
+        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_IN_ID,
+        context.resolveGenericTypeFromProtocolWithRelationType(
+          buildV1GenericType(PRIMITIVE_TYPE.INTEGER),
+        ),
+      ),
+    );
+    relationType.columns.push(
+      new RelationColumn(
+        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_OUT_ID,
+        context.resolveGenericTypeFromProtocolWithRelationType(
+          buildV1GenericType(PRIMITIVE_TYPE.INTEGER),
+        ),
+      ),
+    );
+    relationType.columns.push(
+      new RelationColumn(
+        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_DIGEST,
+        context.resolveGenericTypeFromProtocolWithRelationType(
+          buildV1GenericType(PRIMITIVE_TYPE.STRING),
+        ),
+      ),
+    );
+    if (
+      writeMode._type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL
+    ) {
+      relationType.columns.push(
+        new RelationColumn(
+          MILESTONE_INGEST_COLUMNS.INGEST_LAKE_FROM,
+          context.resolveGenericTypeFromProtocolWithRelationType(
+            buildV1GenericType(PRECISE_PRIMITIVE_TYPE.TIMESTAMP),
+          ),
+        ),
+      );
+      relationType.columns.push(
+        new RelationColumn(
+          MILESTONE_INGEST_COLUMNS.INGEST_LAKE_THRU,
+          context.resolveGenericTypeFromProtocolWithRelationType(
+            buildV1GenericType(PRECISE_PRIMITIVE_TYPE.TIMESTAMP),
+          ),
+        ),
+      );
+    }
+  }
+};
+
 const buildRelationTypeFromIngestDataset = (
   dataset: V1_IngestDataset,
   context: V1_GraphBuilderContext,
@@ -93,40 +156,18 @@ const buildRelationTypeFromIngestDataset = (
     const rawTypePath =
       col.genericType.rawType instanceof V1_PackageableType
         ? col.genericType.rawType.fullPath
-        : 'String';
+        : PRIMITIVE_TYPE.STRING;
     const v1GenericType = buildV1GenericType(rawTypePath);
     const resolvedGenericType =
       returnUndefOnError(() =>
         context.resolveGenericTypeFromProtocolWithRelationType(v1GenericType),
       ) ??
       context.resolveGenericTypeFromProtocolWithRelationType(
-        buildV1GenericType('String'),
+        buildV1GenericType(PRIMITIVE_TYPE.STRING),
       );
     return new RelationColumn(col.name, resolvedGenericType);
   });
-  // For batch-milestoned write modes, LAKE_IN_ID is a system column added by the
-  // lake infrastructure and required by the physical table (NOT NULL).
-  if (
-    writeMode?._type === V1_WriteModeType.BATCH_MILESTONED ||
-    writeMode?._type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL
-  ) {
-    relationType.columns.push(
-      new RelationColumn(
-        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_IN_ID,
-        context.resolveGenericTypeFromProtocolWithRelationType(
-          buildV1GenericType('Int'),
-        ),
-      ),
-    );
-    relationType.columns.push(
-      new RelationColumn(
-        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_OUT_ID,
-        context.resolveGenericTypeFromProtocolWithRelationType(
-          buildV1GenericType('Int'),
-        ),
-      ),
-    );
-  }
+  addMilestonedColumnsForWriteMode(relationType, writeMode, context);
   return relationType;
 };
 
@@ -146,6 +187,42 @@ const buildRelationTypeFromTable = (table: Table): RelationType => {
   return relationType;
 };
 // TODO: move to pure graph
+/**
+ * Builds a metamodel `RelationType` from the cached `lambdaGenericType` on a
+ * `V1_AccessPointImplementation`. Returns `undefined` if the implementation
+ * does not carry a relation-typed generic type.
+ *
+ * Column types are resolved against the supplied `PureModel`.
+ */
+export const V1_buildRelationTypeFromAccessPointImplementation = (
+  apImpl: V1_AccessPointImplementation,
+  graph: PureModel,
+  relationTypeName?: string | undefined,
+): RelationType | undefined => {
+  const v1RelationType = apImpl.lambdaGenericType?.typeArguments
+    .map((typeArg) => typeArg.rawType)
+    .find(
+      (rawType): rawType is V1_RelationType =>
+        rawType instanceof V1_RelationType,
+    );
+  if (!v1RelationType) {
+    return undefined;
+  }
+  const relationType = new RelationType(relationTypeName ?? apImpl.id);
+  relationType.columns = v1RelationType.columns.map(
+    (col) =>
+      new RelationColumn(
+        col.name,
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            graph.getType(V1_getGenericTypeFullPath(col.genericType)),
+          ),
+        ),
+      ),
+  );
+  return relationType;
+};
+
 /**
  * Creates an appropriate Accessor from a packageable element.
  *
@@ -228,7 +305,7 @@ const buildRelationTypeFromMetadata = (
         context.resolveGenericTypeFromProtocolWithRelationType(v1GenericType),
       ) ??
       context.resolveGenericTypeFromProtocolWithRelationType(
-        buildV1GenericType('String'),
+        buildV1GenericType(PRIMITIVE_TYPE.STRING),
       );
     return new RelationColumn(col.name, resolvedGenericType);
   });

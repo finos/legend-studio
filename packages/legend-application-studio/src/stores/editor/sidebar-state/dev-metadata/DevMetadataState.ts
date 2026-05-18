@@ -20,6 +20,7 @@ import {
   assertNonNullable,
   assertTrue,
   type GeneratorFn,
+  type PlainObject,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore.js';
 import { action, flow, makeObservable, observable } from 'mobx';
@@ -27,13 +28,23 @@ import {
   type DeployProjectResponse,
   MetadataRequestOptions,
 } from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-storage';
 import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
+
+export const DEV_SNAPSHOT_VERSION = '1.0.0-SNAPSHOT';
 
 export class DevMetadataState {
   readonly editorStore: EditorStore;
   result: DeployProjectResponse | undefined;
   options: MetadataRequestOptions = new MetadataRequestOptions();
   pushState = ActionState.create();
+
+  // Compare-with-dev state
+  compareState = ActionState.create();
+  currentWorkspaceCode: string | undefined;
+  snapshotCode: string | undefined;
+  snapshotNotAvailable = false;
+  isCompareModalOpen = false;
 
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
@@ -43,11 +54,27 @@ export class DevMetadataState {
       push: flow,
       options: observable,
       setOptions: action,
+      compareState: observable,
+      currentWorkspaceCode: observable,
+      snapshotCode: observable,
+      snapshotNotAvailable: observable,
+      isCompareModalOpen: observable,
+      openCompareModal: action,
+      closeCompareModal: action,
+      compareWithSnapshot: flow,
     });
   }
 
   setOptions(options: MetadataRequestOptions): void {
     this.options = options;
+  }
+
+  openCompareModal(): void {
+    this.isCompareModalOpen = true;
+  }
+
+  closeCompareModal(): void {
+    this.isCompareModalOpen = false;
   }
 
   get projectGAV(): { groupId: string; artifactId: string } | undefined {
@@ -60,6 +87,55 @@ export class DevMetadataState {
       };
     }
     return undefined;
+  }
+
+  *compareWithSnapshot(): GeneratorFn<void> {
+    try {
+      this.compareState.inProgress();
+      this.snapshotNotAvailable = false;
+      this.currentWorkspaceCode = undefined;
+      this.snapshotCode = undefined;
+      const gav = this.projectGAV;
+      assertNonNullable(gav, 'Project configuration is required to compare');
+      const graphManager = this.editorStore.graphManagerState.graphManager;
+
+      // 1) Current workspace -> Pure code (same as toggling to text mode)
+      const currentCode = (yield graphManager.graphToPureCode(
+        this.editorStore.graphManagerState.graph,
+        { pretty: true, excludeUnknown: true },
+      )) as string;
+      this.currentWorkspaceCode = currentCode;
+
+      // 2) Snapshot from depot -> Pure code; if the call fails we treat
+      // it as "nothing deployed yet"
+      let snapshotEntities: Entity[] | undefined;
+      try {
+        const entitiesJson =
+          (yield this.editorStore.depotServerClient.getVersionEntities(
+            gav.groupId,
+            gav.artifactId,
+            DEV_SNAPSHOT_VERSION,
+          )) as PlainObject<Entity>[];
+        snapshotEntities = entitiesJson as unknown as Entity[];
+      } catch {
+        this.snapshotNotAvailable = true;
+        this.compareState.complete();
+        return;
+      }
+
+      const snapshotCode = (yield graphManager.entitiesToPureCode(
+        snapshotEntities,
+        { pretty: true },
+      )) as string;
+      this.snapshotCode = snapshotCode;
+      this.compareState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Error comparing with dev snapshot: ${error.message}`,
+      );
+      this.compareState.fail();
+    }
   }
 
   *push(): GeneratorFn<void> {

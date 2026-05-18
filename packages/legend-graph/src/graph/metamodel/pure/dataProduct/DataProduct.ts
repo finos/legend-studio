@@ -44,6 +44,7 @@ import { ConcreteFunctionDefinition } from '../packageableElements/function/Conc
 import { generateFunctionPrettyName } from '../../../helpers/PureLanguageHelper.js';
 import type { StereotypeReference } from '../packageableElements/domain/StereotypeReference.js';
 import type { AppDirNode } from '../packageableElements/ingest/IngestDefinition.js';
+import type { RelationType } from '../packageableElements/relation/RelationType.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
@@ -103,6 +104,7 @@ export class LakehouseAccessPoint extends AccessPoint {
   classification: string | undefined;
   func: RawLambda;
   reproducible: boolean | undefined;
+  __internal__RelationType: RelationType | undefined;
 
   constructor(
     id: string,

@@ -127,7 +127,14 @@ import {
   V1_IngestDefinitionAccessor,
   V1_DataProductAccessor,
 } from '../../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
-import { AccessorInstanceValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
+import {
+  AccessorInstanceValue,
+  DataProductAccessor,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
+import {
+  DataProduct,
+  LakehouseAccessPoint,
+} from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_createAccessorFromPackageableElement } from '../../../../helpers/V1_AccessorHelper.js';
 import { Database } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { IngestDefinition } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
@@ -597,10 +604,47 @@ export class V1_ValueSpecificationBuilder
           valueSpecification.value,
           V1_DataProductAccessor,
         );
-        const _path = protocol.path;
-        throw new UnsupportedOperationError(
-          `Can't build accessor for data product with path '${_path.join('.')}': data product accessor building is not yet supported`,
+        const dataProductPath = guaranteeNonNullable(
+          protocol.path[0],
+          `Can't build data product accessor: missing data product path`,
         );
+        const accessPointId = guaranteeNonNullable(
+          protocol.path[1],
+          `Can't build data product accessor for data product '${dataProductPath}': missing access point id`,
+        );
+        const dataProduct = guaranteeType(
+          this.context.resolveElement(dataProductPath, false).value,
+          DataProduct,
+          `Can't build data product accessor: element '${dataProductPath}' is not a data product`,
+        );
+        const accessPoint = dataProduct.accessPointGroups
+          .flatMap((group) => group.accessPoints)
+          .find(
+            (ap): ap is LakehouseAccessPoint =>
+              ap instanceof LakehouseAccessPoint && ap.id === accessPointId,
+          );
+        if (!accessPoint) {
+          throw new UnsupportedOperationError(
+            `Can't build data product accessor: lakehouse access point '${accessPointId}' not found in data product '${dataProductPath}'`,
+          );
+        }
+        const relationType = guaranteeNonNullable(
+          accessPoint.__internal__RelationType,
+          `Can't build data product accessor for '${dataProductPath}.${accessPointId}': relation type has not been resolved on the access point`,
+        );
+        const accessor = new DataProductAccessor(
+          dataProductPath,
+          accessPoint.__owner.id,
+          accessPointId,
+          relationType,
+          dataProduct,
+        );
+        const accessorInstanceValue = new AccessorInstanceValue();
+        accessorInstanceValue.values = [accessor];
+        accessorInstanceValue.genericType = GenericTypeExplicitReference.create(
+          new GenericType(accessor.relationType),
+        );
+        return accessorInstanceValue;
       }
       default: {
         const builders = this.context.extensions.plugins.flatMap(

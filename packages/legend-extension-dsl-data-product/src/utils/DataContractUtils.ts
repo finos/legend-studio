@@ -67,6 +67,7 @@ export const dataContractContainsAccessGroup = (
   group: V1_AccessPointGroup,
   dataContract: V1_LiteDataContract,
   dataProductName?: string | undefined,
+  deploymentId?: number | undefined,
 ): boolean => {
   if (dataContract.resourceType === V1_ResourceType.ACCESS_POINT_GROUP) {
     if (dataContract.accessPointGroup !== group.id) {
@@ -75,6 +76,12 @@ export const dataContractContainsAccessGroup = (
     if (
       dataProductName !== undefined &&
       dataContract.resourceId !== dataProductName
+    ) {
+      return false;
+    }
+    if (
+      deploymentId !== undefined &&
+      dataContract.deploymentId !== deploymentId
     ) {
       return false;
     }

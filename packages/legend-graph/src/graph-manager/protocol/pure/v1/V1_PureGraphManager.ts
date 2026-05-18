@@ -42,6 +42,7 @@ import {
   guaranteeType,
   guaranteeNonEmptyString,
   uuid,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -415,12 +416,14 @@ import {
   V1_createAccessorFromPackageableElement,
   V1_buildDataProductAccessor,
   V1_resolveAccessorsFromRawLambda,
+  V1_buildRelationTypeFromAccessPointImplementation,
 } from './helpers/V1_AccessorHelper.js';
 import {
   V1_DataProductAccessor,
   V1_IngestDefinitionAccessor,
   V1_RelationStoreAccessor,
 } from './model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
+import { V1_deserializeIngestDefinitionContent } from './transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 
 /**
  * Number of elements to process synchronously before yielding to the event loop.
@@ -3980,10 +3983,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graphReport,
     );
 
-    const data = pureGraph.getDataProduct(dataProductPath);
+    const dataProduct = pureGraph.getDataProduct(dataProductPath);
 
     // Create access point groups with LakehouseAccessPoints from artifact data
-    data.accessPointGroups = artifact.accessPointGroups
+    dataProduct.accessPointGroups = artifact.accessPointGroups
       .filter(
         (groupInfo) => !(groupInfo instanceof V1_ModelAccessPointGroupInfo),
       )
@@ -4000,6 +4003,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               apGroup,
             );
             lakehouseAP.description = apImpl.description;
+            // Cache the relation type derived from the artifact's lambda
+            // generic type so downstream consumers can avoid re-computing it.
+            lakehouseAP.__internal__RelationType =
+              V1_buildRelationTypeFromAccessPointImplementation(
+                apImpl,
+                pureGraph,
+              );
             return lakehouseAP;
           },
         );
@@ -4007,7 +4017,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       });
 
     // Find the lakehouse access point matching the requested id
-    const lakehouseResult = data.accessPointGroups
+    const lakehouseResult = dataProduct.accessPointGroups
       .flatMap((group) => group.accessPoints)
       .find(
         (ap): ap is LakehouseAccessPoint =>
@@ -4405,6 +4415,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     input.model = this.prepareExecutionContextGraphData(graphData);
     const result = await this.engine.publishFunctionActivatorToSandbox(input);
     return result;
+  }
+
+  // --------------------------------------------- Ingeset Defintion --------------------------------------
+
+  getIngestDefinitionDatasetNames(
+    ingestDefinition: IngestDefinition,
+  ): string[] {
+    const content = returnUndefOnError(() =>
+      V1_deserializeIngestDefinitionContent(ingestDefinition.content),
+    );
+    if (!content?.datasets) {
+      return [];
+    }
+    return content.datasets.map((ds) => ds.name);
   }
 
   // --------------------------------------------- Relational ---------------------------------------------

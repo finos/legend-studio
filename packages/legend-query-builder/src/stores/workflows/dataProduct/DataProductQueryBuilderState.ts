@@ -54,8 +54,7 @@ import {
   GenericTypeExplicitReference,
   findLakehouseAccessPointGroup,
   type PureModel,
-  V1_RelationType,
-  V1_getGenericTypeFullPath,
+  V1_buildRelationTypeFromAccessPointImplementation,
   LegendSDLC,
   DataProductAccessType,
 } from '@finos/legend-graph';
@@ -92,7 +91,6 @@ export const resolveDataProductAccessor = (
   artifact: V1_DataProductArtifact | undefined,
   relationMetadata?: RelationTypeMetadata | undefined,
 ): DataProductAccessor => {
-  const relationType = new RelationType(accessPoint.title ?? accessPoint.id);
   if (artifact) {
     const artifactGroup = artifact.accessPointGroups.find((apg) =>
       apg.accessPointImplementations.some(
@@ -102,30 +100,25 @@ export const resolveDataProductAccessor = (
     const artifactImpl = artifactGroup?.accessPointImplementations.find(
       (apImpl) => apImpl.id === accessPoint.id,
     );
-    const v1RelationType = artifactImpl?.lambdaGenericType?.typeArguments
-      .map((typeArg) => typeArg.rawType)
-      .find((rawType) => rawType instanceof V1_RelationType);
-    if (v1RelationType) {
-      relationType.columns = v1RelationType.columns.map(
-        (col) =>
-          new RelationColumn(
-            col.name,
-            GenericTypeExplicitReference.create(
-              new GenericType(
-                graph.getType(V1_getGenericTypeFullPath(col.genericType)),
-              ),
-            ),
-          ),
-      );
-      return new DataProductAccessor(
-        dataProduct.path,
-        artifactGroup?.id,
-        accessPoint.id,
-        relationType,
-        dataProduct,
-      );
+    if (artifactImpl) {
+      const builtRelationType =
+        V1_buildRelationTypeFromAccessPointImplementation(
+          artifactImpl,
+          graph,
+          accessPoint.title ?? accessPoint.id,
+        );
+      if (builtRelationType) {
+        return new DataProductAccessor(
+          dataProduct.path,
+          artifactGroup?.id,
+          accessPoint.id,
+          builtRelationType,
+          dataProduct,
+        );
+      }
     }
   }
+  const relationType = new RelationType(accessPoint.title ?? accessPoint.id);
   if (relationMetadata) {
     relationType.columns = relationMetadata.columns.map(
       (col) =>
