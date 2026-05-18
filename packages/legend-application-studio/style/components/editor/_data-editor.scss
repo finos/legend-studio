@@ -765,16 +765,35 @@
     }
 
     &__delete {
-      color: transparent;
+      opacity: 0;
+      pointer-events: none;
       flex-shrink: 0;
+      width: 1.6rem;
+      height: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.2rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--color-light-grey-400);
+      transition:
+        opacity 0.12s,
+        color 0.12s;
 
       svg {
         font-size: 1rem;
       }
+
+      &:hover {
+        color: var(--color-red-100);
+      }
     }
 
     &:hover &__delete {
-      color: var(--color-dark-grey-500);
+      opacity: 1;
+      pointer-events: auto;
     }
   }
 
@@ -856,44 +875,6 @@
     &__btn-group {
       display: flex;
       gap: 1rem;
-    }
-  }
-
-  &__export-format {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    flex-wrap: nowrap;
-
-    label {
-      color: var(--color-light-grey-200);
-      font-size: 1.3rem;
-      font-weight: 500;
-      white-space: nowrap;
-    }
-
-    .btn {
-      margin-left: 0.5rem;
-    }
-  }
-
-  &__export-select {
-    height: 2.8rem;
-    padding: 0 1rem;
-    background: var(--color-dark-grey-200);
-    border: 0.1rem solid var(--color-dark-grey-300);
-    border-radius: 0.2rem;
-    color: var(--color-light-grey-200);
-    font-size: 1.3rem;
-
-    &:focus {
-      border-color: var(--color-blue-200);
-      outline: none;
-    }
-
-    &:disabled {
-      background: var(--color-dark-grey-300);
-      color: var(--color-dark-grey-500);
     }
   }
 

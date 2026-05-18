@@ -413,7 +413,7 @@ export const RelationElementEditor = observer(
                             {column}
                           </span>
                           <button
-                            className="btn--icon btn--caution btn--dark btn--sm relation-test-data-editor__th__delete"
+                            className="relation-test-data-editor__th__delete"
                             onClick={() => removeColumn(columnIndex)}
                             disabled={!canEditColumns}
                             title={`Remove column ${column}`}
