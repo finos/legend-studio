@@ -124,6 +124,8 @@ export class DataProductAPGState {
   dataAccessRequestViewerState: DataAccessRequestState | undefined = undefined;
   readonly fetchingDataRequestAccessState = ActionState.create();
 
+  missingIngests: string[] | undefined = undefined;
+
   readonly fetchingAccessState = ActionState.create();
   readonly pollingConsumerGrantState = ActionState.create();
   readonly handlingContractsState = ActionState.create();
@@ -164,10 +166,14 @@ export class DataProductAPGState {
       setConsumerGrantNotFound: action,
       pollConsumerGrant: flow,
       isEntitlementsSyncing: computed,
+      hasMissingIngests: computed,
       dataRequestAccess: observable,
       dataRequestGuid: observable,
       dataAccessRequestViewerState: observable,
       setDataRequestAccess: action,
+      missingIngests: observable,
+      setMissingIngests: action,
+      fetchMissingIngests: flow,
     });
 
     this.apg = group;
@@ -244,6 +250,38 @@ export class DataProductAPGState {
   ): void {
     this.dataRequestAccess = val;
     this.dataRequestGuid = guid;
+  }
+
+  setMissingIngests(val: string[] | undefined): void {
+    this.missingIngests = val;
+  }
+
+  get hasMissingIngests(): boolean {
+    return (this.missingIngests?.length ?? 0) > 0;
+  }
+
+  *fetchMissingIngests(
+    tokenProvider: () => string | undefined,
+  ): GeneratorFn<void> {
+    if (this.missingIngests !== undefined) {
+      return;
+    }
+    const dataAccessState =
+      this.dataProductViewerState.dataProductDataAccessState;
+    if (!dataAccessState) {
+      this.setMissingIngests([]);
+      return;
+    }
+    try {
+      const result = (yield dataAccessState.computeMissingIngestsForApg(
+        this.apg.id,
+        tokenProvider,
+      )) as string[];
+      this.setMissingIngests(result);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.setMissingIngests([]);
+    }
   }
 
   get canCreateSubscription(): boolean {

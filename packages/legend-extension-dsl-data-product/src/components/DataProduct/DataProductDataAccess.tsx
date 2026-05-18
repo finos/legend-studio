@@ -136,7 +136,11 @@ import {
 } from '../../__lib__/DataProductTelemetryHelper.js';
 import { flowResult } from 'mobx';
 import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/DataContractViewerState.js';
-import { DataAccessRequestViewer } from './DataContract/DataAccessRequestViewer.js';
+import {
+  type ContractErrorLayer,
+  DataAccessRequestViewer,
+  buildContractErrorsRoot,
+} from './DataContract/DataAccessRequestViewer.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -1375,6 +1379,18 @@ export const DataProductAccessPointGroupViewer = observer(
         apgState.dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [apgState, anchor]);
 
+    const apgContractErrors = useMemo(() => {
+      const missingIngests = apgState.missingIngests ?? [];
+      const ingestLayer: ContractErrorLayer | undefined =
+        missingIngests.length === 0
+          ? undefined
+          : {
+              title: `Ingest${missingIngests.length === 1 ? '' : 's'} Not Found:`,
+              errorItems: missingIngests,
+            };
+      return buildContractErrorsRoot([ingestLayer]);
+    }, [apgState.missingIngests]);
+
     const dataContractViewerState = useMemo(() => {
       return contractViewerContractAndSubscription &&
         contractViewerContractAndSubscription.dataContract.resource instanceof
@@ -1423,8 +1439,13 @@ export const DataProductAccessPointGroupViewer = observer(
     const renderAccess = (val: AccessPointGroupAccess): React.ReactNode => {
       let buttonLabel: string | undefined = undefined;
       let onClick: (() => void) | undefined = undefined;
-      let buttonColor: 'info' | 'primary' | 'warning' | 'success' | undefined =
-        undefined;
+      let buttonColor:
+        | 'info'
+        | 'primary'
+        | 'warning'
+        | 'success'
+        | 'error'
+        | undefined = undefined;
       switch (val) {
         case AccessPointGroupAccess.UNKNOWN:
           buttonLabel = 'UNKNOWN';
@@ -1456,6 +1477,10 @@ export const DataProductAccessPointGroupViewer = observer(
             buttonLabel = 'ENTITLEMENTS SYNCING';
             onClick = handleContractsClick;
             buttonColor = 'success';
+          } else if (apgState.hasMissingIngests) {
+            buttonLabel = 'MISSING INGESTS';
+            onClick = handleContractsClick;
+            buttonColor = 'error';
           } else {
             buttonLabel = 'ENTITLED';
             onClick = handleContractsClick;
@@ -1463,8 +1488,14 @@ export const DataProductAccessPointGroupViewer = observer(
           }
           break;
         case AccessPointGroupAccess.ENTERPRISE:
-          buttonLabel = 'ENTERPRISE ACCESS';
-          buttonColor = 'success';
+          if (apgState.hasMissingIngests) {
+            buttonLabel = 'MISSING INGESTS';
+            onClick = handleContractsClick;
+            buttonColor = 'error';
+          } else {
+            buttonLabel = 'ENTERPRISE ACCESS';
+            buttonColor = 'success';
+          }
           break;
         default:
           buttonLabel = undefined;
@@ -1474,14 +1505,19 @@ export const DataProductAccessPointGroupViewer = observer(
         return null;
       }
       const tooltipText =
-        val === AccessPointGroupAccess.APPROVED &&
+        (val === AccessPointGroupAccess.APPROVED ||
+          val === AccessPointGroupAccess.ENTERPRISE) &&
         apgState.isEntitlementsSyncing
           ? 'Your contract has been approved but your entitlements are still syncing. The status will refresh automatically once your entitlements have synced.'
-          : dataAccessState?.dataAccessPlugins
-              .flatMap((plugin) =>
-                plugin.getExtraAccessPointGroupAccessInfo?.(val),
-              )
-              .filter(isNonEmptyString)[0];
+          : (val === AccessPointGroupAccess.APPROVED ||
+                val === AccessPointGroupAccess.ENTERPRISE) &&
+              apgState.hasMissingIngests
+            ? 'One or more ingest definitions referenced by this access point group could not be verified against the producer environment.'
+            : dataAccessState?.dataAccessPlugins
+                .flatMap((plugin) =>
+                  plugin.getExtraAccessPointGroupAccessInfo?.(val),
+                )
+                .filter(isNonEmptyString)[0];
 
       return (
         <>
@@ -1683,6 +1719,7 @@ export const DataProductAccessPointGroupViewer = observer(
               }
             }}
             getDataProductUrl={dataAccessState.getDataProductUrl}
+            contractErrors={apgContractErrors}
           />
         )}
         {dataAccessRequestViewerState && (
@@ -1693,6 +1730,7 @@ export const DataProductAccessPointGroupViewer = observer(
             }
             viewerState={dataAccessRequestViewerState}
             getDataProductUrl={dataAccessState.getDataProductUrl}
+            contractErrors={apgContractErrors}
           />
         )}
         {dataAccessState && apgState.associatedUserContract !== false && (

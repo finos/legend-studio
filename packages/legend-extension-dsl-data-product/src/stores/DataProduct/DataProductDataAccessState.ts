@@ -53,7 +53,14 @@ import {
   isNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { deserialize, serialize } from 'serializr';
 import {
   type LakehouseIngestServerClient,
@@ -72,6 +79,7 @@ import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '..
 import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
 import { PermitDataAccessRequestState } from './DataAccess/PermitDataAccessRequestState.js';
 import { type DataAccessRequestState } from './DataAccess/DataAccessRequestState.js';
+import { getUnverifiedIngestDefinitionsForAPG } from '../../utils/DataProductIngestUtils.js';
 
 export enum DataAccessRequestType {
   CONTRACT = 'CONTRACT',
@@ -215,6 +223,8 @@ export class DataProductDataAccessState {
     this.getContractTaskUrl = actions.getContractTaskUrl;
     this.getDataProductUrl = actions.getDataProductUrl;
     this.getTaskPageUrl = actions.getTaskPageUrl;
+
+    this.dataProductViewerState.setDataProductDataAccessState(this);
   }
 
   get product(): V1_DataProduct {
@@ -382,6 +392,9 @@ export class DataProductDataAccessState {
       this.fetchContracts(tokenProvider),
       this.fetchIngestEnvironmentDetails(tokenProvider),
       this.fetchDataProductOwners(tokenProvider),
+      ...this.dataProductViewerState.apgStates.map((apgState) =>
+        flowResult(apgState.fetchMissingIngests(tokenProvider)),
+      ),
     ]);
   }
 
@@ -692,6 +705,28 @@ export class DataProductDataAccessState {
         `Unable to find lakehouse ingest env with did: ${this.entitlementsDataProductDetails.deploymentId}, error: ${error.message}`,
       );
     }
+  }
+
+  async computeMissingIngestsForApg(
+    accessPointGroupId: string,
+    tokenProvider: () => string | undefined,
+  ): Promise<string[]> {
+    return getUnverifiedIngestDefinitionsForAPG(
+      {
+        deploymentId: this.entitlementsDataProductDetails.deploymentId,
+        dataProductName: this.entitlementsDataProductDetails.dataProduct.name,
+        accessPointGroupId,
+      },
+      {
+        lakehouseContractServerClient: this.lakehouseContractServerClient,
+        depotServerClient: this.dataProductViewerState.depotServerClient,
+        lakehouseIngestServerClient: this.lakehouseIngestServerClient,
+        lakehousePlatformServerClient: this.lakehousePlatformServerClient,
+      },
+      this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+      async () => this.graphManagerState.graphManager,
+      tokenProvider(),
+    );
   }
 
   async fetchLakehouseIngestEnvironmentDetails(

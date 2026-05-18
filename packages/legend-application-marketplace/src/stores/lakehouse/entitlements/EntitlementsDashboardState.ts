@@ -15,20 +15,15 @@
  */
 
 import {
+  type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
-  guaranteeType,
-  HttpStatus,
   isNonNullable,
-  NetworkClientError,
-  type GeneratorFn,
-  type PlainObject,
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
-  type PureProtocolProcessorPlugin,
-  type V1_DataProduct,
   type V1_EnrichedUserApprovalStatus,
   type V1_LiteDataContract,
   type V1_LiteDataContractWithUserStatus,
@@ -36,26 +31,24 @@ import {
   type V1_TaskStatus,
   type V1_ContractUserEventRecord,
   type V1_TaskStatusChangeResponse,
-  RawLambda,
-  V1_DataProductAccessor,
-  V1_deserializeDataContractResponse,
   type V1_DataRequestWithWorkflow,
+  type V1_DataRequestsWithWorkflowResponse,
+  V1_deserializeDataContractResponse,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
-  V1_IngestDefinitionAccessor,
-  V1_LakehouseAccessPoint,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_pendingTasksResponseModelSchema,
-  V1_PureGraphManager,
-  V1_resolveAccessorsFromRawLambda,
-  V1_ResourceType,
-  V1_SdlcDeploymentDataProductOrigin,
   V1_TaskStatusChangeResponseModelSchema,
   V1_transformDataContractToLiteDatacontract,
   V1_deserializeDataRequestsWithWorkflowResponse,
-  type V1_DataRequestsWithWorkflowResponse,
 } from '@finos/legend-graph';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import type { ContractErrorLayer } from '@finos/legend-extension-dsl-data-product';
+import {
+  type ContractErrorLayer,
+  type LakehouseContractSyncStatusResponse,
+  buildSyncErrorLayer,
+  buildContractErrorsRoot,
+  getContractAPGCoordinates,
+  getUnverifiedIngestDefinitionsForAPG,
+} from '@finos/legend-extension-dsl-data-product';
 import {
   makeObservable,
   flow,
@@ -65,97 +58,9 @@ import {
   computed,
 } from 'mobx';
 import {
-  TEST_USER,
   type LakehouseEntitlementsStore,
+  TEST_USER,
 } from './LakehouseEntitlementsStore.js';
-import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
-
-export enum ContractSyncStatus {
-  NEVER_SYNCED = 'NEVER_SYNCED',
-  NOT_FULLY_SYNCED = 'NOT_FULLY_SYNCED',
-}
-
-export type LakehouseContractSyncStatusResponse = {
-  status: string;
-  unsyncedUsers?: { username: string }[];
-  unsyncedAccessPoints?: { accessPointName: string }[];
-  unsyncedTargetAccounts?: string[];
-};
-
-const collectIngestSpecPathsFromOriginDp = (
-  rootDataProduct: V1_DataProduct,
-  accessPointGroupId: string,
-  graphManager: V1_PureGraphManager,
-  plugins: PureProtocolProcessorPlugin[],
-): Set<string> => {
-  const dpPath = `${rootDataProduct.package}::${rootDataProduct.name}`;
-  const targetApg = rootDataProduct.accessPointGroups.find(
-    (apg) => apg.id === accessPointGroupId,
-  );
-  if (!targetApg) {
-    throw new Error(
-      `Access point group '${accessPointGroupId}' not found in data product '${dpPath}'`,
-    );
-  }
-  const specs = new Set<string>();
-  const visited = new Set<string>();
-  const worklist: string[] = [accessPointGroupId];
-
-  const collectFromApg = (apgId: string): void => {
-    const apg = rootDataProduct.accessPointGroups.find((g) => g.id === apgId);
-    if (!apg) {
-      return;
-    }
-    for (const accessPoint of apg.accessPoints) {
-      if (!(accessPoint instanceof V1_LakehouseAccessPoint)) {
-        continue;
-      }
-      const visitKey = `${dpPath}::${accessPoint.id}`;
-      if (visited.has(visitKey)) {
-        continue;
-      }
-      visited.add(visitKey);
-
-      const rawLambda = new RawLambda(
-        accessPoint.func.parameters,
-        accessPoint.func.body,
-      );
-      const accessors =
-        V1_resolveAccessorsFromRawLambda(rawLambda, graphManager, plugins) ??
-        [];
-      for (const accessor of accessors) {
-        if (accessor instanceof V1_IngestDefinitionAccessor) {
-          const specPath = accessor.path[0];
-          if (specPath) {
-            specs.add(specPath);
-          }
-        } else if (accessor instanceof V1_DataProductAccessor) {
-          const refDpPath = accessor.path[0];
-          const refApId = accessor.path[1];
-          if (!refDpPath || !refApId) {
-            continue;
-          }
-          if (refDpPath !== dpPath) {
-            continue;
-          }
-          const refApg = rootDataProduct.accessPointGroups.find((g) =>
-            g.accessPoints.some((ap) => ap.id === refApId),
-          );
-          if (refApg && !worklist.includes(refApg.id)) {
-            worklist.push(refApg.id);
-          }
-        }
-      }
-    }
-  };
-
-  while (worklist.length > 0) {
-    const apgId = guaranteeNonNullable(worklist.shift());
-    collectFromApg(apgId);
-  }
-
-  return specs;
-};
 
 export class ContractCreatedByUserDetails {
   readonly contractResultLite: V1_LiteDataContract;
@@ -529,158 +434,37 @@ export class EntitlementsDashboardState {
     return didToEnvType;
   }
 
-  async getUnverifiedIngestDefinitions(
+  async getContractIngestErrors(
     contractId: string,
     token: string | undefined,
-  ): Promise<string[]> {
-    const entitlementsStore = this.lakehouseEntitlementsStore;
-    const baseStore = entitlementsStore.marketplaceBaseStore;
-    const applicationStore = entitlementsStore.applicationStore;
+  ): Promise<ContractErrorLayer | undefined> {
+    const baseStore = this.lakehouseEntitlementsStore.marketplaceBaseStore;
     const plugins =
-      applicationStore.pluginManager.getPureProtocolProcessorPlugins();
-    const contractClient = entitlementsStore.lakehouseContractServerClient;
-
-    const PROD_ENV = 'prod';
-    const SDLC_DEPLOYMENT = 'alloy-git';
-
-    try {
-      const liteContract = await (async () => {
-        try {
-          const rawContractResponse = await contractClient.getDataContract(
-            contractId,
-            false,
-            token,
-          );
-          const dataContract = V1_deserializeDataContractResponse(
-            rawContractResponse,
-            plugins,
-          )[0]?.dataContract;
-          if (!dataContract) {
-            return undefined;
-          }
-          return V1_transformDataContractToLiteDatacontract(dataContract);
-        } catch (error) {
-          assertErrorThrown(error);
-          return undefined;
-        }
-      })();
-      if (!liteContract) {
-        return [];
-      }
-
-      const accessPointGroupId =
-        liteContract.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
-          ? (liteContract.accessPointGroup ?? undefined)
-          : undefined;
-      if (!accessPointGroupId) {
-        return [];
-      }
-
-      const dpDetails = await (async () => {
-        try {
-          const raw = await contractClient.getDataProductByIdAndDID(
-            liteContract.resourceId,
-            liteContract.deploymentId,
-            token,
-          );
-          return V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-            raw,
-          )[0];
-        } catch (error) {
-          assertErrorThrown(error);
-          return undefined;
-        }
-      })();
-      if (!dpDetails) {
-        return [];
-      }
-
-      if (!(dpDetails.origin instanceof V1_SdlcDeploymentDataProductOrigin)) {
-        return [];
-      }
-
-      const graphManager = new V1_PureGraphManager(
-        applicationStore.pluginManager,
-        applicationStore.logService,
-        baseStore.remoteEngine,
-      );
-      await graphManager.initialize(
-        {
-          env: applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl: applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: baseStore.remoteEngine },
-      );
-
-      const v1DataProduct = await getDataProductFromDetails(
-        dpDetails,
-        graphManager,
-        baseStore,
-      );
-      if (!v1DataProduct) {
-        return [];
-      }
-
-      const specs = collectIngestSpecPathsFromOriginDp(
-        v1DataProduct,
-        accessPointGroupId,
-        graphManager,
-        plugins,
-      );
-      if (specs.size === 0) {
-        return [];
-      }
-
-      const ingestEnvironment =
-        await baseStore.lakehouseDataProductService.getOrFetchEnvironmentForDID(
-          liteContract.deploymentId,
-          token,
-        );
-      const ingestServerUrl = ingestEnvironment?.ingestServerUrl;
-      if (ingestServerUrl === undefined) {
-        return [];
-      }
-
-      const sdlcOrigin = guaranteeType(
-        dpDetails.origin,
-        V1_SdlcDeploymentDataProductOrigin,
-      );
-      const gav = `${sdlcOrigin.group}~${sdlcOrigin.artifact}`;
-      const specsToVerify = Array.from(specs, (specPath) => ({
-        specPath,
-        urn: `urn:lakehouse:${PROD_ENV}:ingest:definition:${SDLC_DEPLOYMENT}:${gav}~${specPath}`,
-      }));
-
-      const ingestClient = baseStore.lakehouseIngestServerClient;
-      const settled = await Promise.all(
-        specsToVerify.map(async (entry) => {
-          try {
-            await ingestClient.getIngestDefinitionDetail(
-              entry.urn,
-              ingestServerUrl,
-              token,
-            );
-            return undefined;
-          } catch (error) {
-            assertErrorThrown(error);
-            if (
-              error instanceof NetworkClientError &&
-              error.response.status === HttpStatus.NOT_FOUND
-            ) {
-              return entry.specPath;
-            }
-            return undefined;
-          }
-        }),
-      );
-      return settled.filter(isNonNullable);
-    } catch (error) {
-      assertErrorThrown(error);
-      return [];
+      this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins();
+    const apg = await getContractAPGCoordinates(
+      contractId,
+      baseStore.lakehouseContractServerClient,
+      plugins,
+      token,
+    );
+    if (!apg) {
+      return undefined;
     }
+    const unverifiedIngestDefinitions =
+      await getUnverifiedIngestDefinitionsForAPG(
+        apg,
+        baseStore,
+        plugins,
+        () => baseStore.createInitializedGraphManager(),
+        token,
+      );
+    if (unverifiedIngestDefinitions.length === 0) {
+      return undefined;
+    }
+    return {
+      title: `Ingest${unverifiedIngestDefinitions.length === 1 ? '' : 's'} Not Found:`,
+      errorItems: unverifiedIngestDefinitions,
+    };
   }
 
   async getContractSyncErrors(
@@ -693,39 +477,7 @@ export class EntitlementsDashboardState {
           contractId,
           token,
         )) as LakehouseContractSyncStatusResponse;
-
-      const status = response.status.toUpperCase();
-
-      if (status === ContractSyncStatus.NEVER_SYNCED) {
-        return { title: 'Sync Error: Contract Never Synced' };
-      }
-
-      if (status === ContractSyncStatus.NOT_FULLY_SYNCED) {
-        const unsyncedUsers =
-          response.unsyncedUsers?.map((user) => user.username) ?? [];
-        const unsyncedAccessPoints =
-          response.unsyncedAccessPoints?.map(
-            (accessPoint) => accessPoint.accessPointName,
-          ) ?? [];
-        const unsyncedTargetAccounts = response.unsyncedTargetAccounts ?? [];
-
-        const syncGroupingLayers: ContractErrorLayer[] = [
-          { title: 'Users', errorItems: unsyncedUsers },
-          { title: 'Target Accounts', errorItems: unsyncedTargetAccounts },
-          { title: 'Access Points', errorItems: unsyncedAccessPoints },
-        ].filter((layer) => layer.errorItems.length > 0);
-
-        if (syncGroupingLayers.length === 0) {
-          return undefined;
-        }
-
-        return {
-          title: 'Unsynced Entities',
-          childLayers: syncGroupingLayers,
-        };
-      }
-
-      return undefined;
+      return buildSyncErrorLayer(response);
     } catch (error) {
       assertErrorThrown(error);
       return undefined;
@@ -737,26 +489,13 @@ export class EntitlementsDashboardState {
     token: string | undefined,
     checkSyncStatus = false,
   ): Promise<ContractErrorLayer | undefined> {
-    const [unverifiedIngestDefinitions, syncErrorsLayer] = await Promise.all([
-      this.getUnverifiedIngestDefinitions(contractId, token),
+    const [ingestErrorsLayer, syncErrorsLayer] = await Promise.all([
+      this.getContractIngestErrors(contractId, token),
       checkSyncStatus
         ? this.getContractSyncErrors(contractId, token)
         : Promise.resolve(undefined),
     ]);
-
-    const childLayers: ContractErrorLayer[] = [
-      unverifiedIngestDefinitions.length > 0
-        ? {
-            title: `Ingest${unverifiedIngestDefinitions.length === 1 ? '' : 's'} Not Found`,
-            errorItems: unverifiedIngestDefinitions,
-          }
-        : undefined,
-      syncErrorsLayer,
-    ].filter(isNonNullable);
-
-    return childLayers.length > 0
-      ? { title: 'Contract Errors', childLayers }
-      : undefined;
+    return buildContractErrorsRoot([ingestErrorsLayer, syncErrorsLayer]);
   }
 
   filterByUserEnvironment(

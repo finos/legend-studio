@@ -410,6 +410,68 @@ export type ContractErrorLayer = {
   childLayers?: ContractErrorLayer[];
 };
 
+export enum ContractSyncStatus {
+  FULLY_SYNCED = 'FULLY_SYNCED',
+  NOT_FULLY_SYNCED = 'NOT_FULLY_SYNCED',
+  NEVER_SYNCED = 'NEVER_SYNCED',
+}
+
+export type LakehouseContractSyncStatusResponse = {
+  status: string;
+  unsyncedUsers?: { username: string }[];
+  unsyncedAccessPoints?: { accessPointName: string }[];
+  unsyncedTargetAccounts?: string[];
+};
+
+export const buildSyncErrorLayer = (
+  response: LakehouseContractSyncStatusResponse,
+): ContractErrorLayer | undefined => {
+  const status = response.status.toUpperCase();
+
+  if (status === ContractSyncStatus.NEVER_SYNCED) {
+    return { title: 'Sync Error: Contract Never Synced' };
+  }
+
+  if (status === ContractSyncStatus.NOT_FULLY_SYNCED) {
+    const unsyncedUsers =
+      response.unsyncedUsers?.map((user) => user.username) ?? [];
+    const unsyncedAccessPoints =
+      response.unsyncedAccessPoints?.map(
+        (accessPoint) => accessPoint.accessPointName,
+      ) ?? [];
+    const unsyncedTargetAccounts = response.unsyncedTargetAccounts ?? [];
+
+    const syncGroupingLayers: ContractErrorLayer[] = [
+      { title: 'Users:', errorItems: unsyncedUsers },
+      { title: 'Target Accounts:', errorItems: unsyncedTargetAccounts },
+      { title: 'Access Points:', errorItems: unsyncedAccessPoints },
+    ].filter((layer) => layer.errorItems.length > 0);
+
+    if (syncGroupingLayers.length === 0) {
+      return undefined;
+    }
+
+    return {
+      title: 'Unsynced Entities:',
+      childLayers: syncGroupingLayers,
+    };
+  }
+
+  return undefined;
+};
+
+export const buildContractErrorsRoot = (
+  childLayers: (ContractErrorLayer | undefined)[],
+): ContractErrorLayer | undefined => {
+  const filtered = childLayers.filter(
+    (layer): layer is ContractErrorLayer => layer !== undefined,
+  );
+  if (filtered.length === 0) {
+    return undefined;
+  }
+  return { title: 'Contract Errors:', childLayers: filtered };
+};
+
 const ErrorLayerCard = (props: {
   layer: ContractErrorLayer;
   applicationStore: GenericLegendApplicationStore;
@@ -452,7 +514,7 @@ const ErrorLayerCard = (props: {
           <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__text">
             <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__title">
               {layer.title}
-              {showCount ? `: (${errorItems.length})` : ':'}
+              {showCount ? ` (${errorItems.length})` : ''}
             </Box>
           </Box>
         </Box>

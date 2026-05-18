@@ -415,11 +415,12 @@ const setupLakehouseDataProductTest = async (
       : [],
   );
 
-  dataProductViewerState.init(entitlementsDataProductDetails);
-
   let renderResult;
 
   await act(async () => {
+    await flowResult(
+      dataProductViewerState.init(entitlementsDataProductDetails),
+    );
     await flowResult(dataProductDataAccessState?.init(() => undefined));
     renderResult = render(
       <BrowserRouter>
@@ -3947,6 +3948,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
@@ -3986,6 +3988,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
@@ -4021,6 +4024,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
@@ -4062,6 +4066,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
@@ -4100,6 +4105,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
