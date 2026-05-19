@@ -589,7 +589,7 @@ describe('PermitDataAccessRequestState', () => {
       expect(steps[1]?.label.link).toBe('/tasks/req-1');
     });
 
-    test('falls back to task url when getTaskPageUrl is not provided', () => {
+    test('falls back to externalLink when getTaskPageUrl is not provided', () => {
       const pmTask = createMockPmTask({
         status: V1_WorkflowTaskStatus.OPEN,
       });
@@ -600,7 +600,8 @@ describe('PermitDataAccessRequestState', () => {
         ),
       );
       const steps = state.getTimelineSteps(undefined);
-      expect(steps[1]?.label.link).toBe('http://task/pm-task-1');
+      expect(steps[1]?.label.link).toBeUndefined();
+      expect(steps[1]?.label.externalLink).toBe('http://task/pm-task-1');
     });
 
     test('PM step includes approval payload when completed', () => {
