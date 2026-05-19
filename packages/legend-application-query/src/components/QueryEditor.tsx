@@ -42,6 +42,7 @@ import {
   PencilIcon,
   MoonIcon,
   SunIcon,
+  SparkleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -123,6 +124,43 @@ const CreateQueryDialog = observer(() => {
     createQueryState.setQueryDescription(event.target.value);
   };
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const legendAIUrl = editorStore.applicationStore.config.legendAIUrl;
+  const aiSuggester = legendAIUrl
+    ? editorStore.pluginManager
+        .getApplicationPlugins()
+        .map((p) => p.getExtraQueryTitleDescriptionAISuggester?.())
+        .find(Boolean)
+    : undefined;
+  const [isSuggestingWithAI, setIsSuggestingWithAI] = useState(false);
+  const [aiSuggestion, setAISuggestion] = useState<
+    { title: string; description: string } | undefined
+  >(undefined);
+  const suggestWithAI = async (): Promise<void> => {
+    if (!aiSuggester || !editorStore.queryBuilderState || !legendAIUrl) {
+      return;
+    }
+    setIsSuggestingWithAI(true);
+    setAISuggestion(undefined);
+    try {
+      const suggestion = await aiSuggester(
+        editorStore.queryBuilderState,
+        legendAIUrl,
+      );
+      setAISuggestion(suggestion);
+    } finally {
+      setIsSuggestingWithAI(false);
+    }
+  };
+  const acceptAISuggestion = (): void => {
+    if (!aiSuggestion) {
+      return;
+    }
+    createQueryState.setQueryName(aiSuggestion.title);
+    createQueryState.setQueryDescription(aiSuggestion.description);
+    setAISuggestion(undefined);
+  };
+
   const debouncedLoadQueries = useMemo(
     () =>
       debounce((input: string): void => {
@@ -213,8 +251,62 @@ const CreateQueryDialog = observer(() => {
               />
             </div>
           </div>
+          {aiSuggestion && (
+            <div
+              className="query-editor__ai-suggestion"
+              style={{ marginTop: '1rem' }}
+            >
+              <div className="query-editor__ai-suggestion__header">
+                <SparkleIcon />
+                <span>AI Suggestion</span>
+              </div>
+              <div className="query-editor__ai-suggestion__field">
+                <div className="query-editor__ai-suggestion__label">
+                  Query Name
+                </div>
+                <div className="query-editor__ai-suggestion__value">
+                  {aiSuggestion.title}
+                </div>
+              </div>
+              <div className="query-editor__ai-suggestion__field">
+                <div className="query-editor__ai-suggestion__label">
+                  Query Description
+                </div>
+                <div className="query-editor__ai-suggestion__value">
+                  {aiSuggestion.description}
+                </div>
+              </div>
+              <div className="query-editor__ai-suggestion__actions">
+                <ModalFooterButton
+                  text="Accept"
+                  title="Apply AI suggestion to name and description"
+                  onClick={acceptAISuggestion}
+                />
+                <ModalFooterButton
+                  text="Dismiss"
+                  type="secondary"
+                  onClick={(): void => setAISuggestion(undefined)}
+                />
+              </div>
+            </div>
+          )}
         </ModalBody>
         <ModalFooter>
+          {aiSuggester && (
+            <button
+              className="btn btn--dark query-editor__ai-suggest-btn"
+              onClick={(): void => {
+                suggestWithAI().catch(applicationStore.alertUnhandledError);
+              }}
+              disabled={isSuggestingWithAI || !editorStore.queryBuilderState}
+              title="Use AI to suggest name and description based on the current query"
+            >
+              <SparkleIcon />
+              <span>
+                {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+              </span>
+            </button>
+          )}
           <ModalFooterButton
             text="Create Query"
             title="Create new query"
@@ -322,6 +414,46 @@ const RenameQueryDialog = observer(
       existingEditorStore.existingQueryName &&
       queryRenameName !== existingEditorStore.lightQuery.name;
 
+    const legendAIUrl = existingEditorStore.applicationStore.config.legendAIUrl;
+    const aiSuggester = legendAIUrl
+      ? existingEditorStore.pluginManager
+          .getApplicationPlugins()
+          .map((p) => p.getExtraQueryTitleDescriptionAISuggester?.())
+          .find(Boolean)
+      : undefined;
+    const [isSuggestingWithAI, setIsSuggestingWithAI] = useState(false);
+    const [aiSuggestion, setAISuggestion] = useState<
+      { title: string; description: string } | undefined
+    >(undefined);
+    const suggestWithAI = async (): Promise<void> => {
+      if (
+        !aiSuggester ||
+        !existingEditorStore.queryBuilderState ||
+        !legendAIUrl
+      ) {
+        return;
+      }
+      setIsSuggestingWithAI(true);
+      setAISuggestion(undefined);
+      try {
+        const suggestion = await aiSuggester(
+          existingEditorStore.queryBuilderState,
+          legendAIUrl,
+        );
+        setAISuggestion(suggestion);
+      } finally {
+        setIsSuggestingWithAI(false);
+      }
+    };
+    const acceptAISuggestion = (): void => {
+      if (!aiSuggestion) {
+        return;
+      }
+      setQueryRenameName(aiSuggestion.title);
+      setQueryDescription(aiSuggestion.description);
+      setAISuggestion(undefined);
+    };
+
     const debouncedLoadQueries = useMemo(
       () =>
         debounce((input: string): void => {
@@ -428,8 +560,64 @@ const RenameQueryDialog = observer(
                 />
               </div>
             </div>
+            {aiSuggestion && (
+              <div
+                className="query-editor__ai-suggestion"
+                style={{ marginTop: '1rem' }}
+              >
+                <div className="query-editor__ai-suggestion__header">
+                  <SparkleIcon />
+                  <span>AI Suggestion</span>
+                </div>
+                <div className="query-editor__ai-suggestion__field">
+                  <div className="query-editor__ai-suggestion__label">
+                    Query Name
+                  </div>
+                  <div className="query-editor__ai-suggestion__value">
+                    {aiSuggestion.title}
+                  </div>
+                </div>
+                <div className="query-editor__ai-suggestion__field">
+                  <div className="query-editor__ai-suggestion__label">
+                    Query Description
+                  </div>
+                  <div className="query-editor__ai-suggestion__value">
+                    {aiSuggestion.description}
+                  </div>
+                </div>
+                <div className="query-editor__ai-suggestion__actions">
+                  <ModalFooterButton
+                    text="Accept"
+                    title="Apply AI suggestion to name and description"
+                    onClick={acceptAISuggestion}
+                  />
+                  <ModalFooterButton
+                    text="Dismiss"
+                    type="secondary"
+                    onClick={(): void => setAISuggestion(undefined)}
+                  />
+                </div>
+              </div>
+            )}
           </ModalBody>
           <ModalFooter>
+            {aiSuggester && (
+              <button
+                className="btn btn--dark query-editor__ai-suggest-btn"
+                onClick={(): void => {
+                  suggestWithAI().catch(applicationStore.alertUnhandledError);
+                }}
+                disabled={
+                  isSuggestingWithAI || !existingEditorStore.queryBuilderState
+                }
+                title="Use AI to suggest name and description based on the current query"
+              >
+                <SparkleIcon />
+                <span>
+                  {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+                </span>
+              </button>
+            )}
             <ModalFooterButton
               text="Update Query"
               title="Update query name and description"

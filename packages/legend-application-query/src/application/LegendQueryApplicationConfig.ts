@@ -160,6 +160,9 @@ export interface LegendQueryApplicationConfigurationData
   lakehouse?: {
     url: string;
   };
+  legendAI?: {
+    url: string;
+  };
 }
 
 export class LegendQueryApplicationConfig extends LegendApplicationConfig {
@@ -174,6 +177,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly marketplaceApplicationUrl?: string;
   readonly marketplaceProductionParallelUrl?: string;
   readonly lakehouseContractUrl?: string;
+  readonly legendAIUrl?: string;
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
 
@@ -259,6 +263,13 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
     if (input.configData.lakehouse?.url) {
       this.lakehouseContractUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.lakehouse.url,
+      );
+    }
+
+    // legend AI
+    if (input.configData.legendAI?.url) {
+      this.legendAIUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.legendAI.url,
       );
     }
 
