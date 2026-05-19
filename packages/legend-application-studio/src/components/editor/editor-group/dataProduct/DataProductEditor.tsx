@@ -2231,6 +2231,9 @@ const AccessPointGroupTab = observer(
 const DataProductSidebar = observer(
   (props: { dataProductEditorState: DataProductEditorState }) => {
     const { dataProductEditorState } = props;
+    const showTestingTab =
+      dataProductEditorState.editorStore.applicationStore.config.options
+        .NonProductionFeatureFlag;
     const sidebarTabs = [
       {
         label: DATA_PRODUCT_TAB.HOME,
@@ -2246,11 +2249,15 @@ const DataProductSidebar = observer(
         title: 'Operational Metadata',
         icon: <GearSuggestIcon />,
       },
-      {
-        label: DATA_PRODUCT_TAB.TESTING,
-        title: 'Testing',
-        icon: <FlaskIcon />,
-      },
+      ...(showTestingTab
+        ? [
+            {
+              label: DATA_PRODUCT_TAB.TESTING,
+              title: 'Testing',
+              icon: <FlaskIcon />,
+            },
+          ]
+        : []),
       {
         label: DATA_PRODUCT_TAB.SUPPORT,
         icon: <QuestionCircleIcon />,
@@ -3359,6 +3366,8 @@ export const DataProductEditor = observer(() => {
   const [showPreview, setShowPreview] = useState(false);
   const [dataProductViewerState, setDataProductViewerState] =
     useState<DataProductViewerState>();
+  const showTestingTab =
+    editorStore.applicationStore.config.options.NonProductionFeatureFlag;
 
   const selectedActivity = dataProductEditorState.selectedTab;
   const renderActivivtyBarTab = (): React.ReactNode => {
@@ -3392,12 +3401,12 @@ export const DataProductEditor = observer(() => {
           />
         );
       case DATA_PRODUCT_TAB.TESTING:
-        return (
+        return showTestingTab ? (
           <DataProductTestableEditor
             dataProductEditorState={dataProductEditorState}
             isReadOnly={isReadOnly}
           />
-        );
+        ) : null;
       default:
         return null;
     }
@@ -3412,6 +3421,15 @@ export const DataProductEditor = observer(() => {
       dataProductEditorState.editorStore.applicationStore.alertUnhandledError,
     );
   }, [dataProductEditorState]);
+
+  useEffect(() => {
+    if (
+      !showTestingTab &&
+      dataProductEditorState.selectedTab === DATA_PRODUCT_TAB.TESTING
+    ) {
+      dataProductEditorState.setSelectedTab(DATA_PRODUCT_TAB.HOME);
+    }
+  }, [dataProductEditorState, showTestingTab]);
 
   useEffect(
     () =>

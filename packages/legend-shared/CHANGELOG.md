@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.25
+
+### Patch Changes
+
+- [#5172](https://github.com/finos/legend-studio/pull/5172) [`b92003f`](https://github.com/finos/legend-studio/commit/b92003fea0a76de4b6c83d64a897974118e29a85) ([@yash0024](https://github.com/yash0024)) - Also, users now type in the csv-decoded value (so "Hello", not """Hello"""), and we take care of csv-encoding it on the metamodel (so user types "Hello" on the RelationElement editor, and we store it as """Hello""" in the metamodel). Also, update import and exports with these new CSV parsing rules
+
 ## 11.0.24
 
 ### Patch Changes
