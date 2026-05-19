@@ -595,6 +595,7 @@ const EqualToRelationAsssertionEditor = observer(
           equalToRelationAssertionState.expectedRelationElementState
         }
         isReadOnly={isReadOnly}
+        hideColumnDefinitions={true}
       />
     );
   },

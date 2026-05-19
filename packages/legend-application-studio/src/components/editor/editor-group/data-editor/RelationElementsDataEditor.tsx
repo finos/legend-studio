@@ -426,7 +426,8 @@ export const RelationElementEditor = observer(
               </div>
             </div>
           ) : null}
-          {embeddedData.rows.length === 0 ? (
+          {embeddedData.rows.length === 0 &&
+          embeddedData.columns.length === 0 ? (
             <div className="relation-test-data-editor__empty-data">
               <div className="relation-test-data-editor__empty-text">
                 No test data rows. Click &quot;+&quot; below to start entering
@@ -440,13 +441,20 @@ export const RelationElementEditor = observer(
                   <tr>
                     {embeddedData.columns.map((column, columnIndex) => (
                       <th
-                        key={column}
+                        key={`col-${guaranteeNonNullable(columnIndex)}`}
                         className="relation-test-data-editor__th"
                       >
                         <div className="relation-test-data-editor__th__inner">
-                          <span className="relation-test-data-editor__th__label">
-                            {column}
-                          </span>
+                          <input
+                            className="relation-test-data-editor__th__label relation-test-data-editor__th__label--editable"
+                            type="text"
+                            value={column}
+                            onChange={(e) =>
+                              updateColumn(columnIndex, e.target.value)
+                            }
+                            disabled={!canEditColumns}
+                            title={column}
+                          />
                           <button
                             className="relation-test-data-editor__th__delete"
                             onClick={() => removeColumn(columnIndex)}

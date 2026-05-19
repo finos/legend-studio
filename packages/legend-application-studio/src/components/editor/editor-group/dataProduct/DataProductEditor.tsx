@@ -661,6 +661,7 @@ const SampleValuesEditorModal = observer(
                             accessPointState.relationElementState
                           }
                           isReadOnly={isReadOnly}
+                          hideColumnDefinitions={true}
                         />
                       </div>
                     </Tooltip>

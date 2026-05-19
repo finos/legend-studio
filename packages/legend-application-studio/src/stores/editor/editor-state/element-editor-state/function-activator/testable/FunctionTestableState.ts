@@ -63,7 +63,9 @@ import {
   EqualTo,
   EqualToRelation,
   RelationElement,
+  RelationRowTestData,
   observe_RelationElement,
+  observe_RelationRowTestData,
   ModelStore,
   RelationElementsData,
   CORE_PURE_PATH,
@@ -723,7 +725,6 @@ export const createFunctionTest = async (
     assertion.id = DEFAULT_TEST_ASSERTION_ID;
     const expectedRelElement = new RelationElement();
     expectedRelElement.paths = [];
-    expectedRelElement.rows = [];
     let inferredColumns: string[] = [];
     if (type.path === CORE_PURE_PATH.RELATION) {
       try {
@@ -746,6 +747,9 @@ export const createFunctionTest = async (
       }
     }
     expectedRelElement.columns = inferredColumns;
+    const emptyRow = observe_RelationRowTestData(new RelationRowTestData());
+    emptyRow.values = inferredColumns.map(() => '');
+    expectedRelElement.rows = [emptyRow];
     observe_RelationElement(expectedRelElement);
     assertion.expected = expectedRelElement;
     _assertion = assertion;

@@ -400,6 +400,7 @@ export function renderEmbeddedDataEditor(
         dataState={embeddedDataState}
         isReadOnly={isReadOnly}
         isSharedData={isSharedData}
+        hideColumnDefinitions={true}
       />
     );
   } else if (embeddedDataState instanceof DataElementReferenceState) {
