@@ -784,6 +784,26 @@
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
+
+      &--editable {
+        background: transparent;
+        border: none;
+        color: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        padding: 0;
+        outline: none;
+        width: 100%;
+
+        &:focus {
+          background: var(--color-dark-grey-300);
+          border-radius: 0.2rem;
+        }
+
+        &:disabled {
+          color: inherit;
+        }
+      }
     }
 
     &__delete {

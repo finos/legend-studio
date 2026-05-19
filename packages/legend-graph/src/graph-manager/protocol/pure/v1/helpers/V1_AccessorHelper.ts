@@ -51,6 +51,7 @@ import { V1_deserializeIngestDefinitionContent } from '../transformation/purePro
 import {
   RelationElement,
   RelationElementsData,
+  RelationRowTestData,
 } from '../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import type { AbstractPureGraphManager } from '../../../../AbstractPureGraphManager.js';
@@ -457,7 +458,9 @@ export const V1_buildRelationElementsDataFromAccessors = (
     relationElement.columns = accessor.relationType.columns.map(
       (column) => column.name,
     );
-    relationElement.rows = [];
+    const row = new RelationRowTestData();
+    row.values = relationElement.columns.map(() => '');
+    relationElement.rows = [row];
     return relationElement;
   });
   return relationElementsData;
