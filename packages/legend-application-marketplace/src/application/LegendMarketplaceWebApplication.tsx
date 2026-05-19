@@ -21,7 +21,10 @@ import {
   CubesLoadingIndicatorIcon,
   GhostIcon,
 } from '@finos/legend-art';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  LegendTokenSync,
+} from '@finos/legend-application';
 import {
   BrowserEnvironmentProvider,
   Outlet,
@@ -463,11 +466,13 @@ export const LegendMarketplaceWebApplication = observer(
 
     return (
       <AuthProvider {...mergedOIDCConfig}>
-        <BrowserEnvironmentProvider baseUrl={baseUrl}>
-          <LegendMarketplaceFrameworkProvider>
-            <LegendMarketplaceWebApplicationRouter />
-          </LegendMarketplaceFrameworkProvider>
-        </BrowserEnvironmentProvider>
+        <LegendTokenSync>
+          <BrowserEnvironmentProvider baseUrl={baseUrl}>
+            <LegendMarketplaceFrameworkProvider>
+              <LegendMarketplaceWebApplicationRouter />
+            </LegendMarketplaceFrameworkProvider>
+          </BrowserEnvironmentProvider>
+        </LegendTokenSync>
       </AuthProvider>
     );
   },
