@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.17
+
+### Patch Changes
+
+- [#5166](https://github.com/finos/legend-studio/pull/5166) [`ed1f0fb`](https://github.com/finos/legend-studio/commit/ed1f0fba0abe5bca1b63b2139849b1702ed6bbd9) ([@gs-gunjan](https://github.com/gs-gunjan)) - query: adding extension for generation title and descriptions for a query using AI
+
 ## 13.8.16
 
 ### Patch Changes

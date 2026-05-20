@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.2.12
+
+### Patch Changes
+
+- [#5177](https://github.com/finos/legend-studio/pull/5177) [`0e1c71c`](https://github.com/finos/legend-studio/commit/0e1c71cf3d3bea4bb43e71b8b64250d1a3c7ef2b) ([@bojja-gs](https://github.com/bojja-gs)) - add OIDC token renewal to prevent session expiry errors in using legend AI LLM service and orchestartor
+
 ## 0.2.11
 
 ## 0.2.10

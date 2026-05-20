@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.21.6
+
+### Patch Changes
+
+- [#5179](https://github.com/finos/legend-studio/pull/5179) [`46301e8`](https://github.com/finos/legend-studio/commit/46301e8611a897acd0f38c5733d65edc67c77c99) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Cache recently-opened projects and workspaces on the workspace setup screen so users can re-open common work without waiting for project search to round-trip to SDLC. Recents are written from the editor at the moment a workspace is successfully opened (covers both Go-button and direct deep-link opens), persisted via the user data service, capped (10 projects / 20 workspaces, LRU), pruned automatically when the editor cannot find a referenced project or workspace, and can be cleared via a "Clear recents" action. Patch-based workspaces are intentionally excluded.
+
+- [#5177](https://github.com/finos/legend-studio/pull/5177) [`0e1c71c`](https://github.com/finos/legend-studio/commit/0e1c71cf3d3bea4bb43e71b8b64250d1a3c7ef2b) ([@bojja-gs](https://github.com/bojja-gs)) - add OIDC token renewal to prevent session expiry errors in using legend AI LLM service and orchestartor
+
+- [#5178](https://github.com/finos/legend-studio/pull/5178) [`9a18ff8`](https://github.com/finos/legend-studio/commit/9a18ff8d224a087b2d360c0e7b05938994b69fb2) ([@yash0024](https://github.com/yash0024)) - Fix small bug with columns not showing on empty test data. Ensure all RelationElement flows don't show column definitions. Make column name editable
+
 ## 28.21.5
 
 ### Patch Changes
