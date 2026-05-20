@@ -410,7 +410,10 @@ export class DataContractViewerState implements DataAccessRequestState {
     }
   }
 
-  *invalidateRequest(token: string | undefined): GeneratorFn<void> {
+  *invalidateRequest(
+    _justification: string | undefined,
+    token: string | undefined,
+  ): GeneratorFn<void> {
     try {
       this.invalidatingState.inProgress();
       yield this.lakehouseContractServerClient.invalidateContract(
