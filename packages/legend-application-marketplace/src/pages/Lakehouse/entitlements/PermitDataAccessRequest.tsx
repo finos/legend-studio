@@ -64,15 +64,7 @@ export const PermitDataAccessRequestTask =
         params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID],
       );
 
-      // Find the first OPEN task
-      const getActionableTask = () => {
-        if (!permitState) {
-          return undefined;
-        }
-        return permitState.getFirstOpenTask();
-      };
-
-      const actionableTask = getActionableTask();
+      const actionableTask = permitState?.getFirstOpenTask();
       const userCanAction = actionableTask?.assignees.includes(currentUser);
 
       useEffect(() => {
