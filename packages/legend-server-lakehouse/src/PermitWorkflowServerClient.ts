@@ -20,7 +20,6 @@ import type {
   V1_PermitProcessInstanceDetail,
   V1_PermitTaskActionResponse,
   V1_PermitTaskAction,
-  V1_CreatePermitDataRequestPayload,
 } from '@finos/legend-graph';
 
 // -------------------------------- Config --------------------------------
@@ -50,12 +49,6 @@ export class PermitWorkflowServerClient extends AbstractServerClient {
 
   private readonly _dataRequests = (): string =>
     `${this.authBaseUrl}/datarequests`;
-
-  createDataRequest = (
-    payload: V1_CreatePermitDataRequestPayload,
-    token: string | undefined,
-  ): Promise<PlainObject<V1_DataRequestsWithWorkflowResponse>> =>
-    this.post(this._dataRequests(), payload, undefined, this._authToken(token));
 
   getDataRequestWithWorkflow = (
     dataRequestId: string,
