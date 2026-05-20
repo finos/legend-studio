@@ -42,6 +42,7 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
     url: 'https://testLakehouseUrl',
     platformUrl: 'https://testLakehousePlatformUrl',
     workflowUrl: 'https://testLakehouseWorkflowUrl',
+    permitWorkflowUrl: 'https://testLakehousePermitWorkflowUrl',
     entitlements: {
       applicationDirectoryUrl: 'https://testApplicationDirectoryUrl',
       applicationIDUrl: 'https://testApplicationIDUrl',

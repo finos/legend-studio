@@ -15,12 +15,8 @@
  */
 
 import {
-  GraphManagerState,
   V1_ContractState,
   V1_LiteDataContractWithUserStatus,
-  type V1_DataRequestsWithWorkflowResponse,
-  V1_deserializeDataRequestsWithWorkflowResponse,
-  V1_WorkflowTaskStatus,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -38,7 +34,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { startCase, type PlainObject } from '@finos/legend-shared';
+import { startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
   type ContractErrorLayer,
@@ -46,25 +42,24 @@ import {
   isContractInTerminalState,
   DataAccessRequestViewer,
   isApprovalStatusTerminal,
-  DataContractViewerState,
-  PermitDataAccessRequestState,
 } from '@finos/legend-extension-dsl-data-product';
-import {
-  generateContractPagePath,
-  generateLakehouseDataProductPath,
-  generatePermitDataAccessRequestPagePath,
-} from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { LakehouseEntitlementsStore } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
 import { flowResult } from 'mobx';
 import {
   getCommonEntitlementsColDefs,
   type EntitlementsRow,
   getContractData,
-  getRequestData,
+  getSelectedRowId,
+  getSelectedContractGuid,
+  getOpenTaskAssignees,
+  EntitlementsColumnHeader,
+  ENTITLEMENTS_DEFAULT_COL_DEF,
   ROW_KIND_CONTRACT,
   ROW_KIND_REQUEST,
   TERMINAL_DATA_REQUEST_STATES,
   UNKNOWN,
+  useSelectedViewerState,
+  useGetDataProductUrl,
 } from '../../../utils/EntitlementsUtils.js';
 
 const AssigneesCellRenderer = observer(
@@ -84,10 +79,7 @@ const AssigneesCellRenderer = observer(
           ? row.data.pendingTaskWithAssignees?.assignees.toSorted()
           : row.data.sortedAssigneeIds) ?? [];
     } else {
-      const openTask = row.data.workflows
-        .flatMap((w) => w.tasks)
-        .find((t) => t.status === V1_WorkflowTaskStatus.OPEN);
-      assignees = openTask?.assignees.toSorted() ?? [];
+      assignees = getOpenTaskAssignees(row.data);
     }
 
     return (
@@ -114,6 +106,7 @@ export const EntitlementsPendingContractsDashboard = observer(
     } = dashboardState;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
+    const getDataProductUrl = useGetDataProductUrl();
 
     const myPendingContracts = useMemo(
       () =>
@@ -151,62 +144,11 @@ export const EntitlementsPendingContractsDashboard = observer(
       ContractErrorLayer | undefined
     >(undefined);
 
-    const selectedRowId = selectedRow
-      ? (getContractData(selectedRow)?.guid ??
-        getRequestData(selectedRow)?.guid)
-      : undefined;
-    const selectedViewerState = useMemo(() => {
-      if (!selectedRow) {
-        return undefined;
-      }
-      if (selectedRow.kind === ROW_KIND_CONTRACT) {
-        const contract = selectedRow.data.contractResultLite;
-        return new DataContractViewerState(
-          contract,
-          (contractId: string, taskId: string) =>
-            marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-              generateContractPagePath(contractId, taskId),
-            ),
-          undefined,
-          marketplaceBaseStore.applicationStore,
-          marketplaceBaseStore.lakehouseContractServerClient,
-          new GraphManagerState(
-            marketplaceBaseStore.applicationStore.pluginManager,
-            marketplaceBaseStore.applicationStore.logService,
-          ),
-          marketplaceBaseStore.userSearchService,
-        );
-      }
-      const guid = selectedRow.data.dataRequest.guid;
-      const authClient = marketplaceBaseStore.lakehouseContractServerClient;
-      const pluginManager = marketplaceBaseStore.applicationStore.pluginManager;
-      return new PermitDataAccessRequestState(
-        guid,
-        marketplaceBaseStore.applicationStore,
-        marketplaceBaseStore.permitWorkflowServerClient,
-        marketplaceBaseStore.userSearchService,
-        {
-          authServerClient: authClient,
-          initialData: selectedRow.data,
-          fetchFresh: async (token) => {
-            const raw = await authClient.getDataAccessRequestWithWorkflow(
-              guid,
-              token,
-            );
-            return V1_deserializeDataRequestsWithWorkflowResponse(
-              raw as unknown as PlainObject<V1_DataRequestsWithWorkflowResponse>,
-              pluginManager.getPureProtocolProcessorPlugins(),
-            )[0];
-          },
-          getTaskPageUrl: (id) =>
-            marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-              generatePermitDataAccessRequestPagePath(id),
-            ),
-        },
-      );
-      // Re-create only when the selected row changes (different guid)
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedRowId]);
+    const selectedRowId = getSelectedRowId(selectedRow);
+    const selectedViewerState = useSelectedViewerState(
+      selectedRow,
+      selectedRowId,
+    );
 
     const [showForOthers, setShowForOthers] = useState<boolean>(
       myPendingContracts.length === 0 && pendingContractsForOthers.length > 0,
@@ -226,25 +168,13 @@ export const EntitlementsPendingContractsDashboard = observer(
       }
     }, [selectedRow, auth.user?.access_token, dashboardState]);
 
-    const selectedContractGuid = selectedRow
-      ? getContractData(selectedRow)?.guid
-      : undefined;
-
-    const defaultColDef: DataGridColumnDefinition<EntitlementsRow> = useMemo(
-      () => ({
-        minWidth: 50,
-        sortable: true,
-        resizable: true,
-        flex: 1,
-      }),
-      [],
-    );
+    const selectedContractGuid = getSelectedContractGuid(selectedRow);
 
     const colDefs: DataGridColumnDefinition<EntitlementsRow>[] = useMemo(
       () => [
         ...getCommonEntitlementsColDefs(dashboardState),
         {
-          headerName: 'State',
+          headerName: EntitlementsColumnHeader.STATE,
           valueGetter: (params) => {
             if (!params.data) {
               return UNKNOWN;
@@ -264,7 +194,7 @@ export const EntitlementsPendingContractsDashboard = observer(
           },
         },
         {
-          headerName: 'Assignees',
+          headerName: EntitlementsColumnHeader.ASSIGNEES,
           colId: 'assignees',
           valueGetter: (params) => {
             if (!params.data) {
@@ -277,11 +207,8 @@ export const EntitlementsPendingContractsDashboard = observer(
                   : params.data.data.sortedAssigneeIds) ?? [];
               return assignees.length > 0 ? assignees.join(', ') : UNKNOWN;
             }
-            const openTask = params.data.data.workflows
-              .flatMap((w) => w.tasks)
-              .find((t) => t.status === V1_WorkflowTaskStatus.OPEN);
-            const assignees = openTask?.assignees.toSorted() ?? [];
-            return assignees.length > 0 ? assignees.join(', ') : 'None';
+            const openAssignees = getOpenTaskAssignees(params.data.data);
+            return openAssignees.length > 0 ? openAssignees.join(', ') : 'None';
           },
           cellRenderer: (
             params: DataGridCellRendererParams<EntitlementsRow>,
@@ -351,7 +278,7 @@ export const EntitlementsPendingContractsDashboard = observer(
             suppressContextMenu={false}
             columnDefs={colDefs}
             onCellClicked={(event) => event.data && setSelectedRow(event.data)}
-            defaultColDef={defaultColDef}
+            defaultColDef={ENTITLEMENTS_DEFAULT_COL_DEF}
             rowHeight={45}
             overlayNoRowsTemplate="You have no pending contracts or data requests"
             loading={
@@ -382,11 +309,7 @@ export const EntitlementsPendingContractsDashboard = observer(
                   },
                 }
               : {})}
-            getDataProductUrl={(dataProductId: string, deploymentId: number) =>
-              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateLakehouseDataProductPath(dataProductId, deploymentId),
-              )
-            }
+            getDataProductUrl={getDataProductUrl}
             dataProductEnvironment={
               marketplaceBaseStore.envState.lakehouseEnvironment
             }

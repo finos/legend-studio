@@ -57,7 +57,6 @@ export type PermitDataAccessRequestStateOptions = {
   fetchFresh?: (
     token: string | undefined,
   ) => Promise<V1_DataRequestWithWorkflow | undefined>;
-  subscription?: V1_DataSubscription;
   authServerClient?: LakehouseContractServerClient;
   getTaskPageUrl?: (dataAccessRequestId: string) => string;
 };
@@ -179,7 +178,7 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
   readonly permitClient: PermitWorkflowServerClient | undefined;
   readonly authServerClient: LakehouseContractServerClient | undefined;
   readonly userSearchService: UserSearchService | undefined;
-  readonly subscription: V1_DataSubscription | undefined;
+  readonly subscription: V1_DataSubscription | undefined = undefined;
   readonly fetchFresh:
     | ((
         token: string | undefined,
@@ -219,7 +218,6 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
     this.permitClient = permitClient;
     this.userSearchService = userSearchService;
     this.authServerClient = options?.authServerClient;
-    this.subscription = options?.subscription;
     this.fetchFresh = options?.fetchFresh;
     this.getTaskPageUrl = options?.getTaskPageUrl;
 
