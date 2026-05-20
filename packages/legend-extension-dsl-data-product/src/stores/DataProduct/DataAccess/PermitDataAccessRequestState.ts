@@ -323,8 +323,10 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
 
   get isInProgress(): boolean {
     return (
-      this.dataRequestWithWorkflow?.workflows.some((wf) =>
-        wf.tasks.some((t) => t.status === V1_WorkflowTaskStatus.OPEN),
+      this.dataRequestWithWorkflow?.workflows.some((workflow) =>
+        workflow.tasks.some(
+          (task) => task.status === V1_WorkflowTaskStatus.OPEN,
+        ),
       ) ?? false
     );
   }
@@ -336,7 +338,9 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
   get targetUsers(): string[] | undefined {
     const members = this.contractMembers;
     if (members.length > 0) {
-      return Array.from(new Set(members.map((m) => m.user.name))).sort();
+      return Array.from(
+        new Set(members.map((member) => member.user.name)),
+      ).sort();
     }
     return undefined;
   }
@@ -361,23 +365,27 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
     }
 
     const doTask = workflow.tasks.find(
-      (t): t is V1_DataOwnerApprovalTask =>
-        t instanceof V1_DataOwnerApprovalTask,
+      (task): task is V1_DataOwnerApprovalTask =>
+        task instanceof V1_DataOwnerApprovalTask,
     );
     const pmLikeTasks = workflow.tasks.filter(
-      (t) => !(t instanceof V1_DataOwnerApprovalTask),
+      (task) => !(task instanceof V1_DataOwnerApprovalTask),
     );
 
     const pmTask =
-      pmLikeTasks.find((t) => t.status === V1_WorkflowTaskStatus.OPEN) ??
-      pmLikeTasks.find((t) => t.action === V1_WorkflowTaskAction.REJECTED) ??
-      pmLikeTasks.find((t) => t.action === V1_WorkflowTaskAction.APPROVED) ??
+      pmLikeTasks.find((task) => task.status === V1_WorkflowTaskStatus.OPEN) ??
+      pmLikeTasks.find(
+        (task) => task.action === V1_WorkflowTaskAction.REJECTED,
+      ) ??
+      pmLikeTasks.find(
+        (task) => task.action === V1_WorkflowTaskAction.APPROVED,
+      ) ??
       pmLikeTasks[pmLikeTasks.length - 1];
 
     const pmStepStatus = getStepStatus(pmTask, 'skipped');
     const doStepStatus = getStepStatus(doTask, 'upcoming');
     const isEscalated = pmLikeTasks.some(
-      (t) => t.action === V1_WorkflowTaskAction.ESCALATED,
+      (task) => task.action === V1_WorkflowTaskAction.ESCALATED,
     );
     const currentUser = this.applicationStore.identityService.currentUser;
     const isCreatorOrAssignee =
@@ -474,78 +482,71 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       // Overlay real-time task data from the permit server
       if (permitDetail) {
         const allPermitTasks = collectPermitTasks(permitDetail);
-        const permitTaskMap = new Map(allPermitTasks.map((t) => [t.taskId, t]));
+        const permitTaskMap = new Map(
+          allPermitTasks.map((permitTask) => [permitTask.taskId, permitTask]),
+        );
 
         if (permitTaskMap.size > 0) {
-          const patchedWorkflows = base.workflows.map((wf) => {
-            const authTaskIds = new Set(wf.tasks.map((t) => t.taskId));
+          for (const workflow of base.workflows) {
+            const authTaskIds = new Set(
+              workflow.tasks.map((task) => task.taskId),
+            );
 
             // 1. Patch existing tasks with live status / assignees
-            const patchedTasks: V1_WorkflowTask[] = wf.tasks.map((task) => {
-              const pt = permitTaskMap.get(task.taskId);
-              if (!pt) {
-                return task;
+            for (const task of workflow.tasks) {
+              const permitTask = permitTaskMap.get(task.taskId);
+              if (permitTask) {
+                task.status = permitTask.status as V1_WorkflowTaskStatus;
+                task.assignees = permitTask.assignees;
+                if (permitTask.completedBy) {
+                  task.actionedBy = permitTask.completedBy;
+                }
+                if (permitTask.completedDate) {
+                  task.actionedOn = new Date(permitTask.completedDate);
+                }
+                const taskAction = mapCompletionReasonToAction(
+                  permitTask.completionReason,
+                );
+                if (taskAction !== undefined) {
+                  task.action = taskAction;
+                }
               }
-              return Object.assign(
-                Object.create(Object.getPrototypeOf(task)) as V1_WorkflowTask,
-                task,
-                {
-                  status: pt.status,
-                  assignees: pt.assignees,
-                  ...(pt.completedBy ? { actionedBy: pt.completedBy } : {}),
-                  ...(pt.completedDate
-                    ? { actionedOn: new Date(pt.completedDate) }
-                    : {}),
-                  ...(() => {
-                    const taskAction = mapCompletionReasonToAction(
-                      pt.completionReason,
-                    );
-                    return taskAction === undefined
-                      ? {}
-                      : { action: taskAction };
-                  })(),
-                },
-              );
-            });
+            }
 
             // 2. Synthesize tasks the auth server hasn't caught up with yet
             //    (e.g. the replacement OPEN task created by an escalation event).
-            const lastPmLikeTask = wf.tasks.findLast(
-              (t) => !(t instanceof V1_DataOwnerApprovalTask),
+            const lastPmLikeTask = workflow.tasks.findLast(
+              (task) => !(task instanceof V1_DataOwnerApprovalTask),
             );
 
             const syntheticTasks: V1_WorkflowTask[] = allPermitTasks
-              .filter((pt) => !authTaskIds.has(pt.taskId))
-              .map((pt) =>
+              .filter((permitTask) => !authTaskIds.has(permitTask.taskId))
+              .map((permitTask) =>
                 Object.assign(
                   Object.create(
-                    Object.getPrototypeOf(lastPmLikeTask ?? patchedTasks[0]),
+                    Object.getPrototypeOf(lastPmLikeTask ?? workflow.tasks[0]),
                   ) as V1_WorkflowTask,
                   lastPmLikeTask ?? {},
                   {
-                    taskId: pt.taskId,
-                    status: pt.status,
-                    assignees: pt.assignees,
-                    url: `${wf.url}/${pt.taskId}`,
-                    action: mapCompletionReasonToAction(pt.completionReason),
-                    actionedOn: pt.completedDate
-                      ? new Date(pt.completedDate)
+                    taskId: permitTask.taskId,
+                    status: permitTask.status,
+                    assignees: permitTask.assignees,
+                    url: `${workflow.url}/${permitTask.taskId}`,
+                    action: mapCompletionReasonToAction(
+                      permitTask.completionReason,
+                    ),
+                    actionedOn: permitTask.completedDate
+                      ? new Date(permitTask.completedDate)
                       : undefined,
-                    actionedBy: pt.completedBy ?? undefined,
+                    actionedBy: permitTask.completedBy ?? undefined,
                   },
                 ),
               );
 
-            return Object.assign(Object.create(Object.getPrototypeOf(wf)), wf, {
-              tasks: [...patchedTasks, ...syntheticTasks],
-            });
-          });
+            workflow.tasks = [...workflow.tasks, ...syntheticTasks];
+          }
 
-          this.setDataRequestWithWorkflow(
-            Object.assign(Object.create(Object.getPrototypeOf(base)), base, {
-              workflows: patchedWorkflows,
-            }) as V1_DataRequestWithWorkflow,
-          );
+          this.setDataRequestWithWorkflow(base);
         }
       }
     } catch (error) {
@@ -564,8 +565,10 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       const currentUser = this.applicationStore.identityService.currentUser;
       const isCreator = currentUser === this.createdBy;
       const task = this.dataRequestWithWorkflow?.workflows
-        .flatMap((wf) => wf.tasks)
-        .find((t) => t.status === V1_WorkflowTaskStatus.OPEN);
+        .flatMap((workflow) => workflow.tasks)
+        .find(
+          (workflowTask) => workflowTask.status === V1_WorkflowTaskStatus.OPEN,
+        );
       if (!task) {
         throw new Error('No open task available to escalate');
       }
@@ -620,39 +623,25 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
 
   private applyPermitTaskRefresh(detail: V1_PermitProcessInstanceDetail): void {
     const openChildTask = collectPermitTasks(detail).find(
-      (t) => t.status === 'OPEN',
+      (task) => task.status === 'OPEN',
     );
     if (!openChildTask || !this.dataRequestWithWorkflow) {
       return;
     }
-    const wf = this.dataRequestWithWorkflow.workflows[0];
-    if (!wf) {
+    const workflow = this.dataRequestWithWorkflow.workflows[0];
+    if (!workflow) {
       return;
     }
-    const newTaskUrl = `${wf.url}/${openChildTask.taskId}`;
-    const updatedTasks = wf.tasks.map((t) =>
-      t.status === V1_WorkflowTaskStatus.OPEN
-        ? Object.assign(Object.create(Object.getPrototypeOf(t)), t, {
-            taskId: openChildTask.taskId,
-            assignees: openChildTask.assignees,
-            url: newTaskUrl,
-          })
-        : t,
+    const newTaskUrl = `${workflow.url}/${openChildTask.taskId}`;
+    const openTask = workflow.tasks.find(
+      (task) => task.status === V1_WorkflowTaskStatus.OPEN,
     );
-    this.setDataRequestWithWorkflow(
-      Object.assign(
-        Object.create(Object.getPrototypeOf(this.dataRequestWithWorkflow)),
-        this.dataRequestWithWorkflow,
-        {
-          workflows: [
-            Object.assign(Object.create(Object.getPrototypeOf(wf)), wf, {
-              tasks: updatedTasks,
-            }),
-            ...this.dataRequestWithWorkflow.workflows.slice(1),
-          ],
-        },
-      ) as V1_DataRequestWithWorkflow,
-    );
+    if (openTask) {
+      openTask.taskId = openChildTask.taskId;
+      openTask.assignees = openChildTask.assignees;
+      openTask.url = newTaskUrl;
+    }
+    this.setDataRequestWithWorkflow(this.dataRequestWithWorkflow);
   }
 
   *invalidateRequest(
@@ -661,10 +650,6 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
   ): GeneratorFn<void> {
     try {
       this.invalidatingState.inProgress();
-      const workflow = this.dataRequestWithWorkflow?.workflows[0];
-      if (!workflow) {
-        throw new Error('No workflow found');
-      }
       if (this.permitClient) {
         yield this.permitClient.cancelWorkflow(
           this.dataAccessRequestId,
@@ -711,13 +696,15 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
 
   getFirstOpenTask() {
     return this.dataRequestWithWorkflow?.workflows
-      .flatMap((wf) => wf.tasks)
-      .find((t) => t.status === V1_WorkflowTaskStatus.OPEN);
+      .flatMap((workflow) => workflow.tasks)
+      .find((task) => task.status === V1_WorkflowTaskStatus.OPEN);
   }
 
   getAllTasks() {
     return (
-      this.dataRequestWithWorkflow?.workflows.flatMap((wf) => wf.tasks) ?? []
+      this.dataRequestWithWorkflow?.workflows.flatMap(
+        (workflow) => workflow.tasks,
+      ) ?? []
     );
   }
 }
