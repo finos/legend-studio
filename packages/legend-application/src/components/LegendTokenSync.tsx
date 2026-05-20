@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useAuth } from 'react-oidc-context';
 import { LogEvent } from '@finos/legend-shared';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
@@ -23,6 +23,11 @@ import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 /**
  * Must be rendered inside an `<AuthProvider>` and an
  * `<ApplicationStoreProvider>`.
+ *
+ * Keeps the in-memory token and cookie in sync with the OIDC provider
+ * and proactively renews the access token before it expires so that
+ * long-running sessions (e.g. Legend marketplace AI chat, query execution) never send
+ * stale credentials.
  */
 export const LegendTokenSync = (props: {
   children: React.ReactNode;
@@ -31,6 +36,18 @@ export const LegendTokenSync = (props: {
   const applicationStore = useApplicationStore();
   const token = auth.user?.access_token;
   const expiresAt = auth.user?.expires_at;
+
+  const attemptSilentRenew = useCallback(async () => {
+    try {
+      await auth.signinSilent();
+    } catch {
+      applicationStore.logService.warn(
+        LogEvent.create(APPLICATION_EVENT.TOKEN_EXPIRED),
+        'OIDC silent renewal failed — clearing token',
+      );
+      applicationStore.setAccessToken(undefined);
+    }
+  }, [auth, applicationStore]);
 
   // Sync token into ApplicationStore whenever it changes (including
   // after a successful automatic silent renewal).  When the auth object
@@ -44,18 +61,33 @@ export const LegendTokenSync = (props: {
     applicationStore.setAccessToken(token ?? undefined, maxAge);
   }, [applicationStore, token, expiresAt]);
 
+  useEffect(() => {
+    const removeExpiring = auth.events.addAccessTokenExpiring(() => {
+      applicationStore.logService.info(
+        LogEvent.create(APPLICATION_EVENT.TOKEN_EXPIRED),
+        'OIDC access token expiring soon — attempting silent renewal',
+      );
+      attemptSilentRenew().catch(() => {
+        /* handled inside attemptSilentRenew */
+      });
+    });
+    return removeExpiring;
+  }, [auth.events, applicationStore, attemptSilentRenew]);
+
   // If the token fully expires (automatic renewal failed or was never
-  // attempted) clear the stale token immediately.
+  // attempted) make one last renewal attempt before giving up.
   useEffect(() => {
     const removeExpired = auth.events.addAccessTokenExpired(() => {
       applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.TOKEN_EXPIRED),
-        'OIDC access token expired — clearing token',
+        'OIDC access token expired — attempting silent renewal',
       );
-      applicationStore.setAccessToken(undefined);
+      attemptSilentRenew().catch(() => {
+        /* handled inside attemptSilentRenew */
+      });
     });
     return removeExpired;
-  }, [auth.events, applicationStore]);
+  }, [auth.events, applicationStore, attemptSilentRenew]);
 
   return <>{props.children}</>;
 };
