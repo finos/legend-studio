@@ -28,6 +28,7 @@ import {
   V1_LiteDataContractWithUserStatus,
   V1_ResourceType,
   V1_AccessPointGroupReference,
+  V1_ContractState,
   V1_RequestState,
   V1_WorkflowTaskStatus,
   type V1_DataRequestWithWorkflow,
@@ -70,6 +71,16 @@ export enum EntitlementsColumnHeader {
   STATE = 'State',
   ASSIGNEES = 'Assignees',
 }
+
+export const CONTRACT_STATE_DISPLAY_LABELS: Record<string, string> = {
+  [V1_ContractState.DRAFT]: 'Draft',
+  [V1_ContractState.PENDING_DATA_OWNER_APPROVAL]: 'Data Owner Approval',
+  [V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL]:
+    'Privilege Manager Approval',
+  [V1_ContractState.COMPLETED]: 'Completed',
+  [V1_ContractState.REJECTED]: 'Rejected',
+  [V1_ContractState.CLOSED]: 'Closed',
+};
 
 export const TERMINAL_DATA_REQUEST_STATES = new Set<string>([
   V1_RequestState.COMPLETED,

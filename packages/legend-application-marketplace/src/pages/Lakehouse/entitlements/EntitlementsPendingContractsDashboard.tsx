@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  V1_ContractState,
-  V1_LiteDataContractWithUserStatus,
-} from '@finos/legend-graph';
+import { V1_LiteDataContractWithUserStatus } from '@finos/legend-graph';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -53,6 +50,7 @@ import {
   getSelectedContractGuid,
   getOpenTaskAssignees,
   EntitlementsColumnHeader,
+  CONTRACT_STATE_DISPLAY_LABELS,
   ENTITLEMENTS_DEFAULT_COL_DEF,
   ROW_KIND_CONTRACT,
   ROW_KIND_REQUEST,
@@ -181,14 +179,9 @@ export const EntitlementsPendingContractsDashboard = observer(
             }
             if (params.data.kind === ROW_KIND_CONTRACT) {
               const state = getContractData(params.data)?.state;
-              switch (state) {
-                case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
-                  return 'Data Owner Approval';
-                case V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL:
-                  return 'Privilege Manager Approval';
-                default:
-                  return state ? startCase(state) : UNKNOWN;
-              }
+              return state
+                ? (CONTRACT_STATE_DISPLAY_LABELS[state] ?? startCase(state))
+                : UNKNOWN;
             }
             return startCase(params.data.data.dataRequest.state);
           },
