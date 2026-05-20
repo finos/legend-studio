@@ -51,6 +51,11 @@ import {
   ProjectConfigurationStatus,
 } from './ProjectConfigurationStatus.js';
 import { GraphManagerState } from '@finos/legend-graph';
+import {
+  LegendStudioUserDataHelper,
+  type RecentProjectEntry,
+  type RecentWorkspaceEntry,
+} from '../../__lib__/LegendStudioUserDataHelper.js';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -92,6 +97,12 @@ export class WorkspaceSetupStore {
 
   graphManagerState: GraphManagerState;
 
+  // Cached recents to make re-opening a project/workspace instantaneous.
+  // NOTE: patch-based workspaces are intentionally excluded from this cache.
+  recentProjects: RecentProjectEntry[] = [];
+  recentWorkspaces: RecentWorkspaceEntry[] = [];
+  selectRecentProjectState = ActionState.create();
+
   constructor(
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
@@ -113,6 +124,8 @@ export class WorkspaceSetupStore {
       enginePromise: observable,
       sandboxModal: observable,
       hasSandboxAccess: observable,
+      recentProjects: observable,
+      recentWorkspaces: observable,
       setShowCreateProjectModal: action,
       setShowCreateWorkspaceModal: action,
       setShowAdvancedWorkspaceFilterOptions: action,
@@ -121,6 +134,9 @@ export class WorkspaceSetupStore {
       changeWorkspace: action,
       resetProject: action,
       resetWorkspace: action,
+      removeRecentProject: action,
+      removeRecentWorkspace: action,
+      clearRecents: action,
       initialize: flow,
       loadProjects: flow,
       loadSandboxProject: flow,
@@ -130,6 +146,7 @@ export class WorkspaceSetupStore {
       createSandboxProject: flow,
       createWorkspace: flow,
       initializeEngine: flow,
+      selectRecentProject: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -138,6 +155,14 @@ export class WorkspaceSetupStore {
       applicationStore.pluginManager,
       applicationStore.logService,
     );
+    this.recentProjects =
+      LegendStudioUserDataHelper.workspaceSetup_getRecentProjects(
+        applicationStore.userDataService,
+      );
+    this.recentWorkspaces =
+      LegendStudioUserDataHelper.workspaceSetup_getRecentWorkspaces(
+        applicationStore.userDataService,
+      );
     if (this.supportsCreatingSandboxProject) {
       flowResult(this.initializeEngine()).catch(
         applicationStore.alertUnhandledError,
@@ -195,6 +220,67 @@ export class WorkspaceSetupStore {
 
   setSandboxModal(val: boolean): void {
     this.sandboxModal = val;
+  }
+
+  // --- Recents -------------------------------------------------------------
+  // NOTE: writes to the recents cache happen from the editor (see
+  // `EditorStore.initialize`) at the moment a workspace is actually opened.
+  // This store only reads the cache (to seed dropdowns) and prunes entries
+  // that are discovered to be stale.
+
+  removeRecentProject(projectId: string): void {
+    const updated =
+      LegendStudioUserDataHelper.workspaceSetup_removeRecentProject(
+        this.applicationStore.userDataService,
+        projectId,
+      );
+    this.recentProjects = updated.projects;
+    this.recentWorkspaces = updated.workspaces;
+  }
+
+  removeRecentWorkspace(entry: {
+    projectId: string;
+    workspaceId: string;
+    workspaceType: WorkspaceType;
+  }): void {
+    this.recentWorkspaces =
+      LegendStudioUserDataHelper.workspaceSetup_removeRecentWorkspace(
+        this.applicationStore.userDataService,
+        entry,
+      );
+  }
+
+  clearRecents(): void {
+    LegendStudioUserDataHelper.workspaceSetup_clearRecents(
+      this.applicationStore.userDataService,
+    );
+    this.recentProjects = [];
+    this.recentWorkspaces = [];
+  }
+
+  /**
+   * Fetches a project by id (used when the user picks a cached "recent"
+   * project that may not be in the current search results) and switches to
+   * it. If the project no longer exists, the entry is pruned from recents.
+   */
+  *selectRecentProject(projectId: string): GeneratorFn<void> {
+    this.selectRecentProjectState.inProgress();
+    try {
+      const project = Project.serialization.fromJson(
+        (yield this.sdlcServerClient.getProject(
+          projectId,
+        )) as PlainObject<Project>,
+      );
+      yield flowResult(this.changeProject(project));
+      this.selectRecentProjectState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.removeRecentProject(projectId);
+      this.applicationStore.notificationService.notifyWarning(
+        `Recent project could not be opened and was removed from recents`,
+      );
+      this.selectRecentProjectState.fail();
+    }
   }
 
   *createSandboxProject(): GeneratorFn<void> {
@@ -277,6 +363,7 @@ export class WorkspaceSetupStore {
             )) as PlainObject<Project>,
           );
         } catch {
+          this.removeRecentProject(projectId);
           this.applicationStore.navigationService.navigator.updateCurrentLocation(
             generateSetupRoute(undefined, undefined),
           );
@@ -513,6 +600,12 @@ export class WorkspaceSetupStore {
         if (matchingWorkspace) {
           this.changeWorkspace(matchingWorkspace);
         } else {
+          // Workspace no longer exists — prune from recents.
+          this.removeRecentWorkspace({
+            projectId: project.projectId,
+            workspaceId: workspaceInfo.workspaceId,
+            workspaceType: workspaceInfo.workspaceType,
+          });
           this.applicationStore.navigationService.navigator.updateCurrentLocation(
             generateSetupRoute(project.projectId, undefined),
           );

@@ -90,4 +90,7 @@ export enum LEGEND_STUDIO_APP_EVENT {
 
   // push to dev
   METADATA_PUSH_TO_METADATA = 'editor.metadata.push-to-metadata',
+  METADATA_PUSH_TO_METADATA__LAUNCH = 'editor.metadata.push-to-metadata.launch',
+  METADATA_PUSH_TO_METADATA__SUCCESS = 'editor.metadata.push-to-metadata.success',
+  METADATA_PUSH_TO_METADATA__FAILURE = 'editor.metadata.push-to-metadata.failure',
 }

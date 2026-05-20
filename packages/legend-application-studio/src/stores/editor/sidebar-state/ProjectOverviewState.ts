@@ -42,6 +42,7 @@ import {
   type WorkspaceType,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import { LegendStudioUserDataHelper } from '../../../__lib__/LegendStudioUserDataHelper.js';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',
@@ -155,6 +156,19 @@ export class ProjectOverviewState {
       this.projectWorkspaces = this.projectWorkspaces.filter(
         (w) => !areWorkspacesEquivalent(workspace, w),
       );
+      // Drop the deleted workspace from the recents cache so the workspace
+      // setup screen doesn't keep offering a dead link. Patch workspaces are
+      // never cached, so this is a no-op for them.
+      if (workspace.source === undefined) {
+        LegendStudioUserDataHelper.workspaceSetup_removeRecentWorkspace(
+          this.editorStore.applicationStore.userDataService,
+          {
+            projectId: this.sdlcState.activeProject.projectId,
+            workspaceId: workspace.workspaceId,
+            workspaceType: workspace.workspaceType,
+          },
+        );
+      }
       // redirect to home page if current workspace is deleted
       if (
         areWorkspacesEquivalent(

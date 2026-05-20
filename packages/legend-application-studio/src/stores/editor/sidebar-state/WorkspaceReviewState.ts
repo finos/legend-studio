@@ -25,6 +25,7 @@ import {
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import { LegendStudioUserDataHelper } from '../../../__lib__/LegendStudioUserDataHelper.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -402,6 +403,19 @@ export class WorkspaceReviewState {
         review.id,
         { message: `${review.title} [review]` },
       );
+      // Committing a review deletes the workspace on SDLC. Drop it from
+      // the recents cache so the workspace setup screen doesn't keep
+      // offering a dead link. Patch workspaces are never cached.
+      if (this.sdlcState.activePatch === undefined) {
+        LegendStudioUserDataHelper.workspaceSetup_removeRecentWorkspace(
+          this.editorStore.applicationStore.userDataService,
+          {
+            projectId: this.sdlcState.activeProject.projectId,
+            workspaceId: this.sdlcState.activeWorkspace.workspaceId,
+            workspaceType: this.sdlcState.activeWorkspace.workspaceType,
+          },
+        );
+      }
       this.editorStore.applicationStore.alertService.setActionAlertInfo({
         message: 'Committed review successfully',
         prompt:

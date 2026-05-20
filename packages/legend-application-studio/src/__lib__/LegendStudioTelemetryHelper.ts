@@ -257,15 +257,36 @@ export class LegendStudioTelemetryHelper {
     groupId: string,
     artifactId: string,
     versionId: string | undefined,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.METADATA_PUSH_TO_METADATA__LAUNCH,
+      {
+        sourceInfo,
+        groupId,
+        artifactId,
+        versionId,
+      },
+    );
+  }
+
+  static logEvent_DevMetadataPushSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    groupId: string,
+    artifactId: string,
+    versionId: string | undefined,
     status: string,
   ): void {
-    service.logEvent(LEGEND_STUDIO_APP_EVENT.METADATA_PUSH_TO_METADATA, {
-      sourceInfo,
-      groupId,
-      artifactId,
-      versionId,
-      status,
-    });
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.METADATA_PUSH_TO_METADATA__SUCCESS,
+      {
+        sourceInfo,
+        groupId,
+        artifactId,
+        versionId,
+        status,
+      },
+    );
   }
 
   static logEvent_DevMetadataPushFailure(
@@ -273,9 +294,12 @@ export class LegendStudioTelemetryHelper {
     sourceInfo: LegendSourceInfo | undefined,
     errorMessage: string,
   ): void {
-    service.logEvent(LEGEND_STUDIO_APP_EVENT.METADATA_PUSH_TO_METADATA, {
-      sourceInfo,
-      errorMessage,
-    });
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.METADATA_PUSH_TO_METADATA__FAILURE,
+      {
+        sourceInfo,
+        errorMessage,
+      },
+    );
   }
 }

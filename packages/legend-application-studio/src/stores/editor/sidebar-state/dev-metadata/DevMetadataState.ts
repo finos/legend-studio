@@ -156,6 +156,13 @@ export class DevMetadataState {
         'Project Name required to push to dev mode',
       );
       this.pushState.inProgress();
+      LegendStudioTelemetryHelper.logEvent_DevMetadataPushLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        currentProjectConfiguration.groupId,
+        currentProjectConfiguration.artifactId,
+        undefined,
+      );
       const result =
         (yield this.editorStore.graphManagerState.graphManager.pushToDevMetadata(
           currentProjectConfiguration.groupId,
@@ -165,7 +172,7 @@ export class DevMetadataState {
           this.editorStore.graphManagerState.graph,
         )) as DeployProjectResponse;
       this.result = result;
-      LegendStudioTelemetryHelper.logEvent_DevMetadataPushLaunched(
+      LegendStudioTelemetryHelper.logEvent_DevMetadataPushSucceeded(
         this.editorStore.applicationStore.telemetryService,
         this.editorStore.editorMode.getSourceInfo(),
         currentProjectConfiguration.groupId,
