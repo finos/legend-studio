@@ -382,11 +382,25 @@ export const LegendMarketplaceSearchResults =
                   ? `${searchResultsStore.filterSortProducts?.length ?? 0} Products`
                   : `${searchResultsStore.totalItems} Products`}
               </Typography>
-              <div className="legend-marketplace-search-results__search-type-tabs">
-                <button className="legend-marketplace-search-results__search-type-tab legend-marketplace-search-results__search-type-tab--active">
+              <div
+                className="legend-marketplace-search-results__search-type-tabs"
+                role="tablist"
+                aria-label="Search result type"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={true}
+                  tabIndex={0}
+                  className="legend-marketplace-search-results__search-type-tab legend-marketplace-search-results__search-type-tab--active"
+                >
                   Data Products
                 </button>
                 <button
+                  type="button"
+                  role="tab"
+                  aria-selected={false}
+                  tabIndex={-1}
                   className="legend-marketplace-search-results__search-type-tab"
                   onClick={() => {
                     if (isNonEmptyString(searchResultsStore.searchQuery)) {

@@ -313,6 +313,61 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     );
   });
 
+  test('clicking a legacy data product chip with missing execution context falls back and logs a warning', async () => {
+    const { MOCK__baseStore } = await setupFieldSearchTestComponent('legacy', {
+      results: [
+        {
+          fieldName: 'legacyField',
+          fieldType: 'STRING',
+          dataProducts: [
+            {
+              path: 'test::LegacyWithoutContext',
+              productType: DataProductSearchResultDetailsType.LEGACY,
+              groupId: 'com.example.legacy',
+              artifactId: 'legacy-without-context',
+              versionId: '1.0.0',
+              // defaultExecutionContext intentionally omitted to force fallback
+            },
+          ],
+        },
+      ],
+      metadata: {
+        total_count: 1,
+        num_pages: 1,
+        page_size: 12,
+        page_number: 1,
+        lakehouse_count: 0,
+        legacy_count: 1,
+        total_field_matches: 1,
+        next_page_number: null,
+        prev_page_number: null,
+      },
+    });
+
+    const mockVisitAddress = jest.fn();
+    MOCK__baseStore.applicationStore.navigationService.navigator.visitAddress =
+      mockVisitAddress;
+    const logWarnSpy = createSpy(
+      MOCK__baseStore.applicationStore.logService,
+      'warn',
+    );
+
+    await screen.findByText('legacyField');
+    const legacyChip = guaranteeNonNullable(
+      guaranteeNonNullable(
+        screen.getAllByText('LegacyWithoutContext')[0],
+      ).closest('.MuiChip-root'),
+    );
+    fireEvent.click(legacyChip);
+
+    expect(mockVisitAddress).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '/dataProduct/legacy/com.example.legacy:legacy-without-context:1.0.0/test::LegacyWithoutContext',
+      ),
+    );
+    expect(logWarnSpy).toHaveBeenCalled();
+  });
+
   test('hovering over a dataset chip shows the datasetDescription tooltip', async () => {
     await setupFieldSearchTestComponent('customer');
 
@@ -629,6 +684,31 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     expect(screen.getByText('trades_intraday')).toBeDefined();
   });
 
+  test('distinct data products do not collapse when owning path is empty', () => {
+    const resultState = new FieldSearchResultState({
+      fieldName: 'legacyField',
+      fieldType: 'STRING',
+      dataProducts: [
+        GroupedFieldSearchDataProduct.serialization.fromJson({
+          path: 'test::LegacyProductA',
+          productType: DataProductSearchResultDetailsType.ERROR,
+        }),
+        GroupedFieldSearchDataProduct.serialization.fromJson({
+          path: 'test::LegacyProductB',
+          productType: DataProductSearchResultDetailsType.ERROR,
+        }),
+      ],
+    } as never);
+
+    // ERROR product type maps to legacy filter, but owning path is empty.
+    // Distinct fallback key should keep these as separate products.
+    expect(resultState.dataProducts[0]?.path).toBe('');
+    expect(resultState.dataProducts[1]?.path).toBe('');
+    expect(resultState.distinctDataProducts).toHaveLength(2);
+    expect(resultState.distinctDataProducts[0]?.name).toBe('LegacyProductA');
+    expect(resultState.distinctDataProducts[1]?.name).toBe('LegacyProductB');
+  });
+
   test('clicking the Data Products tab navigates back to product search', async () => {
     const { MOCK__baseStore } = await setupFieldSearchTestComponent('customer');
     const mockGoToLocation = jest.fn();
@@ -642,7 +722,7 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
       ),
     ) as HTMLElement;
     fireEvent.click(
-      within(searchTypeTabs).getByRole('button', { name: 'Data Products' }),
+      within(searchTypeTabs).getByRole('tab', { name: 'Data Products' }),
     );
 
     expect(mockGoToLocation).toHaveBeenCalledWith(

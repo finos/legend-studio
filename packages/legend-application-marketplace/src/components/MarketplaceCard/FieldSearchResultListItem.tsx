@@ -26,6 +26,8 @@ import { LegendMarketplaceListItem } from '../MarketplaceCard/LegendMarketplaceL
 
 enum FieldSearchResultListItemLabel {
   SHOW_LESS = 'Show Less',
+  SHOW_LESS_INLINE = 'Show less',
+  SHOW_MORE_INLINE = 'Show more',
   MORE_SUFFIX = 'More',
   DATASET_SEPARATOR = '|',
   EMPTY_VALUE = '-',
@@ -35,6 +37,34 @@ enum FieldSearchResultListItemValue {
   COLLAPSED_VISIBLE_DATA_PRODUCTS = 2,
   MAX_DESCRIPTION_LENGTH = 150,
 }
+
+const getCollapsibleListState = <T,>(
+  items: T[],
+  expanded: boolean,
+): { visibleItems: T[]; toggleLabel: string; shouldShowToggle: boolean } => {
+  const visibleItems = expanded
+    ? items
+    : items.slice(
+        0,
+        FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS,
+      );
+  const hiddenItemCount = Math.max(
+    0,
+    items.length -
+      FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS,
+  );
+  const toggleLabel = expanded
+    ? FieldSearchResultListItemLabel.SHOW_LESS
+    : `+${hiddenItemCount} ${FieldSearchResultListItemLabel.MORE_SUFFIX}`;
+
+  return {
+    visibleItems,
+    toggleLabel,
+    shouldShowToggle:
+      items.length >
+      FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS,
+  };
+};
 
 export const FieldSearchResultListRow = observer(
   (props: {
@@ -63,35 +93,19 @@ export const FieldSearchResultListRow = observer(
         ? `${description.substring(0, FieldSearchResultListItemValue.MAX_DESCRIPTION_LENGTH)}...`
         : description;
 
-    const visibleDataProducts = expanded
-      ? fieldSearchResultState.dataProducts
-      : fieldSearchResultState.dataProducts.slice(
-          0,
-          FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS,
-        );
-    const hiddenDataProductCount = Math.max(
-      0,
-      fieldSearchResultState.dataProducts.length -
-        FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS,
-    );
-    const toggleLabel = expanded
-      ? FieldSearchResultListItemLabel.SHOW_LESS
-      : `+${hiddenDataProductCount} ${FieldSearchResultListItemLabel.MORE_SUFFIX}`;
+    const distinctDataProducts = fieldSearchResultState.distinctDataProducts;
 
-    const visibleDistinctDataProducts = dpExpanded
-      ? fieldSearchResultState.distinctDataProducts
-      : fieldSearchResultState.distinctDataProducts.slice(
-          0,
-          FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS,
-        );
-    const hiddenDpCount = Math.max(
-      0,
-      fieldSearchResultState.distinctDataProducts.length -
-        FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS,
-    );
-    const dpToggleLabel = dpExpanded
-      ? FieldSearchResultListItemLabel.SHOW_LESS
-      : `+${hiddenDpCount} ${FieldSearchResultListItemLabel.MORE_SUFFIX}`;
+    const {
+      visibleItems: visibleDataProducts,
+      toggleLabel,
+      shouldShowToggle: shouldShowDataProductToggle,
+    } = getCollapsibleListState(fieldSearchResultState.dataProducts, expanded);
+
+    const {
+      visibleItems: visibleDistinctDataProducts,
+      toggleLabel: dpToggleLabel,
+      shouldShowToggle: shouldShowDistinctDataProductToggle,
+    } = getCollapsibleListState(distinctDataProducts, dpExpanded);
 
     const content = (
       <div className="marketplace-lakehouse-field-search-results__list-item-grid">
@@ -117,16 +131,18 @@ export const FieldSearchResultListRow = observer(
                 setDescriptionExpanded(!descriptionExpanded);
               }}
             >
-              {descriptionExpanded ? 'Show less' : 'Show more'}
+              {descriptionExpanded
+                ? FieldSearchResultListItemLabel.SHOW_LESS_INLINE
+                : FieldSearchResultListItemLabel.SHOW_MORE_INLINE}
             </button>
           )}
         </div>
         <div className="marketplace-lakehouse-field-search-results__data-products-cell">
-          {fieldSearchResultState.distinctDataProducts.length > 0 ? (
+          {distinctDataProducts.length > 0 ? (
             <>
               {visibleDistinctDataProducts.map((dataProduct) => (
                 <Chip
-                  key={`${fieldSearchResultState.id}-dp-${dataProduct.path}`}
+                  key={`${fieldSearchResultState.id}-dp-${dataProduct.distinctKey}`}
                   clickable={true}
                   label={
                     <span className="marketplace-lakehouse-field-search-results__chip-label">
@@ -139,8 +155,7 @@ export const FieldSearchResultListRow = observer(
                   size="small"
                 />
               ))}
-              {fieldSearchResultState.distinctDataProducts.length >
-                FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS && (
+              {shouldShowDistinctDataProductToggle && (
                 <Chip
                   key={`${fieldSearchResultState.id}-dp-toggle`}
                   label={dpToggleLabel}
@@ -196,8 +211,7 @@ export const FieldSearchResultListRow = observer(
                   />
                 </Tooltip>
               ))}
-              {fieldSearchResultState.dataProducts.length >
-                FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS && (
+              {shouldShowDataProductToggle && (
                 <Chip
                   key={`${fieldSearchResultState.id}-toggle`}
                   label={toggleLabel}
