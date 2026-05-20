@@ -65,15 +65,15 @@ export const RecentWorkspacesPanel = observer(
     const applicationStore = setupStore.applicationStore;
 
     // Recents are stored in LRU order (most-recent first). Show the top N
-    // workspaces; map each to its project name (or fall back to projectId
-    // if the matching project entry was evicted independently).
+    // workspaces; look up each one's cached project entry for richer tile
+    // metadata (name, description tooltip, tag badges).
     const tiles = setupStore.recentWorkspaces.slice(0, MAX_TILES);
     if (tiles.length === 0) {
       return null;
     }
 
-    const projectNameById = new Map(
-      setupStore.recentProjects.map((p) => [p.projectId, p.name]),
+    const projectById = new Map(
+      setupStore.recentProjects.map((p) => [p.projectId, p]),
     );
 
     const openWorkspace = (
@@ -96,8 +96,14 @@ export const RecentWorkspacesPanel = observer(
         </div>
         <div className="workspace-setup__recents__grid">
           {tiles.map((entry) => {
-            const projectName =
-              projectNameById.get(entry.projectId) ?? entry.projectId;
+            const cachedProject = projectById.get(entry.projectId);
+            const projectName = cachedProject?.name ?? entry.projectId;
+            const projectDescription = cachedProject?.description ?? '';
+            const projectTags = cachedProject?.tags ?? [];
+            const tileTitle =
+              projectDescription.trim().length > 0
+                ? `${projectName} / ${entry.workspaceId}\n${projectDescription}`
+                : `Open ${projectName} / ${entry.workspaceId}`;
             const key = `${entry.projectId}::${entry.workspaceType}::${entry.workspaceId}`;
             const handleRemove = (
               event: React.MouseEvent<HTMLButtonElement>,
@@ -114,7 +120,7 @@ export const RecentWorkspacesPanel = observer(
                 key={key}
                 type="button"
                 className="workspace-setup__recents__tile"
-                title={`Open ${projectName} / ${entry.workspaceId}`}
+                title={tileTitle}
                 onClick={() =>
                   openWorkspace(
                     entry.projectId,
@@ -148,8 +154,22 @@ export const RecentWorkspacesPanel = observer(
                     {entry.workspaceId}
                   </span>
                 </div>
-                <div className="workspace-setup__recents__tile__time">
-                  {formatRelativeTime(entry.lastOpenedAt)}
+                <div className="workspace-setup__recents__tile__meta">
+                  {projectTags.length > 0 && (
+                    <div className="workspace-setup__recents__tile__tags">
+                      {projectTags.slice(0, 2).map((tag) => (
+                        <span
+                          key={tag}
+                          className="workspace-setup__recents__tile__tag"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="workspace-setup__recents__tile__time">
+                    {formatRelativeTime(entry.lastOpenedAt)}
+                  </div>
                 </div>
               </button>
             );

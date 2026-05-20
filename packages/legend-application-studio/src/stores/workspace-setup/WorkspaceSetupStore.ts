@@ -93,7 +93,6 @@ export class WorkspaceSetupStore {
   loadWorkspacesState = ActionState.create();
   createWorkspaceState = ActionState.create();
   showCreateWorkspaceModal = false;
-  showAdvancedWorkspaceFilterOptions = false;
 
   graphManagerState: GraphManagerState;
 
@@ -115,7 +114,6 @@ export class WorkspaceSetupStore {
       showCreateProjectModal: observable,
       workspaces: observable,
       currentWorkspace: observable,
-      showAdvancedWorkspaceFilterOptions: observable,
       loadSandboxState: observable,
       showCreateWorkspaceModal: observable,
       sandboxProject: observable,
@@ -128,7 +126,6 @@ export class WorkspaceSetupStore {
       recentWorkspaces: observable,
       setShowCreateProjectModal: action,
       setShowCreateWorkspaceModal: action,
-      setShowAdvancedWorkspaceFilterOptions: action,
       setImportProjectSuccessReport: action,
       setSandboxModal: action,
       changeWorkspace: action,
@@ -181,10 +178,6 @@ export class WorkspaceSetupStore {
 
   setShowCreateWorkspaceModal(val: boolean): void {
     this.showCreateWorkspaceModal = val;
-  }
-
-  setShowAdvancedWorkspaceFilterOptions(val: boolean): void {
-    this.showAdvancedWorkspaceFilterOptions = val;
   }
 
   setImportProjectSuccessReport(
@@ -262,6 +255,12 @@ export class WorkspaceSetupStore {
    * Fetches a project by id (used when the user picks a cached "recent"
    * project that may not be in the current search results) and switches to
    * it. If the project no longer exists, the entry is pruned from recents.
+   *
+   * NOTE: we deliberately don't short-circuit using the cached recent entry
+   * here. Going through `getProject` keeps the prune-on-404 path intact, and
+   * the cached metadata is already used elsewhere to make the UI feel fast
+   * (dropdown stubs in `WorkspaceSetup.tsx` and tile labels in
+   * `RecentWorkspacesPanel.tsx`).
    */
   *selectRecentProject(projectId: string): GeneratorFn<void> {
     this.selectRecentProjectState.inProgress();
@@ -304,6 +303,12 @@ export class WorkspaceSetupStore {
         message: `Sandbox project ${sandboxProject.projectId} created. Creating default workspace...`,
         showLoading: true,
       });
+      // Invalidate the cached sandbox info so loadSandboxProject re-fetches
+      // and persists the newly-created project id instead of reusing the
+      // stale "no sandbox yet" cache entry.
+      LegendStudioUserDataHelper.workspaceSetup_clearSandboxInfo(
+        this.applicationStore.userDataService,
+      );
       yield flowResult(this.loadSandboxProject());
       const sandbox = guaranteeType(
         this.sandboxProject,
@@ -460,10 +465,58 @@ export class WorkspaceSetupStore {
       if (this.enginePromise) {
         yield this.enginePromise;
       }
+
+      const userId = this.sdlcServerClient.currentUser?.userId;
+
+      // Fast path — if we have a recent, user-matching cache entry, use it to
+      // avoid the `userHasPrototypeProjectAccess` graph manager call and the
+      // sandbox-tag project search. We still hit SDLC once to confirm the
+      // cached projectId is alive, but `getProject(id)` is cheaper than the
+      // tagged search and self-invalidates on 404.
+      if (userId) {
+        const cached =
+          LegendStudioUserDataHelper.workspaceSetup_getCachedSandboxInfo(
+            this.applicationStore.userDataService,
+            userId,
+          );
+        if (cached) {
+          this.hasSandboxAccess = cached.hasAccess;
+          if (!cached.hasAccess) {
+            // No access, no project — nothing else to do.
+            this.sandboxProject = true;
+            this.loadSandboxState.pass();
+            return;
+          }
+          if (cached.projectId) {
+            try {
+              this.sandboxProject = Project.serialization.fromJson(
+                (yield this.sdlcServerClient.getProject(
+                  cached.projectId,
+                )) as PlainObject<Project>,
+              );
+              this.loadSandboxState.pass();
+              return;
+            } catch {
+              // Cached sandbox project no longer exists on the server; drop
+              // the cache and fall through to the full refresh.
+              LegendStudioUserDataHelper.workspaceSetup_clearSandboxInfo(
+                this.applicationStore.userDataService,
+              );
+            }
+          } else {
+            // User has access but hasn't created a sandbox yet.
+            this.sandboxProject = true;
+            this.loadSandboxState.pass();
+            return;
+          }
+        }
+      }
+
+      // Slow path — original flow.
       const sandboxProject = (
         (yield this.sdlcServerClient.getProjects(
           undefined,
-          this.sdlcServerClient.currentUser?.userId,
+          userId,
           [SANDBOX_SDLC_TAG],
           1,
         )) as PlainObject<Project>[]
@@ -471,7 +524,7 @@ export class WorkspaceSetupStore {
       if (this.hasSandboxAccess === undefined) {
         this.hasSandboxAccess =
           (yield this.graphManagerState.graphManager.userHasPrototypeProjectAccess(
-            this.sdlcServerClient.currentUser?.userId ?? '',
+            userId ?? '',
           )) as boolean;
       }
       this.sandboxProject = true;
@@ -482,6 +535,23 @@ export class WorkspaceSetupStore {
       } else if (sandboxProject.length === 1) {
         this.sandboxProject = guaranteeNonNullable(sandboxProject[0]);
       }
+
+      // Persist the fresh result for next time. We only cache when we have
+      // a userId (cache is scoped per user); anonymous sessions skip this.
+      if (userId) {
+        LegendStudioUserDataHelper.workspaceSetup_recordSandboxInfo(
+          this.applicationStore.userDataService,
+          {
+            userId,
+            hasAccess: this.hasSandboxAccess,
+            projectId:
+              this.sandboxProject instanceof Project
+                ? this.sandboxProject.projectId
+                : undefined,
+          },
+        );
+      }
+
       this.loadSandboxState.pass();
     } catch (error) {
       this.sandboxProject = true;

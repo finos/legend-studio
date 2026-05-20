@@ -378,15 +378,14 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     const recentProjectOptions: ProjectOption[] = setupStore.recentProjects
       .filter((r) => !loadedProjectIds.has(r.projectId))
       .map((r) => {
-        // Construct a lightweight Project stand-in so the existing selector
-        // contract is preserved. The full project will be fetched on click
-        // via `selectRecentProject`.
+        // Rebuild a real Project from the cached metadata; no synthetic
+        // fields needed since we persist everything the schema requires.
         const stub = Project.serialization.fromJson({
           projectId: r.projectId,
           name: r.name,
-          description: '',
-          webUrl: '',
-          tags: [],
+          description: r.description,
+          webUrl: r.webUrl,
+          tags: r.tags,
         } as PlainObject<Project>);
         return { label: stub.name, value: stub };
       });

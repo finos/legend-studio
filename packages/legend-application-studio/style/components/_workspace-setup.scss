@@ -722,7 +722,36 @@
     &__time {
       font-size: 1.1rem;
       color: var(--color-light-grey-400);
+    }
+
+    &__meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+      width: 100%;
       margin-top: auto;
+    }
+
+    &__tags {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+
+    &__tag {
+      font-size: 1rem;
+      line-height: 1.4rem;
+      padding: 0 0.5rem;
+      border-radius: 0.2rem;
+      background: var(--color-dark-grey-200);
+      color: var(--color-light-grey-300);
+      max-width: 8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }
