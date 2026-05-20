@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.4
+
+### Patch Changes
+
+- [#5178](https://github.com/finos/legend-studio/pull/5178) [`9a18ff8`](https://github.com/finos/legend-studio/commit/9a18ff8d224a087b2d360c0e7b05938994b69fb2) ([@yash0024](https://github.com/yash0024)) - Add empty row when creating Relation test data for function tests
+
 ## 32.6.3
 
 ### Patch Changes
