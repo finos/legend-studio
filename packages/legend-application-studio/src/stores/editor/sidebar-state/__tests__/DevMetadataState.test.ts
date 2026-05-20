@@ -119,6 +119,11 @@ test(
       .mockImplementation(() => {
         // no-op
       });
+    const telemetrySuccessSpy = jest
+      .spyOn(LegendStudioTelemetryHelper, 'logEvent_DevMetadataPushSucceeded')
+      .mockImplementation(() => {
+        // no-op
+      });
     const telemetryFailureSpy = jest
       .spyOn(LegendStudioTelemetryHelper, 'logEvent_DevMetadataPushFailure')
       .mockImplementation(() => {
@@ -139,9 +144,11 @@ test(
     expect(state.pushState.hasSucceeded).toBe(true);
     expect(state.pushState.hasFailed).toBe(false);
     expect(telemetryLaunchSpy).toHaveBeenCalledTimes(1);
+    expect(telemetrySuccessSpy).toHaveBeenCalledTimes(1);
     expect(telemetryFailureSpy).not.toHaveBeenCalled();
 
     telemetryLaunchSpy.mockRestore();
+    telemetrySuccessSpy.mockRestore();
     telemetryFailureSpy.mockRestore();
   },
 );
@@ -174,6 +181,11 @@ test(
       .mockImplementation(() => {
         // no-op
       });
+    const telemetrySuccessSpy = jest
+      .spyOn(LegendStudioTelemetryHelper, 'logEvent_DevMetadataPushSucceeded')
+      .mockImplementation(() => {
+        // no-op
+      });
     const telemetryFailureSpy = jest
       .spyOn(LegendStudioTelemetryHelper, 'logEvent_DevMetadataPushFailure')
       .mockImplementation(() => {
@@ -188,10 +200,12 @@ test(
     expect(notifyErrorSpy).toHaveBeenCalledTimes(1);
     const notifiedMessage = String(notifyErrorSpy.mock.calls[0]?.[0]);
     expect(notifiedMessage).toContain('engine boom');
-    expect(telemetryLaunchSpy).not.toHaveBeenCalled();
+    expect(telemetryLaunchSpy).toHaveBeenCalledTimes(1);
+    expect(telemetrySuccessSpy).not.toHaveBeenCalled();
     expect(telemetryFailureSpy).toHaveBeenCalledTimes(1);
 
     telemetryLaunchSpy.mockRestore();
+    telemetrySuccessSpy.mockRestore();
     telemetryFailureSpy.mockRestore();
   },
 );

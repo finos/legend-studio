@@ -93,6 +93,7 @@ import {
   DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
+import { LegendStudioUserDataHelper } from '../../__lib__/LegendStudioUserDataHelper.js';
 import type { EditorMode } from './EditorMode.js';
 import { StandardEditorMode } from './StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
@@ -691,6 +692,12 @@ export class EditorStore implements CommandRegistrar {
       }),
     );
     if (!this.sdlcState.currentProject) {
+      // The project the user navigated to doesn't exist (or isn't accessible).
+      // Drop it from the recents cache so we don't keep offering a dead link.
+      LegendStudioUserDataHelper.workspaceSetup_removeRecentProject(
+        this.applicationStore.userDataService,
+        projectId,
+      );
       // If the project is not found or the user does not have access to it,
       // we will not automatically redirect them to the setup page as they will lose the URL
       // instead, we give them the option to:
@@ -740,6 +747,15 @@ export class EditorStore implements CommandRegistrar {
       ),
     );
     if (!this.sdlcState.currentWorkspace) {
+      // The workspace the user navigated to doesn't exist anymore. Drop
+      // the matching entry from the recents cache (no-op for patch
+      // workspaces, which are never cached in the first place).
+      if (patchReleaseVersionId === undefined) {
+        LegendStudioUserDataHelper.workspaceSetup_removeRecentWorkspace(
+          this.applicationStore.userDataService,
+          { projectId, workspaceId, workspaceType },
+        );
+      }
       // If the workspace is not found,
       // we will not automatically redirect the user to the setup page as they will lose the URL
       // instead, we give them the option to:
@@ -810,6 +826,34 @@ export class EditorStore implements CommandRegistrar {
       onLeave(false);
       return;
     }
+    // At this point both the project and the workspace have been confirmed
+    // to exist on the server (the guards above bail out otherwise), so this
+    // is the authoritative "the user actually opened this workspace" moment.
+    // Record it in the recents cache so the workspace setup screen can offer
+    // it instantly next time.
+    // NOTE: patch-based workspaces are intentionally excluded from recents
+    // (they are not surfaced in the recents UI). Sandbox projects ARE
+    // included — opening one is still a meaningful "I worked here" signal,
+    // and surfacing it alongside other recents gives a faster one-click
+    // re-entry than waiting for the dedicated sandbox loader.
+    if (this.sdlcState.currentWorkspace.source === undefined) {
+      LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(
+        this.applicationStore.userDataService,
+        {
+          projectId: this.sdlcState.currentProject.projectId,
+          name: this.sdlcState.currentProject.name,
+        },
+      );
+      LegendStudioUserDataHelper.workspaceSetup_recordRecentWorkspace(
+        this.applicationStore.userDataService,
+        {
+          projectId: this.sdlcState.currentProject.projectId,
+          workspaceId: this.sdlcState.currentWorkspace.workspaceId,
+          workspaceType: this.sdlcState.currentWorkspace.workspaceType,
+        },
+      );
+    }
+
     yield Promise.all([
       this.sdlcState.fetchCurrentRevision(
         projectId,

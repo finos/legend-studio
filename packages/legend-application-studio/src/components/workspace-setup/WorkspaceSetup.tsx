@@ -52,6 +52,7 @@ import { CreateProjectModal } from './CreateProjectModal.js';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { CreateWorkspaceModal } from './CreateWorkspaceModal.js';
+import { RecentWorkspacesPanel } from './RecentWorkspacesPanel.js';
 import {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
@@ -66,7 +67,12 @@ import {
   buildWorkspaceOption,
   formatWorkspaceOptionLabel,
 } from './WorkspaceSelectorUtils.js';
-import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  debounce,
+  guaranteeNonNullable,
+  type PlainObject,
+} from '@finos/legend-shared';
+import { Project } from '@finos/legend-server-sdlc';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import { openShowcaseManager } from '../../stores/ShowcaseManagerState.js';
 
@@ -360,18 +366,57 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
       applicationStore.assistantService.toggleAssistant();
 
     // projects
-    const projectOptions = setupStore.projects
+    // Build a unified option list: recent projects (that aren't already in the
+    // loaded set) are prepended so users can instantly re-open common work
+    // without waiting for the SDLC search to round-trip.
+    const loadedProjectOptions = setupStore.projects
       .map(buildProjectOption)
       .sort(compareLabelFn);
+    const loadedProjectIds = new Set(
+      setupStore.projects.map((p) => p.projectId),
+    );
+    const recentProjectOptions: ProjectOption[] = setupStore.recentProjects
+      .filter((r) => !loadedProjectIds.has(r.projectId))
+      .map((r) => {
+        // Construct a lightweight Project stand-in so the existing selector
+        // contract is preserved. The full project will be fetched on click
+        // via `selectRecentProject`.
+        const stub = Project.serialization.fromJson({
+          projectId: r.projectId,
+          name: r.name,
+          description: '',
+          webUrl: '',
+          tags: [],
+        } as PlainObject<Project>);
+        return { label: stub.name, value: stub };
+      });
+    const projectOptions: ProjectOption[] = [
+      ...recentProjectOptions,
+      ...loadedProjectOptions,
+    ];
+    const recentProjectIdSet = new Set(
+      setupStore.recentProjects.map((p) => p.projectId),
+    );
     const selectedProjectOption = setupStore.currentProject
       ? buildProjectOption(setupStore.currentProject)
       : null;
 
     const onProjectChange = (val: ProjectOption | null): void => {
       if (val) {
-        flowResult(setupStore.changeProject(val.value)).catch(
-          applicationStore.alertUnhandledError,
-        );
+        // If the selection corresponds to a recent that hasn't been loaded
+        // from search yet, fetch the project before switching.
+        const isUnloadedRecent =
+          !loadedProjectIds.has(val.value.projectId) &&
+          recentProjectIdSet.has(val.value.projectId);
+        if (isUnloadedRecent) {
+          flowResult(setupStore.selectRecentProject(val.value.projectId)).catch(
+            applicationStore.alertUnhandledError,
+          );
+        } else {
+          flowResult(setupStore.changeProject(val.value)).catch(
+            applicationStore.alertUnhandledError,
+          );
+        }
       } else {
         setupStore.resetProject();
       }
@@ -404,9 +449,40 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     };
 
     // workspaces
-    const workspaceOptions = setupStore.workspaces
-      .map(buildWorkspaceOption)
+    // Recent (non-patch) workspaces for the currently selected project are
+    // floated to the top of the dropdown so users can re-enter their
+    // typical work without scanning the full list.
+    const projectIdForRecents = setupStore.currentProject?.projectId;
+    const recentWorkspaceKeys = new Set(
+      projectIdForRecents
+        ? setupStore.recentWorkspaces
+            .filter((w) => w.projectId === projectIdForRecents)
+            .map((w) => `${w.workspaceType}::${w.workspaceId}`)
+        : [],
+    );
+    const allWorkspaceOptions = setupStore.workspaces.map(buildWorkspaceOption);
+    const recentWorkspaceOptions = allWorkspaceOptions
+      .filter(
+        (o) =>
+          o.value.source === undefined &&
+          recentWorkspaceKeys.has(
+            `${o.value.workspaceType}::${o.value.workspaceId}`,
+          ),
+      )
       .sort(compareLabelFn);
+    const otherWorkspaceOptions = allWorkspaceOptions
+      .filter(
+        (o) =>
+          o.value.source !== undefined ||
+          !recentWorkspaceKeys.has(
+            `${o.value.workspaceType}::${o.value.workspaceId}`,
+          ),
+      )
+      .sort(compareLabelFn);
+    const workspaceOptions = [
+      ...recentWorkspaceOptions,
+      ...otherWorkspaceOptions,
+    ];
     const selectedWorkspaceOption = setupStore.currentWorkspace
       ? buildWorkspaceOption(setupStore.currentWorkspace)
       : null;
@@ -489,11 +565,24 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       Welcome to Legend Studio
                     </div>
                   </div>
+                  <RecentWorkspacesPanel setupStore={setupStore} />
                   <div className="workspace-setup__selectors">
                     <div className="workspace-setup__selectors__container">
                       <div className="workspace-setup__selector">
                         <div className="workspace-setup__selector__header">
-                          Search for an existing project
+                          <span>Search for an existing project</span>
+                          {(setupStore.recentProjects.length > 0 ||
+                            setupStore.recentWorkspaces.length > 0) && (
+                            <button
+                              type="button"
+                              className="workspace-setup__selector__header__clear-recents"
+                              tabIndex={-1}
+                              onClick={() => setupStore.clearRecents()}
+                              title="Clear recently-opened projects and workspaces"
+                            >
+                              Clear recents
+                            </button>
+                          )}
                         </div>
                         <div className="workspace-setup__selector__content">
                           <div

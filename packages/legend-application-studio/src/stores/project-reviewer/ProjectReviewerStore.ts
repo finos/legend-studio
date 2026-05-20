@@ -45,6 +45,7 @@ import {
   ReviewApproval,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
+import { LegendStudioUserDataHelper } from '../../__lib__/LegendStudioUserDataHelper.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import type { Entity } from '@finos/legend-storage';
 import { EntityDiffViewState } from '../editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
@@ -457,6 +458,20 @@ export class ProjectReviewerStore {
           { message: `${this.review.title} [review]` },
         )) as PlainObject<Review>,
       );
+      // Committing a review deletes its workspace on SDLC. Drop the
+      // matching entry from the local recents cache (no-op if it wasn't
+      // there, e.g., the reviewer isn't the workspace author). Patch
+      // workspaces are never cached.
+      if (this.patchReleaseVersionId === undefined) {
+        LegendStudioUserDataHelper.workspaceSetup_removeRecentWorkspace(
+          this.editorStore.applicationStore.userDataService,
+          {
+            projectId: this.projectId,
+            workspaceId: this.review.workspaceId,
+            workspaceType: this.review.workspaceType,
+          },
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
