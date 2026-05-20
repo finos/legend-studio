@@ -30,6 +30,7 @@ import {
   Link,
   MenuItem,
   Select,
+  TextField,
   Tooltip,
 } from '@mui/material';
 import {
@@ -87,6 +88,7 @@ import {
   DataAccessRequestStatus,
   type DataAccessRequestState,
 } from '../../../stores/DataProduct/DataAccess/DataAccessRequestState.js';
+import { PermitDataAccessRequestState } from '../../../stores/DataProduct/DataAccess/PermitDataAccessRequestState.js';
 
 const AssigneesList = (props: {
   userIds: string[];
@@ -370,8 +372,23 @@ export const DataAccessRequestContent = observer(
     };
 
     const checkBeforeClosingRequest = (): void => {
+      const isPermitFlow = viewerState instanceof PermitDataAccessRequestState;
+      let justification = '';
       viewerState.applicationStore.alertService.setActionAlertInfo({
         message: 'Are you sure you want to close this request?',
+        prompt: isPermitFlow ? (
+          <TextField
+            fullWidth={true}
+            autoFocus={true}
+            multiline={true}
+            minRows={3}
+            placeholder="Justification for closing this request"
+            onChange={(e) => {
+              justification = e.target.value;
+            }}
+            sx={{ marginTop: 2 }}
+          />
+        ) : undefined,
         type: ActionAlertType.CAUTION,
         actions: [
           {
@@ -381,7 +398,10 @@ export const DataAccessRequestContent = observer(
               const invalidateRequest = async (): Promise<void> => {
                 try {
                   await flowResult(
-                    viewerState.invalidateRequest?.(auth.user?.access_token),
+                    viewerState.invalidateRequest?.(
+                      isPermitFlow ? justification || undefined : undefined,
+                      auth.user?.access_token,
+                    ),
                   );
                   await refresh();
                 } catch (error) {

@@ -655,7 +655,10 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
     );
   }
 
-  *invalidateRequest(token: string | undefined): GeneratorFn<void> {
+  *invalidateRequest(
+    justification: string | undefined,
+    token: string | undefined,
+  ): GeneratorFn<void> {
     try {
       this.invalidatingState.inProgress();
       const workflow = this.dataRequestWithWorkflow?.workflows[0];
@@ -665,8 +668,8 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       if (this.permitClient) {
         yield this.permitClient.cancelWorkflow(
           this.dataAccessRequestId,
-          workflow.workflowId,
           token,
+          justification,
         );
       }
     } catch (error) {

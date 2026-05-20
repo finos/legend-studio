@@ -102,5 +102,8 @@ export interface DataAccessRequestState {
   init(token: string | undefined): GeneratorFn<void>;
   getContractUserType(userId: string): V1_UserType | undefined;
   escalateRequest?(user: string, token: string | undefined): GeneratorFn<void>;
-  invalidateRequest?(token: string | undefined): GeneratorFn<void>;
+  invalidateRequest?(
+    justification: string | undefined,
+    token: string | undefined,
+  ): GeneratorFn<void>;
 }

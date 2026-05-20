@@ -79,14 +79,15 @@ export class PermitWorkflowServerClient extends AbstractServerClient {
 
   cancelWorkflow = (
     dataRequestId: string,
-    workflowId: string,
     token: string | undefined,
+    justification?: string | undefined,
   ): Promise<PlainObject> =>
     this.delete(
-      `${this._dataRequests()}/${encodeURIComponent(dataRequestId)}/workflow/${encodeURIComponent(workflowId)}`,
+      `${this._dataRequests()}/${encodeURIComponent(dataRequestId)}`,
       {},
       {},
       this._authToken(token),
+      { justification },
     );
 
   // -------------------------------- Workflow Service --------------------------------
