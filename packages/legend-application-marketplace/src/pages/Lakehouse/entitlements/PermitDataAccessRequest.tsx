@@ -119,10 +119,13 @@ export const PermitDataAccessRequestTask =
 
       const handleRefresh = async (): Promise<void> => {
         if (permitState) {
-          setIsLoading(true);
-          permitState.initializationState.reset();
-          await flowResult(permitState.init(auth.user?.access_token));
-          setIsLoading(false);
+          try {
+            setIsLoading(true);
+            permitState.initializationState.reset();
+            await flowResult(permitState.init(auth.user?.access_token));
+          } finally {
+            setIsLoading(false);
+          }
         }
       };
 
