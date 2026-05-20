@@ -15,11 +15,8 @@
  */
 
 import {
-  type V1_DataRequestsWithWorkflowResponse,
-  GraphManagerState,
   V1_AdhocTeam,
   V1_LiteDataContractWithUserStatus,
-  V1_deserializeDataRequestsWithWorkflowResponse,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -33,33 +30,30 @@ import {
   Switch,
 } from '@mui/material';
 import { useMemo, useState } from 'react';
-import { startCase, type PlainObject } from '@finos/legend-shared';
+import { startCase } from '@finos/legend-shared';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { useAuth } from 'react-oidc-context';
 import {
   DataAccessRequestViewer,
-  DataContractViewerState,
-  PermitDataAccessRequestState,
   isApprovalStatusTerminal,
   isContractInTerminalState,
 } from '@finos/legend-extension-dsl-data-product';
-import {
-  generateContractPagePath,
-  generateLakehouseDataProductPath,
-  generatePermitDataAccessRequestPagePath,
-} from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { flowResult } from 'mobx';
 import {
   getCommonEntitlementsColDefs,
   type EntitlementsRow,
-  getContractData,
-  getRequestData,
+  getSelectedRowId,
+  getSelectedContractGuid,
+  EntitlementsColumnHeader,
+  ENTITLEMENTS_DEFAULT_COL_DEF,
   ROW_KIND_CONTRACT,
   ROW_KIND_REQUEST,
   TERMINAL_DATA_REQUEST_STATES,
   UNKNOWN,
+  useSelectedViewerState,
+  useGetDataProductUrl,
 } from '../../../utils/EntitlementsUtils.js';
 
 export const EntitlementsClosedContractsDashboard = observer(
@@ -72,6 +66,7 @@ export const EntitlementsClosedContractsDashboard = observer(
     } = dashboardState;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
+    const getDataProductUrl = useGetDataProductUrl();
 
     const myClosedContracts = useMemo(
       () =>
@@ -109,63 +104,12 @@ export const EntitlementsClosedContractsDashboard = observer(
       myClosedContracts.length === 0 && closedContractsForOthers.length > 0,
     );
 
-    const selectedRowId = selectedRow
-      ? (getContractData(selectedRow)?.guid ??
-        getRequestData(selectedRow)?.guid)
-      : undefined;
+    const selectedRowId = getSelectedRowId(selectedRow);
 
-    const selectedViewerState = useMemo(() => {
-      if (!selectedRow) {
-        return undefined;
-      }
-      if (selectedRow.kind === ROW_KIND_CONTRACT) {
-        const contract = selectedRow.data.contractResultLite;
-        return new DataContractViewerState(
-          contract,
-          (contractId: string, taskId: string) =>
-            marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-              generateContractPagePath(contractId, taskId),
-            ),
-          undefined,
-          marketplaceBaseStore.applicationStore,
-          marketplaceBaseStore.lakehouseContractServerClient,
-          new GraphManagerState(
-            marketplaceBaseStore.applicationStore.pluginManager,
-            marketplaceBaseStore.applicationStore.logService,
-          ),
-          marketplaceBaseStore.userSearchService,
-        );
-      }
-      const guid = selectedRow.data.dataRequest.guid;
-      const authClient = marketplaceBaseStore.lakehouseContractServerClient;
-      const pluginManager = marketplaceBaseStore.applicationStore.pluginManager;
-      return new PermitDataAccessRequestState(
-        guid,
-        marketplaceBaseStore.applicationStore,
-        marketplaceBaseStore.permitWorkflowServerClient,
-        marketplaceBaseStore.userSearchService,
-        {
-          authServerClient: authClient,
-          initialData: selectedRow.data,
-          fetchFresh: async (token) => {
-            const raw = await authClient.getDataAccessRequestWithWorkflow(
-              guid,
-              token,
-            );
-            return V1_deserializeDataRequestsWithWorkflowResponse(
-              raw as unknown as PlainObject<V1_DataRequestsWithWorkflowResponse>,
-              pluginManager.getPureProtocolProcessorPlugins(),
-            )[0];
-          },
-          getTaskPageUrl: (id) =>
-            marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-              generatePermitDataAccessRequestPagePath(id),
-            ),
-        },
-      );
-      // Re-create only when the selected row changes (different guid)
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedRowId]);
+    const selectedViewerState = useSelectedViewerState(
+      selectedRow,
+      selectedRowId,
+    );
 
     const getInitialUserForViewer = (): string | undefined => {
       if (selectedRow?.kind !== ROW_KIND_CONTRACT) {
@@ -173,8 +117,7 @@ export const EntitlementsClosedContractsDashboard = observer(
       }
       const contract = selectedRow.data.contractResultLite;
       const currentUser =
-        dashboardState.lakehouseEntitlementsStore.applicationStore
-          .identityService.currentUser;
+        marketplaceBaseStore.applicationStore.identityService.currentUser;
       if (myClosedContractIds.has(contract.guid)) {
         return currentUser;
       }
@@ -187,25 +130,13 @@ export const EntitlementsClosedContractsDashboard = observer(
       return undefined;
     };
 
-    const selectedContractGuid = selectedRow
-      ? getContractData(selectedRow)?.guid
-      : undefined;
-
-    const defaultColDef: DataGridColumnDefinition<EntitlementsRow> = useMemo(
-      () => ({
-        minWidth: 50,
-        sortable: true,
-        resizable: true,
-        flex: 1,
-      }),
-      [],
-    );
+    const selectedContractGuid = getSelectedContractGuid(selectedRow);
 
     const colDefs: DataGridColumnDefinition<EntitlementsRow>[] = useMemo(
       () => [
         ...getCommonEntitlementsColDefs(dashboardState),
         {
-          headerName: 'State',
+          headerName: EntitlementsColumnHeader.STATE,
           valueGetter: (params) => {
             if (!params.data) {
               return UNKNOWN;
@@ -278,7 +209,7 @@ export const EntitlementsClosedContractsDashboard = observer(
             suppressContextMenu={false}
             columnDefs={colDefs}
             onCellClicked={(event) => event.data && setSelectedRow(event.data)}
-            defaultColDef={defaultColDef}
+            defaultColDef={ENTITLEMENTS_DEFAULT_COL_DEF}
             rowHeight={45}
             overlayNoRowsTemplate="You have no closed contracts or data requests"
             loading={
@@ -306,11 +237,7 @@ export const EntitlementsClosedContractsDashboard = observer(
                   },
                 }
               : {})}
-            getDataProductUrl={(dataProductId: string, deploymentId: number) =>
-              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                generateLakehouseDataProductPath(dataProductId, deploymentId),
-              )
-            }
+            getDataProductUrl={getDataProductUrl}
             dataProductEnvironment={
               marketplaceBaseStore.envState.lakehouseEnvironment
             }

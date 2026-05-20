@@ -56,9 +56,8 @@ export const PermitDataAccessRequestTask =
       const currentUser =
         marketplaceBaseStore.applicationStore.identityService.currentUser;
 
-      const [permitState, setPermitState] = useState<
-        PermitDataAccessRequestState | undefined
-      >(undefined);
+      const [permitState, setPermitState] =
+        useState<PermitDataAccessRequestState>();
       const [isLoading, setIsLoading] = useState(false);
 
       const dataAccessRequestId = guaranteeNonNullable(

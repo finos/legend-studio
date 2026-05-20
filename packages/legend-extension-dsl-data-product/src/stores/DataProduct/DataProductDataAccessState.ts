@@ -584,10 +584,7 @@ export class DataProductDataAccessState {
             ...(initialData ? { initialData } : {}),
             fetchFresh: async (token) => {
               const freshRaw =
-                (await authClient.getDataAccessRequestWithWorkflow(
-                  guid,
-                  token,
-                )) as unknown as PlainObject<V1_DataRequestsWithWorkflowResponse>;
+                await authClient.getDataAccessRequestWithWorkflow(guid, token);
               return V1_deserializeDataRequestsWithWorkflowResponse(
                 freshRaw,
                 pluginManager.getPureProtocolProcessorPlugins(),

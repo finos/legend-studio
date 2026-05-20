@@ -20,13 +20,18 @@ import {
   UserRenderer,
   MultiUserRenderer,
   stringifyOrganizationalScope,
+  DataContractViewerState,
+  PermitDataAccessRequestState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
+  GraphManagerState,
   V1_LiteDataContractWithUserStatus,
   V1_ResourceType,
   V1_AccessPointGroupReference,
   V1_RequestState,
+  V1_WorkflowTaskStatus,
   type V1_DataRequestWithWorkflow,
+  V1_deserializeDataRequestsWithWorkflowResponse,
 } from '@finos/legend-graph';
 import type {
   DataGridCellRendererParams,
@@ -41,10 +46,30 @@ import { InfoCircleIcon } from '@finos/legend-art';
 import { Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import type { LakehouseEntitlementsStore } from '../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
+import { useMemo } from 'react';
+import { useLegendMarketplaceBaseStore } from '../application/providers/LegendMarketplaceFrameworkProvider.js';
+import {
+  generateContractPagePath,
+  generateLakehouseDataProductPath,
+  generatePermitDataAccessRequestPagePath,
+} from '../__lib__/LegendMarketplaceNavigation.js';
 
 export const UNKNOWN = 'Unknown';
 export const ROW_KIND_CONTRACT = 'contract';
 export const ROW_KIND_REQUEST = 'request';
+
+export enum EntitlementsColumnHeader {
+  TYPE = 'Type',
+  DATE_CREATED = 'Date Created',
+  CONSUMER_TYPE = 'Consumer Type',
+  TARGET_USERS = 'Target User(s)',
+  REQUESTER = 'Requester',
+  TARGET_DATA_PRODUCT = 'Target Data Product',
+  TARGET_ACCESS_POINT_GROUP = 'Target Access Point Group',
+  BUSINESS_JUSTIFICATION = 'Business Justification',
+  STATE = 'State',
+  ASSIGNEES = 'Assignees',
+}
 
 export const TERMINAL_DATA_REQUEST_STATES = new Set<string>([
   V1_RequestState.COMPLETED,
@@ -52,6 +77,14 @@ export const TERMINAL_DATA_REQUEST_STATES = new Set<string>([
   V1_RequestState.INVALIDATED,
   V1_RequestState.OBSOLETE,
 ]);
+
+export const ENTITLEMENTS_DEFAULT_COL_DEF: DataGridColumnDefinition<EntitlementsRow> =
+  {
+    minWidth: 50,
+    sortable: true,
+    resizable: true,
+    flex: 1,
+  };
 
 export type EntitlementsRow =
   | {
@@ -65,6 +98,24 @@ export const getContractData = (row: EntitlementsRow) =>
 
 export const getRequestData = (row: EntitlementsRow) =>
   row.kind === ROW_KIND_REQUEST ? row.data.dataRequest : undefined;
+
+export const getSelectedRowId = (
+  row: EntitlementsRow | undefined,
+): string | undefined =>
+  row ? (getContractData(row)?.guid ?? getRequestData(row)?.guid) : undefined;
+
+export const getSelectedContractGuid = (
+  row: EntitlementsRow | undefined,
+): string | undefined => (row ? getContractData(row)?.guid : undefined);
+
+export const getOpenTaskAssignees = (
+  data: V1_DataRequestWithWorkflow,
+): string[] => {
+  const openTask = data.workflows
+    .flatMap((w) => w.tasks)
+    .find((t) => t.status === V1_WorkflowTaskStatus.OPEN);
+  return openTask?.assignees.toSorted() ?? [];
+};
 
 export const getConsumer = (row: EntitlementsRow) =>
   getContractData(row)?.consumer ?? getRequestData(row)?.consumer;
@@ -105,7 +156,7 @@ export const getCommonEntitlementsColDefs = (
   dashboardState: EntitlementsDashboardState,
 ): DataGridColumnDefinition<EntitlementsRow>[] => [
   {
-    headerName: 'Type',
+    headerName: EntitlementsColumnHeader.TYPE,
     colId: 'type',
     valueGetter: (params) =>
       params.data?.kind === ROW_KIND_CONTRACT
@@ -113,7 +164,7 @@ export const getCommonEntitlementsColDefs = (
         : 'Data Request',
   },
   {
-    headerName: 'Date Created',
+    headerName: EntitlementsColumnHeader.DATE_CREATED,
     colId: 'dateCreated',
     sort: 'desc',
     comparator: (_, __, val1, val2) => {
@@ -161,7 +212,7 @@ export const getCommonEntitlementsColDefs = (
   },
   {
     colId: 'consumerType',
-    headerName: 'Consumer Type',
+    headerName: EntitlementsColumnHeader.CONSUMER_TYPE,
     valueGetter: (params) => {
       if (!params.data) {
         return UNKNOWN;
@@ -203,7 +254,7 @@ export const getCommonEntitlementsColDefs = (
     },
   },
   {
-    headerName: 'Target User(s)',
+    headerName: EntitlementsColumnHeader.TARGET_USERS,
     colId: 'targetUser',
     valueGetter: (params) => {
       if (!params.data) {
@@ -227,7 +278,7 @@ export const getCommonEntitlementsColDefs = (
     ),
   },
   {
-    headerName: 'Requester',
+    headerName: EntitlementsColumnHeader.REQUESTER,
     colId: 'requester',
     valueGetter: (params) => {
       if (!params.data) {
@@ -265,7 +316,7 @@ export const getCommonEntitlementsColDefs = (
     },
   },
   {
-    headerName: 'Target Data Product',
+    headerName: EntitlementsColumnHeader.TARGET_DATA_PRODUCT,
     valueGetter: (params) => {
       if (!params.data) {
         return UNKNOWN;
@@ -281,7 +332,7 @@ export const getCommonEntitlementsColDefs = (
     },
   },
   {
-    headerName: 'Target Access Point Group',
+    headerName: EntitlementsColumnHeader.TARGET_ACCESS_POINT_GROUP,
     valueGetter: (params) => {
       if (!params.data) {
         return UNKNOWN;
@@ -301,7 +352,7 @@ export const getCommonEntitlementsColDefs = (
     },
   },
   {
-    headerName: 'Business Justification',
+    headerName: EntitlementsColumnHeader.BUSINESS_JUSTIFICATION,
     valueGetter: (params) => {
       if (!params.data) {
         return UNKNOWN;
@@ -314,3 +365,73 @@ export const getCommonEntitlementsColDefs = (
     },
   },
 ];
+
+export const useSelectedViewerState = (
+  selectedRow: EntitlementsRow | undefined,
+  selectedRowId: string | undefined,
+) => {
+  const marketplaceBaseStore = useLegendMarketplaceBaseStore();
+  return useMemo(() => {
+    if (!selectedRow) {
+      return undefined;
+    }
+    if (selectedRow.kind === ROW_KIND_CONTRACT) {
+      const contract = selectedRow.data.contractResultLite;
+      return new DataContractViewerState(
+        contract,
+        (contractId: string, taskId: string) =>
+          marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+            generateContractPagePath(contractId, taskId),
+          ),
+        undefined,
+        marketplaceBaseStore.applicationStore,
+        marketplaceBaseStore.lakehouseContractServerClient,
+        new GraphManagerState(
+          marketplaceBaseStore.applicationStore.pluginManager,
+          marketplaceBaseStore.applicationStore.logService,
+        ),
+        marketplaceBaseStore.userSearchService,
+      );
+    }
+    const guid = selectedRow.data.dataRequest.guid;
+    const authClient = marketplaceBaseStore.lakehouseContractServerClient;
+    const pluginManager = marketplaceBaseStore.applicationStore.pluginManager;
+    return new PermitDataAccessRequestState(
+      guid,
+      marketplaceBaseStore.applicationStore,
+      marketplaceBaseStore.permitWorkflowServerClient,
+      marketplaceBaseStore.userSearchService,
+      {
+        authServerClient: authClient,
+        initialData: selectedRow.data,
+        fetchFresh: async (token) => {
+          const raw = await authClient.getDataAccessRequestWithWorkflow(
+            guid,
+            token,
+          );
+          return V1_deserializeDataRequestsWithWorkflowResponse(
+            raw,
+            pluginManager.getPureProtocolProcessorPlugins(),
+          )[0];
+        },
+        getTaskPageUrl: (id) =>
+          marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+            generatePermitDataAccessRequestPagePath(id),
+          ),
+      },
+    );
+    // Re-create only when the selected row changes (different guid)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRowId]);
+};
+
+export const useGetDataProductUrl = (): ((
+  dataProductId: string,
+  deploymentId: number,
+) => string) => {
+  const marketplaceBaseStore = useLegendMarketplaceBaseStore();
+  return (dataProductId: string, deploymentId: number) =>
+    marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+      generateLakehouseDataProductPath(dataProductId, deploymentId),
+    );
+};

@@ -303,7 +303,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   getDataAccessRequestWithWorkflow = (
     accessRequestId: string,
     token: string | undefined,
-  ): Promise<V1_DataRequestsWithWorkflowResponse> =>
+  ): Promise<PlainObject<V1_DataRequestsWithWorkflowResponse>> =>
     this.get(
       `${this._dataAccessRequests()}/${encodeURIComponent(accessRequestId)}/withWorkflow`,
       {},
