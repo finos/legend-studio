@@ -183,8 +183,7 @@ export class LegendMarketplaceBaseStore {
     this.permitWorkflowServerClient = new PermitWorkflowServerClient({
       authBaseUrl: this.applicationStore.config.lakehouseServerUrl,
       workflowBaseUrl:
-        this.applicationStore.config.lakehousePermitWorkflowServerUrl ??
-        this.applicationStore.config.lakehouseWorkflowServerUrl,
+        this.applicationStore.config.lakehousePermitWorkflowServerUrl,
     });
     this.permitWorkflowServerClient.setTracerService(
       this.applicationStore.tracerService,
