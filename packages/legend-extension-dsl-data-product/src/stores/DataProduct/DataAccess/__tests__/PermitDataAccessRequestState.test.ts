@@ -731,31 +731,6 @@ describe('PermitDataAccessRequestState', () => {
     });
   });
 
-  describe('getAllTasks', () => {
-    test('returns all tasks across workflows', () => {
-      const pmTask = createMockPmTask();
-      const doTask = createMockDoTask();
-      const state = createState(
-        createMockDataRequestWithWorkflow(
-          V1_RequestState.SUBMITTED_FOR_APPROVALS,
-          [pmTask, doTask],
-        ),
-      );
-      expect(state.getAllTasks()).toHaveLength(2);
-    });
-
-    test('returns empty array when no data', () => {
-      const appStore = createTestApplicationStore();
-      const state = new PermitDataAccessRequestState(
-        'req-1',
-        appStore,
-        undefined,
-        undefined,
-      );
-      expect(state.getAllTasks()).toEqual([]);
-    });
-  });
-
   describe('setDataRequestWithWorkflow', () => {
     test('updates the observable', () => {
       const state = createState(createMockDataRequestWithWorkflow());

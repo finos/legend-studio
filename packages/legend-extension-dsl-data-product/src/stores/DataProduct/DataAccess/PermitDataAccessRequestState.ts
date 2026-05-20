@@ -117,15 +117,6 @@ const getStepStatus = (
   return fallback;
 };
 
-const toTimestamp = (
-  val: Date | string | null | undefined,
-): string | undefined => {
-  if (!val) {
-    return undefined;
-  }
-  return val instanceof Date ? val.toISOString() : val;
-};
-
 const buildApprovalPayload = (
   task: V1_WorkflowTask | undefined,
   stepStatus: string,
@@ -144,7 +135,11 @@ const buildApprovalPayload = (
     status:
       task.action === V1_WorkflowTaskAction.APPROVED ? 'APPROVED' : 'DENIED',
   };
-  const ts = toTimestamp(task.actionedOn);
+  const ts = task.actionedOn
+    ? task.actionedOn instanceof Date
+      ? task.actionedOn.toISOString()
+      : task.actionedOn
+    : undefined;
   if (ts !== undefined) {
     payload.approvalTimestamp = ts;
   }
@@ -152,20 +147,6 @@ const buildApprovalPayload = (
     payload.approverId = task.actionedBy;
   }
   return payload;
-};
-
-const buildStepLink = (
-  stepStatus: string,
-  taskPageUrl: string | undefined,
-  taskUrl: string | undefined,
-): { link?: string | undefined; externalLink?: string | undefined } => {
-  if (stepStatus !== 'active') {
-    return {};
-  }
-  return {
-    link: taskPageUrl,
-    externalLink: taskUrl,
-  };
 };
 
 // -------------------------------- State --------------------------------
@@ -398,8 +379,14 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       ? this.getTaskPageUrl(this.dataAccessRequestId)
       : undefined;
 
-    const pmLinks = buildStepLink(pmStepStatus, taskPageUrl, pmTask?.url);
-    const doLinks = buildStepLink(doStepStatus, taskPageUrl, doTask?.url);
+    const pmLinks =
+      pmStepStatus === 'active'
+        ? { link: taskPageUrl, externalLink: pmTask?.url }
+        : {};
+    const doLinks =
+      doStepStatus === 'active'
+        ? { link: taskPageUrl, externalLink: doTask?.url }
+        : {};
 
     const steps: TimelineStep[] = [
       { key: 'submitted', status: 'complete', label: { title: 'Submitted' } },
@@ -609,8 +596,11 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
             token,
           )) as unknown as V1_PermitProcessInstanceDetail;
           this.applyPermitTaskRefresh(detail);
-        } catch {
-          // Non-fatal: UI will show stale data until next manual refresh
+        } catch (_e) {
+          assertErrorThrown(_e);
+          this.applicationStore.notificationService.notifyWarning(
+            `Failed to refresh task status: ${_e.message}`,
+          );
         }
       }
     } catch (error) {
@@ -698,13 +688,5 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
     return this.dataRequestWithWorkflow?.workflows
       .flatMap((workflow) => workflow.tasks)
       .find((task) => task.status === V1_WorkflowTaskStatus.OPEN);
-  }
-
-  getAllTasks() {
-    return (
-      this.dataRequestWithWorkflow?.workflows.flatMap(
-        (workflow) => workflow.tasks,
-      ) ?? []
-    );
   }
 }
