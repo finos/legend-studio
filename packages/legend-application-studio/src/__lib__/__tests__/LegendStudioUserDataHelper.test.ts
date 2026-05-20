@@ -70,6 +70,9 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
     LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
       projectId: 'p1',
       name: 'Project One',
+      description: '',
+      webUrl: '',
+      tags: [],
     });
     const projects =
       LegendStudioUserDataHelper.workspaceSetup_getRecentProjects(service);
@@ -78,6 +81,25 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
     expect(projects[0]?.name).toBe('Project One');
     expect(typeof projects[0]?.lastOpenedAt).toBe('number');
   });
+
+  test(
+    unitTest('round-trips description, webUrl, and tags for a project'),
+    () => {
+      LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
+        projectId: 'p1',
+        name: 'Project One',
+        description: 'A useful project',
+        webUrl: 'https://sdlc.example.com/projects/p1',
+        tags: ['sandbox', 'dev'],
+      });
+      const projects =
+        LegendStudioUserDataHelper.workspaceSetup_getRecentProjects(service);
+      expect(projects).toHaveLength(1);
+      expect(projects[0]?.description).toBe('A useful project');
+      expect(projects[0]?.webUrl).toBe('https://sdlc.example.com/projects/p1');
+      expect(projects[0]?.tags).toEqual(['sandbox', 'dev']);
+    },
+  );
 
   test(unitTest('records a workspace and reads it back'), () => {
     LegendStudioUserDataHelper.workspaceSetup_recordRecentWorkspace(service, {
@@ -99,14 +121,23 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
     LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
       projectId: 'p1',
       name: 'One',
+      description: '',
+      webUrl: '',
+      tags: [],
     });
     LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
       projectId: 'p2',
       name: 'Two',
+      description: '',
+      webUrl: '',
+      tags: [],
     });
     LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
       projectId: 'p3',
       name: 'Three',
+      description: '',
+      webUrl: '',
+      tags: [],
     });
     const projects =
       LegendStudioUserDataHelper.workspaceSetup_getRecentProjects(service);
@@ -119,14 +150,23 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
         projectId: 'p1',
         name: 'One',
+        description: '',
+        webUrl: '',
+        tags: [],
       });
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
         projectId: 'p2',
         name: 'Two',
+        description: '',
+        webUrl: '',
+        tags: [],
       });
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
         projectId: 'p1',
         name: 'One (renamed)',
+        description: '',
+        webUrl: '',
+        tags: [],
       });
       const projects =
         LegendStudioUserDataHelper.workspaceSetup_getRecentProjects(service);
@@ -185,6 +225,9 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
         projectId: `p${i}`,
         name: `Project ${i}`,
+        description: '',
+        webUrl: '',
+        tags: [],
       });
     }
     const projects =
@@ -218,10 +261,16 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
         projectId: 'p1',
         name: 'One',
+        description: '',
+        webUrl: '',
+        tags: [],
       });
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
         projectId: 'p2',
         name: 'Two',
+        description: '',
+        webUrl: '',
+        tags: [],
       });
       LegendStudioUserDataHelper.workspaceSetup_recordRecentWorkspace(service, {
         projectId: 'p1',
@@ -295,6 +344,9 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
     LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
       projectId: 'p1',
       name: 'One',
+      description: '',
+      webUrl: '',
+      tags: [],
     });
     LegendStudioUserDataHelper.workspaceSetup_recordRecentWorkspace(service, {
       projectId: 'p1',
@@ -365,6 +417,9 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
       const overflowProjects = Array.from({ length: 25 }, (_, i) => ({
         projectId: `p${i}`,
         name: `Project ${i}`,
+        description: '',
+        webUrl: '',
+        tags: [],
         lastOpenedAt: i,
       }));
       const overflowWorkspaces = Array.from({ length: 50 }, (_, i) => ({
@@ -397,6 +452,9 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(service, {
         projectId: 'p1',
         name: 'One',
+        description: '',
+        webUrl: '',
+        tags: [],
       });
       LegendStudioUserDataHelper.workspaceSetup_recordRecentWorkspace(service, {
         projectId: 'p1',
@@ -423,4 +481,138 @@ describe('LegendStudioUserDataHelper — workspace setup recents', () => {
       ).toHaveLength(1);
     },
   );
+});
+
+describe('LegendStudioUserDataHelper — cached sandbox info', () => {
+  let service: UserDataService;
+
+  beforeEach(() => {
+    ({ service } = createFakeUserDataService());
+  });
+
+  test(unitTest('returns undefined when nothing is persisted'), () => {
+    expect(
+      LegendStudioUserDataHelper.workspaceSetup_getCachedSandboxInfo(
+        service,
+        'user-1',
+      ),
+    ).toBeUndefined();
+  });
+
+  test(unitTest('record + read round-trip (with projectId)'), () => {
+    LegendStudioUserDataHelper.workspaceSetup_recordSandboxInfo(service, {
+      userId: 'user-1',
+      hasAccess: true,
+      projectId: 'sb-1',
+    });
+    const cached =
+      LegendStudioUserDataHelper.workspaceSetup_getCachedSandboxInfo(
+        service,
+        'user-1',
+      );
+    expect(cached).toBeDefined();
+    expect(cached?.userId).toBe('user-1');
+    expect(cached?.hasAccess).toBe(true);
+    expect(cached?.projectId).toBe('sb-1');
+    expect(typeof cached?.fetchedAt).toBe('number');
+  });
+
+  test(unitTest('record + read round-trip (without projectId)'), () => {
+    LegendStudioUserDataHelper.workspaceSetup_recordSandboxInfo(service, {
+      userId: 'user-1',
+      hasAccess: true,
+      projectId: undefined,
+    });
+    const cached =
+      LegendStudioUserDataHelper.workspaceSetup_getCachedSandboxInfo(
+        service,
+        'user-1',
+      );
+    expect(cached?.projectId).toBeUndefined();
+  });
+
+  test(unitTest('returns undefined when the requesting userId differs'), () => {
+    LegendStudioUserDataHelper.workspaceSetup_recordSandboxInfo(service, {
+      userId: 'user-A',
+      hasAccess: true,
+      projectId: 'sb-A',
+    });
+    expect(
+      LegendStudioUserDataHelper.workspaceSetup_getCachedSandboxInfo(
+        service,
+        'user-B',
+      ),
+    ).toBeUndefined();
+  });
+
+  test(
+    unitTest('returns undefined when the entry is older than the TTL'),
+    () => {
+      LegendStudioUserDataHelper.workspaceSetup_recordSandboxInfo(service, {
+        userId: 'user-1',
+        hasAccess: true,
+        projectId: 'sb-1',
+      });
+      // Pull the stored blob out, age it past the TTL, push it back in.
+      const STALE_MS = 25 * 60 * 60 * 1000; // > 24h
+      const raw = service.getObjectValue(
+        'studio-editor.workspace-setup.sandboxInfo',
+      ) as { fetchedAt: number };
+      raw.fetchedAt = Date.now() - STALE_MS;
+      service.persistValue('studio-editor.workspace-setup.sandboxInfo', raw);
+      expect(
+        LegendStudioUserDataHelper.workspaceSetup_getCachedSandboxInfo(
+          service,
+          'user-1',
+        ),
+      ).toBeUndefined();
+    },
+  );
+
+  test(unitTest('clearSandboxInfo wipes the cached entry'), () => {
+    LegendStudioUserDataHelper.workspaceSetup_recordSandboxInfo(service, {
+      userId: 'user-1',
+      hasAccess: true,
+      projectId: 'sb-1',
+    });
+    LegendStudioUserDataHelper.workspaceSetup_clearSandboxInfo(service);
+    expect(
+      LegendStudioUserDataHelper.workspaceSetup_getCachedSandboxInfo(
+        service,
+        'user-1',
+      ),
+    ).toBeUndefined();
+  });
+
+  test(unitTest('re-recording overwrites the previous entry'), () => {
+    LegendStudioUserDataHelper.workspaceSetup_recordSandboxInfo(service, {
+      userId: 'user-1',
+      hasAccess: false,
+      projectId: undefined,
+    });
+    LegendStudioUserDataHelper.workspaceSetup_recordSandboxInfo(service, {
+      userId: 'user-1',
+      hasAccess: true,
+      projectId: 'sb-1',
+    });
+    const cached =
+      LegendStudioUserDataHelper.workspaceSetup_getCachedSandboxInfo(
+        service,
+        'user-1',
+      );
+    expect(cached?.hasAccess).toBe(true);
+    expect(cached?.projectId).toBe('sb-1');
+  });
+
+  test(unitTest('corrupted persisted blob returns undefined'), () => {
+    const corrupted = createFakeUserDataService({
+      'studio-editor.workspace-setup.sandboxInfo': { totally: 'wrong' },
+    });
+    expect(
+      LegendStudioUserDataHelper.workspaceSetup_getCachedSandboxInfo(
+        corrupted.service,
+        'user-1',
+      ),
+    ).toBeUndefined();
+  });
 });

@@ -6,7 +6,7 @@ import {
   usingModelSchema,
 } from '@finos/legend-shared';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
-import { createModelSchema, list, primitive } from 'serializr';
+import { createModelSchema, list, optional, primitive } from 'serializr';
 
 /**
  * Copyright (c) 2020-present, Goldman Sachs
@@ -39,6 +39,12 @@ export enum LEGEND_STUDIO_USER_DATA_KEY {
   // Recently-opened projects and (non-patch) workspaces shown on the
   // workspace setup screen to speed up re-opening common work.
   WORKSPACE_SETUP_RECENTS = 'studio-editor.workspace-setup.recents',
+  // Per-user cache of the sandbox-access boolean + the sandbox project id,
+  // so the workspace setup screen can render the sandbox UI without waiting
+  // on the `userHasPrototypeProjectAccess` graph manager call AND a
+  // sandbox-tag project search on every mount. Revalidated against SDLC in
+  // the background; invalidated automatically on 404 or after the TTL.
+  WORKSPACE_SETUP_SANDBOX_INFO = 'studio-editor.workspace-setup.sandboxInfo',
 }
 
 // --- Workspace setup recents -------------------------------------------------
@@ -50,13 +56,19 @@ const MAX_RECENT_WORKSPACES = 20;
 export class RecentProjectEntry {
   projectId!: string;
   name!: string;
+  description!: string;
+  webUrl!: string;
+  tags!: string[];
   lastOpenedAt!: number;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RecentProjectEntry, {
+      description: primitive(),
       lastOpenedAt: primitive(),
       name: primitive(),
       projectId: primitive(),
+      tags: list(primitive()),
+      webUrl: primitive(),
     }),
   );
 }
@@ -134,6 +146,31 @@ const writeRecents = (
   );
 };
 
+// --- Cached sandbox info -----------------------------------------------------
+
+// Sandbox access and the sandbox project id rarely change for a given user,
+// but they're costly to look up on every setup mount (one graph manager call
+// + one tagged-project search). Cache the result for a day and revalidate
+// in the background on the fast path.
+const SANDBOX_INFO_TTL_MS = 24 * 60 * 60 * 1000;
+
+export class CachedSandboxInfo {
+  userId!: string;
+  hasAccess!: boolean;
+  /** undefined when the user has access but hasn't created a sandbox yet. */
+  projectId?: string | undefined;
+  fetchedAt!: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(CachedSandboxInfo, {
+      fetchedAt: primitive(),
+      hasAccess: primitive(),
+      projectId: optional(primitive()),
+      userId: primitive(),
+    }),
+  );
+}
+
 export class LegendStudioUserDataHelper {
   static globalTestRunner_getShowDependencyPanel(
     service: UserDataService,
@@ -190,12 +227,21 @@ export class LegendStudioUserDataHelper {
 
   static workspaceSetup_recordRecentProject(
     service: UserDataService,
-    entry: { projectId: string; name: string },
+    entry: {
+      projectId: string;
+      name: string;
+      description: string;
+      webUrl: string;
+      tags: string[];
+    },
   ): RecentProjectEntry[] {
     const recents = readRecents(service);
     const next = new RecentProjectEntry();
     next.projectId = entry.projectId;
     next.name = entry.name;
+    next.description = entry.description;
+    next.webUrl = entry.webUrl;
+    next.tags = entry.tags;
     next.lastOpenedAt = Date.now();
     recents.projects = [
       next,
@@ -272,5 +318,64 @@ export class LegendStudioUserDataHelper {
 
   static workspaceSetup_clearRecents(service: UserDataService): void {
     writeRecents(service, emptyRecents());
+  }
+
+  // --- Cached sandbox info -------------------------------------------------
+
+  static workspaceSetup_getCachedSandboxInfo(
+    service: UserDataService,
+    currentUserId: string,
+  ): CachedSandboxInfo | undefined {
+    const raw = returnUndefOnError(() =>
+      service.getObjectValue(
+        LEGEND_STUDIO_USER_DATA_KEY.WORKSPACE_SETUP_SANDBOX_INFO,
+      ),
+    );
+    if (!raw) {
+      return undefined;
+    }
+    const parsed = returnUndefOnError(() =>
+      CachedSandboxInfo.serialization.fromJson(
+        raw as PlainObject<CachedSandboxInfo>,
+      ),
+    );
+    if (!parsed) {
+      return undefined;
+    }
+    // Discard entries that don't belong to the user looking at the screen
+    // (e.g., after a user switch on a shared machine) or that have aged out.
+    if (parsed.userId !== currentUserId) {
+      return undefined;
+    }
+    if (Date.now() - parsed.fetchedAt > SANDBOX_INFO_TTL_MS) {
+      return undefined;
+    }
+    return parsed;
+  }
+
+  static workspaceSetup_recordSandboxInfo(
+    service: UserDataService,
+    info: {
+      userId: string;
+      hasAccess: boolean;
+      projectId?: string | undefined;
+    },
+  ): void {
+    const entry = new CachedSandboxInfo();
+    entry.userId = info.userId;
+    entry.hasAccess = info.hasAccess;
+    entry.projectId = info.projectId;
+    entry.fetchedAt = Date.now();
+    service.persistValue(
+      LEGEND_STUDIO_USER_DATA_KEY.WORKSPACE_SETUP_SANDBOX_INFO,
+      CachedSandboxInfo.serialization.toJson(entry),
+    );
+  }
+
+  static workspaceSetup_clearSandboxInfo(service: UserDataService): void {
+    service.persistValue(
+      LEGEND_STUDIO_USER_DATA_KEY.WORKSPACE_SETUP_SANDBOX_INFO,
+      undefined,
+    );
   }
 }

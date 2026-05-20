@@ -842,6 +842,9 @@ export class EditorStore implements CommandRegistrar {
         {
           projectId: this.sdlcState.currentProject.projectId,
           name: this.sdlcState.currentProject.name,
+          description: this.sdlcState.currentProject.description,
+          webUrl: this.sdlcState.currentProject.webUrl,
+          tags: this.sdlcState.currentProject.tags,
         },
       );
       LegendStudioUserDataHelper.workspaceSetup_recordRecentWorkspace(

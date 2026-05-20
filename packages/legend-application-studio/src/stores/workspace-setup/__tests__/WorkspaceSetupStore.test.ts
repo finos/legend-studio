@@ -117,7 +117,13 @@ describe('WorkspaceSetupStore — recents wiring', () => {
       const seedHarness = buildSetupHarness();
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(
         seedHarness.applicationStore.userDataService,
-        { projectId: 'p1', name: 'Seeded Project' },
+        {
+          projectId: 'p1',
+          name: 'Seeded Project',
+          description: '',
+          webUrl: '',
+          tags: [],
+        },
       );
       LegendStudioUserDataHelper.workspaceSetup_recordRecentWorkspace(
         seedHarness.applicationStore.userDataService,
@@ -146,7 +152,13 @@ describe('WorkspaceSetupStore — recents wiring', () => {
       const { setupStore, applicationStore } = buildSetupHarness();
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(
         applicationStore.userDataService,
-        { projectId: 'p1', name: 'One' },
+        {
+          projectId: 'p1',
+          name: 'One',
+          description: '',
+          webUrl: '',
+          tags: [],
+        },
       );
       // Re-read into the observable to mirror what construction does.
       setupStore.recentProjects =
@@ -174,7 +186,13 @@ describe('WorkspaceSetupStore — recents wiring', () => {
         buildSetupHarness();
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(
         applicationStore.userDataService,
-        { projectId: 'p-missing', name: 'Will Be Pruned' },
+        {
+          projectId: 'p-missing',
+          name: 'Will Be Pruned',
+          description: '',
+          webUrl: '',
+          tags: [],
+        },
       );
       setupStore.recentProjects =
         LegendStudioUserDataHelper.workspaceSetup_getRecentProjects(
@@ -306,11 +324,23 @@ describe('WorkspaceSetupStore — recents wiring', () => {
         buildSetupHarness();
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(
         applicationStore.userDataService,
-        { projectId: 'p-missing', name: 'Will Be Pruned' },
+        {
+          projectId: 'p-missing',
+          name: 'Will Be Pruned',
+          description: '',
+          webUrl: '',
+          tags: [],
+        },
       );
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(
         applicationStore.userDataService,
-        { projectId: 'p-kept', name: 'Survives' },
+        {
+          projectId: 'p-kept',
+          name: 'Survives',
+          description: '',
+          webUrl: '',
+          tags: [],
+        },
       );
       setupStore.recentProjects =
         LegendStudioUserDataHelper.workspaceSetup_getRecentProjects(
@@ -342,7 +372,13 @@ describe('WorkspaceSetupStore — recents wiring', () => {
       const { setupStore, applicationStore } = buildSetupHarness();
       LegendStudioUserDataHelper.workspaceSetup_recordRecentProject(
         applicationStore.userDataService,
-        { projectId: 'p1', name: 'One' },
+        {
+          projectId: 'p1',
+          name: 'One',
+          description: '',
+          webUrl: '',
+          tags: [],
+        },
       );
       LegendStudioUserDataHelper.workspaceSetup_recordRecentWorkspace(
         applicationStore.userDataService,
