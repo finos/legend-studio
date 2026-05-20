@@ -38,10 +38,10 @@ enum FieldSearchResultListItemValue {
   MAX_DESCRIPTION_LENGTH = 150,
 }
 
-const getCollapsibleListState = <T,>(
+function getCollapsibleListState<T>(
   items: T[],
   expanded: boolean,
-): { visibleItems: T[]; toggleLabel: string; shouldShowToggle: boolean } => {
+): { visibleItems: T[]; toggleLabel: string; shouldShowToggle: boolean } {
   const visibleItems = expanded
     ? items
     : items.slice(
@@ -64,7 +64,7 @@ const getCollapsibleListState = <T,>(
       items.length >
       FieldSearchResultListItemValue.COLLAPSED_VISIBLE_DATA_PRODUCTS,
   };
-};
+}
 
 export const FieldSearchResultListRow = observer(
   (props: {

@@ -136,7 +136,7 @@ export class FieldSearchDataProductEntry {
     this.distinctKey = [
       this.path,
       this.entityPath,
-      this.dataProductId ?? '',
+      this.dataProductId,
       this.name,
     ].join(FieldSearchDataProductKey.DISTINCT_SEPARATOR);
   }
