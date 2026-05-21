@@ -847,7 +847,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
                 applicationStore.config.options.queryBuilderConfig,
                 editorStore.editorMode.getSourceInfo(),
               );
-              queryBuilderState.changeAccessorOwner(ingestDefinition);
+              await queryBuilderState.changeAccessorOwner(ingestDefinition);
               const compatibleRuntimes = getCompatibleRuntimesFromAccessorOwner(
                 ingestDefinition,
                 editorStore.graphManagerState,

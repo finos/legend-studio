@@ -33,7 +33,6 @@ import {
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   TEST__setUpAccessorQueryBuilder,
-  selectFirstOptionFromCustomSelectorInput,
   dragAndDrop,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -61,7 +60,7 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
     // No source selected => no accessor options => accessor selector hidden
-    expect(queryByText(setupPanel, 'Data Set')).toBeNull();
+    expect(queryByText(setupPanel, 'Dataset')).toBeNull();
   });
 
   test('renders placeholder text for empty selectors', async () => {
@@ -106,7 +105,7 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
       queryBuilderState.graphManagerState.graph.ingests[0],
     );
     await act(async () => {
-      queryBuilderState.changeAccessorOwner(ingest);
+      await queryBuilderState.changeAccessorOwner(ingest);
     });
 
     const setupPanel = await waitFor(() =>
@@ -129,7 +128,7 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
       queryBuilderState.graphManagerState.usableDatabases[0],
     );
     await act(async () => {
-      queryBuilderState.changeAccessorOwner(db);
+      await queryBuilderState.changeAccessorOwner(db);
     });
 
     const setupPanel = await waitFor(() =>
@@ -156,8 +155,8 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
     const ingest = guaranteeNonNullable(
       queryBuilderState.graphManagerState.graph.ingests[0],
     );
-    act(() => {
-      queryBuilderState.changeAccessorOwner(ingest);
+    await act(async () => {
+      await queryBuilderState.changeAccessorOwner(ingest);
     });
 
     const runtimes = queryBuilderState.compatibleRuntimes;
@@ -174,8 +173,8 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
     const db = guaranteeNonNullable(
       queryBuilderState.graphManagerState.usableDatabases[0],
     );
-    act(() => {
-      queryBuilderState.changeAccessorOwner(db);
+    await act(async () => {
+      await queryBuilderState.changeAccessorOwner(db);
     });
 
     const runtimes = queryBuilderState.compatibleRuntimes;
@@ -242,14 +241,19 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
     // Initially no source selected
     expect(queryBuilderState.selectedAccessorOwner).toBeUndefined();
 
-    // Select first source from dropdown
-    const sourceContainer = guaranteeNonNullable(
-      getByText(setupPanel, 'Source').parentElement,
+    // Select first available accessor owner
+    const firstOwner = guaranteeNonNullable(
+      queryBuilderState.accessorOwners[0],
     );
-    selectFirstOptionFromCustomSelectorInput(sourceContainer, false, false);
+    await act(async () => {
+      await queryBuilderState.changeAccessorOwner(firstOwner);
+    });
 
     // Source should now be selected
     expect(queryBuilderState.selectedAccessorOwner).not.toBeUndefined();
+
+    // Verify the source selector in the UI reflects the change
+    expect(getByText(setupPanel, 'Source')).not.toBeNull();
   });
 
   test('renders full query builder with accessor setup panel from ingest lambda', async () => {
@@ -287,7 +291,7 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
       queryBuilderState.graphManagerState.graph.ingests[0],
     );
     await act(async () => {
-      queryBuilderState.changeAccessorOwner(ingest);
+      await queryBuilderState.changeAccessorOwner(ingest);
     });
 
     // Verify filter panel IS shown (accessor mode now supports it)

@@ -135,9 +135,9 @@ import {
   DataProduct,
   LakehouseAccessPoint,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
-import { V1_createAccessorFromPackageableElement } from '../../../../helpers/V1_AccessorHelper.js';
 import { Database } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { IngestDefinition } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import { V1_createAccessorFromPackageableElementWithNonFunctionSources } from '../../../../helpers/V1_AccessorHelper.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -562,10 +562,14 @@ export class V1_ValueSpecificationBuilder
           Database,
         );
         const accessor = guaranteeNonNullable(
-          V1_createAccessorFromPackageableElement(db, this.context, {
-            schemaName,
-            tableName,
-          }),
+          V1_createAccessorFromPackageableElementWithNonFunctionSources(
+            db,
+            this.context,
+            {
+              schemaName,
+              tableName,
+            },
+          ),
           `Can't build accessor for database '${dbPath}'`,
         );
         const accessorInstanceValue = new AccessorInstanceValue();
@@ -587,9 +591,13 @@ export class V1_ValueSpecificationBuilder
           IngestDefinition,
         );
         const accessor = guaranteeNonNullable(
-          V1_createAccessorFromPackageableElement(ingestDef, this.context, {
-            tableName: datasetName,
-          }),
+          V1_createAccessorFromPackageableElementWithNonFunctionSources(
+            ingestDef,
+            this.context,
+            {
+              tableName: datasetName,
+            },
+          ),
           `Can't build accessor for ingest definition '${ingestPath}'`,
         );
         const accessorInstanceValue = new AccessorInstanceValue();

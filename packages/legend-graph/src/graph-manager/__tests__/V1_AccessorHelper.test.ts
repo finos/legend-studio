@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, describe, expect, beforeAll } from '@jest/globals';
+import { test, describe, expect, beforeAll, jest } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import {
@@ -25,7 +25,10 @@ import {
   DataProductAccessor,
   AccessorInstanceValue,
 } from '../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
-import { IngestDefinition } from '../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import {
+  IngestDefinition,
+  type MatViewDataSet,
+} from '../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { Database } from '../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { DataProduct } from '../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
@@ -64,6 +67,12 @@ import {
   TEST__getTestGraphManagerState,
   TEST__buildGraphWithEntities,
 } from '../__test-utils__/GraphManagerTestUtils.js';
+import { RawLambda } from '../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
+import {
+  RelationTypeMetadata,
+  RelationTypeColumnMetadata,
+} from '../action/relation/RelationTypeMetadata.js';
+import { Multiplicity } from '../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 
 // ──────────────────────────────────────────────────────────
 // Shared graph setup
@@ -75,13 +84,13 @@ beforeAll(async () => {
   await TEST__buildGraphWithEntities(graphManagerState, []);
 });
 
-const createAccessorFromPackageableElement = (
+const createAccessorFromPackageableElement = async (
   element: AccessorOwner,
   options?: {
     schemaName: string | undefined;
     tableName: string | undefined;
   },
-): Accessor | undefined =>
+): Promise<Accessor | undefined> =>
   graphManagerState.graphManager.createAccessorFromPackageableElement(
     element,
     graphManagerState.graph,
@@ -160,7 +169,7 @@ const createTestDatabase = (
 describe(
   unitTest('createAccessorFromPackageableElement — IngestDefinition'),
   () => {
-    test('creates IngestionAccessor with first dataset when tableName not specified', () => {
+    test('creates IngestionAccessor with first dataset when tableName not specified', async () => {
       const ingest = createTestIngestDefinition('test::MyIngest', [
         {
           name: 'dataset1',
@@ -176,7 +185,7 @@ describe(
       ]);
 
       const accessor = guaranteeNonNullable(
-        createAccessorFromPackageableElement(ingest),
+        await createAccessorFromPackageableElement(ingest),
       );
 
       expect(accessor).toBeInstanceOf(IngestionAccessor);
@@ -192,7 +201,7 @@ describe(
       );
     });
 
-    test('creates IngestionAccessor for a specific dataset by tableName', () => {
+    test('creates IngestionAccessor for a specific dataset by tableName', async () => {
       const ingest = createTestIngestDefinition('test::MyIngest', [
         {
           name: 'dataset1',
@@ -208,7 +217,7 @@ describe(
       ]);
 
       const accessor = guaranteeNonNullable(
-        createAccessorFromPackageableElement(ingest, {
+        await createAccessorFromPackageableElement(ingest, {
           tableName: 'dataset2',
           schemaName: undefined,
         }),
@@ -225,7 +234,7 @@ describe(
       );
     });
 
-    test('returns undefined when tableName does not match any dataset', () => {
+    test('returns undefined when tableName does not match any dataset', async () => {
       const ingest = createTestIngestDefinition('test::MyIngest', [
         {
           name: 'dataset1',
@@ -233,7 +242,7 @@ describe(
         },
       ]);
 
-      const accessor = createAccessorFromPackageableElement(ingest, {
+      const accessor = await createAccessorFromPackageableElement(ingest, {
         tableName: 'nonexistent',
         schemaName: undefined,
       });
@@ -241,16 +250,16 @@ describe(
       expect(accessor).toBeUndefined();
     });
 
-    test('returns undefined when ingest has no datasets', () => {
+    test('returns undefined when ingest has no datasets', async () => {
       const ingest = new IngestDefinition('EmptyIngest');
       ingest.content = {} as PlainObject;
 
-      const accessor = createAccessorFromPackageableElement(ingest);
+      const accessor = await createAccessorFromPackageableElement(ingest);
 
       expect(accessor).toBeUndefined();
     });
 
-    test('maps Pure type paths to correct PrimitiveTypes', () => {
+    test('maps Pure type paths to correct PrimitiveTypes', async () => {
       const ingest = createTestIngestDefinition('test::MyIngest', [
         {
           name: 'ds',
@@ -269,7 +278,7 @@ describe(
       ]);
 
       const accessor = guaranteeNonNullable(
-        createAccessorFromPackageableElement(ingest, {
+        await createAccessorFromPackageableElement(ingest, {
           tableName: 'ds',
           schemaName: undefined,
         }),
@@ -293,7 +302,7 @@ describe(
       expect(getType('col_number')).toBe(PrimitiveType.NUMBER);
     });
 
-    test('resolves fully qualified type paths', () => {
+    test('resolves fully qualified type paths', async () => {
       const ingest = createTestIngestDefinition('test::MyIngest', [
         {
           name: 'ds',
@@ -307,7 +316,7 @@ describe(
       ]);
 
       const accessor = guaranteeNonNullable(
-        createAccessorFromPackageableElement(ingest, {
+        await createAccessorFromPackageableElement(ingest, {
           tableName: 'ds',
           schemaName: undefined,
         }),
@@ -319,7 +328,7 @@ describe(
       ).toBe(PrimitiveType.INTEGER);
     });
 
-    test('defaults to STRING for unknown type paths', () => {
+    test('defaults to STRING for unknown type paths', async () => {
       const ingest = createTestIngestDefinition('test::MyIngest', [
         {
           name: 'ds',
@@ -328,7 +337,7 @@ describe(
       ]);
 
       const accessor = guaranteeNonNullable(
-        createAccessorFromPackageableElement(ingest, {
+        await createAccessorFromPackageableElement(ingest, {
           tableName: 'ds',
           schemaName: undefined,
         }),
@@ -340,7 +349,7 @@ describe(
       ).toBe(PrimitiveType.STRING);
     });
 
-    test('accessor path and labels are correct', () => {
+    test('accessor path and labels are correct', async () => {
       const ingest = createTestIngestDefinition('test::MyIngest', [
         {
           name: 'myDataset',
@@ -348,10 +357,10 @@ describe(
         },
       ]);
 
-      const accessor = createAccessorFromPackageableElement(ingest, {
+      const accessor = (await createAccessorFromPackageableElement(ingest, {
         tableName: 'myDataset',
         schemaName: undefined,
-      }) as IngestionAccessor;
+      })) as IngestionAccessor;
 
       expect(accessor.accessorOwnerLabel).toBe('Ingestion Source');
       expect(accessor.accessorLabel).toBe('Dataset');
@@ -366,7 +375,7 @@ describe(
 // ──────────────────────────────────────────────────────────
 
 describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
-  test('creates RelationalStoreAccessor for a specific table', () => {
+  test('creates RelationalStoreAccessor for a specific table', async () => {
     const db = createTestDatabase('test::MyDB', [
       {
         name: 'public',
@@ -383,7 +392,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     ]);
 
     const accessor = guaranteeNonNullable(
-      createAccessorFromPackageableElement(db, {
+      await createAccessorFromPackageableElement(db, {
         schemaName: 'public',
         tableName: 'PERSON',
       }),
@@ -402,7 +411,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     );
   });
 
-  test('maps relational data types to correct PrimitiveTypes', () => {
+  test('maps relational data types to correct PrimitiveTypes', async () => {
     const db = createTestDatabase('test::MyDB', [
       {
         name: 'default',
@@ -436,7 +445,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     ]);
 
     const accessor = guaranteeNonNullable(
-      createAccessorFromPackageableElement(db, {
+      await createAccessorFromPackageableElement(db, {
         schemaName: 'default',
         tableName: 'TYPES_TABLE',
       }),
@@ -485,7 +494,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     expect(getType('col_varbinary')).toBe(PrimitiveType.BINARY);
   });
 
-  test('returns undefined when schema does not exist', () => {
+  test('returns undefined when schema does not exist', async () => {
     const db = createTestDatabase('test::MyDB', [
       {
         name: 'public',
@@ -498,7 +507,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
       },
     ]);
 
-    const accessor = createAccessorFromPackageableElement(db, {
+    const accessor = await createAccessorFromPackageableElement(db, {
       schemaName: 'nonexistent',
       tableName: 'T',
     });
@@ -506,7 +515,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     expect(accessor).toBeUndefined();
   });
 
-  test('returns undefined when table does not exist', () => {
+  test('returns undefined when table does not exist', async () => {
     const db = createTestDatabase('test::MyDB', [
       {
         name: 'public',
@@ -519,7 +528,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
       },
     ]);
 
-    const accessor = createAccessorFromPackageableElement(db, {
+    const accessor = await createAccessorFromPackageableElement(db, {
       schemaName: 'public',
       tableName: 'nonexistent',
     });
@@ -527,7 +536,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     expect(accessor).toBeUndefined();
   });
 
-  test('accessor path and labels are correct', () => {
+  test('accessor path and labels are correct', async () => {
     const db = createTestDatabase('test::MyDB', [
       {
         name: 'mySchema',
@@ -540,10 +549,10 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
       },
     ]);
 
-    const accessor = createAccessorFromPackageableElement(db, {
+    const accessor = (await createAccessorFromPackageableElement(db, {
       schemaName: 'mySchema',
       tableName: 'myTable',
-    }) as RelationalStoreAccessor;
+    })) as RelationalStoreAccessor;
 
     expect(accessor.accessorOwnerLabel).toBe('Relational Database');
     expect(accessor.accessorLabel).toBe('Table');
@@ -551,7 +560,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     expect(accessor.path).toEqual(['MyDB', 'mySchema', 'myTable']);
   });
 
-  test('handles multiple schemas and tables', () => {
+  test('handles multiple schemas and tables', async () => {
     const db = createTestDatabase('test::MyDB', [
       {
         name: 'schema1',
@@ -581,7 +590,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     ]);
 
     const accessorA = guaranteeNonNullable(
-      createAccessorFromPackageableElement(db, {
+      await createAccessorFromPackageableElement(db, {
         schemaName: 'schema1',
         tableName: 'TABLE_A',
       }),
@@ -592,7 +601,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     );
 
     const accessorB = guaranteeNonNullable(
-      createAccessorFromPackageableElement(db, {
+      await createAccessorFromPackageableElement(db, {
         schemaName: 'schema2',
         tableName: 'TABLE_B',
       }),
@@ -600,7 +609,7 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     expect(accessorB.relationType.columns).toHaveLength(2);
 
     const accessorC = guaranteeNonNullable(
-      createAccessorFromPackageableElement(db, {
+      await createAccessorFromPackageableElement(db, {
         schemaName: 'schema2',
         tableName: 'TABLE_C',
       }),
@@ -693,3 +702,204 @@ describe(unitTest('Accessor model classes'), () => {
     expect(typeof instanceValue.hashCode).toBe('string');
   });
 });
+
+describe(
+  unitTest(
+    'createAccessorFromPackageableElement — IngestDefinition (matview datasets)',
+  ),
+  () => {
+    const createMatViewDataSet = (
+      name: string,
+      lambdaBody?: object,
+    ): MatViewDataSet => ({
+      name,
+      source: {
+        function: new RawLambda([], lambdaBody ?? {}),
+      },
+    });
+
+    const createMockRelationTypeMetadata = (
+      columns: { name: string; type: string }[],
+    ): RelationTypeMetadata => {
+      const metadata = new RelationTypeMetadata();
+      metadata.columns = columns.map(
+        (col) =>
+          new RelationTypeColumnMetadata(
+            col.type,
+            col.name,
+            new Multiplicity(1, 1),
+          ),
+      );
+      return metadata;
+    };
+
+    test('creates IngestionAccessor from first matview dataset when no non-matview datasets exist and tableName not specified', async () => {
+      const ingest = new IngestDefinition('MatviewIngest');
+      // content has only the same datasets as the matview list (no non-matview)
+      ingest.content = {
+        datasets: [
+          {
+            name: 'matview_ds1',
+            primaryKey: [],
+            source: {
+              _type: 'ingestSource',
+              schema: { _type: 'schema', columns: [] },
+            },
+          },
+          {
+            name: 'matview_ds2',
+            primaryKey: [],
+            source: {
+              _type: 'ingestSource',
+              schema: { _type: 'schema', columns: [] },
+            },
+          },
+        ],
+      } as PlainObject;
+      ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS = [
+        createMatViewDataSet('matview_ds1'),
+        createMatViewDataSet('matview_ds2'),
+      ];
+
+      const mockMetadata = createMockRelationTypeMetadata([
+        { name: 'id', type: 'Integer' },
+        { name: 'amount', type: 'Float' },
+      ]);
+
+      const spy = jest
+        .spyOn(graphManagerState.graphManager, 'getLambdaRelationType')
+        .mockResolvedValue(mockMetadata);
+
+      const accessor = guaranteeNonNullable(
+        await createAccessorFromPackageableElement(ingest),
+      );
+
+      expect(accessor).toBeInstanceOf(IngestionAccessor);
+      expect(accessor.accessor).toBe('matview_ds1');
+      expect(accessor.parentElement).toBe(ingest);
+      expect(accessor.relationType.columns).toHaveLength(2);
+      expect(guaranteeNonNullable(accessor.relationType.columns[0]).name).toBe(
+        'id',
+      );
+      expect(guaranteeNonNullable(accessor.relationType.columns[1]).name).toBe(
+        'amount',
+      );
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(
+        ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS[0]?.source.function,
+        graphManagerState.graph,
+      );
+
+      spy.mockRestore();
+    });
+
+    test('creates IngestionAccessor for a specific matview dataset by tableName', async () => {
+      const ingest = new IngestDefinition('MatviewIngest');
+      ingest.content = {} as PlainObject;
+      ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS = [
+        createMatViewDataSet('matview_ds1'),
+        createMatViewDataSet('matview_ds2'),
+      ];
+
+      const mockMetadata = createMockRelationTypeMetadata([
+        { name: 'name', type: 'String' },
+        { name: 'active', type: 'Boolean' },
+        { name: 'score', type: 'Decimal' },
+      ]);
+
+      const spy = jest
+        .spyOn(graphManagerState.graphManager, 'getLambdaRelationType')
+        .mockResolvedValue(mockMetadata);
+
+      const accessor = guaranteeNonNullable(
+        await createAccessorFromPackageableElement(ingest, {
+          tableName: 'matview_ds2',
+          schemaName: undefined,
+        }),
+      );
+
+      expect(accessor).toBeInstanceOf(IngestionAccessor);
+      expect(accessor.accessor).toBe('matview_ds2');
+      expect(accessor.relationType.columns).toHaveLength(3);
+      expect(guaranteeNonNullable(accessor.relationType.columns[0]).name).toBe(
+        'name',
+      );
+      expect(guaranteeNonNullable(accessor.relationType.columns[1]).name).toBe(
+        'active',
+      );
+      expect(guaranteeNonNullable(accessor.relationType.columns[2]).name).toBe(
+        'score',
+      );
+      expect(spy).toHaveBeenCalledWith(
+        ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS[1]?.source.function,
+        graphManagerState.graph,
+      );
+
+      spy.mockRestore();
+    });
+
+    test('falls through to non-matview path when non-matview datasets exist and tableName not specified', async () => {
+      const ingest = new IngestDefinition('MixedIngest');
+      // content has both matview and non-matview datasets
+      ingest.content = {
+        datasets: [
+          {
+            name: 'regular_ds',
+            primaryKey: [],
+            source: {
+              _type: 'ingestSource',
+              schema: {
+                _type: 'schema',
+                columns: [
+                  {
+                    name: 'id',
+                    genericType: {
+                      rawType: {
+                        _type: 'packageableType',
+                        fullPath: 'Integer',
+                      },
+                    },
+                    multiplicity: { lowerBound: 1, upperBound: 1 },
+                  },
+                ],
+              },
+            },
+          },
+          {
+            name: 'matview_ds1',
+            primaryKey: [],
+            source: {
+              _type: 'ingestSource',
+              schema: { _type: 'schema', columns: [] },
+            },
+          },
+        ],
+      } as PlainObject;
+      ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS = [
+        createMatViewDataSet('matview_ds1'),
+      ];
+
+      const spy = jest.spyOn(
+        graphManagerState.graphManager,
+        'getLambdaRelationType',
+      );
+
+      // Should use the non-matview dataset (regular_ds) via the sync path
+      const accessor = guaranteeNonNullable(
+        await createAccessorFromPackageableElement(ingest),
+      );
+
+      expect(accessor).toBeInstanceOf(IngestionAccessor);
+      // The sync path picks the first dataset in content.datasets
+      expect(accessor.accessor).toBe('regular_ds');
+      expect(accessor.relationType.columns).toHaveLength(1);
+      expect(guaranteeNonNullable(accessor.relationType.columns[0]).name).toBe(
+        'id',
+      );
+      // Should NOT have called getLambdaRelationType since it fell through
+      expect(spy).not.toHaveBeenCalled();
+
+      spy.mockRestore();
+    });
+  },
+);

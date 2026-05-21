@@ -76,7 +76,7 @@ describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
     const ingest = guaranteeNonNullable(
       queryBuilderState.graphManagerState.graph.ingests[0],
     );
-    queryBuilderState.changeAccessorOwner(ingest);
+    await queryBuilderState.changeAccessorOwner(ingest);
 
     // Verify filter panel is shown
     expect(queryBuilderState.filterState.showPanel).toBe(true);
@@ -161,7 +161,7 @@ describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
     const ingest = guaranteeNonNullable(
       queryBuilderState.graphManagerState.graph.ingests[0],
     );
-    queryBuilderState.changeAccessorOwner(ingest);
+    await queryBuilderState.changeAccessorOwner(ingest);
 
     const relationType = guaranteeNonNullable(
       queryBuilderState.sourceRelationType,
@@ -213,7 +213,7 @@ describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
     const ingest = guaranteeNonNullable(
       queryBuilderState.graphManagerState.graph.ingests[0],
     );
-    queryBuilderState.changeAccessorOwner(ingest);
+    await queryBuilderState.changeAccessorOwner(ingest);
 
     const relationType = guaranteeNonNullable(
       queryBuilderState.sourceRelationType,

@@ -35,7 +35,7 @@ import type {
 } from '../../query-workflow/QueryBuilderWorkFlowState.js';
 import type { QueryBuilderConfig } from '../../../graph-manager/QueryBuilderConfig.js';
 import { renderAccessorQueryBuilderSetupPanelContent } from '../../../components/workflows/AccessorQueryBuilder.js';
-import { action, computed, makeObservable } from 'mobx';
+import { action, computed, makeObservable, runInAction } from 'mobx';
 import type { QueryableSourceInfo } from '@finos/legend-storage';
 import { buildElementOption } from '@finos/legend-lego/graph-editor';
 import { getCompatibleRuntimesFromAccessorOwner } from './AccessorQueryBuilderHelper.js';
@@ -159,26 +159,28 @@ export class AccessorQueryBuilderState extends QueryBuilderState {
     }
   }
 
-  changeAccessorOwner(accessorOwner: AccessorOwner): void {
+  async changeAccessorOwner(accessorOwner: AccessorOwner): Promise<void> {
     const accessor =
-      this.graphManagerState.graphManager.createAccessorFromPackageableElement(
+      await this.graphManagerState.graphManager.createAccessorFromPackageableElement(
         accessorOwner,
         this.graphManagerState.graph,
       );
     if (accessor) {
-      this.changeSourceElement(accessor);
-      this.configureFilterPanelsForAccessor();
+      runInAction(() => {
+        this.changeSourceElement(accessor);
+        this.configureFilterPanelsForAccessor();
+      });
     }
   }
 
-  changeAccessor(value: {
+  async changeAccessor(value: {
     schemaName?: string | undefined;
     tableName: string;
-  }): void {
+  }): Promise<void> {
     const owner = this.selectedAccessorOwner;
     if (owner) {
       const accessor =
-        this.graphManagerState.graphManager.createAccessorFromPackageableElement(
+        await this.graphManagerState.graphManager.createAccessorFromPackageableElement(
           owner,
           this.graphManagerState.graph,
           {
@@ -187,8 +189,10 @@ export class AccessorQueryBuilderState extends QueryBuilderState {
           },
         );
       if (accessor) {
-        this.changeSourceElement(accessor);
-        this.configureFilterPanelsForAccessor();
+        runInAction(() => {
+          this.changeSourceElement(accessor);
+          this.configureFilterPanelsForAccessor();
+        });
       }
     }
   }

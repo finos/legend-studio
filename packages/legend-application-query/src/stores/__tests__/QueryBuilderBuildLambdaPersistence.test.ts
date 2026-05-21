@@ -794,7 +794,7 @@ describe(unitTest('Accessor – buildQuery vs buildQueryForPersistence'), () => 
       );
 
       const ingest = guaranteeNonNullable(graphManagerState.graph.ingests[0]);
-      state.changeAccessorOwner(ingest);
+      await state.changeAccessorOwner(ingest);
       state.changeSelectedRuntime(
         guaranteeNonNullable(state.compatibleRuntimes[0]),
       );
@@ -821,7 +821,7 @@ describe(unitTest('Accessor – buildQuery vs buildQueryForPersistence'), () => 
       );
 
       const ingest = guaranteeNonNullable(graphManagerState.graph.ingests[0]);
-      state.changeAccessorOwner(ingest);
+      await state.changeAccessorOwner(ingest);
       state.changeSelectedRuntime(
         guaranteeNonNullable(state.compatibleRuntimes[0]),
       );
