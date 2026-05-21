@@ -87,6 +87,7 @@ import {
 import {
   DataAccessRequestStatus,
   type DataAccessRequestState,
+  type TimelineStep,
 } from '../../../stores/DataProduct/DataAccess/DataAccessRequestState.js';
 import { PermitDataAccessRequestState } from '../../../stores/DataProduct/DataAccess/PermitDataAccessRequestState.js';
 
@@ -162,6 +163,133 @@ const TaskApprovalView = (props: {
           ? formatDate(new Date(timestamp), `MM/dd/yyyy HH:mm:ss`)
           : 'Unknown datetime'}
       </Box>
+    </Box>
+  );
+};
+
+const TimelineStepLinks = (props: {
+  step: TimelineStep;
+  copyToClipboard: (text: string) => void;
+  onEscalate: () => void;
+  isEscalating: boolean;
+}): React.ReactNode => {
+  const { step, copyToClipboard, onEscalate, isEscalating } = props;
+  const { label } = step;
+
+  const renderLinks = (): React.ReactNode => {
+    if (label.link && label.externalLink) {
+      return (
+        <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__dual-links">
+          <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__link-row">
+            <Link
+              href={label.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__link--primary"
+            >
+              {label.title}
+            </Link>
+            <IconButton
+              onClick={() => copyToClipboard(label.link ?? '')}
+              size="medium"
+              title="Copy Task Link"
+              className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__copy-btn"
+            >
+              <CopyFilledIcon />
+            </IconButton>
+          </Box>
+          <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__external-row">
+            <span>or</span>
+            <Link
+              href={label.externalLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__link--secondary"
+            >
+              action via eTask
+            </Link>
+            <IconButton
+              onClick={() => copyToClipboard(label.externalLink ?? '')}
+              size="medium"
+              title="Copy eTask Link"
+              className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__copy-btn"
+            >
+              <CopyFilledIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      );
+    }
+    if (label.link) {
+      return (
+        <>
+          <Link href={label.link} target="_blank" rel="noopener noreferrer">
+            {label.title}
+          </Link>
+          <IconButton
+            onClick={() => copyToClipboard(label.link ?? '')}
+            className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
+            title="Copy Task Link"
+          >
+            <CopyFilledIcon />
+            <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
+              Copy
+            </div>
+          </IconButton>
+        </>
+      );
+    }
+    if (label.externalLink) {
+      return (
+        <>
+          <Link
+            href={label.externalLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {label.title}
+          </Link>
+          <IconButton
+            onClick={() => copyToClipboard(label.externalLink ?? '')}
+            className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
+            title="Copy eTask Link"
+          >
+            <CopyFilledIcon />
+            <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
+              Copy
+            </div>
+          </IconButton>
+        </>
+      );
+    }
+    return label.title;
+  };
+
+  const escalateTitle = isEscalating
+    ? 'Escalating...'
+    : label.isEscalatable
+      ? 'Escalate request'
+      : label.isEscalated
+        ? 'Request has already been escalated'
+        : 'Cannot escalate request';
+
+  return (
+    <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links">
+      {renderLinks()}
+      {label.showEscalateButton && (
+        <span title={escalateTitle}>
+          <IconButton
+            onClick={onEscalate}
+            disabled={!label.isEscalatable || isEscalating}
+            className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
+          >
+            <ArrowUpFromBracketIcon />
+            <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
+              Escalate
+            </div>
+          </IconButton>
+        </span>
+      )}
     </Box>
   );
 };
@@ -386,7 +514,7 @@ export const DataAccessRequestContent = observer(
             onChange={(e) => {
               justification = e.target.value;
             }}
-            sx={{ marginTop: 2 }}
+            className="marketplace-lakehouse-entitlements__data-access-request-viewer__justification-field"
           />
         ) : undefined,
         type: ActionAlertType.CAUTION,
@@ -512,161 +640,12 @@ export const DataAccessRequestContent = observer(
                     },
                   )}
                 >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'flex-end',
-                      gap: '1rem',
-                    }}
-                  >
-                    {step.label.link ? (
-                      <>
-                        {step.label.externalLink ? (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'flex-end',
-                              gap: '0.25rem',
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                              }}
-                            >
-                              <Link
-                                href={step.label.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{ fontWeight: 600 }}
-                              >
-                                {step.label.title}
-                              </Link>
-                              <IconButton
-                                onClick={() =>
-                                  copyToClipboard(step.label.link ?? '')
-                                }
-                                size="medium"
-                                title="Copy Task Link"
-                                sx={{ padding: '4px' }}
-                              >
-                                <CopyFilledIcon />
-                              </IconButton>
-                            </Box>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                fontSize: '0.85rem',
-                                color: 'text.secondary',
-                              }}
-                            >
-                              <span>or</span>
-                              <Link
-                                href={step.label.externalLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{
-                                  fontSize: '0.85rem',
-                                  color: 'text.secondary',
-                                }}
-                              >
-                                action via eTask
-                              </Link>
-                              <IconButton
-                                onClick={() =>
-                                  copyToClipboard(step.label.externalLink ?? '')
-                                }
-                                size="medium"
-                                title="Copy eTask Link"
-                                sx={{ padding: '4px' }}
-                              >
-                                <CopyFilledIcon />
-                              </IconButton>
-                            </Box>
-                          </Box>
-                        ) : (
-                          <>
-                            <Link
-                              href={step.label.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {step.label.title}
-                            </Link>
-                            <IconButton
-                              onClick={() =>
-                                copyToClipboard(step.label.link ?? '')
-                              }
-                              className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
-                              title="Copy Task Link"
-                            >
-                              <CopyFilledIcon />
-                              <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
-                                Copy
-                              </div>
-                            </IconButton>
-                          </>
-                        )}
-                      </>
-                    ) : step.label.externalLink ? (
-                      <>
-                        <Link
-                          href={step.label.externalLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {step.label.title}
-                        </Link>
-                        <IconButton
-                          onClick={() =>
-                            copyToClipboard(step.label.externalLink ?? '')
-                          }
-                          className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
-                          title="Copy eTask Link"
-                        >
-                          <CopyFilledIcon />
-                          <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
-                            Copy
-                          </div>
-                        </IconButton>
-                      </>
-                    ) : (
-                      step.label.title
-                    )}
-                    {step.label.showEscalateButton && (
-                      <span
-                        title={
-                          viewerState.escalatingState.isInProgress
-                            ? 'Escalating...'
-                            : step.label.isEscalatable
-                              ? 'Escalate request'
-                              : step.label.isEscalated
-                                ? 'Request has already been escalated'
-                                : 'Cannot escalate request'
-                        }
-                      >
-                        <IconButton
-                          onClick={() => setShowEscalationModal(true)}
-                          disabled={
-                            !step.label.isEscalatable ||
-                            viewerState.escalatingState.isInProgress
-                          }
-                          className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
-                        >
-                          <ArrowUpFromBracketIcon />
-                          <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-label">
-                            Escalate
-                          </div>
-                        </IconButton>
-                      </span>
-                    )}
-                  </Box>
+                  <TimelineStepLinks
+                    step={step}
+                    copyToClipboard={copyToClipboard}
+                    onEscalate={() => setShowEscalationModal(true)}
+                    isEscalating={viewerState.escalatingState.isInProgress}
+                  />
                 </TimelineOppositeContent>
                 <TimelineSeparator>
                   <TimelineDot
