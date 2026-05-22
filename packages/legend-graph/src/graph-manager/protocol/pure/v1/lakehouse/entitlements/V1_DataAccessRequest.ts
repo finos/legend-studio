@@ -166,9 +166,9 @@ export class V1_PermitTaskActionResponse {
 }
 
 export enum V1_PermitTaskAction {
-  APPROVE = 'approve',
-  REJECT = 'reject',
-  ESCALATE = 'escalate',
+  APPROVE = 'APPROVE',
+  REJECT = 'REJECT',
+  ESCALATE = 'ESCALATE',
 }
 
 export class V1_CreatePermitDataRequestPayload {
