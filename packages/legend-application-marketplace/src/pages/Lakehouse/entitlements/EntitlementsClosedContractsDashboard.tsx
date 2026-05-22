@@ -84,6 +84,10 @@ export const EntitlementsClosedContractsDashboard = observer(
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
     >();
+    const [unverifiedIngestDefinitions, setUnverifiedIngestDefinitions] =
+      useState<string[] | undefined>(undefined);
+    const [ingestVerificationInProgress, setIngestVerificationInProgress] =
+      useState(false);
     const [showForOthers, setShowForOthers] = useState<boolean>(
       myClosedContracts.length === 0 && closedContractsForOthers.length > 0,
     );
@@ -93,7 +97,20 @@ export const EntitlementsClosedContractsDashboard = observer(
         V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
       >,
     ) => {
-      setSelectedContract(event.data?.contractResultLite);
+      const contract = event.data?.contractResultLite;
+      setSelectedContract(contract);
+      setUnverifiedIngestDefinitions(undefined);
+      if (contract !== undefined) {
+        setIngestVerificationInProgress(true);
+        const result = await flowResult(
+          dashboardState.getUnverifiedIngestDefinitions(
+            contract.guid,
+            auth.user?.access_token,
+          ),
+        );
+        setUnverifiedIngestDefinitions(result);
+        setIngestVerificationInProgress(false);
+      }
     };
 
     const defaultColDef: DataGridColumnDefinition<
@@ -210,10 +227,15 @@ export const EntitlementsClosedContractsDashboard = observer(
             overlayLoadingTemplate="Loading contracts"
           />
         </Box>
-        {selectedContract !== undefined && (
+        {selectedContract !== undefined && !ingestVerificationInProgress && (
           <DataAccessRequestViewer
             open={true}
-            onClose={() => setSelectedContract(undefined)}
+            onClose={() => {
+              setSelectedContract(undefined);
+              setUnverifiedIngestDefinitions(undefined);
+              setIngestVerificationInProgress(false);
+            }}
+            unverifiedIngestDefinitions={unverifiedIngestDefinitions}
             viewerState={
               new DataContractViewerState(
                 selectedContract,

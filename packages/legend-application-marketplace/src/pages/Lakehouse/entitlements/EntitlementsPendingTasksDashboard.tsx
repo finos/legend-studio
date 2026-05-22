@@ -289,6 +289,10 @@ export const EntitlementsPendingTasksDashboard = observer(
     >();
     const [selectedContractTargetUser, setSelectedContractTargetUser] =
       useState<string | undefined>();
+    const [unverifiedIngestDefinitions, setUnverifiedIngestDefinitions] =
+      useState<string[] | undefined>(undefined);
+    const [ingestVerificationInProgress, setIngestVerificationInProgress] =
+      useState(false);
 
     const auth = useAuth();
 
@@ -309,7 +313,7 @@ export const EntitlementsPendingTasksDashboard = observer(
       event.api.setNodesSelected({ nodes: nodesToSelect, newValue: true });
     };
 
-    const handleCellClicked = (
+    const handleCellClicked = async (
       event: DataGridCellClickedEvent<V1_ContractUserEventRecord, unknown>,
     ) => {
       if (event.colDef.colId !== 'selection') {
@@ -318,6 +322,18 @@ export const EntitlementsPendingTasksDashboard = observer(
         );
         setSelectedContract(contract);
         setSelectedContractTargetUser(event.data?.consumer);
+        setUnverifiedIngestDefinitions(undefined);
+        if (contract !== undefined) {
+          setIngestVerificationInProgress(true);
+          const result = await flowResult(
+            dashboardState.getUnverifiedIngestDefinitions(
+              contract.guid,
+              auth.user?.access_token,
+            ),
+          );
+          setUnverifiedIngestDefinitions(result);
+          setIngestVerificationInProgress(false);
+        }
       }
     };
 
@@ -737,7 +753,15 @@ export const EntitlementsPendingTasksDashboard = observer(
                   rowHeight={45}
                   rowSelection={rowSelection}
                   onFirstDataRendered={handleFirstDataRendered}
-                  onCellClicked={handleCellClicked}
+                  onCellClicked={(
+                    event: DataGridCellClickedEvent<
+                      V1_ContractUserEventRecord,
+                      unknown
+                    >,
+                  ) =>
+                    // eslint-disable-next-line no-void
+                    void handleCellClicked(event)
+                  }
                   columnDefs={privilegeManagerColDefs}
                   overlayNoRowsTemplate="You have no contracts to approve as a Privilege Manager"
                   loading={loading}
@@ -772,7 +796,15 @@ export const EntitlementsPendingTasksDashboard = observer(
                   rowHeight={45}
                   rowSelection={rowSelection}
                   onFirstDataRendered={handleFirstDataRendered}
-                  onCellClicked={handleCellClicked}
+                  onCellClicked={(
+                    event: DataGridCellClickedEvent<
+                      V1_ContractUserEventRecord,
+                      unknown
+                    >,
+                  ) =>
+                    // eslint-disable-next-line no-void
+                    void handleCellClicked(event)
+                  }
                   columnDefs={dataOwnerColDefs}
                   overlayNoRowsTemplate="You have no contracts to approve as a Data Owner"
                   loading={loading}
@@ -796,7 +828,15 @@ export const EntitlementsPendingTasksDashboard = observer(
                     rowHeight={45}
                     rowSelection={rowSelection}
                     onFirstDataRendered={handleFirstDataRendered}
-                    onCellClicked={handleCellClicked}
+                    onCellClicked={(
+                      event: DataGridCellClickedEvent<
+                        V1_ContractUserEventRecord,
+                        unknown
+                      >,
+                    ) =>
+                      // eslint-disable-next-line no-void
+                      void handleCellClicked(event)
+                    }
                     columnDefs={otherTasksColDefs}
                     loading={loading}
                     overlayLoadingTemplate="Loading contracts"
@@ -819,10 +859,15 @@ export const EntitlementsPendingTasksDashboard = observer(
           pendingTaskContracts={pendingTaskContracts}
           marketplaceBaseStore={marketplaceBaseStore}
         />
-        {selectedContract !== undefined && (
+        {selectedContract !== undefined && !ingestVerificationInProgress && (
           <DataAccessRequestViewer
             open={true}
-            onClose={() => setSelectedContract(undefined)}
+            onClose={() => {
+              setSelectedContract(undefined);
+              setUnverifiedIngestDefinitions(undefined);
+              setIngestVerificationInProgress(false);
+            }}
+            unverifiedIngestDefinitions={unverifiedIngestDefinitions}
             viewerState={
               new DataContractViewerState(
                 selectedContract,

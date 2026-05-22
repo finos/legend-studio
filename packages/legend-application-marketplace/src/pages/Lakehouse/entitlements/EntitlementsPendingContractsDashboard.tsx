@@ -115,16 +115,33 @@ export const EntitlementsPendingContractsDashboard = observer(
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
     >();
+    const [unverifiedIngestDefinitions, setUnverifiedIngestDefinitions] =
+      useState<string[] | undefined>(undefined);
+    const [ingestVerificationInProgress, setIngestVerificationInProgress] =
+      useState(false);
     const [showForOthers, setShowForOthers] = useState<boolean>(
       myPendingContracts.length === 0 && pendingContractsForOthers.length > 0,
     );
 
-    const handleCellClicked = (
+    const handleCellClicked = async (
       event: DataGridCellClickedEvent<
         V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
       >,
     ) => {
-      setSelectedContract(event.data?.contractResultLite);
+      const contract = event.data?.contractResultLite;
+      setSelectedContract(contract);
+      setUnverifiedIngestDefinitions(undefined);
+      if (contract !== undefined) {
+        setIngestVerificationInProgress(true);
+        const result = await flowResult(
+          dashboardState.getUnverifiedIngestDefinitions(
+            contract.guid,
+            auth.user?.access_token,
+          ),
+        );
+        setUnverifiedIngestDefinitions(result);
+        setIngestVerificationInProgress(false);
+      }
     };
 
     const defaultColDef: DataGridColumnDefinition<
@@ -235,7 +252,14 @@ export const EntitlementsPendingContractsDashboard = observer(
             suppressFieldDotNotation={true}
             suppressContextMenu={false}
             columnDefs={colDefs}
-            onCellClicked={handleCellClicked}
+            onCellClicked={(
+              event: DataGridCellClickedEvent<
+                V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
+              >,
+            ) =>
+              // eslint-disable-next-line no-void
+              void handleCellClicked(event)
+            }
             defaultColDef={defaultColDef}
             rowHeight={45}
             overlayNoRowsTemplate="You have no pending contracts"
@@ -243,10 +267,15 @@ export const EntitlementsPendingContractsDashboard = observer(
             overlayLoadingTemplate="Loading contracts"
           />
         </Box>
-        {selectedContract !== undefined && (
+        {selectedContract !== undefined && !ingestVerificationInProgress && (
           <DataAccessRequestViewer
             open={true}
-            onClose={() => setSelectedContract(undefined)}
+            onClose={() => {
+              setSelectedContract(undefined);
+              setUnverifiedIngestDefinitions(undefined);
+              setIngestVerificationInProgress(false);
+            }}
+            unverifiedIngestDefinitions={unverifiedIngestDefinitions}
             viewerState={
               new DataContractViewerState(
                 selectedContract,
