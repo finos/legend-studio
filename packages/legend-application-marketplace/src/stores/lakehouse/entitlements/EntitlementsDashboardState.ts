@@ -66,12 +66,12 @@ import {
 } from './LakehouseEntitlementsStore.js';
 import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
 
-function collectIngestSpecPathsFromOriginDp(
+const collectIngestSpecPathsFromOriginDp = (
   rootDataProduct: V1_DataProduct,
   accessPointGroupId: string,
   graphManager: V1_PureGraphManager,
   plugins: PureProtocolProcessorPlugin[],
-): Set<string> {
+): Set<string> => {
   const dpPath = `${rootDataProduct.package}::${rootDataProduct.name}`;
   const targetApg = rootDataProduct.accessPointGroups.find(
     (apg) => apg.id === accessPointGroupId,
@@ -139,7 +139,7 @@ function collectIngestSpecPathsFromOriginDp(
   }
 
   return specs;
-}
+};
 
 export class ContractCreatedByUserDetails {
   readonly contractResultLite: V1_LiteDataContract;
