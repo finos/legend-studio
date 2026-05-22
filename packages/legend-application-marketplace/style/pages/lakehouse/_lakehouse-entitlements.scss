@@ -227,14 +227,6 @@
     gap: 1rem;
   }
 
-  &__missing-ingests-wrapper {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-top: -1rem;
-    margin-bottom: 2.5rem;
-  }
-
   &__close {
     position: absolute;
     right: 8px;
@@ -280,38 +272,125 @@
   }
 
   &__missing-ingests {
-    display: inline-flex;
-    flex-direction: column;
-    min-width: 32rem;
-    max-height: 18rem;
-    border: 0.3rem solid var(--color-light-grey-400);
-    font-size: 1.4rem;
+    width: 100%;
+    margin-bottom: 2rem;
+    background: var(--color-red-50, #fdecea);
+    border: 0.1rem solid var(--color-red-200);
+    border-left: 0.4rem solid var(--color-red-200);
+    border-radius: 0.4rem;
     overflow: hidden;
+    box-shadow: none;
 
-    &__heading {
-      font-weight: bold;
-      color: var(--color-red-200);
-      padding: 0.4rem 1rem;
-      border-bottom: 0.1rem solid var(--color-light-grey-400);
-      background: inherit;
+    &::before {
+      display: none;
     }
 
-    &__list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      padding: 0.4rem 1rem 1rem;
-      overflow-y: auto;
-      scrollbar-width: none;
+    &__summary {
+      padding: 0.4rem 1.2rem;
+      min-height: unset;
 
-      &::-webkit-scrollbar {
-        display: none;
+      .MuiAccordionSummary-content {
+        margin: 0.8rem 0;
+      }
+
+      .MuiAccordionSummary-expandIconWrapper {
+        color: var(--color-red-200);
+        transition: transform 200ms ease;
+      }
+
+      &__content {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        width: 100%;
+      }
+
+      &__icon {
+        color: var(--color-red-200);
+        font-size: 2rem;
+        flex-shrink: 0;
+      }
+
+      &__text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      &__title {
+        font-weight: 600;
+        font-size: 1.4rem;
+        color: var(--color-red-200);
+        line-height: 1.2;
+      }
+
+      &__subtitle {
+        font-size: 1.2rem;
+        color: var(--color-red-200);
+        opacity: 0.85;
+        line-height: 1.2;
       }
     }
 
-    &__item {
+    &__chevron {
       color: var(--color-red-200);
-      word-break: break-all;
+    }
+
+    &__details {
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      max-height: 22rem;
+      overflow-y: auto;
+      background: var(--color-light-grey-0, #fff);
+      border-top: 0.1rem solid var(--color-red-200);
+    }
+
+    &__item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.6rem 1.2rem 0.6rem 3.2rem;
+      border-bottom: 0.1rem solid var(--color-light-grey-200);
+      transition: background 150ms ease;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background: var(--color-red-50, #fdecea);
+
+        .marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item__copy-btn {
+          opacity: 1;
+        }
+      }
+
+      &__indicator {
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 50%;
+        background: var(--color-red-200);
+        flex-shrink: 0;
+      }
+
+      &__path {
+        flex: 1;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 1.2rem;
+        color: var(--color-dark-grey-300);
+        word-break: break-all;
+      }
+
+      &__copy-btn {
+        opacity: 0;
+        transition: opacity 150ms ease;
+        color: var(--color-dark-grey-300);
+
+        &:hover {
+          color: var(--color-red-200);
+        }
+      }
     }
   }
 

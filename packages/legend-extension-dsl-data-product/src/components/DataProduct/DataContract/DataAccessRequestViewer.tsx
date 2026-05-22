@@ -65,6 +65,7 @@ import {
   CopyIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  ExclamationTriangleIcon,
   ExpandMoreIcon,
   InfoCircleIcon,
   RefreshIcon,
@@ -251,6 +252,79 @@ const RequestEscalationModal = (props: {
         </Button>
       </DialogActions>
     </Dialog>
+  );
+};
+
+const UnverifiedIngestsBanner = (props: {
+  unverifiedIngestDefinitions: string[];
+  applicationStore: GenericLegendApplicationStore;
+}): React.ReactNode => {
+  const { unverifiedIngestDefinitions, applicationStore } = props;
+  const count = unverifiedIngestDefinitions.length;
+  const copyToClipboard = (text: string): void => {
+    applicationStore.clipboardService
+      .copyTextToClipboard(text)
+      .then(() =>
+        applicationStore.notificationService.notifySuccess(
+          'Copied to Clipboard',
+          undefined,
+          2500,
+        ),
+      )
+      .catch(applicationStore.alertUnhandledError);
+  };
+  return (
+    <Accordion
+      className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests"
+      elevation={0}
+      disableGutters={true}
+      square={true}
+    >
+      <AccordionSummary
+        expandIcon={
+          <ExpandMoreIcon className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__chevron" />
+        }
+        className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary"
+      >
+        <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__content">
+          <ExclamationTriangleIcon className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__icon" />
+          <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__text">
+            <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__title">
+              {count === 1 ? 'Ingest Not Found' : 'Ingests Not Found'}
+            </Box>
+            <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__subtitle">
+              {count}{' '}
+              {count === 1
+                ? 'ingest definition could'
+                : 'ingest definitions could'}{' '}
+              not be resolved from this contract
+            </Box>
+          </Box>
+        </Box>
+      </AccordionSummary>
+      <AccordionDetails className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__details">
+        {unverifiedIngestDefinitions.map((specPath) => (
+          <Box
+            key={specPath}
+            className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item"
+          >
+            <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item__indicator" />
+            <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item__path">
+              {specPath}
+            </Box>
+            <Tooltip title="Copy path">
+              <IconButton
+                size="small"
+                onClick={() => copyToClipboard(specPath)}
+                className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item__copy-btn"
+              >
+                <CopyIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ))}
+      </AccordionDetails>
+    </Accordion>
   );
 };
 
@@ -735,25 +809,10 @@ export const DataAccessRequestViewer = observer(
         </IconButton>
         <DialogContent className="marketplace-lakehouse-entitlements__data-access-request-viewer__content">
           {hasUnverifiedIngestDefinitions && (
-            <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests-wrapper">
-              <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests">
-                <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__heading">
-                  {unverifiedIngestDefinitions.length === 1
-                    ? 'Ingest Not Found:'
-                    : 'Ingests Not Found:'}
-                </Box>
-                <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__list">
-                  {unverifiedIngestDefinitions.map((specPath) => (
-                    <Box
-                      key={specPath}
-                      className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item"
-                    >
-                      {specPath}
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            </Box>
+            <UnverifiedIngestsBanner
+              unverifiedIngestDefinitions={unverifiedIngestDefinitions}
+              applicationStore={viewerState.applicationStore}
+            />
           )}
           <DataAccessRequestContent
             viewerState={viewerState}
