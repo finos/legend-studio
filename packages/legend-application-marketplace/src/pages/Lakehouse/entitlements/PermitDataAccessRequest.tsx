@@ -129,43 +129,30 @@ export const PermitDataAccessRequestTask =
         }
       };
 
-      const handleApprove = async (justification: string) => {
+      const handleTaskAction = async (
+        action: V1_PermitTaskAction,
+        justification: string,
+      ): Promise<void> => {
         if (!actionableTask || !permitState) {
           return;
         }
         await flowResult(
           permitState.performTaskAction(
             actionableTask.taskId,
-            V1_PermitTaskAction.APPROVE,
+            action,
             justification,
             auth.user?.access_token,
           ),
         );
+        const label =
+          action === V1_PermitTaskAction.APPROVE ? 'approved' : 'denied';
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          'Request has been approved',
+          `Request has been ${label}`,
         );
         await handleRefresh();
       };
 
-      const handleDeny = async (justification: string) => {
-        if (!actionableTask || !permitState) {
-          return;
-        }
-        await flowResult(
-          permitState.performTaskAction(
-            actionableTask.taskId,
-            V1_PermitTaskAction.REJECT,
-            justification,
-            auth.user?.access_token,
-          ),
-        );
-        marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          'Request has been denied',
-        );
-        await handleRefresh();
-      };
-
-      const handleApproveClick = () => {
+      const handleApproveClick = (): void => {
         let justification = '';
         marketplaceBaseStore.applicationStore.alertService.setActionAlertInfo({
           title: 'Approve Request',
@@ -181,7 +168,7 @@ export const PermitDataAccessRequestTask =
               onChange={(e) => {
                 justification = e.target.value;
               }}
-              sx={{ marginTop: 2 }}
+              className="marketplace-lakehouse-entitlements__data-access-request-viewer__justification-field"
             />
           ),
           type: ActionAlertType.STANDARD,
@@ -198,7 +185,7 @@ export const PermitDataAccessRequestTask =
                 }
                 if (!isLoading) {
                   setIsLoading(true);
-                  handleApprove(justification)
+                  handleTaskAction(V1_PermitTaskAction.APPROVE, justification)
                     .catch((error) => {
                       assertErrorThrown(error);
                       marketplaceBaseStore.applicationStore.notificationService.notifyError(
@@ -220,7 +207,7 @@ export const PermitDataAccessRequestTask =
         });
       };
 
-      const handleDenyClick = () => {
+      const handleDenyClick = (): void => {
         let justification = '';
         marketplaceBaseStore.applicationStore.alertService.setActionAlertInfo({
           title: 'Deny Request',
@@ -236,7 +223,7 @@ export const PermitDataAccessRequestTask =
               onChange={(e) => {
                 justification = e.target.value;
               }}
-              sx={{ marginTop: 2 }}
+              className="marketplace-lakehouse-entitlements__data-access-request-viewer__justification-field"
             />
           ),
           type: ActionAlertType.CAUTION,
@@ -253,7 +240,7 @@ export const PermitDataAccessRequestTask =
                 }
                 if (!isLoading) {
                   setIsLoading(true);
-                  handleDeny(justification)
+                  handleTaskAction(V1_PermitTaskAction.REJECT, justification)
                     .catch((error) => {
                       assertErrorThrown(error);
                       marketplaceBaseStore.applicationStore.notificationService.notifyError(
