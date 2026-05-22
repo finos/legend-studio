@@ -422,6 +422,8 @@ export class QueryBuilderResultState {
               this.queryBuilderState.parametersState.parameterStates,
               this.queryBuilderState.graphManagerState,
             ),
+            forceFromExpression:
+              this.queryBuilderState.forceFromExpressionForExec,
             floatingExecutionElements:
               this.queryBuilderState.floatingExecutionElements,
           },
@@ -623,6 +625,8 @@ export class QueryBuilderResultState {
             {
               forceFromExpression:
                 this.queryBuilderState.forceFromExpressionForExec,
+              floatingExecutionElements:
+                this.queryBuilderState.floatingExecutionElements,
             },
             report,
           )) as { plan: RawExecutionPlan; debug: string };
@@ -641,6 +645,8 @@ export class QueryBuilderResultState {
             {
               forceFromExpression:
                 this.queryBuilderState.forceFromExpressionForExec,
+              floatingExecutionElements:
+                this.queryBuilderState.floatingExecutionElements,
             },
             report,
           )) as object;
