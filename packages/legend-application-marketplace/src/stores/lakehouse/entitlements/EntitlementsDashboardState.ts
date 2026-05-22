@@ -34,7 +34,6 @@ import {
   type V1_TaskStatus,
   type V1_ContractUserEventRecord,
   type V1_TaskStatusChangeResponse,
-  type PureProtocolProcessorPlugin,
   RawLambda,
   V1_DataProductAccessor,
   V1_deserializeDataContractResponse,
@@ -49,12 +48,10 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
   V1_TaskStatusChangeResponseModelSchema,
   V1_transformDataContractToLiteDatacontract,
+  PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import {
-  type LakehouseContractServerClient,
-  type IngestDeploymentServerConfig,
-} from '@finos/legend-server-lakehouse';
+import { type IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import {
   makeObservable,
   flow,
@@ -269,9 +266,26 @@ export class EntitlementsDashboardState {
     const plugins =
       this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins();
     const pendingTaskContracts = (yield Promise.all(
-      pendingTaskContractIds.map((contractId) =>
-        fetchLiteContract(contractId, token, contractClient, plugins),
-      ),
+      pendingTaskContractIds.map(async (contractId) => {
+        try {
+          const rawContractResponse = await contractClient.getDataContract(
+            contractId,
+            false,
+            token,
+          );
+          const dataContract = V1_deserializeDataContractResponse(
+            rawContractResponse,
+            plugins,
+          )[0]?.dataContract;
+          if (!dataContract) {
+            return undefined;
+          }
+          return V1_transformDataContractToLiteDatacontract(dataContract);
+        } catch (error) {
+          assertErrorThrown(error);
+          return undefined;
+        }
+      }),
     )) as (V1_LiteDataContract | undefined)[];
     const resultMap = new Map<string, V1_LiteDataContract>();
     pendingTaskContractIds.forEach((contractId, idx) => {
@@ -367,15 +381,21 @@ export class EntitlementsDashboardState {
     yield Promise.all(
       Array.from(uniqueDIDToDataProduct.entries()).map(
         async ([deploymentId, resourceId]) => {
-          const details = await fetchDataProductDetails(
-            resourceId,
-            deploymentId,
-            token,
-            contractClient,
-          );
-          const env = details?.lakehouseEnvironment?.type;
-          if (env) {
-            didToEnvType.set(deploymentId, env);
+          try {
+            const raw = await contractClient.getDataProductByIdAndDID(
+              resourceId,
+              deploymentId,
+              token,
+            );
+            const env =
+              V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+                raw,
+              )[0]?.lakehouseEnvironment?.type;
+            if (env) {
+              didToEnvType.set(deploymentId, env);
+            }
+          } catch (error) {
+            assertErrorThrown(error);
           }
         },
       ),
@@ -392,17 +412,32 @@ export class EntitlementsDashboardState {
     const applicationStore = entitlementsStore.applicationStore;
     const plugins =
       applicationStore.pluginManager.getPureProtocolProcessorPlugins();
+    const contractClient = entitlementsStore.lakehouseContractServerClient;
 
     const PROD_ENV = 'prod';
     const SDLC_DEPLOYMENT = 'alloy-git';
 
     try {
-      const liteContract = (yield fetchLiteContract(
-        contractId,
-        token,
-        entitlementsStore.lakehouseContractServerClient,
-        plugins,
-      )) as V1_LiteDataContract | undefined;
+      const liteContract = (yield (async () => {
+        try {
+          const rawContractResponse = await contractClient.getDataContract(
+            contractId,
+            false,
+            token,
+          );
+          const dataContract = V1_deserializeDataContractResponse(
+            rawContractResponse,
+            plugins,
+          )[0]?.dataContract;
+          if (!dataContract) {
+            return undefined;
+          }
+          return V1_transformDataContractToLiteDatacontract(dataContract);
+        } catch (error) {
+          assertErrorThrown(error);
+          return undefined;
+        }
+      })()) as V1_LiteDataContract | undefined;
       if (!liteContract) {
         return [];
       }
@@ -415,12 +450,21 @@ export class EntitlementsDashboardState {
         return [];
       }
 
-      const dpDetails = (yield fetchDataProductDetails(
-        liteContract.resourceId,
-        liteContract.deploymentId,
-        token,
-        entitlementsStore.lakehouseContractServerClient,
-      )) as V1_EntitlementsDataProductDetails | undefined;
+      const dpDetails = (yield (async () => {
+        try {
+          const raw = await contractClient.getDataProductByIdAndDID(
+            liteContract.resourceId,
+            liteContract.deploymentId,
+            token,
+          );
+          return V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+            raw,
+          )[0];
+        } catch (error) {
+          assertErrorThrown(error);
+          return undefined;
+        }
+      })()) as V1_EntitlementsDataProductDetails | undefined;
       if (!dpDetails) {
         return [];
       }
@@ -698,53 +742,6 @@ export class EntitlementsDashboardState {
         undefined,
       );
     }
-  }
-}
-
-async function fetchLiteContract(
-  contractId: string,
-  token: string | undefined,
-  contractClient: LakehouseContractServerClient,
-  plugins: PureProtocolProcessorPlugin[],
-): Promise<V1_LiteDataContract | undefined> {
-  try {
-    const rawContractResponse = await contractClient.getDataContract(
-      contractId,
-      false,
-      token,
-    );
-    const dataContract = V1_deserializeDataContractResponse(
-      rawContractResponse,
-      plugins,
-    )[0]?.dataContract;
-    if (!dataContract) {
-      return undefined;
-    }
-    return V1_transformDataContractToLiteDatacontract(dataContract);
-  } catch (error) {
-    assertErrorThrown(error);
-    return undefined;
-  }
-}
-
-async function fetchDataProductDetails(
-  resourceId: string,
-  deploymentId: number,
-  token: string | undefined,
-  contractClient: LakehouseContractServerClient,
-): Promise<V1_EntitlementsDataProductDetails | undefined> {
-  try {
-    const raw = await contractClient.getDataProductByIdAndDID(
-      resourceId,
-      deploymentId,
-      token,
-    );
-    return V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-      raw,
-    )[0];
-  } catch (error) {
-    assertErrorThrown(error);
-    return undefined;
   }
 }
 

@@ -729,9 +729,6 @@ export const DataAccessRequestViewer = observer(
             <span>
               {isRequestInProgress ? 'Pending ' : ''}Data Access Request
             </span>
-            {hasUnverifiedIngestDefinitions && (
-              <WarningIcon className="marketplace-lakehouse-entitlements__data-access-request-viewer__title__warning-icon" />
-            )}
           </Box>
         </DialogTitle>
         <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
