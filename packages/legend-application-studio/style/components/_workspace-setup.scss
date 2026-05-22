@@ -299,7 +299,7 @@
   }
 
   &__title {
-    height: 32%;
+    height: 24%;
   }
 
   &__title__header {
@@ -416,7 +416,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 32%;
+    height: 30%;
 
     &__container {
       display: flex;
@@ -517,6 +517,7 @@
 
   &__actions-combo {
     height: 36%;
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -594,35 +595,55 @@
 }
 
 .workspace-setup__recents {
-  margin: 0 2vw 1.5vh;
+  // Sits between __title and __selectors inside __content__main. Size to the
+  // tile's natural height (auto) with a cap so the panel cannot push the
+  // action buttons out of view on short viewports / high zoom. `flex-shrink`
+  // on __actions-combo already protects the actions, so we don't need to
+  // pre-reserve a fixed slice here.
+  flex: 0 0 auto;
+  max-height: 14vh;
+  margin: 0 2vw;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.4rem;
+    flex-shrink: 0;
 
     &__title {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      font-size: 1.3rem;
+      gap: 0.5rem;
+      font-size: 1.2rem;
       font-weight: 500;
       color: var(--color-light-grey-300);
 
       svg {
         color: var(--color-light-grey-400);
-        font-size: 1.2rem;
+        font-size: 1.1rem;
       }
     }
   }
 
   &__grid {
+    // One row only — overflow scrolls horizontally so the panel never grows
+    // vertically and starts overlapping the selectors / actions below.
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-    gap: 1rem;
+    grid-auto-flow: column;
+    // Fixed-width columns so tiles keep their natural size instead of
+    // stretching to fill the row when there are only a few recents.
+    grid-auto-columns: 18rem;
+    justify-content: start;
+    gap: 0.8rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 0.2rem; // breathing room for the scrollbar
   }
 
   &__tile {
@@ -630,7 +651,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 1rem 1.2rem;
+    padding: 0.6rem 0.8rem;
     background: var(--color-dark-grey-85);
     border: 0.1rem solid var(--color-dark-grey-200);
     border-radius: 0.3rem;
@@ -640,7 +661,6 @@
     transition:
       background-color 0.1s ease-in-out,
       border-color 0.1s ease-in-out;
-    min-height: 7.5rem;
 
     &:hover {
       background: var(--color-dark-grey-100);
@@ -658,10 +678,10 @@
 
     &__remove {
       position: absolute;
-      top: 0.4rem;
-      right: 0.4rem;
-      width: 1.8rem;
-      height: 1.8rem;
+      top: 0.2rem;
+      right: 0.2rem;
+      width: 1.6rem;
+      height: 1.6rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -681,7 +701,7 @@
       }
 
       svg {
-        font-size: 1rem;
+        font-size: 0.9rem;
       }
     }
 
@@ -689,14 +709,14 @@
     &__workspace {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
       width: 100%;
       min-width: 0;
 
       svg {
         flex-shrink: 0;
         color: var(--color-light-grey-400);
-        font-size: 1.1rem;
+        font-size: 1rem;
       }
 
       &__name {
@@ -707,20 +727,19 @@
     }
 
     &__project {
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: 500;
-      margin-bottom: 0.4rem;
-      padding-right: 1.6rem; // leave room for the remove button
+      margin-bottom: 0.2rem;
+      padding-right: 1.4rem; // leave room for the remove button
     }
 
     &__workspace {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: var(--color-light-grey-200);
-      margin-bottom: 0.6rem;
     }
 
     &__time {
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: var(--color-light-grey-400);
     }
 
@@ -728,7 +747,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.6rem;
+      gap: 0.4rem;
       width: 100%;
       margin-top: auto;
     }
@@ -736,19 +755,19 @@
     &__tags {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.3rem;
       flex-wrap: nowrap;
       overflow: hidden;
     }
 
     &__tag {
-      font-size: 1rem;
-      line-height: 1.4rem;
-      padding: 0 0.5rem;
+      font-size: 0.95rem;
+      line-height: 1.3rem;
+      padding: 0 0.4rem;
       border-radius: 0.2rem;
       background: var(--color-dark-grey-200);
       color: var(--color-light-grey-300);
-      max-width: 8rem;
+      max-width: 6rem;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
