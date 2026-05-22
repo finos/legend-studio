@@ -19,6 +19,7 @@ import {
   ROOT_PACKAGE_NAME,
   AUTO_IMPORTS,
   PRECISE_PRIMITIVE_TYPE,
+  BUILT_IN_TYPE,
 } from '../graph/MetaModelConst.js';
 import {
   type Clazz,
@@ -100,6 +101,7 @@ export class CoreModel extends BasicModel {
     super(ROOT_PACKAGE_NAME.CORE, graphPlugins);
     this.initializePrimitiveTypes();
     this.initializePrecisePrimitiveTypes();
+    this.initializeBuiltInClasses();
     // index model store singleton
     this.setOwnStore(ModelStore.NAME, ModelStore.INSTANCE);
   }
@@ -138,6 +140,18 @@ export class CoreModel extends BasicModel {
     ].forEach((primitiveType) => {
       this.primitiveTypesIndex.set(primitiveType.path, primitiveType);
       this.setOwnType(primitiveType.path, primitiveType);
+    });
+  }
+
+  /**
+   * Built-in generic classes (e.g. `Map<K, V>`) are referenced by the Pure
+   * engine via unqualified type paths, so they must be discoverable through
+   * the core model the same way primitive types are.
+   */
+  initializeBuiltInClasses(): void {
+    Object.values(BUILT_IN_TYPE).forEach((typeName) => {
+      const cls = new Class(typeName);
+      this.setOwnType(cls.path, cls);
     });
   }
 
