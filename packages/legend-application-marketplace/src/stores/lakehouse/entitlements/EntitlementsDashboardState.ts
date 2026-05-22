@@ -66,6 +66,81 @@ import {
 } from './LakehouseEntitlementsStore.js';
 import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
 
+function collectIngestSpecPathsFromOriginDp(
+  rootDataProduct: V1_DataProduct,
+  accessPointGroupId: string,
+  graphManager: V1_PureGraphManager,
+  plugins: PureProtocolProcessorPlugin[],
+): Set<string> {
+  const dpPath = `${rootDataProduct.package}::${rootDataProduct.name}`;
+  const targetApg = rootDataProduct.accessPointGroups.find(
+    (apg) => apg.id === accessPointGroupId,
+  );
+  if (!targetApg) {
+    throw new Error(
+      `Access point group '${accessPointGroupId}' not found in data product '${dpPath}'`,
+    );
+  }
+  const specs = new Set<string>();
+  const visited = new Set<string>();
+  const worklist: string[] = [accessPointGroupId];
+
+  const collectFromApg = (apgId: string): void => {
+    const apg = rootDataProduct.accessPointGroups.find((g) => g.id === apgId);
+    if (!apg) {
+      return;
+    }
+    for (const accessPoint of apg.accessPoints) {
+      if (!(accessPoint instanceof V1_LakehouseAccessPoint)) {
+        continue;
+      }
+      const visitKey = `${dpPath}::${accessPoint.id}`;
+      if (visited.has(visitKey)) {
+        continue;
+      }
+      visited.add(visitKey);
+
+      const rawLambda = new RawLambda(
+        accessPoint.func.parameters,
+        accessPoint.func.body,
+      );
+      const accessors =
+        V1_resolveAccessorsFromRawLambda(rawLambda, graphManager, plugins) ??
+        [];
+      for (const accessor of accessors) {
+        if (accessor instanceof V1_IngestDefinitionAccessor) {
+          const specPath = accessor.path[0];
+          if (specPath) {
+            specs.add(specPath);
+          }
+        } else if (accessor instanceof V1_DataProductAccessor) {
+          const refDpPath = accessor.path[0];
+          const refApId = accessor.path[1];
+          if (!refDpPath || !refApId) {
+            continue;
+          }
+          if (refDpPath !== dpPath) {
+            continue;
+          }
+          const refApg = rootDataProduct.accessPointGroups.find((g) =>
+            g.accessPoints.some((ap) => ap.id === refApId),
+          );
+          if (refApg && !worklist.includes(refApg.id)) {
+            worklist.push(refApg.id);
+          }
+        }
+      }
+    }
+  };
+
+  while (worklist.length > 0) {
+    const apgId = guaranteeNonNullable(worklist.shift());
+    collectFromApg(apgId);
+  }
+
+  return specs;
+}
+
 export class ContractCreatedByUserDetails {
   readonly contractResultLite: V1_LiteDataContract;
   assignees: Set<string> = new Set();
@@ -743,79 +818,4 @@ export class EntitlementsDashboardState {
       );
     }
   }
-}
-
-function collectIngestSpecPathsFromOriginDp(
-  rootDataProduct: V1_DataProduct,
-  accessPointGroupId: string,
-  graphManager: V1_PureGraphManager,
-  plugins: PureProtocolProcessorPlugin[],
-): Set<string> {
-  const dpPath = `${rootDataProduct.package}::${rootDataProduct.name}`;
-  const targetApg = rootDataProduct.accessPointGroups.find(
-    (apg) => apg.id === accessPointGroupId,
-  );
-  if (!targetApg) {
-    throw new Error(
-      `Access point group '${accessPointGroupId}' not found in data product '${dpPath}'`,
-    );
-  }
-  const specs = new Set<string>();
-  const visited = new Set<string>();
-  const worklist: string[] = [accessPointGroupId];
-
-  const collectFromApg = (apgId: string): void => {
-    const apg = rootDataProduct.accessPointGroups.find((g) => g.id === apgId);
-    if (!apg) {
-      return;
-    }
-    for (const accessPoint of apg.accessPoints) {
-      if (!(accessPoint instanceof V1_LakehouseAccessPoint)) {
-        continue;
-      }
-      const visitKey = `${dpPath}::${accessPoint.id}`;
-      if (visited.has(visitKey)) {
-        continue;
-      }
-      visited.add(visitKey);
-
-      const rawLambda = new RawLambda(
-        accessPoint.func.parameters,
-        accessPoint.func.body,
-      );
-      const accessors =
-        V1_resolveAccessorsFromRawLambda(rawLambda, graphManager, plugins) ??
-        [];
-      for (const accessor of accessors) {
-        if (accessor instanceof V1_IngestDefinitionAccessor) {
-          const specPath = accessor.path[0];
-          if (specPath) {
-            specs.add(specPath);
-          }
-        } else if (accessor instanceof V1_DataProductAccessor) {
-          const refDpPath = accessor.path[0];
-          const refApId = accessor.path[1];
-          if (!refDpPath || !refApId) {
-            continue;
-          }
-          if (refDpPath !== dpPath) {
-            continue;
-          }
-          const refApg = rootDataProduct.accessPointGroups.find((g) =>
-            g.accessPoints.some((ap) => ap.id === refApId),
-          );
-          if (refApg && !worklist.includes(refApg.id)) {
-            worklist.push(refApg.id);
-          }
-        }
-      }
-    }
-  };
-
-  while (worklist.length > 0) {
-    const apgId = guaranteeNonNullable(worklist.shift());
-    collectFromApg(apgId);
-  }
-
-  return specs;
 }
