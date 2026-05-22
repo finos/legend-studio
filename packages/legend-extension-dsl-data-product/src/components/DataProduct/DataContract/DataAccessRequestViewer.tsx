@@ -70,7 +70,6 @@ import {
   RefreshIcon,
   TimesIcon,
   TrashIcon,
-  WarningIcon,
 } from '@finos/legend-art';
 import {
   getOrganizationalScopeTypeDetails,

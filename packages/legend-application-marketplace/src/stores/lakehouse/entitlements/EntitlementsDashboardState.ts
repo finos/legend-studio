@@ -25,6 +25,7 @@ import {
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
+  type PureProtocolProcessorPlugin,
   type V1_DataProduct,
   type V1_EnrichedUserApprovalStatus,
   type V1_EntitlementsDataProductDetails,
@@ -48,7 +49,6 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
   V1_TaskStatusChangeResponseModelSchema,
   V1_transformDataContractToLiteDatacontract,
-  PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { type IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
