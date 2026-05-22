@@ -20,20 +20,22 @@ import { flowResult } from 'mobx';
 import { useCallback, useEffect, useRef } from 'react';
 import { useSyncStateAndSearchParam } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
-import { isNonEmptyString } from '@finos/legend-shared';
+import { isNonEmptyString, LogEvent } from '@finos/legend-shared';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { DATAPRODUCT_TYPE } from '@finos/legend-extension-dsl-data-product';
 import {
   LEGEND_MARKETPLACE_FIELD_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
   generateLakehouseSearchResultsRoute,
+  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import {
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
 } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
+
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../__lib__/LegendMarketplaceAppEvent.js';
 import {
   useLegendMarketplaceFieldSearchResultsStore,
   withLegendMarketplaceFieldSearchResultsStore,
@@ -54,6 +56,9 @@ const FieldSearchResultsContent = observer(
     handleItemsPerPageChange: (itemsPerPage: number) => void;
     handleToggleExpandRow: (rowId: string) => void;
     handleOpenDataProduct: (dataProduct: FieldSearchDataProductEntry) => void;
+    handleOpenDatasetInQuery: (
+      dataProduct: FieldSearchDataProductEntry,
+    ) => void;
   }) => {
     const {
       fieldSearchResultsStore,
@@ -61,6 +66,7 @@ const FieldSearchResultsContent = observer(
       handleItemsPerPageChange,
       handleToggleExpandRow,
       handleOpenDataProduct,
+      handleOpenDatasetInQuery,
     } = props;
 
     if (fieldSearchResultsStore.isLoading) {
@@ -160,6 +166,9 @@ const FieldSearchResultsContent = observer(
             <Typography className="marketplace-lakehouse-field-search-results__list-header-cell">
               Data Products
             </Typography>
+            <Typography className="marketplace-lakehouse-field-search-results__list-header-cell">
+              Datasets
+            </Typography>
           </div>
           <div className="marketplace-lakehouse-field-search-results__list-body">
             {fieldSearchResultsStore.tableRows.map((row) => (
@@ -169,6 +178,7 @@ const FieldSearchResultsContent = observer(
                 expanded={fieldSearchResultsStore.isRowExpanded(row.id)}
                 onToggleExpanded={handleToggleExpandRow}
                 onOpenDataProduct={handleOpenDataProduct}
+                onOpenDatasetInQuery={handleOpenDatasetInQuery}
               />
             ))}
           </div>
@@ -283,29 +293,45 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
     [applicationStore, fieldSearchResultsStore],
   );
 
-  const handleOpenDataProduct = useCallback(
-    (dataProduct: FieldSearchDataProductEntry) => {
-      LegendMarketplaceTelemetryHelper.logEvent_ClickingDataProductCard(
-        applicationStore.telemetryService,
-        {
-          origin:
-            dataProduct.productType === DataProductTypeFilter.LEGACY
-              ? {
-                  type: DATAPRODUCT_TYPE.SDLC,
-                  groupId: dataProduct.groupId,
-                  artifactId: dataProduct.artifactId,
-                  versionId: dataProduct.versionId,
-                  path: dataProduct.entityPath,
-                }
-              : {
-                  type: DATAPRODUCT_TYPE.ADHOC,
-                },
-          dataProductId: dataProduct.dataProductId,
-          name: dataProduct.name,
-          deploymentId: dataProduct.deploymentId,
-        },
-        LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
-      );
+  const openInLegendQuery = useCallback(
+    (
+      dataProduct: FieldSearchDataProductEntry,
+      modelPath: string | undefined,
+    ) => {
+      const isLegacyDataProduct =
+        dataProduct.productType === DataProductTypeFilter.LEGACY;
+      const canOpenLegacyQuery =
+        dataProduct.groupId &&
+        dataProduct.artifactId &&
+        dataProduct.versionId &&
+        dataProduct.executionContextKey;
+
+      if (isLegacyDataProduct && canOpenLegacyQuery) {
+        applicationStore.navigationService.navigator.visitAddress(
+          EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
+            applicationStore.config.queryApplicationUrl,
+            dataProduct.groupId,
+            dataProduct.artifactId,
+            dataProduct.versionId,
+            dataProduct.entityPath,
+            dataProduct.executionContextKey,
+            undefined,
+            modelPath,
+          ),
+        );
+        return;
+      }
+
+      if (isLegacyDataProduct && !canOpenLegacyQuery) {
+        applicationStore.logService.warn(
+          LogEvent.create(
+            LEGEND_MARKETPLACE_APP_EVENT.CLICK_QUERY_DATA_PRODUCT,
+          ),
+          `Falling back to marketplace navigation for legacy data product ${dataProduct.entityPath} due to missing query context`,
+        );
+      }
+
+      // Fallback to marketplace data product page for adhoc/lakehouse products
       applicationStore.navigationService.navigator.visitAddress(
         applicationStore.navigationService.navigator.generateAddress(
           dataProduct.path,
@@ -315,12 +341,35 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
     [applicationStore],
   );
 
+  const handleOpenDataProduct = useCallback(
+    (dataProduct: FieldSearchDataProductEntry) => {
+      openInLegendQuery(dataProduct, undefined);
+    },
+    [openInLegendQuery],
+  );
+
+  const handleOpenDatasetInQuery = useCallback(
+    (dataProduct: FieldSearchDataProductEntry) => {
+      openInLegendQuery(dataProduct, dataProduct.modelPath);
+    },
+    [openInLegendQuery],
+  );
+
   const handleToggleExpandRow = useCallback(
     (rowId: string) => {
       fieldSearchResultsStore.toggleExpandRow(rowId);
     },
     [fieldSearchResultsStore],
   );
+
+  const handleOpenDataProductsTab = useCallback(() => {
+    applicationStore.navigationService.navigator.goToLocation(
+      generateLakehouseSearchResultsRoute(
+        fieldSearchResultsStore.searchQuery,
+        false,
+      ),
+    );
+  }, [applicationStore, fieldSearchResultsStore.searchQuery]);
 
   return (
     <LegendMarketplacePage className="marketplace-lakehouse-search-results marketplace-lakehouse-field-search-results">
@@ -345,6 +394,31 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
           >
             {fieldSearchResultsStore.totalFieldMatches} Fields
           </Typography>
+          <div
+            className="legend-marketplace-search-results__search-type-tabs"
+            role="tablist"
+            aria-label="Search result type"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={false}
+              tabIndex={-1}
+              className="legend-marketplace-search-results__search-type-tab"
+              onClick={handleOpenDataProductsTab}
+            >
+              Data Products
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={true}
+              tabIndex={0}
+              className="legend-marketplace-search-results__search-type-tab legend-marketplace-search-results__search-type-tab--active"
+            >
+              Data Fields
+            </button>
+          </div>
         </div>
       </div>
       <Container
@@ -366,6 +440,7 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
               handleItemsPerPageChange={handleItemsPerPageChange}
               handleToggleExpandRow={handleToggleExpandRow}
               handleOpenDataProduct={handleOpenDataProduct}
+              handleOpenDatasetInQuery={handleOpenDatasetInQuery}
             />
           </div>
         </div>

@@ -19,12 +19,22 @@ import {
   type GroupedFieldSearchDataProduct,
   type GroupedFieldSearchResultEntry,
 } from '@finos/legend-server-marketplace';
+import { hashArray } from '@finos/legend-shared';
 import { DataProductTypeFilter } from '../LegendMarketplaceSearchResultsStore.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import {
   generateLakehouseDataProductPath,
   generateLegacyDataProductPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
+
+enum FieldSearchResultStateDefaultValue {
+  UNKNOWN_FIELD_TYPE = 'Unknown',
+  EMPTY_FIELD_DESCRIPTION = '-',
+}
+
+enum FieldSearchDataProductKey {
+  DISTINCT_SEPARATOR = '|',
+}
 
 const PRODUCT_TYPE_FILTER_MAP: Record<
   DataProductSearchResultDetailsType,
@@ -38,6 +48,28 @@ const PRODUCT_TYPE_FILTER_MAP: Record<
 
 const getDataProductName = (path: string): string =>
   path.split('::').at(-1) ?? path;
+
+const generateFieldSearchResultId = (
+  fieldName: string,
+  fieldType: string,
+  fieldDescription: string,
+): string => `${hashArray([fieldName, fieldType, fieldDescription])}`;
+
+const getDistinctDataProducts = (
+  dataProducts: FieldSearchDataProductEntry[],
+): FieldSearchDataProductEntry[] => {
+  const seen = new Set<string>();
+  return dataProducts.filter((dp) => {
+    // Dedupe primarily by owning data product path. Fallback to a stable
+    // composite key only when path is unavailable.
+    const dedupeKey = dp.path || dp.distinctKey;
+    if (seen.has(dedupeKey)) {
+      return false;
+    }
+    seen.add(dedupeKey);
+    return true;
+  });
+};
 
 const getOwningDataProductPath = (
   dataProduct: GroupedFieldSearchDataProduct,
@@ -71,6 +103,8 @@ const getOwningDataProductPath = (
 export class FieldSearchDataProductEntry {
   readonly name: string;
   readonly datasetName: string | undefined;
+  readonly datasetDescription: string | undefined;
+  readonly executionContextKey: string | undefined;
   readonly modelPath: string | undefined;
   readonly path: string;
   readonly entityPath: string;
@@ -80,6 +114,7 @@ export class FieldSearchDataProductEntry {
   readonly artifactId: string | undefined;
   readonly versionId: string | undefined;
   readonly productType: DataProductTypeFilter | undefined;
+  readonly distinctKey: string;
 
   constructor(dataProduct: GroupedFieldSearchDataProduct) {
     const productType = PRODUCT_TYPE_FILTER_MAP[dataProduct.productType];
@@ -87,6 +122,8 @@ export class FieldSearchDataProductEntry {
 
     this.name = dataProductName;
     this.datasetName = dataProduct.datasetName;
+    this.datasetDescription = dataProduct.datasetDescription;
+    this.executionContextKey = dataProduct.defaultExecutionContext;
     this.modelPath = dataProduct.modelPath;
     this.path = getOwningDataProductPath(dataProduct);
     this.entityPath = dataProduct.path;
@@ -96,6 +133,12 @@ export class FieldSearchDataProductEntry {
     this.artifactId = dataProduct.artifactId;
     this.versionId = dataProduct.versionId;
     this.productType = productType;
+    this.distinctKey = [
+      this.path,
+      this.entityPath,
+      this.dataProductId,
+      this.name,
+    ].join(FieldSearchDataProductKey.DISTINCT_SEPARATOR);
   }
 }
 
@@ -105,18 +148,24 @@ export class FieldSearchResultState {
   readonly fieldType: string;
   readonly fieldDescription: string;
   readonly dataProducts: FieldSearchDataProductEntry[];
+  readonly distinctDataProducts: FieldSearchDataProductEntry[];
 
   constructor(result: GroupedFieldSearchResultEntry) {
     this.fieldName = result.fieldName;
-    this.fieldType = result.fieldType ?? 'Unknown';
-    this.fieldDescription = result.fieldDescription ?? '-';
-    this.id = JSON.stringify([
+    this.fieldType =
+      result.fieldType ?? FieldSearchResultStateDefaultValue.UNKNOWN_FIELD_TYPE;
+    this.fieldDescription =
+      result.fieldDescription ??
+      FieldSearchResultStateDefaultValue.EMPTY_FIELD_DESCRIPTION;
+    this.id = generateFieldSearchResultId(
       this.fieldName,
       this.fieldType,
       this.fieldDescription,
-    ]);
+    );
     this.dataProducts = result.dataProducts.map(
       (dp) => new FieldSearchDataProductEntry(dp),
     );
+    // Precompute once since dataProducts are immutable after construction.
+    this.distinctDataProducts = getDistinctDataProducts(this.dataProducts);
   }
 }

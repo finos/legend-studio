@@ -382,6 +382,43 @@ export const LegendMarketplaceSearchResults =
                   ? `${searchResultsStore.filterSortProducts?.length ?? 0} Products`
                   : `${searchResultsStore.totalItems} Products`}
               </Typography>
+              <div
+                className="legend-marketplace-search-results__search-type-tabs"
+                role="tablist"
+                aria-label="Search result type"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={true}
+                  tabIndex={0}
+                  className="legend-marketplace-search-results__search-type-tab legend-marketplace-search-results__search-type-tab--active"
+                >
+                  Data Products
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={false}
+                  tabIndex={-1}
+                  className="legend-marketplace-search-results__search-type-tab"
+                  onClick={() => {
+                    if (isNonEmptyString(searchResultsStore.searchQuery)) {
+                      applicationStore.navigationService.navigator.goToLocation(
+                        generateFieldSearchResultsRoute(
+                          searchResultsStore.searchQuery,
+                        ),
+                      );
+                    } else {
+                      applicationStore.navigationService.navigator.goToLocation(
+                        generateFieldSearchResultsRoute(undefined),
+                      );
+                    }
+                  }}
+                >
+                  Data Fields
+                </button>
+              </div>
               <div className="legend-marketplace-search-results__sort-bar__controls">
                 <div className="legend-marketplace-search-results__view-toggle">
                   <div
