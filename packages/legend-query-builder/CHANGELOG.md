@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.18.11
+
+### Patch Changes
+
+- [#5188](https://github.com/finos/legend-studio/pull/5188) [`8a790b8`](https://github.com/finos/legend-studio/commit/8a790b8ea7159f3959f22858861ff48ef8e336a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Align generatePlan, exportData with runQuery
+
 ## 4.18.10
 
 ## 4.18.9
