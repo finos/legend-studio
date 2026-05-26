@@ -189,8 +189,10 @@ export const getCommonEntitlementsColDefs = (
             ? new Date(contract.createdAt).getTime()
             : 0;
         }
-        const c = (row as { data: V1_DataRequestWithWorkflow }).data
-          .workflows[0]?.tasks[0]?.createdOn;
+        if (row.kind !== ROW_KIND_REQUEST) {
+          return 0;
+        }
+        const c = row.data.workflows[0]?.tasks[0]?.createdOn;
         if (!c) {
           return 0;
         }
@@ -207,8 +209,10 @@ export const getCommonEntitlementsColDefs = (
       if (contract) {
         return formatOrderDate(contract.createdAt) ?? UNKNOWN;
       }
-      const createdOn = (params.data as { data: V1_DataRequestWithWorkflow })
-        .data.workflows[0]?.tasks[0]?.createdOn;
+      if (params.data.kind !== ROW_KIND_REQUEST) {
+        return UNKNOWN;
+      }
+      const createdOn = params.data.data.workflows[0]?.tasks[0]?.createdOn;
       if (!createdOn) {
         return UNKNOWN;
       }
