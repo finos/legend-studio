@@ -1,5 +1,15 @@
 # @finos/legend-server-marketplace
 
+## 0.1.68
+
+### Patch Changes
+
+- [#5185](https://github.com/finos/legend-studio/pull/5185) [`3ad3007`](https://github.com/finos/legend-studio/commit/3ad3007a4ecdc6d578a800da92353c0033367384) ([@nguyenqchi](https://github.com/nguyenqchi)) - Enhance Lakehouse field search results to better separate data products from datasets.
+
+  - Add dedicated `Data Products` and `Datasets` columns in field search results.
+  - Add dataset chip tooltip support and dataset click-to-query behavior for legacy products (with marketplace fallback for lakehouse products).
+  - Extend field-search response models to include optional dataset metadata (`datasetDescription`, `defaultExecutionContext`) used by the UI.
+
 ## 0.1.67
 
 ## 0.1.66

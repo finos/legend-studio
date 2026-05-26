@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.82
+
+### Patch Changes
+
+- [#5187](https://github.com/finos/legend-studio/pull/5187) [`d44b7cd`](https://github.com/finos/legend-studio/commit/d44b7cd541ce3a48c89a12db794ba3016e55b69c) ([@jackp5150](https://github.com/jackp5150)) - Add warning label to contract viewer when missing ingests
+
 ## 0.0.81
 
 ## 0.0.80

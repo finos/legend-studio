@@ -1,5 +1,17 @@
 # @finos/legend-application-marketplace
 
+## 0.2.13
+
+### Patch Changes
+
+- [#5185](https://github.com/finos/legend-studio/pull/5185) [`3ad3007`](https://github.com/finos/legend-studio/commit/3ad3007a4ecdc6d578a800da92353c0033367384) ([@nguyenqchi](https://github.com/nguyenqchi)) - Enhance Lakehouse field search results to better separate data products from datasets.
+
+  - Add dedicated `Data Products` and `Datasets` columns in field search results.
+  - Add dataset chip tooltip support and dataset click-to-query behavior for legacy products (with marketplace fallback for lakehouse products).
+  - Extend field-search response models to include optional dataset metadata (`datasetDescription`, `defaultExecutionContext`) used by the UI.
+
+- [#5187](https://github.com/finos/legend-studio/pull/5187) [`d44b7cd`](https://github.com/finos/legend-studio/commit/d44b7cd541ce3a48c89a12db794ba3016e55b69c) ([@jackp5150](https://github.com/jackp5150)) - Add ingest verification from contract id flow to EntitlementsDashboardState
+
 ## 0.2.12
 
 ### Patch Changes
