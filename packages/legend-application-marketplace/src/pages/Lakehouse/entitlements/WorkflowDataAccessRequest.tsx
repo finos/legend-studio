@@ -71,10 +71,11 @@ export const WorkflowDataAccessRequestTask =
           return undefined;
         }
         // Prefer workflow server tasks
-        const { privilegeManagerTask, dataOwnerTask } =
+        const { privilegeManagerTasks, dataOwnerTasks } =
           workflowState.workflowTasks;
-        const workflowServerTask = [privilegeManagerTask, dataOwnerTask].find(
-          (task) => task !== undefined && task.status === 'OPEN',
+        const allTasks = [...privilegeManagerTasks, ...dataOwnerTasks];
+        const workflowServerTask = allTasks.find(
+          (task) => task.status === 'OPEN',
         );
         if (workflowServerTask) {
           return workflowServerTask;
@@ -85,8 +86,8 @@ export const WorkflowDataAccessRequestTask =
           .find((task) => task.status === V1_WorkflowTaskStatus.OPEN);
         if (fallbackTask) {
           // Find the matching raw workflow task by taskId, or build a minimal one from the fallback
-          const matchingRaw = [privilegeManagerTask, dataOwnerTask].find(
-            (t) => t?.taskId === fallbackTask.taskId,
+          const matchingRaw = allTasks.find(
+            (t) => t.taskId === fallbackTask.taskId,
           );
           if (matchingRaw) {
             return matchingRaw;

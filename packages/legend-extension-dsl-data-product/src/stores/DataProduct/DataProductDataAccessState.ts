@@ -69,6 +69,7 @@ import type { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
 import { PermitDataAccessRequestState } from './DataAccess/PermitDataAccessRequestState.js';
+import { type DataAccessRequestState } from './DataAccess/DataAccessRequestState.js';
 
 export enum DataAccessRequestType {
   CONTRACT = 'CONTRACT',
@@ -95,6 +96,9 @@ export type ContractConsumerTypeRendererConfig = {
   organizationalScopeTypeDetailsRenderer?: (
     consumer: V1_OrganizationalScope,
   ) => React.ReactNode | undefined;
+  stringifyOrganizationalScope?: (
+    consumer: V1_OrganizationalScope,
+  ) => string | undefined;
   enableForEnterpriseAPGs?: boolean;
 };
 
@@ -142,8 +146,7 @@ export class DataProductDataAccessState {
   contractViewerContractAndSubscription:
     | V1_DataContractSubscriptions
     | undefined = undefined;
-  permitRequestViewerState: PermitDataAccessRequestState | undefined =
-    undefined;
+  dataAccessRequestViewerState: DataAccessRequestState | undefined = undefined;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnv: IngestDeploymentServerConfig | undefined;
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
@@ -170,14 +173,14 @@ export class DataProductDataAccessState {
       associatedContracts: observable,
       contractCreatorAPG: observable,
       contractViewerContractAndSubscription: observable,
-      permitRequestViewerState: observable,
+      dataAccessRequestViewerState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnv: observable,
       lakehouseIngestEnvironmentDetails: observable,
       userEntitlementsEnv: observable,
       dataProductOwners: observable,
       setContractViewerContractAndSubscription: action,
-      setPermitRequestViewerState: action,
+      setDataAccessRequestViewerState: action,
       setAssociatedContracts: action,
       filteredDataProductQueryEnvs: computed,
       resolvedUserEnv: computed,
@@ -260,10 +263,10 @@ export class DataProductDataAccessState {
     this.contractViewerContractAndSubscription = val;
   }
 
-  setPermitRequestViewerState(
-    val: PermitDataAccessRequestState | undefined,
+  setDataAccessRequestViewerState(
+    val: DataAccessRequestState | undefined,
   ): void {
-    this.permitRequestViewerState = val;
+    this.dataAccessRequestViewerState = val;
   }
 
   setLakehouseIngestEnvironmentSummaries(
@@ -595,7 +598,7 @@ export class DataProductDataAccessState {
               : {}),
           },
         );
-        this.setPermitRequestViewerState(viewerState);
+        this.setDataAccessRequestViewerState(viewerState);
       }
       this.applicationStore.notificationService.notifySuccess(
         `Permit data access request created successfully`,
