@@ -168,7 +168,10 @@ export class CartStore {
     return [];
   }
 
-  *addToCartWithAPI(cartItemData: CartItemRequest): GeneratorFn<{
+  *addToCartWithAPI(
+    cartItemData: CartItemRequest,
+    suppressSuccessToast = false,
+  ): GeneratorFn<{
     success: boolean;
     recommendations?: TerminalResult[];
     message: string;
@@ -194,7 +197,7 @@ export class CartStore {
       const responseMessage: string = response.message;
       if (!/^2\d\d$/.test(String(response.status_code))) {
         toastManager.warning(responseMessage);
-      } else {
+      } else if (!suppressSuccessToast) {
         toastManager.success(responseMessage);
       }
 

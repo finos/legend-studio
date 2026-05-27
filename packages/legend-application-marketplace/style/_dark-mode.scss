@@ -4258,4 +4258,193 @@
       }
     }
   }
+
+  // ── Order Profile Card ────────────────────────────────────────────────────
+
+  .legend-marketplace-order-profile-card {
+    &__info-button {
+      color: rgb(255 255 255 / 70%);
+
+      &:hover {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+  }
+
+  // ── Order Profile Detail Modal ─────────────────────────────────────────────
+
+  .order-profile-modal {
+    &__header {
+      border-bottom-color: var(--color-dark-theme-border);
+      background: var(--color-dark-theme-bg-secondary);
+    }
+
+    &__header-icon {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__profile-name {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__close-button {
+      color: var(--color-dark-theme-text-secondary);
+
+      &:hover {
+        color: var(--color-dark-theme-text-primary);
+        background: rgb(255 255 255 / 8%);
+      }
+    }
+
+    &__header-summary {
+      color: var(--color-dark-theme-text-secondary);
+
+      strong {
+        color: var(--color-dark-green-50);
+      }
+    }
+
+    &__table-head {
+      background: var(--color-dark-theme-bg-tertiary);
+    }
+
+    &__table-header-cell {
+      color: var(--color-dark-theme-text-secondary);
+      border-bottom-color: var(--color-dark-theme-border) !important;
+    }
+
+    &__table-row {
+      &:hover {
+        background: var(--color-dark-theme-bg-tertiary);
+      }
+
+      &--owned {
+        opacity: 0.5;
+      }
+
+      &--in-cart {
+        background: rgb(22 161 99 / 8%);
+
+        &:hover {
+          background: rgb(22 161 99 / 14%);
+        }
+      }
+    }
+
+    &__table-cell {
+      color: var(--color-dark-theme-text-primary);
+      border-bottom-color: var(--color-dark-theme-border) !important;
+
+      &--price {
+        color: var(--color-dark-green-50);
+      }
+    }
+
+    &__product-name-wrapper {
+      &--sub {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__row-accent {
+      &--vendor-profile {
+        background: var(--color-dark-theme-blue-primary);
+      }
+
+      &--addon {
+        background: var(--color-dark-green-50);
+      }
+    }
+
+    &__owned-label {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__in-cart-label {
+      color: var(--color-dark-green-50);
+    }
+
+    &__category-chip {
+      &--terminal {
+        background: rgb(115 153 198 / 20%);
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &--addon {
+        background: rgb(22 161 99 / 15%);
+        color: var(--color-dark-green-50);
+      }
+    }
+
+    &__actions {
+      background: var(--color-dark-theme-bg-secondary);
+      border-top: 1px solid var(--color-dark-theme-border);
+    }
+
+    &__close-btn {
+      background: var(--color-dark-theme-blue-primary);
+      color: var(--color-dark-theme-text-primary);
+
+      &:hover {
+        background: var(--color-dark-theme-blue-accent);
+      }
+    }
+  }
+
+  // ── Multiselect terminal-picker modal ──────────────────────────────────────
+
+  .order-profile-multiselect-modal {
+    .MuiDialogTitle-root {
+      background: var(--color-dark-theme-bg-secondary);
+      color: var(--color-dark-theme-text-primary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+    }
+
+    .MuiDialogContent-root {
+      background: var(--color-dark-theme-bg-secondary);
+    }
+
+    .MuiDialogActions-root {
+      background: var(--color-dark-theme-bg-secondary);
+      border-top: 1px solid var(--color-dark-theme-border);
+    }
+
+    &__description {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__list-item {
+      border-color: var(--color-dark-theme-border);
+      color: var(--color-dark-theme-text-primary);
+
+      &:hover {
+        background: var(--color-dark-theme-bg-tertiary);
+      }
+
+      &--selected {
+        border-color: var(--color-dark-theme-blue-primary);
+        background: rgb(115 153 198 / 10%);
+      }
+    }
+
+    &__item-name {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__item-price {
+      color: var(--color-dark-green-50);
+    }
+
+    &__item-model {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    .MuiRadio-root {
+      color: var(--color-dark-theme-text-muted);
+
+      &.Mui-checked {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
 }

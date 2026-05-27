@@ -241,6 +241,7 @@
     margin-top: auto;
     margin-bottom: 0.5rem;
     gap: 1rem;
+    flex-wrap: nowrap;
   }
 
   &__price {
@@ -265,6 +266,14 @@
     cursor: pointer;
     border-radius: 25px;
     transition: background-color 0.3s ease;
+    flex-shrink: 0;
+    white-space: nowrap;
+
+    .MuiButton-endIcon,
+    .MuiButton-startIcon {
+      display: inline-flex;
+      align-items: center;
+    }
 
     &:disabled {
       background-color: var(--color-primary);

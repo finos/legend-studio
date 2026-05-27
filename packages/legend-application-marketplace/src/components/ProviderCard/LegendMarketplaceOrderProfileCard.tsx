@@ -222,28 +222,31 @@ export const LegendMarketplaceOrderProfileCard = observer(
           continue;
         }
         await flowResult(
-          legendMarketplaceBaseStore.cartStore.addToCartWithAPI({
-            id: item.id,
-            productName: item.productName,
-            providerName: item.providerName,
-            category: item.category,
-            price: item.price,
-            description: item.description ?? '',
-            isOwned: 'false',
-            ...(item.model !== undefined && item.model !== null
-              ? { model: item.model }
-              : {}),
-            skipWorkflow: true,
-            ...(item.isMandatory !== undefined
-              ? { isMandatory: item.isMandatory }
-              : {}),
-            ...(item.vendorProfileId !== undefined
-              ? { vendorProfileId: item.vendorProfileId }
-              : {}),
-            ...(item.permissionId !== undefined
-              ? { permissionId: item.permissionId }
-              : {}),
-          }),
+          legendMarketplaceBaseStore.cartStore.addToCartWithAPI(
+            {
+              id: item.id,
+              productName: item.productName,
+              providerName: item.providerName,
+              category: item.category,
+              price: item.price,
+              description: item.description ?? '',
+              isOwned: 'false',
+              ...(item.model !== undefined && item.model !== null
+                ? { model: item.model }
+                : {}),
+              skipWorkflow: true,
+              ...(item.isMandatory !== undefined
+                ? { isMandatory: item.isMandatory }
+                : {}),
+              ...(item.vendorProfileId !== undefined
+                ? { vendorProfileId: item.vendorProfileId }
+                : {}),
+              ...(item.permissionId !== undefined
+                ? { permissionId: item.permissionId }
+                : {}),
+            },
+            true,
+          ),
         );
       }
     };
@@ -263,6 +266,9 @@ export const LegendMarketplaceOrderProfileCard = observer(
         const addOns = nonOwnedItems.filter((item) => !item.isTerminal);
         await addItemsToCart(vendorProfiles);
         await addItemsToCart(addOns);
+        toastManager.success(
+          `Order profile ${traderProfile.productName} has been successfully added to cart.`,
+        );
       } catch (error) {
         assertErrorThrown(error);
         toastManager.error(
@@ -289,6 +295,9 @@ export const LegendMarketplaceOrderProfileCard = observer(
         // Add the selected vendor profile first; only add its associated add-ons after success
         await addItemsToCart(selectedTerminals);
         await addItemsToCart(addOnItems);
+        toastManager.success(
+          `Order profile ${traderProfile.productName} has been successfully added to cart.`,
+        );
       } catch (error) {
         assertErrorThrown(error);
         toastManager.error(
