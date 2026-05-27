@@ -605,7 +605,10 @@ export const DataAccessRequestContent = observer(
               </Select>
             )
           ) : (
-            stringifyOrganizationalScope(consumer)
+            stringifyOrganizationalScope(
+              consumer,
+              viewerState.applicationStore.pluginManager.getApplicationPlugins(),
+            )
           )}
         </div>
         <div>

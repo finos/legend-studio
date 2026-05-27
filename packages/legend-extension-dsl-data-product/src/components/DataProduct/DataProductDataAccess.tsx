@@ -1353,7 +1353,8 @@ export const DataProductAccessPointGroupViewer = observer(
     const accessPointStates = apgState.accessPointStates;
     const contractViewerContractAndSubscription =
       dataAccessState?.contractViewerContractAndSubscription;
-    const permitRequestViewerState = dataAccessState?.permitRequestViewerState;
+    const dataAccessRequestViewerState =
+      dataAccessState?.dataAccessRequestViewerState;
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
@@ -1677,13 +1678,13 @@ export const DataProductAccessPointGroupViewer = observer(
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />
         )}
-        {permitRequestViewerState && (
+        {dataAccessRequestViewerState && (
           <DataAccessRequestViewer
             open={true}
             onClose={() =>
-              dataAccessState.setPermitRequestViewerState(undefined)
+              dataAccessState.setDataAccessRequestViewerState(undefined)
             }
-            viewerState={permitRequestViewerState}
+            viewerState={dataAccessRequestViewerState}
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />
         )}

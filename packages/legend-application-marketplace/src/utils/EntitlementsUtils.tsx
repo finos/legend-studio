@@ -159,7 +159,14 @@ const TargetUserCellRenderer = observer(
       );
     }
     const consumer = row.data.dataRequest.consumer;
-    return <>{stringifyOrganizationalScope(consumer)}</>;
+    return (
+      <>
+        {stringifyOrganizationalScope(
+          consumer,
+          entitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+        )}
+      </>
+    );
   },
 );
 
@@ -283,7 +290,10 @@ export const getCommonEntitlementsColDefs = (
         return userIds.length > 0 ? userIds.join(', ') : UNKNOWN;
       }
       const consumer = params.data.data.dataRequest.consumer;
-      return stringifyOrganizationalScope(consumer);
+      return stringifyOrganizationalScope(
+        consumer,
+        dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+      );
     },
     cellRenderer: (params: DataGridCellRendererParams<EntitlementsRow>) => (
       <TargetUserCellRenderer
