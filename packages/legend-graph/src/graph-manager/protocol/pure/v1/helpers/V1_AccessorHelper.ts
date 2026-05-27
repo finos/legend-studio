@@ -68,6 +68,7 @@ import {
   V1_DataProductAccessor,
   V1_IngestDefinitionAccessor,
   V1_RelationStoreAccessor,
+  V1_SQLAccessor,
 } from '../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 import type { V1_ValueSpecification } from '../model/valueSpecification/V1_ValueSpecification.js';
 import {
@@ -356,6 +357,72 @@ const collectV1AccessorsFromValueSpecification = (
   graph: PureModel | undefined,
   visitedFunctions: Set<ConcreteFunctionDefinition>,
 ): void => {
+  const addSqlAccessorIfAbsent = (
+    existingAccessors: V1_Accessor[],
+    accessor: V1_Accessor,
+  ): void => {
+    const accessorKey = `${accessor.INSTANCE_TYPE}|${accessor.path.join('.')}`;
+    const exists = existingAccessors.some(
+      (candidate) =>
+        `${candidate.INSTANCE_TYPE}|${candidate.path.join('.')}` ===
+        accessorKey,
+    );
+    if (!exists) {
+      existingAccessors.push(accessor);
+    }
+  };
+
+  const extractAccessorsFromSQL = (sql: string): V1_Accessor[] => {
+    const sqlAccessors: V1_Accessor[] = [];
+    const ingestAccessorPattern =
+      /\bi\s*\(\s*(?<path>'[^']+'|"[^"]+"|[^\)]+)\s*\)/gi;
+    const dataProductAccessorPattern =
+      /\bp\s*\(\s*(?<path>'[^']+'|"[^"]+"|[^\)]+)\s*\)/gi;
+
+    const addParsedAccessor = (
+      rawPath: string,
+      createAccessor: () => V1_Accessor,
+    ): void => {
+      if (rawPath.length === 0) {
+        return;
+      }
+      const unquotedPath =
+        rawPath.startsWith("'") || rawPath.startsWith('"')
+          ? rawPath.slice(1, -1)
+          : rawPath;
+      const normalizedPath = unquotedPath.replace(/\s*\.\s*/g, '.');
+      const separatorIndex = normalizedPath.lastIndexOf('.');
+      const accessor = createAccessor();
+      if (separatorIndex > 0 && separatorIndex < normalizedPath.length - 1) {
+        accessor.path = [
+          normalizedPath.slice(0, separatorIndex),
+          normalizedPath.slice(separatorIndex + 1),
+        ];
+      } else {
+        accessor.path = [normalizedPath];
+      }
+      addSqlAccessorIfAbsent(sqlAccessors, accessor);
+    };
+
+    let match: RegExpExecArray | null = ingestAccessorPattern.exec(sql);
+    while (match) {
+      addParsedAccessor((match.groups?.path ?? '').trim(), () => {
+        return new V1_IngestDefinitionAccessor();
+      });
+      match = ingestAccessorPattern.exec(sql);
+    }
+
+    match = dataProductAccessorPattern.exec(sql);
+    while (match) {
+      addParsedAccessor((match.groups?.path ?? '').trim(), () => {
+        return new V1_DataProductAccessor();
+      });
+      match = dataProductAccessorPattern.exec(sql);
+    }
+
+    return sqlAccessors;
+  };
+
   if (visited.has(valueSpec)) {
     return;
   }
@@ -370,6 +437,10 @@ const collectV1AccessorsFromValueSpecification = (
     ) {
       if (!accessors.includes(val)) {
         accessors.push(val);
+      }
+    } else if (val instanceof V1_SQLAccessor) {
+      for (const accessor of extractAccessorsFromSQL(val.sql)) {
+        addSqlAccessorIfAbsent(accessors, accessor);
       }
     }
   } else if (valueSpec instanceof V1_AppliedFunction) {

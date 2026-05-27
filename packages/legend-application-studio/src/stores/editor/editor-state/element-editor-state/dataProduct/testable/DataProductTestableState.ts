@@ -17,6 +17,7 @@
 import {
   type Accessor,
   type AccessPoint,
+  type DataResolver,
   type PackageableElement,
   type TestSuite,
   type RawLambda,
@@ -124,6 +125,26 @@ const isIngestOrDataProductAccessor = (
 
 const getAccessPointDisplayLabel = (accessPoint: AccessPoint): string =>
   accessPoint.id;
+
+const isResolverForElementPath = (
+  resolver: DataResolver,
+  elementPath: string,
+): resolver is BaseDataResolver | ReferenceDataResolver =>
+  (resolver instanceof BaseDataResolver ||
+    resolver instanceof ReferenceDataResolver) &&
+  resolver.element.value.path === elementPath;
+
+const removeSelfDataResolvers = (
+  suite: DataProductTestSuite,
+  currentDataProductPath: string,
+): void => {
+  if (!suite.testData?.length) {
+    return;
+  }
+  suite.testData = suite.testData.filter(
+    (resolver) => !isResolverForElementPath(resolver, currentDataProductPath),
+  );
+};
 
 interface ElementDataItem {
   id: string;
@@ -578,7 +599,7 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
       resolvedAccessors = all.filter(
         (accessor) =>
           isIngestOrDataProductAccessor(accessor) &&
-          accessor.parentElement.path !== this.testableState.dataProduct.path,
+          accessor.accessorOwner !== this.testableState.dataProduct.path,
       );
     }
 
@@ -586,11 +607,14 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
       // Group by element, merge into existing resolvers or create new ones
       const byElement = new Map<string, Accessor[]>();
       for (const acc of resolvedAccessors) {
-        const grp = byElement.get(acc.parentElement.path) ?? [];
+        const grp = byElement.get(acc.accessorOwner) ?? [];
         grp.push(acc);
-        byElement.set(acc.parentElement.path, grp);
+        byElement.set(acc.accessorOwner, grp);
       }
       for (const [elementPath, accs] of byElement) {
+        if (elementPath === this.testableState.dataProduct.path) {
+          continue;
+        }
         const element =
           this.editorStore.graphManagerState.graph.getNullableElement(
             elementPath,
@@ -635,6 +659,7 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
         'Access Point accessors cannot be resolved',
       );
     }
+    removeSelfDataResolvers(this.suite, this.testableState.dataProduct.path);
 
     const assertion = new EqualToRelation();
     assertion.id = 'assert_1';
@@ -759,6 +784,9 @@ export class DataProductTestableState {
    */
   init(): void {
     const dp = this.dataProduct;
+    for (const suite of dp.tests) {
+      removeSelfDataResolvers(suite, dp.path);
+    }
     this.suiteStates = dp.tests.map(
       (s) => new DataProductTestSuiteState(this.editorStore, this, s),
     );
@@ -836,15 +864,18 @@ export class DataProductTestableState {
       const externalAccessors = all.filter(
         (accessor) =>
           isIngestOrDataProductAccessor(accessor) &&
-          accessor.parentElement.path !== dp.path,
+          accessor.accessorOwner !== dp.path,
       );
       const byElement = new Map<string, Accessor[]>();
       for (const acc of externalAccessors) {
-        const grp = byElement.get(acc.parentElement.path) ?? [];
+        const grp = byElement.get(acc.accessorOwner) ?? [];
         grp.push(acc);
-        byElement.set(acc.parentElement.path, grp);
+        byElement.set(acc.accessorOwner, grp);
       }
       for (const [elementPath, accs] of byElement) {
+        if (elementPath === dp.path) {
+          continue;
+        }
         const element =
           this.editorStore.graphManagerState.graph.getNullableElement(
             elementPath,
@@ -866,6 +897,7 @@ export class DataProductTestableState {
         'Access Point accessors cannot be resolved',
       );
     }
+    removeSelfDataResolvers(suite, dp.path);
 
     // Create one initial test with EqualToRelation assertion
     const test = new DataProductAccessPointTest();
