@@ -144,14 +144,7 @@ export const LegendMarketplaceTerminalCard = observer(
         </CardActionArea>
         <CardActions className="legend-marketplace-terminal-card__action-buttons">
           {terminalResult.isOwned ? (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                color: '#077D55',
-                fontWeight: 'bold',
-              }}
-            >
+            <Box className="legend-marketplace-terminal-card__owned-access">
               Already have access &nbsp;
               <CheckCircleIcon />
             </Box>
@@ -165,19 +158,21 @@ export const LegendMarketplaceTerminalCard = observer(
                 }}
                 disabled={isAddingToCart || isInCart}
               >
-                {isAddingToCart ? (
+                {isAddingToCart && (
                   <>
                     Adding... &nbsp;
                     <CircularProgress size={16} />
                   </>
-                ) : isInCart ? (
+                )}
+                {!isAddingToCart && isInCart && (
                   <>
                     In Cart &nbsp;
-                    <Box sx={{ color: '#077D55', display: 'inline-flex' }}>
+                    <Box className="legend-marketplace-terminal-card__in-cart-check">
                       <CheckCircleIcon />
                     </Box>
                   </>
-                ) : (
+                )}
+                {!isAddingToCart && !isInCart && (
                   <>
                     Add to cart &nbsp;
                     <ShoppingCartIcon />
@@ -189,12 +184,10 @@ export const LegendMarketplaceTerminalCard = observer(
                   label={`${new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'USD',
-                    roundingIncrement: 1,
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
                   }).format(terminalResult.price)}/month`}
                   className="legend-marketplace-terminal-card__price"
-                  sx={{ color: 'white', backgroundColor: '#077d55' }}
                 />
               )}
             </>

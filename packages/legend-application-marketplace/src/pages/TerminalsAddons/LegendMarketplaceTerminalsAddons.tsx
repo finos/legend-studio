@@ -25,8 +25,12 @@ import {
   ListItem,
   CircularProgress,
 } from '@mui/material';
-import type { TerminalResult } from '@finos/legend-server-marketplace';
+import type {
+  TerminalResult,
+  TraderProfile,
+} from '@finos/legend-server-marketplace';
 import { LegendMarketplaceTerminalCard } from '../../components/ProviderCard/LegendMarketplaceTerminalCard.js';
+import { LegendMarketplaceOrderProfileCard } from '../../components/ProviderCard/LegendMarketplaceOrderProfileCard.js';
 import {
   type LegendMarketPlaceVendorDataStore,
   VendorDataProviderType,
@@ -45,6 +49,11 @@ import { useLegendMarketplaceBaseStore } from '../../application/providers/Legen
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
 
+const GENERAL_INQUIRIES_URL =
+  'https://tmd.web.gs.com/ui/spine/spineCommon.xhtml?serviceName=General+Inquiries+%2F+Report+Request&serviceCode=132&productCode=127';
+const REQUEST_INTERNAL_APP_URL =
+  'https://goldmansachs.service-now.com/now?id=sc_cat_item_guide&sys_id=7a4abc3b87ca9510718f0d45dabb357f';
+
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
     const { vendorDataState } = props;
@@ -52,6 +61,7 @@ export const RefinedVendorRadioSelector = observer(
       VendorDataProviderType.ALL,
       VendorDataProviderType.TERMINAL_LICENSE,
       VendorDataProviderType.ADD_ONS,
+      VendorDataProviderType.ORDER_PROFILE,
     ];
 
     const onRadioChange = useCallback(
@@ -154,6 +164,69 @@ const SearchResultsRenderer = observer(
   },
 );
 
+const OrderProfileSearchResultsRenderer = observer(
+  (props: {
+    vendorDataState: LegendMarketPlaceVendorDataStore;
+    traderProfiles: TraderProfile[];
+    totalCount?: number | undefined;
+    tooltip?: string;
+    seeAll?: boolean;
+  }) => {
+    const { vendorDataState, traderProfiles, totalCount, tooltip, seeAll } =
+      props;
+    const showCount = vendorDataState.searchTerm.trim().length > 0;
+
+    return (
+      <div>
+        <div className="legend-marketplace-vendordata-main-search-results__category">
+          <div className="legend-marketplace-vendordata-main-sidebar__title">
+            {VendorDataProviderType.ORDER_PROFILE}
+            {showCount && (
+              <span className="legend-marketplace-vendordata-main-sidebar__title__count">
+                ({totalCount ?? traderProfiles.length})
+              </span>
+            )}
+          </div>
+          {tooltip && (
+            <Tooltip title={tooltip} placement={'right'} arrow={true}>
+              <InfoCircleIcon />
+            </Tooltip>
+          )}
+          {seeAll && (
+            <button
+              className="see-all"
+              onClick={() => {
+                vendorDataState.setProviderDisplayState(
+                  VendorDataProviderType.ORDER_PROFILE,
+                );
+                flowResult(vendorDataState.populateProviders()).catch(
+                  vendorDataState.applicationStore.alertUnhandledError,
+                );
+              }}
+            >
+              <strong>See All&gt;</strong>
+            </button>
+          )}
+        </div>
+        {traderProfiles.length === 0 ? (
+          <div className="legend-marketplace-vendordata-main__empty">
+            No Order Profiles available
+          </div>
+        ) : (
+          <div className="legend-marketplace-vendordata-main-search-results__card-group">
+            {traderProfiles.map((profile) => (
+              <LegendMarketplaceOrderProfileCard
+                key={profile.id}
+                traderProfile={profile}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
 export const VendorDataMainContent = observer(
   (props: { marketPlaceVendorDataState: LegendMarketPlaceVendorDataStore }) => {
     const { marketPlaceVendorDataState } = props;
@@ -211,6 +284,17 @@ export const VendorDataMainContent = observer(
                     seeAll={true}
                     tooltip={addOnsInfoMessage}
                   />
+                  <hr />
+                  <OrderProfileSearchResultsRenderer
+                    vendorDataState={marketPlaceVendorDataState}
+                    traderProfiles={
+                      marketPlaceVendorDataState.traderProfileProviders
+                    }
+                    totalCount={
+                      marketPlaceVendorDataState.totalTraderProfileItems
+                    }
+                    seeAll={true}
+                  />
                 </>
               )}
               {marketPlaceVendorDataState.providerDisplayState ===
@@ -234,11 +318,23 @@ export const VendorDataMainContent = observer(
                   tooltip={addOnsInfoMessage}
                 />
               )}
+              {marketPlaceVendorDataState.providerDisplayState ===
+                VendorDataProviderType.ORDER_PROFILE && (
+                <OrderProfileSearchResultsRenderer
+                  vendorDataState={marketPlaceVendorDataState}
+                  traderProfiles={
+                    marketPlaceVendorDataState.traderProfileAllProviders
+                  }
+                  totalCount={marketPlaceVendorDataState.totalItems}
+                />
+              )}
             </div>
             {(marketPlaceVendorDataState.providerDisplayState ===
               VendorDataProviderType.TERMINAL_LICENSE ||
               marketPlaceVendorDataState.providerDisplayState ===
-                VendorDataProviderType.ADD_ONS) && (
+                VendorDataProviderType.ADD_ONS ||
+              marketPlaceVendorDataState.providerDisplayState ===
+                VendorDataProviderType.ORDER_PROFILE) && (
               <PaginationControls
                 totalItems={marketPlaceVendorDataState.totalItems}
                 itemsPerPage={marketPlaceVendorDataState.itemsPerPage}
@@ -341,6 +437,34 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
               <RefinedVendorRadioSelector
                 vendorDataState={marketPlaceVendorDataStore}
               />
+            </div>
+            <div className="legend-marketplace-body__action-buttons">
+              <Button
+                variant="outlined"
+                className="legend-marketplace-body__action-button"
+                onClick={() => {
+                  window.open(
+                    GENERAL_INQUIRIES_URL,
+                    '_blank',
+                    'noopener,noreferrer',
+                  );
+                }}
+              >
+                General Inquiries
+              </Button>
+              <Button
+                variant="outlined"
+                className="legend-marketplace-body__action-button"
+                onClick={() => {
+                  window.open(
+                    REQUEST_INTERNAL_APP_URL,
+                    '_blank',
+                    'noopener,noreferrer',
+                  );
+                }}
+              >
+                Request Internal Application
+              </Button>
             </div>
           </div>
           <VendorDataMainContent
