@@ -48,6 +48,7 @@ import {
   type PlainObject,
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
   isNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
@@ -509,10 +510,39 @@ export class DataProductDataAccessState {
           this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         );
         if (response.length > 0) {
+          const dataRequestWithWorkflow = guaranteeNonNullable(response[0]);
+          const guid = dataRequestWithWorkflow.dataRequest.guid;
           this.setContractCreatorAPG(undefined);
           this.applicationStore.notificationService.notifySuccess(
             `Data access request created successfully`,
           );
+          const authClient = this.lakehouseContractServerClient;
+          const plugins =
+            this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins();
+          const viewerState = new PermitDataAccessRequestState(
+            guid,
+            this.applicationStore,
+            this.permitWorkflowServerClient,
+            this.dataProductViewerState.userSearchService,
+            {
+              authServerClient: authClient,
+              initialData: dataRequestWithWorkflow,
+              fetchFresh: async (token) => {
+                const raw = await authClient.getDataAccessRequestWithWorkflow(
+                  guid,
+                  token,
+                );
+                return V1_deserializeDataRequestsWithWorkflowResponse(
+                  raw,
+                  plugins,
+                )[0];
+              },
+              ...(this.getTaskPageUrl
+                ? { getTaskPageUrl: this.getTaskPageUrl }
+                : {}),
+            },
+          );
+          this.setDataAccessRequestViewerState(viewerState);
         }
         this.applicationStore.telemetryService.logEvent(
           DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
