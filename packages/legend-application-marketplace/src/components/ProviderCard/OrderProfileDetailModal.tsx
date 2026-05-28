@@ -152,11 +152,11 @@ export const OrderProfileDetailModal = observer(
                   return (
                     <TableRow
                       key={item.id}
-                      className={`order-profile-modal__table-row${item.isOwned ? 'order-profile-modal__table-row--owned' : isInCart ? 'order-profile-modal__table-row--in-cart' : ''}`}
+                      className={`order-profile-modal__table-row ${item.isOwned ? 'order-profile-modal__table-row--owned' : isInCart ? 'order-profile-modal__table-row--in-cart' : ''}`}
                     >
                       <TableCell className="order-profile-modal__table-cell order-profile-modal__table-cell--name">
                         <Box
-                          className={`order-profile-modal__product-name-wrapper${isSubItem ? 'order-profile-modal__product-name-wrapper--sub' : ''}`}
+                          className={`order-profile-modal__product-name-wrapper ${isSubItem ? 'order-profile-modal__product-name-wrapper--sub' : ''}`}
                         >
                           <Box
                             className={`order-profile-modal__row-accent ${item.isTerminal ? 'order-profile-modal__row-accent--vendor-profile' : 'order-profile-modal__row-accent--addon'}`}

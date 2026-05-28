@@ -69,6 +69,7 @@ export class TerminalResult {
   skipWorkflow?: boolean;
   isOwned?: boolean;
   vendorProfileId?: number;
+  permissionId?: number;
   source?: RecommendationSource;
 
   static readonly serialization = new SerializationFactory(
@@ -85,6 +86,7 @@ export class TerminalResult {
       skipWorkflow: optional(primitive()),
       isOwned: primitive(),
       vendorProfileId: primitive(),
+      permissionId: optional(primitive()),
       source: optional(primitive()),
     }),
   );

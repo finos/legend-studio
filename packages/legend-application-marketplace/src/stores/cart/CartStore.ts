@@ -36,6 +36,7 @@ import {
   type CartSummary,
   type OrderDetails,
   type TerminalResult,
+  RecommendationSource,
 } from '@finos/legend-server-marketplace';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
@@ -233,8 +234,9 @@ export class CartStore {
   }
 
   providerToCartRequest(provider: TerminalResult): CartItemRequest {
+    const isInventory = provider.source === RecommendationSource.INVENTORY;
     return {
-      id: provider.id,
+      id: isInventory ? (provider.permissionId ?? provider.id) : provider.id,
       productName: provider.productName,
       providerName: provider.providerName,
       category: provider.category,
@@ -245,6 +247,9 @@ export class CartStore {
       skipWorkflow: provider.skipWorkflow ?? false,
       ...(provider.vendorProfileId !== undefined && {
         vendorProfileId: provider.vendorProfileId,
+      }),
+      ...(provider.permissionId !== undefined && {
+        permissionId: provider.permissionId,
       }),
       ...(provider.source !== undefined && {
         source: provider.source,
