@@ -17,7 +17,6 @@
 import {
   ELEMENT_PATH_DELIMITER,
   V1_ModelAccessPointGroup,
-  type V1_UnknownOrganizationalScopeType,
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
@@ -85,7 +84,7 @@ export const EntitlementsDataContractCreator = observer(
     const [consumer, setConsumer] = useState<
       V1_OrganizationalScope | undefined
     >();
-    const [description, setDescription] = useState<string | undefined>();
+    const [description, setDescription] = useState<string>();
     const [isValid, setIsValid] = useState<boolean>(false);
 
     const currentConsumerTypeResult = useMemo(
@@ -107,20 +106,7 @@ export const EntitlementsDataContractCreator = observer(
 
     const onCreate = (): void => {
       if (isValid && consumer && description) {
-        if (currentRequestType === DataAccessRequestType.PERMIT) {
-          const rmsNode = (consumer as V1_UnknownOrganizationalScopeType)
-            .content.rmsNode as string | undefined;
-          if (rmsNode) {
-            flowResult(
-              dataAccessState.createPermitRequest(
-                rmsNode,
-                description,
-                accessPointGroup,
-                tokenProvider,
-              ),
-            ).catch(viewerState.applicationStore.alertUnhandledError);
-          }
-        } else if (currentRequestType === DataAccessRequestType.WORKFLOW) {
+        if (currentRequestType === DataAccessRequestType.WORKFLOW) {
           flowResult(
             dataAccessState.createWorkflowRequest(
               consumer,
@@ -209,8 +195,7 @@ export const EntitlementsDataContractCreator = observer(
             disabled={
               dataAccessState.creatingContractState.isInProgress ||
               dataAccessState.creatingWorkflowRequestState.isInProgress ||
-              dataAccessState.creatingPermitRequestState.isInProgress ||
-              !isValid
+              dataAccessState.creatingPermitRequestState.isInProgress
             }
           >
             Create

@@ -20,7 +20,6 @@ import {
   V1_UserType,
   V1_AdhocTeam,
   V1_ProducerScope,
-  V1_UnknownOrganizationalScopeType,
   V1_User,
 } from '@finos/legend-graph';
 import { LegendUser } from '@finos/legend-shared';
@@ -224,66 +223,6 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
       );
     };
 
-    const RmsRenderer = (props: {
-      apgState: DataProductAPGState;
-      handleOrganizationalScopeChange: (
-        consumer: V1_OrganizationalScope,
-      ) => void;
-      handleDescriptionChange: (description: string | undefined) => void;
-      handleIsValidChange: (isValid: boolean) => void;
-    }): React.ReactElement => {
-      const {
-        handleOrganizationalScopeChange,
-        handleDescriptionChange,
-        handleIsValidChange,
-      } = props;
-      const [rmsNode, setRmsNode] = useState<string>('');
-      const [description, setDescription] = useState<string>('');
-
-      useEffect(() => {
-        const scope = new V1_UnknownOrganizationalScopeType();
-        scope.content = { _type: 'RMS', rmsNode };
-        handleOrganizationalScopeChange(scope);
-        handleDescriptionChange(description);
-        handleIsValidChange(rmsNode.trim() !== '' && description.trim() !== '');
-      }, [
-        rmsNode,
-        description,
-        handleOrganizationalScopeChange,
-        handleDescriptionChange,
-        handleIsValidChange,
-      ]);
-
-      return (
-        <>
-          <TextField
-            className="marketplace-lakehouse-entitlements__data-contract-creator__rms-node-input"
-            required={true}
-            label="RMS Org Node"
-            placeholder="e.g. OC_GRO23351"
-            variant="outlined"
-            fullWidth={true}
-            value={rmsNode}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              setRmsNode(event.target.value)
-            }
-          />
-          <TextField
-            className="marketplace-lakehouse-entitlements__data-contract-creator__business-justification-input"
-            required={true}
-            name="business-justification"
-            label="Business Justification"
-            variant="outlined"
-            fullWidth={true}
-            value={description}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              setDescription(event.target.value)
-            }
-          />
-        </>
-      );
-    };
-
     return [
       {
         type: 'User',
@@ -360,28 +299,6 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
             />
           ),
           requestType: DataAccessRequestType.CONTRACT,
-        }),
-      },
-      {
-        type: 'Team (RMS)',
-        createContractRenderer: (
-          apgState: DataProductAPGState,
-          handleOrganizationalScopeChange: (
-            consumer: V1_OrganizationalScope,
-          ) => void,
-          handleDescriptionChange: (description: string | undefined) => void,
-          handleIsValidChange: (isValid: boolean) => void,
-        ) => ({
-          component: (
-            <RmsRenderer
-              key="rms"
-              apgState={apgState}
-              handleOrganizationalScopeChange={handleOrganizationalScopeChange}
-              handleDescriptionChange={handleDescriptionChange}
-              handleIsValidChange={handleIsValidChange}
-            />
-          ),
-          requestType: DataAccessRequestType.PERMIT,
         }),
       },
     ];
