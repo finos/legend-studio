@@ -99,7 +99,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   // Data Products
   DATA_PRODUCT: `/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
   LEGACY_DATA_PRODUCT: `/dataProduct/legacy/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
-  SDLC_DATA_PRODUCT: `/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
+  NATIVELH_DATA_PRODUCT: `/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   DATA_PRODUCT_SEARCH_RESULTS: '/dataProduct/results',
   FIELD_SEARCH_RESULTS: '/dataProduct/fields/results',
   // Lakehouse
@@ -161,6 +161,15 @@ export const generateLegacyDataProductPath = (
   path: string,
 ): string =>
   generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LEGACY_DATA_PRODUCT, {
+    gav,
+    path,
+  });
+
+export const generateNativeLHDataProductPath = (
+  gav: string,
+  path: string,
+): string =>
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.NATIVELH_DATA_PRODUCT, {
     gav,
     path,
   });

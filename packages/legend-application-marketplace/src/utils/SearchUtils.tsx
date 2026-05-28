@@ -32,6 +32,7 @@ import {
 import {
   generateLakehouseDataProductPath,
   generateLegacyDataProductPath,
+  generateNativeLHDataProductPath,
 } from '../__lib__/LegendMarketplaceNavigation.js';
 import {
   type V1_EntitlementsDataProductDetails,
@@ -69,6 +70,21 @@ export const getSearchResultProjectGAV = (
   }
 };
 
+const hasNonLegacyDataProductLink = (link: string | undefined): boolean => {
+  if (!link) {
+    return false;
+  }
+  try {
+    const url = new URL(link);
+    return (
+      url.pathname.startsWith('/dataProduct/') &&
+      !url.pathname.startsWith('/dataProduct/legacy/')
+    );
+  } catch {
+    return false;
+  }
+};
+
 export const generatePathForDataProductSearchResult = (
   searchResult: DataProductSearchResult,
 ): string | undefined =>
@@ -80,14 +96,23 @@ export const generatePathForDataProductSearchResult = (
       )
     : searchResult.dataProductDetails instanceof
         LegacyDataProductSearchResultDetails
-      ? generateLegacyDataProductPath(
-          generateGAVCoordinates(
-            searchResult.dataProductDetails.groupId,
-            searchResult.dataProductDetails.artifactId,
-            searchResult.dataProductDetails.versionId,
-          ),
-          searchResult.dataProductDetails.path,
-        )
+      ? hasNonLegacyDataProductLink(searchResult.data_product_link)
+        ? generateNativeLHDataProductPath(
+            generateGAVCoordinates(
+              searchResult.dataProductDetails.groupId,
+              searchResult.dataProductDetails.artifactId,
+              searchResult.dataProductDetails.versionId,
+            ),
+            searchResult.dataProductDetails.path,
+          )
+        : generateLegacyDataProductPath(
+            generateGAVCoordinates(
+              searchResult.dataProductDetails.groupId,
+              searchResult.dataProductDetails.artifactId,
+              searchResult.dataProductDetails.versionId,
+            ),
+            searchResult.dataProductDetails.path,
+          )
       : undefined;
 
 export const convertEntitlementsDataProductDetailsToSearchResult = (
