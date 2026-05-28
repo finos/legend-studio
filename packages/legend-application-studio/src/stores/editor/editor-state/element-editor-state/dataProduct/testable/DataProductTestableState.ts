@@ -17,7 +17,6 @@
 import {
   type Accessor,
   type AccessPoint,
-  type DataResolver,
   type PackageableElement,
   type TestSuite,
   type RawLambda,
@@ -125,26 +124,6 @@ const isIngestOrDataProductAccessor = (
 
 const getAccessPointDisplayLabel = (accessPoint: AccessPoint): string =>
   accessPoint.id;
-
-const isResolverForElementPath = (
-  resolver: DataResolver,
-  elementPath: string,
-): resolver is BaseDataResolver | ReferenceDataResolver =>
-  (resolver instanceof BaseDataResolver ||
-    resolver instanceof ReferenceDataResolver) &&
-  resolver.element.value.path === elementPath;
-
-const removeSelfDataResolvers = (
-  suite: DataProductTestSuite,
-  currentDataProductPath: string,
-): void => {
-  if (!suite.testData?.length) {
-    return;
-  }
-  suite.testData = suite.testData.filter(
-    (resolver) => !isResolverForElementPath(resolver, currentDataProductPath),
-  );
-};
 
 interface ElementDataItem {
   id: string;
@@ -610,9 +589,6 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
         byElement.set(acc.accessorOwner, grp);
       }
       for (const [elementPath, accs] of byElement) {
-        if (elementPath === this.testableState.dataProduct.path) {
-          continue;
-        }
         const element =
           this.editorStore.graphManagerState.graph.getNullableElement(
             elementPath,
@@ -657,8 +633,6 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
         'Access Point accessors cannot be resolved',
       );
     }
-    removeSelfDataResolvers(this.suite, this.testableState.dataProduct.path);
-
     const assertion = new EqualToRelation();
     assertion.id = 'assert_1';
     const expectedRelElement = new RelationElement();
@@ -782,9 +756,6 @@ export class DataProductTestableState {
    */
   init(): void {
     const dp = this.dataProduct;
-    for (const suite of dp.tests) {
-      removeSelfDataResolvers(suite, dp.path);
-    }
     this.suiteStates = dp.tests.map(
       (s) => new DataProductTestSuiteState(this.editorStore, this, s),
     );
@@ -890,8 +861,6 @@ export class DataProductTestableState {
         'Access Point accessors cannot be resolved',
       );
     }
-    removeSelfDataResolvers(suite, dp.path);
-
     // Create one initial test with EqualToRelation assertion
     const test = new DataProductAccessPointTest();
     test.id = testName;
