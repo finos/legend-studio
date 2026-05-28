@@ -596,10 +596,8 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
           rawLambdaForTest,
           this.editorStore.graphManagerState.graph,
         )) as Accessor[];
-      resolvedAccessors = all.filter(
-        (accessor) =>
-          isIngestOrDataProductAccessor(accessor) &&
-          accessor.accessorOwner !== this.testableState.dataProduct.path,
+      resolvedAccessors = all.filter((accessor) =>
+        isIngestOrDataProductAccessor(accessor),
       );
     }
 
@@ -861,10 +859,8 @@ export class DataProductTestableState {
           rawLambdaForSuite,
           this.editorStore.graphManagerState.graph,
         )) as Accessor[];
-      const externalAccessors = all.filter(
-        (accessor) =>
-          isIngestOrDataProductAccessor(accessor) &&
-          accessor.accessorOwner !== dp.path,
+      const externalAccessors = all.filter((accessor) =>
+        isIngestOrDataProductAccessor(accessor),
       );
       const byElement = new Map<string, Accessor[]>();
       for (const acc of externalAccessors) {
@@ -873,9 +869,6 @@ export class DataProductTestableState {
         byElement.set(acc.accessorOwner, grp);
       }
       for (const [elementPath, accs] of byElement) {
-        if (elementPath === dp.path) {
-          continue;
-        }
         const element =
           this.editorStore.graphManagerState.graph.getNullableElement(
             elementPath,
