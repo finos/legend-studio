@@ -584,9 +584,9 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
       // Group by element, merge into existing resolvers or create new ones
       const byElement = new Map<string, Accessor[]>();
       for (const acc of resolvedAccessors) {
-        const grp = byElement.get(acc.accessorOwner) ?? [];
+        const grp = byElement.get(acc.parentElement.path) ?? [];
         grp.push(acc);
-        byElement.set(acc.accessorOwner, grp);
+        byElement.set(acc.parentElement.path, grp);
       }
       for (const [elementPath, accs] of byElement) {
         const element =
@@ -633,6 +633,7 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
         'Access Point accessors cannot be resolved',
       );
     }
+
     const assertion = new EqualToRelation();
     assertion.id = 'assert_1';
     const expectedRelElement = new RelationElement();
@@ -835,9 +836,9 @@ export class DataProductTestableState {
       );
       const byElement = new Map<string, Accessor[]>();
       for (const acc of externalAccessors) {
-        const grp = byElement.get(acc.accessorOwner) ?? [];
+        const grp = byElement.get(acc.parentElement.path) ?? [];
         grp.push(acc);
-        byElement.set(acc.accessorOwner, grp);
+        byElement.set(acc.parentElement.path, grp);
       }
       for (const [elementPath, accs] of byElement) {
         const element =
@@ -861,6 +862,7 @@ export class DataProductTestableState {
         'Access Point accessors cannot be resolved',
       );
     }
+
     // Create one initial test with EqualToRelation assertion
     const test = new DataProductAccessPointTest();
     test.id = testName;
