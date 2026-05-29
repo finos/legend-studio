@@ -301,3 +301,85 @@ describe('Large graph build (batch processing)', () => {
     },
   );
 });
+
+describe('Built-in Map type', () => {
+  test(
+    unitTest('Function returning Map<K, V> builds without error'),
+    async () => {
+      const entities: Entity[] = [
+        {
+          path: 'test::getMap_Integer_MANY__String_MANY__Map_1_',
+          content: {
+            _type: 'function',
+            body: [
+              {
+                _type: 'func',
+                function: 'newMap',
+                parameters: [
+                  {
+                    _type: 'func',
+                    function: 'zip',
+                    parameters: [
+                      { _type: 'var', name: 'i' },
+                      { _type: 'var', name: 's' },
+                    ],
+                  },
+                ],
+              },
+            ],
+            name: 'getMap_Integer_MANY__String_MANY__Map_1_',
+            package: 'test',
+            parameters: [
+              {
+                _type: 'var',
+                genericType: {
+                  rawType: { _type: 'packageableType', fullPath: 'Integer' },
+                },
+                multiplicity: { lowerBound: 0 },
+                name: 'i',
+              },
+              {
+                _type: 'var',
+                genericType: {
+                  rawType: { _type: 'packageableType', fullPath: 'String' },
+                },
+                multiplicity: { lowerBound: 0 },
+                name: 's',
+              },
+            ],
+            returnGenericType: {
+              rawType: { _type: 'packageableType', fullPath: 'Map' },
+              typeArguments: [
+                {
+                  rawType: { _type: 'packageableType', fullPath: 'Integer' },
+                },
+                {
+                  rawType: { _type: 'packageableType', fullPath: 'String' },
+                },
+              ],
+            },
+            returnMultiplicity: { lowerBound: 1, upperBound: 1 },
+          },
+          classifierPath:
+            'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+        },
+      ] as Entity[];
+
+      const state = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(state, entities);
+      expect(state.graphBuildState.hasSucceeded).toBeTruthy();
+
+      const fn = state.graph.getFunction(
+        'test::getMap_Integer_MANY__String_MANY__Map_1_',
+      );
+      expect(fn.returnType.value.rawType.path).toBe('Map');
+      expect(fn.returnType.value.typeArguments).toHaveLength(2);
+      expect(fn.returnType.value.typeArguments?.[0]?.value.rawType).toEqual(
+        PrimitiveType.INTEGER,
+      );
+      expect(fn.returnType.value.typeArguments?.[1]?.value.rawType).toEqual(
+        PrimitiveType.STRING,
+      );
+    },
+  );
+});
