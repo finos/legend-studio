@@ -27,6 +27,7 @@ import {
   custom,
   deserialize,
   list,
+  object,
   optional,
   primitive,
   serialize,
@@ -40,6 +41,8 @@ import {
   V1_DataRequestsWithWorkflowResponse,
   V1_DataRequestWithWorkflow,
   V1_GenericWorkflowTask,
+  V1_OrgMember,
+  V1_OrgMembersResponse,
   V1_PrivilegeManagerApprovalTask,
   V1_Workflow,
 } from '../../../../lakehouse/entitlements/V1_DataAccessRequest.js';
@@ -276,4 +279,24 @@ export const V1_deserializeDataRequestsWithWorkflowResponse = (
     json,
   );
   return response.dataRequests;
+};
+
+// ----------------------------------------- Org Members -----------------------------------------------
+
+export const V1_OrgMemberModelSchema = createModelSchema(V1_OrgMember, {
+  kerberos: primitive(),
+});
+
+export const V1_OrgMembersResponseModelSchema = createModelSchema(
+  V1_OrgMembersResponse,
+  {
+    data: list(object(V1_OrgMember)),
+  },
+);
+
+export const V1_deserializeOrgMembersResponse = (
+  json: PlainObject<V1_OrgMembersResponse>,
+): V1_OrgMember[] => {
+  const response = deserialize(V1_OrgMembersResponseModelSchema, json);
+  return response.data;
 };

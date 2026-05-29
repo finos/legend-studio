@@ -363,6 +363,7 @@ export class DataProductDataAccessState {
           userContracts,
           this.lakehouseContractServerClient,
           tokenProvider,
+          this.dataAccessPlugins,
         );
       });
     } catch (error) {
