@@ -2150,14 +2150,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   //
 
-  override createAccessorFromPackageableElement(
+  override async createAccessorFromPackageableElement(
     element: PackageableElement,
     graph: PureModel,
     options?: {
       schemaName?: string | undefined;
       tableName?: string | undefined;
     },
-  ): Accessor | undefined {
+  ): Promise<Accessor | undefined> {
     if (
       !(element instanceof IngestDefinition) &&
       !(element instanceof Database)
@@ -2170,7 +2170,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.graphBuilderExtensions,
       this.logService,
     ).build();
-    return V1_createAccessorFromPackageableElement(element, context, options);
+    return V1_createAccessorFromPackageableElement(
+      element,
+      context,
+      this,
+      options,
+    );
   }
 
   override async buildDataProductAccessor(

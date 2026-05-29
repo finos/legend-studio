@@ -230,7 +230,7 @@ export const V1_buildRelationTypeFromAccessPointImplementation = (
  * For IngestDefinition: requires `datasetName` to identify the dataset.
  * For Database: requires `schemaName` and `tableName` to identify the table.
  */
-export const V1_createAccessorFromPackageableElement = (
+export const V1_createAccessorFromPackageableElementWithNonFunctionSources = (
   element: AccessorOwner,
   context: V1_GraphBuilderContext,
   options?: {
@@ -239,6 +239,7 @@ export const V1_createAccessorFromPackageableElement = (
   },
 ): Accessor | undefined => {
   if (element instanceof IngestDefinition) {
+    const datasetName = options?.tableName;
     const content = returnUndefOnError(() =>
       V1_deserializeIngestDefinitionContent(element.content),
     );
@@ -246,7 +247,6 @@ export const V1_createAccessorFromPackageableElement = (
     if (!content) {
       return undefined;
     }
-    const datasetName = options?.tableName;
     const dataset = datasetName
       ? content.datasets?.find((ds) => ds.name === datasetName)
       : content.datasets?.[0];
@@ -311,6 +311,67 @@ const buildRelationTypeFromMetadata = (
     return new RelationColumn(col.name, resolvedGenericType);
   });
   return relationType;
+};
+
+export const V1_createAccessorFromPackageableElement = async (
+  element: AccessorOwner,
+  context: V1_GraphBuilderContext,
+  graphManager: AbstractPureGraphManager,
+  options?: {
+    schemaName?: string | undefined;
+    tableName?: string | undefined;
+  },
+): Promise<Accessor | undefined> => {
+  if (element instanceof IngestDefinition) {
+    const datasetName = options?.tableName;
+    const content = returnUndefOnError(() =>
+      V1_deserializeIngestDefinitionContent(element.content),
+    );
+    let matviewDataSet;
+    if (datasetName) {
+      matviewDataSet = element.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.find(
+        (ds) => ds.name === datasetName,
+      );
+    } else if (element.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.length) {
+      // Prefer non-matview datasets - only use matview if no non-matview dataset exists
+      const matviewNames = new Set(
+        element.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS.map((ds) => ds.name),
+      );
+      const hasNonMatviewDataset = content?.datasets?.some(
+        (ds) => !matviewNames.has(ds.name),
+      );
+      matviewDataSet = hasNonMatviewDataset
+        ? undefined
+        : element.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS[0];
+    }
+    if (matviewDataSet) {
+      const relationTypeMetadata = await graphManager.getLambdaRelationType(
+        matviewDataSet.source.function,
+        context.graph,
+      );
+      const relationType = buildRelationTypeFromMetadata(
+        relationTypeMetadata,
+        context,
+      );
+      addMilestonedColumnsForWriteMode(
+        relationType,
+        content?.writeMode,
+        context,
+      );
+      return new IngestionAccessor(
+        element.path,
+        undefined,
+        matviewDataSet.name,
+        relationType,
+        element,
+      );
+    }
+  }
+  return V1_createAccessorFromPackageableElementWithNonFunctionSources(
+    element,
+    context,
+    options,
+  );
 };
 
 export const V1_buildDataProductAccessor = async (

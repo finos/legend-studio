@@ -888,6 +888,7 @@ export {
 } from './graph/metamodel/pure/packageableElements/relation/Accessor.js';
 export {
   V1_createAccessorFromPackageableElement,
+  V1_createAccessorFromPackageableElementWithNonFunctionSources,
   V1_resolveAccessorsFromRawLambda,
   V1_buildRelationElementsDataFromAccessors,
   V1_buildRelationTypeFromAccessPointImplementation,

@@ -45,7 +45,7 @@ export const queryAccessorSource = async (
             editorStore.applicationStore.config.options.queryBuilderConfig,
             editorStore.editorMode.getSourceInfo(),
           );
-          queryBuilderState.changeAccessorOwner(element);
+          await queryBuilderState.changeAccessorOwner(element);
           const compatibleRuntimes = getCompatibleRuntimesFromAccessorOwner(
             element,
             editorStore.graphManagerState,

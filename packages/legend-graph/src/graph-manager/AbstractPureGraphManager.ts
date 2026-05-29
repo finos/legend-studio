@@ -454,7 +454,7 @@ export abstract class AbstractPureGraphManager {
       schemaName: string | undefined;
       tableName: string | undefined;
     },
-  ): Accessor | undefined;
+  ): Promise<Accessor | undefined>;
 
   abstract buildDataProductAccessor(
     element: DataProduct,
