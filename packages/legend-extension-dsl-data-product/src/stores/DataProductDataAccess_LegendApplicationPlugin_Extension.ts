@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationPlugin } from '@finos/legend-application';
+import type {
+  GenericLegendApplicationStore,
+  LegendApplicationPlugin,
+} from '@finos/legend-application';
 import type {
   ContractConsumerTypeRendererConfig,
   DataProductAccessPointCodeConfiguration,
@@ -83,4 +86,17 @@ export interface DataProductDataAccess_LegendApplicationPlugin_Extension
    * @param task workflow task
    */
   getWorkflowTaskType?(task: V1_RawWorkflowTask): V1_WorkflowTaskType;
+
+  /**
+   * Fetches org members for a given RMS node code.
+   *
+   * @param code the RMS node code
+   * @param token the auth token
+   * @param applicationStore the application store (for tracer service)
+   */
+  getOrgMembers?(
+    code: string,
+    token: string | undefined,
+    applicationStore: GenericLegendApplicationStore,
+  ): Promise<PlainObject>;
 }

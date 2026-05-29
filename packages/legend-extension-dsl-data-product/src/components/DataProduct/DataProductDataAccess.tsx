@@ -1441,6 +1441,11 @@ export const DataProductAccessPointGroupViewer = observer(
           onClick = handleContractsClick;
           buttonColor = 'warning';
           break;
+        case AccessPointGroupAccess.SUBMITTED_FOR_APPROVALS:
+          buttonLabel = 'SUBMITTED FOR APPROVALS';
+          onClick = handleContractsClick;
+          buttonColor = 'warning';
+          break;
         case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
           buttonLabel = 'PENDING DATA OWNER APPROVAL';
           onClick = handleContractsClick;

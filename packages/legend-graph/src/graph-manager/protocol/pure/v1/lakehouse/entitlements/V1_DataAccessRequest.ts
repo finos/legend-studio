@@ -39,6 +39,7 @@ export enum V1_RequestState {
   REJECTED = 'REJECTED',
   INVALIDATED = 'INVALIDATED',
   OBSOLETE = 'OBSOLETE',
+  PENDING_INVALIDATION = 'PENDING_INVALIDATION',
 }
 
 export abstract class V1_Request {}
@@ -177,4 +178,14 @@ export class V1_CreatePermitDataRequestPayload {
   deploymentId!: string;
   accessPointGroup!: string;
   consumer!: V1_OrganizationalScope;
+}
+
+// ----------------------------------------- Org Members -----------------------------------------------
+
+export class V1_OrgMember {
+  kerberos!: string;
+}
+
+export class V1_OrgMembersResponse {
+  data: V1_OrgMember[] = [];
 }

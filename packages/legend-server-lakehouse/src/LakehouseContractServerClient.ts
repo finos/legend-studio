@@ -268,6 +268,18 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _dataAccessRequests = (): string => `${this.baseUrl}/datarequests`;
 
+  getDataRequestsForDataProduct = (
+    resourceType: string,
+    resourceId: string,
+    did: number,
+    token: string | undefined,
+  ): Promise<PlainObject> =>
+    this.get(
+      `${this._dataAccessRequests()}/lite/resourceType/${encodeURIComponent(resourceType)}/resourceId/${encodeURIComponent(resourceId)}/did/${encodeURIComponent(did)}`,
+      {},
+      this._token(token),
+    );
+
   createDataAccessRequest = (
     requestPayload: PlainObject<V1_CreateDataAccessRequestPayload>,
     token: string | undefined,
