@@ -32,7 +32,7 @@ import {
 import {
   generateLakehouseDataProductPath,
   generateLegacyDataProductPath,
-  generateNativeLHDataProductPath,
+  generateSdlcDataProductPath,
 } from '../__lib__/LegendMarketplaceNavigation.js';
 import {
   type V1_EntitlementsDataProductDetails,
@@ -97,7 +97,7 @@ export const generatePathForDataProductSearchResult = (
     : searchResult.dataProductDetails instanceof
         LegacyDataProductSearchResultDetails
       ? hasNonLegacyDataProductLink(searchResult.data_product_link)
-        ? generateNativeLHDataProductPath(
+        ? generateSdlcDataProductPath(
             generateGAVCoordinates(
               searchResult.dataProductDetails.groupId,
               searchResult.dataProductDetails.artifactId,

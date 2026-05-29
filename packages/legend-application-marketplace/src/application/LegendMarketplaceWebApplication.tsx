@@ -326,7 +326,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={React.createElement(useProtectedPage(TerminalProduct))}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.NATIVELH_DATA_PRODUCT}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT}
               element={<LakehouseSDLCDataProduct />}
             />
             <Route
@@ -414,7 +414,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               }
               element={
                 <Navigate
-                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.NATIVELH_DATA_PRODUCT}
+                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT}
                   replace={true}
                 />
               }
