@@ -55,6 +55,7 @@ import { observer } from 'mobx-react-lite';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { startCase } from '@finos/legend-shared';
 import {
+  type ContractErrorLayer,
   UserRenderer,
   getOrganizationalScopeTypeName,
   getOrganizationalScopeTypeDetails,
@@ -289,10 +290,9 @@ export const EntitlementsPendingTasksDashboard = observer(
     >();
     const [selectedContractTargetUser, setSelectedContractTargetUser] =
       useState<string | undefined>();
-    const [unverifiedIngestDefinitions, setUnverifiedIngestDefinitions] =
-      useState<string[] | undefined>(undefined);
-    const [ingestVerificationInProgress, setIngestVerificationInProgress] =
-      useState(false);
+    const [contractErrors, setContractErrors] = useState<
+      ContractErrorLayer | undefined
+    >(undefined);
 
     const auth = useAuth();
 
@@ -322,17 +322,13 @@ export const EntitlementsPendingTasksDashboard = observer(
         );
         setSelectedContract(contract);
         setSelectedContractTargetUser(event.data?.consumer);
-        setUnverifiedIngestDefinitions(undefined);
+        setContractErrors(undefined);
         if (contract !== undefined) {
-          setIngestVerificationInProgress(true);
-          const result = await flowResult(
-            dashboardState.getUnverifiedIngestDefinitions(
-              contract.guid,
-              auth.user?.access_token,
-            ),
+          const result = await dashboardState.getContractErrors(
+            contract.guid,
+            auth.user?.access_token,
           );
-          setUnverifiedIngestDefinitions(result);
-          setIngestVerificationInProgress(false);
+          setContractErrors(result);
         }
       }
     };
@@ -859,15 +855,14 @@ export const EntitlementsPendingTasksDashboard = observer(
           pendingTaskContracts={pendingTaskContracts}
           marketplaceBaseStore={marketplaceBaseStore}
         />
-        {selectedContract !== undefined && !ingestVerificationInProgress && (
+        {selectedContract !== undefined && (
           <DataAccessRequestViewer
             open={true}
             onClose={() => {
               setSelectedContract(undefined);
-              setUnverifiedIngestDefinitions(undefined);
-              setIngestVerificationInProgress(false);
+              setContractErrors(undefined);
             }}
-            unverifiedIngestDefinitions={unverifiedIngestDefinitions}
+            contractErrors={contractErrors}
             viewerState={
               new DataContractViewerState(
                 selectedContract,

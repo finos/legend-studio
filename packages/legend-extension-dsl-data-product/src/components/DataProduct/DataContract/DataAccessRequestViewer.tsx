@@ -89,6 +89,22 @@ import {
   type DataAccessRequestState,
 } from '../../../stores/DataProduct/DataAccess/DataAccessRequestState.js';
 
+const copyToClipboard = (
+  applicationStore: GenericLegendApplicationStore,
+  text: string,
+): void => {
+  applicationStore.clipboardService
+    .copyTextToClipboard(text)
+    .then(() =>
+      applicationStore.notificationService.notifySuccess(
+        'Copied to Clipboard',
+        undefined,
+        2500,
+      ),
+    )
+    .catch(applicationStore.alertUnhandledError);
+};
+
 const AssigneesList = (props: {
   userIds: string[];
   applicationStore: GenericLegendApplicationStore;
@@ -255,73 +271,87 @@ const RequestEscalationModal = (props: {
   );
 };
 
-const UnverifiedIngestsBanner = (props: {
-  unverifiedIngestDefinitions: string[];
+export type ContractErrorLayer = {
+  title: string;
+  errorItems?: string[];
+  childLayers?: ContractErrorLayer[];
+};
+
+const ErrorLayerCard = (props: {
+  layer: ContractErrorLayer;
   applicationStore: GenericLegendApplicationStore;
+  depth?: number;
 }): React.ReactNode => {
-  const { unverifiedIngestDefinitions, applicationStore } = props;
-  const count = unverifiedIngestDefinitions.length;
-  const copyToClipboard = (text: string): void => {
-    applicationStore.clipboardService
-      .copyTextToClipboard(text)
-      .then(() =>
-        applicationStore.notificationService.notifySuccess(
-          'Copied to Clipboard',
-          undefined,
-          2500,
-        ),
-      )
-      .catch(applicationStore.alertUnhandledError);
-  };
+  const { layer, applicationStore, depth = 0 } = props;
+  const errorItems = layer.errorItems ?? [];
+  const childLayers = layer.childLayers ?? [];
+  const showCount = childLayers.length === 0 && errorItems.length > 0;
+  const isRoot = depth === 0;
+  const isExpandable = errorItems.length > 0 || childLayers.length > 0;
+
   return (
     <Accordion
-      className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests"
+      className={clsx(
+        'marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests',
+        {
+          'marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests--child':
+            !isRoot,
+          'marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests--inset':
+            depth >= 2,
+        },
+      )}
       elevation={0}
       disableGutters={true}
       square={true}
     >
       <AccordionSummary
         expandIcon={
-          <ExpandMoreIcon className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__chevron" />
+          isExpandable ? (
+            <ExpandMoreIcon className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__chevron" />
+          ) : null
         }
         className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary"
       >
         <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__content">
-          <ExclamationTriangleIcon className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__icon" />
+          {isRoot && (
+            <ExclamationTriangleIcon className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__icon" />
+          )}
           <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__text">
             <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__title">
-              {count === 1 ? 'Ingest Not Found' : 'Ingests Not Found'}
-            </Box>
-            <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__summary__subtitle">
-              {count}{' '}
-              {count === 1
-                ? 'ingest definition could'
-                : 'ingest definitions could'}{' '}
-              not be resolved from this contract
+              {layer.title}
+              {showCount ? `: (${errorItems.length})` : ':'}
             </Box>
           </Box>
         </Box>
       </AccordionSummary>
       <AccordionDetails className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__details">
-        {unverifiedIngestDefinitions.map((specPath) => (
+        {errorItems.map((item) => (
           <Box
-            key={specPath}
+            key={item}
             className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item"
           >
             <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item__indicator" />
             <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item__path">
-              {specPath}
+              {item}
             </Box>
-            <Tooltip title="Copy path">
+            <Tooltip title="Copy">
               <IconButton
                 size="small"
-                onClick={() => copyToClipboard(specPath)}
+                onClick={() => copyToClipboard(applicationStore, item)}
                 className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item__copy-btn"
               >
                 <CopyIcon />
               </IconButton>
             </Tooltip>
           </Box>
+        ))}
+        {childLayers.map((child) => (
+          <ErrorLayerCard
+            key={child.title}
+            layer={child}
+            applicationStore={applicationStore}
+            depth={depth + 1}
+          />
         ))}
       </AccordionDetails>
     </Accordion>
@@ -430,18 +460,8 @@ export const DataAccessRequestContent = observer(
     const accessPointGroup = viewerState.accessPointGroup;
     const timelineSteps = viewerState.getTimelineSteps(selectedTargetUser);
 
-    const copyToClipboard = (text: string): void => {
-      viewerState.applicationStore.clipboardService
-        .copyTextToClipboard(text)
-        .then(() =>
-          viewerState.applicationStore.notificationService.notifySuccess(
-            'Copied to Clipboard',
-            undefined,
-            2500,
-          ),
-        )
-        .catch(viewerState.applicationStore.alertUnhandledError);
-    };
+    const onCopyToClipboard = (text: string): void =>
+      copyToClipboard(viewerState.applicationStore, text);
 
     const checkBeforeClosingRequest = (): void => {
       viewerState.applicationStore.alertService.setActionAlertInfo({
@@ -584,7 +604,9 @@ export const DataAccessRequestContent = observer(
                           {step.label.title}
                         </Link>
                         <IconButton
-                          onClick={() => copyToClipboard(step.label.link ?? '')}
+                          onClick={() =>
+                            onCopyToClipboard(step.label.link ?? '')
+                          }
                           className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
                           title="Copy Task Link"
                         >
@@ -730,7 +752,7 @@ export const DataAccessRequestContent = observer(
             <Box>
               Request ID: {viewerState.guid}
               <IconButton
-                onClick={() => copyToClipboard(viewerState.guid)}
+                onClick={() => onCopyToClipboard(viewerState.guid)}
                 title="Copy Request ID"
               >
                 <CopyIcon />
@@ -781,20 +803,12 @@ export const DataAccessRequestViewer = observer(
     onRefresh?: (() => void) | (() => Promise<void>);
     isReadOnly?: boolean | undefined;
     dataProductEnvironment?: string | undefined;
-    unverifiedIngestDefinitions?: string[] | undefined;
+    contractErrors?: ContractErrorLayer | undefined;
   }) => {
-    const {
-      open,
-      onClose,
-      viewerState,
-      unverifiedIngestDefinitions,
-      ...contentProps
-    } = props;
+    const { open, onClose, viewerState, contractErrors, ...contentProps } =
+      props;
 
     const isRequestInProgress = viewerState.isInProgress;
-    const hasUnverifiedIngestDefinitions =
-      unverifiedIngestDefinitions !== undefined &&
-      unverifiedIngestDefinitions.length > 0;
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>
@@ -808,11 +822,13 @@ export const DataAccessRequestViewer = observer(
           <CloseIcon />
         </IconButton>
         <DialogContent className="marketplace-lakehouse-entitlements__data-access-request-viewer__content">
-          {hasUnverifiedIngestDefinitions && (
-            <UnverifiedIngestsBanner
-              unverifiedIngestDefinitions={unverifiedIngestDefinitions}
-              applicationStore={viewerState.applicationStore}
-            />
+          {contractErrors && (
+            <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests-wrapper">
+              <ErrorLayerCard
+                layer={contractErrors}
+                applicationStore={viewerState.applicationStore}
+              />
+            </Box>
           )}
           <DataAccessRequestContent
             viewerState={viewerState}

@@ -17,6 +17,7 @@
 export { Core_DataProductDataAccess_LegendApplicationPlugin } from './components/Core_DataProductDataAccess_LegendApplicationPlugin.js';
 export { EntitlementsDataContractCreator } from './components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
 export {
+  type ContractErrorLayer,
   DataAccessRequestContent,
   DataAccessRequestViewer,
 } from './components/DataProduct/DataContract/DataAccessRequestViewer.js';
