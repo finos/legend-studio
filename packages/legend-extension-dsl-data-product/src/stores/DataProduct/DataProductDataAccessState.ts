@@ -32,6 +32,7 @@ import {
   V1_AdhocTeam,
   V1_AppDirLevel,
   V1_AppDirNode,
+  V1_RMS,
   V1_createContractPayloadModelSchema,
   V1_createDataAccessRequestPayloadModelSchema,
   V1_deserializeDataContractResponse,
@@ -586,13 +587,20 @@ export class DataProductDataAccessState {
   ): GeneratorFn<void> {
     try {
       this.creatingPermitRequestState.inProgress();
-      const payload = {
-        description,
-        resourceId: this.product.name,
-        deploymentId: this.entitlementsDataProductDetails.deploymentId,
-        accessPointGroup: group.id,
-        consumer: { _type: 'RMS', rmsNode },
-      };
+      const consumer = new V1_RMS();
+      consumer.rmsNode = rmsNode;
+      const payload = serialize(
+        V1_createDataAccessRequestPayloadModelSchema(
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+        ),
+        {
+          description,
+          resourceId: this.product.name,
+          deploymentId: this.entitlementsDataProductDetails.deploymentId,
+          accessPointGroup: group.id,
+          consumer,
+        } satisfies V1_CreateDataAccessRequestPayload,
+      ) as PlainObject<V1_CreateDataAccessRequestPayload>;
       const raw =
         (yield this.lakehouseContractServerClient.createPermitDataRequest(
           payload,
