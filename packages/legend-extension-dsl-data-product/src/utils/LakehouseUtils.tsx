@@ -39,15 +39,15 @@ export const getOrganizationalScopeTypeName = (
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return 'Unknown';
   } else {
-    const typeNames = plugins
+    const typeName = plugins
       .flatMap((plugin) =>
         plugin
           .getContractConsumerTypeRendererConfigs?.()
           .flatMap((config) => config.organizationalScopeTypeName?.(scope)),
       )
-      .filter(isNonNullable);
+      .find(isNonNullable);
 
-    return typeNames[0] ?? scope.constructor.name;
+    return typeName ?? scope.constructor.name;
   }
 };
 
@@ -108,14 +108,14 @@ export const stringifyOrganizationalScope = (
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return JSON.stringify(scope.content);
   }
-  const stringifiedValues = plugins
+  const stringifiedValue = plugins
     .flatMap((plugin) =>
       plugin
         .getContractConsumerTypeRendererConfigs?.()
         .flatMap((config) => config.stringifyOrganizationalScope?.(scope)),
     )
-    .filter(isNonEmptyString);
-  return stringifiedValues[0] ?? JSON.stringify(scope);
+    .find(isNonEmptyString);
+  return stringifiedValue ?? JSON.stringify(scope);
 };
 
 export const getHumanReadableIngestEnvName = (

@@ -517,40 +517,32 @@ export class DataProductAPGState {
 
       const currentUser =
         this.applicationStore.identityService.currentUser.toLowerCase();
+      const orgMembersPlugin = dataAccessPlugins.find(
+        (p) => p.getOrgMembers !== undefined,
+      );
 
-      // Iterate through data requests, check RMS org membership
+      if (!orgMembersPlugin?.getOrgMembers) {
+        return;
+      }
+
+      const getOrgMembers =
+        orgMembersPlugin.getOrgMembers.bind(orgMembersPlugin);
+
       for (const request of dataRequests) {
         if (!(request.consumer instanceof V1_RMS)) {
           continue;
         }
-        const rmsNode = request.consumer.rmsNode;
-
-        // Find a plugin that implements getOrgMembers
-        for (const plugin of dataAccessPlugins) {
-          if (plugin.getOrgMembers) {
-            try {
-              const orgMembersResponse = await plugin.getOrgMembers(
-                rmsNode,
-                token,
-                this.applicationStore,
-              );
-              const orgMembers =
-                V1_deserializeOrgMembersResponse(orgMembersResponse);
-              const userFound = orgMembers.some(
-                (m) => m.kerberos.toLowerCase() === currentUser,
-              );
-              if (userFound) {
-                // Map request state to V1_EnrichedUserApprovalStatus
-                const access = this.mapRequestStateToAccess(request.state);
-                if (access) {
-                  this.setDataRequestAccess(access, request.guid);
-                  return;
-                }
-              }
-            } catch {
-              // Continue to next plugin/request if this one fails
-            }
-            break; // Only use first plugin that implements getOrgMembers
+        const matched = await this.checkOrgMembership(
+          getOrgMembers,
+          request.consumer.rmsNode,
+          token,
+          currentUser,
+        );
+        if (matched) {
+          const access = this.mapRequestStateToAccess(request.state);
+          if (access) {
+            this.setDataRequestAccess(access, request.guid);
+            return;
           }
         }
       }
@@ -558,6 +550,27 @@ export class DataProductAPGState {
       assertErrorThrown(error);
     } finally {
       this.fetchingDataRequestAccessState.complete();
+    }
+  }
+
+  private async checkOrgMembership(
+    getOrgMembers: NonNullable<
+      DataProductDataAccess_LegendApplicationPlugin_Extension['getOrgMembers']
+    >,
+    rmsNode: string,
+    token: string | undefined,
+    currentUser: string,
+  ): Promise<boolean> {
+    try {
+      const orgMembersResponse = await getOrgMembers(
+        rmsNode,
+        token,
+        this.applicationStore,
+      );
+      const orgMembers = V1_deserializeOrgMembersResponse(orgMembersResponse);
+      return orgMembers.some((m) => m.kerberos.toLowerCase() === currentUser);
+    } catch {
+      return false;
     }
   }
 

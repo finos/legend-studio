@@ -653,10 +653,10 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
             token,
           )) as V1_PermitProcessInstanceDetail;
           this.applyPermitTaskRefresh(detail);
-        } catch (_e) {
-          assertErrorThrown(_e);
+        } catch (error_) {
+          assertErrorThrown(error_);
           this.applicationStore.notificationService.notifyWarning(
-            `Failed to refresh task status: ${_e.message}`,
+            `Failed to refresh task status: ${error_.message}`,
           );
         }
       }
