@@ -23,6 +23,7 @@ import {
   type V1_WorkflowTask,
   V1_AccessPointGroupReference,
   V1_DataOwnerApprovalTask,
+  V1_PrivilegeManagerApprovalTask,
   V1_RequestState,
   V1_ResourceType,
   V1_WorkflowTaskAction,
@@ -508,27 +509,33 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
 
             const syntheticTasks: V1_WorkflowTask[] = allPermitTasks
               .filter((permitTask) => !authTaskIds.has(permitTask.taskId))
-              .map((permitTask) =>
-                Object.assign(
-                  Object.create(
-                    Object.getPrototypeOf(lastPmLikeTask ?? workflow.tasks[0]),
-                  ) as V1_WorkflowTask,
-                  lastPmLikeTask ?? {},
-                  {
-                    taskId: permitTask.taskId,
-                    status: permitTask.status,
-                    assignees: permitTask.assignees,
-                    url: `${workflow.url}/${permitTask.taskId}`,
-                    action: mapCompletionReasonToAction(
-                      permitTask.completionReason,
-                    ),
-                    actionedOn: permitTask.completedDate
-                      ? new Date(permitTask.completedDate)
-                      : undefined,
-                    actionedBy: permitTask.completedBy ?? undefined,
-                  },
-                ),
-              );
+              .map((permitTask) => {
+                const task = new V1_PrivilegeManagerApprovalTask();
+                task.taskId = permitTask.taskId;
+                task.status = permitTask.status as V1_WorkflowTaskStatus;
+                task.assignees = permitTask.assignees;
+                task.url = `${workflow.url}/${permitTask.taskId}`;
+                const taskAction = mapCompletionReasonToAction(
+                  permitTask.completionReason,
+                );
+                if (taskAction !== undefined) {
+                  task.action = taskAction;
+                }
+                if (permitTask.completedDate) {
+                  task.actionedOn = new Date(permitTask.completedDate);
+                }
+                if (permitTask.completedBy) {
+                  task.actionedBy = permitTask.completedBy;
+                }
+                if (lastPmLikeTask instanceof V1_PrivilegeManagerApprovalTask) {
+                  task.resourceId = lastPmLikeTask.resourceId;
+                  task.accessPointGroup = lastPmLikeTask.accessPointGroup;
+                  task.consumer = lastPmLikeTask.consumer;
+                  task.workflowGuid = lastPmLikeTask.workflowGuid;
+                  task.createdOn = lastPmLikeTask.createdOn;
+                }
+                return task;
+              });
 
             workflow.tasks = [...workflow.tasks, ...syntheticTasks];
           }
