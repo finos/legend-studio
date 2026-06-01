@@ -326,18 +326,12 @@ describe('MarketplaceLakehouseSearchResults', () => {
     );
   });
 
-  test('clicking the Data Fields tab with no query navigates to field search with undefined', async () => {
-    const { MOCK__baseStore } = await setupTestComponent('', 'prod');
-    const mockGoToLocation = jest.fn();
-    MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
-      mockGoToLocation;
+  test('search type tabs are not shown when there is no search query', async () => {
+    await setupTestComponent('', 'prod');
 
-    await screen.findByText('Data Fields');
-    fireEvent.click(screen.getByText('Data Fields'));
-
-    expect(mockGoToLocation).toHaveBeenCalledWith(
-      generateFieldSearchResultsRoute(undefined),
-    );
+    await screen.findByPlaceholderText('Search Legend Marketplace');
+    expect(screen.queryByRole('tab', { name: 'Data Products' })).toBeNull();
+    expect(screen.queryByRole('tab', { name: 'Data Fields' })).toBeNull();
   });
 
   describe('Semantic search', () => {
