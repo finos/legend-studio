@@ -106,7 +106,7 @@ const mapCompletionReasonToAction = (
 };
 
 const getStepStatus = (
-  task: { status: string; action?: string | undefined } | undefined,
+  task: { status: string; action?: string } | undefined,
   fallback: 'skipped' | 'upcoming',
 ): 'active' | 'complete' | 'denied' | 'skipped' | 'upcoming' => {
   if (!task) {
@@ -393,12 +393,27 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
 
     const pmLinks =
       pmStepStatus === 'active'
-        ? { link: taskPageUrl, externalLink: pmTask?.url }
+        ? {
+            ...(taskPageUrl && { link: taskPageUrl }),
+            ...(pmTask?.url && { externalLink: pmTask.url }),
+          }
         : {};
     const doLinks =
       doStepStatus === 'active'
-        ? { link: taskPageUrl, externalLink: doTask?.url }
+        ? {
+            ...(taskPageUrl && { link: taskPageUrl }),
+            ...(doTask?.url && { externalLink: doTask.url }),
+          }
         : {};
+
+    const pmApprovalPayload = buildApprovalPayload(pmTask, pmStepStatus, [
+      'active',
+      'skipped',
+    ]);
+    const doApprovalPayload = buildApprovalPayload(doTask, doStepStatus, [
+      'active',
+      'upcoming',
+    ]);
 
     const steps: TimelineStep[] = [
       { key: 'submitted', status: 'complete', label: { title: 'Submitted' } },
@@ -412,11 +427,9 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
           isEscalated,
         },
         status: pmStepStatus,
-        assignees: pmStepStatus === 'active' ? pmTask?.assignees : undefined,
-        approvalPayload: buildApprovalPayload(pmTask, pmStepStatus, [
-          'active',
-          'skipped',
-        ]),
+        ...(pmStepStatus === 'active' &&
+          pmTask?.assignees && { assignees: pmTask.assignees }),
+        ...(pmApprovalPayload && { approvalPayload: pmApprovalPayload }),
       },
       {
         key: 'data-producer-approval',
@@ -425,11 +438,9 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
           ...doLinks,
         },
         status: doStepStatus,
-        assignees: doStepStatus === 'active' ? doTask?.assignees : undefined,
-        approvalPayload: buildApprovalPayload(doTask, doStepStatus, [
-          'active',
-          'upcoming',
-        ]),
+        ...(doStepStatus === 'active' &&
+          doTask?.assignees && { assignees: doTask.assignees }),
+        ...(doApprovalPayload && { approvalPayload: doApprovalPayload }),
       },
       {
         key: 'complete',

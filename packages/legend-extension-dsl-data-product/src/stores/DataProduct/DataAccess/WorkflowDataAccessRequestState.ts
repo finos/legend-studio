@@ -327,6 +327,15 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       _selectedTargetUser === this.applicationStore.identityService.currentUser;
     const isEscalatable = showEscalateButton && !isEscalated;
 
+    const pmAssignees =
+      pmStepStatus === 'active'
+        ? getEffectiveAssignees(pmTask, pmWorkflowTask)
+        : undefined;
+    const doAssignees =
+      doStepStatus === 'active'
+        ? getEffectiveAssignees(doTask, doWorkflowTask)
+        : undefined;
+
     return [
       {
         key: 'submitted',
@@ -337,50 +346,50 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
         key: 'privilege-manager-approval',
         label: {
           title: 'Privilege Manager Approval',
-          link: pmStepStatus === 'active' ? pmTask?.url : undefined,
+          ...(pmStepStatus === 'active' && pmTask?.url && { link: pmTask.url }),
           showEscalateButton,
           isEscalatable,
           isEscalated,
         },
         status: pmStepStatus,
-        assignees:
-          pmStepStatus === 'active'
-            ? getEffectiveAssignees(pmTask, pmWorkflowTask)
-            : undefined,
-        approvalPayload:
-          pmTask && pmStepStatus !== 'active' && pmStepStatus !== 'skipped'
-            ? {
-                status:
-                  pmTask.action === V1_WorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
-                approvalTimestamp: pmTask.actionedOn?.toISOString(),
-                approverId: pmTask.actionedBy,
-              }
-            : undefined,
+        ...(pmAssignees && { assignees: pmAssignees }),
+        ...(pmTask &&
+          pmStepStatus !== 'active' &&
+          pmStepStatus !== 'skipped' && {
+            approvalPayload: {
+              status:
+                pmTask.action === V1_WorkflowTaskAction.APPROVED
+                  ? 'APPROVED'
+                  : 'DENIED',
+              ...(pmTask.actionedOn && {
+                approvalTimestamp: pmTask.actionedOn.toISOString(),
+              }),
+              ...(pmTask.actionedBy && { approverId: pmTask.actionedBy }),
+            },
+          }),
       },
       {
         key: 'data-producer-approval',
         label: {
           title: 'Data Producer Approval',
-          link: doStepStatus === 'active' ? doTask?.url : undefined,
+          ...(doStepStatus === 'active' && doTask?.url && { link: doTask.url }),
         },
         status: doStepStatus,
-        assignees:
-          doStepStatus === 'active'
-            ? getEffectiveAssignees(doTask, doWorkflowTask)
-            : undefined,
-        approvalPayload:
-          doTask && doStepStatus !== 'active' && doStepStatus !== 'upcoming'
-            ? {
-                status:
-                  doTask.action === V1_WorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
-                approvalTimestamp: doTask.actionedOn?.toISOString(),
-                approverId: doTask.actionedBy,
-              }
-            : undefined,
+        ...(doAssignees && { assignees: doAssignees }),
+        ...(doTask &&
+          doStepStatus !== 'active' &&
+          doStepStatus !== 'upcoming' && {
+            approvalPayload: {
+              status:
+                doTask.action === V1_WorkflowTaskAction.APPROVED
+                  ? 'APPROVED'
+                  : 'DENIED',
+              ...(doTask.actionedOn && {
+                approvalTimestamp: doTask.actionedOn.toISOString(),
+              }),
+              ...(doTask.actionedBy && { approverId: doTask.actionedBy }),
+            },
+          }),
       },
       {
         key: 'complete',
