@@ -64,6 +64,19 @@ export type PermitDataAccessRequestStateOptions = {
 
 // -------------------------------- Permit overlay helpers --------------------------------
 
+const VALID_WORKFLOW_TASK_STATUSES = new Set<string>(
+  Object.values(V1_WorkflowTaskStatus),
+);
+
+const parseWorkflowTaskStatus = (
+  raw: string,
+): V1_WorkflowTaskStatus | undefined => {
+  if (VALID_WORKFLOW_TASK_STATUSES.has(raw)) {
+    return raw as V1_WorkflowTaskStatus;
+  }
+  return undefined;
+};
+
 const collectPermitTasks = (
   detail: V1_PermitProcessInstanceDetail,
 ): V1_PermitProcessInstanceTask[] => {
@@ -102,13 +115,11 @@ const getStepStatus = (
   if (task.status === V1_WorkflowTaskStatus.OPEN) {
     return 'active';
   }
-  if (task.action === V1_WorkflowTaskAction.APPROVED) {
-    return 'complete';
-  }
   if (task.action === V1_WorkflowTaskAction.REJECTED) {
     return 'denied';
   }
   if (
+    task.action === V1_WorkflowTaskAction.APPROVED ||
     task.action === V1_WorkflowTaskAction.ESCALATED ||
     task.status === V1_WorkflowTaskStatus.COMPLETED ||
     task.status === V1_WorkflowTaskStatus.CLOSED
@@ -484,7 +495,10 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
             for (const task of workflow.tasks) {
               const permitTask = permitTaskMap.get(task.taskId);
               if (permitTask) {
-                task.status = permitTask.status as V1_WorkflowTaskStatus;
+                const parsedStatus = parseWorkflowTaskStatus(permitTask.status);
+                if (parsedStatus) {
+                  task.status = parsedStatus;
+                }
                 task.assignees = permitTask.assignees;
                 if (permitTask.completedBy) {
                   task.actionedBy = permitTask.completedBy;
@@ -512,7 +526,9 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
               .map((permitTask) => {
                 const task = new V1_PrivilegeManagerApprovalTask();
                 task.taskId = permitTask.taskId;
-                task.status = permitTask.status as V1_WorkflowTaskStatus;
+                task.status =
+                  parseWorkflowTaskStatus(permitTask.status) ??
+                  V1_WorkflowTaskStatus.OPEN;
                 task.assignees = permitTask.assignees;
                 task.url = `${workflow.url}/${permitTask.taskId}`;
                 const taskAction = mapCompletionReasonToAction(
