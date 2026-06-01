@@ -479,7 +479,10 @@ export const DataAccessRequestContent = observer(
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
       viewerState.initializationState.reset();
-      await onRefresh?.();
+      await Promise.resolve(onRefresh?.())
+        .then(() => flowResult(viewerState.init(auth.user?.access_token)))
+        .catch(viewerState.applicationStore.alertUnhandledError)
+        .finally(() => setIsLoading(false));
     };
 
     const dataProduct = viewerState.resourceId;
