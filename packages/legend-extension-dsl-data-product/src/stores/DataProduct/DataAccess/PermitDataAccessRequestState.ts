@@ -545,6 +545,7 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       }
     } catch (error) {
       assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error.message);
     } finally {
       this.initializationState.complete();
     }
@@ -601,7 +602,7 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
           const detail = (yield this.permitClient.getProcessInstanceDetail(
             workflowId,
             token,
-          )) as unknown as V1_PermitProcessInstanceDetail;
+          )) as V1_PermitProcessInstanceDetail;
           this.applyPermitTaskRefresh(detail);
         } catch (_e) {
           assertErrorThrown(_e);
