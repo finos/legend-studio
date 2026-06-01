@@ -15,10 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-} from '@finos/legend-application';
+import { ActionAlertType } from '@finos/legend-application';
 import { withLegendMarketplaceProductViewerStore } from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import {
@@ -36,7 +33,7 @@ import {
   V1_RawWorkflowTask,
   V1_WorkflowTaskStatus,
 } from '@finos/legend-graph';
-import { Box, Button, TextField } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -46,6 +43,7 @@ import {
   WorkflowDataAccessRequestState,
 } from '@finos/legend-extension-dsl-data-product';
 import { flowResult } from 'mobx';
+import { showTaskActionAlert } from './showTaskActionAlert.js';
 
 export const WorkflowDataAccessRequestTask =
   withLegendMarketplaceProductViewerStore(
@@ -181,100 +179,32 @@ export const WorkflowDataAccessRequestTask =
       };
 
       const handleApproveClick = () => {
-        let justification = '';
-        marketplaceBaseStore.applicationStore.alertService.setActionAlertInfo({
+        showTaskActionAlert({
+          applicationStore: marketplaceBaseStore.applicationStore,
           title: 'Approve Request',
           message:
             'Please provide a business justification for approving this request.',
-          prompt: (
-            <TextField
-              fullWidth={true}
-              autoFocus={true}
-              multiline={true}
-              minRows={3}
-              placeholder="Business Justification"
-              onChange={(e) => {
-                justification = e.target.value;
-              }}
-              sx={{ marginTop: 2 }}
-            />
-          ),
-          type: ActionAlertType.STANDARD,
-          actions: [
-            {
-              label: 'Approve',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: () => {
-                if (!isLoading) {
-                  setIsLoading(true);
-                  handleApprove(justification)
-                    .catch((error) => {
-                      assertErrorThrown(error);
-                      marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                        `Error approving request: ${error.message}`,
-                      );
-                    })
-                    .finally(() => {
-                      setIsLoading(false);
-                    });
-                }
-              },
-            },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
+          confirmLabel: 'Approve',
+          alertType: ActionAlertType.STANDARD,
+          isLoading,
+          setIsLoading,
+          onConfirm: (justification) => handleApprove(justification),
+          errorPrefix: 'Error approving request',
         });
       };
 
       const handleDenyClick = () => {
-        let justification = '';
-        marketplaceBaseStore.applicationStore.alertService.setActionAlertInfo({
+        showTaskActionAlert({
+          applicationStore: marketplaceBaseStore.applicationStore,
           title: 'Deny Request',
           message:
             'Please provide a business justification for denying this request.',
-          prompt: (
-            <TextField
-              fullWidth={true}
-              autoFocus={true}
-              multiline={true}
-              minRows={3}
-              placeholder="Business Justification"
-              onChange={(e) => {
-                justification = e.target.value;
-              }}
-              sx={{ marginTop: 2 }}
-            />
-          ),
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Deny',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: () => {
-                if (!isLoading) {
-                  setIsLoading(true);
-                  handleDeny(justification)
-                    .catch((error) => {
-                      assertErrorThrown(error);
-                      marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                        `Error denying request: ${error.message}`,
-                      );
-                    })
-                    .finally(() => {
-                      setIsLoading(false);
-                    });
-                }
-              },
-            },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
+          confirmLabel: 'Deny',
+          alertType: ActionAlertType.CAUTION,
+          isLoading,
+          setIsLoading,
+          onConfirm: (justification) => handleDeny(justification),
+          errorPrefix: 'Error denying request',
         });
       };
 

@@ -15,10 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-} from '@finos/legend-application';
+import { ActionAlertType } from '@finos/legend-application';
 import { withLegendMarketplaceProductViewerStore } from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import {
@@ -32,7 +29,7 @@ import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useEffect, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import { Box, Button, TextField } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -46,6 +43,7 @@ import {
   V1_deserializeDataRequestsWithWorkflowResponse,
   V1_PermitTaskAction,
 } from '@finos/legend-graph';
+import { showTaskActionAlert } from './showTaskActionAlert.js';
 
 export const PermitDataAccessRequestTask =
   withLegendMarketplaceProductViewerStore(
@@ -153,112 +151,36 @@ export const PermitDataAccessRequestTask =
       };
 
       const handleApproveClick = (): void => {
-        let justification = '';
-        marketplaceBaseStore.applicationStore.alertService.setActionAlertInfo({
+        showTaskActionAlert({
+          applicationStore: marketplaceBaseStore.applicationStore,
           title: 'Approve Request',
           message:
             'Please provide a business justification for approving this request.',
-          prompt: (
-            <TextField
-              fullWidth={true}
-              autoFocus={true}
-              multiline={true}
-              minRows={3}
-              placeholder="Business Justification"
-              onChange={(e) => {
-                justification = e.target.value;
-              }}
-              className="marketplace-lakehouse-entitlements__data-access-request-viewer__justification-field"
-            />
-          ),
-          type: ActionAlertType.STANDARD,
-          actions: [
-            {
-              label: 'Approve',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: () => {
-                if (!justification.trim()) {
-                  marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                    'Business justification is required for approval',
-                  );
-                  return;
-                }
-                if (!isLoading) {
-                  setIsLoading(true);
-                  handleTaskAction(V1_PermitTaskAction.APPROVE, justification)
-                    .catch((error) => {
-                      assertErrorThrown(error);
-                      marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                        `Error approving request: ${error.message}`,
-                      );
-                    })
-                    .finally(() => {
-                      setIsLoading(false);
-                    });
-                }
-              },
-            },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
+          confirmLabel: 'Approve',
+          alertType: ActionAlertType.STANDARD,
+          requireJustification: true,
+          isLoading,
+          setIsLoading,
+          onConfirm: (justification) =>
+            handleTaskAction(V1_PermitTaskAction.APPROVE, justification),
+          errorPrefix: 'Error approving request',
         });
       };
 
       const handleDenyClick = (): void => {
-        let justification = '';
-        marketplaceBaseStore.applicationStore.alertService.setActionAlertInfo({
+        showTaskActionAlert({
+          applicationStore: marketplaceBaseStore.applicationStore,
           title: 'Deny Request',
           message:
             'Please provide a business justification for denying this request.',
-          prompt: (
-            <TextField
-              fullWidth={true}
-              autoFocus={true}
-              multiline={true}
-              minRows={3}
-              placeholder="Business Justification"
-              onChange={(e) => {
-                justification = e.target.value;
-              }}
-              className="marketplace-lakehouse-entitlements__data-access-request-viewer__justification-field"
-            />
-          ),
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Deny',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: () => {
-                if (!justification.trim()) {
-                  marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                    'Business justification is required for denial',
-                  );
-                  return;
-                }
-                if (!isLoading) {
-                  setIsLoading(true);
-                  handleTaskAction(V1_PermitTaskAction.REJECT, justification)
-                    .catch((error) => {
-                      assertErrorThrown(error);
-                      marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                        `Error denying request: ${error.message}`,
-                      );
-                    })
-                    .finally(() => {
-                      setIsLoading(false);
-                    });
-                }
-              },
-            },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
+          confirmLabel: 'Deny',
+          alertType: ActionAlertType.CAUTION,
+          requireJustification: true,
+          isLoading,
+          setIsLoading,
+          onConfirm: (justification) =>
+            handleTaskAction(V1_PermitTaskAction.REJECT, justification),
+          errorPrefix: 'Error denying request',
         });
       };
 
