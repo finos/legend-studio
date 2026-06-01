@@ -1,5 +1,7 @@
 # @finos/legend-application-pure-ide-deployment
 
+## 13.222.0
+
 ## 13.221.0
 
 ## 13.220.0

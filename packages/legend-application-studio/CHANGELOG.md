@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.21.8
+
+### Patch Changes
+
+- [#5193](https://github.com/finos/legend-studio/pull/5193) [`70bc5c3`](https://github.com/finos/legend-studio/commit/70bc5c3a16628cbc39644990169140d2f5f99719) ([@yash0024](https://github.com/yash0024)) - Updates to call now async functions
+
+- [#5194](https://github.com/finos/legend-studio/pull/5194) [`967056b`](https://github.com/finos/legend-studio/commit/967056b8fdd159226a22a8252487f3fe979b0a66) ([@Rakan1837](https://github.com/Rakan1837)) - enable production flag for dataproduct testing editor
+
 ## 28.21.7
 
 ### Patch Changes

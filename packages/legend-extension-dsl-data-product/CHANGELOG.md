@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.83
+
+### Patch Changes
+
+- [#5196](https://github.com/finos/legend-studio/pull/5196) [`6a1171a`](https://github.com/finos/legend-studio/commit/6a1171a15ffadb4d01073ad2de713fd522069bee) ([@jackp5150](https://github.com/jackp5150)) - Refactored contract viewer error modal to combine all contract errors in one modal.
+
 ## 0.0.82
 
 ### Patch Changes

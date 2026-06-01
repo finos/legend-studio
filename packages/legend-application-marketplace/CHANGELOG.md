@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.2.14
+
+### Patch Changes
+
+- [#5196](https://github.com/finos/legend-studio/pull/5196) [`6a1171a`](https://github.com/finos/legend-studio/commit/6a1171a15ffadb4d01073ad2de713fd522069bee) ([@jackp5150](https://github.com/jackp5150)) - Added contract sync logic to entitlements state and consolidated contract errors in individual contract dashboards
+
 ## 0.2.13
 
 ### Patch Changes
