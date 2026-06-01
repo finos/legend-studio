@@ -147,11 +147,13 @@ const buildApprovalPayload = (
     status:
       task.action === V1_WorkflowTaskAction.APPROVED ? 'APPROVED' : 'DENIED',
   };
-  const ts = task.actionedOn
-    ? task.actionedOn instanceof Date
-      ? task.actionedOn.toISOString()
-      : task.actionedOn
-    : undefined;
+  let ts: string | undefined;
+  if (task.actionedOn) {
+    ts =
+      task.actionedOn instanceof Date
+        ? task.actionedOn.toISOString()
+        : task.actionedOn;
+  }
   if (ts !== undefined) {
     payload.approvalTimestamp = ts;
   }
@@ -491,84 +493,7 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
 
       // Overlay real-time task data from the permit server
       if (permitDetail) {
-        const allPermitTasks = collectPermitTasks(permitDetail);
-        const permitTaskMap = new Map(
-          allPermitTasks.map((permitTask) => [permitTask.taskId, permitTask]),
-        );
-
-        if (permitTaskMap.size > 0) {
-          for (const workflow of base.workflows) {
-            const authTaskIds = new Set(
-              workflow.tasks.map((task) => task.taskId),
-            );
-
-            // 1. Patch existing tasks with live status / assignees
-            for (const task of workflow.tasks) {
-              const permitTask = permitTaskMap.get(task.taskId);
-              if (permitTask) {
-                const parsedStatus = parseWorkflowTaskStatus(permitTask.status);
-                if (parsedStatus) {
-                  task.status = parsedStatus;
-                }
-                task.assignees = permitTask.assignees;
-                if (permitTask.completedBy) {
-                  task.actionedBy = permitTask.completedBy;
-                }
-                if (permitTask.completedDate) {
-                  task.actionedOn = new Date(permitTask.completedDate);
-                }
-                const taskAction = mapCompletionReasonToAction(
-                  permitTask.completionReason,
-                );
-                if (taskAction !== undefined) {
-                  task.action = taskAction;
-                }
-              }
-            }
-
-            // 2. Synthesize tasks the auth server hasn't caught up with yet
-            //    (e.g. the replacement OPEN task created by an escalation event).
-            const lastPmLikeTask = workflow.tasks.findLast(
-              (task) => !(task instanceof V1_DataOwnerApprovalTask),
-            );
-
-            const syntheticTasks: V1_WorkflowTask[] = allPermitTasks
-              .filter((permitTask) => !authTaskIds.has(permitTask.taskId))
-              .map((permitTask) => {
-                const task = new V1_PrivilegeManagerApprovalTask();
-                task.taskId = permitTask.taskId;
-                task.status =
-                  parseWorkflowTaskStatus(permitTask.status) ??
-                  V1_WorkflowTaskStatus.OPEN;
-                task.assignees = permitTask.assignees;
-                task.url = `${workflow.url}/${permitTask.taskId}`;
-                const taskAction = mapCompletionReasonToAction(
-                  permitTask.completionReason,
-                );
-                if (taskAction !== undefined) {
-                  task.action = taskAction;
-                }
-                if (permitTask.completedDate) {
-                  task.actionedOn = new Date(permitTask.completedDate);
-                }
-                if (permitTask.completedBy) {
-                  task.actionedBy = permitTask.completedBy;
-                }
-                if (lastPmLikeTask instanceof V1_PrivilegeManagerApprovalTask) {
-                  task.resourceId = lastPmLikeTask.resourceId;
-                  task.accessPointGroup = lastPmLikeTask.accessPointGroup;
-                  task.consumer = lastPmLikeTask.consumer;
-                  task.workflowGuid = lastPmLikeTask.workflowGuid;
-                  task.createdOn = lastPmLikeTask.createdOn;
-                }
-                return task;
-              });
-
-            workflow.tasks = [...workflow.tasks, ...syntheticTasks];
-          }
-
-          this.setDataRequestWithWorkflow(base);
-        }
+        this.applyPermitOverlay(base, permitDetail);
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -576,6 +501,103 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
     } finally {
       this.initializationState.complete();
     }
+  }
+
+  private applyPermitOverlay(
+    base: V1_DataRequestWithWorkflow,
+    permitDetail: V1_PermitProcessInstanceDetail,
+  ): void {
+    const allPermitTasks = collectPermitTasks(permitDetail);
+    const permitTaskMap = new Map(
+      allPermitTasks.map((permitTask) => [permitTask.taskId, permitTask]),
+    );
+
+    if (permitTaskMap.size === 0) {
+      return;
+    }
+
+    for (const workflow of base.workflows) {
+      const authTaskIds = new Set(workflow.tasks.map((task) => task.taskId));
+
+      // 1. Patch existing tasks with live status / assignees
+      for (const task of workflow.tasks) {
+        const permitTask = permitTaskMap.get(task.taskId);
+        if (permitTask) {
+          this.patchTaskFromPermit(task, permitTask);
+        }
+      }
+
+      // 2. Synthesize tasks the auth server hasn't caught up with yet
+      const syntheticTasks = this.buildSyntheticTasks(
+        allPermitTasks.filter(
+          (permitTask) => !authTaskIds.has(permitTask.taskId),
+        ),
+        workflow,
+      );
+      workflow.tasks = [...workflow.tasks, ...syntheticTasks];
+    }
+
+    this.setDataRequestWithWorkflow(base);
+  }
+
+  private patchTaskFromPermit(
+    task: V1_WorkflowTask,
+    permitTask: V1_PermitProcessInstanceTask,
+  ): void {
+    const parsedStatus = parseWorkflowTaskStatus(permitTask.status);
+    if (parsedStatus) {
+      task.status = parsedStatus;
+    }
+    task.assignees = permitTask.assignees;
+    if (permitTask.completedBy) {
+      task.actionedBy = permitTask.completedBy;
+    }
+    if (permitTask.completedDate) {
+      task.actionedOn = new Date(permitTask.completedDate);
+    }
+    const taskAction = mapCompletionReasonToAction(permitTask.completionReason);
+    if (taskAction !== undefined) {
+      task.action = taskAction;
+    }
+  }
+
+  private buildSyntheticTasks(
+    missingPermitTasks: V1_PermitProcessInstanceTask[],
+    workflow: V1_DataRequestWithWorkflow['workflows'][number],
+  ): V1_WorkflowTask[] {
+    const lastPmLikeTask = workflow.tasks.findLast(
+      (task) => !(task instanceof V1_DataOwnerApprovalTask),
+    );
+
+    return missingPermitTasks.map((permitTask) => {
+      const task = new V1_PrivilegeManagerApprovalTask();
+      task.taskId = permitTask.taskId;
+      task.status =
+        parseWorkflowTaskStatus(permitTask.status) ??
+        V1_WorkflowTaskStatus.OPEN;
+      task.assignees = permitTask.assignees;
+      task.url = `${workflow.url}/${permitTask.taskId}`;
+      const taskAction = mapCompletionReasonToAction(
+        permitTask.completionReason,
+      );
+      if (taskAction !== undefined) {
+        task.action = taskAction;
+      }
+      if (permitTask.completedDate) {
+        task.actionedOn = new Date(permitTask.completedDate);
+      }
+      if (permitTask.completedBy) {
+        task.actionedBy = permitTask.completedBy;
+      }
+      if (lastPmLikeTask instanceof V1_PrivilegeManagerApprovalTask) {
+        task.resourceId = lastPmLikeTask.resourceId;
+        task.accessPointGroup = lastPmLikeTask.accessPointGroup;
+        task.consumer = lastPmLikeTask.consumer;
+        task.workflowGuid = lastPmLikeTask.workflowGuid;
+        task.createdOn = lastPmLikeTask.createdOn;
+      }
+      return task;
+    });
   }
 
   *escalateRequest(
