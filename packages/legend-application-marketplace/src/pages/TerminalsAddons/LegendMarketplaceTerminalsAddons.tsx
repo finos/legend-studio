@@ -106,7 +106,7 @@ const SearchResultsRenderer = observer(
     vendorDataState: LegendMarketPlaceVendorDataStore;
     terminalResults: TerminalResult[];
     sectionTitle: VendorDataProviderType;
-    totalCount?: number | undefined;
+    totalCount?: number;
     seeAll?: boolean;
     tooltip?: string;
   }) => {
@@ -168,7 +168,7 @@ const OrderProfileSearchResultsRenderer = observer(
   (props: {
     vendorDataState: LegendMarketPlaceVendorDataStore;
     traderProfiles: TraderProfile[];
-    totalCount?: number | undefined;
+    totalCount?: number;
     tooltip?: string;
     seeAll?: boolean;
   }) => {

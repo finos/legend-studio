@@ -147,10 +147,17 @@ export const OrderProfileDetailModal = observer(
                 {groupedItems.map(({ item, isSubItem }) => {
                   const isInCart =
                     !item.isOwned && cartStore.isItemInCart(item.id);
+                  let rowModifierClass = '';
+                  if (item.isOwned) {
+                    rowModifierClass = 'order-profile-modal__table-row--owned';
+                  } else if (isInCart) {
+                    rowModifierClass =
+                      'order-profile-modal__table-row--in-cart';
+                  }
                   return (
                     <TableRow
                       key={item.id}
-                      className={`order-profile-modal__table-row ${item.isOwned ? 'order-profile-modal__table-row--owned' : isInCart ? 'order-profile-modal__table-row--in-cart' : ''}`}
+                      className={`order-profile-modal__table-row ${rowModifierClass}`}
                     >
                       <TableCell className="order-profile-modal__table-cell order-profile-modal__table-cell--name">
                         <Box

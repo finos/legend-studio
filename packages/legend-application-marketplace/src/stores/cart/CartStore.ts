@@ -259,19 +259,19 @@ export class CartStore {
             price: item.price,
             description: item.description ?? '',
             isOwned: 'false',
-            ...(item.model !== null && item.model !== undefined
-              ? { model: item.model }
-              : {}),
+            ...(item.model === null || item.model === undefined
+              ? {}
+              : { model: item.model }),
             skipWorkflow: true,
-            ...(item.isMandatory !== undefined
-              ? { isMandatory: item.isMandatory }
-              : {}),
-            ...(item.vendorProfileId !== undefined
-              ? { vendorProfileId: item.vendorProfileId }
-              : {}),
-            ...(item.permissionId !== undefined
-              ? { permissionId: item.permissionId }
-              : {}),
+            ...(item.isMandatory === undefined
+              ? {}
+              : { isMandatory: item.isMandatory }),
+            ...(item.vendorProfileId === undefined
+              ? {}
+              : { vendorProfileId: item.vendorProfileId }),
+            ...(item.permissionId === undefined
+              ? {}
+              : { permissionId: item.permissionId }),
           },
           suppressSuccessToast,
         ),

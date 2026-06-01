@@ -51,7 +51,8 @@ export enum OrderProfileTableHeader {
  * does not change on re-renders.
  */
 export const getRandomImageUrl = (assetUrl: string): string => {
-  const randomIndex = Math.floor(Math.random() * MAX_PRODUCT_IMAGE_COUNT) + 1;
+  const randomValue = crypto.getRandomValues(new Uint32Array(1))[0] ?? 0;
+  const randomIndex = (randomValue % MAX_PRODUCT_IMAGE_COUNT) + 1;
   return `${assetUrl}/images${randomIndex}.jpg`;
 };
 
@@ -115,8 +116,9 @@ export const calculateMultiselectTotalPrice = (
   if (terminals.length === 0) {
     return undefined;
   }
-  const highestTerminal = terminals.reduce((max, curr) =>
-    curr.price > max.price ? curr : max,
+  const highestTerminal = terminals.reduce(
+    (max, curr) => (curr.price > max.price ? curr : max),
+    terminals[0] as TraderProfileItem,
   );
   const addOns = items.filter(
     (item) => !item.isTerminal && item.model === highestTerminal.model,
