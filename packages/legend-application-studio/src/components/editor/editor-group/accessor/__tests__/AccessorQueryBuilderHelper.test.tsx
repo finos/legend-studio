@@ -69,7 +69,7 @@ describe(integrationTest('Promote accessor query to function'), () => {
       QueryBuilderAdvancedWorkflowState.INSTANCE,
       QueryBuilderActionConfig.INSTANCE,
     );
-    queryBuilderState.changeAccessorOwner(ingest);
+    await queryBuilderState.changeAccessorOwner(ingest);
     const compatibleRuntimes = getCompatibleRuntimesFromAccessorOwner(
       ingest,
       MOCK__editorStore.graphManagerState,
@@ -129,7 +129,7 @@ describe(integrationTest('Promote accessor query to function'), () => {
       QueryBuilderAdvancedWorkflowState.INSTANCE,
       QueryBuilderActionConfig.INSTANCE,
     );
-    queryBuilderState.changeAccessorOwner(database);
+    await queryBuilderState.changeAccessorOwner(database);
     const compatibleRuntimes = getCompatibleRuntimesFromAccessorOwner(
       database,
       MOCK__editorStore.graphManagerState,

@@ -55,11 +55,13 @@ const AccessorQueryBuilderSetupPanelContent = observer(
           (opt) => opt.value === queryBuilderState.selectedAccessorOwner,
         ) ?? null)
       : null;
-    const changeAccessorOwner = (val: AccessorOwnerOption): void => {
+    const changeAccessorOwner = async (
+      val: AccessorOwnerOption,
+    ): Promise<void> => {
       if (val.value === queryBuilderState.selectedAccessorOwner) {
         return;
       }
-      queryBuilderState.changeAccessorOwner(val.value);
+      await queryBuilderState.changeAccessorOwner(val.value);
     };
     const accessorOwnerFilterOption = createFilter({
       ignoreCase: true,
@@ -79,8 +81,8 @@ const AccessorQueryBuilderSetupPanelContent = observer(
             opt.value.schemaName === queryBuilderState.sourceAccessor.schema,
         ) ?? null)
       : null;
-    const changeAccessor = (val: AccessorOption): void => {
-      queryBuilderState.changeAccessor(val.value);
+    const changeAccessor = async (val: AccessorOption): Promise<void> => {
+      await queryBuilderState.changeAccessor(val.value);
     };
     const showAccessorSelector = accessorOptions.length > 0;
 
@@ -130,7 +132,9 @@ const AccessorQueryBuilderSetupPanelContent = observer(
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
               placeholder="Choose a source..."
               options={accessorOwnerOptions}
-              onChange={changeAccessorOwner}
+              onChange={(val: AccessorOwnerOption): void => {
+                changeAccessorOwner(val).catch(() => undefined);
+              }}
               value={selectedAccessorOwnerOption}
               darkMode={
                 !applicationStore.layoutService
@@ -158,7 +162,9 @@ const AccessorQueryBuilderSetupPanelContent = observer(
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 placeholder={`Choose a ${queryBuilderState.accessorLabel.toLocaleLowerCase()}...`}
                 options={accessorOptions}
-                onChange={changeAccessor}
+                onChange={(val: AccessorOption): void => {
+                  changeAccessor(val).catch(() => undefined);
+                }}
                 value={selectedAccessorOption}
                 darkMode={
                   !applicationStore.layoutService

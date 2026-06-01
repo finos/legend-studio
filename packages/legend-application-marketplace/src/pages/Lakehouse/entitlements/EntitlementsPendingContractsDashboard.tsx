@@ -43,6 +43,7 @@ import { observer } from 'mobx-react-lite';
 import { startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
+  type ContractErrorLayer,
   MultiUserRenderer,
   isContractInTerminalState,
   DataAccessRequestViewer,
@@ -115,10 +116,9 @@ export const EntitlementsPendingContractsDashboard = observer(
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
     >();
-    const [unverifiedIngestDefinitions, setUnverifiedIngestDefinitions] =
-      useState<string[] | undefined>(undefined);
-    const [ingestVerificationInProgress, setIngestVerificationInProgress] =
-      useState(false);
+    const [contractErrors, setContractErrors] = useState<
+      ContractErrorLayer | undefined
+    >(undefined);
     const [showForOthers, setShowForOthers] = useState<boolean>(
       myPendingContracts.length === 0 && pendingContractsForOthers.length > 0,
     );
@@ -130,17 +130,13 @@ export const EntitlementsPendingContractsDashboard = observer(
     ) => {
       const contract = event.data?.contractResultLite;
       setSelectedContract(contract);
-      setUnverifiedIngestDefinitions(undefined);
+      setContractErrors(undefined);
       if (contract !== undefined) {
-        setIngestVerificationInProgress(true);
-        const result = await flowResult(
-          dashboardState.getUnverifiedIngestDefinitions(
-            contract.guid,
-            auth.user?.access_token,
-          ),
+        const result = await dashboardState.getContractErrors(
+          contract.guid,
+          auth.user?.access_token,
         );
-        setUnverifiedIngestDefinitions(result);
-        setIngestVerificationInProgress(false);
+        setContractErrors(result);
       }
     };
 
@@ -267,15 +263,14 @@ export const EntitlementsPendingContractsDashboard = observer(
             overlayLoadingTemplate="Loading contracts"
           />
         </Box>
-        {selectedContract !== undefined && !ingestVerificationInProgress && (
+        {selectedContract !== undefined && (
           <DataAccessRequestViewer
             open={true}
             onClose={() => {
               setSelectedContract(undefined);
-              setUnverifiedIngestDefinitions(undefined);
-              setIngestVerificationInProgress(false);
+              setContractErrors(undefined);
             }}
-            unverifiedIngestDefinitions={unverifiedIngestDefinitions}
+            contractErrors={contractErrors}
             viewerState={
               new DataContractViewerState(
                 selectedContract,

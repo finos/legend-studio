@@ -468,6 +468,16 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       this._token(token),
     );
 
+  getContractSyncStatus = (
+    contractId: string,
+    token: string | undefined,
+  ): Promise<PlainObject> =>
+    this.get(
+      `${this._consumerEntitlements()}/sync/status/contracts/${encodeURIComponent(contractId)}`,
+      {},
+      this._token(token),
+    );
+
   // ------------------------------------------- Ref Data -------------------------------------------
 
   getOwnersForDid = (

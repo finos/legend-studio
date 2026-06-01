@@ -322,11 +322,12 @@ export class DataProductElementTestDataState {
         let columns: string[] = [];
         try {
           if (element instanceof IngestDefinition) {
-            const accessor = graphManager.createAccessorFromPackageableElement(
-              element,
-              graph,
-              { schemaName: undefined, tableName: item.id },
-            );
+            const accessor =
+              await graphManager.createAccessorFromPackageableElement(
+                element,
+                graph,
+                { schemaName: undefined, tableName: item.id },
+              );
             if (accessor) {
               columns = accessor.relationType.columns.map((c) => c.name);
             }
