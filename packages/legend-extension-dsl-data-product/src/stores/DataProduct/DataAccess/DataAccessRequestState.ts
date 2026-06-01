@@ -31,22 +31,20 @@ export type TimelineStep = {
   key: string;
   label: {
     title: string;
-    link?: string | undefined;
-    externalLink?: string | undefined;
-    showEscalateButton?: boolean | undefined;
-    isEscalatable?: boolean | undefined;
-    isEscalated?: boolean | undefined;
+    link?: string;
+    externalLink?: string;
+    showEscalateButton?: boolean;
+    isEscalatable?: boolean;
+    isEscalated?: boolean;
   };
   status: 'active' | 'complete' | 'denied' | 'skipped' | 'upcoming';
   description?: React.ReactNode;
-  assignees?: string[] | undefined;
-  approvalPayload?:
-    | {
-        status: string;
-        approvalTimestamp?: string | undefined;
-        approverId?: string | undefined;
-      }
-    | undefined;
+  assignees?: string[];
+  approvalPayload?: {
+    status: string;
+    approvalTimestamp?: string;
+    approverId?: string;
+  };
 };
 
 export enum DataAccessRequestStatus {

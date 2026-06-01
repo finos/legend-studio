@@ -282,13 +282,16 @@ const TimelineStepLinks = (props: {
     return label.title;
   };
 
-  const escalateTitle = isEscalating
-    ? 'Escalating...'
-    : label.isEscalatable
-      ? 'Escalate request'
-      : label.isEscalated
-        ? 'Request has already been escalated'
-        : 'Cannot escalate request';
+  let escalateTitle: string;
+  if (isEscalating) {
+    escalateTitle = 'Escalating...';
+  } else if (label.isEscalatable) {
+    escalateTitle = 'Escalate request';
+  } else if (label.isEscalated) {
+    escalateTitle = 'Request has already been escalated';
+  } else {
+    escalateTitle = 'Cannot escalate request';
+  }
 
   return (
     <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links">
