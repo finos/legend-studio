@@ -72,19 +72,19 @@
   white-space: nowrap;
 
   &:hover {
-    color: var(--color-blue-200);
-    border-color: var(--color-blue-200);
+    color: var(--color-dark-theme-blue-primary);
+    border-color: var(--color-dark-theme-blue-primary);
   }
 
   &--active {
-    color: var(--color-blue-200);
-    border-color: var(--color-blue-200);
+    color: var(--color-dark-theme-blue-primary);
+    border-color: var(--color-dark-theme-blue-primary);
     background-color: rgb(64 102 224 / 8%);
     font-weight: 600;
     cursor: default;
 
     &:hover {
-      border-color: var(--color-blue-200);
+      border-color: var(--color-dark-theme-blue-primary);
     }
   }
 }

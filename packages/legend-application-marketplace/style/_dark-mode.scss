@@ -2182,13 +2182,13 @@
     color: var(--color-dark-theme-text-primary);
 
     &:hover {
-      color: var(--color-blue-100);
-      border-color: var(--color-blue-100);
+      color: var(--color-dark-theme-blue-primary);
+      border-color: var(--color-dark-theme-blue-primary);
     }
 
     &--active {
-      color: var(--color-blue-100);
-      border-color: var(--color-blue-100);
+      color: var(--color-dark-theme-blue-primary);
+      border-color: var(--color-dark-theme-blue-primary);
       background-color: rgb(100 140 255 / 12%);
     }
   }
