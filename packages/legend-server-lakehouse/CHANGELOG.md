@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.54
+
+### Patch Changes
+
+- [#5196](https://github.com/finos/legend-studio/pull/5196) [`6a1171a`](https://github.com/finos/legend-studio/commit/6a1171a15ffadb4d01073ad2de713fd522069bee) ([@jackp5150](https://github.com/jackp5150)) - Adding api endpoint function to server client to call contract sync api
+
 ## 0.3.53
 
 ## 0.3.52

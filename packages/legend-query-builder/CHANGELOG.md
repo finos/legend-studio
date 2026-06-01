@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.18.12
+
+### Patch Changes
+
+- [#5193](https://github.com/finos/legend-studio/pull/5193) [`70bc5c3`](https://github.com/finos/legend-studio/commit/70bc5c3a16628cbc39644990169140d2f5f99719) ([@yash0024](https://github.com/yash0024)) - Make changeAccessorOwner and changeAccessor async
+
 ## 4.18.11
 
 ### Patch Changes
