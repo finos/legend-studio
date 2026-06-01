@@ -36,6 +36,8 @@ import {
   type CartSummary,
   type OrderDetails,
   type TerminalResult,
+  type TraderProfile,
+  type TraderProfileItem,
   RecommendationSource,
 } from '@finos/legend-server-marketplace';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
@@ -84,6 +86,7 @@ export class CartStore {
       clearCart: flow,
       deleteCartItem: flow,
       addToCartWithAPI: flow,
+      addOrderProfileItemsToCart: flow,
     });
     this.baseStore = baseStore;
   }
@@ -231,6 +234,78 @@ export class CartStore {
       this.loadingState.fail();
       return { success: false, message };
     }
+  }
+
+  /**
+   * Adds a list of order-profile items to the cart, skipping already-owned ones.
+   * Each item is added sequentially so that vendor-profile items can be added
+   * before their associated add-ons.
+   */
+  *addOrderProfileItemsToCart(
+    items: TraderProfileItem[],
+    suppressSuccessToast = false,
+  ): GeneratorFn<void> {
+    for (const item of items) {
+      if (item.isOwned) {
+        continue;
+      }
+      yield flowResult(
+        this.addToCartWithAPI(
+          {
+            id: item.id,
+            productName: item.productName,
+            providerName: item.providerName,
+            category: item.category,
+            price: item.price,
+            description: item.description ?? '',
+            isOwned: 'false',
+            ...(item.model !== null && item.model !== undefined
+              ? { model: item.model }
+              : {}),
+            skipWorkflow: true,
+            ...(item.isMandatory !== undefined
+              ? { isMandatory: item.isMandatory }
+              : {}),
+            ...(item.vendorProfileId !== undefined
+              ? { vendorProfileId: item.vendorProfileId }
+              : {}),
+            ...(item.permissionId !== undefined
+              ? { permissionId: item.permissionId }
+              : {}),
+          },
+          suppressSuccessToast,
+        ),
+      );
+    }
+  }
+
+  /**
+   * Returns true when all non-owned items of the profile are present in the
+   * cart.  For multiselect profiles, at least one complete terminal bundle
+   * (terminal + its associated add-ons) must be fully in the cart.
+   */
+  isOrderProfileInCart(profile: TraderProfile): boolean {
+    const nonOwnedItems = profile.items.filter((item) => !item.isOwned);
+    const nonOwnedTerminals = nonOwnedItems.filter((item) => item.isTerminal);
+    if (profile.multiselect) {
+      return nonOwnedTerminals.some((terminal) => {
+        const selectedModel = terminal.model ?? null;
+        const bundleItems = [
+          terminal,
+          ...profile.items.filter(
+            (item) =>
+              !item.isTerminal &&
+              !item.isOwned &&
+              (selectedModel === null || item.model === selectedModel),
+          ),
+        ];
+        return bundleItems.every((item) => this.isItemInCart(item.id));
+      });
+    }
+    return (
+      nonOwnedItems.length > 0 &&
+      nonOwnedItems.every((item) => this.isItemInCart(item.id))
+    );
   }
 
   providerToCartRequest(provider: TerminalResult): CartItemRequest {

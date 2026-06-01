@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025-present, Goldman Sachs
+ * Copyright (c) 2026-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type JSX, useCallback, useState } from 'react';
+import { type JSX, useState } from 'react';
 import {
   Box,
   Button,
@@ -25,15 +25,7 @@ import {
   CardMedia,
   Chip,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
-  List,
-  ListItemButton,
-  ListItemText,
-  Radio,
   Typography,
 } from '@mui/material';
 import {
@@ -50,122 +42,18 @@ import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import { toastManager } from '../Toast/CartToast.js';
 import { assertErrorThrown } from '@finos/legend-shared';
-import { MAX_PRODUCT_IMAGE_COUNT } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 import { OrderProfileDetailModal } from './OrderProfileDetailModal.js';
+import { OrderProfileMultiselectModal } from './OrderProfileMultiselectModal.js';
 import {
+  calculateMultiselectTotalPrice,
+  formatAddToCartErrorMessage,
+  formatAddToCartSuccessMessage,
   formatCardPrice,
-  formatItemPrice,
   formatProfileSummaryLine,
   getItemSummary,
+  getRandomImageUrl,
   OrderProfileLabel,
 } from './orderProfileUtils.js';
-
-// Modal for multiselect: lets user pick one terminal to include
-const MultiselectModal = observer(
-  (props: {
-    profile: TraderProfile;
-    open: boolean;
-    onClose: () => void;
-    onConfirm: (selectedTerminals: TraderProfileItem[]) => void;
-  }): JSX.Element => {
-    const { profile, open, onClose, onConfirm } = props;
-    const terminalItems = profile.items.filter(
-      (item) => item.isTerminal && !item.isOwned,
-    );
-    const [selectedId, setSelectedId] = useState<number | null>(null);
-
-    const handleConfirm = useCallback((): void => {
-      const selectedItem = terminalItems.find((item) => item.id === selectedId);
-      onConfirm(selectedItem ? [selectedItem] : []);
-    }, [terminalItems, selectedId, onConfirm]);
-
-    return (
-      <Dialog
-        open={open}
-        onClose={onClose}
-        maxWidth="md"
-        fullWidth={true}
-        className="order-profile-multiselect-modal"
-        aria-labelledby="order-profile-multiselect-title"
-      >
-        <DialogTitle id="order-profile-multiselect-title">
-          {OrderProfileLabel.SELECT_TERMINAL_TITLE}
-        </DialogTitle>
-        <DialogContent dividers={true}>
-          <Typography
-            variant="body2"
-            className="order-profile-multiselect-modal__description"
-          >
-            Choose one terminal to include from{' '}
-            <strong>{profile.productName}</strong>.{' '}
-            {OrderProfileLabel.SELECT_TERMINAL_DESCRIPTION}
-          </Typography>
-          <List dense={false}>
-            {terminalItems.map((item) => (
-              <ListItemButton
-                key={item.id}
-                onClick={() => setSelectedId(item.id)}
-                selected={selectedId === item.id}
-                className={`order-profile-multiselect-modal__list-item${selectedId === item.id ? 'order-profile-multiselect-modal__list-item--selected' : ''}`}
-              >
-                <Radio
-                  checked={selectedId === item.id}
-                  onChange={() => setSelectedId(item.id)}
-                  size="small"
-                  className="order-profile-multiselect-modal__radio"
-                  inputProps={{ 'aria-labelledby': `terminal-item-${item.id}` }}
-                />
-                <ListItemText
-                  id={`terminal-item-${item.id}`}
-                  disableTypography={true}
-                  primary={
-                    <Box className="order-profile-multiselect-modal__item-primary">
-                      <Typography
-                        variant="body1"
-                        className="order-profile-multiselect-modal__item-name"
-                      >
-                        {item.productName}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        className="order-profile-multiselect-modal__item-price"
-                      >
-                        {formatItemPrice(item.price)}
-                      </Typography>
-                    </Box>
-                  }
-                  secondary={
-                    item.model !== undefined && item.model !== null ? (
-                      <Typography
-                        variant="caption"
-                        className="order-profile-multiselect-modal__item-model"
-                      >
-                        {OrderProfileLabel.MODEL_PREFIX}
-                        {item.model}
-                      </Typography>
-                    ) : undefined
-                  }
-                />
-              </ListItemButton>
-            ))}
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose} variant="outlined">
-            {OrderProfileLabel.CANCEL}
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            variant="contained"
-            disabled={selectedId === null}
-          >
-            {OrderProfileLabel.ADD_TO_CART}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  },
-);
 
 export const LegendMarketplaceOrderProfileCard = observer(
   (props: { traderProfile: TraderProfile }): JSX.Element => {
@@ -175,83 +63,44 @@ export const LegendMarketplaceOrderProfileCard = observer(
     const [showMultiselectModal, setShowMultiselectModal] = useState(false);
 
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
-    const applicationStore = legendMarketplaceBaseStore.applicationStore;
+    const { cartStore, applicationStore } = legendMarketplaceBaseStore;
     const assetUrl = applicationStore.config.assetsBaseUrl;
 
-    const [imageUrl] = useState(() => {
-      const randomIndex =
-        Math.floor(Math.random() * MAX_PRODUCT_IMAGE_COUNT) + 1;
-      return `${assetUrl}/images${randomIndex}.jpg`;
-    });
+    const [imageUrl] = useState(() => getRandomImageUrl(assetUrl));
 
     const items = traderProfile.items;
     const { terminalCount, addOnCount } = getItemSummary(items);
 
-    // --- Multiselect price calculation ---
-    let multiselectTotalPrice: number | undefined = undefined;
-    if (traderProfile.multiselect) {
-      // Find all vendor profiles (terminals)
-      const vendorProfiles = items.filter((item) => item.isTerminal);
-      if (vendorProfiles.length > 0) {
-        // Find the highest price vendor profile
-        const highestVendor = vendorProfiles.reduce((max, curr) => {
-          if (!max) {
-            return curr;
-          }
-          return curr.price > max.price ? curr : max;
-        }, vendorProfiles[0]);
-        if (highestVendor) {
-          // Find all add-ons (service pricing) associated with this vendor profile (by model)
-          const addOns = items.filter(
-            (item) => !item.isTerminal && item.model === highestVendor.model,
-          );
-          const addOnsTotal = addOns.reduce(
-            (sum, item) => sum + (item.price || 0),
-            0,
-          );
-          multiselectTotalPrice = (highestVendor.price || 0) + addOnsTotal;
-        }
-      }
-    }
+    const multiselectTotalPrice = traderProfile.multiselect
+      ? calculateMultiselectTotalPrice(items)
+      : undefined;
 
-    const addItemsToCart = async (
-      itemsToAdd: TraderProfileItem[],
+    const displayPrice = traderProfile.multiselect
+      ? (multiselectTotalPrice ?? traderProfile.price)
+      : traderProfile.price;
+
+    const isInCart = cartStore.isOrderProfileInCart(traderProfile);
+
+    const executeCartAction = async (
+      action: () => Promise<void>,
     ): Promise<void> => {
-      for (const item of itemsToAdd) {
-        if (item.isOwned) {
-          continue;
-        }
-        await flowResult(
-          legendMarketplaceBaseStore.cartStore.addToCartWithAPI(
-            {
-              id: item.id,
-              productName: item.productName,
-              providerName: item.providerName,
-              category: item.category,
-              price: item.price,
-              description: item.description ?? '',
-              isOwned: 'false',
-              ...(item.model !== undefined && item.model !== null
-                ? { model: item.model }
-                : {}),
-              skipWorkflow: true,
-              ...(item.isMandatory !== undefined
-                ? { isMandatory: item.isMandatory }
-                : {}),
-              ...(item.vendorProfileId !== undefined
-                ? { vendorProfileId: item.vendorProfileId }
-                : {}),
-              ...(item.permissionId !== undefined
-                ? { permissionId: item.permissionId }
-                : {}),
-            },
-            true,
-          ),
+      setIsAddingToCart(true);
+      try {
+        await action();
+        toastManager.success(
+          formatAddToCartSuccessMessage(traderProfile.productName),
         );
+      } catch (error) {
+        assertErrorThrown(error);
+        toastManager.error(
+          formatAddToCartErrorMessage(traderProfile.productName, error.message),
+        );
+      } finally {
+        setIsAddingToCart(false);
       }
     };
 
-    const handleAddToCart = async (): Promise<void> => {
+    const handleAddToCart = (): void => {
       if (traderProfile.isOwned) {
         return;
       }
@@ -259,78 +108,35 @@ export const LegendMarketplaceOrderProfileCard = observer(
         setShowMultiselectModal(true);
         return;
       }
-      setIsAddingToCart(true);
-      try {
-        const nonOwnedItems = items.filter((item) => !item.isOwned);
-        const vendorProfiles = nonOwnedItems.filter((item) => item.isTerminal);
-        const addOns = nonOwnedItems.filter((item) => !item.isTerminal);
-        await addItemsToCart(vendorProfiles);
-        await addItemsToCart(addOns);
-        toastManager.success(
-          `Order profile ${traderProfile.productName} has been successfully added to cart.`,
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        toastManager.error(
-          `Failed to add ${traderProfile.productName} to cart: ${error.message}`,
-        );
-      } finally {
-        setIsAddingToCart(false);
-      }
+      const nonOwnedItems = items.filter((item) => !item.isOwned);
+      const terminals = nonOwnedItems.filter((item) => item.isTerminal);
+      const addOns = nonOwnedItems.filter((item) => !item.isTerminal);
+      executeCartAction(async () => {
+        await flowResult(cartStore.addOrderProfileItemsToCart(terminals, true));
+        await flowResult(cartStore.addOrderProfileItemsToCart(addOns, true));
+      }).catch(() => {});
     };
 
-    const handleMultiselectConfirm = async (
+    const handleMultiselectConfirm = (
       selectedTerminals: TraderProfileItem[],
-    ): Promise<void> => {
+    ): void => {
       setShowMultiselectModal(false);
-      setIsAddingToCart(true);
-      try {
-        const selectedModel = selectedTerminals[0]?.model ?? null;
-        const addOnItems = items.filter(
-          (item) =>
-            !item.isTerminal &&
-            !item.isOwned &&
-            (selectedModel === null || item.model === selectedModel),
+      const selectedModel = selectedTerminals[0]?.model ?? null;
+      const addOnItems = items.filter(
+        (item) =>
+          !item.isTerminal &&
+          !item.isOwned &&
+          (selectedModel === null || item.model === selectedModel),
+      );
+      executeCartAction(async () => {
+        await flowResult(
+          cartStore.addOrderProfileItemsToCart(selectedTerminals, true),
         );
-        // Add the selected vendor profile first; only add its associated add-ons after success
-        await addItemsToCart(selectedTerminals);
-        await addItemsToCart(addOnItems);
-        toastManager.success(
-          `Order profile ${traderProfile.productName} has been successfully added to cart.`,
+        await flowResult(
+          cartStore.addOrderProfileItemsToCart(addOnItems, true),
         );
-      } catch (error) {
-        assertErrorThrown(error);
-        toastManager.error(
-          `Failed to add ${traderProfile.productName} to cart: ${error.message}`,
-        );
-      } finally {
-        setIsAddingToCart(false);
-      }
+      }).catch(() => {});
     };
-
-    const nonOwnedItems = items.filter((item) => !item.isOwned);
-    const nonOwnedTerminals = nonOwnedItems.filter((item) => item.isTerminal);
-    const isInCart = traderProfile.multiselect
-      ? nonOwnedTerminals.some((terminal) => {
-          const selectedModel = terminal.model ?? null;
-          const bundleItems = [
-            terminal,
-            ...items.filter(
-              (item) =>
-                !item.isTerminal &&
-                !item.isOwned &&
-                (selectedModel === null || item.model === selectedModel),
-            ),
-          ];
-
-          return bundleItems.every((item) =>
-            legendMarketplaceBaseStore.cartStore.isItemInCart(item.id),
-          );
-        })
-      : nonOwnedItems.length > 0 &&
-        nonOwnedItems.every((item) =>
-          legendMarketplaceBaseStore.cartStore.isItemInCart(item.id),
-        );
 
     return (
       <>
@@ -387,9 +193,7 @@ export const LegendMarketplaceOrderProfileCard = observer(
                 <Button
                   variant="outlined"
                   className="legend-marketplace-terminal-card__add-to-cart-button"
-                  onClick={() => {
-                    handleAddToCart().catch(() => {});
-                  }}
+                  onClick={handleAddToCart}
                   disabled={isAddingToCart || isInCart}
                 >
                   {isAddingToCart && (
@@ -413,47 +217,29 @@ export const LegendMarketplaceOrderProfileCard = observer(
                     </>
                   )}
                 </Button>
-                {typeof (traderProfile.multiselect
-                  ? multiselectTotalPrice
-                  : traderProfile.price) === 'number' && (
-                  <Chip
-                    label={formatCardPrice(
-                      traderProfile.multiselect &&
-                        multiselectTotalPrice !== undefined
-                        ? multiselectTotalPrice
-                        : traderProfile.price,
-                    )}
-                    className="legend-marketplace-terminal-card__price"
-                  />
-                )}
+                <Chip
+                  label={formatCardPrice(displayPrice)}
+                  className="legend-marketplace-terminal-card__price"
+                />
               </>
             )}
           </CardActions>
         </Card>
 
-        {traderProfile.multiselect &&
-        typeof multiselectTotalPrice === 'number' ? (
-          <OrderProfileDetailModal
-            profile={traderProfile}
-            open={showDetailModal}
-            onClose={() => setShowDetailModal(false)}
-            multiselectTotalPrice={multiselectTotalPrice}
-          />
-        ) : (
-          <OrderProfileDetailModal
-            profile={traderProfile}
-            open={showDetailModal}
-            onClose={() => setShowDetailModal(false)}
-          />
-        )}
+        <OrderProfileDetailModal
+          profile={traderProfile}
+          open={showDetailModal}
+          onClose={() => setShowDetailModal(false)}
+          {...(multiselectTotalPrice !== undefined
+            ? { multiselectTotalPrice }
+            : {})}
+        />
 
-        <MultiselectModal
+        <OrderProfileMultiselectModal
           profile={traderProfile}
           open={showMultiselectModal}
           onClose={() => setShowMultiselectModal(false)}
-          onConfirm={(selectedTerminals) => {
-            handleMultiselectConfirm(selectedTerminals).catch(() => {});
-          }}
+          onConfirm={handleMultiselectConfirm}
         />
       </>
     );

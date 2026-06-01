@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025-present, Goldman Sachs
+ * Copyright (c) 2026-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,24 +43,24 @@ import {
   groupOrderProfileItems,
   OrderProfileLabel,
   OrderProfileTableHeader,
-  VENDOR_PROFILE_CATEGORY,
 } from './orderProfileUtils.js';
 
-const CategoryChip = (props: { category: string }): JSX.Element => {
-  const { category } = props;
-  const isTerminal = category.toLowerCase() === VENDOR_PROFILE_CATEGORY;
-  return (
-    <Chip
-      label={category}
-      size="small"
-      className={
-        isTerminal
-          ? 'order-profile-modal__category-chip--terminal'
-          : 'order-profile-modal__category-chip--addon'
-      }
-    />
-  );
-};
+const CategoryChip = observer(
+  (props: { category: string; isTerminal: boolean }): JSX.Element => {
+    const { category, isTerminal } = props;
+    return (
+      <Chip
+        label={category}
+        size="small"
+        className={
+          isTerminal
+            ? 'order-profile-modal__category-chip--terminal'
+            : 'order-profile-modal__category-chip--addon'
+        }
+      />
+    );
+  },
+);
 
 export const OrderProfileDetailModal = observer(
   (props: {
@@ -74,6 +74,10 @@ export const OrderProfileDetailModal = observer(
     const items = profile.items;
     const { terminalCount, addOnCount } = getItemSummary(items);
     const groupedItems = groupOrderProfileItems(items);
+    const displayPrice =
+      profile.multiselect && multiselectTotalPrice !== undefined
+        ? multiselectTotalPrice
+        : profile.price;
 
     return (
       <Dialog
@@ -113,13 +117,7 @@ export const OrderProfileDetailModal = observer(
           >
             {formatProfileSummaryLine(terminalCount, addOnCount)}
             {OrderProfileLabel.PRICE_TOTAL_SEPARATOR}
-            <strong>
-              {formatItemPrice(
-                profile.multiselect && typeof multiselectTotalPrice === 'number'
-                  ? multiselectTotalPrice
-                  : profile.price,
-              )}
-            </strong>
+            <strong>{formatItemPrice(displayPrice)}</strong>
           </Typography>
         </DialogTitle>
 
@@ -182,7 +180,10 @@ export const OrderProfileDetailModal = observer(
                         {item.providerName}
                       </TableCell>
                       <TableCell className="order-profile-modal__table-cell">
-                        <CategoryChip category={item.category} />
+                        <CategoryChip
+                          category={item.category}
+                          isTerminal={item.isTerminal}
+                        />
                       </TableCell>
                       <TableCell
                         align="center"
