@@ -39,6 +39,7 @@ export enum V1_RequestState {
   REJECTED = 'REJECTED',
   INVALIDATED = 'INVALIDATED',
   OBSOLETE = 'OBSOLETE',
+  PENDING_INVALIDATION = 'PENDING_INVALIDATION',
 }
 
 export abstract class V1_Request {}
@@ -98,6 +99,10 @@ export class V1_DataOwnerApprovalTask extends V1_WorkflowTask {
   accessPointGroup!: string;
 }
 
+export class V1_GenericWorkflowTask extends V1_WorkflowTask {
+  _type!: string;
+}
+
 // -------------------------------------------- Workflows ----------------------------------------------
 
 export enum V1_WorkflowStatus {
@@ -112,6 +117,7 @@ export class V1_Workflow {
   status!: V1_WorkflowStatus;
   tasks: V1_WorkflowTask[] = [];
   url!: string;
+  workflowType?: string;
 }
 
 // ------------------------------------------- Responses -----------------------------------------------
@@ -127,4 +133,59 @@ export class V1_DataRequestsWithWorkflowResponse {
 
 export class V1_DataRequestTasksResponse {
   workflowTasks: V1_WorkflowTask[] = [];
+}
+
+// -------------------------------- Permit Workflow Server Types --------------------------------
+
+export class V1_PermitProcessInstanceTask {
+  taskId!: string;
+  status!: string;
+  assignees: string[] = [];
+  completionReason?: string;
+  completedBy?: string;
+  completedDate?: number;
+}
+
+export class V1_PermitProcessInstanceDetail {
+  processInstanceId!: string;
+  status!: string;
+  tasks: V1_PermitProcessInstanceTask[] = [];
+  childProcesses: { tasks: V1_PermitProcessInstanceTask[] }[] = [];
+  url!: string;
+}
+
+export class V1_PermitTaskActionResponse {
+  taskId!: string;
+  workItemType!: string;
+  workItemName!: string;
+  status!: string;
+  assignees: string[] = [];
+  completedBy!: string;
+  createdDate!: number;
+  completedDate!: number;
+  completionReason!: string;
+}
+
+export enum V1_PermitTaskAction {
+  APPROVE = 'APPROVE',
+  REJECT = 'REJECT',
+  ESCALATE = 'ESCALATE',
+}
+
+export class V1_CreatePermitDataRequestPayload {
+  description!: string;
+  resourceId!: string;
+  deploymentId!: string;
+  accessPointGroup!: string;
+  consumer!: V1_OrganizationalScope;
+}
+
+// ----------------------------------------- Org Members -----------------------------------------------
+
+export class V1_OrgMember {
+  kerberos!: string;
+}
+
+export class V1_OrgMembersResponse {
+  data: V1_OrgMember[] = [];
 }

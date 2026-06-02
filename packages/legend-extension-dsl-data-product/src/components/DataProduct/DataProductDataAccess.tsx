@@ -1353,6 +1353,8 @@ export const DataProductAccessPointGroupViewer = observer(
     const accessPointStates = apgState.accessPointStates;
     const contractViewerContractAndSubscription =
       dataAccessState?.contractViewerContractAndSubscription;
+    const dataAccessRequestViewerState =
+      dataAccessState?.dataAccessRequestViewerState;
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
@@ -1436,6 +1438,11 @@ export const DataProductAccessPointGroupViewer = observer(
           break;
         case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
           buttonLabel = 'PENDING MANAGER APPROVAL';
+          onClick = handleContractsClick;
+          buttonColor = 'warning';
+          break;
+        case AccessPointGroupAccess.SUBMITTED_FOR_APPROVALS:
+          buttonLabel = 'SUBMITTED FOR APPROVALS';
           onClick = handleContractsClick;
           buttonColor = 'warning';
           break;
@@ -1673,6 +1680,16 @@ export const DataProductAccessPointGroupViewer = observer(
                 );
               }
             }}
+            getDataProductUrl={dataAccessState.getDataProductUrl}
+          />
+        )}
+        {dataAccessRequestViewerState && (
+          <DataAccessRequestViewer
+            open={true}
+            onClose={() =>
+              dataAccessState.setDataAccessRequestViewerState(undefined)
+            }
+            viewerState={dataAccessRequestViewerState}
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />
         )}

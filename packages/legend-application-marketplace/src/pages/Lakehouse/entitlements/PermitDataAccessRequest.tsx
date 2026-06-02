@@ -20,6 +20,7 @@ import { withLegendMarketplaceProductViewerStore } from '../../../application/pr
 import { useParams } from '@finos/legend-application/browser';
 import {
   generateLakehouseDataProductPath,
+  generatePermitDataAccessRequestPagePath,
   type WorkflowDataAccessRequestPathParams,
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
@@ -28,11 +29,6 @@ import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useEffect, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import {
-  GraphManagerState,
-  V1_RawWorkflowTask,
-  V1_WorkflowTaskStatus,
-} from '@finos/legend-graph';
 import { Box, Button } from '@mui/material';
 import {
   CubesLoadingIndicator,
@@ -40,12 +36,16 @@ import {
 } from '@finos/legend-art';
 import {
   DataAccessRequestContent,
-  WorkflowDataAccessRequestState,
+  PermitDataAccessRequestState,
 } from '@finos/legend-extension-dsl-data-product';
 import { flowResult } from 'mobx';
+import {
+  V1_deserializeDataRequestsWithWorkflowResponse,
+  V1_PermitTaskAction,
+} from '@finos/legend-graph';
 import { showTaskActionAlert } from './showTaskActionAlert.js';
 
-export const WorkflowDataAccessRequestTask =
+export const PermitDataAccessRequestTask =
   withLegendMarketplaceProductViewerStore(
     observer(() => {
       const marketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -54,76 +54,53 @@ export const WorkflowDataAccessRequestTask =
       const currentUser =
         marketplaceBaseStore.applicationStore.identityService.currentUser;
 
-      const [workflowState, setWorkflowState] = useState<
-        WorkflowDataAccessRequestState | undefined
-      >(undefined);
+      const [permitState, setPermitState] =
+        useState<PermitDataAccessRequestState>();
       const [isLoading, setIsLoading] = useState(false);
 
       const dataAccessRequestId = guaranteeNonNullable(
         params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID],
       );
 
-      // Find the first OPEN task, preferring workflow server tasks as source of truth
-      const getActionableTask = (): V1_RawWorkflowTask | undefined => {
-        if (!workflowState) {
-          return undefined;
-        }
-        // Prefer workflow server tasks
-        const { privilegeManagerTasks, dataOwnerTasks } =
-          workflowState.workflowTasks;
-        const allTasks = [...privilegeManagerTasks, ...dataOwnerTasks];
-        const workflowServerTask = allTasks.find(
-          (task) => task.status === 'OPEN',
-        );
-        if (workflowServerTask) {
-          return workflowServerTask;
-        }
-        // Fallback to dataRequestWithWorkflow tasks
-        const fallbackTask = workflowState.dataRequestWithWorkflow?.workflows
-          .flatMap((wf) => wf.tasks)
-          .find((task) => task.status === V1_WorkflowTaskStatus.OPEN);
-        if (fallbackTask) {
-          // Find the matching raw workflow task by taskId, or build a minimal one from the fallback
-          const matchingRaw = allTasks.find(
-            (t) => t.taskId === fallbackTask.taskId,
-          );
-          if (matchingRaw) {
-            return matchingRaw;
-          }
-          // Create a minimal V1_RawWorkflowTask from the fallback
-          const raw = new V1_RawWorkflowTask();
-          raw.taskId = fallbackTask.taskId;
-          raw.status = fallbackTask.status;
-          raw.potentialAssignees = fallbackTask.assignees;
-          raw.completed = false;
-          return raw;
-        }
-        return undefined;
-      };
-
-      const actionableTask = getActionableTask();
-
-      const userCanAction =
-        actionableTask?.potentialAssignees.includes(currentUser);
+      const actionableTask = permitState?.getFirstOpenTask();
+      const userCanAction = actionableTask?.assignees.includes(currentUser);
 
       useEffect(() => {
         const fetchAndInitialize = async () => {
           try {
             setIsLoading(true);
 
-            const state = new WorkflowDataAccessRequestState(
+            const pluginManager =
+              marketplaceBaseStore.applicationStore.pluginManager;
+            const permitClient =
+              marketplaceBaseStore.permitWorkflowServerClient;
+
+            const state = new PermitDataAccessRequestState(
               dataAccessRequestId,
               marketplaceBaseStore.applicationStore,
-              marketplaceBaseStore.lakehouseContractServerClient,
-              marketplaceBaseStore.lakehouseWorkflowServerClient,
-              new GraphManagerState(
-                marketplaceBaseStore.applicationStore.pluginManager,
-                marketplaceBaseStore.applicationStore.logService,
-              ),
+              permitClient,
               marketplaceBaseStore.userSearchService,
+              {
+                authServerClient:
+                  marketplaceBaseStore.lakehouseContractServerClient,
+                fetchFresh: async (token) => {
+                  const raw = await permitClient.getDataRequestWithWorkflow(
+                    dataAccessRequestId,
+                    token,
+                  );
+                  return V1_deserializeDataRequestsWithWorkflowResponse(
+                    raw,
+                    pluginManager.getPureProtocolProcessorPlugins(),
+                  )[0];
+                },
+                getTaskPageUrl: (id) =>
+                  marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generatePermitDataAccessRequestPagePath(id),
+                  ),
+              },
             );
 
-            setWorkflowState(state);
+            setPermitState(state);
             await flowResult(state.init(auth.user?.access_token));
           } catch (error) {
             assertErrorThrown(error);
@@ -139,46 +116,41 @@ export const WorkflowDataAccessRequestTask =
       }, [dataAccessRequestId, auth.user?.access_token, marketplaceBaseStore]);
 
       const handleRefresh = async (): Promise<void> => {
-        if (workflowState) {
-          workflowState.init(auth.user?.access_token);
+        if (permitState) {
+          try {
+            setIsLoading(true);
+            permitState.initializationState.reset();
+            await flowResult(permitState.init(auth.user?.access_token));
+          } finally {
+            setIsLoading(false);
+          }
         }
       };
 
-      const handleApprove = async (justification: string) => {
-        if (!actionableTask || !currentUser) {
+      const handleTaskAction = async (
+        action: V1_PermitTaskAction,
+        justification: string,
+      ): Promise<void> => {
+        if (!actionableTask || !permitState) {
           return;
         }
-        await marketplaceBaseStore.lakehouseWorkflowServerClient.approveTask(
-          actionableTask.taskId,
-          currentUser,
-          justification,
+        await flowResult(
+          permitState.performTaskAction(
+            actionableTask.taskId,
+            action,
+            justification,
+            auth.user?.access_token,
+          ),
         );
-
+        const label =
+          action === V1_PermitTaskAction.APPROVE ? 'approved' : 'denied';
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          'Request has been approved',
+          `Request has been ${label}`,
         );
-
         await handleRefresh();
       };
 
-      const handleDeny = async (justification: string) => {
-        if (!actionableTask || !currentUser) {
-          return;
-        }
-        await marketplaceBaseStore.lakehouseWorkflowServerClient.rejectTask(
-          actionableTask.taskId,
-          currentUser,
-          justification,
-        );
-
-        marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          'Request has been denied',
-        );
-
-        await handleRefresh();
-      };
-
-      const handleApproveClick = () => {
+      const handleApproveClick = (): void => {
         showTaskActionAlert({
           applicationStore: marketplaceBaseStore.applicationStore,
           title: 'Approve Request',
@@ -186,14 +158,16 @@ export const WorkflowDataAccessRequestTask =
             'Please provide a business justification for approving this request.',
           confirmLabel: 'Approve',
           alertType: ActionAlertType.STANDARD,
+          requireJustification: true,
           isLoading,
           setIsLoading,
-          onConfirm: (justification) => handleApprove(justification),
+          onConfirm: (justification) =>
+            handleTaskAction(V1_PermitTaskAction.APPROVE, justification),
           errorPrefix: 'Error approving request',
         });
       };
 
-      const handleDenyClick = () => {
+      const handleDenyClick = (): void => {
         showTaskActionAlert({
           applicationStore: marketplaceBaseStore.applicationStore,
           title: 'Deny Request',
@@ -201,9 +175,11 @@ export const WorkflowDataAccessRequestTask =
             'Please provide a business justification for denying this request.',
           confirmLabel: 'Deny',
           alertType: ActionAlertType.CAUTION,
+          requireJustification: true,
           isLoading,
           setIsLoading,
-          onConfirm: (justification) => handleDeny(justification),
+          onConfirm: (justification) =>
+            handleTaskAction(V1_PermitTaskAction.REJECT, justification),
           errorPrefix: 'Error denying request',
         });
       };
@@ -213,7 +189,7 @@ export const WorkflowDataAccessRequestTask =
           <CubesLoadingIndicator isLoading={isLoading}>
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
-          {workflowState?.dataRequestWithWorkflow && (
+          {permitState?.dataRequestWithWorkflow && (
             <div className="marketplace-lakehouse-single-contract-viewer__container">
               {actionableTask !== undefined && (
                 <Box className="marketplace-lakehouse-single-contract-viewer__action-btns">
@@ -246,7 +222,7 @@ export const WorkflowDataAccessRequestTask =
                 </Box>
               )}
               <DataAccessRequestContent
-                viewerState={workflowState}
+                viewerState={permitState}
                 getDataProductUrl={(
                   dataProductId: string,
                   deploymentId: number,
