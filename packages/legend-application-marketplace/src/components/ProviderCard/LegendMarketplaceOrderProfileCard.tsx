@@ -108,13 +108,12 @@ export const LegendMarketplaceOrderProfileCard = observer(
         setShowMultiselectModal(true);
         return;
       }
-      const nonOwnedItems = items.filter((item) => !item.isOwned);
-      const terminals = nonOwnedItems.filter((item) => item.isTerminal);
-      const addOns = nonOwnedItems.filter((item) => !item.isTerminal);
+      const terminals = items.filter((item) => item.isTerminal);
+      const addOns = items.filter((item) => !item.isTerminal);
       executeCartAction(async () => {
         await flowResult(cartStore.addOrderProfileItemsToCart(terminals, true));
         await flowResult(cartStore.addOrderProfileItemsToCart(addOns, true));
-      }).catch(() => {});
+      }).catch(applicationStore.alertUnhandledError);
     };
 
     const handleMultiselectConfirm = (
@@ -135,7 +134,7 @@ export const LegendMarketplaceOrderProfileCard = observer(
         await flowResult(
           cartStore.addOrderProfileItemsToCart(addOnItems, true),
         );
-      }).catch(() => {});
+      }).catch(applicationStore.alertUnhandledError);
     };
 
     return (
@@ -230,9 +229,7 @@ export const LegendMarketplaceOrderProfileCard = observer(
           profile={traderProfile}
           open={showDetailModal}
           onClose={() => setShowDetailModal(false)}
-          {...(multiselectTotalPrice === undefined
-            ? {}
-            : { multiselectTotalPrice })}
+          multiselectTotalPrice={multiselectTotalPrice}
         />
 
         <OrderProfileMultiselectModal

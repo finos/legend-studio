@@ -112,7 +112,7 @@ export const formatProfileSummaryLine = (
 export const calculateMultiselectTotalPrice = (
   items: TraderProfileItem[],
 ): number | undefined => {
-  const terminals = items.filter((item) => item.isTerminal);
+  const terminals = items.filter((item) => item.isTerminal && !item.isOwned);
   if (terminals.length === 0) {
     return undefined;
   }
@@ -121,7 +121,8 @@ export const calculateMultiselectTotalPrice = (
     terminals[0] as TraderProfileItem,
   );
   const addOns = items.filter(
-    (item) => !item.isTerminal && item.model === highestTerminal.model,
+    (item) =>
+      !item.isTerminal && !item.isOwned && item.model === highestTerminal.model,
   );
   const addOnsTotal = addOns.reduce((sum, item) => sum + item.price, 0);
   return highestTerminal.price + addOnsTotal;
@@ -146,9 +147,11 @@ export const groupOrderProfileItems = (
   for (const terminal of terminals) {
     result.push({ item: terminal, isSubItem: false });
     if (terminal.model !== undefined && terminal.model !== null) {
-      for (const addon of addOns.filter((a) => a.model === terminal.model)) {
-        result.push({ item: addon, isSubItem: true });
-        matchedAddonIds.add(addon.id);
+      for (const addon of addOns) {
+        if (addon.model === terminal.model && !matchedAddonIds.has(addon.id)) {
+          result.push({ item: addon, isSubItem: true });
+          matchedAddonIds.add(addon.id);
+        }
       }
     }
   }

@@ -45,29 +45,30 @@ import {
   OrderProfileTableHeader,
 } from './orderProfileUtils.js';
 
-const CategoryChip = observer(
-  (props: { category: string; isTerminal: boolean }): JSX.Element => {
-    const { category, isTerminal } = props;
-    return (
-      <Chip
-        label={category}
-        size="small"
-        className={
-          isTerminal
-            ? 'order-profile-modal__category-chip--terminal'
-            : 'order-profile-modal__category-chip--addon'
-        }
-      />
-    );
-  },
-);
+const CategoryChip = (props: {
+  category: string;
+  isTerminal: boolean;
+}): JSX.Element => {
+  const { category, isTerminal } = props;
+  return (
+    <Chip
+      label={category}
+      size="small"
+      className={
+        isTerminal
+          ? 'order-profile-modal__category-chip--terminal'
+          : 'order-profile-modal__category-chip--addon'
+      }
+    />
+  );
+};
 
 export const OrderProfileDetailModal = observer(
   (props: {
     profile: TraderProfile;
     open: boolean;
     onClose: () => void;
-    multiselectTotalPrice?: number;
+    multiselectTotalPrice?: number | undefined;
   }): JSX.Element => {
     const { profile, open, onClose, multiselectTotalPrice } = props;
     const { cartStore } = useLegendMarketplaceBaseStore();
@@ -147,13 +148,15 @@ export const OrderProfileDetailModal = observer(
                 {groupedItems.map(({ item, isSubItem }) => {
                   const isInCart =
                     !item.isOwned && cartStore.isItemInCart(item.id);
-                  let rowModifierClass = '';
-                  if (item.isOwned) {
-                    rowModifierClass = 'order-profile-modal__table-row--owned';
-                  } else if (isInCart) {
-                    rowModifierClass =
-                      'order-profile-modal__table-row--in-cart';
-                  }
+                  const rowModifierClass = (() => {
+                    if (item.isOwned) {
+                      return 'order-profile-modal__table-row--owned';
+                    }
+                    if (isInCart) {
+                      return 'order-profile-modal__table-row--in-cart';
+                    }
+                    return '';
+                  })();
                   return (
                     <TableRow
                       key={item.id}

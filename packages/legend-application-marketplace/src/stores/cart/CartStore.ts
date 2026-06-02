@@ -44,6 +44,9 @@ import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.j
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { toastManager } from '../../components/Toast/CartToast.js';
 
+const boolToString = (val: boolean | undefined): 'true' | 'false' =>
+  val ? 'true' : 'false';
+
 enum BUSINESS_REASONS {
   NEW_HIRE = 'New Hire',
   NEW_ROLE = 'New Role',
@@ -258,7 +261,7 @@ export class CartStore {
             category: item.category,
             price: item.price,
             description: item.description ?? '',
-            isOwned: 'false',
+            isOwned: boolToString(item.isOwned),
             ...(item.model === null || item.model === undefined
               ? {}
               : { model: item.model }),
@@ -317,7 +320,7 @@ export class CartStore {
       category: provider.category,
       price: provider.price,
       description: provider.description,
-      isOwned: provider.isOwned ? 'true' : 'false',
+      isOwned: boolToString(provider.isOwned),
       model: provider.model ?? provider.productName,
       skipWorkflow: provider.skipWorkflow ?? false,
       ...(provider.vendorProfileId !== undefined && {

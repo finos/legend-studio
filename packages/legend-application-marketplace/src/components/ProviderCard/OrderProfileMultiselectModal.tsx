@@ -80,7 +80,7 @@ export const OrderProfileMultiselectModal = observer(
                 key={item.id}
                 onClick={() => setSelectedId(item.id)}
                 selected={selectedId === item.id}
-                className={`order-profile-multiselect-modal__list-item${selectedId === item.id ? 'order-profile-multiselect-modal__list-item--selected' : ''}`}
+                className={`order-profile-multiselect-modal__list-item ${selectedId === item.id ? 'order-profile-multiselect-modal__list-item--selected' : ''}`}
               >
                 <Radio
                   checked={selectedId === item.id}

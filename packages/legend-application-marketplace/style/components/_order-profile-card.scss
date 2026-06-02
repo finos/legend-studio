@@ -85,7 +85,7 @@
     font-size: 1.5rem;
 
     strong {
-      color: #077d55;
+      color: var(--color-hclight-green-60);
     }
   }
 
@@ -129,7 +129,7 @@
     }
 
     &--price {
-      color: #077d55;
+      color: var(--color-hclight-green-60);
       font-weight: 600;
     }
   }
@@ -153,17 +153,17 @@
     flex-shrink: 0;
 
     &--vendor-profile {
-      background: #186ade;
+      background: var(--color-hclight-blue-60);
     }
 
     &--addon {
-      background: #077d55;
+      background: var(--color-hclight-green-60);
     }
   }
 
   &__owned-label {
     font-size: 1.3rem;
-    color: #077d55;
+    color: var(--color-hclight-green-60);
     font-weight: 500;
   }
 
@@ -176,8 +176,8 @@
     }
 
     &--addon {
-      background: #e0f7f0;
-      color: #077d55;
+      background: var(--marketplace-addon-chip-bg);
+      color: var(--color-hclight-green-60);
       font-size: 1.3rem;
       border-radius: 999px;
     }
@@ -211,7 +211,7 @@
     align-items: flex-start;
 
     &--selected {
-      border-color: #186ade;
+      border-color: var(--color-hclight-blue-60);
     }
   }
 
@@ -233,7 +233,7 @@
   }
 
   &__item-price {
-    color: #077d55;
+    color: var(--color-hclight-green-60);
     font-weight: 600;
     font-size: 1.3rem;
     margin-left: 1.6rem;

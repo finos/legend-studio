@@ -15,6 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { type JSX, useEffect, useCallback } from 'react';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import {
   Button,
@@ -36,7 +37,6 @@ import {
   VendorDataProviderType,
 } from '../../stores/LegendMarketPlaceVendorDataStore.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
-import { useEffect, useCallback } from 'react';
 import {
   useLegendMarketPlaceVendorDataStore,
   withLegendMarketplaceVendorDataStore,
@@ -48,11 +48,6 @@ import type { LegendUser } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
-
-const GENERAL_INQUIRIES_URL =
-  'https://tmd.web.gs.com/ui/spine/spineCommon.xhtml?serviceName=General+Inquiries+%2F+Report+Request&serviceCode=132&productCode=127';
-const REQUEST_INTERNAL_APP_URL =
-  'https://goldmansachs.service-now.com/now?id=sc_cat_item_guide&sys_id=7a4abc3b87ca9510718f0d45dabb357f';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -101,24 +96,31 @@ export const RefinedVendorRadioSelector = observer(
   },
 );
 
-const SearchResultsRenderer = observer(
+/**
+ * Shared section wrapper that renders the header (title, count badge, tooltip,
+ * "See All" button) plus any card content passed via the `renderCards` prop.
+ * Use this as the base for both terminal/add-on and order-profile sections so
+ * the header logic lives in exactly one place.
+ */
+const SearchResultsSection = observer(
   (props: {
     vendorDataState: LegendMarketPlaceVendorDataStore;
-    terminalResults: TerminalResult[];
     sectionTitle: VendorDataProviderType;
-    totalCount?: number;
-    seeAll?: boolean;
-    tooltip?: string;
-  }) => {
+    itemCount: number;
+    totalCount: number | undefined;
+    tooltip: string | undefined;
+    seeAll: boolean | undefined;
+    renderCards: () => JSX.Element;
+  }): JSX.Element => {
     const {
       vendorDataState,
-      terminalResults,
       sectionTitle,
+      itemCount,
       totalCount,
-      seeAll,
       tooltip,
+      seeAll,
+      renderCards,
     } = props;
-
     const showCount = vendorDataState.searchTerm.trim().length > 0;
 
     return (
@@ -128,7 +130,7 @@ const SearchResultsRenderer = observer(
             {sectionTitle}
             {showCount && (
               <span className="legend-marketplace-vendordata-main-sidebar__title__count">
-                ({totalCount ?? terminalResults.length})
+                ({totalCount ?? itemCount})
               </span>
             )}
           </div>
@@ -151,15 +153,49 @@ const SearchResultsRenderer = observer(
             </button>
           )}
         </div>
-        <div className="legend-marketplace-vendordata-main-search-results__card-group">
-          {terminalResults.map((terminal) => (
-            <LegendMarketplaceTerminalCard
-              key={terminal.id}
-              terminalResult={terminal}
-            />
-          ))}
-        </div>
+        {renderCards()}
       </div>
+    );
+  },
+);
+
+const SearchResultsRenderer = observer(
+  (props: {
+    vendorDataState: LegendMarketPlaceVendorDataStore;
+    terminalResults: TerminalResult[];
+    sectionTitle: VendorDataProviderType;
+    totalCount?: number;
+    seeAll?: boolean;
+    tooltip?: string;
+  }): JSX.Element => {
+    const {
+      vendorDataState,
+      terminalResults,
+      sectionTitle,
+      totalCount,
+      seeAll,
+      tooltip,
+    } = props;
+
+    return (
+      <SearchResultsSection
+        vendorDataState={vendorDataState}
+        sectionTitle={sectionTitle}
+        itemCount={terminalResults.length}
+        totalCount={totalCount}
+        seeAll={seeAll}
+        tooltip={tooltip}
+        renderCards={() => (
+          <div className="legend-marketplace-vendordata-main-search-results__card-group">
+            {terminalResults.map((terminal) => (
+              <LegendMarketplaceTerminalCard
+                key={terminal.id}
+                terminalResult={terminal}
+              />
+            ))}
+          </div>
+        )}
+      />
     );
   },
 );
@@ -171,58 +207,35 @@ const OrderProfileSearchResultsRenderer = observer(
     totalCount?: number;
     tooltip?: string;
     seeAll?: boolean;
-  }) => {
+  }): JSX.Element => {
     const { vendorDataState, traderProfiles, totalCount, tooltip, seeAll } =
       props;
-    const showCount = vendorDataState.searchTerm.trim().length > 0;
 
     return (
-      <div>
-        <div className="legend-marketplace-vendordata-main-search-results__category">
-          <div className="legend-marketplace-vendordata-main-sidebar__title">
-            {VendorDataProviderType.ORDER_PROFILE}
-            {showCount && (
-              <span className="legend-marketplace-vendordata-main-sidebar__title__count">
-                ({totalCount ?? traderProfiles.length})
-              </span>
-            )}
-          </div>
-          {tooltip && (
-            <Tooltip title={tooltip} placement={'right'} arrow={true}>
-              <InfoCircleIcon />
-            </Tooltip>
-          )}
-          {seeAll && (
-            <button
-              className="see-all"
-              onClick={() => {
-                vendorDataState.setProviderDisplayState(
-                  VendorDataProviderType.ORDER_PROFILE,
-                );
-                flowResult(vendorDataState.populateProviders()).catch(
-                  vendorDataState.applicationStore.alertUnhandledError,
-                );
-              }}
-            >
-              <strong>See All&gt;</strong>
-            </button>
-          )}
-        </div>
-        {traderProfiles.length === 0 ? (
-          <div className="legend-marketplace-vendordata-main__empty">
-            No Order Profiles available
-          </div>
-        ) : (
-          <div className="legend-marketplace-vendordata-main-search-results__card-group">
-            {traderProfiles.map((profile) => (
-              <LegendMarketplaceOrderProfileCard
-                key={profile.id}
-                traderProfile={profile}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      <SearchResultsSection
+        vendorDataState={vendorDataState}
+        sectionTitle={VendorDataProviderType.ORDER_PROFILE}
+        itemCount={traderProfiles.length}
+        totalCount={totalCount}
+        seeAll={seeAll}
+        tooltip={tooltip}
+        renderCards={() =>
+          traderProfiles.length === 0 ? (
+            <div className="legend-marketplace-vendordata-main__empty">
+              No Order Profiles available
+            </div>
+          ) : (
+            <div className="legend-marketplace-vendordata-main-search-results__card-group">
+              {traderProfiles.map((profile) => (
+                <LegendMarketplaceOrderProfileCard
+                  key={profile.id}
+                  traderProfile={profile}
+                />
+              ))}
+            </div>
+          )
+        }
+      />
     );
   },
 );
@@ -439,32 +452,44 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
               />
             </div>
             <div className="legend-marketplace-body__action-buttons">
-              <Button
-                variant="outlined"
-                className="legend-marketplace-body__action-button"
-                onClick={() => {
-                  window.open(
-                    GENERAL_INQUIRIES_URL,
-                    '_blank',
-                    'noopener,noreferrer',
-                  );
-                }}
-              >
-                General Inquiries
-              </Button>
-              <Button
-                variant="outlined"
-                className="legend-marketplace-body__action-button"
-                onClick={() => {
-                  window.open(
-                    REQUEST_INTERNAL_APP_URL,
-                    '_blank',
-                    'noopener,noreferrer',
-                  );
-                }}
-              >
-                Request Internal Application
-              </Button>
+              {marketplaceStore.applicationStore.config.options
+                .generalInquiriesUrl && (
+                <Button
+                  variant="outlined"
+                  className="legend-marketplace-body__action-button"
+                  onClick={() => {
+                    const url =
+                      marketplaceStore.applicationStore.config.options
+                        .generalInquiriesUrl;
+                    if (url) {
+                      marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
+                        url,
+                      );
+                    }
+                  }}
+                >
+                  General Inquiries
+                </Button>
+              )}
+              {marketplaceStore.applicationStore.config.options
+                .requestInternalAppUrl && (
+                <Button
+                  variant="outlined"
+                  className="legend-marketplace-body__action-button"
+                  onClick={() => {
+                    const url =
+                      marketplaceStore.applicationStore.config.options
+                        .requestInternalAppUrl;
+                    if (url) {
+                      marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
+                        url,
+                      );
+                    }
+                  }}
+                >
+                  Request Internal Application
+                </Button>
+              )}
             </div>
           </div>
           <VendorDataMainContent
