@@ -157,10 +157,7 @@ export const EntitlementsPendingContractsDashboard = observer(
       if (selectedRow?.kind === ROW_KIND_CONTRACT) {
         const contract = selectedRow.data.contractResultLite;
         dashboardState
-          .getContractErrors(
-            contract.guid,
-            auth.user?.access_token,
-          )
+          .getContractErrors(contract.guid, auth.user?.access_token)
           .then((result) => setContractErrors(result))
           .catch(() => setContractErrors(undefined));
       }

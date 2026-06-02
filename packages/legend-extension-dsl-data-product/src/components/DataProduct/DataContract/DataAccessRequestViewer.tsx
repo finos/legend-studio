@@ -186,11 +186,11 @@ const TaskApprovalView = (props: {
 
 const TimelineStepLinks = (props: {
   step: TimelineStep;
-  copyToClipboard: (text: string) => void;
+  onCopyToClipboard: (text: string) => void;
   onEscalate: () => void;
   isEscalating: boolean;
 }): React.ReactNode => {
-  const { step, copyToClipboard, onEscalate, isEscalating } = props;
+  const { step, onCopyToClipboard, onEscalate, isEscalating } = props;
   const { label } = step;
 
   const renderLinks = (): React.ReactNode => {
@@ -207,7 +207,7 @@ const TimelineStepLinks = (props: {
               {label.title}
             </Link>
             <IconButton
-              onClick={() => copyToClipboard(label.link ?? '')}
+              onClick={() => onCopyToClipboard(label.link ?? '')}
               size="medium"
               title="Copy Task Link"
               className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__copy-btn"
@@ -226,7 +226,7 @@ const TimelineStepLinks = (props: {
               action via eTask
             </Link>
             <IconButton
-              onClick={() => copyToClipboard(label.externalLink ?? '')}
+              onClick={() => onCopyToClipboard(label.externalLink ?? '')}
               size="medium"
               title="Copy eTask Link"
               className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__copy-btn"
@@ -244,7 +244,7 @@ const TimelineStepLinks = (props: {
             {label.title}
           </Link>
           <IconButton
-            onClick={() => copyToClipboard(label.link ?? '')}
+            onClick={() => onCopyToClipboard(label.link ?? '')}
             className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
             title="Copy Task Link"
           >
@@ -267,7 +267,7 @@ const TimelineStepLinks = (props: {
             {label.title}
           </Link>
           <IconButton
-            onClick={() => copyToClipboard(label.externalLink ?? '')}
+            onClick={() => onCopyToClipboard(label.externalLink ?? '')}
             className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
             title="Copy eTask Link"
           >
@@ -745,7 +745,7 @@ export const DataAccessRequestContent = observer(
                 >
                   <TimelineStepLinks
                     step={step}
-                    copyToClipboard={onCopyToClipboard}
+                    onCopyToClipboard={onCopyToClipboard}
                     onEscalate={() => setShowEscalationModal(true)}
                     isEscalating={viewerState.escalatingState.isInProgress}
                   />
