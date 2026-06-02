@@ -602,6 +602,25 @@ export const TEST_DATA__DATAPRODUCT__TEST_SUITES = [
             {
               _type: 'accessPointTest',
               accessPointId: 'persons',
+              parameters: [
+                {
+                  name: 'name',
+                  value: {
+                    _type: 'instanceValue',
+                    genericType: {
+                      rawType: {
+                        _type: 'packageableType',
+                        fullPath: 'String',
+                      },
+                    },
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    values: ['Alice'],
+                  },
+                },
+              ],
               assertions: [
                 {
                   _type: 'equalToRelation',

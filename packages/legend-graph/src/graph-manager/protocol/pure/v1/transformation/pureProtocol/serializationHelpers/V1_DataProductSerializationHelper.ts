@@ -95,6 +95,7 @@ import {
   V1_deserializeDataResolver,
   V1_serializeDataResolver,
 } from './V1_DataResolverSerializationHelper.js';
+import { V1_parameterValueModelSchema } from './V1_FunctionSerializationHelper.js';
 
 export enum V1_AccessPointType {
   LAKEHOUSE = 'lakehouseAccessPoint',
@@ -133,6 +134,7 @@ const V1_accessPointTestModelSchema = createModelSchema(V1_AccessPointTest, {
   ),
   doc: optional(primitive()),
   id: primitive(),
+  parameters: customListWithSchema(V1_parameterValueModelSchema),
 });
 
 const V1_dataProductTestSuiteModelSchema = (

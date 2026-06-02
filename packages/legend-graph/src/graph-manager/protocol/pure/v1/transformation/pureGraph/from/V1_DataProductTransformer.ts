@@ -78,6 +78,7 @@ import { V1_AccessPointTest } from '../../../model/packageableElements/dataProdu
 import { V1_DataProductTestSuite } from '../../../model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
 import { V1_transformDataResolver } from './V1_DataResolverTransformer.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
+import { V1_FunctionParameterValue } from '../../../model/packageableElements/function/test/V1_FunctionTest.js';
 
 const transformAccessPoint = (
   ap: AccessPoint,
@@ -144,6 +145,12 @@ export const V1_transformDataProductAccessPointTest = (
   accessPointTest.id = element.id;
   accessPointTest.doc = element.doc;
   accessPointTest.accessPointId = element.accessPointId;
+  accessPointTest.parameters = element.parameters?.map((p) => {
+    const parameterValue = new V1_FunctionParameterValue();
+    parameterValue.name = p.name;
+    parameterValue.value = p.value;
+    return parameterValue;
+  });
   accessPointTest.assertions = element.assertions.map(
     V1_transformTestAssertion,
   );

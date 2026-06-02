@@ -21,6 +21,7 @@ import {
   type TestSuite,
   type RawLambda,
   type AccessorOwner,
+  type ValueSpecification,
   DataProduct,
   FunctionAccessPoint,
   LakehouseAccessPoint,
@@ -35,21 +36,31 @@ import {
   TestError,
   TestExecutionStatus,
   EqualToRelation,
+  FunctionParameterValue,
   RelationRowTestData,
+  VariableExpression,
+  observe_FunctionParameterValue,
   observe_RelationElement,
   observe_RelationRowTestData,
   observe_RelationElementsData,
   observe_DataProductTestSuite,
+  observe_ValueSpecification,
+  buildLambdaVariableExpressions,
   IngestDefinition,
   getAccessorItemLabelForElement,
   type AbstractPureGraphManager,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
+  filterByType,
+  guaranteeNonNullable,
+  isNonNullable,
   deleteEntry,
   addUniqueEntry,
+  returnUndefOnError,
   uuid,
   noop,
 } from '@finos/legend-shared';
@@ -73,6 +84,7 @@ import {
   TestableTestEditorState,
   TestableTestSuiteEditorState,
 } from '../../testable/TestableEditorState.js';
+import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';
 
 const createEmptyRelationElement = (
   itemId: string,
@@ -178,6 +190,73 @@ const inferDataProductItemColumns = async (
 
 // ─── Per-test state ──────────────────────────────────────────────────────────
 
+export class DataProductTestParameterState {
+  readonly uuid = uuid();
+  readonly editorStore: EditorStore;
+  readonly testState: DataProductTestState;
+  parameterValue: FunctionParameterValue;
+
+  constructor(
+    parameterValue: FunctionParameterValue,
+    editorStore: EditorStore,
+    testState: DataProductTestState,
+  ) {
+    this.editorStore = editorStore;
+    this.testState = testState;
+    this.parameterValue = parameterValue;
+  }
+}
+
+export class DataProductValueSpecificationTestParameterState extends DataProductTestParameterState {
+  valueSpec: ValueSpecification;
+  varExpression: VariableExpression;
+
+  constructor(
+    parameterValue: FunctionParameterValue,
+    editorStore: EditorStore,
+    testState: DataProductTestState,
+    valueSpec: ValueSpecification,
+    varExpression: VariableExpression,
+  ) {
+    super(parameterValue, editorStore, testState);
+    makeObservable(this, {
+      valueSpec: observable,
+      updateValueSpecification: action,
+      updateParameterValue: action,
+      resetValueSpec: action,
+    });
+    this.valueSpec = valueSpec;
+    this.varExpression = varExpression;
+  }
+
+  updateValueSpecification(val: ValueSpecification): void {
+    this.valueSpec = observe_ValueSpecification(
+      val,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    this.updateParameterValue();
+  }
+
+  updateParameterValue(): void {
+    const updatedValueSpec =
+      this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
+        this.valueSpec,
+      );
+    this.parameterValue.value = updatedValueSpec;
+  }
+
+  resetValueSpec(): void {
+    const mockValue = generateVariableExpressionMockValue(
+      this.varExpression,
+      this.editorStore.graphManagerState.graph,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    if (mockValue) {
+      this.updateValueSpecification(mockValue);
+    }
+  }
+}
+
 export class DataProductTestState extends TestableTestEditorState {
   readonly suiteState: DataProductTestSuiteState;
   override test: DataProductAccessPointTest;
@@ -185,6 +264,9 @@ export class DataProductTestState extends TestableTestEditorState {
 
   /** Wraps assertion.expected — drives both column definitions and test data rows. */
   testDataRelationState: RelationElementState | undefined;
+  parameterValueStates: DataProductTestParameterState[] = [];
+  newParameterValueName = '';
+  showNewParameterModal = false;
 
   constructor(
     suiteState: DataProductTestSuiteState,
@@ -206,6 +288,9 @@ export class DataProductTestState extends TestableTestEditorState {
       runningTestAction: observable,
       // own observable
       testDataRelationState: observable,
+      parameterValueStates: observable,
+      newParameterValueName: observable,
+      showNewParameterModal: observable,
       // actions from base class
       setSelectedTab: action,
       setAssertionToRename: action,
@@ -214,12 +299,247 @@ export class DataProductTestState extends TestableTestEditorState {
       openAssertion: action,
       resetResult: action,
       handleTestResult: action,
+      setNewParameterValueName: action,
+      setShowNewParameterModal: action,
+      openNewParamModal: action,
+      addParameterValue: action,
+      addExpressionParameterValue: action,
+      syncWithQuery: action,
+      generateTestParameterValues: action,
+      removeParamValueState: action,
       // flow from base class
       runTest: flow,
     });
     this.suiteState = suiteState;
     this.test = test;
+    this.normalizePositionalParameters();
+    this.parameterValueStates = this.buildParameterStates();
     this.buildTestDataRelationState().catch(noop());
+  }
+
+  /**
+   * Backward compatibility: Data Product grammar test calls can come in as
+   * positional args (e.g. `ap('Human')`) without parameter names. In form mode
+   * we key by variable name, so align unnamed values to query variables first.
+   */
+  private normalizePositionalParameters(): void {
+    const params = this.test.parameters ?? [];
+    if (!params.length) {
+      return;
+    }
+
+    const expressions = this.queryVariableExpressions;
+    if (!expressions.length) {
+      return;
+    }
+
+    const unnamedParams = params.filter((p) => !p.name.trim());
+    if (!unnamedParams.length) {
+      return;
+    }
+
+    const takenNames = new Set(
+      params.map((p) => p.name.trim()).filter((name) => Boolean(name)),
+    );
+
+    expressions.forEach((expr) => {
+      if (!takenNames.has(expr.name)) {
+        const nextUnnamed = unnamedParams.shift();
+        if (nextUnnamed) {
+          nextUnnamed.name = expr.name;
+          takenNames.add(expr.name);
+        }
+      }
+    });
+  }
+
+  get queryVariableExpressions(): VariableExpression[] {
+    const accessPoint = this.suiteState.testableState.ownAccessPoints.find(
+      (ap) => ap.id === this.test.accessPointId,
+    );
+    const query = accessPoint ? getAccessPointLambda(accessPoint) : undefined;
+    if (!query) {
+      return [];
+    }
+    return buildLambdaVariableExpressions(
+      query,
+      this.editorStore.graphManagerState,
+    ).filter(filterByType(VariableExpression));
+  }
+
+  get newParamOptions(): { value: string; label: string }[] {
+    const queryVarExpressions = this.queryVariableExpressions;
+    const currentParams = this.test.parameters ?? [];
+    return queryVarExpressions
+      .filter((v) => !currentParams.find((i) => i.name === v.name))
+      .map((e) => ({ value: e.name, label: e.name }));
+  }
+
+  setNewParameterValueName(val: string): void {
+    this.newParameterValueName = val;
+  }
+
+  setShowNewParameterModal(val: boolean): void {
+    this.showNewParameterModal = val;
+  }
+
+  openNewParamModal(): void {
+    this.setShowNewParameterModal(true);
+    const option = this.newParamOptions[0];
+    if (option) {
+      this.newParameterValueName = option.value;
+    }
+  }
+
+  addParameterValue(): void {
+    try {
+      const expressions = this.queryVariableExpressions;
+      const expression = guaranteeNonNullable(
+        expressions.find((v) => v.name === this.newParameterValueName),
+      );
+      this.addExpressionParameterValue(expression);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.setShowNewParameterModal(false);
+    }
+  }
+
+  syncWithQuery(): void {
+    this.normalizePositionalParameters();
+
+    this.parameterValueStates.forEach((paramState) => {
+      const expression = this.queryVariableExpressions.find(
+        (v) => v.name === paramState.parameterValue.name,
+      );
+      if (!expression) {
+        deleteEntry(this.parameterValueStates, paramState);
+        deleteEntry(this.test.parameters ?? [], paramState.parameterValue);
+      }
+    });
+
+    this.queryVariableExpressions.forEach((v) => {
+      const multiplicity = v.multiplicity;
+      const isRequired = multiplicity.lowerBound > 0;
+      const paramState = this.parameterValueStates.find(
+        (p) => p.parameterValue.name === v.name,
+      );
+      if (!paramState && isRequired) {
+        this.addExpressionParameterValue(v);
+      }
+    });
+  }
+
+  addExpressionParameterValue(expression: VariableExpression): void {
+    try {
+      const mockValue = guaranteeNonNullable(
+        generateVariableExpressionMockValue(
+          expression,
+          this.editorStore.graphManagerState.graph,
+          this.editorStore.changeDetectionState.observerContext,
+        ),
+      );
+      const paramValue = observe_FunctionParameterValue(
+        new FunctionParameterValue(),
+      );
+      paramValue.name = expression.name;
+      paramValue.value =
+        this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
+          mockValue,
+        );
+      if (this.test.parameters) {
+        this.test.parameters.push(paramValue);
+      } else {
+        this.test.parameters = [paramValue];
+      }
+      const paramValueState =
+        new DataProductValueSpecificationTestParameterState(
+          paramValue,
+          this.editorStore,
+          this,
+          observe_ValueSpecification(
+            mockValue,
+            this.editorStore.changeDetectionState.observerContext,
+          ),
+          expression,
+        );
+      this.parameterValueStates.push(paramValueState);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    }
+  }
+
+  generateTestParameterValues(): void {
+    try {
+      const varExpressions = this.queryVariableExpressions;
+      const parameterValueStates = varExpressions
+        .map((varExpression) => {
+          const mockValue = generateVariableExpressionMockValue(
+            varExpression,
+            this.editorStore.graphManagerState.graph,
+            this.editorStore.changeDetectionState.observerContext,
+          );
+          if (mockValue) {
+            const paramValue = observe_FunctionParameterValue(
+              new FunctionParameterValue(),
+            );
+            paramValue.name = varExpression.name;
+            paramValue.value =
+              this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
+                mockValue,
+              );
+            return new DataProductValueSpecificationTestParameterState(
+              paramValue,
+              this.editorStore,
+              this,
+              mockValue,
+              varExpression,
+            );
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      this.test.parameters = parameterValueStates.map((s) => s.parameterValue);
+      this.parameterValueStates = parameterValueStates;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to generate parameter values: ${error.message}`,
+      );
+    }
+  }
+
+  buildParameterStates(): DataProductTestParameterState[] {
+    const varExpressions = this.queryVariableExpressions;
+    const paramValues = this.test.parameters ?? [];
+    return paramValues.map((paramValue) => {
+      const spec = returnUndefOnError(() =>
+        this.editorStore.graphManagerState.graphManager.buildValueSpecification(
+          paramValue.value as PlainObject,
+          this.editorStore.graphManagerState.graph,
+        ),
+      );
+      const expression = varExpressions.find((e) => e.name === paramValue.name);
+      return spec && expression
+        ? new DataProductValueSpecificationTestParameterState(
+            paramValue,
+            this.editorStore,
+            this,
+            observe_ValueSpecification(
+              spec,
+              this.editorStore.changeDetectionState.observerContext,
+            ),
+            expression,
+          )
+        : new DataProductTestParameterState(paramValue, this.editorStore, this);
+    });
+  }
+
+  removeParamValueState(paramState: DataProductTestParameterState): void {
+    deleteEntry(this.parameterValueStates, paramState);
+    deleteEntry(this.test.parameters ?? [], paramState.parameterValue);
   }
 
   private async buildTestDataRelationState(): Promise<void> {
