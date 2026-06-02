@@ -67,7 +67,7 @@ export class ProductCardState {
     searchResult: DataProductSearchResult,
     graphManager: V1_PureGraphManager,
     vendorImageMap: ReadonlyMap<string, string>,
-    usedImages?: Set<string> | undefined,
+    usedImages?: Set<string>,
   ) {
     makeObservable(this, {
       dataProductElement: observable,
@@ -87,8 +87,7 @@ export class ProductCardState {
   }
 
   get title(): string {
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    return this.searchResult.dataProductTitle || this.dataProductId;
+    return this.searchResult.dataProductTitle ?? this.dataProductId;
   }
 
   get description(): string {
@@ -232,7 +231,7 @@ export class ProductCardState {
 
   private resolveDisplayImage(
     vendorImageMap: ReadonlyMap<string, string>,
-    usedImages?: Set<string> | undefined,
+    usedImages?: Set<string>,
   ): string {
     const GENERIC_IMAGE_COUNT = 20;
     const guidUpper = this.guid.toUpperCase();

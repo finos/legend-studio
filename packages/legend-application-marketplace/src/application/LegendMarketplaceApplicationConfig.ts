@@ -60,6 +60,11 @@ class LegendMarketplaceApplicationCoreOptions {
    */
   defaultSearchSuggestions: string[] | undefined;
 
+  /**
+   * Default suggested queries to show in the AI chat welcome screen
+   */
+  defaultAISuggestedQueries: string[] | undefined;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendMarketplaceApplicationCoreOptions, {
       dataProductConfig: optional(
@@ -75,6 +80,7 @@ class LegendMarketplaceApplicationCoreOptions {
       ),
       historicalNewsletterUrl: optional(primitive()),
       defaultSearchSuggestions: optional(list(primitive())),
+      defaultAISuggestedQueries: optional(list(primitive())),
     }),
   );
 
@@ -156,6 +162,8 @@ export interface LegendMarketplaceApplicationConfigurationData
     orchestratorAuthToken?: string;
     maxJudgeAttempts?: number;
     lakehouseEnvironment?: string;
+    enghubDocUrl?: string;
+    enthubRequestAccessUrl?: string;
   };
 }
 
@@ -419,35 +427,56 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       );
     }
 
-    const legendAIData = input.configData.legendAI;
-    this.legendAIConfig = legendAIData
-      ? {
-          ...DEFAULT_LEGEND_AI_CONFIG,
-          enabled: legendAIData.enabled,
-          llmServiceUrl: legendAIData.llmServiceUrl,
-          llmModelName: legendAIData.llmModelName,
-          sqlExecutionUrl: legendAIData.sqlExecutionUrl,
-          orchestratorUrl: legendAIData.orchestratorUrl
-            ? LegendApplicationConfig.resolveAbsoluteUrl(
-                legendAIData.orchestratorUrl,
-              )
-            : undefined,
-          marketplaceSearchUrl: this.marketplaceServerUrl,
-          engineUrl: this.engineServerUrl,
-          ...(legendAIData.orchestratorAuthToken === undefined
-            ? {}
-            : { orchestratorAuthToken: legendAIData.orchestratorAuthToken }),
-          ...(legendAIData.maxJudgeAttempts === undefined
-            ? {}
-            : { maxJudgeAttempts: legendAIData.maxJudgeAttempts }),
-          lakehouseEnvironment: legendAIData.lakehouseEnvironment ?? this.env,
-        }
-      : DEFAULT_LEGEND_AI_CONFIG;
+    this.legendAIConfig =
+      LegendMarketplaceApplicationConfig.buildLegendAIConfig(
+        input.configData.legendAI,
+        this.marketplaceServerUrl,
+        this.engineServerUrl,
+        this.dataProductEnv,
+      );
 
     // options
     this.options = LegendMarketplaceApplicationCoreOptions.create(
       input.configData.extensions?.core ?? {},
     );
+  }
+
+  private static buildLegendAIConfig(
+    legendAIData: LegendMarketplaceApplicationConfigurationData['legendAI'],
+    marketplaceServerUrl: string,
+    engineServerUrl: string,
+    dataProductEnv: LegendMarketplaceEnv,
+  ): LegendAIConfig {
+    if (!legendAIData) {
+      return DEFAULT_LEGEND_AI_CONFIG;
+    }
+    return {
+      ...DEFAULT_LEGEND_AI_CONFIG,
+      enabled: legendAIData.enabled,
+      llmServiceUrl: legendAIData.llmServiceUrl,
+      llmModelName: legendAIData.llmModelName,
+      sqlExecutionUrl: legendAIData.sqlExecutionUrl,
+      orchestratorUrl: legendAIData.orchestratorUrl
+        ? LegendApplicationConfig.resolveAbsoluteUrl(
+            legendAIData.orchestratorUrl,
+          )
+        : undefined,
+      marketplaceSearchUrl: marketplaceServerUrl,
+      engineUrl: engineServerUrl,
+      ...(legendAIData.orchestratorAuthToken === undefined
+        ? {}
+        : { orchestratorAuthToken: legendAIData.orchestratorAuthToken }),
+      ...(legendAIData.maxJudgeAttempts === undefined
+        ? {}
+        : { maxJudgeAttempts: legendAIData.maxJudgeAttempts }),
+      lakehouseEnvironment: legendAIData.lakehouseEnvironment ?? dataProductEnv,
+      ...(legendAIData.enghubDocUrl === undefined
+        ? {}
+        : { enghubDocUrl: legendAIData.enghubDocUrl }),
+      ...(legendAIData.enthubRequestAccessUrl === undefined
+        ? {}
+        : { enthubRequestAccessUrl: legendAIData.enthubRequestAccessUrl }),
+    };
   }
 
   override getDefaultApplicationStorageKey(): string {

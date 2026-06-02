@@ -55,14 +55,17 @@ export const TEST__makeAssistantMessage = (
   thinkingSteps: [],
   sql: null,
   textAnswer: null,
+  dataContext: null,
   gridData: null,
   error: null,
+  errorType: null,
   sqlGenTime: null,
   execTime: null,
   thinkingDuration: null,
   isProcessing: true,
   isExecuting: false,
   suggestedQueries: [],
+  fallbackAction: null,
   ...overrides,
 });
 export const TEST__seedAssistant = (setter: MessageSetter): void => {
@@ -135,5 +138,11 @@ export const TEST__createMockLegendAIPlugin = (
     extractJudgeResult: (_a: string): LegendAIJudgeResult => ({
       verdict: LegendAIJudgeVerdict.PASS,
     }),
+    selectRelevantServices: (
+      _q: string,
+      services: TDSServiceSchema[],
+    ): Promise<TDSServiceSchema[]> => Promise.resolve(services),
+    buildErrorCorrectionPrompt: (): string => '',
+    buildZeroRowCorrectionPrompt: (): string => '',
     ...overrides,
   }) as LegendAI_LegendApplicationPlugin_Extension;
