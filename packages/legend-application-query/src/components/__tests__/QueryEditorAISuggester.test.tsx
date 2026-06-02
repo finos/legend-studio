@@ -130,7 +130,7 @@ test(
 
 test(
   integrationTest(
-    'Clicking Suggest with AI shows a suggestion panel with Accept and Dismiss buttons',
+    'Clicking Suggest with AI fills inputs inline with AI suggestion and shows Apply/Dismiss buttons',
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
@@ -170,14 +170,18 @@ test(
       fireEvent.click(suggestBtn);
     });
 
-    // Suggestion panel should appear with the mock values
+    // Inputs should be filled inline with AI values and styled as suggestions
     await waitFor(() => {
       expect(
-        dialog.querySelector('.query-editor__ai-suggestion'),
+        dialog.querySelector('.query-editor__ai-suggestion-badge'),
       ).not.toBeNull();
-      expect(renderResult.getByText('AI Generated Title')).not.toBeNull();
-      expect(renderResult.getByText('AI Generated Description')).not.toBeNull();
-      expect(renderResult.getByText('Accept')).not.toBeNull();
+      const inputs = dialog.querySelectorAll('.input--ai-suggested');
+      expect(inputs).toHaveLength(2);
+      expect((inputs[0] as HTMLInputElement).value).toBe('AI Generated Title');
+      expect((inputs[1] as HTMLInputElement).value).toBe(
+        'AI Generated Description',
+      );
+      expect(renderResult.getByText('Apply Suggestion')).not.toBeNull();
       expect(renderResult.getByText('Dismiss')).not.toBeNull();
     });
   },
@@ -225,15 +229,20 @@ test(
       fireEvent.click(suggestBtn);
     });
 
-    // Accept
-    const acceptBtn = await waitFor(() => renderResult.getByText('Accept'));
+    // Apply suggestion
+    const applyBtn = await waitFor(() =>
+      renderResult.getByText('Apply Suggestion'),
+    );
     await act(async () => {
-      fireEvent.click(acceptBtn);
+      fireEvent.click(applyBtn);
     });
 
-    // Suggestion panel should be gone and fields should be filled
+    // Inline suggestion state should be cleared and fields committed to store
     await waitFor(() => {
-      expect(dialog.querySelector('.query-editor__ai-suggestion')).toBeNull();
+      expect(
+        dialog.querySelector('.query-editor__ai-suggestion-badge'),
+      ).toBeNull();
+      expect(dialog.querySelectorAll('.input--ai-suggested')).toHaveLength(0);
       expect(mockedEditorStore.queryCreatorState.queryName).toBe(
         'AI Generated Title',
       );

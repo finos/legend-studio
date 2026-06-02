@@ -200,6 +200,82 @@
   &__documentation__input {
     width: 50rem;
     max-width: 50rem !important;
+
+    &.textarea--ai-suggested {
+      border-color: var(--color-purple-200) !important;
+      color: var(--color-purple-0) !important;
+    }
+  }
+
+  &__ai-suggest-btn {
+    @include flexVCenter;
+
+    display: inline-flex;
+    gap: 0.4rem;
+    margin-left: 0.8rem;
+    height: 2rem;
+    padding: 0 0.6rem;
+    font-size: 1rem;
+    border: 0.1rem solid var(--color-purple-200);
+    border-radius: 0.2rem;
+    background: transparent;
+    color: var(--color-purple-200);
+    cursor: pointer;
+    vertical-align: middle;
+
+    svg {
+      font-size: 1.2rem;
+    }
+
+    &:hover {
+      background: var(--color-dark-grey-200);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  &__ai-suggestion-badge {
+    @include flexVCenter;
+
+    display: inline-flex;
+    gap: 0.4rem;
+    margin-left: 0.8rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-purple-200);
+    vertical-align: middle;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__ai-suggestion__actions {
+    @include flexVCenter;
+
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+  }
+
+  &__ai-suggestion__apply-btn {
+    height: 2.8rem;
+    padding: 0 1rem;
+    font-size: 1.2rem;
+  }
+
+  &__ai-suggestion__dismiss-btn {
+    height: 2.8rem;
+    padding: 0 1rem;
+    font-size: 1.2rem;
+    background: var(--color-dark-grey-200);
+    color: var(--color-light-grey-200);
+
+    &:hover {
+      background: var(--color-dark-grey-250);
+    }
   }
 
   &__execution {

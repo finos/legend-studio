@@ -307,6 +307,28 @@
   height: 2.3rem;
 }
 
+.input--ai-suggested {
+  border-color: var(--color-purple-200) !important;
+  color: var(--color-purple-0) !important;
+}
+
+.query-editor__ai-suggestion-badge {
+  @include flexVCenter;
+
+  display: inline-flex;
+  gap: 0.4rem;
+  margin-left: 0.8rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-purple-200);
+  vertical-align: middle;
+
+  svg {
+    font-size: 1.2rem;
+    color: var(--color-purple-200);
+  }
+}
+
 .query-export {
   width: 50vw;
   padding: 0;

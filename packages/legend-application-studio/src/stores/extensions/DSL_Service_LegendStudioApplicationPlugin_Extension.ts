@@ -23,6 +23,7 @@ import type {
   ObserverContext,
   PostDeploymentProperties,
   HostedService,
+  Service,
 } from '@finos/legend-graph';
 
 export type ServiceTestRuntimeConnectionBuilder = (
@@ -48,6 +49,11 @@ export type PostDeploymentActionTypeGetter = (
   metamodel: PostDeploymentProperties,
 ) => string | undefined;
 
+export type ServiceDocumentationAISuggester = (
+  service: Service,
+  legendAIUrl: string,
+) => Promise<string>;
+
 export interface DSL_Service_LegendStudioApplicationPlugin_Extension
   extends DSL_LegendStudioApplicationPlugin_Extension {
   /**
@@ -70,4 +76,8 @@ export interface DSL_Service_LegendStudioApplicationPlugin_Extension
    * Get the list of the Classifiers for Post Deployment Actions.
    */
   getExtraPostDeploymentActionClassifierGetters?(): PostDeploymentActionTypeGetter[];
+  /**
+   * Get a suggester function that generates AI-suggested documentation for a service.
+   */
+  getExtraServiceDocumentationAISuggester?(): ServiceDocumentationAISuggester;
 }
