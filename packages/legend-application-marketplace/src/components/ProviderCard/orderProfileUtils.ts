@@ -116,9 +116,8 @@ export const calculateMultiselectTotalPrice = (
   if (terminals.length === 0) {
     return undefined;
   }
-  const highestTerminal = terminals.reduce(
-    (max, curr) => (curr.price > max.price ? curr : max),
-    terminals[0] as TraderProfileItem,
+  const highestTerminal = terminals.reduce((max, curr) =>
+    curr.price > max.price ? curr : max,
   );
   const addOns = items.filter(
     (item) =>

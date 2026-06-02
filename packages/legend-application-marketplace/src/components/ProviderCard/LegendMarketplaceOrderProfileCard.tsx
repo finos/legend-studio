@@ -229,7 +229,9 @@ export const LegendMarketplaceOrderProfileCard = observer(
           profile={traderProfile}
           open={showDetailModal}
           onClose={() => setShowDetailModal(false)}
-          multiselectTotalPrice={multiselectTotalPrice}
+          {...(multiselectTotalPrice !== undefined
+            ? { multiselectTotalPrice }
+            : {})}
         />
 
         <OrderProfileMultiselectModal

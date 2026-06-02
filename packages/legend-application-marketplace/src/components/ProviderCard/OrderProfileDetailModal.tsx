@@ -68,7 +68,7 @@ export const OrderProfileDetailModal = observer(
     profile: TraderProfile;
     open: boolean;
     onClose: () => void;
-    multiselectTotalPrice?: number | undefined;
+    multiselectTotalPrice?: number;
   }): JSX.Element => {
     const { profile, open, onClose, multiselectTotalPrice } = props;
     const { cartStore } = useLegendMarketplaceBaseStore();
