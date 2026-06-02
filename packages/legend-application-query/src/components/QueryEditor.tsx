@@ -214,16 +214,28 @@ const CreateQueryDialog = observer(() => {
             isLoading={createQueryState.createQueryState.isInProgress}
           />
           <div className="input-section">
-            <div className="input-label">Enter Query Name</div>
+            <div className="input-label">
+              Enter Query Name
+              {aiSuggestion && (
+                <span className="query-editor__ai-suggestion-badge">
+                  <SparkleIcon />
+                  AI Suggestion
+                </span>
+              )}
+            </div>
             <div className="input--with-validation">
               <input
                 ref={nameInputRef}
                 className={clsx('input input--dark', {
                   'input--caution': isExistingQueryName,
+                  'input--ai-suggested': Boolean(aiSuggestion),
                 })}
                 spellCheck={false}
-                value={createQueryState.queryName}
+                value={
+                  aiSuggestion ? aiSuggestion.title : createQueryState.queryName
+                }
                 onChange={changeName}
+                readOnly={Boolean(aiSuggestion)}
                 title="New Query Name"
                 placeholder='(e.g. "MyQuery")'
               />
@@ -242,70 +254,53 @@ const CreateQueryDialog = observer(() => {
             <div className="input--with-validation">
               <input
                 ref={descriptionInputRef}
-                className="input input--dark"
+                className={clsx('input input--dark', {
+                  'input--ai-suggested': Boolean(aiSuggestion),
+                })}
                 spellCheck={true}
-                value={createQueryState.queryDescription ?? ''}
+                value={
+                  aiSuggestion
+                    ? aiSuggestion.description
+                    : (createQueryState.queryDescription ?? '')
+                }
                 onChange={changeDescription}
+                readOnly={Boolean(aiSuggestion)}
                 title="Query Description"
                 placeholder="Add details about what this query retrieves"
               />
             </div>
           </div>
-          {aiSuggestion && (
-            <div
-              className="query-editor__ai-suggestion"
-              style={{ marginTop: '1rem' }}
-            >
-              <div className="query-editor__ai-suggestion__header">
-                <SparkleIcon />
-                <span>AI Suggestion</span>
-              </div>
-              <div className="query-editor__ai-suggestion__field">
-                <div className="query-editor__ai-suggestion__label">
-                  Query Name
-                </div>
-                <div className="query-editor__ai-suggestion__value">
-                  {aiSuggestion.title}
-                </div>
-              </div>
-              <div className="query-editor__ai-suggestion__field">
-                <div className="query-editor__ai-suggestion__label">
-                  Query Description
-                </div>
-                <div className="query-editor__ai-suggestion__value">
-                  {aiSuggestion.description}
-                </div>
-              </div>
-              <div className="query-editor__ai-suggestion__actions">
-                <ModalFooterButton
-                  text="Accept"
-                  title="Apply AI suggestion to name and description"
-                  onClick={acceptAISuggestion}
-                />
-                <ModalFooterButton
-                  text="Dismiss"
-                  type="secondary"
-                  onClick={(): void => setAISuggestion(undefined)}
-                />
-              </div>
-            </div>
-          )}
         </ModalBody>
         <ModalFooter>
-          {aiSuggester && (
-            <button
-              className="btn btn--dark query-editor__ai-suggest-btn"
-              onClick={(): void => {
-                suggestWithAI().catch(applicationStore.alertUnhandledError);
-              }}
-              disabled={isSuggestingWithAI || !editorStore.queryBuilderState}
-              title="Use AI to suggest name and description based on the current query"
-            >
-              <SparkleIcon />
-              <span>
-                {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
-              </span>
-            </button>
+          {aiSuggestion ? (
+            <>
+              <ModalFooterButton
+                text="Apply Suggestion"
+                title="Apply AI suggestion to name and description"
+                onClick={acceptAISuggestion}
+              />
+              <ModalFooterButton
+                text="Dismiss"
+                type="secondary"
+                onClick={(): void => setAISuggestion(undefined)}
+              />
+            </>
+          ) : (
+            aiSuggester && (
+              <button
+                className="btn btn--dark query-editor__ai-suggest-btn"
+                onClick={(): void => {
+                  suggestWithAI().catch(applicationStore.alertUnhandledError);
+                }}
+                disabled={isSuggestingWithAI || !editorStore.queryBuilderState}
+                title="Use AI to suggest name and description based on the current query"
+              >
+                <SparkleIcon />
+                <span>
+                  {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+                </span>
+              </button>
+            )
           )}
           <ModalFooterButton
             text="Create Query"
@@ -524,16 +519,26 @@ const RenameQueryDialog = observer(
               isLoading={updateState.updateQueryState.isInProgress}
             />
             <div className="input-section">
-              <div className="input-label">Update Query Name</div>
+              <div className="input-label">
+                Update Query Name
+                {aiSuggestion && (
+                  <span className="query-editor__ai-suggestion-badge">
+                    <SparkleIcon />
+                    AI Suggestion
+                  </span>
+                )}
+              </div>
               <div className="input--with-validation">
                 <input
                   ref={nameInputRef}
                   className={clsx('input input--dark', {
                     'input--caution': isExistingQueryName,
+                    'input--ai-suggested': Boolean(aiSuggestion),
                   })}
                   spellCheck={false}
-                  value={queryRenameName}
+                  value={aiSuggestion ? aiSuggestion.title : queryRenameName}
                   onChange={changeName}
+                  readOnly={Boolean(aiSuggestion)}
                   title="Query Name"
                   placeholder='(e.g. "MyQuery")'
                 />
@@ -551,72 +556,53 @@ const RenameQueryDialog = observer(
               <div className="input-label">Update Query Description</div>
               <div className="input--with-validation">
                 <input
-                  className="input input--dark"
+                  className={clsx('input input--dark', {
+                    'input--ai-suggested': Boolean(aiSuggestion),
+                  })}
                   spellCheck={true}
-                  value={queryDescription}
+                  value={
+                    aiSuggestion ? aiSuggestion.description : queryDescription
+                  }
                   onChange={changeDescription}
+                  readOnly={Boolean(aiSuggestion)}
                   title="Query Description"
                   placeholder="Add details about what this query retrieves"
                 />
               </div>
             </div>
-            {aiSuggestion && (
-              <div
-                className="query-editor__ai-suggestion"
-                style={{ marginTop: '1rem' }}
-              >
-                <div className="query-editor__ai-suggestion__header">
-                  <SparkleIcon />
-                  <span>AI Suggestion</span>
-                </div>
-                <div className="query-editor__ai-suggestion__field">
-                  <div className="query-editor__ai-suggestion__label">
-                    Query Name
-                  </div>
-                  <div className="query-editor__ai-suggestion__value">
-                    {aiSuggestion.title}
-                  </div>
-                </div>
-                <div className="query-editor__ai-suggestion__field">
-                  <div className="query-editor__ai-suggestion__label">
-                    Query Description
-                  </div>
-                  <div className="query-editor__ai-suggestion__value">
-                    {aiSuggestion.description}
-                  </div>
-                </div>
-                <div className="query-editor__ai-suggestion__actions">
-                  <ModalFooterButton
-                    text="Accept"
-                    title="Apply AI suggestion to name and description"
-                    onClick={acceptAISuggestion}
-                  />
-                  <ModalFooterButton
-                    text="Dismiss"
-                    type="secondary"
-                    onClick={(): void => setAISuggestion(undefined)}
-                  />
-                </div>
-              </div>
-            )}
           </ModalBody>
           <ModalFooter>
-            {aiSuggester && (
-              <button
-                className="btn btn--dark query-editor__ai-suggest-btn"
-                onClick={(): void => {
-                  suggestWithAI().catch(applicationStore.alertUnhandledError);
-                }}
-                disabled={
-                  isSuggestingWithAI || !existingEditorStore.queryBuilderState
-                }
-                title="Use AI to suggest name and description based on the current query"
-              >
-                <SparkleIcon />
-                <span>
-                  {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
-                </span>
-              </button>
+            {aiSuggestion ? (
+              <>
+                <ModalFooterButton
+                  text="Apply Suggestion"
+                  title="Apply AI suggestion to name and description"
+                  onClick={acceptAISuggestion}
+                />
+                <ModalFooterButton
+                  text="Dismiss"
+                  type="secondary"
+                  onClick={(): void => setAISuggestion(undefined)}
+                />
+              </>
+            ) : (
+              aiSuggester && (
+                <button
+                  className="btn btn--dark query-editor__ai-suggest-btn"
+                  onClick={(): void => {
+                    suggestWithAI().catch(applicationStore.alertUnhandledError);
+                  }}
+                  disabled={
+                    isSuggestingWithAI || !existingEditorStore.queryBuilderState
+                  }
+                  title="Use AI to suggest name and description based on the current query"
+                >
+                  <SparkleIcon />
+                  <span>
+                    {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+                  </span>
+                </button>
+              )
             )}
             <ModalFooterButton
               text="Update Query"
