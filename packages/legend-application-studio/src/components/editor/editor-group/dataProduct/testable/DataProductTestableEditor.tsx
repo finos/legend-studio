@@ -54,13 +54,14 @@ import {
   LakehouseAccessPoint,
   PrimitiveInstanceValue,
   PrimitiveType,
+  type RawLambda,
   type DataProductTestSuite,
   type ValueSpecification,
 } from '@finos/legend-graph';
 import type { DataProductEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import {
-  DataProductTestParameterState,
   DataProductValueSpecificationTestParameterState,
+  type DataProductTestParameterState,
   type DataProductTestableState,
   type DataProductTestSuiteState,
   type DataProductTestState,
@@ -900,12 +901,15 @@ const DataProductTestEditor = observer(
     const accessPoint = testState.suiteState.testableState.ownAccessPoints.find(
       (ap) => ap.id === testState.test.accessPointId,
     );
-    let accessPointQuery;
+    let accessPointQuery: RawLambda | undefined;
     if (accessPoint instanceof LakehouseAccessPoint) {
       accessPointQuery = accessPoint.func;
     } else if (accessPoint instanceof FunctionAccessPoint) {
       accessPointQuery = accessPoint.query;
     }
+    const hasQueryParameters = Boolean(
+      testState.queryVariableExpressions.length,
+    );
 
     return (
       <div className="function-test-editor panel">
@@ -928,22 +932,16 @@ const DataProductTestEditor = observer(
                     overflow: 'hidden',
                   }}
                 >
-                  <div
-                    style={{
-                      flex: '0 0 32%',
-                      minHeight: '12rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div className="panel__content__form__section">
-                      <div className="panel__content__form__section__header__label">
-                        Access Point: {testState.accessPointLabel}
-                      </div>
-                    </div>
-
-                    {Boolean(testState.queryVariableExpressions.length) && (
+                  {hasQueryParameters && (
+                    <div
+                      style={{
+                        flex: '0 0 32%',
+                        minHeight: '12rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                      }}
+                    >
                       <div
                         className="service-test-data-editor panel"
                         style={{
@@ -1010,11 +1008,11 @@ const DataProductTestEditor = observer(
                           ))}
                         </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <div
                     style={{
-                      flex: 1,
+                      flex: hasQueryParameters ? 1 : '1 1 100%',
                       minHeight: 0,
                       overflow: 'hidden',
                     }}
