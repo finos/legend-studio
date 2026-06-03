@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  useMemo,
-  useCallback,
-  useState,
-  useRef,
-  useEffect,
-  useLayoutEffect,
-} from 'react';
+import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import {
   SendIcon,
   LoadingIcon,
@@ -30,11 +23,6 @@ import {
   TableIcon,
   CopyIcon,
   RefreshIcon,
-  CheckIcon,
-  TimesIcon,
-  CaretDownIcon,
-  CaretRightIcon,
-  DotIcon,
   MarkdownTextViewer,
 } from '@finos/legend-art';
 import { noop } from '@finos/legend-shared';
@@ -184,17 +172,13 @@ export function buildSuggestedQueries(
   ].slice(0, MAX_SUGGESTED_QUERIES);
 }
 
-export function renderStepStatusIcon(
+function renderStepStatusIcon(
   status: LegendAIThinkingStepStatus,
 ): React.ReactNode {
   if (status === LegendAIThinkingStepStatus.ACTIVE) {
     return <LoadingIcon isLoading={true} />;
   }
-  return status === LegendAIThinkingStepStatus.DONE ? (
-    <CheckIcon />
-  ) : (
-    <TimesIcon />
-  );
+  return status === LegendAIThinkingStepStatus.DONE ? '\u2713' : '\u2717';
 }
 
 const AssistantMessageView = (props: {
@@ -202,15 +186,9 @@ const AssistantMessageView = (props: {
   isThinkingVisible: boolean;
   onToggleThinking: () => void;
   onSuggestedQueryClick?: (query: string) => void;
-  onFallbackAction?: (messageId: string) => void;
 }): React.ReactNode => {
-  const {
-    msg,
-    isThinkingVisible,
-    onToggleThinking,
-    onSuggestedQueryClick,
-    onFallbackAction,
-  } = props;
+  const { msg, isThinkingVisible, onToggleThinking, onSuggestedQueryClick } =
+    props;
 
   const [sqlCopied, setSqlCopied] = useState(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -255,7 +233,7 @@ const AssistantMessageView = (props: {
                 onClick={onToggleThinking}
               >
                 <span className="legend-ai__thinking-toggle-icon">
-                  {isThinkingVisible ? <CaretDownIcon /> : <CaretRightIcon />}
+                  {isThinkingVisible ? '\u25BC' : '\u25B6'}
                 </span>
                 Thought for {msg.thinkingDuration ?? '...'}s
               </button>
@@ -264,7 +242,7 @@ const AssistantMessageView = (props: {
               <div className="legend-ai__thinking-steps">
                 {msg.thinkingSteps.map((step) => (
                   <div
-                    key={step.id}
+                    key={step.label}
                     className={`legend-ai__thinking-step legend-ai__thinking-step--${step.status}`}
                   >
                     <span className="legend-ai__thinking-step-icon">
@@ -299,7 +277,7 @@ const AssistantMessageView = (props: {
               >
                 {sqlCopied ? (
                   <span className="legend-ai__sql-copy-btn--copied">
-                    <CheckIcon />
+                    \u2713
                   </span>
                 ) : (
                   <CopyIcon />
@@ -319,33 +297,6 @@ const AssistantMessageView = (props: {
           </div>
         )}
 
-        {msg.error && <div className="legend-ai__exec-error">{msg.error}</div>}
-
-        {msg.gridData && (
-          <div className="legend-ai__results-block">
-            <div className="legend-ai__results-header">
-              <span className="legend-ai__results-header-icon">
-                <TableIcon />
-              </span>
-              <span>Results</span>
-              <span className="legend-ai__results-meta">
-                {msg.gridData.rowData.length} row
-                {msg.gridData.rowData.length === 1 ? '' : 's'}
-                {msg.execTime ? (
-                  <>
-                    {' '}
-                    <DotIcon className="legend-ai__results-meta-dot" />{' '}
-                    {msg.execTime}s
-                  </>
-                ) : (
-                  ''
-                )}
-              </span>
-            </div>
-            <LegendAIResultGrid data={msg.gridData} />
-          </div>
-        )}
-
         {msg.textAnswer && (
           <div className="legend-ai__text-answer">
             <MarkdownTextViewer
@@ -354,6 +305,8 @@ const AssistantMessageView = (props: {
             />
           </div>
         )}
+
+        {msg.error && <div className="legend-ai__exec-error">{msg.error}</div>}
 
         {!msg.isProcessing &&
           msg.suggestedQueries.length > 0 &&
@@ -375,19 +328,21 @@ const AssistantMessageView = (props: {
             </div>
           )}
 
-        {msg.fallbackAction && !msg.isProcessing && onFallbackAction && (
-          <button
-            type="button"
-            className="legend-ai__fallback-action-btn"
-            onClick={(): void => {
-              if (msg.fallbackAction?.actionId) {
-                onFallbackAction(msg.id);
-              }
-            }}
-          >
-            <SparkleStarsIcon />
-            <span>{msg.fallbackAction.label}</span>
-          </button>
+        {msg.gridData && (
+          <div className="legend-ai__results-block">
+            <div className="legend-ai__results-header">
+              <span className="legend-ai__results-header-icon">
+                <TableIcon />
+              </span>
+              <span>Results</span>
+              <span className="legend-ai__results-meta">
+                {msg.gridData.rowData.length} row
+                {msg.gridData.rowData.length === 1 ? '' : 's'}
+                {msg.execTime ? ` \u00B7 ${msg.execTime}s` : ''}
+              </span>
+            </div>
+            <LegendAIResultGrid data={msg.gridData} />
+          </div>
         )}
       </div>
     </div>
@@ -421,7 +376,7 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
   const hasMessages = state.messages.length > 0;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const el = textareaRef.current;
     if (el) {
       el.style.height = 'auto';
@@ -498,9 +453,6 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
               msg={msg}
               isThinkingVisible={isThinkingVisible}
               onToggleThinking={(): void => state.toggleThinking(msgIndex)}
-              onFallbackAction={(messageId): void =>
-                state.runFallbackAction(messageId)
-              }
               onSuggestedQueryClick={(q): void =>
                 state.askQuestionWithIntent(
                   q,

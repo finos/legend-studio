@@ -669,14 +669,12 @@ import {
   GoGitBranch,
   GoX,
   GoPlug,
-  GoDotFill,
 } from 'react-icons/go';
 
 export const ChevronDownIcon = GoChevronDown;
 export const ChevronUpIcon = GoChevronUp;
 export const ChevronLeftIcon = GoChevronLeft;
 export const ChevronRightIcon = GoChevronRight;
-export const DotIcon = GoDotFill;
 export const BinaryTypeIcon = GoFileBinary;
 export const GitPullRequestIcon = GoGitPullRequest;
 export const GitMergeIcon = GoGitMerge;

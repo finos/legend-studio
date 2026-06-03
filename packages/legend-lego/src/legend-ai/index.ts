@@ -23,7 +23,6 @@ export {
   isNumericColumn,
   isDateColumn,
   buildSuggestedQueries,
-  renderStepStatusIcon,
 } from './components/LegendAIChat.js';
 export { LegendAIErrorBoundary } from './components/LegendAIErrorBoundary.js';
 export {
@@ -32,7 +31,6 @@ export {
   addThinkingStep,
   completeThinkingSteps,
   finishWithThinkingError,
-  classifyError,
   buildConversationHistory,
   buildGenerationFailureMessage,
   buildExecutionErrorMessage,
@@ -43,22 +41,6 @@ export {
   processQuestion,
   processQuestionWithIntent,
   handleMetadataQuestion,
-  elapsedSeconds,
-  createMessagePair,
-  analyzeOrchestratorResults,
   type MessageSetter,
-  type LegendAIOperationContext,
 } from './stores/LegendAIChatState.js';
 export { LegendAIResultGrid } from './components/LegendAIResultGrid.js';
-export { LegendAIAnalysisPanel } from './components/LegendAIAnalysisPanel.js';
-export {
-  LegendAIBarChart,
-  LegendAIDonutChart,
-} from './components/LegendAICharts.js';
-export {
-  computeKeyMetrics,
-  computeChartData,
-  inferChartType,
-  computeTopItems,
-  findNumericColumnName,
-} from './components/LegendAIAnalysisUtils.js';
