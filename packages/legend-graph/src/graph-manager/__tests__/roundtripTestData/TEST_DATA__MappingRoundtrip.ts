@@ -2607,4 +2607,3 @@ export const TEST_DATA__RelationFunctionMappingEmptyPrimaryKey = [
     classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
-
