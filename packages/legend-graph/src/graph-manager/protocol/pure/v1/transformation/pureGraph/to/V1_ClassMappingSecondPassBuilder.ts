@@ -413,6 +413,8 @@ export class V1_ClassMappingSecondPassBuilder
           ),
         ),
       );
+    relationFunctionInstanceSetImplementation.primaryKey =
+      classMapping.primaryKey;
     return relationFunctionInstanceSetImplementation;
   }
 }
