@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace
 
+## 0.2.15
+
+### Patch Changes
+
+- [#5204](https://github.com/finos/legend-studio/pull/5204) [`431d6fd`](https://github.com/finos/legend-studio/commit/431d6fdb79b4a759bab3786be4901054fa1a6e5d) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+- [#5205](https://github.com/finos/legend-studio/pull/5205) [`d485724`](https://github.com/finos/legend-studio/commit/d485724f64627e9288aa03f08b7fb0f773964cfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Unify entitlements dashboards into single grids with shared `EntitlementsRow` type and a Type column.
+
+- [#5200](https://github.com/finos/legend-studio/pull/5200) [`b244870`](https://github.com/finos/legend-studio/commit/b24487045573c8fd46f166a4fec24a9e6e3f20c5) ([@bojja-gs](https://github.com/bojja-gs)) - Fix: data fields radio to be disabled with empty query
+
 ## 0.2.14
 
 ### Patch Changes

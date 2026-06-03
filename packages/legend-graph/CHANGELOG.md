@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.6.6
+
+### Patch Changes
+
+- [#5199](https://github.com/finos/legend-studio/pull/5199) [`3c8840b`](https://github.com/finos/legend-studio/commit/3c8840b0d5bedc9615956e2d4ae03f1c6fb32ddd) ([@Rakan1837](https://github.com/Rakan1837)) - feat: infer #SQL i()/p() accessors for DataProduct test-data setup
+
+- [#5205](https://github.com/finos/legend-studio/pull/5205) [`d485724`](https://github.com/finos/legend-studio/commit/d485724f64627e9288aa03f08b7fb0f773964cfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add explicit `GenericWorkflowTask` case in workflow task deserializer; default now throws for unknown types.
+
 ## 32.6.5
 
 ### Patch Changes

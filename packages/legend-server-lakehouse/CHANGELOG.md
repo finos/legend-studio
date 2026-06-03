@@ -1,5 +1,12 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.55
+
+### Patch Changes
+
+- [#5205](https://github.com/finos/legend-studio/pull/5205) [`d485724`](https://github.com/finos/legend-studio/commit/d485724f64627e9288aa03f08b7fb0f773964cfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add permit data access request support with live task overlay, marketplace and eTask timeline links, standalone permit page, and escalation handling.
+  Added Permit Workflow client.
+
 ## 0.3.54
 
 ### Patch Changes

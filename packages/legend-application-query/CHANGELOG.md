@@ -1,5 +1,12 @@
 # @finos/legend-application-query
 
+## 13.8.20
+
+### Patch Changes
+
+- [#5203](https://github.com/finos/legend-studio/pull/5203) [`bcaa473`](https://github.com/finos/legend-studio/commit/bcaa473a66b6a70bf898f8485ac0ce23aa015937) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: add ai suggester for services
+  query: inline ai suggestions
+
 ## 13.8.19
 
 ## 13.8.18
