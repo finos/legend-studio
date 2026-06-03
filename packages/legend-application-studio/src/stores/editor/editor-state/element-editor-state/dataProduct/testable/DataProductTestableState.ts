@@ -317,11 +317,6 @@ export class DataProductTestState extends TestableTestEditorState {
     this.buildTestDataRelationState().catch(noop());
   }
 
-  /**
-   * Backward compatibility: Data Product grammar test calls can come in as
-   * positional args (e.g. `ap('Human')`) without parameter names. In form mode
-   * we key by variable name, so align unnamed values to query variables first.
-   */
   private normalizePositionalParameters(): void {
     const params = this.test.parameters ?? [];
     if (!params.length) {
