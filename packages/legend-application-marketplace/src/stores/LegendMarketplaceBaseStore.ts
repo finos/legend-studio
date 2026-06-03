@@ -55,6 +55,7 @@ import {
   LakehouseWorkflowServerClient,
 } from '@finos/legend-server-lakehouse';
 import { CartStore } from './cart/CartStore.js';
+import { PendingTasksCache } from './lakehouse/PendingTasksCache.js';
 import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
 import { V1_deserializeDataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import {
@@ -95,6 +96,7 @@ export class LegendMarketplaceBaseStore {
   readonly lakehouseDataProductService: LakehouseDataProductService;
   readonly cartStore: CartStore;
   readonly terminalAccessServerClient: TerminalAccessServerClient;
+  readonly pendingTasksCache: PendingTasksCache;
 
   readonly initState = ActionState.create();
 
@@ -222,6 +224,11 @@ export class LegendMarketplaceBaseStore {
 
     // Initialize cart store
     this.cartStore = new CartStore(this);
+
+    // Shared cache + in-flight dedupe for /datacontracts/tasks/pending
+    this.pendingTasksCache = new PendingTasksCache(
+      this.lakehouseContractServerClient,
+    );
   }
 
   buildAdjacentEnvState(): LegendMarketplaceEnvState | undefined {

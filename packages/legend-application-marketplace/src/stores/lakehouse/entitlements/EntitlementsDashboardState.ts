@@ -326,7 +326,7 @@ export class EntitlementsDashboardState {
   ): GeneratorFn<V1_ContractUserEventRecord[]> {
     try {
       const rawTasks =
-        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getPendingTasks(
+        (yield this.lakehouseEntitlementsStore.marketplaceBaseStore.pendingTasksCache.fetch(
           TEST_USER,
           token,
         )) as PlainObject<V1_PendingTasksResponse>;
@@ -863,6 +863,7 @@ export class EntitlementsDashboardState {
       }
       task.status = change.status;
       this.pendingTasks = [...(this.pendingTasks ?? [])];
+      this.lakehouseEntitlementsStore.marketplaceBaseStore.pendingTasksCache.invalidate();
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `Task has been Approved`,
       );
@@ -901,6 +902,7 @@ export class EntitlementsDashboardState {
       }
       task.status = change.status;
       this.pendingTasks = [...(this.pendingTasks ?? [])];
+      this.lakehouseEntitlementsStore.marketplaceBaseStore.pendingTasksCache.invalidate();
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `Task has been denied`,
       );
