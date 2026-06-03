@@ -319,7 +319,24 @@ describe('MarketplaceLakehouseSearchResults', () => {
       mockGoToLocation;
 
     await screen.findByText('4 Products');
-    fireEvent.click(screen.getByText('Data Fields'));
+    fireEvent.click(screen.getByRole('radio', { name: 'Data Fields' }));
+
+    expect(mockGoToLocation).toHaveBeenCalledWith(
+      generateFieldSearchResultsRoute('customer'),
+    );
+  });
+
+  test('clicking the Data Fields tab trims query before navigating', async () => {
+    const { MOCK__baseStore } = await setupTestComponent(
+      '  customer  ',
+      'prod',
+    );
+    const mockGoToLocation = jest.fn();
+    MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
+      mockGoToLocation;
+
+    await screen.findByText('4 Products');
+    fireEvent.click(screen.getByRole('radio', { name: 'Data Fields' }));
 
     expect(mockGoToLocation).toHaveBeenCalledWith(
       generateFieldSearchResultsRoute('customer'),
@@ -330,8 +347,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
     await setupTestComponent('', 'prod');
 
     await screen.findByPlaceholderText('Search Legend Marketplace');
-    expect(screen.queryByRole('tab', { name: 'Data Products' })).toBeNull();
-    expect(screen.queryByRole('tab', { name: 'Data Fields' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Data Products' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Data Fields' })).toBeNull();
   });
 
   describe('Semantic search', () => {

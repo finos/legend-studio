@@ -17,8 +17,6 @@
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import {
-  Button,
-  ButtonGroup,
   Tooltip,
   Typography,
   List,
@@ -44,6 +42,7 @@ import type { LegendUser } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
+import { LegendMarketplaceOptionSelector } from '../../components/OptionSelector/LegendMarketplaceOptionSelector.js';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -65,28 +64,12 @@ export const RefinedVendorRadioSelector = observer(
     );
 
     return (
-      <ButtonGroup variant="outlined">
-        {radioOptions.map((option) => (
-          <Button
-            key={option}
-            onClick={() => onRadioChange(option)}
-            variant={
-              vendorDataState.providerDisplayState === option
-                ? 'contained'
-                : 'outlined'
-            }
-            sx={{
-              fontSize: '12px',
-              backgroundColor:
-                vendorDataState.providerDisplayState === option
-                  ? 'primary'
-                  : 'white',
-            }}
-          >
-            {option}
-          </Button>
-        ))}
-      </ButtonGroup>
+      <LegendMarketplaceOptionSelector
+        options={radioOptions}
+        selectedOption={vendorDataState.providerDisplayState}
+        onChange={onRadioChange}
+        ariaLabel="Vendor data provider type"
+      />
     );
   },
 );

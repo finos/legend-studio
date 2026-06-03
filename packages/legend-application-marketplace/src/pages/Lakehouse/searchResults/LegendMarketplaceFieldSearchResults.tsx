@@ -42,12 +42,18 @@ import {
 } from '../../../application/providers/LegendMarketplaceFieldSearchResultsStoreProvider.js';
 import { FieldSearchFiltersPanel } from '../../../components/FieldSearchFiltersPanel/FieldSearchFiltersPanel.js';
 import { FieldSearchResultListRow } from '../../../components/MarketplaceCard/FieldSearchResultListItem.js';
+import { LegendMarketplaceOptionSelector } from '../../../components/OptionSelector/LegendMarketplaceOptionSelector.js';
 import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { PaginationControls } from '../../../components/Pagination/PaginationControls.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { DataProductTypeFilter } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import type { LegendMarketplaceFieldSearchResultsStore } from '../../../stores/lakehouse/LegendMarketplaceFieldSearchResultsStore.js';
 import { type FieldSearchDataProductEntry } from '../../../stores/lakehouse/fieldSearch/FieldSearchResultState.js';
+
+enum FieldSearchResultViewOption {
+  DATA_PRODUCTS = 'Data Products',
+  DATA_FIELDS = 'Data Fields',
+}
 
 const FieldSearchResultsContent = observer(
   (props: {
@@ -371,6 +377,15 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
     );
   }, [applicationStore, fieldSearchResultsStore.searchQuery]);
 
+  const handleSearchResultViewChange = useCallback(
+    (value: FieldSearchResultViewOption) => {
+      if (value === FieldSearchResultViewOption.DATA_PRODUCTS) {
+        handleOpenDataProductsTab();
+      }
+    },
+    [handleOpenDataProductsTab],
+  );
+
   return (
     <LegendMarketplacePage className="marketplace-lakehouse-search-results marketplace-lakehouse-field-search-results">
       <div ref={pageRef} />
@@ -394,30 +409,16 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
           >
             {fieldSearchResultsStore.totalFieldMatches} Fields
           </Typography>
-          <div
-            className="legend-marketplace-search-results__search-type-tabs"
-            role="tablist"
-            aria-label="Search result type"
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={false}
-              tabIndex={-1}
-              className="legend-marketplace-search-results__search-type-tab"
-              onClick={handleOpenDataProductsTab}
-            >
-              Data Products
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={true}
-              tabIndex={0}
-              className="legend-marketplace-search-results__search-type-tab legend-marketplace-search-results__search-type-tab--active"
-            >
-              Data Fields
-            </button>
+          <div className="legend-marketplace-search-results__search-type-tabs">
+            <LegendMarketplaceOptionSelector
+              options={[
+                FieldSearchResultViewOption.DATA_PRODUCTS,
+                FieldSearchResultViewOption.DATA_FIELDS,
+              ]}
+              selectedOption={FieldSearchResultViewOption.DATA_FIELDS}
+              onChange={handleSearchResultViewChange}
+              ariaLabel="Search result type"
+            />
           </div>
         </div>
       </div>
