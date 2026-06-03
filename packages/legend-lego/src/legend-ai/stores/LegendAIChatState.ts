@@ -25,21 +25,16 @@ import {
   type LegendAIMessage,
   type LegendAIConversationTurn,
   type LegendAIProductMetadata,
-  type LegendAIFallbackAction,
   LegendAIQuestionIntent,
   LegendAIThinkingStepStatus,
   LegendAIMessageRole,
-  LegendAIErrorType,
-  LegendAIServiceError,
   TDSServiceSourceType,
   buildColumnDefsFromNames,
-  LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
 } from '../LegendAITypes.js';
 import {
   type LegendAI_LegendApplicationPlugin_Extension,
   type LegendAIOrchestratorDataProductCoordinates,
   type LegendAISqlExecutionResultData,
-  type LegendAIResolvedEntities,
   LegendAIJudgeVerdict,
 } from '../LegendAI_LegendApplicationPlugin_Extension.js';
 import type { QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
@@ -47,31 +42,8 @@ import type { QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
 const MAX_ERROR_MESSAGE_LENGTH = 500;
 const MAX_THINKING_ERROR_PREVIEW_LENGTH = 200;
 const DEFAULT_MAX_JUDGE_ATTEMPTS = 5;
-const DEFAULT_MAX_EXECUTION_RETRIES = 3;
-const ANALYSIS_TIMEOUT_MS = 15_000;
 
 const SUGGESTED_QUERIES_DELIMITER = '---SUGGESTED_QUERIES---';
-
-export function elapsedSeconds(startTime: number, decimals: 1 | 2 = 1): string {
-  return ((Date.now() - startTime) / 1000).toFixed(decimals);
-}
-
-function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-): Promise<T | undefined> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  return Promise.race([
-    promise.finally(() => {
-      if (timer !== undefined) {
-        clearTimeout(timer);
-      }
-    }),
-    new Promise<undefined>((resolve) => {
-      timer = setTimeout(() => resolve(undefined), ms);
-    }),
-  ]);
-}
 
 function deduplicateColumns(columns: string[]): string[] {
   const seen = new Map<string, number>();
@@ -86,7 +58,7 @@ export type MessageSetter = React.Dispatch<
   React.SetStateAction<LegendAIMessage[]>
 >;
 
-export function createMessagePair(
+function createMessagePair(
   text: string,
 ): [LegendAIUserMessage, LegendAIAssistantMessage] {
   return [
@@ -97,22 +69,19 @@ export function createMessagePair(
       thinkingSteps: [],
       sql: null,
       textAnswer: null,
-      dataContext: null,
       gridData: null,
       error: null,
-      errorType: null,
       sqlGenTime: null,
       execTime: null,
       thinkingDuration: null,
       isProcessing: true,
       isExecuting: false,
       suggestedQueries: [],
-      fallbackAction: null,
     },
   ];
 }
 
-export interface LegendAIOperationContext {
+interface LegendAIOperationContext {
   config: LegendAIConfig;
   plugin: LegendAI_LegendApplicationPlugin_Extension;
   history: LegendAIConversationTurn[];
@@ -150,7 +119,7 @@ export function addThinkingStep(
           ? { ...s, status: LegendAIThinkingStepStatus.DONE }
           : s,
       ),
-      { id: uuid(), label, status: LegendAIThinkingStepStatus.ACTIVE },
+      { label, status: LegendAIThinkingStepStatus.ACTIVE },
     ],
   }));
 }
@@ -165,18 +134,10 @@ export function completeThinkingSteps(setMessages: MessageSetter): void {
   }));
 }
 
-export function classifyError(error: Error): LegendAIErrorType {
-  if (error instanceof LegendAIServiceError) {
-    return error.errorType;
-  }
-  return LegendAIErrorType.GENERAL;
-}
-
 export function finishWithThinkingError(
   setMessages: MessageSetter,
   errorMsg: string,
   startTime: number,
-  errorType?: LegendAIErrorType,
 ): void {
   updateLastAssistant(setMessages, (msg) => ({
     thinkingSteps: msg.thinkingSteps.map((s) =>
@@ -185,9 +146,8 @@ export function finishWithThinkingError(
         : s,
     ),
     error: errorMsg.slice(0, MAX_ERROR_MESSAGE_LENGTH),
-    errorType: errorType ?? null,
     isProcessing: false,
-    thinkingDuration: elapsedSeconds(startTime),
+    thinkingDuration: ((Date.now() - startTime) / 1000).toFixed(1),
   }));
 }
 
@@ -346,7 +306,7 @@ export async function handleMetadataQuestion(
     textAnswer: answer,
     suggestedQueries,
     isProcessing: false,
-    thinkingDuration: elapsedSeconds(startTime),
+    thinkingDuration: ((Date.now() - startTime) / 1000).toFixed(1),
   }));
 }
 
@@ -380,7 +340,6 @@ export async function generateAndJudgeSql(
       setMessages,
       buildGenerationFailureMessage(failure, suggestion, services),
       startTime,
-      LegendAIErrorType.GENERATION,
     );
     return null;
   }
@@ -391,7 +350,6 @@ export async function generateAndJudgeSql(
       setMessages,
       'Could not extract SQL from LLM response.\nTry rephrasing your question or ask about a specific service.',
       startTime,
-      LegendAIErrorType.GENERATION,
     );
     return null;
   }
@@ -461,10 +419,10 @@ function reportExecutionResult(
 
   updateLastAssistant(setMessages, () => ({
     gridData: { columnDefs: buildColumnDefsFromNames(columns), rowData: rows },
-    execTime: elapsedSeconds(execStartTime, 2),
+    execTime: ((Date.now() - execStartTime) / 1000).toFixed(2),
     isProcessing: false,
     isExecuting: false,
-    thinkingDuration: elapsedSeconds(startTime),
+    thinkingDuration: ((Date.now() - startTime) / 1000).toFixed(1),
   }));
   return { columns, rows };
 }
@@ -495,7 +453,6 @@ export async function executeSqlAndReport(
     );
   } catch (executeError) {
     assertErrorThrown(executeError);
-    const execErrorType = classifyError(executeError);
     addThinkingStep(
       setMessages,
       `Execution failed: ${executeError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
@@ -504,12 +461,9 @@ export async function executeSqlAndReport(
       setMessages,
       buildExecutionErrorMessage(executeError.message, services),
       startTime,
-      execErrorType === LegendAIErrorType.GENERAL
-        ? LegendAIErrorType.EXECUTION
-        : execErrorType,
     );
     updateLastAssistant(setMessages, () => ({
-      execTime: elapsedSeconds(execStartTime, 2),
+      execTime: ((Date.now() - execStartTime) / 1000).toFixed(2),
       isExecuting: false,
     }));
     return undefined;
@@ -542,183 +496,44 @@ export async function executePureQueryAndReport(
     );
   } catch (executeError) {
     assertErrorThrown(executeError);
-    const execErrorType = classifyError(executeError);
     addThinkingStep(
       setMessages,
       `Execution failed: ${executeError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
     );
     completeThinkingSteps(setMessages);
     updateLastAssistant(setMessages, () => ({
-      execTime: elapsedSeconds(execStartTime, 2),
+      execTime: ((Date.now() - execStartTime) / 1000).toFixed(2),
       isExecuting: false,
       isProcessing: false,
       error: `Execution failed: ${executeError.message.slice(0, MAX_ERROR_MESSAGE_LENGTH)}`,
-      errorType:
-        execErrorType === LegendAIErrorType.GENERAL
-          ? LegendAIErrorType.EXECUTION
-          : execErrorType,
-      thinkingDuration: elapsedSeconds(startTime),
+      thinkingDuration: ((Date.now() - startTime) / 1000).toFixed(1),
     }));
     return { columns: [], rows: [] };
-  }
-}
-
-export async function analyzeOrchestratorResults(
-  question: string,
-  query: string,
-  execResult: LegendAISqlExecutionResultData,
-  metadata: LegendAIProductMetadata,
-  context: LegendAIOperationContext,
-  startTime: number,
-): Promise<void> {
-  const { config, plugin, setMessages } = context;
-  addThinkingStep(setMessages, 'Analyzing results...');
-  updateLastAssistant(setMessages, () => ({
-    isProcessing: true,
-  }));
-  const analysis = await withTimeout(
-    plugin.analyzeQueryResults(
-      question,
-      query,
-      execResult.columns,
-      execResult.rows,
-      metadata,
-      config,
-    ),
-    ANALYSIS_TIMEOUT_MS,
-  );
-  if (analysis) {
-    completeThinkingSteps(setMessages);
-    updateLastAssistant(setMessages, () => ({
-      textAnswer: analysis.summary,
-      suggestedQueries: analysis.suggestedQueries,
-      isProcessing: false,
-      thinkingDuration: elapsedSeconds(startTime),
-    }));
-  }
-}
-
-async function handleEmptyOrchestratorResults(
-  question: string,
-  legendQuery: string,
-  orchestratorOptions: Required<LegendAIOrchestratorOptionsParam>,
-  metadata: LegendAIProductMetadata,
-  resolvedEntities: LegendAIResolvedEntities,
-  context: LegendAIOperationContext,
-  startTime: number,
-): Promise<void> {
-  const { dataProductCoordinates, pureExecutionContext } = orchestratorOptions;
-  const { config, plugin, setMessages } = context;
-
-  if (resolvedEntities.relatedEntities.length > 0) {
-    const alternateRoot = resolvedEntities.relatedEntities[0];
-    if (alternateRoot) {
-      addThinkingStep(
-        setMessages,
-        `No results with ${resolvedEntities.rootEntity.split('::').pop() ?? resolvedEntities.rootEntity}, retrying with ${alternateRoot.split('::').pop() ?? alternateRoot}...`,
-      );
-
-      try {
-        const retryResponse = await plugin.generateQueryViaOrchestrator(
-          {
-            user_question: question,
-            semantic_search_resolution_details: {
-              data_product_coordinates: dataProductCoordinates,
-              root_entity: alternateRoot,
-              related_entities: resolvedEntities.relatedEntities.slice(1),
-            },
-          },
-          config,
-        );
-
-        updateLastAssistant(setMessages, () => ({
-          sql: retryResponse.legend_query,
-          sqlGenTime: elapsedSeconds(startTime, 2),
-          isExecuting: true,
-        }));
-
-        const retryResult = await executePureQueryAndReport(
-          retryResponse.legend_query,
-          pureExecutionContext,
-          dataProductCoordinates,
-          config,
-          plugin,
-          setMessages,
-          startTime,
-        );
-
-        if (retryResult.rows.length > 0) {
-          await analyzeOrchestratorResults(
-            question,
-            retryResponse.legend_query,
-            retryResult,
-            metadata,
-            context,
-            startTime,
-          );
-          return;
-        }
-      } catch {
-        /* empty */
-      }
-    }
-  }
-
-  addThinkingStep(
-    setMessages,
-    'No results returned \u2014 building contextual guidance...',
-  );
-  updateLastAssistant(setMessages, () => ({
-    isProcessing: true,
-  }));
-  const fallback = await withTimeout(
-    plugin.buildNoResultsFallback(question, legendQuery, metadata, config),
-    ANALYSIS_TIMEOUT_MS,
-  );
-  if (fallback) {
-    completeThinkingSteps(setMessages);
-    updateLastAssistant(setMessages, () => ({
-      textAnswer: fallback.summary,
-      suggestedQueries: fallback.suggestedQueries,
-      isProcessing: false,
-      thinkingDuration: elapsedSeconds(startTime),
-    }));
   }
 }
 
 export async function processQuestionViaOrchestrator(
   question: string,
   dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
-  metadata: LegendAIProductMetadata,
+  _metadata: LegendAIProductMetadata,
   context: LegendAIOperationContext,
   pureExecutionContext?: QueryExplicitExecutionContextInfo,
-  preResolvedEntities?: LegendAIResolvedEntities,
 ): Promise<void> {
   const { config, plugin, setMessages } = context;
   const startTime = Date.now();
 
   try {
-    let resolvedEntities: LegendAIResolvedEntities;
-    if (preResolvedEntities) {
-      resolvedEntities = preResolvedEntities;
-      addThinkingStep(
-        setMessages,
-        `Using pre-resolved root entity: ${resolvedEntities.rootEntity.split('::').pop() ?? resolvedEntities.rootEntity}`,
-      );
-    } else {
-      addThinkingStep(setMessages, 'Resolving entities for your query...');
-      resolvedEntities = await plugin.resolveEntitiesForQuery(
-        question,
-        dataProductCoordinates,
-        config,
-        pureExecutionContext,
-      );
-      addThinkingStep(
-        setMessages,
-        `Found root entity: ${resolvedEntities.rootEntity.split('::').pop() ?? resolvedEntities.rootEntity}`,
-      );
-    }
+    addThinkingStep(setMessages, 'Resolving entities for your query...');
+    const resolvedEntities = await plugin.resolveEntitiesForQuery(
+      question,
+      dataProductCoordinates,
+      config,
+    );
 
+    addThinkingStep(
+      setMessages,
+      `Found root entity: ${resolvedEntities.rootEntity.split('::').pop() ?? resolvedEntities.rootEntity}`,
+    );
     if (resolvedEntities.relatedEntities.length > 0) {
       addThinkingStep(
         setMessages,
@@ -739,7 +554,7 @@ export async function processQuestionViaOrchestrator(
       config,
     );
 
-    const queryGenTime = elapsedSeconds(startTime, 2);
+    const queryGenTime = ((Date.now() - startTime) / 1000).toFixed(2);
     completeThinkingSteps(setMessages);
     updateLastAssistant(setMessages, () => ({
       sql: orchestratorResponse.legend_query,
@@ -754,13 +569,12 @@ export async function processQuestionViaOrchestrator(
         isExecuting: false,
         error:
           'No execution context available — cannot execute query via engine.',
-        errorType: LegendAIErrorType.EXECUTION,
-        thinkingDuration: elapsedSeconds(startTime),
+        thinkingDuration: ((Date.now() - startTime) / 1000).toFixed(1),
       }));
       return;
     }
 
-    const execResult = await executePureQueryAndReport(
+    await executePureQueryAndReport(
       orchestratorResponse.legend_query,
       pureExecutionContext,
       dataProductCoordinates,
@@ -769,571 +583,14 @@ export async function processQuestionViaOrchestrator(
       setMessages,
       startTime,
     );
-
-    try {
-      if (execResult.rows.length > 0) {
-        await analyzeOrchestratorResults(
-          question,
-          orchestratorResponse.legend_query,
-          execResult,
-          metadata,
-          context,
-          startTime,
-        );
-      } else {
-        await handleEmptyOrchestratorResults(
-          question,
-          orchestratorResponse.legend_query,
-          { dataProductCoordinates, pureExecutionContext },
-          metadata,
-          resolvedEntities,
-          context,
-          startTime,
-        );
-      }
-    } catch {
-      /* empty */
-    } finally {
-      completeThinkingSteps(setMessages);
-      updateLastAssistant(setMessages, () => ({
-        isProcessing: false,
-        thinkingDuration: elapsedSeconds(startTime),
-      }));
-    }
   } catch (error) {
     assertErrorThrown(error);
-    const orchErrorType = classifyError(error);
     addThinkingStep(
       setMessages,
       `Error: ${error.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
     );
-
-    try {
-      addThinkingStep(
-        setMessages,
-        'Building guidance from available metadata...',
-      );
-      const fallbackText = await withTimeout(
-        plugin.buildFailureFallback(question, error.message, metadata, config),
-        ANALYSIS_TIMEOUT_MS,
-      );
-      if (fallbackText) {
-        completeThinkingSteps(setMessages);
-        updateLastAssistant(setMessages, () => ({
-          dataContext: fallbackText,
-          isProcessing: false,
-          thinkingDuration: elapsedSeconds(startTime),
-        }));
-        return;
-      }
-    } catch {
-      /* empty */
-    }
-
-    finishWithThinkingError(
-      setMessages,
-      error.message,
-      startTime,
-      orchErrorType,
-    );
+    finishWithThinkingError(setMessages, error.message, startTime);
   }
-}
-
-function cleanLlmSqlResponse(raw: string): string {
-  return raw
-    .trim()
-    .replace(/^```\w*\n?/, '')
-    .replace(/\n?```$/, '')
-    .replace(/;\s*$/, '')
-    .trim();
-}
-
-function isValidSqlCorrection(trimmed: string, currentSql: string): boolean {
-  return (
-    trimmed.length > 0 &&
-    trimmed.toLowerCase().startsWith('select') &&
-    trimmed !== currentSql
-  );
-}
-
-const ALIAS_DOT_COL_PATTERN = /\b(?<tbl>[a-z]\w*)\s*\.\s*"(?<col>[^"]+)"/gi;
-
-const JOIN_PATTERN = /\bJOIN\b/i;
-
-const ORDER_BY_SPLIT = /\bORDER\s+BY\b/i;
-
-export function sanitizeJoinOrderBy(sql: string): string {
-  if (!JOIN_PATTERN.test(sql)) {
-    return sql;
-  }
-  const parts = sql.split(ORDER_BY_SPLIT);
-  if (parts.length < 2) {
-    return sql;
-  }
-
-  const beforeOrderBy = parts[0] ?? '';
-  const afterOrderBy = parts.slice(1).join('ORDER BY').replace(/^\s+/, '');
-
-  const selectAliases = new Map<string, string>();
-  const aliasRegex =
-    /\b(?<tbl>[a-z]\w*)\s*\.\s*"(?<col>[^"]+)"\s+AS\s+(?:"(?<qAlias>[^"]+)"|(?<uAlias>\w+))/gi;
-  let m: RegExpExecArray | null;
-  while ((m = aliasRegex.exec(beforeOrderBy)) !== null) {
-    const tableAlias = (m.groups?.tbl ?? '').toLowerCase();
-    const colName = (m.groups?.col ?? '').toLowerCase();
-    const asAlias = m.groups?.qAlias ?? m.groups?.uAlias ?? '';
-    selectAliases.set(`${tableAlias}.${colName}`, asAlias);
-  }
-
-  if (selectAliases.size === 0) {
-    return sql;
-  }
-
-  const rewritten = afterOrderBy.replaceAll(
-    ALIAS_DOT_COL_PATTERN,
-    (...args) => {
-      const groups = args[args.length - 1] as {
-        tbl: string;
-        col: string;
-      };
-      const key = `${groups.tbl.toLowerCase()}.${groups.col.toLowerCase()}`;
-      const alias = selectAliases.get(key);
-      return alias ? `"${alias}"` : String(args[0]);
-    },
-  );
-
-  if (rewritten === afterOrderBy) {
-    return sql;
-  }
-  return `${beforeOrderBy}ORDER BY ${rewritten}`;
-}
-
-const UNION_ALL_PATTERN = /\bUNION\s+ALL\b/i;
-
-const LITERAL_COL_PATTERN = /,\s*'[^']*'\s+AS\s+(?:"[^"]+"|[a-z]\w*)/gi;
-
-export function sanitizeLiteralColumns(sql: string): string {
-  if (!UNION_ALL_PATTERN.test(sql)) {
-    return sql;
-  }
-  LITERAL_COL_PATTERN.lastIndex = 0;
-  if (!LITERAL_COL_PATTERN.test(sql)) {
-    return sql;
-  }
-  LITERAL_COL_PATTERN.lastIndex = 0;
-  return sql.replace(LITERAL_COL_PATTERN, '');
-}
-
-const SERVICE_PARAM_DATE_LIKE =
-  /date|time|day|month|year|period|asOf|businessDate|processingDate|snapshot/i;
-
-function hasUnresolvableParams(service: TDSServiceSchema): boolean {
-  return service.parameters.some((p) => !SERVICE_PARAM_DATE_LIKE.test(p));
-}
-
-function getNonDateParamNames(service: TDSServiceSchema): string[] {
-  return service.parameters.filter((p) => !SERVICE_PARAM_DATE_LIKE.test(p));
-}
-
-export function stripNonDateServiceParams(sql: string): string {
-  return sql.replaceAll(/,\s*\w+\s*=>\s*'[^']*'/g, (match) => {
-    const paramName = /,\s*(?<param>\w+)\s*=>/.exec(match)?.groups?.param;
-    if (!paramName) {
-      return match;
-    }
-    if (
-      paramName === 'coordinates' ||
-      SERVICE_PARAM_DATE_LIKE.test(paramName)
-    ) {
-      return match;
-    }
-    return '';
-  });
-}
-
-async function executeSqlForServices(
-  sql: string,
-  services: TDSServiceSchema[],
-  dataProductCoordinates:
-    | LegendAIOrchestratorDataProductCoordinates
-    | undefined,
-  plugin: LegendAI_LegendApplicationPlugin_Extension,
-  config: LegendAIConfig,
-): Promise<LegendAISqlExecutionResultData> {
-  const safeSql = sanitizeLiteralColumns(sanitizeJoinOrderBy(sql));
-  const isAccessPoint = services.some(
-    (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
-  );
-  if (isAccessPoint && dataProductCoordinates) {
-    return plugin.executeLakehouseSql(safeSql, dataProductCoordinates, config);
-  }
-  return plugin.executeSql(safeSql, config);
-}
-
-interface SqlExecutionOutcome {
-  sql: string;
-  result?: LegendAISqlExecutionResultData;
-  error?: string;
-}
-
-async function executeSqlWithRetries(
-  initialSql: string,
-  question: string,
-  services: TDSServiceSchema[],
-  coordinates: string,
-  dataProductCoordinates:
-    | LegendAIOrchestratorDataProductCoordinates
-    | undefined,
-  context: LegendAIOperationContext,
-): Promise<SqlExecutionOutcome> {
-  const { plugin, config, setMessages } = context;
-  let currentSql = initialSql;
-
-  for (let attempt = 0; attempt <= DEFAULT_MAX_EXECUTION_RETRIES; attempt++) {
-    try {
-      const result = await executeSqlForServices(
-        currentSql,
-        services,
-        dataProductCoordinates,
-        plugin,
-        config,
-      );
-      return { sql: currentSql, result };
-    } catch (executeError) {
-      assertErrorThrown(executeError);
-      if (attempt >= DEFAULT_MAX_EXECUTION_RETRIES) {
-        return { sql: currentSql, error: executeError.message };
-      }
-      addThinkingStep(
-        setMessages,
-        `Execution failed (attempt ${attempt + 1}/${DEFAULT_MAX_EXECUTION_RETRIES + 1}), correcting query...`,
-      );
-      const corrected = await attemptErrorCorrection(
-        currentSql,
-        executeError.message,
-        question,
-        services,
-        coordinates,
-        plugin,
-        config,
-      );
-      if (corrected) {
-        currentSql = corrected;
-        updateLastAssistant(setMessages, () => ({ sql: currentSql }));
-        continue;
-      }
-      return { sql: currentSql, error: executeError.message };
-    }
-  }
-  return { sql: currentSql };
-}
-
-async function attemptErrorCorrection(
-  currentSql: string,
-  errorMessage: string,
-  question: string,
-  services: TDSServiceSchema[],
-  coordinates: string,
-  plugin: LegendAI_LegendApplicationPlugin_Extension,
-  config: LegendAIConfig,
-): Promise<string | undefined> {
-  const prompt = plugin.buildErrorCorrectionPrompt(
-    currentSql,
-    errorMessage,
-    question,
-    services,
-    coordinates,
-  );
-  if (!prompt) {
-    return undefined;
-  }
-  try {
-    const correctedSql = await plugin.callLLM(prompt, config);
-    const trimmed = cleanLlmSqlResponse(correctedSql);
-    if (isValidSqlCorrection(trimmed, currentSql)) {
-      return trimmed;
-    }
-  } catch {
-    /* empty */
-  }
-  return undefined;
-}
-
-async function attemptZeroRowCorrection(
-  currentSql: string,
-  question: string,
-  services: TDSServiceSchema[],
-  coordinates: string,
-  dataProductCoordinates:
-    | LegendAIOrchestratorDataProductCoordinates
-    | undefined,
-  context: LegendAIOperationContext,
-): Promise<
-  { sql: string; result: LegendAISqlExecutionResultData } | undefined
-> {
-  const { plugin, config, setMessages } = context;
-  addThinkingStep(
-    setMessages,
-    'Query returned 0 rows, attempting filter correction...',
-  );
-  const prompt = plugin.buildZeroRowCorrectionPrompt(
-    currentSql,
-    question,
-    services,
-    coordinates,
-  );
-  if (!prompt) {
-    return undefined;
-  }
-  try {
-    const correctedSql = await plugin.callLLM(prompt, config);
-    const trimmed = cleanLlmSqlResponse(correctedSql);
-    if (!isValidSqlCorrection(trimmed, currentSql)) {
-      return undefined;
-    }
-    addThinkingStep(setMessages, 'Retrying with corrected filters...');
-    updateLastAssistant(setMessages, () => ({ sql: trimmed }));
-    try {
-      const retryResult = await executeSqlForServices(
-        trimmed,
-        services,
-        dataProductCoordinates,
-        plugin,
-        config,
-      );
-      if (retryResult.rows.length > 0) {
-        return { sql: trimmed, result: retryResult };
-      }
-    } catch {
-      /* empty */
-    }
-  } catch {
-    /* empty */
-  }
-  return undefined;
-}
-
-function buildZeroRowMessage(services: TDSServiceSchema[]): string {
-  const withUnresolvable = services.filter((s) => hasUnresolvableParams(s));
-  if (withUnresolvable.length > 0) {
-    const parts: string[] = [];
-    for (const svc of withUnresolvable) {
-      for (const paramName of getNonDateParamNames(svc)) {
-        const matchingCol = svc.columns.find((c) => c.name === paramName);
-        const docHint = matchingCol?.documentation ?? matchingCol?.sampleValues;
-        if (docHint) {
-          parts.push(`**${paramName}** (${docHint})`);
-        } else {
-          parts.push(`**${paramName}**`);
-        }
-      }
-    }
-    const uniqueParts = [...new Set(parts)];
-    const firstSvc = withUnresolvable[0];
-    const firstParam = firstSvc
-      ? (getNonDateParamNames(firstSvc)[0] ?? 'parameter')
-      : 'parameter';
-    return `The SQL query executed successfully but returned **0 rows**. This service requires specific values for ${uniqueParts.join(', ')} to return data. Please include ${uniqueParts.length === 1 ? 'a value' : 'values'} in your question, e.g., "show data where ${firstParam} is [your value]".`;
-  }
-  return 'The SQL query executed successfully but returned **0 rows**. The applied filters may not match any records, or the specific values may not exist in the queried datasets.';
-}
-
-function offerOrchestratorFallbackMessage(
-  setMessages: MessageSetter,
-  startTime: number,
-  fallbackMessage: string,
-): void {
-  updateLastAssistant(setMessages, () => ({
-    textAnswer: fallbackMessage,
-    fallbackAction: {
-      label: 'Try Legend AI Orchestrator',
-      actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
-    },
-    isProcessing: false,
-    thinkingDuration: elapsedSeconds(startTime),
-  }));
-}
-
-function reportFatalQueryError(
-  setMessages: MessageSetter,
-  startTime: number,
-  errorMessage: string,
-  errorType: LegendAIErrorType,
-): void {
-  finishWithThinkingError(setMessages, errorMessage, startTime, errorType);
-}
-
-function handleSqlGenerationFailure(
-  setMessages: MessageSetter,
-  startTime: number,
-  hasOrchestratorFallback: boolean,
-  orchestratorMessage: string,
-  errorMessage: string,
-  errorType: LegendAIErrorType,
-): void {
-  completeThinkingSteps(setMessages);
-  if (hasOrchestratorFallback) {
-    offerOrchestratorFallbackMessage(
-      setMessages,
-      startTime,
-      orchestratorMessage,
-    );
-  } else {
-    reportFatalQueryError(setMessages, startTime, errorMessage, errorType);
-  }
-}
-
-interface QueryResultReport {
-  currentSql: string;
-  sqlResult: LegendAISqlExecutionResultData;
-  question: string;
-  services: TDSServiceSchema[];
-}
-
-async function reportQueryResults(
-  report: QueryResultReport,
-  metadata: LegendAIProductMetadata,
-  context: LegendAIOperationContext,
-  startTime: number,
-  hasOrchestratorFallback: boolean,
-): Promise<void> {
-  const { currentSql, sqlResult, question, services } = report;
-  const { setMessages } = context;
-  if (sqlResult.rows.length > 0) {
-    const columns = deduplicateColumns(sqlResult.columns);
-    const rows = sqlResult.rows;
-    completeThinkingSteps(setMessages);
-    addThinkingStep(
-      setMessages,
-      `Retrieved ${rows.length} row${rows.length === 1 ? '' : 's'}`,
-    );
-    completeThinkingSteps(setMessages);
-    updateLastAssistant(setMessages, () => ({
-      sql: currentSql,
-      gridData: {
-        columnDefs: buildColumnDefsFromNames(columns),
-        rowData: rows,
-      },
-      execTime: elapsedSeconds(startTime, 2),
-      isProcessing: true,
-      isExecuting: false,
-      thinkingDuration: elapsedSeconds(startTime),
-    }));
-
-    try {
-      await analyzeOrchestratorResults(
-        question,
-        currentSql,
-        sqlResult,
-        metadata,
-        context,
-        startTime,
-      );
-    } catch {
-      /* empty */
-    } finally {
-      completeThinkingSteps(setMessages);
-      updateLastAssistant(setMessages, () => ({
-        isProcessing: false,
-        thinkingDuration: elapsedSeconds(startTime),
-      }));
-    }
-  } else {
-    addThinkingStep(
-      setMessages,
-      'Query returned 0 rows after correction attempts.',
-    );
-    completeThinkingSteps(setMessages);
-    const fallback = hasOrchestratorFallback
-      ? {
-          fallbackAction: {
-            label: 'Try Legend AI Orchestrator',
-            actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
-          } as LegendAIFallbackAction,
-        }
-      : {};
-    updateLastAssistant(setMessages, () => ({
-      textAnswer: buildZeroRowMessage(services),
-      ...fallback,
-      isProcessing: false,
-      isExecuting: false,
-      thinkingDuration: elapsedSeconds(startTime),
-    }));
-  }
-}
-
-async function selectBestServices(
-  question: string,
-  services: TDSServiceSchema[],
-  context: LegendAIOperationContext,
-): Promise<TDSServiceSchema[]> {
-  const { plugin, config, setMessages } = context;
-  if (services.length <= 1) {
-    return services;
-  }
-  try {
-    addThinkingStep(setMessages, 'Selecting best service for your query...');
-    return await plugin.selectRelevantServices(question, services, config);
-  } catch {
-    return services;
-  }
-}
-
-async function tryRecoverZeroRows(
-  currentSql: string,
-  sqlResult: LegendAISqlExecutionResultData,
-  question: string,
-  selectedServices: TDSServiceSchema[],
-  coordinates: string,
-  dataProductCoordinates:
-    | LegendAIOrchestratorDataProductCoordinates
-    | undefined,
-  context: LegendAIOperationContext,
-): Promise<{ sql: string; result: LegendAISqlExecutionResultData }> {
-  const { plugin, config, setMessages } = context;
-  let recoveredSql = currentSql;
-  let recoveredResult = sqlResult;
-
-  const strippedSql = stripNonDateServiceParams(recoveredSql);
-  if (strippedSql !== recoveredSql) {
-    addThinkingStep(
-      setMessages,
-      'Trying query without guessed parameter values...',
-    );
-    try {
-      const strippedResult = await executeSqlForServices(
-        strippedSql,
-        selectedServices,
-        dataProductCoordinates,
-        plugin,
-        config,
-      );
-      if (strippedResult.rows.length > 0) {
-        recoveredSql = strippedSql;
-        recoveredResult = strippedResult;
-        updateLastAssistant(setMessages, () => ({ sql: strippedSql }));
-      }
-    } catch {
-      /* empty */
-    }
-  }
-
-  if (recoveredResult.rows.length === 0) {
-    const correction = await attemptZeroRowCorrection(
-      recoveredSql,
-      question,
-      selectedServices,
-      coordinates,
-      dataProductCoordinates,
-      context,
-    );
-    if (correction) {
-      recoveredSql = correction.sql;
-      recoveredResult = correction.result;
-    }
-  }
-
-  return { sql: recoveredSql, result: recoveredResult };
 }
 
 async function processDataQuery(
@@ -1345,57 +602,63 @@ async function processDataQuery(
   startTime: number,
   orchestratorOptions?: LegendAIOrchestratorOptionsParam,
 ): Promise<void> {
-  const { config, setMessages } = context;
+  const { config, plugin, setMessages } = context;
   const dataProductCoordinates = orchestratorOptions?.dataProductCoordinates;
-  const hasOrchestratorFallback = Boolean(
-    config.orchestratorUrl && dataProductCoordinates,
-  );
+  const pureExecutionContext = orchestratorOptions?.pureExecutionContext;
 
   if (services.length === 0) {
-    handleSqlGenerationFailure(
+    if (config.orchestratorUrl && dataProductCoordinates) {
+      completeThinkingSteps(setMessages);
+      await processQuestionViaOrchestrator(
+        question,
+        dataProductCoordinates,
+        metadata,
+        context,
+        pureExecutionContext,
+      );
+      return;
+    }
+    finishWithThinkingError(
       setMessages,
-      startTime,
-      hasOrchestratorFallback,
-      'No TDS services available for SQL querying. You can try the Legend AI Orchestrator to generate a Pure query instead.',
       'No TDS services available for querying',
-      LegendAIErrorType.GENERAL,
+      startTime,
     );
     return;
   }
 
   addThinkingStep(setMessages, 'Found relevant services to query');
 
-  const selectedServices = await selectBestServices(
-    question,
-    services,
-    context,
-  );
-
   const judgedSql = await generateAndJudgeSql(
     question,
-    selectedServices,
+    services,
     coordinates,
     context,
     startTime,
   );
 
   if (!judgedSql) {
-    addThinkingStep(
-      setMessages,
-      'SQL generation could not produce a valid query.',
-    );
-    handleSqlGenerationFailure(
-      setMessages,
-      startTime,
-      hasOrchestratorFallback,
-      'SQL generation could not handle this query. You can try the Legend AI Orchestrator to generate a Pure query instead.',
-      'SQL generation could not handle this query. Try rephrasing your question.',
-      LegendAIErrorType.GENERATION,
-    );
+    if (config.orchestratorUrl && dataProductCoordinates) {
+      addThinkingStep(
+        setMessages,
+        'SQL generation could not handle this query, trying Legend AI orchestrator...',
+      );
+      updateLastAssistant(setMessages, () => ({
+        error: null,
+        isProcessing: true,
+      }));
+      await processQuestionViaOrchestrator(
+        question,
+        dataProductCoordinates,
+        metadata,
+        context,
+        pureExecutionContext,
+      );
+      return;
+    }
     return;
   }
 
-  const sqlGenTimeValue = elapsedSeconds(startTime, 2);
+  const sqlGenTimeValue = ((Date.now() - startTime) / 1000).toFixed(2);
   completeThinkingSteps(setMessages);
   updateLastAssistant(setMessages, () => ({
     sql: judgedSql,
@@ -1403,76 +666,39 @@ async function processDataQuery(
     isExecuting: true,
   }));
 
-  const execOutcome = await executeSqlWithRetries(
+  const sqlResult = await executeSqlAndReport(
     judgedSql,
-    question,
-    selectedServices,
-    coordinates,
+    services,
+    config,
+    plugin,
+    setMessages,
+    startTime,
     dataProductCoordinates,
-    context,
   );
 
-  if (execOutcome.error) {
-    const execErrorType = classifyError(new Error(execOutcome.error));
+  if (
+    sqlResult?.rows.length === 0 &&
+    config.orchestratorUrl &&
+    dataProductCoordinates
+  ) {
     addThinkingStep(
       setMessages,
-      `Execution failed: ${execOutcome.error.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
-    );
-    finishWithThinkingError(
-      setMessages,
-      buildExecutionErrorMessage(execOutcome.error, selectedServices),
-      startTime,
-      execErrorType === LegendAIErrorType.GENERAL
-        ? LegendAIErrorType.EXECUTION
-        : execErrorType,
+      'SQL query returned no results, trying Legend AI orchestrator...',
     );
     updateLastAssistant(setMessages, () => ({
+      gridData: null,
+      error: null,
+      isProcessing: true,
       isExecuting: false,
-      ...(hasOrchestratorFallback
-        ? {
-            fallbackAction: {
-              label: 'Try Legend AI Orchestrator',
-              actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
-            } as LegendAIFallbackAction,
-          }
-        : {}),
     }));
-    return;
-  }
-
-  if (!execOutcome.result) {
-    return;
-  }
-
-  let currentSql = execOutcome.sql;
-  let sqlResult = execOutcome.result;
-
-  if (sqlResult.rows.length === 0) {
-    const recovered = await tryRecoverZeroRows(
-      currentSql,
-      sqlResult,
+    await processQuestionViaOrchestrator(
       question,
-      selectedServices,
-      coordinates,
       dataProductCoordinates,
+      metadata,
       context,
+      pureExecutionContext,
     );
-    currentSql = recovered.sql;
-    sqlResult = recovered.result;
   }
-
-  await reportQueryResults(
-    {
-      currentSql,
-      sqlResult,
-      question,
-      services: selectedServices,
-    },
-    metadata,
-    context,
-    startTime,
-    hasOrchestratorFallback,
-  );
 }
 
 export async function processQuestion(
@@ -1490,96 +716,66 @@ export async function processQuestion(
   try {
     addThinkingStep(setMessages, 'Analyzing your question...');
 
-    const orchestratorOpts = dataProductCoordinates
-      ? {
-          dataProductCoordinates,
-          ...(pureExecutionContext === undefined
-            ? {}
-            : { pureExecutionContext }),
-        }
-      : undefined;
+    const serviceNames = services.map((s) => s.title);
+    const intent = await plugin.classifyQuestionIntent(
+      question,
+      services.length > 0,
+      config,
+      serviceNames,
+    );
 
-    if (services.length > 0) {
-      const serviceNames = services.map((s) => s.title);
-      const intent = await plugin.classifyQuestionIntent(
-        question,
-        true,
-        config,
-        serviceNames,
-      );
-
-      if (intent === LegendAIQuestionIntent.METADATA) {
-        await handleMetadataQuestion(
-          question,
-          metadata,
-          context,
-          startTime,
-          true,
-        );
-        return;
-      }
-
-      // DATA_QUERY or ORCHESTRATOR — try SQL generation.
-      // If SQL throws, fall back to metadata as a safety net
-      // (e.g. misclassified metadata question).
-      try {
-        await processDataQuery(
-          question,
-          services,
-          coordinates,
-          metadata,
-          context,
-          startTime,
-          orchestratorOpts,
-        );
-      } catch (sqlError) {
-        assertErrorThrown(sqlError);
-        addThinkingStep(
-          setMessages,
-          'SQL generation failed, answering from product metadata...',
-        );
-        await handleMetadataQuestion(
-          question,
-          metadata,
-          context,
-          startTime,
-          true,
-        );
-      }
-      return;
-    }
-
-    // No services available — use orchestrator if configured, else metadata only.
-    if (config.orchestratorUrl && dataProductCoordinates) {
-      completeThinkingSteps(setMessages);
-      await processQuestionViaOrchestrator(
-        question,
-        dataProductCoordinates,
-        metadata,
-        context,
-        pureExecutionContext,
-      );
-    } else {
+    if (intent === LegendAIQuestionIntent.METADATA) {
       await handleMetadataQuestion(
         question,
         metadata,
         context,
         startTime,
-        false,
+        services.length > 0,
+      );
+      return;
+    }
+
+    if (intent === LegendAIQuestionIntent.ORCHESTRATOR) {
+      if (config.orchestratorUrl && dataProductCoordinates) {
+        completeThinkingSteps(setMessages);
+        await processQuestionViaOrchestrator(
+          question,
+          dataProductCoordinates,
+          metadata,
+          context,
+          pureExecutionContext,
+        );
+        return;
+      }
+      addThinkingStep(
+        setMessages,
+        'Orchestrator not available, trying SQL generation...',
       );
     }
+
+    await processDataQuery(
+      question,
+      services,
+      coordinates,
+      metadata,
+      context,
+      startTime,
+      dataProductCoordinates
+        ? {
+            dataProductCoordinates,
+            ...(pureExecutionContext === undefined
+              ? {}
+              : { pureExecutionContext }),
+          }
+        : undefined,
+    );
   } catch (error) {
     assertErrorThrown(error);
     addThinkingStep(
       setMessages,
       `Error: ${error.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
     );
-    finishWithThinkingError(
-      setMessages,
-      error.message,
-      startTime,
-      classifyError(error),
-    );
+    finishWithThinkingError(setMessages, error.message, startTime);
   }
 }
 
@@ -1598,61 +794,18 @@ export async function processQuestionWithIntent(
 
   if (intent === LegendAIQuestionIntent.METADATA) {
     const startTime = Date.now();
-    try {
-      await handleMetadataQuestion(
-        question,
-        metadata,
-        context,
-        startTime,
-        services.length > 0,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      addThinkingStep(
-        setMessages,
-        `Error: ${error.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
-      );
-      finishWithThinkingError(
-        setMessages,
-        error.message,
-        startTime,
-        classifyError(error),
-      );
-    }
+    await handleMetadataQuestion(
+      question,
+      metadata,
+      context,
+      startTime,
+      services.length > 0,
+    );
     return;
   }
 
   if (intent === LegendAIQuestionIntent.ORCHESTRATOR) {
     if (config.orchestratorUrl && dataProductCoordinates) {
-      // When services are available, try SQL first even for ORCHESTRATOR intent
-      if (services.length > 0) {
-        const startTime = Date.now();
-        try {
-          addThinkingStep(setMessages, 'Preparing data query...');
-          await processDataQuery(
-            question,
-            services,
-            coordinates,
-            metadata,
-            context,
-            startTime,
-            orchestratorOptions,
-          );
-        } catch (error) {
-          assertErrorThrown(error);
-          addThinkingStep(
-            setMessages,
-            `Error: ${error.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
-          );
-          finishWithThinkingError(
-            setMessages,
-            error.message,
-            startTime,
-            classifyError(error),
-          );
-        }
-        return;
-      }
       await processQuestionViaOrchestrator(
         question,
         dataProductCoordinates,
@@ -1683,12 +836,7 @@ export async function processQuestionWithIntent(
       setMessages,
       `Error: ${error.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
     );
-    finishWithThinkingError(
-      setMessages,
-      error.message,
-      startTime,
-      classifyError(error),
-    );
+    finishWithThinkingError(setMessages, error.message, startTime);
   }
 }
 
@@ -1841,64 +989,6 @@ export const useLegendAIChatState = (
     ],
   );
 
-  const runFallbackAction = useCallback(
-    (messageId: string): void => {
-      if (isSending || !config.orchestratorUrl || !dataProductCoordinates) {
-        return;
-      }
-      // Find the user question associated with this assistant message
-      let question: string | undefined;
-      for (let i = 0; i < messages.length; i++) {
-        const msg = messages[i];
-        if (
-          msg?.role === LegendAIMessageRole.ASSISTANT &&
-          msg.id === messageId &&
-          i > 0
-        ) {
-          const userMsg = messages[i - 1];
-          if (userMsg?.role === LegendAIMessageRole.USER) {
-            question = userMsg.text;
-          }
-        }
-      }
-      if (!question) {
-        return;
-      }
-
-      setIsSending(true);
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === messageId && m.role === LegendAIMessageRole.ASSISTANT
-            ? { ...m, fallbackAction: null, error: null, isProcessing: true }
-            : m,
-        ),
-      );
-
-      const history = buildConversationHistory(messages);
-      const q = question;
-      processQuestionViaOrchestrator(
-        q,
-        dataProductCoordinates,
-        metadata,
-        { config, plugin, history, setMessages },
-        pureExecutionContext,
-      )
-        .catch(noop())
-        .finally(() => {
-          setIsSending(false);
-        });
-    },
-    [
-      isSending,
-      messages,
-      config,
-      metadata,
-      plugin,
-      dataProductCoordinates,
-      pureExecutionContext,
-    ],
-  );
-
   return {
     questionText,
     setQuestionText,
@@ -1906,7 +996,6 @@ export const useLegendAIChatState = (
     messages,
     askQuestion,
     askQuestionWithIntent,
-    runFallbackAction,
     clearChat,
     expandedThinking,
     toggleThinking,

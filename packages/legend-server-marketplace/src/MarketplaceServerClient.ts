@@ -56,7 +56,6 @@ import type {
   DatasetSearchResponse,
   FieldSearchResponse,
 } from './models/DatasetSearchResult.js';
-import type { EntitySearchResponse } from './models/EntitySearchResult.js';
 
 export interface TrendingDataProductEntry {
   dataProductId?: string;
@@ -233,41 +232,6 @@ export class MarketplaceServerClient extends AbstractServerClient {
         search_type: options?.searchType ?? 'hybrid',
         page_size: options?.pageSize ?? 20,
         page_number: options?.pageNumber ?? 1,
-      },
-    );
-
-  entitySearch = async (
-    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
-    query: string,
-    options?: {
-      groupId?: string;
-      artifactId?: string;
-      versionId?: string;
-      path?: string;
-      dataProductId?: string;
-      deploymentId?: string;
-      searchType?: string;
-      pageSize?: number;
-      pageNumber?: number;
-      includePrimitiveFields?: boolean;
-    },
-  ): Promise<PlainObject<EntitySearchResponse>> =>
-    this.get<PlainObject<EntitySearchResponse>>(
-      `${this._search()}/entities/${lakehouseEnv}`,
-      undefined,
-      undefined,
-      {
-        query,
-        group_id: options?.groupId,
-        artifact_id: options?.artifactId,
-        version_id: options?.versionId,
-        path: options?.path,
-        data_product_id: options?.dataProductId,
-        deployment_id: options?.deploymentId,
-        search_type: options?.searchType ?? 'hybrid',
-        page_size: options?.pageSize ?? 10,
-        page_number: options?.pageNumber ?? 1,
-        include_primitive_fields: options?.includePrimitiveFields ?? true,
       },
     );
 

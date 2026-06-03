@@ -255,11 +255,7 @@ describe(unitTest('processQuestion'), () => {
   test('handles no services available', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
-    const plugin = TEST__createMockLegendAIPlugin({
-      callLLM: createMock().mockResolvedValue(
-        'This product provides data services.',
-      ),
-    });
+    const plugin = TEST__createMockLegendAIPlugin();
 
     await processQuestion(
       'show data',
@@ -275,8 +271,7 @@ describe(unitTest('processQuestion'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.textAnswer).toBeDefined();
-    expect(msg.isProcessing).toBe(false);
+    expect(msg.error).toContain('No TDS services available');
   });
 
   test('handles full data_query flow', async () => {

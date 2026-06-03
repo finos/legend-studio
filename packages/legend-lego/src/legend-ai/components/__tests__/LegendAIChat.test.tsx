@@ -31,6 +31,10 @@ import {
   TEST_DATA__legendAIServices,
 } from '../../__test-utils__/LegendAITestUtils.js';
 
+// ---------------------------------------------------------------------------
+// Mock the hook to isolate component rendering logic
+// ---------------------------------------------------------------------------
+
 const mockState: LegendAIChatState = {
   questionText: '',
   setQuestionText: jest.fn(),
@@ -41,7 +45,6 @@ const mockState: LegendAIChatState = {
   clearChat: jest.fn(),
   expandedThinking: new Set<number>(),
   toggleThinking: jest.fn(),
-  runFallbackAction: jest.fn(),
   conversationRef: { current: null },
 };
 
@@ -65,11 +68,6 @@ jest.mock('@finos/legend-art', () => ({
   TableIcon: () => <span data-testid="table-icon" />,
   CopyIcon: () => <span data-testid="copy-icon" />,
   RefreshIcon: () => <span data-testid="refresh-icon" />,
-  CheckIcon: () => <span data-testid="check-icon" />,
-  TimesIcon: () => <span data-testid="times-icon" />,
-  CaretDownIcon: () => <span data-testid="caret-down-icon" />,
-  CaretRightIcon: () => <span data-testid="caret-right-icon" />,
-  DotIcon: () => <span data-testid="dot-icon" />,
   MarkdownTextViewer: (props: { value: { value: string } }) => (
     <div data-testid="markdown-viewer">{props.value.value}</div>
   ),
@@ -182,7 +180,6 @@ describe(unitTest('LegendAIChat'), () => {
         thinkingSteps: [],
         sql: 'SELECT * FROM trades',
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: '1.50',
@@ -191,8 +188,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -210,7 +205,6 @@ describe(unitTest('LegendAIChat'), () => {
         thinkingSteps: [],
         sql: null,
         textAnswer: 'This provides trade data',
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -219,8 +213,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -236,7 +228,6 @@ describe(unitTest('LegendAIChat'), () => {
         thinkingSteps: [],
         sql: null,
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: 'Query timeout',
         sqlGenTime: null,
@@ -245,8 +236,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -262,7 +251,6 @@ describe(unitTest('LegendAIChat'), () => {
         thinkingSteps: [],
         sql: 'SELECT 1',
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: '0.50',
@@ -271,8 +259,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: true,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -288,7 +274,6 @@ describe(unitTest('LegendAIChat'), () => {
         thinkingSteps: [],
         sql: 'SELECT id FROM t',
         textAnswer: null,
-        dataContext: null,
         gridData: {
           columnDefs: [{ colId: 'id', headerName: 'id', field: 'id' }],
           rowData: [{ id: 1 }, { id: 2 }],
@@ -300,12 +285,11 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
     expect(screen.getByText('Results')).toBeDefined();
+    // Row count is split across text nodes; check the results-meta span
     const meta = document.querySelector('.legend-ai__results-meta');
     expect(meta?.textContent).toContain('2');
     expect(meta?.textContent).toContain('rows');
@@ -321,7 +305,6 @@ describe(unitTest('LegendAIChat'), () => {
         thinkingSteps: [],
         sql: 'SELECT id FROM t LIMIT 1',
         textAnswer: null,
-        dataContext: null,
         gridData: {
           columnDefs: [{ colId: 'id', headerName: 'id', field: 'id' }],
           rowData: [{ id: 1 }],
@@ -333,8 +316,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -351,14 +332,12 @@ describe(unitTest('LegendAIChat'), () => {
         role: LegendAIMessageRole.ASSISTANT,
         thinkingSteps: [
           {
-            id: 'step-1',
             label: 'Analyzing your question...',
             status: LegendAIThinkingStepStatus.ACTIVE,
           },
         ],
         sql: null,
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -367,8 +346,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: true,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -382,15 +359,10 @@ describe(unitTest('LegendAIChat'), () => {
         id: 'a',
         role: LegendAIMessageRole.ASSISTANT,
         thinkingSteps: [
-          {
-            id: 'step-1',
-            label: 'Done analyzing',
-            status: LegendAIThinkingStepStatus.DONE,
-          },
+          { label: 'Done analyzing', status: LegendAIThinkingStepStatus.DONE },
         ],
         sql: 'SELECT 1',
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -399,8 +371,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     mockState.expandedThinking = new Set([1]);
@@ -473,7 +443,6 @@ describe(unitTest('LegendAIChat'), () => {
         thinkingSteps: [],
         sql: 'SELECT 1',
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -482,8 +451,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -505,7 +472,6 @@ describe(unitTest('LegendAIChat'), () => {
         thinkingSteps: [],
         sql: 'SELECT * FROM trades',
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -514,8 +480,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -529,15 +493,10 @@ describe(unitTest('LegendAIChat'), () => {
         id: 'a',
         role: LegendAIMessageRole.ASSISTANT,
         thinkingSteps: [
-          {
-            id: 'step-1',
-            label: 'Analyzing...',
-            status: LegendAIThinkingStepStatus.DONE,
-          },
+          { label: 'Analyzing...', status: LegendAIThinkingStepStatus.DONE },
         ],
         sql: 'SELECT 1',
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -546,8 +505,6 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -562,15 +519,10 @@ describe(unitTest('LegendAIChat'), () => {
         id: 'a',
         role: LegendAIMessageRole.ASSISTANT,
         thinkingSteps: [
-          {
-            id: 'step-1',
-            label: 'Error occurred',
-            status: LegendAIThinkingStepStatus.ERROR,
-          },
+          { label: 'Error occurred', status: LegendAIThinkingStepStatus.ERROR },
         ],
         sql: null,
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: 'Something went wrong',
         sqlGenTime: null,
@@ -579,14 +531,12 @@ describe(unitTest('LegendAIChat'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     mockState.expandedThinking = new Set([1]);
     render(<LegendAIChat {...defaultProps} />);
     expect(screen.getByText('Error occurred')).toBeDefined();
-    expect(screen.getByTestId('times-icon')).toBeDefined();
+    expect(screen.getByText('\u2717')).toBeDefined(); // ✗ error icon
   });
   test('typing in textarea calls setQuestionText', () => {
     render(<LegendAIChat {...defaultProps} />);

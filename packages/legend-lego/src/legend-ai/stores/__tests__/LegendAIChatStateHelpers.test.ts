@@ -24,10 +24,6 @@ import {
   addThinkingStep,
   completeThinkingSteps,
   finishWithThinkingError,
-  classifyError,
-  sanitizeJoinOrderBy,
-  sanitizeLiteralColumns,
-  stripNonDateServiceParams,
 } from '../LegendAIChatState.js';
 import {
   type LegendAIMessage,
@@ -36,8 +32,6 @@ import {
   LegendAIMessageRole,
   LegendAIQuestionIntent,
   LegendAIThinkingStepStatus,
-  LegendAIErrorType,
-  LegendAIServiceError,
 } from '../../LegendAITypes.js';
 import {
   TEST__createMockSetter,
@@ -65,7 +59,6 @@ describe(unitTest('buildConversationHistory'), () => {
         thinkingSteps: [],
         sql: 'SELECT * FROM t LIMIT 10',
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -74,8 +67,6 @@ describe(unitTest('buildConversationHistory'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -96,7 +87,6 @@ describe(unitTest('buildConversationHistory'), () => {
         thinkingSteps: [],
         sql: null,
         textAnswer: 'This is a data product about trades.',
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -105,8 +95,6 @@ describe(unitTest('buildConversationHistory'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -127,7 +115,6 @@ describe(unitTest('buildConversationHistory'), () => {
         thinkingSteps: [],
         sql: null,
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: 'Something failed',
         sqlGenTime: null,
@@ -136,8 +123,6 @@ describe(unitTest('buildConversationHistory'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([]);
@@ -152,7 +137,6 @@ describe(unitTest('buildConversationHistory'), () => {
         thinkingSteps: [],
         sql: 'SELECT 1',
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -161,8 +145,6 @@ describe(unitTest('buildConversationHistory'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
       { id: 'u2', role: LegendAIMessageRole.USER, text: 'q2' },
       {
@@ -171,7 +153,6 @@ describe(unitTest('buildConversationHistory'), () => {
         thinkingSteps: [],
         sql: null,
         textAnswer: 'answer2',
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -180,8 +161,6 @@ describe(unitTest('buildConversationHistory'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -207,7 +186,6 @@ describe(unitTest('buildConversationHistory'), () => {
         thinkingSteps: [],
         sql: 'SELECT col',
         textAnswer: 'some text',
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -216,8 +194,6 @@ describe(unitTest('buildConversationHistory'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -237,7 +213,6 @@ describe(unitTest('buildConversationHistory'), () => {
         thinkingSteps: [],
         sql: 'SELECT 1',
         textAnswer: null,
-        dataContext: null,
         gridData: null,
         error: null,
         sqlGenTime: null,
@@ -246,11 +221,11 @@ describe(unitTest('buildConversationHistory'), () => {
         isProcessing: false,
         isExecuting: false,
         suggestedQueries: [],
-        fallbackAction: null,
-        errorType: null,
       },
       { id: 'u1', role: LegendAIMessageRole.USER, text: 'q' },
     ];
+    // First msg is assistant (not user), so it skips i=0, then user at i=1
+    // has no pair after it, so nothing extracted
     expect(buildConversationHistory(messages)).toEqual([]);
   });
 });
@@ -460,11 +435,10 @@ describe(unitTest('addThinkingStep'), () => {
     addThinkingStep(setter, 'Analyzing...');
     const msg = getMessages()[0] as LegendAIAssistantMessage;
     expect(msg.thinkingSteps).toHaveLength(1);
-    expect(msg.thinkingSteps[0]).toMatchObject({
+    expect(msg.thinkingSteps[0]).toEqual({
       label: 'Analyzing...',
       status: LegendAIThinkingStepStatus.ACTIVE,
     });
-    expect(msg.thinkingSteps[0]?.id).toBeDefined();
   });
 
   test('completes previous active step when adding new one', () => {
@@ -472,11 +446,7 @@ describe(unitTest('addThinkingStep'), () => {
     setter([
       TEST__makeAssistantMessage({
         thinkingSteps: [
-          {
-            id: 's1',
-            label: 'Step 1',
-            status: LegendAIThinkingStepStatus.ACTIVE,
-          },
+          { label: 'Step 1', status: LegendAIThinkingStepStatus.ACTIVE },
         ],
       }),
     ]);
@@ -494,16 +464,8 @@ describe(unitTest('addThinkingStep'), () => {
     setter([
       TEST__makeAssistantMessage({
         thinkingSteps: [
-          {
-            id: 's1',
-            label: 'Done step',
-            status: LegendAIThinkingStepStatus.DONE,
-          },
-          {
-            id: 's2',
-            label: 'Active step',
-            status: LegendAIThinkingStepStatus.ACTIVE,
-          },
+          { label: 'Done step', status: LegendAIThinkingStepStatus.DONE },
+          { label: 'Active step', status: LegendAIThinkingStepStatus.ACTIVE },
         ],
       }),
     ]);
@@ -524,11 +486,7 @@ describe(unitTest('completeThinkingSteps'), () => {
     setter([
       TEST__makeAssistantMessage({
         thinkingSteps: [
-          {
-            id: 's1',
-            label: 'Active',
-            status: LegendAIThinkingStepStatus.ACTIVE,
-          },
+          { label: 'Active', status: LegendAIThinkingStepStatus.ACTIVE },
         ],
       }),
     ]);
@@ -542,17 +500,9 @@ describe(unitTest('completeThinkingSteps'), () => {
     setter([
       TEST__makeAssistantMessage({
         thinkingSteps: [
-          { id: 's1', label: 'Done', status: LegendAIThinkingStepStatus.DONE },
-          {
-            id: 's2',
-            label: 'Error',
-            status: LegendAIThinkingStepStatus.ERROR,
-          },
-          {
-            id: 's3',
-            label: 'Active',
-            status: LegendAIThinkingStepStatus.ACTIVE,
-          },
+          { label: 'Done', status: LegendAIThinkingStepStatus.DONE },
+          { label: 'Error', status: LegendAIThinkingStepStatus.ERROR },
+          { label: 'Active', status: LegendAIThinkingStepStatus.ACTIVE },
         ],
       }),
     ]);
@@ -570,11 +520,7 @@ describe(unitTest('finishWithThinkingError'), () => {
     setter([
       TEST__makeAssistantMessage({
         thinkingSteps: [
-          {
-            id: 's1',
-            label: 'Working',
-            status: LegendAIThinkingStepStatus.ACTIVE,
-          },
+          { label: 'Working', status: LegendAIThinkingStepStatus.ACTIVE },
         ],
       }),
     ]);
@@ -583,7 +529,6 @@ describe(unitTest('finishWithThinkingError'), () => {
     const msg = getMessages()[0] as LegendAIAssistantMessage;
     expect(msg.thinkingSteps[0]?.status).toBe(LegendAIThinkingStepStatus.ERROR);
     expect(msg.error).toBe('Something failed');
-    expect(msg.errorType).toBeNull();
     expect(msg.isProcessing).toBe(false);
     expect(msg.thinkingDuration).toBeDefined();
   });
@@ -605,236 +550,5 @@ describe(unitTest('finishWithThinkingError'), () => {
     const duration = parseFloat(msg.thinkingDuration ?? '0');
     expect(duration).toBeGreaterThanOrEqual(4);
     expect(duration).toBeLessThan(10);
-  });
-
-  test('propagates errorType when provided', () => {
-    const { setter, getMessages } = TEST__createMockSetter();
-    setter([TEST__makeAssistantMessage()]);
-    finishWithThinkingError(
-      setter,
-      'Permission denied',
-      Date.now(),
-      LegendAIErrorType.PERMISSION,
-    );
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
-    expect(msg.errorType).toBe(LegendAIErrorType.PERMISSION);
-  });
-
-  test('sets errorType to null when not provided', () => {
-    const { setter, getMessages } = TEST__createMockSetter();
-    setter([TEST__makeAssistantMessage()]);
-    finishWithThinkingError(setter, 'generic error', Date.now());
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
-    expect(msg.errorType).toBeNull();
-  });
-});
-
-// ─── classifyError ───────────────────────────────────────────────────────────
-
-describe(unitTest('classifyError'), () => {
-  test('returns errorType from LegendAIServiceError', () => {
-    const permErr = new LegendAIServiceError(
-      'forbidden',
-      LegendAIErrorType.PERMISSION,
-    );
-    expect(classifyError(permErr)).toBe(LegendAIErrorType.PERMISSION);
-
-    const netErr = new LegendAIServiceError(
-      'unreachable',
-      LegendAIErrorType.NETWORK,
-    );
-    expect(classifyError(netErr)).toBe(LegendAIErrorType.NETWORK);
-  });
-
-  test('returns GENERAL for plain Error', () => {
-    expect(classifyError(new Error('something'))).toBe(
-      LegendAIErrorType.GENERAL,
-    );
-  });
-
-  test('returns GENERAL for TypeError', () => {
-    expect(classifyError(new TypeError('type issue'))).toBe(
-      LegendAIErrorType.GENERAL,
-    );
-  });
-});
-
-describe(unitTest('sanitizeJoinOrderBy'), () => {
-  test('returns unchanged SQL when no JOIN present', () => {
-    const sql = `SELECT "date" FROM service('/svc') ORDER BY "date" DESC`;
-    expect(sanitizeJoinOrderBy(sql)).toBe(sql);
-  });
-
-  test('returns unchanged SQL when no ORDER BY present', () => {
-    const sql = [
-      'SELECT a."date" AS query_date, b."price" AS svc_price',
-      "FROM service('/a') AS a",
-      'JOIN service(\'/b\') AS b ON a."id" = b."id"',
-    ].join('\n');
-    expect(sanitizeJoinOrderBy(sql)).toBe(sql);
-  });
-
-  test('rewrites alias-prefixed ORDER BY in a JOIN query', () => {
-    const sql = [
-      'SELECT',
-      '  a."date" AS query_date,',
-      '  b."price" AS wdi_price',
-      "FROM service('/usecon') AS a",
-      'JOIN service(\'/wdi\') AS b ON a."date" = b."date"',
-      'ORDER BY a."date" DESC',
-      'LIMIT 10',
-    ].join('\n');
-    const result = sanitizeJoinOrderBy(sql);
-    expect(result).toContain('ORDER BY "query_date" DESC');
-    expect(result).not.toContain('a."date" DESC');
-  });
-
-  test('rewrites multiple alias-prefixed columns in ORDER BY', () => {
-    const sql = [
-      'SELECT',
-      '  a."date" AS query_date,',
-      '  a."name" AS usecon_name,',
-      '  b."price" AS wdi_price',
-      "FROM service('/a') AS a",
-      'JOIN service(\'/b\') AS b ON a."id" = b."id"',
-      'ORDER BY a."date" DESC, a."name" ASC',
-    ].join('\n');
-    const result = sanitizeJoinOrderBy(sql);
-    expect(result).toContain('"query_date" DESC');
-    expect(result).toContain('"usecon_name" ASC');
-  });
-
-  test('leaves ORDER BY alone when using existing aliases', () => {
-    const sql = [
-      'SELECT a."date" AS query_date, b."price" AS wdi_price',
-      "FROM service('/a') AS a",
-      'JOIN service(\'/b\') AS b ON a."id" = b."id"',
-      'ORDER BY query_date DESC',
-    ].join('\n');
-    expect(sanitizeJoinOrderBy(sql)).toBe(sql);
-  });
-
-  test('handles quoted AS aliases', () => {
-    const sql = [
-      'SELECT a."date" AS "query date"',
-      "FROM service('/a') AS a",
-      'JOIN service(\'/b\') AS b ON a."id" = b."id"',
-      'ORDER BY a."date" DESC',
-    ].join('\n');
-    const result = sanitizeJoinOrderBy(sql);
-    expect(result).toContain('"query date" DESC');
-  });
-});
-
-describe(unitTest('sanitizeLiteralColumns'), () => {
-  test('returns unchanged SQL when no UNION ALL present', () => {
-    const sql = `SELECT "date", 'USECON' AS service_name FROM service('/svc')`;
-    expect(sanitizeLiteralColumns(sql)).toBe(sql);
-  });
-
-  test('strips literal columns from UNION ALL query', () => {
-    const sql = [
-      'SELECT',
-      '  "date",',
-      '  "haverId",',
-      "  'USECON' AS service_name",
-      "FROM service('/Usecon')",
-      'UNION ALL',
-      'SELECT',
-      '  "date",',
-      '  "haverId",',
-      "  'WDI' AS service_name",
-      "FROM service('/Wdi')",
-      'ORDER BY "date"',
-    ].join('\n');
-    const result = sanitizeLiteralColumns(sql);
-    expect(result).not.toContain("'USECON' AS service_name");
-    expect(result).not.toContain("'WDI' AS service_name");
-    expect(result).toContain('"date"');
-    expect(result).toContain('"haverId"');
-  });
-
-  test('strips literal columns with quoted aliases', () => {
-    const sql = [
-      'SELECT "col1", \'Period1\' AS "time period"',
-      "FROM service('/a')",
-      'UNION ALL',
-      'SELECT "col1", \'Period2\' AS "time period"',
-      "FROM service('/b')",
-    ].join('\n');
-    const result = sanitizeLiteralColumns(sql);
-    expect(result).not.toContain("'Period1'");
-    expect(result).not.toContain("'Period2'");
-    expect(result).toContain('"col1"');
-  });
-
-  test('leaves non-literal columns untouched', () => {
-    const sql = [
-      'SELECT "date", "source"',
-      "FROM service('/a')",
-      'UNION ALL',
-      'SELECT "date", "source"',
-      "FROM service('/b')",
-    ].join('\n');
-    expect(sanitizeLiteralColumns(sql)).toBe(sql);
-  });
-});
-
-describe(unitTest('stripNonDateServiceParams'), () => {
-  test('passes through SQL without non-date params', () => {
-    const sql = [
-      'SELECT *',
-      "FROM service('/path', coordinates => 'com:group:1.0', startDate => '2025-01-01', endDate => '2026-01-01')",
-      'LIMIT 10',
-    ].join('\n');
-    expect(stripNonDateServiceParams(sql)).toBe(sql);
-  });
-
-  test('strips non-date params like haverId', () => {
-    const sql = [
-      'SELECT *',
-      "FROM service('/path', coordinates => 'com:group:1.0', haverId => 'A001NGDP', startDate => '2020-01-01', endDate => '2023-12-31')",
-      'LIMIT 10',
-    ].join('\n');
-    const result = stripNonDateServiceParams(sql);
-    expect(result).not.toContain('haverId');
-    expect(result).toContain("startDate => '2020-01-01'");
-    expect(result).toContain("endDate => '2023-12-31'");
-    expect(result).toContain("coordinates => 'com:group:1.0'");
-  });
-
-  test('strips multiple non-date params', () => {
-    const sql =
-      "SELECT * FROM service('/path', coordinates => 'c:g:1', ticker => 'AAPL', region => 'US', startDate => '2024-01-01')";
-    const result = stripNonDateServiceParams(sql);
-    expect(result).not.toContain('ticker');
-    expect(result).not.toContain('region');
-    expect(result).toContain("startDate => '2024-01-01'");
-    expect(result).toContain("coordinates => 'c:g:1'");
-  });
-
-  test('preserves all date-like params', () => {
-    const sql =
-      "SELECT * FROM service('/path', coordinates => 'c:g:1', businessDate => '2024-01-01', processingDate => '2024-06-01', asOfDate => '2024-12-31')";
-    expect(stripNonDateServiceParams(sql)).toBe(sql);
-  });
-
-  test('handles multi-line formatted service call', () => {
-    const sql = [
-      'SELECT',
-      '  *',
-      'FROM service(',
-      "    '/VendorData/Haver/Afdb',",
-      "    coordinates => 'com.gs:vendor-data-haver:5.11.0',",
-      "    haverId => 'A001NGDP',",
-      "    startDate => '2020-01-01',",
-      "    endDate => '2023-12-31'",
-      ')',
-      'LIMIT 10',
-    ].join('\n');
-    const result = stripNonDateServiceParams(sql);
-    expect(result).not.toContain('haverId');
-    expect(result).toContain("startDate => '2020-01-01'");
-    expect(result).toContain("endDate => '2023-12-31'");
   });
 });

@@ -79,50 +79,6 @@ export class LegendAIResolvedEntities {
   relatedEntities!: string[];
 }
 
-export class LegendAIEntityCandidate {
-  datasetName!: string;
-  description?: string;
-  modelPath!: string;
-  similarityScore!: number;
-}
-
-export enum LegendAIChartType {
-  BAR = 'bar',
-  LINE = 'line',
-  PIE = 'pie',
-  TABLE = 'table',
-  NONE = 'none',
-}
-
-export class LegendAIChartRecommendation {
-  chartType!: LegendAIChartType;
-  xAxis?: string;
-  yAxis?: string;
-  label?: string;
-  reasoning!: string;
-}
-
-export class LegendAIKeyMetric {
-  label!: string;
-  value!: string;
-  detail?: string;
-}
-
-export class LegendAIChartDataPoint {
-  label!: string;
-  value!: number;
-  color?: string;
-  colorIndex?: number;
-}
-
-export class LegendAIResultAnalysis {
-  summary!: string;
-  chartRecommendation?: LegendAIChartRecommendation;
-  keyMetrics!: LegendAIKeyMetric[];
-  chartData!: LegendAIChartDataPoint[];
-  suggestedQueries!: string[];
-}
-
 /**
  * @deprecated Use {@link QueryExplicitExecutionContextInfo} from `@finos/legend-graph` directly.
  */
@@ -226,7 +182,6 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     query: string,
     dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
     config: LegendAIConfig,
-    pureExecutionContext?: QueryExplicitExecutionContextInfo,
   ): Promise<LegendAIResolvedEntities>;
 
   /**
@@ -250,128 +205,4 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
     config: LegendAIConfig,
   ): Promise<LegendAISqlExecutionResultData>;
-
-  /**
-   * Analyze query results using the LLM to produce a summary, chart
-   * recommendation, key metrics, and suggested follow-up queries.
-   */
-  abstract analyzeQueryResults(
-    question: string,
-    query: string,
-    columns: string[],
-    rows: TDSRowDataType[],
-    metadata: LegendAIProductMetadata,
-    config: LegendAIConfig,
-  ): Promise<LegendAIResultAnalysis | undefined>;
-
-  /**
-   * Build a fallback analysis when the query returns no results.
-   */
-  abstract buildNoResultsFallback(
-    question: string,
-    query: string,
-    metadata: LegendAIProductMetadata,
-    config: LegendAIConfig,
-  ): Promise<LegendAIResultAnalysis | undefined>;
-
-  /**
-   * Build a contextual summary of the data product for the user.
-   */
-  abstract buildDataContextSummary(
-    question: string,
-    metadata: LegendAIProductMetadata,
-    config: LegendAIConfig,
-  ): Promise<string | undefined>;
-
-  /**
-   * Build a fallback message when query execution fails.
-   */
-  abstract buildFailureFallback(
-    question: string,
-    errorMessage: string,
-    metadata: LegendAIProductMetadata,
-    config: LegendAIConfig,
-  ): Promise<string | undefined>;
-
-  /**
-   * Given a user question and pre-fetched entity search candidates, disambiguate
-   * which entity is the correct root for the query. Uses LLM disambiguation
-   * and/or probing to pick the best entity.
-   */
-  abstract disambiguateEntity(
-    question: string,
-    candidates: LegendAIEntityCandidate[],
-    config: LegendAIConfig,
-    pureExecutionContext?: QueryExplicitExecutionContextInfo,
-    dataProductCoordinates?: LegendAIOrchestratorDataProductCoordinates,
-  ): Promise<LegendAIResolvedEntities>;
-
-  /**
-   * Given a user question and candidate data products (with their matched fields),
-   * use the LLM to pick the top N most relevant products.
-   * Returns 0-based indices into the candidates array, ordered by relevance.
-   * Returns undefined if reranking is not possible (e.g. LLM unavailable).
-   */
-  abstract rerankProducts(
-    question: string,
-    candidates: {
-      title: string;
-      description: string;
-      matchedFields: string[];
-    }[],
-    allFieldNames: string[],
-    topN: number,
-    config: LegendAIConfig,
-  ): Promise<number[] | undefined>;
-
-  /**
-   * Given a user question and available services, use LLM to select the most
-   * relevant service(s) for SQL generation. Returns the filtered subset of
-   * services. Default implementation returns all services (no pre-filtering).
-   * Override in plugins to add LLM-based service selection.
-   */
-  selectRelevantServices(
-    _question: string,
-    services: TDSServiceSchema[],
-    _config: LegendAIConfig,
-  ): Promise<TDSServiceSchema[]> {
-    return Promise.resolve(services);
-  }
-
-  /**
-   * Probe a service by executing SELECT * LIMIT 1 to discover the real column
-   * names from the engine. Returns the actual column names or undefined if
-   * probing fails (non-fatal). This is the ground truth for column names.
-   */
-  probeServiceColumns(
-    _service: TDSServiceSchema,
-    _coordinates: string,
-    _config: LegendAIConfig,
-  ): Promise<string[] | undefined> {
-    return Promise.resolve(undefined);
-  }
-
-  /**
-   * Build an error correction prompt that feeds the execution error back to
-   * the LLM and asks it to fix the SQL. Used in the execution retry loop.
-   */
-  abstract buildErrorCorrectionPrompt(
-    failedSql: string,
-    errorMessage: string,
-    question: string,
-    services: TDSServiceSchema[],
-    coordinates: string,
-    availableColumns?: string[],
-  ): string;
-
-  /**
-   * Build a zero-row correction prompt that asks the LLM to relax or fix
-   * filters when a syntactically valid query returns 0 rows.
-   */
-  abstract buildZeroRowCorrectionPrompt(
-    sql: string,
-    question: string,
-    services: TDSServiceSchema[],
-    coordinates: string,
-  ): string;
 }

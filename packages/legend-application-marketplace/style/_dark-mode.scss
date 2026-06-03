@@ -2193,51 +2193,6 @@
     }
   }
 
-  // Intelligence & AI Agents Page
-  .legend-marketplace-ai-page {
-    background: var(--color-dark-theme-bg-primary);
-  }
-
-  .marketplace-agents__search-container {
-    background: var(--color-dark-theme-bg-primary);
-  }
-
-  .marketplace-agents__section-bar {
-    background-color: var(--color-dark-theme-bg-secondary);
-    border-bottom: 1px solid var(--color-dark-theme-border);
-
-    &__container {
-      background-color: var(--color-dark-theme-bg-secondary);
-      color: var(--color-dark-theme-text-primary);
-    }
-  }
-
-  .marketplace-agents__section-title {
-    color: var(--color-dark-theme-text-primary);
-  }
-
-  .marketplace-agents__content-container {
-    background: var(--color-dark-theme-bg-primary);
-  }
-
-  .marketplace-agents__agent-card {
-    background: var(--color-dark-theme-bg-secondary);
-    border-color: var(--color-dark-theme-border);
-
-    &:hover {
-      border-color: var(--color-dark-theme-blue-primary);
-      box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
-    }
-  }
-
-  .marketplace-agents__agent-card-title {
-    color: var(--color-dark-theme-text-primary);
-  }
-
-  .marketplace-agents__agent-card-desc {
-    color: var(--color-dark-theme-text-muted);
-  }
-
   .legend-marketplace-search-results__sort-bar {
     background-color: var(--color-dark-theme-bg-secondary);
     border-bottom: 1px solid var(--color-dark-theme-border);
@@ -2989,9 +2944,6 @@
         &.ag-theme-balham-dark {
           --ag-background-color: var(--color-dark-theme-bg-secondary);
           --ag-foreground-color: var(--color-dark-theme-text-primary);
-          --ag-disabled-foreground-color: var(
-            --color-dark-theme-text-secondary
-          );
           --ag-header-background-color: var(--color-dark-theme-bg-elevated);
           --ag-header-foreground-color: var(--color-dark-theme-text-primary);
           --ag-border-color: var(--color-dark-theme-border);
@@ -3025,16 +2977,6 @@
           }
 
           .ag-cell {
-            color: var(--color-dark-theme-text-primary);
-          }
-
-          .ag-status-bar {
-            background: var(--color-dark-theme-bg-elevated);
-            color: var(--color-dark-theme-text-primary);
-            border-top-color: var(--color-dark-theme-border);
-          }
-
-          .ag-status-name-value {
             color: var(--color-dark-theme-text-primary);
           }
         }
@@ -3075,7 +3017,6 @@
       &.ag-theme-balham-dark {
         --ag-background-color: var(--color-dark-theme-bg-secondary);
         --ag-foreground-color: var(--color-dark-theme-text-primary);
-        --ag-disabled-foreground-color: var(--color-dark-theme-text-secondary);
         --ag-header-background-color: var(--color-dark-theme-bg-elevated);
         --ag-header-foreground-color: var(--color-dark-theme-text-primary);
         --ag-border-color: var(--color-dark-theme-border);
@@ -3101,16 +3042,6 @@
         }
 
         .ag-cell {
-          color: var(--color-dark-theme-text-primary);
-        }
-
-        .ag-status-bar {
-          background: var(--color-dark-theme-bg-elevated);
-          color: var(--color-dark-theme-text-primary);
-          border-top-color: var(--color-dark-theme-border);
-        }
-
-        .ag-status-name-value {
           color: var(--color-dark-theme-text-primary);
         }
       }
@@ -4074,7 +4005,6 @@
     &.ag-theme-balham-dark {
       --ag-background-color: var(--color-dark-theme-bg-secondary);
       --ag-foreground-color: var(--color-dark-theme-text-primary);
-      --ag-disabled-foreground-color: var(--color-dark-theme-text-secondary);
       --ag-header-background-color: var(--color-dark-theme-bg-elevated);
       --ag-header-foreground-color: var(--color-dark-theme-text-primary);
       --ag-border-color: var(--color-dark-theme-border);
@@ -4128,7 +4058,6 @@
   .ag-theme-balham-dark {
     --ag-background-color: var(--color-dark-theme-bg-secondary);
     --ag-foreground-color: var(--color-dark-theme-text-primary);
-    --ag-disabled-foreground-color: var(--color-dark-theme-text-secondary);
     --ag-header-background-color: var(--color-dark-theme-bg-elevated);
     --ag-header-foreground-color: var(--color-dark-theme-text-primary);
     --ag-border-color: var(--color-dark-theme-border);
@@ -4190,16 +4119,6 @@
     }
 
     .ag-icon {
-      color: var(--color-dark-theme-text-primary);
-    }
-
-    .ag-status-bar {
-      background: var(--color-dark-theme-bg-elevated);
-      color: var(--color-dark-theme-text-primary);
-      border-top-color: var(--color-dark-theme-border);
-    }
-
-    .ag-status-name-value {
       color: var(--color-dark-theme-text-primary);
     }
   }
@@ -4349,43 +4268,4 @@
       }
     }
   }
-
-  // ─── Legend AI Chat ──────────────────────────────────────────────────────────
-  --ai-bg-page: var(--marketplace-bg-primary);
-  --ai-bg-surface: var(--marketplace-bg-secondary);
-  --ai-bg-elevated: var(--marketplace-bg-elevated);
-  --ai-bg-input: var(--marketplace-bg-secondary);
-  --ai-bg-input-focus: var(--color-dark-theme-bg-tertiary);
-  --ai-bg-user-bubble: var(--color-ai-accent-primary);
-  --ai-bg-assistant: transparent;
-  --ai-bg-code: var(--color-ai-bg-code-dark);
-  --ai-bg-suggestion: rgb(255 255 255 / 4%);
-  --ai-bg-suggestion-hover: rgb(255 255 255 / 8%);
-  --ai-bg-card: var(--marketplace-bg-secondary);
-  --ai-bg-card-hover: var(--color-dark-theme-bg-tertiary);
-  --ai-bg-badge: rgb(99 141 193 / 12%);
-  --ai-bg-thinking: rgb(255 255 255 / 2%);
-  --ai-bg-results-header: rgb(255 255 255 / 3%);
-  --ai-text-primary: var(--marketplace-text-primary);
-  --ai-text-secondary: var(--marketplace-text-secondary);
-  --ai-text-muted: var(--marketplace-text-muted);
-  --ai-text-user-bubble: var(--marketplace-text-primary);
-  --ai-text-code: var(--color-ai-text-code-dark);
-  --ai-text-link: var(--marketplace-link-color);
-  --ai-border-primary: var(--color-dark-theme-bg-elevated);
-  --ai-border-input: var(--color-dark-theme-border);
-  --ai-border-input-focus: var(--marketplace-link-color);
-  --ai-border-card: var(--color-dark-theme-bg-elevated);
-  --ai-border-card-hover: var(--marketplace-link-color);
-  --ai-accent-primary: var(--color-ai-accent-primary);
-  --ai-accent-hover: var(--color-ai-accent-hover);
-  --ai-accent-green: var(--color-ai-accent-green-dark);
-  --ai-accent-green-bg: rgb(52 211 153 / 10%);
-  --ai-accent-purple: var(--color-ai-accent-purple);
-  --ai-accent-blue-soft: var(--marketplace-link-color);
-  --ai-accent-red: var(--color-ai-accent-red-dark);
-  --ai-text-error: var(--color-ai-text-error-dark);
-  --ai-shadow-card: 0 1px 3px rgb(0 0 0 / 40%);
-  --ai-shadow-card-hover: 0 8px 24px rgb(0 0 0 / 50%);
-  --ai-shadow-input: 0 0 0 3px rgb(37 99 235 / 10%);
 }

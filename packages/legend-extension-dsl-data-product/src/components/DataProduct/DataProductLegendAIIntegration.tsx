@@ -76,22 +76,7 @@ export async function extractTDSServicesFromDataProduct(
             column.type = col.type;
           }
           if (col.doc !== undefined) {
-            const sampleDelimiter = '-- e.g.';
-            const delimIdx = col.doc.indexOf(sampleDelimiter);
-            if (delimIdx === -1) {
-              column.documentation = col.doc;
-            } else {
-              const docPart = col.doc.substring(0, delimIdx).trim();
-              const samplePart = col.doc
-                .substring(delimIdx + sampleDelimiter.length)
-                .trim();
-              if (docPart) {
-                column.documentation = docPart;
-              }
-              if (samplePart) {
-                column.sampleValues = samplePart;
-              }
-            }
+            column.documentation = col.doc;
           }
           return column;
         });
