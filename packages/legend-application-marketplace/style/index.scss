@@ -57,9 +57,6 @@
 @forward 'light-mode';
 @forward 'dark-mode';
 
-/* stylelint-disable-next-line no-invalid-position-at-import-rule */
-@import url('~swiper/css');
-/* stylelint-disable-next-line no-invalid-position-at-import-rule */
-@import url('~swiper/css/navigation');
-/* stylelint-disable-next-line no-invalid-position-at-import-rule */
-@import url('~swiper/css/pagination');
+@forward '../../../node_modules/swiper/swiper.css';
+@forward '../../../node_modules/swiper/modules/navigation.css';
+@forward '../../../node_modules/swiper/modules/pagination.css';
