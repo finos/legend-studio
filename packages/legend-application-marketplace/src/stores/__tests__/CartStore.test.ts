@@ -175,7 +175,6 @@ const makeCartItem = (
   price: 100,
   description: '',
   isOwned: 'false',
-  model: null,
   skipWorkflow: false,
 });
 
@@ -431,9 +430,15 @@ describe('CartStore - providerToCartRequest', () => {
       overrides.model !== undefined ? overrides.model : 'Model X';
     provider.isOwned = overrides.isOwned ?? false;
     provider.skipWorkflow = overrides.skipWorkflow ?? false;
-    provider.vendorProfileId = overrides.vendorProfileId;
-    provider.permissionId = overrides.permissionId;
-    provider.source = overrides.source;
+    if (overrides.vendorProfileId !== undefined) {
+      provider.vendorProfileId = overrides.vendorProfileId;
+    }
+    if (overrides.permissionId !== undefined) {
+      provider.permissionId = overrides.permissionId;
+    }
+    if (overrides.source !== undefined) {
+      provider.source = overrides.source;
+    }
     return provider;
   };
 
@@ -493,7 +498,7 @@ describe('CartStore - providerToCartRequest', () => {
   test('omits vendorProfileId when undefined', async () => {
     const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
     const cartStore = new CartStore(baseStore);
-    const provider = makeProvider({ vendorProfileId: undefined });
+    const provider = makeProvider({});
     const request = cartStore.providerToCartRequest(provider);
     expect('vendorProfileId' in request).toBe(false);
   });
@@ -517,7 +522,7 @@ describe('CartStore - providerToCartRequest', () => {
   test('omits source when undefined', async () => {
     const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
     const cartStore = new CartStore(baseStore);
-    const provider = makeProvider({ source: undefined });
+    const provider = makeProvider({});
     const request = cartStore.providerToCartRequest(provider);
     expect('source' in request).toBe(false);
   });
@@ -539,7 +544,6 @@ describe('CartStore - providerToCartRequest', () => {
     const cartStore = new CartStore(baseStore);
     const provider = makeProvider({
       id: 55,
-      permissionId: undefined,
       source: RecommendationSource.INVENTORY,
     });
     const request = cartStore.providerToCartRequest(provider);
