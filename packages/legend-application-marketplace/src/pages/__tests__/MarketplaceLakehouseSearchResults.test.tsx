@@ -326,23 +326,6 @@ describe('MarketplaceLakehouseSearchResults', () => {
     );
   });
 
-  test('clicking the Data Fields tab trims query before navigating', async () => {
-    const { MOCK__baseStore } = await setupTestComponent(
-      '  customer  ',
-      'prod',
-    );
-    const mockGoToLocation = jest.fn();
-    MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
-      mockGoToLocation;
-
-    await screen.findByText('4 Products');
-    fireEvent.click(screen.getByRole('radio', { name: 'Data Fields' }));
-
-    expect(mockGoToLocation).toHaveBeenCalledWith(
-      generateFieldSearchResultsRoute('customer'),
-    );
-  });
-
   test('search type tabs are not shown when there is no search query', async () => {
     await setupTestComponent('', 'prod');
 

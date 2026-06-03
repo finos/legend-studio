@@ -402,7 +402,7 @@ export const LegendMarketplaceSearchResults =
                       ) {
                         applicationStore.navigationService.navigator.goToLocation(
                           generateFieldSearchResultsRoute(
-                            searchResultsStore.searchQuery?.trim(),
+                            searchResultsStore.searchQuery,
                           ),
                         );
                       }
