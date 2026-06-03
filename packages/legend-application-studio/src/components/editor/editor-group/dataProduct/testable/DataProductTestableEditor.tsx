@@ -59,6 +59,7 @@ import {
 } from '@finos/legend-graph';
 import type { DataProductEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import {
+  DataProductTestParameterState,
   DataProductValueSpecificationTestParameterState,
   type DataProductTestableState,
   type DataProductTestSuiteState,
@@ -79,11 +80,7 @@ import {
   validateTestableId,
 } from '../../../../../stores/editor/utils/TestableUtils.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
-import {
-  filterByType,
-  guaranteeNonNullable,
-  prettyCONSTName,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   ExternalFormatParameterEditorModal,
   RenameModal,
@@ -665,40 +662,53 @@ const TestItem = observer(
 const DataProductTestParameterEditor = observer(
   (props: {
     isReadOnly: boolean;
-    paramState: DataProductValueSpecificationTestParameterState;
+    paramState: DataProductTestParameterState;
     testState: DataProductTestState;
     contentTypeParamPair: TestParamContentType | undefined;
   }) => {
     const { testState, paramState, isReadOnly, contentTypeParamPair } = props;
     const [showPopUp, setShowPopUp] = useState(false);
-    const paramIsRequired =
-      paramState.varExpression.multiplicity.lowerBound > 0;
+    const valueSpecificationParamState =
+      paramState instanceof DataProductValueSpecificationTestParameterState
+        ? paramState
+        : undefined;
+    const paramExpression = valueSpecificationParamState?.varExpression;
+    const paramIsRequired = (paramExpression?.multiplicity.lowerBound ?? 0) > 0;
     const type = contentTypeParamPair
       ? contentTypeParamPair.contentType
-      : (paramState.varExpression.genericType?.value.rawType.name ?? 'unknown');
+      : (paramExpression?.genericType?.value.rawType.name ?? 'unknown');
+    const primitiveValueSpecification =
+      valueSpecificationParamState?.valueSpec instanceof PrimitiveInstanceValue
+        ? valueSpecificationParamState.valueSpec
+        : undefined;
+    const primitiveValue = primitiveValueSpecification?.values[0] as
+      | string
+      | undefined;
     const paramValue =
-      paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
-        ? atob(
-            (paramState.valueSpec as PrimitiveInstanceValue)
-              .values[0] as string,
-          )
-        : ((paramState.valueSpec as PrimitiveInstanceValue)
-            .values[0] as string);
+      paramExpression?.genericType?.value.rawType === PrimitiveType.BYTE &&
+      primitiveValue !== undefined
+        ? atob(primitiveValue)
+        : (primitiveValue ?? '');
 
     const openInPopUp = (): void => setShowPopUp(!showPopUp);
     const closePopUp = (): void => setShowPopUp(false);
     const updateParamValue = (val: string): void => {
-      if (paramState.valueSpec instanceof PrimitiveInstanceValue) {
+      if (
+        primitiveValueSpecification &&
+        valueSpecificationParamState &&
+        paramExpression
+      ) {
         instanceValue_setValue(
-          paramState.valueSpec,
-          paramState.varExpression.genericType?.value.rawType ===
-            PrimitiveType.BYTE
+          primitiveValueSpecification,
+          paramExpression.genericType?.value.rawType === PrimitiveType.BYTE
             ? btoa(val)
             : val,
           0,
           testState.editorStore.changeDetectionState.observerContext,
         );
-        paramState.updateValueSpecification(paramState.valueSpec);
+        valueSpecificationParamState.updateValueSpecification(
+          primitiveValueSpecification,
+        );
       }
     };
 
@@ -717,26 +727,26 @@ const DataProductTestParameterEditor = observer(
             {type}
           </button>
         </div>
-        {contentTypeParamPair ? (
+        {!valueSpecificationParamState || !paramExpression ? (
+          <BlankPanelPlaceholder
+            text="Unsupported parameter value"
+            tooltipText="This parameter was preserved but cannot currently be edited in form mode"
+          />
+        ) : contentTypeParamPair && primitiveValueSpecification ? (
           <div className="service-test-editor__setup__parameter__code-editor">
             <textarea
               className="panel__content__form__section__textarea value-spec-editor__input"
               spellCheck={false}
               value={paramValue}
-              placeholder={
-                ((paramState.valueSpec as PrimitiveInstanceValue)
-                  .values[0] as string) === ''
-                  ? '(empty)'
-                  : undefined
-              }
+              placeholder={primitiveValue === '' ? '(empty)' : undefined}
               onChange={(event) => {
                 updateParamValue(event.target.value);
               }}
             />
             {showPopUp && (
               <ExternalFormatParameterEditorModal
-                valueSpec={paramState.valueSpec}
-                varExpression={paramState.varExpression}
+                valueSpec={valueSpecificationParamState.valueSpec}
+                varExpression={paramExpression}
                 isReadOnly={isReadOnly}
                 onClose={closePopUp}
                 updateParamValue={updateParamValue}
@@ -770,9 +780,9 @@ const DataProductTestParameterEditor = observer(
         ) : (
           <div className="service-test-editor__setup__parameter__value">
             <BasicValueSpecificationEditor
-              valueSpecification={paramState.valueSpec}
+              valueSpecification={valueSpecificationParamState.valueSpec}
               setValueSpecification={(val: ValueSpecification): void => {
-                paramState.updateValueSpecification(val);
+                valueSpecificationParamState.updateValueSpecification(val);
               }}
               graph={testState.editorStore.graphManagerState.graph}
               observerContext={
@@ -780,12 +790,12 @@ const DataProductTestParameterEditor = observer(
               }
               typeCheckOption={{
                 expectedType:
-                  paramState.varExpression.genericType?.value.rawType ??
+                  paramExpression.genericType?.value.rawType ??
                   PrimitiveType.STRING,
               }}
               className="query-builder__parameters__value__editor"
               resetValue={(): void => {
-                paramState.resetValueSpec();
+                valueSpecificationParamState.resetValueSpec();
               }}
             />
             <div className="service-test-editor__setup__parameter__value__actions">
@@ -890,34 +900,18 @@ const DataProductTestEditor = observer(
     const accessPoint = testState.suiteState.testableState.ownAccessPoints.find(
       (ap) => ap.id === testState.test.accessPointId,
     );
-    const accessPointQuery = accessPoint
-      ? accessPoint instanceof LakehouseAccessPoint
-        ? accessPoint.func
-        : accessPoint instanceof FunctionAccessPoint
-          ? accessPoint.query
-          : undefined
-      : undefined;
-
-    const tabs = [TESTABLE_TEST_TAB.ASSERTION];
+    let accessPointQuery;
+    if (accessPoint instanceof LakehouseAccessPoint) {
+      accessPointQuery = accessPoint.func;
+    } else if (accessPoint instanceof FunctionAccessPoint) {
+      accessPointQuery = accessPoint.query;
+    }
 
     return (
       <div className="function-test-editor panel">
         <div className="panel__header">
           <div className="panel__header service-test-editor__header--with-tabs">
-            <div className="uml-element-editor__tabs">
-              {tabs.map((tab) => (
-                <div
-                  key={tab}
-                  onClick={(): void => testState.setSelectedTab(tab)}
-                  className={clsx('service-test-editor__tab', {
-                    'service-test-editor__tab--active':
-                      tab === testState.selectedTab,
-                  })}
-                >
-                  {prettyCONSTName(tab)}
-                </div>
-              ))}
-            </div>
+            <div className="panel__header__title__content">Assertion</div>
           </div>
         </div>
         <div className="panel">
@@ -999,28 +993,21 @@ const DataProductTestEditor = observer(
                             minHeight: 0,
                           }}
                         >
-                          {testState.parameterValueStates
-                            .filter(
-                              filterByType(
-                                DataProductValueSpecificationTestParameterState,
-                              ),
-                            )
-                            .map((paramState) => (
-                              <DataProductTestParameterEditor
-                                key={paramState.uuid}
-                                isReadOnly={isReadOnly}
-                                paramState={paramState}
-                                testState={testState}
-                                contentTypeParamPair={getContentTypeWithParamFromQuery(
-                                  accessPointQuery,
-                                  testState.editorStore,
-                                ).find(
-                                  (pair) =>
-                                    pair.param ===
-                                    paramState.parameterValue.name,
-                                )}
-                              />
-                            ))}
+                          {testState.parameterValueStates.map((paramState) => (
+                            <DataProductTestParameterEditor
+                              key={paramState.uuid}
+                              isReadOnly={isReadOnly}
+                              paramState={paramState}
+                              testState={testState}
+                              contentTypeParamPair={getContentTypeWithParamFromQuery(
+                                accessPointQuery,
+                                testState.editorStore,
+                              ).find(
+                                (pair) =>
+                                  pair.param === paramState.parameterValue.name,
+                              )}
+                            />
+                          ))}
                         </div>
                       </div>
                     )}
@@ -1047,15 +1034,6 @@ const DataProductTestEditor = observer(
                 tooltipText="No assertion configured for this test"
               />
             )}
-
-          {selectedTab === TESTABLE_TEST_TAB.SETUP && (
-            <>
-              <BlankPanelPlaceholder
-                text="No setup configuration"
-                tooltipText="Parameters are configured in the Assertion tab"
-              />
-            </>
-          )}
           {testState.showNewParameterModal && (
             <NewDataProductParameterModal
               testState={testState}

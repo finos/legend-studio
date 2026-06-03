@@ -643,8 +643,6 @@ export const TEST_DATA__DATAPRODUCT__TEST_SUITES = [
               accessPointId: 'employees',
               parameters: [
                 {
-                  // Positional style from grammar (e.g. ap('Bob')) is represented
-                  // without a parameter name and must survive roundtrip unchanged.
                   name: '',
                   value: {
                     _type: 'instanceValue',

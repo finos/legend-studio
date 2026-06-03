@@ -57,7 +57,6 @@ import {
   assertErrorThrown,
   filterByType,
   guaranteeNonNullable,
-  isNonNullable,
   deleteEntry,
   addUniqueEntry,
   returnUndefOnError,
@@ -328,13 +327,13 @@ export class DataProductTestState extends TestableTestEditorState {
       return;
     }
 
-    const unnamedParams = params.filter((p) => !p.name.trim());
+    const unnamedParams = params.filter((p) => !(p.name ?? '').trim());
     if (!unnamedParams.length) {
       return;
     }
 
     const takenNames = new Set(
-      params.map((p) => p.name.trim()).filter((name) => Boolean(name)),
+      params.map((p) => (p.name ?? '').trim()).filter((name) => Boolean(name)),
     );
 
     expressions.forEach((expr) => {
@@ -495,7 +494,10 @@ export class DataProductTestState extends TestableTestEditorState {
           }
           return undefined;
         })
-        .filter(isNonNullable);
+        .filter(
+          (value): value is DataProductValueSpecificationTestParameterState =>
+            value !== undefined,
+        );
       this.test.parameters = parameterValueStates.map((s) => s.parameterValue);
       this.parameterValueStates = parameterValueStates;
     } catch (error) {
