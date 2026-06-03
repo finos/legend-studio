@@ -1,0 +1,39 @@
+###Relational
+Database my::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    AGE INTEGER,
+    FIRMID INTEGER
+  )
+)
+
+
+###Pure
+Class my::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+}
+
+function my::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.personTable}#->filter(x|$x.AGE > 25)->limit(5)
+}
+
+
+###Mapping
+Mapping my::relationFunctionMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    ~primaryKey: [ID, FIRMID]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+)
+

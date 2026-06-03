@@ -2472,3 +2472,139 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
     classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
+
+const TEST_DATA__RelationFunctionMappingCommonEntities = [
+  {
+    path: 'my::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'my',
+      properties: [
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'firstName',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'String' },
+          },
+        },
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'age',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'Integer' },
+          },
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'my::personFunction__Relation_1_',
+    content: {
+      _type: 'function',
+      body: [],
+      name: 'personFunction__Relation_1_',
+      package: 'my',
+      parameters: [],
+      postConstraints: [],
+      preConstraints: [],
+      returnGenericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'meta::pure::metamodel::relation::Relation',
+        },
+      },
+      returnMultiplicity: { lowerBound: 1, upperBound: 1 },
+    },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  },
+];
+
+export const TEST_DATA__RelationFunctionMappingWithPrimaryKey = [
+  ...TEST_DATA__RelationFunctionMappingCommonEntities,
+  {
+    path: 'my::testMapping',
+    content: {
+      _type: 'mapping',
+      name: 'testMapping',
+      package: 'my',
+      classMappings: [
+        {
+          _type: 'relationFunction',
+          class: 'my::Person',
+          id: 'person',
+          primaryKey: ['ID', 'FIRMID'],
+          propertyMappings: [
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'FIRSTNAME',
+              property: { class: 'my::Person', property: 'firstName' },
+              source: 'person',
+            },
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'AGE',
+              property: { class: 'my::Person', property: 'age' },
+              source: 'person',
+            },
+          ],
+          relationFunction: {
+            path: 'my::personFunction():Relation<Any>[1]',
+            type: 'FUNCTION',
+          },
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];
+
+export const TEST_DATA__RelationFunctionMappingEmptyPrimaryKey = [
+  ...TEST_DATA__RelationFunctionMappingCommonEntities,
+  {
+    path: 'my::testMapping',
+    content: {
+      _type: 'mapping',
+      name: 'testMapping',
+      package: 'my',
+      classMappings: [
+        {
+          _type: 'relationFunction',
+          class: 'my::Person',
+          id: 'person',
+          primaryKey: [],
+          propertyMappings: [
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'FIRSTNAME',
+              property: { class: 'my::Person', property: 'firstName' },
+              source: 'person',
+            },
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'AGE',
+              property: { class: 'my::Person', property: 'age' },
+              source: 'person',
+            },
+          ],
+          relationFunction: {
+            path: 'my::personFunction():Relation<Any>[1]',
+            type: 'FUNCTION',
+          },
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];
+
