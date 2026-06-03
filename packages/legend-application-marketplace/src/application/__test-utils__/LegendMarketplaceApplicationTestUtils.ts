@@ -95,6 +95,12 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
         'Search for product catalog information',
         'Display user activity datasets',
       ],
+      defaultAISuggestedQueries: [
+        'What BVAL bond pricing data is available?',
+        'Show me credit risk data products',
+        'Find FX rates and currency data',
+        'What equity analytics data do we have?',
+      ],
     },
   },
   assets: {

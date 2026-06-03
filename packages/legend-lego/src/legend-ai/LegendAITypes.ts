@@ -65,6 +65,10 @@ export class LegendAIConfig {
   maxJudgeAttempts?: number;
   /** Lakehouse runtime environment name (e.g. 'prod', 'uat'). Defaults to 'prod' when not set. */
   lakehouseEnvironment?: string;
+  /** URL to EngHub documentation for Legend AI setup. */
+  enghubDocUrl?: string;
+  /** URL to EntHub request access page for the AI coverage app. */
+  enthubRequestAccessUrl?: string;
 }
 
 export const DEFAULT_LEGEND_AI_CONFIG: LegendAIConfig = Object.freeze({
@@ -76,6 +80,17 @@ export const DEFAULT_LEGEND_AI_CONFIG: LegendAIConfig = Object.freeze({
   marketplaceSearchUrl: undefined,
   engineUrl: undefined,
 });
+
+/** Runtime environment name that indicates production. */
+export const LAKEHOUSE_ENV_PROD = 'prod';
+/** EngHub coverage app name for production. */
+export const COVERAGE_NAME_PROD = 'legend-ai';
+/** EngHub coverage app name for non-production (sandbox). */
+export const COVERAGE_NAME_SANDBOX = 'Legend-AI-Sandbox';
+
+/** Action ID used to offer the Legend AI Orchestrator as a fallback. */
+export const LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID =
+  'orchestrator-fallback';
 
 export function findLegendAIPlugin(
   plugins: LegendApplicationPlugin[],
@@ -108,8 +123,27 @@ export enum LegendAIThinkingStepStatus {
 }
 
 export class LegendAIThinkingStep {
+  id!: string;
   label!: string;
   status!: LegendAIThinkingStepStatus;
+}
+
+export enum LegendAIErrorType {
+  PERMISSION = 'PERMISSION',
+  NETWORK = 'NETWORK',
+  EXECUTION = 'EXECUTION',
+  GENERATION = 'GENERATION',
+  GENERAL = 'GENERAL',
+}
+
+export class LegendAIServiceError extends Error {
+  override name = 'LegendAIServiceError';
+  errorType: LegendAIErrorType;
+
+  constructor(message: string, errorType: LegendAIErrorType) {
+    super(message);
+    this.errorType = errorType;
+  }
 }
 
 export enum LegendAIMessageRole {
@@ -123,20 +157,28 @@ export class LegendAIUserMessage {
   text!: string;
 }
 
+export interface LegendAIFallbackAction {
+  label: string;
+  actionId: string;
+}
+
 export class LegendAIAssistantMessage {
   id!: string;
   role!: LegendAIMessageRole.ASSISTANT;
   thinkingSteps!: LegendAIThinkingStep[];
   sql!: string | null;
   textAnswer!: string | null;
+  dataContext!: string | null;
   gridData!: LegendAIGridData | null;
   error!: string | null;
+  errorType!: LegendAIErrorType | null;
   sqlGenTime!: string | null;
   execTime!: string | null;
   thinkingDuration!: string | null;
   isProcessing!: boolean;
   isExecuting!: boolean;
   suggestedQueries!: string[];
+  fallbackAction!: LegendAIFallbackAction | null;
 }
 
 export type LegendAIMessage = LegendAIUserMessage | LegendAIAssistantMessage;
@@ -158,6 +200,7 @@ export interface LegendAIChatState {
   messages: LegendAIMessage[];
   askQuestion: () => void;
   askQuestionWithIntent: (text: string, intent: LegendAIQuestionIntent) => void;
+  runFallbackAction: (messageId: string) => void;
   clearChat: () => void;
   expandedThinking: Set<number>;
   toggleThinking: (index: number) => void;
@@ -240,10 +283,15 @@ export const DATA_QUERY_SIGNAL_PATTERNS: readonly RegExp[] = Object.freeze([
   /\b(?:which\s+\w+s?\s+(?:does|do|did|has|have|is|are|generate|earn|produce))\b/,
   /\b(?:how\s+(?:much|many|often))\b/,
   /\b\d{4}[-/]\d{2}[-/]\d{2}\b/,
+  /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d/,
   /\b(?:as\s+of|since|before|after|between|from|until|latest|recent|yesterday|today)\b/,
   /\blast\s+(?:year|month|week|quarter|fiscal)\b/,
   /\b(?:fiscal\s+(?:year|quarter)|fy\s*\d|q[1-4]\s*\d{4})\b/,
   /\b(?:sedol|isin|cusip|ticker|symbol)[\s:=]*\w+/,
+  /\([A-Z]{1,5}\)/,
+  /\b(?:bonds?|securities|equities|options?|futures?|swaps?)\b/,
+  /\b(?:stocks?|cds|etfs?|funds?)\b/,
+  /\b(?:score|scores|spread|spreads|yield|yields|duration|convexity|coupon|nav|oas|dv01|notional|bid|ask|mid|vwap)\b/,
   /\b(?:revenue|sales|income|profit|earnings|margin|growth|volume|price|rate|exposure)\b/,
   /\b(?:breakdown|distribution|composition|split|allocation|attribution|ranking|trend)\b/,
   /\b(?:per\s+(?:country|region|year|month|quarter|segment|category))\b/,
@@ -296,11 +344,13 @@ export function classifyQuestionIntentFast(
   const dataScore = countPatternMatches(q, DATA_QUERY_SIGNAL_PATTERNS);
 
   if (metaScore > 0 && dataScore === 0) {
+    const isStructural =
+      PRODUCT_REFERENCE_PATTERN.test(q) || STRUCTURAL_KEYWORD_PATTERN.test(q);
     return {
       intent: LegendAIQuestionIntent.METADATA,
       metaScore,
       dataScore,
-      ambiguous: false,
+      ambiguous: hasServices && !isStructural,
     };
   }
   if (dataScore > 0 && metaScore === 0) {

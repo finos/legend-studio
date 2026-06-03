@@ -242,20 +242,14 @@ describe(unitTest('executeSqlAndReport — duplicate columns'), () => {
 // ─── processQuestion — orchestrator branches ─────────────────────────────────
 
 describe(unitTest('processQuestion — orchestrator branches'), () => {
-  test('routes orchestrator intent to orchestrator when configured', async () => {
+  test('orchestrator intent with services goes SQL-first when configured', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const plugin = TEST__createMockLegendAIPlugin({
       classifyQuestionIntent: () =>
         Promise.resolve(LegendAIQuestionIntent.ORCHESTRATOR),
-      resolveEntitiesForQuery: createMock().mockResolvedValue({
-        rootEntity: 'my::Entity',
-        relatedEntities: [],
-      }),
-      generateQueryViaOrchestrator: createMock().mockResolvedValue({
-        legend_query: 'Pure expression',
-      }),
-      executePureQuery: createMock().mockResolvedValue({
+      callLLM: createMock().mockResolvedValue('sql response'),
+      executeSql: createMock().mockResolvedValue({
         columns: ['x'],
         rows: [{ x: 1 }],
       }),
@@ -280,7 +274,8 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.sql).toBe('Pure expression');
+    expect(msg.sql).toBe('SELECT * FROM t');
+    expect(msg.gridData?.rowData).toHaveLength(1);
   });
 
   test('orchestrator intent falls back to SQL when not configured', async () => {
@@ -356,7 +351,7 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
     expect(msg.sql).toBe('fallback query');
   });
 
-  test('SQL generation null falls back to orchestrator when configured', async () => {
+  test('SQL generation null offers fallback when orchestrator configured', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const plugin = TEST__createMockLegendAIPlugin({
@@ -366,17 +361,6 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
       extractSqlFromResponse: () => ({
         sql: null,
         failure: 'parse error',
-      }),
-      resolveEntitiesForQuery: createMock().mockResolvedValue({
-        rootEntity: 'my::Entity',
-        relatedEntities: [],
-      }),
-      generateQueryViaOrchestrator: createMock().mockResolvedValue({
-        legend_query: 'orchestrator fallback query',
-      }),
-      executePureQuery: createMock().mockResolvedValue({
-        columns: ['a'],
-        rows: [{ a: 1 }],
       }),
     });
 
@@ -399,7 +383,8 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.sql).toBe('orchestrator fallback query');
+    expect(msg.error).toContain('parse error');
+    expect(msg.isProcessing).toBe(false);
   });
 });
 
@@ -464,22 +449,10 @@ describe(
       expect(msg.isProcessing).toBe(false);
     });
 
-    test('no services with orchestrator options falls back to orchestrator', async () => {
+    test('no services with orchestrator options offers fallback', async () => {
       const { setter, getMessages } = TEST__createMockSetter();
       TEST__seedAssistant(setter);
-      const plugin = TEST__createMockLegendAIPlugin({
-        resolveEntitiesForQuery: createMock().mockResolvedValue({
-          rootEntity: 'my::Entity',
-          relatedEntities: [],
-        }),
-        generateQueryViaOrchestrator: createMock().mockResolvedValue({
-          legend_query: 'orch query',
-        }),
-        executePureQuery: createMock().mockResolvedValue({
-          columns: ['z'],
-          rows: [{ z: 99 }],
-        }),
-      });
+      const plugin = TEST__createMockLegendAIPlugin();
 
       await processQuestionWithIntent(
         'show data',
@@ -503,7 +476,9 @@ describe(
       );
 
       const msg = getMessages()[1] as LegendAIAssistantMessage;
-      expect(msg.sql).toBe('orch query');
+      expect(msg.textAnswer).toContain('No TDS services available');
+      expect(msg.fallbackAction).toBeDefined();
+      expect(msg.isProcessing).toBe(false);
     });
   },
 );
@@ -513,7 +488,7 @@ describe(
 describe(
   unitTest('processDataQuery — zero-row → orchestrator fallback'),
   () => {
-    test('falls back to orchestrator when SQL returns zero rows', async () => {
+    test('shows zero-row message with fallback when SQL returns empty', async () => {
       const { setter, getMessages } = TEST__createMockSetter();
       TEST__seedAssistant(setter);
       const plugin = TEST__createMockLegendAIPlugin({
@@ -523,17 +498,6 @@ describe(
         executeSql: createMock().mockResolvedValue({
           columns: ['id'],
           rows: [],
-        }),
-        resolveEntitiesForQuery: createMock().mockResolvedValue({
-          rootEntity: 'my::Entity',
-          relatedEntities: [],
-        }),
-        generateQueryViaOrchestrator: createMock().mockResolvedValue({
-          legend_query: 'orchestrator fallback after zero rows',
-        }),
-        executePureQuery: createMock().mockResolvedValue({
-          columns: ['a'],
-          rows: [{ a: 1 }],
         }),
       });
 
@@ -556,8 +520,9 @@ describe(
       );
 
       const msg = getMessages()[1] as LegendAIAssistantMessage;
-      expect(msg.sql).toBe('orchestrator fallback after zero rows');
-      expect(msg.gridData?.rowData).toHaveLength(1);
+      expect(msg.textAnswer).toContain('0 rows');
+      expect(msg.fallbackAction).toBeDefined();
+      expect(msg.isProcessing).toBe(false);
     });
   },
 );
