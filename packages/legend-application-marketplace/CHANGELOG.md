@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.2.16
+
+### Patch Changes
+
+- [#5210](https://github.com/finos/legend-studio/pull/5210) [`3cfe994`](https://github.com/finos/legend-studio/commit/3cfe994cdb7e4519af58e09ea7c05b0ca0937b6d) ([@TharunRajeev](https://github.com/TharunRajeev)) - Used useRef for handling token refresh.
+
 ## 0.2.15
 
 ### Patch Changes
