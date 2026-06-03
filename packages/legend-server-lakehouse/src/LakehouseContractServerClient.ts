@@ -268,18 +268,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _dataAccessRequests = (): string => `${this.baseUrl}/datarequests`;
 
-  getDataRequestsForDataProduct = (
-    resourceType: string,
-    resourceId: string,
-    did: number,
-    token: string | undefined,
-  ): Promise<PlainObject> =>
-    this.get(
-      `${this._dataAccessRequests()}/lite/resourceType/${encodeURIComponent(resourceType)}/resourceId/${encodeURIComponent(resourceId)}/did/${encodeURIComponent(did)}`,
-      {},
-      this._token(token),
-    );
-
   createDataAccessRequest = (
     requestPayload: PlainObject<V1_CreateDataAccessRequestPayload>,
     token: string | undefined,
@@ -287,17 +275,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     this.post(
       `${this._dataAccessRequests()}`,
       requestPayload,
-      undefined,
-      this._token(token),
-    );
-
-  createPermitDataRequest = (
-    payload: PlainObject,
-    token: string | undefined,
-  ): Promise<PlainObject> =>
-    this.post(
-      `${this._dataAccessRequests()}`,
-      payload,
       undefined,
       this._token(token),
     );
@@ -315,7 +292,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   getDataAccessRequestWithWorkflow = (
     accessRequestId: string,
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataRequestsWithWorkflowResponse>> =>
+  ): Promise<V1_DataRequestsWithWorkflowResponse> =>
     this.get(
       `${this._dataAccessRequests()}/${encodeURIComponent(accessRequestId)}/withWorkflow`,
       {},
@@ -329,29 +306,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     this.get(
       `${this.baseUrl}/datarequests/${encodeURIComponent(accessRequestId)}/tasks`,
       {},
-      this._token(token),
-    );
-
-  getDataRequestWorkflows = (
-    accessRequestId: string,
-    token: string | undefined,
-  ): Promise<PlainObject> =>
-    this.get(
-      `${this._dataAccessRequests()}/${encodeURIComponent(accessRequestId)}/workflows`,
-      {},
-      this._token(token),
-    );
-
-  escalateDataRequest = (
-    requestId: string,
-    taskId: string,
-    justification: string,
-    token: string | undefined,
-  ): Promise<PlainObject> =>
-    this.post(
-      `${this._dataAccessRequests()}/${encodeURIComponent(requestId)}/tasks/${encodeURIComponent(taskId)}/escalate?justification=${encodeURIComponent(justification)}`,
-      {},
-      undefined,
       this._token(token),
     );
 

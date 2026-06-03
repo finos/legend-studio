@@ -32,7 +32,6 @@ import {
   V1_AdhocTeam,
   V1_AppDirLevel,
   V1_AppDirNode,
-  V1_RMS,
   V1_createContractPayloadModelSchema,
   V1_createDataAccessRequestPayloadModelSchema,
   V1_deserializeDataContractResponse,
@@ -49,7 +48,6 @@ import {
   type PlainObject,
   ActionState,
   assertErrorThrown,
-  guaranteeNonNullable,
   isNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
@@ -59,7 +57,6 @@ import {
   type LakehouseIngestServerClient,
   type LakehouseContractServerClient,
   type LakehousePlatformServerClient,
-  type PermitWorkflowServerClient,
   IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
@@ -70,13 +67,10 @@ import {
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
-import { PermitDataAccessRequestState } from './DataAccess/PermitDataAccessRequestState.js';
-import { type DataAccessRequestState } from './DataAccess/DataAccessRequestState.js';
 
 export enum DataAccessRequestType {
   CONTRACT = 'CONTRACT',
   WORKFLOW = 'WORKFLOW',
-  PERMIT = 'PERMIT',
 }
 
 export type ContractCreationRendererResult = {
@@ -98,16 +92,12 @@ export type ContractConsumerTypeRendererConfig = {
   organizationalScopeTypeDetailsRenderer?: (
     consumer: V1_OrganizationalScope,
   ) => React.ReactNode | undefined;
-  stringifyOrganizationalScope?: (
-    consumer: V1_OrganizationalScope,
-  ) => string | undefined;
   enableForEnterpriseAPGs?: boolean;
 };
 
 export type DataProductDataAccessStateActions = {
   getContractTaskUrl: (contractId: string, taskId: string) => string;
   getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
-  getTaskPageUrl?: (dataAccessRequestId: string) => string;
 };
 
 export type DataProductAccessPointCodeConfiguration = {
@@ -128,7 +118,6 @@ export class DataProductDataAccessState {
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
-  readonly permitWorkflowServerClient: PermitWorkflowServerClient | undefined;
   readonly graphManagerState: GraphManagerState;
   readonly dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[];
 
@@ -138,9 +127,6 @@ export class DataProductDataAccessState {
     dataProductId: string,
     deploymentId: number,
   ) => string;
-  readonly getTaskPageUrl:
-    | ((dataAccessRequestId: string) => string)
-    | undefined;
 
   // state
   associatedContracts: V1_LiteDataContract[] | undefined = undefined;
@@ -148,7 +134,6 @@ export class DataProductDataAccessState {
   contractViewerContractAndSubscription:
     | V1_DataContractSubscriptions
     | undefined = undefined;
-  dataAccessRequestViewerState: DataAccessRequestState | undefined = undefined;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnv: IngestDeploymentServerConfig | undefined;
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
@@ -157,7 +142,6 @@ export class DataProductDataAccessState {
 
   readonly creatingContractState = ActionState.create();
   readonly creatingWorkflowRequestState = ActionState.create();
-  readonly creatingPermitRequestState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
   readonly fetchingDataProductOwnersState = ActionState.create();
 
@@ -169,20 +153,17 @@ export class DataProductDataAccessState {
     lakehouseIngestServerClient: LakehouseIngestServerClient,
     dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
     actions: DataProductDataAccessStateActions,
-    permitWorkflowServerClient?: PermitWorkflowServerClient | undefined,
   ) {
     makeObservable(this, {
       associatedContracts: observable,
       contractCreatorAPG: observable,
       contractViewerContractAndSubscription: observable,
-      dataAccessRequestViewerState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnv: observable,
       lakehouseIngestEnvironmentDetails: observable,
       userEntitlementsEnv: observable,
       dataProductOwners: observable,
       setContractViewerContractAndSubscription: action,
-      setDataAccessRequestViewerState: action,
       setAssociatedContracts: action,
       filteredDataProductQueryEnvs: computed,
       resolvedUserEnv: computed,
@@ -193,7 +174,6 @@ export class DataProductDataAccessState {
       setLakehouseIngestEnv: action,
       createContract: flow,
       createWorkflowRequest: flow,
-      createPermitRequest: flow,
       fetchContracts: action,
       fetchIngestEnvironmentDetails: action,
       setDataProductOwners: action,
@@ -207,14 +187,12 @@ export class DataProductDataAccessState {
     this.lakehouseContractServerClient = lakehouseContractServerClient;
     this.lakehousePlatformServerClient = lakehousePlatformServerClient;
     this.lakehouseIngestServerClient = lakehouseIngestServerClient;
-    this.permitWorkflowServerClient = permitWorkflowServerClient;
     this.graphManagerState = this.dataProductViewerState.graphManagerState;
     this.dataAccessPlugins = dataAccessPlugins;
 
     // actions
     this.getContractTaskUrl = actions.getContractTaskUrl;
     this.getDataProductUrl = actions.getDataProductUrl;
-    this.getTaskPageUrl = actions.getTaskPageUrl;
   }
 
   get product(): V1_DataProduct {
@@ -263,12 +241,6 @@ export class DataProductDataAccessState {
     val: V1_DataContractSubscriptions | undefined,
   ) {
     this.contractViewerContractAndSubscription = val;
-  }
-
-  setDataAccessRequestViewerState(
-    val: DataAccessRequestState | undefined,
-  ): void {
-    this.dataAccessRequestViewerState = val;
   }
 
   setLakehouseIngestEnvironmentSummaries(
@@ -364,7 +336,6 @@ export class DataProductDataAccessState {
           userContracts,
           this.lakehouseContractServerClient,
           tokenProvider,
-          this.dataAccessPlugins,
         );
       });
     } catch (error) {
@@ -512,39 +483,10 @@ export class DataProductDataAccessState {
           this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         );
         if (response.length > 0) {
-          const dataRequestWithWorkflow = guaranteeNonNullable(response[0]);
-          const guid = dataRequestWithWorkflow.dataRequest.guid;
           this.setContractCreatorAPG(undefined);
           this.applicationStore.notificationService.notifySuccess(
             `Data access request created successfully`,
           );
-          const authClient = this.lakehouseContractServerClient;
-          const plugins =
-            this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins();
-          const viewerState = new PermitDataAccessRequestState(
-            guid,
-            this.applicationStore,
-            this.permitWorkflowServerClient,
-            this.dataProductViewerState.userSearchService,
-            {
-              authServerClient: authClient,
-              initialData: dataRequestWithWorkflow,
-              fetchFresh: async (token) => {
-                const raw = await authClient.getDataAccessRequestWithWorkflow(
-                  guid,
-                  token,
-                );
-                return V1_deserializeDataRequestsWithWorkflowResponse(
-                  raw,
-                  plugins,
-                )[0];
-              },
-              ...(this.getTaskPageUrl
-                ? { getTaskPageUrl: this.getTaskPageUrl }
-                : {}),
-            },
-          );
-          this.setDataAccessRequestViewerState(viewerState);
         }
         this.applicationStore.telemetryService.logEvent(
           DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
@@ -576,77 +518,6 @@ export class DataProductDataAccessState {
       this.applicationStore.notificationService.notifyError(`${error.message}`);
     } finally {
       this.creatingWorkflowRequestState.complete();
-    }
-  }
-
-  *createPermitRequest(
-    rmsNode: string,
-    description: string,
-    group: V1_AccessPointGroup,
-    tokenProvider: () => string | undefined,
-  ): GeneratorFn<void> {
-    try {
-      this.creatingPermitRequestState.inProgress();
-      const consumer = new V1_RMS();
-      consumer.rmsNode = rmsNode;
-      const payload = serialize(
-        V1_createDataAccessRequestPayloadModelSchema(
-          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-        ),
-        {
-          description,
-          resourceId: this.product.name,
-          deploymentId: this.entitlementsDataProductDetails.deploymentId,
-          accessPointGroup: group.id,
-          consumer,
-        } satisfies V1_CreateDataAccessRequestPayload,
-      ) as PlainObject<V1_CreateDataAccessRequestPayload>;
-      const raw =
-        (yield this.lakehouseContractServerClient.createPermitDataRequest(
-          payload,
-          tokenProvider(),
-        )) as PlainObject;
-      this.setContractCreatorAPG(undefined);
-      const typedRequests = V1_deserializeDataRequestsWithWorkflowResponse(
-        raw,
-        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-      );
-      const guid = typedRequests[0]?.dataRequest?.guid;
-      if (guid) {
-        const initialData = typedRequests[0];
-        const authClient = this.lakehouseContractServerClient;
-        const pluginManager = this.graphManagerState.pluginManager;
-        const viewerState = new PermitDataAccessRequestState(
-          guid,
-          this.applicationStore,
-          this.permitWorkflowServerClient,
-          this.dataProductViewerState.userSearchService,
-          {
-            authServerClient: authClient,
-            ...(initialData ? { initialData } : {}),
-            fetchFresh: async (token) => {
-              const freshRaw =
-                await authClient.getDataAccessRequestWithWorkflow(guid, token);
-              return V1_deserializeDataRequestsWithWorkflowResponse(
-                freshRaw,
-                pluginManager.getPureProtocolProcessorPlugins(),
-              )[0];
-            },
-            ...(this.getTaskPageUrl
-              ? { getTaskPageUrl: this.getTaskPageUrl }
-              : {}),
-          },
-        );
-        this.setDataAccessRequestViewerState(viewerState);
-      }
-      this.applicationStore.notificationService.notifySuccess(
-        `Permit data access request created successfully`,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(`${error.message}`);
-    } finally {
-      this.creatingPermitRequestState.complete();
     }
   }
 

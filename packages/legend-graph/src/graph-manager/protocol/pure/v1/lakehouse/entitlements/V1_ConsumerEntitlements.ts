@@ -98,16 +98,12 @@ export class V1_LiteDataContractWithUserStatus {
 // -------------------------------------- Data Contract Approval ---------------------------------------
 
 export enum V1_EnrichedUserApprovalStatus {
-  UNKNOWN = 'UNKNOWN',
-  SUBMITTED_FOR_APPROVALS = 'SUBMITTED_FOR_APPROVALS',
   PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL = 'PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL',
   PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
   APPROVED = 'APPROVED',
   DENIED = 'DENIED',
   REVOKED = 'REVOKED',
   CLOSED = 'CLOSED',
-  NO_ACCESS = 'NO_ACCESS',
-  ENTERPRISE = 'ENTERPRISE',
 }
 
 export class V1_DataContractApprovedUsersResponse {

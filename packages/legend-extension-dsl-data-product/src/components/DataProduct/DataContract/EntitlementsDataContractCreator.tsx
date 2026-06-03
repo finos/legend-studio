@@ -84,7 +84,7 @@ export const EntitlementsDataContractCreator = observer(
     const [consumer, setConsumer] = useState<
       V1_OrganizationalScope | undefined
     >();
-    const [description, setDescription] = useState<string>();
+    const [description, setDescription] = useState<string | undefined>();
     const [isValid, setIsValid] = useState<boolean>(false);
 
     const currentConsumerTypeResult = useMemo(
@@ -141,15 +141,13 @@ export const EntitlementsDataContractCreator = observer(
           <CubesLoadingIndicator
             isLoading={
               dataAccessState.creatingContractState.isInProgress ||
-              dataAccessState.creatingWorkflowRequestState.isInProgress ||
-              dataAccessState.creatingPermitRequestState.isInProgress
+              dataAccessState.creatingWorkflowRequestState.isInProgress
             }
           >
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
           {!dataAccessState.creatingContractState.isInProgress &&
-            !dataAccessState.creatingWorkflowRequestState.isInProgress &&
-            !dataAccessState.creatingPermitRequestState.isInProgress && (
+            !dataAccessState.creatingWorkflowRequestState.isInProgress && (
               <>
                 <div>
                   Submit access request for{' '}
@@ -195,7 +193,7 @@ export const EntitlementsDataContractCreator = observer(
             disabled={
               dataAccessState.creatingContractState.isInProgress ||
               dataAccessState.creatingWorkflowRequestState.isInProgress ||
-              dataAccessState.creatingPermitRequestState.isInProgress
+              !isValid
             }
           >
             Create
@@ -205,8 +203,7 @@ export const EntitlementsDataContractCreator = observer(
             variant="outlined"
             disabled={
               dataAccessState.creatingContractState.isInProgress ||
-              dataAccessState.creatingWorkflowRequestState.isInProgress ||
-              dataAccessState.creatingPermitRequestState.isInProgress
+              dataAccessState.creatingWorkflowRequestState.isInProgress
             }
           >
             Cancel

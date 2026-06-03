@@ -53,7 +53,6 @@ import {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
   LakehouseWorkflowServerClient,
-  PermitWorkflowServerClient,
 } from '@finos/legend-server-lakehouse';
 import { CartStore } from './cart/CartStore.js';
 import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
@@ -93,7 +92,6 @@ export class LegendMarketplaceBaseStore {
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
   readonly lakehouseWorkflowServerClient: LakehouseWorkflowServerClient;
-  readonly permitWorkflowServerClient: PermitWorkflowServerClient;
   readonly lakehouseDataProductService: LakehouseDataProductService;
   readonly cartStore: CartStore;
   readonly terminalAccessServerClient: TerminalAccessServerClient;
@@ -176,16 +174,6 @@ export class LegendMarketplaceBaseStore {
       baseUrl: this.applicationStore.config.lakehouseWorkflowServerUrl,
     });
     this.lakehouseWorkflowServerClient.setTracerService(
-      this.applicationStore.tracerService,
-    );
-
-    // permit + eTask workflow
-    this.permitWorkflowServerClient = new PermitWorkflowServerClient({
-      authBaseUrl: this.applicationStore.config.lakehouseServerUrl,
-      workflowBaseUrl:
-        this.applicationStore.config.lakehousePermitWorkflowServerUrl,
-    });
-    this.permitWorkflowServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
 
