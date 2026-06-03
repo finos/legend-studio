@@ -106,7 +106,6 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_ENTITLEMENTS_CONTRACT_TASK: `/lakehouse/entitlements/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_TASK_ID}`,
   LAKEHOUSE_ENTITLEMENTS_WORKFLOW_DATA_ACCESS_REQUEST: `/lakehouse/entitlements/workflowDataAccessRequest/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID}`,
-  LAKEHOUSE_ENTITLEMENTS_PERMIT_DATA_ACCESS_REQUEST: `/lakehouse/entitlements/permitDataAccessRequest/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID}`,
   LAKEHOUSE_ADMIN: '/lakehouse/admin',
   // Deprecated
   DEPRECATED_LAKEHOUSE: '/lakehouse',
@@ -141,16 +140,6 @@ export const generateWorkflowDataAccessRequestPagePath = (
 ): string =>
   generatePath(
     LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_WORKFLOW_DATA_ACCESS_REQUEST,
-    {
-      dataAccessRequestId,
-    },
-  );
-
-export const generatePermitDataAccessRequestPagePath = (
-  dataAccessRequestId: string,
-): string =>
-  generatePath(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_PERMIT_DATA_ACCESS_REQUEST,
     {
       dataAccessRequestId,
     },

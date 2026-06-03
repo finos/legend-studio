@@ -42,7 +42,6 @@ import {
   V1_EntitlementsDataProduct,
   V1_PaginationMetadataRecord,
   V1_ProducerScope,
-  V1_RMS,
   V1_UnknownOrganizationalScopeType,
   V1_User,
 } from '../../../../lakehouse/entitlements/V1_CoreEntitlements.js';
@@ -78,7 +77,6 @@ export const V1_paginationMetadataRecordModelSchema = createModelSchema(
 export enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
   Producer = 'Producer',
-  RMS = 'RMS',
 }
 
 export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
@@ -91,11 +89,6 @@ export const V1_ProducerScopeModelSchema = createModelSchema(V1_ProducerScope, {
   did: primitive(),
 });
 
-export const V1_RMSModelSchema = createModelSchema(V1_RMS, {
-  _type: usingConstantValueSchema(V1_OrganizationalScopeType.RMS),
-  rmsNode: primitive(),
-});
-
 export const V1_deserializeOrganizationalScope = (
   json: PlainObject<V1_OrganizationalScope>,
   plugins: PureProtocolProcessorPlugin[],
@@ -105,8 +98,6 @@ export const V1_deserializeOrganizationalScope = (
       return deserialize(V1_AdhocTeamModelSchema, json);
     case V1_OrganizationalScopeType.Producer:
       return deserialize(V1_ProducerScopeModelSchema, json);
-    case V1_OrganizationalScopeType.RMS:
-      return deserialize(V1_RMSModelSchema, json);
     default: {
       const extraOrganizationalScopeDeserializers = plugins.flatMap(
         (plugin) =>
@@ -138,9 +129,6 @@ export const V1_serializeOrganizationalScope = (
   }
   if (organizationalScope instanceof V1_ProducerScope) {
     return serialize(V1_ProducerScopeModelSchema, organizationalScope);
-  }
-  if (organizationalScope instanceof V1_RMS) {
-    return serialize(V1_RMSModelSchema, organizationalScope);
   }
   const extraOrganizationalScopeSerializers = plugins.flatMap(
     (plugin) =>

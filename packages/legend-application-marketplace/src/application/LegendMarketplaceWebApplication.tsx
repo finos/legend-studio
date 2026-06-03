@@ -97,13 +97,6 @@ const WorkflowDataAccessRequestTask = React.lazy(() =>
     }),
   ),
 );
-const PermitDataAccessRequestTask = React.lazy(() =>
-  import('../pages/Lakehouse/entitlements/PermitDataAccessRequest.js').then(
-    (module) => ({
-      default: module.PermitDataAccessRequestTask,
-    }),
-  ),
-);
 const LakehouseAdmin = React.lazy(() =>
   import('../pages/Lakehouse/admin/LakehouseAdmin.js').then((module) => ({
     default: module.LakehouseAdmin,
@@ -339,14 +332,6 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               }
               element={React.createElement(
                 useProtectedPage(WorkflowDataAccessRequestTask),
-              )}
-            />
-            <Route
-              path={
-                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_PERMIT_DATA_ACCESS_REQUEST
-              }
-              element={React.createElement(
-                useProtectedPage(PermitDataAccessRequestTask),
               )}
             />
             <Route
