@@ -26,7 +26,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Avatar, Box, IconButton, Link, Menu, MenuItem } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   assertErrorThrown,
   isNonNullable,
@@ -56,6 +56,8 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
   const [pendingTasksCount, setPendingTasksCount] = useState<number>(0);
   const showDevFeatures = applicationStore.config.options.showDevFeatures;
+  const tokenRef = useRef(auth.user?.access_token);
+  tokenRef.current = auth.user?.access_token;
 
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {
@@ -87,7 +89,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           const pendingTasks =
             await marketplaceStore.lakehouseContractServerClient.getPendingTasks(
               userId,
-              auth.user?.access_token,
+              tokenRef.current,
             );
           const tasks = deserialize(
             V1_pendingTasksResponseModelSchema,
@@ -114,7 +116,6 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     userId,
     applicationStore.notificationService,
     marketplaceStore.userSearchService,
-    auth.user?.access_token,
     marketplaceStore.lakehouseContractServerClient,
     applicationStore.logService,
     applicationStore.config.options.showDevFeatures,
