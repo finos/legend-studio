@@ -31,21 +31,20 @@ export type TimelineStep = {
   key: string;
   label: {
     title: string;
-    link?: string | undefined;
-    showEscalateButton?: boolean | undefined;
-    isEscalatable?: boolean | undefined;
-    isEscalated?: boolean | undefined;
+    link?: string;
+    externalLink?: string;
+    showEscalateButton?: boolean;
+    isEscalatable?: boolean;
+    isEscalated?: boolean;
   };
   status: 'active' | 'complete' | 'denied' | 'skipped' | 'upcoming';
   description?: React.ReactNode;
-  assignees?: string[] | undefined;
-  approvalPayload?:
-    | {
-        status: string;
-        approvalTimestamp?: string | undefined;
-        approverId?: string | undefined;
-      }
-    | undefined;
+  assignees?: string[];
+  approvalPayload?: {
+    status: string;
+    approvalTimestamp?: string;
+    approverId?: string;
+  };
 };
 
 export enum DataAccessRequestStatus {
@@ -101,5 +100,8 @@ export interface DataAccessRequestState {
   init(token: string | undefined): GeneratorFn<void>;
   getContractUserType(userId: string): V1_UserType | undefined;
   escalateRequest?(user: string, token: string | undefined): GeneratorFn<void>;
-  invalidateRequest?(token: string | undefined): GeneratorFn<void>;
+  invalidateRequest?(
+    justification: string | undefined,
+    token: string | undefined,
+  ): GeneratorFn<void>;
 }

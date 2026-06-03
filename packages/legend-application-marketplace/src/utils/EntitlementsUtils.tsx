@@ -19,10 +19,20 @@ import {
   getOrganizationalScopeTypeDetails,
   UserRenderer,
   MultiUserRenderer,
+  stringifyOrganizationalScope,
+  DataContractViewerState,
+  PermitDataAccessRequestState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
+  GraphManagerState,
   V1_LiteDataContractWithUserStatus,
   V1_ResourceType,
+  V1_AccessPointGroupReference,
+  V1_ContractState,
+  V1_RequestState,
+  V1_WorkflowTaskStatus,
+  type V1_DataRequestWithWorkflow,
+  V1_deserializeDataRequestsWithWorkflowResponse,
 } from '@finos/legend-graph';
 import type {
   DataGridCellRendererParams,
@@ -37,94 +47,222 @@ import { InfoCircleIcon } from '@finos/legend-art';
 import { Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import type { LakehouseEntitlementsStore } from '../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
+import { useMemo } from 'react';
+import { useLegendMarketplaceBaseStore } from '../application/providers/LegendMarketplaceFrameworkProvider.js';
+import {
+  generateContractPagePath,
+  generateLakehouseDataProductPath,
+  generatePermitDataAccessRequestPagePath,
+} from '../__lib__/LegendMarketplaceNavigation.js';
+
+export const UNKNOWN = 'Unknown';
+export const ROW_KIND_CONTRACT = 'contract';
+export const ROW_KIND_REQUEST = 'request';
+
+export enum EntitlementsColumnHeader {
+  TYPE = 'Type',
+  DATE_CREATED = 'Date Created',
+  CONSUMER_TYPE = 'Consumer Type',
+  TARGET_USERS = 'Target User(s)',
+  REQUESTER = 'Requester',
+  TARGET_DATA_PRODUCT = 'Target Data Product',
+  TARGET_ACCESS_POINT_GROUP = 'Target Access Point Group',
+  BUSINESS_JUSTIFICATION = 'Business Justification',
+  STATE = 'State',
+  ASSIGNEES = 'Assignees',
+}
+
+export const CONTRACT_STATE_DISPLAY_LABELS: Record<string, string> = {
+  [V1_ContractState.DRAFT]: 'Draft',
+  [V1_ContractState.PENDING_DATA_OWNER_APPROVAL]: 'Data Owner Approval',
+  [V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL]:
+    'Privilege Manager Approval',
+  [V1_ContractState.COMPLETED]: 'Completed',
+  [V1_ContractState.REJECTED]: 'Rejected',
+  [V1_ContractState.CLOSED]: 'Closed',
+};
+
+export const TERMINAL_DATA_REQUEST_STATES = new Set<string>([
+  V1_RequestState.COMPLETED,
+  V1_RequestState.REJECTED,
+  V1_RequestState.INVALIDATED,
+  V1_RequestState.OBSOLETE,
+]);
+
+export const ENTITLEMENTS_DEFAULT_COL_DEF: DataGridColumnDefinition<EntitlementsRow> =
+  {
+    minWidth: 50,
+    sortable: true,
+    resizable: true,
+    flex: 1,
+  };
+
+export type EntitlementsRow =
+  | {
+      kind: 'contract';
+      data: V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails;
+    }
+  | { kind: 'request'; data: V1_DataRequestWithWorkflow };
+
+export const getContractData = (row: EntitlementsRow) =>
+  row.kind === ROW_KIND_CONTRACT ? row.data.contractResultLite : undefined;
+
+export const getRequestData = (row: EntitlementsRow) =>
+  row.kind === ROW_KIND_REQUEST ? row.data.dataRequest : undefined;
+
+export const getSelectedRowId = (
+  row: EntitlementsRow | undefined,
+): string | undefined =>
+  row ? (getContractData(row)?.guid ?? getRequestData(row)?.guid) : undefined;
+
+export const getSelectedContractGuid = (
+  row: EntitlementsRow | undefined,
+): string | undefined => (row ? getContractData(row)?.guid : undefined);
+
+export const getOpenTaskAssignees = (
+  data: V1_DataRequestWithWorkflow,
+): string[] => {
+  const openTask = data.workflows
+    .flatMap((w) => w.tasks)
+    .find((t) => t.status === V1_WorkflowTaskStatus.OPEN);
+  return openTask?.assignees.toSorted() ?? [];
+};
+
+export const getConsumer = (row: EntitlementsRow) =>
+  getContractData(row)?.consumer ?? getRequestData(row)?.consumer;
 
 const TargetUserCellRenderer = observer(
   (props: {
-    dataContract:
-      | V1_LiteDataContractWithUserStatus
-      | ContractCreatedByUserDetails
-      | undefined;
+    row: EntitlementsRow | undefined;
     entitlementsStore: LakehouseEntitlementsStore;
   }): React.ReactNode => {
-    const { dataContract, entitlementsStore } = props;
-
-    const userIds =
-      dataContract instanceof V1_LiteDataContractWithUserStatus
-        ? [dataContract.user]
-        : (dataContract?.sortedMemberIds ?? []);
-
+    const { row, entitlementsStore } = props;
+    if (!row) {
+      return <>{UNKNOWN}</>;
+    }
+    if (row.kind === ROW_KIND_CONTRACT) {
+      const dataContract = row.data;
+      const userIds =
+        dataContract instanceof V1_LiteDataContractWithUserStatus
+          ? [dataContract.user]
+          : dataContract.sortedMemberIds;
+      return (
+        <MultiUserRenderer
+          userIds={userIds}
+          applicationStore={entitlementsStore.applicationStore}
+          userSearchService={
+            entitlementsStore.marketplaceBaseStore.userSearchService
+          }
+          disableOnClick={true}
+          singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
+        />
+      );
+    }
+    const consumer = row.data.dataRequest.consumer;
     return (
-      <MultiUserRenderer
-        userIds={userIds}
-        applicationStore={entitlementsStore.applicationStore}
-        userSearchService={
-          entitlementsStore.marketplaceBaseStore.userSearchService
-        }
-        disableOnClick={true}
-        singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
-      />
+      <>
+        {stringifyOrganizationalScope(
+          consumer,
+          entitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+        )}
+      </>
     );
   },
 );
 
 export const getCommonEntitlementsColDefs = (
   dashboardState: EntitlementsDashboardState,
-): DataGridColumnDefinition<
-  V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
->[] => [
+): DataGridColumnDefinition<EntitlementsRow>[] => [
   {
-    headerName: 'Date Created',
+    headerName: EntitlementsColumnHeader.TYPE,
+    colId: 'type',
+    valueGetter: (params) =>
+      params.data?.kind === ROW_KIND_CONTRACT
+        ? 'Data Contract'
+        : 'Data Request',
+  },
+  {
+    headerName: EntitlementsColumnHeader.DATE_CREATED,
     colId: 'dateCreated',
-    valueGetter: (params) => {
-      return (
-        formatOrderDate(params.data?.contractResultLite.createdAt) ?? 'Unknown'
-      );
-    },
     sort: 'desc',
     comparator: (_, __, val1, val2) => {
-      const dateA = val1.data?.contractResultLite.createdAt
-        ? new Date(val1.data.contractResultLite.createdAt).getTime()
-        : 0;
-      const dateB = val2.data?.contractResultLite.createdAt
-        ? new Date(val2.data.contractResultLite.createdAt).getTime()
-        : 0;
-      return dateA - dateB;
+      const getTime = (row: EntitlementsRow | undefined): number => {
+        if (!row) {
+          return 0;
+        }
+        const contract = getContractData(row);
+        if (contract) {
+          return contract.createdAt
+            ? new Date(contract.createdAt).getTime()
+            : 0;
+        }
+        if (row.kind !== ROW_KIND_REQUEST) {
+          return 0;
+        }
+        const c = row.data.workflows[0]?.tasks[0]?.createdOn;
+        if (!c) {
+          return 0;
+        }
+        const dateStr = c instanceof Date ? c.toISOString() : String(c);
+        return new Date(dateStr).getTime();
+      };
+      return getTime(val1.data) - getTime(val2.data);
+    },
+    valueGetter: (params) => {
+      if (!params.data) {
+        return UNKNOWN;
+      }
+      const contract = getContractData(params.data);
+      if (contract) {
+        return formatOrderDate(contract.createdAt) ?? UNKNOWN;
+      }
+      if (params.data.kind !== ROW_KIND_REQUEST) {
+        return UNKNOWN;
+      }
+      const createdOn = params.data.data.workflows[0]?.tasks[0]?.createdOn;
+      if (!createdOn) {
+        return UNKNOWN;
+      }
+      return (
+        formatOrderDate(
+          createdOn instanceof Date
+            ? createdOn.toISOString()
+            : String(createdOn),
+        ) ?? UNKNOWN
+      );
     },
   },
   {
     colId: 'consumerType',
-    headerName: 'Consumer Type',
+    headerName: EntitlementsColumnHeader.CONSUMER_TYPE,
     valueGetter: (params) => {
-      const consumer = params.data?.contractResultLite.consumer;
-      const typeName = consumer
+      if (!params.data) {
+        return UNKNOWN;
+      }
+      const consumer = getConsumer(params.data);
+      return consumer
         ? getOrganizationalScopeTypeName(
             consumer,
             dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
           )
-        : undefined;
-      return typeName ?? 'Unknown';
+        : UNKNOWN;
     },
-    cellRenderer: (
-      params: DataGridCellRendererParams<
-        V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
-      >,
-    ) => {
-      const consumer = params.data?.contractResultLite.consumer;
+    cellRenderer: (params: DataGridCellRendererParams<EntitlementsRow>) => {
+      if (!params.data) {
+        return UNKNOWN;
+      }
+      const consumer = getConsumer(params.data);
+      const plugins =
+        dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins();
       const typeName = consumer
-        ? getOrganizationalScopeTypeName(
-            consumer,
-            dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
-          )
+        ? getOrganizationalScopeTypeName(consumer, plugins)
         : undefined;
       const typeDetails = consumer
-        ? getOrganizationalScopeTypeDetails(
-            consumer,
-            dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
-          )
+        ? getOrganizationalScopeTypeDetails(consumer, plugins)
         : undefined;
       return (
         <>
-          {typeName ?? 'Unknown'}
+          {typeName ?? UNKNOWN}
           {typeDetails !== undefined && (
             <Tooltip
               className="marketplace-lakehouse-entitlements__grid__consumer-type__tooltip__icon"
@@ -138,37 +276,52 @@ export const getCommonEntitlementsColDefs = (
     },
   },
   {
-    headerName: 'Target User(s)',
+    headerName: EntitlementsColumnHeader.TARGET_USERS,
     colId: 'targetUser',
     valueGetter: (params) => {
-      const userIds =
-        params.data instanceof V1_LiteDataContractWithUserStatus
-          ? [params.data.user]
-          : (params.data?.sortedMemberIds ?? []);
-      return userIds.length > 0 ? userIds.join(', ') : 'Unknown';
+      if (!params.data) {
+        return UNKNOWN;
+      }
+      if (params.data.kind === ROW_KIND_CONTRACT) {
+        const userIds =
+          params.data.data instanceof V1_LiteDataContractWithUserStatus
+            ? [params.data.data.user]
+            : params.data.data.sortedMemberIds;
+        return userIds.length > 0 ? userIds.join(', ') : UNKNOWN;
+      }
+      const consumer = params.data.data.dataRequest.consumer;
+      return stringifyOrganizationalScope(
+        consumer,
+        dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+      );
     },
-    cellRenderer: (
-      params: DataGridCellRendererParams<
-        V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
-      >,
-    ) => (
+    cellRenderer: (params: DataGridCellRendererParams<EntitlementsRow>) => (
       <TargetUserCellRenderer
-        dataContract={params.data}
+        row={params.data}
         entitlementsStore={dashboardState.lakehouseEntitlementsStore}
       />
     ),
   },
   {
-    headerName: 'Requester',
+    headerName: EntitlementsColumnHeader.REQUESTER,
     colId: 'requester',
-    valueGetter: (params) =>
-      params.data?.contractResultLite.createdBy ?? 'Unknown',
-    cellRenderer: (
-      params: DataGridCellRendererParams<
-        V1_LiteDataContractWithUserStatus | ContractCreatedByUserDetails
-      >,
-    ) => {
-      const requester = params.data?.contractResultLite.createdBy;
+    valueGetter: (params) => {
+      if (!params.data) {
+        return UNKNOWN;
+      }
+      return (
+        getContractData(params.data)?.createdBy ??
+        getRequestData(params.data)?.createdBy ??
+        UNKNOWN
+      );
+    },
+    cellRenderer: (params: DataGridCellRendererParams<EntitlementsRow>) => {
+      if (!params.data) {
+        return <>{UNKNOWN}</>;
+      }
+      const requester =
+        getContractData(params.data)?.createdBy ??
+        getRequestData(params.data)?.createdBy;
       return requester ? (
         <UserRenderer
           userId={requester}
@@ -183,25 +336,127 @@ export const getCommonEntitlementsColDefs = (
           className="marketplace-lakehouse-entitlements__grid__user-display"
         />
       ) : (
-        <>Unknown</>
+        <>{UNKNOWN}</>
       );
     },
   },
   {
-    headerName: 'Target Data Product',
+    headerName: EntitlementsColumnHeader.TARGET_DATA_PRODUCT,
     valueGetter: (params) => {
-      return params.data?.contractResultLite.resourceId ?? 'Unknown';
+      if (!params.data) {
+        return UNKNOWN;
+      }
+      const contract = getContractData(params.data);
+      if (contract) {
+        return contract.resourceId;
+      }
+      const resource = getRequestData(params.data)?.resource;
+      return resource instanceof V1_AccessPointGroupReference
+        ? resource.dataProduct.name
+        : UNKNOWN;
     },
   },
   {
-    headerName: 'Target Access Point Group',
+    headerName: EntitlementsColumnHeader.TARGET_ACCESS_POINT_GROUP,
     valueGetter: (params) => {
-      const accessPointGroup =
-        params.data?.contractResultLite.resourceType ===
-        V1_ResourceType.ACCESS_POINT_GROUP
-          ? params.data.contractResultLite.accessPointGroup
-          : `${params.data?.contractResultLite.accessPointGroup ?? 'Unknown'} (${params.data?.contractResultLite.resourceType ?? 'Unknown Type'})`;
-      return accessPointGroup ?? 'Unknown';
+      if (!params.data) {
+        return UNKNOWN;
+      }
+      const contract = getContractData(params.data);
+      if (contract) {
+        const accessPointGroup =
+          contract.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
+            ? contract.accessPointGroup
+            : `${contract.accessPointGroup ?? UNKNOWN} (${contract.resourceType})`;
+        return accessPointGroup ?? UNKNOWN;
+      }
+      const resource = getRequestData(params.data)?.resource;
+      return resource instanceof V1_AccessPointGroupReference
+        ? resource.accessPointGroup
+        : UNKNOWN;
+    },
+  },
+  {
+    headerName: EntitlementsColumnHeader.BUSINESS_JUSTIFICATION,
+    valueGetter: (params) => {
+      if (!params.data) {
+        return UNKNOWN;
+      }
+      return (
+        getContractData(params.data)?.description ??
+        getRequestData(params.data)?.businessJustification ??
+        UNKNOWN
+      );
     },
   },
 ];
+
+export const useSelectedViewerState = (
+  selectedRow: EntitlementsRow | undefined,
+  selectedRowId: string | undefined,
+) => {
+  const marketplaceBaseStore = useLegendMarketplaceBaseStore();
+  return useMemo(() => {
+    if (!selectedRow) {
+      return undefined;
+    }
+    if (selectedRow.kind === ROW_KIND_CONTRACT) {
+      const contract = selectedRow.data.contractResultLite;
+      return new DataContractViewerState(
+        contract,
+        (contractId: string, taskId: string) =>
+          marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+            generateContractPagePath(contractId, taskId),
+          ),
+        undefined,
+        marketplaceBaseStore.applicationStore,
+        marketplaceBaseStore.lakehouseContractServerClient,
+        new GraphManagerState(
+          marketplaceBaseStore.applicationStore.pluginManager,
+          marketplaceBaseStore.applicationStore.logService,
+        ),
+        marketplaceBaseStore.userSearchService,
+      );
+    }
+    const guid = selectedRow.data.dataRequest.guid;
+    const authClient = marketplaceBaseStore.lakehouseContractServerClient;
+    const pluginManager = marketplaceBaseStore.applicationStore.pluginManager;
+    return new PermitDataAccessRequestState(
+      guid,
+      marketplaceBaseStore.applicationStore,
+      marketplaceBaseStore.permitWorkflowServerClient,
+      marketplaceBaseStore.userSearchService,
+      {
+        authServerClient: authClient,
+        initialData: selectedRow.data,
+        fetchFresh: async (token) => {
+          const raw = await authClient.getDataAccessRequestWithWorkflow(
+            guid,
+            token,
+          );
+          return V1_deserializeDataRequestsWithWorkflowResponse(
+            raw,
+            pluginManager.getPureProtocolProcessorPlugins(),
+          )[0];
+        },
+        getTaskPageUrl: (id) =>
+          marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+            generatePermitDataAccessRequestPagePath(id),
+          ),
+      },
+    );
+    // Re-create only when the selected row changes (different guid)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRowId]);
+};
+
+export const useGetDataProductUrl = (): ((
+  dataProductId: string,
+  deploymentId: number,
+) => string) => {
+  const marketplaceBaseStore = useLegendMarketplaceBaseStore();
+  return (dataProductId: string, deploymentId: number) =>
+    marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+      generateLakehouseDataProductPath(dataProductId, deploymentId),
+    );
+};

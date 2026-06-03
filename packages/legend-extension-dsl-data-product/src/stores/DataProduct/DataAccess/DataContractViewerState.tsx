@@ -247,57 +247,58 @@ export class DataContractViewerState implements DataAccessRequestState {
         key: 'privilege-manager-approval',
         label: {
           title: 'Privilege Manager Approval',
-          link:
-            privilegeManagerApprovalStepStatus === 'active'
-              ? this.getTaskUrl(
-                  this.guid,
-                  guaranteeNonNullable(
-                    privilegeManagerApprovalTask,
-                    'Expected privilege manager approval task to be defined',
-                  ).rec.taskId,
-                )
-              : undefined,
+          ...(privilegeManagerApprovalStepStatus === 'active' && {
+            link: this.getTaskUrl(
+              this.guid,
+              guaranteeNonNullable(
+                privilegeManagerApprovalTask,
+                'Expected privilege manager approval task to be defined',
+              ).rec.taskId,
+            ),
+          }),
           showEscalateButton,
           isEscalatable,
           isEscalated,
         },
         status: privilegeManagerApprovalStepStatus,
-        assignees: privilegeManagerApprovalTask?.assignees,
-        approvalPayload:
-          privilegeManagerApprovalTask && privilegeManagerApprovalPayload
-            ? {
-                status: privilegeManagerApprovalTask.rec.status,
-                approvalTimestamp:
-                  privilegeManagerApprovalPayload.eventTimestamp,
-                approverId: privilegeManagerApprovalPayload.managerIdentity,
-              }
-            : undefined,
+        ...(privilegeManagerApprovalTask?.assignees && {
+          assignees: privilegeManagerApprovalTask.assignees,
+        }),
+        ...(privilegeManagerApprovalTask &&
+          privilegeManagerApprovalPayload && {
+            approvalPayload: {
+              status: privilegeManagerApprovalTask.rec.status,
+              approvalTimestamp: privilegeManagerApprovalPayload.eventTimestamp,
+              approverId: privilegeManagerApprovalPayload.managerIdentity,
+            },
+          }),
       },
       {
         key: 'data-producer-approval',
         label: {
           title: 'Data Producer Approval',
-          link:
-            dataOwnerApprovalStepStatus === 'active'
-              ? this.getTaskUrl(
-                  this.guid,
-                  guaranteeNonNullable(
-                    dataOwnerApprovalTask,
-                    'Expected data owner approval task to be defined',
-                  ).rec.taskId,
-                )
-              : undefined,
+          ...(dataOwnerApprovalStepStatus === 'active' && {
+            link: this.getTaskUrl(
+              this.guid,
+              guaranteeNonNullable(
+                dataOwnerApprovalTask,
+                'Expected data owner approval task to be defined',
+              ).rec.taskId,
+            ),
+          }),
         },
         status: dataOwnerApprovalStepStatus,
-        assignees: dataOwnerApprovalTask?.assignees,
-        approvalPayload:
-          dataOwnerApprovalTask && dataOwnerApprovalPayload
-            ? {
-                status: dataOwnerApprovalTask.rec.status,
-                approvalTimestamp: dataOwnerApprovalPayload.eventTimestamp,
-                approverId: dataOwnerApprovalPayload.dataProducerIdentity,
-              }
-            : undefined,
+        ...(dataOwnerApprovalTask?.assignees && {
+          assignees: dataOwnerApprovalTask.assignees,
+        }),
+        ...(dataOwnerApprovalTask &&
+          dataOwnerApprovalPayload && {
+            approvalPayload: {
+              status: dataOwnerApprovalTask.rec.status,
+              approvalTimestamp: dataOwnerApprovalPayload.eventTimestamp,
+              approverId: dataOwnerApprovalPayload.dataProducerIdentity,
+            },
+          }),
       },
       {
         key: 'complete',
@@ -410,7 +411,10 @@ export class DataContractViewerState implements DataAccessRequestState {
     }
   }
 
-  *invalidateRequest(token: string | undefined): GeneratorFn<void> {
+  *invalidateRequest(
+    _justification: string | undefined,
+    token: string | undefined,
+  ): GeneratorFn<void> {
     try {
       this.invalidatingState.inProgress();
       yield this.lakehouseContractServerClient.invalidateContract(
