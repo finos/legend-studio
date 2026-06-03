@@ -1,5 +1,14 @@
 # @finos/legend-application-studio
 
+## 28.21.9
+
+### Patch Changes
+
+- [#5199](https://github.com/finos/legend-studio/pull/5199) [`3c8840b`](https://github.com/finos/legend-studio/commit/3c8840b0d5bedc9615956e2d4ae03f1c6fb32ddd) ([@Rakan1837](https://github.com/Rakan1837)) - feat: infer #SQL i()/p() accessors for DataProduct test-data setup
+
+- [#5203](https://github.com/finos/legend-studio/pull/5203) [`bcaa473`](https://github.com/finos/legend-studio/commit/bcaa473a66b6a70bf898f8485ac0ce23aa015937) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: add ai suggester for services
+  query: inline ai suggestions
+
 ## 28.21.8
 
 ### Patch Changes
