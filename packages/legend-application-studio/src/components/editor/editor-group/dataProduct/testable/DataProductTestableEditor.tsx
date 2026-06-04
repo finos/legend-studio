@@ -925,24 +925,24 @@ const DataProductTestEditor = observer(
                 <div className="data-product-test-editor__assertion">
                   {hasQueryParameters && (
                     <div className="data-product-test-editor__parameters-panel-container">
-                      <div className="service-test-data-editor panel data-product-test-editor__parameters-panel">
-                        <div className="service-test-suite-editor__header data-product-test-editor__parameters-header">
-                          <div className="service-test-suite-editor__header__title data-product-test-editor__parameters-header__title">
-                            <div className="service-test-suite-editor__header__title__label data-product-test-editor__parameters-header__title__label">
+                      <div className="panel data-product-test-editor__parameters-panel">
+                        <div className="data-product-test-editor__parameters-header">
+                          <div className="data-product-test-editor__parameters-header__title">
+                            <div className="data-product-test-editor__parameters-header__title__label">
                               Parameters
                             </div>
                           </div>
                           <div className="panel__header__actions data-product-test-editor__parameters-header__actions">
                             <button
-                              className="panel__header__action service-execution-editor__test-data__generate-btn data-product-test-editor__parameters-header__action"
+                              className="panel__header__action data-product-test-editor__parameters-header__action data-product-test-editor__parameters-header__generate-btn"
                               onClick={generateParameterValues}
                               disabled={!testState.newParamOptions.length}
                               title="Generate test parameter values"
                               tabIndex={-1}
                             >
-                              <div className="service-execution-editor__test-data__generate-btn__label">
-                                <RefreshIcon className="service-execution-editor__test-data__generate-btn__label__icon" />
-                                <div className="service-execution-editor__test-data__generate-btn__label__title">
+                              <div className="data-product-test-editor__parameters-header__generate-btn__label">
+                                <RefreshIcon className="data-product-test-editor__parameters-header__generate-btn__label__icon" />
+                                <div className="data-product-test-editor__parameters-header__generate-btn__label__title">
                                   Generate
                                 </div>
                               </div>
@@ -958,7 +958,7 @@ const DataProductTestEditor = observer(
                             </button>
                           </div>
                         </div>
-                        <div className="service-test-editor__setup__parameters data-product-test-editor__parameters">
+                        <div className="data-product-test-editor__parameters">
                           {testState.parameterValueStates.map((paramState) => (
                             <DataProductTestParameterEditor
                               key={paramState.uuid}

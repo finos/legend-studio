@@ -382,6 +382,45 @@
     min-height: 0;
   }
 
+  &__parameters-header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    min-height: 3.4rem;
+    padding: 0 0.5rem;
+  }
+
+  &__parameters-header__title {
+    @include flexVCenter;
+  }
+
+  &__parameters-header__title__label {
+    @include flexVCenter;
+
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  &__parameters-header__actions {
+    @include flexVCenter;
+  }
+
+  &__parameters-header__action {
+    @include flexCenter;
+  }
+
+  &__parameters-header__generate-btn {
+    padding: 0 0.7rem;
+  }
+
+  &__parameters-header__generate-btn__label {
+    @include flexVCenter;
+  }
+
+  &__parameters-header__generate-btn__label__icon {
+    margin-right: 0.5rem;
+  }
+
   &__parameters {
     overflow-y: auto;
     flex: 1;
