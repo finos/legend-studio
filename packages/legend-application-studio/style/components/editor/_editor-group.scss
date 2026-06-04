@@ -18,7 +18,7 @@
 
 .editor-group {
   &__header {
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     z-index: 1;
     height: 3.4rem;
     min-height: 3.4rem;
@@ -28,7 +28,7 @@
   &__content {
     overflow-y: hidden;
     position: relative;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     height: calc(100% - 3.4rem);
   }
 
@@ -51,7 +51,7 @@
       &--readonly {
         margin-left: 0.5rem;
         font-size: 1rem;
-        color: var(--color-dark-grey-350);
+        color: var(--color-text-disabled);
       }
     }
 
@@ -62,7 +62,7 @@
     &__path {
       @include flexVCenter;
 
-      color: var(--color-dark-grey-350);
+      color: var(--color-text-disabled);
       margin-left: 0.5rem;
       border-radius: 0.2rem;
       font-size: 1rem;
@@ -73,21 +73,24 @@
     }
   }
 
+  // NOTE: tab separators below use --color-bg-app as a "border" — the value
+  // intentionally matches the surrounding shell so tabs appear separated by a
+  // bg-colored gap rather than a visible line.
   &__text-mode__tab {
     @include flexVCenter;
 
     cursor: pointer;
-    color: var(--color-light-grey-400);
-    background: var(--color-dark-grey-80);
-    border-right: 0.1rem solid var(--color-dark-grey-50);
+    color: var(--color-text-muted);
+    background: var(--color-bg-elevated);
+    border-right: 0.1rem solid var(--color-bg-app);
 
     &--active {
-      color: var(--color-light-grey-100);
-      background: var(--color-dark-grey-50);
+      color: var(--color-text-primary);
+      background: var(--color-bg-app);
     }
 
     svg {
-      color: var(--color-blue-100) !important;
+      color: var(--color-text-link) !important;
       font-size: 1.3rem;
     }
 
@@ -106,10 +109,13 @@
       padding: 0.5rem 0.5rem 0.5rem 0;
     }
 
+    // NOTE: CTA was --color-light-blue-50 (steel blue). Mapped to --color-accent
+    // (navy blue) — visible color shift. If the lighter steel-blue treatment
+    // turns out to be intentional, introduce --color-accent-soft.
     &-btn {
       height: 100%;
       width: 12rem;
-      background: var(--color-light-blue-50);
+      background: var(--color-accent);
     }
   }
 
@@ -123,10 +129,10 @@
 
     height: 3.4rem;
     width: 3.4rem;
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-disabled);
 
     &--active {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
   }
 
@@ -139,15 +145,15 @@
       @include flexCenter;
 
       width: 15rem;
-      background: var(--color-dark-grey-100);
-      border-right: 0.1rem solid var(--color-dark-grey-50);
-      border-left: 0.1rem solid var(--color-dark-grey-50);
-      color: var(--color-light-grey-300);
+      background: var(--color-bg-panel);
+      border-right: 0.1rem solid var(--color-bg-app);
+      border-left: 0.1rem solid var(--color-bg-app);
+      color: var(--color-text-secondary);
       cursor: pointer;
     }
 
     &__type:hover {
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-hover);
     }
 
     &__type__label {
@@ -155,7 +161,7 @@
 
       height: 3.4rem;
       padding: 0 0.5rem;
-      border-top: 0.3rem solid var(--color-yellow-200);
+      border-top: 0.3rem solid var(--color-active-indicator);
     }
 
     &__options {
@@ -179,28 +185,31 @@
       padding: 0.5rem 0;
     }
 
+    // Group color-coding: native vs generated elements. Brand semantics —
+    // colors encode meaning (where this element comes from) so they stay
+    // stable across themes.
     &__option__group {
       display: flex;
       flex-direction: row;
 
       &--native {
-        background: var(--color-blue-100);
-        border: 0.1rem solid var(--color-blue-100);
+        background: var(--color-status-info);
+        border: 0.1rem solid var(--color-status-info);
       }
 
       &--native &__name {
-        background: var(--color-blue-100);
-        color: var(--color-light-grey-50);
+        background: var(--color-status-info);
+        color: var(--color-text-on-accent);
       }
 
       &--generation {
-        background: var(--color-pink-300);
-        border: 0.1rem solid var(--color-pink-300);
+        background: var(--color-category-generation);
+        border: 0.1rem solid var(--color-category-generation);
       }
 
       &--generation &__name {
-        background: var(--color-pink-300);
-        color: var(--color-light-grey-50);
+        background: var(--color-category-generation);
+        color: var(--color-text-on-accent);
       }
     }
 
@@ -211,7 +220,7 @@
 
     &__option__group__options {
       width: 100%;
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel);
     }
 
     &__option__group__options--center {
@@ -234,7 +243,7 @@
     width: 100%;
     flex-direction: column;
     user-select: none;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
 
     &__content--hidden {
       display: none;
@@ -304,11 +313,11 @@
 
         border-radius: 0.1rem;
         height: 0.1rem;
-        background: var(--color-dark-grey-200);
+        background: var(--color-border-default);
       }
 
       &__header {
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
         font-weight: bold;
         font-size: min(2vw, 2vh);
         height: 10%;
@@ -349,7 +358,7 @@
       font-weight: 500;
       font-size: min(1.5vh, 1.5vw);
       width: 65%;
-      color: var(--color-light-blue-50);
+      color: var(--color-text-link);
     }
 
     &__content__item__hot-keys {
@@ -362,14 +371,14 @@
 
     .hotkey {
       &__key {
-        color: var(--color-light-grey-400);
-        background: var(--color-dark-grey-200);
+        color: var(--color-text-muted);
+        background: var(--color-bg-tag);
         font-size: min(1.5vh, 1.5vw);
         height: min(2vh, 2vw);
       }
 
       &__plus svg {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         font-size: min(1vh, 1vw);
       }
     }

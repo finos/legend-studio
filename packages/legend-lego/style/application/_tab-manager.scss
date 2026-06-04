@@ -32,13 +32,15 @@
     @include flexVCenter;
 
     cursor: pointer;
-    color: var(--color-light-grey-400);
-    background: var(--color-dark-grey-80);
-    border-right: 0.1rem solid var(--color-dark-grey-50);
+    // Inactive tab sits on the panel-header strip; active tab "lifts" onto
+    // the app shell surface (matches the VSCode pattern in dark theme).
+    color: var(--color-text-muted);
+    background: var(--color-bg-panel-header);
+    border-right: 0.1rem solid var(--color-border-subtle);
 
     &--active {
-      color: var(--color-light-grey-100);
-      background: var(--color-dark-grey-50);
+      color: var(--color-text-primary);
+      background: var(--color-bg-app);
     }
 
     &--dragged {
@@ -71,12 +73,12 @@
       margin-right: 0.4rem;
 
       svg {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
         font-size: 1.2rem;
       }
 
       &:hover {
-        background: var(--color-dark-grey-200);
+        background: var(--color-bg-hover);
       }
     }
 
@@ -89,12 +91,12 @@
       margin-right: 0.4rem;
 
       svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-disabled);
         font-size: 1.4rem;
       }
 
       &:hover {
-        background: var(--color-dark-grey-200);
+        background: var(--color-bg-hover);
       }
     }
 
@@ -103,7 +105,7 @@
       visibility: visible;
 
       svg {
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
       }
     }
 
@@ -111,7 +113,7 @@
       text-align: left;
       margin: 0;
       padding: 0 0.5rem;
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel);
     }
   }
 
@@ -125,8 +127,8 @@
       @include flexCenter;
       @include flexConstantDimension;
 
-      color: var(--color-light-grey-400);
-      border-left: 0.1rem solid var(--color-dark-grey-50);
+      color: var(--color-text-muted);
+      border-left: 0.1rem solid var(--color-border-subtle);
       height: 100%;
       width: 2.8rem;
     }
@@ -136,7 +138,7 @@
 
       &--active,
       &:not([disabled]):hover {
-        background: var(--color-dark-grey-250);
+        background: var(--color-bg-selected);
       }
     }
 

@@ -23,7 +23,7 @@
 
     cursor: default;
     height: 3.6rem;
-    background: var(--color-blue-300);
+    background: var(--color-accent);
     padding-left: 1rem;
   }
 
@@ -47,7 +47,7 @@
     margin-right: 0.7rem;
 
     svg {
-      color: var(--color-dark-shade-300);
+      color: var(--color-state-disabled-on-accent);
     }
   }
 
@@ -64,11 +64,11 @@
 
     svg {
       font-size: 1.6rem;
-      color: var(--color-light-grey-200);
+      color: var(--color-text-on-accent);
     }
 
     &:hover svg {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-on-accent);
     }
   }
 
@@ -80,7 +80,7 @@
   &__footer {
     @include flexVCenter;
 
-    border-top: 0.1rem solid var(--color-dark-grey-100);
+    border-top: 0.1rem solid var(--color-border-subtle);
     height: 5rem;
     padding-right: 1rem;
     justify-content: flex-end;
@@ -91,12 +91,13 @@
 
       height: 3.6rem;
       border-radius: 0.2rem;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-on-accent);
     }
 
+    // Legacy `.btn--light` — backward-compat alias; theme-aware now.
     .btn--light {
-      color: var(--color-dark-grey-100);
-      background: var(--color-light-grey-50);
+      color: var(--color-text-inverted);
+      background: var(--color-bg-tag);
     }
 
     &__status {
@@ -108,8 +109,8 @@
   }
 
   &__footer__btn {
-    border-color: var(--color-blue-200);
-    background: var(--color-blue-300);
+    border-color: var(--color-accent);
+    background: var(--color-accent);
 
     svg {
       margin-right: 0.5rem;
@@ -117,19 +118,21 @@
     }
 
     &--secondary {
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-panel-header);
 
       &:hover {
-        background: var(--color-dark-grey-250);
+        background: var(--color-bg-hover);
       }
     }
   }
 }
 
+// Legacy `--dark` modal — theme-aware now (bg-app + accent border in both
+// themes). Backward-compat alias for consumers passing the modifier.
 .modal.modal--dark {
-  background: var(--color-dark-grey-50);
-  color: var(--color-light-grey-200);
-  border: 0.1rem solid var(--color-blue-300);
+  background: var(--color-bg-app);
+  color: var(--color-text-secondary);
+  border: 0.1rem solid var(--color-accent);
 }
 
 .modal.modal--no-padding {

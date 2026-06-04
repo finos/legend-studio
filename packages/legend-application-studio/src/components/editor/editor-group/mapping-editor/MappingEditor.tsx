@@ -220,7 +220,7 @@ const MappingClassMappingEditor = observer(() => {
   );
 
   return (
-    <div className={clsx('mapping-editor', 'mapping__theme__dark')}>
+    <div className="mapping-editor">
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={300} minSize={300}>
           <div className="mapping-editor__side-bar">

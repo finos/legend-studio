@@ -19,8 +19,8 @@
 .runtime-editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
-  color: var(--color-light-grey-200);
+  background: var(--color-bg-app);
+  color: var(--color-text-secondary);
 
   .panel {
     height: 100%;
@@ -28,27 +28,27 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -79,7 +79,7 @@
   }
 
   &__tree__node__container:hover {
-    background: var(--color-dark-blue-shade-100);
+    background: var(--color-accent-subtle);
   }
 
   &__item {
@@ -90,7 +90,7 @@
   }
 
   &__item:hover {
-    background: var(--color-dark-blue-shade-100);
+    background: var(--color-accent-subtle);
   }
 
   &__item__label {
@@ -126,11 +126,14 @@
 
   &__item--active,
   &__item--active:hover {
-    background: var(--color-light-blue-450);
+    background: var(--color-bg-selected);
   }
 
+  // NOTE: context-menu selected was --color-light-grey-300 (a bright grey
+  // highlight). Mapped to accent-subtle for consistency with other right-click
+  // selected treatments. Visible shift: bright grey → translucent blue.
   &__item--selected-from-context-menu {
-    background: var(--color-light-grey-300);
+    background: var(--color-accent-subtle);
   }
 
   &__content {
@@ -177,7 +180,7 @@
 
   &__pointer {
     height: 8.7rem !important;
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    border-bottom: 0.1rem solid var(--color-border-default);
 
     .panel__content {
       padding: 1.5rem 1.5rem 1rem;
@@ -189,7 +192,7 @@
 
     height: 2.8rem;
     width: 2.8rem;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     margin-right: 0.5rem;
   }
 
@@ -207,7 +210,7 @@
     @include flexVCenter;
 
     svg {
-      color: var(--color-blue-100);
+      color: var(--color-text-link);
     }
 
     &__label {

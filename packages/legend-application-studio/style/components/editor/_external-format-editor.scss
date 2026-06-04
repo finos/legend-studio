@@ -21,16 +21,18 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
   position: relative;
   padding-left: 0;
 
   &__dropdown {
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-border-default);
     padding: 0;
   }
 
+  // Format-type selector pill — bg matches panel, borders match shell for
+  // the "gap-as-border" tab pattern.
   &__type {
     @include flexVCenter;
 
@@ -38,10 +40,10 @@
     width: 25rem;
     flex: auto;
     min-width: 15rem;
-    background: var(--color-dark-grey-100);
-    border-right: 0.1rem solid var(--color-dark-grey-50);
-    border-left: 0.1rem solid var(--color-dark-grey-50);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-panel);
+    border-right: 0.1rem solid var(--color-bg-app);
+    border-left: 0.1rem solid var(--color-bg-app);
+    color: var(--color-text-primary);
     cursor: pointer;
   }
 
@@ -55,7 +57,7 @@
   &__type__icon {
     @include flexCenter;
 
-    border-left: 0.1rem solid var(--color-dark-grey-50);
+    border-left: 0.1rem solid var(--color-bg-app);
     height: 2.6rem;
     width: 2.6rem;
     min-width: 2.6rem;
@@ -66,12 +68,14 @@
 
     width: 25rem;
     height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.01rem solid var(--color-dark-grey-200);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-panel);
+    border: 0.01rem solid var(--color-border-default);
+    color: var(--color-text-primary);
   }
 }
 
+// NOTE: --color-light-shade-280 box-shadows below are pre-existing typos in
+// the palette (only dark-shade-280 exists). Substituted with --color-shadow.
 .binding-editor {
   display: flex;
   flex-direction: column;
@@ -82,14 +86,14 @@
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__header__actions {
@@ -101,7 +105,7 @@
     @include flexCenter;
 
     background: transparent;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     cursor: pointer;
     width: 2.8rem;
   }
@@ -113,7 +117,7 @@
   }
 
   &__header__action[disabled] svg {
-    color: var(--color-dark-grey-400) !important;
+    color: var(--color-text-disabled) !important;
   }
 
   &__header__title {
@@ -128,7 +132,7 @@
     word-break: normal;
     overflow-wrap: anywhere;
     font-size: 1.4rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     line-height: 2rem;
     margin-bottom: 0.8rem;
     cursor: default;
@@ -141,8 +145,8 @@
     line-height: 1.8rem;
     border-radius: 0.1rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-250);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tag);
     font-size: 1.1rem;
     cursor: default;
     margin-right: 0.5rem;
@@ -153,7 +157,7 @@
 
       border-radius: 0.2rem;
       margin-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
 
       svg {
         font-size: 1rem;
@@ -171,18 +175,18 @@
     @include flexVCenter;
 
     cursor: default;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     height: 2.8rem;
     padding: 0 1rem;
   }
 
   &__context-menu:hover {
-    background: var(--color-light-blue-200);
-    color: var(--color-light-grey-0);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
   }
 
   &__content {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     height: calc(100% - 2.8rem);
     overflow-y: auto;
   }
@@ -194,25 +198,28 @@
   }
 
   &__dropdown {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     padding: 0;
   }
 
+  // Dropdown option. Hover originally inverted the colors (bright bg + bright
+  // text — barely readable). Folded to bg-hover with text-primary for
+  // consistency; meaningful improvement to legibility.
   &__option {
     padding: 1rem;
     height: 2.8rem;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
 
     &__active {
-      background: var(--color-light-blue-400);
-      color: var(--color-light-grey-50);
+      background: var(--color-accent);
+      color: var(--color-text-on-accent);
     }
   }
 
   &__option:hover {
-    background: var(--color-light-grey-100);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
   }
 
   &__model-unit-editor {
@@ -231,27 +238,27 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -271,14 +278,14 @@
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__header__actions {
@@ -290,11 +297,12 @@
     @include flexCenter;
 
     background: transparent;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     cursor: pointer;
     width: 2.8rem;
   }
 
+  // Lock indicator — bright chip pattern (light-grey-100 bg → bg-tag).
   &__header__lock {
     @include flexCenter;
 
@@ -302,11 +310,11 @@
     min-width: 4rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    background: var(--color-light-grey-100);
+    background: var(--color-bg-tag);
   }
 
   &__header__action[disabled] svg {
-    color: var(--color-dark-grey-400) !important;
+    color: var(--color-text-disabled) !important;
   }
 
   &__header__title {
@@ -321,7 +329,7 @@
     word-break: normal;
     overflow-wrap: anywhere;
     font-size: 1.4rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     line-height: 2rem;
     margin-bottom: 0.8rem;
     cursor: default;
@@ -332,8 +340,8 @@
     line-height: 1.8rem;
     border-radius: 0.1rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-250);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tag);
     font-size: 1.1rem;
     cursor: default;
     margin-right: 0.5rem;
@@ -347,7 +355,7 @@
   }
 
   &__content {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     height: calc(100% - 2.8rem);
     overflow-y: auto;
   }
@@ -359,7 +367,7 @@
   }
 
   &__dropdown {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     padding: 0;
   }
 
@@ -368,17 +376,17 @@
     @include flexHSpaceBetween;
 
     height: 2.4rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__item:hover {
-    background: var(--color-dark-blue-shade-100);
+    background: var(--color-accent-subtle);
   }
 
   &__item--active,
   &__item--active:hover {
-    background: var(--color-light-blue-450);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-selected);
+    color: var(--color-text-primary);
   }
 
   &__item__label {
@@ -403,10 +411,10 @@
   &__location {
     flex: auto;
     min-width: 0;
-    border: 0.1rem solid var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-bg-input);
     border-radius: 0.2rem;
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-input);
+    color: var(--color-text-secondary);
     padding: 0 0.5rem;
     height: 2.8rem;
     margin-left: 0.2rem;
@@ -422,10 +430,10 @@
   &__content__input {
     width: 100%;
     min-width: 0;
-    border: 0.1rem solid var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-bg-input);
     border-radius: 0.2rem 0 0 0.2rem;
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-input);
+    color: var(--color-text-secondary);
     height: 50rem;
     margin-left: 0.1rem;
     overflow-y: hidden;
@@ -461,7 +469,7 @@
     @include flexVCenter;
 
     font-weight: 500;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
     line-height: 2rem;
     cursor: default;
@@ -471,7 +479,7 @@
     word-break: normal;
     overflow-wrap: anywhere;
     font-size: 1.4rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     line-height: 2rem;
     margin-bottom: 0.8rem;
     cursor: default;
@@ -481,22 +489,22 @@
     width: 100%;
     min-width: 5rem;
     max-width: 45rem;
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-input);
+    color: var(--color-text-secondary);
     padding: 1rem;
     border-radius: 0.1rem;
     height: 8rem !important;
     resize: none;
     line-height: 2rem;
-    border: 0.1rem solid var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-bg-input);
 
     &:focus {
-      border: 0.1rem solid var(--color-blue-200);
+      border: 0.1rem solid var(--color-border-focus);
       outline: none;
     }
 
     &[disabled] {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       cursor: not-allowed;
     }
   }
@@ -509,7 +517,7 @@
     @include flexVCenter;
 
     font-weight: 500;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     margin: 0.5rem 0;
     line-height: 2rem;
     cursor: default;
@@ -532,21 +540,21 @@
 }
 
 .model-unit-editor {
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   &__panel__header {
     @include flexVCenter;
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__panel__content__form {
@@ -601,6 +609,9 @@
   }
 }
 
+// External-format icon brand colors. These are existing semantic indirection
+// (--color-schema-set, --color-binding) pointing at blue-50; kept stable
+// across themes.
 :root {
   --color-schema-set: var(--color-blue-50);
   --color-binding: var(--color-blue-50);

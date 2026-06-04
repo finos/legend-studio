@@ -25,6 +25,8 @@
         display: flex;
         padding-right: 0.5rem;
 
+        // Test-category icons — direct palette refs for the testable brand
+        // palette (see service-editor header for the longer note).
         &__icon {
           @include flexVCenter;
 
@@ -39,22 +41,22 @@
           }
 
           &--passed svg {
-            color: var(--color-green-100) !important;
+            color: var(--color-status-success) !important;
           }
 
           &--failed svg {
-            color: var(--color-red-100) !important;
+            color: var(--color-status-error) !important;
           }
         }
       }
     }
 
     &__play__all__icon svg {
-      color: var(--color-green-100) !important;
+      color: var(--color-status-success) !important;
     }
 
     &__play__all__icon svg:hover {
-      color: var(--color-green-80) !important;
+      color: var(--color-status-success) !important;
     }
 
     &__item {
@@ -62,18 +64,18 @@
       @include flexHSpaceBetween;
 
       height: 2.4rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__item:hover {
-      background: var(--color-dark-blue-shade-100);
+      background: var(--color-accent-subtle);
     }
 
     &__item--active,
     &__item--active svg,
     &__item--active:hover {
-      background: var(--color-light-blue-450);
-      color: var(--color-light-grey-50);
+      background: var(--color-bg-selected);
+      color: var(--color-text-primary);
     }
 
     &__item__label {
@@ -104,7 +106,7 @@
     &__item__action {
       height: 100%;
       width: 2.8rem;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-disabled);
     }
   }
 }
@@ -117,10 +119,10 @@
     @include flexHSpaceBetween;
 
     padding-left: 0.5rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     font-weight: bold;
-    background: var(--color-dark-grey-50);
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-app);
+    border-bottom: 0.1rem solid var(--color-border-default);
     height: 2.8rem;
 
     &__tabs {
@@ -136,9 +138,9 @@
 
       display: inline-flex;
       height: 100%;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       padding: 0 1rem;
-      border-right: 0.1rem solid var(--color-dark-grey-80);
+      border-right: 0.1rem solid var(--color-border-subtle);
       white-space: nowrap;
       cursor: pointer;
     }
@@ -153,7 +155,7 @@
       width: 100%;
       position: absolute;
       bottom: 0;
-      background: var(--color-yellow-200);
+      background: var(--color-active-indicator);
     }
 
     &__actions {
@@ -168,11 +170,11 @@
     }
 
     &__action svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
   }
 
@@ -193,7 +195,7 @@
   &__content {
     height: 100%;
     width: 100%;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__summary {
@@ -201,15 +203,15 @@
     height: 100%;
     overflow: auto;
     padding: 2rem;
-    color: var(--color-light-grey-150);
-    background: var(--color-dark-grey-50);
+    color: var(--color-text-primary);
+    background: var(--color-bg-app);
 
     &--fail {
-      color: var(--color-red-100);
+      color: var(--color-status-error);
     }
 
     &--success {
-      color: var(--color-green-100);
+      color: var(--color-status-success);
     }
 
     &-main {
@@ -237,7 +239,7 @@
     &__content {
       height: 100%;
       width: 100%;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
 
       &__data {
         position: relative;
@@ -248,17 +250,19 @@
     &__message {
       cursor: pointer;
       text-decoration: underline;
-      color: var(--color-blue-180);
+      color: var(--color-text-link);
       padding-top: 0.5rem;
     }
   }
 
+  // Diff-summary chip — bright-grey chip with dark text. Same pattern as
+  // workspace source tags etc.
   &-result {
     &__diff__header__label {
       margin: 0 0.5rem;
       font-size: 1.2rem;
       font-weight: 500;
-      color: var(--color-dark-grey-50);
+      color: var(--color-text-inverted);
       white-space: nowrap;
     }
 
@@ -270,7 +274,7 @@
 
     &__diff__icon svg {
       font-size: 1.7rem;
-      color: var(--color-dark-grey-50);
+      color: var(--color-text-inverted);
     }
 
     &__diff__summary {
@@ -278,7 +282,7 @@
 
       height: 1.8rem;
       border-radius: 0.3rem;
-      background: var(--color-light-grey-400);
+      background: var(--color-bg-tag);
       cursor: default;
       user-select: none;
     }
@@ -289,7 +293,7 @@
   &-editor {
     &__content {
       width: 100%;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
       padding: 1rem;
       height: 5rem;
 

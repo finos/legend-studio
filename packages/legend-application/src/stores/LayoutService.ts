@@ -46,6 +46,14 @@ export class LayoutService {
   private readonly colorThemeRegistry = new Map<string, ColorTheme>();
   currentColorTheme!: ColorTheme;
 
+  /**
+   * All color themes registered with the application (core + plugin-contributed).
+   * Used to populate theme picker UIs.
+   */
+  get availableColorThemes(): ColorTheme[] {
+    return Array.from(this.colorThemeRegistry.values());
+  }
+
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       currentColorTheme: observable.ref,

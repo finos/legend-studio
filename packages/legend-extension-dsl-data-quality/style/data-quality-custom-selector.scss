@@ -21,22 +21,22 @@
 
   width: 100%;
   height: 2.8rem;
-  border: 0.1rem solid var(--color-dark-grey-280);
+  border: 0.1rem solid var(--color-border-default);
   border-radius: 0.2rem;
   cursor: pointer;
-  background: var(--color-dark-grey-100);
+  background: var(--color-bg-panel);
 
   &[disabled] {
     cursor: not-allowed;
-    background: var(--color-dark-grey-50);
-    border-color: var(--color-dark-grey-200);
+    background: var(--color-bg-app);
+    border-color: var(--color-border-default);
 
     .data-quality-custom-selector__label {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
     }
 
     .data-quality-custom-selector__dropdown__trigger svg {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
     }
   }
 
@@ -46,7 +46,7 @@
     padding: 0 0.5rem;
     height: 100%;
     width: calc(100% - 2rem);
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     font-size: 1.2rem;
     user-select: none;
   }
@@ -62,10 +62,10 @@
     border: none;
     background: transparent;
     cursor: pointer;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
 
     &:hover {
-      color: var(--color-light-grey-100);
+      color: var(--color-text-primary);
     }
 
     svg {
@@ -81,7 +81,7 @@
     height: 100%;
 
     svg {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
       font-size: 1.2rem;
     }
   }
@@ -93,7 +93,7 @@
     padding: 0 1rem;
     cursor: pointer;
     font-size: 1.2rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
 
     &:hover {
       background: var(--color-dark-blue-shade-100);

@@ -20,14 +20,14 @@
   &__button {
     @include flexVCenter;
 
-    background: var(--color-dark-grey-300);
+    background: var(--color-bg-tag);
 
     svg {
       font-size: 2rem;
     }
 
     &:hover {
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-hover);
     }
   }
 
@@ -46,15 +46,15 @@
   max-height: 20rem;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--color-dark-grey-100);
-  border: 1px solid var(--color-dark-grey-200);
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-default);
 
   &__option {
     @include flexCenter;
 
     padding: 0.5rem;
     cursor: pointer;
-    color: var(--color-dark-grey-300);
+    color: var(--color-text-disabled);
     font-size: 1.6rem;
 
     &--disabled {
@@ -62,13 +62,13 @@
     }
 
     &:hover {
-      background: var(--color-blue-100);
-      color: var(--color-light-grey-50);
+      background: var(--color-accent);
+      color: var(--color-text-on-accent);
     }
 
     &--selected {
-      background: var(--color-orange-100);
-      color: var(--color-light-grey-50);
+      background: var(--color-status-warn);
+      color: var(--color-text-on-accent);
     }
 
     &--none {

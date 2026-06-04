@@ -19,7 +19,7 @@
 .service-register-modal {
   height: 100%;
   position: relative;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   &__actions {
     margin-top: 0.5rem;
@@ -35,8 +35,8 @@
       height: 1.8rem;
       width: 10rem;
       padding: 0 1rem;
-      background: var(--color-dark-grey-400);
-      color: var(--color-light-grey-0);
+      background: var(--color-bg-tag);
+      color: var(--color-text-primary);
       font-weight: 500;
       font-size: 1.2rem;
       border-radius: 0.2rem 0.2rem 0 0;
@@ -44,7 +44,7 @@
 
     &__content {
       padding: 0.5rem;
-      border: 0.1rem solid var(--color-dark-grey-400);
+      border: 0.1rem solid var(--color-border-strong);
       border-radius: 0 0.2rem 0.2rem;
     }
 
@@ -76,12 +76,12 @@
       @include flexVCenter;
 
       width: 12rem;
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-panel-header);
       font-family: 'Roboto Mono', monospace;
       font-size: 1.3rem;
       padding: 0 1rem;
       border-radius: 0.2rem 0 0 0.2rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
 
     &__label--warning {
@@ -105,8 +105,8 @@
 
   &__auto-activation {
     display: flex;
-    background: var(--color-dark-grey-85);
-    border: 0.1rem solid var(--color-dark-grey-280);
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-border-default);
     border-radius: 0.2rem;
     margin-top: 0.5rem;
 

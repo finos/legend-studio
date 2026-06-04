@@ -1,0 +1,128 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* ============================================================================
+ * Semantic color tokens
+ * ============================================================================
+ *
+ * This file defines the *vocabulary* of semantic color tokens used by Legend
+ * applications. Components should reference ONLY these tokens — never the
+ * physical palette tokens in `_variables.scss` directly.
+ *
+ * How theming works
+ * -----------------
+ *   palette tokens (physical)   →   semantic tokens (role-based)   →   components
+ *   --color-dark-grey-50              --color-bg-app                    .editor { background: var(--color-bg-app); }
+ *
+ * Each theme (`_theme-default-dark.scss`, `_theme-default-light.scss`, ...)
+ * provides a *mapping* from semantic tokens to palette values, scoped to a
+ * theme class (e.g. `.theme__default-dark`) on the <html> element.
+ *
+ * The values in this file (at `:root`) are the default fallback if no theme
+ * class is applied — set to the dark-theme values for backward compatibility.
+ *
+ * To add a new theme:
+ *   1. Create `_theme-<name>.scss` that maps every token below to a palette value.
+ *   2. Register it in `LegendApplicationColorTheme.ts` with a matching className.
+ *   3. No component changes required.
+ *
+ * Naming convention: `--color-<category>-<role>[-<state>]`
+ *   Categories: bg, text, border, accent, status
+ *
+ * ============================================================================ */
+
+:root {
+  /* ---- Surfaces (layered backgrounds) ----------------------------------- */
+  --color-bg-app: var(--color-dark-grey-50); // app shell
+  --color-bg-panel: var(--color-dark-grey-100); // sidebars, panels
+  --color-bg-panel-header: var(--color-dark-grey-200); // tabs, panel headers
+  // activity bar, chrome surfaces
+  --color-bg-chrome: var(--color-dark-grey-250);
+  --color-bg-elevated: var(--color-dark-grey-80); // menus, popovers, tooltips
+  --color-bg-input: var(--color-dark-grey-100); // form inputs
+  --color-bg-hover: var(--color-dark-grey-250); // row/item hover state
+  --color-bg-selected: var(--color-light-blue-450); // selected item
+  --color-bg-tag: var(--color-dark-grey-300); // neutral pill/badge/count bg
+  --color-bg-overlay: var(--color-dark-shade-300); // modal backdrop
+
+  /* ---- Text ------------------------------------------------------------- */
+  --color-text-primary: var(--color-light-grey-0); // body text, titles
+  --color-text-secondary: var(--color-light-grey-200); // sub-text
+  // labels, hints, placeholders
+  --color-text-muted: var(--color-light-grey-400);
+  // disabled controls (dimmer than muted; blends toward bg)
+  --color-text-disabled: var(--color-dark-grey-400);
+  // text on inverted-luminance bg (flips with theme)
+  --color-text-inverted: var(--color-dark-grey-50);
+  // text on saturated colored fills (stable across themes)
+  --color-text-on-accent: var(--color-light-grey-50);
+  --color-text-link: var(--color-blue-100); // hyperlinks
+
+  /* ---- Borders ---------------------------------------------------------- */
+  --color-border-subtle: var(--color-dark-grey-100); // hairlines, list rows
+  --color-border-default: var(--color-dark-grey-200); // standard dividers
+  --color-border-strong: var(--color-dark-grey-300); // emphasized borders
+  --color-border-focus: var(--color-blue-200); // focus ring
+
+  /* ---- Accents (primary interaction color) ------------------------------ */
+  --color-accent: var(--color-blue-200); // buttons, primary actions
+  --color-accent-hover: var(--color-blue-100); // accent hover state
+  --color-accent-subtle: var(
+    --color-dark-blue-shade-100
+  ); // tinted accent backgrounds
+
+  /* ---- Status ----------------------------------------------------------- */
+  --color-status-error: var(--color-red-100);
+  --color-status-error-bg: var(--color-dark-red-shade-100);
+  --color-status-warn: var(--color-yellow-200);
+  --color-status-warn-bg: var(--color-dark-yellow-500);
+  --color-status-success: var(--color-green-100);
+  --color-status-success-bg: var(--color-green-200);
+  --color-status-info: var(--color-blue-100);
+
+  /* ---- Interaction states on accent/colored surfaces -------------------- *
+   * Translucent overlays applied over saturated bg fills (e.g. status bar,
+   * primary buttons). Hover lightens in dark / darkens in light to make the
+   * target stand out; disabled dims the foreground in both. */
+  --color-state-hover-on-accent: var(--color-light-shade-50);
+  --color-state-disabled-on-accent: var(--color-dark-shade-300);
+
+  /* ---- Active indicator ------------------------------------------------- *
+   * Strong-contrast color for active/selected indicators (tab underlines,
+   * focused menu rails, active step markers). Distinct from `--color-accent`,
+   * which is for primary actions. Optimized to *pop* against the surrounding
+   * surface in each theme. */
+  --color-active-indicator: var(--color-yellow-200); // pops on dark surfaces
+
+  /* ---- Category / brand colors ----------------------------------------- *
+   * Theme-agnostic brand colors that signal element categories in the Legend
+   * data model (native vs generated elements, etc.). These are kept stable
+   * across themes because they encode meaning, not just style. */
+  // generated/derived elements
+  --color-category-generation: var(--color-pink-300);
+  // experimental / beta indicators
+  --color-category-experimental: var(--color-mauve-50);
+  --color-category-class: var(--color-purple-400); // Class entity type
+  // Enumeration entity type
+  --color-category-enumeration: var(--color-medium-green-450);
+  // Primitive entity type (string, int, etc.)
+  --color-category-primitive: var(--color-blue-200);
+
+  /* ---- Misc ------------------------------------------------------------- */
+  --color-shadow: var(
+    --color-dark-shade-280
+  ); // box-shadows; works in both themes
+}

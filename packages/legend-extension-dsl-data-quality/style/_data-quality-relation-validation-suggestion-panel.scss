@@ -26,7 +26,7 @@
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-hover);
   }
 
   &__header__controls {
@@ -38,9 +38,9 @@
   &__header__title {
     padding: 0.25rem 0.5rem;
     border-radius: 0.125rem;
-    background: var(--color-dark-grey-80);
+    background: var(--color-bg-panel-header);
     font-weight: 700;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
   }
 
   &__header__filter {
@@ -60,7 +60,7 @@
     background: var(--color-blue-200);
     cursor: pointer;
     border: none;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
 
     &:hover:not(:disabled) {
       background: var(--color-blue-150);
@@ -79,7 +79,7 @@
     svg {
       height: 2rem;
       width: 2rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
   }
 
@@ -88,14 +88,14 @@
     flex: 1;
     overflow: auto;
     padding: 1rem;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__badge {
     margin-right: 0.5rem;
     height: 100%;
     text-transform: uppercase;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
 
     &--modification {
       background: var(--color-orange-200);
@@ -112,7 +112,7 @@
   justify-content: center;
   align-items: center;
   padding: 2rem;
-  color: var(--color-light-grey-400);
+  color: var(--color-text-muted);
   font-style: italic;
   font-size: 1.3rem;
 }

@@ -25,8 +25,8 @@
     @include flexHSpaceBetween;
 
     height: 2.8rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
-    background: var(--color-dark-grey-50);
+    border-bottom: 0.1rem solid var(--color-border-default);
+    background: var(--color-bg-app);
     padding: 0 0.5rem;
   }
 
@@ -34,12 +34,13 @@
     @include flexVCenter;
   }
 
+  // Revision tag — same bright-chip pattern as entity-diff-view.
   &__header__info__tag {
     @include flexVCenter;
 
     height: 1.8rem;
     border-radius: 0.3rem;
-    background: var(--color-light-grey-400);
+    background: var(--color-bg-tag);
     cursor: default;
     user-select: none;
   }
@@ -48,7 +49,7 @@
     margin: 0 0.5rem;
     font-size: 1.2rem;
     font-weight: 500;
-    color: var(--color-dark-grey-50);
+    color: var(--color-text-inverted);
     white-space: nowrap;
   }
 
@@ -56,7 +57,7 @@
     @include ellipsisTextOverflow;
 
     margin: 0 1rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     cursor: default;
     font-size: 1.2rem;
     line-height: 2.8rem;
@@ -69,7 +70,7 @@
     @include flexHSpaceBetween;
 
     height: 3.8rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    border-bottom: 0.1rem solid var(--color-border-default);
   }
 
   &__header__actions__main {
@@ -83,6 +84,9 @@
     margin-left: 0.5rem;
   }
 
+  // Merge-view dropdown options. The four `&__option__label--*` variants
+  // each use a domain color identifying a specific merge stream — kept as
+  // brand category palette refs.
   &__header__action__view-dropdown {
     margin-left: 0.5rem;
     min-width: 36rem;
@@ -101,8 +105,8 @@
       user-select: none;
       padding: 0 0.5rem;
       font-size: 1.2rem;
-      color: var(--color-light-grey-150);
-      background: var(--color-dark-grey-280);
+      color: var(--color-text-primary);
+      background: var(--color-bg-panel-header);
       border-left: 0.5rem solid;
 
       &--merge_view {
@@ -127,7 +131,7 @@
 
       height: 1.8rem;
       border-radius: 0.3rem;
-      background: var(--color-light-grey-400);
+      background: var(--color-bg-tag);
       cursor: default;
       user-select: none;
       margin-left: 0.5rem;
@@ -137,7 +141,7 @@
       margin: 0 0.5rem;
       font-size: 1.2rem;
       font-weight: 500;
-      color: var(--color-dark-grey-50);
+      color: var(--color-text-inverted);
       white-space: nowrap;
     }
 
@@ -148,7 +152,7 @@
 
       svg {
         font-size: 1.7rem;
-        color: var(--color-dark-grey-50);
+        color: var(--color-text-inverted);
       }
     }
   }
@@ -168,7 +172,7 @@
     justify-content: flex-end;
     height: 4.8rem;
     padding-right: 1rem;
-    border-top: 0.1rem solid var(--color-dark-grey-200);
+    border-top: 0.1rem solid var(--color-border-default);
   }
 
   &__action {
@@ -182,6 +186,7 @@
     margin-left: 0.5rem;
   }
 
+  // "Use yours" CTA — green to match the merge--current accent semantically.
   &__action__use-yours-btn {
     width: 10rem;
     background: var(--color-medium-green-500);

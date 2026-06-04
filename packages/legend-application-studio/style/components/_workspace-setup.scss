@@ -128,7 +128,7 @@
 .workspace-setup {
   height: 100%;
   position: relative;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   .selector-input__clear-indicator {
     margin-right: 1vh;
@@ -150,7 +150,7 @@
   }
 
   .selector-input--dark .selector-input--dark__control {
-    background: var(--color-dark-grey-85);
+    background: var(--color-bg-elevated);
     height: 100%;
     min-height: unset;
   }
@@ -160,7 +160,7 @@
   }
 
   .selector-input--dark .selector-input__dropdown-indicator {
-    background: var(--color-light-blue-50);
+    background: var(--color-accent);
     margin-right: 1vh;
     height: 2vh;
     width: 2vh;
@@ -308,7 +308,7 @@
     height: 24%;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 700;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     justify-content: center;
     margin-bottom: 2.5vh;
     align-items: center;
@@ -322,7 +322,7 @@
     align-items: center;
 
     &__link {
-      color: var(--color-light-blue-50);
+      color: var(--color-accent);
       font-weight: 500;
       font-size: min(1.5vh, 1.5vw);
       text-decoration: none;
@@ -342,8 +342,8 @@
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-bg-panel);
     border-radius: 1rem;
     box-shadow: 0 1px 5px 0 rgb(0 0 0 / 50%);
   }
@@ -390,7 +390,7 @@
   }
 
   &__content__card {
-    background-color: var(--color-dark-grey-100) !important;
+    background-color: var(--color-bg-panel) !important;
     height: 100% !important;
 
     &__content {
@@ -437,7 +437,7 @@
     &__header {
       font-size: min(2vw, 2vh);
       font-weight: 500;
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
       height: 33%;
       display: flex;
       align-items: center;
@@ -446,7 +446,7 @@
       &__clear-recents {
         font-size: 1.2vh;
         font-weight: 400;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         background: none;
         border: none;
         cursor: pointer;
@@ -454,7 +454,7 @@
         text-decoration: underline;
 
         &:hover {
-          color: var(--color-light-grey-100);
+          color: var(--color-text-primary);
         }
       }
     }
@@ -468,11 +468,11 @@
 
         height: 100%;
         width: 4vh;
-        background: var(--color-dark-grey-85);
+        background: var(--color-bg-elevated);
         border-radius: 0.2rem 0 0 0.2rem;
 
         svg {
-          color: var(--color-dark-grey-400);
+          color: var(--color-text-disabled);
         }
       }
 
@@ -481,19 +481,21 @@
         font-size: 1.5vh;
       }
 
+      // Selector "Project:" / "Workspace:" label — bright chip with dark text
+      // standing out next to the input. Folded to bg-tag with text-inverted.
       &__label {
         @include flexCenter;
 
         width: 3.5rem;
-        background: var(--color-light-grey-100);
-        border: 0.1rem solid var(--color-dark-grey-300);
+        background: var(--color-bg-tag);
+        border: 0.1rem solid var(--color-border-strong);
         border-right: none;
-        color: var(--color-dark-grey-300);
+        color: var(--color-text-inverted);
       }
 
       &__input {
         flex: 1 0 auto;
-        background: var(--color-dark-grey-50);
+        background: var(--color-bg-app);
       }
 
       &__action {
@@ -537,10 +539,12 @@
     }
   }
 
+  // Primary CTAs — were light-blue-50 (steel blue); folded to accent (navy).
+  // Same shift as documented elsewhere; potentially revisit with --color-accent-soft.
   &__go-btn {
     height: 100%;
     width: 15vw;
-    background: var(--color-light-blue-50);
+    background: var(--color-accent);
 
     &__label {
       font-weight: 700;
@@ -558,33 +562,33 @@
     width: 15vw;
     margin-left: 2vw;
     margin-right: 2vw;
-    background: var(--color-light-blue-50);
+    background: var(--color-accent);
     font-size: min(2vw, 2vh);
   }
 
   &__new-workspace-btn {
     font-size: min(1.5vw, 1.5vh);
     font-weight: 400;
-    color: var(--color-light-blue-50);
+    color: var(--color-accent);
     margin-left: 2vw;
     text-align: left;
 
     &[disabled],
     &[disabled]:hover {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
   &__filter__selector {
     width: 100%;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-tag);
 
     &__header__label {
       @include flexVCenter;
 
       font-weight: 500;
-      color: var(--color-light-grey-50);
-      background: var(--color-dark-grey-300);
+      color: var(--color-text-primary);
+      background: var(--color-bg-panel-header);
       padding: 0 1rem;
       line-height: 2rem;
       font-size: 1.2rem;
@@ -620,10 +624,10 @@
       gap: 0.5rem;
       font-size: 1.2rem;
       font-weight: 500;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-muted);
 
       svg {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         font-size: 1.1rem;
       }
     }
@@ -652,19 +656,19 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0.6rem 0.8rem;
-    background: var(--color-dark-grey-85);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-border-default);
     border-radius: 0.3rem;
     cursor: pointer;
     text-align: left;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     transition:
       background-color 0.1s ease-in-out,
       border-color 0.1s ease-in-out;
 
     &:hover {
-      background: var(--color-dark-grey-100);
-      border-color: var(--color-dark-grey-300);
+      background: var(--color-bg-panel-header);
+      border-color: var(--color-border-strong);
 
       .workspace-setup__recents__tile__remove {
         opacity: 1;
@@ -688,7 +692,7 @@
       background: transparent;
       border: none;
       border-radius: 0.2rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       cursor: pointer;
       opacity: 0;
       transition:
@@ -696,8 +700,8 @@
         background-color 0.1s ease-in-out;
 
       &:hover {
-        background: var(--color-dark-grey-300);
-        color: var(--color-light-grey-100);
+        background: var(--color-bg-hover);
+        color: var(--color-text-primary);
       }
 
       svg {
@@ -715,7 +719,7 @@
 
       svg {
         flex-shrink: 0;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         font-size: 1rem;
       }
 
@@ -735,12 +739,12 @@
 
     &__workspace {
       font-size: 1.1rem;
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
 
     &__time {
       font-size: 1rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__meta {
@@ -765,8 +769,8 @@
       line-height: 1.3rem;
       padding: 0 0.4rem;
       border-radius: 0.2rem;
-      background: var(--color-dark-grey-200);
-      color: var(--color-light-grey-300);
+      background: var(--color-bg-tag);
+      color: var(--color-text-muted);
       max-width: 6rem;
       overflow: hidden;
       text-overflow: ellipsis;

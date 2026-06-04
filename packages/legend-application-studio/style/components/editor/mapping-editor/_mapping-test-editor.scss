@@ -25,8 +25,8 @@
     @include flexHSpaceBetween;
 
     height: 3.4rem;
-    background: var(--color-dark-grey-100);
-    border-bottom: 0.1rem solid var(--color-dark-grey-50);
+    background: var(--color-bg-panel);
+    border-bottom: 0.1rem solid var(--color-bg-app);
 
     &__tabs {
       height: 3.4rem;
@@ -41,9 +41,9 @@
 
       display: inline-flex;
       height: 100%;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       padding: 0 1rem;
-      border-right: 0.1rem solid var(--color-dark-grey-80);
+      border-right: 0.1rem solid var(--color-border-subtle);
       white-space: nowrap;
       cursor: pointer;
     }
@@ -58,7 +58,7 @@
       width: 100%;
       position: absolute;
       bottom: 0;
-      background: var(--color-yellow-200);
+      background: var(--color-active-indicator);
     }
 
     &__actions {
@@ -73,11 +73,11 @@
     }
 
     &__action svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
   }
 
@@ -93,14 +93,16 @@
     &__header {
       @include flexVCenter;
 
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-weight: bold;
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel);
     }
 
+    // Note: panel header label gets a bright tag treatment (matching the
+    // legacy "light bg, dark text" chip pattern). bg-tag adapts to theme.
     &__header__title__label {
-      color: var(--color-dark-grey-50);
-      background: var(--color-light-grey-400);
+      color: var(--color-text-inverted);
+      background: var(--color-bg-tag);
     }
 
     &__header__actions {
@@ -110,15 +112,15 @@
     }
 
     &__header__action svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
   }
 
@@ -143,8 +145,8 @@
     height: 2.2rem;
     padding: 0 1rem;
     cursor: pointer;
-    color: var(--color-light-grey-400);
-    background: var(--color-dark-grey-80);
+    color: var(--color-text-muted);
+    background: var(--color-bg-elevated);
     margin-right: 0.5rem;
 
     &__option {
@@ -187,9 +189,9 @@
   &__service__modal {
     &__service-path {
       width: 100%;
-      background: var(--color-dark-grey-280);
-      color: var(--color-light-grey-200);
-      border: 0.1rem solid var(--color-dark-grey-300);
+      background: var(--color-bg-input);
+      color: var(--color-text-secondary);
+      border: 0.1rem solid var(--color-border-strong);
       margin-bottom: 1rem;
     }
   }
@@ -207,7 +209,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__result__status {
@@ -215,26 +217,26 @@
     height: 15rem;
     line-height: 2rem;
     padding: 2rem;
-    color: var(--color-light-grey-150);
-    background: var(--color-dark-grey-50);
+    color: var(--color-text-primary);
+    background: var(--color-bg-app);
     font-family: 'Roboto Mono', monospace;
   }
 
   &__result__status--failed,
   &__result__status--error {
-    color: var(--color-red-100);
+    color: var(--color-status-error);
   }
 
   &__result__status--running {
-    color: var(--color-light-grey-150);
+    color: var(--color-text-on-accent);
   }
 
   &__result__status--passed {
-    color: var(--color-green-neon-100);
+    color: var(--color-status-success);
   }
 
   &__result__diff {
-    border-top: 0.1rem solid var(--color-dark-grey-280);
+    border-top: 0.1rem solid var(--color-border-default);
     height: calc(100% - 15rem);
     width: 100%;
 

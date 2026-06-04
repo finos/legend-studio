@@ -31,7 +31,9 @@ import {
   clearMarkers,
   CODE_EDITOR_THEME,
   configureCodeEditor,
+  getCodeEditorThemeForAppTheme,
 } from '@finos/legend-code-editor';
+import { autorun } from 'mobx';
 import {
   DEFAULT_TAB_SIZE,
   useApplicationStore,
@@ -85,6 +87,23 @@ export const configureCodeEditorComponent = async (
       commandArgs: keyCombination,
     })),
   );
+
+  // Sync Monaco's global editor theme with the application's color theme.
+  // `monaco.editor.setTheme` is process-global — calling it here applies the
+  // new theme to every existing Monaco instance, and any editor created later
+  // with no explicit `theme:` option will inherit it as well. The autorun
+  // runs once immediately (setting the initial theme based on whatever
+  // colorTheme the app booted with) and re-runs on every theme change.
+  //
+  // This is intentionally a long-lived subscription with no disposer — it's
+  // application lifetime, the editor module is initialized once per app boot.
+  autorun(() => {
+    monacoEditorAPI.setTheme(
+      getCodeEditorThemeForAppTheme(
+        applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+      ),
+    );
+  });
 };
 
 /**

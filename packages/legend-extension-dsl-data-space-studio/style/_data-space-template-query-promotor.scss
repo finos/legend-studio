@@ -19,7 +19,7 @@
 .template-query-promotor {
   height: 100%;
   position: relative;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   &__body {
     height: calc(100% - 2.2rem);
@@ -30,7 +30,7 @@
     font-size: 3.6rem;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 700;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     margin-bottom: 1.8rem;
 
     &__prompt {
@@ -38,7 +38,7 @@
       font-size: 1.4rem;
       padding-bottom: 1rem;
       border-radius: 0.2rem 0 0 0.2rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -68,8 +68,8 @@
       height: 1.8rem;
       width: 13rem;
       padding: 0 1rem;
-      background: var(--color-dark-grey-400);
-      color: var(--color-light-grey-0);
+      background: var(--color-bg-selected);
+      color: var(--color-text-primary);
       font-weight: 500;
       font-size: 1.2rem;
       border-radius: 0.2rem 0.2rem 0 0;
@@ -77,7 +77,7 @@
 
     &__content {
       padding: 0.5rem;
-      border: 0.1rem solid var(--color-dark-grey-400);
+      border: 0.1rem solid var(--color-border-strong);
       border-radius: 0 0.2rem 0.2rem;
     }
 
@@ -109,12 +109,12 @@
       @include flexVCenter;
 
       width: 11rem;
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
       font-family: 'Roboto Mono', monospace;
       font-size: 1.4rem;
       padding: 0 1rem;
       border-radius: 0.2rem 0 0 0.2rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
 
     &__icon {
@@ -122,11 +122,11 @@
 
       height: 2.8rem;
       width: 2.8rem;
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
       border-radius: 0.2rem 0 0 0.2rem;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
       }
     }
 

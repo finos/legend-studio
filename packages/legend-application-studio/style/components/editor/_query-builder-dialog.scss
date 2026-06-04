@@ -30,11 +30,12 @@
     max-height: 100vh !important;
   }
 
+  // Yellow attention header — same pattern as bulk-service-registration.
   &__header {
     @include flexVCenter;
 
     height: 3.8rem;
-    background: var(--color-yellow-200);
+    background: var(--color-status-warn);
     justify-content: flex-end;
   }
 
@@ -52,11 +53,11 @@
 
     svg {
       font-size: 1.6rem;
-      color: var(--color-dark-shade-300);
+      color: var(--color-state-disabled-on-accent);
     }
 
     &:hover svg {
-      color: var(--color-dark-shade-800);
+      color: var(--color-state-disabled-on-accent);
     }
   }
 
@@ -68,23 +69,23 @@
     border-radius: 0.2rem;
     font-size: 1.4rem;
     margin-right: 1rem;
-    color: var(--color-dark-shade-800);
+    color: var(--color-state-disabled-on-accent);
     font-weight: 500;
-    border: 0.1rem solid var(--color-dark-shade-300);
+    border: 0.1rem solid var(--color-state-disabled-on-accent);
 
     &:not([disabled]):hover {
-      background: var(--color-dark-shade-50);
+      background: var(--color-state-hover-on-accent);
     }
 
     &[disabled] {
-      color: var(--color-dark-shade-230);
-      border-color: var(--color-dark-shade-100);
+      color: var(--color-state-disabled-on-accent);
+      border-color: var(--color-state-disabled-on-accent);
       background: transparent;
     }
   }
 
   &__content {
     height: calc(100% - 3.8rem);
-    border: 0.1rem solid var(--color-dark-grey-80);
+    border: 0.1rem solid var(--color-border-subtle);
   }
 }

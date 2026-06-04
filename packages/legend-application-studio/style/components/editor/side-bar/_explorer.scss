@@ -22,7 +22,7 @@
   .panel {
     &__header__action {
       height: 100%;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action--config {
@@ -33,7 +33,7 @@
 
     &__header__action[disabled],
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__header__title {
@@ -45,8 +45,8 @@
     @include flexHSpaceBetween;
 
     min-width: 9rem;
-    background: var(--color-dark-grey-200);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-panel-header);
+    color: var(--color-text-secondary);
     padding-left: 1rem;
 
     .panel__header__actions {
@@ -56,7 +56,7 @@
 
   &__content__container {
     height: 100%;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
   }
 
   &__content {
@@ -64,21 +64,21 @@
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0.5rem 0;
   }
 
   &__content__separator {
     height: 0.1rem;
     width: 100%;
-    background: var(--color-dark-grey-250);
+    background: var(--color-border-default);
     margin: 0.5rem 0;
   }
 
   &__content__progress-msg {
     margin: 1rem;
     line-height: 2rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     font-family: 'Roboto Mono', monospace;
     font-size: 1.2rem;
     user-select: none;
@@ -89,9 +89,12 @@
 
     flex-direction: column;
 
+    // NOTE: large watermark-style icon — intentionally barely visible against
+    // the panel bg. Reusing border-subtle for its near-bg value, not for its
+    // border semantic. If we add a dedicated decorative token later, swap.
     &__icon svg {
       font-size: 11rem;
-      color: var(--color-dark-grey-80);
+      color: var(--color-border-subtle);
     }
 
     &__text {
@@ -105,12 +108,15 @@
     flex: auto;
   }
 
+  // NOTE: config icon was orange-100 (attention/needs-setup). Folded into the
+  // warn semantic (yellow) — minor color shift. Revisit if orange becomes a
+  // recurring "attention" signal worth its own token.
   &__config__icon {
     padding-left: 2rem;
 
     svg {
       font-size: 1.6rem;
-      color: var(--color-orange-100);
+      color: var(--color-status-warn);
     }
   }
 
@@ -119,12 +125,12 @@
   }
 
   &__package-tree__node__container:hover {
-    background: var(--color-dark-blue-shade-100);
+    background: var(--color-accent-subtle);
   }
 
   &__package-tree__node__container--selected,
   &__package-tree__node__container--selected:hover {
-    background: var(--color-light-blue-450);
+    background: var(--color-bg-selected);
   }
 
   &__package-tree__node__icon {
@@ -181,8 +187,8 @@
       width: 100%;
       height: 3.4rem;
       padding: 0 1rem;
-      background: var(--color-blue-200);
-      color: var(--color-light-grey-50);
+      background: var(--color-accent);
+      color: var(--color-text-on-accent);
       cursor: pointer;
     }
   }
@@ -192,7 +198,7 @@
   }
 
   &__element-renamer {
-    border: 0.1rem solid var(--color-dark-grey-85) !important;
+    border: 0.1rem solid var(--color-border-subtle) !important;
 
     &__input {
       height: 2.8rem;

@@ -30,7 +30,7 @@
   }
 
   &__item__link {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     text-decoration: none;
   }
 
@@ -47,46 +47,46 @@
     }
 
     &--succeeded svg {
-      color: var(--color-green-100);
+      color: var(--color-status-success);
     }
 
     &--failed svg {
-      color: var(--color-red-100);
+      color: var(--color-status-error);
     }
 
     &--in-progress svg {
       animation: spin 1s infinite ease;
-      color: var(--color-blue-100);
+      color: var(--color-status-info);
     }
 
     &--suspended svg {
-      color: var(--color-yellow-400);
+      color: var(--color-status-warn);
     }
 
     &--unknown svg,
     &--canceled svg {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 
   &__item__link__content__id {
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__item__link__content__created-at {
     margin-left: 1rem;
     font-size: 1.2rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
   }
 
   &__explorer {
     &__workflow-tree__node__container:hover {
-      background: var(--color-dark-blue-shade-100);
+      background: var(--color-accent-subtle);
     }
 
     &__workflow-tree__node__container--selected,
     &__workflow-tree__node__container--selected:hover {
-      background: var(--color-light-blue-450);
+      background: var(--color-bg-selected);
     }
 
     &__workflow-tree__node__icon {
@@ -113,7 +113,7 @@
 
 .workspace-workflow-jobs {
   &__item__link {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     text-decoration: none;
   }
 
@@ -130,25 +130,25 @@
     }
 
     &--succeeded svg {
-      color: var(--color-green-100);
+      color: var(--color-status-success);
     }
 
     &--failed svg {
-      color: var(--color-red-100);
+      color: var(--color-status-error);
     }
 
     &--in-progress svg {
       animation: spin 1s infinite ease;
-      color: var(--color-blue-100);
+      color: var(--color-status-info);
     }
 
     &--suspended svg {
-      color: var(--color-yellow-400);
+      color: var(--color-status-warn);
     }
 
     &--unknown svg,
     &--canceled svg {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 }

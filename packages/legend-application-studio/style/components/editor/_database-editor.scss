@@ -16,28 +16,46 @@
 
 @use 'mixins' as *;
 
-// Top-level shell: vertical stack of tab strip + content area. The tab strip
-// switches between the interactive diagram (VIEW) and the read-only Pure
-// grammar (GRAMMAR). Tab styles mirror `.uml-element-editor__tab` for
-// consistency with other Legend Studio form-mode editors.
+/* ============================================================================
+ * Database editor
+ * ----------------------------------------------------------------------------
+ * Structural greys (backgrounds, borders, text) use the global semantic
+ * tokens — the editor automatically adapts to the active studio theme.
+ *
+ * Domain "kind" colors are kept as direct palette refs because they encode
+ * meaning that must read identically in light and dark theme:
+ *   - purple (`--color-purple-400` / `--color-magenta-50`) — schemas, views,
+ *     view-formula expressions, processing-milestoning
+ *   - yellow (`--color-yellow-200`) — joins, primary keys, read-only indicator,
+ *     "lakehouse-generated" banner
+ *   - blue (`--color-blue-200`) — foreign keys, business-milestoning,
+ *     SELF-join marker, table selection ring
+ *   - orange (`--color-orange-100/200`) — filters, cross-database join marker
+ *   - lime (`--color-lime-75`) — view GROUP BY tag
+ *   - medium-green (`--color-medium-green-450`) — column type annotations
+ *
+ * These should not be folded into the generic semantic tokens; they read as a
+ * legend (PK is yellow, FK is blue, etc.) that users learn over time.
+ *
+ * The previous `.database-editor--light` modifier and its sun/moon toggle
+ * have been removed — global theme switching does the same job.
+ * ============================================================================ */
+
 .database-editor {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
-  color: var(--color-light-grey-300);
+  background: var(--color-bg-app);
+  color: var(--color-text-secondary);
 
-  // Dark-themed tab strip — matches the side panel's dark background so the
-  // header reads as part of the editor surface, not a contrasting lighter
-  // strip. Bottom border gives a thin separator from the content below.
   &__tabs__header {
     @include flexVCenter;
 
     flex-shrink: 0;
     height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-panel);
+    border-bottom: 0.1rem solid var(--color-border-default);
   }
 
   &__tabs {
@@ -57,24 +75,23 @@
     padding: 0 1.6rem;
     background: transparent;
     border: none;
-    border-right: 0.1rem solid var(--color-dark-grey-200);
-    color: var(--color-light-grey-400);
+    border-right: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-muted);
     white-space: nowrap;
     cursor: pointer;
     font-size: 1.1rem;
 
     &:hover {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
   }
 
   &__tab--active,
   &__tab--active:hover {
-    color: var(--color-light-grey-0);
+    color: var(--color-text-primary);
     position: relative;
   }
 
-  // Yellow underline matches the active-tab cue used in `.uml-element-editor`.
   &__tab--active::after {
     content: '';
     height: 0.3rem;
@@ -82,12 +99,10 @@
     position: absolute;
     bottom: 0;
     left: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 
-  // Read-only sticker on the right of the tab strip. Yellow-tinted to read
-  // as a status indicator — explicit and obvious, but small enough not to
-  // compete with the tabs themselves.
+  // Read-only sticker — yellow status indicator (domain warn color).
   &__read-only-badge {
     @include flexVCenter;
 
@@ -111,8 +126,6 @@
     }
   }
 
-  // Fills the remaining vertical space below the tab strip. The diagram and
-  // grammar children both expect to flex into the full available area.
   &__content {
     flex: 1;
     min-height: 0;
@@ -123,7 +136,7 @@
     flex: 1;
     min-width: 0;
     min-height: 0;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 }
 
@@ -131,21 +144,17 @@
   display: flex;
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
-  color: var(--color-light-grey-300);
+  background: var(--color-bg-app);
+  color: var(--color-text-secondary);
 
-  // Wrapper around the schema tree inside the resizable left panel. Adds
-  // a header strip with a collapse button so users have an explicit
-  // affordance besides the splitter drag. Tree itself fills the remaining
-  // space and scrolls.
   &__side-panel-wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
     min-width: 0;
-    background: var(--color-dark-grey-80);
-    border-right: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-elevated);
+    border-right: 0.1rem solid var(--color-border-default);
 
     &__header {
       @include flexVCenter;
@@ -153,8 +162,8 @@
       flex-shrink: 0;
       gap: 0.4rem;
       padding: 0.3rem 0.6rem 0.3rem 1rem;
-      background: var(--color-dark-grey-100);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-panel);
+      border-bottom: 0.1rem solid var(--color-border-default);
 
       &__title {
         flex: 1;
@@ -162,7 +171,7 @@
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.05rem;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         @include ellipsisTextOverflow;
       }
 
@@ -174,7 +183,7 @@
         background: transparent;
         border: none;
         border-radius: 0.2rem;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         cursor: pointer;
 
         svg {
@@ -183,8 +192,8 @@
         }
 
         &:hover {
-          background: var(--color-dark-grey-200);
-          color: var(--color-light-grey-100);
+          background: var(--color-bg-hover);
+          color: var(--color-text-primary);
         }
       }
     }
@@ -196,10 +205,6 @@
     }
   }
 
-  // Wrapper around the canvas + the expand rail. The rail is a thin
-  // clickable strip rendered only when the side panel is collapsed, so the
-  // user has an in-canvas affordance to bring the panel back without
-  // having to find the splitter.
   &__canvas-area {
     display: flex;
     flex-direction: row;
@@ -214,10 +219,10 @@
     flex-shrink: 0;
     width: 1.6rem;
     height: 100%;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     border: none;
-    border-right: 0.1rem solid var(--color-dark-grey-200);
-    color: var(--color-light-grey-400);
+    border-right: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-muted);
     cursor: pointer;
 
     svg {
@@ -226,20 +231,11 @@
     }
 
     &:hover {
-      background: var(--color-dark-grey-200);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
     }
   }
 
-  // ------------------------------------------------------------------------
-  // Schema tree (Schema → Table → Column). Each level is offset by indent —
-  // we use padding-left rather than margin-left so the hover/selection
-  // backgrounds extend across the full row width.
-  //
-  // Caret + icons are vertically centered via flexVCenter on the row button.
-  // Column rows are buttons (not divs) so they get keyboard focus rings for
-  // free.
-  // ------------------------------------------------------------------------
   &__tree {
     &__caret {
       @include flexCenter;
@@ -247,7 +243,7 @@
       width: 1.2rem;
       height: 1.2rem;
       flex-shrink: 0;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-disabled);
 
       svg {
         width: 1rem;
@@ -255,6 +251,7 @@
       }
     }
 
+    // Schema rows — purple domain color signals "schema namespace".
     &__schema {
       &__row {
         @include flexVCenter;
@@ -276,7 +273,7 @@
         }
 
         &:hover {
-          background: var(--color-dark-grey-100);
+          background: var(--color-bg-hover);
         }
       }
 
@@ -286,7 +283,7 @@
       }
 
       &__count {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
         font-size: 1rem;
       }
 
@@ -305,30 +302,30 @@
         padding: 0.3rem 1rem 0.3rem 2.4rem;
         background: transparent;
         border: none;
-        color: var(--color-light-grey-300);
+        color: var(--color-text-secondary);
         font-size: 1.1rem;
         cursor: pointer;
         text-align: left;
 
+        // Yellow domain color — table icons (consistent with PK indicator).
         svg {
           color: var(--color-yellow-200);
           flex-shrink: 0;
         }
 
         &:hover {
-          background: var(--color-dark-grey-100);
+          background: var(--color-bg-hover);
         }
 
+        // Blue selection — domain "table focus" color, matches FK/table-selection ring.
         &--selected,
         &--selected:hover {
           background: var(--color-blue-200);
-          color: var(--color-light-grey-0);
+          color: var(--color-text-on-accent);
         }
       }
 
-      // Views reuse the table row layout but tint the icon purple so users
-      // can tell views and tables apart in the tree at a glance. Same
-      // selected/hover behavior — the parent button styles still apply.
+      // Views — purple icon distinguishes view from table.
       &--view &__row svg {
         color: var(--color-purple-400);
       }
@@ -339,22 +336,22 @@
       }
 
       &__count {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
         font-size: 1rem;
       }
 
-      // Secondary view-feature tags rendered inline in the view's tree row
-      // (DISTINCT / FILTERED / GROUP BY (n)). Visually mirror the canvas
-      // node header tags so the same view reads identically in both
-      // surfaces. Compact size so multiple tags can fit alongside the row
-      // text without overflowing the side panel.
+      // Secondary view-feature tags (DISTINCT / FILTERED / GROUP BY (n)).
+      // Each kind uses its own domain color so the legend reads consistently
+      // across the tree and canvas.
+      // View tag — sits on a saturated brand bg (set via --distinct / --filtered
+      // / --grouped modifiers below). Text stays light in both themes.
       &__view-tag {
         padding: 0 0.4rem;
         border-radius: 0.2rem;
         font-size: 0.8rem;
         font-weight: 600;
         letter-spacing: 0.04rem;
-        color: var(--color-dark-grey-50);
+        color: var(--color-text-on-accent);
         flex-shrink: 0;
 
         &--distinct {
@@ -365,9 +362,10 @@
           background: var(--color-orange-100);
         }
 
+        // Grouped uses pale lime — needs DARK text in both themes.
         &--grouped {
           background: var(--color-lime-75);
-          color: var(--color-dark-grey-100);
+          color: var(--color-text-inverted);
         }
       }
     }
@@ -380,29 +378,31 @@
       padding: 0.2rem 1rem 0.2rem 4.4rem;
       background: transparent;
       border: none;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-family: 'Roboto Mono', monospace;
       font-size: 1rem;
       cursor: pointer;
       text-align: left;
 
       &:hover {
-        background: var(--color-dark-grey-100);
+        background: var(--color-bg-hover);
       }
 
       &--selected,
       &--selected:hover {
         background: var(--color-blue-200);
-        color: var(--color-light-grey-0);
+        color: var(--color-text-on-accent);
       }
 
+      // PK column — yellow (domain).
       &--pk &__name {
         color: var(--color-yellow-200);
       }
 
+      // Selected column bg is saturated blue — text stays light in both themes.
       &--selected &__name,
       &--selected &__type {
-        color: var(--color-light-grey-0);
+        color: var(--color-text-on-accent);
       }
 
       &__icon {
@@ -419,7 +419,7 @@
       }
 
       &__bullet {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
       }
 
       &__name {
@@ -427,27 +427,20 @@
         @include ellipsisTextOverflow;
       }
 
+      // Column type annotation — medium-green domain color.
       &__type {
         color: var(--color-medium-green-450);
         font-size: 0.95rem;
       }
 
-      // View column rows: secondary text is a Pure-code formula placeholder
-      // ("calculate [...]" for now). Italicize it so it reads as "expression"
-      // rather than "type" — distinct visual cue without changing the layout.
+      // View column formula — italic purple (matches view domain color).
       &--view &__type {
         font-style: italic;
         color: var(--color-purple-400);
       }
 
-      // View metadata rows (filter mapping reference, groupBy expressions).
-      // Rendered as siblings of the view's column-mapping rows but with a
-      // muted name to signal "this is a view-level annotation, not a
-      // projected column". When the row is also `--readonly` (groupBy)
-      // it's a div instead of a button — kill the hover affordance to
-      // make that clear.
       &--view-meta &__name {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
         font-style: italic;
       }
 
@@ -459,8 +452,6 @@
         }
       }
 
-      // Disabled filter rows (cross-database filter references — the editor
-      // can't navigate to a filter that lives in another database).
       &:disabled {
         cursor: default;
         opacity: 0.6;
@@ -473,14 +464,10 @@
   }
 
   &__side-panel {
-    // Width is owned by the parent ResizablePanel wrapper now; let the
-    // panel fill whatever room the splitter has given it. `flex-shrink`
-    // and `flex-grow` are both 1 so the schema tree stays scrollable as
-    // the user drags the splitter to any size.
     width: 100%;
     flex: 1;
     min-height: 0;
-    background: var(--color-dark-grey-80);
+    background: var(--color-bg-elevated);
     overflow: auto;
     padding: 0.4rem 0;
 
@@ -493,11 +480,11 @@
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.05rem;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
 
       &__count {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
       }
     }
 
@@ -519,7 +506,7 @@
       }
 
       &__count {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
         font-size: 1rem;
       }
     }
@@ -532,7 +519,7 @@
       padding: 0.3rem 1rem 0.3rem 2.4rem;
       background: transparent;
       border: none;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       cursor: pointer;
       font-size: 1.1rem;
       text-align: left;
@@ -543,13 +530,13 @@
       }
 
       &:hover {
-        background: var(--color-dark-grey-100);
+        background: var(--color-bg-hover);
       }
 
       &--selected,
       &--selected:hover {
         background: var(--color-blue-200);
-        color: var(--color-light-grey-0);
+        color: var(--color-text-on-accent);
       }
 
       &__name {
@@ -558,10 +545,7 @@
       }
     }
 
-    // Join rows are buttons (clickable) — they select the join, which the
-    // canvas mirrors by highlighting the matching edge in yellow and ringing
-    // both endpoint tables. We use yellow here too for consistency with the
-    // canvas treatment of join-mode focus.
+    // Joins — yellow selection (domain: matches the canvas join-highlight).
     &__join {
       @include flexVCenter;
 
@@ -570,7 +554,7 @@
       padding: 0.3rem 1rem 0.3rem 2.4rem;
       background: transparent;
       border: none;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-size: 1.1rem;
       cursor: pointer;
       text-align: left;
@@ -581,16 +565,16 @@
       }
 
       &:hover {
-        background: var(--color-dark-grey-100);
+        background: var(--color-bg-hover);
       }
 
       &--selected,
       &--selected:hover {
         background: var(--color-yellow-200);
-        color: var(--color-dark-grey-50);
+        color: var(--color-text-inverted);
 
         svg {
-          color: var(--color-dark-grey-50);
+          color: var(--color-text-inverted);
         }
       }
 
@@ -600,11 +584,7 @@
       }
     }
 
-    // Filter rows are two-line buttons: the filter name on top and the
-    // rendered Pure code as italic secondary text below. The icon column is
-    // top-aligned so it sits next to the name (not centered between the two
-    // lines). Selected state uses orange to stay distinct from blue (table
-    // selection) and yellow (join selection).
+    // Filters — orange domain color.
     &__filter {
       display: flex;
       align-items: flex-start;
@@ -613,26 +593,26 @@
       padding: 0.4rem 1rem 0.4rem 2.4rem;
       background: transparent;
       border: none;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-size: 1.1rem;
       cursor: pointer;
       text-align: left;
 
       &:hover {
-        background: var(--color-dark-grey-100);
+        background: var(--color-bg-hover);
       }
 
       &--selected,
       &--selected:hover {
         background: var(--color-orange-100);
-        color: var(--color-light-grey-0);
+        color: var(--color-text-on-accent);
 
         svg {
-          color: var(--color-light-grey-0);
+          color: var(--color-text-on-accent);
         }
 
         .database-diagram__side-panel__filter__formula {
-          color: var(--color-light-grey-50);
+          color: var(--color-text-on-accent);
         }
       }
 
@@ -660,25 +640,16 @@
         @include ellipsisTextOverflow;
       }
 
-      // The Pure-code expression underneath. Italicized to read as
-      // "expression" rather than identifier — same visual treatment as the
-      // view-column formula display, so the two stay visually consistent
-      // across the panel.
       &__formula {
         @include ellipsisTextOverflow;
 
         font-family: var(--font-code);
         font-style: italic;
         font-size: 1rem;
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
       }
     }
 
-    // Included-store entries are clickable buttons — clicking opens the
-    // referenced database as its own element editor (new tab in the editor
-    // group). The trailing `ExternalLinkIcon` only appears on hover so the
-    // resting state stays calm; on hover the row brightens and the
-    // open-icon becomes visible to signal the navigation affordance.
     &__included-store {
       @include flexVCenter;
 
@@ -687,23 +658,23 @@
       padding: 0.3rem 1rem 0.3rem 2.4rem;
       background: transparent;
       border: none;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-disabled);
       font-size: 1.1rem;
       cursor: pointer;
       text-align: left;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
         flex-shrink: 0;
         font-size: 1.2rem;
       }
 
       &:hover {
-        background: var(--color-dark-grey-100);
-        color: var(--color-light-grey-200);
+        background: var(--color-bg-hover);
+        color: var(--color-text-secondary);
 
         svg {
-          color: var(--color-light-grey-200);
+          color: var(--color-text-secondary);
         }
 
         .database-diagram__side-panel__included-store__open {
@@ -737,39 +708,42 @@
     flex: 1;
     min-width: 0;
     position: relative;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
+  // ReactFlow canvas — chrome (background, controls, edges) uses semantic
+  // tokens so the canvas tracks the active theme. Edge selection stays blue
+  // (domain accent).
   &__canvas {
     width: 100%;
     height: 100%;
 
     .react-flow__background {
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     .react-flow__controls {
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-250);
+      background: var(--color-bg-panel);
+      border: 0.1rem solid var(--color-border-default);
       box-shadow: none;
 
       button {
-        background: var(--color-dark-grey-100);
-        border-bottom: 0.1rem solid var(--color-dark-grey-250);
-        color: var(--color-light-grey-300);
+        background: var(--color-bg-panel);
+        border-bottom: 0.1rem solid var(--color-border-default);
+        color: var(--color-text-secondary);
 
         svg {
           fill: currentcolor;
         }
 
         &:hover {
-          background: var(--color-dark-grey-200);
+          background: var(--color-bg-hover);
         }
       }
     }
 
     .react-flow__edge-path {
-      stroke: var(--color-dark-grey-400);
+      stroke: var(--color-text-disabled);
       stroke-width: 1.2;
     }
 
@@ -780,12 +754,12 @@
     }
 
     .react-flow__edge-text {
-      fill: var(--color-light-grey-200);
+      fill: var(--color-text-secondary);
       font-size: 1rem;
     }
 
     .react-flow__edge-textbg {
-      fill: var(--color-dark-grey-100);
+      fill: var(--color-bg-panel);
     }
 
     .react-flow__attribution {
@@ -794,22 +768,20 @@
   }
 
   &__minimap {
-    background: var(--color-dark-grey-100) !important;
-    border: 0.1rem solid var(--color-dark-grey-250) !important;
+    background: var(--color-bg-panel) !important;
+    border: 0.1rem solid var(--color-border-default) !important;
   }
 
   &__table-node {
     min-width: 22rem;
-    background: var(--color-dark-grey-80);
-    border: 0.1rem solid var(--color-dark-grey-300);
+    background: var(--color-bg-elevated);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.4rem;
     box-shadow: 0 0.2rem 0.6rem rgb(0 0 0 / 40%);
     font-size: 1.1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
 
-    // Two visually-distinct rings, never both at once:
-    //   --selected (blue): single-table focus
-    //   --join-endpoint (yellow): one of two endpoints of the selected join
+    // Selection ring — blue (domain).
     &--selected {
       border-color: var(--color-blue-200);
       box-shadow:
@@ -817,6 +789,7 @@
         0 0.2rem 0.6rem rgb(0 0 0 / 40%);
     }
 
+    // Join-endpoint ring — yellow (matches join selection in side panel).
     &--join-endpoint {
       border-color: var(--color-yellow-200);
       box-shadow:
@@ -824,10 +797,7 @@
         0 0.2rem 0.6rem rgb(0 0 0 / 40%);
     }
 
-    // Views are visually distinguished from tables via a purple-tinted header
-    // and a small "VIEW" tag in the title bar. The body still looks the same
-    // (column rows on dark) so the layout is consistent and joins read the
-    // same way regardless of which kind sits at each endpoint.
+    // View variant — purple-tinted header to distinguish from tables.
     &--view {
       .database-diagram__table-node__header {
         background: rgb(197 134 192 / 18%);
@@ -838,18 +808,13 @@
         color: var(--color-purple-400);
       }
 
-      // The translucent purple header tint reduces contrast against the
-      // default light-grey-100 used for table labels. Bump the view's name
-      // to the brightest grey + a heavier weight so it reads cleanly.
       .database-diagram__table-node__header__name {
-        color: var(--color-light-grey-0);
+        color: var(--color-text-primary);
         font-weight: 600;
       }
     }
 
     &__handle {
-      // The two handles are decorative anchors for edge routing — keep them
-      // hidden so users don't think they're interactive.
       opacity: 0;
       pointer-events: none;
       width: 0.1rem !important;
@@ -861,8 +826,8 @@
 
       gap: 0.6rem;
       padding: 0.6rem 0.8rem;
-      background: var(--color-dark-grey-100);
-      border-bottom: 0.1rem solid var(--color-dark-grey-300);
+      background: var(--color-bg-panel);
+      border-bottom: 0.1rem solid var(--color-border-strong);
       border-radius: 0.4rem 0.4rem 0 0;
 
       &__icon {
@@ -879,10 +844,11 @@
       &__name {
         flex: 1;
         font-weight: 500;
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
         @include ellipsisTextOverflow;
       }
 
+      // Schema badge — purple translucent tint over panel header bg.
       &__schema {
         padding: 0.1rem 0.6rem;
         border-radius: 1rem;
@@ -891,24 +857,17 @@
         font-size: 0.95rem;
       }
 
-      // "VIEW" tag — only rendered for view nodes, sits next to the schema
-      // badge so users can tell tables and views apart at a glance even when
-      // the icon is small.
+      // Kind tag — "VIEW" pill. Color overrides per variant below.
       &__kind-tag {
         padding: 0.1rem 0.5rem;
         border-radius: 0.2rem;
         background: var(--color-purple-400);
-        color: var(--color-dark-grey-50);
+        color: var(--color-text-on-accent);
         font-size: 0.85rem;
         font-weight: 600;
         letter-spacing: 0.05rem;
       }
 
-      // Secondary view-feature tags: DISTINCT / FILTERED / GROUP BY (n).
-      // They sit immediately after the primary "VIEW" tag in the header
-      // and use distinct hues so the three features are visually separable
-      // at a glance, and so the row stays readable even when all three
-      // are present together.
       &__kind-tag--distinct {
         background: var(--color-blue-200);
       }
@@ -919,7 +878,7 @@
 
       &__kind-tag--grouped {
         background: var(--color-lime-75);
-        color: var(--color-dark-grey-100);
+        color: var(--color-text-inverted);
       }
     }
 
@@ -936,23 +895,21 @@
       font-family: 'Roboto Mono', monospace;
       font-size: 1rem;
 
+      // PK column — yellow name (domain).
       &--pk &__name {
         color: var(--color-yellow-200);
         font-weight: 500;
       }
 
+      // FK column — blue name (domain).
       &--fk &__name {
         color: var(--color-blue-200);
       }
 
       &--nullable:not(&--pk, &--fk) &__name {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
       }
 
-      // The column the user clicked in the side-panel tree gets a strong
-      // background so it's findable at a glance even on a large table card.
-      // We override the PK/FK text colors so contrast stays readable on the
-      // blue background.
       &--focused {
         background: var(--color-blue-200);
 
@@ -960,7 +917,7 @@
         .database-diagram__table-node__column__name,
         .database-diagram__table-node__column__type,
         .database-diagram__table-node__column__key {
-          color: var(--color-light-grey-0);
+          color: var(--color-text-on-accent);
         }
       }
 
@@ -979,7 +936,7 @@
       &__name {
         @include ellipsisTextOverflow;
 
-        color: var(--color-light-grey-300);
+        color: var(--color-text-secondary);
       }
 
       &__type {
@@ -987,23 +944,16 @@
         font-size: 0.95rem;
       }
 
-      // View column rows on the canvas table-node: italic purple formula text,
-      // matching the tree treatment so the two surfaces feel coherent.
       &--view &__type {
         font-style: italic;
         color: var(--color-purple-400);
       }
     }
 
-    // Footer rendered on view nodes when the view declares `groupBy`.
-    // Sits below the column-mapping rows and lists each grouping
-    // expression as one row of italic purple Pure code (matching the
-    // existing column-formula treatment so the two read consistently).
-    // Subtle top divider plus a small uppercase "GROUP BY" header so it's
-    // visually grouped without competing with the column list above.
+    // View "GROUP BY" footer — purple translucent tint.
     &__group-by {
       padding: 0.3rem 0.8rem 0.4rem;
-      border-top: 0.1rem dashed var(--color-dark-grey-300);
+      border-top: 0.1rem dashed var(--color-border-strong);
       background: rgb(197 134 192 / 6%);
 
       &__header {
@@ -1025,7 +975,7 @@
 
       &__index {
         flex-shrink: 0;
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
       }
 
       &__formula {
@@ -1036,68 +986,49 @@
       }
     }
 
-    // Foreign-stub nodes stand in for cross-database join endpoints. Smaller,
-    // dashed border, and dimmer text — visually distinct from real in-DB
-    // table nodes so users can tell at a glance the actual relation lives
-    // somewhere else. Hover/selection rings still apply when the stub is
-    // a join endpoint.
+    // Foreign-stub — dimmed dashed-border node for cross-database refs.
     &--foreign-stub {
       min-width: 16rem;
-      background: var(--color-dark-grey-50);
-      border: 0.1rem dashed var(--color-dark-grey-400);
-      color: var(--color-dark-grey-400);
+      background: var(--color-bg-app);
+      border: 0.1rem dashed var(--color-text-disabled);
+      color: var(--color-text-disabled);
 
       .database-diagram__table-node__header {
         background: transparent;
-        border-bottom: 0.1rem dashed var(--color-dark-grey-300);
+        border-bottom: 0.1rem dashed var(--color-border-strong);
       }
 
       .database-diagram__table-node__header__icon {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
       }
 
       .database-diagram__table-node__header__name {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         font-weight: 400;
         font-style: italic;
       }
     }
 
-    // Owner-database path beneath the relation name on a foreign stub.
-    // Italic + dim, monospace so the path reads as an identifier.
     &__foreign-stub__owner {
       padding: 0.3rem 0.8rem 0.5rem;
       font-family: 'Roboto Mono', monospace;
       font-size: 0.95rem;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-disabled);
       font-style: italic;
       @include ellipsisTextOverflow;
     }
   }
 
-  // ------------------------------------------------------------------------
-  // Annotation pills (stereotypes + tagged values). Reused at every level of
-  // the tree, on the canvas table-node header, and as a dedicated section
-  // for database-level annotations. Three layout variants:
-  //   - inline: flow with the surrounding row content
-  //   - block: wrap into a free-standing block with margin
-  //   - compact: a single badge showing only the count + tag icon
-  // ------------------------------------------------------------------------
   &__side-panel__annotations {
     padding: 0.4rem 1rem 0.6rem 2.4rem;
   }
 
-  // Canvas wrapper that hosts the floating cards alongside ReactFlow.
   &__canvas-shell {
     position: relative;
     width: 100%;
     height: 100%;
   }
 
-  // Floating overlays for "selected join" / "selected filter" — pinned to
-  // the top-right of the canvas so they stay clear of ReactFlow's
-  // <Controls> (bottom-left) and <MiniMap> (bottom-right). Card width is
-  // capped so the rendered formula wraps gracefully on long expressions.
   &__floating-card {
     position: absolute;
     top: 1rem;
@@ -1105,11 +1036,11 @@
     z-index: 5;
     max-width: 32rem;
     padding: 0.6rem 0.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-250);
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-border-default);
     border-radius: 0.4rem;
     box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 50%);
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     font-size: 1.1rem;
 
     &--join {
@@ -1130,56 +1061,44 @@
     &__kind {
       padding: 0.1rem 0.5rem;
       border-radius: 0.2rem;
-      background: var(--color-dark-grey-300);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-tag);
+      color: var(--color-text-primary);
       font-size: 0.85rem;
       font-weight: 600;
       letter-spacing: 0.05rem;
     }
 
     &__name {
-      color: var(--color-light-grey-0);
+      color: var(--color-text-primary);
       font-weight: 500;
       @include ellipsisTextOverflow;
     }
 
-    // Italicized monospace expression — same visual treatment as filter
-    // rows in the side panel so the two stay consistent.
     &__formula {
       font-family: var(--font-code);
       font-style: italic;
       font-size: 1rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
   }
 }
 
-// ---------------------------------------------------------------------------
-// Tree column nullable indicator: a small `?` after the column name. Italic
-// dim color so it doesn't compete with the column name itself but is still
-// noticeable. Mirrors the canvas table-node which uses the `--nullable` CSS
-// class (no `?` glyph there because that node already has rich tooltips).
-// ---------------------------------------------------------------------------
 .database-diagram__tree__column__nullable {
   margin-left: 0.3rem;
-  color: var(--color-dark-grey-400);
+  color: var(--color-text-disabled);
   font-style: italic;
   font-weight: 400;
 }
 
-// ---------------------------------------------------------------------------
-// Annotations (stereotypes + tagged values) display. Used in tree rows,
-// canvas table-node headers, and database-level side-panel sections.
-// ---------------------------------------------------------------------------
 .database-annotation {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   flex-wrap: wrap;
   font-size: 0.95rem;
-  color: var(--color-light-grey-400);
+  color: var(--color-text-muted);
 
   &--block {
     display: flex;
@@ -1187,16 +1106,14 @@
     gap: 0.4rem;
   }
 
-  // Compact form: a small tag icon + count, with the full content surfaced
-  // via tooltip. Used in dense headers (canvas table-node, tree rows).
   &--compact {
     @include flexVCenter;
 
     gap: 0.2rem;
     padding: 0 0.4rem;
     border-radius: 0.2rem;
-    background: var(--color-dark-grey-200);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-panel-header);
+    color: var(--color-text-secondary);
     font-size: 0.85rem;
     cursor: help;
 
@@ -1217,8 +1134,8 @@
     gap: 0.2rem;
     padding: 0.1rem 0.5rem;
     border-radius: 0.2rem;
-    border: 0.1rem solid var(--color-dark-grey-300);
-    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-border-strong);
+    background: var(--color-bg-panel);
     font-size: 0.95rem;
     cursor: help;
 
@@ -1228,6 +1145,7 @@
     }
   }
 
+  // Stereotypes — purple (domain).
   &__stereotype {
     color: var(--color-purple-400);
 
@@ -1236,8 +1154,9 @@
     }
   }
 
+  // Tagged-values — blue domain accent for name + icon.
   &__tagged-value {
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
 
     svg {
       color: var(--color-blue-200);
@@ -1248,25 +1167,17 @@
     }
 
     &__sep {
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-disabled);
       margin: 0 0.1rem;
     }
 
     &__value {
       font-family: var(--font-code);
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
   }
 }
 
-// ---------------------------------------------------------------------------
-// Join row enhancements: now a two-line button (name + Pure-code formula)
-// like filter rows; SELF / CROSS-DB markers next to the name; a top-aligned
-// icon column to match the new shape. These rules intentionally extend the
-// earlier `.database-diagram__side-panel__join` block defined inside the
-// nested `&__join` rule above; keeping them together would force a deep
-// nesting that hurts readability, so we accept the duplicate-selector lint.
-// ---------------------------------------------------------------------------
 // stylelint-disable-next-line no-duplicate-selectors
 .database-diagram__side-panel__join {
   display: flex;
@@ -1302,7 +1213,7 @@
     font-family: var(--font-code);
     font-style: italic;
     font-size: 1rem;
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-disabled);
   }
 
   &__marker {
@@ -1314,38 +1225,28 @@
 
     &--self {
       background: var(--color-blue-200);
-      color: var(--color-light-grey-0);
+      color: var(--color-text-on-accent);
     }
 
     &--cross-db {
       background: var(--color-orange-200);
-      color: var(--color-light-grey-0);
+      color: var(--color-text-on-accent);
     }
   }
 }
 
-// ---------------------------------------------------------------------------
-// Lakehouse-stores section: same row shape as the classic "Included Stores"
-// rows above, with an extra `__type` badge between the path and the open
-// icon to indicate the storeType (DataProduct / IngestDefinition / etc.).
-// ---------------------------------------------------------------------------
 .database-diagram__side-panel__included-store__type {
   flex-shrink: 0;
   padding: 0 0.4rem;
   border-radius: 0.2rem;
-  background: var(--color-dark-grey-300);
-  color: var(--color-light-grey-200);
+  background: var(--color-bg-tag);
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
   font-weight: 500;
   letter-spacing: 0.05rem;
   text-transform: uppercase;
 }
 
-// ---------------------------------------------------------------------------
-// Lakehouse-generated banner: above the editor body whenever the database
-// is an `INTERNAL__LakehouseGeneratedDatabase`. Yellow-tinted to signal the
-// "informational status" intent (matches the read-only sticker color).
-// ---------------------------------------------------------------------------
 // stylelint-disable-next-line no-duplicate-selectors
 .database-editor__content {
   display: flex;
@@ -1360,6 +1261,7 @@
   }
 }
 
+// Lakehouse-generated banner — yellow informational status (domain).
 .database-editor__generated-banner {
   @include flexVCenter;
 
@@ -1368,7 +1270,7 @@
   padding: 0.6rem 1rem;
   background: rgb(229 192 123 / 10%);
   border-bottom: 0.1rem solid var(--color-yellow-200);
-  color: var(--color-light-grey-200);
+  color: var(--color-text-secondary);
   font-size: 1.1rem;
 
   svg {
@@ -1387,20 +1289,13 @@
   }
 }
 
-// ---------------------------------------------------------------------------
-// UX polish layer: tree search/expand toolbar, copy-to-clipboard buttons,
-// loading skeletons, empty-state rows, view-column focus highlight, canvas
-// floating toolbar, annotation popover. All additive — do not change any
-// existing rules above.
-// ---------------------------------------------------------------------------
-
 .database-diagram__side-panel__toolbar {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   padding: 0.4rem 0.6rem;
-  border-bottom: 0.1rem solid var(--color-dark-grey-200);
-  background: var(--color-dark-grey-100);
+  border-bottom: 0.1rem solid var(--color-border-default);
+  background: var(--color-bg-panel);
   flex-shrink: 0;
 }
 
@@ -1411,13 +1306,13 @@
   min-width: 0;
   height: 2.4rem;
   padding: 0 0.6rem;
-  border: 0.1rem solid var(--color-dark-grey-300);
-  background: var(--color-dark-grey-50);
+  border: 0.1rem solid var(--color-border-strong);
+  background: var(--color-bg-app);
   border-radius: 0.2rem;
 
   svg {
     flex-shrink: 0;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     font-size: 1.2rem;
   }
 
@@ -1429,11 +1324,11 @@
     background: transparent;
     border: 0;
     outline: none;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     font-size: 1.2rem;
 
     &::placeholder {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
   }
 
@@ -1448,12 +1343,12 @@
     background: transparent;
     border: 0;
     border-radius: 0.2rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     cursor: pointer;
 
     &:hover {
-      background: var(--color-dark-grey-200);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
     }
   }
 }
@@ -1468,7 +1363,7 @@
   background: transparent;
   border: 0;
   border-radius: 0.2rem;
-  color: var(--color-light-grey-300);
+  color: var(--color-text-secondary);
   cursor: pointer;
 
   svg {
@@ -1476,15 +1371,11 @@
   }
 
   &:hover {
-    background: var(--color-dark-grey-200);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
   }
 }
 
-// Inline copy-to-clipboard button shown on rendered Pure formula rows
-// (joins, filters, view columns, view groupBy). Visually muted by default
-// and brighter on hover so it does not steal attention from the formula
-// itself.
 .database-diagram__copy-btn {
   @include flexCenter;
 
@@ -1495,7 +1386,7 @@
   background: transparent;
   border: 0;
   border-radius: 0.2rem;
-  color: var(--color-light-grey-400);
+  color: var(--color-text-muted);
   cursor: pointer;
   flex-shrink: 0;
 
@@ -1504,31 +1395,28 @@
   }
 
   &:hover {
-    background: var(--color-dark-grey-200);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
   }
 
   &--copied {
-    color: var(--color-green-100);
+    color: var(--color-status-success);
 
     &:hover {
-      color: var(--color-green-100);
+      color: var(--color-status-success);
     }
   }
 }
 
-// Skeleton shimmer used while a Pure formula is being lazily computed.
-// Width-randomization is done in markup so the same skeleton component can
-// reuse this single rule.
 .database-diagram__skeleton {
   display: inline-block;
   height: 1.2rem;
   border-radius: 0.2rem;
   background: linear-gradient(
     90deg,
-    var(--color-dark-grey-200) 0%,
-    var(--color-dark-grey-300) 50%,
-    var(--color-dark-grey-200) 100%
+    var(--color-bg-panel-header) 0%,
+    var(--color-bg-tag) 50%,
+    var(--color-bg-panel-header) 100%
   );
   background-size: 200% 100%;
   animation: database-diagram__skeleton-shimmer 1.4s linear infinite;
@@ -1544,24 +1432,13 @@
   }
 }
 
-// Empty-state rows shown when a section has no entries OR when the active
-// search query filters everything out. Italicized + dim to signal "this is
-// not a real row, just a notice".
 .database-diagram__side-panel__empty {
   padding: 0.5rem 1rem 0.5rem 2.4rem;
-  color: var(--color-light-grey-400);
+  color: var(--color-text-muted);
   font-style: italic;
   font-size: 1.1rem;
 }
 
-// View column focus highlight on the canvas table-node. The focused state is
-// already styled by the nested `&--focused` rule under
-// `.database-diagram__table-node__column` above (strong blue background +
-// readable text colors). No additional rule is needed here — the same class
-// is reused for view-column focus.
-
-// Floating canvas toolbar pinned top-right. Sits above the ReactFlow
-// surface but below any modal/popover overlays.
 .database-diagram__toolbar {
   position: absolute;
   top: 0.8rem;
@@ -1570,8 +1447,8 @@
   display: flex;
   gap: 0.2rem;
   padding: 0.3rem;
-  background: var(--color-dark-grey-100);
-  border: 0.1rem solid var(--color-dark-grey-200);
+  background: var(--color-bg-panel);
+  border: 0.1rem solid var(--color-border-default);
   border-radius: 0.3rem;
   box-shadow: 0 0.2rem 0.6rem rgb(0 0 0 / 35%);
 
@@ -1584,7 +1461,7 @@
     background: transparent;
     border: 0;
     border-radius: 0.2rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     cursor: pointer;
 
     svg {
@@ -1592,8 +1469,8 @@
     }
 
     &:hover:not(:disabled) {
-      background: var(--color-dark-grey-200);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
     }
 
     &:disabled {
@@ -1603,24 +1480,16 @@
   }
 }
 
-// Annotation popover content — paddings + min-width so the rendered pills
-// do not feel cramped against the popover border.
 .database-annotation__popover {
   padding: 0.8rem;
   min-width: 18rem;
   max-width: 40rem;
-  background: var(--color-dark-grey-100);
-  border: 0.1rem solid var(--color-dark-grey-200);
+  background: var(--color-bg-panel);
+  border: 0.1rem solid var(--color-border-default);
 }
 
-// ---------------------------------------------------------------------------
-// Milestoning surface: a small color-coded tag rendered on canvas table-node
-// headers (one per `Milestoning` declaration) plus a matching tree meta-row
-// under expanded tables. Two color families: business (teal) vs. processing
-// (purple) so users can tell the two kinds apart at a glance. A muted grey
-// fallback covers plugin-defined custom kinds.
-// ---------------------------------------------------------------------------
-
+// Milestoning kind-tag colors. Business vs. processing use distinct domain
+// hues (blue vs. magenta) so users can tell the two apart at a glance.
 .database-diagram__table-node__header__kind-tag--milestoned-business {
   background: rgb(86 156 214 / 18%);
   color: var(--color-blue-200);
@@ -1635,12 +1504,10 @@
 
 .database-diagram__table-node__header__kind-tag--milestoned-unknown {
   background: rgb(255 255 255 / 6%);
-  color: var(--color-light-grey-300);
+  color: var(--color-text-secondary);
   border: 0.1rem solid rgb(255 255 255 / 12%);
 }
 
-// Tree meta-rows mirror the View distinct/filter/groupBy treatment but use
-// the milestoning-specific kind colors on the small leading dot.
 .database-diagram__tree__table__meta-row--milestoning-business
   .database-diagram__tree__table__meta-row__label {
   color: var(--color-blue-200);
@@ -1653,11 +1520,9 @@
 
 .database-diagram__tree__table__meta-row--milestoning-unknown
   .database-diagram__tree__table__meta-row__label {
-  color: var(--color-light-grey-400);
+  color: var(--color-text-muted);
 }
 
-// Export buttons render an icon plus a tiny "PNG" / "SVG" label so users
-// can tell the two formats apart without hovering for the tooltip.
 .database-diagram__toolbar__btn__label {
   margin-left: 0.3rem;
   font-size: 0.9rem;
@@ -1665,170 +1530,7 @@
   letter-spacing: 0.05rem;
 }
 
-// Buttons with a label need a bit more horizontal room than the
-// icon-only ones (fit/reset).
 .database-diagram__toolbar__btn:has(.database-diagram__toolbar__btn__label) {
   width: auto;
   padding: 0 0.6rem;
-}
-
-// =============================================================================
-// Theme toggle button (lives in the tab header strip)
-// =============================================================================
-
-.database-editor__theme-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  margin-right: 0.6rem;
-  background: transparent;
-  border: 0.1rem solid var(--color-dark-grey-250);
-  border-radius: 0.3rem;
-  color: var(--color-light-grey-300);
-  cursor: pointer;
-
-  svg {
-    font-size: 1.4rem;
-  }
-
-  &:hover {
-    background: var(--color-dark-grey-200);
-    color: var(--color-light-grey-50);
-  }
-}
-
-// =============================================================================
-// Light theme overrides — scoped to this editor only.
-//
-// Strategy: rather than rewriting every existing rule, we remap the legend
-// dark/light palette tokens at the `.database-editor--light` ancestor scope.
-// CSS custom properties cascade by inheritance, so any `var(--color-*)` use
-// inside the editor subtree automatically resolves to the light value here
-// while the rest of Studio (outside this subtree) keeps its dark tokens
-// intact.
-//
-// Accent tokens (blue/yellow/purple/orange/lime/green) are intentionally
-// left untouched so kind-tags and badges stay recognizable across themes.
-// We only flip the structural greys.
-//
-// TODO: when Studio adopts app-wide theming via `LayoutService` color
-// themes, retarget this block at the framework's color-theme tokens (or
-// delete it entirely if those tokens already cover the surfaces below).
-// The hex values here are a stop-gap until that infrastructure exists.
-// =============================================================================
-
-.database-editor--light {
-  // Backgrounds (was: dark grey scale → now: warm whites/light greys)
-  --color-dark-grey-50: #fff;
-  --color-dark-grey-80: #f7f7f8;
-  --color-dark-grey-100: #fff;
-  --color-dark-grey-200: #eceef1;
-  --color-dark-grey-250: #dfe2e7;
-  --color-dark-grey-300: #d2d6dc;
-  --color-dark-grey-400: #6b7280;
-
-  // Foregrounds (was: light grey scale → now: dark text on light bg)
-  --color-light-grey-0: #111827;
-  --color-light-grey-50: #1f2937;
-  --color-light-grey-100: #1f2937;
-  --color-light-grey-200: #2d333b;
-  --color-light-grey-300: #374151;
-  --color-light-grey-400: #6b7280;
-
-  // Editor root surface — explicit so the outer chrome reads as light.
-  background: #fff;
-  color: #1f2937;
-
-  // The "READ ONLY" yellow badge keeps its accent color but the soft
-  // bg behind the lock+text label needs a lighter wash so the yellow
-  // border isn't fighting a near-black surface anymore.
-  .database-editor__read-only-badge {
-    background: #fffbeb;
-  }
-
-  // Theme toggle picks up its own light styling.
-  .database-editor__theme-toggle {
-    border-color: #d2d6dc;
-    color: #374151;
-
-    &:hover {
-      background: #f3f4f6;
-      color: #111827;
-    }
-  }
-
-  // The amber "generated from grammar" banner — keep accent text but
-  // lighten the wash so it doesn't punch a yellow hole.
-  .database-editor__generated-banner {
-    background: #fef9c3;
-  }
-
-  // Active tab underline — purple-on-purple-tint reads fine on light too,
-  // but the wash needs to be a touch deeper to hold the purple text.
-  .database-editor__tab--active {
-    background: rgb(139 92 246 / 12%) !important;
-    color: #6d28d9 !important;
-  }
-
-  .database-editor__tab--active::after,
-  .database-editor__tab--active {
-    border-bottom-color: #6d28d9;
-  }
-
-  // Milestoning / annotation accent washes that used purple-with-alpha
-  // need their alpha bumped because they're now sitting on white.
-  .database-diagram__node__milestoning,
-  .database-diagram__node__annotations {
-    background: rgb(139 92 246 / 8%);
-    border-top-color: #d2d6dc;
-  }
-
-  // ============================================================
-  // ReactFlow canvas (CSS variable overrides scoped to this subtree)
-  // ============================================================
-  .react-flow {
-    --xy-background-color: #fafbfc;
-    --xy-background-pattern-color: #c7cdd6;
-    --xy-edge-stroke: #6b7280;
-    --xy-edge-stroke-selected: #6d28d9;
-    --xy-edge-stroke-width: 1.2;
-    --xy-controls-button-background-color: #fff;
-    --xy-controls-button-background-color-hover: #f3f4f6;
-    --xy-controls-button-color: #374151;
-    --xy-controls-button-color-hover: #111827;
-    --xy-controls-button-border-color: #d2d6dc;
-    --xy-controls-box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
-    --xy-minimap-background-color: #fff;
-    --xy-minimap-mask-background-color: rgb(17 24 39 / 6%);
-    --xy-minimap-mask-stroke-color: rgb(17 24 39 / 18%);
-    --xy-node-color: #1f2937;
-    --xy-node-background-color: #fff;
-    --xy-node-border: 1px solid #d2d6dc;
-  }
-
-  // The dotted background's host element also reads our token — keep it
-  // aligned with `--xy-background-color` for a seamless surface.
-  .react-flow__background {
-    background: #fafbfc;
-  }
-
-  // Table-node card sits on a near-white canvas; its own white-on-white
-  // bg would disappear, so give it the faintest grey wash and a crisper
-  // shadow so cards still float above the dotted background.
-  .database-diagram__node__table {
-    background: #fff !important;
-    border: 0.1rem solid #d2d6dc !important;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
-  }
-
-  // Selected/hover ring — keep accent but on light it needs darker stroke.
-  .database-diagram__node__table--hovered {
-    border-color: #2563eb !important;
-  }
-
-  .database-diagram__node__table--focused {
-    border-color: #b45309 !important;
-  }
 }

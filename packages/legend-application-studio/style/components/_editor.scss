@@ -66,7 +66,7 @@
   &__content-container {
     @include flexHCenter;
 
-    background: var(--color-dark-grey-80);
+    background: var(--color-bg-app);
     flex: 1 0 auto;
     width: calc(100% - 10rem);
   }
