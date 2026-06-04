@@ -256,18 +256,12 @@ describe(unitTest('processQuestionWithIntent'), () => {
     expect(msg.isProcessing).toBe(false);
   });
 
-  test('orchestrator intent routes to orchestrator', async () => {
+  test('orchestrator intent with services goes SQL-first when configured', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const plugin = TEST__createMockLegendAIPlugin({
-      resolveEntitiesForQuery: createMock().mockResolvedValue({
-        rootEntity: 'my::Entity',
-        relatedEntities: [],
-      }),
-      generateQueryViaOrchestrator: createMock().mockResolvedValue({
-        legend_query: 'Pure query',
-      }),
-      executePureQuery: createMock().mockResolvedValue({
+      callLLM: createMock().mockResolvedValue('sql response'),
+      executeSql: createMock().mockResolvedValue({
         columns: ['x'],
         rows: [{ x: 1 }],
       }),
@@ -295,7 +289,7 @@ describe(unitTest('processQuestionWithIntent'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.sql).toBe('Pure query');
+    expect(msg.sql).toBe('SELECT * FROM t');
     expect(msg.gridData?.rowData).toHaveLength(1);
   });
 
@@ -322,22 +316,10 @@ describe(unitTest('processQuestionWithIntent'), () => {
     expect(msg.error).toContain('No TDS services available');
   });
 
-  test('data_query with no services falls back to orchestrator when configured', async () => {
+  test('no services with orchestrator offers fallback', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
-    const plugin = TEST__createMockLegendAIPlugin({
-      resolveEntitiesForQuery: createMock().mockResolvedValue({
-        rootEntity: 'my::Entity',
-        relatedEntities: [],
-      }),
-      generateQueryViaOrchestrator: createMock().mockResolvedValue({
-        legend_query: 'fallback query',
-      }),
-      executePureQuery: createMock().mockResolvedValue({
-        columns: ['y'],
-        rows: [{ y: 42 }],
-      }),
-    });
+    const plugin = TEST__createMockLegendAIPlugin();
 
     await processQuestionWithIntent(
       'show data',
@@ -361,8 +343,8 @@ describe(unitTest('processQuestionWithIntent'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.sql).toBe('fallback query');
-    expect(msg.gridData?.rowData).toHaveLength(1);
+    expect(msg.textAnswer).toContain('No TDS services available');
+    expect(msg.fallbackAction).toBeDefined();
   });
 });
 describe(unitTest('executePureQueryAndReport'), () => {

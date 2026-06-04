@@ -1573,6 +1573,52 @@
     }
   }
 
+  // Intelligence & AI Agents Page
+  .legend-marketplace-ai-page {
+    background: var(--color-hclight-white);
+  }
+
+  .marketplace-agents__search-container {
+    background: var(--legend-marketplace-light-blue);
+  }
+
+  .marketplace-agents__section-bar {
+    background-color: var(--color-hclight-grey-10);
+    border-bottom-color: var(--color-hclight-grey-20);
+
+    &__container {
+      background-color: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-90);
+    }
+  }
+
+  .marketplace-agents__section-title {
+    color: var(--color-hclight-grey-90);
+  }
+
+  .marketplace-agents__content-container {
+    background: var(--color-hclight-white);
+  }
+
+  .marketplace-agents__agent-card {
+    background: var(--color-hclight-grey-10);
+    border-color: var(--color-hclight-grey-20);
+
+    &:hover {
+      background: var(--color-hclight-white);
+      border-color: var(--color-hclight-blue-50);
+      box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+    }
+  }
+
+  .marketplace-agents__agent-card-title {
+    color: var(--color-hclight-grey-90);
+  }
+
+  .marketplace-agents__agent-card-desc {
+    color: var(--color-hclight-grey-50);
+  }
+
   .marketplace-lakehouse-search-results {
     background: var(--color-hclight-white);
 
@@ -2757,4 +2803,43 @@
       }
     }
   }
+
+  // ─── Legend AI Chat ──────────────────────────────────────────────────────────
+  --ai-bg-page: var(--marketplace-bg-primary);
+  --ai-bg-surface: var(--marketplace-bg-secondary);
+  --ai-bg-elevated: var(--marketplace-bg-elevated);
+  --ai-bg-input: var(--marketplace-bg-primary);
+  --ai-bg-input-focus: var(--marketplace-bg-primary);
+  --ai-bg-user-bubble: var(--color-ai-accent-primary);
+  --ai-bg-assistant: transparent;
+  --ai-bg-code: var(--color-ai-bg-code);
+  --ai-bg-suggestion: rgb(0 0 0 / 3%);
+  --ai-bg-suggestion-hover: rgb(0 0 0 / 6%);
+  --ai-bg-card: var(--marketplace-bg-primary);
+  --ai-bg-card-hover: var(--marketplace-bg-secondary);
+  --ai-bg-badge: rgb(37 99 235 / 8%);
+  --ai-bg-thinking: rgb(0 0 0 / 2%);
+  --ai-bg-results-header: rgb(0 0 0 / 2%);
+  --ai-text-primary: var(--marketplace-text-primary);
+  --ai-text-secondary: var(--marketplace-text-secondary);
+  --ai-text-muted: var(--marketplace-text-muted);
+  --ai-text-user-bubble: var(--color-white);
+  --ai-text-code: var(--color-ai-text-code);
+  --ai-text-link: var(--marketplace-link-color);
+  --ai-border-primary: var(--color-ai-border);
+  --ai-border-input: var(--color-ai-border-input);
+  --ai-border-input-focus: var(--marketplace-link-color);
+  --ai-border-card: var(--color-ai-border);
+  --ai-border-card-hover: var(--marketplace-link-color);
+  --ai-accent-primary: var(--color-ai-accent-primary);
+  --ai-accent-hover: var(--color-ai-accent-hover);
+  --ai-accent-green: var(--color-ai-accent-green);
+  --ai-accent-green-bg: rgb(5 150 105 / 8%);
+  --ai-accent-purple: var(--color-ai-accent-purple);
+  --ai-accent-blue-soft: var(--color-ai-accent-blue-soft);
+  --ai-accent-red: var(--color-ai-accent-red);
+  --ai-text-error: var(--color-ai-accent-red);
+  --ai-shadow-card: 0 1px 3px rgb(0 0 0 / 8%);
+  --ai-shadow-card-hover: 0 8px 24px rgb(0 0 0 / 12%);
+  --ai-shadow-input: 0 0 0 3px rgb(37 99 235 / 8%);
 }
