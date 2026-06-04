@@ -134,7 +134,7 @@ const V1_accessPointTestModelSchema = createModelSchema(V1_AccessPointTest, {
   ),
   doc: optional(primitive()),
   id: primitive(),
-  parameters: customListWithSchema(V1_parameterValueModelSchema),
+  parameters: optionalCustomListWithSchema(V1_parameterValueModelSchema),
 });
 
 const V1_dataProductTestSuiteModelSchema = (

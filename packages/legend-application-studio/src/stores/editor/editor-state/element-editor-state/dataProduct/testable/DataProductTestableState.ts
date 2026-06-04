@@ -327,17 +327,13 @@ export class DataProductTestState extends TestableTestEditorState {
       return;
     }
 
-    const unnamedParams = params.filter(
-      (p) => !(typeof p.name === 'string' ? p.name.trim() : ''),
-    );
+    const unnamedParams = params.filter((p) => !p.name);
     if (!unnamedParams.length) {
       return;
     }
 
     const takenNames = new Set(
-      params
-        .map((p) => (typeof p.name === 'string' ? p.name.trim() : ''))
-        .filter((name) => Boolean(name)),
+      params.map((p) => p.name).filter((name) => Boolean(name)),
     );
 
     expressions.forEach((expr) => {

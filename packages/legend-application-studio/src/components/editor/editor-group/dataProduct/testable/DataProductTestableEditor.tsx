@@ -922,44 +922,19 @@ const DataProductTestEditor = observer(
           {selectedTab === TESTABLE_TEST_TAB.ASSERTION && (
             <>
               {selectedAssertion ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: '100%',
-                    height: '100%',
-                    minHeight: 0,
-                    overflow: 'hidden',
-                  }}
-                >
+                <div className="data-product-test-editor__assertion">
                   {hasQueryParameters && (
-                    <div
-                      style={{
-                        flex: '0 0 32%',
-                        minHeight: '12rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <div
-                        className="service-test-data-editor panel"
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          flex: 1,
-                          minHeight: 0,
-                        }}
-                      >
-                        <div className="service-test-suite-editor__header">
-                          <div className="service-test-suite-editor__header__title">
-                            <div className="service-test-suite-editor__header__title__label">
+                    <div className="data-product-test-editor__parameters-panel-container">
+                      <div className="service-test-data-editor panel data-product-test-editor__parameters-panel">
+                        <div className="service-test-suite-editor__header data-product-test-editor__parameters-header">
+                          <div className="service-test-suite-editor__header__title data-product-test-editor__parameters-header__title">
+                            <div className="service-test-suite-editor__header__title__label data-product-test-editor__parameters-header__title__label">
                               Parameters
                             </div>
                           </div>
-                          <div className="panel__header__actions">
+                          <div className="panel__header__actions data-product-test-editor__parameters-header__actions">
                             <button
-                              className="panel__header__action service-execution-editor__test-data__generate-btn"
+                              className="panel__header__action service-execution-editor__test-data__generate-btn data-product-test-editor__parameters-header__action"
                               onClick={generateParameterValues}
                               disabled={!testState.newParamOptions.length}
                               title="Generate test parameter values"
@@ -973,7 +948,7 @@ const DataProductTestEditor = observer(
                               </div>
                             </button>
                             <button
-                              className="panel__header__action"
+                              className="panel__header__action data-product-test-editor__parameters-header__action"
                               tabIndex={-1}
                               disabled={!testState.newParamOptions.length}
                               onClick={addParameter}
@@ -983,14 +958,7 @@ const DataProductTestEditor = observer(
                             </button>
                           </div>
                         </div>
-                        <div
-                          className="service-test-editor__setup__parameters"
-                          style={{
-                            overflowY: 'auto',
-                            flex: 1,
-                            minHeight: 0,
-                          }}
-                        >
+                        <div className="service-test-editor__setup__parameters data-product-test-editor__parameters">
                           {testState.parameterValueStates.map((paramState) => (
                             <DataProductTestParameterEditor
                               key={paramState.uuid}
@@ -1011,11 +979,13 @@ const DataProductTestEditor = observer(
                     </div>
                   )}
                   <div
-                    style={{
-                      flex: hasQueryParameters ? 1 : '1 1 100%',
-                      minHeight: 0,
-                      overflow: 'hidden',
-                    }}
+                    className={clsx(
+                      'data-product-test-editor__assertion-result',
+                      {
+                        'data-product-test-editor__assertion-result--full':
+                          !hasQueryParameters,
+                      },
+                    )}
                   >
                     <TestAssertionEditor
                       testAssertionState={selectedAssertion}
