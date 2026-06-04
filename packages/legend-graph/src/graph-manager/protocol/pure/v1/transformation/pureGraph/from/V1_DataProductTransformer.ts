@@ -145,12 +145,14 @@ export const V1_transformDataProductAccessPointTest = (
   accessPointTest.id = element.id;
   accessPointTest.doc = element.doc;
   accessPointTest.accessPointId = element.accessPointId;
-  accessPointTest.parameters = element.parameters?.map((p) => {
-    const parameterValue = new V1_FunctionParameterValue();
-    parameterValue.name = p.name;
-    parameterValue.value = p.value;
-    return parameterValue;
-  });
+  if (element.parameters?.length) {
+    accessPointTest.parameters = element.parameters.map((p) => {
+      const parameterValue = new V1_FunctionParameterValue();
+      parameterValue.name = p.name;
+      parameterValue.value = p.value;
+      return parameterValue;
+    });
+  }
   accessPointTest.assertions = element.assertions.map(
     V1_transformTestAssertion,
   );

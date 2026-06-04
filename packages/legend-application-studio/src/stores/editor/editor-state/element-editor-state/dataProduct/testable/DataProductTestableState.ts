@@ -98,9 +98,6 @@ const createEmptyRelationElement = (
   return observe_RelationElement(relationElement);
 };
 
-const getTrimmedParameterName = (name: unknown): string =>
-  typeof name === 'string' ? name.trim() : '';
-
 /**
  * Returns the lambda for an access point (handles both LakehouseAccessPoint
  * and FunctionAccessPoint).
@@ -331,7 +328,7 @@ export class DataProductTestState extends TestableTestEditorState {
     }
 
     const unnamedParams = params.filter(
-      (p) => !getTrimmedParameterName(p.name),
+      (p) => !(typeof p.name === 'string' ? p.name.trim() : ''),
     );
     if (!unnamedParams.length) {
       return;
@@ -339,7 +336,7 @@ export class DataProductTestState extends TestableTestEditorState {
 
     const takenNames = new Set(
       params
-        .map((p) => getTrimmedParameterName(p.name))
+        .map((p) => (typeof p.name === 'string' ? p.name.trim() : ''))
         .filter((name) => Boolean(name)),
     );
 
