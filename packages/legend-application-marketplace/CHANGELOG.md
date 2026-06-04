@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.2.18
+
+### Patch Changes
+
+- [#5223](https://github.com/finos/legend-studio/pull/5223) [`612fafe`](https://github.com/finos/legend-studio/commit/612fafe4aeeb2f6f7af6e251297f715f006f2d7d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Avoid redundant API calls on access-token rotation in the admin contracts and subscriptions dashboards. The AG Grid server-side datasources now take a token-provider callback instead of a token value, so the datasource is no longer recreated on every token rotation (which previously caused the grid to reset and refetch the visible page).
+
 ## 0.2.17
 
 ## 0.2.16
