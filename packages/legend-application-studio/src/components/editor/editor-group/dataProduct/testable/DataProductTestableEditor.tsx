@@ -511,11 +511,11 @@ const DataProductTestDataEditor = observer(
 
     return (
       <div
-        className={clsx('service-test-data-editor panel', {
-          'service-test-data-editor--no-data': !hasTestData,
+        className={clsx('data-product-test-data-editor panel', {
+          'data-product-test-data-editor--no-data': !hasTestData,
         })}
       >
-        <div className="service-test-data-editor__data">
+        <div className="data-product-test-data-editor__data">
           <ResizablePanelGroup orientation="vertical">
             {/* Left: elements list — always visible */}
             <ResizablePanel minSize={100} size={180}>
@@ -537,7 +537,7 @@ const DataProductTestDataEditor = observer(
                 )}
               </div>
               {!hasTestData ? (
-                <div className="service-test-data-editor__warning">
+                <div className="data-product-test-data-editor__warning">
                   <ErrorWarnIcon />
                   <span>Add an element to configure test data</span>
                 </div>
@@ -734,7 +734,7 @@ const DataProductTestParameterEditor = observer(
             tooltipText="This parameter was preserved but cannot currently be edited in form mode"
           />
         ) : contentTypeParamPair && primitiveValueSpecification ? (
-          <div className="service-test-editor__setup__parameter__code-editor">
+          <div className="data-product-test-editor__parameter__code-editor">
             <textarea
               className="panel__content__form__section__textarea value-spec-editor__input"
               spellCheck={false}
@@ -754,9 +754,9 @@ const DataProductTestParameterEditor = observer(
                 contentTypeParamPair={contentTypeParamPair}
               />
             )}
-            <div className="service-test-editor__setup__parameter__value__actions">
+            <div className="data-product-test-editor__parameter__value__actions">
               <button
-                className="service-test-editor__setup__parameter__code-editor__expand-btn"
+                className="data-product-test-editor__parameter__code-editor__expand-btn"
                 onClick={openInPopUp}
                 tabIndex={-1}
                 title="Open in a popup..."
@@ -764,7 +764,7 @@ const DataProductTestParameterEditor = observer(
                 <FilledWindowMaximizeIcon />
               </button>
               <button
-                className="btn--icon btn--dark btn--sm service-test-editor__setup__parameter__code-editor__expand-btn"
+                className="btn--icon btn--dark btn--sm data-product-test-editor__parameter__code-editor__expand-btn"
                 disabled={isReadOnly || paramIsRequired}
                 onClick={(): void =>
                   testState.removeParamValueState(paramState)
@@ -779,7 +779,7 @@ const DataProductTestParameterEditor = observer(
             </div>
           </div>
         ) : (
-          <div className="service-test-editor__setup__parameter__value">
+          <div className="data-product-test-editor__parameter__value">
             <BasicValueSpecificationEditor
               valueSpecification={valueSpecificationParamState.valueSpec}
               setValueSpecification={(val: ValueSpecification): void => {
@@ -799,7 +799,7 @@ const DataProductTestParameterEditor = observer(
                 valueSpecificationParamState.resetValueSpec();
               }}
             />
-            <div className="service-test-editor__setup__parameter__value__actions">
+            <div className="data-product-test-editor__parameter__value__actions">
               <button
                 className="btn--icon btn--dark btn--sm"
                 disabled={isReadOnly || paramIsRequired}
@@ -914,7 +914,7 @@ const DataProductTestEditor = observer(
     return (
       <div className="function-test-editor panel">
         <div className="panel__header">
-          <div className="panel__header service-test-editor__header--with-tabs">
+          <div className="panel__header data-product-test-editor__header--with-tabs">
             <div className="panel__header__title__content">Assertion</div>
           </div>
         </div>
@@ -934,15 +934,15 @@ const DataProductTestEditor = observer(
                           </div>
                           <div className="panel__header__actions data-product-test-editor__parameters-header__actions">
                             <button
-                              className="panel__header__action data-product-test-editor__parameters-header__action data-product-test-editor__parameters-header__generate-btn"
+                              className="panel__header__action data-product-test-editor__generate-btn"
                               onClick={generateParameterValues}
                               disabled={!testState.newParamOptions.length}
                               title="Generate test parameter values"
                               tabIndex={-1}
                             >
-                              <div className="data-product-test-editor__parameters-header__generate-btn__label">
-                                <RefreshIcon className="data-product-test-editor__parameters-header__generate-btn__label__icon" />
-                                <div className="data-product-test-editor__parameters-header__generate-btn__label__title">
+                              <div className="data-product-test-editor__generate-btn__label">
+                                <RefreshIcon className="data-product-test-editor__generate-btn__label__icon" />
+                                <div className="data-product-test-editor__generate-btn__label__title">
                                   Generate
                                 </div>
                               </div>
@@ -1028,8 +1028,8 @@ const DataProductTestsEditor = observer(
     const selectedTest = suiteState.selectTestState;
 
     return (
-      <div className="panel service-test-editor">
-        <div className="service-test-editor__content">
+      <div className="panel data-product-test-editor__tests">
+        <div className="data-product-test-editor__tests__content">
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={100} size={200}>
               <div className="binding-editor__header">
@@ -1113,7 +1113,7 @@ const DataProductTestSuiteEditor = observer(
     const isReadOnly = testableState.dataProductEditorState.isReadOnly;
 
     return (
-      <div className="service-test-suite-editor">
+      <div className="data-product-test-suite-editor">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel size={580} minSize={28}>
             <DataProductTestDataEditor
@@ -1199,7 +1199,7 @@ export const DataProductTestableEditor = observer(
       testSuite_setId(guaranteeNonNullable(testableState.suiteToRename), val);
 
     return (
-      <Panel className="service-test-suite-editor">
+      <Panel className="data-product-test-suite-editor">
         <PanelLoadingIndicator
           isLoading={testableState.runningAllTestsState.isInProgress}
         />
@@ -1220,14 +1220,14 @@ export const DataProductTestableEditor = observer(
 
         <PanelHeader>
           {dp.tests.length ? (
-            <PanelHeader className="service-test-suite-editor__header service-test-suite-editor__header--with-tabs">
+            <PanelHeader className="data-product-test-suite-editor__header data-product-test-suite-editor__header--with-tabs">
               <div className="uml-element-editor__tabs">
                 {dp.tests.map((suite) => (
                   <div
                     key={suite.id}
                     onClick={(): void => changeSuite(suite)}
-                    className={clsx('service-test-suite-editor__tab', {
-                      'service-test-suite-editor__tab--active':
+                    className={clsx('data-product-test-suite-editor__tab', {
+                      'data-product-test-suite-editor__tab--active':
                         selectedSuiteState?.suite === suite,
                     })}
                   >
@@ -1255,7 +1255,7 @@ export const DataProductTestableEditor = observer(
             </PanelHeaderActionItem>
           </PanelHeaderActions>
         </PanelHeader>
-        <Panel className="service-test-suite-editor">
+        <Panel className="data-product-test-suite-editor">
           {selectedSuiteState && (
             <DataProductTestSuiteEditor suiteState={selectedSuiteState} />
           )}
