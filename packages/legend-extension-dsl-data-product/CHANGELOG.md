@@ -1,5 +1,14 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.86
+
+### Patch Changes
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+- [#5227](https://github.com/finos/legend-studio/pull/5227) [`eefc7dd`](https://github.com/finos/legend-studio/commit/eefc7dd4a99a7a54b79a79c0977b9eaa7e93bcfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add permit data access request support with live task overlay, marketplace and eTask timeline links, standalone permit page, and escalation handling.
+  Added Permit Workflow client.
+
 ## 0.0.85
 
 ## 0.0.84

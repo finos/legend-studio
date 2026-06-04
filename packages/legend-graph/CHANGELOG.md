@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.8
+
+### Patch Changes
+
+- [#5227](https://github.com/finos/legend-studio/pull/5227) [`eefc7dd`](https://github.com/finos/legend-studio/commit/eefc7dd4a99a7a54b79a79c0977b9eaa7e93bcfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add explicit `GenericWorkflowTask` case in workflow task deserializer; default now throws for unknown types.
+
 ## 32.6.7
 
 ## 32.6.6
