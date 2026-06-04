@@ -32,6 +32,7 @@ import {
   PropertyExplicitReference,
   Property,
   VariableExpression,
+  FunctionExpression,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
@@ -42,6 +43,11 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '@finos/legend-data-cube';
+import {
+  QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderRelationColumnProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
+} from '../projection/QueryBuilderProjectionColumnState.js';
 
 export const buildRelationAggregation = (
   precedingExpression: ValueSpecification,
@@ -131,33 +137,84 @@ export const buildRelationAggregation = (
       ),
       `Could not find projected column matching aggregation column '${aggregationColumnState.columnName}'`,
     );
-    const projectedPropertyExpression = guaranteeType(
-      guaranteeType(projectionColSpec.function1, LambdaFunctionInstanceValue)
-        .values[0]?.expressionSequence[0],
-      AbstractPropertyExpression,
+    // Add column return type to relationType (computed up-front so we can also
+    // reuse it when building the map lambda for relation/derivation columns).
+    const returnType = guaranteeNonNullable(
+      aggregationColumnState.getColumnType(),
+      `Can't create value spec for aggregation column ${aggregationColumnState.columnName}. Missing type.`,
     );
-    const projectedProperty = guaranteeType(
-      projectedPropertyExpression.func.value,
-      Property,
-    );
-    // Second, build a new AbstractPropertyExpression for our map function
-    const newPropertyExpression = new AbstractPropertyExpression('');
-    newPropertyExpression.func = PropertyExplicitReference.create(
-      new Property(
+    // Second, build the map lambda. The shape of the lambda depends on the
+    // kind of projection column being aggregated:
+    //  - Simple (class-property) projections: rebuild an AbstractPropertyExpression
+    //    referencing the projected column name.
+    //  - Relation-column projections (source is an Accessor/Relation): build a
+    //    FunctionExpression over a RelationColumn with the projected name.
+    //  - Derivation projections: reuse the lambda already produced by project().
+    let mapLambda: ValueSpecification;
+    const projectionColumnState = aggregationColumnState.projectionColumnState;
+    if (
+      projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+    ) {
+      const projectedPropertyExpression = guaranteeType(
+        guaranteeType(projectionColSpec.function1, LambdaFunctionInstanceValue)
+          .values[0]?.expressionSequence[0],
+        AbstractPropertyExpression,
+      );
+      const projectedProperty = guaranteeType(
+        projectedPropertyExpression.func.value,
+        Property,
+      );
+      const newPropertyExpression = new AbstractPropertyExpression('');
+      newPropertyExpression.func = PropertyExplicitReference.create(
+        new Property(
+          projectionColSpec.name,
+          projectedProperty.multiplicity,
+          projectedProperty.genericType,
+          projectedProperty._OWNER,
+        ),
+      );
+      newPropertyExpression.parametersValues = [
+        new VariableExpression(DEFAULT_LAMBDA_VARIABLE_NAME, Multiplicity.ONE),
+      ];
+      mapLambda = buildGenericLambdaFunctionInstanceValue(
+        [DEFAULT_LAMBDA_VARIABLE_NAME],
+        [newPropertyExpression],
+        queryBuilderState.graphManagerState.graph,
+      );
+    } else if (
+      projectionColumnState instanceof
+      QueryBuilderRelationColumnProjectionColumnState
+    ) {
+      const projectedColumn = new RelationColumn(
         projectionColSpec.name,
-        projectedProperty.multiplicity,
-        projectedProperty.genericType,
-        projectedProperty._OWNER,
-      ),
-    );
-    newPropertyExpression.parametersValues = [
-      new VariableExpression(DEFAULT_LAMBDA_VARIABLE_NAME, Multiplicity.ONE),
-    ];
-    const mapLambda = buildGenericLambdaFunctionInstanceValue(
-      [DEFAULT_LAMBDA_VARIABLE_NAME],
-      [newPropertyExpression],
-      queryBuilderState.graphManagerState.graph,
-    );
+        GenericTypeExplicitReference.create(new GenericType(returnType)),
+      );
+      const columnExpression = new FunctionExpression(projectionColSpec.name);
+      columnExpression.func = projectedColumn;
+      columnExpression.parametersValues = [
+        new VariableExpression(DEFAULT_LAMBDA_VARIABLE_NAME, Multiplicity.ONE),
+      ];
+      mapLambda = buildGenericLambdaFunctionInstanceValue(
+        [DEFAULT_LAMBDA_VARIABLE_NAME],
+        [columnExpression],
+        queryBuilderState.graphManagerState.graph,
+      );
+    } else if (
+      projectionColumnState instanceof
+      QueryBuilderDerivationProjectionColumnState
+    ) {
+      // The derivation lambda was already serialized as part of project();
+      // reuse it directly so we don't need to re-serialize it here.
+      mapLambda = guaranteeNonNullable(
+        projectionColSpec.function1,
+        `Could not find projected derivation lambda for aggregation column '${aggregationColumnState.columnName}'`,
+      );
+    } else {
+      throw new UnsupportedOperationError(
+        `Can't build relation groupBy() aggregation map function: unsupported projection column state`,
+        projectionColumnState,
+      );
+    }
     colSpec.function1 = mapLambda;
 
     // Reduce function (function2)
@@ -174,10 +231,6 @@ export const buildRelationAggregation = (
     colSpec.function2 = reduceLambda;
 
     // Add column return type to relationType
-    const returnType = guaranteeNonNullable(
-      aggregationColumnState.getColumnType(),
-      `Can't create value spec for aggregation column ${aggregationColumnState.columnName}. Missing type.`,
-    );
     relationType.columns.push(
       new RelationColumn(
         aggregationColumnState.columnName,
