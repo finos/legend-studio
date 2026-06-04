@@ -1,5 +1,17 @@
 # @finos/legend-application-marketplace
 
+## 0.2.19
+
+### Patch Changes
+
+- [#5222](https://github.com/finos/legend-studio/pull/5222) [`26a3c39`](https://github.com/finos/legend-studio/commit/26a3c39e97da9d67f780c37953640ec381d84bde) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Cache and dedupe `/datacontracts/tasks/pending` requests across the header badge and entitlements dashboard to reduce load on the entitlements server. Cached responses are reused for 60 seconds and concurrent callers share a single in-flight request. The cache is invalidated automatically after approving or denying a task.
+
+- [#5215](https://github.com/finos/legend-studio/pull/5215) [`3b838e5`](https://github.com/finos/legend-studio/commit/3b838e50947334416a4bfd85d09bde4c4bed3824) ([@bojja-gs](https://github.com/bojja-gs)) - updated index scss from import to forward
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+- [#5227](https://github.com/finos/legend-studio/pull/5227) [`eefc7dd`](https://github.com/finos/legend-studio/commit/eefc7dd4a99a7a54b79a79c0977b9eaa7e93bcfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Unify entitlements dashboards into single grids with shared `EntitlementsRow` type and a Type column.
+
 ## 0.2.18
 
 ### Patch Changes
