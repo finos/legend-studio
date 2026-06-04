@@ -54,8 +54,8 @@ import {
 } from './DataAccessRequestState.js';
 
 export interface WorkflowTasksState {
-  privilegeManagerTask: V1_RawWorkflowTask | undefined;
-  dataOwnerTask: V1_RawWorkflowTask | undefined;
+  privilegeManagerTasks: V1_RawWorkflowTask[];
+  dataOwnerTasks: V1_RawWorkflowTask[];
 }
 
 export class WorkflowDataAccessRequestState implements DataAccessRequestState {
@@ -97,8 +97,8 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     this.dataAccessRequestId = dataAccessRequestId;
     this.dataRequestWithWorkflow = undefined;
     this.workflowTasks = {
-      privilegeManagerTask: undefined,
-      dataOwnerTask: undefined,
+      privilegeManagerTasks: [],
+      dataOwnerTasks: [],
     };
     this.applicationStore = applicationStore;
     this.lakehouseContractServerClient = lakehouseContractServerClient;
@@ -213,10 +213,10 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
 
   get isInProgress(): boolean {
     // Use workflow server tasks as source of truth if available
-    const { privilegeManagerTask, dataOwnerTask } = this.workflowTasks;
-    if (privilegeManagerTask || dataOwnerTask) {
-      return [privilegeManagerTask, dataOwnerTask].some(
-        (task) => task !== undefined && !task.completed,
+    const { privilegeManagerTasks, dataOwnerTasks } = this.workflowTasks;
+    if (privilegeManagerTasks.length > 0 || dataOwnerTasks.length > 0) {
+      return [...privilegeManagerTasks, ...dataOwnerTasks].some(
+        (task) => !task.completed,
       );
     }
     const workflows = guaranteeNonNullable(
@@ -273,8 +273,8 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     );
 
     // Look up workflow server tasks for source-of-truth status/assignees
-    const pmWorkflowTask = this.workflowTasks.privilegeManagerTask;
-    const doWorkflowTask = this.workflowTasks.dataOwnerTask;
+    const pmWorkflowTask = this.workflowTasks.privilegeManagerTasks[0];
+    const doWorkflowTask = this.workflowTasks.dataOwnerTasks[0];
 
     // Helper to get effective assignees: prefer workflow server, fall back to dataRequestWithWorkflow
     const getEffectiveAssignees = (
@@ -327,6 +327,15 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       _selectedTargetUser === this.applicationStore.identityService.currentUser;
     const isEscalatable = showEscalateButton && !isEscalated;
 
+    const pmAssignees =
+      pmStepStatus === 'active'
+        ? getEffectiveAssignees(pmTask, pmWorkflowTask)
+        : undefined;
+    const doAssignees =
+      doStepStatus === 'active'
+        ? getEffectiveAssignees(doTask, doWorkflowTask)
+        : undefined;
+
     return [
       {
         key: 'submitted',
@@ -337,50 +346,50 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
         key: 'privilege-manager-approval',
         label: {
           title: 'Privilege Manager Approval',
-          link: pmStepStatus === 'active' ? pmTask?.url : undefined,
+          ...(pmStepStatus === 'active' && pmTask?.url && { link: pmTask.url }),
           showEscalateButton,
           isEscalatable,
           isEscalated,
         },
         status: pmStepStatus,
-        assignees:
-          pmStepStatus === 'active'
-            ? getEffectiveAssignees(pmTask, pmWorkflowTask)
-            : undefined,
-        approvalPayload:
-          pmTask && pmStepStatus !== 'active' && pmStepStatus !== 'skipped'
-            ? {
-                status:
-                  pmTask.action === V1_WorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
-                approvalTimestamp: pmTask.actionedOn?.toISOString(),
-                approverId: pmTask.actionedBy,
-              }
-            : undefined,
+        ...(pmAssignees && { assignees: pmAssignees }),
+        ...(pmTask &&
+          pmStepStatus !== 'active' &&
+          pmStepStatus !== 'skipped' && {
+            approvalPayload: {
+              status:
+                pmTask.action === V1_WorkflowTaskAction.APPROVED
+                  ? 'APPROVED'
+                  : 'DENIED',
+              ...(pmTask.actionedOn && {
+                approvalTimestamp: pmTask.actionedOn.toISOString(),
+              }),
+              ...(pmTask.actionedBy && { approverId: pmTask.actionedBy }),
+            },
+          }),
       },
       {
         key: 'data-producer-approval',
         label: {
           title: 'Data Producer Approval',
-          link: doStepStatus === 'active' ? doTask?.url : undefined,
+          ...(doStepStatus === 'active' && doTask?.url && { link: doTask.url }),
         },
         status: doStepStatus,
-        assignees:
-          doStepStatus === 'active'
-            ? getEffectiveAssignees(doTask, doWorkflowTask)
-            : undefined,
-        approvalPayload:
-          doTask && doStepStatus !== 'active' && doStepStatus !== 'upcoming'
-            ? {
-                status:
-                  doTask.action === V1_WorkflowTaskAction.APPROVED
-                    ? 'APPROVED'
-                    : 'DENIED',
-                approvalTimestamp: doTask.actionedOn?.toISOString(),
-                approverId: doTask.actionedBy,
-              }
-            : undefined,
+        ...(doAssignees && { assignees: doAssignees }),
+        ...(doTask &&
+          doStepStatus !== 'active' &&
+          doStepStatus !== 'upcoming' && {
+            approvalPayload: {
+              status:
+                doTask.action === V1_WorkflowTaskAction.APPROVED
+                  ? 'APPROVED'
+                  : 'DENIED',
+              ...(doTask.actionedOn && {
+                approvalTimestamp: doTask.actionedOn.toISOString(),
+              }),
+              ...(doTask.actionedBy && { approverId: doTask.actionedBy }),
+            },
+          }),
       },
       {
         key: 'complete',
@@ -432,17 +441,20 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
         (tasksResponse as { workflowTasks?: { taskId: string }[] })
           .workflowTasks ?? [];
       const result: WorkflowTasksState = {
-        privilegeManagerTask: undefined,
-        dataOwnerTask: undefined,
+        privilegeManagerTasks: [],
+        dataOwnerTasks: [],
       };
       if (workflowTasks.length > 0 && refreshed) {
         const allWorkflowTaskEntries = refreshed.workflows.flatMap((wf) =>
           wf.tasks.map((task) => {
-            let taskType: 'privilegeManagerTask' | 'dataOwnerTask' | undefined;
+            let taskType:
+              | 'privilegeManagerTasks'
+              | 'dataOwnerTasks'
+              | undefined;
             if (task instanceof V1_PrivilegeManagerApprovalTask) {
-              taskType = 'privilegeManagerTask';
+              taskType = 'privilegeManagerTasks';
             } else if (task instanceof V1_DataOwnerApprovalTask) {
-              taskType = 'dataOwnerTask';
+              taskType = 'dataOwnerTasks';
             }
             return { taskId: task.taskId, taskType };
           }),
@@ -459,9 +471,8 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
             (e) => e.taskId === (rawTask as { taskId?: string }).taskId,
           );
           if (entry?.taskType) {
-            result[entry.taskType] = deserialize(
-              V1_workflowTaskModelSchema,
-              rawTask,
+            result[entry.taskType].push(
+              deserialize(V1_workflowTaskModelSchema, rawTask),
             );
           }
         }

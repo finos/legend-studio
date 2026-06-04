@@ -18,11 +18,12 @@ import {
   V1_AdhocTeam,
   V1_AppDirOrganizationalScope,
   V1_ProducerScope,
+  V1_RMS,
   V1_UnknownOrganizationalScopeType,
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
-import { isNonNullable } from '@finos/legend-shared';
+import { isNonEmptyString, isNonNullable } from '@finos/legend-shared';
 import { Box, Typography } from '@mui/material';
 
 export const getOrganizationalScopeTypeName = (
@@ -38,15 +39,15 @@ export const getOrganizationalScopeTypeName = (
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return 'Unknown';
   } else {
-    const typeNames = plugins
+    const typeName = plugins
       .flatMap((plugin) =>
         plugin
           .getContractConsumerTypeRendererConfigs?.()
           .flatMap((config) => config.organizationalScopeTypeName?.(scope)),
       )
-      .filter(isNonNullable);
+      .find(isNonNullable);
 
-    return typeNames[0] ?? scope.constructor.name;
+    return typeName ?? scope.constructor.name;
   }
 };
 
@@ -92,6 +93,7 @@ export const getOrganizationalScopeTypeDetails = (
 
 export const stringifyOrganizationalScope = (
   scope: V1_OrganizationalScope,
+  plugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
 ): string => {
   if (scope instanceof V1_AppDirOrganizationalScope) {
     return scope.appDirNode
@@ -101,10 +103,19 @@ export const stringifyOrganizationalScope = (
     return scope.users.map((user) => user.name).join(', ');
   } else if (scope instanceof V1_ProducerScope) {
     return `Producer DID: ${scope.did}`;
+  } else if (scope instanceof V1_RMS) {
+    return scope.rmsNode;
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return JSON.stringify(scope.content);
   }
-  return JSON.stringify(scope);
+  const stringifiedValue = plugins
+    .flatMap((plugin) =>
+      plugin
+        .getContractConsumerTypeRendererConfigs?.()
+        .flatMap((config) => config.stringifyOrganizationalScope?.(scope)),
+    )
+    .find(isNonEmptyString);
+  return stringifiedValue ?? JSON.stringify(scope);
 };
 
 export const getHumanReadableIngestEnvName = (

@@ -125,6 +125,7 @@ export interface LegendMarketplaceApplicationConfigurationData
     url: string;
     platformUrl: string;
     workflowUrl: string;
+    permitWorkflowUrl: string;
     entitlements: {
       applicationDirectoryUrl: string;
       applicationIDUrl: string;
@@ -196,6 +197,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly lakehouseServerUrl: string;
   readonly lakehousePlatformUrl: string;
   readonly lakehouseWorkflowServerUrl: string;
+  readonly lakehousePermitWorkflowServerUrl: string;
   readonly lakehouseEntitlementsConfig:
     | LegendLakehouseEntitlementsConfig
     | undefined;
@@ -349,6 +351,13 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         guaranteeNonEmptyString(
           input.configData.lakehouse.workflowUrl,
           `Can't configure application: 'lakehouse.workflowUrl' field is missing or empty`,
+        ),
+      );
+    this.lakehousePermitWorkflowServerUrl =
+      LegendApplicationConfig.resolveAbsoluteUrl(
+        guaranteeNonEmptyString(
+          input.configData.lakehouse.permitWorkflowUrl,
+          `Can't configure application: 'lakehouse.permitWorkflowUrl' field is missing or empty`,
         ),
       );
     this.lakehouseEntitlementsConfig = new LegendLakehouseEntitlementsConfig(

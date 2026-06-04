@@ -23,4 +23,5 @@ export * from './LakehousePlatformServerClient.js';
 export * from './LakehouseIngestionManager.js';
 export * from './LakehouseContractServerClient.js';
 export * from './LakehouseWorkflowServerClient.js';
+export * from './PermitWorkflowServerClient.js';
 export * from './helpers/V1_IngestHelpers.js';
