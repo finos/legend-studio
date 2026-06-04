@@ -1495,7 +1495,8 @@ export const DataProductAccessPointGroupViewer = observer(
               loading={
                 apgState.fetchingAccessState.isInProgress ||
                 apgState.handlingContractsState.isInProgress ||
-                apgState.fetchingUserAccessState.isInProgress
+                apgState.fetchingUserAccessState.isInProgress ||
+                apgState.fetchingDataRequestAccessState.isInProgress
               }
               disabled={dataAccessState === undefined}
               title={
@@ -1536,12 +1537,13 @@ export const DataProductAccessPointGroupViewer = observer(
                   ? 'Data access state not configured'
                   : 'More options'
               }
-              loading={
+              disabled={
+                dataAccessState === undefined ||
                 apgState.fetchingAccessState.isInProgress ||
                 apgState.handlingContractsState.isInProgress ||
-                apgState.fetchingUserAccessState.isInProgress
+                apgState.fetchingUserAccessState.isInProgress ||
+                apgState.fetchingDataRequestAccessState.isInProgress
               }
-              disabled={dataAccessState === undefined}
             >
               <CaretDownIcon />
             </Button>
