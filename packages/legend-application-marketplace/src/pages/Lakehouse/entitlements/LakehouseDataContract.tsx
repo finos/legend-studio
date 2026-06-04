@@ -232,6 +232,7 @@ export const LakehouseDataContractTask =
           throw new Error(`Unable to approve task: ${change.errorMessage}`);
         }
 
+        marketplaceBaseStore.pendingTasksCache.invalidate();
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
           'Task has been approved',
         );
@@ -254,6 +255,7 @@ export const LakehouseDataContractTask =
           throw new Error(`Unable to deny task: ${change.errorMessage}`);
         }
 
+        marketplaceBaseStore.pendingTasksCache.invalidate();
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
           'Task has been denied',
         );

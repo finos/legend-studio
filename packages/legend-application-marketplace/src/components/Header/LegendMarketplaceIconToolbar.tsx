@@ -86,11 +86,10 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     const fetchPendingTasks = async (): Promise<void> => {
       if (userId) {
         try {
-          const pendingTasks =
-            await marketplaceStore.lakehouseContractServerClient.getPendingTasks(
-              userId,
-              tokenRef.current,
-            );
+          const pendingTasks = await marketplaceStore.pendingTasksCache.fetch(
+            userId,
+            tokenRef.current,
+          );
           const tasks = deserialize(
             V1_pendingTasksResponseModelSchema,
             pendingTasks,
@@ -116,7 +115,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     userId,
     applicationStore.notificationService,
     marketplaceStore.userSearchService,
-    marketplaceStore.lakehouseContractServerClient,
+    marketplaceStore.pendingTasksCache,
     applicationStore.logService,
     applicationStore.config.options.showDevFeatures,
   ]);
