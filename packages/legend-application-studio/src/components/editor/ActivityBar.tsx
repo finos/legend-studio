@@ -24,13 +24,11 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   clsx,
-  CheckIcon,
   ControlledDropdownMenu,
   RepoIcon,
   MenuContent,
   MenuContentItem,
   MenuContentItemBlankIcon,
-  MenuContentItemIcon,
   MenuContentItemLabel,
   GitPullRequestIcon,
   GitMergeIcon,
@@ -47,6 +45,8 @@ import {
   WorkflowIcon,
   ReadMeIcon,
   DevIcon,
+  MoonIcon,
+  SunIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useEffect, useState } from 'react';
@@ -97,19 +97,10 @@ import { useAuth, type AuthContextProps } from 'react-oidc-context';
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
     const editorStore = useEditorStore();
-    const applicationStore = useLegendStudioApplicationStore();
-    const { layoutService } = applicationStore;
     const showDeveloperTool = (): void => {
       editorStore.panelGroupDisplayState.open();
       editorStore.setActivePanelMode(PANEL_MODE.DEV_TOOL);
     };
-    const selectColorTheme = (key: string): void => {
-      layoutService.setColorTheme(key, { persist: true });
-    };
-    // Non-production themes (e.g. the in-progress light theme) are only exposed
-    // when the `NonProductionFeatureFlag` config option is on.
-    const showNonProductionThemes =
-      applicationStore.config.options.NonProductionFeatureFlag;
 
     return (
       <MenuContent ref={ref} className="activity-bar__setting__menu">
@@ -117,33 +108,6 @@ const SettingsMenu = observer(
           <MenuContentItemBlankIcon />
           <MenuContentItemLabel>Show Developer Tool</MenuContentItemLabel>
         </MenuContentItem>
-        <MenuContentDivider />
-        <MenuContentItem disabled={true}>
-          <MenuContentItemBlankIcon />
-          <MenuContentItemLabel>Color Theme</MenuContentItemLabel>
-        </MenuContentItem>
-        {layoutService.availableColorThemes
-          .filter(
-            (theme) =>
-              STUDIO_SUPPORTED_COLOR_THEMES.has(theme.key) &&
-              (showNonProductionThemes ||
-                !STUDIO_NON_PRODUCTION_COLOR_THEMES.has(theme.key)),
-          )
-          .map((theme) => (
-            <MenuContentItem
-              key={theme.key}
-              onClick={() => selectColorTheme(theme.key)}
-            >
-              {theme.key === layoutService.currentColorTheme.key ? (
-                <MenuContentItemIcon>
-                  <CheckIcon />
-                </MenuContentItemIcon>
-              ) : (
-                <MenuContentItemBlankIcon />
-              )}
-              <MenuContentItemLabel>{theme.name}</MenuContentItemLabel>
-            </MenuContentItem>
-          ))}
       </MenuContent>
     );
   }),
@@ -156,6 +120,64 @@ const useOptionalAuth = (): AuthContextProps | undefined => {
     return undefined;
   }
 };
+
+/**
+ * One-click toggle between the default dark and default light color themes,
+ * surfaced directly in the activity bar so users don't have to dig through the
+ * Settings menu to flip themes.
+ *
+ * The toggle only renders when both themes are actually exposed in the current
+ * environment (i.e. it respects the same `STUDIO_SUPPORTED_COLOR_THEMES` /
+ * `NonProductionFeatureFlag` gating as the Settings menu picker). This keeps
+ * the in-progress light theme hidden in production until it's stabilized.
+ */
+export const ColorThemeToggle = observer(() => {
+  const applicationStore = useLegendStudioApplicationStore();
+  const { layoutService } = applicationStore;
+  const showNonProductionThemes =
+    applicationStore.config.options.NonProductionFeatureFlag;
+
+  const exposedThemeKeys = new Set(
+    layoutService.availableColorThemes
+      .filter(
+        (theme) =>
+          STUDIO_SUPPORTED_COLOR_THEMES.has(theme.key) &&
+          (showNonProductionThemes ||
+            !STUDIO_NON_PRODUCTION_COLOR_THEMES.has(theme.key)),
+      )
+      .map((theme) => theme.key),
+  );
+
+  // Only show the toggle when both endpoints of the dark<->light flip are
+  // actually available; otherwise it would be a no-op control.
+  if (
+    !exposedThemeKeys.has(LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK) ||
+    !exposedThemeKeys.has(LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT)
+  ) {
+    return null;
+  }
+
+  const isLight = layoutService.TEMPORARY__isLightColorThemeEnabled;
+  const toggleTheme = (): void => {
+    layoutService.setColorTheme(
+      isLight
+        ? LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK
+        : LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT,
+      { persist: true },
+    );
+  };
+
+  return (
+    <button
+      className="activity-bar__item"
+      onClick={toggleTheme}
+      tabIndex={-1}
+      title={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
+    >
+      {isLight ? <MoonIcon /> : <SunIcon />}
+    </button>
+  );
+});
 
 export const ActivityBarMenu: React.FC<{
   openShowcasePanel?: () => void;
@@ -570,6 +592,7 @@ export const ActivityBar = observer(() => {
       >
         <ReadMeIcon />
       </button>
+      <ColorThemeToggle />
       <ControlledDropdownMenu
         className="activity-bar__item"
         title="Settings"

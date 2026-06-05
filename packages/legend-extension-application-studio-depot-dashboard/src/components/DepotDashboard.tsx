@@ -581,6 +581,11 @@ export const DepotDashboard = withDepotSetupStore(
     const depotSetupStore = useDepotSetupStore();
     const dataProductDepotState = depotSetupStore.dataProductDepotState;
     const applicationStore = depotSetupStore.applicationStore;
+    // Track the active color theme so the AG-Grid skin and the selector follow
+    // the rest of the app instead of being locked to dark. Computed reads on
+    // `layoutService` stay reactive because this component is an `observer`.
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
     const dataProductOption = {
       value: 'Data Product',
       label: 'Data Product',
@@ -691,13 +696,14 @@ export const DepotDashboard = withDepotSetupStore(
                   value={dataProductOption}
                   placeholder={'Choose an Element'}
                   className="depot-dashboard__selector"
-                  darkMode={true}
+                  darkMode={darkMode}
                 />
               </div>
               <div className="depot-dashboard__result__values__table">
                 <div
                   className={clsx('query-builder__result__tds-grid', {
-                    'ag-theme-balham-dark': true,
+                    'ag-theme-balham': !darkMode,
+                    'ag-theme-balham-dark': darkMode,
                   })}
                 >
                   <DataGrid

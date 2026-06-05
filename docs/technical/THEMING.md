@@ -25,11 +25,13 @@ To add a new theme:
 
 No component file changes required.
 
-## Where the picker lives
+## Where theme switching lives
 
-Studio's theme picker is in the cog menu (`packages/legend-application-studio/src/components/editor/ActivityBar.tsx`). It iterates `layoutService.availableColorThemes` filtered by `STUDIO_SUPPORTED_COLOR_THEMES` — that allow-list is what determines which themes show up. The global registry can contain themes other apps support (e.g. `legacy-light` for query) without studio surfacing them.
+Studio surfaces theme switching as a **one-click moon/sun toggle** in the activity bar and again on the workspace setup page (`ColorThemeToggle` in `packages/legend-application-studio/src/components/editor/ActivityBar.tsx`). Clicking flips between `DEFAULT_DARK` and `DEFAULT_LIGHT` and persists via `layoutService.setColorTheme(..., { persist: true })`. The icon shows the _destination_ theme (sun while in dark, moon while in light) and is wrapped in `observer`, so the active theme is reactive.
 
-**Non-production gating.** Themes that are still being stabilized are additionally listed in `STUDIO_NON_PRODUCTION_COLOR_THEMES` and are hidden from the picker unless the `NonProductionFeatureFlag` config option is enabled. The light theme (`DEFAULT_LIGHT`) is currently gated this way, so it only appears in dev/QA environments (where the flag is on) and stays hidden in production. To promote a theme to production, remove its key from `STUDIO_NON_PRODUCTION_COLOR_THEMES`. Note: gating only controls _visibility_ in the picker — a theme that a user already persisted (via the settings key `application.layout.colorTheme`) still loads on next visit, but persisted settings are per-origin so dev selections don't leak into a separate production origin.
+The toggle only renders when both endpoints of the flip are actually exposed — it reuses the same `STUDIO_SUPPORTED_COLOR_THEMES` allow-list and `STUDIO_NON_PRODUCTION_COLOR_THEMES` / `NonProductionFeatureFlag` gating documented below. The Color Theme list that previously lived in the Settings (cog) menu has been removed; the toggle is now the sole theme-switching entry point.
+
+**Non-production gating.** Themes that are still being stabilized are additionally listed in `STUDIO_NON_PRODUCTION_COLOR_THEMES` and are hidden from the toggle unless the `NonProductionFeatureFlag` config option is enabled. The light theme (`DEFAULT_LIGHT`) is currently gated this way, so the moon/sun toggle only appears in dev/QA environments (where the flag is on) and stays hidden in production. To promote a theme to production, remove its key from `STUDIO_NON_PRODUCTION_COLOR_THEMES`. Note: gating only controls _visibility_ of the toggle — a theme that a user already persisted (via the settings key `application.layout.colorTheme`) still loads on next visit, but persisted settings are per-origin so dev selections don't leak into a separate production origin.
 
 ## Semantic token vocabulary
 
@@ -287,7 +289,7 @@ Files migrated:
 - `packages/legend-art/style/components/_icon.scss` — generic icon styles
 - `packages/legend-art/style/components/_markdown-viewer.scss` — markdown rendering surface
 - `packages/legend-art/style/components/_blank-panel-placeholder.scss` — "empty panel" placeholder UI
-- `packages/legend-art/style/reset/_react-reflex.scss` — resizable-panel splitter colors
+- `packages/legend-art/style/reset/_react-reflex.scss` — resizable-panel splitter colors (including a regression fix restoring `.reflex-container.vertical > .reflex-splitter` width/min-width/margin/cursor, which was accidentally dropped and made Studio side/showcase splitter affordances hard to see/use in light theme)
 - `packages/legend-art/style/reset/muiOverrides.scss` — MUI tooltips/menus/popovers/dialogs/cards/steppers/radios
 
 After the legend-art sweep, the only remaining `var(--color-(dark|light)-grey-*)` references in `legend-art/style/` are:
@@ -303,7 +305,7 @@ Follow-up cleanup (separate PR): drop the `darkMode` prop from React components,
 - The `darkMode` prop sweep itself (the React-side cleanup described above) — not started; SCSS side is now ready for it.
 - [x] `packages/legend-application-studio/style/components/editor/_uml-editor.scss`
 - [x] `packages/legend-application-studio/style/components/editor/uml-editor/_uml-element-editor.scss`
-- [x] `packages/legend-application-studio/style/components/editor/uml-editor/_class-editor.scss`
+- [x] `packages/legend-application-studio/style/components/editor/uml-editor/_class-editor.scss`F
 - [x] `packages/legend-application-studio/style/components/editor/uml-editor/_tagged-value-editor.scss`
 - [x] `packages/legend-application-studio/style/components/editor/uml-editor/_stereotype-selector.scss`
 - [x] `packages/legend-application-studio/style/components/editor/uml-editor/_profile-editor.scss` (already legacy-semantic-only — no migration needed)
@@ -315,9 +317,17 @@ Still dark-only (see `Migration tracker` to mark off).
 
 ### Status
 
-- **`legend-query-builder` — NOT migrated.** ~613 direct palette refs across 18 SCSS files, **zero semantic tokens**. It renders dark under _every_ theme (including Studio's `theme__default-light`) because its physical palette tokens have nothing to remap. This is the one large, user-visible gap remaining: open Query Builder in Studio's light theme and it's a dark island.
+- **`legend-query-builder` — largely NOT migrated.** ~600+ direct palette refs still remain across 18 SCSS files. A targeted first pass has been applied to `shared/_lambda-editor.scss` (semantic tokenization + `lambda-editor--dark` behavior aligned to active theme) to unblock Studio Function Editor light-theme rendering, but the package is still predominantly dark-token based.
 - **Extensions — migrated (done):** `dsl-data-product`, `dsl-data-quality`, `dsl-data-space`, `dsl-data-space-studio`, `dsl-diagram`, `dsl-service`, `dsl-text`, `store-service-store`, `application-studio-depot-dashboard`.
 - **`legend-application-query/style/light-mode.scss`** — the legacy 2,036-line `theme__legacy-light` override file. Repaints ~227 Query-Builder selectors for the Query app only. To be **retired** once QB is tokenized.
+
+### Recent applied fixes (June 2026)
+
+- **Studio splitter affordance regression (light theme):** restored missing vertical splitter base style in `packages/legend-art/style/reset/_react-reflex.scss` (`.reflex-container.vertical > .reflex-splitter` sizing/hit-area rule) after a regression introduced during light-theme work.
+- **Function Editor lambda dark-island fix:** tokenized the shared lambda editor surface/error/popup styles in `packages/legend-query-builder/style/shared/_lambda-editor.scss`; `lambda-editor--dark` is now a compatibility alias that follows the active app theme instead of forcing dark palette colors.
+- **Prominent theme toggle:** added `ColorThemeToggle` (moon/sun icon button) to the Studio activity bar and the workspace setup page so users can flip themes in one click. Removed the redundant Color Theme list from the Settings (cog) menu — the toggle is now the sole entry point. Same gating as before: only renders when both `DEFAULT_DARK` and `DEFAULT_LIGHT` are exposed (i.e. respects `NonProductionFeatureFlag`).
+- **Activity-bar layout — flex column:** `_activity-bar.scss` now uses `display: flex; flex-direction: column;` with `flex: 1 1 auto; min-height: 0` on `.activity-bar__items` and `flex-shrink: 0` on `__menu` / `__item`. Replaces the brittle `calc(100% - 13.4rem)` reservation that had to be retuned every time a bottom button was added (and which hid the Settings cog the moment the theme toggle was inserted). Any number of bottom buttons now stays anchored visible without further CSS changes.
+- **Depot Dashboard grid + selector locked-dark fix:** `packages/legend-extension-application-studio-depot-dashboard/src/components/DepotDashboard.tsx` no longer hardcodes `ag-theme-balham-dark` / `darkMode={true}`. Both the AG-Grid wrapper and the element-type `CustomSelectorInput` now derive `darkMode` from `applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled` and apply `ag-theme-balham` / `ag-theme-balham-dark` conditionally, matching the convention used in `DatabaseBuilderWizard`, `QueryBuilderTDSGridResult`, `SQLPlaygroundGrid`, etc. The component is already an `observer`, so theme flips repaint live.
 
 ### Why QB is dark in Studio's light theme — two mechanisms that don't meet
 
@@ -356,7 +366,7 @@ The bulk swap is fast (context-aware script). The real effort is the **review pa
 - [ ] `_execution-plan-viewer.scss` (31)
 - [ ] `_query-builder-explorer.scss` (30)
 - [ ] `shared/_query-loader.scss` (26)
-- [ ] `shared/_lambda-editor.scss` (25)
+- [ ] `shared/_lambda-editor.scss` (partially migrated: major surface/error/popup tokens converted; 2 `dark-grey` refs remain in highlighted expected-type text)
 - [ ] `_query-builder-post-filter.scss` (21)
 - [ ] `_query-builder-graph-fetch-tree.scss` (20)
 - [ ] `_query-builder-property-search-panel.scss` (19)
@@ -375,5 +385,5 @@ Repos that extend Studio extensions need to do the same palette→semantic migra
 
 1. `cd packages/legend-application-studio && npx tsc --noEmit -p tsconfig.json` — ts compiles
 2. `npx sass packages/legend-application-studio/style/index.scss /tmp/out.css --load-path=...` — SCSS compiles
-3. Run studio, open cog menu → Color Theme → toggle between Default Dark and Default Light
+3. Run studio, click the moon/sun toggle in the activity bar (or on the workspace setup page) to flip between Default Dark and Default Light
 4. Per-PR: grep migrated files for `var(--color-(dark|light|blue|red|...)-...)` — should be empty unless inside a documented legacy modifier block
