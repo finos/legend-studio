@@ -16,6 +16,7 @@
 
 import {
   TerminalResult,
+  TraderProfile,
   type Filter,
   type MarketplaceServerClient,
   type TerminalServicesResponse,
@@ -38,6 +39,7 @@ export enum VendorDataProviderType {
   ALL = 'All',
   TERMINAL_LICENSE = 'Terminal License',
   ADD_ONS = 'Add-Ons',
+  ORDER_PROFILE = 'Order Profile',
 }
 
 export class LegendMarketPlaceVendorDataStore {
@@ -51,12 +53,15 @@ export class LegendMarketPlaceVendorDataStore {
 
   terminalProviders: TerminalResult[] = [];
   addOnProviders: TerminalResult[] = [];
+  traderProfileProviders: TraderProfile[] = [];
   providers: TerminalResult[] = [];
+  traderProfileAllProviders: TraderProfile[] = [];
 
   page = 1;
   itemsPerPage = 24;
   totalTerminalItems = 0;
   totalAddOnItems = 0;
+  totalTraderProfileItems = 0;
   totalItems = 0;
 
   searchTerm = '';
@@ -73,11 +78,14 @@ export class LegendMarketPlaceVendorDataStore {
       selectedUser: observable,
       terminalProviders: observable,
       addOnProviders: observable,
+      traderProfileProviders: observable,
       providers: observable,
+      traderProfileAllProviders: observable,
       page: observable,
       itemsPerPage: observable,
       totalTerminalItems: observable,
       totalAddOnItems: observable,
+      totalTraderProfileItems: observable,
       totalItems: observable,
       searchTerm: observable,
       providerDisplayState: observable,
@@ -181,8 +189,13 @@ export class LegendMarketPlaceVendorDataStore {
           TerminalResult.serialization.fromJson(json),
         );
 
+        this.traderProfileProviders = (response.order_profile ?? []).map(
+          (json) => TraderProfile.serialization.fromJson(json),
+        );
+
         this.totalTerminalItems = response.vendor_profiles_total_count ?? 0;
         this.totalAddOnItems = response.service_pricing_total_count ?? 0;
+        this.totalTraderProfileItems = response.order_profile_total_count ?? 0;
       } else if (
         this.providerDisplayState === VendorDataProviderType.TERMINAL_LICENSE
       ) {
@@ -203,7 +216,7 @@ export class LegendMarketPlaceVendorDataStore {
         );
 
         this.totalItems = response.total_count ?? 0;
-      } else {
+      } else if (this.providerDisplayState === VendorDataProviderType.ADD_ONS) {
         const params: FetchProductsParams = {
           kerberos: this.selectedUser.id,
           product_type: ProductType.SERVICE_PRICING,
@@ -218,6 +231,25 @@ export class LegendMarketPlaceVendorDataStore {
 
         this.providers = (response.service_pricing ?? []).map((json) =>
           TerminalResult.serialization.fromJson(json),
+        );
+
+        this.totalItems = response.total_count ?? 0;
+      } else {
+        // ORDER_PROFILE
+        const params: FetchProductsParams = {
+          kerberos: this.selectedUser.id,
+          product_type: ProductType.ORDER_PROFILE,
+          preferred_products: false,
+          page_size: this.itemsPerPage,
+          search: this.searchTerm,
+          page_number: this.page,
+        };
+        const response = (yield this.marketplaceServerClient.fetchProducts(
+          params,
+        )) as TerminalServicesResponse;
+
+        this.traderProfileAllProviders = (response.order_profile ?? []).map(
+          (json) => TraderProfile.serialization.fromJson(json),
         );
 
         this.totalItems = response.total_count ?? 0;

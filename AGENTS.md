@@ -182,7 +182,7 @@ When reviewing a PR or diff in this repo, walk this checklist top-to-bottom. The
 ### PR metadata
 
 - [ ] PR title follows [Conventional Commits](https://www.conventionalcommits.org/) — it becomes the squash-merge message and feeds the changelog.
-- [ ] PR description explains the *why*, not just the *what*.
+- [ ] PR description explains the _why_, not just the _what_.
 - [ ] Linked issue (if applicable).
 
 ## Don'ts (common agent pitfalls)

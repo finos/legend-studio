@@ -93,23 +93,25 @@ export const PaginationControls = observer(
         </Box>
 
         <Box className="legend-marketplace-pagination-controls">
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            showFirstButton={true}
-            showLastButton={true}
-            disabled={disabled}
-            siblingCount={1}
-            boundaryCount={2}
-            size="large"
-            sx={{
-              '& .MuiPaginationItem-root': {
-                fontSize: '1.5rem',
-              },
-            }}
-          />
+          {totalPages > 1 && (
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              showFirstButton={true}
+              showLastButton={true}
+              disabled={disabled}
+              siblingCount={1}
+              boundaryCount={2}
+              size="large"
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  fontSize: '1.5rem',
+                },
+              }}
+            />
+          )}
         </Box>
       </Box>
     );
