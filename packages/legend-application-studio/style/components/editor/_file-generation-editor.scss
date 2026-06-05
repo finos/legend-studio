@@ -19,7 +19,7 @@
 .file-generation-editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   .panel {
     height: 100%;
@@ -27,27 +27,27 @@
 
     &__header {
       padding: 0 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
       position: relative;
     }
 
@@ -74,7 +74,7 @@
       width: 100%;
       padding: 2rem !important;
       max-width: 50rem;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
 
       &__scope {
         display: flex;
@@ -112,7 +112,7 @@
 .generation-result-viewer {
   &__side-bar {
     height: 100%;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__regenerate-btn {
@@ -127,8 +127,8 @@
 
   &__explorer {
     overflow-x: hidden;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-app);
+    color: var(--color-text-primary);
 
     .panel {
       &__header__actions {
@@ -138,7 +138,7 @@
       &__content {
         height: 100% !important;
         overflow-x: hidden;
-        background: var(--color-dark-grey-50);
+        background: var(--color-bg-app);
       }
     }
 
@@ -146,16 +146,16 @@
       height: 100%;
       overflow-x: hidden;
       padding: 0.5rem 0;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
     }
 
     &__package-tree__node__container:hover {
-      background: var(--color-dark-blue-shade-100);
+      background: var(--color-accent-subtle);
     }
 
     &__package-tree__node__container--selected,
     &__package-tree__node__container--selected:hover {
-      background: var(--color-light-blue-450);
+      background: var(--color-bg-selected);
     }
 
     &__package-tree__node__icon {
@@ -181,8 +181,8 @@
 
   &__file {
     overflow-x: hidden;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-app);
+    color: var(--color-text-primary);
 
     .panel {
       &__header__actions {
@@ -192,8 +192,8 @@
       &__content {
         height: 100% !important;
         overflow-x: hidden;
-        background: var(--color-dark-grey-50);
-        color: var(--color-light-grey-400);
+        background: var(--color-bg-app);
+        color: var(--color-text-muted);
         position: relative;
         overflow-y: hidden;
       }
@@ -221,19 +221,19 @@
       @include flexVCenter;
 
       height: 2.2rem;
-      background: var(--color-blue-200);
+      background: var(--color-accent);
       padding: 1rem;
       border-radius: 0.2rem;
     }
 
     &__label__icon {
       font-size: 1.6rem;
-      color: var(--color-light-grey-180);
+      color: var(--color-text-on-accent);
     }
 
     &__label__title {
       margin-left: 0.5rem;
-      color: var(--color-light-grey-180);
+      color: var(--color-text-on-accent);
       font-size: 1.2rem;
       font-weight: 500;
     }
@@ -241,7 +241,7 @@
     &__label:hover &__label__icon,
     &__label:hover &__label__title,
     &__dropdown-btn:hover svg {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-on-accent);
     }
 
     &__option {
@@ -250,36 +250,37 @@
 
     &[disabled] &__label,
     &[disabled] &__dropdown-btn {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &[disabled] &__label__icon,
     &[disabled] &__label__title,
     &[disabled] &__dropdown-btn svg {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 }
 
 .element-generation-editor {
   &__header {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     padding-left: 0.5rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    border-bottom: 0.1rem solid var(--color-border-default);
   }
 
+  // "Leave" chip — bright-grey-pill-with-dark-text pattern.
   &__leave-btn {
     @include flexVCenter;
 
     height: 1.8rem;
     border-radius: 0.7rem 0.2rem 0.2rem 0.7rem;
-    background: var(--color-light-grey-400);
+    background: var(--color-bg-tag);
     padding: 0 0.7rem 0 0.2rem;
     font-size: 1.2rem;
     width: initial;
 
     svg {
-      color: var(--color-dark-grey-280);
+      color: var(--color-text-inverted);
       margin-right: 0.5rem;
     }
   }

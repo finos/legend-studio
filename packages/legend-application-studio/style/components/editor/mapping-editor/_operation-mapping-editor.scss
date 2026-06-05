@@ -22,16 +22,16 @@
 
     height: 2.4rem;
     padding: 0 1rem;
-    background: var(--color-light-blue-200);
+    background: var(--color-accent);
     font-weight: 500;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
     border-radius: 0.2rem;
     margin-bottom: 1rem;
   }
 
   &__parameter {
     display: flex;
-    background: var(--color-light-grey-0);
+    background: var(--color-bg-app);
     padding: 0.5rem 0;
     margin: 0 1rem;
   }
@@ -44,8 +44,8 @@
     @include flexCenter;
 
     width: 2.8rem;
-    color: var(--color-dark-grey-300);
-    background: var(--color-light-grey-200);
+    color: var(--color-text-muted);
+    background: var(--color-bg-panel-header);
     cursor: pointer;
     border-radius: 0 50% 50% 0;
   }
@@ -58,22 +58,22 @@
     @include flexCenter;
 
     width: 2.8rem;
-    color: var(--color-light-grey-0);
-    background: var(--color-dark-grey-300);
+    color: var(--color-text-primary);
+    background: var(--color-bg-tag);
     border-radius: 0.2rem;
     margin-left: 0.5rem;
     cursor: pointer;
   }
 
   &__parameter__remove-btn[disabled] {
-    background: var(--color-light-grey-400);
+    background: var(--color-bg-hover);
   }
 
   &__operation {
     @include flexVCenter;
 
     padding: 1rem;
-    background: var(--color-light-grey-0);
+    background: var(--color-bg-app);
   }
 
   &__operation .selector-input {
@@ -83,8 +83,8 @@
   &__operation__label {
     display: flex;
     font-weight: 500;
-    color: var(--color-dark-grey-300);
-    background: var(--color-light-grey-100);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-panel);
     border: 0.1rem solid var(--color-input-border);
     border-right: none;
     padding: 0 1rem;

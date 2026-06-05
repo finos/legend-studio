@@ -18,17 +18,17 @@
 
 .app {
   height: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   &__page {
     height: 100%;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__info {
     &__group {
       margin-top: 1rem;
-      background: var(--color-dark-grey-85);
+      background: var(--color-bg-panel);
       padding: 1.5rem;
       border-radius: 0.2rem;
     }
@@ -42,23 +42,23 @@
 
     &__entry__title {
       margin-right: 0.5rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-muted);
     }
 
     &__entry__value {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
 
     &__entry__value a {
       text-decoration: none;
       font-weight: 700;
-      color: var(--color-blue-50);
+      color: var(--color-text-link);
     }
 
     &__entry__value__action {
       text-decoration: none;
       font-weight: 700;
-      color: var(--color-blue-50);
+      color: var(--color-text-link);
       cursor: pointer;
     }
 
@@ -71,7 +71,7 @@
         @include flexVCenter;
 
         height: 2.2rem;
-        background: var(--color-dark-grey-100);
+        background: var(--color-bg-panel-header);
         border-radius: 0.2rem 0.2rem 0 0;
         padding: 0 1rem;
 
@@ -79,7 +79,7 @@
           cursor: default;
           font-size: 1.2rem;
           font-weight: 700;
-          color: var(--color-dark-grey-500);
+          color: var(--color-text-muted);
           font-family: 'Roboto Mono', monospace;
         }
       }
@@ -88,7 +88,7 @@
         height: calc(100% - 2.2rem);
         overflow: auto;
         padding: 1rem;
-        background: var(--color-dark-grey-85);
+        background: var(--color-bg-panel);
         border-radius: 0 0 0.2rem 0.2rem;
       }
 
@@ -117,7 +117,7 @@
 
           svg {
             font-size: 1.4rem;
-            color: var(--color-blue-100);
+            color: var(--color-text-link);
           }
         }
 
@@ -147,7 +147,7 @@
 
             height: 1.6rem;
             padding: 0.5rem;
-            background: var(--color-dark-grey-280);
+            background: var(--color-bg-tag);
             font-size: 1rem;
             border-radius: 0.2rem;
           }

@@ -24,8 +24,8 @@
     @include flexVCenter;
 
     height: 2.8rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
-    background: var(--color-dark-grey-50);
+    border-bottom: 0.1rem solid var(--color-border-default);
+    background: var(--color-bg-app);
     padding: 0 0.5rem;
   }
 
@@ -35,12 +35,14 @@
     width: calc(100% - 2.8rem);
   }
 
+  // Revision summary chip — bright-grey chip with dark text. Same pattern
+  // as other "highlighted neutral chip" treatments throughout studio.
   &__header__info__revision-summary {
     @include flexVCenter;
 
     height: 1.8rem;
     border-radius: 0.3rem;
-    background: var(--color-light-grey-400);
+    background: var(--color-bg-tag);
     cursor: default;
     user-select: none;
   }
@@ -49,7 +51,7 @@
     margin: 0 0.5rem;
     font-size: 1.2rem;
     font-weight: 500;
-    color: var(--color-dark-grey-50);
+    color: var(--color-text-inverted);
     white-space: nowrap;
   }
 
@@ -61,14 +63,14 @@
 
   &__header__info__revision-summary__icon svg {
     font-size: 1.7rem;
-    color: var(--color-dark-grey-50);
+    color: var(--color-text-inverted);
   }
 
   &__header__info__comparison-summary {
     @include ellipsisTextOverflow;
 
     margin: 0 1rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     cursor: default;
     font-size: 1.2rem;
     line-height: 2.8rem;
@@ -85,19 +87,19 @@
 
     width: 2.8rem;
     height: 100%;
-    color: var(--color-dark-grey-100);
+    color: var(--color-text-primary);
     cursor: pointer;
 
     svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-size: 1.6rem;
       stroke-width: 0.4;
-      stroke: var(--color-light-grey-400);
+      stroke: var(--color-text-muted);
     }
 
     &[disabled] svg {
-      color: var(--color-dark-grey-300);
-      stroke: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
+      stroke: var(--color-text-disabled);
     }
   }
 

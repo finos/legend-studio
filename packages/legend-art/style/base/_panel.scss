@@ -16,6 +16,22 @@
 
 @use 'mixins' as *;
 
+/* ============================================================================
+ * Shared panel chrome
+ * ----------------------------------------------------------------------------
+ * The base `.panel` styles are now theme-aware via semantic tokens.
+ *
+ * The legacy `.panel__*--dark` and `.panel__*--light` modifier classes pre-date
+ * real theming. They are kept for backward compatibility with consumers that
+ * use them to force a specific look regardless of the active theme. Inside
+ * those modifier blocks we intentionally use physical palette tokens — the
+ * point of the modifier is to opt OUT of theme awareness. New code should not
+ * use these modifiers; let the theme drive the colors instead.
+ *
+ * TODO(theming): sweep consumers off `--dark` / `--light` modifiers, then
+ * remove the modifier blocks entirely.
+ * ============================================================================ */
+
 .panel {
   display: flex;
   flex-direction: column;
@@ -26,14 +42,15 @@
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-light-grey-200);
+    background: var(--color-bg-panel-header);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
     padding-left: 1rem;
-    box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
 
+    // Legacy: force app-shell-colored header regardless of theme.
     &--dark {
       background: var(--color-dark-grey-50);
     }
@@ -54,7 +71,7 @@
   }
 
   &__header__action[disabled] svg {
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-disabled) !important;
   }
 
   &__header__title {
@@ -62,6 +79,7 @@
 
     user-select: none;
 
+    // Legacy: force light-themed title regardless of active theme.
     &--light {
       color: var(--color-dark-grey-400);
       background: var(--color-light-grey-50);
@@ -73,13 +91,14 @@
     line-height: 1.8rem;
     border-radius: 0.1rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-100);
-    background: var(--color-dark-grey-300);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tag);
     font-size: 1.1rem;
     cursor: default;
     margin-right: 0.5rem;
     white-space: nowrap;
 
+    // Legacy: force light-themed label regardless of active theme.
     &--light {
       color: var(--color-dark-grey-400);
       background: var(--color-light-grey-50);
@@ -93,15 +112,16 @@
     padding: 0.7rem;
     font-weight: 400;
     font-size: 1.2rem;
-    font-style: italic; // background: var(--color-dark-grey-280);
+    font-style: italic;
   }
 
   &__header__title__content {
     @include ellipsisTextOverflow;
 
     font-weight: bold;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
 
+    // Legacy: force light-themed title content regardless of active theme.
     &--light {
       color: var(--color-dark-grey-400);
       background: var(--color-light-grey-50);
@@ -126,9 +146,9 @@
     display: inline-flex;
     font-size: 1.2rem;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -137,20 +157,25 @@
     position: relative;
   }
 
+  // Active-tab underline. Yellow in dark theme (preserves the original "pops
+  // against dark" intent), vivid blue in light theme (yellow on white reads
+  // poorly). Lives in --color-active-indicator, separate from --color-accent
+  // which is reserved for primary action surfaces.
   &__header__tab--active::after {
     content: '';
     height: 0.2rem;
     width: 100%;
     position: absolute;
     bottom: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 
   &__content {
-    background: var(--color-light-grey-100);
+    background: var(--color-bg-panel);
     height: calc(100% - 2.8rem);
     overflow-y: auto;
 
+    // Legacy: force dark content regardless of theme.
     &--dark {
       color: var(--color-light-grey-50);
       background: var(--color-dark-grey-50);
@@ -171,7 +196,7 @@
     overflow: hidden;
 
     &__content {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
       font-weight: 700;
       cursor: default;
       user-select: none;
@@ -202,8 +227,8 @@
     height: 100%;
     width: 100%;
     position: absolute;
-    background: var(--color-dark-red-shade-50);
-    border: 0.1rem solid var(--color-red-100);
+    background: var(--color-status-error-bg);
+    border: 0.1rem solid var(--color-status-error);
     z-index: 100;
     padding: 1rem;
     display: flex;
@@ -214,9 +239,9 @@
     svg {
       pointer-events: all;
       cursor: help;
-      color: var(--color-red-100);
+      color: var(--color-status-error);
       stroke-width: 0.4;
-      stroke: var(--color-red-100);
+      stroke: var(--color-status-error);
     }
   }
 
@@ -238,29 +263,35 @@
     padding: 1rem;
 
     &__label {
-      color: var(--color-white);
+      color: var(--color-text-on-accent);
       font-size: 1.2rem;
       white-space: nowrap;
     }
 
+    // NOTE: was --color-red-500 (opaque dark red). Now a translucent error
+    // overlay — visually subtler. Revisit if the loud original red was
+    // intentional for severity.
     &--with-validation--error {
-      background: var(--color-red-500);
+      background: var(--color-status-error-bg);
     }
   }
 
   &__item:hover {
-    background: var(--color-dark-blue-shade-100);
+    background: var(--color-accent-subtle);
     cursor: pointer;
   }
 
   &__item--selected,
   &__item--selected:hover {
-    background: var(--color-light-blue-450);
+    background: var(--color-bg-selected);
   }
 
+  // Selected + error: combines selection bg with error tint. Originally a
+  // distinct red-400 fill; using status-error here trades exact value for
+  // semantic clarity.
   &__item--selected--with-validation--error,
   &__item--selected--with-validation--error:hover {
-    background: var(--color-red-400);
+    background: var(--color-status-error);
   }
 }
 
@@ -300,8 +331,8 @@
   &__description {
     @include flexVCenter;
 
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-400);
+    background: var(--color-bg-panel);
+    color: var(--color-text-muted);
     padding: 1rem;
     width: 60%;
     font-size: 1.2rem;
@@ -321,7 +352,7 @@
     &__divider {
       height: 1rem;
       width: 100%;
-      border-bottom: 0.1rem solid var(--color-dark-grey-100);
+      border-bottom: 0.1rem solid var(--color-border-subtle);
     }
   }
 
@@ -333,7 +364,7 @@
     @include flexVCenter;
 
     font-weight: 500;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
     line-height: 2rem;
     cursor: default;
@@ -343,7 +374,7 @@
     svg {
       margin-left: 0.5rem;
       font-size: 1.2rem;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -351,7 +382,7 @@
     word-break: normal;
     overflow-wrap: anywhere;
     font-size: 1.4rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     line-height: 2rem;
     margin-bottom: 0.8rem;
     cursor: default;
@@ -363,18 +394,18 @@
     margin: 0;
     padding: 1rem;
     border-radius: 0.1rem;
-    border: 0.1rem solid var(--color-dark-grey-100);
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
+    border: 0.1rem solid var(--color-bg-input);
+    background: var(--color-bg-input);
+    color: var(--color-text-secondary);
     height: 2.8rem;
 
     &:focus {
-      border: 0.1rem solid var(--color-blue-200);
+      border: 0.1rem solid var(--color-border-focus);
       outline: none;
     }
 
     &[disabled] {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       cursor: not-allowed;
     }
 
@@ -395,10 +426,10 @@
       right: 0;
       height: 2.8rem;
       width: 2.8rem;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-disabled);
 
       &:hover {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
     }
   }
@@ -407,22 +438,22 @@
     width: 100%;
     min-width: 5rem;
     max-width: 45rem;
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-input);
+    color: var(--color-text-secondary);
     padding: 1rem;
     border-radius: 0.1rem;
     height: 8rem;
     resize: none;
     line-height: 2rem;
-    border: 0.1rem solid var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-bg-input);
 
     &:focus {
-      border: 0.1rem solid var(--color-blue-200);
+      border: 0.1rem solid var(--color-border-focus);
       outline: none;
     }
 
     &[disabled] {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       cursor: not-allowed;
     }
   }
@@ -431,7 +462,7 @@
     width: 100%;
     height: 35rem;
     position: relative;
-    border: 0.1rem solid var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-border-subtle);
     resize: both;
     overflow: hidden;
   }
@@ -452,36 +483,36 @@
 
     svg {
       font-size: 2rem;
-      color: var(--color-dark-grey-250);
+      color: var(--color-text-disabled);
     }
 
     &:hover svg {
       font-size: 2rem;
-      color: var(--color-dark-grey-280);
+      color: var(--color-text-muted);
     }
 
     &[disabled] svg,
     &[disabled]:hover svg {
       cursor: not-allowed;
-      color: var(--color-dark-grey-250);
+      color: var(--color-text-disabled);
     }
   }
 
   &__section__toggler__btn--toggled {
     svg {
       font-size: 2rem;
-      color: var(--color-blue-150);
+      color: var(--color-accent);
     }
 
     &:hover svg {
       font-size: 2rem;
-      color: var(--color-blue-100);
+      color: var(--color-accent-hover);
     }
 
     &[disabled] svg,
     &[disabled]:hover svg {
       cursor: not-allowed;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -491,7 +522,7 @@
     word-break: normal;
     overflow-wrap: anywhere;
     margin-left: 0.8rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     line-height: 2rem;
     user-select: none;
     cursor: pointer;
@@ -514,10 +545,10 @@
 
     height: 4rem;
     width: 100%;
-    color: var(--color-dark-grey-300);
+    color: var(--color-text-disabled);
     font-weight: 500;
     max-width: 45rem;
-    border: 0.2rem dashed var(--color-dark-grey-200);
+    border: 0.2rem dashed var(--color-border-default);
     margin-bottom: 1rem;
   }
 
@@ -535,7 +566,7 @@
     @include flexHSpaceBetween;
 
     padding-left: 0.3rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     font-size: 1.3rem;
     gap: 1rem;
 
@@ -560,7 +591,7 @@
   }
 
   &__section__list__item:hover {
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-hover);
 
     .panel__content__form__section__list__item__actions {
       display: flex;
@@ -585,7 +616,7 @@
   &__section__list__item__value__map-item {
     &__key {
       font-weight: 500;
-      color: var(--color-blue-100);
+      color: var(--color-text-link);
     }
 
     &__separator {
@@ -613,11 +644,11 @@
       padding: 0.5rem;
       height: 2.2rem;
       line-height: 2.2rem;
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-100);
+      background: var(--color-bg-input);
+      border: 0.1rem solid var(--color-bg-input);
 
       &:focus {
-        border: 0.1rem solid var(--color-blue-200);
+        border: 0.1rem solid var(--color-border-focus);
         outline: none;
       }
     }
@@ -638,10 +669,10 @@
     }
 
     &__cancel-btn {
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-panel-header);
 
       &:hover {
-        background: var(--color-dark-grey-250);
+        background: var(--color-bg-hover);
       }
     }
   }
@@ -666,11 +697,11 @@
     width: 2.2rem;
 
     svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &:hover svg {
-      color: var(--color-light-grey-100) !important;
+      color: var(--color-text-primary) !important;
     }
   }
 

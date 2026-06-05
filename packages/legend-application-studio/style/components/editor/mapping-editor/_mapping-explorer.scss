@@ -19,11 +19,14 @@
 .mapping-explorer {
   height: 100%;
   width: 100%;
+  background: var(--color-bg-elevated);
+  border-right: 0.1rem solid var(--color-border-default);
+  border-bottom: 0.1rem solid var(--color-border-default);
 
   .panel {
     &__header {
-      color: var(--color-dark-grey-300);
-      background: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-elevated);
       font-weight: bold;
       padding-left: 1rem;
     }
@@ -37,13 +40,13 @@
     }
 
     &__header__action {
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__content {
       overflow-x: hidden;
-      background: var(--color-light-grey-200);
-      color: var(--color-dark-grey-100);
+      background: var(--color-bg-elevated);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -52,7 +55,7 @@
 
     width: 2rem;
     min-width: 2rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__header__lock svg {
@@ -67,11 +70,12 @@
     cursor: pointer;
   }
 
+  // Generation-origin tag uses the brand generated/category-generation colors.
   &__header__generation-origin__label {
     @include flexVCenter;
 
     background: var(--color-generated);
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     padding: 0 0.5rem;
     border-radius: 0.2rem 0 0 0.2rem;
     height: 2rem;
@@ -87,8 +91,8 @@
 
     height: 2rem;
     line-height: 2rem;
-    background: var(--color-pink-300);
-    color: var(--color-light-grey-100);
+    background: var(--color-category-generation);
+    color: var(--color-text-on-accent);
     padding: 0 0.5rem 0 0.7rem;
     font-size: 1.2rem;
     max-width: 6rem;
@@ -98,8 +102,8 @@
   &__header__generation-origin__visit-btn {
     @include flexVCenter;
 
-    background: var(--color-pink-300);
-    color: var(--color-light-grey-100);
+    background: var(--color-category-generation);
+    color: var(--color-text-on-accent);
     padding: 0 0.3rem;
     border-radius: 0 50% 50% 0;
     height: 2rem;
@@ -111,10 +115,11 @@
     @include flexHSpaceBetween;
 
     height: 2.4rem;
+    color: var(--color-text-muted);
   }
 
   &__item:hover {
-    background: var(--color-light-grey-250);
+    background: var(--color-bg-hover);
   }
 
   &__item__label {
@@ -145,7 +150,7 @@
     padding-right: 0.5rem;
 
     & > svg {
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-disabled);
       font-size: 1rem;
     }
   }
@@ -153,12 +158,12 @@
   &__item--active,
   &__item--active svg,
   &__item--active:hover {
-    background: var(--color-light-blue-200);
-    color: var(--color-light-grey-0);
+    background: var(--color-bg-selected);
+    color: var(--color-text-primary);
   }
 
   &__item--selected-from-context-menu {
-    background: var(--color-light-grey-300);
+    background: var(--color-accent-subtle);
   }
 
   &__content {
@@ -167,10 +172,10 @@
 
     .blank-panel-placeholder .blank-panel-placeholder__action,
     .blank-panel-placeholder:hover .blank-panel-placeholder__action {
-      border-color: var(--color-light-grey-400);
+      border-color: var(--color-text-muted);
 
       svg {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
     }
   }

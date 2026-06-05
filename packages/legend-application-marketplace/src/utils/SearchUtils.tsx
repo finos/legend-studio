@@ -94,10 +94,9 @@ export const convertEntitlementsDataProductDetailsToSearchResult = (
   entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
 ): DataProductSearchResult => {
   const searchResult = new DataProductSearchResult();
-  searchResult.dataProductTitle =
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    entitlementsDataProductDetails.title ||
-    entitlementsDataProductDetails.dataProduct.name;
+  searchResult.dataProductTitle = entitlementsDataProductDetails.title
+    ? entitlementsDataProductDetails.title
+    : entitlementsDataProductDetails.dataProduct.name;
   searchResult.dataProductDescription =
     entitlementsDataProductDetails.description ?? '';
 
@@ -159,6 +158,10 @@ export const convertAutosuggestResultToSearchResult = (
   searchResult.dataProductTitle = autosuggestResult.dataProductName;
   searchResult.dataProductDescription =
     autosuggestResult.dataProductDescription;
+  searchResult.tags1 = [];
+  searchResult.tags2 = [];
+  searchResult.tag_score = 0;
+  searchResult.similarity = 0;
 
   const details = autosuggestResult.dataProductDetails;
 

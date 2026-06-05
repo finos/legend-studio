@@ -97,19 +97,9 @@
   top: 0.2rem;
 }
 
-.reflex-container.vertical > .reflex-splitter {
-  border-right: none;
-  border-left: none;
-  cursor: col-resize;
-  height: 100%;
-  width: 0.4rem;
-  min-width: 0.4rem;
-  margin: 0 -0.2rem;
-}
-
 .reflex-container.horizontal > .reflex-splitter:hover,
 .reflex-container.horizontal > .reflex-splitter.active {
-  background: var(--color-dark-grey-300);
+  background: var(--color-border-strong);
   border-bottom: none;
   border-top: none;
 
@@ -134,7 +124,7 @@
 
 .reflex-container.vertical > .reflex-splitter:hover,
 .reflex-container.vertical > .reflex-splitter.active {
-  background: var(--color-dark-grey-300);
+  background: var(--color-border-strong);
   border-right: none;
   border-left: none;
 

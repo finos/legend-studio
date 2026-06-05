@@ -16,7 +16,7 @@
 
 .markdown-content {
   margin: 0;
-  color: var(--color-light-grey-50);
+  color: var(--color-text-primary);
   font-size: 1.6rem;
   line-height: 1.5;
   word-wrap: break-word;
@@ -44,7 +44,7 @@
 
 .markdown-content a {
   background: transparent;
-  color: var(--color-blue-40);
+  color: var(--color-text-link);
   text-decoration: none;
 }
 
@@ -72,11 +72,11 @@
   font-weight: 700;
   padding-bottom: 0.3rem;
   font-size: 2.8rem;
-  border-bottom: 0.1rem solid var(--color-dark-grey-250);
+  border-bottom: 0.1rem solid var(--color-border-default);
 }
 
 .markdown-content mark {
-  background: var(--color-dark-grey-280);
+  background: var(--color-bg-panel-header);
 }
 
 .markdown-content small {
@@ -103,7 +103,7 @@
   border-style: none;
   max-width: 100%;
   box-sizing: content-box;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 }
 
 .markdown-content code,
@@ -120,11 +120,11 @@
 .markdown-content hr {
   box-sizing: content-box;
   overflow: hidden;
-  border-bottom: 0.1rem solid var(--color-dark-grey-250);
+  border-bottom: 0.1rem solid var(--color-border-default);
   height: 0.25rem;
   padding: 0;
   margin: 2.4rem 0;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
   border: 0;
 }
 
@@ -190,7 +190,7 @@
   font-weight: 700;
   padding-bottom: 0.3rem;
   font-size: 1.5rem;
-  border-bottom: 0.1rem solid var(--color-dark-grey-250);
+  border-bottom: 0.1rem solid var(--color-border-default);
 }
 
 .markdown-content h3 {
@@ -221,8 +221,8 @@
 .markdown-content blockquote {
   margin: 0;
   padding: 0 1rem;
-  color: var(--color-dark-grey-500);
-  border-left: 0.3rem solid var(--color-dark-grey-350);
+  color: var(--color-text-disabled);
+  border-left: 0.3rem solid var(--color-border-strong);
 }
 
 .markdown-content ul,
@@ -253,10 +253,6 @@
 .markdown-content ul.contains-task-list li:not(.task-list-item) {
   list-style: disc;
 }
-
-// .markdown-content ul.contains-task-list li::marker {
-//   margin-left: 1.7rem;
-// }
 
 .markdown-content .task-list-item {
   list-style-type: none;
@@ -436,14 +432,8 @@
 .markdown-content table th,
 .markdown-content table td {
   padding: 0.6rem 1.3rem;
-  border: 0.1rem solid var(--color-dark-grey-350);
+  border: 0.1rem solid var(--color-border-default);
 }
-
-// .markdown-content table tr {
-//   border-top: 0.1rem solid var(--color-dark-grey-250);
-// }
-// .markdown-content table tr:nth-child(2n) {
-// }
 
 .markdown-content table img {
   background: transparent;
@@ -462,7 +452,7 @@
   padding: 0.2rem 0.4rem;
   margin: 0;
   font-size: 1.2rem;
-  background: var(--color-dark-grey-280);
+  background: var(--color-bg-panel-header);
   border-radius: 0.2rem;
 }
 
@@ -492,7 +482,7 @@
   overflow: auto;
   font-size: 1.2rem;
   line-height: 1.45;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
   border-radius: 0.2rem;
 }
 

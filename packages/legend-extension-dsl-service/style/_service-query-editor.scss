@@ -27,8 +27,8 @@
 
     height: 3.4rem;
     padding: 0.2rem;
-    background: var(--color-dark-grey-80);
-    border-bottom: 0.1rem solid var(--color-dark-grey-100);
+    background: var(--color-bg-panel-header);
+    border-bottom: 0.1rem solid var(--color-border-subtle);
 
     &__content {
       @include flexHSpaceBetween;
@@ -52,7 +52,7 @@
       height: 2.8rem;
       width: 0.1rem;
       margin: 0.2rem;
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-hover);
     }
 
     &__action {
@@ -63,7 +63,7 @@
       border-radius: 0.2rem;
 
       svg {
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
       }
 
       &__icon--branch {
@@ -85,10 +85,10 @@
     @include flexVCenter;
 
     &__url {
-      color: var(--color-dark-grey-200);
+      color: var(--color-text-muted);
       margin-left: 1rem;
       line-height: 1.4rem;
-      background: var(--color-dark-grey-500);
+      background: var(--color-bg-tag);
       border-radius: 0.2rem;
       padding: 0 0.5rem;
       font-size: 1rem;
@@ -123,7 +123,7 @@
     width: unset;
     border-radius: 0.2rem;
     background: var(--color-yellow-200);
-    color: var(--color-dark-grey-280);
+    color: var(--color-text-muted);
     cursor: pointer;
 
     &__icon {
@@ -135,7 +135,7 @@
       background: var(--color-dark-shade-50);
 
       svg {
-        color: var(--color-dark-grey-80);
+        color: var(--color-text-inverted);
       }
     }
 
@@ -157,7 +157,7 @@
       width: 2.8rem;
 
       svg {
-        color: var(--color-dark-grey-80);
+        color: var(--color-text-inverted);
       }
     }
   }
@@ -198,7 +198,7 @@
     &--out-of-sync,
     &--outdated {
       width: unset;
-      color: var(--color-light-grey-100);
+      color: var(--color-text-primary);
       background: var(--color-red-200);
     }
   }

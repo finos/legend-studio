@@ -1353,6 +1353,8 @@ export const DataProductAccessPointGroupViewer = observer(
     const accessPointStates = apgState.accessPointStates;
     const contractViewerContractAndSubscription =
       dataAccessState?.contractViewerContractAndSubscription;
+    const dataAccessRequestViewerState =
+      dataAccessState?.dataAccessRequestViewerState;
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
@@ -1439,6 +1441,11 @@ export const DataProductAccessPointGroupViewer = observer(
           onClick = handleContractsClick;
           buttonColor = 'warning';
           break;
+        case AccessPointGroupAccess.SUBMITTED_FOR_APPROVALS:
+          buttonLabel = 'SUBMITTED FOR APPROVALS';
+          onClick = handleContractsClick;
+          buttonColor = 'warning';
+          break;
         case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
           buttonLabel = 'PENDING DATA OWNER APPROVAL';
           onClick = handleContractsClick;
@@ -1488,7 +1495,8 @@ export const DataProductAccessPointGroupViewer = observer(
               loading={
                 apgState.fetchingAccessState.isInProgress ||
                 apgState.handlingContractsState.isInProgress ||
-                apgState.fetchingUserAccessState.isInProgress
+                apgState.fetchingUserAccessState.isInProgress ||
+                apgState.fetchingDataRequestAccessState.isInProgress
               }
               disabled={dataAccessState === undefined}
               title={
@@ -1529,12 +1537,13 @@ export const DataProductAccessPointGroupViewer = observer(
                   ? 'Data access state not configured'
                   : 'More options'
               }
-              loading={
+              disabled={
+                dataAccessState === undefined ||
                 apgState.fetchingAccessState.isInProgress ||
                 apgState.handlingContractsState.isInProgress ||
-                apgState.fetchingUserAccessState.isInProgress
+                apgState.fetchingUserAccessState.isInProgress ||
+                apgState.fetchingDataRequestAccessState.isInProgress
               }
-              disabled={dataAccessState === undefined}
             >
               <CaretDownIcon />
             </Button>
@@ -1673,6 +1682,16 @@ export const DataProductAccessPointGroupViewer = observer(
                 );
               }
             }}
+            getDataProductUrl={dataAccessState.getDataProductUrl}
+          />
+        )}
+        {dataAccessRequestViewerState && (
+          <DataAccessRequestViewer
+            open={true}
+            onClose={() =>
+              dataAccessState.setDataAccessRequestViewerState(undefined)
+            }
+            viewerState={dataAccessRequestViewerState}
             getDataProductUrl={dataAccessState.getDataProductUrl}
           />
         )}

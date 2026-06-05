@@ -46,26 +46,26 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -83,7 +83,7 @@
 
 .query-connection-workflow {
   &__content {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__actions {
@@ -102,14 +102,16 @@
       justify-content: center;
       height: 3.6rem;
       border-radius: 0.2rem;
-      color: var(--color-light-grey-50);
-      border-color: var(--color-light-grey-400);
-      background: var(--color-dark-grey-500);
+      color: var(--color-text-primary);
+      border-color: var(--color-border-strong);
+      background: var(--color-bg-tag);
     }
 
+    // Primary CTA. Border + bg both folded to --color-accent (originally
+    // border was blue-200, bg was darker blue-300 — slight depth flattened).
     &__action-btn--primary {
-      border-color: var(--color-blue-200);
-      background: var(--color-blue-300);
+      border-color: var(--color-accent);
+      background: var(--color-accent);
     }
   }
 }
@@ -141,7 +143,7 @@
     @include flexVCenter;
 
     justify-content: space-between;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
 
     &__action {
       @include flexVCenter;
@@ -154,9 +156,9 @@
       margin-top: 1rem;
       margin-bottom: 1rem;
       font-size: 1.4rem;
-      color: var(--color-light-grey-50);
-      border-color: var(--color-blue-200);
-      background: var(--color-blue-300);
+      color: var(--color-text-on-accent);
+      border-color: var(--color-accent);
+      background: var(--color-accent);
 
       &__icon {
         height: 1.5rem;
@@ -168,14 +170,14 @@
   &__prompt {
     @include flexVCenter;
 
-    background: var(--color-dark-grey-300);
+    background: var(--color-bg-tag);
     margin-bottom: 0 !important;
     padding-left: 1rem;
-    border: 0.1rem solid var(--color-dark-grey-350);
+    border: 0.1rem solid var(--color-border-strong);
     height: 4rem;
     margin-left: 2rem;
     margin-right: 2rem;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
   }
 
   &__editor {

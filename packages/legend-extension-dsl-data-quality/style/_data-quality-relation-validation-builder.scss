@@ -38,8 +38,8 @@
       padding-right: 0.5rem;
       padding-left: 0.5rem;
       margin-right: 0.5rem;
-      color: var(--color-light-grey-100);
-      background: var(--color-dark-grey-200);
+      color: var(--color-text-primary);
+      background: var(--color-bg-panel-header);
       font-weight: 500;
       width: 200px;
     }
@@ -68,31 +68,31 @@
   .panel {
     height: 100%;
     width: 100%;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-hover);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-muted) !important;
     }
 
     &__content {
       height: calc(100% - 5.6rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -129,9 +129,9 @@
 
     display: inline-flex;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -154,7 +154,7 @@
 
     border-radius: 0.2rem;
     margin-left: 1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
 
     svg {
       font-size: 1.2rem;
@@ -188,7 +188,7 @@
   }
 
   &__definition {
-    background-color: var(--color-dark-grey-50);
+    background-color: var(--color-bg-app);
     height: 100%;
     width: 100%;
     padding: 1rem;
@@ -213,7 +213,7 @@
       &__header-group {
         display: flex;
         flex-direction: row;
-        color: var(--color-light-grey-300);
+        color: var(--color-text-secondary);
 
         @include flexVCenter;
       }
@@ -242,11 +242,11 @@
         align-items: center;
         justify-content: center;
         border-radius: 0.2rem;
-        background: var(--color-dark-grey-200);
+        background: var(--color-bg-panel-header);
         padding-left: 1rem;
         padding-right: 1rem;
         font-weight: 500;
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
       }
 
       &__header__add-btn {
@@ -262,7 +262,7 @@
         @include flexCenter;
 
         background: var(--color-blue-200);
-        color: var(--color-light-grey-50);
+        color: var(--color-text-primary);
         padding-left: 2rem;
         padding-right: 2rem;
         gap: 1rem;
@@ -274,8 +274,8 @@
 
         @include flexVCenter;
 
-        background: var(--color-dark-grey-200);
-        color: var(--color-light-grey-100);
+        background: var(--color-bg-panel-header);
+        color: var(--color-text-primary);
         padding: 0 1rem;
         border-radius: 0.2rem;
         margin: 0;
@@ -294,10 +294,10 @@
         margin-top: 0.5rem;
         height: 4rem;
         width: 100%;
-        color: var(--color-dark-grey-300);
+        color: var(--color-text-muted);
         font-weight: 500;
         user-select: none;
-        border: 0.2rem dashed var(--color-dark-grey-200);
+        border: 0.2rem dashed var(--color-border-default);
       }
     }
 
@@ -307,7 +307,7 @@
 
     &__result-viewer {
       height: 35rem !important;
-      border: 0.1rem solid var(--color-dark-grey-280);
+      border: 0.1rem solid var(--color-border-default);
     }
   }
 
@@ -325,7 +325,7 @@
   &__actions-bar {
     display: flex;
     justify-content: end;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     margin-top: 2rem;
     height: 4rem;
     padding-top: 0.5rem;
@@ -391,11 +391,11 @@
 
   &__absolute-date {
     padding-bottom: 1rem;
-    border-top: 0.1rem solid var(--color-dark-grey-50);
+    border-top: 0.1rem solid var(--color-border-subtle);
 
     &__input {
       height: 2.8rem;
-      border: 0.1rem solid var(--color-dark-grey-300);
+      border: 0.1rem solid var(--color-border-strong);
       color-scheme: dark;
       font-size: 1.2rem;
     }
@@ -414,7 +414,7 @@
     align-items: center;
     justify-content: right;
     width: 25%;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-panel-header);
     margin-right: 0.5rem;
   }
 
@@ -441,7 +441,7 @@
       @include flexVCenter;
 
       flex: 0 0 2.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
     }
 
     &__select {
@@ -449,8 +449,8 @@
 
       flex: auto;
       height: 2.8rem;
-      background: var(--color-dark-grey-50);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-app);
+      color: var(--color-text-primary);
       border-radius: 0.2rem;
     }
 
@@ -459,15 +459,15 @@
 
       flex: auto;
       height: 2.8rem;
-      background: var(--color-dark-grey-50);
-      color: var(--color-light-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
+      background: var(--color-bg-app);
+      color: var(--color-text-primary);
+      border: 0.1rem solid var(--color-border-strong);
       padding: 0 0.5rem;
       border-radius: 0.2rem;
     }
 
     &__name::placeholder {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
 
     &__name--with-lock {
@@ -475,8 +475,8 @@
 
       flex: auto;
       height: 2.8rem;
-      background: var(--color-dark-grey-300);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-tag);
+      color: var(--color-text-primary);
       padding: 0 1rem;
       border-radius: 0.2rem;
       cursor: default;
@@ -513,7 +513,7 @@
   }
 
   &__lambda {
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
   }
 
   &__content {
@@ -527,7 +527,7 @@
       @include flexVCenter;
 
       flex: 0 0 2.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
     }
 
     &__name {
@@ -535,15 +535,15 @@
 
       flex: auto;
       height: 2.8rem;
-      background: var(--color-dark-grey-100);
-      color: var(--color-light-grey-200);
+      background: var(--color-bg-panel);
+      color: var(--color-text-secondary);
       padding: 0 1rem;
       border-radius: 0.2rem;
       font-weight: 500;
     }
 
     &__name::placeholder {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
 
     &__name--with-lock {
@@ -551,8 +551,8 @@
 
       flex: auto;
       height: 2.8rem;
-      background: var(--color-dark-grey-300);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-tag);
+      color: var(--color-text-primary);
       padding: 0 1rem;
       border-radius: 0.2rem;
       cursor: default;

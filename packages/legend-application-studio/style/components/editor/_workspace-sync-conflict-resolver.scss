@@ -24,9 +24,9 @@
     height: 100%;
 
     &__header {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
 
       &__title {
         max-width: calc(100% - 11rem);
@@ -34,20 +34,20 @@
     }
 
     &__main-header {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-weight: bold;
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-panel-header);
     }
 
     &__content {
       position: relative;
       height: calc(100% - 3rem);
       width: 100%;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
       overflow-y: hidden;
 
       & ::-webkit-scrollbar-thumb {
-        background: var(--color-dark-grey-400);
+        background: var(--color-text-disabled);
       }
     }
 
@@ -64,7 +64,7 @@
   }
 
   &__header {
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     z-index: 1;
     height: 3.4rem;
     min-height: 3.4rem;
@@ -82,9 +82,9 @@
 
     padding: 0 1rem;
     cursor: pointer;
-    color: var(--color-light-grey-400);
-    background: var(--color-dark-grey-80);
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    color: var(--color-text-muted);
+    background: var(--color-bg-elevated);
+    border-right: 0.1rem solid var(--color-bg-app);
   }
 
   &__header__tab__label {
@@ -99,13 +99,13 @@
     @include flexVCenter;
 
     svg {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
       font-size: 1.2rem;
     }
   }
 
   &__header__tab--active svg {
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
   }
 
   &__header__tab--active &__header__tab__close-btn,
@@ -114,8 +114,8 @@
   }
 
   &__header__tab--active {
-    color: var(--color-light-grey-100);
-    background: var(--color-dark-grey-50);
+    color: var(--color-text-primary);
+    background: var(--color-bg-app);
   }
 
   &__header__tab__content {
@@ -135,8 +135,8 @@
     &__header {
       height: 3.4rem;
       min-height: 3.4rem;
-      background: var(--color-dark-grey-100);
-      color: var(--color-light-grey-400);
+      background: var(--color-bg-panel);
+      color: var(--color-text-muted);
       z-index: 0;
     }
 
@@ -150,19 +150,19 @@
       .panel {
         &__header {
           min-width: 9rem;
-          background: var(--color-dark-grey-200);
-          color: var(--color-light-grey-200);
+          background: var(--color-bg-panel-header);
+          color: var(--color-text-secondary);
           padding-left: 1rem;
         }
 
         &__header__action {
           height: 100%;
-          color: var(--color-light-grey-400);
+          color: var(--color-text-muted);
         }
 
         &__header__action[disabled],
         &__header__action[disabled] svg {
-          color: var(--color-dark-grey-300) !important;
+          color: var(--color-text-disabled) !important;
         }
 
         &__header__title {
@@ -172,7 +172,7 @@
         &__content {
           height: 100%;
           padding: 0.5rem 0;
-          background: var(--color-dark-grey-100);
+          background: var(--color-bg-panel);
         }
       }
     }
@@ -187,7 +187,7 @@
       @include flexCenter;
 
       margin-right: 1rem;
-      background: var(--color-dark-grey-300);
+      background: var(--color-bg-tag);
       border-radius: 0.8rem;
       padding: 0.3rem 0.7rem;
       height: 1.6rem;

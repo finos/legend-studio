@@ -56,7 +56,7 @@ import {
   clearMarkers,
   setErrorMarkers,
   moveCursorToPosition,
-  CODE_EDITOR_THEME,
+  getCodeEditorThemeForAppTheme,
   CODE_EDITOR_LANGUAGE,
   getInlineSnippetSuggestions,
   type PureGrammarTextSuggestion,
@@ -869,7 +869,13 @@ export const GrammarTextEditor = observer(() => {
       const _editor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         language: CODE_EDITOR_LANGUAGE.PURE,
-        theme: CODE_EDITOR_THEME.DEFAULT_DARK,
+        // Pick the theme matching the current app theme so the editor doesn't
+        // flash dark before the global theme sync (in configureCodeEditorComponent)
+        // applies. Theme changes after mount are picked up via that global sync.
+        theme: getCodeEditorThemeForAppTheme(
+          editorStore.applicationStore.layoutService
+            .TEMPORARY__isLightColorThemeEnabled,
+        ),
         renderValidationDecorations: 'on',
         wordWrap: grammarTextEditorState.wordWrapOtion,
         readOnly: editorStore.editorMode.disableEditing,

@@ -69,7 +69,7 @@
 }
 
 .structure-validations-btn {
-  color: var(--color-light-grey-0);
+  color: var(--color-text-on-accent);
   height: 2.2rem;
   border-radius: 0.2rem;
   margin-right: 0.3rem;
@@ -109,11 +109,11 @@
 
   &__absolute-date {
     padding-bottom: 1rem;
-    border-top: 0.1rem solid var(--color-dark-grey-50);
+    border-top: 0.1rem solid var(--color-border-subtle);
 
     &__input {
       height: 2.8rem;
-      border: 0.1rem solid var(--color-dark-grey-300);
+      border: 0.1rem solid var(--color-border-strong);
       color-scheme: dark;
       font-size: 1.2rem;
     }
@@ -152,7 +152,7 @@
   }
 
   &__divider {
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     margin-right: 1rem;
   }
 
@@ -169,8 +169,8 @@
       justify-content: center;
       padding: 0.7rem;
       height: 2.2rem;
-      background: var(--color-dark-grey-280);
-      color: var(--color-light-grey-200);
+      background: var(--color-bg-elevated);
+      color: var(--color-text-secondary);
       white-space: nowrap;
       line-height: 1.8rem;
       border-radius: 0.1rem;
@@ -183,9 +183,9 @@
   @include flexVCenter;
 
   min-height: 2.8rem;
-  border: 0.1rem solid var(--color-dark-grey-280);
+  border: 0.1rem solid var(--color-border-default);
   border-radius: 0.2rem;
-  background: var(--color-dark-grey-100);
+  background: var(--color-bg-panel);
 
   &__tags {
     display: flex;
@@ -198,7 +198,7 @@
   }
 
   &__placeholder {
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-muted);
     font-size: 1.2rem;
     user-select: none;
   }
@@ -208,10 +208,10 @@
 
     height: 2rem;
     padding: 0 0.3rem 0 0.6rem;
-    background: var(--color-dark-grey-280);
+    background: var(--color-bg-elevated);
     border-radius: 0.2rem;
     font-size: 1.1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     gap: 0.3rem;
 
     &__label {
@@ -227,12 +227,12 @@
       background: none;
       padding: 0;
       cursor: pointer;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       border-radius: 0.2rem;
 
       &:hover {
-        background: var(--color-dark-grey-400);
-        color: var(--color-light-grey-100);
+        background: var(--color-bg-tag);
+        color: var(--color-text-primary);
       }
 
       svg {

@@ -1,5 +1,47 @@
 # @finos/legend-application-marketplace
 
+## 0.2.19
+
+### Patch Changes
+
+- [#5222](https://github.com/finos/legend-studio/pull/5222) [`26a3c39`](https://github.com/finos/legend-studio/commit/26a3c39e97da9d67f780c37953640ec381d84bde) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Cache and dedupe `/datacontracts/tasks/pending` requests across the header badge and entitlements dashboard to reduce load on the entitlements server. Cached responses are reused for 60 seconds and concurrent callers share a single in-flight request. The cache is invalidated automatically after approving or denying a task.
+
+- [#5215](https://github.com/finos/legend-studio/pull/5215) [`3b838e5`](https://github.com/finos/legend-studio/commit/3b838e50947334416a4bfd85d09bde4c4bed3824) ([@bojja-gs](https://github.com/bojja-gs)) - updated index scss from import to forward
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+- [#5227](https://github.com/finos/legend-studio/pull/5227) [`eefc7dd`](https://github.com/finos/legend-studio/commit/eefc7dd4a99a7a54b79a79c0977b9eaa7e93bcfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Unify entitlements dashboards into single grids with shared `EntitlementsRow` type and a Type column.
+
+## 0.2.18
+
+### Patch Changes
+
+- [#5223](https://github.com/finos/legend-studio/pull/5223) [`612fafe`](https://github.com/finos/legend-studio/commit/612fafe4aeeb2f6f7af6e251297f715f006f2d7d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Avoid redundant API calls on access-token rotation in the admin contracts and subscriptions dashboards. The AG Grid server-side datasources now take a token-provider callback instead of a token value, so the datasource is no longer recreated on every token rotation (which previously caused the grid to reset and refetch the visible page).
+
+## 0.2.17
+
+## 0.2.16
+
+### Patch Changes
+
+- [#5210](https://github.com/finos/legend-studio/pull/5210) [`3cfe994`](https://github.com/finos/legend-studio/commit/3cfe994cdb7e4519af58e09ea7c05b0ca0937b6d) ([@TharunRajeev](https://github.com/TharunRajeev)) - Used useRef for handling token refresh.
+
+## 0.2.15
+
+### Patch Changes
+
+- [#5204](https://github.com/finos/legend-studio/pull/5204) [`431d6fd`](https://github.com/finos/legend-studio/commit/431d6fdb79b4a759bab3786be4901054fa1a6e5d) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+- [#5205](https://github.com/finos/legend-studio/pull/5205) [`d485724`](https://github.com/finos/legend-studio/commit/d485724f64627e9288aa03f08b7fb0f773964cfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Unify entitlements dashboards into single grids with shared `EntitlementsRow` type and a Type column.
+
+- [#5200](https://github.com/finos/legend-studio/pull/5200) [`b244870`](https://github.com/finos/legend-studio/commit/b24487045573c8fd46f166a4fec24a9e6e3f20c5) ([@bojja-gs](https://github.com/bojja-gs)) - Fix: data fields radio to be disabled with empty query
+
+## 0.2.14
+
+### Patch Changes
+
+- [#5196](https://github.com/finos/legend-studio/pull/5196) [`6a1171a`](https://github.com/finos/legend-studio/commit/6a1171a15ffadb4d01073ad2de713fd522069bee) ([@jackp5150](https://github.com/jackp5150)) - Added contract sync logic to entitlements state and consolidated contract errors in individual contract dashboards
+
 ## 0.2.13
 
 ### Patch Changes

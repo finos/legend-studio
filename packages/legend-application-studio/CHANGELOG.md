@@ -1,5 +1,26 @@
 # @finos/legend-application-studio
 
+## 28.21.11
+
+## 28.21.10
+
+## 28.21.9
+
+### Patch Changes
+
+- [#5199](https://github.com/finos/legend-studio/pull/5199) [`3c8840b`](https://github.com/finos/legend-studio/commit/3c8840b0d5bedc9615956e2d4ae03f1c6fb32ddd) ([@Rakan1837](https://github.com/Rakan1837)) - feat: infer #SQL i()/p() accessors for DataProduct test-data setup
+
+- [#5203](https://github.com/finos/legend-studio/pull/5203) [`bcaa473`](https://github.com/finos/legend-studio/commit/bcaa473a66b6a70bf898f8485ac0ce23aa015937) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: add ai suggester for services
+  query: inline ai suggestions
+
+## 28.21.8
+
+### Patch Changes
+
+- [#5193](https://github.com/finos/legend-studio/pull/5193) [`70bc5c3`](https://github.com/finos/legend-studio/commit/70bc5c3a16628cbc39644990169140d2f5f99719) ([@yash0024](https://github.com/yash0024)) - Updates to call now async functions
+
+- [#5194](https://github.com/finos/legend-studio/pull/5194) [`967056b`](https://github.com/finos/legend-studio/commit/967056b8fdd159226a22a8252487f3fe979b0a66) ([@Rakan1837](https://github.com/Rakan1837)) - enable production flag for dataproduct testing editor
+
 ## 28.21.7
 
 ### Patch Changes

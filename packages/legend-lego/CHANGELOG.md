@@ -1,5 +1,21 @@
 # @finos/legend-lego
 
+## 2.0.196
+
+### Patch Changes
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+## 2.0.195
+
+## 2.0.194
+
+### Patch Changes
+
+- [#5204](https://github.com/finos/legend-studio/pull/5204) [`431d6fd`](https://github.com/finos/legend-studio/commit/431d6fdb79b4a759bab3786be4901054fa1a6e5d) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+## 2.0.193
+
 ## 2.0.192
 
 ## 2.0.191

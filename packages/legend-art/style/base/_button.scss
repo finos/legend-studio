@@ -16,19 +16,29 @@
 
 @use 'mixins' as *;
 
+/* ============================================================================
+ * Button styling
+ * ----------------------------------------------------------------------------
+ * Migrated from a light-default + `--dark` modifier pattern to theme-aware
+ * semantic tokens. The various `.btn--*` variants are visual styles (size,
+ * shape, severity), independent of theme. The `.btn--dark` / `.btn--icon--dark`
+ * modifier classes are preserved as backward-compat aliases — their bodies
+ * now produce the same accent-on-bg look in every theme.
+ * ============================================================================ */
+
 // TODO: we should remove or restyle this
 .btn {
   @include flexCenter;
 
   padding: 1rem;
-  background: var(--color-white);
-  color: var(--color-dark-grey-100);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
   cursor: pointer;
 
   &--primary {
     background: var(--color-primitive);
     border-color: var(--color-primitive);
-    color: var(--color-light-grey-0);
+    color: var(--color-text-primary);
   }
 
   & + & {
@@ -37,9 +47,9 @@
 
   &[disabled],
   &--primary[disabled] {
-    background: var(--color-light-grey-100);
-    border-color: var(--color-light-grey-200);
-    color: var(--color-dark-grey-400);
+    background: var(--color-bg-panel-header);
+    border-color: var(--color-border-default);
+    color: var(--color-text-disabled);
   }
 }
 
@@ -64,12 +74,12 @@
 
     padding: 0.5rem;
     border-radius: 0.1rem;
-    color: var(--color-light-grey-50);
-    background: var(--color-dark-grey-300);
+    color: var(--color-text-primary);
+    background: var(--color-bg-tag);
   }
 
   &--small:hover {
-    background: var(--color-dark-grey-400);
+    background: var(--color-bg-hover);
   }
 
   &--margin--right {
@@ -80,18 +90,20 @@
     margin-left: 0.5rem;
   }
 
+  // Yellow caution icon-button — uses status-warn surface.
   &__caution {
-    background: var(--color-yellow-400);
+    background: var(--color-status-warn);
     border-radius: 0;
   }
 
   &__caution:hover {
-    background: var(--color-yellow-300);
+    background: var(--color-status-warn);
   }
 
+  // Legacy `--dark` modifier — accent-colored icon button. Theme-aware now.
   &--dark {
-    background: var(--color-blue-200);
-    color: var(--color-light-grey-50);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
   }
 }
 
@@ -101,50 +113,56 @@
   font-weight: 500;
 }
 
+// Legacy `--dark` modifier — accent button. Theme-aware now.
 .btn--dark {
   @include flexCenter;
 
   border-radius: 0.1rem;
-  background: var(--color-blue-200);
-  color: var(--color-light-grey-50);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
 
   &:hover {
-    background: var(--color-blue-180);
+    background: var(--color-accent-hover);
   }
 
   &[disabled] {
-    background: var(--color-dark-grey-200);
-    color: var(--color-dark-grey-500);
+    background: var(--color-bg-tag);
+    color: var(--color-text-disabled);
   }
 
   &:focus {
-    outline: 0.1rem solid var(--color-blue-200);
+    outline: 0.1rem solid var(--color-border-focus);
     outline-offset: 0.1rem;
   }
 }
 
+// Medium-weight button — neutral chip-style surface.
 .btn--medium {
   @include flexCenter;
 
   border-radius: 0.1rem;
-  background: var(--color-dark-grey-280);
-  color: var(--color-light-grey-50);
+  background: var(--color-bg-panel-header);
+  color: var(--color-text-primary);
 
   &:hover {
-    background: var(--color-dark-grey-300);
+    background: var(--color-bg-hover);
   }
 
   &[disabled] {
-    background: var(--color-dark-grey-300);
-    color: var(--color-dark-grey-500);
+    background: var(--color-bg-tag);
+    color: var(--color-text-disabled);
   }
 
+  // NOTE: original used --color-grey-200 which is not in the palette (typo).
+  // Substituted with border-default.
   &:focus {
-    outline: 0.1rem solid var(--color-grey-200);
+    outline: 0.1rem solid var(--color-border-default);
     outline-offset: 0.1rem;
   }
 }
 
+// Caution + dark — pink "destructive caution" surface. Brand category color
+// for "destructive action that requires explicit confirmation".
 .btn--dark.btn--caution {
   background: var(--color-pink-400);
 
@@ -153,7 +171,7 @@
   }
 
   &[disabled] {
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-tag);
   }
 
   &:focus {
@@ -162,6 +180,7 @@
   }
 }
 
+// Conflict button — orange brand surface tied to git-conflict semantics.
 .btn--dark.btn--conflict {
   background: var(--color-conflict);
 
@@ -170,7 +189,7 @@
   }
 
   &[disabled] {
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-tag);
   }
 
   &:focus {
@@ -188,8 +207,8 @@
 
 .btn--error[disabled],
 .btn--error {
-  background: var(--color-carmine-200);
-  color: var(--color-dark-shade-250);
+  background: var(--color-status-error);
+  color: var(--color-text-on-accent);
 }
 
 .btn__dropdown-combo {
@@ -202,19 +221,19 @@
 
     height: 2.2rem;
     width: 10rem;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-tag);
     padding: 1rem;
     border-radius: 0.2rem 0 0 0.2rem;
   }
 
   &__label__icon {
     font-size: 1.2rem;
-    color: var(--color-light-grey-180);
+    color: var(--color-text-on-accent);
   }
 
   &__label__title {
     margin-left: 0.7rem;
-    color: var(--color-light-grey-180);
+    color: var(--color-text-on-accent);
     font-size: 1.2rem;
     font-weight: 500;
   }
@@ -224,29 +243,29 @@
 
     height: 2.2rem;
     width: 2rem;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-tag);
     border-radius: 0 0.2rem 0.2rem 0;
-    border-left: 0.1rem solid var(--color-dark-shade-280);
+    border-left: 0.1rem solid var(--color-shadow);
 
     svg {
-      color: var(--color-light-grey-180);
+      color: var(--color-text-primary);
     }
   }
 
   &--primary &__label,
   &--primary &__dropdown-btn {
-    background: var(--color-blue-200);
+    background: var(--color-accent);
   }
 
   &__label:hover &__label__icon,
   &__label:hover &__label__title,
   &__dropdown-btn:hover svg {
-    color: var(--color-light-grey-50);
+    color: var(--color-text-on-accent);
   }
 
   &__label[disabled],
   &__dropdown-btn[disabled] {
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-tag);
   }
 
   &[disabled] &__label__icon,
@@ -261,7 +280,7 @@
   &[disabled]:hover &__dropdown-btn svg,
   &__dropdown-btn[disabled] svg,
   &__dropdown-btn[disabled]:hover svg {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
   }
 
   &__option {
@@ -290,18 +309,18 @@
 
   &__label__icon {
     font-size: 1.2rem;
-    color: var(--color-light-grey-180);
+    color: var(--color-text-on-accent);
   }
 
   &__label__title {
     margin-left: 0.7rem;
-    color: var(--color-light-grey-180);
+    color: var(--color-text-on-accent);
     font-size: 1.2rem;
     font-weight: 500;
   }
 
   &__label:hover &__label__icon,
   &__label:hover &__label__title {
-    color: var(--color-light-grey-50);
+    color: var(--color-text-on-accent);
   }
 }

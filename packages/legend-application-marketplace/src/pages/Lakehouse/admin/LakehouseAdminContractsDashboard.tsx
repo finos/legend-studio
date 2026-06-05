@@ -25,7 +25,7 @@ import {
   type V1_LiteDataContract,
 } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
 import {
   DataAccessRequestViewer,
@@ -40,6 +40,11 @@ export const LakehouseAdminContractsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
     const auth = useAuth();
+    // Keep the latest access token in a ref so the grid datasource always reads
+    // the freshest token without being recreated on every token rotation
+    // (which would otherwise cause the grid to reset and refetch).
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
 
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
@@ -53,8 +58,8 @@ export const LakehouseAdminContractsDashboard = observer(
 
     const datasource = useMemo(
       () =>
-        adminStore.createContractsServerSideDatasource(auth.user?.access_token),
-      [adminStore, auth.user?.access_token],
+        adminStore.createContractsServerSideDatasource(() => tokenRef.current),
+      [adminStore],
     );
 
     return (

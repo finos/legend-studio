@@ -35,6 +35,7 @@ import {
   CustomSelectorInput,
   PanelFormValidatedTextField,
   PanelContentLists,
+  SparkleIcon,
 } from '@finos/legend-art';
 import { debounce, prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
@@ -72,6 +73,7 @@ import { flowResult } from 'mobx';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { ServicePostValidationsEditor } from './ServicePostValidationEditor.js';
+import type { DSL_Service_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 
 type UserOption = { label: string; value: string };
 
@@ -242,6 +244,43 @@ const ServiceGeneralEditor = observer(() => {
     }
   };
 
+  // AI documentation suggestion
+  const legendAIUrl = editorStore.applicationStore.config.legendAIUrl;
+  const aiDocSuggester = legendAIUrl
+    ? editorStore.pluginManager
+        .getApplicationPlugins()
+        .map((p) =>
+          (
+            p as DSL_Service_LegendStudioApplicationPlugin_Extension
+          ).getExtraServiceDocumentationAISuggester?.(),
+        )
+        .find(Boolean)
+    : undefined;
+  const [isSuggestingWithAI, setIsSuggestingWithAI] = useState(false);
+  const [aiDocSuggestion, setAIDocSuggestion] = useState<string | undefined>(
+    undefined,
+  );
+  const suggestDocumentationWithAI = async (): Promise<void> => {
+    if (!aiDocSuggester || !legendAIUrl) {
+      return;
+    }
+    setIsSuggestingWithAI(true);
+    setAIDocSuggestion(undefined);
+    try {
+      const suggestion = await aiDocSuggester(service, legendAIUrl);
+      setAIDocSuggestion(suggestion);
+    } finally {
+      setIsSuggestingWithAI(false);
+    }
+  };
+  const applyAIDocSuggestion = (): void => {
+    if (!aiDocSuggestion) {
+      return;
+    }
+    service_setDocumentation(service, aiDocSuggestion);
+    setAIDocSuggestion(undefined);
+  };
+
   const changeTitle: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     if (!isReadOnly) {
       service_setTitle(service, event.target.value);
@@ -392,29 +431,76 @@ const ServiceGeneralEditor = observer(() => {
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
             Documentation
+            {aiDocSuggestion && (
+              <span className="service-editor__ai-suggestion-badge">
+                <SparkleIcon />
+                AI Suggestion
+              </span>
+            )}
+            {aiDocSuggester && !aiDocSuggestion && (
+              <button
+                className="service-editor__ai-suggest-btn"
+                onClick={(): void => {
+                  suggestDocumentationWithAI().catch(
+                    editorStore.applicationStore.alertUnhandledError,
+                  );
+                }}
+                disabled={isSuggestingWithAI || isReadOnly}
+                title="Use AI to suggest documentation for this service"
+              >
+                <SparkleIcon />
+                <span>
+                  {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+                </span>
+              </button>
+            )}
           </div>
           <div
             className={clsx('panel__content__form__section__header__prompt', {
-              'service-editor__general__warning-prompt': !service.documentation,
+              'service-editor__general__warning-prompt':
+                !service.documentation && !aiDocSuggestion,
             })}
           >
-            {!service.documentation && (
+            {!service.documentation && !aiDocSuggestion && (
               <ErrorWarnIcon style={{ fontSize: '1.2rem' }} />
             )}
             {`Provide a brief description of the service's functionalities and usage`}
           </div>
           <textarea
-            className="panel__content__form__section__textarea service-editor__documentation__input"
+            className={clsx(
+              'panel__content__form__section__textarea service-editor__documentation__input',
+              { 'textarea--ai-suggested': Boolean(aiDocSuggestion) },
+            )}
             spellCheck={false}
             disabled={isReadOnly}
-            value={service.documentation}
+            readOnly={Boolean(aiDocSuggestion)}
+            value={aiDocSuggestion ?? service.documentation}
             onChange={changeDocumentation}
             style={{
-              borderColor: !service.documentation
-                ? 'var(--color-red-300)'
-                : undefined,
+              borderColor:
+                !service.documentation && !aiDocSuggestion
+                  ? 'var(--color-red-300)'
+                  : undefined,
             }}
           />
+          {aiDocSuggestion && (
+            <div className="service-editor__ai-suggestion__actions">
+              <button
+                className="btn btn--dark service-editor__ai-suggestion__apply-btn"
+                onClick={applyAIDocSuggestion}
+                title="Apply AI suggestion to documentation"
+              >
+                Apply Suggestion
+              </button>
+              <button
+                className="btn service-editor__ai-suggestion__dismiss-btn"
+                onClick={(): void => setAIDocSuggestion(undefined)}
+                title="Dismiss AI suggestion"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
         </div>
       </PanelForm>
       <PanelForm>

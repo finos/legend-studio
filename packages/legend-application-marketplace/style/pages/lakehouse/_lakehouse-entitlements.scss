@@ -195,6 +195,7 @@
 
   &__user-input,
   &__producer-input,
+  &__rms-node-input,
   &__business-justification-input {
     max-width: 70rem;
     margin: 2rem 0;
@@ -264,9 +265,10 @@
       &__tooltip__icon {
         @include hoverableLightTooltipIcon;
 
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         margin-left: 0.5rem;
-        margin-bottom: 0.5rem;
+        vertical-align: middle;
       }
     }
   }
@@ -543,6 +545,51 @@
         color: var(--color-red-200);
       }
     }
+  }
+
+  &__step-links {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+
+    &__dual-links {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+    }
+
+    &__link-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    &__link--primary {
+      font-weight: 600;
+    }
+
+    &__copy-btn {
+      padding: 4px;
+    }
+
+    &__external-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--color-dark-grey-300);
+    }
+
+    &__link--secondary {
+      font-size: 0.85rem;
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__justification-field {
+    margin-top: 1.6rem;
   }
 }
 

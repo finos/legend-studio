@@ -42,6 +42,7 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
     url: 'https://testLakehouseUrl',
     platformUrl: 'https://testLakehousePlatformUrl',
     workflowUrl: 'https://testLakehouseWorkflowUrl',
+    permitWorkflowUrl: 'https://testLakehousePermitWorkflowUrl',
     entitlements: {
       applicationDirectoryUrl: 'https://testApplicationDirectoryUrl',
       applicationIDUrl: 'https://testApplicationIDUrl',
@@ -93,6 +94,12 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
         'What dataproducts are available?',
         'Search for product catalog information',
         'Display user activity datasets',
+      ],
+      defaultAISuggestedQueries: [
+        'What BVAL bond pricing data is available?',
+        'Show me credit risk data products',
+        'Find FX rates and currency data',
+        'What equity analytics data do we have?',
       ],
     },
   },

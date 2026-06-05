@@ -19,7 +19,7 @@
 .project-configuration-editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   &__input {
     @include flexCenter;
@@ -30,27 +30,27 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 5.6rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -73,8 +73,8 @@
     @include flexCenter;
 
     height: calc(100% - 2.8rem);
-    background: var(--color-dark-grey-50);
-    color: var(--color-dark-grey-500);
+    background: var(--color-bg-app);
+    color: var(--color-text-disabled);
     cursor: default;
   }
 
@@ -95,9 +95,9 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -112,7 +112,7 @@
     width: 100%;
     position: absolute;
     bottom: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 
   &__manual-btn,
@@ -121,7 +121,7 @@
     outline: none;
 
     svg {
-      color: var(--color-light-grey-250);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -129,20 +129,20 @@
     background: none;
 
     svg {
-      color: var(--color-light-grey-0);
+      color: var(--color-text-primary);
     }
   }
 
   &__manual-btn--active,
   &__manual-btn--active:hover {
     svg {
-      color: var(--color-yellow-200) !important;
+      color: var(--color-active-indicator) !important;
     }
   }
 
   &__update-btn {
-    background: var(--color-blue-200);
-    color: var(--color-light-grey-0);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
     border-radius: 0.2rem;
     width: 10rem;
     cursor: pointer;
@@ -151,12 +151,12 @@
     margin-right: 0.3rem;
 
     &:hover {
-      background: var(--color-blue-100);
+      background: var(--color-accent-hover);
     }
 
     &[disabled]:hover,
     &[disabled] {
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
     }
   }
 
@@ -169,8 +169,8 @@
       @include flexCenter;
 
       padding: 0 1.5rem;
-      background: var(--color-dark-grey-200);
-      color: var(--color-light-grey-300);
+      background: var(--color-bg-panel-header);
+      color: var(--color-text-secondary);
       border-radius: 0.2rem;
       cursor: default;
     }
@@ -183,11 +183,13 @@
       }
 
       &--up-to-date {
-        color: var(--color-green-100);
+        color: var(--color-status-success);
       }
 
+      // NOTE: outdated indicator was orange-100; folded to status-warn (yellow).
+      // Same orange→yellow shift as documented in other files.
       &--outdated {
-        color: var(--color-orange-100);
+        color: var(--color-status-warn);
       }
     }
 
@@ -200,11 +202,11 @@
       @include flexCenter;
 
       margin-left: 1rem;
-      background: var(--color-red-100);
+      background: var(--color-status-error);
       padding: 0 1rem;
       border-radius: 0.2rem;
       font-weight: 500;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-on-accent);
     }
   }
 
@@ -219,8 +221,8 @@
       width: 20rem;
       height: 3.4rem;
       padding: 0 1rem;
-      background: var(--color-blue-200);
-      color: var(--color-light-grey-50);
+      background: var(--color-accent);
+      color: var(--color-text-on-accent);
       cursor: pointer;
     }
   }
@@ -260,8 +262,8 @@
 
     flex: 2.8rem 0 0;
     height: 2.8rem;
-    color: var(--color-light-grey-0);
-    background: var(--color-dark-grey-300);
+    color: var(--color-text-primary);
+    background: var(--color-bg-tag);
     border-radius: 0.2rem;
     margin-left: 0.5rem;
     cursor: pointer;
@@ -270,7 +272,7 @@
   &__progress-msg {
     margin: 1rem;
     line-height: 2rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     font-family: 'Roboto Mono', monospace;
     font-size: 1.2rem;
     user-select: none;
@@ -293,7 +295,7 @@
       padding: 0 0.5rem;
       margin-left: 0.5rem;
       border-radius: 0 0.2rem 0.2rem 0;
-      border-left: 0.1rem solid var(--color-dark-shade-200);
+      border-left: 0.1rem solid var(--color-shadow);
       cursor: pointer;
 
       svg {
@@ -304,7 +306,7 @@
   }
 
   &__remove-btn[disabled] {
-    background: var(--color-light-grey-400);
+    background: var(--color-text-disabled);
   }
 
   &__remove-btn--hidden {
@@ -312,6 +314,7 @@
     visibility: hidden;
   }
 
+  // Dependency tag — bright-grey chip with dark text; standard chip pattern.
   &__label {
     display: flex;
 
@@ -324,8 +327,8 @@
       font-size: 1rem;
       margin-right: 1rem;
       cursor: default;
-      color: var(--color-dark-grey-250);
-      background: var(--color-light-grey-400);
+      color: var(--color-text-inverted);
+      background: var(--color-bg-tag);
       font-weight: 500;
     }
 
@@ -346,21 +349,21 @@
     @include flexCenter;
 
     margin-left: 1rem;
-    background: var(--color-red-100);
+    background: var(--color-status-error);
     padding: 0 1rem;
     border-radius: 0.2rem;
     font-weight: 500;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-on-accent);
   }
 
   &__tree-btn {
     @include flexCenter;
 
-    background: var(--color-blue-150);
+    background: var(--color-accent);
     padding: 0 1rem;
     border-radius: 0.2rem;
     font-weight: 500;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-on-accent);
   }
 
   &__resolve-controls {
@@ -387,7 +390,7 @@
 
   &__backtrack-label {
     font-size: 1.2rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     white-space: nowrap;
   }
 
@@ -431,9 +434,9 @@
 .project-dependency-exclusions-editor {
   margin-top: 1rem;
   padding: 1.5rem;
-  border: 0.1rem solid var(--color-dark-grey-200);
+  border: 0.1rem solid var(--color-border-default);
   border-radius: 0.4rem;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
   box-shadow: 0 0.2rem 0.8rem rgb(0 0 0 / 15%);
 
   &__header {
@@ -443,14 +446,14 @@
   &__title {
     font-size: 1.3rem;
     font-weight: 600;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__add-section {
     margin-bottom: 1rem;
     padding: 1rem;
-    background: var(--color-dark-grey-80);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-elevated);
+    border: 0.1rem solid var(--color-border-default);
     border-radius: 0.3rem;
   }
 
@@ -462,7 +465,7 @@
 
   &__dropdown-label {
     font-size: 1.1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     font-weight: 500;
   }
 
@@ -476,8 +479,8 @@
     gap: 0.6rem;
     margin-top: 1rem;
     padding: 1rem;
-    background: var(--color-dark-grey-80);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-elevated);
+    border: 0.1rem solid var(--color-border-default);
     border-radius: 0.3rem;
   }
 
@@ -486,21 +489,21 @@
 
     justify-content: space-between;
     padding: 0.8rem 1rem;
-    background: var(--color-dark-grey-50);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-app);
+    border: 0.1rem solid var(--color-border-default);
     border-radius: 0.3rem;
     transition: all 0.1s ease;
 
     &:hover {
-      background: var(--color-dark-grey-80);
-      border-color: var(--color-dark-grey-250);
+      background: var(--color-bg-elevated);
+      border-color: var(--color-border-strong);
     }
   }
 
   &__item__coordinate {
     font-family: 'Roboto Mono', monospace;
     font-size: 1.1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     font-weight: 500;
   }
 
@@ -510,18 +513,18 @@
     width: 2.2rem;
     height: 2.2rem;
     border-radius: 0.2rem;
-    color: var(--color-light-grey-0);
-    background: var(--color-red-100);
+    color: var(--color-text-on-accent);
+    background: var(--color-status-error);
     cursor: pointer;
     transition: all 0.1s ease;
 
     &:hover {
-      background: var(--color-red-200);
+      background: var(--color-status-error);
       transform: scale(1.05);
     }
 
     &:disabled {
-      background: var(--color-dark-grey-300);
+      background: var(--color-bg-tag);
       cursor: not-allowed;
       transform: none;
     }
@@ -536,8 +539,8 @@
   margin-left: 3rem;
   margin-top: 0.5rem;
   padding: 0.6rem;
-  border-left: 0.2rem solid var(--color-dark-grey-250);
-  background: var(--color-dark-grey-80);
+  border-left: 0.2rem solid var(--color-border-strong);
+  background: var(--color-bg-elevated);
   border-radius: 0 0.3rem 0.3rem 0;
 
   &__header {
@@ -547,7 +550,7 @@
   &__title {
     font-size: 1rem;
     font-weight: 500;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
   }
 
   &__items {
@@ -561,21 +564,21 @@
 
     justify-content: space-between;
     padding: 0.4rem 0.6rem;
-    background: var(--color-dark-grey-50);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-app);
+    border: 0.1rem solid var(--color-border-default);
     border-radius: 0.3rem;
     transition: all 0.1s ease;
 
     &:hover {
-      background: var(--color-dark-grey-80);
-      border-color: var(--color-dark-grey-250);
+      background: var(--color-bg-elevated);
+      border-color: var(--color-border-strong);
     }
   }
 
   &__item__coordinate {
     font-family: 'Roboto Mono', monospace;
     font-size: 0.9rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     font-weight: 500;
   }
 
@@ -585,18 +588,18 @@
     width: 1.8rem;
     height: 1.8rem;
     border-radius: 0.2rem;
-    color: var(--color-light-grey-0);
-    background: var(--color-red-100);
+    color: var(--color-text-on-accent);
+    background: var(--color-status-error);
     cursor: pointer;
     transition: all 0.1s ease;
 
     &:hover {
-      background: var(--color-red-200);
+      background: var(--color-status-error);
       transform: scale(1.05);
     }
 
     &:disabled {
-      background: var(--color-dark-grey-300);
+      background: var(--color-bg-tag);
       cursor: not-allowed;
       transform: none;
     }
@@ -609,7 +612,7 @@
 
 .platform-configurations-editor {
   &__dependencies {
-    border: 0.1rem solid var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-border-subtle);
     margin-top: 1rem;
     border-radius: 0.2rem;
 
@@ -619,7 +622,7 @@
       justify-content: space-between;
       height: 4.4rem;
       padding: 0 0.5rem 0 1rem;
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel);
     }
 
     &__content {
@@ -640,36 +643,36 @@
 
     svg {
       font-size: 2rem;
-      color: var(--color-dark-grey-250);
+      color: var(--color-text-disabled);
     }
 
     &:hover svg {
       font-size: 2rem;
-      color: var(--color-dark-grey-280);
+      color: var(--color-text-muted);
     }
 
     &[disabled] svg,
     &[disabled]:hover svg {
       cursor: not-allowed;
-      color: var(--color-dark-grey-250);
+      color: var(--color-text-disabled);
     }
   }
 
   &__toggler__btn--toggled {
     svg {
       font-size: 2rem;
-      color: var(--color-blue-150);
+      color: var(--color-accent);
     }
 
     &:hover svg {
       font-size: 2rem;
-      color: var(--color-blue-100);
+      color: var(--color-accent-hover);
     }
 
     &[disabled] svg,
     &[disabled]:hover svg {
       cursor: not-allowed;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -679,7 +682,7 @@
     word-break: normal;
     overflow-wrap: anywhere;
     margin-left: 0.8rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     line-height: 2rem;
     user-select: none;
     cursor: pointer;
@@ -694,8 +697,8 @@
       width: 30rem;
       height: 2.8rem;
       border-radius: 0.2rem;
-      color: var(--color-light-grey-300);
-      background: var(--color-dark-grey-85);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-elevated);
 
       &__status {
         @include flexCenter;
@@ -707,15 +710,15 @@
         }
 
         &--default {
-          color: var(--color-dark-grey-280);
+          color: var(--color-text-disabled);
         }
 
         &--up-to-date {
-          color: var(--color-green-100);
+          color: var(--color-status-success);
         }
 
         &--outdated {
-          color: var(--color-yellow-100);
+          color: var(--color-status-warn);
         }
       }
 
@@ -733,8 +736,8 @@
 
         width: 10rem;
         height: 2.8rem;
-        background: var(--color-dark-grey-200);
-        color: var(--color-light-grey-200);
+        background: var(--color-bg-panel-header);
+        color: var(--color-text-secondary);
         border-radius: 0 0.2rem 0.2rem 0;
         padding: 0 1rem;
         cursor: default;
@@ -756,10 +759,10 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
   }
 
@@ -780,9 +783,9 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -797,7 +800,7 @@
     width: 100%;
     position: absolute;
     bottom: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 }
 
@@ -807,27 +810,27 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 5.6rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -849,12 +852,12 @@
   }
 
   &-tree__node__container:hover {
-    background: var(--color-dark-blue-shade-100);
+    background: var(--color-accent-subtle);
   }
 
   &-tree__node__container--selected,
   &-tree__node__container--selected:hover {
-    background: var(--color-light-blue-450);
+    background: var(--color-bg-selected);
   }
 
   &-tree__node__icon {
@@ -886,12 +889,12 @@
     padding-left: 0.5rem;
 
     &-btn {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
       height: 1.8rem;
       line-height: 1.8rem;
       border-radius: 0.3rem;
       padding: 0 0.5rem;
-      color: var(--color-light-grey-100);
+      color: var(--color-text-primary);
       font-size: 1.1rem;
       cursor: default;
       margin-right: 0.5rem;
@@ -912,7 +915,7 @@
   &__title {
     font-size: 1.6rem;
     font-weight: 700;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
@@ -925,17 +928,19 @@
 
   &__subtitle {
     font-size: 1.3rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
+  // Tip callout — left-bordered with active-indicator (yellow in dark, blue
+  // in light). Bg is the standard panel-header tone.
   &__tip {
     font-size: 1.3rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     margin-top: 1rem;
     padding: 1rem 1.2rem;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-panel-header);
     border-radius: 0.4rem;
-    border-left: 0.3rem solid var(--color-yellow-200);
+    border-left: 0.3rem solid var(--color-active-indicator);
   }
 
   &__list {
@@ -947,11 +952,11 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     border-radius: 0.4rem;
     margin-bottom: 0.5rem;
     font-size: 1.3rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
 
     svg {
       flex-shrink: 0;
@@ -959,7 +964,7 @@
     }
 
     &--success {
-      border-left: 0.3rem solid var(--color-green-100);
+      border-left: 0.3rem solid var(--color-status-success);
     }
   }
 
@@ -970,37 +975,37 @@
   &__conflicts-header {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-300);
+    border-bottom: 0.1rem solid var(--color-border-strong);
   }
 
   &__conflict-item {
     padding: 1.5rem;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     border-radius: 0.4rem;
     margin-bottom: 1rem;
-    border-left: 0.3rem solid var(--color-red-100);
+    border-left: 0.3rem solid var(--color-status-error);
   }
 
   &__conflict-name {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
   }
 
   &__suggested-version {
     font-size: 1.3rem;
     font-weight: 600;
-    color: var(--color-yellow-100);
-    background: var(--color-dark-grey-50);
+    color: var(--color-status-warn);
+    background: var(--color-bg-app);
     padding: 0.8rem 1rem;
     border-radius: 0.3rem;
     margin-top: 0.5rem;
     margin-bottom: 1rem;
-    border-left: 0.3rem solid var(--color-yellow-200);
+    border-left: 0.3rem solid var(--color-active-indicator);
   }
 
   &__conflict-versions {
@@ -1013,20 +1018,20 @@
 
   &__conflict-version {
     padding: 1rem;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     border-radius: 0.3rem;
-    border-left: 0.2rem solid var(--color-dark-grey-300);
+    border-left: 0.2rem solid var(--color-border-strong);
 
     &--suggested {
-      background: var(--color-dark-grey-80);
-      border-left: 0.3rem solid var(--color-yellow-200);
+      background: var(--color-bg-elevated);
+      border-left: 0.3rem solid var(--color-active-indicator);
     }
   }
 
   &__version-label {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     display: block;
     margin-bottom: 0.5rem;
   }
@@ -1034,13 +1039,13 @@
   &__suggested-badge {
     font-size: 1.2rem;
     font-weight: 600;
-    color: var(--color-yellow-100);
+    color: var(--color-status-warn);
     font-style: italic;
   }
 
   &__required-by {
     font-size: 1.2rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     font-style: italic;
     display: block;
     margin-bottom: 0.5rem;
@@ -1054,28 +1059,30 @@
     gap: 0.3rem;
   }
 
+  // NOTE: --color-light-grey-500 used as the requirement arrow color is a
+  // typo (palette has no light-grey-500). Substituted with text-disabled.
   &__requirement {
     font-size: 1.2rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     padding: 0.3rem 0;
 
     &::before {
       content: '↳ ';
       margin-right: 0.5rem;
-      color: var(--color-light-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 
   &__requirement-more {
     font-size: 1.2rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     font-style: italic;
     padding: 0.3rem 0;
 
     &::before {
       content: '↳ ';
       margin-right: 0.5rem;
-      color: var(--color-light-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -1085,7 +1092,7 @@
     justify-content: flex-end;
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 0.1rem solid var(--color-dark-grey-200);
+    border-top: 0.1rem solid var(--color-border-default);
   }
 
   &__action-btn {
@@ -1101,20 +1108,20 @@
     transition: all 0.2s ease;
 
     &--primary {
-      background: var(--color-blue-100);
-      color: var(--color-light-grey-0);
+      background: var(--color-accent);
+      color: var(--color-text-on-accent);
 
       &:hover {
-        background: var(--color-blue-200);
+        background: var(--color-accent-hover);
       }
     }
 
     &--secondary {
-      background: var(--color-dark-grey-200);
-      color: var(--color-light-grey-200);
+      background: var(--color-bg-panel-header);
+      color: var(--color-text-secondary);
 
       &:hover {
-        background: var(--color-dark-grey-300);
+        background: var(--color-bg-hover);
       }
     }
 
@@ -1126,7 +1133,7 @@
   &__suggested-overrides {
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 0.1rem solid var(--color-dark-grey-200);
+    border-top: 0.1rem solid var(--color-border-default);
   }
 
   &__suggested-overrides-header {
@@ -1136,13 +1143,13 @@
   &__suggested-overrides-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
   }
 
   &__suggested-overrides-subtitle {
     font-size: 1.2rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__suggested-overrides-list {
@@ -1156,21 +1163,21 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.2rem;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     border-radius: 0.4rem;
-    border-left: 0.3rem solid var(--color-yellow-200);
+    border-left: 0.3rem solid var(--color-active-indicator);
     font-size: 1.3rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__suggested-override-name {
     font-weight: 500;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-primary);
   }
 
   &__suggested-override-version {
     font-weight: 600;
-    color: var(--color-yellow-100);
+    color: var(--color-status-warn);
     margin-left: 1rem;
   }
 }

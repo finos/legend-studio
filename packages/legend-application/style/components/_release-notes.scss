@@ -43,7 +43,7 @@
     }
 
     &__header__close-btn {
-      color: var(--color-light-grey-300);
+      color: var(--color-text-muted);
     }
 
     &__content {
@@ -60,7 +60,7 @@
 
 .release-viewer {
   margin-bottom: 1rem;
-  border: 0.1rem solid var(--color-dark-grey-400);
+  border: 0.1rem solid var(--color-border-strong);
 
   &__version {
     font-weight: bold;

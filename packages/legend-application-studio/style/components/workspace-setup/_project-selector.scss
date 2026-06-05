@@ -41,6 +41,8 @@
     }
   }
 
+  // Visit button — was a bright-grey chip (dark-grey-500 bg, dark-grey-200
+  // text). Folded to bg-tag with text-inverted; documented shift pattern.
   &__visit-btn {
     display: flex;
     width: 6rem;
@@ -52,10 +54,10 @@
 
       width: 4.2rem;
       height: 1.8rem;
-      background: var(--color-dark-grey-500);
+      background: var(--color-bg-tag);
       border-radius: 0.2rem 0 0 0.2rem;
       font-size: 1.2rem;
-      color: var(--color-dark-grey-200);
+      color: var(--color-text-inverted);
       font-weight: 500;
     }
 
@@ -64,21 +66,23 @@
 
       height: 1.8rem;
       width: 1.8rem;
-      background: var(--color-dark-grey-500);
+      background: var(--color-bg-tag);
       border-radius: 0 50% 50% 0;
 
       svg {
         font-size: 1.6rem;
-        color: var(--color-dark-grey-200);
+        color: var(--color-text-inverted);
       }
     }
 
     &:hover &__label,
     &:hover &__icon {
-      background: var(--color-light-grey-400);
+      background: var(--color-bg-hover);
     }
   }
 
+  // Configure button — yellow warning chip indicating "this project needs
+  // setup". Uses status-warn surface.
   &__configure-btn {
     display: flex;
     width: 10rem;
@@ -89,9 +93,9 @@
 
       width: 6.4rem;
       height: 1.8rem;
-      background: var(--color-yellow-100);
+      background: var(--color-status-warn);
       font-size: 1.2rem;
-      color: var(--color-dark-grey-200);
+      color: var(--color-text-inverted);
       font-weight: 500;
     }
 
@@ -100,12 +104,12 @@
 
       height: 1.8rem;
       width: 1.8rem;
-      background: var(--color-yellow-100);
+      background: var(--color-status-warn);
       border-radius: 0.2rem 0 0 0.2rem;
 
       svg {
         font-size: 1.2rem;
-        color: var(--color-dark-grey-200);
+        color: var(--color-text-inverted);
       }
     }
 
@@ -114,13 +118,12 @@
 
       height: 1.8rem;
       width: 1.8rem;
-      background: var(--color-yellow-100);
+      background: var(--color-status-warn);
       border-radius: 0 50% 50% 0;
 
       svg {
         font-size: 1.6rem;
-        // color: var(--color-dark-shade-250);
-        color: var(--color-dark-grey-200);
+        color: var(--color-text-inverted);
       }
     }
   }

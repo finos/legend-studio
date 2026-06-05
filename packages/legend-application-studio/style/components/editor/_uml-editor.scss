@@ -21,109 +21,24 @@
 @forward 'uml-editor/enum-editor';
 @forward 'uml-editor/class-editor';
 
+/* ============================================================================
+ * UML editor — theme-aware via semantic tokens.
+ *
+ * Historically this file was authored light-first with a `.uml-editor--dark`
+ * modifier that FunctionEditor used to force a dark embedded UML view. With
+ * the global theme system both are no longer needed: the base styles adapt
+ * to the active theme and FunctionEditor's embedded UML follows along.
+ * ============================================================================ */
+
 .uml-editor {
   height: 100%;
   position: relative;
 
   .panel__content__form__section__header__label {
-    color: var(--color-dark-grey-350);
+    color: var(--color-text-secondary);
   }
 
   .dnd__entry-drag-handle {
     margin-right: 0.5rem;
-  }
-}
-
-.uml-editor--dark {
-  .panel__content__form__section__header__label {
-    color: var(--color-light-grey-100);
-  }
-
-  .dnd__entry-drag-handle {
-    background: var(--color-dark-grey-100);
-  }
-
-  .property-basic-editor {
-    // &__lock {
-    //   color: var(--color-light-grey-300);
-    // }
-
-    &__multiplicity {
-      background: var(--color-dark-grey-85);
-    }
-
-    &__multiplicity__range {
-      color: var(--color-dark-grey-400);
-    }
-
-    &__multiplicity-bound {
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
-      color: var(--color-light-grey-200);
-    }
-
-    &__multiplicity-bound[disabled] {
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-100);
-    }
-
-    &__name {
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
-      color: var(--color-light-grey-200);
-    }
-
-    // &__input--with-validation {
-    //   background: var(--color-dark-grey-300);
-    //   color: var(--color-light-grey-100);
-    // }
-
-    &__name::placeholder {
-      color: var(--color-dark-grey-300);
-    }
-
-    &__type {
-      color: var(--color-light-grey-0);
-    }
-
-    // &__type--error {
-    //   background: var(--color-red-400);
-    // }
-
-    // &__error--info {
-    //   color: var(--color-light-grey-300);
-    // }
-
-    &__type.background--class {
-      background: var(--color-purple-400);
-    }
-
-    &__type.background--enumeration {
-      background: var(--color-medium-green-450);
-    }
-
-    &__type.background--primitive {
-      background: var(--color-blue-200);
-    }
-
-    &__type__visit-btn {
-      background: var(--color-dark-shade-100);
-    }
-
-    &__type__visit-btn svg {
-      color: var(--color-light-grey-100);
-    }
-
-    &__type .selector-input__menu {
-      color: var(--color-dark-grey-100);
-    }
-
-    &__type--show-click-hint:hover &__type__label {
-      background: var(--color-dark-shade-100);
-    }
-
-    &__type--show-click-hint:hover &__type__label--hover {
-      color: var(--color-light-grey-100);
-    }
   }
 }

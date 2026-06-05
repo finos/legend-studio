@@ -576,10 +576,8 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
           rawLambdaForTest,
           this.editorStore.graphManagerState.graph,
         )) as Accessor[];
-      resolvedAccessors = all.filter(
-        (accessor) =>
-          isIngestOrDataProductAccessor(accessor) &&
-          accessor.parentElement.path !== this.testableState.dataProduct.path,
+      resolvedAccessors = all.filter((accessor) =>
+        isIngestOrDataProductAccessor(accessor),
       );
     }
 
@@ -834,10 +832,8 @@ export class DataProductTestableState {
           rawLambdaForSuite,
           this.editorStore.graphManagerState.graph,
         )) as Accessor[];
-      const externalAccessors = all.filter(
-        (accessor) =>
-          isIngestOrDataProductAccessor(accessor) &&
-          accessor.parentElement.path !== dp.path,
+      const externalAccessors = all.filter((accessor) =>
+        isIngestOrDataProductAccessor(accessor),
       );
       const byElement = new Map<string, Accessor[]>();
       for (const acc of externalAccessors) {

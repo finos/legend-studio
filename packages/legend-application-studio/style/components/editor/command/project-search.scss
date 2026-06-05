@@ -30,21 +30,21 @@
 
     height: 2.8rem;
     width: 3.5rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-280);
+    background: var(--color-bg-input);
+    border: 0.1rem solid var(--color-border-default);
     border-right: none;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
   }
 
   &__type__selector {
     @include flexCenter;
 
     height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-280);
+    background: var(--color-bg-input);
+    border: 0.1rem solid var(--color-border-default);
     width: 1.5rem;
     border-right: none;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
   }
 
   &__options {
@@ -55,9 +55,9 @@
     @include flexCenter;
 
     height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-input);
+    border-bottom: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-secondary);
     border-top: none;
     cursor: pointer;
   }

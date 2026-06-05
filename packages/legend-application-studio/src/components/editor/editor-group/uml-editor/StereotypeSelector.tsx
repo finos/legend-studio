@@ -185,11 +185,7 @@ export const StereotypeSelector = observer(
           dragSourceConnector={handleRef}
           isDragging={isBeingDragged}
         />
-        <div
-          className={clsx('stereotype-selector', {
-            'stereotype-selector--dark': darkTheme,
-          })}
-        >
+        <div className="stereotype-selector">
           <div className="stereotype-selector__profile">
             <CustomSelectorInput
               className="stereotype-selector__profile__selector"

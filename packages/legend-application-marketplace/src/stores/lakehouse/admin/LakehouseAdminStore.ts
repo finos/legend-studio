@@ -52,14 +52,14 @@ export class LakehouseAdminStore {
   }
 
   createContractsServerSideDatasource(
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): DataGridServerSideDatasource {
     return {
       getRows: (
         params: DataGridServerSideGetRowsParams<V1_LiteDataContract>,
       ) => {
         // eslint-disable-next-line no-void
-        void this.fetchContractsPage(params, token);
+        void this.fetchContractsPage(params, tokenProvider());
       },
     };
   }
@@ -116,14 +116,14 @@ export class LakehouseAdminStore {
   }
 
   createSubscriptionsServerSideDatasource(
-    token: string | undefined,
+    tokenProvider: () => string | undefined,
   ): DataGridServerSideDatasource {
     return {
       getRows: (
         params: DataGridServerSideGetRowsParams<V1_DataSubscription>,
       ) => {
         // eslint-disable-next-line no-void
-        void this.fetchSubscriptionsPage(params, token);
+        void this.fetchSubscriptionsPage(params, tokenProvider());
       },
     };
   }

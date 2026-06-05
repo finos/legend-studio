@@ -19,26 +19,26 @@
 .data-quality-relation-comparison-editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   .panel {
     height: 100%;
     width: 100%;
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-hover);
     }
 
     &__content {
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
   }
 
@@ -54,7 +54,7 @@
     align-items: center;
     justify-content: end;
     gap: 1rem;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     margin-top: 2rem;
     height: 4rem;
     padding-top: 0.5rem;
@@ -71,9 +71,9 @@
 
       height: 100%;
       padding: 0 1rem;
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-elevated);
       border-radius: 0.2rem 0 0 0.2rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-size: 1.2rem;
       text-transform: lowercase;
       white-space: nowrap;
@@ -83,9 +83,9 @@
       width: 7rem;
       height: 2.8rem;
       padding: 0 0.8rem;
-      color: var(--color-light-grey-150);
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
+      color: var(--color-text-primary);
+      background: var(--color-bg-panel);
+      border: 0.1rem solid var(--color-border-strong);
       border-radius: 0.2rem;
     }
 
@@ -121,7 +121,7 @@
     padding: 0.8rem 1rem;
     margin: 0 1rem 1rem;
     border-radius: 0.2rem;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-panel-header);
     border: 0.1rem solid var(--color-red-200);
 
     &__icon {
@@ -149,11 +149,11 @@
       cursor: pointer;
       font-size: 1.2rem;
       white-space: nowrap;
-      color: var(--color-light-grey-200);
-      background: var(--color-dark-grey-300);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-tag);
 
       &:hover:not(:disabled) {
-        background: var(--color-dark-grey-350);
+        background: var(--color-bg-tag);
       }
 
       &:disabled {
@@ -174,7 +174,7 @@
     padding: 0.8rem 1rem;
     margin: 0 1rem 1rem;
     border-radius: 0.2rem;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-panel-header);
     border: 0.1rem solid var(--color-yellow-200);
 
     &__icon {
@@ -206,7 +206,7 @@
       height: 2.8rem;
       padding-left: 2rem;
       font-weight: 500;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
     }
 
     &__content {
@@ -216,7 +216,7 @@
       margin-right: 2rem;
       padding-top: 0.5rem;
       overflow: hidden;
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__title {
@@ -224,8 +224,8 @@
 
       @include flexVCenter;
 
-      background: var(--color-dark-grey-200);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-panel-header);
+      color: var(--color-text-primary);
       padding: 0 1rem;
       border-radius: 0.2rem;
       margin: 0;
@@ -252,7 +252,7 @@
     &__header-group {
       display: flex;
       flex-direction: row;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
 
       @include flexVCenter;
     }
@@ -262,8 +262,8 @@
 
       @include flexVCenter;
 
-      background: var(--color-dark-grey-200);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-panel-header);
+      color: var(--color-text-primary);
       padding: 0 1rem;
       border-radius: 0.2rem;
       margin: 0;
@@ -282,7 +282,7 @@
       @include flexVCenter;
 
       margin-left: 1rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-size: 1.2rem;
     }
 
@@ -293,7 +293,7 @@
 
     &__viewer {
       height: 35rem !important;
-      border: 0.1rem solid var(--color-dark-grey-280);
+      border: 0.1rem solid var(--color-border-default);
     }
   }
 
@@ -309,7 +309,7 @@
     }
 
     &__description {
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-size: 1.2rem;
       line-height: 1.8rem;
     }
@@ -326,13 +326,13 @@
       flex-direction: column;
       gap: 1.2rem;
       padding: 1.2rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
+      border: 0.1rem solid var(--color-border-default);
       border-radius: 0.2rem;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__section__title {
-      color: var(--color-light-grey-100);
+      color: var(--color-text-primary);
       font-size: 1.2rem;
       font-weight: 700;
       letter-spacing: 0.04rem;

@@ -41,14 +41,16 @@
   }
 
   &__source {
+    // Patch tag — same bright-grey-chip pattern as project-overview source
+    // tags. Folded to bg-tag with text-inverted; documented shift.
     &__patch {
       @include flexCenter;
 
       height: 1.8rem;
-      background: var(--color-dark-grey-500);
+      background: var(--color-bg-tag);
       border-radius: 0.2rem;
       font-size: 1.2rem;
-      color: var(--color-dark-grey-200);
+      color: var(--color-text-inverted);
       font-weight: 500;
       width: 8rem;
     }

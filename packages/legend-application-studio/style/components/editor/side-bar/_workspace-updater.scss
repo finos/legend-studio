@@ -42,7 +42,7 @@
   }
 
   &__review__link {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     text-decoration: none;
   }
 
@@ -51,12 +51,12 @@
   }
 
   &__review__name {
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__review__info {
     margin-left: 1rem;
     font-size: 1.2rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
   }
 }

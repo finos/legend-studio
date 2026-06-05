@@ -1,5 +1,19 @@
 # @finos/legend-art
 
+## 7.1.151
+
+### Patch Changes
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+## 7.1.150
+
+## 7.1.149
+
+### Patch Changes
+
+- [#5204](https://github.com/finos/legend-studio/pull/5204) [`431d6fd`](https://github.com/finos/legend-studio/commit/431d6fdb79b4a759bab3786be4901054fa1a6e5d) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
 ## 7.1.148
 
 ## 7.1.147

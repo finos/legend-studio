@@ -24,10 +24,13 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   clsx,
+  CheckIcon,
   ControlledDropdownMenu,
   RepoIcon,
   MenuContent,
   MenuContentItem,
+  MenuContentItemBlankIcon,
+  MenuContentItemIcon,
   MenuContentItemLabel,
   GitPullRequestIcon,
   GitMergeIcon,
@@ -48,10 +51,35 @@ import {
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useEffect, useState } from 'react';
 import {
+  LEGEND_APPLICATION_COLOR_THEME,
   ReleaseLogManager,
   ReleaseNotesManager,
   VIRTUAL_ASSISTANT_TAB,
 } from '@finos/legend-application';
+
+/**
+ * Themes that studio has real SCSS support for. Filters the global theme
+ * registry (which also exposes stubs and app-specific themes like
+ * `legacy-light`) down to what studio can actually render correctly.
+ *
+ * To add a new theme to studio's picker:
+ *   1. Implement its SCSS in `legend-art/style/base/themes/`
+ *   2. Add the key here.
+ */
+const STUDIO_SUPPORTED_COLOR_THEMES: ReadonlySet<string> = new Set([
+  LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
+  LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT,
+]);
+
+/**
+ * Subset of supported themes that are still being stabilized and should only be
+ * exposed in non-production environments. These are hidden from the picker
+ * unless the `NonProductionFeatureFlag` config option is enabled, so dev/QA can
+ * test them without shipping the toggle to production users.
+ */
+const STUDIO_NON_PRODUCTION_COLOR_THEMES: ReadonlySet<string> = new Set([
+  LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT,
+]);
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
 import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
@@ -69,16 +97,53 @@ import { useAuth, type AuthContextProps } from 'react-oidc-context';
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
     const editorStore = useEditorStore();
+    const applicationStore = useLegendStudioApplicationStore();
+    const { layoutService } = applicationStore;
     const showDeveloperTool = (): void => {
       editorStore.panelGroupDisplayState.open();
       editorStore.setActivePanelMode(PANEL_MODE.DEV_TOOL);
     };
+    const selectColorTheme = (key: string): void => {
+      layoutService.setColorTheme(key, { persist: true });
+    };
+    // Non-production themes (e.g. the in-progress light theme) are only exposed
+    // when the `NonProductionFeatureFlag` config option is on.
+    const showNonProductionThemes =
+      applicationStore.config.options.NonProductionFeatureFlag;
 
     return (
       <MenuContent ref={ref} className="activity-bar__setting__menu">
         <MenuContentItem onClick={showDeveloperTool}>
+          <MenuContentItemBlankIcon />
           <MenuContentItemLabel>Show Developer Tool</MenuContentItemLabel>
         </MenuContentItem>
+        <MenuContentDivider />
+        <MenuContentItem disabled={true}>
+          <MenuContentItemBlankIcon />
+          <MenuContentItemLabel>Color Theme</MenuContentItemLabel>
+        </MenuContentItem>
+        {layoutService.availableColorThemes
+          .filter(
+            (theme) =>
+              STUDIO_SUPPORTED_COLOR_THEMES.has(theme.key) &&
+              (showNonProductionThemes ||
+                !STUDIO_NON_PRODUCTION_COLOR_THEMES.has(theme.key)),
+          )
+          .map((theme) => (
+            <MenuContentItem
+              key={theme.key}
+              onClick={() => selectColorTheme(theme.key)}
+            >
+              {theme.key === layoutService.currentColorTheme.key ? (
+                <MenuContentItemIcon>
+                  <CheckIcon />
+                </MenuContentItemIcon>
+              ) : (
+                <MenuContentItemBlankIcon />
+              )}
+              <MenuContentItemLabel>{theme.name}</MenuContentItemLabel>
+            </MenuContentItem>
+          ))}
       </MenuContent>
     );
   }),

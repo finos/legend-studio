@@ -191,6 +191,7 @@ export interface LegendStudioApplicationConfigurationData
   query?: { url: string };
   showcase?: { url: string };
   pct?: { reportUrl: string };
+  legendAI?: { url: string };
 }
 
 export class LegendStudioApplicationConfig extends LegendApplicationConfig {
@@ -205,6 +206,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly queryApplicationUrl?: string | undefined;
   readonly showcaseServerUrl?: string | undefined;
   readonly pctReportUrl?: string | undefined;
+  readonly legendAIUrl?: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendStudioApplicationConfigurationData>,
@@ -272,6 +274,13 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
     if (input.configData.pct?.reportUrl) {
       this.pctReportUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.pct.reportUrl,
+      );
+    }
+
+    // legend AI
+    if (input.configData.legendAI?.url) {
+      this.legendAIUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.legendAI.url,
       );
     }
 

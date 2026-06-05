@@ -1,5 +1,27 @@
 # @finos/legend-graph
 
+## 32.6.8
+
+### Patch Changes
+
+- [#5227](https://github.com/finos/legend-studio/pull/5227) [`eefc7dd`](https://github.com/finos/legend-studio/commit/eefc7dd4a99a7a54b79a79c0977b9eaa7e93bcfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add explicit `GenericWorkflowTask` case in workflow task deserializer; default now throws for unknown types.
+
+## 32.6.7
+
+## 32.6.6
+
+### Patch Changes
+
+- [#5199](https://github.com/finos/legend-studio/pull/5199) [`3c8840b`](https://github.com/finos/legend-studio/commit/3c8840b0d5bedc9615956e2d4ae03f1c6fb32ddd) ([@Rakan1837](https://github.com/Rakan1837)) - feat: infer #SQL i()/p() accessors for DataProduct test-data setup
+
+- [#5205](https://github.com/finos/legend-studio/pull/5205) [`d485724`](https://github.com/finos/legend-studio/commit/d485724f64627e9288aa03f08b7fb0f773964cfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add explicit `GenericWorkflowTask` case in workflow task deserializer; default now throws for unknown types.
+
+## 32.6.5
+
+### Patch Changes
+
+- [#5193](https://github.com/finos/legend-studio/pull/5193) [`70bc5c3`](https://github.com/finos/legend-studio/commit/70bc5c3a16628cbc39644990169140d2f5f99719) ([@yash0024](https://github.com/yash0024)) - Make V1_createAccessorFromPackageableElement async -- it now handles fetching the columns from matview datasets' RawLambdas. The sync version (like before) is called V1_createAccessorFromPackageableElementWithNonFunctionSources and is still used in building value specs
+
 ## 32.6.4
 
 ### Patch Changes

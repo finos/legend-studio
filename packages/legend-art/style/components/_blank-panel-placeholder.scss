@@ -45,7 +45,7 @@
   &__text {
     @include flexHCenter;
 
-    color: var(--color-dark-grey-300);
+    color: var(--color-text-disabled);
     font-weight: bold;
   }
 
@@ -63,7 +63,7 @@
     @include flexCenter;
 
     padding: 1rem;
-    border: 0.3rem dashed var(--color-dark-grey-100);
+    border: 0.3rem dashed var(--color-border-subtle);
     border-radius: 0.3rem;
     width: 10rem;
     height: 10rem;
@@ -79,15 +79,15 @@
 
   &__action svg {
     font-size: 4rem;
-    color: var(--color-dark-grey-100);
+    color: var(--color-border-subtle);
   }
 
   &:hover &__action {
-    border-color: var(--color-dark-grey-200);
+    border-color: var(--color-border-default);
   }
 
   &:hover &__action svg {
-    color: var(--color-dark-grey-200);
+    color: var(--color-border-default);
   }
 
   &__action__dnd-click-icon {

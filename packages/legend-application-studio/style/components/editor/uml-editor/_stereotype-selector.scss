@@ -26,7 +26,7 @@
   &__profile {
     display: flex;
     width: 17rem;
-    background: var(--color-light-grey-200);
+    background: var(--color-bg-panel-header);
     border-radius: 0 1.4rem 1.4rem 0;
     margin-right: 0.5rem;
   }
@@ -40,14 +40,14 @@
 
     height: 2.8rem;
     width: 2.8rem;
-    color: var(--color-dark-grey-300);
-    background: var(--color-light-grey-200);
+    color: var(--color-text-muted);
+    background: var(--color-bg-panel-header);
     cursor: pointer;
     border-radius: 50%;
   }
 
   &__profile__visit-btn[disabled] {
-    color: var(--color-light-grey-400);
+    color: var(--color-text-disabled);
   }
 
   &__profile__visit-btn svg {
@@ -56,20 +56,5 @@
 
   &__stereotype {
     flex: auto;
-  }
-}
-
-.stereotype-selector--dark {
-  .stereotype-selector__profile {
-    background: var(--color-dark-grey-200);
-  }
-
-  .stereotype-selector__profile__visit-btn {
-    color: var(--color-light-grey-400);
-    background: var(--color-dark-grey-200);
-  }
-
-  .stereotype-selector__profile__visit-btn[disabled] {
-    color: var(--color-dark-grey-400);
   }
 }

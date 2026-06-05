@@ -26,12 +26,13 @@
     height: 1.6rem;
     width: 1.6rem;
     border-radius: 50%;
-    background: var(--color-mauve-50);
-    border: 0.1rem solid var(--color-dark-grey-280);
+    // Mauve is a category color signaling "experimental" — kept stable.
+    background: var(--color-category-experimental);
+    border: 0.1rem solid var(--color-border-default);
 
     svg {
       font-size: 1.2rem;
-      color: var(--color-dark-grey-280);
+      color: var(--color-text-secondary);
     }
   }
 }
