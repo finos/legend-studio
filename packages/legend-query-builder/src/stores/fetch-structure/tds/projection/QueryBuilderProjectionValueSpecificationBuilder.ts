@@ -285,7 +285,7 @@ export const appendProjection = (
   // build projection
   if (
     tdsState.aggregationState.columns.length &&
-    !tdsState.queryBuilderState.isFetchStructureTyped
+    !tdsState.queryBuilderState.useRelation
   ) {
     // aggregation
     const groupByFunction = new SimpleFunctionExpression(

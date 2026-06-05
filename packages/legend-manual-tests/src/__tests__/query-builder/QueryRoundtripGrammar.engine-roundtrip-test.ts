@@ -214,6 +214,12 @@ const TEST_CASES: QueryTestCase[] = [
     queryGrammar:
       "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->filter(x|($x.COMPANY_NAME == 'Google') && (($x.CONTACT_NAME == 'Tim') || ($x.CONTACT_TITLE == 'President')))->project(~['Customer Id':x|$x.CUSTOMER_ID, 'Company Name':x|$x.COMPANY_NAME, 'Contact Name':x|$x.CONTACT_NAME, 'Contact Title':x|$x.CONTACT_TITLE, Address:x|$x.ADDRESS, City:x|$x.CITY, Region:x|$x.REGION, 'Postal Code':x|$x.POSTAL_CODE, Country:x|$x.COUNTRY, Phone:x|$x.PHONE, Fax:x|$x.FAX])->filter(row|($row.City == 'NYC') || (($row.Region == 'EMEA') && ($row.'Contact Name' == 'Tim')))",
   },
+  {
+    testName: '[Accessor] Store Accessor with aggregation (group by count)',
+    model: 'Northwind',
+    queryGrammar:
+      "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->project(~[Country:x|$x.COUNTRY, 'Customer Id (count)':x|$x.CUSTOMER_ID])->groupBy(~[Country], ~['Customer Id (count)':x|$x.'Customer Id (count)':x|$x->count()])",
+  },
 ];
 
 const globalGraphManagerStates = new Map<string, GraphManagerState>();
