@@ -22,10 +22,18 @@
   height: 100%;
   overflow-x: hidden;
   overflow-y: hidden;
+  // Lay the bar out as a flex column so the scrollable items region can grow
+  // to fill the available space while the fixed-height bottom buttons
+  // (showcases, theme toggle, settings) always stay visible. Previously this
+  // used `calc(100% - 13.4rem)` on `__items`, which had to be manually retuned
+  // every time a new bottom button was added.
+  display: flex;
+  flex-direction: column;
 
   &__menu {
     height: 3.4rem;
     border-bottom: 0.1rem solid var(--color-border-default);
+    flex-shrink: 0;
   }
 
   &__menu-item {
@@ -41,7 +49,8 @@
   }
 
   &__items {
-    height: calc(100% - 13.4rem);
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
   }
@@ -54,6 +63,7 @@
     color: var(--color-text-muted);
     cursor: pointer;
     position: relative;
+    flex-shrink: 0;
   }
 
   &__item svg {

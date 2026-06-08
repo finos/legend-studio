@@ -37,7 +37,7 @@
     position: relative;
     height: 100%;
     width: 100%;
-    background: var(--color-dark-grey-300);
+    background: var(--color-bg-panel);
   }
 
   &__editor__input__compressed {
@@ -68,7 +68,7 @@
     height: 100%;
     align-items: flex-start;
     padding: 0.5rem;
-    background: var(--color-dark-grey-300);
+    background: var(--color-bg-panel);
   }
 
   &__editor__expected-return-type {
@@ -78,8 +78,8 @@
     height: 1.8rem;
     border-radius: 0.2rem;
     padding: 0 0.5rem;
-    color: var(--color-dark-grey-400);
-    background: var(--color-light-grey-0);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-elevated);
     font-size: 1rem;
     font-weight: 500;
     cursor: default;
@@ -101,16 +101,16 @@
 
     height: 100%;
     width: 1.6rem;
-    background: var(--color-dark-grey-280);
-    border-left: 0.1rem solid var(--color-dark-grey-280);
-    border-right: 0.1rem solid var(--color-dark-grey-280);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-chrome);
+    border-left: 0.1rem solid var(--color-border-default);
+    border-right: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-primary);
     border-radius: 0;
     cursor: pointer;
   }
 
   &__editor__expand-btn[disabled] {
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-disabled);
     cursor: not-allowed;
   }
 
@@ -119,8 +119,8 @@
   }
 
   &__expanded &__editor__expand-btn {
-    background: var(--color-dark-grey-280);
-    border-color: var(--color-dark-grey-280);
+    background: var(--color-bg-chrome);
+    border-color: var(--color-border-default);
   }
 
   &--dnd-match &__editor__expected-return-type {
@@ -132,15 +132,15 @@
   &__action {
     width: 2.8rem;
     min-width: 2.8rem;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-chrome);
     height: 100%;
-    border-left: 0.1rem solid var(--color-dark-shade-300);
+    border-left: 0.1rem solid var(--color-border-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
 
     svg {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
   }
 }
@@ -148,8 +148,8 @@
 .lambda-editor__error-feedback {
   width: 100%;
   margin-top: 0.5rem;
-  background: var(--color-red-100);
-  color: var(--color-light-grey-0);
+  background: var(--color-status-error);
+  color: var(--color-text-on-accent);
   border-radius: 0.2rem;
   cursor: default;
 
@@ -162,7 +162,7 @@
   &__parsing-error__content {
     @include flexHSpaceBetween;
 
-    border-top: 0.1rem solid var(--color-dark-shade-230);
+    border-top: 0.1rem solid var(--color-state-disabled-on-accent);
     padding: 0.5rem;
   }
 
@@ -170,11 +170,11 @@
     cursor: pointer;
     font-size: 1.2rem;
     height: 1.8rem;
-    background: var(--color-dark-shade-230);
+    background: var(--color-state-disabled-on-accent);
     white-space: nowrap;
     border-radius: 0.2rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-on-accent);
   }
 }
 
@@ -183,23 +183,23 @@
     &__content {
       width: 100%;
       height: 100%;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
   }
 
   &__modal--has-error {
-    border: 0.1rem solid var(--color-red-200) !important;
+    border: 0.1rem solid var(--color-status-error) !important;
 
     .modal__header {
-      background: var(--color-red-200);
+      background: var(--color-status-error);
     }
 
     .modal__title__error-badge {
       @include flexCenter;
 
       margin-right: 1rem;
-      background: var(--color-red-400);
-      color: var(--color-white);
+      background: var(--color-state-disabled-on-accent);
+      color: var(--color-text-on-accent);
       height: 2.2rem;
       border-radius: 0.2rem;
       padding: 0.5rem;
@@ -210,38 +210,38 @@
 
   &__content {
     height: 100% !important;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     padding-top: 1rem;
 
     .monaco-editor {
       .margin,
       .monaco-editor-background {
-        background: var(--color-dark-grey-50) !important;
+        background: var(--color-bg-app) !important;
       }
     }
   }
 }
 
 .lambda-editor--dark {
-  border: 0.1rem solid var(--color-dark-grey-280);
+  border: 0.1rem solid var(--color-border-strong);
 
   .monaco-editor {
     .margin,
     .monaco-editor-background {
-      background: var(--color-dark-grey-50) !important;
+      background: var(--color-bg-panel) !important;
     }
   }
 
   .lambda-editor__editor__input {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-panel);
   }
 
   .lambda-editor__editor__info {
-    background: var(--color-dark-grey-50);
-    border-left: 0.1rem solid var(--color-dark-grey-85);
+    background: var(--color-bg-panel);
+    border-left: 0.1rem solid var(--color-border-subtle);
   }
 
   .lambda-editor__error-feedback {
-    background: var(--color-red-200);
+    background: var(--color-status-error);
   }
 }
