@@ -62,6 +62,7 @@ import {
   UpdateProjectConfigurationCommand,
   EntityChangeType,
   User,
+  SANDBOX_SDLC_TAG,
 } from '@finos/legend-server-sdlc';
 import {
   type GeneratorFn,
@@ -430,6 +431,9 @@ export class QueryProductionizerStore {
           undefined,
           isValidSearchString ? searchText : undefined,
           undefined,
+          // Sandbox projects are not relevant for query productionization
+          // flows; exclude them from the picker.
+          [SANDBOX_SDLC_TAG],
           DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));

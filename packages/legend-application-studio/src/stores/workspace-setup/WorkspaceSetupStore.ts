@@ -444,6 +444,10 @@ export class WorkspaceSetupStore {
           // custom selector. This avoids losing some results with the additional filtering.
           isValidSearchString ? exactSearch(searchText) : undefined,
           undefined,
+          // Sandbox projects are loaded via a separate, dedicated call (see
+          // `loadSandboxProject`); exclude them here so they do not appear
+          // in the main workspace setup project picker.
+          [SANDBOX_SDLC_TAG],
           DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));
@@ -518,6 +522,7 @@ export class WorkspaceSetupStore {
           undefined,
           userId,
           [SANDBOX_SDLC_TAG],
+          undefined,
           1,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));
