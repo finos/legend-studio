@@ -4146,7 +4146,7 @@ describe('DataProductViewer', () => {
           createdAt: '2025-12-22T15:18:41.998+00:00',
           resourceId: 'MOCK_SDLC_DATAPRODUCT',
           resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-          deploymentId: 12345,
+          deploymentId: 11111,
           accessPointGroup: 'GROUP1',
         },
       ];
@@ -4189,6 +4189,7 @@ describe('DataProductViewer', () => {
         mockDataContracts,
       );
 
+      await screen.findByRole('button', { name: 'ENTITLED' });
       await screen.findByText('Customer Demographics');
 
       const serviceTab = await screen.findByRole('tab', { name: 'Service' });
@@ -4291,7 +4292,7 @@ describe('DataProductViewer', () => {
           createdAt: '2025-12-22T15:18:41.998+00:00',
           resourceId: 'MOCK_SDLC_DATAPRODUCT',
           resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-          deploymentId: 12345,
+          deploymentId: 11111,
           accessPointGroup: 'GROUP1',
         },
       ];
@@ -4338,6 +4339,7 @@ describe('DataProductViewer', () => {
         mockDataContracts,
       );
 
+      await screen.findByRole('button', { name: 'ENTITLED' });
       await screen.findByText('Customer Demographics');
 
       const serviceTab = await screen.findByRole('tab', { name: 'Service' });
