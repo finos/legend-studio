@@ -4243,7 +4243,8 @@ describe('DataProductViewer', () => {
       // Mock the clipboard service
       const mockCopyToClipboard = jest
         .spyOn(
-          dataProductDataAccessState!.applicationStore.clipboardService,
+          guaranteeNonNullable(dataProductDataAccessState).applicationStore
+            .clipboardService,
           'copyTextToClipboard',
         )
         .mockResolvedValue(undefined);
