@@ -101,6 +101,46 @@ import { QueryEditorDataProductInfoModal } from './data-product/DataProductInfo.
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryBareQueryBuilderState } from '../stores/data-space/LegendQueryBareQueryBuilderState.js';
 import { extractQueryParams } from './utils/QueryParameterUtils.js';
+import type { QueryTitleDescriptionAISuggestionRequest } from '../stores/LegendQueryApplicationPlugin.js';
+
+const buildAISuggestionRequest = async (
+  queryBuilderState: QueryBuilderState,
+  name?: string,
+): Promise<QueryTitleDescriptionAISuggestionRequest> => {
+  const graphManager = queryBuilderState.graphManagerState.graphManager;
+  const lambda = queryBuilderState.buildQuery();
+  const content = await graphManager.lambdaToPureCode(lambda);
+  const request: QueryTitleDescriptionAISuggestionRequest = { content };
+  const execContext = queryBuilderState.getQueryExecutionContext();
+  if (execContext instanceof QueryDataSpaceExecutionContext) {
+    request.executionContext = {
+      dataSpacePath: execContext.dataSpacePath,
+      executionKey: execContext.executionKey,
+    };
+  } else if (execContext instanceof QueryExplicitExecutionContext) {
+    request.executionContext = {
+      mapping: execContext.mapping.value.path,
+      runtime: execContext.runtime.value.path,
+    };
+  }
+  const parameterValues = queryBuilderState.getCurrentParameterValues();
+  if (parameterValues && parameterValues.size > 0) {
+    request.defaultParameterValues = [];
+    for (const [paramName, valueSpec] of parameterValues) {
+      const serialized = graphManager.serializeValueSpecification(valueSpec);
+      const paramContent =
+        await graphManager.valueSpecificationToPureCode(serialized);
+      request.defaultParameterValues.push({
+        name: paramName,
+        content: paramContent,
+      });
+    }
+  }
+  if (name) {
+    request.name = name;
+  }
+  return request;
+};
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
@@ -117,8 +157,8 @@ const CreateQueryDialog = observer(() => {
   const isEmptyName = !createQueryState.queryName;
   const isDescriptionEmptyOrValid =
     !description || /[a-zA-Z0-9]/.test(description);
-  const descriptionInputRef = useRef<HTMLInputElement>(null);
-  const changeDescription: React.ChangeEventHandler<HTMLInputElement> = (
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+  const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
     event,
   ) => {
     createQueryState.setQueryDescription(event.target.value);
@@ -143,10 +183,10 @@ const CreateQueryDialog = observer(() => {
     setIsSuggestingWithAI(true);
     setAISuggestion(undefined);
     try {
-      const suggestion = await aiSuggester(
+      const request = await buildAISuggestionRequest(
         editorStore.queryBuilderState,
-        legendAIUrl,
       );
+      const suggestion = await aiSuggester(request, legendAIUrl);
       setAISuggestion(suggestion);
     } finally {
       setIsSuggestingWithAI(false);
@@ -218,8 +258,7 @@ const CreateQueryDialog = observer(() => {
               Enter Query Name
               {aiSuggestion && (
                 <span className="query-editor__ai-suggestion-badge">
-                  <SparkleIcon />
-                  AI Suggestion
+                  <SparkleIcon /> <span>AI Suggestion</span>
                 </span>
               )}
             </div>
@@ -252,11 +291,14 @@ const CreateQueryDialog = observer(() => {
           <div className="input-section" style={{ marginTop: '1rem' }}>
             <div className="input-label">Enter Query Description</div>
             <div className="input--with-validation">
-              <input
+              <textarea
                 ref={descriptionInputRef}
-                className={clsx('input input--dark', {
-                  'input--ai-suggested': Boolean(aiSuggestion),
-                })}
+                className={clsx(
+                  'input input--dark query-editor__description__textarea',
+                  {
+                    'input--ai-suggested': Boolean(aiSuggestion),
+                  },
+                )}
                 spellCheck={true}
                 value={
                   aiSuggestion
@@ -288,7 +330,7 @@ const CreateQueryDialog = observer(() => {
           ) : (
             aiSuggester && (
               <button
-                className="btn btn--dark query-editor__ai-suggest-btn"
+                className="btn btn--dark modal__footer__btn modal__footer__btn--primary query-editor__ai-suggest-btn"
                 onClick={(): void => {
                   suggestWithAI().catch(applicationStore.alertUnhandledError);
                 }}
@@ -309,7 +351,8 @@ const CreateQueryDialog = observer(() => {
               createQueryState.editorStore.isPerformingBlockingAction ||
               Boolean(isExistingQueryName) ||
               isEmptyName ||
-              !isDescriptionEmptyOrValid
+              !isDescriptionEmptyOrValid ||
+              isSuggestingWithAI
             }
             onClick={create}
           />
@@ -431,10 +474,11 @@ const RenameQueryDialog = observer(
       setIsSuggestingWithAI(true);
       setAISuggestion(undefined);
       try {
-        const suggestion = await aiSuggester(
+        const request = await buildAISuggestionRequest(
           existingEditorStore.queryBuilderState,
-          legendAIUrl,
+          existingEditorStore.lightQuery.name,
         );
+        const suggestion = await aiSuggester(request, legendAIUrl);
         setAISuggestion(suggestion);
       } finally {
         setIsSuggestingWithAI(false);
@@ -463,7 +507,7 @@ const RenameQueryDialog = observer(
       setQueryRenameName(event.target.value);
     };
 
-    const changeDescription: React.ChangeEventHandler<HTMLInputElement> = (
+    const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
       event,
     ) => {
       setQueryDescription(event.target.value);
@@ -523,8 +567,7 @@ const RenameQueryDialog = observer(
                 Update Query Name
                 {aiSuggestion && (
                   <span className="query-editor__ai-suggestion-badge">
-                    <SparkleIcon />
-                    AI Suggestion
+                    <SparkleIcon /> <span>AI Suggestion</span>
                   </span>
                 )}
               </div>
@@ -555,10 +598,13 @@ const RenameQueryDialog = observer(
             <div className="input-section" style={{ marginTop: '1rem' }}>
               <div className="input-label">Update Query Description</div>
               <div className="input--with-validation">
-                <input
-                  className={clsx('input input--dark', {
-                    'input--ai-suggested': Boolean(aiSuggestion),
-                  })}
+                <textarea
+                  className={clsx(
+                    'input input--dark query-editor__description__textarea',
+                    {
+                      'input--ai-suggested': Boolean(aiSuggestion),
+                    },
+                  )}
                   spellCheck={true}
                   value={
                     aiSuggestion ? aiSuggestion.description : queryDescription
@@ -588,7 +634,7 @@ const RenameQueryDialog = observer(
             ) : (
               aiSuggester && (
                 <button
-                  className="btn btn--dark query-editor__ai-suggest-btn"
+                  className="btn btn--dark modal__footer__btn modal__footer__btn--primary query-editor__ai-suggest-btn"
                   onClick={(): void => {
                     suggestWithAI().catch(applicationStore.alertUnhandledError);
                   }}
@@ -598,7 +644,7 @@ const RenameQueryDialog = observer(
                   title="Use AI to suggest name and description based on the current query"
                 >
                   <SparkleIcon />
-                  <span>
+                  <span style={{ marginLeft: '0.4rem' }}>
                     {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
                   </span>
                 </button>
