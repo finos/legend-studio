@@ -17,25 +17,38 @@
 import {
   type Type,
   type ValueSpecification,
-  type FunctionExpression,
+  FunctionExpression,
   type LambdaFunction,
   Enumeration,
   PrimitiveType,
   PrecisePrimitiveType,
+  SimpleFunctionExpression,
+  matchFunctionName,
 } from '@finos/legend-graph';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import {
-  type PostFilterConditionState,
   type QueryBuilderPostFilterState,
+  PostFilterConditionState,
   PostFilterValueSpecConditionValueState,
 } from '../QueryBuilderPostFilterState.js';
-import { QueryBuilderSimpleProjectionColumnState } from '../../projection/QueryBuilderProjectionColumnState.js';
+import {
+  QueryBuilderRelationColumnProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
+} from '../../projection/QueryBuilderProjectionColumnState.js';
 import { buildPostFilterConditionExpressionHelper } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
-import { isPropertyExpressionChainOptional } from '../../../../QueryBuilderValueSpecificationHelper.js';
+import { getTDSColumnState } from '../../QueryBuilderTDSHelper.js';
+import {
+  buildNotExpression,
+  isPropertyExpressionChainOptional,
+  unwrapNotExpression,
+} from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
-import { TDS_COLUMN_GETTER } from '../../../../../graph/QueryBuilderMetaModelConst.js';
+import {
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  TDS_COLUMN_GETTER,
+} from '../../../../../graph/QueryBuilderMetaModelConst.js';
 
 export class QueryBuilderPostFilterOperator_IsEmpty
   extends QueryBuilderPostFilterOperator
@@ -84,6 +97,15 @@ export class QueryBuilderPostFilterOperator_IsEmpty
             .propertyExpression,
         );
       }
+      if (
+        postFilterState.leftConditionValue instanceof
+        QueryBuilderRelationColumnProjectionColumnState
+      ) {
+        return (
+          postFilterState.leftConditionValue.column.multiplicity.lowerBound ===
+          0
+        );
+      }
       return true;
     }
     return false;
@@ -99,10 +121,18 @@ export class QueryBuilderPostFilterOperator_IsEmpty
     postFilterConditionState: PostFilterConditionState,
     parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined {
+    // For relation-column projections there is no `TDSRow.isNull` derived
+    // property to lean on, so wrap the column expression in `isEmpty(...)`
+    // (mirrors how the where-filter `is empty` operator builds its lambda).
+    const operatorFunctionFullPath =
+      postFilterConditionState.leftConditionValue instanceof
+      QueryBuilderRelationColumnProjectionColumnState
+        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_EMPTY
+        : undefined;
     return buildPostFilterConditionExpressionHelper(
       postFilterConditionState,
       this,
-      undefined,
+      operatorFunctionFullPath,
       parentExpression,
     );
   }
@@ -111,6 +141,24 @@ export class QueryBuilderPostFilterOperator_IsEmpty
     postFilterState: QueryBuilderPostFilterState,
     expression: FunctionExpression,
   ): PostFilterConditionState | undefined {
+    // Round-trip: handle the relation-column variant emitted as
+    // `isEmpty($row.<col>)` (no TDSRow getter available).
+    if (
+      expression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        expression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_EMPTY,
+      ) &&
+      expression.parametersValues.length === 1 &&
+      expression.parametersValues[0] instanceof FunctionExpression
+    ) {
+      const columnFuncExp = expression.parametersValues[0];
+      const columnState = getTDSColumnState(
+        postFilterState.tdsState,
+        columnFuncExp.functionName,
+      );
+      return new PostFilterConditionState(postFilterState, columnState, this);
+    }
     return buildPostFilterConditionState(
       postFilterState,
       expression,
@@ -133,6 +181,43 @@ export class QueryBuilderPostFilterOperator_IsNotEmpty extends QueryBuilderPostF
 
   override getTDSColumnGetter(): TDS_COLUMN_GETTER | undefined {
     return TDS_COLUMN_GETTER.IS_NOT_NULL;
+  }
+
+  override buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
+  ): ValueSpecification | undefined {
+    // For relation-column projections, `is not empty` has no TDS column getter
+    // shortcut either; build it as `not(isEmpty(...))` instead.
+    if (
+      postFilterConditionState.leftConditionValue instanceof
+      QueryBuilderRelationColumnProjectionColumnState
+    ) {
+      const inner = super.buildPostFilterConditionExpression(
+        postFilterConditionState,
+        parentExpression,
+      );
+      return inner ? buildNotExpression(inner) : undefined;
+    }
+    return super.buildPostFilterConditionExpression(
+      postFilterConditionState,
+      parentExpression,
+    );
+  }
+
+  override buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: FunctionExpression,
+  ): PostFilterConditionState | undefined {
+    // Round-trip: unwrap a leading `not(...)` (relation-column variant) before
+    // delegating to the IsEmpty builder.
+    if (expression instanceof SimpleFunctionExpression) {
+      const inner = unwrapNotExpression(expression);
+      if (inner) {
+        return super.buildPostFilterConditionState(postFilterState, inner);
+      }
+    }
+    return super.buildPostFilterConditionState(postFilterState, expression);
   }
 
   override get hashCode(): string {

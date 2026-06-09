@@ -18,6 +18,7 @@ import {
   type QueryBuilderFilterState,
   type FilterConditionState,
   FilterPropertyExpressionSourceState,
+  FilterRelationColumnSourceState,
 } from '../QueryBuilderFilterState.js';
 import { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import {
@@ -52,16 +53,21 @@ export class QueryBuilderFilterOperator_IsEmpty
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType = filterConditionState.leftConditionType;
-    // First check if property is optional
-    if (
-      !(
-        filterConditionState.sourceState instanceof
-        FilterPropertyExpressionSourceState
-      ) ||
-      !isPropertyExpressionChainOptional(
-        filterConditionState.propertyExpressionState.propertyExpression,
-      )
-    ) {
+    const sourceState = filterConditionState.sourceState;
+    // First check if source is optional (multiplicity lower bound === 0)
+    if (sourceState instanceof FilterPropertyExpressionSourceState) {
+      if (
+        !isPropertyExpressionChainOptional(
+          filterConditionState.propertyExpressionState.propertyExpression,
+        )
+      ) {
+        return false;
+      }
+    } else if (sourceState instanceof FilterRelationColumnSourceState) {
+      if (sourceState.columnMultiplicity.lowerBound !== 0) {
+        return false;
+      }
+    } else {
       return false;
     }
     return (
