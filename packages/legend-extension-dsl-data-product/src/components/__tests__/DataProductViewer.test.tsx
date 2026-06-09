@@ -4328,16 +4328,21 @@ describe('DataProductViewer', () => {
         },
       ];
 
-      const mockWindowOpen = jest
-        .spyOn(window, 'open')
-        .mockImplementation(() => null);
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
 
-      await setupLakehouseDataProductTest(
-        mockSDLCDataProduct,
-        mockEntitlementsSDLCDataProduct,
-        mockLiteContracts,
-        mockDataContracts,
-      );
+      const mockVisitAddress = jest
+        .spyOn(
+          guaranteeNonNullable(dataProductDataAccessState).applicationStore
+            .navigationService.navigator,
+          'visitAddress',
+        )
+        .mockImplementation(() => undefined);
 
       await screen.findByRole('button', { name: 'ENTITLED' });
       await screen.findByText('Customer Demographics');
@@ -4354,13 +4359,11 @@ describe('DataProductViewer', () => {
         fireEvent.click(zipkinButton);
       });
 
-      expect(mockWindowOpen).toHaveBeenCalledWith(
+      expect(mockVisitAddress).toHaveBeenCalledWith(
         expect.stringContaining('http://test-engine-server-client-url/zipkin/'),
-        '_blank',
-        'noopener,noreferrer',
       );
 
-      mockWindowOpen.mockRestore();
+      mockVisitAddress.mockRestore();
     });
   });
 });

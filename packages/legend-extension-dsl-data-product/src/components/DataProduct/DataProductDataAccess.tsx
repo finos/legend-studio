@@ -1114,7 +1114,9 @@ const ServiceScreen = observer(
 
     const openZipkinHealthCheck = (): void => {
       if (zipkinUrl) {
-        window.open(zipkinUrl, '_blank', 'noopener,noreferrer');
+        dataAccessState.applicationStore.navigationService.navigator.visitAddress(
+          zipkinUrl,
+        );
       }
     };
 
