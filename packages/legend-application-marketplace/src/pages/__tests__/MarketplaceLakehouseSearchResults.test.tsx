@@ -136,7 +136,7 @@ const setupTestComponent = async (
     environmentName: 'production-analytics',
   };
   createSpy(
-    MOCK__baseStore.lakehousePlatformServerClient,
+    MOCK__baseStore.lakehousePlatformServerClient!,
     'findProducerServer',
   ).mockResolvedValue(mockEnvironment);
 
@@ -878,7 +878,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
         environmentName: 'production-analytics',
       };
       createSpy(
-        MOCK__baseStore.lakehousePlatformServerClient,
+        MOCK__baseStore.lakehousePlatformServerClient!,
         'findProducerServer',
       ).mockResolvedValue(mockEnvironment);
 
