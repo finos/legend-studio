@@ -219,8 +219,8 @@
     max-width: 50rem !important;
 
     &.textarea--ai-suggested {
-      border-color: var(--color-purple-200) !important;
-      color: var(--color-purple-0) !important;
+      border-color: var(--color-category-ai-suggestion) !important;
+      color: var(--color-category-ai-suggestion) !important;
     }
   }
 
@@ -233,10 +233,10 @@
     height: 2rem;
     padding: 0 0.6rem;
     font-size: 1rem;
-    border: 0.1rem solid var(--color-purple-200);
+    border: none;
     border-radius: 0.2rem;
-    background: transparent;
-    color: var(--color-purple-200);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
     cursor: pointer;
     vertical-align: middle;
 
@@ -245,7 +245,7 @@
     }
 
     &:hover {
-      background: var(--color-dark-grey-200);
+      background: var(--color-accent-hover);
     }
 
     &[disabled] {
@@ -262,7 +262,7 @@
     margin-left: 0.8rem;
     font-size: 1rem;
     font-weight: 500;
-    color: var(--color-purple-200);
+    color: var(--color-category-ai-suggestion);
     vertical-align: middle;
 
     svg {
