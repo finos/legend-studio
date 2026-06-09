@@ -245,7 +245,9 @@ const setupLakehouseDataProductTest = async (
       environmentName: 'test-production-env',
     };
     createSpy(
-      dataProductDataAccessState.lakehousePlatformServerClient!,
+      guaranteeNonNullable(
+        dataProductDataAccessState.lakehousePlatformServerClient,
+      ),
       'findProducerServer',
     ).mockResolvedValue(mockEnvironment);
 
