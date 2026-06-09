@@ -66,10 +66,12 @@ export const TEST__provideMockLegendMarketplaceBaseStore =
       customization?.mockBaseStore ??
       new LegendMarketplaceBaseStore(applicationStore);
 
-    createSpy(
-      mockBaseStore.lakehousePlatformServerClient,
-      'getIngestEnvironmentSummaries',
-    ).mockResolvedValue([]);
+    if (mockBaseStore.lakehousePlatformServerClient) {
+      createSpy(
+        mockBaseStore.lakehousePlatformServerClient,
+        'getIngestEnvironmentSummaries',
+      ).mockResolvedValue([]);
+    }
 
     const MOCK__LegendMarketplaceBaseStoreProvider = require('../../application/providers/LegendMarketplaceFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
     MOCK__LegendMarketplaceBaseStoreProvider.useLegendMarketplaceBaseStore =

@@ -74,6 +74,9 @@ export const PermitDataAccessRequestTask =
               marketplaceBaseStore.applicationStore.pluginManager;
             const permitClient =
               marketplaceBaseStore.permitWorkflowServerClient;
+            if (!permitClient) {
+              throw new Error('Permit workflow server is not configured');
+            }
 
             const state = new PermitDataAccessRequestState(
               dataAccessRequestId,

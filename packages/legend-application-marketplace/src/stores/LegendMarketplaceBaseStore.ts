@@ -86,7 +86,9 @@ export class LegendMarketplaceBaseStore {
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
-  readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
+  readonly lakehousePlatformServerClient:
+    | LakehousePlatformServerClient
+    | undefined;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   readonly engineServerClient: V1_EngineServerClient;
   readonly registryServerClient: RegistryServerClient | undefined;
@@ -94,7 +96,7 @@ export class LegendMarketplaceBaseStore {
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
   readonly lakehouseWorkflowServerClient: LakehouseWorkflowServerClient;
-  readonly permitWorkflowServerClient: PermitWorkflowServerClient;
+  readonly permitWorkflowServerClient: PermitWorkflowServerClient | undefined;
   readonly lakehouseDataProductService: LakehouseDataProductService;
   readonly cartStore: CartStore;
   readonly terminalAccessServerClient: TerminalAccessServerClient;
@@ -166,12 +168,16 @@ export class LegendMarketplaceBaseStore {
     );
 
     // lakehouse platform
-    this.lakehousePlatformServerClient = new LakehousePlatformServerClient(
-      this.applicationStore.config.lakehousePlatformUrl,
-    );
-    this.lakehousePlatformServerClient.setTracerService(
-      this.applicationStore.tracerService,
-    );
+    if (this.applicationStore.config.lakehousePlatformUrl) {
+      this.lakehousePlatformServerClient = new LakehousePlatformServerClient(
+        this.applicationStore.config.lakehousePlatformUrl,
+      );
+      this.lakehousePlatformServerClient.setTracerService(
+        this.applicationStore.tracerService,
+      );
+    } else {
+      this.lakehousePlatformServerClient = undefined;
+    }
 
     // lakehouse workflow
     this.lakehouseWorkflowServerClient = new LakehouseWorkflowServerClient({
@@ -182,14 +188,18 @@ export class LegendMarketplaceBaseStore {
     );
 
     // permit + eTask workflow
-    this.permitWorkflowServerClient = new PermitWorkflowServerClient({
-      authBaseUrl: this.applicationStore.config.lakehouseServerUrl,
-      workflowBaseUrl:
-        this.applicationStore.config.lakehousePermitWorkflowServerUrl,
-    });
-    this.permitWorkflowServerClient.setTracerService(
-      this.applicationStore.tracerService,
-    );
+    if (this.applicationStore.config.lakehousePermitWorkflowServerUrl) {
+      this.permitWorkflowServerClient = new PermitWorkflowServerClient({
+        authBaseUrl: this.applicationStore.config.lakehouseServerUrl,
+        workflowBaseUrl:
+          this.applicationStore.config.lakehousePermitWorkflowServerUrl,
+      });
+      this.permitWorkflowServerClient.setTracerService(
+        this.applicationStore.tracerService,
+      );
+    } else {
+      this.permitWorkflowServerClient = undefined;
+    }
 
     // lakehouse ingest
     this.lakehouseIngestServerClient = new LakehouseIngestServerClient(

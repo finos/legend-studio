@@ -128,9 +128,9 @@ export interface LegendMarketplaceApplicationConfigurationData
   };
   lakehouse?: {
     url: string;
-    platformUrl: string;
+    platformUrl?: string;
     workflowUrl: string;
-    permitWorkflowUrl: string;
+    permitWorkflowUrl?: string;
     entitlements: {
       applicationDirectoryUrl: string;
       applicationIDUrl: string;
@@ -200,9 +200,9 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly terminalServerUrl: string;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl: string;
-  readonly lakehousePlatformUrl: string;
+  readonly lakehousePlatformUrl: string | undefined;
   readonly lakehouseWorkflowServerUrl: string;
-  readonly lakehousePermitWorkflowServerUrl: string;
+  readonly lakehousePermitWorkflowServerUrl: string | undefined;
   readonly lakehouseEntitlementsConfig:
     | LegendLakehouseEntitlementsConfig
     | undefined;
@@ -345,12 +345,11 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         `Can't configure application: 'lakehouse.url' field is missing or empty`,
       ),
     );
-    this.lakehousePlatformUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-      guaranteeNonEmptyString(
-        input.configData.lakehouse.platformUrl,
-        `Can't configure application: 'lakehouse.platformUrl' field is missing or empty`,
-      ),
-    );
+    this.lakehousePlatformUrl = input.configData.lakehouse.platformUrl
+      ? LegendApplicationConfig.resolveAbsoluteUrl(
+          input.configData.lakehouse.platformUrl,
+        )
+      : undefined;
     this.lakehouseWorkflowServerUrl =
       LegendApplicationConfig.resolveAbsoluteUrl(
         guaranteeNonEmptyString(
@@ -358,13 +357,12 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
           `Can't configure application: 'lakehouse.workflowUrl' field is missing or empty`,
         ),
       );
-    this.lakehousePermitWorkflowServerUrl =
-      LegendApplicationConfig.resolveAbsoluteUrl(
-        guaranteeNonEmptyString(
+    this.lakehousePermitWorkflowServerUrl = input.configData.lakehouse
+      .permitWorkflowUrl
+      ? LegendApplicationConfig.resolveAbsoluteUrl(
           input.configData.lakehouse.permitWorkflowUrl,
-          `Can't configure application: 'lakehouse.permitWorkflowUrl' field is missing or empty`,
-        ),
-      );
+        )
+      : undefined;
     this.lakehouseEntitlementsConfig = new LegendLakehouseEntitlementsConfig(
       guaranteeNonEmptyString(
         input.configData.lakehouse.entitlements.applicationDirectoryUrl,

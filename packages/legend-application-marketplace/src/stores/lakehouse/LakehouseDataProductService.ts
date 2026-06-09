@@ -26,7 +26,9 @@ import { action, makeObservable, observable } from 'mobx';
 
 export class LakehouseDataProductService {
   readonly legendMarketplaceBaseStore: LegendMarketplaceBaseStore;
-  readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
+  readonly lakehousePlatformServerClient:
+    | LakehousePlatformServerClient
+    | undefined;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly didToEnvironmentRequestMap = new Map<
     number,
@@ -39,7 +41,7 @@ export class LakehouseDataProductService {
 
   constructor(
     legendMarketplaceBaseStore: LegendMarketplaceBaseStore,
-    lakehousePlatformServerClient: LakehousePlatformServerClient,
+    lakehousePlatformServerClient: LakehousePlatformServerClient | undefined,
     lakehouseContractServerClient: LakehouseContractServerClient,
   ) {
     this.legendMarketplaceBaseStore = legendMarketplaceBaseStore;
@@ -66,12 +68,15 @@ export class LakehouseDataProductService {
     did: number,
     token: string | undefined,
   ): Promise<IngestDeploymentServerConfig> {
-    const rawResult =
-      await this.lakehousePlatformServerClient.findProducerServer(
-        did,
-        V1_AppDirLevel.DEPLOYMENT,
-        token,
-      );
+    const client = guaranteeNonNullable(
+      this.lakehousePlatformServerClient,
+      'Lakehouse platform server client is not configured',
+    );
+    const rawResult = await client.findProducerServer(
+      did,
+      V1_AppDirLevel.DEPLOYMENT,
+      token,
+    );
     return IngestDeploymentServerConfig.serialization.fromJson(rawResult);
   }
 

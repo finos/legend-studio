@@ -126,7 +126,9 @@ export class DataProductDataAccessState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly engineServerClient: V1_EngineServerClient;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
-  readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
+  readonly lakehousePlatformServerClient:
+    | LakehousePlatformServerClient
+    | undefined;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   readonly permitWorkflowServerClient: PermitWorkflowServerClient | undefined;
   readonly graphManagerState: GraphManagerState;
@@ -165,7 +167,7 @@ export class DataProductDataAccessState {
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     dataProductViewerState: DataProductViewerState,
     lakehouseContractServerClient: LakehouseContractServerClient,
-    lakehousePlatformServerClient: LakehousePlatformServerClient,
+    lakehousePlatformServerClient: LakehousePlatformServerClient | undefined,
     lakehouseIngestServerClient: LakehouseIngestServerClient,
     dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
     actions: DataProductDataAccessStateActions,
@@ -653,6 +655,9 @@ export class DataProductDataAccessState {
   async fetchLakehouseIngestEnvironmentSummaries(
     tokenProvider: () => string | undefined,
   ): Promise<void> {
+    if (!this.lakehousePlatformServerClient) {
+      return;
+    }
     try {
       const discoveryEnvironments = (
         await this.lakehousePlatformServerClient.getIngestEnvironmentSummaries(
@@ -674,6 +679,9 @@ export class DataProductDataAccessState {
   async fetchLakehouseIngestEnv(
     tokenProvider: () => string | undefined,
   ): Promise<void> {
+    if (!this.lakehousePlatformServerClient) {
+      return;
+    }
     try {
       const did = this.entitlementsDataProductDetails.deploymentId;
       const ingestEnv =
