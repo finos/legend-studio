@@ -220,6 +220,20 @@ const TEST_CASES: QueryTestCase[] = [
     queryGrammar:
       "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->project(~[Country:x|$x.COUNTRY, 'Customer Id (count)':x|$x.CUSTOMER_ID])->groupBy(~[Country], ~['Customer Id (count)':x|$x.'Customer Id (count)':x|$x->count()])",
   },
+  {
+    testName:
+      '[Accessor] Store Accessor with pre-filter isEmpty / isNotEmpty on nullable columns',
+    model: 'Northwind',
+    queryGrammar:
+      "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->filter(x|$x.CONTACT_NAME->isEmpty() || !$x.REGION->isEmpty())->project(~['Customer Id':x|$x.CUSTOMER_ID, 'Contact Name':x|$x.CONTACT_NAME, Region:x|$x.REGION])",
+  },
+  {
+    testName:
+      '[Accessor] Store Accessor with post-filter isEmpty / isNotEmpty on nullable columns',
+    model: 'Northwind',
+    queryGrammar:
+      "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->project(~['Customer Id':x|$x.CUSTOMER_ID, 'Contact Name':x|$x.CONTACT_NAME, Region:x|$x.REGION])->filter(row|$row.'Contact Name'->isEmpty() || !$row.Region->isEmpty())",
+  },
 ];
 
 const globalGraphManagerStates = new Map<string, GraphManagerState>();

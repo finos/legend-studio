@@ -331,10 +331,31 @@ const processFilterTree = (
           filterConditionState.sourceState instanceof
           FilterRelationColumnSourceState
         ) {
-          const leftSide = expression.parametersValues[0];
+          // For a relation-column source the raw expression can be one of:
+          //   - `isEmpty(col($x))`     (IsEmpty / other unary ops)
+          //   - `not(isEmpty(col($x)))` (IsNotEmpty)
+          //   - `op(col($x), value)`   (binary ops like equal, lessThan, ...)
+          // Walk down through any `not(...)` and any wrapping function call
+          // until we find the relation-column accessor `col($x)`, then read
+          // its variable parameter.
+          let current: ValueSpecification | undefined = expression;
+          while (
+            current instanceof SimpleFunctionExpression &&
+            !(
+              current.parametersValues[0] instanceof FunctionExpression &&
+              current.parametersValues[0].parametersValues[0] instanceof
+                VariableExpression
+            )
+          ) {
+            current = current.parametersValues[0];
+          }
+          const columnAccessor =
+            current instanceof SimpleFunctionExpression
+              ? current.parametersValues[0]
+              : current;
           const varExpr = guaranteeType(
-            leftSide instanceof FunctionExpression
-              ? leftSide.parametersValues[0]
+            columnAccessor instanceof FunctionExpression
+              ? columnAccessor.parametersValues[0]
               : undefined,
             VariableExpression,
             `Can't process filter expression: relation column filter must reference a variable`,

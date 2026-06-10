@@ -46,6 +46,7 @@ import {
   IngestionAccessor,
   InstanceValue,
   RelationalStoreAccessor,
+  getMultiplicityDescription,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderExplorerTreeRelationColumnDragSource,
@@ -342,6 +343,11 @@ const QueryBuilderRelationNodeContainer = observer(
     const columnTypeLabel = columnNode
       ? getColumnTypeLabel(columnNode.column)
       : node.type.path;
+    const columnMultiplicity = columnNode?.column.multiplicity;
+    const isMultiple =
+      columnMultiplicity !== undefined &&
+      (columnMultiplicity.upperBound === undefined ||
+        columnMultiplicity.upperBound > 1);
 
     return (
       <ContextMenu
@@ -384,6 +390,14 @@ const QueryBuilderRelationNodeContainer = observer(
           </div>
           <div className="tree-view__node__label query-builder-explorer-tree__node__label query-builder-explorer-tree__node__label--with-action">
             {columnLabel}
+            {isMultiple && (
+              <div
+                className="query-builder-explorer-tree__node__label__multiple"
+                title="Multiple values of this column can cause row explosion"
+              >
+                *
+              </div>
+            )}
           </div>
           <div className="query-builder-explorer-tree__node__actions">
             <QueryBuilderBaseInfoTooltip
@@ -397,6 +411,14 @@ const QueryBuilderRelationNodeContainer = observer(
                   label: 'Column',
                   value: node.label,
                 },
+                ...(columnMultiplicity
+                  ? [
+                      {
+                        label: 'Multiplicity',
+                        value: getMultiplicityDescription(columnMultiplicity),
+                      },
+                    ]
+                  : []),
               ]}
             >
               <div
