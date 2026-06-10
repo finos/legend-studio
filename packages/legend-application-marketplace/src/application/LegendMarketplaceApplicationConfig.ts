@@ -200,7 +200,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly terminalServerUrl: string;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl: string;
-  readonly lakehousePlatformUrl: string | undefined;
+  readonly lakehousePlatformUrl: string;
   readonly lakehouseWorkflowServerUrl: string;
   readonly lakehousePermitWorkflowServerUrl: string | undefined;
   readonly lakehouseEntitlementsConfig:
@@ -345,11 +345,12 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         `Can't configure application: 'lakehouse.url' field is missing or empty`,
       ),
     );
-    this.lakehousePlatformUrl = input.configData.lakehouse.platformUrl
-      ? LegendApplicationConfig.resolveAbsoluteUrl(
-          input.configData.lakehouse.platformUrl,
-        )
-      : undefined;
+    this.lakehousePlatformUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.lakehouse.platformUrl,
+        `Can't configure application: 'lakehouse.platformUrl' field is missing or empty`,
+      ),
+    );
     this.lakehouseWorkflowServerUrl =
       LegendApplicationConfig.resolveAbsoluteUrl(
         guaranteeNonEmptyString(

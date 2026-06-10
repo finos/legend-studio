@@ -86,9 +86,7 @@ export class LegendMarketplaceBaseStore {
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
-  readonly lakehousePlatformServerClient:
-    | LakehousePlatformServerClient
-    | undefined;
+  readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   readonly engineServerClient: V1_EngineServerClient;
   readonly registryServerClient: RegistryServerClient | undefined;
@@ -168,16 +166,12 @@ export class LegendMarketplaceBaseStore {
     );
 
     // lakehouse platform
-    if (this.applicationStore.config.lakehousePlatformUrl) {
-      this.lakehousePlatformServerClient = new LakehousePlatformServerClient(
-        this.applicationStore.config.lakehousePlatformUrl,
-      );
-      this.lakehousePlatformServerClient.setTracerService(
-        this.applicationStore.tracerService,
-      );
-    } else {
-      this.lakehousePlatformServerClient = undefined;
-    }
+    this.lakehousePlatformServerClient = new LakehousePlatformServerClient(
+      this.applicationStore.config.lakehousePlatformUrl,
+    );
+    this.lakehousePlatformServerClient.setTracerService(
+      this.applicationStore.tracerService,
+    );
 
     // lakehouse workflow
     this.lakehouseWorkflowServerClient = new LakehouseWorkflowServerClient({
