@@ -1,5 +1,16 @@
 # @finos/legend-art
 
+## 7.1.153
+
+### Patch Changes
+
+- [#5243](https://github.com/finos/legend-studio/pull/5243) [`53360a4`](https://github.com/finos/legend-studio/commit/53360a4b20113fcd3be425e646e1f66dd8b338c3) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding ai integrations on studio and query
+
+- [#5237](https://github.com/finos/legend-studio/pull/5237) [`b7e3fe9`](https://github.com/finos/legend-studio/commit/b7e3fe97b3e4c1e895302c794145aa1905241206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix light-theme theming regressions for splitter and lambda-editor surfaces.
+
+  - restore missing vertical `react-reflex` splitter sizing/hit-area styles in `legend-art`
+  - make shared lambda-editor styles theme-aware so Function Editor lambda input follows the active theme
+
 ## 7.1.152
 
 ### Patch Changes
