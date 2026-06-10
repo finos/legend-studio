@@ -163,6 +163,7 @@ export interface LegendMarketplaceApplicationConfigurationData
     enabled: boolean;
     llmServiceUrl?: string;
     llmModelName?: string;
+    llmModelOptions?: string[];
     sqlExecutionUrl?: string;
     orchestratorUrl?: string;
     orchestratorAuthToken?: string;
@@ -457,7 +458,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
 
   private static buildLegendAIConfig(
     legendAIData: LegendMarketplaceApplicationConfigurationData['legendAI'],
-    marketplaceServerUrl: string,
+    marketplaceSearchUrl: string,
     engineServerUrl: string,
     dataProductEnv: LegendMarketplaceEnv,
   ): LegendAIConfig {
@@ -469,13 +470,16 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       enabled: legendAIData.enabled,
       llmServiceUrl: legendAIData.llmServiceUrl,
       llmModelName: legendAIData.llmModelName,
+      ...(legendAIData.llmModelOptions === undefined
+        ? {}
+        : { llmModelOptions: legendAIData.llmModelOptions }),
       sqlExecutionUrl: legendAIData.sqlExecutionUrl,
       orchestratorUrl: legendAIData.orchestratorUrl
         ? LegendApplicationConfig.resolveAbsoluteUrl(
             legendAIData.orchestratorUrl,
           )
         : undefined,
-      marketplaceSearchUrl: marketplaceServerUrl,
+      marketplaceSearchUrl,
       engineUrl: engineServerUrl,
       ...(legendAIData.orchestratorAuthToken === undefined
         ? {}

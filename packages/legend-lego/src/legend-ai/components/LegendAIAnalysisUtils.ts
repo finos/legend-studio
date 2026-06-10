@@ -20,7 +20,7 @@ import {
   LegendAIChartType,
 } from '../LegendAI_LegendApplicationPlugin_Extension.js';
 import type { LegendAIGridData } from '../LegendAITypes.js';
-import { isNonNullable, isNumber, isString } from '@finos/legend-shared';
+import { isNumber, isString } from '@finos/legend-shared';
 
 const CHART_PALETTE_COUNT = 10;
 const MAX_CHART_ITEMS = 10;
@@ -36,8 +36,15 @@ interface ColumnProfile {
   isNumeric: boolean;
   isString: boolean;
   uniqueCount: number;
-  values: unknown[];
+  nonNullCount: number;
   numericValues: number[];
+}
+
+export interface LegendAIGridAnalysis {
+  metrics: LegendAIKeyMetric[];
+  chartType: LegendAIChartType;
+  chartData: LegendAIChartDataPoint[];
+  numericColumnName: string | undefined;
 }
 
 function profileColumns(gridData: LegendAIGridData): ColumnProfile[] {
@@ -48,18 +55,43 @@ function profileColumns(gridData: LegendAIGridData): ColumnProfile[] {
 
   return gridData.columnDefs.map((col) => {
     const field = col.field ?? col.colId ?? '';
-    const values = rows.map((r) => r[field]).filter(isNonNullable);
-    const numericValues = values.filter(isNumber);
-    const unique = new Set(values.map(String));
+    let nonNullCount = 0;
+    let stringCount = 0;
+    const numericValues: number[] = [];
+    const unique = new Set<string>();
+
+    for (const r of rows) {
+      const v = r[field];
+      if (v !== null && v !== undefined) {
+        nonNullCount++;
+        unique.add(String(v));
+        if (isNumber(v)) {
+          numericValues.push(v);
+        }
+        if (isString(v)) {
+          stringCount++;
+        }
+      }
+    }
+
     return {
       name: field,
-      isNumeric: numericValues.length === values.length && values.length > 0,
-      isString: values.length > 0 && values.every(isString),
+      isNumeric: numericValues.length === nonNullCount && nonNullCount > 0,
+      isString: nonNullCount > 0 && stringCount === nonNullCount,
       uniqueCount: unique.size,
-      values,
+      nonNullCount,
       numericValues,
     };
   });
+}
+
+function findBestCategoricalColumn(
+  profiles: ColumnProfile[],
+  rowCount: number,
+): ColumnProfile | undefined {
+  return profiles
+    .filter((c) => c.isString && c.uniqueCount > 1 && c.uniqueCount < rowCount)
+    .sort((a, b) => a.uniqueCount - b.uniqueCount)[0];
 }
 
 function formatNumber(n: number): string {
@@ -111,12 +143,11 @@ function computeNumericMetrics(
   }
 }
 
-export function computeKeyMetrics(
-  gridData: LegendAIGridData,
+function computeKeyMetricsFromProfiles(
+  profiles: ColumnProfile[],
+  rowCount: number,
 ): LegendAIKeyMetric[] {
-  const profiles = profileColumns(gridData);
   const metrics: LegendAIKeyMetric[] = [];
-  const rowCount = gridData.rowData.length;
 
   metrics.push({
     label: 'Total Rows',
@@ -143,66 +174,122 @@ export function computeKeyMetrics(
   return metrics.slice(0, MAX_KEY_METRICS);
 }
 
-export function inferChartType(gridData: LegendAIGridData): LegendAIChartType {
-  const profiles = profileColumns(gridData);
+export function computeKeyMetrics(
+  gridData: LegendAIGridData,
+): LegendAIKeyMetric[] {
+  return computeKeyMetricsFromProfiles(
+    profileColumns(gridData),
+    gridData.rowData.length,
+  );
+}
+
+function inferChartTypeFromProfiles(
+  profiles: ColumnProfile[],
+  rowCount: number,
+): LegendAIChartType {
   const numericCols = profiles.filter((c) => c.isNumeric);
   const stringCols = profiles.filter((c) => c.isString && c.uniqueCount > 1);
 
   if (
     stringCols.length >= 1 &&
     numericCols.length >= 1 &&
-    gridData.rowData.length <= MAX_BAR_CHART_ROWS
+    rowCount <= MAX_BAR_CHART_ROWS
   ) {
-    if (gridData.rowData.length <= MAX_PIE_CHART_ROWS) {
+    if (rowCount <= MAX_PIE_CHART_ROWS) {
       return LegendAIChartType.PIE;
     }
     return LegendAIChartType.BAR;
   }
 
-  if (numericCols.length >= 1 && gridData.rowData.length > 1) {
+  if (numericCols.length >= 1 && rowCount > 1) {
     return LegendAIChartType.BAR;
+  }
+
+  if (rowCount > 1) {
+    const categoricalCol = findBestCategoricalColumn(profiles, rowCount);
+    if (categoricalCol) {
+      return categoricalCol.uniqueCount <= MAX_PIE_CHART_ROWS
+        ? LegendAIChartType.PIE
+        : LegendAIChartType.BAR;
+    }
   }
 
   return LegendAIChartType.NONE;
 }
 
-export function computeChartData(
+export function inferChartType(gridData: LegendAIGridData): LegendAIChartType {
+  return inferChartTypeFromProfiles(
+    profileColumns(gridData),
+    gridData.rowData.length,
+  );
+}
+
+function computeChartDataFromProfiles(
+  profiles: ColumnProfile[],
   gridData: LegendAIGridData,
 ): LegendAIChartDataPoint[] {
-  const profiles = profileColumns(gridData);
   const numericCol = profiles.find((c) => c.isNumeric);
   const labelCol = profiles.find((c) => c.isString && c.uniqueCount > 1);
 
-  if (!numericCol) {
+  if (numericCol) {
+    const field = numericCol.name;
+    const labelField = labelCol?.name;
+    const rows =
+      gridData.rowData.length > MAX_PROFILE_SAMPLE
+        ? gridData.rowData.slice(0, MAX_PROFILE_SAMPLE)
+        : gridData.rowData;
+
+    const entries = rows
+      .map((row) => {
+        const rawValue = row[field];
+        return {
+          label: labelField
+            ? String(row[labelField] ?? '')
+            : String(row[gridData.columnDefs[0]?.field ?? ''] ?? ''),
+          value: typeof rawValue === 'number' ? rawValue : 0,
+        };
+      })
+      .filter((e) => e.label.length > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, MAX_CHART_ITEMS);
+
+    return entries.map((e, i) => ({
+      label: e.label,
+      value: e.value,
+      colorIndex: i % CHART_PALETTE_COUNT,
+    }));
+  }
+
+  const categoricalCol = findBestCategoricalColumn(
+    profiles,
+    gridData.rowData.length,
+  );
+  if (!categoricalCol) {
     return [];
   }
 
-  const field = numericCol.name;
-  const labelField = labelCol?.name;
-  const rows =
-    gridData.rowData.length > MAX_PROFILE_SAMPLE
-      ? gridData.rowData.slice(0, MAX_PROFILE_SAMPLE)
-      : gridData.rowData;
+  const freqMap = new Map<string, number>();
+  for (const row of gridData.rowData) {
+    const val = String(row[categoricalCol.name] ?? '');
+    if (val.length > 0) {
+      freqMap.set(val, (freqMap.get(val) ?? 0) + 1);
+    }
+  }
 
-  const entries = rows
-    .map((row) => {
-      const rawValue = row[field];
-      return {
-        label: labelField
-          ? String(row[labelField] ?? '')
-          : String(row[gridData.columnDefs[0]?.field ?? ''] ?? ''),
-        value: typeof rawValue === 'number' ? rawValue : 0,
-      };
-    })
-    .filter((e) => e.label.length > 0)
-    .sort((a, b) => b.value - a.value)
-    .slice(0, MAX_CHART_ITEMS);
+  return [...freqMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_CHART_ITEMS)
+    .map(([label, value], i) => ({
+      label,
+      value,
+      colorIndex: i % CHART_PALETTE_COUNT,
+    }));
+}
 
-  return entries.map((e, i) => ({
-    label: e.label,
-    value: e.value,
-    colorIndex: i % CHART_PALETTE_COUNT,
-  }));
+export function computeChartData(
+  gridData: LegendAIGridData,
+): LegendAIChartDataPoint[] {
+  return computeChartDataFromProfiles(profileColumns(gridData), gridData);
 }
 
 export function computeTopItems(
@@ -211,10 +298,10 @@ export function computeTopItems(
   return computeChartData(gridData).slice(0, TOP_N_ITEMS);
 }
 
-export function findNumericColumnName(
+function findNumericColumnNameFromProfiles(
+  profiles: ColumnProfile[],
   gridData: LegendAIGridData,
 ): string | undefined {
-  const profiles = profileColumns(gridData);
   const numericCol = profiles.find((c) => c.isNumeric);
   if (!numericCol) {
     return undefined;
@@ -223,4 +310,27 @@ export function findNumericColumnName(
     (c) => (c.field ?? c.colId ?? '') === numericCol.name,
   );
   return colDef?.headerName ?? colDef?.field;
+}
+
+export function findNumericColumnName(
+  gridData: LegendAIGridData,
+): string | undefined {
+  return findNumericColumnNameFromProfiles(profileColumns(gridData), gridData);
+}
+
+export function analyzeGridData(
+  gridData: LegendAIGridData,
+): LegendAIGridAnalysis {
+  const profiles = profileColumns(gridData);
+  const rowCount = gridData.rowData.length;
+  const chartType = inferChartTypeFromProfiles(profiles, rowCount);
+  return {
+    metrics: computeKeyMetricsFromProfiles(profiles, rowCount),
+    chartType,
+    chartData:
+      chartType === LegendAIChartType.NONE
+        ? []
+        : computeChartDataFromProfiles(profiles, gridData),
+    numericColumnName: findNumericColumnNameFromProfiles(profiles, gridData),
+  };
 }

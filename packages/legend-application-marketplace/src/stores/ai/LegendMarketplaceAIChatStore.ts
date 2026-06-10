@@ -44,9 +44,12 @@ import {
   LegendAIQuestionIntent,
   LegendAIResolvedEntities,
   TDSServiceSourceType,
+  classifyQuestionIntentFast,
   findLegendAIPlugin,
   processQuestionViaOrchestrator,
   handleMetadataQuestion,
+  buildMetadataOverview,
+  attachMetadataOverview,
   generateAndJudgeSql,
   executeSqlAndReport,
   analyzeOrchestratorResults,
@@ -59,8 +62,14 @@ import {
   createMessagePair,
   elapsedSeconds,
   LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+  cleanLlmSqlResponse,
+  isValidSqlCorrection,
 } from '@finos/legend-lego/legend-ai';
-import { QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
+import {
+  QueryExplicitExecutionContextInfo,
+  extractElementNameFromPath,
+} from '@finos/legend-graph';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import {
   type V1_DataSpace,
   V1_deserializeDataSpace,
@@ -144,6 +153,16 @@ export function unwrapProductDetails(product: DataProductSearchResult): {
     }
   }
   return { groupId: '', artifactId: '', versionId: '', path: '' };
+}
+
+function toCoordinatesString(
+  coords: LegendAIOrchestratorDataProductCoordinates,
+): string {
+  return generateGAVCoordinates(
+    coords.group_id,
+    coords.artifact_id,
+    coords.version,
+  );
 }
 
 export class LegendMarketplaceAIChatStore {
@@ -263,7 +282,7 @@ export class LegendMarketplaceAIChatStore {
     this.selectedProductMetadata = firstScope
       ? {
           name: firstScope.name,
-          coordinates: `${firstScope.coordinates.group_id}:${firstScope.coordinates.artifact_id}:${firstScope.coordinates.version}`,
+          coordinates: toCoordinatesString(firstScope.coordinates),
           serviceSummaries: [],
         }
       : undefined;
@@ -322,7 +341,7 @@ export class LegendMarketplaceAIChatStore {
   ): LegendAIProductMetadata {
     const metadata: LegendAIProductMetadata = {
       name: result.dataProductTitle ?? 'Unknown',
-      coordinates: `${coordinates.group_id}:${coordinates.artifact_id}:${coordinates.version}`,
+      coordinates: toCoordinatesString(coordinates),
       serviceSummaries: [],
       accessPointGroups: [],
     };
@@ -880,13 +899,9 @@ export class LegendMarketplaceAIChatStore {
     if (!groupId || !artifactId || !versionId || !path) {
       return;
     }
-    const key = `${groupId}:${artifactId}:${versionId}`;
+    const key = generateGAVCoordinates(groupId, artifactId, versionId);
     if (
-      this.scopeProducts.some(
-        (p) =>
-          `${p.coordinates.group_id}:${p.coordinates.artifact_id}:${p.coordinates.version}` ===
-          key,
-      )
+      this.scopeProducts.some((p) => toCoordinatesString(p.coordinates) === key)
     ) {
       return;
     }
@@ -923,7 +938,7 @@ export class LegendMarketplaceAIChatStore {
       this.selectedProductMetadata = firstScope
         ? {
             name: firstScope.name,
-            coordinates: `${firstScope.coordinates.group_id}:${firstScope.coordinates.artifact_id}:${firstScope.coordinates.version}`,
+            coordinates: toCoordinatesString(firstScope.coordinates),
             serviceSummaries: [],
           }
         : undefined;
@@ -1091,7 +1106,7 @@ export class LegendMarketplaceAIChatStore {
         this.baseStore.marketplaceServerClient
           .entitySearch(
             env,
-            coordinates.data_product.split('::').pop() ?? 'data',
+            extractElementNameFromPath(coordinates.data_product),
             entitySearchOptions,
           )
           .catch(() => undefined),
@@ -1343,6 +1358,73 @@ export class LegendMarketplaceAIChatStore {
     return relevant;
   }
 
+  private async handleNoServices(
+    question: string,
+    setMessages: MessageSetter,
+    startTime: number,
+    contextPromise: Promise<void>,
+  ): Promise<void> {
+    addThinkingStep(
+      setMessages,
+      'No dataset schemas available — entity search did not return results for this data product.',
+    );
+    completeThinkingSteps(setMessages);
+    updateLastAssistant(setMessages, () => ({
+      textAnswer:
+        'Could not resolve dataset schemas for this data product. You can try the Legend AI Orchestrator to generate a Pure query instead.',
+      isProcessing: false,
+    }));
+    this.offerOrchestratorFallback(question, setMessages, startTime);
+    await contextPromise;
+  }
+
+  private async handleZeroRows(
+    judgedSql: string,
+    question: string,
+    services: TDSServiceSchema[],
+    coordinates: LegendAIOrchestratorDataProductCoordinates,
+    metadata: LegendAIProductMetadata,
+    context: LegendAIOperationContext,
+    timing: { startTime: number; contextPromise: Promise<void> },
+  ): Promise<void> {
+    const { startTime, contextPromise } = timing;
+    const { setMessages } = context;
+    const coordinatesStr = toCoordinatesString(coordinates);
+    const corrected = await this.attemptZeroRowCorrection(
+      judgedSql,
+      question,
+      services,
+      coordinatesStr,
+      setMessages,
+      coordinates,
+    );
+    if (corrected) {
+      await contextPromise;
+      await this.safeAnalyzeResults(
+        question,
+        corrected.sql,
+        corrected.result,
+        metadata,
+        context,
+        startTime,
+      );
+      return;
+    }
+    const datasetList = services
+      .slice(0, MAX_RELEVANT_SERVICES)
+      .map((s) => s.title)
+      .join(', ');
+    const datasetSuffix =
+      services.length > MAX_RELEVANT_SERVICES
+        ? ` and ${services.length - MAX_RELEVANT_SERVICES} more`
+        : '';
+    updateLastAssistant(setMessages, () => ({
+      textAnswer: `The SQL 2.0 query executed successfully but returned **0 rows**. The applied filters may not match any records in the available datasets, or the specific values may not exist.\n\n**Queried datasets:** ${datasetList}${datasetSuffix}`,
+    }));
+    this.offerOrchestratorFallback(question, setMessages, startTime);
+    await contextPromise;
+  }
+
   private async dispatchWithSql2(
     question: string,
     relevantDatasetNames: string[],
@@ -1358,11 +1440,174 @@ export class LegendMarketplaceAIChatStore {
 
     const config = this.config;
     const history = this.buildConversationHistory();
-    const context = { config, plugin, history, setMessages };
+    const context = {
+      config,
+      plugin,
+      history,
+      setMessages,
+    };
 
-    const intent = await plugin.classifyQuestionIntent(question, false, config);
+    const services = this.getServicesForQuery(relevantDatasetNames);
+    const contextPromise =
+      services.length > 0
+        ? this.buildContextPromise(question, metadata, setMessages)
+        : Promise.resolve();
+
+    const fastIntent = classifyQuestionIntentFast(question, true);
+
+    // ── Pure METADATA: fast classifier is confident, no data signals ──
+    if (
+      fastIntent.intent === LegendAIQuestionIntent.METADATA &&
+      !fastIntent.ambiguous
+    ) {
+      await handleMetadataQuestion(
+        question,
+        metadata,
+        context,
+        Date.now(),
+        services.length > 0,
+      );
+      return;
+    }
+
+    // ── Ambiguous: show both metadata overview + SQL results ──
+    if (fastIntent.ambiguous && services.length > 0) {
+      await this.handleAmbiguousIntent(
+        question,
+        services,
+        coordinates,
+        metadata,
+        context,
+        contextPromise,
+        setMessages,
+      );
+      return;
+    }
+
+    await this.handleLlmJudgeFallback(
+      { question, ...fastIntent },
+      services,
+      coordinates,
+      metadata,
+      context,
+      contextPromise,
+      setMessages,
+    );
+  }
+
+  private async handleLlmJudgeFallback(
+    fastIntent: {
+      question: string;
+      intent: LegendAIQuestionIntent;
+      ambiguous: boolean;
+    },
+    services: TDSServiceSchema[],
+    coordinates: LegendAIOrchestratorDataProductCoordinates,
+    metadata: LegendAIProductMetadata,
+    context: LegendAIOperationContext,
+    contextPromise: Promise<void>,
+    setMessages: MessageSetter,
+  ): Promise<void> {
+    if (
+      fastIntent.intent === LegendAIQuestionIntent.METADATA ||
+      fastIntent.ambiguous
+    ) {
+      addThinkingStep(
+        setMessages,
+        services.length > 0
+          ? 'Checking product capabilities first and trying a data query if the datasets support it...'
+          : 'Checking product capabilities first...',
+      );
+    }
+
+    const intent = await context.plugin.classifyQuestionIntent(
+      fastIntent.question,
+      services.length > 0,
+      context.config,
+    );
 
     if (intent === LegendAIQuestionIntent.METADATA) {
+      await handleMetadataQuestion(
+        fastIntent.question,
+        metadata,
+        context,
+        Date.now(),
+        services.length > 0,
+      );
+      return;
+    }
+
+    const startTime = Date.now();
+
+    if (services.length === 0) {
+      await this.handleNoServices(
+        fastIntent.question,
+        setMessages,
+        startTime,
+        contextPromise,
+      );
+      return;
+    }
+
+    await this.runSqlPath(
+      fastIntent.question,
+      services,
+      coordinates,
+      metadata,
+      context,
+      contextPromise,
+      setMessages,
+    );
+  }
+
+  private async handleAmbiguousIntent(
+    question: string,
+    services: TDSServiceSchema[],
+    coordinates: LegendAIOrchestratorDataProductCoordinates,
+    metadata: LegendAIProductMetadata,
+    context: LegendAIOperationContext,
+    contextPromise: Promise<void>,
+    setMessages: MessageSetter,
+  ): Promise<void> {
+    addThinkingStep(
+      setMessages,
+      'Intent is ambiguous, providing metadata context and querying data...',
+    );
+
+    let metadataOverview: string | undefined;
+    try {
+      addThinkingStep(setMessages, 'Building metadata context...');
+      metadataOverview = await buildMetadataOverview(
+        question,
+        metadata,
+        context,
+      );
+    } catch {
+      addThinkingStep(
+        setMessages,
+        'Could not build metadata context — continuing with data query...',
+      );
+    }
+
+    try {
+      await this.runSqlPath(
+        question,
+        services,
+        coordinates,
+        metadata,
+        context,
+        contextPromise,
+        setMessages,
+      );
+      if (metadataOverview) {
+        attachMetadataOverview(setMessages, metadataOverview);
+      }
+    } catch (queryError) {
+      assertErrorThrown(queryError);
+      addThinkingStep(
+        setMessages,
+        'Query failed, answering from product metadata...',
+      );
       await handleMetadataQuestion(
         question,
         metadata,
@@ -1370,34 +1615,26 @@ export class LegendMarketplaceAIChatStore {
         Date.now(),
         true,
       );
-      return;
     }
+  }
 
-    const services = this.getServicesForQuery(relevantDatasetNames);
-    const coordinatesStr = `${coordinates.group_id}:${coordinates.artifact_id}:${coordinates.version}`;
+  /**
+   * Core SQL generation → execution → analysis pipeline.
+   * Extracted so both the direct DATA_QUERY path and the ambiguous-intent
+   * path can reuse it.
+   */
+  private async runSqlPath(
+    question: string,
+    services: TDSServiceSchema[],
+    coordinates: LegendAIOrchestratorDataProductCoordinates,
+    metadata: LegendAIProductMetadata,
+    context: LegendAIOperationContext,
+    contextPromise: Promise<void>,
+    setMessages: MessageSetter,
+  ): Promise<void> {
+    const { config, plugin } = context;
+    const coordinatesStr = toCoordinatesString(coordinates);
     const startTime = Date.now();
-
-    const contextPromise = this.buildContextPromise(
-      question,
-      metadata,
-      setMessages,
-    );
-
-    if (services.length === 0) {
-      addThinkingStep(
-        setMessages,
-        'No dataset schemas available — entity search did not return results for this data product.',
-      );
-      completeThinkingSteps(setMessages);
-      updateLastAssistant(setMessages, () => ({
-        textAnswer:
-          'Could not resolve dataset schemas for this data product. You can try the Legend AI Orchestrator to generate a Pure query instead.',
-        isProcessing: false,
-      }));
-      this.offerOrchestratorFallback(question, setMessages, startTime);
-      await contextPromise;
-      return;
-    }
 
     const totalColumns = services.reduce((sum, s) => sum + s.columns.length, 0);
     addThinkingStep(
@@ -1445,39 +1682,15 @@ export class LegendMarketplaceAIChatStore {
       }
 
       if (sqlResult.rows.length === 0) {
-        const corrected = await this.attemptZeroRowCorrection(
+        await this.handleZeroRows(
           judgedSql,
           question,
           services,
-          coordinatesStr,
-          setMessages,
           coordinates,
+          metadata,
+          context,
+          { startTime, contextPromise },
         );
-        if (corrected) {
-          await contextPromise;
-          await this.safeAnalyzeResults(
-            question,
-            corrected.sql,
-            corrected.result,
-            metadata,
-            context,
-            startTime,
-          );
-          return;
-        }
-        const datasetList = services
-          .slice(0, MAX_RELEVANT_SERVICES)
-          .map((s) => s.title)
-          .join(', ');
-        const datasetSuffix =
-          services.length > MAX_RELEVANT_SERVICES
-            ? ` and ${services.length - MAX_RELEVANT_SERVICES} more`
-            : '';
-        updateLastAssistant(setMessages, () => ({
-          textAnswer: `The SQL 2.0 query executed successfully but returned **0 rows**. The applied filters may not match any records in the available datasets, or the specific values may not exist.\n\n**Queried datasets:** ${datasetList}${datasetSuffix}`,
-        }));
-        this.offerOrchestratorFallback(question, setMessages, startTime);
-        await contextPromise;
         return;
       }
 
@@ -1572,17 +1785,8 @@ export class LegendMarketplaceAIChatStore {
     }
     try {
       const raw = await plugin.callLLM(prompt, config);
-      const trimmed = raw
-        .trim()
-        .replace(/^```\w*\n?/, '')
-        .replace(/\n?```$/, '')
-        .replace(/;\s*$/, '')
-        .trim();
-      if (
-        trimmed.length === 0 ||
-        !trimmed.toLowerCase().startsWith('select') ||
-        trimmed === currentSql
-      ) {
+      const trimmed = cleanLlmSqlResponse(raw);
+      if (!isValidSqlCorrection(trimmed, currentSql)) {
         return undefined;
       }
       addThinkingStep(setMessages, 'Retrying with corrected filters...');

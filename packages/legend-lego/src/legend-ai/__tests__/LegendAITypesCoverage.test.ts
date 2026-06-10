@@ -38,11 +38,17 @@ import {
   METADATA_SIGNAL_PATTERNS,
   DATA_QUERY_SIGNAL_PATTERNS,
   buildColumnDefsFromNames,
+  extractParameterSchemas,
   type LegendAIServiceSummary,
   type LegendAIAccessPointInfo,
   type LegendAITagInfo,
 } from '../LegendAITypes.js';
 import type { LegendApplicationPlugin } from '@finos/legend-application';
+import {
+  Multiplicity,
+  VariableExpression,
+  RawLambda,
+} from '@finos/legend-graph';
 
 // ─── findLegendAIPlugin ──────────────────────────────────────────────────────
 
@@ -493,3 +499,42 @@ describe(
     });
   },
 );
+
+// ─── extractParameterSchemas ─────────────────────────────────────────────────
+
+describe(unitTest('extractParameterSchemas'), () => {
+  test('returns empty result when pureCodeToLambda throws', async () => {
+    const graphManager = {
+      pureCodeToLambda: async (): Promise<RawLambda> => {
+        throw new Error('parse error');
+      },
+    } as never;
+    const graphManagerState = { graph: {} } as never;
+    const result = await extractParameterSchemas(
+      'invalid code',
+      graphManager,
+      graphManagerState,
+    );
+    expect(result.parameters).toEqual([]);
+    expect(result.parameterSchemas).toEqual([]);
+    expect(result.parameterExtractionFailed).toBe(true);
+  });
+
+  test('returns parameters when lambda has variable expressions', async () => {
+    const graphManager = {
+      pureCodeToLambda: async (): Promise<RawLambda> =>
+        new RawLambda(undefined, undefined),
+      buildValueSpecification: (param: { name?: string }) =>
+        new VariableExpression(param.name ?? '', new Multiplicity(1, 1)),
+    } as never;
+    const graphManagerState = { graph: {} } as never;
+    const result = await extractParameterSchemas(
+      '{| ok}',
+      graphManager,
+      graphManagerState,
+    );
+    expect(result.parameterExtractionFailed).toBe(false);
+    expect(result.parameters).toEqual([]);
+    expect(result.parameterSchemas).toEqual([]);
+  });
+});

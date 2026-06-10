@@ -14,175 +14,156 @@
  * limitations under the License.
  */
 
+import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import {
-  useMemo,
-  useCallback,
-  useState,
-  useRef,
-  useEffect,
-  useLayoutEffect,
-} from 'react';
-import {
-  SendIcon,
-  LoadingIcon,
   SparkleStarsIcon,
   CodeIcon,
   TableIcon,
   CopyIcon,
-  RefreshIcon,
   CheckIcon,
   TimesIcon,
+  MinusIcon,
+  PlusIcon,
   CaretDownIcon,
   CaretRightIcon,
   DotIcon,
+  LoadingIcon,
+  LikeIcon,
+  DislikeIcon,
+  ExternalLinkIcon,
   MarkdownTextViewer,
 } from '@finos/legend-art';
 import { noop } from '@finos/legend-shared';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   type LegendAIChatProps,
   type LegendAIAssistantMessage,
-  type LegendAIProductMetadata,
-  type TDSServiceSchema,
-  type TDSColumnSchema,
+  type LegendAIMessageFeedback,
+  type LegendAIThinkingStep,
+  type LegendAIScopeItem,
+  type LegendAIQuestionIntent,
+  LegendAIMessageFeedbackRating,
   LegendAIThinkingStepStatus,
   LegendAIMessageRole,
-  LegendAIQuestionIntent,
+  LegendAIErrorType,
+  classifyQuestionIntentFast,
 } from '../LegendAITypes.js';
 import { useLegendAIChatState } from '../stores/LegendAIChatState.js';
 import { LegendAIResultGrid } from './LegendAIResultGrid.js';
+import { LegendAIAnalysisPanel } from './LegendAIAnalysisPanel.js';
+import { LegendAIChatInput } from './LegendAIChatInput.js';
+import { buildSuggestedQueries } from './LegendAIChatHelpers.js';
 
 export const LEGEND_AI_ANCHOR_ID = 'legend-ai-anchor';
 
 const COPY_FEEDBACK_DURATION_MS = 2000;
-const MAX_SUGGESTED_QUERIES = 8;
+const METADATA_CONTEXT_HEADING = '### Metadata context';
+const QUERY_ANALYSIS_HEADING = '### Query analysis';
 
-const STRING_TYPES = new Set<string>([PRIMITIVE_TYPE.STRING]);
-
-const NUMERIC_TYPES = new Set<string>([
-  PRIMITIVE_TYPE.NUMBER,
-  PRIMITIVE_TYPE.INTEGER,
-  PRIMITIVE_TYPE.FLOAT,
-  PRIMITIVE_TYPE.DECIMAL,
-]);
-
-const DATE_TYPES = new Set<string>([
-  PRIMITIVE_TYPE.DATE,
-  PRIMITIVE_TYPE.STRICTDATE,
-  PRIMITIVE_TYPE.DATETIME,
-]);
-
-export function isStringColumn(c: TDSColumnSchema): boolean {
-  return STRING_TYPES.has(c.type ?? '') && !c.name.toLowerCase().includes('id');
+function toUserFacingThinkingLabel(label: string): string {
+  const normalized = label.toLowerCase();
+  if (
+    normalized.includes('analyzing your question') ||
+    normalized.includes('intent is ambiguous')
+  ) {
+    return 'Understanding your request';
+  }
+  if (
+    normalized.includes('building metadata context') ||
+    normalized.includes('answering from product metadata')
+  ) {
+    return 'Checking product capabilities and services';
+  }
+  if (
+    normalized.includes('found relevant services') ||
+    normalized.includes('selecting best service') ||
+    normalized.includes('building context from service schemas') ||
+    normalized.includes('preparing data query') ||
+    normalized.includes('generating sql query') ||
+    normalized.includes('verifying query correctness') ||
+    normalized.includes('query corrected') ||
+    normalized.includes('max verification attempts reached') ||
+    normalized.includes('judge approved a non-sql draft')
+  ) {
+    return 'Trying a data query when helpful';
+  }
+  if (
+    normalized.includes('retrieved ') ||
+    normalized.includes('executing') ||
+    normalized.includes('analyzing results') ||
+    normalized.includes('verifying answer coverage')
+  ) {
+    return 'Summarizing what matters for your question';
+  }
+  if (normalized.includes('error')) {
+    return 'Hit an issue while preparing the answer';
+  }
+  return label;
 }
 
-export function isNumericColumn(c: TDSColumnSchema): boolean {
-  return NUMERIC_TYPES.has(c.type ?? '');
+function formatThinkingSteps(
+  thinkingSteps: LegendAIThinkingStep[],
+): LegendAIThinkingStep[] {
+  const formatted: LegendAIThinkingStep[] = [];
+  for (const step of thinkingSteps) {
+    const userLabel = toUserFacingThinkingLabel(step.label);
+    const last = formatted[formatted.length - 1];
+    if (last?.label === userLabel) {
+      formatted[formatted.length - 1] = {
+        ...last,
+        status: step.status,
+      };
+    } else {
+      formatted.push({
+        ...step,
+        label: userLabel,
+      });
+    }
+  }
+  return formatted;
 }
 
-export function isDateColumn(c: TDSColumnSchema): boolean {
-  return (
-    DATE_TYPES.has(c.type ?? '') ||
-    c.name.toLowerCase().includes('date') ||
-    c.name.toLowerCase().includes('time')
-  );
+function splitCombinedAnswer(textAnswer: string | null): {
+  metadataContext: string | null;
+  queryAnalysis: string | null;
+} {
+  if (!textAnswer) {
+    return { metadataContext: null, queryAnalysis: null };
+  }
+  const metadataIndex = textAnswer.indexOf(METADATA_CONTEXT_HEADING);
+  if (metadataIndex < 0) {
+    return { metadataContext: null, queryAnalysis: textAnswer };
+  }
+
+  const metadataStart = metadataIndex + METADATA_CONTEXT_HEADING.length;
+  const queryIndex = textAnswer.indexOf(QUERY_ANALYSIS_HEADING, metadataStart);
+
+  const metadataContext =
+    queryIndex >= 0
+      ? textAnswer.slice(metadataStart, queryIndex).trim()
+      : textAnswer.slice(metadataStart).trim();
+  const queryAnalysis =
+    queryIndex >= 0
+      ? textAnswer.slice(queryIndex + QUERY_ANALYSIS_HEADING.length).trim() ||
+        null
+      : null;
+
+  return {
+    metadataContext: metadataContext.length > 0 ? metadataContext : null,
+    queryAnalysis,
+  };
 }
 
-function buildDataInsightSuggestions(
-  primary: TDSServiceSchema,
-  stringCol: TDSColumnSchema | undefined,
-  numericCol: TDSColumnSchema | undefined,
-  dateCol: TDSColumnSchema | undefined,
-): string[] {
-  const result: string[] = [];
-  if (stringCol && numericCol) {
-    result.push(
-      `What are the top ${stringCol.name} values by total ${numericCol.name} in ${primary.title}?`,
-    );
-  } else if (stringCol) {
-    result.push(
-      `What are the distinct ${stringCol.name} values in ${primary.title}?`,
-    );
-  }
+const AISummaryRenderer = ({ value }: { value: string }): React.ReactNode => (
+  <MarkdownTextViewer value={{ value }} className="legend-ai__text-answer-md" />
+);
 
-  if (dateCol && stringCol) {
-    result.push(
-      `Show ${primary.title} records from the last month grouped by ${stringCol.name}`,
-    );
-  }
-
-  if (numericCol && !stringCol) {
-    result.push(`What is the total ${numericCol.name} in ${primary.title}?`);
-  }
-  return result;
-}
-
-function buildMultiServiceSuggestion(services: TDSServiceSchema[]): string[] {
-  if (services.length < 2) {
-    return [];
-  }
-  const svcA = services[0];
-  const svcB = services[1];
-  if (!svcA || !svcB) {
-    return [];
-  }
-
-  const result: string[] = [`Show the latest 10 records from ${svcB.title}`];
-
-  const colNamesA = new Set(svcA.columns.map((c) => c.name.toLowerCase()));
-  const sharedCol = svcB.columns.find((c) =>
-    colNamesA.has(c.name.toLowerCase()),
-  );
-  if (sharedCol) {
-    result.push(
-      `Compare ${svcA.title} and ${svcB.title} by ${sharedCol.name}, show 10 rows`,
-    );
-  }
-
-  return result;
-}
-
-export function buildSuggestedQueries(
-  services: TDSServiceSchema[],
-  metadata: LegendAIProductMetadata,
-): string[] {
-  const suggestions: string[] = [
-    `What data does ${metadata.name} offer and how can I use it?`,
-  ];
-
-  if (services.length === 0) {
-    return [
-      ...suggestions,
-      'What access points are available?',
-      'Describe the data model and key entities',
-    ];
-  }
-
-  const primary = services[0];
-  if (!primary) {
-    return [
-      ...suggestions,
-      'What access points are available and what columns do they have?',
-    ];
-  }
-
-  const stringCol = primary.columns.find(isStringColumn);
-  const numericCol = primary.columns.find(isNumericColumn);
-  const dateCol = primary.columns.find(isDateColumn);
-
-  const multiSvcSuggestions = buildMultiServiceSuggestion(services);
-
-  const primaryRecordsSuggestion = dateCol
-    ? `Show the 10 most recent records from ${primary.title} by ${dateCol.name}`
-    : `Show 10 records from ${primary.title}`;
-
-  return [
-    ...suggestions,
-    primaryRecordsSuggestion,
-    ...buildDataInsightSuggestions(primary, stringCol, numericCol, dateCol),
-    ...multiSvcSuggestions,
-  ].slice(0, MAX_SUGGESTED_QUERIES);
-}
+const DEFAULT_SCOPES: LegendAIScopeItem[] = [
+  {
+    id: 'legend-ai-mcp',
+    label: 'Legend AI MCP',
+    description: 'Model Context Protocol via Marketplace /mcp proxy',
+  },
+];
 
 export function renderStepStatusIcon(
   status: LegendAIThinkingStepStatus,
@@ -199,18 +180,35 @@ export function renderStepStatusIcon(
 
 const AssistantMessageView = (props: {
   msg: LegendAIAssistantMessage;
+  questionText: string;
   isThinkingVisible: boolean;
   onToggleThinking: () => void;
+  onMessageFeedback?: (
+    feedback: LegendAIMessageFeedback,
+  ) => Promise<void> | void;
+  selectedFeedbackRating: LegendAIMessageFeedbackRating | undefined;
+  feedbackSubmitting: boolean;
   onSuggestedQueryClick?: (query: string) => void;
   onFallbackAction?: (messageId: string) => void;
+  enghubDocUrl?: string;
+  enthubRequestAccessUrl?: string;
 }): React.ReactNode => {
   const {
     msg,
+    questionText,
     isThinkingVisible,
     onToggleThinking,
+    onMessageFeedback,
+    selectedFeedbackRating,
+    feedbackSubmitting,
     onSuggestedQueryClick,
     onFallbackAction,
+    enghubDocUrl,
+    enthubRequestAccessUrl,
   } = props;
+
+  const hasPermissionAccessLinks =
+    enghubDocUrl !== undefined || enthubRequestAccessUrl !== undefined;
 
   const [sqlCopied, setSqlCopied] = useState(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -228,7 +226,7 @@ const AssistantMessageView = (props: {
 
   const handleCopySql = useCallback(() => {
     if (msg.sql) {
-      navigator.clipboard.writeText(msg.sql).catch(noop());
+      navigator.clipboard.writeText(msg.sql).catch(noop);
       setSqlCopied(true);
       if (copyTimerRef.current !== undefined) {
         clearTimeout(copyTimerRef.current);
@@ -240,13 +238,48 @@ const AssistantMessageView = (props: {
     }
   }, [msg.sql]);
 
+  const canShowFeedback =
+    !msg.isProcessing &&
+    (msg.textAnswer !== null || msg.gridData !== null || msg.error !== null);
+  const visibleThinkingSteps = formatThinkingSteps(msg.thinkingSteps);
+  const { metadataContext, queryAnalysis } = splitCombinedAnswer(
+    msg.textAnswer,
+  );
+  const analysisSummary = (() => {
+    if (msg.gridData === null) {
+      return null;
+    }
+    return queryAnalysis ?? (metadataContext === null ? msg.textAnswer : null);
+  })();
+  const plainAnswer =
+    msg.gridData === null ? (metadataContext ?? msg.textAnswer) : null;
+
+  const submitFeedback = useCallback(
+    (rating: LegendAIMessageFeedbackRating): void => {
+      const result = onMessageFeedback?.({
+        messageId: msg.id,
+        rating,
+        question: questionText,
+        ...(msg.textAnswer === null ? {} : { answer: msg.textAnswer }),
+        ...(msg.sql === null ? {} : { sql: msg.sql }),
+        ...(msg.gridData === null
+          ? {}
+          : { rowCount: msg.gridData.rowData.length }),
+      });
+      if (result instanceof Promise) {
+        result.catch(noop);
+      }
+    },
+    [msg, onMessageFeedback, questionText],
+  );
+
   return (
     <div className="legend-ai__msg legend-ai__msg--assistant">
       <div className="legend-ai__msg-avatar">
         <SparkleStarsIcon />
       </div>
       <div className="legend-ai__msg-content">
-        {msg.thinkingSteps.length > 0 && (
+        {visibleThinkingSteps.length > 0 && (
           <div className="legend-ai__thinking">
             {!msg.isProcessing && (
               <button
@@ -262,7 +295,7 @@ const AssistantMessageView = (props: {
             )}
             {isThinkingVisible && (
               <div className="legend-ai__thinking-steps">
-                {msg.thinkingSteps.map((step) => (
+                {visibleThinkingSteps.map((step) => (
                   <div
                     key={step.id}
                     className={`legend-ai__thinking-step legend-ai__thinking-step--${step.status}`}
@@ -275,6 +308,15 @@ const AssistantMessageView = (props: {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {metadataContext && msg.gridData && (
+          <div className="legend-ai__inline-answer">
+            <MarkdownTextViewer
+              value={{ value: metadataContext }}
+              className="legend-ai__text-answer-md"
+            />
           </div>
         )}
 
@@ -319,7 +361,43 @@ const AssistantMessageView = (props: {
           </div>
         )}
 
-        {msg.error && <div className="legend-ai__exec-error">{msg.error}</div>}
+        {msg.error && (
+          <div className="legend-ai__exec-error">
+            {msg.error}
+            {msg.errorType === LegendAIErrorType.PERMISSION &&
+              hasPermissionAccessLinks && (
+                <div className="legend-ai__permission-error-action">
+                  <span className="legend-ai__permission-error-note">
+                    Need access?
+                  </span>
+                  <div className="legend-ai__permission-error-btns">
+                    {enghubDocUrl && (
+                      <a
+                        className="legend-ai__permission-error-btn"
+                        href={enghubDocUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLinkIcon />
+                        <span>View Documentation</span>
+                      </a>
+                    )}
+                    {enthubRequestAccessUrl && (
+                      <a
+                        className="legend-ai__permission-error-btn legend-ai__permission-error-btn--primary"
+                        href={enthubRequestAccessUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLinkIcon />
+                        <span>Request Access</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+          </div>
+        )}
 
         {msg.gridData && (
           <div className="legend-ai__results-block">
@@ -346,12 +424,27 @@ const AssistantMessageView = (props: {
           </div>
         )}
 
-        {msg.textAnswer && (
-          <div className="legend-ai__text-answer">
+        {plainAnswer && (
+          <div className="legend-ai__inline-answer">
             <MarkdownTextViewer
-              value={{ value: msg.textAnswer }}
+              value={{ value: plainAnswer }}
               className="legend-ai__text-answer-md"
             />
+          </div>
+        )}
+
+        {analysisSummary && msg.gridData && (
+          <LegendAIAnalysisPanel
+            gridData={msg.gridData}
+            summary={analysisSummary}
+            SummaryRenderer={AISummaryRenderer}
+          />
+        )}
+
+        {msg.isProcessing && !msg.isExecuting && msg.gridData && (
+          <div className="legend-ai__analyzing">
+            <LoadingIcon isLoading={true} />
+            <span>Analyzing results...</span>
           </div>
         )}
 
@@ -389,6 +482,50 @@ const AssistantMessageView = (props: {
             <span>{msg.fallbackAction.label}</span>
           </button>
         )}
+
+        {canShowFeedback && (
+          <div className="legend-ai__message-feedback">
+            <span className="legend-ai__message-feedback-label">
+              Did this answer your question?
+            </span>
+            <div className="legend-ai__message-feedback-actions">
+              <button
+                type="button"
+                className={`legend-ai__message-feedback-btn${
+                  selectedFeedbackRating ===
+                  LegendAIMessageFeedbackRating.THUMBS_UP
+                    ? 'legend-ai__message-feedback-btn--selected'
+                    : ''
+                }`}
+                title="Thumbs up"
+                aria-label="Thumbs up"
+                onClick={(): void =>
+                  submitFeedback(LegendAIMessageFeedbackRating.THUMBS_UP)
+                }
+                disabled={feedbackSubmitting}
+              >
+                <LikeIcon />
+              </button>
+              <button
+                type="button"
+                className={`legend-ai__message-feedback-btn${
+                  selectedFeedbackRating ===
+                  LegendAIMessageFeedbackRating.THUMBS_DOWN
+                    ? 'legend-ai__message-feedback-btn--selected'
+                    : ''
+                }`}
+                title="Thumbs down"
+                aria-label="Thumbs down"
+                onClick={(): void =>
+                  submitFeedback(LegendAIMessageFeedbackRating.THUMBS_DOWN)
+                }
+                disabled={feedbackSubmitting}
+              >
+                <DislikeIcon />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -404,6 +541,10 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
     plugin,
     dataProductCoordinates,
     pureExecutionContext,
+    availableScopes,
+    onMessageFeedback,
+    onClose,
+    onMinimize,
   } = props;
   const state = useLegendAIChatState(
     services,
@@ -418,16 +559,58 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
     () => buildSuggestedQueries(services, metadata),
     [services, metadata],
   );
-  const hasMessages = state.messages.length > 0;
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasServices = services.length > 0;
 
-  useLayoutEffect(() => {
-    const el = textareaRef.current;
-    if (el) {
-      el.style.height = 'auto';
-      el.style.height = `${el.scrollHeight}px`;
-    }
-  }, [state.questionText]);
+  const inferSuggestedQueryIntent = useCallback(
+    (query: string): LegendAIQuestionIntent =>
+      classifyQuestionIntentFast(query, hasServices).intent,
+    [hasServices],
+  );
+  const hasMessages = state.messages.length > 0;
+  const scopes = availableScopes ?? DEFAULT_SCOPES;
+  const [feedbackByMessageId, setFeedbackByMessageId] = useState<
+    Map<string, LegendAIMessageFeedbackRating>
+  >(new Map());
+  const [pendingFeedbackByMessageId, setPendingFeedbackByMessageId] = useState<
+    Set<string>
+  >(new Set());
+
+  const handleMessageFeedback = useCallback(
+    async (feedback: LegendAIMessageFeedback): Promise<void> => {
+      setFeedbackByMessageId((prev) => {
+        const next = new Map(prev);
+        next.set(feedback.messageId, feedback.rating);
+        return next;
+      });
+
+      if (!onMessageFeedback) {
+        return;
+      }
+
+      setPendingFeedbackByMessageId((prev) => {
+        const next = new Set(prev);
+        next.add(feedback.messageId);
+        return next;
+      });
+
+      try {
+        await onMessageFeedback(feedback);
+      } catch {
+        setFeedbackByMessageId((prev) => {
+          const next = new Map(prev);
+          next.delete(feedback.messageId);
+          return next;
+        });
+      } finally {
+        setPendingFeedbackByMessageId((prev) => {
+          const next = new Set(prev);
+          next.delete(feedback.messageId);
+          return next;
+        });
+      }
+    },
+    [onMessageFeedback],
+  );
 
   return (
     <div className="legend-ai" id={LEGEND_AI_ANCHOR_ID}>
@@ -436,18 +619,39 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
           <SparkleStarsIcon />
         </div>
         <div className="legend-ai__title">{title ?? 'Legend AI'}</div>
-        {hasMessages && (
+        <div className="legend-ai__header-actions">
           <button
             type="button"
-            className="legend-ai__clear-btn"
-            title="Clear chat"
-            aria-label="Clear chat"
+            className="legend-ai__header-action"
+            title="New chat"
+            aria-label="New chat"
             onClick={(): void => state.clearChat()}
           >
-            <RefreshIcon />
-            <span>Clear</span>
+            <PlusIcon />
           </button>
-        )}
+          {onMinimize && (
+            <button
+              type="button"
+              className="legend-ai__header-action"
+              title="Minimize"
+              aria-label="Minimize"
+              onClick={onMinimize}
+            >
+              <MinusIcon />
+            </button>
+          )}
+          {onClose && (
+            <button
+              type="button"
+              className="legend-ai__header-action"
+              title="Close"
+              aria-label="Close"
+              onClick={onClose}
+            >
+              <TimesIcon />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="legend-ai__conversation" ref={state.conversationRef}>
@@ -460,23 +664,21 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
               Ask a question about your data
             </div>
             <div className="legend-ai__suggestions">
-              <div className="legend-ai__suggestions-grid">
-                {suggestedQueries.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    className="legend-ai__suggestion-card"
-                    onClick={(): void => {
-                      state.setQuestionText(q);
-                    }}
-                  >
-                    <span className="legend-ai__suggestion-card-icon">
-                      <SparkleStarsIcon />
-                    </span>
-                    <span className="legend-ai__suggestion-card-text">{q}</span>
-                  </button>
-                ))}
-              </div>
+              {suggestedQueries.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  className="legend-ai__suggestion-chip"
+                  onClick={(): void => {
+                    state.askQuestionWithIntent(
+                      q,
+                      inferSuggestedQueryIntent(q),
+                    );
+                  }}
+                >
+                  {q}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -492,59 +694,40 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
 
           const isThinkingVisible =
             msg.isProcessing || state.expandedThinking.has(msgIndex);
+          const previousMessage =
+            msgIndex > 0 ? state.messages[msgIndex - 1] : null;
+          const questionText =
+            previousMessage?.role === LegendAIMessageRole.USER
+              ? previousMessage.text
+              : '';
           return (
             <AssistantMessageView
               key={msg.id}
               msg={msg}
+              questionText={questionText}
               isThinkingVisible={isThinkingVisible}
               onToggleThinking={(): void => state.toggleThinking(msgIndex)}
+              onMessageFeedback={handleMessageFeedback}
+              selectedFeedbackRating={feedbackByMessageId.get(msg.id)}
+              feedbackSubmitting={pendingFeedbackByMessageId.has(msg.id)}
+              {...(config.enghubDocUrl === undefined
+                ? {}
+                : { enghubDocUrl: config.enghubDocUrl })}
+              {...(config.enthubRequestAccessUrl === undefined
+                ? {}
+                : { enthubRequestAccessUrl: config.enthubRequestAccessUrl })}
               onFallbackAction={(messageId): void =>
                 state.runFallbackAction(messageId)
               }
               onSuggestedQueryClick={(q): void =>
-                state.askQuestionWithIntent(
-                  q,
-                  services.length > 0
-                    ? LegendAIQuestionIntent.DATA_QUERY
-                    : LegendAIQuestionIntent.ORCHESTRATOR,
-                )
+                state.askQuestionWithIntent(q, inferSuggestedQueryIntent(q))
               }
             />
           );
         })}
       </div>
 
-      <div className="legend-ai__input-area">
-        <div className="legend-ai__question-wrapper">
-          <textarea
-            ref={textareaRef}
-            className="legend-ai__question"
-            placeholder="Ask anything about the data..."
-            rows={1}
-            spellCheck={false}
-            value={state.questionText}
-            onChange={(e): void => state.setQuestionText(e.target.value)}
-            onKeyDown={(e): void => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (!state.isSending && state.questionText.trim()) {
-                  state.askQuestion();
-                }
-              }
-            }}
-          />
-          <button
-            type="button"
-            title="Send"
-            aria-label="Send"
-            className="legend-ai__send-btn"
-            disabled={state.isSending || !state.questionText.trim()}
-            onClick={(): void => state.askQuestion()}
-          >
-            {state.isSending ? <LoadingIcon isLoading={true} /> : <SendIcon />}
-          </button>
-        </div>
-      </div>
+      <LegendAIChatInput state={state} scopes={scopes} />
     </div>
   );
 };

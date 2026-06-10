@@ -137,6 +137,8 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   private _search = (): string => `${this.baseUrl}/v1/search`;
 
+  private readonly _entitySearch = (): string => `${this.baseUrl}/v1/search`;
+
   private _autosuggest = (): string => `${this.baseUrl}/v1/autosuggest`;
 
   dataProductSearch = async (
@@ -253,7 +255,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
     },
   ): Promise<PlainObject<EntitySearchResponse>> =>
     this.get<PlainObject<EntitySearchResponse>>(
-      `${this._search()}/entities/${lakehouseEnv}`,
+      `${this._entitySearch()}/entities/${lakehouseEnv}`,
       undefined,
       undefined,
       {

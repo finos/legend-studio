@@ -15,14 +15,23 @@
  */
 
 import { describe, test, expect, afterEach, jest } from '@jest/globals';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  cleanup,
+  act,
+} from '@testing-library/react';
 import { unitTest } from '@finos/legend-shared/test';
 import { LegendAIChat, LEGEND_AI_ANCHOR_ID } from '../LegendAIChat.js';
 import {
   type LegendAIChatProps,
   type LegendAIChatState,
+  LegendAIMessageFeedbackRating,
   LegendAIMessageRole,
+  LegendAIQuestionIntent,
   LegendAIThinkingStepStatus,
+  LegendAIErrorType,
 } from '../../LegendAITypes.js';
 import {
   TEST__createMockLegendAIPlugin,
@@ -36,6 +45,9 @@ const mockState: LegendAIChatState = {
   setQuestionText: jest.fn(),
   isSending: false,
   messages: [],
+  selectedModelName: undefined,
+  availableModelNames: [],
+  setSelectedModelName: jest.fn(),
   askQuestion: jest.fn(),
   askQuestionWithIntent: jest.fn(),
   clearChat: jest.fn(),
@@ -43,6 +55,10 @@ const mockState: LegendAIChatState = {
   toggleThinking: jest.fn(),
   runFallbackAction: jest.fn(),
   conversationRef: { current: null },
+  selectedScopes: [],
+  toggleScope: jest.fn(),
+  removeScope: jest.fn(),
+  stopGeneration: jest.fn(),
 };
 
 jest.mock('../../stores/LegendAIChatState.js', () => ({
@@ -53,6 +69,12 @@ jest.mock('../../stores/LegendAIChatState.js', () => ({
 jest.mock('../LegendAIResultGrid.js', () => ({
   LegendAIResultGrid: (props: { data: { rowData: unknown[] } }) => (
     <div data-testid="mock-result-grid">{props.data.rowData.length} rows</div>
+  ),
+}));
+
+jest.mock('../LegendAIAnalysisPanel.js', () => ({
+  LegendAIAnalysisPanel: (props: { summary: string }) => (
+    <div data-testid="mock-analysis-panel">{props.summary}</div>
   ),
 }));
 
@@ -67,12 +89,20 @@ jest.mock('@finos/legend-art', () => ({
   RefreshIcon: () => <span data-testid="refresh-icon" />,
   CheckIcon: () => <span data-testid="check-icon" />,
   TimesIcon: () => <span data-testid="times-icon" />,
+  MinusIcon: () => <span data-testid="minus-icon" />,
+  PlusIcon: () => <span data-testid="plus-icon" />,
   CaretDownIcon: () => <span data-testid="caret-down-icon" />,
   CaretRightIcon: () => <span data-testid="caret-right-icon" />,
   DotIcon: () => <span data-testid="dot-icon" />,
+  PlusCircleIcon: () => <span data-testid="plus-circle-icon" />,
+  SearchIcon: () => <span data-testid="search-icon" />,
+  SquareIcon: () => <span data-testid="square-icon" />,
   MarkdownTextViewer: (props: { value: { value: string } }) => (
     <div data-testid="markdown-viewer">{props.value.value}</div>
   ),
+  LikeIcon: () => <span data-testid="like-icon" />,
+  DislikeIcon: () => <span data-testid="dislike-icon" />,
+  ExternalLinkIcon: () => <span data-testid="external-link-icon" />,
 }));
 
 afterEach(() => {
@@ -122,26 +152,27 @@ describe(unitTest('LegendAIChat'), () => {
     ).toBeDefined();
   });
 
-  test('does not show clear button when no messages', () => {
-    const { container } = render(<LegendAIChat {...defaultProps} />);
-    expect(container.querySelector('.legend-ai__clear-btn')).toBeNull();
+  test('new chat button is always visible in header', () => {
+    render(<LegendAIChat {...defaultProps} />);
+    expect(screen.getByTitle('New chat')).toBeDefined();
   });
   test('renders textarea placeholder', () => {
     render(<LegendAIChat {...defaultProps} />);
     const textarea = screen.getByPlaceholderText(
-      'Ask anything about the data...',
+      /Ask anything about (?:the|your) data\.\.\./,
     );
     expect(textarea).toBeDefined();
   });
 
-  test('clicking suggestion sets question text', () => {
+  test('clicking suggestion triggers askQuestionWithIntent', () => {
     render(<LegendAIChat {...defaultProps} />);
     const suggestion = screen.getByText(
       `What data does ${TEST_DATA__legendAIMetadata.name} offer and how can I use it?`,
     );
     fireEvent.click(suggestion);
-    expect(mockState.setQuestionText).toHaveBeenCalledWith(
+    expect(mockState.askQuestionWithIntent).toHaveBeenCalledWith(
       `What data does ${TEST_DATA__legendAIMetadata.name} offer and how can I use it?`,
+      LegendAIQuestionIntent.METADATA,
     );
   });
 
@@ -227,6 +258,53 @@ describe(unitTest('LegendAIChat'), () => {
     expect(screen.getByText('This provides trade data')).toBeDefined();
   });
 
+  test('submits thumbs up feedback for assistant message', async () => {
+    const onMessageFeedback: LegendAIChatProps['onMessageFeedback'] = jest.fn(
+      () => undefined,
+    );
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'what is this?' },
+      {
+        id: 'a',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: 'SELECT * FROM trades',
+        textAnswer: 'This provides trade data',
+        dataContext: null,
+        gridData: {
+          columnDefs: [{ colId: 'id', headerName: 'id', field: 'id' }],
+          rowData: [{ id: 1 }, { id: 2 }],
+        },
+        error: null,
+        sqlGenTime: null,
+        execTime: null,
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+      },
+    ];
+
+    render(
+      <LegendAIChat {...defaultProps} onMessageFeedback={onMessageFeedback} />,
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByTitle('Thumbs up'));
+    });
+
+    expect(onMessageFeedback).toHaveBeenCalledWith({
+      messageId: 'a',
+      rating: LegendAIMessageFeedbackRating.THUMBS_UP,
+      question: 'what is this?',
+      answer: 'This provides trade data',
+      sql: 'SELECT * FROM trades',
+      rowCount: 2,
+    });
+  });
+
   test('renders assistant message with error', () => {
     mockState.messages = [
       { id: 'u', role: LegendAIMessageRole.USER, text: 'bad query' },
@@ -251,6 +329,82 @@ describe(unitTest('LegendAIChat'), () => {
     ];
     render(<LegendAIChat {...defaultProps} />);
     expect(screen.getByText('Query timeout')).toBeDefined();
+  });
+
+  test('renders permission access links when configured', () => {
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'bad query' },
+      {
+        id: 'a',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: null,
+        textAnswer: null,
+        dataContext: null,
+        gridData: null,
+        error: 'Unable to reach the AI service. This is a permissions issue.',
+        sqlGenTime: null,
+        execTime: null,
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: LegendAIErrorType.PERMISSION,
+      },
+    ];
+
+    render(
+      <LegendAIChat
+        {...defaultProps}
+        config={{
+          ...defaultProps.config,
+          enghubDocUrl: 'https://enghub.gs.com/test',
+          enthubRequestAccessUrl: 'https://enthub.site.gs.com/test',
+        }}
+      />,
+    );
+
+    expect(
+      screen
+        .getByRole('link', { name: 'View Documentation' })
+        .getAttribute('href'),
+    ).toBe('https://enghub.gs.com/test');
+    expect(
+      screen.getByRole('link', { name: 'Request Access' }).getAttribute('href'),
+    ).toBe('https://enthub.site.gs.com/test');
+  });
+
+  test('does not render permission links when config URLs are missing', () => {
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'bad query' },
+      {
+        id: 'a',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: null,
+        textAnswer: null,
+        dataContext: null,
+        gridData: null,
+        error: 'Unable to reach the AI service. This is a permissions issue.',
+        sqlGenTime: null,
+        execTime: null,
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: LegendAIErrorType.PERMISSION,
+      },
+    ];
+
+    render(<LegendAIChat {...defaultProps} />);
+
+    expect(screen.queryByRole('link', { name: 'View Documentation' })).toBe(
+      null,
+    );
+    expect(screen.queryByRole('link', { name: 'Request Access' })).toBe(null);
+    expect(screen.queryByText('Need access?')).toBe(null);
   });
 
   test('renders executing indicator', () => {
@@ -372,7 +526,7 @@ describe(unitTest('LegendAIChat'), () => {
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
-    expect(screen.getByText('Analyzing your question...')).toBeDefined();
+    expect(screen.getByText('Understanding your request')).toBeDefined();
   });
 
   test('renders thinking toggle for completed messages', () => {
@@ -408,27 +562,27 @@ describe(unitTest('LegendAIChat'), () => {
     expect(screen.getByText(/Thought for 2.1s/)).toBeDefined();
     expect(screen.getByText('Done analyzing')).toBeDefined();
   });
-  test('shows clear button when messages exist', () => {
+  test('shows new chat button when messages exist', () => {
     mockState.messages = [
       { id: 'u', role: LegendAIMessageRole.USER, text: 'hello' },
     ];
     render(<LegendAIChat {...defaultProps} />);
-    expect(screen.getByTitle('Clear chat')).toBeDefined();
+    expect(screen.getByTitle('New chat')).toBeDefined();
   });
 
-  test('clicking clear calls clearChat', () => {
+  test('clicking new chat calls clearChat', () => {
     mockState.messages = [
       { id: 'u', role: LegendAIMessageRole.USER, text: 'hello' },
     ];
     render(<LegendAIChat {...defaultProps} />);
-    fireEvent.click(screen.getByTitle('Clear chat'));
+    fireEvent.click(screen.getByTitle('New chat'));
     expect(mockState.clearChat).toHaveBeenCalled();
   });
   test('Enter key triggers askQuestion', () => {
     mockState.questionText = 'show data';
     render(<LegendAIChat {...defaultProps} />);
     const textarea = screen.getByPlaceholderText(
-      'Ask anything about the data...',
+      /Ask anything about (?:the|your) data\.\.\./,
     );
     fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: false });
     expect(mockState.askQuestion).toHaveBeenCalled();
@@ -438,7 +592,7 @@ describe(unitTest('LegendAIChat'), () => {
     mockState.questionText = 'show data';
     render(<LegendAIChat {...defaultProps} />);
     const textarea = screen.getByPlaceholderText(
-      'Ask anything about the data...',
+      /Ask anything about (?:the|your) data\.\.\./,
     );
     fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: true });
     expect(mockState.askQuestion).not.toHaveBeenCalled();
@@ -449,7 +603,7 @@ describe(unitTest('LegendAIChat'), () => {
     mockState.isSending = true;
     render(<LegendAIChat {...defaultProps} />);
     const textarea = screen.getByPlaceholderText(
-      'Ask anything about the data...',
+      /Ask anything about (?:the|your) data\.\.\./,
     );
     fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: false });
     expect(mockState.askQuestion).not.toHaveBeenCalled();
@@ -459,7 +613,7 @@ describe(unitTest('LegendAIChat'), () => {
     mockState.questionText = '   ';
     render(<LegendAIChat {...defaultProps} />);
     const textarea = screen.getByPlaceholderText(
-      'Ask anything about the data...',
+      /Ask anything about (?:the|your) data\.\.\./,
     );
     fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: false });
     expect(mockState.askQuestion).not.toHaveBeenCalled();
@@ -585,13 +739,15 @@ describe(unitTest('LegendAIChat'), () => {
     ];
     mockState.expandedThinking = new Set([1]);
     render(<LegendAIChat {...defaultProps} />);
-    expect(screen.getByText('Error occurred')).toBeDefined();
+    expect(
+      screen.getByText('Hit an issue while preparing the answer'),
+    ).toBeDefined();
     expect(screen.getByTestId('times-icon')).toBeDefined();
   });
   test('typing in textarea calls setQuestionText', () => {
     render(<LegendAIChat {...defaultProps} />);
     const textarea = screen.getByPlaceholderText(
-      'Ask anything about the data...',
+      /Ask anything about (?:the|your) data\.\.\./,
     );
     fireEvent.change(textarea, { target: { value: 'hello' } });
     expect(mockState.setQuestionText).toHaveBeenCalledWith('hello');
@@ -602,5 +758,130 @@ describe(unitTest('LegendAIChat'), () => {
     const sendBtn = screen.getByTitle('Send');
     fireEvent.click(sendBtn);
     expect(mockState.askQuestion).toHaveBeenCalled();
+  });
+
+  test('renders analysis panel when textAnswer and gridData present', () => {
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'analyze data' },
+      {
+        id: 'a',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: 'SELECT * FROM t',
+        textAnswer: 'Here is the analysis summary',
+        dataContext: null,
+        gridData: {
+          columnDefs: [{ colId: 'id', headerName: 'id', field: 'id' }],
+          rowData: [{ id: 1 }],
+        },
+        error: null,
+        sqlGenTime: '0.50',
+        execTime: '0.10',
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+      },
+    ];
+    render(<LegendAIChat {...defaultProps} />);
+    expect(screen.getByTestId('mock-analysis-panel')).toBeDefined();
+  });
+
+  test('renders metadata text above SQL and query analysis below results', () => {
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'capability question' },
+      {
+        id: 'a',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: 'SELECT * FROM t',
+        textAnswer:
+          '### Metadata context\nMetadata context answer\n\n### Query analysis\nQuery analysis summary',
+        dataContext: null,
+        gridData: {
+          columnDefs: [{ colId: 'id', headerName: 'id', field: 'id' }],
+          rowData: [{ id: 1 }],
+        },
+        error: null,
+        sqlGenTime: '0.50',
+        execTime: '0.10',
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+      },
+    ];
+
+    render(<LegendAIChat {...defaultProps} />);
+
+    const metadataNode = screen.getByText('Metadata context answer');
+    const sqlNode = screen.getByText('SELECT * FROM t');
+    const analysisNode = screen.getByText('Query analysis summary');
+
+    expect(
+      metadataNode.compareDocumentPosition(sqlNode) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      sqlNode.compareDocumentPosition(analysisNode) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  test('renders analyzing loader when processing after grid data', () => {
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'get data' },
+      {
+        id: 'a',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: 'SELECT * FROM t',
+        textAnswer: null,
+        dataContext: null,
+        gridData: {
+          columnDefs: [{ colId: 'id', headerName: 'id', field: 'id' }],
+          rowData: [{ id: 1 }],
+        },
+        error: null,
+        sqlGenTime: '0.50',
+        execTime: '0.10',
+        thinkingDuration: null,
+        isProcessing: true,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+      },
+    ];
+    render(<LegendAIChat {...defaultProps} />);
+    expect(screen.getByText('Analyzing results...')).toBeDefined();
+  });
+
+  test('renders close button when onClose provided', () => {
+    const onClose = jest.fn();
+    render(<LegendAIChat {...defaultProps} onClose={onClose} />);
+    const closeBtn = screen.getByTitle('Close');
+    expect(closeBtn).toBeDefined();
+    fireEvent.click(closeBtn);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  test('renders minimize button when onMinimize provided', () => {
+    const onMinimize = jest.fn();
+    render(<LegendAIChat {...defaultProps} onMinimize={onMinimize} />);
+    const minimizeBtn = screen.getByTitle('Minimize');
+    expect(minimizeBtn).toBeDefined();
+    fireEvent.click(minimizeBtn);
+    expect(onMinimize).toHaveBeenCalled();
+  });
+
+  test('does not render close or minimize buttons by default', () => {
+    render(<LegendAIChat {...defaultProps} />);
+    expect(screen.queryByTitle('Close')).toBeNull();
+    expect(screen.queryByTitle('Minimize')).toBeNull();
   });
 });

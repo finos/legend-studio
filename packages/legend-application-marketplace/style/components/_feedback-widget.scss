@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+// Hide feedback widget on Data Product and DataSpace pages (AI toggle replaces it)
+.app:has(.legend-marketplace-lakehouse-data-product)
+  .legend-marketplace-feedback-widget {
+  display: none;
+}
+
 .legend-marketplace-feedback-widget {
   position: fixed;
   bottom: 10rem;
