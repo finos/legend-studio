@@ -4113,4 +4113,257 @@ describe('DataProductViewer', () => {
       await screen.findByText(MOCK__TDS_COLUMN_SAMPLE_VALUES);
     });
   });
+
+  describe('ServiceScreen', () => {
+    beforeEach(() => {
+      jest.spyOn(MockedMonacoEditorAPI, 'create').mockReturnValue({
+        ...MockedMonacoEditorInstance,
+        getValue: jest.fn().mockReturnValue(''),
+      });
+      jest
+        .spyOn(MockedMonacoEditorAPI, 'createModel')
+        .mockReturnValue(MockedMonacoEditorModel);
+    });
+
+    test('shows experimental warning when user has access', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 11111,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        mockLiteContracts,
+        mockDataContracts,
+      );
+
+      await screen.findByRole('button', { name: 'ENTITLED' });
+      await screen.findByText('Customer Demographics');
+
+      const serviceTab = await screen.findByRole('tab', { name: 'Service' });
+      await act(async () => {
+        fireEvent.click(serviceTab);
+      });
+
+      // Should display the experimental warning banner (user has access)
+      await screen.findByText(/For exploration and experimental use only/);
+
+      // Should NOT display the no-access warning
+      expect(
+        screen.queryByText(/You do not have access to this access point group/),
+      ).toBeNull();
+    });
+
+    test('shows no-access warning when user has no access', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Customer Demographics');
+
+      const serviceTab = await screen.findByRole('tab', { name: 'Service' });
+      await act(async () => {
+        fireEvent.click(serviceTab);
+      });
+
+      // Should display the no-access warning
+      await screen.findByText(
+        /You do not have access to this access point group/,
+      );
+
+      // Should NOT display the experimental warning
+      expect(
+        screen.queryByText(/For exploration and experimental use only/),
+      ).toBeNull();
+    });
+
+    test('copy button copies curl command to clipboard', async () => {
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          [],
+          [],
+        );
+
+      // Mock the clipboard service
+      const mockCopyToClipboard = jest
+        .spyOn(
+          guaranteeNonNullable(dataProductDataAccessState).applicationStore
+            .clipboardService,
+          'copyTextToClipboard',
+        )
+        .mockResolvedValue(undefined);
+
+      await screen.findByText('Customer Demographics');
+
+      const serviceTab = await screen.findByRole('tab', { name: 'Service' });
+      await act(async () => {
+        fireEvent.click(serviceTab);
+      });
+
+      const copyButton = await screen.findByTitle('Copy cURL command');
+      await act(async () => {
+        fireEvent.click(copyButton);
+      });
+
+      expect(mockCopyToClipboard).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'curl -X GET "http://test-engine-server-client-url/lakehouse/v1/execute/MOCK_SDLC_DATAPRODUCT/customer_demographics/DEFAULT"',
+        ),
+      );
+
+      mockCopyToClipboard.mockRestore();
+    });
+
+    test('Open in Zipkin button opens new tab with correct URL', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 11111,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      const mockVisitAddress = jest
+        .spyOn(
+          guaranteeNonNullable(dataProductDataAccessState).applicationStore
+            .navigationService.navigator,
+          'visitAddress',
+        )
+        .mockImplementation(() => undefined);
+
+      await screen.findByRole('button', { name: 'ENTITLED' });
+      await screen.findByText('Customer Demographics');
+
+      const serviceTab = await screen.findByRole('tab', { name: 'Service' });
+      await act(async () => {
+        fireEvent.click(serviceTab);
+      });
+
+      const zipkinButton = await screen.findByTitle(
+        'View traces in Zipkin for this access point',
+      );
+      await act(async () => {
+        fireEvent.click(zipkinButton);
+      });
+
+      expect(mockVisitAddress).toHaveBeenCalledWith(
+        expect.stringContaining('http://test-engine-server-client-url/zipkin/'),
+      );
+
+      mockVisitAddress.mockRestore();
+    });
+  });
 });
