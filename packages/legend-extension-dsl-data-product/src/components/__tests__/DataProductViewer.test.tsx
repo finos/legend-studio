@@ -415,11 +415,12 @@ const setupLakehouseDataProductTest = async (
       : [],
   );
 
-  dataProductViewerState.init(entitlementsDataProductDetails);
-
   let renderResult;
 
   await act(async () => {
+    const initPromise = flowResult(
+      dataProductViewerState.init(entitlementsDataProductDetails),
+    );
     await flowResult(dataProductDataAccessState?.init(() => undefined));
     renderResult = render(
       <BrowserRouter>
@@ -432,6 +433,9 @@ const setupLakehouseDataProductTest = async (
       </BrowserRouter>,
     );
 
+    await initPromise.catch(
+      /* expected — artifact fetch has no mock data */ () => undefined,
+    );
     await new Promise((resolve) => setTimeout(resolve, 0)); // wait for async state updates
   });
 

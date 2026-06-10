@@ -19,15 +19,19 @@ export * from './LegendAI_LegendApplicationPlugin_Extension.js';
 export {
   LegendAIChat,
   LEGEND_AI_ANCHOR_ID,
+  renderStepStatusIcon,
+} from './components/LegendAIChat.js';
+export {
   isStringColumn,
   isNumericColumn,
   isDateColumn,
   buildSuggestedQueries,
-  renderStepStatusIcon,
-} from './components/LegendAIChat.js';
+} from './components/LegendAIChatHelpers.js';
+export { LegendAIScopeSelector } from './components/LegendAIScopeSelector.js';
+export { LegendAIChatInput } from './components/LegendAIChatInput.js';
 export { LegendAIErrorBoundary } from './components/LegendAIErrorBoundary.js';
+export { useLegendAIChatState } from './stores/LegendAIChatState.js';
 export {
-  useLegendAIChatState,
   updateLastAssistant,
   addThinkingStep,
   completeThinkingSteps,
@@ -37,18 +41,32 @@ export {
   buildGenerationFailureMessage,
   buildExecutionErrorMessage,
   generateAndJudgeSql,
+  generateAndJudgeAccessPointSql,
   executeSqlAndReport,
   executePureQueryAndReport,
   processQuestionViaOrchestrator,
   processQuestion,
   processQuestionWithIntent,
   handleMetadataQuestion,
+  buildMetadataOverview,
+  attachMetadataOverview,
   elapsedSeconds,
   createMessagePair,
   analyzeOrchestratorResults,
+  cleanLlmSqlResponse,
+  isValidSqlCorrection,
+  sanitizeJoinOrderBy,
+  sanitizeLiteralColumns,
+  stripGuessedNonDateServiceParams,
+  ensureDateParameters,
+  detectMissingServiceParams,
+  buildMissingParamsWarning,
+  ensureSafeLimit,
+  preFilterServicesByRelevance,
   type MessageSetter,
   type LegendAIOperationContext,
-} from './stores/LegendAIChatState.js';
+  type MissingParamInfo,
+} from './stores/LegendAIChatProcessors.js';
 export { LegendAIResultGrid } from './components/LegendAIResultGrid.js';
 export { LegendAIAnalysisPanel } from './components/LegendAIAnalysisPanel.js';
 export {
@@ -56,9 +74,18 @@ export {
   LegendAIDonutChart,
 } from './components/LegendAICharts.js';
 export {
+  type LegendAIGridAnalysis,
   computeKeyMetrics,
   computeChartData,
   inferChartType,
   computeTopItems,
   findNumericColumnName,
+  analyzeGridData,
 } from './components/LegendAIAnalysisUtils.js';
+export {
+  buildPropertyDocIndex,
+  enrichColumnsFromElementDocs,
+  inferServiceRelationshipsFromAssociations,
+  extractLambdaPreFilters,
+  formatPreFiltersForContext,
+} from './LegendAIDocEnrichment.js';

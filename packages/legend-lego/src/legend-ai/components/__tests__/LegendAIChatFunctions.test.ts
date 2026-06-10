@@ -21,7 +21,7 @@ import {
   isNumericColumn,
   isDateColumn,
   buildSuggestedQueries,
-} from '../LegendAIChat.js';
+} from '../LegendAIChatHelpers.js';
 import type {
   TDSServiceSchema,
   LegendAIProductMetadata,
@@ -126,7 +126,7 @@ describe(unitTest('buildSuggestedQueries'), () => {
     expect(result).toContain('Describe the data model and key entities');
   });
 
-  test('returns record suggestion when single service with date column', () => {
+  test('returns record and distinct suggestions when service has columns', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'TradeService',
@@ -141,8 +141,8 @@ describe(unitTest('buildSuggestedQueries'), () => {
       },
     ];
     const result = buildSuggestedQueries(services, TEST__metadata);
-    expect(result.some((s) => s.includes('most recent'))).toBe(true);
-    expect(result.some((s) => s.includes('tradeDate'))).toBe(true);
+    expect(result).toContain('Show 10 records from TradeService');
+    expect(result.some((s) => s.includes('distinct ticker values'))).toBe(true);
   });
 
   test('returns insight suggestions with string and numeric columns', () => {
@@ -158,12 +158,10 @@ describe(unitTest('buildSuggestedQueries'), () => {
       },
     ];
     const result = buildSuggestedQueries(services, TEST__metadata);
-    expect(
-      result.some((s) => s.includes('region') && s.includes('revenue')),
-    ).toBe(true);
+    expect(result.some((s) => s.includes('distinct region values'))).toBe(true);
   });
 
-  test('returns multi-service suggestions for 2+ services', () => {
+  test('returns second-service suggestions for 2+ services', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'ServiceA',
@@ -214,7 +212,7 @@ describe(unitTest('buildSuggestedQueries'), () => {
     expect(result.length).toBeLessThanOrEqual(8);
   });
 
-  test('includes string-only suggestion when no numeric column', () => {
+  test('includes distinct-values suggestion when string column present', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'TextService',
@@ -251,8 +249,7 @@ describe(unitTest('buildSuggestedQueries'), () => {
     ).toBe(true);
   });
 
-  test('returns fallback when services array has undefined primary', () => {
-    // Edge case: empty service with columns
+  test('returns overview when service has no columns', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'EmptyService',
@@ -262,6 +259,6 @@ describe(unitTest('buildSuggestedQueries'), () => {
       },
     ];
     const result = buildSuggestedQueries(services, TEST__metadata);
-    expect(result.some((s) => s.includes('EmptyService'))).toBe(true);
+    expect(result[0]).toContain('TestProduct');
   });
 });

@@ -27,8 +27,13 @@ import {
   classifyError,
   sanitizeJoinOrderBy,
   sanitizeLiteralColumns,
-  stripNonDateServiceParams,
-} from '../LegendAIChatState.js';
+  stripGuessedNonDateServiceParams,
+  ensureDateParameters,
+  detectMissingServiceParams,
+  buildMissingParamsWarning,
+  preFilterServicesByRelevance,
+  ensureSafeLimit,
+} from '../LegendAIChatProcessors.js';
 import {
   type LegendAIMessage,
   type LegendAIAssistantMessage,
@@ -780,43 +785,53 @@ describe(unitTest('sanitizeLiteralColumns'), () => {
   });
 });
 
-describe(unitTest('stripNonDateServiceParams'), () => {
+describe(unitTest('stripGuessedNonDateServiceParams'), () => {
   test('passes through SQL without non-date params', () => {
     const sql = [
       'SELECT *',
       "FROM service('/path', coordinates => 'com:group:1.0', startDate => '2025-01-01', endDate => '2026-01-01')",
       'LIMIT 10',
     ].join('\n');
-    expect(stripNonDateServiceParams(sql)).toBe(sql);
+    expect(stripGuessedNonDateServiceParams(sql, 'show me data')).toBe(sql);
   });
 
-  test('strips non-date params like haverId', () => {
+  test('strips guessed non-date params not in question', () => {
     const sql = [
       'SELECT *',
       "FROM service('/path', coordinates => 'com:group:1.0', haverId => 'A001NGDP', startDate => '2020-01-01', endDate => '2023-12-31')",
       'LIMIT 10',
     ].join('\n');
-    const result = stripNonDateServiceParams(sql);
+    const result = stripGuessedNonDateServiceParams(sql, 'show me GDP data');
     expect(result).not.toContain('haverId');
     expect(result).toContain("startDate => '2020-01-01'");
     expect(result).toContain("endDate => '2023-12-31'");
     expect(result).toContain("coordinates => 'com:group:1.0'");
   });
 
-  test('strips multiple non-date params', () => {
+  test('preserves non-date params when value appears in question', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1', ticker => 'AAPL', startDate => '2024-01-01')";
+    const result = stripGuessedNonDateServiceParams(
+      sql,
+      'show me AAPL stock data',
+    );
+    expect(result).toContain("ticker => 'AAPL'");
+    expect(result).toContain("startDate => '2024-01-01'");
+  });
+
+  test('strips guessed params but keeps user-mentioned ones', () => {
     const sql =
       "SELECT * FROM service('/path', coordinates => 'c:g:1', ticker => 'AAPL', region => 'US', startDate => '2024-01-01')";
-    const result = stripNonDateServiceParams(sql);
-    expect(result).not.toContain('ticker');
+    const result = stripGuessedNonDateServiceParams(sql, 'show me AAPL bonds');
+    expect(result).toContain("ticker => 'AAPL'");
     expect(result).not.toContain('region');
     expect(result).toContain("startDate => '2024-01-01'");
-    expect(result).toContain("coordinates => 'c:g:1'");
   });
 
   test('preserves all date-like params', () => {
     const sql =
       "SELECT * FROM service('/path', coordinates => 'c:g:1', businessDate => '2024-01-01', processingDate => '2024-06-01', asOfDate => '2024-12-31')";
-    expect(stripNonDateServiceParams(sql)).toBe(sql);
+    expect(stripGuessedNonDateServiceParams(sql, 'show data')).toBe(sql);
   });
 
   test('handles multi-line formatted service call', () => {
@@ -832,9 +847,488 @@ describe(unitTest('stripNonDateServiceParams'), () => {
       ')',
       'LIMIT 10',
     ].join('\n');
-    const result = stripNonDateServiceParams(sql);
+    const result = stripGuessedNonDateServiceParams(sql, 'show me Haver data');
     expect(result).not.toContain('haverId');
     expect(result).toContain("startDate => '2020-01-01'");
     expect(result).toContain("endDate => '2023-12-31'");
+  });
+});
+
+describe(unitTest('ensureDateParameters'), () => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  function makeService(
+    params: string[],
+    sourceType?: string,
+  ): TDSServiceSchema {
+    return {
+      title: 'Test Service',
+      pattern: '/test/pattern',
+      columns: [{ name: 'col1' }],
+      parameters: params,
+      ...(sourceType !== undefined ? { sourceType: sourceType as never } : {}),
+    };
+  }
+
+  test('injects missing processingDate into service() call', () => {
+    const sql = [
+      'SELECT *',
+      "FROM service('/test/pattern', coordinates => 'com:group:1.0')",
+      'LIMIT 10',
+    ].join('\n');
+    const result = ensureDateParameters(sql, [makeService(['processingDate'])]);
+    expect(result).toContain(`processingDate => '${today}'`);
+    expect(result).toContain("coordinates => 'com:group:1.0'");
+  });
+
+  test('does not duplicate existing date parameter', () => {
+    const sql = [
+      'SELECT *',
+      `FROM service('/test/pattern', coordinates => 'com:group:1.0', processingDate => '2025-06-01')`,
+      'LIMIT 10',
+    ].join('\n');
+    const result = ensureDateParameters(sql, [makeService(['processingDate'])]);
+    expect(result).toBe(sql);
+  });
+
+  test('injects multiple missing date parameters', () => {
+    const sql = "SELECT * FROM service('/path', coordinates => 'c:g:1')";
+    const result = ensureDateParameters(sql, [
+      makeService(['businessDate', 'processingDate']),
+    ]);
+    expect(result).toContain(`businessDate => '${today}'`);
+    expect(result).toContain(`processingDate => '${today}'`);
+  });
+
+  test('returns unchanged SQL when service has no date params', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = ensureDateParameters(sql, [
+      makeService(['ticker', 'region']),
+    ]);
+    expect(result).toBe(sql);
+  });
+
+  test('returns unchanged SQL when service has no params', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = ensureDateParameters(sql, [makeService([])]);
+    expect(result).toBe(sql);
+  });
+
+  test('skips access point services', () => {
+    const sql = "SELECT * FROM p('product.ap')";
+    const result = ensureDateParameters(sql, [
+      makeService(['processingDate'], 'accessPoint'),
+    ]);
+    expect(result).toBe(sql);
+  });
+
+  test('handles multi-line service() call', () => {
+    const sql = [
+      'SELECT',
+      '  "col1"',
+      'FROM service(',
+      "    '/Bloomberg/test',",
+      "    coordinates => 'com.gs:bbg:1.0'",
+      ')',
+      'LIMIT 10',
+    ].join('\n');
+    const result = ensureDateParameters(sql, [makeService(['processingDate'])]);
+    expect(result).toContain(`processingDate => '${today}'`);
+    expect(result).toContain("coordinates => 'com.gs:bbg:1.0'");
+  });
+
+  test('injects date params into ALL service() calls in a JOIN', () => {
+    const sql = [
+      'SELECT a."col1", b."col2"',
+      "FROM service('/svcA', coordinates => 'c:g:1') AS a",
+      "JOIN service('/svcB', coordinates => 'c:g:1') AS b",
+      '  ON a."id" = b."id"',
+    ].join('\n');
+    const result = ensureDateParameters(sql, [makeService(['processingDate'])]);
+    const matches = result.match(/processingDate =>/g);
+    expect(matches).toHaveLength(2);
+  });
+});
+
+describe(unitTest('detectMissingServiceParams'), () => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  function makeService(
+    params: string[],
+    columns?: { name: string; sampleValues?: string; documentation?: string }[],
+    sourceType?: string,
+  ): TDSServiceSchema {
+    return {
+      title: 'Test Service',
+      pattern: '/test/pattern',
+      columns: columns ?? [{ name: 'col1' }],
+      parameters: params,
+      ...(sourceType !== undefined ? { sourceType: sourceType as never } : {}),
+    };
+  }
+
+  test('detects missing non-date param', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = detectMissingServiceParams(sql, [makeService(['haverId'])]);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.name).toBe('haverId');
+    expect(result[0]?.isDateLike).toBe(false);
+  });
+
+  test('detects missing date param', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = detectMissingServiceParams(sql, [
+      makeService(['processingDate']),
+    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.name).toBe('processingDate');
+    expect(result[0]?.isDateLike).toBe(true);
+    expect(result[0]?.hint).toContain(today);
+  });
+
+  test('detects mixed missing params', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = detectMissingServiceParams(sql, [
+      makeService(['processingDate', 'haverId', 'ticker']),
+    ]);
+    expect(result).toHaveLength(3);
+    const names = result.map((p) => p.name);
+    expect(names).toContain('processingDate');
+    expect(names).toContain('haverId');
+    expect(names).toContain('ticker');
+  });
+
+  test('returns empty when all params present in SQL', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1', processingDate => '2026-01-01', haverId => 'A001') LIMIT 10";
+    const result = detectMissingServiceParams(sql, [
+      makeService(['processingDate', 'haverId']),
+    ]);
+    expect(result).toHaveLength(0);
+  });
+
+  test('returns empty when service has no params', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = detectMissingServiceParams(sql, [makeService([])]);
+    expect(result).toHaveLength(0);
+  });
+
+  test('skips access point services', () => {
+    const sql = "SELECT * FROM p('product.ap')";
+    const result = detectMissingServiceParams(sql, [
+      makeService(['processingDate', 'haverId'], undefined, 'accessPoint'),
+    ]);
+    expect(result).toHaveLength(0);
+  });
+
+  test('includes sample values as hint for non-date params', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = detectMissingServiceParams(sql, [
+      makeService(
+        ['ticker'],
+        [{ name: 'ticker', sampleValues: 'AAPL, MSFT, GOOG' }],
+      ),
+    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.hint).toBe('AAPL, MSFT, GOOG');
+  });
+
+  test('includes documentation as hint when no sample values', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = detectMissingServiceParams(sql, [
+      makeService(
+        ['region'],
+        [{ name: 'region', documentation: 'Geographic region code' }],
+      ),
+    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.hint).toBe('Geographic region code');
+  });
+
+  test('deduplicates params across services', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = detectMissingServiceParams(sql, [
+      makeService(['haverId']),
+      makeService(['haverId']),
+    ]);
+    expect(result).toHaveLength(1);
+  });
+});
+
+describe(unitTest('buildMissingParamsWarning'), () => {
+  test('builds warning for single non-date param', () => {
+    const result = buildMissingParamsWarning([
+      { name: 'haverId', isDateLike: false },
+    ]);
+    expect(result).toContain('**haverId**');
+    expect(result).toContain('haverId=[your value]');
+    expect(result).toContain('requires the following parameter to execute');
+  });
+
+  test('builds warning for multiple params with hints', () => {
+    const result = buildMissingParamsWarning([
+      {
+        name: 'processingDate',
+        hint: "today's date: 2026-06-03",
+        isDateLike: true,
+      },
+      { name: 'haverId', hint: 'A001NGDP, B002XYZ', isDateLike: false },
+    ]);
+    expect(result).toContain('**processingDate**');
+    expect(result).toContain('**haverId**');
+    expect(result).toMatch(/processingDate=\d{4}-\d{2}-\d{2}/);
+    expect(result).toContain('haverId=[your value]');
+    expect(result).toContain('parameters');
+  });
+
+  test('builds warning without hints on param line', () => {
+    const result = buildMissingParamsWarning([
+      { name: 'ticker', isDateLike: false },
+    ]);
+    expect(result).toContain('- **ticker**');
+    // The param description line should not have a hint parenthetical
+    expect(result).not.toContain('- **ticker** (e.g.');
+  });
+});
+
+describe(unitTest('preFilterServicesByRelevance'), () => {
+  function makeSvc(
+    title: string,
+    columns: string[],
+    description?: string,
+  ): TDSServiceSchema {
+    return {
+      title,
+      pattern: `/${title.toLowerCase()}`,
+      columns: columns.map((name) => ({ name })),
+      parameters: [],
+      ...(description !== undefined ? { description } : {}),
+    };
+  }
+
+  test('returns all services when under limit', () => {
+    const svcs = [makeSvc('Alpha', ['a']), makeSvc('Beta', ['b'])];
+    const result = preFilterServicesByRelevance('show alpha data', svcs, 10);
+    expect(result).toHaveLength(2);
+  });
+
+  test('ranks services by keyword match', () => {
+    const svcs = [
+      makeSvc('Pricing', ['price', 'ticker']),
+      makeSvc('Ratings', ['rating', 'issuer']),
+      makeSvc('BondPricing', ['price', 'coupon', 'maturity']),
+    ];
+    const result = preFilterServicesByRelevance(
+      'show me bond pricing data',
+      svcs,
+      2,
+    );
+    expect(result[0]?.title).toBe('BondPricing');
+    expect(result).toHaveLength(2);
+  });
+
+  test('matches against column names', () => {
+    const svcs = [
+      makeSvc('ServiceA', ['ticker', 'price', 'volume']),
+      makeSvc('ServiceB', ['name', 'address', 'phone']),
+    ];
+    const result = preFilterServicesByRelevance(
+      'what is the ticker price',
+      svcs,
+      1,
+    );
+    expect(result[0]?.title).toBe('ServiceA');
+  });
+
+  test('handles empty question gracefully', () => {
+    const svcs = [makeSvc('A', ['x']), makeSvc('B', ['y'])];
+    const result = preFilterServicesByRelevance('', svcs, 5);
+    expect(result).toHaveLength(2);
+  });
+});
+
+describe(unitTest('ensureSafeLimit'), () => {
+  test('appends LIMIT to simple SELECT without one', () => {
+    const sql = "SELECT * FROM service('/path', coordinates => 'c:g:1')";
+    const result = ensureSafeLimit(sql);
+    expect(result).toContain('LIMIT 1000');
+  });
+
+  test('does not append when LIMIT already present', () => {
+    const sql =
+      "SELECT * FROM service('/path', coordinates => 'c:g:1') LIMIT 10";
+    const result = ensureSafeLimit(sql);
+    expect(result).toBe(sql);
+  });
+
+  test('does not append to aggregation queries', () => {
+    const sql =
+      'SELECT "region", COUNT(*) AS cnt FROM service(\'/path\', coordinates => \'c:g:1\') GROUP BY "region"';
+    const result = ensureSafeLimit(sql);
+    expect(result).toBe(sql);
+  });
+
+  test('does not append when SUM is present', () => {
+    const sql =
+      "SELECT SUM(\"amount\") AS total FROM service('/path', coordinates => 'c:g:1')";
+    const result = ensureSafeLimit(sql);
+    expect(result).toBe(sql);
+  });
+
+  test('uses custom limit value', () => {
+    const sql = "SELECT * FROM service('/path', coordinates => 'c:g:1')";
+    const result = ensureSafeLimit(sql, 500);
+    expect(result).toContain('LIMIT 500');
+  });
+});
+
+describe(unitTest('sanitizeJoinOrderBy — edge cases'), () => {
+  test('returns unchanged when JOIN + ORDER BY but no AS aliases', () => {
+    const sql = [
+      'SELECT a."date", b."price"',
+      "FROM service('/a') AS a",
+      'JOIN service(\'/b\') AS b ON a."id" = b."id"',
+      'ORDER BY a."date" DESC',
+    ].join('\n');
+    expect(sanitizeJoinOrderBy(sql)).toBe(sql);
+  });
+
+  test('leaves ORDER BY unchanged when col not in alias map', () => {
+    const sql = [
+      'SELECT a."date" AS query_date',
+      "FROM service('/a') AS a",
+      'JOIN service(\'/b\') AS b ON a."id" = b."id"',
+      'ORDER BY b."other" DESC',
+    ].join('\n');
+    const result = sanitizeJoinOrderBy(sql);
+    expect(result).toContain('b."other"');
+  });
+});
+
+describe(unitTest('preFilterServicesByRelevance — edge cases'), () => {
+  function makeSvc(
+    title: string,
+    columns: string[],
+    params?: string[],
+  ): TDSServiceSchema {
+    return {
+      title,
+      pattern: `/${title.toLowerCase()}`,
+      columns: columns.map((name) => ({ name })),
+      parameters: params ?? [],
+    };
+  }
+
+  test('matches against parameters', () => {
+    const svcs = [
+      makeSvc('ServiceA', ['col1'], ['businessDate']),
+      makeSvc('ServiceB', ['col2'], ['region']),
+    ];
+    const result = preFilterServicesByRelevance(
+      'show region breakdown',
+      svcs,
+      1,
+    );
+    expect(result[0]?.title).toBe('ServiceB');
+  });
+
+  test('matches against description', () => {
+    const svcs = [
+      {
+        title: 'Svc1',
+        pattern: '/svc1',
+        columns: [{ name: 'x' }],
+        parameters: [],
+        description: 'Credit risk exposure data',
+      },
+      {
+        title: 'Svc2',
+        pattern: '/svc2',
+        columns: [{ name: 'y' }],
+        parameters: [],
+        description: 'Equity pricing data',
+      },
+    ];
+    const result = preFilterServicesByRelevance(
+      'show credit risk data',
+      svcs,
+      1,
+    );
+    expect(result[0]?.title).toBe('Svc1');
+  });
+
+  test('question with only short tokens returns first N services', () => {
+    const svcs = [makeSvc('A', ['x']), makeSvc('B', ['y'])];
+    const result = preFilterServicesByRelevance('is it ok', svcs, 5);
+    expect(result).toHaveLength(2);
+  });
+});
+
+describe(unitTest('buildConversationHistory — gridData colId fallback'), () => {
+  test('uses colId when headerName is missing', () => {
+    const messages: LegendAIMessage[] = [
+      { id: '1', role: LegendAIMessageRole.USER, text: 'query' },
+      {
+        ...TEST__makeAssistantMessage(),
+        sql: 'SELECT 1',
+        gridData: {
+          columnDefs: [{ colId: 'revenue', field: 'revenue' }],
+          rowData: [{ revenue: 100 }],
+        },
+      },
+    ];
+    const history = buildConversationHistory(messages);
+    expect(history).toHaveLength(1);
+    expect(history[0]?.resultSummary).toContain('revenue');
+  });
+
+  test('skips columns with no headerName or colId', () => {
+    const messages: LegendAIMessage[] = [
+      { id: '1', role: LegendAIMessageRole.USER, text: 'query' },
+      {
+        ...TEST__makeAssistantMessage(),
+        sql: 'SELECT 1',
+        gridData: {
+          columnDefs: [{ field: 'f' }],
+          rowData: [{ f: 1 }],
+        },
+      },
+    ];
+    const history = buildConversationHistory(messages);
+    expect(history).toHaveLength(1);
+    expect(history[0]?.resultSummary).toBeUndefined();
+  });
+});
+
+describe(unitTest('buildGenerationFailureMessage — parameterSchemas'), () => {
+  test('includes parameterSchema types', () => {
+    const services: TDSServiceSchema[] = [
+      {
+        title: 'MyService',
+        pattern: '/svc',
+        columns: [],
+        parameters: ['businessDate'],
+        parameterSchemas: [
+          { name: 'businessDate', type: 'StrictDate' },
+          { name: 'region', type: 'String' },
+        ],
+      },
+    ];
+    const result = buildGenerationFailureMessage(
+      'Could not generate',
+      undefined,
+      services,
+    );
+    expect(result).toContain('businessDate (StrictDate)');
+    expect(result).toContain('region (String)');
   });
 });

@@ -36,7 +36,7 @@ function makeViewerStateStub(
   lambdaMocks?: Map<string, RawLambda>,
 ): DataSpaceViewerState {
   return {
-    dataSpaceAnalysisResult: { executables },
+    dataSpaceAnalysisResult: { executables, elementDocs: [] },
     graphManagerState: {
       graphManager: {
         pureCodeToLambda: async (code: string) =>

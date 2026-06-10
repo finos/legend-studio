@@ -26,7 +26,6 @@ import {
   generateAnchorForActivity,
   generateAnchorForDiagram,
 } from '../stores/DataSpaceViewerNavigation.js';
-import { DataSpaceLegendAIIntegration } from './DataSpaceLegendAIIntegration.js';
 
 export const DataSpaceWiki = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -102,10 +101,6 @@ export const DataSpaceWiki = observer(
         />
         <DataSpaceQuickStart dataSpaceViewerState={dataSpaceViewerState} />
         <DataSpaceDataAccess dataSpaceViewerState={dataSpaceViewerState} />
-        <DataSpaceLegendAIIntegration
-          dataSpaceViewerState={dataSpaceViewerState}
-          config={dataSpaceViewerState.legendAIConfig}
-        />
       </div>
     );
   },

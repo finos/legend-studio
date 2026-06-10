@@ -25,9 +25,20 @@ import {
   LegendAIOrchestratorRequest,
   LegendAIOrchestratorResponse,
   LegendAIResolvedEntities,
+  LegendAIEntityCandidate,
+  LegendAIChartType,
+  LegendAIChartRecommendation,
+  LegendAIKeyMetric,
+  LegendAIChartDataPoint,
+  LegendAIResultAnalysis,
   type LegendAISemanticSearchResolutionDetails,
 } from '../LegendAI_LegendApplicationPlugin_Extension.js';
 import { QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
+import {
+  TEST__createMockLegendAIPlugin,
+  TEST_DATA__legendAIConfig,
+  TEST_DATA__legendAIServices,
+} from '../__test-utils__/LegendAITestUtils.js';
 
 describe(unitTest('LegendAI plugin extension DTOs'), () => {
   test('LegendAISqlExtractionResult', () => {
@@ -138,5 +149,85 @@ describe(unitTest('LegendAI plugin extension DTOs'), () => {
     expect(LegendAIJudgeVerdict.FAIL).toBe('FAIL');
     const values = Object.values(LegendAIJudgeVerdict);
     expect(values).toHaveLength(2);
+  });
+
+  test('LegendAIEntityCandidate has expected defaults', () => {
+    const candidate = new LegendAIEntityCandidate();
+    candidate.datasetName = 'Trades';
+    candidate.modelPath = 'my::Trade';
+    candidate.similarityScore = 0.95;
+    candidate.description = 'Trade entity';
+    expect(candidate.datasetName).toBe('Trades');
+    expect(candidate.modelPath).toBe('my::Trade');
+    expect(candidate.similarityScore).toBe(0.95);
+    expect(candidate.description).toBe('Trade entity');
+  });
+
+  test('LegendAIChartType enum values', () => {
+    expect(LegendAIChartType.BAR).toBe('bar');
+    expect(LegendAIChartType.LINE).toBe('line');
+    expect(LegendAIChartType.PIE).toBe('pie');
+    expect(LegendAIChartType.TABLE).toBe('table');
+    expect(LegendAIChartType.NONE).toBe('none');
+    expect(Object.values(LegendAIChartType)).toHaveLength(5);
+  });
+
+  test('LegendAIChartRecommendation has expected defaults', () => {
+    const rec = new LegendAIChartRecommendation();
+    rec.chartType = LegendAIChartType.BAR;
+    rec.xAxis = 'date';
+    rec.yAxis = 'amount';
+    rec.label = 'Trades';
+    rec.reasoning = 'Bar chart suits categorical data';
+    expect(rec.chartType).toBe('bar');
+    expect(rec.xAxis).toBe('date');
+    expect(rec.yAxis).toBe('amount');
+    expect(rec.label).toBe('Trades');
+    expect(rec.reasoning).toBe('Bar chart suits categorical data');
+  });
+
+  test('LegendAIKeyMetric has expected defaults', () => {
+    const metric = new LegendAIKeyMetric();
+    metric.label = 'Total';
+    metric.value = '1000';
+    metric.detail = 'Sum of all trades';
+    expect(metric.label).toBe('Total');
+    expect(metric.value).toBe('1000');
+    expect(metric.detail).toBe('Sum of all trades');
+  });
+
+  test('LegendAIChartDataPoint has expected defaults', () => {
+    const point = new LegendAIChartDataPoint();
+    point.label = 'Jan';
+    point.value = 42;
+    point.color = '#ff0000';
+    point.colorIndex = 0;
+    expect(point.label).toBe('Jan');
+    expect(point.value).toBe(42);
+    expect(point.color).toBe('#ff0000');
+    expect(point.colorIndex).toBe(0);
+  });
+
+  test('LegendAIResultAnalysis has expected defaults', () => {
+    const analysis = new LegendAIResultAnalysis();
+    analysis.summary = 'Top trades summary';
+    analysis.keyMetrics = [];
+    analysis.chartData = [];
+    analysis.suggestedQueries = ['show more'];
+    expect(analysis.summary).toBe('Top trades summary');
+    expect(analysis.chartRecommendation).toBeUndefined();
+    expect(analysis.keyMetrics).toEqual([]);
+    expect(analysis.chartData).toEqual([]);
+    expect(analysis.suggestedQueries).toEqual(['show more']);
+  });
+
+  test('selectRelevantServices returns services unchanged by default', async () => {
+    const plugin = TEST__createMockLegendAIPlugin();
+    const result = await plugin.selectRelevantServices(
+      'show trades',
+      TEST_DATA__legendAIServices,
+      TEST_DATA__legendAIConfig,
+    );
+    expect(result).toBe(TEST_DATA__legendAIServices);
   });
 });

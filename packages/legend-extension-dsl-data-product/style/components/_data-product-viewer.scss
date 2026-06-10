@@ -22,14 +22,17 @@
   position: relative;
   font-family: Roboto, sans-serif;
   overflow: auto;
+  display: flex;
+  flex-direction: row;
 
   &__header {
     @include flexHCenter;
 
     position: absolute;
     top: 0;
+    left: 0;
+    right: 0;
     height: 14rem;
-    width: 100%;
     z-index: 1;
     background: transparent;
     transition: all 0.5s ease;
@@ -197,7 +200,7 @@
     flex-direction: column;
     height: 100%;
     width: 100%;
-    min-width: fit-content;
+    min-width: 0;
     overflow: auto;
   }
 
@@ -509,7 +512,7 @@
   flex-direction: column;
   z-index: 10;
   bottom: 2rem;
-  right: 3rem;
+  left: 3rem;
   width: 3.4rem;
   height: 4.8rem;
   background: var(--color-blue-200);
@@ -2833,5 +2836,139 @@
     display: flex;
     gap: 0.5rem;
     align-items: center;
+  }
+}
+
+// ─── AI side-panel & toggle ──────────────────────────────────────────────────
+
+.data-product__viewer--chat-open .data-product__viewer__header {
+  right: var(--ai-panel-width, 0);
+}
+
+.data-product__viewer--chat-open .data-product__viewer__frame {
+  min-width: 0;
+}
+
+.data-product__viewer--chat-open .data-product__viewer__header__content {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  padding-left: 4rem;
+  padding-right: 4rem;
+}
+
+.data-product__viewer--chat-open .data-product__viewer__header__title {
+  max-width: 100%;
+}
+
+.data-product__viewer__ai-panel {
+  min-width: 32rem;
+  max-width: 60vw;
+  height: 100%;
+  border-left: 0.1rem solid var(--qai-border, #2a2d35);
+  background: var(--qai-bg-primary, #1a1d24);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dp-ai-panel-slide-in 0.3s ease;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 11;
+
+  .legend-ai {
+    height: 100%;
+    min-height: 0;
+    border-radius: 0;
+    border: none;
+    margin: 0;
+    box-shadow: none;
+    scroll-margin-top: 0;
+  }
+
+  &__resize-handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0.4rem;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 10;
+    background: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+    transition: background 0.15s ease;
+
+    &:hover,
+    &:active {
+      background: var(--qai-accent, #186ade);
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.2rem;
+    border-bottom: 0.1rem solid var(--qai-border, #2a2d35);
+    background: var(--qai-bg-secondary, #23262f);
+    flex-shrink: 0;
+
+    &__title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--qai-text-primary, #e0e1e6);
+
+      svg {
+        font-size: 1.4rem;
+        color: var(--qai-accent, #186ade);
+      }
+    }
+
+    &__actions {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    &__action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.8rem;
+      height: 2.8rem;
+      border: none;
+      border-radius: 0.4rem;
+      background: transparent;
+      color: var(--qai-text-muted, #8b8fa3);
+      cursor: pointer;
+      transition:
+        background 0.15s ease,
+        color 0.15s ease;
+
+      svg {
+        font-size: 1.4rem;
+      }
+
+      &:hover {
+        background: var(--qai-bg-elevated, #2a2d35);
+        color: var(--qai-text-primary, #e0e1e6);
+      }
+    }
+  }
+}
+
+@keyframes dp-ai-panel-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
