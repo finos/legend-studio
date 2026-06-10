@@ -1238,6 +1238,7 @@ const transformRelationFunctionInstanceSetImplementation = (
     context,
   );
   classMapping.extendsClassMappingId = element.superSetImplementationId;
+  classMapping.primaryKey = element.primaryKey;
   return classMapping;
 };
 

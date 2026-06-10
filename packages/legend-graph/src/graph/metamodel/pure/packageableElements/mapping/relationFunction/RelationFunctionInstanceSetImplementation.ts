@@ -25,6 +25,7 @@ export class RelationFunctionInstanceSetImplementation
   implements Hashable
 {
   relationFunction?: ConcreteFunctionDefinition;
+  primaryKey: string[] = [];
 
   override accept_SetImplementationVisitor<T>(
     visitor: SetImplementationVisitor<T>,
@@ -37,6 +38,7 @@ export class RelationFunctionInstanceSetImplementation
       CORE_HASH_STRUCTURE.RELATION_FUNCTION_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,
       hashArray(this.propertyMappings),
+      hashArray(this.primaryKey),
     ]);
   }
 }
