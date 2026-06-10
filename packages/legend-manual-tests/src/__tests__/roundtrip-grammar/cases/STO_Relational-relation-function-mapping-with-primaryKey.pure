@@ -36,4 +36,3 @@ Mapping my::relationFunctionMapping
     +firmId: Integer[1]: FIRMID
   }
 )
-
