@@ -82,6 +82,7 @@ import { Association } from '../../../../../../../../graph/metamodel/pure/packag
 import { generateFunctionPrettyName } from '../../../../../../../../graph/helpers/PureLanguageHelper.js';
 import { DataProductAccessPointTest } from '../../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
 import { DataProductTestSuite } from '../../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
+import { FunctionParameterValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
 import { V1_AccessPointTest } from '../../../../model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
 import type { V1_DataProductTestSuite } from '../../../../model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
 import { V1_buildDataResolver } from './V1_DataResolverBuilderHelper.js';
@@ -438,6 +439,12 @@ const V1_buildDataProductAccessPointTest = (
   accessPointTest.__parent = parentSuite;
   accessPointTest.doc = element.doc;
   accessPointTest.accessPointId = element.accessPointId;
+  accessPointTest.parameters = element.parameters?.map((param) => {
+    const parameterValue = new FunctionParameterValue();
+    parameterValue.name = param.name;
+    parameterValue.value = param.value;
+    return parameterValue;
+  });
   accessPointTest.assertions = element.assertions.map((assertion) =>
     V1_buildTestAssertion(assertion, accessPointTest, context),
   );
