@@ -170,19 +170,6 @@ class V1_PackageableElementTransformer
     const parsedContent = V1_deserializeIngestDefinitionContent(
       element.content,
     );
-    const invalidSuites = element.tests.filter(
-      (suite) =>
-        suite.tests.length === 0 || (suite.testData?.length ?? 0) === 0,
-    );
-    if (invalidSuites.length) {
-      throw new UnsupportedOperationError(
-        `Can't transform ingest '${element.path}': invalid test suite(s) ${invalidSuites
-          .map((suite) => `'${suite.id}'`)
-          .join(
-            ', ',
-          )}; each suite must contain at least one test and one testData entry`,
-      );
-    }
 
     parsedContent.testSuites = element.tests.map((suite) =>
       V1_transformIngestTestSuite(suite, this.context),

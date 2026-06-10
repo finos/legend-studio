@@ -45,11 +45,9 @@ export const V1_transformIngestTestSuite = (
   const suite = new V1_IngestTestSuite();
   suite.id = element.id;
   suite.doc = element.doc;
-  if (element.testData?.length) {
-    suite.testData = element.testData.map((dataResolver) =>
-      V1_transformDataResolver(dataResolver, context),
-    );
-  }
+  suite.testData = element.testData.map((dataResolver) =>
+    V1_transformDataResolver(dataResolver, context),
+  );
   suite.tests = element.tests.map((test) => {
     if (test instanceof IngestMatViewTest) {
       return V1_transformIngestMatViewTest(test);

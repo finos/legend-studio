@@ -88,14 +88,14 @@ export class IngestMatViewTest extends AtomicTest implements Hashable {
 }
 
 export class IngestTestSuite extends TestSuite implements Hashable {
-  testData: DataResolver[] | undefined;
+  testData: DataResolver[] = [];
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.INGEST_TEST_SUITE,
       this.id,
       this.doc ?? '',
-      this.testData?.length ? hashArray(this.testData) : '',
+      hashArray(this.testData),
       hashArray(this.tests),
     ]);
   }

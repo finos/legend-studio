@@ -54,11 +54,9 @@ export const V1_buildIngestTestSuite = (
   const testSuite = new IngestTestSuite();
   testSuite.id = element.id;
   testSuite.doc = element.doc;
-  if (element.testData?.length) {
-    testSuite.testData = element.testData.map((dataResolver) =>
-      V1_buildDataResolver(dataResolver, context),
-    );
-  }
+  testSuite.testData = element.testData.map((dataResolver) =>
+    V1_buildDataResolver(dataResolver, context),
+  );
   testSuite.tests = element.tests.map((test) => {
     if ('datasetId' in test || 'datasetName' in (test as object)) {
       return V1_buildIngestMatViewTest(

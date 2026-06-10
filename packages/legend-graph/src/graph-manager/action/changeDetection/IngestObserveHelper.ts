@@ -36,7 +36,7 @@ export const observe_IngestTestSuite = skipObservedWithContext(
       hashCode: computed,
     });
     metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
-    metamodel.testData?.forEach((testData) =>
+    metamodel.testData.forEach((testData) =>
       observe_DataResolver(testData, context),
     );
     return metamodel;

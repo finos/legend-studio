@@ -89,14 +89,14 @@ export class V1_IngestMatViewTest extends V1_AtomicTest implements Hashable {
 }
 
 export class V1_IngestTestSuite extends V1_TestSuite implements Hashable {
-  testData: V1_DataResolver[] | undefined;
+  testData: V1_DataResolver[] = [];
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.INGEST_TEST_SUITE,
       this.id,
       this.doc ?? '',
-      hashArray(this.testData ?? []),
+      hashArray(this.testData),
       hashArray(this.tests),
     ]);
   }

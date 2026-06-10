@@ -423,7 +423,7 @@ export class IngestTestDataState {
   get availableElementsToAdd(): PackageableElement[] {
     const suite = this.suiteState.suite;
     const existingPaths = new Set(
-      (suite.testData ?? [])
+      suite.testData
         .filter(
           (testData): testData is BaseDataResolver | ReferenceDataResolver =>
             testData instanceof BaseDataResolver ||
@@ -459,16 +459,14 @@ export class IngestTestDataState {
     resolver.data = relationElementsData;
 
     const suite = this.suiteState.suite;
-    suite.testData = [...(suite.testData ?? []), resolver];
+    suite.testData = [...suite.testData, resolver];
     this.refreshElementTestDataStates({ selectedElementPath: path });
   }
 
   deleteElement(elementState: IngestElementTestDataState): void {
     const suite = this.suiteState.suite;
-    if (suite.testData) {
-      const index = suite.testData.indexOf(elementState.testData);
-      suite.testData.splice(index, 1);
-    }
+    const index = suite.testData.indexOf(elementState.testData);
+    suite.testData.splice(index, 1);
     this.refreshElementTestDataStates();
   }
 
@@ -480,7 +478,7 @@ export class IngestTestDataState {
       this.selectedElementTestDataState?.element.path;
     const suite = this.suiteState.suite;
 
-    this.elementTestDataStates = (suite.testData ?? [])
+    this.elementTestDataStates = suite.testData
       .filter(
         (testData): testData is BaseDataResolver =>
           testData instanceof BaseDataResolver,
@@ -642,7 +640,6 @@ export class IngestTestSuiteState extends TestableTestSuiteEditorState {
         byElement.set(accessor.parentElement.path, group);
       }
 
-      this.suite.testData = this.suite.testData ?? [];
       for (const [elementPath, accessors] of byElement) {
         const element =
           this.editorStore.graphManagerState.graph.getNullableElement(
@@ -694,7 +691,7 @@ export class IngestTestSuiteState extends TestableTestSuiteEditorState {
       );
     }
 
-    if ((this.suite.testData?.length ?? 0) === 0) {
+    if (this.suite.testData.length === 0) {
       // Ingest test suites require testData >= 1; seed a minimal editable resolver.
       const resolver = new BaseDataResolver();
       resolver.element = PackageableElementExplicitReference.create(
