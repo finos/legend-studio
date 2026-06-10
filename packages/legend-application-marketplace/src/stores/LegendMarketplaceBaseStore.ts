@@ -94,7 +94,7 @@ export class LegendMarketplaceBaseStore {
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
   readonly lakehouseWorkflowServerClient: LakehouseWorkflowServerClient;
-  readonly permitWorkflowServerClient: PermitWorkflowServerClient;
+  readonly permitWorkflowServerClient: PermitWorkflowServerClient | undefined;
   readonly lakehouseDataProductService: LakehouseDataProductService;
   readonly cartStore: CartStore;
   readonly terminalAccessServerClient: TerminalAccessServerClient;
@@ -182,14 +182,18 @@ export class LegendMarketplaceBaseStore {
     );
 
     // permit + eTask workflow
-    this.permitWorkflowServerClient = new PermitWorkflowServerClient({
-      authBaseUrl: this.applicationStore.config.lakehouseServerUrl,
-      workflowBaseUrl:
-        this.applicationStore.config.lakehousePermitWorkflowServerUrl,
-    });
-    this.permitWorkflowServerClient.setTracerService(
-      this.applicationStore.tracerService,
-    );
+    if (this.applicationStore.config.lakehousePermitWorkflowServerUrl) {
+      this.permitWorkflowServerClient = new PermitWorkflowServerClient({
+        authBaseUrl: this.applicationStore.config.lakehouseServerUrl,
+        workflowBaseUrl:
+          this.applicationStore.config.lakehousePermitWorkflowServerUrl,
+      });
+      this.permitWorkflowServerClient.setTracerService(
+        this.applicationStore.tracerService,
+      );
+    } else {
+      this.permitWorkflowServerClient = undefined;
+    }
 
     // lakehouse ingest
     this.lakehouseIngestServerClient = new LakehouseIngestServerClient(
