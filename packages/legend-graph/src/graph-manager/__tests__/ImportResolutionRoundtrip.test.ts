@@ -96,6 +96,10 @@ import {
   TEST_DATA__COMPUTE_UNKNOWN_SPEC,
 } from './roundtripTestData/TEST_DATA__ComputeRoundtrip.js';
 import { TEST_DATA__Function_genericType } from './roundtripTestData/TEST_DATA__Function-generictype.js';
+import {
+  TEST_DATA__INGEST_DEFINITION,
+  TEST_DATA__INGEST_DEFINITION__TEST_SUITES,
+} from './roundtripTestData/TEST_DATA__IngestRoundtrip.js';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([
@@ -349,4 +353,16 @@ describe(unitTest('Function Generic Type'), () => {
       await TEST__checkBuildingElementsRoundtrip(entities);
     },
   );
+});
+
+describe(unitTest('Ingest definition'), () => {
+  test.each([
+    ['Ingest definition (no test suites)', TEST_DATA__INGEST_DEFINITION],
+    [
+      'Ingest definition with test suites',
+      TEST_DATA__INGEST_DEFINITION__TEST_SUITES,
+    ],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
 });

@@ -15,10 +15,16 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
+import type { DataResolver } from '../../data/DataResolver.js';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
+import { AtomicTest, TestSuite } from '../../test/Test.js';
 import { INTERNAL__UnknownPackageableElement } from '../INTERNAL__UnknownPackageableElement.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
-import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../Core_HashUtils.js';
+import type { Testable } from '../../test/Testable.js';
 
 export enum AppDirLevel {
   BUSINESS_UNIT = 'BUSINESS_UNIT',
@@ -67,10 +73,50 @@ export interface MatViewDataSet {
   };
 }
 
+export class IngestMatViewTest extends AtomicTest implements Hashable {
+  datasetName!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INGEST_MAT_VIEW_TEST,
+      this.id,
+      this.doc ?? '',
+      this.datasetName,
+      hashArray(this.assertions),
+    ]);
+  }
+}
+
+export class IngestTestSuite extends TestSuite implements Hashable {
+  testData: DataResolver[] | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INGEST_TEST_SUITE,
+      this.id,
+      this.doc ?? '',
+      this.testData?.length ? hashArray(this.testData) : '',
+      hashArray(this.tests),
+    ]);
+  }
+}
+
 // will extend UnknownPackageableElement for now until we want to expose more of the forms
-export class IngestDefinition extends INTERNAL__UnknownPackageableElement {
+export class IngestDefinition
+  extends INTERNAL__UnknownPackageableElement
+  implements Testable
+{
   appDirDeployment?: AppDirNode;
+  tests: IngestTestSuite[] = [];
   TEMPORARY_MATVIEW_FUNCTION_DATA_SETS: MatViewDataSet[] | undefined;
+
+  protected override get _elementHashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_PACKAGEABLE_ELEMENT,
+      this.path,
+      hashObjectWithoutSourceInformation(this.content),
+    ]);
+  }
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,

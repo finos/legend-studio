@@ -15,9 +15,14 @@
  */
 
 import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_RelationTypeColumn } from '../type/V1_RelationType.js';
 import { V1_INTERNAL__UnknownPackageableElement } from '../V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_PackageableElementVisitor } from '../V1_PackageableElement.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import { V1_AtomicTest } from '../../test/V1_AtomicTest.js';
+import { V1_TestSuite } from '../../test/V1_TestSuite.js';
+import type { V1_DataResolver } from '../../data/V1_DataResolver.js';
 
 export const V1_INGEST_DEFINITION_TYPE = 'ingestDefinition';
 
@@ -69,7 +74,36 @@ export class V1_IngestDataset {
   writeMode?: V1_WriteMode;
 }
 
+export class V1_IngestMatViewTest extends V1_AtomicTest implements Hashable {
+  datasetId!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INGEST_MAT_VIEW_TEST,
+      this.id,
+      this.doc ?? '',
+      this.datasetId,
+      hashArray(this.assertions),
+    ]);
+  }
+}
+
+export class V1_IngestTestSuite extends V1_TestSuite implements Hashable {
+  testData: V1_DataResolver[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INGEST_TEST_SUITE,
+      this.id,
+      this.doc ?? '',
+      hashArray(this.testData ?? []),
+      hashArray(this.tests),
+    ]);
+  }
+}
+
 export class V1_IngestDefinitionContent {
   datasets?: V1_IngestDataset[];
+  testSuites?: V1_IngestTestSuite[];
   writeMode?: V1_WriteMode;
 }

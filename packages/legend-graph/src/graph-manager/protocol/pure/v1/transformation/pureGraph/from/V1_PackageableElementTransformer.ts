@@ -106,6 +106,11 @@ import type { Compute } from '../../../../../../../graph/metamodel/pure/compute/
 import { V1_transformCompute } from './V1_ComputeTransformer.js';
 import type { IngestDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import {
+  V1_deserializeIngestDefinitionContent,
+  V1_serializeIngestDefinitionContent,
+} from '../../pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
+import { V1_transformIngestTestSuite } from './V1_IngestTransformer.js';
 import { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import type { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 
@@ -160,7 +165,36 @@ class V1_PackageableElementTransformer
   visit_IngestDefinition(element: IngestDefinition): V1_PackageableElement {
     const protocol = new V1_IngestDefinition();
     V1_initPackageableElement(protocol, element);
-    protocol.content = element.content;
+    // Keep full unknown ingest element shape (_type/name/package/etc.) and
+    // project current form-mode test suites into content to stay in sync.
+    const parsedContent = V1_deserializeIngestDefinitionContent(
+      element.content,
+    );
+    const invalidSuites = element.tests.filter(
+      (suite) =>
+        suite.tests.length === 0 || (suite.testData?.length ?? 0) === 0,
+    );
+    if (invalidSuites.length) {
+      throw new UnsupportedOperationError(
+        `Can't transform ingest '${element.path}': invalid test suite(s) ${invalidSuites
+          .map((suite) => `'${suite.id}'`)
+          .join(
+            ', ',
+          )}; each suite must contain at least one test and one testData entry`,
+      );
+    }
+
+    parsedContent.testSuites = element.tests.map((suite) =>
+      V1_transformIngestTestSuite(suite, this.context),
+    );
+    const serializedContent =
+      V1_serializeIngestDefinitionContent(parsedContent);
+    protocol.content = {
+      ...(element.content as Record<string, unknown>),
+      ...(serializedContent.testSuites !== undefined
+        ? { testSuites: serializedContent.testSuites }
+        : {}),
+    };
     // we don't take into account appDirDeployment here as it is still read only
     return protocol;
   }

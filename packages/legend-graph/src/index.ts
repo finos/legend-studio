@@ -100,6 +100,8 @@ export {
   V1_IngestDatasetSchema,
   V1_IngestDatasetSource,
   V1_IngestDataset,
+  V1_IngestMatViewTest,
+  V1_IngestTestSuite,
   V1_IngestDefinitionContent,
   V1_WriteMode,
   V1_WriteModeType,
@@ -816,6 +818,7 @@ export * from './graph/metamodel/pure/dataProduct/test/DataProductAccessPointTes
 export * from './graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
 export * from './graph/metamodel/pure/data/DataResolver.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
+export * from './graph-manager/action/changeDetection/IngestObserveHelper.js';
 
 // ------------------------------------- DSL Data --------------------------------------------
 

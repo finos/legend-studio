@@ -40,6 +40,7 @@ import {
 import {
   type DataElement,
   DataProduct,
+  IngestDefinition,
   type ValueSpecification,
   type VariableExpression,
   type PrimitiveInstanceValue,
@@ -87,6 +88,7 @@ import {
 } from '@finos/legend-query-builder';
 import { useApplicationStore } from '@finos/legend-application';
 import type { DataProductTestState } from '../../../../stores/editor/editor-state/element-editor-state/dataProduct/testable/DataProductTestableState.js';
+import type { IngestTestState } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestTestableState.js';
 
 export const SharedDataElementModal = observer(
   (props: {
@@ -604,8 +606,11 @@ const EqualToRelationAsssertionEditor = observer(
 const DataProductEqualToRelationAssertionEditor = observer(
   (props: { testAssertionEditorState: TestAssertionEditorState }) => {
     const { testAssertionEditorState } = props;
-    const testState =
-      testAssertionEditorState.testState as DataProductTestState;
+    const isDataProductTest =
+      testAssertionEditorState.testState.testable instanceof DataProduct;
+    const testState = isDataProductTest
+      ? (testAssertionEditorState.testState as DataProductTestState)
+      : (testAssertionEditorState.testState as IngestTestState);
     const isReadOnly = testAssertionEditorState.testState.isReadOnly;
     const relationElementState = testState.testDataRelationState;
 
@@ -613,7 +618,9 @@ const DataProductEqualToRelationAssertionEditor = observer(
       <div className="service-test-data-editor panel">
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
-            Access Point: {testState.accessPointLabel}
+            {isDataProductTest
+              ? `Access Point: ${(testState as DataProductTestState).accessPointLabel}`
+              : `Dataset: ${(testState as IngestTestState).datasetLabel}`}
           </div>
         </div>
         {relationElementState ? (
@@ -978,7 +985,8 @@ export const TestAssertionEditor = observer(
     const selectedTab = testAssertionState.selectedTab;
     const isReadOnly = testAssertionState.testState.isReadOnly;
     const isDataProductTest =
-      testAssertionState.testState.testable instanceof DataProduct;
+      testAssertionState.testState.testable instanceof DataProduct ||
+      testAssertionState.testState.testable instanceof IngestDefinition;
     const isDisabled =
       isReadOnly ||
       !testAssertionState.assertionState.supportsGeneratingAssertion ||
