@@ -1,5 +1,17 @@
 # @finos/legend-server-sdlc
 
+## 5.4.4
+
+### Patch Changes
+
+- [#5236](https://github.com/finos/legend-studio/pull/5236) [`27c60b9`](https://github.com/finos/legend-studio/commit/27c60b9c3253acd4cbb0dcc3cb146c9c4584aabf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - feat: add `excludeTag` parameter to `SDLCServerClient.getProjects` and exclude sandbox projects from project search
+
+  `SDLCServerClient.getProjects` now accepts an `excludeTag: string[] | undefined` parameter (positioned between `tag` and `limit`) which filters out projects carrying any of the given SDLC tags.
+
+  Workspace setup, query productionization, and update-project-service-query flows now pass `[SANDBOX_SDLC_TAG]` as `excludeTag` so that other users' sandbox projects no longer appear in the main project search/typeahead. The current user's own sandbox project is still fetched via the dedicated sandbox lookup and is now pinned to the top of the workspace setup project picker with a `(sandbox)` label suffix.
+
+- [#5249](https://github.com/finos/legend-studio/pull/5249) [`ed6bce8`](https://github.com/finos/legend-studio/commit/ed6bce8574d43d840e9c6d9c0200f13a83962422) ([@kelly-thai](https://github.com/kelly-thai)) - Update SDLC Review class with description
+
 ## 5.4.3
 
 ## 5.4.2

@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 2.0.198
+
+### Patch Changes
+
+- [#5246](https://github.com/finos/legend-studio/pull/5246) [`d386f88`](https://github.com/finos/legend-studio/commit/d386f88b6c17ab8e4de3f3ddcb25fa46dc1a08cd) ([@bojja-gs](https://github.com/bojja-gs)) - Legend AI chat: extract processors into dedicated module, add scope selector and chat input components, improve intent classification, add analysis utils, and expand test coverage.
+
 ## 2.0.197
 
 ### Patch Changes

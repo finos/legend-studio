@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.227
+
+### Patch Changes
+
+- [#5246](https://github.com/finos/legend-studio/pull/5246) [`d386f88`](https://github.com/finos/legend-studio/commit/d386f88b6c17ab8e4de3f3ddcb25fa46dc1a08cd) ([@bojja-gs](https://github.com/bojja-gs)) - Data space viewer: add Legend AI integration panel with resize handle, keyboard accessibility, service relationship inference, and column enrichment from model docs.
+
 ## 10.4.226
 
 ### Patch Changes
