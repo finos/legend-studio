@@ -43,9 +43,20 @@ export const LegendTokenSync = (props: {
     } catch {
       applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.TOKEN_EXPIRED),
-        'OIDC silent renewal failed — clearing token',
+        'OIDC silent renewal failed — falling back to redirect',
       );
-      applicationStore.setAccessToken(undefined);
+      try {
+        // Fallback to an interactive redirect when silent renewal fails
+        await auth.signinRedirect({
+          state: window.location.href,
+        });
+      } catch {
+        applicationStore.logService.warn(
+          LogEvent.create(APPLICATION_EVENT.TOKEN_EXPIRED),
+          'OIDC interactive redirect failed — clearing token',
+        );
+        applicationStore.setAccessToken(undefined);
+      }
     }
   }, [auth, applicationStore]);
 
