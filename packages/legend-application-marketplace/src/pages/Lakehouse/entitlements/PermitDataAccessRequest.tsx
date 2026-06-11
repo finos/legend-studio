@@ -36,6 +36,7 @@ import {
 } from '@finos/legend-art';
 import {
   DataAccessRequestContent,
+  LakehouseResiliencyDisclaimer,
   PermitDataAccessRequestState,
 } from '@finos/legend-extension-dsl-data-product';
 import { flowResult } from 'mobx';
@@ -224,6 +225,9 @@ export const PermitDataAccessRequestTask =
                   </Button>
                 </Box>
               )}
+              <LakehouseResiliencyDisclaimer
+                applicationStore={marketplaceBaseStore.applicationStore}
+              />
               <DataAccessRequestContent
                 viewerState={permitState}
                 getDataProductUrl={(
