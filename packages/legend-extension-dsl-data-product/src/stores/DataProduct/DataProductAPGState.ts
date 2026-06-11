@@ -442,8 +442,16 @@ export class DataProductAPGState {
         tokenProvider,
       );
 
-      // Fallback: if no user contract found, check data requests
-      if (!userContract && dataAccessPlugins) {
+      const isContractActive =
+        userContract &&
+        userLiteContract &&
+        [
+          V1_EnrichedUserApprovalStatus.APPROVED,
+          V1_EnrichedUserApprovalStatus.SUBMITTED_FOR_APPROVALS,
+          V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+          V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL,
+        ].includes(userLiteContract.status);
+      if (!isContractActive && dataAccessPlugins) {
         // eslint-disable-next-line no-void
         void this.fetchDataRequestAccessFallback(
           lakehouseContractServerClient,
