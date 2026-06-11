@@ -17,7 +17,6 @@
 import { describe, expect, test } from '@jest/globals';
 import {
   convertTrendingEntryToSearchResult,
-<<<<<<< HEAD
   getSearchResultProjectGAV,
   generatePathForDataProductSearchResult,
   convertEntitlementsDataProductDetailsToSearchResult,
@@ -27,12 +26,6 @@ import {
 import {
   type TrendingDataProductEntry,
   type AutosuggestResult,
-=======
-  generatePathForDataProductSearchResult,
-} from '../SearchUtils.js';
-import {
-  type TrendingDataProductEntry,
->>>>>>> c2686bef0 (add url for native lakehouse product)
   DataProductSearchResult,
   LakehouseDataProductSearchResultDetails,
   LakehouseSDLCDataProductSearchResultOrigin,
@@ -508,6 +501,9 @@ describe('convertAutosuggestResultToSearchResult', () => {
     expect(details.artifactId).toBe('lg-art');
     expect(details.versionId).toBe('3.0.0');
     expect(details.path).toBe('com::legacy::DataSpace');
+  });
+});
+
 describe('generatePathForDataProductSearchResult', () => {
   const makeLegacyResult = (
     groupId: string,
