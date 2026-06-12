@@ -54,6 +54,26 @@ export interface ServerClientConfig {
    * NOTE: this is very specific to the deployment context.
    */
   autoReAuthenticateUrl?: string;
+  /**
+   * Programmatic re-authentication hook. Invoked when a `401` response is
+   * received. Should resolve to `true` if the original request should be
+   * retried (i.e. re-authentication succeeded), or `false` to propagate the
+   * `401` to the caller.
+   *
+   * This is useful when iframe-based silent re-auth (`autoReAuthenticateUrl`)
+   * is not viable — e.g. when the identity provider refuses to render its
+   * login UI in an `<iframe>` and a popup window is required instead.
+   *
+   * NOTE: this hook is fired only on a real `401`, not on `status === 0`
+   * (CORS / timeout). The iframe `autoReAuthenticateUrl` path keeps its
+   * legacy `status === 0` retry behavior.
+   *
+   * When both `autoReAuthenticate` and `autoReAuthenticateUrl` are set, the
+   * callback takes precedence on `401` and the iframe fallback is NOT
+   * chained: if the callback resolves `false`, the `401` propagates straight
+   * to the caller.
+   */
+  autoReAuthenticate?: (() => Promise<boolean>) | undefined;
 }
 
 /**
@@ -71,6 +91,7 @@ export abstract class AbstractServerClient {
   baseUrl?: string | undefined;
   baseHeaders?: RequestHeaders | undefined;
   autoReAuthenticateUrl?: string | undefined;
+  autoReAuthenticate?: (() => Promise<boolean>) | undefined;
 
   constructor(config: ServerClientConfig) {
     makeObservable(this, {
@@ -89,6 +110,7 @@ export abstract class AbstractServerClient {
     this.payloadDebugger = config.payloadDebugger;
     this.baseHeaders = config.baseHeaders;
     this.autoReAuthenticateUrl = config.autoReAuthenticateUrl;
+    this.autoReAuthenticate = config.autoReAuthenticate;
   }
 
   setBaseUrl(val: string | undefined): void {
@@ -343,6 +365,7 @@ export abstract class AbstractServerClient {
           ...(responseProcessConfig ?? {}),
           preprocess: (response: Response) => trace.bootstrap(response),
           autoReAuthenticateUrl: this.autoReAuthenticateUrl,
+          autoReAuthenticate: this.autoReAuthenticate,
         },
       )
       .then((result) => {

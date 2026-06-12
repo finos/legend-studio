@@ -182,7 +182,27 @@ class LegendStudioApplicationCoreOptions {
 
 export interface LegendStudioApplicationConfigurationData
   extends LegendApplicationConfigurationData {
-  sdlc: { url: string; baseHeaders?: RequestHeaders; client?: string };
+  sdlc: {
+    url: string;
+    baseHeaders?: RequestHeaders;
+    client?: string;
+    /**
+     * Enable the popup-based SDLC re-authentication flow.
+     *
+     * When `true`, Studio surfaces a "Re-authenticate with SDLC" action
+     * and (on a mid-session 401) automatically opens a popup that completes
+     * the OAuth dance against the SDLC server — preserving all in-memory
+     * editor state instead of doing a top-level navigation that wipes it.
+     *
+     * The popup uses a same-origin static page as its OAuth `redirect_uri`,
+     * derived at runtime from Studio's own origin + base URL (the same way
+     * the boot-time `/auth/authorize` flow constructs its `redirect_uri`).
+     * The deployment ships that page at `<base-url>/popup-callback.html`;
+     * deployments that enable this flag must register that derived URL on
+     * the SDLC server's OAuth client allow-list.
+     */
+    enablePopupReAuth?: boolean;
+  };
   depot: { url: string };
   engine: {
     url: string;
@@ -203,6 +223,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly sdlcServerUrl: string;
   readonly sdlcServerBaseHeaders?: RequestHeaders | undefined;
   readonly sdlcServerClient?: string | undefined;
+  readonly sdlcEnablePopupReAuth: boolean;
   readonly queryApplicationUrl?: string | undefined;
   readonly showcaseServerUrl?: string | undefined;
   readonly pctReportUrl?: string | undefined;
@@ -255,6 +276,9 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
     );
     this.sdlcServerBaseHeaders = input.configData.sdlc.baseHeaders;
     this.sdlcServerClient = input.configData.sdlc.client;
+    this.sdlcEnablePopupReAuth = Boolean(
+      input.configData.sdlc.enablePopupReAuth,
+    );
 
     // query
     if (input.configData.query?.url) {

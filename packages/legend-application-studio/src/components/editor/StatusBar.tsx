@@ -28,6 +28,7 @@ import {
   AssistantIcon,
   ErrorIcon,
   WarningIcon,
+  ShieldIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
@@ -42,7 +43,10 @@ import {
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
-import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
+import {
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from '../LegendStudioFrameworkProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
@@ -51,6 +55,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const params = useParams<WorkspaceEditorPathParams>();
   const editorStore = useEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
+  const baseStore = useLegendStudioBaseStore();
   const isInConflictResolutionMode = editorStore.isInConflictResolutionMode;
   // SDLC
   const projectId = params.projectId;
@@ -392,6 +397,21 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         >
           <HackerIcon />
         </button>
+        {baseStore.isSDLCPopupReAuthEnabled && (
+          <button
+            className="editor__status-bar__action"
+            disabled={baseStore.popupReAuthState.isInProgress}
+            onClick={(): void => {
+              baseStore
+                .reAuthorizeSDLCInPopup()
+                .catch(applicationStore.alertUnhandledError);
+            }}
+            tabIndex={-1}
+            title="Re-authenticate with SDLC (preserves local state)"
+          >
+            <ShieldIcon />
+          </button>
+        )}
         <button
           className={clsx(
             'editor__status-bar__action editor__status-bar__action__toggler',
