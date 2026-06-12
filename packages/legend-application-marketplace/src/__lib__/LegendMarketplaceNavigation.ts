@@ -165,6 +165,15 @@ export const generateLegacyDataProductPath = (
     path,
   });
 
+export const generateSdlcDataProductPath = (
+  gav: string,
+  path: string,
+): string =>
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT, {
+    gav,
+    path,
+  });
+
 export const generateLakehouseSearchResultsRoute = (
   query: string | undefined,
   useProducerSearch: boolean,

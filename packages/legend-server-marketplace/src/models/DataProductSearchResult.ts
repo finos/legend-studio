@@ -176,6 +176,7 @@ export class DataProductSearchResult {
   licenseTo!: string | undefined;
   hygiene_score: number | null | undefined;
   meets_hygiene_threshold: boolean | undefined;
+  data_product_link: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductSearchResult, {
@@ -195,6 +196,7 @@ export class DataProductSearchResult {
       licenseTo: optional(primitive()),
       hygiene_score: optional(primitive()),
       meets_hygiene_threshold: optional(primitive()),
+      data_product_link: optional(primitive()),
     }),
   );
 }
