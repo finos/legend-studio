@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { type JSX, useEffect, useCallback } from 'react';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import {
+  Button,
   Tooltip,
   Typography,
   List,
