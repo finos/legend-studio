@@ -34,6 +34,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
+import { LakehouseResiliencyDisclaimer } from './LakehouseResiliencyDisclaimer.js';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import {
   DataAccessRequestType,
@@ -162,6 +163,9 @@ export const EntitlementsDataContractCreator = observer(
                   </span>{' '}
                   Data Product
                 </div>
+                <LakehouseResiliencyDisclaimer
+                  applicationStore={viewerState.applicationStore}
+                />
                 <ButtonGroup
                   className="marketplace-lakehouse-entitlements__data-contract-creator__consumer-type-btn-group"
                   variant="contained"
