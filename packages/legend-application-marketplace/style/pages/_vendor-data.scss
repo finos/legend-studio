@@ -83,6 +83,35 @@
       display: flex;
       align-items: center;
     }
+
+    &__action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: absolute;
+      right: 2rem;
+      flex-wrap: wrap;
+    }
+
+    &__action-button {
+      font-size: 1.2rem;
+      border-radius: 999px;
+      text-transform: none;
+      white-space: nowrap;
+      color: var(--marketplace-text-primary);
+      border-color: var(--color-light-grey-400);
+      background: var(--marketplace-bg-primary);
+
+      .MuiButton-endIcon {
+        font-size: 1.2rem;
+        margin-left: 6px;
+      }
+
+      &:hover {
+        background: var(--marketplace-bg-secondary);
+        border-color: var(--color-blue-100);
+      }
+    }
   }
 
   .legend-marketplace-user-search-container {
@@ -150,6 +179,15 @@
     height: 60vh;
     flex-direction: column;
     gap: 2rem;
+  }
+
+  &__empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    color: var(--marketplace-text-secondary);
+    font-size: 1.4rem;
   }
 
   &__content-wrapper {

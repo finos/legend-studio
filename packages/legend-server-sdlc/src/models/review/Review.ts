@@ -38,6 +38,7 @@ export class Review {
   state!: ReviewState;
   author!: User;
   title!: string;
+  description?: string;
   projectId!: string;
   workspaceId!: string;
   webURL!: string;
@@ -72,6 +73,7 @@ export class Review {
       state: primitive(),
       labels: optional(list(primitive())),
       title: primitive(),
+      description: optional(primitive()),
       webURL: primitive(),
       workspaceId: primitive(),
       workspaceType: primitive(),

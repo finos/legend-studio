@@ -1,5 +1,25 @@
 # @finos/legend-lego
 
+## 2.0.198
+
+### Patch Changes
+
+- [#5246](https://github.com/finos/legend-studio/pull/5246) [`d386f88`](https://github.com/finos/legend-studio/commit/d386f88b6c17ab8e4de3f3ddcb25fa46dc1a08cd) ([@bojja-gs](https://github.com/bojja-gs)) - Legend AI chat: extract processors into dedicated module, add scope selector and chat input components, improve intent classification, add analysis utils, and expand test coverage.
+
+## 2.0.197
+
+### Patch Changes
+
+- [#5226](https://github.com/finos/legend-studio/pull/5226) [`476f055`](https://github.com/finos/legend-studio/commit/476f055ffe77e6eeb6e350546e060ba98aa48877) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce a scalable, theme-aware styling foundation for Legend Studio. Component styles now consume a two-tier CSS variable system (palette tokens → role-based semantic tokens such as `--color-bg-panel`, `--color-text-primary`, `--color-border-default`) that is remapped per theme via a body class (`theme__default-dark` / `theme__default-light`), rather than hardcoding palette colors directly. This makes the dark theme the stable default while enabling a light theme and additional themes in the future. No public API changes — existing dark-theme appearance is preserved.
+
+## 2.0.196
+
+### Patch Changes
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+## 2.0.195
+
 ## 2.0.194
 
 ### Patch Changes

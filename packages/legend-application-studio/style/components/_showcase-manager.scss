@@ -34,7 +34,7 @@
       height: 2.2rem;
 
       &:hover {
-        background: var(--color-dark-blue-shade-100);
+        background: var(--color-accent-subtle);
       }
     }
 
@@ -47,14 +47,14 @@
       height: 100%;
 
       svg {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         font-size: 1.4rem;
       }
     }
 
     &__node__label {
       font-size: 1.4rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       user-select: none;
       margin-left: 0.5rem;
     }
@@ -69,7 +69,7 @@
 
       height: 2.8rem;
       width: 100%;
-      border-bottom: 0.1rem solid var(--color-dark-grey-250);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__search-action {
@@ -78,7 +78,7 @@
 
       width: 2.8rem;
       height: 2.8rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       cursor: pointer;
 
       svg {
@@ -86,7 +86,7 @@
       }
 
       &:hover {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
     }
 
@@ -103,7 +103,7 @@
       @include flexVCenter;
 
       height: 100%;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       cursor: pointer;
 
       &__icon {
@@ -124,13 +124,13 @@
       }
 
       &:hover {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
 
       &__arrow {
         @include flexCenter;
 
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-disabled);
       }
     }
 
@@ -144,7 +144,7 @@
       @include flexCenter;
 
       padding: 0.3rem;
-      border-bottom: 0.1rem solid var(--color-dark-grey-250);
+      border-bottom: 0.1rem solid var(--color-border-default);
       height: 3.4rem;
       position: relative;
     }
@@ -155,9 +155,9 @@
       padding-right: 2.8rem;
       padding-left: 0.5rem;
       width: 100%;
-      background: var(--color-dark-grey-85);
+      background: var(--color-bg-elevated);
       border-radius: 0.2rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
+      border: 0.1rem solid var(--color-border-default);
 
       &__search__icon {
         @include flexCenter;
@@ -168,7 +168,7 @@
         width: 2.8rem;
 
         svg {
-          color: var(--color-light-shade-100);
+          color: var(--color-text-disabled);
         }
       }
 
@@ -181,11 +181,11 @@
         width: 2.8rem;
 
         svg {
-          color: var(--color-dark-grey-400);
+          color: var(--color-text-disabled);
         }
 
         &:hover svg {
-          color: var(--color-dark-grey-500);
+          color: var(--color-text-muted);
         }
       }
     }
@@ -197,7 +197,7 @@
       &__categories {
         width: 15rem;
         height: 100%;
-        border-right: 0.1rem solid var(--color-dark-grey-200);
+        border-right: 0.1rem solid var(--color-border-default);
         padding: 0.5rem 0;
       }
 
@@ -209,7 +209,7 @@
         user-select: none;
         border-radius: 0.2rem;
         border-left: 0.2rem solid transparent;
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-disabled);
         font-family: 'Roboto Mono', monospace;
         font-size: 1.2rem;
         padding: 0 0.5rem;
@@ -238,21 +238,21 @@
 
           height: 1.4rem;
           font-size: 0.9rem;
-          background: var(--color-dark-grey-280);
+          background: var(--color-bg-tag);
           border-radius: 0.6rem;
           font-weight: 700;
           padding: 0 0.5rem;
         }
 
         &:hover {
-          background: var(--color-dark-grey-200);
+          background: var(--color-bg-hover);
         }
 
         &--active,
         &--active:hover {
-          border-color: var(--color-yellow-300);
-          background: var(--color-dark-grey-85);
-          color: var(--color-dark-grey-500);
+          border-color: var(--color-active-indicator);
+          background: var(--color-bg-elevated);
+          color: var(--color-text-disabled);
         }
       }
 
@@ -266,7 +266,7 @@
       padding: 1rem;
       border-radius: 0.5rem;
       margin: 1rem;
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
       border-left: 0.5rem solid transparent;
 
       &__title,
@@ -276,18 +276,18 @@
         height: 2.2rem;
         line-height: 2.2rem;
         user-select: none;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         cursor: pointer;
       }
 
       &__title {
         font-weight: 700;
-        color: var(--color-light-grey-0);
+        color: var(--color-text-primary);
       }
 
       &:hover {
-        border-left: 0.5rem solid var(--color-yellow-300);
-        background: var(--color-dark-grey-280);
+        border-left: 0.5rem solid var(--color-active-indicator);
+        background: var(--color-bg-hover);
       }
     }
 
@@ -301,8 +301,8 @@
         width: 100%;
         cursor: pointer;
         border-radius: 0.5rem 0.5rem 0 0;
-        background: var(--color-dark-grey-250);
-        color: var(--color-light-grey-400);
+        background: var(--color-bg-tag);
+        color: var(--color-text-muted);
 
         &__icon {
           @include flexCenter;
@@ -321,13 +321,13 @@
         }
 
         &:hover {
-          color: var(--color-light-grey-0);
+          color: var(--color-text-primary);
         }
       }
 
       &__content {
-        border: 0.1rem solid var(--color-dark-grey-250);
-        background: var(--color-dark-grey-85);
+        border: 0.1rem solid var(--color-bg-tag);
+        background: var(--color-bg-elevated);
         border-radius: 0 0 0.5rem 0.5rem;
         overflow-x: auto;
 
@@ -344,11 +344,11 @@
             padding: 0 0.5rem;
             font-size: 1.2rem;
             width: 5rem;
-            color: var(--color-dark-grey-400);
+            color: var(--color-text-disabled);
             font-weight: 500;
 
             &--highlighted {
-              color: var(--color-light-grey-400);
+              color: var(--color-text-muted);
             }
           }
 
@@ -358,21 +358,24 @@
             white-space: pre;
             font-size: 1.2rem;
             font-family: 'Roboto Mono', monospace;
-            color: var(--color-light-grey-400);
+            color: var(--color-text-muted);
             padding: 0 1rem;
 
+            // Match-highlight — uses status-warn (yellow) as the highlight
+            // surface. Original yellow-80 (mustard) vs status-warn (goldenrod)
+            // is a small hue shift.
             &--highlighted {
-              background: var(--color-yellow-80);
+              background: var(--color-status-warn);
               font-size: 1.2rem;
               font-family: 'Roboto Mono', monospace;
               font-weight: 500;
               border-radius: 0.2rem;
-              color: var(--color-dark-grey-280);
+              color: var(--color-text-inverted);
             }
           }
 
           &:hover {
-            background: var(--color-dark-grey-50);
+            background: var(--color-bg-app);
           }
         }
       }
@@ -398,7 +401,7 @@
       }
 
       &-icon {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
         cursor: pointer;
       }
     }
@@ -409,7 +412,7 @@
       line-height: 3.4rem;
       font-size: 2.4rem;
       font-weight: 700;
-      color: var(--color-light-grey-150);
+      color: var(--color-text-primary);
       user-select: none;
     }
 
@@ -418,7 +421,7 @@
       line-height: 1.6rem;
       font-size: 1.1rem;
       font-family: 'Roboto Mono', monospace;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
       user-select: none;
       margin-bottom: 1rem;
     }

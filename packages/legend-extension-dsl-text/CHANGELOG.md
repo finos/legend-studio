@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-text
 
+## 6.0.471
+
+## 6.0.470
+
+### Patch Changes
+
+- [#5226](https://github.com/finos/legend-studio/pull/5226) [`476f055`](https://github.com/finos/legend-studio/commit/476f055ffe77e6eeb6e350546e060ba98aa48877) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce a scalable, theme-aware styling foundation for Legend Studio. Component styles now consume a two-tier CSS variable system (palette tokens → role-based semantic tokens such as `--color-bg-panel`, `--color-text-primary`, `--color-border-default`) that is remapped per theme via a body class (`theme__default-dark` / `theme__default-light`), rather than hardcoding palette colors directly. This makes the dark theme the stable default while enabling a light theme and additional themes in the future. No public API changes — existing dark-theme appearance is preserved.
+
+## 6.0.469
+
+## 6.0.468
+
 ## 6.0.467
 
 ## 6.0.466

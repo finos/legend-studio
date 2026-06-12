@@ -1,5 +1,24 @@
 # @finos/legend-server-marketplace
 
+## 0.1.73
+
+### Patch Changes
+
+- [#5232](https://github.com/finos/legend-studio/pull/5232) [`e20ed7a`](https://github.com/finos/legend-studio/commit/e20ed7aae7e326ce5e9df32e25f6063fd529ef52) ([@eradityash](https://github.com/eradityash)) - Order Profiles feature for Terminals & Add-Ons
+
+  - Implement Order Profile sections alongside Terminal License and Add-Ons section.
+  - Implement a modal per Order Profile listing all included Vendor Profiles and Service Pricing items.
+
+- [#5246](https://github.com/finos/legend-studio/pull/5246) [`d386f88`](https://github.com/finos/legend-studio/commit/d386f88b6c17ab8e4de3f3ddcb25fa46dc1a08cd) ([@bojja-gs](https://github.com/bojja-gs)) - Marketplace server client: update endpoint signature to support AI chat API changes.
+
+## 0.1.72
+
+### Patch Changes
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+## 0.1.71
+
 ## 0.1.70
 
 ### Patch Changes

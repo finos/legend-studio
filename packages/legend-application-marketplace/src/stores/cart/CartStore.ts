@@ -36,10 +36,16 @@ import {
   type CartSummary,
   type OrderDetails,
   type TerminalResult,
+  type TraderProfile,
+  type TraderProfileItem,
+  RecommendationSource,
 } from '@finos/legend-server-marketplace';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { toastManager } from '../../components/Toast/CartToast.js';
+
+const boolToString = (val: boolean | undefined): 'true' | 'false' =>
+  val ? 'true' : 'false';
 
 enum BUSINESS_REASONS {
   NEW_HIRE = 'New Hire',
@@ -83,6 +89,7 @@ export class CartStore {
       clearCart: flow,
       deleteCartItem: flow,
       addToCartWithAPI: flow,
+      addOrderProfileItemsToCart: flow,
     });
     this.baseStore = baseStore;
   }
@@ -168,7 +175,10 @@ export class CartStore {
     return [];
   }
 
-  *addToCartWithAPI(cartItemData: CartItemRequest): GeneratorFn<{
+  *addToCartWithAPI(
+    cartItemData: CartItemRequest,
+    suppressSuccessToast = false,
+  ): GeneratorFn<{
     success: boolean;
     recommendations?: TerminalResult[];
     message: string;
@@ -194,7 +204,7 @@ export class CartStore {
       const responseMessage: string = response.message;
       if (!/^2\d\d$/.test(String(response.status_code))) {
         toastManager.warning(responseMessage);
-      } else {
+      } else if (!suppressSuccessToast) {
         toastManager.success(responseMessage);
       }
 
@@ -229,19 +239,95 @@ export class CartStore {
     }
   }
 
+  /**
+   * Adds a list of order-profile items to the cart, skipping already-owned ones.
+   * Each item is added sequentially so that vendor-profile items can be added
+   * before their associated add-ons.
+   */
+  *addOrderProfileItemsToCart(
+    items: TraderProfileItem[],
+    suppressSuccessToast = false,
+  ): GeneratorFn<void> {
+    for (const item of items) {
+      if (item.isOwned) {
+        continue;
+      }
+      yield flowResult(
+        this.addToCartWithAPI(
+          {
+            id: item.id,
+            productName: item.productName,
+            providerName: item.providerName,
+            category: item.category,
+            price: item.price,
+            description: item.description ?? '',
+            isOwned: boolToString(item.isOwned),
+            ...(item.model === null || item.model === undefined
+              ? {}
+              : { model: item.model }),
+            skipWorkflow: true,
+            ...(item.isMandatory === undefined
+              ? {}
+              : { isMandatory: item.isMandatory }),
+            ...(item.vendorProfileId === undefined
+              ? {}
+              : { vendorProfileId: item.vendorProfileId }),
+            ...(item.permissionId === undefined
+              ? {}
+              : { permissionId: item.permissionId }),
+          },
+          suppressSuccessToast,
+        ),
+      );
+    }
+  }
+
+  /**
+   * Returns true when all non-owned items of the profile are present in the
+   * cart.  For multiselect profiles, at least one complete terminal bundle
+   * (terminal + its associated add-ons) must be fully in the cart.
+   */
+  isOrderProfileInCart(profile: TraderProfile): boolean {
+    const nonOwnedItems = profile.items.filter((item) => !item.isOwned);
+    const nonOwnedTerminals = nonOwnedItems.filter((item) => item.isTerminal);
+    if (profile.multiselect) {
+      return nonOwnedTerminals.some((terminal) => {
+        const selectedModel = terminal.model ?? null;
+        const bundleItems = [
+          terminal,
+          ...profile.items.filter(
+            (item) =>
+              !item.isTerminal &&
+              !item.isOwned &&
+              (selectedModel === null || item.model === selectedModel),
+          ),
+        ];
+        return bundleItems.every((item) => this.isItemInCart(item.id));
+      });
+    }
+    return (
+      nonOwnedItems.length > 0 &&
+      nonOwnedItems.every((item) => this.isItemInCart(item.id))
+    );
+  }
+
   providerToCartRequest(provider: TerminalResult): CartItemRequest {
+    const isInventory = provider.source === RecommendationSource.INVENTORY;
     return {
-      id: provider.id,
+      id: isInventory ? (provider.permissionId ?? provider.id) : provider.id,
       productName: provider.productName,
       providerName: provider.providerName,
       category: provider.category,
       price: provider.price,
       description: provider.description,
-      isOwned: provider.isOwned ? 'true' : 'false',
+      isOwned: boolToString(provider.isOwned),
       model: provider.model ?? provider.productName,
       skipWorkflow: provider.skipWorkflow ?? false,
       ...(provider.vendorProfileId !== undefined && {
         vendorProfileId: provider.vendorProfileId,
+      }),
+      ...(provider.permissionId !== undefined && {
+        permissionId: provider.permissionId,
       }),
       ...(provider.source !== undefined && {
         source: provider.source,

@@ -54,7 +54,7 @@
 
   &__option__path {
     font-size: 1.2rem;
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-muted);
     margin-left: 0.5rem;
     line-height: 1.4rem;
   }
@@ -120,7 +120,7 @@
 
   &__content {
     height: calc(100% - 3.8rem);
-    border: 0.1rem solid var(--color-dark-grey-80);
+    border: 0.1rem solid var(--color-border-subtle);
   }
 
   &__input {
@@ -129,7 +129,7 @@
     padding: 0.5rem;
     width: 100%;
     height: 3.8rem;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-panel-header);
   }
 
   &__input__icon {
@@ -150,10 +150,10 @@
     height: 2.8rem;
     width: 2.8rem;
     border-radius: 0 0.2rem 0.2rem 0;
-    background: var(--color-dark-grey-300);
+    background: var(--color-bg-tag);
 
     svg {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
     }
 
     &--active {
@@ -167,7 +167,7 @@
 
     width: 2.8rem;
     height: 2.8rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     margin-left: 0.5rem;
   }
 
@@ -179,7 +179,7 @@
 
   &__option__path {
     font-size: 1.2rem;
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-muted);
     margin-left: 0.5rem;
     line-height: 1.4rem;
   }
@@ -208,7 +208,7 @@
 
       &__text {
         margin-left: 0.5rem;
-        color: var(--color-dark-grey-300);
+        color: var(--color-text-muted);
         font-weight: 700;
         cursor: default;
         user-select: none;
@@ -235,10 +235,10 @@
     @include flexCenter;
 
     padding: 0.5rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-250);
+    border-bottom: 0.1rem solid var(--color-border-default);
     height: 4.4rem;
     position: relative;
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     font-weight: 500;
   }
 
@@ -275,7 +275,7 @@
 
           text-align: left;
           margin-top: 0.5rem;
-          color: var(--color-dark-grey-500);
+          color: var(--color-text-disabled);
         }
       }
     }

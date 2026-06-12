@@ -26,27 +26,27 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 5.6rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -82,9 +82,9 @@
 
     display: inline-flex;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -99,7 +99,7 @@
     width: 100%;
     position: absolute;
     bottom: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 
   &__tab__hint {
@@ -107,7 +107,7 @@
 
     border-radius: 0.2rem;
     margin-left: 1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
 
     svg {
       font-size: 1.2rem;
@@ -192,8 +192,8 @@
 
         @include flexVCenter;
 
-        background: var(--color-dark-grey-200);
-        color: var(--color-light-grey-100);
+        background: var(--color-bg-panel-header);
+        color: var(--color-text-primary);
         padding: 0 1rem;
         border-radius: 0.2rem;
         margin: 0;
@@ -214,10 +214,10 @@
         margin-top: 0.5rem;
         height: 100%;
         width: 100%;
-        color: var(--color-dark-grey-300);
+        color: var(--color-text-disabled);
         font-weight: 500;
         user-select: none;
-        border: 0.2rem dashed var(--color-dark-grey-200);
+        border: 0.2rem dashed var(--color-border-default);
       }
     }
 
@@ -230,44 +230,47 @@
       &__label {
         @include flexCenter;
 
-        background: var(--color-dark-grey-200);
+        background: var(--color-bg-panel-header);
         padding: 0 1rem;
         height: 2.8rem;
         border-radius: 0.2rem 0 0 0.2rem;
         font-size: 1.4rem;
         user-select: none;
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
       }
 
       &__toggler__btn {
         @include flexVCenter;
 
-        background: var(--color-dark-grey-200);
+        background: var(--color-bg-panel-header);
         padding: 0 0.5rem 0 0;
         height: 2.8rem;
 
         svg {
           font-size: 2.2rem;
-          color: var(--color-dark-grey-100);
+          color: var(--color-bg-panel);
         }
 
+        // NOTE: original used --color-dark-grey-180 which is not in the
+        // palette (typo, only light-grey-180 exists). Substituted with
+        // text-disabled.
         &[disabled] svg,
         &[disabled]:hover svg {
           cursor: not-allowed;
-          color: var(--color-dark-grey-180);
+          color: var(--color-text-disabled);
         }
       }
 
       &__toggler__btn--toggled {
         svg {
           font-size: 2rem;
-          color: var(--color-blue-150);
+          color: var(--color-accent);
         }
 
         &[disabled] svg,
         &[disabled]:hover svg {
           cursor: not-allowed;
-          color: var(--color-dark-grey-100);
+          color: var(--color-bg-panel);
         }
       }
     }
@@ -282,7 +285,7 @@
 
     &__result-viewer {
       height: 100%;
-      border: 0.1rem solid var(--color-dark-grey-280);
+      border: 0.1rem solid var(--color-border-default);
     }
   }
 
@@ -303,7 +306,7 @@
   border: none !important;
 
   &__type-icon {
-    color: white;
+    color: var(--color-text-on-accent);
     font-size: 3rem;
   }
 
@@ -328,22 +331,23 @@
     justify-content: center;
     height: 3.6rem;
     border-radius: 0.2rem;
-    color: var(--color-light-grey-50);
-    border-color: var(--color-light-grey-400);
-    background: var(--color-dark-grey-500);
+    color: var(--color-text-primary);
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-tag);
   }
 
   &__action-btn--primitive {
-    background: var(--color-blue-200);
+    background: var(--color-accent);
   }
 }
 
+// "Coming soon" badge — generic white-on-current-bg label.
 .coming-soon-label {
   border-radius: 1.7rem;
   width: 7rem;
   text-align: center;
-  border: 0.1rem solid white;
-  color: white;
+  border: 0.1rem solid var(--color-text-primary);
+  color: var(--color-text-primary);
   font-size: 1rem;
 }
 
@@ -352,19 +356,21 @@
   flex-direction: column;
   height: 100%;
 
+  // NOTE: original used --color-light-shade-280 which is not in the palette
+  // (typo for dark-shade-280). Now uses --color-shadow.
   &__header {
     @include flexVCenter;
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__header__title {
@@ -374,20 +380,25 @@
     user-select: none;
   }
 
+  // Testable category labels. These four colors form a recurring "test
+  // entity type" palette (data / tests / tests-suites / assertions) seen in
+  // testable-editor and service-editor too. Kept as physical palette refs
+  // for now — promote to --color-category-test-* tokens after we see the
+  // pattern repeat across all three files.
   &__header__title__label {
     height: 1.8rem;
     line-height: 1.8rem;
     border-radius: 0.1rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-250);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tag);
     font-size: 1.1rem;
     cursor: default;
     margin-right: 0.5rem;
     white-space: nowrap;
 
     &--data {
-      background: var(--color-blue-200) !important;
+      background: var(--color-accent) !important;
     }
 
     &--tests {
@@ -415,27 +426,27 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -457,7 +468,7 @@
 
   &__content {
     height: 100%;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__doc {
@@ -479,6 +490,6 @@
 
   &__content {
     height: 100%;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 }

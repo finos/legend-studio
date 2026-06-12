@@ -17,9 +17,11 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { V1_AtomicTest } from '../../../test/V1_AtomicTest.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
+import type { V1_FunctionParameterValue } from '../../function/test/V1_FunctionTest.js';
 
 export class V1_AccessPointTest extends V1_AtomicTest implements Hashable {
   accessPointId!: string;
+  parameters: V1_FunctionParameterValue[] | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -27,6 +29,7 @@ export class V1_AccessPointTest extends V1_AtomicTest implements Hashable {
       this.id,
       this.doc ?? '',
       this.accessPointId,
+      this.parameters ? hashArray(this.parameters) : '',
       hashArray(this.assertions),
     ]);
   }

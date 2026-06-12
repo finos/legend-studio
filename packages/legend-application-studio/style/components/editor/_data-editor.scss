@@ -16,6 +16,12 @@
 
 @use 'mixins' as *;
 
+// NOTE: this file repeats a header/content layout four times for the
+// different data-editor sub-types (data-editor, external-format-data-editor,
+// data-element-reference-editor, relational-data-editor). Each is migrated
+// individually; header lock chips use the bg-tag pattern; tab-style borders
+// intentionally match the shell bg (gap-as-border).
+
 .data-editor {
   display: flex;
   flex-direction: column;
@@ -26,14 +32,14 @@
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__header__actions {
@@ -45,7 +51,7 @@
     @include flexCenter;
 
     background: transparent;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     cursor: pointer;
     width: 2.8rem;
   }
@@ -57,11 +63,11 @@
     min-width: 4rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    background: var(--color-light-grey-100);
+    background: var(--color-bg-tag);
   }
 
   &__header__action[disabled] svg {
-    color: var(--color-dark-grey-400) !important;
+    color: var(--color-text-disabled) !important;
   }
 
   &__header__title {
@@ -78,8 +84,8 @@
     line-height: 1.8rem;
     border-radius: 0.1rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-250);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tag);
     font-size: 1.1rem;
     cursor: default;
     margin-right: 0.5rem;
@@ -90,7 +96,7 @@
 
       border-radius: 0.2rem;
       margin-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
 
       svg {
         font-size: 1rem;
@@ -105,7 +111,7 @@
   }
 
   &__content {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     height: calc(100% - 2.8rem);
     overflow-y: auto;
   }
@@ -117,8 +123,8 @@
   }
 
   &__dropdown {
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-border-default);
     padding: 0;
   }
 
@@ -127,9 +133,9 @@
 
     width: 25rem;
     height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.01rem solid var(--color-dark-grey-200);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-panel);
+    border: 0.01rem solid var(--color-border-default);
+    color: var(--color-text-primary);
   }
 
   &__type {
@@ -139,10 +145,10 @@
     width: 25rem;
     flex: auto;
     min-width: 15rem;
-    background: var(--color-dark-grey-100);
-    border-right: 0.1rem solid var(--color-dark-grey-50);
-    border-left: 0.1rem solid var(--color-dark-grey-50);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-panel);
+    border-right: 0.1rem solid var(--color-bg-app);
+    border-left: 0.1rem solid var(--color-bg-app);
+    color: var(--color-text-primary);
     cursor: pointer;
   }
 
@@ -156,7 +162,7 @@
   &__type__icon {
     @include flexCenter;
 
-    border-left: 0.1rem solid var(--color-dark-grey-50);
+    border-left: 0.1rem solid var(--color-bg-app);
     height: 2.6rem;
     width: 2.6rem;
     min-width: 2.6rem;
@@ -166,21 +172,21 @@
 .external-format-data-editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   &__header {
     @include flexVCenter;
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__header__actions {
@@ -195,7 +201,7 @@
     min-width: 4rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    background: var(--color-light-grey-100);
+    background: var(--color-bg-tag);
   }
 
   &__header__title {
@@ -210,8 +216,8 @@
     line-height: 1.8rem;
     border-radius: 0.1rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-250);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tag);
     font-size: 1.1rem;
     cursor: default;
     margin-right: 0.5rem;
@@ -236,10 +242,10 @@
     position: relative;
     width: 100%;
     min-width: 0;
-    border: 0.1rem solid var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-bg-input);
     border-radius: 0.2rem 0 0 0.2rem;
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-input);
+    color: var(--color-text-secondary);
     height: 100%;
     margin-left: 0.1rem;
   }
@@ -257,8 +263,8 @@
   }
 
   &__dropdown {
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-border-default);
     padding: 0;
   }
 
@@ -267,9 +273,9 @@
 
     width: 25rem;
     height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.01rem solid var(--color-dark-grey-200);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-panel);
+    border: 0.01rem solid var(--color-border-default);
+    color: var(--color-text-primary);
   }
 
   &__type {
@@ -279,10 +285,10 @@
     width: 25rem;
     flex: auto;
     min-width: 15rem;
-    background: var(--color-dark-grey-100);
-    border-right: 0.1rem solid var(--color-dark-grey-50);
-    border-left: 0.1rem solid var(--color-dark-grey-50);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-panel);
+    border-right: 0.1rem solid var(--color-bg-app);
+    border-left: 0.1rem solid var(--color-bg-app);
+    color: var(--color-text-primary);
     cursor: pointer;
   }
 
@@ -296,7 +302,7 @@
   &__type__icon {
     @include flexCenter;
 
-    border-left: 0.1rem solid var(--color-dark-grey-50);
+    border-left: 0.1rem solid var(--color-bg-app);
     height: 2.6rem;
     width: 2.6rem;
     min-width: 2.6rem;
@@ -306,7 +312,7 @@
 .data-element-reference-editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
   display: flex;
   flex-direction: column;
 
@@ -315,14 +321,14 @@
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__header__actions {
@@ -337,7 +343,7 @@
     min-width: 4rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    background: var(--color-light-grey-100);
+    background: var(--color-bg-tag);
   }
 
   &__header__title {
@@ -352,8 +358,8 @@
     line-height: 1.8rem;
     border-radius: 0.1rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-250);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tag);
     font-size: 1.1rem;
     cursor: default;
     margin-right: 0.5rem;
@@ -382,7 +388,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel);
       margin-right: 0.5rem;
     }
 
@@ -403,10 +409,10 @@
     width: 25rem;
     flex: auto;
     min-width: 15rem;
-    background: var(--color-dark-grey-100);
-    border-right: 0.1rem solid var(--color-dark-grey-50);
-    border-left: 0.1rem solid var(--color-dark-grey-50);
-    color: var(--color-light-grey-50);
+    background: var(--color-bg-panel);
+    border-right: 0.1rem solid var(--color-bg-app);
+    border-left: 0.1rem solid var(--color-bg-app);
+    color: var(--color-text-primary);
     cursor: pointer;
   }
 
@@ -420,7 +426,7 @@
   &__type__icon {
     @include flexCenter;
 
-    border-left: 0.1rem solid var(--color-dark-grey-50);
+    border-left: 0.1rem solid var(--color-bg-app);
     height: 2.6rem;
     width: 2.6rem;
     min-width: 2.6rem;
@@ -437,14 +443,14 @@
     @include flexHSpaceBetween;
 
     cursor: default;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
     height: 2.8rem;
     min-height: 2.8rem;
     position: relative;
     z-index: 1;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+    border: 0.1rem solid var(--color-border-default);
+    box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
   }
 
   &__header__actions {
@@ -456,7 +462,7 @@
     @include flexCenter;
 
     background: transparent;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-secondary);
     cursor: pointer;
     width: 2.8rem;
   }
@@ -468,11 +474,11 @@
     min-width: 4rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    background: var(--color-light-grey-100);
+    background: var(--color-bg-tag);
   }
 
   &__header__action[disabled] svg {
-    color: var(--color-dark-grey-400) !important;
+    color: var(--color-text-disabled) !important;
   }
 
   &__header__title {
@@ -487,8 +493,8 @@
     line-height: 1.8rem;
     border-radius: 0.1rem;
     padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-250);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tag);
     font-size: 1.1rem;
     cursor: default;
     margin-right: 0.5rem;
@@ -507,18 +513,18 @@
       @include flexHSpaceBetween;
 
       height: 2.4rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__item:hover {
-      background: var(--color-dark-blue-shade-100);
+      background: var(--color-accent-subtle);
     }
 
     &__item--active,
     &__item--active svg,
     &__item--active:hover {
-      background: var(--color-light-blue-450);
-      color: var(--color-light-grey-50);
+      background: var(--color-bg-selected);
+      color: var(--color-text-primary);
     }
 
     &__item__label {
@@ -549,12 +555,12 @@
     &__item__action {
       height: 100%;
       width: 2.8rem;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-disabled);
     }
   }
 
   &__content {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     height: calc(100% - 2.8rem);
     overflow-y: auto;
   }
@@ -563,7 +569,7 @@
     width: 100%;
     height: 100%;
     position: relative;
-    border: 0.1rem solid var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-border-subtle);
   }
 
   &__identifier {
@@ -583,29 +589,29 @@
     &__textarea {
       width: 100%;
       min-width: 50rem;
-      background: var(--color-dark-grey-100);
-      color: var(--color-light-grey-200);
+      background: var(--color-bg-input);
+      color: var(--color-text-secondary);
       padding: 1rem;
       border-radius: 0.1rem;
       height: 47rem;
       resize: none;
       line-height: 2rem;
-      border: 0.1rem solid var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-bg-input);
 
       &:focus {
-        border: 0.1rem solid var(--color-blue-200);
+        border: 0.1rem solid var(--color-border-focus);
         outline: none;
       }
 
       &[disabled] {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-disabled);
         cursor: not-allowed;
       }
     }
   }
 }
 
-// Relation Test Data Editor
+// Relation Test Data Editor — grid-style data table.
 .relation-test-data-editor {
   &__content {
     display: flex;
@@ -657,12 +663,12 @@
 
   &__section-title {
     font-weight: 500;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     font-size: 1.4rem;
   }
 
   &__columns {
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     border-radius: 0.2rem;
     padding: 1.5rem;
   }
@@ -683,20 +689,20 @@
     flex: 2;
     height: 2.8rem;
     padding: 0 1rem;
-    background: var(--color-dark-grey-200);
-    border: 0.1rem solid var(--color-dark-grey-300);
+    background: var(--color-bg-panel-header);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.2rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     font-size: 1.3rem;
 
     &:focus {
-      border-color: var(--color-blue-200);
+      border-color: var(--color-border-focus);
       outline: none;
     }
 
     &:disabled {
-      background: var(--color-dark-grey-300);
-      color: var(--color-dark-grey-500);
+      background: var(--color-bg-tag);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -704,25 +710,25 @@
     flex: 1;
     height: 2.8rem;
     padding: 0 1rem;
-    background: var(--color-dark-grey-200);
-    border: 0.1rem solid var(--color-dark-grey-300);
+    background: var(--color-bg-panel-header);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.2rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     font-size: 1.3rem;
 
     &:focus {
-      border-color: var(--color-blue-200);
+      border-color: var(--color-border-focus);
       outline: none;
     }
 
     &:disabled {
-      background: var(--color-dark-grey-300);
-      color: var(--color-dark-grey-500);
+      background: var(--color-bg-tag);
+      color: var(--color-text-disabled);
     }
   }
 
   &__data {
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     border-radius: 0.2rem;
     padding: 1.5rem;
   }
@@ -735,13 +741,13 @@
   }
 
   &__empty-text {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     font-size: 1.3rem;
     font-style: italic;
   }
 
   &__data-grid {
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.2rem;
     overflow-x: auto;
   }
@@ -753,14 +759,14 @@
 
   &__th {
     position: relative;
-    background: var(--color-dark-grey-200);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-panel-header);
+    color: var(--color-text-primary);
     font-weight: 500;
     font-size: 1.2rem;
     text-align: left;
     white-space: nowrap;
-    border-right: 0.1rem solid var(--color-dark-grey-300);
-    border-bottom: 0.1rem solid var(--color-dark-grey-300);
+    border-right: 0.1rem solid var(--color-border-strong);
+    border-bottom: 0.1rem solid var(--color-border-strong);
     padding: 0;
 
     &:last-child {
@@ -796,7 +802,7 @@
         width: 100%;
 
         &:focus {
-          background: var(--color-dark-grey-300);
+          background: var(--color-bg-panel-header);
           border-radius: 0.2rem;
         }
 
@@ -819,7 +825,7 @@
       background: transparent;
       border: none;
       cursor: pointer;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       transition:
         opacity 0.12s,
         color 0.12s;
@@ -847,14 +853,14 @@
     }
 
     &:hover {
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
   }
 
   &__td {
     padding: 0.5rem;
-    border-right: 0.1rem solid var(--color-dark-grey-300);
-    border-bottom: 0.1rem solid var(--color-dark-grey-300);
+    border-right: 0.1rem solid var(--color-border-strong);
+    border-bottom: 0.1rem solid var(--color-border-strong);
     vertical-align: middle;
 
     &:last-child {
@@ -883,17 +889,17 @@
     background: transparent;
     border: 0.1rem solid transparent;
     border-radius: 0.2rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     font-size: 1.3rem;
 
     &:focus {
-      background: var(--color-dark-grey-200);
-      border-color: var(--color-blue-200);
+      background: var(--color-bg-panel-header);
+      border-color: var(--color-border-focus);
       outline: none;
     }
 
     &:disabled {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -916,7 +922,7 @@
     gap: 0.8rem;
 
     &__label {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
       font-size: 1.3rem;
       font-weight: 500;
       white-space: nowrap;
@@ -929,7 +935,7 @@
     gap: 0.8rem;
 
     &__label {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
       font-size: 1.3rem;
       font-weight: 500;
       white-space: nowrap;

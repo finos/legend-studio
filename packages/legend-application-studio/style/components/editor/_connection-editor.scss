@@ -19,7 +19,7 @@
 .connection-editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   .panel {
     height: 100%;
@@ -27,27 +27,27 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -78,27 +78,27 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-400) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
       height: calc(100% - 2.8rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -122,9 +122,9 @@
 
     display: inline-flex;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -139,11 +139,11 @@
     width: 100%;
     position: absolute;
     bottom: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 
   &__content {
-    border-top: 0.1rem solid var(--color-dark-grey-100);
+    border-top: 0.1rem solid var(--color-border-subtle);
     height: 100%;
     width: 100%;
   }
@@ -155,7 +155,7 @@
   &__auth {
     height: 100%;
     width: 100%;
-    border-right: 0.1rem solid var(--color-dark-grey-100);
+    border-right: 0.1rem solid var(--color-border-subtle);
 
     &__content {
       padding: 1rem;
@@ -169,7 +169,7 @@
   &__source {
     height: 100%;
     width: 100%;
-    border-right: 0.1rem solid var(--color-dark-grey-100);
+    border-right: 0.1rem solid var(--color-border-subtle);
 
     &__content {
       padding: 1rem;
@@ -186,14 +186,14 @@
     cursor: help;
 
     &__label {
-      color: var(--color-red-100);
+      color: var(--color-status-error);
       margin-right: 0.5rem;
     }
 
     svg {
-      color: var(--color-red-100);
+      color: var(--color-status-error);
       stroke-width: 0.4;
-      stroke: var(--color-red-100);
+      stroke: var(--color-status-error);
     }
   }
 }

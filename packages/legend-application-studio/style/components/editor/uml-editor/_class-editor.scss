@@ -25,7 +25,7 @@
 }
 
 .class-editor {
-  background: var(--color-light-grey-180);
+  background: var(--color-bg-app);
 }
 
 .property-basic-editor {
@@ -43,13 +43,13 @@
     @include flexVCenter;
 
     flex: 0 0 2.5rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-muted);
   }
 
   &__multiplicity {
     @include flexVCenter;
 
-    background: var(--color-light-grey-200);
+    background: var(--color-bg-panel-header);
     margin-left: 0.5rem;
     padding: 0.3rem;
     border-radius: 0.2rem;
@@ -60,7 +60,7 @@
 
       svg {
         font-size: 1.3rem;
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-disabled);
       }
     }
   }
@@ -72,7 +72,7 @@
     font-size: 2rem;
     font-weight: bold;
     height: 2.2rem;
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-muted);
     cursor: default;
   }
 
@@ -85,16 +85,20 @@
   }
 
   &__multiplicity-bound[disabled] {
-    background: var(--color-light-grey-100);
+    background: var(--color-bg-panel);
   }
 
+  // Property "name" chip — historically a dark-grey chip with light text used
+  // to make property names stand out against a light editor bg. Folded to
+  // bg-tag (neutral chip surface) which keeps a stand-out treatment in both
+  // themes (dark grey chip in dark, light grey chip in light).
   &__name {
     @include flexVCenter;
 
     flex: auto;
     height: 2.8rem;
-    background: var(--color-dark-grey-300);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-tag);
+    color: var(--color-text-primary);
     margin-right: 0.5rem;
     width: calc(100% - 36rem);
     min-width: calc(100% - 36rem);
@@ -106,8 +110,8 @@
 
     flex: auto;
     height: 2.8rem;
-    background: var(--color-dark-grey-300);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-tag);
+    color: var(--color-text-primary);
     padding: 0 1rem;
     border-radius: 0.2rem;
   }
@@ -117,7 +121,7 @@
   }
 
   &__name::placeholder {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
   }
 
   &__name--with-lock {
@@ -145,12 +149,12 @@
     height: 2.8rem;
     border-radius: 0.2rem;
     margin: 0;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-on-accent);
     cursor: default;
   }
 
   &__type--error {
-    background: var(--color-red-400);
+    background: var(--color-status-error);
   }
 
   &__error--info {
@@ -158,7 +162,7 @@
 
     border-radius: 0.2rem;
     margin-left: 1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-muted);
 
     svg {
       font-size: 1.2rem;
@@ -173,9 +177,19 @@
     border-radius: 0.2rem 1.4rem 1.4rem 0.2rem;
   }
 
+  // Type category fills — brand colors that signal entity type.
+  &__type.background--class {
+    background: var(--color-category-class);
+  }
+
+  &__type.background--enumeration {
+    background: var(--color-category-enumeration);
+  }
+
   &__type.background--primitive {
     border-radius: 0.2rem;
     width: 20rem;
+    background: var(--color-category-primitive);
   }
 
   &__type.background--primitive &__type__label {
@@ -186,12 +200,12 @@
     @include flexCenter;
 
     width: 2.8rem;
-    background: var(--color-dark-shade-100);
+    background: var(--color-state-disabled-on-accent);
     border-radius: 0.2rem 0 0 0.2rem;
   }
 
   &__type__abbr .icon {
-    color: var(--color-light-grey-50);
+    color: var(--color-text-on-accent);
   }
 
   &__type__label {
@@ -213,13 +227,13 @@
     width: 2.8rem;
     font-family: var(--font-entity-label);
     border-radius: 50%;
-    background: var(--color-dark-shade-100);
+    background: var(--color-state-disabled-on-accent);
     cursor: pointer;
   }
 
   &__type__visit-btn svg {
     font-size: 2rem;
-    color: var(--color-light-grey-100);
+    color: var(--color-text-on-accent);
   }
 
   // Show click to edit label
@@ -230,7 +244,7 @@
 
   &__type .selector-input--dark__menu,
   &__type .selector-input__menu {
-    color: var(--color-dark-grey-100);
+    color: var(--color-text-primary);
   }
 
   &__type--show-click-hint:hover,
@@ -240,7 +254,7 @@
 
   &__type--show-click-hint:hover &__type__label {
     display: none;
-    background: var(--color-dark-shade-100);
+    background: var(--color-state-disabled-on-accent);
   }
 
   &__type--show-click-hint:hover &__type__visit-btn {
@@ -250,7 +264,7 @@
   &__type--show-click-hint:hover &__type__label--hover {
     @include flexCenter;
 
-    color: var(--color-light-grey-100);
+    color: var(--color-text-on-accent);
   }
 
   &__qualified-property__lambda {
@@ -264,7 +278,7 @@
 
 .derived-property-editor {
   padding: 1rem;
-  background: var(--color-light-grey-0);
+  background: var(--color-bg-panel);
   border-radius: 0.2rem;
 
   &__container {
@@ -289,7 +303,7 @@
 
 .constraint-editor {
   padding: 1rem;
-  background: var(--color-light-grey-0);
+  background: var(--color-bg-panel);
   border-radius: 0.2rem;
 
   &__container {
@@ -311,7 +325,7 @@
       @include flexVCenter;
 
       flex: 0 0 2.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-muted);
     }
 
     &__name {
@@ -319,14 +333,14 @@
 
       flex: auto;
       height: 2.8rem;
-      background: var(--color-dark-grey-300);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-tag);
+      color: var(--color-text-primary);
       padding: 0 1rem;
       border-radius: 0.2rem;
     }
 
     &__name::placeholder {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
 
     &__name--with-lock {
@@ -334,8 +348,8 @@
 
       flex: auto;
       height: 2.8rem;
-      background: var(--color-dark-grey-300);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-tag);
+      color: var(--color-text-primary);
       padding: 0 1rem;
       border-radius: 0.2rem;
       cursor: default;

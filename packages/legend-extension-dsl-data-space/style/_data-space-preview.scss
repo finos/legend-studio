@@ -55,7 +55,7 @@
 
   &__content {
     height: calc(100% - 3.8rem);
-    border: 0.1rem solid var(--color-dark-grey-80);
+    border: 0.1rem solid var(--color-border-subtle);
 
     &--failed {
       @include flexVCenter;
@@ -70,7 +70,7 @@
 
       &__text {
         margin-left: 0.5rem;
-        color: var(--color-dark-grey-300);
+        color: var(--color-text-muted);
         font-weight: 700;
         cursor: default;
         user-select: none;

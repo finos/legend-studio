@@ -38,9 +38,13 @@
   }
 }
 
-.panel__content__form__section__list {
+// NOTE: scoped under `.dataSpace-editor`. Previously this block lived at the
+// top level, which meant its `__item` background (a hardcoded dark grey) leaked
+// into every `.panel__content__form__section__list` in the app and forced
+// items dark in light theme. Tokens are theme-aware now.
+.dataSpace-editor .panel__content__form__section__list {
   &__item {
-    background-color: var(--color-dark-grey-85);
+    background-color: var(--color-bg-panel);
     margin-bottom: 0.5rem;
     padding: 0.5rem;
     border-radius: 3px;
@@ -48,12 +52,12 @@
 
     &__content {
       &__label {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
         font-size: 1.2rem;
       }
 
       &__title {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
         font-size: 1.2rem;
       }
 
@@ -78,7 +82,7 @@
         gap: 0.5rem;
 
         &__label {
-          color: var(--color-light-grey-200);
+          color: var(--color-text-secondary);
           font-size: 1.2rem;
           margin-left: 0.5rem;
         }
@@ -87,10 +91,10 @@
           background: none;
           border: none;
           cursor: pointer;
-          color: var(--color-light-grey-200);
+          color: var(--color-text-secondary);
 
           &:hover {
-            color: var(--color-light-grey-100);
+            color: var(--color-text-primary);
           }
         }
       }
@@ -135,10 +139,10 @@
         background: none;
         border: none;
         cursor: pointer;
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
 
         &:hover {
-          color: var(--color-light-grey-100);
+          color: var(--color-text-primary);
         }
       }
     }
@@ -146,14 +150,14 @@
 }
 
 .dataSpace-editor {
-  background-color: var(--color-dark-grey-85);
+  background-color: var(--color-bg-panel);
 
   .panel__content {
-    background-color: var(--color-dark-grey-85);
+    background-color: var(--color-bg-panel);
   }
 
   .panel__header {
-    background-color: var(--color-dark-grey-50);
+    background-color: var(--color-bg-panel-header);
   }
 
   .panel__header__actions {

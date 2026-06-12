@@ -267,7 +267,11 @@ const ServiceGeneralEditor = observer(() => {
     setIsSuggestingWithAI(true);
     setAIDocSuggestion(undefined);
     try {
-      const suggestion = await aiDocSuggester(service, legendAIUrl);
+      const serviceGrammar =
+        await editorStore.graphManagerState.graphManager.elementsToPureCode([
+          service,
+        ]);
+      const suggestion = await aiDocSuggester(serviceGrammar, legendAIUrl);
       setAIDocSuggestion(suggestion);
     } finally {
       setIsSuggestingWithAI(false);

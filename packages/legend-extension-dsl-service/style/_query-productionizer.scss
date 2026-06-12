@@ -19,7 +19,7 @@
 .query-productionizer {
   height: 100%;
   position: relative;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   &__body {
     height: calc(100% - 2.2rem);
@@ -30,7 +30,7 @@
     font-size: 3.6rem;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 700;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     margin-bottom: 1.8rem;
   }
 
@@ -64,8 +64,8 @@
       height: 1.8rem;
       width: 10rem;
       padding: 0 1rem;
-      background: var(--color-dark-grey-400);
-      color: var(--color-light-grey-0);
+      background: var(--color-bg-tag);
+      color: var(--color-text-primary);
       font-weight: 500;
       font-size: 1.2rem;
       border-radius: 0.2rem 0.2rem 0 0;
@@ -73,7 +73,7 @@
 
     &__content {
       padding: 0.5rem;
-      border: 0.1rem solid var(--color-dark-grey-400);
+      border: 0.1rem solid var(--color-border-strong);
       border-radius: 0 0.2rem 0.2rem;
     }
 
@@ -105,12 +105,12 @@
       @include flexVCenter;
 
       width: 9.4rem;
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-panel-header);
       font-family: 'Roboto Mono', monospace;
       font-size: 1.4rem;
       padding: 0 1rem;
       border-radius: 0.2rem 0 0 0.2rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
 
     &__label--warning {
@@ -123,11 +123,11 @@
 
       height: 2.8rem;
       width: 2.8rem;
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-panel-header);
       border-radius: 0.2rem 0 0 0.2rem;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
     }
 
@@ -164,19 +164,19 @@
       cursor: pointer;
 
       svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-disabled);
       }
 
       &:hover svg {
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
       }
     }
   }
 
   &__auto-configuration {
     display: flex;
-    background: var(--color-dark-grey-85);
-    border: 0.1rem solid var(--color-dark-grey-280);
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-border-default);
     border-radius: 0.2rem;
     margin-top: 0.5rem;
 
@@ -250,7 +250,7 @@
     padding: 0 1rem;
     line-height: 2.8rem;
     background: var(--color-blue-100);
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     font-weight: 500;
   }
 
@@ -262,7 +262,7 @@
     cursor: default;
     padding: 0 1rem;
     line-height: 2.8rem;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     font-weight: 500;
     color: var(--color-blue-50);
     font-family: 'Roboto Mono', monospace;
@@ -273,7 +273,7 @@
     height: 30rem;
     margin-top: 0.5rem;
     position: relative;
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-border-default);
   }
 
   &__field + &__field {

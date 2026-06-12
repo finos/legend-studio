@@ -20,6 +20,7 @@
   &__button {
     @include flexVCenter;
 
+    // Light blue stays a brand color (signals "history" affordance).
     color: var(--color-light-blue-50);
     margin: 0 0.5rem;
     flex-direction: column;
@@ -37,6 +38,6 @@
   }
 
   &__button[disabled] {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
   }
 }

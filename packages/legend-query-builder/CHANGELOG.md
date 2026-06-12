@@ -1,5 +1,22 @@
 # @finos/legend-query-builder
 
+## 4.18.17
+
+### Patch Changes
+
+- [#5233](https://github.com/finos/legend-studio/pull/5233) [`eeca5e8`](https://github.com/finos/legend-studio/commit/eeca5e855e6fa882171b75f973a08e6d5c8d21f1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix building lambda for queries whose source is an `Accessor` (relation source) and that use aggregations. Aggregations now route through the relation `project()->groupBy(...)` path based on `useRelation` instead of `isFetchStructureTyped`, and `buildRelationAggregation` correctly handles `QueryBuilderRelationColumnProjectionColumnState` and `QueryBuilderDerivationProjectionColumnState` map lambdas instead of assuming an `AbstractPropertyExpression`.
+
+- [#5237](https://github.com/finos/legend-studio/pull/5237) [`b7e3fe9`](https://github.com/finos/legend-studio/commit/b7e3fe97b3e4c1e895302c794145aa1905241206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix light-theme theming regressions for splitter and lambda-editor surfaces.
+
+  - restore missing vertical `react-reflex` splitter sizing/hit-area styles in `legend-art`
+  - make shared lambda-editor styles theme-aware so Function Editor lambda input follows the active theme
+
+## 4.18.16
+
+## 4.18.15
+
+## 4.18.14
+
 ## 4.18.13
 
 ## 4.18.12

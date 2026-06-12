@@ -1,5 +1,48 @@
 # @finos/legend-application-marketplace
 
+## 0.2.21
+
+### Patch Changes
+
+- [#5250](https://github.com/finos/legend-studio/pull/5250) [`1c0152a`](https://github.com/finos/legend-studio/commit/1c0152a0aba54bab248b7f53f8aa6115d498ed90) ([@TharunRajeev](https://github.com/TharunRajeev)) - Made Permit and Workflow URL optional.
+
+- [#5246](https://github.com/finos/legend-studio/pull/5246) [`d386f88`](https://github.com/finos/legend-studio/commit/d386f88b6c17ab8e4de3f3ddcb25fa46dc1a08cd) ([@bojja-gs](https://github.com/bojja-gs)) - Legend Marketplace AI Agent and Legend AI integration updates across marketplace, lego, and data product/data space modules.
+
+- [#5232](https://github.com/finos/legend-studio/pull/5232) [`e20ed7a`](https://github.com/finos/legend-studio/commit/e20ed7aae7e326ce5e9df32e25f6063fd529ef52) ([@eradityash](https://github.com/eradityash)) - Order Profiles feature for Terminals & Add-Ons
+
+  - Implement Order Profile sections alongside Terminal License and Add-Ons section.
+  - Implement a modal per Order Profile listing all included Vendor Profiles and Service Pricing items.
+
+- [#5244](https://github.com/finos/legend-studio/pull/5244) [`ed80d2d`](https://github.com/finos/legend-studio/commit/ed80d2d10e6f129a5ea295f543b48f4aaebb94f9) ([@TharunRajeev](https://github.com/TharunRajeev)) - Filtered data requests by env.
+
+## 0.2.20
+
+## 0.2.19
+
+### Patch Changes
+
+- [#5222](https://github.com/finos/legend-studio/pull/5222) [`26a3c39`](https://github.com/finos/legend-studio/commit/26a3c39e97da9d67f780c37953640ec381d84bde) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Cache and dedupe `/datacontracts/tasks/pending` requests across the header badge and entitlements dashboard to reduce load on the entitlements server. Cached responses are reused for 60 seconds and concurrent callers share a single in-flight request. The cache is invalidated automatically after approving or denying a task.
+
+- [#5215](https://github.com/finos/legend-studio/pull/5215) [`3b838e5`](https://github.com/finos/legend-studio/commit/3b838e50947334416a4bfd85d09bde4c4bed3824) ([@bojja-gs](https://github.com/bojja-gs)) - updated index scss from import to forward
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+- [#5227](https://github.com/finos/legend-studio/pull/5227) [`eefc7dd`](https://github.com/finos/legend-studio/commit/eefc7dd4a99a7a54b79a79c0977b9eaa7e93bcfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Unify entitlements dashboards into single grids with shared `EntitlementsRow` type and a Type column.
+
+## 0.2.18
+
+### Patch Changes
+
+- [#5223](https://github.com/finos/legend-studio/pull/5223) [`612fafe`](https://github.com/finos/legend-studio/commit/612fafe4aeeb2f6f7af6e251297f715f006f2d7d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Avoid redundant API calls on access-token rotation in the admin contracts and subscriptions dashboards. The AG Grid server-side datasources now take a token-provider callback instead of a token value, so the datasource is no longer recreated on every token rotation (which previously caused the grid to reset and refetch the visible page).
+
+## 0.2.17
+
+## 0.2.16
+
+### Patch Changes
+
+- [#5210](https://github.com/finos/legend-studio/pull/5210) [`3cfe994`](https://github.com/finos/legend-studio/commit/3cfe994cdb7e4519af58e09ea7c05b0ca0937b6d) ([@TharunRajeev](https://github.com/TharunRajeev)) - Used useRef for handling token refresh.
+
 ## 0.2.15
 
 ### Patch Changes

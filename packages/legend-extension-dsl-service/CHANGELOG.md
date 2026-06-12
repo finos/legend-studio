@@ -1,5 +1,25 @@
 # @finos/legend-extension-dsl-service
 
+## 1.0.482
+
+### Patch Changes
+
+- [#5236](https://github.com/finos/legend-studio/pull/5236) [`27c60b9`](https://github.com/finos/legend-studio/commit/27c60b9c3253acd4cbb0dcc3cb146c9c4584aabf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - feat: add `excludeTag` parameter to `SDLCServerClient.getProjects` and exclude sandbox projects from project search
+
+  `SDLCServerClient.getProjects` now accepts an `excludeTag: string[] | undefined` parameter (positioned between `tag` and `limit`) which filters out projects carrying any of the given SDLC tags.
+
+  Workspace setup, query productionization, and update-project-service-query flows now pass `[SANDBOX_SDLC_TAG]` as `excludeTag` so that other users' sandbox projects no longer appear in the main project search/typeahead. The current user's own sandbox project is still fetched via the dedicated sandbox lookup and is now pinned to the top of the workspace setup project picker with a `(sandbox)` label suffix.
+
+## 1.0.481
+
+### Patch Changes
+
+- [#5226](https://github.com/finos/legend-studio/pull/5226) [`476f055`](https://github.com/finos/legend-studio/commit/476f055ffe77e6eeb6e350546e060ba98aa48877) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce a scalable, theme-aware styling foundation for Legend Studio. Component styles now consume a two-tier CSS variable system (palette tokens → role-based semantic tokens such as `--color-bg-panel`, `--color-text-primary`, `--color-border-default`) that is remapped per theme via a body class (`theme__default-dark` / `theme__default-light`), rather than hardcoding palette colors directly. This makes the dark theme the stable default while enabling a light theme and additional themes in the future. No public API changes — existing dark-theme appearance is preserved.
+
+## 1.0.480
+
+## 1.0.479
+
 ## 1.0.478
 
 ## 1.0.477

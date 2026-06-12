@@ -56,6 +56,7 @@ import {
   PermitWorkflowServerClient,
 } from '@finos/legend-server-lakehouse';
 import { CartStore } from './cart/CartStore.js';
+import { PendingTasksCache } from './lakehouse/PendingTasksCache.js';
 import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
 import { V1_deserializeDataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import {
@@ -93,10 +94,11 @@ export class LegendMarketplaceBaseStore {
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
   readonly lakehouseWorkflowServerClient: LakehouseWorkflowServerClient;
-  readonly permitWorkflowServerClient: PermitWorkflowServerClient;
+  readonly permitWorkflowServerClient: PermitWorkflowServerClient | undefined;
   readonly lakehouseDataProductService: LakehouseDataProductService;
   readonly cartStore: CartStore;
   readonly terminalAccessServerClient: TerminalAccessServerClient;
+  readonly pendingTasksCache: PendingTasksCache;
 
   readonly initState = ActionState.create();
 
@@ -180,14 +182,18 @@ export class LegendMarketplaceBaseStore {
     );
 
     // permit + eTask workflow
-    this.permitWorkflowServerClient = new PermitWorkflowServerClient({
-      authBaseUrl: this.applicationStore.config.lakehouseServerUrl,
-      workflowBaseUrl:
-        this.applicationStore.config.lakehousePermitWorkflowServerUrl,
-    });
-    this.permitWorkflowServerClient.setTracerService(
-      this.applicationStore.tracerService,
-    );
+    if (this.applicationStore.config.lakehousePermitWorkflowServerUrl) {
+      this.permitWorkflowServerClient = new PermitWorkflowServerClient({
+        authBaseUrl: this.applicationStore.config.lakehouseServerUrl,
+        workflowBaseUrl:
+          this.applicationStore.config.lakehousePermitWorkflowServerUrl,
+      });
+      this.permitWorkflowServerClient.setTracerService(
+        this.applicationStore.tracerService,
+      );
+    } else {
+      this.permitWorkflowServerClient = undefined;
+    }
 
     // lakehouse ingest
     this.lakehouseIngestServerClient = new LakehouseIngestServerClient(
@@ -234,6 +240,11 @@ export class LegendMarketplaceBaseStore {
 
     // Initialize cart store
     this.cartStore = new CartStore(this);
+
+    // Shared cache + in-flight dedupe for /datacontracts/tasks/pending
+    this.pendingTasksCache = new PendingTasksCache(
+      this.lakehouseContractServerClient,
+    );
   }
 
   buildAdjacentEnvState(): LegendMarketplaceEnvState | undefined {

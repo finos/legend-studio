@@ -265,9 +265,10 @@
       &__tooltip__icon {
         @include hoverableLightTooltipIcon;
 
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         margin-left: 0.5rem;
-        margin-bottom: 0.5rem;
+        vertical-align: middle;
       }
     }
   }
@@ -462,6 +463,11 @@
 
   &__icon-label {
     font-size: 1rem;
+  }
+
+  &__resiliency-disclaimer {
+    margin: 1rem 0;
+    font-size: 1.4rem;
   }
 
   &__refresh-btn {

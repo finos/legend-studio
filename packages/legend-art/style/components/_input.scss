@@ -25,7 +25,7 @@
   }
 
   &__editable__indicator {
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__error {
@@ -35,7 +35,7 @@
   }
 
   &__error__indicator {
-    color: var(--color-red-180);
+    color: var(--color-status-error);
   }
 
   &__caution {
@@ -50,12 +50,12 @@
 }
 
 input.input--with-validation--error {
-  border: 0.1rem solid var(--color-red-300);
-  background: var(--color-red-500);
+  border: 0.1rem solid var(--color-status-error);
+  background: var(--color-status-error-bg);
   padding-right: 2.3rem;
-  color: var(--color-light-grey-100);
+  color: var(--color-text-primary);
 
   :focus {
-    border: 0.1rem solid var(--color-red-300);
+    border: 0.1rem solid var(--color-status-error);
   }
 }

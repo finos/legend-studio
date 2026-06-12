@@ -19,6 +19,7 @@ import { BlankPanelContent, clsx } from '@finos/legend-art';
 import { useCallback } from 'react';
 import {
   at,
+  isBoolean,
   isString,
   parseCSVString,
   isNonNullable,
@@ -63,12 +64,24 @@ const parseExecutionResultData = (
 };
 
 const TDSResultCellRenderer = observer((params: DataGridCellRendererParams) => {
-  const cellValue = params.value as string;
-  const formattedCellValue = (): string => {
+  const cellValue = params.value as
+    | string
+    | number
+    | boolean
+    | null
+    | undefined;
+  const formattedCellValue = ():
+    | string
+    | number
+    | boolean
+    | null
+    | undefined => {
     if (isNumber(cellValue)) {
       return Intl.NumberFormat('en-US', {
         maximumFractionDigits: 4,
       }).format(Number(cellValue));
+    } else if (isBoolean(cellValue)) {
+      return String(cellValue);
     }
     return cellValue;
   };

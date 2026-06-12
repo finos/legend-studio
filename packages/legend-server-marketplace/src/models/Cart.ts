@@ -28,6 +28,7 @@ export interface CartItemRequest {
   skipWorkflow?: boolean;
   isMandatory?: boolean;
   vendorProfileId?: number;
+  permissionId?: number;
   cartId?: number;
   source?: string;
 }

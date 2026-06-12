@@ -36,6 +36,8 @@ import {
   Dialog,
   ExpandMoreIcon,
   GitBranchIcon,
+  RocketIcon,
+  CopyIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -144,6 +146,7 @@ const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 const LEGEND_SQL_DOCUMENTATION = 'LEGEND_SQL_DOCUMENTATION';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
+const LAKEHOUSE_EXECUTE_PATH = '/lakehouse/v1/execute';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -835,6 +838,7 @@ const enum DataProductAccessPointTabs {
   COLUMNS = 'Columns',
   QUERY = 'Query',
   GRAMMAR = 'Grammar',
+  SERVICE = 'Service',
   GOVERNANCE = 'Governance',
   DATACUBE = 'Datacube',
   POWER_BI = 'Power BI',
@@ -1079,6 +1083,109 @@ const GrammarScreen = observer(
   },
 );
 
+const ServiceScreen = observer(
+  (props: {
+    accessPointState: DataProductAccessPointState;
+    dataAccessState: DataProductDataAccessState | undefined;
+  }) => {
+    const { accessPointState, dataAccessState } = props;
+
+    if (!dataAccessState) {
+      return <TabMessageScreen message={NOT_SUPPORTED} />;
+    }
+
+    const hasNoAccess =
+      accessPointState.apgState.access === AccessPointGroupAccess.NO_ACCESS ||
+      accessPointState.apgState.access === AccessPointGroupAccess.DENIED;
+
+    const engineBaseUrl = dataAccessState.engineServerClient.baseUrl ?? '';
+    const dataProductName =
+      dataAccessState.entitlementsDataProductDetails.dataProduct.name;
+    const accessPointName = accessPointState.accessPoint.id;
+    const curlCommand = `curl -X GET "${engineBaseUrl}${LAKEHOUSE_EXECUTE_PATH}/${dataProductName}/${accessPointName}/DEFAULT" -H "accept: application/json"`;
+
+    const annotationQuery = `dataProductName=${dataProductName} and accessPoint=${accessPointName}`;
+    const engineOrigin = engineBaseUrl
+      ? new URL(engineBaseUrl).origin
+      : undefined;
+    const zipkinUrl = engineOrigin
+      ? `${engineOrigin}/zipkin/?spanName=all&lookback=3600000&annotationQuery=${encodeURIComponent(annotationQuery)}&minDuration=&limit=100&sortOrder=timestamp-desc`
+      : undefined;
+
+    const openZipkinHealthCheck = (): void => {
+      if (zipkinUrl) {
+        dataAccessState.applicationStore.navigationService.navigator.visitAddress(
+          zipkinUrl,
+        );
+      }
+    };
+
+    const copyCurlCommand = (): void => {
+      dataAccessState.applicationStore.clipboardService
+        .copyTextToClipboard(curlCommand)
+        .then(() =>
+          dataAccessState.applicationStore.notificationService.notifySuccess(
+            'Copied cURL command to clipboard',
+          ),
+        )
+        .catch(dataAccessState.applicationStore.alertUnhandledError);
+    };
+
+    return (
+      <div className="data-product__viewer__service-screen">
+        {hasNoAccess ? (
+          <Box className="data-product__viewer__service-screen__warning-banner">
+            You do not have access to this access point group. Please request
+            access before running this command.
+          </Box>
+        ) : (
+          <Box className="data-product__viewer__service-screen__warning-banner">
+            For exploration and experimental use only. Not intended for
+            production services. Production compute selection (Compute ID)
+            coming in a future release.
+          </Box>
+        )}
+        <div className="data-product__viewer__service-screen__content">
+          <button
+            className="data-product__viewer__service-screen__content__copy-btn"
+            tabIndex={-1}
+            title="Copy cURL command"
+            onClick={copyCurlCommand}
+          >
+            <CopyIcon />
+          </button>
+          <CodeEditor
+            inputValue={curlCommand}
+            isReadOnly={true}
+            language={CODE_EDITOR_LANGUAGE.TEXT}
+            hideMinimap={true}
+            hideGutter={true}
+            hideActionBar={true}
+            lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
+            extraEditorOptions={{
+              scrollBeyondLastLine: false,
+              wordWrap: 'on',
+              links: false,
+            }}
+          />
+        </div>
+        <div className="data-product__viewer__service-screen__actions">
+          {zipkinUrl && (
+            <button
+              className="data-product__viewer__service-screen__actions__text-btn btn--dark"
+              tabIndex={-1}
+              onClick={openZipkinHealthCheck}
+              title="View traces in Zipkin for this access point"
+            >
+              Open in Zipkin
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
 const AccessPointTable = observer(
   (props: {
     accessPointState: DataProductAccessPointState;
@@ -1152,6 +1259,13 @@ const AccessPointTable = observer(
               dataAccessState={dataAccessState}
             />
           );
+        case DataProductAccessPointTabs.SERVICE:
+          return (
+            <ServiceScreen
+              accessPointState={accessPointState}
+              dataAccessState={dataAccessState}
+            />
+          );
         case DataProductAccessPointTabs.POWER_BI:
           return (
             <PowerBiScreen
@@ -1191,6 +1305,11 @@ const AccessPointTable = observer(
         key: DataProductAccessPointTabs.QUERY,
         label: 'Query',
         icon: null,
+      },
+      {
+        key: DataProductAccessPointTabs.SERVICE,
+        label: 'Service',
+        icon: <RocketIcon />,
       },
       {
         key: DataProductAccessPointTabs.DATACUBE,
@@ -1495,7 +1614,8 @@ export const DataProductAccessPointGroupViewer = observer(
               loading={
                 apgState.fetchingAccessState.isInProgress ||
                 apgState.handlingContractsState.isInProgress ||
-                apgState.fetchingUserAccessState.isInProgress
+                apgState.fetchingUserAccessState.isInProgress ||
+                apgState.fetchingDataRequestAccessState.isInProgress
               }
               disabled={dataAccessState === undefined}
               title={
@@ -1536,12 +1656,13 @@ export const DataProductAccessPointGroupViewer = observer(
                   ? 'Data access state not configured'
                   : 'More options'
               }
-              loading={
+              disabled={
+                dataAccessState === undefined ||
                 apgState.fetchingAccessState.isInProgress ||
                 apgState.handlingContractsState.isInProgress ||
-                apgState.fetchingUserAccessState.isInProgress
+                apgState.fetchingUserAccessState.isInProgress ||
+                apgState.fetchingDataRequestAccessState.isInProgress
               }
-              disabled={dataAccessState === undefined}
             >
               <CaretDownIcon />
             </Button>

@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { integrationTest } from '@finos/legend-shared/test';
+import { integrationTest, createSpy } from '@finos/legend-shared/test';
 import { stub_RawLambda } from '@finos/legend-graph';
 import { act, fireEvent, waitFor } from '@testing-library/react';
 import { ApplicationStore } from '@finos/legend-application';
@@ -32,8 +32,8 @@ import { LegendQueryPluginManager } from '../../application/LegendQueryPluginMan
 import {
   LegendQueryApplicationPlugin,
   type QueryTitleDescriptionSuggestion,
+  type QueryTitleDescriptionAISuggestionRequest,
 } from '../../stores/LegendQueryApplicationPlugin.js';
-import type { QueryBuilderState } from '@finos/legend-query-builder';
 
 // ---------------------------------------------------------------------------
 // Minimal mock plugin that returns a fixed suggestion instantly
@@ -49,7 +49,7 @@ class MockAISuggesterPlugin extends LegendQueryApplicationPlugin {
 
   override getExtraQueryTitleDescriptionAISuggester() {
     return async (
-      _queryBuilderState: QueryBuilderState,
+      _request: QueryTitleDescriptionAISuggestionRequest,
       _legendAIUrl: string,
     ): Promise<QueryTitleDescriptionSuggestion> => ({
       title: 'AI Generated Title',
@@ -59,12 +59,12 @@ class MockAISuggesterPlugin extends LegendQueryApplicationPlugin {
 }
 
 // ---------------------------------------------------------------------------
-// Tests
+// Tests — AI suggestion for Save (Rename) Query dialog
 // ---------------------------------------------------------------------------
 
 test(
   integrationTest(
-    'Suggest with AI button is visible when legendAIUrl is configured and a plugin is registered',
+    'Suggest with AI button is visible in Rename dialog when legendAIUrl is configured and a plugin is registered',
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
@@ -90,9 +90,15 @@ test(
       TEST_DATA__modelCoverageAnalysisResult,
     );
 
-    // Open the Create Query dialog
+    // Mock searchQueries to prevent URL errors from debounced search
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    // Open the Rename Query dialog
     await act(async () => {
-      mockedEditorStore.queryCreatorState.open();
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
     });
 
     const dialog = await waitFor(() => renderResult.getByRole('dialog'));
@@ -104,10 +110,9 @@ test(
 
 test(
   integrationTest(
-    'Suggest with AI button is NOT visible when legendAIUrl is not configured',
+    'Suggest with AI button is NOT visible in Rename dialog when legendAIUrl is not configured',
   ),
   async () => {
-    // Default config has no legendAI.url
     const mockedEditorStore = TEST__provideMockedQueryEditorStore();
 
     const { renderResult } = await TEST__setUpQueryEditor(
@@ -119,8 +124,15 @@ test(
       TEST_DATA__modelCoverageAnalysisResult,
     );
 
+    // Mock searchQueries to prevent URL errors from debounced search
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    // Open the Rename Query dialog
     await act(async () => {
-      mockedEditorStore.queryCreatorState.open();
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
     });
 
     const dialog = await waitFor(() => renderResult.getByRole('dialog'));
@@ -130,7 +142,7 @@ test(
 
 test(
   integrationTest(
-    'Clicking Suggest with AI fills inputs inline with AI suggestion and shows Apply/Dismiss buttons',
+    'Clicking Suggest with AI in Rename dialog fills inputs inline with AI suggestion and shows Apply/Dismiss buttons',
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
@@ -147,7 +159,7 @@ test(
       extraPlugins: [new MockAISuggesterPlugin()],
     });
 
-    const { renderResult } = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       mockedEditorStore,
       TEST_DATA__ResultState_entities,
       stub_RawLambda(),
@@ -156,8 +168,34 @@ test(
       TEST_DATA__modelCoverageAnalysisResult,
     );
 
+    // Set up source element so buildQuery() works
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      mockedEditorStore.queryCreatorState.open();
+      queryBuilderState.changeSourceElement(_modelClass);
+    });
+
+    // Mock lambdaToPureCode (called by buildAISuggestionRequest)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'lambdaToPureCode',
+    ).mockResolvedValue('|test::query');
+
+    // Mock valueSpecificationToPureCode (called for parameter values)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'valueSpecificationToPureCode',
+    ).mockResolvedValue("'test'");
+
+    // Mock searchQueries to prevent URL errors from debounced search
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    // Open the Rename Query dialog
+    await act(async () => {
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
     });
 
     const dialog = await waitFor(() => renderResult.getByRole('dialog'));
@@ -178,7 +216,7 @@ test(
       const inputs = dialog.querySelectorAll('.input--ai-suggested');
       expect(inputs).toHaveLength(2);
       expect((inputs[0] as HTMLInputElement).value).toBe('AI Generated Title');
-      expect((inputs[1] as HTMLInputElement).value).toBe(
+      expect((inputs[1] as HTMLTextAreaElement).value).toBe(
         'AI Generated Description',
       );
       expect(renderResult.getByText('Apply Suggestion')).not.toBeNull();
@@ -189,7 +227,7 @@ test(
 
 test(
   integrationTest(
-    'Accepting the AI suggestion fills name and description fields',
+    'Accepting the AI suggestion in Rename dialog fills name and description fields',
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
@@ -206,7 +244,7 @@ test(
       extraPlugins: [new MockAISuggesterPlugin()],
     });
 
-    const { renderResult } = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       mockedEditorStore,
       TEST_DATA__ResultState_entities,
       stub_RawLambda(),
@@ -215,8 +253,34 @@ test(
       TEST_DATA__modelCoverageAnalysisResult,
     );
 
+    // Set up source element so buildQuery() works
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
     await act(async () => {
-      mockedEditorStore.queryCreatorState.open();
+      queryBuilderState.changeSourceElement(_modelClass);
+    });
+
+    // Mock lambdaToPureCode (called by buildAISuggestionRequest)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'lambdaToPureCode',
+    ).mockResolvedValue('|test::query');
+
+    // Mock valueSpecificationToPureCode (called for parameter values)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'valueSpecificationToPureCode',
+    ).mockResolvedValue("'test'");
+
+    // Mock searchQueries to prevent URL errors from debounced search
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    // Open the Rename Query dialog
+    await act(async () => {
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
     });
 
     const dialog = await waitFor(() => renderResult.getByRole('dialog'));
@@ -237,18 +301,123 @@ test(
       fireEvent.click(applyBtn);
     });
 
-    // Inline suggestion state should be cleared and fields committed to store
+    // Inline suggestion state should be cleared and fields committed
     await waitFor(() => {
       expect(
         dialog.querySelector('.query-editor__ai-suggestion-badge'),
       ).toBeNull();
       expect(dialog.querySelectorAll('.input--ai-suggested')).toHaveLength(0);
-      expect(mockedEditorStore.queryCreatorState.queryName).toBe(
-        'AI Generated Title',
-      );
-      expect(mockedEditorStore.queryCreatorState.queryDescription).toBe(
-        'AI Generated Description',
-      );
+      // After applying, the input should show the AI-suggested title
+      const nameInput = dialog.querySelector(
+        'input[title="Query Name"]',
+      ) as HTMLInputElement;
+      expect(nameInput.value).toBe('AI Generated Title');
+      const descInput = dialog.querySelector(
+        'textarea[title="Query Description"]',
+      ) as HTMLTextAreaElement;
+      expect(descInput.value).toBe('AI Generated Description');
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Dismissing the AI suggestion in Rename dialog restores original values',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    const applicationStore = new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig({
+        legendAI: { url: 'http://ai.example.com' },
+      }),
+      pluginManager,
+    );
+
+    const mockedEditorStore = TEST__provideMockedQueryEditorStore({
+      pluginManager,
+      applicationStore,
+      extraPlugins: [new MockAISuggesterPlugin()],
+    });
+
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
+      mockedEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+
+    // Set up source element so buildQuery() works
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeSourceElement(_modelClass);
+    });
+
+    // Mock lambdaToPureCode (called by buildAISuggestionRequest)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'lambdaToPureCode',
+    ).mockResolvedValue('|test::query');
+
+    // Mock valueSpecificationToPureCode (called for parameter values)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'valueSpecificationToPureCode',
+    ).mockResolvedValue("'test'");
+
+    // Mock searchQueries to prevent URL errors from debounced search
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    // Open the Rename Query dialog
+    await act(async () => {
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
+    });
+
+    const dialog = await waitFor(() => renderResult.getByRole('dialog'));
+
+    // Capture original name from lightQuery
+    const originalName = mockedEditorStore.lightQuery.name;
+
+    // Suggest
+    const suggestBtn = dialog.querySelector(
+      '.query-editor__ai-suggest-btn',
+    ) as HTMLButtonElement;
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    // Wait for suggestion to appear
+    await waitFor(() => {
+      expect(
+        dialog.querySelector('.query-editor__ai-suggestion-badge'),
+      ).not.toBeNull();
+    });
+
+    // Dismiss suggestion
+    const dismissBtn = renderResult.getByText('Dismiss');
+    await act(async () => {
+      fireEvent.click(dismissBtn);
+    });
+
+    // Suggestion state should be cleared and original values restored
+    await waitFor(() => {
+      expect(
+        dialog.querySelector('.query-editor__ai-suggestion-badge'),
+      ).toBeNull();
+      expect(dialog.querySelectorAll('.input--ai-suggested')).toHaveLength(0);
+      const nameInput = dialog.querySelector(
+        'input[title="Query Name"]',
+      ) as HTMLInputElement;
+      expect(nameInput.value).toBe(originalName);
+      // The AI suggest button should reappear
+      expect(
+        dialog.querySelector('.query-editor__ai-suggest-btn'),
+      ).not.toBeNull();
     });
   },
 );

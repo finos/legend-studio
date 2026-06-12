@@ -142,6 +142,7 @@ export const buildFilterConditionState = (
         new FilterRelationColumnSourceState(
           col.name,
           col.genericType.value.rawType,
+          col.multiplicity,
         ),
       );
     } else {

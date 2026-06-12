@@ -1,5 +1,21 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.70
+
+### Patch Changes
+
+- [#5237](https://github.com/finos/legend-studio/pull/5237) [`b7e3fe9`](https://github.com/finos/legend-studio/commit/b7e3fe97b3e4c1e895302c794145aa1905241206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix the Depot Dashboard AG-Grid and element-type selector being locked to the dark theme. Both now follow the application's active color theme (matching the pattern used by `DatabaseBuilderWizard`, `QueryBuilderTDSGridResult`, etc.).
+
+## 0.1.69
+
+### Patch Changes
+
+- [#5226](https://github.com/finos/legend-studio/pull/5226) [`476f055`](https://github.com/finos/legend-studio/commit/476f055ffe77e6eeb6e350546e060ba98aa48877) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce a scalable, theme-aware styling foundation for Legend Studio. Component styles now consume a two-tier CSS variable system (palette tokens → role-based semantic tokens such as `--color-bg-panel`, `--color-text-primary`, `--color-border-default`) that is remapped per theme via a body class (`theme__default-dark` / `theme__default-light`), rather than hardcoding palette colors directly. This makes the dark theme the stable default while enabling a light theme and additional themes in the future. No public API changes — existing dark-theme appearance is preserved.
+
+## 0.1.68
+
+## 0.1.67
+
 ## 0.1.66
 
 ## 0.1.65

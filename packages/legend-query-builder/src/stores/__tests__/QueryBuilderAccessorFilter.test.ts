@@ -20,6 +20,7 @@ import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
   Core_GraphManagerPreset,
   FunctionExpression,
+  SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import {
   TEST__buildGraphWithEntities,
@@ -43,6 +44,13 @@ import {
   FilterPropertyExpressionSourceState,
   QueryBuilderFilterTreeConditionNodeData,
 } from '../filter/QueryBuilderFilterState.js';
+import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderRelationColumnProjectionColumnState } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import { PostFilterConditionState } from '../fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
+import {
+  QueryBuilderPostFilterOperator_IsEmpty,
+  QueryBuilderPostFilterOperator_IsNotEmpty,
+} from '../fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
 
 describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
   test('can create filter condition from a relation column', async () => {
@@ -92,6 +100,7 @@ describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
     const sourceState = new FilterRelationColumnSourceState(
       column.name,
       column.genericType.value.rawType,
+      column.multiplicity,
     );
     const filterConditionState = new FilterConditionState(
       queryBuilderState.filterState,
@@ -171,6 +180,7 @@ describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
     const sourceState = new FilterRelationColumnSourceState(
       column.name,
       column.genericType.value.rawType,
+      column.multiplicity,
     );
 
     // Verify buildLeftExpression returns a FunctionExpression
@@ -224,6 +234,7 @@ describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
       const sourceState = new FilterRelationColumnSourceState(
         column.name,
         column.genericType.value.rawType,
+        column.multiplicity,
       );
       const filterConditionState = new FilterConditionState(
         queryBuilderState.filterState,
@@ -241,5 +252,380 @@ describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
     expect(queryBuilderState.filterState.nodes.size).toBe(
       relationType.columns.length + 1,
     );
+  });
+
+  test('relation column multiplicity is preserved from V1 protocol', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    const relationType = guaranteeNonNullable(
+      queryBuilderState.sourceRelationType,
+    );
+
+    // The 'country' column is declared in TEST_DATA with multiplicity [1..1]
+    // while 'iso_code' is declared as nullable (lowerBound === 0).
+    const requiredColumn = guaranteeNonNullable(
+      relationType.columns.find((c) => c.name === 'country'),
+    );
+    const optionalColumn = guaranteeNonNullable(
+      relationType.columns.find((c) => c.name === 'iso_code'),
+    );
+
+    expect(requiredColumn.multiplicity.lowerBound).toBe(1);
+    expect(optionalColumn.multiplicity.lowerBound).toBe(0);
+  });
+
+  test('filter `is empty` / `is not empty` are gated on column multiplicity', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    const relationType = guaranteeNonNullable(
+      queryBuilderState.sourceRelationType,
+    );
+    const requiredColumn = guaranteeNonNullable(
+      relationType.columns.find((c) => c.name === 'country'),
+    );
+    const optionalColumn = guaranteeNonNullable(
+      relationType.columns.find((c) => c.name === 'iso_code'),
+    );
+
+    const getOperatorLabels = (col: typeof requiredColumn): string[] =>
+      new FilterConditionState(
+        queryBuilderState.filterState,
+        new FilterRelationColumnSourceState(
+          col.name,
+          col.genericType.value.rawType,
+          col.multiplicity,
+        ),
+      ).operators.map((op) => op.getLabel());
+
+    const requiredOperators = getOperatorLabels(requiredColumn);
+    const optionalOperators = getOperatorLabels(optionalColumn);
+
+    // Required column => is empty / is not empty must NOT be offered.
+    expect(requiredOperators).not.toContain('is empty');
+    expect(requiredOperators).not.toContain('is not empty');
+    // Optional column => is empty / is not empty must be offered.
+    expect(optionalOperators).toContain('is empty');
+    expect(optionalOperators).toContain('is not empty');
+  });
+
+  test('post-filter `is empty` / `is not empty` are gated on relation column multiplicity', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+
+    const relationType = guaranteeNonNullable(
+      queryBuilderState.sourceRelationType,
+    );
+    const requiredColumn = guaranteeNonNullable(
+      relationType.columns.find((c) => c.name === 'country'),
+    );
+    const optionalColumn = guaranteeNonNullable(
+      relationType.columns.find((c) => c.name === 'iso_code'),
+    );
+
+    const requiredColState =
+      new QueryBuilderRelationColumnProjectionColumnState(
+        tdsState,
+        requiredColumn,
+        true,
+      );
+    const optionalColState =
+      new QueryBuilderRelationColumnProjectionColumnState(
+        tdsState,
+        optionalColumn,
+        true,
+      );
+
+    const requiredOperators = new PostFilterConditionState(
+      tdsState.postFilterState,
+      requiredColState,
+      undefined,
+    ).operators.map((op) => op.getLabel());
+    const optionalOperators = new PostFilterConditionState(
+      tdsState.postFilterState,
+      optionalColState,
+      undefined,
+    ).operators.map((op) => op.getLabel());
+
+    // Required column => is empty / is not empty must NOT be offered.
+    expect(requiredOperators).not.toContain('is empty');
+    expect(requiredOperators).not.toContain('is not empty');
+    // Optional column => is empty / is not empty must be offered.
+    expect(optionalOperators).toContain('is empty');
+    expect(optionalOperators).toContain('is not empty');
+  });
+
+  test('post-filter `is empty` builds an isEmpty(...) lambda for relation columns', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    const optionalColumn = guaranteeNonNullable(
+      guaranteeNonNullable(queryBuilderState.sourceRelationType).columns.find(
+        (c) => c.name === 'iso_code',
+      ),
+    );
+    const colState = new QueryBuilderRelationColumnProjectionColumnState(
+      tdsState,
+      optionalColumn,
+      true,
+    );
+
+    // `is empty` should build `isEmpty($row.iso_code)`
+    const isEmptyOp = new QueryBuilderPostFilterOperator_IsEmpty();
+    const isEmptyCondition = new PostFilterConditionState(
+      tdsState.postFilterState,
+      colState,
+      isEmptyOp,
+    );
+    const isEmptyExpr = guaranteeType(
+      isEmptyOp.buildPostFilterConditionExpression(isEmptyCondition, undefined),
+      SimpleFunctionExpression,
+    );
+    expect(isEmptyExpr.functionName).toBe('isEmpty');
+    expect(isEmptyExpr.parametersValues.length).toBe(1);
+    const innerCol = guaranteeType(
+      isEmptyExpr.parametersValues[0],
+      FunctionExpression,
+    );
+    expect(innerCol.functionName).toBe('iso_code');
+
+    // `is not empty` should build `not(isEmpty($row.iso_code))`
+    const isNotEmptyOp = new QueryBuilderPostFilterOperator_IsNotEmpty();
+    const isNotEmptyCondition = new PostFilterConditionState(
+      tdsState.postFilterState,
+      colState,
+      isNotEmptyOp,
+    );
+    const isNotEmptyExpr = guaranteeType(
+      isNotEmptyOp.buildPostFilterConditionExpression(
+        isNotEmptyCondition,
+        undefined,
+      ),
+      SimpleFunctionExpression,
+    );
+    expect(isNotEmptyExpr.functionName).toBe('not');
+    const wrappedIsEmpty = guaranteeType(
+      isNotEmptyExpr.parametersValues[0],
+      SimpleFunctionExpression,
+    );
+    expect(wrappedIsEmpty.functionName).toBe('isEmpty');
+  });
+
+  test('relation column projection state carries the data needed to build a filter source (DnD parity)', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    const optionalColumn = guaranteeNonNullable(
+      guaranteeNonNullable(queryBuilderState.sourceRelationType).columns.find(
+        (c) => c.name === 'iso_code',
+      ),
+    );
+
+    // Add the projection column to the fetch structure (this is the DnD source
+    // the filter panel sees when a user drags a relation projection column
+    // onto the filter panel).
+    const projColState = new QueryBuilderRelationColumnProjectionColumnState(
+      tdsState,
+      optionalColumn,
+      true,
+    );
+    tdsState.addColumn(projColState);
+
+    // Build the filter source state the same way the filter panel DnD handler
+    // does for a `QueryBuilderRelationColumnProjectionColumnState`.
+    const sourceState = new FilterRelationColumnSourceState(
+      projColState.column.name,
+      projColState.column.genericType.value.rawType,
+      projColState.column.multiplicity,
+    );
+    const filterConditionState = new FilterConditionState(
+      queryBuilderState.filterState,
+      sourceState,
+    );
+
+    // Source state should be a relation-column source carrying the right
+    // type / multiplicity so downstream operator-gating still works.
+    expect(filterConditionState.sourceState).toBeInstanceOf(
+      FilterRelationColumnSourceState,
+    );
+    expect(
+      (filterConditionState.sourceState as FilterRelationColumnSourceState)
+        .columnName,
+    ).toBe(optionalColumn.name);
+    expect(
+      (filterConditionState.sourceState as FilterRelationColumnSourceState)
+        .columnMultiplicity.lowerBound,
+    ).toBe(optionalColumn.multiplicity.lowerBound);
+
+    // The condition can be added to the filter tree just like the
+    // relation-explorer DnD path.
+    const treeNode = new QueryBuilderFilterTreeConditionNodeData(
+      undefined,
+      filterConditionState,
+    );
+    queryBuilderState.filterState.addNodeFromNode(treeNode, undefined);
+    expect(queryBuilderState.filterState.nodes.size).toBe(1);
+
+    // And `is empty` / `is not empty` are offered because the column is
+    // optional — same gating as the relation-explorer DnD path.
+    const operatorLabels = filterConditionState.operators.map((op) =>
+      op.getLabel(),
+    );
+    expect(operatorLabels).toContain('is empty');
+    expect(operatorLabels).toContain('is not empty');
   });
 });

@@ -23,7 +23,7 @@
     height: 100%;
     width: 100%;
     position: relative;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__header {
@@ -32,25 +32,25 @@
     justify-content: right;
     width: 100%;
     height: 2.8rem;
-    background: var(--color-dark-grey-50);
-    border-bottom: 0.1rem solid var(--color-dark-grey-80);
+    background: var(--color-bg-app);
+    border-bottom: 0.1rem solid var(--color-border-subtle);
     border-radius: 0.2rem 0.2rem 0 0;
   }
 
   &__header__action {
     @include flexCenter;
 
-    color: var(--color-dark-grey-400);
+    color: var(--color-text-muted);
     height: 2.8rem;
     width: 2.8rem;
 
     &:hover {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-secondary);
     }
 
     &--active,
     &--active:hover {
-      color: var(--color-light-grey-300);
+      color: var(--color-text-primary);
     }
 
     svg {
@@ -148,8 +148,8 @@
     padding: 1rem 1.5rem;
     font-weight: 500;
     border-radius: 0.5rem;
-    background: var(--color-dark-grey-50);
-    color: var(--color-dark-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-secondary);
   }
 
   // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark

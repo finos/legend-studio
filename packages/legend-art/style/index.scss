@@ -15,6 +15,9 @@
  */
 
 @forward 'base/variables';
+@forward 'base/themes/semantic-tokens';
+@forward 'base/themes/theme-default-dark';
+@forward 'base/themes/theme-default-light';
 @forward 'base/fonts';
 @forward 'base/common';
 @forward 'base/divider';

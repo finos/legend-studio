@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CaretUpIcon,
   clsx,
@@ -24,7 +24,7 @@ import {
 } from '@finos/legend-art';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
-import { LEGEND_AI_ANCHOR_ID } from '@finos/legend-lego/legend-ai';
+import { DataProductLegendAIIntegration } from './DataProduct/DataProductLegendAIIntegration.js';
 import {
   type V1_Terminal,
   type V1_DataProduct,
@@ -193,16 +193,8 @@ const ProductHeader = observer(
       | TerminalProductDataAccessState
       | undefined;
     showFullHeader: boolean;
-    showAIButton?: boolean;
-    onLegendAI?: () => void;
   }) => {
-    const {
-      productViewerState,
-      dataAccessState,
-      showFullHeader,
-      showAIButton,
-      onLegendAI,
-    } = props;
+    const { productViewerState, dataAccessState, showFullHeader } = props;
     const headerRef = useRef<HTMLDivElement>(null);
 
     const productTitle =
@@ -250,16 +242,6 @@ const ProductHeader = observer(
             </div>
           </div>
 
-          {showAIButton && onLegendAI && (
-            <button
-              className="legend-ai-floating-btn__trigger"
-              onClick={onLegendAI}
-              title="Ask Marketplace"
-            >
-              <SparkleStarsIcon />
-              <span>Ask Marketplace</span>
-            </button>
-          )}
           {dataAccessState instanceof DataProductDataAccessState && (
             <DataProductEnvironmentLabel dataAccessState={dataAccessState} />
           )}
@@ -291,6 +273,42 @@ export const ProductViewer = observer(
     const frame = useRef<HTMLDivElement>(null);
     const [showFullHeader, setShowFullHeader] = useState(false);
     const [scrollPercentage, setScrollPercentage] = useState(0);
+    const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+    const [panelWidth, setPanelWidth] = useState(500);
+    const isResizing = useRef(false);
+
+    const isAIEnabled =
+      isDataProductViewerState(productViewerState) &&
+      productViewerState.legendAIConfig.enabled;
+
+    const productTitle = isDataProductViewerState(productViewerState)
+      ? (productViewerState.product.title ?? productViewerState.product.name)
+      : undefined;
+
+    const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
+      e.preventDefault();
+      isResizing.current = true;
+      const onMouseMove = (ev: MouseEvent): void => {
+        if (!isResizing.current) {
+          return;
+        }
+        const newWidth = window.innerWidth - ev.clientX;
+        setPanelWidth(
+          Math.max(320, Math.min(newWidth, window.innerWidth * 0.6)),
+        );
+      };
+      const onMouseUp = (): void => {
+        isResizing.current = false;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }, []);
 
     const onScroll: React.UIEventHandler<HTMLDivElement> = (event) => {
       const scrollTop = event.currentTarget.scrollTop;
@@ -317,22 +335,6 @@ export const ProductViewer = observer(
       }
     };
 
-    const scrollToQueryAI = useCallback((): void => {
-      const anchor = frame.current?.querySelector(`#${LEGEND_AI_ANCHOR_ID}`);
-      if (anchor) {
-        anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else if (frame.current) {
-        frame.current.scrollTo({
-          top: frame.current.scrollHeight,
-          behavior: 'smooth',
-        });
-      }
-    }, []);
-
-    const showAIButton =
-      isDataProductViewerState(productViewerState) &&
-      productViewerState.legendAIConfig.enabled;
-
     useEffect(() => {
       if (frame.current) {
         productViewerState.layoutState.setFrame(frame.current);
@@ -340,7 +342,16 @@ export const ProductViewer = observer(
     }, [productViewerState]);
 
     return (
-      <div className="data-product__viewer">
+      <div
+        className={clsx('data-product__viewer', {
+          'data-product__viewer--chat-open': isAIChatOpen,
+        })}
+        style={
+          isAIChatOpen
+            ? ({ '--ai-panel-width': `${panelWidth}px` } as React.CSSProperties)
+            : undefined
+        }
+      >
         <div
           ref={frame}
           className="data-product__viewer__body"
@@ -350,8 +361,6 @@ export const ProductViewer = observer(
             productViewerState={productViewerState}
             dataAccessState={productDataAccessState}
             showFullHeader={showFullHeader}
-            showAIButton={showAIButton}
-            onLegendAI={scrollToQueryAI}
           />
           {productViewerState.layoutState.isTopScrollerVisible && (
             <div className="data-product__viewer__scroller">
@@ -386,6 +395,60 @@ export const ProductViewer = observer(
             </div>
           </div>
         </div>
+        {isAIEnabled && isDataProductViewerState(productViewerState) && (
+          <>
+            <div
+              className="data-product__viewer__ai-panel"
+              style={{
+                width: panelWidth,
+                display: isAIChatOpen ? undefined : 'none',
+              }}
+            >
+              <button
+                type="button"
+                className="data-product__viewer__ai-panel__resize-handle"
+                aria-label="Resize AI panel"
+                onMouseDown={handleResizeMouseDown}
+                onKeyDown={(e): void => {
+                  const step = 20;
+                  if (e.key === 'ArrowLeft') {
+                    setPanelWidth((w) =>
+                      Math.min(w + step, window.innerWidth * 0.6),
+                    );
+                  } else if (e.key === 'ArrowRight') {
+                    setPanelWidth((w) => Math.max(w - step, 320));
+                  }
+                }}
+              />
+              <DataProductLegendAIIntegration
+                dataProductViewerState={productViewerState}
+                config={productViewerState.legendAIConfig}
+                {...(productDataAccessState instanceof
+                DataProductDataAccessState
+                  ? {
+                      dataProductDataAccessState: productDataAccessState,
+                    }
+                  : {})}
+                onClose={(): void => setIsAIChatOpen(false)}
+                onMinimize={(): void => setIsAIChatOpen(false)}
+              />
+            </div>
+            {!isAIChatOpen && (
+              <button
+                className="legend-ai-chat-toggle"
+                onClick={(): void => setIsAIChatOpen(true)}
+                title={`Ask ${productTitle ?? 'AI'}`}
+              >
+                <span className="legend-ai-chat-toggle__icon">
+                  <SparkleStarsIcon />
+                </span>
+                <span className="legend-ai-chat-toggle__label">
+                  Ask {productTitle ?? 'AI'}
+                </span>
+              </button>
+            )}
+          </>
+        )}
       </div>
     );
   },

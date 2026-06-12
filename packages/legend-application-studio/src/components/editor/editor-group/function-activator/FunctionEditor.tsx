@@ -1521,7 +1521,7 @@ export const FunctionEditor = observer(() => {
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.FUNCTION_EDITOR}
-      className="function-editor uml-editor uml-editor--dark"
+      className="function-editor uml-editor"
     >
       <Panel>
         <div className="panel__header">

@@ -56,8 +56,7 @@ import {
   type TDSSampleQueryTabContext,
   type RelationSampleQueryTabContext,
 } from '../../stores/DataProduct/DataProductSampleQueryTabState.js';
-
-const TDS_SAMPLE_VALUES_DELIMITER = '-- e.g.';
+import { TDS_SAMPLE_VALUES_DELIMITER } from '@finos/legend-lego/legend-ai';
 
 interface SampleQueryColumnData {
   id: string;

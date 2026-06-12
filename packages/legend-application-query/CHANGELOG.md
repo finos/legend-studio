@@ -1,5 +1,17 @@
 # @finos/legend-application-query
 
+## 13.8.24
+
+### Patch Changes
+
+- [#5243](https://github.com/finos/legend-studio/pull/5243) [`53360a4`](https://github.com/finos/legend-studio/commit/53360a4b20113fcd3be425e646e1f66dd8b338c3) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding ai integrations on studio and query
+
+## 13.8.23
+
+## 13.8.22
+
+## 13.8.21
+
 ## 13.8.20
 
 ### Patch Changes

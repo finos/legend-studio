@@ -1,0 +1,136 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:root {
+  --qai-bg-primary: #fff;
+  --qai-bg-secondary: #f2f5f7;
+  --qai-bg-elevated: #fbfbfb;
+  --qai-bg-input: #fff;
+  --qai-text-primary: #1c2b36;
+  --qai-text-secondary: #3e5463;
+  --qai-text-muted: #7a909e;
+  --qai-text-code: #2a3f4d;
+  --qai-border: #dce3e8;
+  --qai-border-light: #e1e7ea;
+  --qai-accent: #186ade;
+  --qai-accent-hover: #3d8df5;
+  --qai-accent-subtle: rgb(24 106 222 / 8%);
+  --qai-text-on-accent: #fff;
+  --qai-gradient-mid: #6366f1;
+  --qai-gradient-mid-hover: #818cf8;
+  --qai-gradient-end: #a855f7;
+  --qai-fallback-color: #c4b5fd;
+  --qai-fallback-color-hover: #ddd6fe;
+  --qai-error: #d32f2f;
+  --qai-error-bg: #fef2f2;
+  --qai-success: #16a163;
+  --qai-shadow: 0 0.2rem 0.8rem rgb(0 0 0 / 8%);
+  --qai-shadow-hover: 0 0.4rem 1.6rem rgb(0 0 0 / 14%);
+  --qai-panel-header-bg: #f2f5f7;
+  --qai-sql-bg: #fafafa;
+
+  // AI Chat colors
+  --color-ai-accent-primary: #2563eb;
+  --color-ai-accent-hover: #1d4ed8;
+  --color-ai-accent-focus: #3b82f6;
+  --color-ai-accent-green: #059669;
+  --color-ai-accent-green-dark: #34d399;
+  --color-ai-accent-purple: #7c3aed;
+  --color-ai-accent-red: #dc2626;
+  --color-ai-accent-red-dark: #ef4444;
+  --color-ai-accent-blue-soft: #5b8dbe;
+  --color-ai-accent-blue-soft-dark: #6ba1d4;
+  --color-ai-bg-code: #f8f9fc;
+  --color-ai-bg-code-dark: #0f0f1a;
+  --color-ai-text-code: #334155;
+  --color-ai-text-code-dark: #e2e8f0;
+  --color-ai-text-error-dark: #fca5a5;
+  --color-ai-border: #e5e7eb;
+  --color-ai-border-input: #d1d5db;
+  --color-ai-chart-1: #5b8dbe;
+  --color-ai-chart-2: #7a9ab5;
+  --color-ai-chart-3: #4a90a4;
+  --color-ai-chart-4: #6b8f71;
+  --color-ai-chart-5: #a6896b;
+  --color-ai-chart-6: #8c7baa;
+  --color-ai-chart-7: #6e9fad;
+  --color-ai-chart-8: #9b8e82;
+  --color-ai-chart-9: #7b96b0;
+  --color-ai-chart-10: #8a9a7b;
+
+  // Chart color aliases consumed by LegendAICharts.tsx
+  --ai-chart-color-1: var(--color-ai-chart-1);
+  --ai-chart-color-2: var(--color-ai-chart-2);
+  --ai-chart-color-3: var(--color-ai-chart-3);
+  --ai-chart-color-4: var(--color-ai-chart-4);
+  --ai-chart-color-5: var(--color-ai-chart-5);
+  --ai-chart-color-6: var(--color-ai-chart-6);
+  --ai-chart-color-7: var(--color-ai-chart-7);
+  --ai-chart-color-8: var(--color-ai-chart-8);
+  --ai-chart-color-9: var(--color-ai-chart-9);
+  --ai-chart-color-10: var(--color-ai-chart-10);
+}
+
+.theme__hc-dark {
+  --qai-bg-primary: #141414;
+  --qai-bg-secondary: #1a1a1a;
+  --qai-bg-elevated: #202020;
+  --qai-bg-input: #1a1a1a;
+  --qai-text-primary: #fff;
+  --qai-text-secondary: #e0e0e0;
+  --qai-text-muted: #a0a0a0;
+  --qai-text-code: #c8d4dc;
+  --qai-border: #333;
+  --qai-border-light: #404040;
+  --qai-accent: #7399c6;
+  --qai-accent-hover: #8fb3dc;
+  --qai-accent-subtle: rgb(115 153 198 / 12%);
+  --qai-text-on-accent: #fff;
+  --qai-gradient-mid: #818cf8;
+  --qai-gradient-mid-hover: #a5b4fc;
+  --qai-gradient-end: #a78bfa;
+  --qai-fallback-color: #c4b5fd;
+  --qai-fallback-color-hover: #ddd6fe;
+  --qai-error: #fa5343;
+  --qai-error-bg: rgb(250 83 67 / 10%);
+  --qai-success: #6ac555;
+  --qai-shadow: 0 0.2rem 0.8rem rgb(0 0 0 / 30%);
+  --qai-shadow-hover: 0 0.4rem 1.6rem rgb(0 0 0 / 45%);
+  --qai-panel-header-bg: #202020;
+  --qai-sql-bg: #1a1a1a;
+
+  .legend-ai-floating-btn__trigger {
+    background: linear-gradient(
+      135deg,
+      var(--qai-accent) 0%,
+      var(--qai-gradient-mid) 50%,
+      var(--qai-gradient-end) 100%
+    );
+    box-shadow: 0 0.2rem 0.8rem rgb(115 153 198 / 25%);
+
+    &:hover {
+      background: linear-gradient(
+        135deg,
+        var(--qai-accent-hover) 0%,
+        var(--qai-gradient-mid-hover) 50%,
+        var(--qai-fallback-color) 100%
+      );
+      box-shadow:
+        0 0.4rem 1.4rem rgb(115 153 198 / 35%),
+        0 0 1.2rem rgb(129 140 248 / 20%);
+    }
+  }
+}

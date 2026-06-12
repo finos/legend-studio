@@ -80,6 +80,7 @@ import {
   PanelLoadingIndicator,
   GearSuggestIcon,
   FlaskIcon,
+  SparkleIcon,
 } from '@finos/legend-art';
 import {
   type ChangeEventHandler,
@@ -106,7 +107,7 @@ import {
   QueryBuilderAdvancedWorkflowState,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import { action, autorun, flowResult } from 'mobx';
+import { action, autorun, flowResult, runInAction } from 'mobx';
 import { DataProductTestableEditor } from './testable/DataProductTestableEditor.js';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
@@ -202,6 +203,11 @@ import {
 import type { LegendStudioApplicationStore } from '../../../../stores/LegendStudioBaseStore.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import { RelationElementEditor } from '../data-editor/RelationElementsDataEditor.js';
+import type {
+  AccessPointMeta,
+  DataProductDocResponse,
+  DSL_DataProduct_LegendStudioApplicationPlugin_Extension,
+} from '../../../../stores/extensions/DSL_DataProduct_LegendStudioApplicationPlugin_Extension.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -262,8 +268,11 @@ const hoverIcon = () => {
 };
 
 const AccessPointTitle = observer(
-  (props: { accessPointState: LakehouseAccessPointState }) => {
-    const { accessPointState } = props;
+  (props: {
+    accessPointState: LakehouseAccessPointState;
+    aiSuggestionMeta?: AccessPointMeta | undefined;
+  }) => {
+    const { accessPointState, aiSuggestionMeta } = props;
     const accessPoint = accessPointState.accessPoint;
     const [editingName, setEditingName] = useState(
       accessPoint.id === newNamePlaceholder,
@@ -286,29 +295,37 @@ const AccessPointTitle = observer(
         }
       });
 
-    return editingName ? (
-      <textarea
-        className="access-point-editor__name"
-        spellCheck={false}
-        value={accessPoint.id}
-        onChange={updateAccessPointName}
-        placeholder={'Access Point Name'}
-        onBlur={handleNameBlur}
-        style={{
-          borderColor:
-            accessPoint.id === newNamePlaceholder
-              ? 'var(--color-red-300)'
-              : 'transparent',
-        }}
-      />
-    ) : (
-      <div
-        className="access-point-editor__name__label"
-        onClick={handleNameEdit}
-        title="Click to edit access point name"
-        style={{ flex: '1 1 auto' }}
-      >
-        {accessPoint.id}
+    return (
+      <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+        {editingName ? (
+          <textarea
+            className="access-point-editor__name"
+            spellCheck={false}
+            value={accessPoint.id}
+            onChange={updateAccessPointName}
+            placeholder={'Access Point Name'}
+            onBlur={handleNameBlur}
+            style={{
+              borderColor:
+                accessPoint.id === newNamePlaceholder
+                  ? 'var(--color-red-300)'
+                  : 'transparent',
+            }}
+          />
+        ) : (
+          <div
+            className="access-point-editor__name__label"
+            onClick={handleNameEdit}
+            title="Click to edit access point name"
+          >
+            {accessPoint.id}
+          </div>
+        )}
+        {aiSuggestionMeta && (
+          <div className="data-product-editor__ai-suggestion-inline">
+            {aiSuggestionMeta.name}
+          </div>
+        )}
       </div>
     );
   },
@@ -697,8 +714,9 @@ export const LakehouseDataProductAccessPointEditor = observer(
   (props: {
     accessPointState: LakehouseAccessPointState;
     isReadOnly: boolean;
+    aiSuggestionMeta?: AccessPointMeta | undefined;
   }) => {
-    const { accessPointState } = props;
+    const { accessPointState, aiSuggestionMeta } = props;
     const editorStore = useEditorStore();
     const accessPoint = accessPointState.accessPoint;
     const groupState = accessPointState.state;
@@ -925,7 +943,10 @@ export const LakehouseDataProductAccessPointEditor = observer(
           />
           <div style={{ flex: 1 }}>
             <div className="access-point-editor__metadata">
-              <AccessPointTitle accessPointState={accessPointState} />
+              <AccessPointTitle
+                accessPointState={accessPointState}
+                aiSuggestionMeta={aiSuggestionMeta}
+              />
               <div className="access-point-editor__info">
                 <div className="access-point-editor__reproducible">
                   <Checkbox
@@ -1166,6 +1187,11 @@ export const LakehouseDataProductAccessPointEditor = observer(
                 {isHoveringTitle && hoverIcon()}
               </div>
             )}
+            {aiSuggestionMeta && (
+              <div className="data-product-editor__ai-suggestion-inline">
+                {aiSuggestionMeta.title}
+              </div>
+            )}
             {editingDescription ? (
               <textarea
                 className="panel__content__form__section__input"
@@ -1207,6 +1233,11 @@ export const LakehouseDataProductAccessPointEditor = observer(
                   </div>
                 )}
                 {isHoveringDesc && hoverIcon()}
+              </div>
+            )}
+            {aiSuggestionMeta && (
+              <div className="data-product-editor__ai-suggestion-inline">
+                {aiSuggestionMeta.description}
               </div>
             )}
             <div className="access-point-editor__content">
@@ -1712,6 +1743,10 @@ const AccessPointGroupEditor = observer(
     const [isHoveringName, setIsHoveringName] = useState(false);
     const [editingTitle, setEditingTitle] = useState(false);
     const [isHoveringTitle, setIsHoveringTitle] = useState(false);
+    const [isSuggestingWithAI, setIsSuggestingWithAI] = useState(false);
+    const [aiSuggestion, setAISuggestion] = useState<
+      DataProductDocResponse | undefined
+    >(undefined);
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
       setEditingDescription(false);
@@ -1766,6 +1801,96 @@ const AccessPointGroupEditor = observer(
     const updateGroupTitle = (val: string | undefined): void => {
       accessPointGroup_setTitle(groupState.value, val);
     };
+
+    // AI suggestion for APG
+    const legendAIUrl = editorStore.applicationStore.config.legendAIUrl;
+    const aiDocSuggester = legendAIUrl
+      ? editorStore.pluginManager
+          .getApplicationPlugins()
+          .map((p) =>
+            (
+              p as DSL_DataProduct_LegendStudioApplicationPlugin_Extension
+            ).getExtraDataProductDocumentationAISuggester?.bind(p),
+          )
+          .find(Boolean)
+      : undefined;
+    const suggestWithAI = async (): Promise<void> => {
+      if (!aiDocSuggester || !legendAIUrl) {
+        return;
+      }
+      setIsSuggestingWithAI(true);
+      setAISuggestion(undefined);
+      try {
+        const definitions =
+          await editorStore.graphManagerState.graphManager.graphToPureCode(
+            editorStore.graphManagerState.graph,
+          );
+        const product = productEditorState.product;
+        const suggestion = await aiDocSuggester(
+          { definitions, data_product_name: product.path },
+          legendAIUrl,
+        );
+        runInAction(() => {
+          setAISuggestion(suggestion);
+        });
+      } finally {
+        runInAction(() => {
+          setIsSuggestingWithAI(false);
+        });
+      }
+    };
+    const applyAISuggestion = (): void => {
+      if (!aiSuggestion) {
+        return;
+      }
+      // Find matching group in the response
+      const gIdx =
+        productEditorState.accessPointGroupStates.indexOf(groupState);
+      const groupMeta =
+        aiSuggestion.access_point_groups.find(
+          (g) => g.name === groupState.value.id,
+        ) ?? aiSuggestion.access_point_groups[gIdx];
+      if (groupMeta) {
+        accessPointGroup_setTitle(groupState.value, groupMeta.title);
+        accessPointGroup_setDescription(
+          groupState.value,
+          groupMeta.description,
+        );
+      }
+      // Apply access point metadata for this group
+      const apMetas = aiSuggestion.access_points.filter(
+        (ap) => ap.group === (groupMeta?.name ?? groupState.value.id),
+      );
+      for (
+        let j = 0;
+        j < apMetas.length && j < groupState.value.accessPoints.length;
+        j++
+      ) {
+        const apMeta = apMetas[j] as (typeof apMetas)[number];
+        const ap = groupState.value.accessPoints[
+          j
+        ] as (typeof groupState.value.accessPoints)[number];
+        // Convert suggested name to valid identifier (alphanumeric + underscore)
+        const sanitizedName = apMeta.name.replace(/[^0-9a-zA-Z_]/g, '_');
+        if (sanitizedName) {
+          ap.id = sanitizedName;
+        }
+        accessPoint_setTitle(ap, apMeta.title);
+        accessPoint_setDescription(ap, apMeta.description);
+      }
+      setAISuggestion(undefined);
+    };
+
+    // Computed AI suggestion for current group
+    const groupIndex =
+      productEditorState.accessPointGroupStates.indexOf(groupState);
+    const aiGroupMeta =
+      aiSuggestion?.access_point_groups.find(
+        (g) => g.name === groupState.value.id,
+      ) ?? aiSuggestion?.access_point_groups[groupIndex];
+    const aiAccessPointMetas = aiSuggestion?.access_points.filter(
+      (ap) => ap.group === (aiGroupMeta?.name ?? groupState.value.id),
+    );
 
     const handleRemoveAccessPointGroup = (): void => {
       editorStore.applicationStore.alertService.setActionAlertInfo({
@@ -1852,6 +1977,48 @@ const AccessPointGroupEditor = observer(
             <TimesIcon />
           </button>
         </div>
+        {aiDocSuggester && (
+          <div style={{ padding: '0.25rem 0.5rem' }}>
+            <PanelLoadingIndicator isLoading={isSuggestingWithAI} />
+            {aiSuggestion ? (
+              <div className="data-product-editor__ai-suggestion__actions">
+                <button
+                  className="btn btn--dark data-product-editor__ai-suggestion__apply-btn"
+                  onClick={applyAISuggestion}
+                  title="Apply AI-generated title, description, and access point metadata for this group"
+                >
+                  Apply
+                </button>
+                <button
+                  className="btn data-product-editor__ai-suggestion__dismiss-btn"
+                  onClick={(): void => setAISuggestion(undefined)}
+                >
+                  Dismiss
+                </button>
+                <span className="data-product-editor__ai-suggestion-badge">
+                  <SparkleIcon />
+                  AI Suggestion
+                </span>
+              </div>
+            ) : (
+              <button
+                className="data-product-editor__ai-suggest-btn"
+                onClick={(): void => {
+                  suggestWithAI().catch(
+                    editorStore.applicationStore.alertUnhandledError,
+                  );
+                }}
+                disabled={isSuggestingWithAI || isReadOnly}
+                title="Use AI to suggest title and descriptions for this access point group"
+              >
+                <SparkleIcon />
+                <span>
+                  {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+                </span>
+              </button>
+            )}
+          </div>
+        )}
         <div className="access-point-editor__group-container__name-editor">
           {editingTitle ? (
             <textarea
@@ -1896,6 +2063,11 @@ const AccessPointGroupEditor = observer(
             </div>
           )}
         </div>
+        {aiGroupMeta && (
+          <div className="data-product-editor__ai-suggestion-inline">
+            {aiGroupMeta.title}
+          </div>
+        )}
         <div className="access-point-editor__group-container__description-editor">
           {editingDescription ? (
             <textarea
@@ -1938,6 +2110,11 @@ const AccessPointGroupEditor = observer(
               {isHoveringDescription && hoverIcon()}
             </div>
           )}
+          {aiGroupMeta && (
+            <div className="data-product-editor__ai-suggestion-inline">
+              {aiGroupMeta.description}
+            </div>
+          )}
         </div>
         {editorStore.applicationStore.config.options.dataProductConfig && (
           <AccessPointGroupPublicToggle groupState={groupState} />
@@ -1975,11 +2152,12 @@ const AccessPointGroupEditor = observer(
             >
               {groupState.accessPointStates
                 .filter(filterByType(LakehouseAccessPointState))
-                .map((apState) => (
+                .map((apState, idx) => (
                   <LakehouseDataProductAccessPointEditor
                     key={apState.uuid}
                     isReadOnly={isReadOnly}
                     accessPointState={apState}
+                    aiSuggestionMeta={aiAccessPointMetas?.[idx]}
                   />
                 ))}
             </div>

@@ -23,20 +23,25 @@ import {
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useAuth } from 'react-oidc-context';
 
 export const LakehouseAdminSubscriptionsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
     const auth = useAuth();
+    // Keep the latest access token in a ref so the grid datasource always reads
+    // the freshest token without being recreated on every token rotation
+    // (which would otherwise cause the grid to reset and refetch).
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
 
     const datasource = useMemo(
       () =>
         adminStore.createSubscriptionsServerSideDatasource(
-          auth.user?.access_token,
+          () => tokenRef.current,
         ),
-      [adminStore, auth.user?.access_token],
+      [adminStore],
     );
 
     return (

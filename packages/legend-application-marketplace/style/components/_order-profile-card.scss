@@ -1,0 +1,247 @@
+/**
+ * Copyright (c) 2025-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.legend-marketplace-order-profile-card {
+  position: relative;
+
+  &__title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  &__summary {
+    // Keep the same white colour as the __provider slot on terminal cards
+    color: white !important;
+  }
+
+  &__info-button {
+    color: rgb(255 255 255 / 70%);
+    flex-shrink: 0;
+    margin-top: -2px;
+    padding: 2px;
+
+    svg {
+      font-size: 1.4rem;
+    }
+
+    &:hover {
+      color: white;
+    }
+  }
+}
+
+// Order Profile Detail Modal
+.order-profile-modal {
+  &__header {
+    padding: 16px 20px 8px;
+    border-bottom: 1px solid var(--color-light-grey-200);
+  }
+
+  &__header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  &__header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__header-icon {
+    font-size: 2.2rem;
+    color: var(--marketplace-text-primary);
+  }
+
+  &__profile-name {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--marketplace-text-primary);
+  }
+
+  &__close-button {
+    color: var(--marketplace-text-secondary);
+  }
+
+  &__header-summary {
+    color: var(--marketplace-text-secondary);
+    font-size: 1.5rem;
+
+    strong {
+      color: var(--color-hclight-green-60);
+    }
+  }
+
+  &__content {
+    padding: 0;
+    overflow-x: auto;
+  }
+
+  &__table-head {
+    background: var(--marketplace-bg-secondary);
+  }
+
+  &__table-header-cell {
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--marketplace-text-secondary);
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--color-light-grey-200);
+  }
+
+  &__table-row {
+    &:hover {
+      background: var(--marketplace-bg-secondary);
+    }
+
+    &--owned {
+      opacity: 0.6;
+    }
+  }
+
+  &__table-cell {
+    font-size: 1.5rem;
+    color: var(--marketplace-text-primary);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--color-light-grey-100);
+
+    &--name {
+      font-weight: 500;
+    }
+
+    &--price {
+      color: var(--color-hclight-green-60);
+      font-weight: 600;
+    }
+  }
+
+  &__product-name-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    &--sub {
+      padding-left: 12px;
+      color: var(--marketplace-text-secondary);
+    }
+  }
+
+  &__row-accent {
+    width: 3px;
+    min-width: 3px;
+    height: 18px;
+    border-radius: 2px;
+    flex-shrink: 0;
+
+    &--vendor-profile {
+      background: var(--color-hclight-blue-60);
+    }
+
+    &--addon {
+      background: var(--color-hclight-green-60);
+    }
+  }
+
+  &__owned-label {
+    font-size: 1.3rem;
+    color: var(--color-hclight-green-60);
+    font-weight: 500;
+  }
+
+  &__category-chip {
+    &--terminal {
+      background: var(--color-light-blue-0);
+      color: var(--color-blue-500);
+      font-size: 1.3rem;
+      border-radius: 999px;
+    }
+
+    &--addon {
+      background: var(--marketplace-addon-chip-bg);
+      color: var(--color-hclight-green-60);
+      font-size: 1.3rem;
+      border-radius: 999px;
+    }
+  }
+
+  &__actions {
+    padding: 12px 20px;
+    justify-content: flex-end;
+  }
+
+  &__close-btn {
+    font-size: 1.5rem;
+  }
+}
+
+// Multiselect modal
+.order-profile-multiselect-modal {
+  .MuiListItem-root {
+    cursor: pointer;
+  }
+
+  &__description {
+    margin-bottom: 0.8rem;
+    font-size: 1.4rem;
+  }
+
+  &__list-item {
+    border-radius: 4px;
+    margin-bottom: 8px;
+    border: 1px solid var(--color-light-grey-300);
+    align-items: flex-start;
+
+    &--selected {
+      border-color: var(--color-hclight-blue-60);
+    }
+  }
+
+  &__radio {
+    margin-top: 2px;
+    margin-right: 8px;
+    padding: 0;
+  }
+
+  &__item-primary {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  &__item-name {
+    font-weight: bold;
+    font-size: 1.4rem;
+  }
+
+  &__item-price {
+    color: var(--color-hclight-green-60);
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin-left: 1.6rem;
+    white-space: nowrap;
+  }
+
+  &__item-model {
+    color: var(--marketplace-text-secondary);
+    font-size: 1.2rem;
+  }
+}

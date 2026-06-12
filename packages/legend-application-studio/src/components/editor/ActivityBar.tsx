@@ -28,6 +28,7 @@ import {
   RepoIcon,
   MenuContent,
   MenuContentItem,
+  MenuContentItemBlankIcon,
   MenuContentItemLabel,
   GitPullRequestIcon,
   GitMergeIcon,
@@ -44,14 +45,41 @@ import {
   WorkflowIcon,
   ReadMeIcon,
   DevIcon,
+  MoonIcon,
+  SunIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useEffect, useState } from 'react';
 import {
+  LEGEND_APPLICATION_COLOR_THEME,
   ReleaseLogManager,
   ReleaseNotesManager,
   VIRTUAL_ASSISTANT_TAB,
 } from '@finos/legend-application';
+
+/**
+ * Themes that studio has real SCSS support for. Filters the global theme
+ * registry (which also exposes stubs and app-specific themes like
+ * `legacy-light`) down to what studio can actually render correctly.
+ *
+ * To add a new theme to studio's picker:
+ *   1. Implement its SCSS in `legend-art/style/base/themes/`
+ *   2. Add the key here.
+ */
+const STUDIO_SUPPORTED_COLOR_THEMES: ReadonlySet<string> = new Set([
+  LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
+  LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT,
+]);
+
+/**
+ * Subset of supported themes that are still being stabilized and should only be
+ * exposed in non-production environments. These are hidden from the picker
+ * unless the `NonProductionFeatureFlag` config option is enabled, so dev/QA can
+ * test them without shipping the toggle to production users.
+ */
+const STUDIO_NON_PRODUCTION_COLOR_THEMES: ReadonlySet<string> = new Set([
+  LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT,
+]);
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
 import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
@@ -77,6 +105,7 @@ const SettingsMenu = observer(
     return (
       <MenuContent ref={ref} className="activity-bar__setting__menu">
         <MenuContentItem onClick={showDeveloperTool}>
+          <MenuContentItemBlankIcon />
           <MenuContentItemLabel>Show Developer Tool</MenuContentItemLabel>
         </MenuContentItem>
       </MenuContent>
@@ -91,6 +120,64 @@ const useOptionalAuth = (): AuthContextProps | undefined => {
     return undefined;
   }
 };
+
+/**
+ * One-click toggle between the default dark and default light color themes,
+ * surfaced directly in the activity bar so users don't have to dig through the
+ * Settings menu to flip themes.
+ *
+ * The toggle only renders when both themes are actually exposed in the current
+ * environment (i.e. it respects the same `STUDIO_SUPPORTED_COLOR_THEMES` /
+ * `NonProductionFeatureFlag` gating as the Settings menu picker). This keeps
+ * the in-progress light theme hidden in production until it's stabilized.
+ */
+export const ColorThemeToggle = observer(() => {
+  const applicationStore = useLegendStudioApplicationStore();
+  const { layoutService } = applicationStore;
+  const showNonProductionThemes =
+    applicationStore.config.options.NonProductionFeatureFlag;
+
+  const exposedThemeKeys = new Set(
+    layoutService.availableColorThemes
+      .filter(
+        (theme) =>
+          STUDIO_SUPPORTED_COLOR_THEMES.has(theme.key) &&
+          (showNonProductionThemes ||
+            !STUDIO_NON_PRODUCTION_COLOR_THEMES.has(theme.key)),
+      )
+      .map((theme) => theme.key),
+  );
+
+  // Only show the toggle when both endpoints of the dark<->light flip are
+  // actually available; otherwise it would be a no-op control.
+  if (
+    !exposedThemeKeys.has(LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK) ||
+    !exposedThemeKeys.has(LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT)
+  ) {
+    return null;
+  }
+
+  const isLight = layoutService.TEMPORARY__isLightColorThemeEnabled;
+  const toggleTheme = (): void => {
+    layoutService.setColorTheme(
+      isLight
+        ? LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK
+        : LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT,
+      { persist: true },
+    );
+  };
+
+  return (
+    <button
+      className="activity-bar__item"
+      onClick={toggleTheme}
+      tabIndex={-1}
+      title={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
+    >
+      {isLight ? <MoonIcon /> : <SunIcon />}
+    </button>
+  );
+});
 
 export const ActivityBarMenu: React.FC<{
   openShowcasePanel?: () => void;
@@ -505,6 +592,7 @@ export const ActivityBar = observer(() => {
       >
         <ReadMeIcon />
       </button>
+      <ColorThemeToggle />
       <ControlledDropdownMenu
         className="activity-bar__item"
         title="Settings"

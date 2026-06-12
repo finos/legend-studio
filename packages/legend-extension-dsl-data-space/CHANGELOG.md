@@ -1,5 +1,21 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.227
+
+### Patch Changes
+
+- [#5246](https://github.com/finos/legend-studio/pull/5246) [`d386f88`](https://github.com/finos/legend-studio/commit/d386f88b6c17ab8e4de3f3ddcb25fa46dc1a08cd) ([@bojja-gs](https://github.com/bojja-gs)) - Data space viewer: add Legend AI integration panel with resize handle, keyboard accessibility, service relationship inference, and column enrichment from model docs.
+
+## 10.4.226
+
+### Patch Changes
+
+- [#5226](https://github.com/finos/legend-studio/pull/5226) [`476f055`](https://github.com/finos/legend-studio/commit/476f055ffe77e6eeb6e350546e060ba98aa48877) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce a scalable, theme-aware styling foundation for Legend Studio. Component styles now consume a two-tier CSS variable system (palette tokens → role-based semantic tokens such as `--color-bg-panel`, `--color-text-primary`, `--color-border-default`) that is remapped per theme via a body class (`theme__default-dark` / `theme__default-light`), rather than hardcoding palette colors directly. This makes the dark theme the stable default while enabling a light theme and additional themes in the future. No public API changes — existing dark-theme appearance is preserved.
+
+## 10.4.225
+
+## 10.4.224
+
 ## 10.4.223
 
 ## 10.4.222

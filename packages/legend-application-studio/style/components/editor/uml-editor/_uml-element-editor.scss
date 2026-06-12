@@ -21,22 +21,22 @@
   width: 100%;
 
   ::-webkit-scrollbar-thumb {
-    background: var(--color-light-grey-400);
+    background: var(--color-text-muted);
   }
 
   &__dnd__placeholder {
     height: 100%;
-    border: 0.2rem dashed var(--color-light-grey-300);
-    background: var(--color-light-grey-0);
+    border: 0.2rem dashed var(--color-border-default);
+    background: var(--color-bg-panel);
   }
 
   .panel {
     height: 100%;
 
     &__header {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-light-grey-100);
+      background: var(--color-bg-panel-header);
 
       &__title {
         max-width: calc(100% - 11rem);
@@ -45,7 +45,7 @@
 
     &__content {
       height: calc(100% - 5.6rem);
-      background: var(--color-light-grey-0);
+      background: var(--color-bg-panel);
     }
 
     &__content > div:first-child {
@@ -65,7 +65,7 @@
 
     width: 2rem;
     min-width: 2rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__header__lock svg {
@@ -80,11 +80,12 @@
     cursor: pointer;
   }
 
+  // Generation-origin tags use the generation brand palette (theme-stable).
   &__header__generation-origin__label {
     @include flexVCenter;
 
     background: var(--color-generated);
-    color: var(--color-light-grey-100);
+    color: var(--color-text-on-accent);
     padding: 0 0.5rem;
     border-radius: 0.2rem 0 0 0.2rem;
     height: 2rem;
@@ -100,8 +101,8 @@
 
     height: 2rem;
     line-height: 2rem;
-    background: var(--color-pink-300);
-    color: var(--color-light-grey-100);
+    background: var(--color-category-generation);
+    color: var(--color-text-on-accent);
     padding: 0 0.5rem 0 0.7rem;
     font-size: 1.2rem;
     max-width: 6rem;
@@ -111,8 +112,8 @@
   &__header__generation-origin__visit-btn {
     @include flexVCenter;
 
-    background: var(--color-pink-300);
-    color: var(--color-light-grey-100);
+    background: var(--color-category-generation);
+    color: var(--color-text-on-accent);
     padding: 0 0.3rem;
     border-radius: 0 50% 50% 0;
     height: 2rem;
@@ -137,13 +138,13 @@
     align-items: center;
     justify-content: center;
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-light-grey-200);
+    border-right: 0.1rem solid var(--color-border-default);
     white-space: nowrap;
     cursor: pointer;
   }
 
   &__tab--active {
-    color: var(--color-dark-grey-50);
+    color: var(--color-text-primary);
     position: relative;
   }
 
@@ -153,16 +154,18 @@
     width: 100%;
     position: absolute;
     bottom: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 
+  // "Visit detail" CTA buttons. Originally light-blue-200 (steel blue) —
+  // folded to accent. Same shift as documented elsewhere.
   &__basic__detail-btn {
     @include flexCenter;
 
     flex: 2.8rem 0 0;
     height: 2.8rem;
-    color: var(--color-light-grey-0);
-    background: var(--color-light-blue-200);
+    color: var(--color-text-on-accent);
+    background: var(--color-accent);
     border-radius: 0.2rem;
     margin-left: 0.5rem;
     cursor: pointer;
@@ -173,15 +176,15 @@
 
     flex: 2.8rem 0 0;
     height: 2.8rem;
-    color: var(--color-light-grey-0);
-    background: var(--color-light-blue-200);
+    color: var(--color-text-on-accent);
+    background: var(--color-accent);
     border-radius: 0.2rem;
     margin-left: 0.5rem;
     cursor: pointer;
 
     svg {
       font-size: 2rem;
-      color: var(--color-light-grey-100);
+      color: var(--color-text-on-accent);
     }
   }
 
@@ -190,15 +193,15 @@
 
     flex: 2.8rem 0 0;
     height: 2.8rem;
-    color: var(--color-light-grey-0);
-    background: var(--color-dark-grey-300);
+    color: var(--color-text-primary);
+    background: var(--color-bg-tag);
     border-radius: 0.2rem;
     margin-left: 0.5rem;
     cursor: pointer;
   }
 
   &__remove-btn[disabled] {
-    background: var(--color-light-grey-400);
+    background: var(--color-text-disabled);
   }
 
   &__remove-btn--hidden {
@@ -207,7 +210,7 @@
   }
 
   &__sub-editor {
-    background: var(--color-light-grey-50);
+    background: var(--color-bg-app);
     height: 100%;
     width: 100%;
   }

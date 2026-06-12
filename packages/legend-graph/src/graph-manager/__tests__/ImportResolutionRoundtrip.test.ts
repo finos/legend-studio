@@ -69,6 +69,8 @@ import {
   TEST_DATA__LocalPropertyMapping,
   TEST_DATA__MappingTestSuiteRoundtrip,
   TEST_DATA__MappingOtherwisePropertyRoundtrip,
+  TEST_DATA__RelationFunctionMappingWithPrimaryKey,
+  TEST_DATA__RelationFunctionMappingEmptyPrimaryKey,
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip.js';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
 import { TEST__checkBuildingElementsRoundtrip } from '../__test-utils__/GraphManagerTestUtils.js';
@@ -148,6 +150,14 @@ describe(unitTest('Mapping import resolution roundtrip'), () => {
     [
       'Relational mapping with local property',
       TEST_DATA__Relational_LocalPropertyMappingRoundtrip,
+    ],
+    [
+      'Relation function mapping with primaryKey',
+      TEST_DATA__RelationFunctionMappingWithPrimaryKey,
+    ],
+    [
+      'Relation function mapping with empty primaryKey',
+      TEST_DATA__RelationFunctionMappingEmptyPrimaryKey,
     ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);

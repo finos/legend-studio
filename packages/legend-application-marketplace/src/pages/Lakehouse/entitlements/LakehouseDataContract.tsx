@@ -46,6 +46,7 @@ import {
 import {
   DataAccessRequestContent,
   DataContractViewerState,
+  LakehouseResiliencyDisclaimer,
 } from '@finos/legend-extension-dsl-data-product';
 
 export const LakehouseDataContractTask =
@@ -232,6 +233,7 @@ export const LakehouseDataContractTask =
           throw new Error(`Unable to approve task: ${change.errorMessage}`);
         }
 
+        marketplaceBaseStore.pendingTasksCache.invalidate();
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
           'Task has been approved',
         );
@@ -254,6 +256,7 @@ export const LakehouseDataContractTask =
           throw new Error(`Unable to deny task: ${change.errorMessage}`);
         }
 
+        marketplaceBaseStore.pendingTasksCache.invalidate();
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
           'Task has been denied',
         );
@@ -334,6 +337,9 @@ export const LakehouseDataContractTask =
                   </Button>
                 </Box>
               )}
+              <LakehouseResiliencyDisclaimer
+                applicationStore={marketplaceBaseStore.applicationStore}
+              />
               <DataAccessRequestContent
                 viewerState={contractViewerState}
                 getDataProductUrl={(

@@ -1,5 +1,30 @@
 # @finos/legend-art
 
+## 7.1.153
+
+### Patch Changes
+
+- [#5243](https://github.com/finos/legend-studio/pull/5243) [`53360a4`](https://github.com/finos/legend-studio/commit/53360a4b20113fcd3be425e646e1f66dd8b338c3) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding ai integrations on studio and query
+
+- [#5237](https://github.com/finos/legend-studio/pull/5237) [`b7e3fe9`](https://github.com/finos/legend-studio/commit/b7e3fe97b3e4c1e895302c794145aa1905241206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix light-theme theming regressions for splitter and lambda-editor surfaces.
+
+  - restore missing vertical `react-reflex` splitter sizing/hit-area styles in `legend-art`
+  - make shared lambda-editor styles theme-aware so Function Editor lambda input follows the active theme
+
+## 7.1.152
+
+### Patch Changes
+
+- [#5226](https://github.com/finos/legend-studio/pull/5226) [`476f055`](https://github.com/finos/legend-studio/commit/476f055ffe77e6eeb6e350546e060ba98aa48877) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce a scalable, theme-aware styling foundation for Legend Studio. Component styles now consume a two-tier CSS variable system (palette tokens → role-based semantic tokens such as `--color-bg-panel`, `--color-text-primary`, `--color-border-default`) that is remapped per theme via a body class (`theme__default-dark` / `theme__default-light`), rather than hardcoding palette colors directly. This makes the dark theme the stable default while enabling a light theme and additional themes in the future. No public API changes — existing dark-theme appearance is preserved.
+
+## 7.1.151
+
+### Patch Changes
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+## 7.1.150
+
 ## 7.1.149
 
 ### Patch Changes

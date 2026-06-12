@@ -1,5 +1,21 @@
 # @finos/legend-graph
 
+## 32.6.9
+
+### Patch Changes
+
+- [#5206](https://github.com/finos/legend-studio/pull/5206) [`dd910e5`](https://github.com/finos/legend-studio/commit/dd910e594dddc443ce5e138fb8efccec6702211b) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - add primaryKey support for relation function class mapping
+
+- [#5246](https://github.com/finos/legend-studio/pull/5246) [`d386f88`](https://github.com/finos/legend-studio/commit/d386f88b6c17ab8e4de3f3ddcb25fa46dc1a08cd) ([@bojja-gs](https://github.com/bojja-gs)) - Export available types from legend-graph for use in AI integration column enrichment.
+
+## 32.6.8
+
+### Patch Changes
+
+- [#5227](https://github.com/finos/legend-studio/pull/5227) [`eefc7dd`](https://github.com/finos/legend-studio/commit/eefc7dd4a99a7a54b79a79c0977b9eaa7e93bcfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add explicit `GenericWorkflowTask` case in workflow task deserializer; default now throws for unknown types.
+
+## 32.6.7
+
 ## 32.6.6
 
 ### Patch Changes

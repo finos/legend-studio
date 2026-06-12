@@ -308,11 +308,21 @@ export class FilterPropertyExpressionSourceState extends FilterConditionSourceSt
 export class FilterRelationColumnSourceState extends FilterConditionSourceState {
   readonly columnName: string;
   readonly columnType: Type;
+  readonly columnMultiplicity: Multiplicity;
 
-  constructor(columnName: string, columnType: Type) {
+  constructor(
+    columnName: string,
+    columnType: Type,
+    columnMultiplicity: Multiplicity,
+  ) {
     super();
     this.columnName = columnName;
     this.columnType = columnType;
+    this.columnMultiplicity = columnMultiplicity;
+  }
+
+  get multiplicity(): Multiplicity {
+    return this.columnMultiplicity;
   }
 
   get type(): Type {
@@ -361,6 +371,8 @@ export class FilterRelationColumnSourceState extends FilterConditionSourceState 
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_SOURCE_RELATION_COLUMN,
       this.columnName,
+      this.columnMultiplicity.lowerBound,
+      this.columnMultiplicity.upperBound ?? '',
     ]);
   }
 }

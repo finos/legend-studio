@@ -719,6 +719,7 @@ const relationFunctionClassMappingModelSchema = createModelSchema(
     ),
     root: primitive(),
     relationFunction: usingModelSchema(V1_packageableElementPointerModelSchema),
+    primaryKey: list(primitive()),
   },
 );
 

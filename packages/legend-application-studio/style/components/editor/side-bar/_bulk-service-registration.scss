@@ -45,12 +45,15 @@
     padding: 1.5%;
     page-break-after: always;
 
+    // NOTE: original used --color-dark-shade-500 which is not defined in the
+    // palette (likely a typo for one of dark-shade-300/800). Falling back to
+    // text-muted for "subtle link text on yellow banner".
     &__service__link {
       text-decoration: none;
-      color: var(--color-dark-shade-500);
+      color: var(--color-text-muted);
 
       &:hover {
-        color: var(--color-yellow-200);
+        color: var(--color-status-warn);
       }
     }
   }
@@ -67,12 +70,12 @@
   }
 
   &__section__toggler__btn svg {
-    color: var(--color-dark-grey-250);
+    color: var(--color-text-disabled);
     font-size: 1.7rem;
   }
 
   &__section__toggler__btn--toggled svg {
-    color: var(--color-blue-150);
+    color: var(--color-accent);
     font-size: 1.7rem;
   }
 
@@ -85,11 +88,12 @@
     width: 100vw !important;
   }
 
+  // Yellow attention banner — uses status-warn as the surface.
   &__header {
     @include flexVCenter;
 
     height: 3.8rem;
-    background: var(--color-yellow-200);
+    background: var(--color-status-warn);
     justify-content: flex-end;
   }
 
@@ -107,17 +111,19 @@
 
     svg {
       font-size: 1.6rem;
-      color: var(--color-dark-shade-300);
+      color: var(--color-state-disabled-on-accent);
     }
 
+    // Hover originally darkened further (dark-shade-800). Folded into the
+    // single disabled-on-accent token; slight visual flattening.
     &:hover svg {
-      color: var(--color-dark-shade-800);
+      color: var(--color-state-disabled-on-accent);
     }
   }
 
   &__explorer {
     &__service__container:hover {
-      background: var(--color-dark-blue-shade-100);
+      background: var(--color-accent-subtle);
     }
 
     &__service__result__icon__type {
@@ -134,7 +140,7 @@
   }
 
   &__item__link__content__id {
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__item__link__content__status__indicator {
@@ -146,20 +152,20 @@
     }
 
     &--succeeded svg {
-      color: var(--color-green-100) !important;
+      color: var(--color-status-success) !important;
     }
 
     &--failed svg {
-      color: var(--color-red-100) !important;
+      color: var(--color-status-error) !important;
     }
 
     &--in-progress svg {
       animation: spin 1s infinite ease;
-      color: var(--color-blue-100);
+      color: var(--color-status-info);
     }
 
     &--unknown svg {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -169,15 +175,17 @@
     @include flexHCenter;
   }
 
+  // NOTE: original used --color-light-grey-500 which is not defined in the
+  // palette (typo). Substituted with text-muted.
   &__service__header__action {
-    color: var(--color-light-grey-500);
+    color: var(--color-text-muted);
   }
 
   &__header__changes-count {
     @include flexCenter;
 
     margin-right: 1rem;
-    background: var(--color-dark-grey-300);
+    background: var(--color-bg-tag);
     border-radius: 0.8rem;
     padding: 0.3rem 0.7rem;
     height: 1.6rem;

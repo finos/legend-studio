@@ -49,7 +49,7 @@ import { useApplicationNavigationContext } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/LegendStudioDocumentation.js';
 import { CreateProjectModal } from './CreateProjectModal.js';
-import { ActivityBarMenu } from '../editor/ActivityBar.js';
+import { ActivityBarMenu, ColorThemeToggle } from '../editor/ActivityBar.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { CreateWorkspaceModal } from './CreateWorkspaceModal.js';
 import { RecentWorkspacesPanel } from './RecentWorkspacesPanel.js';
@@ -369,14 +369,24 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     // Build a unified option list: recent projects (that aren't already in the
     // loaded set) are prepended so users can instantly re-open common work
     // without waiting for the SDLC search to round-trip.
+    const sandboxProject =
+      setupStore.sandboxProject instanceof Project
+        ? setupStore.sandboxProject
+        : undefined;
+    const sandboxProjectId = sandboxProject?.projectId;
     const loadedProjectOptions = setupStore.projects
+      .filter((p) => p.projectId !== sandboxProjectId)
       .map(buildProjectOption)
       .sort(compareLabelFn);
     const loadedProjectIds = new Set(
       setupStore.projects.map((p) => p.projectId),
     );
     const recentProjectOptions: ProjectOption[] = setupStore.recentProjects
-      .filter((r) => !loadedProjectIds.has(r.projectId))
+      .filter(
+        (r) =>
+          !loadedProjectIds.has(r.projectId) &&
+          r.projectId !== sandboxProjectId,
+      )
       .map((r) => {
         // Rebuild a real Project from the cached metadata; no synthetic
         // fields needed since we persist everything the schema requires.
@@ -390,6 +400,17 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
         return { label: stub.name, value: stub };
       });
     const projectOptions: ProjectOption[] = [
+      // The user's own sandbox project is fetched via a dedicated call
+      // (`loadSandboxProject`) and excluded from the main search results, so
+      // we surface it here as a labeled option pinned to the top of the list.
+      ...(sandboxProject
+        ? [
+            {
+              label: `${sandboxProject.name} (sandbox)`,
+              value: sandboxProject,
+            },
+          ]
+        : []),
       ...recentProjectOptions,
       ...loadedProjectOptions,
     ];
@@ -546,6 +567,10 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
           <div className="workspace-setup__body">
             <div className="activity-bar">
               <ActivityBarMenu />
+              {/* Spacer so the theme toggle sits at the bottom of the strip,
+                  mirroring how the editor's activity bar is laid out. */}
+              <div className="activity-bar__items" />
+              <ColorThemeToggle />
             </div>
             <div
               className="workspace-setup__content"

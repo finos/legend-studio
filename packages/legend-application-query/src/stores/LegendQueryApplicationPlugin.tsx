@@ -84,6 +84,29 @@ export type QueryTitleDescriptionSuggestion = {
   description: string;
 };
 
+export type QueryTitleDescriptionAISuggestionRequest = {
+  /**
+   * Legend Pure expression (the lambda body).
+   */
+  content: string;
+  /**
+   * Execution context (e.g. { dataSpacePath, executionKey } or { mapping, runtime }).
+   */
+  executionContext?: Record<string, string | undefined>;
+  /**
+   * Default parameter values, each with 'name' and 'content' keys.
+   */
+  defaultParameterValues?: { name: string; content: string }[];
+  /**
+   * LLM model override (uses server default if omitted).
+   */
+  model?: string;
+  /**
+   * Existing query title. If omitted, the LLM generates one.
+   */
+  name?: string;
+};
+
 export class LegendQueryApplicationPlugin
   extends LegendApplicationPlugin
   implements QueryBuilder_LegendApplicationPlugin_Extension
@@ -105,12 +128,12 @@ export class LegendQueryApplicationPlugin
 
   /**
    * Get a function that uses AI to suggest a title and description for the current query.
-   * The function receives the current query builder state (which contains the query lambda,
-   * execution context, etc.) and should return a promise that resolves to the suggested
-   * name and description. Return undefined to indicate no AI suggestion capability.
+   * The function receives the request payload (Pure expression, execution context,
+   * parameter values, etc.) and the Legend AI URL, and should return a promise that
+   * resolves to the suggested name and description.
    */
   getExtraQueryTitleDescriptionAISuggester?(): (
-    queryBuilderState: QueryBuilderState,
+    request: QueryTitleDescriptionAISuggestionRequest,
     legendAIUrl: string,
   ) => Promise<QueryTitleDescriptionSuggestion>;
 }

@@ -171,6 +171,7 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     services: TDSServiceSchema[],
     coordinates: string,
     history?: LegendAIConversationTurn[],
+    metadata?: LegendAIProductMetadata,
   ): string;
 
   /**
@@ -185,7 +186,31 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
   ): string;
 
   /**
+   * Build the LLM prompt for generating a SQL query targeting data product
+   * access points. Unlike service-based prompts this uses `p()` syntax,
+   * has no coordinates or parameters, and focuses on lakehouse execution.
+   */
+  abstract buildAccessPointGeneratorPrompt(
+    question: string,
+    accessPoints: TDSServiceSchema[],
+    history?: LegendAIConversationTurn[],
+  ): string;
+
+  /**
+   * Build the LLM prompt for verifying and correcting a SQL query that
+   * targets data product access points using `p()` syntax.
+   */
+  abstract buildAccessPointJudgePrompt(
+    sql: string,
+    question: string,
+    accessPoints: TDSServiceSchema[],
+    history?: LegendAIConversationTurn[],
+  ): string;
+
+  /**
    * Send a prompt to the LLM service and return the raw response text.
+   * The plugin manages conversation lifecycle internally — callers
+   * do not need to create or track conversations.
    */
   abstract callLLM(prompt: string, config: LegendAIConfig): Promise<string>;
 

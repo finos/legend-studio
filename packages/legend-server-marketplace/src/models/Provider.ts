@@ -15,7 +15,13 @@
  */
 
 import { SerializationFactory, type PlainObject } from '@finos/legend-shared';
-import { createModelSchema, optional, primitive } from 'serializr';
+import {
+  createModelSchema,
+  list,
+  object,
+  optional,
+  primitive,
+} from 'serializr';
 
 export interface LightProvider {
   description: string;
@@ -27,6 +33,7 @@ export enum ProductType {
   ALL = 'ALL',
   VENDOR_PROFILE = 'VENDOR_PROFILE',
   SERVICE_PRICING = 'SERVICE_PRICING',
+  ORDER_PROFILE = 'ORDER_PROFILE',
 }
 
 export interface FetchProductsParams {
@@ -62,6 +69,7 @@ export class TerminalResult {
   skipWorkflow?: boolean;
   isOwned?: boolean;
   vendorProfileId?: number;
+  permissionId?: number;
   source?: RecommendationSource;
 
   static readonly serialization = new SerializationFactory(
@@ -78,6 +86,7 @@ export class TerminalResult {
       skipWorkflow: optional(primitive()),
       isOwned: primitive(),
       vendorProfileId: primitive(),
+      permissionId: optional(primitive()),
       source: optional(primitive()),
     }),
   );
@@ -94,11 +103,75 @@ export interface Filter {
   value: string;
 }
 
+export class TraderProfileItem {
+  id!: number;
+  category!: string;
+  providerName!: string;
+  productName!: string;
+  price!: number;
+  isOwned?: boolean;
+  vendorProfileId?: number;
+  description?: string;
+  phystr?: string;
+  model?: string | null;
+  isMandatory?: boolean;
+  skipWorkflow?: boolean;
+  permissionId?: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TraderProfileItem, {
+      id: primitive(),
+      category: primitive(),
+      providerName: primitive(),
+      productName: primitive(),
+      price: primitive(),
+      isOwned: optional(primitive()),
+      vendorProfileId: optional(primitive()),
+      description: optional(primitive()),
+      phystr: optional(primitive()),
+      model: optional(primitive()),
+      isMandatory: optional(primitive()),
+      skipWorkflow: optional(primitive()),
+      permissionId: optional(primitive()),
+    }),
+  );
+
+  get isTerminal(): boolean {
+    return this.category.toLowerCase() === 'vendor profile';
+  }
+}
+
+export class TraderProfile {
+  id!: number;
+  productName!: string;
+  providerName!: string;
+  description?: string;
+  price!: number;
+  multiselect!: boolean;
+  isOwned?: boolean;
+  items!: TraderProfileItem[];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TraderProfile, {
+      id: primitive(),
+      productName: primitive(),
+      providerName: primitive(),
+      description: optional(primitive()),
+      price: primitive(),
+      multiselect: primitive(),
+      isOwned: optional(primitive()),
+      items: list(object(TraderProfileItem.serialization.schema)),
+    }),
+  );
+}
+
 export interface TerminalServicesResponse {
   hrid: string;
   vendor_profiles?: PlainObject<TerminalResult>[];
   service_pricing?: PlainObject<TerminalResult>[];
+  order_profile?: PlainObject<TraderProfile>[];
   vendor_profiles_total_count?: number;
   service_pricing_total_count?: number;
+  order_profile_total_count?: number;
   total_count?: number;
 }

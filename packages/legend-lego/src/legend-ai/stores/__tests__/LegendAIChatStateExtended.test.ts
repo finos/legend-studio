@@ -33,7 +33,7 @@ import {
   addThinkingStep,
   completeThinkingSteps,
   finishWithThinkingError,
-} from '../LegendAIChatState.js';
+} from '../LegendAIChatProcessors.js';
 import {
   type LegendAIAssistantMessage,
   type LegendAIMessage,
@@ -224,8 +224,42 @@ describe(unitTest('analyzeOrchestratorResults'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.textAnswer).toBe('Analysis summary');
+    expect(msg.textAnswer).toContain('Analysis summary');
     expect(msg.suggestedQueries).toEqual(['Follow up 1', 'Follow up 2']);
+    expect(msg.isProcessing).toBe(false);
+  });
+
+  test('builds deterministic summary when analysis is unavailable', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const plugin = TEST__createMockLegendAIPlugin({
+      analyzeQueryResults: createMock().mockResolvedValue(undefined),
+    });
+
+    await analyzeOrchestratorResults(
+      'Show me net sentiment by language',
+      'SELECT "Net Sentiment Score", "Language Tag" FROM service(...)',
+      {
+        columns: ['Net Sentiment Score', 'Language Tag'],
+        rows: [
+          { 'Net Sentiment Score': 0.6, 'Language Tag': 'en' },
+          { 'Net Sentiment Score': 0.4, 'Language Tag': 'fr' },
+        ],
+      },
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      Date.now(),
+    );
+
+    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    expect(msg.textAnswer).toContain('I retrieved 2 rows');
+    expect(msg.textAnswer).toContain('Net Sentiment Score');
+    expect(msg.suggestedQueries).toEqual([]);
     expect(msg.isProcessing).toBe(false);
   });
 });
@@ -260,22 +294,24 @@ describe(unitTest('executePureQueryAndReport — error handling'), () => {
   });
 });
 
-// ─── executeSqlAndReport — access point routing ──────────────────────────────
+// ─── executeSqlAndReport — access point execution ────────────────────────────
 
-describe(unitTest('executeSqlAndReport — access point routing'), () => {
-  test('routes to lakehouse SQL for access point services', async () => {
+describe(unitTest('executeSqlAndReport — access point execution'), () => {
+  test('routes AP SQL through executeLakehouseSql', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const executeLakehouseSql = createMock().mockResolvedValue({
       columns: ['id'],
       rows: [{ id: 1 }],
     });
+    const executeSql = createMock();
     const plugin = TEST__createMockLegendAIPlugin({
+      executeSql,
       executeLakehouseSql,
     });
 
     await executeSqlAndReport(
-      'SELECT * FROM t',
+      "SELECT * FROM p('DataProduct.AP')",
       [
         {
           title: 'AP',
@@ -292,7 +328,8 @@ describe(unitTest('executeSqlAndReport — access point routing'), () => {
       TEST_DATA__coordinates,
     );
 
-    expect(executeLakehouseSql).toHaveBeenCalled();
+    expect(executeLakehouseSql).toHaveBeenCalledTimes(1);
+    expect(executeSql).not.toHaveBeenCalled();
     const msg = getMessages()[1] as LegendAIAssistantMessage;
     expect(msg.gridData?.rowData).toHaveLength(1);
   });
@@ -377,6 +414,80 @@ describe(unitTest('processQuestion — error handling'), () => {
     const msg = getMessages()[1] as LegendAIAssistantMessage;
     expect(msg.textAnswer).toBe('Product description here');
   });
+
+  test('uses fast metadata guard even if plugin classifier returns data_query', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const classifyQuestionIntent = createMock().mockResolvedValue(
+      LegendAIQuestionIntent.DATA_QUERY,
+    );
+    const plugin = TEST__createMockLegendAIPlugin({
+      classifyQuestionIntent,
+      callLLM: createMock().mockResolvedValue('Metadata answer from guard'),
+    });
+
+    await processQuestion(
+      'What data does LSEG Programmatic News offer and how can I use it?',
+      TEST_DATA__legendAIServices,
+      'com.test:prod:1.0.0',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+    );
+
+    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    expect(msg.textAnswer).toBe('Metadata answer from guard');
+    expect(classifyQuestionIntent).not.toHaveBeenCalled();
+  });
+
+  test('uses metadata-plus-query fallback for ambiguous intent', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const classifyQuestionIntent = createMock().mockResolvedValue(
+      LegendAIQuestionIntent.DATA_QUERY,
+    );
+    const callLLM = createMock()
+      .mockResolvedValueOnce('Metadata context answer')
+      .mockResolvedValue('SQL generation answer');
+    const plugin = TEST__createMockLegendAIPlugin({
+      classifyQuestionIntent,
+      callLLM,
+      executeSql: createMock().mockResolvedValue({
+        columns: ['revenue'],
+        rows: [{ revenue: 100 }],
+      }),
+      analyzeQueryResults: createMock().mockResolvedValue({
+        summary: 'Query analysis summary',
+        suggestedQueries: [],
+        keyMetrics: [],
+        chartData: [],
+      }),
+    });
+
+    await processQuestion(
+      'tell me about what can I do with revenue',
+      TEST_DATA__legendAIServices,
+      'com.test:prod:1.0.0',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+    );
+
+    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    expect(msg.textAnswer).toContain('### Metadata context');
+    expect(msg.textAnswer).toContain('Metadata context answer');
+    expect(msg.textAnswer).toContain('### Query analysis');
+    expect(msg.textAnswer).toContain('Query analysis summary');
+    expect(classifyQuestionIntent).not.toHaveBeenCalled();
+  });
 });
 
 // ─── processQuestionWithIntent ───────────────────────────────────────────────
@@ -407,21 +518,11 @@ describe(unitTest('processQuestionWithIntent — metadata intent'), () => {
     expect(msg.textAnswer).toBe('Metadata answer');
   });
 
-  test('handles orchestrator intent with configured url', async () => {
+  test('handles orchestrator intent with no services — metadata + fallback', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const plugin = TEST__createMockLegendAIPlugin({
-      resolveEntitiesForQuery: createMock().mockResolvedValue({
-        rootEntity: 'my::Entity',
-        relatedEntities: [],
-      }),
-      generateQueryViaOrchestrator: createMock().mockResolvedValue({
-        legend_query: 'Pure query here',
-      }),
-      executePureQuery: createMock().mockResolvedValue({
-        columns: ['a'],
-        rows: [{ a: 1 }],
-      }),
+      callLLM: createMock().mockResolvedValue('Metadata answer here'),
     });
 
     await processQuestionWithIntent(
@@ -446,7 +547,9 @@ describe(unitTest('processQuestionWithIntent — metadata intent'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.sql).toBe('Pure query here');
+    expect(msg.textAnswer).toBeDefined();
+    expect(msg.fallbackAction).toBeDefined();
+    expect(msg.fallbackAction?.label).toBe('Try Legend AI Orchestrator');
   });
 
   test('data query intent falls through to SQL generation', async () => {

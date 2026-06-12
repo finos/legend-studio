@@ -45,6 +45,7 @@ export class V1_RelationFunctionClassMapping
 {
   relationFunction!: V1_PackageableElementPointer;
   propertyMappings: V1_PropertyMapping[] = [];
+  primaryKey: string[] = [];
 
   accept_ClassMappingVisitor<T>(visitor: V1_ClassMappingVisitor<T>): T {
     return visitor.visit_RelationFunctionClassMapping(this);
@@ -55,6 +56,7 @@ export class V1_RelationFunctionClassMapping
       CORE_HASH_STRUCTURE.RELATION_FUNCTION_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,
       hashArray(this.propertyMappings),
+      hashArray(this.primaryKey),
     ]);
   }
 }

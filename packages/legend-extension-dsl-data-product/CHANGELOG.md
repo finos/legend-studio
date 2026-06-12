@@ -1,5 +1,34 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.88
+
+### Patch Changes
+
+- [#5246](https://github.com/finos/legend-studio/pull/5246) [`d386f88`](https://github.com/finos/legend-studio/commit/d386f88b6c17ab8e4de3f3ddcb25fa46dc1a08cd) ([@bojja-gs](https://github.com/bojja-gs)) - Data product viewer: add Legend AI integration panel with resize handle, keyboard accessibility, and AI chat wiring.
+
+- [#5250](https://github.com/finos/legend-studio/pull/5250) [`1c0152a`](https://github.com/finos/legend-studio/commit/1c0152a0aba54bab248b7f53f8aa6115d498ed90) ([@TharunRajeev](https://github.com/TharunRajeev)) - Made Permit and Workflow URL optional.
+
+- [#5244](https://github.com/finos/legend-studio/pull/5244) [`ed80d2d`](https://github.com/finos/legend-studio/commit/ed80d2d10e6f129a5ea295f543b48f4aaebb94f9) ([@TharunRajeev](https://github.com/TharunRajeev)) - Update DataAccessRequestViewer to use initialization state for rendering
+
+- [#5245](https://github.com/finos/legend-studio/pull/5245) [`af6a423`](https://github.com/finos/legend-studio/commit/af6a42375b32906ae6d33e71c79f2b933bc17a3a) ([@mrudula-gs](https://github.com/mrudula-gs)) - Add Service tab to access points showing a cURL command for the REST API endpoint, a copy button, and an Open in Zipkin button for trace viewing.
+
+## 0.0.87
+
+### Patch Changes
+
+- [#5226](https://github.com/finos/legend-studio/pull/5226) [`476f055`](https://github.com/finos/legend-studio/commit/476f055ffe77e6eeb6e350546e060ba98aa48877) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Introduce a scalable, theme-aware styling foundation for Legend Studio. Component styles now consume a two-tier CSS variable system (palette tokens → role-based semantic tokens such as `--color-bg-panel`, `--color-text-primary`, `--color-border-default`) that is remapped per theme via a body class (`theme__default-dark` / `theme__default-light`), rather than hardcoding palette colors directly. This makes the dark theme the stable default while enabling a light theme and additional themes in the future. No public API changes — existing dark-theme appearance is preserved.
+
+## 0.0.86
+
+### Patch Changes
+
+- [#5220](https://github.com/finos/legend-studio/pull/5220) [`414b610`](https://github.com/finos/legend-studio/commit/414b610f882ecd231e7085f5e61ab539cfdb9590) ([@bojja-gs](https://github.com/bojja-gs)) - Implemented legend marketplace AI chatagent in intelligence and agents header bar with agentic UI/UX
+
+- [#5227](https://github.com/finos/legend-studio/pull/5227) [`eefc7dd`](https://github.com/finos/legend-studio/commit/eefc7dd4a99a7a54b79a79c0977b9eaa7e93bcfe) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add permit data access request support with live task overlay, marketplace and eTask timeline links, standalone permit page, and escalation handling.
+  Added Permit Workflow client.
+
+## 0.0.85
+
 ## 0.0.84
 
 ### Patch Changes

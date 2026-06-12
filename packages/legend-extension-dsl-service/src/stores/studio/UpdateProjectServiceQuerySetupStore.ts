@@ -28,6 +28,7 @@ import {
   Workspace,
   WorkspaceType,
   Project,
+  SANDBOX_SDLC_TAG,
 } from '@finos/legend-server-sdlc';
 import {
   type LegendStudioApplicationStore,
@@ -163,6 +164,9 @@ export class UpdateProjectServiceQuerySetupStore {
           undefined,
           isValidSearchString ? searchText : undefined,
           undefined,
+          // Sandbox projects are not relevant for service productionization
+          // flows; exclude them from the picker.
+          [SANDBOX_SDLC_TAG],
           DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));

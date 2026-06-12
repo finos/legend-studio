@@ -20,6 +20,7 @@ import {
   V1_LiteDataContractWithUserStatus,
   V1_ContractUserEventRecord,
   V1_EntitlementsLakehouseEnvironmentType,
+  type V1_DataRequestWithWorkflow,
 } from '@finos/legend-graph';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import {
@@ -71,10 +72,12 @@ const callFilterByUserEnvironment = (
   contractsForUser: V1_LiteDataContractWithUserStatus[],
   contractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails>,
   envMap: Map<number, string>,
+  dataRequests: V1_DataRequestWithWorkflow[] = [],
 ): {
   filteredTasks: V1_ContractUserEventRecord[];
   filteredContractsForUser: V1_LiteDataContractWithUserStatus[];
   filteredCreatedByUserMap: Map<string, ContractCreatedByUserDetails>;
+  filteredDataRequests: V1_DataRequestWithWorkflow[];
 } =>
   (
     dashboardState as unknown as {
@@ -85,17 +88,20 @@ const callFilterByUserEnvironment = (
         },
         contractsForUser: V1_LiteDataContractWithUserStatus[],
         contractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails>,
+        dataRequests: V1_DataRequestWithWorkflow[],
         envMap: Map<number, string>,
       ) => {
         filteredTasks: V1_ContractUserEventRecord[];
         filteredContractsForUser: V1_LiteDataContractWithUserStatus[];
         filteredCreatedByUserMap: Map<string, ContractCreatedByUserDetails>;
+        filteredDataRequests: V1_DataRequestWithWorkflow[];
       };
     }
   ).filterByUserEnvironment(
     pendingData,
     contractsForUser,
     contractsCreatedByUserMap,
+    dataRequests,
     envMap,
   );
 

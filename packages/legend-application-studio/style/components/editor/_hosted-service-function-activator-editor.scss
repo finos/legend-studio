@@ -20,7 +20,7 @@
   display: flex;
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   .panel {
     height: 100%;
@@ -28,19 +28,19 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-tag);
     }
 
     &__content {
       height: calc(100% - 2.6rem);
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
   }
 
@@ -77,7 +77,7 @@
   &__configuration__item__label {
     @include flexCenter;
 
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     margin-right: 0.5rem;
   }
 
@@ -108,7 +108,7 @@
     margin-top: 2rem;
 
     &__label {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
       font-size: 3rem;
       font-weight: 600;
       margin-left: 3rem;
@@ -123,14 +123,16 @@
         height: 3.6rem;
       }
 
+      // Secondary action button. Originally a bright grey bg (dark-grey-500);
+      // folded to bg-tag for theme-awareness — button becomes a darker chip.
       &__action {
         @include flexVCenter;
 
         justify-content: center;
         width: 13rem;
         height: 3.6rem;
-        color: var(--color-light-grey-150);
-        background: var(--color-dark-grey-500);
+        color: var(--color-text-primary);
+        background: var(--color-bg-tag);
 
         &__icon {
           cursor: pointer;
@@ -138,12 +140,12 @@
         }
 
         &__icon:hover {
-          color: var(--color-light-grey-0);
+          color: var(--color-text-primary);
         }
       }
 
       &__action--primary {
-        background: var(--color-blue-200);
+        background: var(--color-accent);
       }
     }
   }

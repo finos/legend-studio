@@ -503,3 +503,92 @@ describe('convertAutosuggestResultToSearchResult', () => {
     expect(details.path).toBe('com::legacy::DataSpace');
   });
 });
+
+describe('generatePathForDataProductSearchResult', () => {
+  const makeLegacyResult = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    path: string,
+    dataProductLink?: string,
+  ): DataProductSearchResult => {
+    const result = new DataProductSearchResult();
+    const details = new LegacyDataProductSearchResultDetails();
+    details.groupId = groupId;
+    details.artifactId = artifactId;
+    details.versionId = versionId;
+    details.path = path;
+    result.dataProductDetails = details;
+    result.data_product_link = dataProductLink;
+    return result;
+  };
+
+  test('legacy result without data_product_link uses legacy path', () => {
+    const result = makeLegacyResult(
+      'com.example',
+      'my-artifact',
+      '1.0.0',
+      'com::example::MyProduct',
+    );
+    expect(generatePathForDataProductSearchResult(result)).toBe(
+      '/dataProduct/legacy/com.example:my-artifact:1.0.0/com::example::MyProduct',
+    );
+  });
+
+  test('legacy result with legacy data_product_link uses legacy path', () => {
+    const result = makeLegacyResult(
+      'com.example',
+      'my-artifact',
+      '1.0.0',
+      'com::example::MyProduct',
+      'https://marketplace.example.com/dataProduct/legacy/com.example:my-artifact:1.0.0/com%3A%3Aexample%3A%3AMyProduct',
+    );
+    expect(generatePathForDataProductSearchResult(result)).toBe(
+      '/dataProduct/legacy/com.example:my-artifact:1.0.0/com::example::MyProduct',
+    );
+  });
+
+  test('legacy result with non-legacy data_product_link uses native LH path', () => {
+    const result = makeLegacyResult(
+      'com.example',
+      'my-artifact',
+      '1.0.0',
+      'com::example::MyProduct',
+      'https://marketplace.example.com/dataProduct/com.example:my-artifact:1.0.0/com%3A%3Aexample%3A%3AMyProduct',
+    );
+    expect(generatePathForDataProductSearchResult(result)).toBe(
+      '/dataProduct/com.example:my-artifact:1.0.0/com::example::MyProduct',
+    );
+  });
+
+  test('legacy result with undefined data_product_link uses legacy path', () => {
+    const result = makeLegacyResult(
+      'org.test',
+      'artifact',
+      '2.0.0',
+      'org::test::Product',
+      undefined,
+    );
+    expect(generatePathForDataProductSearchResult(result)).toBe(
+      '/dataProduct/legacy/org.test:artifact:2.0.0/org::test::Product',
+    );
+  });
+
+  test('legacy result with malformed data_product_link uses legacy path', () => {
+    const result = makeLegacyResult(
+      'org.test',
+      'artifact',
+      '2.0.0',
+      'org::test::Product',
+      'not-a-url',
+    );
+    expect(generatePathForDataProductSearchResult(result)).toBe(
+      '/dataProduct/legacy/org.test:artifact:2.0.0/org::test::Product',
+    );
+  });
+
+  test('returns undefined for result with no dataProductDetails', () => {
+    const result = new DataProductSearchResult();
+    expect(generatePathForDataProductSearchResult(result)).toBeUndefined();
+  });
+});

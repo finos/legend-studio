@@ -356,6 +356,7 @@ export {
   V1_DataProductInfo,
   V1_ModelAccessPointGroupInfo,
   V1_AccessPointGroupInfoType,
+  V1_DatabaseDDL,
   V1_SampleQuery,
   V1_ExecutableInfo,
   V1_TemplateExecutableInfo,

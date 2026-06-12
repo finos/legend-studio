@@ -109,7 +109,7 @@
 
 .reflex-container.horizontal > .reflex-splitter:hover,
 .reflex-container.horizontal > .reflex-splitter.active {
-  background: var(--color-dark-grey-300);
+  background: var(--color-border-strong);
   border-bottom: none;
   border-top: none;
 
@@ -134,7 +134,7 @@
 
 .reflex-container.vertical > .reflex-splitter:hover,
 .reflex-container.vertical > .reflex-splitter.active {
-  background: var(--color-dark-grey-300);
+  background: var(--color-border-strong);
   border-right: none;
   border-left: none;
 

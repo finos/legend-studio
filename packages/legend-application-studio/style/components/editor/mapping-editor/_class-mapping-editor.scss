@@ -17,14 +17,20 @@
 .class-mapping-editor {
   &__sort-by-required-btn {
     cursor: pointer;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-muted);
   }
 
+  // NOTE: original used --color-dark-grey-1 which is not defined in the
+  // palette (typo). Substituted with text-primary for the "enabled" state.
   &__sort-by-required-btn--enabled {
-    color: var(--color-dark-grey-1);
+    color: var(--color-text-primary);
   }
 
   &__property-panel > .panel__header {
     padding-right: 1rem;
+  }
+
+  &__property-panel {
+    border-right: 0.1rem solid var(--color-border-default);
   }
 }

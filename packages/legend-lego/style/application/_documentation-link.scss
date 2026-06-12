@@ -19,7 +19,7 @@
 .documentation-link {
   display: inline-flex;
   align-self: center;
-  color: var(--color-dark-grey-500);
+  color: var(--color-text-disabled);
   cursor: pointer;
 
   &--inline {
@@ -28,19 +28,19 @@
 }
 
 .documentation-link:hover {
-  color: var(--color-light-grey-400);
+  color: var(--color-text-muted);
 }
 
 .documentation-preview {
   display: flex;
-  background: var(--color-dark-grey-85);
-  border: 0.1rem solid var(--color-dark-grey-280);
+  background: var(--color-bg-panel);
+  border: 0.1rem solid var(--color-border-default);
   border-radius: 0.2rem;
 
   &__text {
     padding: 1rem;
     width: calc(100% - 3rem);
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     line-height: 2rem;
   }
 

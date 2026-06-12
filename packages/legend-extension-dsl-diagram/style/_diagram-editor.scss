@@ -28,8 +28,8 @@
 
     justify-content: flex-end;
     height: 2.8rem;
-    background: var(--color-dark-grey-200);
-    border: 0.1rem solid var(--color-dark-grey-85);
+    background: var(--color-bg-panel-header);
+    border: 0.1rem solid var(--color-border-subtle);
   }
 
   &__header__actions {
@@ -46,20 +46,20 @@
     width: 2.8rem;
 
     svg {
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-muted);
     }
 
     &:hover,
     &--active {
       svg {
-        color: var(--color-light-grey-300);
+        color: var(--color-text-secondary);
       }
     }
 
     &[disabled],
     &[disabled]:hover {
       svg {
-        color: var(--color-dark-grey-300);
+        color: var(--color-text-muted);
       }
     }
   }
@@ -85,14 +85,14 @@
 
     margin-left: 0.3rem;
     height: 1.8rem;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
 
     &__label {
       @include flexCenter;
       @include flexConstantDimension;
 
       height: 100%;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       font-weight: 500;
       font-size: 1.2rem;
     }
@@ -105,7 +105,7 @@
       cursor: pointer;
 
       svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-disabled);
       }
     }
   }
@@ -160,9 +160,9 @@
     flex-direction: column;
     width: 4.4rem;
     height: 100%;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-panel-header);
     padding: 0.5rem;
-    border-left: 0.1rem solid var(--color-dark-grey-85);
+    border-left: 0.1rem solid var(--color-border-subtle);
 
     &__divider {
       @include flexConstantDimension;
@@ -170,7 +170,7 @@
       width: 100%;
       border-radius: 0.1rem;
       height: 0.2rem;
-      background: var(--color-dark-grey-300);
+      background: var(--color-bg-tag);
       margin: 0.5rem 0;
     }
   }
@@ -185,25 +185,25 @@
 
     &--active {
       border-radius: 0.2rem;
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel);
       border: 0.1rem solid var(--color-blue-200);
     }
 
     &:hover {
       svg {
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
       }
     }
 
     &:hover[disabled],
     &[disabled] {
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
     }
 
     svg {
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -287,8 +287,8 @@
   }
 
   &__side-panel {
-    background: var(--color-dark-grey-85);
-    border-left: 0.1rem solid var(--color-dark-grey-85);
+    background: var(--color-bg-panel);
+    border-left: 0.1rem solid var(--color-border-subtle);
   }
 
   &__hotkeys__dialog .modal__body {
@@ -300,7 +300,7 @@
 
     width: 100%;
     height: 0.1rem;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
     margin: 0.7rem 0;
   }
 
@@ -316,19 +316,19 @@
     justify-content: flex-end;
     padding-right: 2rem;
     width: 40rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     font-weight: 500;
   }
 
   &__hotkey__keys {
     .hotkey {
       &__key {
-        color: var(--color-light-grey-400);
-        background: var(--color-dark-grey-200);
+        color: var(--color-text-muted);
+        background: var(--color-bg-panel-header);
       }
 
       &__plus svg {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
     }
   }
@@ -356,8 +356,8 @@
       align-items: center;
       justify-content: center;
       padding: 0 1rem;
-      border-right: 0.1rem solid var(--color-dark-grey-280);
-      color: var(--color-light-grey-250);
+      border-right: 0.1rem solid var(--color-border-default);
+      color: var(--color-text-secondary);
       white-space: nowrap;
       cursor: pointer;
     }
@@ -403,7 +403,7 @@
 
     width: 15rem;
     height: 2.2rem;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     margin-right: 0.3rem;
   }
 
@@ -426,7 +426,7 @@
       width: 3rem;
       padding: 0 0.5rem;
       height: 2.2rem;
-      border: 0.1rem solid var(--color-dark-grey-300);
+      border: 0.1rem solid var(--color-border-strong);
     }
 
     &__range {
@@ -438,7 +438,7 @@
       font-size: 2rem;
       font-weight: bold;
       height: 2.2rem;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-muted);
       cursor: default;
     }
   }
@@ -460,7 +460,7 @@
 
     width: 25rem;
     height: 2.2rem;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
   }
 
   &__close-btn {
@@ -474,7 +474,7 @@
   justify-content: flex-start;
   width: 100%;
   border-radius: 0.2rem;
-  color: var(--color-dark-grey-300);
+  color: var(--color-text-muted);
   user-select: none;
   height: auto;
   background: transparent;

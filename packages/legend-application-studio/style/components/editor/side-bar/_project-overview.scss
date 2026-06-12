@@ -23,17 +23,17 @@
   }
 
   &__item__link {
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
     text-decoration: none;
   }
 
   &__item__link--selected-from-context-menu {
-    background: var(--color-dark-blue-shade-100);
+    background: var(--color-accent-subtle);
   }
 
   &__item__link--active,
   &__item__link--active:hover {
-    background: var(--color-light-blue-450) !important;
+    background: var(--color-bg-selected) !important;
   }
 
   &__item__link__content {
@@ -41,13 +41,13 @@
   }
 
   &__item__link__content__name {
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__item__link__content__info {
     margin-left: 1rem;
     font-size: 1.2rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-disabled);
   }
 
   &__activity-bar {
@@ -57,9 +57,9 @@
     overflow: hidden;
     height: 100%;
     padding-top: 2.8rem;
-    background: var(--color-dark-grey-200);
-    border-right: 0.1rem solid var(--color-dark-grey-80);
-    border-left: 0.1rem solid var(--color-dark-grey-80);
+    background: var(--color-bg-panel-header);
+    border-right: 0.1rem solid var(--color-border-subtle);
+    border-left: 0.1rem solid var(--color-border-subtle);
 
     &__items {
       @include flexVCenter;
@@ -79,8 +79,8 @@
       padding: 1rem 0;
       cursor: pointer;
       width: 100%;
-      border-left: 0.2rem solid var(--color-dark-grey-200);
-      color: var(--color-dark-grey-500);
+      border-left: 0.2rem solid var(--color-border-default);
+      color: var(--color-text-disabled);
 
       &-mode {
         writing-mode: vertical-lr;
@@ -89,8 +89,8 @@
       }
 
       &--active {
-        color: var(--color-light-grey-200);
-        border-left: 0.2rem solid var(--color-yellow-200);
+        color: var(--color-text-secondary);
+        border-left: 0.2rem solid var(--color-active-indicator);
       }
     }
   }
@@ -106,13 +106,13 @@
       display: flex;
       align-items: center;
       height: 2.2rem;
-      background: var(--color-blue-200);
+      background: var(--color-accent);
       padding: 1rem;
       border-radius: 0.2rem;
 
       &__title {
         margin-left: 0.5rem;
-        color: var(--color-light-grey-180);
+        color: var(--color-text-on-accent);
         font-size: 1.2rem;
         font-weight: 500;
       }
@@ -133,7 +133,7 @@
   &__overview,
   &__patch {
     height: 100%;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
   }
 
   &__patch {
@@ -148,7 +148,7 @@
     &__content__progress-msg {
       margin: 1rem;
       line-height: 2rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       font-family: 'Roboto Mono', monospace;
       font-size: 1.2rem;
       user-select: none;
@@ -175,12 +175,12 @@
 
     &__release__content {
       display: flex;
-      background: var(--color-dark-grey-85);
-      border: 0.1rem solid var(--color-dark-grey-280);
+      background: var(--color-bg-elevated);
+      border: 0.1rem solid var(--color-border-default);
       border-radius: 0.2rem;
       margin: 0 2.7rem;
       padding: 1rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       line-height: 2rem;
     }
   }
@@ -204,14 +204,17 @@
       width: calc(100% - 1rem);
     }
 
+    // NOTE: source-tag was a bright grey chip (--color-dark-grey-500 bg with
+    // dark text). Now uses bg-tag (darker, blends more). Visual shift —
+    // tag becomes subtler. Revisit if the loud-chip look was intentional.
     &__source {
       @include flexCenter;
 
       height: 1.8rem;
-      background: var(--color-dark-grey-500);
+      background: var(--color-bg-tag);
       border-radius: 0.2rem;
       font-size: 1rem;
-      color: var(--color-dark-grey-200);
+      color: var(--color-text-inverted);
       font-weight: 500;
       width: 7rem;
       padding: 0.2rem;
@@ -220,7 +223,7 @@
 
   &__release--empty {
     padding: 2rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__release__content {
@@ -250,12 +253,12 @@
     &__no-version {
       @include ellipsisTextOverflow;
 
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-disabled);
       cursor: default;
     }
 
     &__link {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
       text-decoration: none;
     }
 
@@ -264,13 +267,13 @@
     }
 
     &__link__content__name {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__link__content__info {
       margin-left: 1rem;
       font-size: 1.2rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -279,6 +282,9 @@
       display: flex;
       white-space: nowrap;
 
+      // NOTE: dependants tag was a bright light-grey chip. Folded to bg-tag —
+      // chip becomes a darker tone, blending with panel. Same shift as
+      // workspace-viewer source tag.
       &__tag {
         @include flexCenter;
 
@@ -287,8 +293,8 @@
         border-radius: 0.2rem;
         font-size: 1rem;
         margin-right: 1rem;
-        color: var(--color-dark-grey-250);
-        background: var(--color-light-grey-400);
+        color: var(--color-text-inverted);
+        background: var(--color-bg-tag);
         font-weight: 500;
       }
 
@@ -297,7 +303,7 @@
 
         white-space: nowrap;
         height: 1.8rem;
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -314,7 +320,7 @@
       @include flexVCenter;
 
       font-weight: 300;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
       margin-bottom: 0.5rem;
       line-height: 1.8rem;
       cursor: default;
@@ -328,8 +334,8 @@
       resize: none;
       line-height: 2rem;
       width: 100%;
-      background: var(--color-dark-grey-250);
-      border: 0.1rem solid var(--color-dark-grey-250);
+      background: var(--color-bg-input);
+      border: 0.1rem solid var(--color-bg-input);
     }
 
     &__actions {
@@ -345,7 +351,7 @@
       font-size: 1.1rem;
       min-width: 2.8rem;
       font-weight: 500;
-      color: var(--color-light-grey-250);
+      color: var(--color-text-primary);
     }
 
     &__patch__action {
@@ -364,7 +370,7 @@
       stroke-width: 0.3rem;
 
       &[disabled] {
-        stroke: var(--color-dark-grey-350);
+        stroke: var(--color-text-disabled);
       }
     }
 
@@ -379,18 +385,18 @@
 
       &__info-entry__title {
         margin-right: 0.5rem;
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-disabled);
       }
 
       &__info-entry__value {
         padding-left: 0.5rem;
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
       }
 
       &__info-entry__value a {
         text-decoration: none;
         font-weight: 500;
-        color: var(--color-blue-50);
+        color: var(--color-text-link);
       }
 
       &__share-btn svg {
@@ -399,7 +405,7 @@
       }
 
       &__select {
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
         font-size: 1.4rem;
         width: 15rem;
       }

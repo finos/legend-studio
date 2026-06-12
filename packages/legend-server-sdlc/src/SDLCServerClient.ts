@@ -256,16 +256,56 @@ export class SDLCServerClient extends AbstractServerClient {
 
   getProject = (projectId: string): Promise<PlainObject<Project>> =>
     this.get(this._project(projectId));
+  /**
+   * Fetch a list of projects from the SDLC server.
+   *
+   * Results are filtered server-side by the provided query parameters. All
+   * parameters are optional — pass `undefined` to omit a given filter. When
+   * multiple filters are supplied they are combined with AND semantics.
+   *
+   * @param user
+   *   When `true`, restrict results to projects on which the current
+   *   authenticated user has at least **Developer** rights (when the SDLC
+   *   server is backed by GitLab, this maps to GitLab's Developer access
+   *   level or higher). When `false` or `undefined`, the server applies its
+   *   default visibility scope (typically all projects the caller can see).
+   *
+   * @param search
+   *   Free-text search string matched against project metadata (e.g. name,
+   *   identifier, description — exact fields are server-defined). Callers
+   *   doing typeahead should consider wrapping the input (see
+   *   {@link exactSearch}) to control fuzzy vs. exact matching.
+   *
+   * @param tag
+   *   Inclusion filter: only return projects that carry **all** of the given
+   *   SDLC tags. Useful for scoping to a known classification
+   *   (e.g. `[SANDBOX_SDLC_TAG]` to find sandbox projects).
+   *
+   * @param excludeTag
+   *   Exclusion filter: drop any project that carries **any** of the given
+   *   SDLC tags. Useful for hiding categories of projects from a listing
+   *   (e.g. excluding sandbox or archived projects from the main picker).
+   *
+   * @param limit
+   *   Maximum number of projects to return. The server may enforce its own
+   *   upper bound regardless of this value. Omit for the server default.
+   *
+   * @returns A promise resolving to the matching projects as raw JSON
+   *   objects ({@link PlainObject}<{@link Project}>); callers are expected
+   *   to deserialize via `Project.serialization.fromJson`.
+   */
   getProjects = (
     user: boolean | undefined,
     search: string | undefined,
     tag: string[] | undefined,
+    excludeTag: string[] | undefined,
     limit: number | undefined,
   ): Promise<PlainObject<Project>[]> =>
     this.get(this._projects(), undefined, undefined, {
       user,
       search,
       tag,
+      excludeTag,
       limit,
     });
   createProject = (

@@ -22,7 +22,10 @@ import {
   processQuestionWithIntent,
   executeSqlAndReport,
   handleMetadataQuestion,
-} from '../LegendAIChatState.js';
+  cleanLlmSqlResponse,
+  isValidSqlCorrection,
+  attachMetadataOverview,
+} from '../LegendAIChatProcessors.js';
 import {
   type LegendAIAssistantMessage,
   LegendAIQuestionIntent,
@@ -310,23 +313,11 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
     expect(msg.gridData?.rowData).toHaveLength(1);
   });
 
-  test('no services falls back to orchestrator when configured', async () => {
+  test('no services falls back to metadata and offers orchestrator when configured', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const plugin = TEST__createMockLegendAIPlugin({
-      classifyQuestionIntent: () =>
-        Promise.resolve(LegendAIQuestionIntent.DATA_QUERY),
-      resolveEntitiesForQuery: createMock().mockResolvedValue({
-        rootEntity: 'my::Entity',
-        relatedEntities: [],
-      }),
-      generateQueryViaOrchestrator: createMock().mockResolvedValue({
-        legend_query: 'fallback query',
-      }),
-      executePureQuery: createMock().mockResolvedValue({
-        columns: ['y'],
-        rows: [{ y: 42 }],
-      }),
+      callLLM: createMock().mockResolvedValue('Here is metadata info'),
     });
 
     await processQuestion(
@@ -348,7 +339,9 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.sql).toBe('fallback query');
+    expect(msg.textAnswer).toBeDefined();
+    expect(msg.fallbackAction).toBeDefined();
+    expect(msg.fallbackAction?.label).toBe('Try Legend AI Orchestrator');
   });
 
   test('SQL generation null offers fallback when orchestrator configured', async () => {
@@ -551,5 +544,86 @@ describe(unitTest('generateAndJudgeSql — loop exhaustion'), () => {
     );
 
     expect(result).toBeNull();
+  });
+});
+
+describe(unitTest('cleanLlmSqlResponse'), () => {
+  test('strips markdown code fences', () => {
+    expect(cleanLlmSqlResponse('```sql\nSELECT 1\n```')).toBe('SELECT 1');
+  });
+
+  test('strips trailing semicolons', () => {
+    expect(cleanLlmSqlResponse('SELECT 1;')).toBe('SELECT 1');
+  });
+
+  test('trims whitespace', () => {
+    expect(cleanLlmSqlResponse('  SELECT 1  ')).toBe('SELECT 1');
+  });
+
+  test('handles code fence without language', () => {
+    expect(cleanLlmSqlResponse('```\nSELECT 1\n```')).toBe('SELECT 1');
+  });
+
+  test('handles plain text without fences', () => {
+    expect(cleanLlmSqlResponse('SELECT * FROM t')).toBe('SELECT * FROM t');
+  });
+
+  test('handles empty string', () => {
+    expect(cleanLlmSqlResponse('')).toBe('');
+  });
+});
+
+describe(unitTest('isValidSqlCorrection'), () => {
+  test('returns true for valid correction', () => {
+    expect(isValidSqlCorrection('SELECT * FROM t', 'SELECT 1')).toBe(true);
+  });
+
+  test('returns false for empty string', () => {
+    expect(isValidSqlCorrection('', 'SELECT 1')).toBe(false);
+  });
+
+  test('returns false when identical to current', () => {
+    expect(isValidSqlCorrection('SELECT 1', 'SELECT 1')).toBe(false);
+  });
+
+  test('returns false when not starting with SELECT', () => {
+    expect(isValidSqlCorrection('UPDATE t SET x=1', 'SELECT 1')).toBe(false);
+  });
+
+  test('case insensitive SELECT check', () => {
+    expect(isValidSqlCorrection('select * from t', 'SELECT 1')).toBe(true);
+  });
+});
+
+describe(unitTest('attachMetadataOverview'), () => {
+  test('does nothing for empty overview', () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    attachMetadataOverview(setter, '   ');
+    const last = getMessages()[
+      getMessages().length - 1
+    ] as LegendAIAssistantMessage;
+    expect(last.textAnswer).toBeNull();
+  });
+
+  test('attaches metadata overview to assistant message', () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    attachMetadataOverview(setter, 'Product overview here');
+    const last = getMessages()[
+      getMessages().length - 1
+    ] as LegendAIAssistantMessage;
+    expect(last.textAnswer).toContain('Product overview here');
+  });
+
+  test('does not duplicate metadata context heading', () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    attachMetadataOverview(setter, 'First overview');
+    attachMetadataOverview(setter, 'Second overview');
+    const last = getMessages()[
+      getMessages().length - 1
+    ] as LegendAIAssistantMessage;
+    expect(last.textAnswer).toContain('First overview');
   });
 });

@@ -15,7 +15,10 @@
  */
 
 import { createMock } from '@finos/legend-shared/test';
-import type { MessageSetter } from '../stores/LegendAIChatState.js';
+import type {
+  MessageSetter,
+  LegendAIOperationContext,
+} from '../stores/LegendAIChatProcessors.js';
 import {
   type LegendAIMessage,
   type LegendAIAssistantMessage,
@@ -31,6 +34,9 @@ import {
   type LegendAISqlExtractionResult,
   type LegendAIJudgeResult,
   LegendAIJudgeVerdict,
+  LegendAIOrchestratorResponse,
+  LegendAIResolvedEntities,
+  LegendAISqlExecutionResultData,
 } from '../LegendAI_LegendApplicationPlugin_Extension.js';
 
 export const TEST__createMockSetter = (): {
@@ -121,6 +127,7 @@ export const TEST__createMockLegendAIPlugin = (
       _s: TDSServiceSchema[],
       _c: string,
       _h?: LegendAIConversationTurn[],
+      _m?: LegendAIProductMetadata,
     ) => 'generator prompt',
     buildJudgePrompt: (
       _sql: string,
@@ -129,6 +136,17 @@ export const TEST__createMockLegendAIPlugin = (
       _c: string,
       _h?: LegendAIConversationTurn[],
     ) => 'judge prompt',
+    buildAccessPointGeneratorPrompt: (
+      _q: string,
+      _s: TDSServiceSchema[],
+      _h?: LegendAIConversationTurn[],
+    ) => 'ap generator prompt',
+    buildAccessPointJudgePrompt: (
+      _sql: string,
+      _q: string,
+      _s: TDSServiceSchema[],
+      _h?: LegendAIConversationTurn[],
+    ) => 'ap judge prompt',
     callLLM: createMock(),
     executeSql: createMock(),
     extractSqlFromResponse: (_a: string): LegendAISqlExtractionResult => ({
@@ -142,7 +160,43 @@ export const TEST__createMockLegendAIPlugin = (
       _q: string,
       services: TDSServiceSchema[],
     ): Promise<TDSServiceSchema[]> => Promise.resolve(services),
+    resolveEntitiesForQuery: (): Promise<LegendAIResolvedEntities> => {
+      const entities = new LegendAIResolvedEntities();
+      entities.rootEntity = 'my::Root';
+      entities.relatedEntities = [];
+      return Promise.resolve(entities);
+    },
+    generateQueryViaOrchestrator: (): Promise<LegendAIOrchestratorResponse> => {
+      const response = new LegendAIOrchestratorResponse();
+      response.legend_query = "model::Entity.all()->project([x|x.id], ['Id'])";
+      return Promise.resolve(response);
+    },
+    executePureQuery: (): Promise<LegendAISqlExecutionResultData> => {
+      const data = new LegendAISqlExecutionResultData();
+      data.columns = ['Id'];
+      data.rows = [{ Id: '1' }];
+      return Promise.resolve(data);
+    },
+    disambiguateEntity: (): Promise<LegendAIResolvedEntities> => {
+      const entities = new LegendAIResolvedEntities();
+      entities.rootEntity = 'my::Root';
+      entities.relatedEntities = [];
+      return Promise.resolve(entities);
+    },
     buildErrorCorrectionPrompt: (): string => '',
     buildZeroRowCorrectionPrompt: (): string => '',
     ...overrides,
   }) as LegendAI_LegendApplicationPlugin_Extension;
+
+export const TEST__createOperationContext = (
+  overrides?: Partial<LegendAIOperationContext>,
+): LegendAIOperationContext => {
+  const { setter } = TEST__createMockSetter();
+  return {
+    config: TEST_DATA__legendAIConfig,
+    plugin: TEST__createMockLegendAIPlugin(),
+    history: [],
+    setMessages: setter,
+    ...overrides,
+  };
+};
