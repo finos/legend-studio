@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.21.14
+
+### Patch Changes
+
+- [#5247](https://github.com/finos/legend-studio/pull/5247) [`babd70f`](https://github.com/finos/legend-studio/commit/babd70f5cb1f87aa4bce5d182a369c10c1430428) ([@Rakan1837](https://github.com/Rakan1837)) - Add Data Product access point test parameter support in Studio, including form-mode editing and round-trip preservation for test parameters.
+
 ## 28.21.13
 
 ### Patch Changes

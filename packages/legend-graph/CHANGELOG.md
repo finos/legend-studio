@@ -1,5 +1,18 @@
 # @finos/legend-graph
 
+## 32.6.10
+
+### Patch Changes
+
+- [#5247](https://github.com/finos/legend-studio/pull/5247) [`babd70f`](https://github.com/finos/legend-studio/commit/babd70f5cb1f87aa4bce5d182a369c10c1430428) ([@Rakan1837](https://github.com/Rakan1837)) - Add Data Product access point test parameter support in Studio, including form-mode editing and round-trip preservation for test parameters.
+
+- [#5252](https://github.com/finos/legend-studio/pull/5252) [`530d316`](https://github.com/finos/legend-studio/commit/530d3165518d348a5754a4173c5b0779efa16696) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Follow-up fixes for `is empty` / `is not empty` on accessor relation columns and projection→filter DnD:
+
+  - `QueryBuilderPostFilterOperator_IsEmpty` now emits `isEmpty($row.<col>)` for relation-column projections (and `not(isEmpty($row.<col>))` for `IsNotEmpty`) instead of silently returning an unwrapped column accessor; matching round-trip overrides recognize both shapes. Previously these operators were offered in the UI but produced an invalid lambda for relation sources.
+  - `buildtdsPropertyExpressionFromColState` now handles `QueryBuilderRelationColumnProjectionColumnState` directly via its `RelationColumn`, so operators can build their expression without requiring a parent lambda.
+  - `QueryBuilderFilterStateBuilder` walks through wrapping `not(...)` / `isEmpty(...)` calls when extracting the lambda variable from a relation-column filter expression, so `is not empty` round-trips no longer throw `relation column filter must reference a variable`.
+  - Filter panel DnD now treats a `QueryBuilderRelationColumnProjectionColumnState` dropped from the projection panel the same as one dragged from the relation explorer, creating a `FilterRelationColumnSourceState` (carrying the column's multiplicity) instead of throwing "Dragging and Dropping derivation projection column is not supported.".
+
 ## 32.6.9
 
 ### Patch Changes
