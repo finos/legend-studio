@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.2.22
+
+### Patch Changes
+
+- [#5256](https://github.com/finos/legend-studio/pull/5256) [`243426a`](https://github.com/finos/legend-studio/commit/243426ac6427a49c84c451737dedee1a98ac07cb) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added warning for Lakehouse not supporting multi region resiliency.
+
+- [#5257](https://github.com/finos/legend-studio/pull/5257) [`91262ab`](https://github.com/finos/legend-studio/commit/91262abc10f25e13ab4ad97fd66c61aa185a2341) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add URL construction for native lakehouse data products (converted from dataspace)
+
 ## 0.2.21
 
 ### Patch Changes
