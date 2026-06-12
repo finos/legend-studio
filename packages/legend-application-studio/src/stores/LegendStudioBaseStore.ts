@@ -89,11 +89,33 @@ export class LegendStudioBaseStore {
   private autoPopupReAuthAttempted = false;
 
   /**
-   * Dedupes concurrent `handleSDLCUnauthorized` calls. Multiple in-flight SDLC
-   * requests can all hit the 401 path simultaneously; we only want to run one
-   * re-auth flow and have all of them resolve to the same outcome.
+   * Dedupes concurrent auto callers of `handleSDLCUnauthorized`. Wraps the
+   * raw popup promise with the auto-flow notification logic (manual-fallback
+   * warning on failure) so all concurrent 401-driven callers get the same
+   * resolution and only one warning fires per attempt.
    */
   private inFlightAutoReAuth: Promise<boolean> | undefined;
+
+  /**
+   * The raw popup promise, set by `reAuthorizeSDLCInPopup` for the duration
+   * of an on-screen popup REGARDLESS of who opened it (manual shield click
+   * OR auto-trigger). `handleSDLCUnauthorized` consults this before deciding
+   * to consume the episode and warn — without it, a 401 raised while the
+   * user is in a manually-opened popup would either stack a second popup or
+   * pop a "click the shield" warning at them while the shield's popup is in
+   * front of them.
+   */
+  private inFlightReAuth: Promise<boolean> | undefined;
+
+  /**
+   * Per-episode dedup flag for the "click the shield to retry" warning.
+   * `handleSDLCUnauthorized` can be re-entered many times within a single
+   * failure episode (every subsequent failing SDLC request in a burst lands
+   * in the loop-guard branch); without this flag, each one would stack an
+   * identical toast. Cleared alongside `autoPopupReAuthAttempted` on a
+   * successful re-auth so the next episode can warn again.
+   */
+  private manualReAuthNotifiedForEpisode = false;
 
   /**
    * Re-entry guard for the network layer's 401 hook. Set to `true` while we
@@ -288,12 +310,21 @@ export class LegendStudioBaseStore {
     if (this.suppressAutoReAuth) {
       return Promise.resolve(false);
     }
-    // Coalesce concurrent callers.
+    // Coalesce concurrent auto callers onto the wrapped auto-flow promise so
+    // the manual-fallback warning only fires once per attempt.
     if (this.inFlightAutoReAuth) {
       return this.inFlightAutoReAuth;
     }
+    // If a popup is already on screen — most commonly because the user just
+    // clicked the StatusBar shield, but also possibly because a prior auto-
+    // attempt's popup is still finalising — defer to its outcome instead of
+    // consuming this episode's one auto-attempt and warning at the user
+    // about a manual button that the popup is in the way of.
+    if (this.inFlightReAuth) {
+      return this.inFlightReAuth;
+    }
     // Loop guard: we've already auto-attempted once this episode. Surface
-    // the manual fallback and stop auto-retrying.
+    // the manual fallback (deduped) and stop auto-retrying.
     if (this.autoPopupReAuthAttempted) {
       this.notifyManualReAuthAvailable();
       return Promise.resolve(false);
@@ -326,8 +357,17 @@ export class LegendStudioBaseStore {
    * re-authentication entry point (the StatusBar shield button) when the
    * automatic flow could not complete (popup blocked, user dismissed, or
    * the retry still 401'd).
+   *
+   * Deduped per failure episode: subsequent 401s within the same episode
+   * (a burst of editor requests after session expiry, for example) all hit
+   * the loop-guard branch and would otherwise each stack an identical
+   * warning toast. The flag is cleared when a re-auth attempt succeeds.
    */
   private notifyManualReAuthAvailable(): void {
+    if (this.manualReAuthNotifiedForEpisode) {
+      return;
+    }
+    this.manualReAuthNotifiedForEpisode = true;
     this.applicationStore.notificationService.notifyWarning(
       `Automatic SDLC re-authentication did not complete. Click the shield icon in the status bar to retry, or reload the page to start a fresh session.`,
     );
@@ -362,9 +402,13 @@ export class LegendStudioBaseStore {
       );
       return false;
     }
-    if (this.popupReAuthState.isInProgress) {
-      // a popup is already in flight — avoid stacking
-      return false;
+    // Coalesce concurrent callers (manual shield click + auto 401 trigger)
+    // onto a single popup. Without this, a 401 raised while the user is in
+    // a manually-opened popup would either stack a second popup OR fire a
+    // confusing "click the shield" warning at the user while the shield's
+    // popup is literally on screen.
+    if (this.inFlightReAuth) {
+      return this.inFlightReAuth;
     }
     this.popupReAuthState.inProgress();
 
@@ -397,7 +441,7 @@ export class LegendStudioBaseStore {
       return false;
     }
 
-    return new Promise<boolean>((resolve) => {
+    const promise = new Promise<boolean>((resolve) => {
       let closedPoll: ReturnType<typeof setInterval> | undefined;
       let settled = false;
 
@@ -422,38 +466,56 @@ export class LegendStudioBaseStore {
         } catch {
           // ignored — popup may already be closed or cross-origin
         }
-        if (!signalled) {
-          this.popupReAuthState.fail();
-          resolve(false);
-          return;
-        }
-        // The popup signalled completion. Re-verify the SDLC session in
-        // place — WITHOUT going through `initializeSDLCServerClient`, which
-        // would do a top-level redirect on `!isAuthorized` and lose all the
-        // in-memory editor state this feature exists to protect.
+        // Always re-verify the SDLC session in place, whether the callback
+        // page managed to `postMessage` (`signalled === true`) or the popup
+        // simply closed (`signalled === false`). The popup-closed path used
+        // to fail outright, but that silently broke environments where the
+        // browser severs `window.opener` somewhere along the auth redirect
+        // chain (most commonly an IdP or the SDLC server sending
+        // `Cross-Origin-Opener-Policy: same-origin`): the callback page's
+        // `postMessage` becomes a no-op, the popup closes itself, and the
+        // only way to learn whether auth actually took is to ask the server.
+        // The cost is one cheap GET on user-cancel; the upside is robust
+        // recovery for COOP-severed deployments.
         //
-        // `suppressAutoReAuth` is set for the duration of the verification
-        // so that a 401 raised by the verify GET itself can't recurse back
-        // into `handleSDLCUnauthorized` (which would return the still-in-
-        // flight outer promise and deadlock the whole chain).
+        // We deliberately do NOT route through `initializeSDLCServerClient`
+        // here — that would do a top-level redirect on `!isAuthorized` and
+        // lose all the in-memory editor state this whole feature exists to
+        // protect. `suppressAutoReAuth` is set for the duration of the
+        // verify so that a 401 raised by the verify GET itself can't recurse
+        // back into `handleSDLCUnauthorized` (which would return the still-
+        // in-flight outer promise and deadlock).
         this.isSDLCServerInitialized = false;
         this.suppressAutoReAuth = true;
         flowResult(this.verifySDLCSessionAfterReAuth())
           .then((ok) => {
             this.suppressAutoReAuth = false;
             if (ok) {
-              // reset the loop guard so the next failure episode can
-              // auto-attempt re-auth again
+              // reset the per-episode flags so the next failure episode
+              // can auto-attempt re-auth and warn the user again
               this.autoPopupReAuthAttempted = false;
+              this.manualReAuthNotifiedForEpisode = false;
               this.popupReAuthState.pass();
               this.applicationStore.notificationService.notifySuccess(
                 `Successfully re-authenticated with the SDLC server.`,
               );
             } else {
               this.popupReAuthState.fail();
-              this.applicationStore.notificationService.notifyError(
-                `Re-authentication popup completed but the SDLC session is still not authorized. Please reload the page to start a fresh session.`,
-              );
+              if (signalled) {
+                // The popup explicitly told us it completed, yet the SDLC
+                // server still reports the session as unauthorized. That's
+                // a real problem the user should know about (wrong identity
+                // chosen in the popup, third-party-cookie / SameSite issue,
+                // ToS race, etc.). Surface a loud error.
+                this.applicationStore.notificationService.notifyError(
+                  `Re-authentication popup completed but the SDLC session is still not authorized. Please reload the page to start a fresh session.`,
+                );
+              }
+              // !signalled + verify failed is indistinguishable from a
+              // deliberate user-cancel — stay quiet. The auto-trigger
+              // caller (`handleSDLCUnauthorized`) will fire a single
+              // "click the shield to retry" hint if this was an auto
+              // attempt; the manual button caller simply gets `false` back.
             }
             resolve(ok);
           })
@@ -492,6 +554,16 @@ export class LegendStudioBaseStore {
         }
       }, 500);
     });
+    this.inFlightReAuth = promise;
+    try {
+      return await promise;
+    } finally {
+      // Clear the slot AFTER awaiting so all concurrent callers (which got
+      // `this.inFlightReAuth` back from the early-return branch) resolve
+      // against the same promise instance. Subsequent attempts then start
+      // a fresh popup.
+      this.inFlightReAuth = undefined;
+    }
   }
 
   /**

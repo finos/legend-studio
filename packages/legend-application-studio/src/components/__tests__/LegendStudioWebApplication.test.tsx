@@ -298,15 +298,29 @@ describe('SDLC popup re-authentication', () => {
           .spyOn(window, 'open')
           .mockReturnValue(popup as unknown as Window);
 
+        // No session (user cancelled / rogue message ignored). The verify-on-
+        // close path will call `isAuthorized` once and resolve `false`.
         const isAuthorizedSpy = createSpy(
           baseStore.sdlcServerClient,
           'isAuthorized',
-        ).mockResolvedValue(true);
+        ).mockResolvedValue(false);
+        // Bootstrap calls must NOT happen on an unauthorized verify.
+        const tosSpy = createSpy(
+          baseStore.sdlcServerClient,
+          'hasAcceptedTermsOfService',
+        ).mockResolvedValue([]);
+        // The loud "popup completed but unauth" error is gated on
+        // `signalled === true`. If the rogue message slipped past the origin
+        // filter, finalize(true) would fire and this error WOULD be raised.
+        const errorSpy = createSpy(
+          baseStore.applicationStore.notificationService,
+          'notifyError',
+        ).mockImplementation(noop);
 
         const reAuthPromise = baseStore.reAuthorizeSDLCInPopup();
 
-        // Wrong origin → should be ignored; the polled-closed fallback then
-        // detects popup closure and finalises with `false`.
+        // Wrong origin → must be ignored; the polled-closed fallback then
+        // detects popup closure and finalises with `signalled === false`.
         window.dispatchEvent(
           new MessageEvent('message', {
             data: { type: 'SDLC_REAUTH_DONE' },
@@ -319,10 +333,18 @@ describe('SDLC popup re-authentication', () => {
 
         const result = await reAuthPromise;
         expect(result).toBe(false);
-        // SDLC re-init must NOT have been triggered by the rogue message
-        expect(
-          isAuthorizedSpy as TEMPORARY__JestMatcher,
-        ).not.toHaveBeenCalled();
+        // Verify ran exactly once (from closedPoll → finalize(false)), NOT
+        // twice (which would mean the rogue message also drove finalize(true)
+        // ahead of the close).
+        expect(isAuthorizedSpy as TEMPORARY__JestMatcher).toHaveBeenCalledTimes(
+          1,
+        );
+        // !isAuthorized → bootstrap short-circuits, nothing else runs.
+        expect(tosSpy as TEMPORARY__JestMatcher).not.toHaveBeenCalled();
+        // Critically: the loud "popup completed but unauth" error must NOT
+        // have fired. If the rogue message had promoted close to a signalled
+        // finalize, it would have.
+        expect(errorSpy as TEMPORARY__JestMatcher).not.toHaveBeenCalled();
       } finally {
         jest.useRealTimers();
       }
@@ -346,6 +368,11 @@ describe('SDLC popup re-authentication', () => {
           baseStore.applicationStore.notificationService,
           'notifyWarning',
         ).mockImplementation(noop);
+        // The verify-on-close path runs unconditionally now; mock the SDLC
+        // calls it makes so the test doesn't punch through to a real fetch.
+        createSpy(baseStore.sdlcServerClient, 'isAuthorized').mockResolvedValue(
+          false,
+        );
 
         // Reach the private handler via a typed cast — the loop-guard behavior
         // is what we want to lock down, even though the method itself isn't
@@ -517,6 +544,142 @@ describe('SDLC popup re-authentication', () => {
       const result = await autoPromise;
       expect(result).toBe(false);
       expect(reentrantResult).toBe(false);
+    },
+  );
+
+  test(
+    integrationTest(
+      'auto 401 raised while a manual popup is on screen defers to it instead of consuming the episode or warning',
+    ),
+    async () => {
+      // Regression: previously, the manual click would set
+      // `popupReAuthState.inProgress`, then a concurrent auto 401 would
+      // (1) consume `autoPopupReAuthAttempted`, (2) call
+      // reAuthorizeSDLCInPopup which would immediately short-circuit on
+      // `popupReAuthState.isInProgress` and return false, and (3) fire the
+      // "click the shield" warning at the user while the shield's popup is
+      // literally on screen. The fix is to coalesce on `inFlightReAuth`.
+      const baseStore = buildBaseStoreWithPopup();
+      const popup = buildMockPopup();
+      openSpy = jest
+        .spyOn(window, 'open')
+        .mockReturnValue(popup as unknown as Window);
+
+      createSpy(baseStore.sdlcServerClient, 'isAuthorized').mockResolvedValue(
+        true,
+      );
+      createSpy(
+        baseStore.sdlcServerClient,
+        'hasAcceptedTermsOfService',
+      ).mockResolvedValue([]);
+      createSpy(
+        baseStore.sdlcServerClient,
+        'fetchServerPlatforms',
+      ).mockResolvedValue();
+      createSpy(
+        baseStore.sdlcServerClient,
+        'fetchServerFeaturesConfiguration',
+      ).mockResolvedValue();
+      const warnSpy = createSpy(
+        baseStore.applicationStore.notificationService,
+        'notifyWarning',
+      ).mockImplementation(noop);
+
+      // User clicks the StatusBar shield first.
+      const manualPromise = baseStore.reAuthorizeSDLCInPopup();
+      expect(openSpy).toHaveBeenCalledTimes(1);
+
+      // While the manual popup is still on screen, a 401 from an in-flight
+      // editor request fires the network layer's auto-reauth hook. It MUST
+      // coalesce onto the manual popup — same in-flight promise, no second
+      // window.open, no episode consumed.
+      const handle = (
+        baseStore as unknown as {
+          handleSDLCUnauthorized(): Promise<boolean>;
+        }
+      ).handleSDLCUnauthorized.bind(baseStore);
+      const autoPromise = handle();
+      expect(openSpy).toHaveBeenCalledTimes(1);
+
+      // Popup completes successfully → both callers see the same outcome.
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'SDLC_REAUTH_DONE' },
+          origin: POPUP_CALLBACK_ORIGIN,
+        }),
+      );
+
+      const [manualResult, autoResult] = await Promise.all([
+        manualPromise,
+        autoPromise,
+      ]);
+      expect(manualResult).toBe(true);
+      expect(autoResult).toBe(true);
+      // Critically: the "click the shield" warning must NOT have fired while
+      // the user was literally engaging with the shield's popup.
+      expect(warnSpy as TEMPORARY__JestMatcher).not.toHaveBeenCalled();
+      // The auto-attempt counter must NOT have been consumed by the
+      // deferred 401 — the next failure episode still gets its one auto
+      // attempt.
+      expect(
+        (baseStore as unknown as { autoPopupReAuthAttempted: boolean })
+          .autoPopupReAuthAttempted,
+      ).toBe(false);
+    },
+  );
+
+  test(
+    integrationTest(
+      'a burst of 401s after a popup-blocked auto attempt only fires the manual-reauth warning once',
+    ),
+    async () => {
+      // Regression: when window.open is blocked (the common case — calls
+      // from a 401 response handler typically lack transient user
+      // activation), the first auto-attempt fails immediately, the loop
+      // guard latches, and every subsequent 401 in the burst lands in the
+      // `if (autoPopupReAuthAttempted)` branch and used to fire an
+      // identical warning toast each time. The dedup flag must collapse
+      // them down to one.
+      const baseStore = buildBaseStoreWithPopup();
+      // simulate popup-blocked: window.open returns null
+      openSpy = jest.spyOn(window, 'open').mockReturnValue(null);
+
+      const warnSpy = createSpy(
+        baseStore.applicationStore.notificationService,
+        'notifyWarning',
+      ).mockImplementation(noop);
+      // The popup-blocked path also fires notifyError once on the FIRST
+      // attempt; we silence it so it doesn't pollute the warn count
+      // and so we can focus the assertion on the dedup we care about.
+      createSpy(
+        baseStore.applicationStore.notificationService,
+        'notifyError',
+      ).mockImplementation(noop);
+
+      const handle = (
+        baseStore as unknown as {
+          handleSDLCUnauthorized(): Promise<boolean>;
+        }
+      ).handleSDLCUnauthorized.bind(baseStore);
+
+      // First call: opens (blocked) popup, fails immediately, fires the
+      // manual-reauth warning ONCE.
+      const first = await handle();
+      expect(first).toBe(false);
+      expect(openSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy as TEMPORARY__JestMatcher).toHaveBeenCalledTimes(1);
+
+      // Subsequent 401s in the burst all hit the loop-guard branch. Without
+      // the dedup flag, each would stack another identical toast.
+      const second = await handle();
+      const third = await handle();
+      const fourth = await handle();
+      expect([second, third, fourth]).toEqual([false, false, false]);
+      // No additional popups attempted (loop guard).
+      expect(openSpy).toHaveBeenCalledTimes(1);
+      // And critically: still only ONE warning toast across the entire
+      // burst.
+      expect(warnSpy as TEMPORARY__JestMatcher).toHaveBeenCalledTimes(1);
     },
   );
 
