@@ -36,6 +36,8 @@ export const getOrganizationalScopeTypeName = (
     return 'Ad-hoc Team';
   } else if (scope instanceof V1_ProducerScope) {
     return 'Producer';
+  } else if (scope instanceof V1_RMS) {
+    return 'RMS';
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return 'Unknown';
   } else {
