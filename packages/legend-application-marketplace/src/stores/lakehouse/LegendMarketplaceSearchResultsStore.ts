@@ -82,6 +82,11 @@ export enum SearchResultsViewMode {
   LIST = 'list',
 }
 
+export enum SearchResultViewOption {
+  DATA_PRODUCTS = 'Data Products',
+  DATA_FIELDS = 'Data Fields',
+}
+
 const LEGEND_MARKETPLACE_SETTING_KEY_VIEW_MODE =
   'marketplace.search-results.viewMode';
 

@@ -42,6 +42,7 @@ import {
 } from '@mui/material';
 import {
   DataProductSort,
+  SearchResultViewOption,
   SearchResultsViewMode,
   type LegendMarketplaceSearchResultsStore,
 } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
@@ -67,11 +68,6 @@ import { isNonEmptyString } from '@finos/legend-shared';
 import { PaginationControls } from '../../../components/Pagination/PaginationControls.js';
 import { MarketplaceSearchFiltersPanel } from '../../../components/MarketplaceSearchFiltersPanel/MarketplaceSearchFiltersPanel.js';
 import { LegendMarketplaceOptionSelector } from '../../../components/OptionSelector/LegendMarketplaceOptionSelector.js';
-
-enum ProductSearchResultViewOption {
-  DATA_PRODUCTS = 'Data Products',
-  DATA_FIELDS = 'Data Fields',
-}
 
 const SearchResultsContent = observer(
   (props: {
@@ -392,14 +388,12 @@ export const LegendMarketplaceSearchResults =
                 <div className="legend-marketplace-search-results__search-type-tabs">
                   <LegendMarketplaceOptionSelector
                     options={[
-                      ProductSearchResultViewOption.DATA_PRODUCTS,
-                      ProductSearchResultViewOption.DATA_FIELDS,
+                      SearchResultViewOption.DATA_PRODUCTS,
+                      SearchResultViewOption.DATA_FIELDS,
                     ]}
-                    selectedOption={ProductSearchResultViewOption.DATA_PRODUCTS}
+                    selectedOption={SearchResultViewOption.DATA_PRODUCTS}
                     onChange={(option) => {
-                      if (
-                        option === ProductSearchResultViewOption.DATA_FIELDS
-                      ) {
+                      if (option === SearchResultViewOption.DATA_FIELDS) {
                         applicationStore.navigationService.navigator.goToLocation(
                           generateFieldSearchResultsRoute(
                             searchResultsStore.searchQuery,
