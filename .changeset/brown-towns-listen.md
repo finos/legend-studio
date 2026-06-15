@@ -1,5 +1,5 @@
 ---
-'@finos/legend-extension-dsl-data-product': patch
+'@finos/legend-application-marketplace': patch
 ---
 
-Added missing ingest visibility to contract viewer
+Updated entitlements dashboards to show contract errors in contract viewer
