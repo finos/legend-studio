@@ -716,14 +716,7 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
       mockGoToLocation;
 
     await screen.findByText('4 Fields');
-    const searchTypeTabs = guaranteeNonNullable(
-      document.querySelector(
-        '.legend-marketplace-search-results__search-type-tabs',
-      ),
-    ) as HTMLElement;
-    fireEvent.click(
-      within(searchTypeTabs).getByRole('tab', { name: 'Data Products' }),
-    );
+    fireEvent.click(screen.getByRole('radio', { name: 'Data Products' }));
 
     expect(mockGoToLocation).toHaveBeenCalledWith(
       generateLakehouseSearchResultsRoute('customer', false),

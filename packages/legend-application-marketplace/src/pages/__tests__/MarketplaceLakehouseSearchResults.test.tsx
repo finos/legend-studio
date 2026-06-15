@@ -319,7 +319,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       mockGoToLocation;
 
     await screen.findByText('4 Products');
-    fireEvent.click(screen.getByText('Data Fields'));
+    fireEvent.click(screen.getByRole('radio', { name: 'Data Fields' }));
 
     expect(mockGoToLocation).toHaveBeenCalledWith(
       generateFieldSearchResultsRoute('customer'),
@@ -330,8 +330,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
     await setupTestComponent('', 'prod');
 
     await screen.findByPlaceholderText('Search Legend Marketplace');
-    expect(screen.queryByRole('tab', { name: 'Data Products' })).toBeNull();
-    expect(screen.queryByRole('tab', { name: 'Data Fields' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Data Products' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Data Fields' })).toBeNull();
   });
 
   describe('Semantic search', () => {
