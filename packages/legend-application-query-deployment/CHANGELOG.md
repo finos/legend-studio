@@ -1,5 +1,7 @@
 # @finos/legend-application-query-deployment
 
+## 13.230.0
+
 ## 13.229.0
 
 ## 13.228.0

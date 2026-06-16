@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.89
+
+### Patch Changes
+
+- [#5260](https://github.com/finos/legend-studio/pull/5260) [`b68dc3f`](https://github.com/finos/legend-studio/commit/b68dc3f1b9ab590f4194804b90bbde445386138c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added condition that checks for pending contracts to render the request access button
+
+- [#5256](https://github.com/finos/legend-studio/pull/5256) [`243426a`](https://github.com/finos/legend-studio/commit/243426ac6427a49c84c451737dedee1a98ac07cb) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added warning for Lakehouse not supporting multi region resiliency.
+
 ## 0.0.88
 
 ### Patch Changes
