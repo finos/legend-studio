@@ -1,5 +1,23 @@
 # @finos/legend-application-query
 
+## 13.8.25
+
+### Patch Changes
+
+- [#5262](https://github.com/finos/legend-studio/pull/5262) [`57b77a4`](https://github.com/finos/legend-studio/commit/57b77a4515a9f512643c950fe7c020e7a75cdcfb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a developer-only DataSpace Artifact Inspector page (route `/dev/dataspace-inspector`) for diagnosing oversized depot analytics artifacts.
+
+  The page hits the depot analytics endpoint (`GET /generations/{groupId}/{artifactId}/{versionId}/types/dataSpace-analytics?elementPath={path}`) scoped to a single DataSpace and reports total uncompressed payload size plus a per-file breakdown. Inputs can be filled in three ways: manually, by pasting a saved query id (loads `groupId` / `artifactId` / `versionId` / dataspace path from `/pure/v1/query/{id}`), or by picking from a dropdown of every DataSpace registered in depot. Also provides streaming variants that survive OOM-causing payloads (raw byte count, JSON state-machine per-element headers, and stream-to-disk download via the File System Access API), plus an inline Monaco JSON viewer for the parsed response and individual file contents.
+
+- [#5262](https://github.com/finos/legend-studio/pull/5262) [`57b77a4`](https://github.com/finos/legend-studio/commit/57b77a4515a9f512643c950fe7c020e7a75cdcfb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix Chrome tab OOM crash when opening a multi execution context DataSpace in Legend Query.
+
+  The depot `GET /generations/{groupId}/{artifactId}/{versionId}/types/dataSpace-analytics` endpoint returns artifacts for **every** DataSpace in the project, which for large multi-execution-context projects can exceed 700 MB and OOM the browser tab. The endpoint also supports an `elementPath` query parameter that scopes the response to a single DataSpace; we now pass it through so only the requested DataSpace's artifacts are fetched.
+
+  Changes:
+
+  - `DepotServerClient.getGenerationFilesByType` now accepts an optional `elementPath` argument that is forwarded as an `elementPath` query parameter to narrow the response server-side.
+  - `retrieveDataspaceArtifactsCache` now requires a `dataSpacePath` argument and forwards it to the depot endpoint.
+  - `V1_DSL_DataSpace_PureGraphManagerExtension.analyzeDataSpaceCoverage` — the unneeded client-side `artifact.path === dataSpacePath` filter is removed; the depot response is already element-scoped.
+
 ## 13.8.24
 
 ### Patch Changes
