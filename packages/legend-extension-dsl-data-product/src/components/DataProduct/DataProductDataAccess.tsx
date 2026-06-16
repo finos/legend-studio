@@ -36,6 +36,7 @@ import {
   Dialog,
   ExpandMoreIcon,
   GitBranchIcon,
+  WarningIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -1362,6 +1363,8 @@ export const DataProductAccessPointGroupViewer = observer(
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
+    const [isMissingIngestsCollapsed, setIsMissingIngestsCollapsed] =
+      useState(false);
     const [isEntitledButtonGroupMenuOpen, setIsEntitledButtonGroupMenuOpen] =
       useState(false);
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
@@ -1477,10 +1480,6 @@ export const DataProductAccessPointGroupViewer = observer(
             buttonLabel = 'ENTITLEMENTS SYNCING';
             onClick = handleContractsClick;
             buttonColor = 'success';
-          } else if (apgState.hasMissingIngests) {
-            buttonLabel = 'MISSING INGESTS';
-            onClick = handleContractsClick;
-            buttonColor = 'error';
           } else {
             buttonLabel = 'ENTITLED';
             onClick = handleContractsClick;
@@ -1488,14 +1487,8 @@ export const DataProductAccessPointGroupViewer = observer(
           }
           break;
         case AccessPointGroupAccess.ENTERPRISE:
-          if (apgState.hasMissingIngests) {
-            buttonLabel = 'MISSING INGESTS';
-            onClick = handleContractsClick;
-            buttonColor = 'error';
-          } else {
-            buttonLabel = 'ENTERPRISE ACCESS';
-            buttonColor = 'success';
-          }
+          buttonLabel = 'ENTERPRISE ACCESS';
+          buttonColor = 'success';
           break;
         default:
           buttonLabel = undefined;
@@ -1509,15 +1502,11 @@ export const DataProductAccessPointGroupViewer = observer(
           val === AccessPointGroupAccess.ENTERPRISE) &&
         apgState.isEntitlementsSyncing
           ? 'Your contract has been approved but your entitlements are still syncing. The status will refresh automatically once your entitlements have synced.'
-          : (val === AccessPointGroupAccess.APPROVED ||
-                val === AccessPointGroupAccess.ENTERPRISE) &&
-              apgState.hasMissingIngests
-            ? 'One or more ingest definitions referenced by this access point group could not be verified against the producer environment.'
-            : dataAccessState?.dataAccessPlugins
-                .flatMap((plugin) =>
-                  plugin.getExtraAccessPointGroupAccessInfo?.(val),
-                )
-                .filter(isNonEmptyString)[0];
+          : dataAccessState?.dataAccessPlugins
+              .flatMap((plugin) =>
+                plugin.getExtraAccessPointGroupAccessInfo?.(val),
+              )
+              .filter(isNonEmptyString)[0];
 
       return (
         <>
@@ -1671,6 +1660,42 @@ export const DataProductAccessPointGroupViewer = observer(
             {renderAccess(apgState.access)}
           </Box>
         </div>
+        {apgState.hasMissingIngests &&
+          (apgState.access === AccessPointGroupAccess.APPROVED ||
+            apgState.access === AccessPointGroupAccess.ENTERPRISE) && (
+            <div className="data-product__viewer__access-group__item__missing-ingests-banner">
+              <button
+                type="button"
+                className="data-product__viewer__access-group__item__missing-ingests-banner__header"
+                onClick={() => setIsMissingIngestsCollapsed((prev) => !prev)}
+              >
+                <WarningIcon className="data-product__viewer__access-group__item__missing-ingests-banner__icon" />
+                <span>Access Point: Missing Ingests</span>
+                <ExpandMoreIcon
+                  className={clsx(
+                    'data-product__viewer__access-group__item__missing-ingests-banner__caret',
+                    {
+                      'data-product__viewer__access-group__item__missing-ingests-banner__caret--collapsed':
+                        isMissingIngestsCollapsed,
+                    },
+                  )}
+                />
+              </button>
+              <ul
+                className={clsx(
+                  'data-product__viewer__access-group__item__missing-ingests-banner__list',
+                  {
+                    'data-product__viewer__access-group__item__missing-ingests-banner__list--collapsed':
+                      isMissingIngestsCollapsed,
+                  },
+                )}
+              >
+                {(apgState.missingIngests ?? []).map((ingest) => (
+                  <li key={ingest}>{ingest}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         {!apgState.isCollapsed && (
           <div className="data-product__viewer__access-group__item__collapsible-content">
             <div className="data-product__viewer__access-group__item__description">
