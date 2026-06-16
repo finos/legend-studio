@@ -43,6 +43,7 @@ import { DataSpaceTemplateQueryCreator } from './data-space/DataSpaceTemplateQue
 import { QueryCreator } from './data-space/DataProductQueryCreator.js';
 import { DataProductSampleQueryCreator } from './data-product/DataProductSampleQueryCreator.js';
 import { ExistingQueryDataCubeViewer } from './data-cube/ExistingQueryDataCubeViewer.js';
+import { DataSpaceArtifactInspector } from './DataSpaceArtifactInspector.js';
 import {
   AuthProvider,
   withAuthenticationRequired,
@@ -119,6 +120,12 @@ const LegendQueryWebApplicationRouter = observer(() => {
           <Route
             path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_MAPPING_QUERY}
             element={<MappingQueryCreator />}
+          />
+
+          {/* Developer-only diagnostic page (artifact size inspector) */}
+          <Route
+            path={LEGEND_QUERY_ROUTE_PATTERN.DEV_DATA_SPACE_INSPECTOR}
+            element={<DataSpaceArtifactInspector />}
           />
 
           {/* LEGACY DATA SPACE */}
