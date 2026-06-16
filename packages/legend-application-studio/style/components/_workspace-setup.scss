@@ -139,27 +139,32 @@
     }
   }
 
-  .selector-input--dark__placeholder {
+  .selector-input--dark__placeholder,
+  .selector-input__placeholder {
     font-size: min(1.25vw, 1.25vh);
   }
 
   selector-input--dark__value-container,
   .selector-menu--dark .selector-input--dark__value-container,
-  .selector-input--dark .selector-input--dark__value-container {
+  .selector-input--dark .selector-input--dark__value-container,
+  .selector-input .selector-input__value-container {
     height: 100%;
   }
 
-  .selector-input--dark .selector-input--dark__control {
+  .selector-input--dark .selector-input--dark__control,
+  .selector-input .selector-input__control {
     background: var(--color-bg-elevated);
     height: 100%;
     min-height: unset;
   }
 
-  .selector-input--dark .selector-input--dark__single-value {
+  .selector-input--dark .selector-input--dark__single-value,
+  .selector-input .selector-input__single-value {
     font-size: min(1vw, 1.5rem);
   }
 
-  .selector-input--dark .selector-input__dropdown-indicator {
+  .selector-input--dark .selector-input__dropdown-indicator,
+  .selector-input .selector-input__dropdown-indicator {
     background: var(--color-accent);
     margin-right: 1vh;
     height: 2vh;
@@ -170,7 +175,8 @@
     }
   }
 
-  .selector-input--dark .selector-input--dark__indicator-separator {
+  .selector-input--dark .selector-input--dark__indicator-separator,
+  .selector-input .selector-input__indicator-separator {
     margin-top: 0;
     margin-bottom: 0;
     background: none;
@@ -606,7 +612,7 @@
   // pre-reserve a fixed slice here.
   flex: 0 0 auto;
   max-height: 14vh;
-  margin: 0 2vw;
+  margin: 0 2vw 2vh;
   display: flex;
   flex-direction: column;
   min-height: 0;

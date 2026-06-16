@@ -1392,11 +1392,15 @@ export const DataSpaceArtifactInspector = observer(() => {
                 {result.rows.map((r, i) => {
                   // In parsed mode, the per-row index in the descending
                   // size table doesn't match the position in `rawFiles`.
-                  // Find the original index by matching `path` (file path).
+                  // Match by the inner `file.path` (the actual file path) —
+                  // the outer `path` field on `StoredFileGeneration` is the
+                  // element path and is the same for every row.
                   const rawIndex =
                     result.mode === 'parsed' && result.rawFiles
                       ? result.rawFiles.findIndex(
-                          (f) => (f as { path?: unknown }).path === r.filePath,
+                          (f) =>
+                            (f as { file?: { path?: unknown } }).file?.path ===
+                            r.filePath,
                         )
                       : -1;
                   return (
