@@ -405,6 +405,7 @@ export class DepotServerClient extends AbstractServerClient {
     project: StoreProjectData,
     versionId: string,
     type: string,
+    elementPath?: string,
   ): Promise<PlainObject<StoredFileGeneration>[]> =>
     this.get(
       `${this._generationsByGAV(
@@ -412,6 +413,9 @@ export class DepotServerClient extends AbstractServerClient {
         project.artifactId,
         resolveVersion(versionId),
       )}/types/${encodeURIComponent(type)}`,
+      undefined,
+      undefined,
+      elementPath !== undefined ? { elementPath } : undefined,
     );
 
   // ------------------------------------------- Versions -------------------------------------------

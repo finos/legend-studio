@@ -803,6 +803,7 @@ export abstract class QueryEditorStore {
             retrieveDataspaceArtifactsCache(
               project,
               versionId,
+              dataSpacePath,
               this.depotServerClient,
             ),
           undefined,
