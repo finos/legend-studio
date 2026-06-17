@@ -139,6 +139,7 @@ import {
 import { flowResult } from 'mobx';
 import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/DataContractViewerState.js';
 import { DataAccessRequestViewer } from './DataContract/DataAccessRequestViewer.js';
+import { getRelationColumnDescription } from '../../utils/LakehouseUtils.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -949,6 +950,17 @@ const ColumnsScreen = observer(
                         .join(',')})`
                     : ''
                 }`
+              : '',
+        },
+        {
+          headerName: 'Column Description',
+          flex: 1,
+          wrapText: true,
+          autoHeight: true,
+          valueGetter: (_params) =>
+            _params.data
+              ? (getRelationColumnDescription(_params.data) ??
+                'No description provided')
               : '',
         },
         {

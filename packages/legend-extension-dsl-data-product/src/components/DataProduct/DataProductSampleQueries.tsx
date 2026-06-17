@@ -57,6 +57,7 @@ import {
   type RelationSampleQueryTabContext,
 } from '../../stores/DataProduct/DataProductSampleQueryTabState.js';
 import { TDS_SAMPLE_VALUES_DELIMITER } from '@finos/legend-lego/legend-ai';
+import { getRelationColumnDescription } from '../../utils/LakehouseUtils.js';
 
 interface SampleQueryColumnData {
   id: string;
@@ -320,6 +321,7 @@ const getRelationSampleQueryTabs =
             id: uuid(),
             name: col.name,
             type: V1_getGenericTypeFullPath(col.genericType),
+            doc: getRelationColumnDescription(col),
           }));
         }
 
@@ -350,6 +352,16 @@ const getRelationSampleQueryTabs =
                   headerValueGetter: () =>
                     `Column${columnData.length ? ` (${columnData.length})` : ''}`,
                   flex: 1,
+                },
+                {
+                  minWidth: 50,
+                  sortable: false,
+                  resizable: true,
+                  cellRenderer: TDSColumnDocumentationCellRenderer,
+                  headerName: 'Description',
+                  flex: 1,
+                  wrapText: true,
+                  autoHeight: true,
                 },
                 {
                   minWidth: 50,

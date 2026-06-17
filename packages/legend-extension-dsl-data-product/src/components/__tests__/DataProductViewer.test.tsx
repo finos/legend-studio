@@ -347,10 +347,20 @@ const setupLakehouseDataProductTest = async (
         columns: [
           {
             name: 'varchar_val',
+            description: 'Varchar Column Description from field',
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            taggedValues: [
+              {
+                tag: {
+                  profile: 'meta::pure::profiles::doc',
+                  value: 'doc',
+                },
+                value: 'Varchar Column Description from tagged value',
+              },
+            ],
             genericType: {
               multiplicityArguments: [],
               typeArguments: [],
@@ -367,6 +377,15 @@ const setupLakehouseDataProductTest = async (
               lowerBound: 1,
               upperBound: 1,
             },
+            taggedValues: [
+              {
+                tag: {
+                  profile: 'meta::pure::profiles::doc',
+                  value: 'doc',
+                },
+                value: 'Int Column Description from tagged value',
+              },
+            ],
             genericType: {
               multiplicityArguments: [],
               typeArguments: [],
@@ -499,6 +518,7 @@ describe('DataProductViewer', () => {
       screen.getByText('Main Group Test');
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
+      screen.getByText('Column Description');
 
       await screen.findByText('artifact_varchar_val');
       screen.getByText('Varchar(500)');
@@ -525,6 +545,7 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
+      screen.getByText('Column Description');
 
       await screen.findByText('varchar_val');
       screen.getByText('Varchar(32)');
@@ -546,6 +567,7 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
+      screen.getByText('Column Description');
 
       await screen.findByText('varchar_val');
       screen.getByText('Varchar(32)');
@@ -4115,6 +4137,26 @@ describe('DataProductViewer', () => {
 
       // The parsed sample values content should appear in the grid
       await screen.findByText(MOCK__TDS_COLUMN_SAMPLE_VALUES);
+    });
+
+    test('Relation sample query Column Specifications shows Description column with tagged value content', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        { groupId: 'com.example', artifactId: 'test', versionId: '1.0.0' },
+      );
+
+      await act(async () => {
+        dataProductViewerState.dataProductArtifact =
+          buildMockDataProductArtifactWithSampleQueries();
+      });
+
+      await screen.findByText('Sample Relation Query');
+      await screen.findByText('Description');
+      await screen.findByText('Relation column description from field');
+      await screen.findByText('Legacy relation column description');
     });
   });
 

@@ -835,6 +835,7 @@ export * from './graph-manager/extensions/DSL_ExternalFormat_PureGraphManagerPlu
 // V1 protocols
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/V1_PackageableElement.js';
 export { V1_StereotypePtr } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_StereotypePtr.js';
+export { V1_TagPtr } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_TagPtr.js';
 export { V1_TaggedValue } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_TaggedValue.js';
 export { V1_PropertyPointer } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_PropertyPointer.js';
 export { V1_SectionIndex } from './graph-manager/protocol/pure/v1/model/packageableElements/section/V1_SectionIndex.js';

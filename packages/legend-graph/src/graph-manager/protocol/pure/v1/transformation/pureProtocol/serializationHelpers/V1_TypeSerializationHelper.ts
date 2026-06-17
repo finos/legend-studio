@@ -19,6 +19,7 @@ import {
   custom,
   deserialize,
   list,
+  optional,
   primitive,
   serialize,
 } from 'serializr';
@@ -29,6 +30,7 @@ import {
   customList,
   isString,
   optionalCustomList,
+  optionalCustomListWithSchema,
   returnUndefOnError,
   UnsupportedOperationError,
   usingConstantValueSchema,
@@ -36,7 +38,10 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
-import { V1_multiplicityModelSchema } from './V1_CoreSerializationHelper.js';
+import {
+  V1_multiplicityModelSchema,
+  V1_taggedValueModelSchema,
+} from './V1_CoreSerializationHelper.js';
 import { matchFunctionName } from '../../../../../../../graph/MetaModelUtils.js';
 import { CORE_PURE_PATH } from '../../../../../../../graph/MetaModelConst.js';
 import { V1_getGenericTypeFullPath } from '../../../helpers/V1_DomainHelper.js';
@@ -94,6 +99,7 @@ const packageableTypeModelSchema = createModelSchema(V1_PackageableType, {
 export const V1_relationTypeColumnModelSchema = createModelSchema(
   V1_RelationTypeColumn,
   {
+    description: optional(primitive()),
     genericType: custom(
       (val) => serialize(V1_genericTypeModelSchema, val),
       (val) => V1_deserializeGenericType(val),
@@ -113,6 +119,7 @@ export const V1_relationTypeColumnModelSchema = createModelSchema(
     ),
     multiplicity: usingModelSchema(V1_multiplicityModelSchema),
     name: primitive(),
+    taggedValues: optionalCustomListWithSchema(V1_taggedValueModelSchema),
   },
 );
 
