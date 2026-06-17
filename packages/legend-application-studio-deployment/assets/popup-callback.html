@@ -1,0 +1,81 @@
+<!doctype html>
+<!--
+  Copyright (c) 2020-present, Goldman Sachs
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html lang="en">
+  <head>
+    <title>Legend Studio — SDLC Re-authentication</title>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #1e1e1e;
+        color: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        text-align: center;
+      }
+      .msg {
+        max-width: 28rem;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="msg">
+      <p>Re-authentication complete.</p>
+      <p>
+        This window should close automatically. If it does not, you may close
+        it.
+      </p>
+    </div>
+    <script>
+      // This page is loaded inside a popup window opened by Legend Studio as
+      // the OAuth `redirect_uri` for the SDLC authorization flow. By the time
+      // we render here, the SDLC server has already set its session cookie on
+      // the browser, so we only need to signal the opener (Studio) that the
+      // flow completed and then close ourselves.
+      //
+      // The opener listens for a `postMessage` of the form
+      // `{ type: 'SDLC_REAUTH_DONE' }` originating from this page's origin
+      // and re-runs its SDLC client initialization on receipt.
+      (function () {
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+              { type: 'SDLC_REAUTH_DONE' },
+              window.location.origin,
+            );
+          }
+        } catch (e) {
+          // ignore — best-effort signalling
+        }
+        // Small delay so the message is delivered before we tear down.
+        setTimeout(function () {
+          try {
+            window.close();
+          } catch (e) {
+            // ignore — some browsers refuse to close windows not opened by script
+          }
+        }, 50);
+      })();
+    </script>
+  </body>
+</html>

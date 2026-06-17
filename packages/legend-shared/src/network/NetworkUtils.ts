@@ -250,6 +250,15 @@ export interface ResponseProcessConfig {
   skipProcessing?: boolean | undefined;
   preprocess?: ((response: Response) => void) | undefined;
   autoReAuthenticateUrl?: string | undefined;
+  /**
+   * Programmatic re-authentication hook. When provided, takes precedence
+   * over `autoReAuthenticateUrl` on `401` responses: resolve to `true` to
+   * retry the original request once; resolve to `false` to propagate the
+   * `401` to the caller. The iframe fallback is NOT chained on `false`.
+   *
+   * NOTE: only fired on `401`, not on `status === 0`.
+   */
+  autoReAuthenticate?: (() => Promise<boolean>) | undefined;
 }
 
 export interface RequestProcessConfig {
@@ -502,6 +511,38 @@ export class NetworkClient {
           response.status === 0 ||
           response.status === HttpStatus.UNAUTHORIZED
         ) {
+          // Programmatic re-auth callback takes precedence over the iframe
+          // URL when set: this lets clients implement popup-based or other
+          // user-driven re-auth flows that the iframe path can't cover
+          // (e.g. when the IdP refuses to render in an iframe).
+          //
+          // NOTE: we only invoke the callback on an actual `401`. A `status === 0`
+          // is typically a CORS / network glitch, and firing a visible re-auth
+          // flow (e.g. a popup) on every transient blip would be jarring and
+          // wouldn't fix the underlying problem. The iframe path below keeps
+          // the legacy behavior of attempting re-auth on `status === 0` for
+          // backwards compatibility.
+          if (
+            response.status === HttpStatus.UNAUTHORIZED &&
+            responseProcessConfig?.autoReAuthenticate
+          ) {
+            return responseProcessConfig.autoReAuthenticate().then((ok) => {
+              if (!ok) {
+                // give up — surface the original 401 to the caller. NOTE
+                // that the iframe `autoReAuthenticateUrl` fallback is NOT
+                // chained here: when both are configured the callback is
+                // authoritative for `401`s.
+                return processResponse<T>(
+                  response,
+                  requestInit,
+                  responseProcessConfig,
+                );
+              }
+              return fetch(requestUrl, requestInit).then((resp) =>
+                processResponse<T>(resp, requestInit, responseProcessConfig),
+              );
+            });
+          }
           // NOTE: we might want to consider different handling here rather than just proceeding with a retry
           // this is a good place to add an auto retry/authenticate mechanism
           if (responseProcessConfig?.autoReAuthenticateUrl) {

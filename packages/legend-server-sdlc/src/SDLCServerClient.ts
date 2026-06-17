@@ -109,6 +109,11 @@ export interface SDLCServerClientConfig {
   serverUrl: string;
   baseHeaders?: RequestHeaders | undefined;
   client?: string | undefined;
+  /**
+   * Programmatic re-authentication hook invoked when the SDLC server returns
+   * a `401`. See `AbstractServerClient.autoReAuthenticate` for the contract.
+   */
+  autoReAuthenticate?: (() => Promise<boolean>) | undefined;
 }
 
 export class SDLCServerClient extends AbstractServerClient {
@@ -123,6 +128,7 @@ export class SDLCServerClient extends AbstractServerClient {
     super({
       baseUrl: config.serverUrl,
       baseHeaders: config.baseHeaders,
+      autoReAuthenticate: config.autoReAuthenticate,
     });
     this.env = config.env;
     this.client = config.client;
