@@ -24,9 +24,10 @@ import {
 import {
   DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB,
   DataQualityRelationValidationConfigurationState,
+  DEFAULT_QUERY_LIMIT,
   EXECUTION_TYPE,
 } from './states/DataQualityRelationValidationConfigurationState.js';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BlankPanelContent,
   CaretDownIcon,
@@ -458,6 +459,17 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
     dataQualityRelationValidationConfigurationState.isRunning ||
     dataQualityRelationValidationConfigurationState.isGeneratingPlan;
 
+  const [limitValue, setLimitValue] = useState(
+    dataQualityRelationValidationConfigurationState.queryLimit,
+  );
+
+  const commitLimit = (): void => {
+    const val =
+      isNaN(limitValue) || limitValue < 1 ? DEFAULT_QUERY_LIMIT : limitValue;
+    setLimitValue(val);
+    dataQualityRelationValidationConfigurationState.setQueryLimit(val);
+  };
+
   const cancelRun = applicationStore.guardUnhandledError(() =>
     flowResult(dataQualityRelationValidationConfigurationState.cancelRun()),
   );
@@ -540,6 +552,26 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
         {selectedTab ===
           DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION && (
           <div className="relation-validation-config-editor__actions-bar">
+            <div className="relation-validation-config-editor__actions-bar__limit">
+              <div className="relation-validation-config-editor__actions-bar__limit__label">
+                preview row limit
+              </div>
+              <input
+                className="input--dark relation-validation-config-editor__actions-bar__limit__input"
+                spellCheck={false}
+                type="number"
+                value={Number.isNaN(limitValue) ? '' : limitValue}
+                min={1}
+                placeholder={DEFAULT_QUERY_LIMIT.toString()}
+                onChange={(e) => setLimitValue(parseInt(e.target.value, 10))}
+                onBlur={commitLimit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    commitLimit();
+                  }
+                }}
+              />
+            </div>
             <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               {dataQualityRelationValidationConfigurationState.isRunning ? (
                 <button
