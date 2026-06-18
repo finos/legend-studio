@@ -19,17 +19,22 @@ import type { V1_Type } from './V1_Type.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_GenericType } from './V1_GenericType.js';
 import type { V1_Multiplicity } from '../domain/V1_Multiplicity.js';
+import type { V1_TaggedValue } from '../domain/V1_TaggedValue.js';
 
 export class V1_RelationTypeColumn implements Hashable {
   name!: string;
   genericType!: V1_GenericType;
   multiplicity!: V1_Multiplicity;
+  description?: string | undefined;
+  taggedValues: V1_TaggedValue[] | undefined = undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATION_TYPE,
       this.name,
       this.genericType,
+      this.description,
+      hashArray(this.taggedValues ?? []),
     ]);
   }
 }
