@@ -29,7 +29,7 @@
       height: 2.8rem;
       padding: 0 1rem;
       font-size: 1.2rem;
-      border-bottom: 0.1rem solid var(--color-dark-grey-100);
+      border-bottom: 0.1rem solid var(--color-border-subtle);
     }
   }
 
@@ -65,7 +65,7 @@
     }
 
     &__divider {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
       margin-right: 1rem;
     }
 
@@ -82,8 +82,8 @@
         justify-content: center;
         padding: 0.7rem;
         height: 2.2rem;
-        background: var(--color-dark-grey-280);
-        color: var(--color-light-grey-200);
+        background: var(--color-bg-hover);
+        color: var(--color-text-secondary);
         white-space: nowrap;
         line-height: 1.8rem;
         border-radius: 0.1rem;
@@ -104,7 +104,7 @@
   &__column {
     @include flexVCenter;
 
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
 
     &:hover {
       background: var(--color-dark-blue-shade-100);
@@ -117,18 +117,18 @@
 
       .query-builder-property-expression-badge__action {
         color: var(--color-dark-grey-50);
-        background: var(--color-dark-grey-500);
+        background: var(--color-bg-tag);
       }
     }
 
     &__placeholder--bottom {
       height: 100%;
-      border-bottom: 0.2rem dashed var(--color-light-grey-300);
+      border-bottom: 0.2rem dashed var(--color-border-default);
     }
 
     &__placeholder--top {
       height: 100%;
-      border-top: 0.2rem dashed var(--color-light-grey-300);
+      border-top: 0.2rem dashed var(--color-border-default);
     }
   }
 
@@ -158,7 +158,7 @@
     height: 3.4rem;
 
     .dnd__entry-drag-handle {
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
     }
   }
 
@@ -200,8 +200,8 @@
       padding: 0 1rem;
       font-size: 1.2rem;
       font-weight: 500;
-      background: var(--color-dark-grey-280);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
       border-radius: 0.2rem 0 0 0.2rem;
       white-space: nowrap;
     }
@@ -209,7 +209,7 @@
     &__operator__percentile {
       &__container {
         &__root {
-          background: var(--color-dark-grey-100);
+          background: var(--color-bg-panel-header);
           width: 40rem;
         }
       }
@@ -218,7 +218,7 @@
         font-weight: 700;
         font-size: 1rem;
         font-family: 'Roboto Mono', monospace;
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
         background: var(--color-dark-blue-shade-100);
         border-radius: 1.4rem;
         height: 2.8rem;
@@ -255,7 +255,7 @@
 
         &__label {
           width: 30%;
-          color: var(--color-light-grey-400);
+          color: var(--color-text-muted);
           font-weight: bold;
         }
 
@@ -269,9 +269,9 @@
         padding-right: 2.8rem;
         padding-left: 1rem;
         width: 100%;
-        background: var(--color-dark-grey-85);
+        background: var(--color-bg-panel);
         border-radius: 0.2rem;
-        border: 0.1rem solid var(--color-dark-grey-200);
+        border: 0.1rem solid var(--color-border-default);
       }
     }
 
@@ -282,7 +282,7 @@
       font-size: 1.2rem;
       font-weight: 500;
       padding-right: 1rem;
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-hover);
       color: var(--color-dark-grey-500);
       cursor: pointer;
       position: relative;
@@ -292,7 +292,7 @@
       }
 
       &:hover {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
 
       &--active,
@@ -330,12 +330,12 @@
 
       height: 100%;
       width: 1.8rem;
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
       border-radius: 0 0.2rem 0.2rem 0;
 
       svg {
         font-size: 1.2rem;
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
       }
     }
 
@@ -344,8 +344,8 @@
 
       height: 100%;
       width: 2.8rem;
-      background: var(--color-dark-grey-280);
-      color: var(--color-light-grey-100);
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
       border-radius: 0.2rem 0 0 0.2rem;
 
       svg {
@@ -378,12 +378,12 @@
 
     .query-builder__icon,
     svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &:hover .query-builder__icon,
     &:hover svg {
-      color: var(--color-light-grey-100);
+      color: var(--color-text-primary);
     }
 
     &[disabled] .query-builder__icon,
@@ -458,7 +458,7 @@
       }
 
       &__type-btn {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
       }
 
       &__sortby {
@@ -468,8 +468,8 @@
         padding: 0 1.8rem;
         font-size: 1.2rem;
         font-weight: 500;
-        background: var(--color-dark-grey-280);
-        color: var(--color-light-grey-100);
+        background: var(--color-bg-hover);
+        color: var(--color-text-primary);
         border-radius: 0.2rem 0 0 0.2rem;
         white-space: nowrap;
         width: 3rem;
@@ -482,7 +482,7 @@
         padding: 0 1rem;
         font-size: 1.2rem;
         font-weight: 500;
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
         border-radius: 0 0.2rem 0.2rem 0;
         white-space: nowrap;
         width: 3rem;
@@ -498,8 +498,8 @@
 
         flex: 2.8rem 0 0;
         height: 2.8rem;
-        color: var(--color-light-grey-200);
-        background: var(--color-dark-grey-200);
+        color: var(--color-text-secondary);
+        background: var(--color-bg-tag);
         border-radius: 0.2rem;
         margin-left: 0.5rem;
         cursor: pointer;
@@ -559,7 +559,7 @@
       padding: 0 1rem;
       font-size: 1.2rem;
       color: var(--color-dark-grey-400);
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel-header);
       border-radius: 0.2rem;
     }
 
@@ -572,7 +572,7 @@
       @include flexCenter;
 
       padding: 0.5rem;
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
 
     &__date__column {
@@ -587,7 +587,7 @@
     &__date__column__label__box {
       @include flexVCenter;
 
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
       width: 100%;
       height: 2.8rem;
       margin: 0.3rem;
@@ -597,7 +597,7 @@
     &__date__column__prefix {
       @include flexCenter;
 
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
       width: 2.8rem;
       font-size: 1rem;
     }
@@ -608,7 +608,7 @@
 
       width: calc(100% - 2.8rem);
       border-radius: 0.2rem;
-      color: var(--color-light-grey-0);
+      color: var(--color-text-primary);
       font-size: 1.2rem;
       font-weight: 700;
     }
@@ -640,7 +640,7 @@
 
       svg {
         font-size: 1.5rem;
-        color: var(--color-light-grey-100);
+        color: var(--color-text-primary);
       }
     }
   }
@@ -650,7 +650,7 @@
   margin: 0.3rem;
 
   .dnd__entry-dropzone__placeholder__content {
-    border: 0.2rem dashed var(--color-dark-grey-300);
-    background: var(--color-dark-grey-250);
+    border: 0.2rem dashed var(--color-border-strong);
+    background: var(--color-bg-hover);
   }
 }

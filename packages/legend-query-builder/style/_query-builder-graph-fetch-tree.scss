@@ -33,7 +33,7 @@
     height: 2.8rem;
     margin-top: 0.3rem;
     font-size: 1.2rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-100);
+    border-bottom: 0.1rem solid var(--color-border-subtle);
 
     &__hint-icon {
       @include flexCenter;
@@ -72,12 +72,12 @@
 
       &__label__icon {
         font-size: 1.4rem;
-        color: var(--color-light-grey-180);
+        color: var(--color-text-secondary);
       }
 
       &__label__title {
         margin-left: 0.5rem;
-        color: var(--color-light-grey-180);
+        color: var(--color-text-secondary);
         font-size: 1.2rem;
         font-weight: 500;
       }
@@ -85,12 +85,12 @@
       &__label:hover &__label__icon,
       &__label:hover &__label__title,
       &__dropdown-btn:hover svg {
-        color: var(--color-light-grey-50);
+        color: var(--color-text-primary);
       }
 
       &__label[disabled],
       &__dropdown-btn[disabled] {
-        background: var(--color-dark-grey-250);
+        background: var(--color-bg-hover);
       }
 
       &__label[disabled] &__label__icon,
@@ -142,12 +142,12 @@
     height: 3.4rem;
 
     svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &:hover {
       svg {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -166,13 +166,13 @@
   }
 
   &__expand-icon svg {
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     font-size: 1.2rem;
   }
 
   &__node__label {
     display: flex;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__node__sub-type,
@@ -193,8 +193,8 @@
   }
 
   &__node__type__label {
-    background: var(--color-dark-grey-250);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-hover);
+    color: var(--color-text-secondary);
   }
 
   &__node__sub-type__label {
@@ -234,11 +234,11 @@
       justify-content: space-between;
       height: 1.6rem;
       padding-left: 1rem;
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-hover);
       border-radius: 0.2rem 0.2rem 0.2rem 0;
 
       &__title {
-        color: var(--color-light-grey-300);
+        color: var(--color-text-muted);
         font-size: 1rem;
         font-weight: 500;
       }
@@ -250,7 +250,7 @@
         width: 3rem;
 
         svg {
-          color: var(--color-light-grey-300);
+          color: var(--color-text-muted);
         }
       }
     }
@@ -263,7 +263,7 @@
       flex-direction: column;
       width: 100%;
       padding: 0.5rem 0 0 0.5rem;
-      border-left: 0.5rem solid var(--color-dark-grey-280);
+      border-left: 0.5rem solid var(--color-border-strong);
     }
 
     &__item {
@@ -275,7 +275,7 @@
     &__item__label {
       @include flexCenter;
 
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel-header);
       margin-right: 0.5rem;
     }
 

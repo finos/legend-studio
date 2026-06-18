@@ -26,15 +26,15 @@
   }
 
   &__debug-panel {
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
 
     .panel__header {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-hover);
     }
 
     .panel__content {
       position: relative;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
   }
 
@@ -47,9 +47,9 @@
     height: 100%;
 
     &__header {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
 
       &__title {
         max-width: calc(100% - 11rem);
@@ -57,20 +57,20 @@
     }
 
     &__main-header {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-weight: bold;
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-hover);
     }
 
     &__content {
       position: relative;
       height: calc(100% - 3rem);
       width: 100%;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
       overflow-y: hidden;
 
       & ::-webkit-scrollbar-thumb {
-        background: var(--color-dark-grey-400);
+        background: var(--color-bg-tag);
       }
     }
 
@@ -104,7 +104,7 @@
     align-items: center;
     justify-content: center;
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-200);
+    border-right: 0.1rem solid var(--color-border-default);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -130,12 +130,12 @@
     &__content {
       overflow-y: hidden;
       position: relative;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
       height: calc(100% - 3.4rem);
     }
 
     &__header {
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel-header);
       z-index: 1;
       height: 3.4rem;
       min-height: 3.4rem;
@@ -153,14 +153,14 @@
 
       padding: 0 1rem;
       cursor: pointer;
-      color: var(--color-light-grey-400);
-      background: var(--color-dark-grey-80);
-      border-right: 0.1rem solid var(--color-dark-grey-80);
+      color: var(--color-text-muted);
+      background: var(--color-bg-panel-header);
+      border-right: 0.1rem solid var(--color-border-subtle);
     }
 
     &__header__tab--active {
-      color: var(--color-light-grey-100);
-      background: var(--color-dark-grey-50);
+      color: var(--color-text-primary);
+      background: var(--color-bg-app);
     }
 
     &__header__tab__content {
@@ -185,15 +185,15 @@
         @include flexCenter;
 
         width: 15rem;
-        background: var(--color-dark-grey-100);
-        border-right: 0.1rem solid var(--color-dark-grey-50);
-        border-left: 0.1rem solid var(--color-dark-grey-50);
-        color: var(--color-light-grey-300);
+        background: var(--color-bg-panel-header);
+        border-right: 0.1rem solid var(--color-border-subtle);
+        border-left: 0.1rem solid var(--color-border-subtle);
+        color: var(--color-text-muted);
         cursor: pointer;
       }
 
       &__type:hover {
-        background: var(--color-dark-grey-200);
+        background: var(--color-bg-tag);
       }
 
       &__type__label {
@@ -236,7 +236,7 @@
 
         &--native &__name {
           background: var(--color-blue-100);
-          color: var(--color-light-grey-50);
+          color: var(--color-text-primary);
         }
 
         &--generation {
@@ -246,7 +246,7 @@
 
         &--generation &__name {
           background: var(--color-pink-300);
-          color: var(--color-light-grey-50);
+          color: var(--color-text-primary);
         }
       }
 
@@ -257,7 +257,7 @@
 
       &__option__group__options {
         width: 100%;
-        background: var(--color-dark-grey-100);
+        background: var(--color-bg-panel-header);
       }
 
       &__option {
@@ -273,7 +273,7 @@
 
     &__content__container {
       height: 100%;
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel-header);
 
       .tree-view__node__icon {
         padding: 0;
@@ -328,8 +328,8 @@
   }
 
   &__node__type__label {
-    background: var(--color-dark-grey-350);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-tag);
+    color: var(--color-text-secondary);
   }
 
   &__node__sub-type__label {

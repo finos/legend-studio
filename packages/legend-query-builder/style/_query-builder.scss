@@ -38,7 +38,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
   }
 
   &__main {
@@ -52,7 +52,7 @@
     @include flexVCenter;
 
     height: 3.2rem;
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel-header);
   }
 
   &__header__statuses {
@@ -61,7 +61,7 @@
     height: 2.2rem;
     margin-left: 0.5rem;
     padding: 0 0.2rem;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-tag);
     border-radius: 0.2rem;
     max-width: 50%;
   }
@@ -77,7 +77,7 @@
     }
 
     &--action:hover svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__icon {
@@ -130,12 +130,12 @@
 
     &__label {
       font-size: 1.2rem;
-      color: var(--color-light-grey-180);
+      color: var(--color-text-secondary);
     }
 
     &__icon {
       margin-left: 1rem;
-      color: var(--color-light-grey-180);
+      color: var(--color-text-secondary);
     }
 
     svg {
@@ -164,11 +164,11 @@
       height: 4.5rem;
       min-height: 4.5rem;
       padding: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-muted);
       font-weight: bold;
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel-header);
       border-radius: 0.2rem 0.2rem 0 0;
-      border-top: 0.1rem solid var(--color-dark-grey-200);
+      border-top: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
@@ -176,19 +176,19 @@
 
       padding: 0.7rem;
       height: 2.2rem;
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-hover);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action:hover svg {
-      color: var(--color-light-grey-100);
+      color: var(--color-text-primary);
     }
 
     &__header__action[disabled] svg,
@@ -211,9 +211,9 @@
 
     &__content {
       height: calc(100% - 3.4rem);
-      background: var(--color-dark-grey-80);
+      background: var(--color-bg-panel-header);
       border-radius: 0 0 0.2rem 0.2rem;
-      border-bottom: 0.1rem solid var(--color-dark-grey-85);
+      border-bottom: 0.1rem solid var(--color-border-subtle);
       box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
     }
   }
@@ -224,7 +224,7 @@
 
     height: 2.2rem;
     background: var(--color-blue-100);
-    color: var(--color-light-grey-0);
+    color: var(--color-text-primary);
     padding: 0 0.5rem 0 1rem;
 
     &__left {
@@ -251,14 +251,14 @@
         color: var(--color-dark-shade-300);
 
         &--toggled {
-          color: var(--color-light-grey-0);
+          color: var(--color-text-primary);
         }
       }
     }
 
     &__view-diff-btn {
       &:not([disabled]) {
-        color: var(--color-light-grey-0);
+        color: var(--color-text-primary);
       }
 
       svg {
@@ -270,7 +270,7 @@
       @include flexCenter;
 
       background: none;
-      color: var(--color-light-grey-0);
+      color: var(--color-text-primary);
       cursor: pointer;
       padding: 0 0.5rem;
 
@@ -308,9 +308,9 @@
         width: 100%;
         height: 2.8rem;
         line-height: 2.8rem;
-        background: var(--color-dark-grey-100);
-        border: 0.1rem solid var(--color-dark-grey-300);
-        color: var(--color-light-grey-200);
+        background: var(--color-bg-panel-header);
+        border: 0.1rem solid var(--color-border-strong);
+        color: var(--color-text-secondary);
 
         &:focus {
           border: 0.1rem solid var(--color-blue-200);
@@ -322,7 +322,7 @@
     &__display {
       @include ellipsisTextOverflow;
 
-      color: var(--color-light-grey-0);
+      color: var(--color-text-primary);
       font-size: 1.4rem;
       flex: 4;
       max-width: fit-content;
@@ -356,7 +356,7 @@
 
     justify-content: flex-end;
     height: 3.4rem;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
     padding: 0 0.5rem;
   }
 
@@ -368,7 +368,7 @@
   &__actions {
     @include flexVCenter;
 
-    border-top: 0.1rem solid var(--color-dark-grey-100);
+    border-top: 0.1rem solid var(--color-border-subtle);
     height: 5rem;
     padding-right: 1rem;
     justify-content: flex-end;
@@ -379,15 +379,15 @@
 
       height: 3.6rem;
       border-radius: 0.2rem;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
     }
   }
 
   &__mode {
     @include flexVCenter;
 
-    background: var(--color-dark-grey-250);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-hover);
+    color: var(--color-text-secondary);
     height: 2.2rem;
     font-size: 1.2rem;
     padding: 0.5rem 1rem;
@@ -395,7 +395,7 @@
   }
 
   &__mode:hover {
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-tag);
   }
 
   &__mode--selected,
@@ -405,7 +405,7 @@
 }
 
 .query-builder__dnd__placeholder .dnd__entry-dropzone__placeholder__content {
-  border-color: var(--color-dark-grey-100);
+  border-color: var(--color-border-subtle);
 }
 
 .query-builder__fetch__structure {
@@ -423,8 +423,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: pre;
-    background: var(--color-dark-grey-250);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-hover);
+    color: var(--color-text-secondary);
     height: 2.2rem;
     font-size: 1.2rem;
     padding: 0.5rem 1rem;
@@ -461,7 +461,7 @@
   height: 2.2rem;
   padding: 0 1rem;
   border-radius: 0.2rem;
-  color: var(--color-light-grey-0);
+  color: var(--color-text-primary);
   white-space: nowrap;
 
   &__icon {
@@ -479,7 +479,7 @@
 
 .query-builder__tooltip {
   border-radius: 0.2rem !important;
-  background: var(--color-dark-grey-200) !important;
+  background: var(--color-bg-tag) !important;
   opacity: 0.9 !important;
   transition: none;
   // as this tooltip can contain long documentation, it's best we limit its dimension
@@ -530,7 +530,7 @@
     justify-content: center;
 
     svg {
-      color: var(--color-light-grey-150);
+      color: var(--color-text-secondary);
       display: flex;
       justify-content: center;
 
@@ -549,11 +549,11 @@
   &__taggedValues {
     max-height: 20rem;
     overflow-y: scroll;
-    background-color: var(--color-dark-grey-100);
+    background-color: var(--color-bg-panel-header);
     margin-top: 0.5rem;
     margin-left: 1rem;
     opacity: 0.9;
-    border: 1rem solid var(--color-dark-grey-100);
+    border: 1rem solid var(--color-border-subtle);
 
     &__show-btn {
       height: 1.5rem;
@@ -580,7 +580,7 @@
     height: 4rem;
     width: 100%;
     margin-top: 1.5rem;
-    border: 0.2rem dashed var(--color-dark-grey-200);
+    border: 0.2rem dashed var(--color-border-default);
     color: var(--color-dark-grey-350);
     font-weight: 500;
   }
@@ -597,7 +597,7 @@
 
     width: 100%;
     height: 2.2rem;
-    color: var(--color-light-grey-0);
+    color: var(--color-text-primary);
   }
 
   &__property__info {
@@ -615,7 +615,7 @@
     }
 
     &:hover svg {
-      color: var(--color-light-grey-200) !important;
+      color: var(--color-text-secondary) !important;
     }
   }
 
@@ -628,7 +628,7 @@
     font-weight: 700;
     font-size: 1rem;
     font-family: 'Roboto Mono', monospace;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     background: var(--color-dark-blue-shade-100);
     border-radius: 1.4rem;
 
@@ -640,7 +640,7 @@
 
   &__action--error {
     background: var(--color-red-200);
-    color: var(--color-light-grey-50);
+    color: var(--color-text-primary);
     width: 6rem;
     min-width: 6rem;
 
@@ -652,7 +652,7 @@
     }
 
     &:hover {
-      color: var(--color-light-grey-0);
+      color: var(--color-text-primary);
     }
   }
 }
@@ -708,7 +708,7 @@
     &__content {
       width: 100%;
       height: 100%;
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
   }
 
@@ -719,7 +719,7 @@
     .monaco-editor {
       .margin,
       .monaco-editor-background {
-        background: var(--color-dark-grey-50) !important;
+        background: var(--color-bg-app) !important;
       }
     }
   }
@@ -838,9 +838,9 @@
         height: 2.8rem;
         line-height: 2.8rem;
         width: 100%;
-        background: var(--color-dark-grey-100);
-        border: 0.1rem solid var(--color-dark-grey-300);
-        color: var(--color-light-grey-200);
+        background: var(--color-bg-panel-header);
+        border: 0.1rem solid var(--color-border-strong);
+        color: var(--color-text-secondary);
 
         &:focus {
           border: 0.1rem solid var(--color-blue-200);
@@ -877,7 +877,7 @@
 
   &__lambda-editor {
     height: calc(100% - 3.4rem) !important;
-    border: 0.1rem solid var(--color-dark-grey-280);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0;
   }
 }
@@ -892,7 +892,7 @@
 
   &__icon svg {
     margin-left: 0.5rem;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__icon svg:hover {
@@ -905,7 +905,7 @@
 
   &__item {
     width: 100%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     font-family: monospace;
     font-size: 1.3rem;
@@ -929,7 +929,7 @@
 
   &__icon svg {
     margin-left: 0.5rem;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__icon svg:hover {
@@ -953,7 +953,7 @@
 
   &__icon svg {
     margin-left: 0.5rem;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__icon svg:hover {
@@ -966,7 +966,7 @@
 
   &__item {
     width: 100%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     font-size: 2rem;
     padding: 1rem;
@@ -989,7 +989,7 @@
 
   &__icon svg {
     margin-left: 0.5rem;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__icon svg:hover {
@@ -1006,7 +1006,7 @@
 
   &__item {
     width: 100%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     font-size: 2rem;
     padding: 1rem;
@@ -1029,7 +1029,7 @@
 
   &__icon svg {
     margin-left: 0.5rem;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__icon svg:hover {
@@ -1046,7 +1046,7 @@
 
   &__item {
     width: 100%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     font-size: 2rem;
     padding: 1rem;
@@ -1058,7 +1058,7 @@
     }
 
     &__label {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
   }
 }
@@ -1069,7 +1069,7 @@
 
   &__icon svg {
     margin-left: 0.5rem;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__icon svg:hover {
@@ -1086,7 +1086,7 @@
 
   &__item {
     width: 100%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     font-size: 2rem;
     margin: 1rem 0;
@@ -1110,7 +1110,7 @@
       color: var(--color-white);
 
       &:hover {
-        background: var(--color-dark-grey-200);
+        background: var(--color-bg-tag);
       }
     }
   }
@@ -1139,7 +1139,7 @@
 
   &__icon svg {
     margin-left: 0.5rem;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__icon svg:hover {
@@ -1157,7 +1157,7 @@
 
   &__item {
     width: 100%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     font-size: 1.3rem;
     margin: 0.1rem 0;
@@ -1168,7 +1168,7 @@
     }
 
     &__data-type {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       margin-left: 3%;
 
       &__type {
@@ -1182,7 +1182,7 @@
     }
 
     &__tds {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       margin: 1rem 5rem;
 
       &__table {
@@ -1191,7 +1191,7 @@
     }
 
     &__partial-class {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       margin-left: 0.5%;
     }
   }
@@ -1207,7 +1207,7 @@
 
   &__tree--header {
     margin: 2rem 0 0;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__graph-fetch {
@@ -1237,15 +1237,15 @@
     &__header {
       padding-left: 0.5rem;
       font-weight: bold;
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-hover);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
@@ -1253,7 +1253,7 @@
     }
 
     &__content {
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -1270,7 +1270,7 @@
 
   &__icon svg {
     margin-left: 0.5rem;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__icon svg:hover {
@@ -1283,7 +1283,7 @@
 
   &__item {
     width: 100%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     font-size: 2rem;
     padding: 1rem;
@@ -1316,9 +1316,9 @@
 
     display: inline-flex;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -1341,7 +1341,7 @@
 
     border-radius: 0.2rem;
     margin-left: 1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-muted);
 
     svg {
       font-size: 1.2rem;
@@ -1357,11 +1357,11 @@
       justify-content: space-between;
       height: 1.6rem;
       padding-left: 1rem;
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-hover);
       border-radius: 0.2rem 0.2rem 0.2rem 0;
 
       &__title {
-        color: var(--color-light-grey-300);
+        color: var(--color-text-muted);
         font-size: 1rem;
         font-weight: 500;
       }
@@ -1373,7 +1373,7 @@
         width: 3rem;
 
         svg {
-          color: var(--color-light-grey-300);
+          color: var(--color-text-muted);
         }
       }
     }
@@ -1394,7 +1394,7 @@
     &__item__label {
       @include flexCenter;
 
-      background: var(--color-dark-grey-100);
+      background: var(--color-bg-panel-header);
       margin-right: 0.5rem;
     }
 
@@ -1465,7 +1465,7 @@
     &__label {
       @include flexCenter;
 
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-hover);
       padding: 0 1rem;
       height: 2.2rem;
       border-radius: 0.2rem 0 0 0.2rem;
@@ -1476,7 +1476,7 @@
     &__toggler__btn {
       @include flexVCenter;
 
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-hover);
       padding: 0 0.5rem 0 0;
       height: 2.2rem;
 
@@ -1515,7 +1515,7 @@
     &__label {
       @include flexCenter;
 
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-hover);
       padding: 0 1rem;
       height: 100%;
       border-radius: 0.2rem 0 0 0.2rem;
@@ -1527,7 +1527,7 @@
       height: 100%;
 
       &:not(:focus) {
-        border: 0.1rem solid var(--color-dark-grey-250);
+        border: 0.1rem solid var(--color-border-default);
       }
 
       &[disabled] {
@@ -1561,7 +1561,7 @@
       font-size: 2rem;
       font-weight: bold;
       height: 2.8rem;
-      color: var(--color-light-grey-150);
+      color: var(--color-text-secondary);
       cursor: default;
     }
   }
@@ -1655,7 +1655,7 @@
       gap: 0 1.4rem;
       height: 2.4rem;
       padding: 0 1rem;
-      background: var(--color-light-grey-100);
+      background: var(--color-bg-panel-header);
       border-top: 0.1rem solid var(--color-light-grey-200);
       font-size: 1.2rem;
       font-family: 'Roboto Mono', monospace;
@@ -1707,8 +1707,8 @@
           display: inline-block;
           width: 1rem;
           height: 1rem;
-          border: 0.15rem solid var(--color-light-grey-300);
-          border-top-color: var(--color-dark-grey-400);
+          border: 0.15rem solid var(--color-border-default);
+          border-top-color: var(--color-border-strong);
           border-radius: 50%;
           animation: stats-bar-spin 0.6s linear infinite;
           vertical-align: middle;
@@ -1741,8 +1741,8 @@
         // when the parent item is near the left side of the stats bar.
         left: 0;
         z-index: 100;
-        background: var(--color-light-grey-0);
-        border: 0.1rem solid var(--color-light-grey-300);
+        background: var(--color-bg-app);
+        border: 0.1rem solid var(--color-border-default);
         border-radius: 0.3rem;
         padding: 0.6rem 0.8rem;
         pointer-events: none;
@@ -1774,7 +1774,7 @@
           opacity: 0.8;
 
           &--other {
-            fill: var(--color-light-grey-300);
+            fill: var(--color-text-muted);
             opacity: 1;
           }
 
@@ -1832,7 +1832,7 @@
         display: flex;
         align-items: flex-end;
         flex-shrink: 0;
-        border: 0.1rem solid var(--color-light-grey-300);
+        border: 0.1rem solid var(--color-border-default);
         border-radius: 0.2rem;
         padding: 0.1rem;
         box-sizing: content-box;
@@ -1886,19 +1886,19 @@
 
     &__label__icon {
       font-size: 1.2rem;
-      color: var(--color-light-grey-180);
+      color: var(--color-text-secondary);
     }
 
     &__label__title {
       margin-left: 0.7rem;
-      color: var(--color-light-grey-180);
+      color: var(--color-text-secondary);
       font-size: 1.2rem;
       font-weight: 500;
     }
 
     &__label:hover &__label__icon,
     &__label:hover &__label__title {
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
     }
   }
 
@@ -1910,11 +1910,11 @@
       height: 100%;
       font-size: 1.2rem;
       font-weight: 500;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
       gap: 0.5rem;
 
       & svg {
-        color: var(--color-light-grey-50);
+        color: var(--color-text-primary);
       }
 
       &--green {
@@ -1924,10 +1924,10 @@
       &--green[disabled] {
         opacity: 0.8;
         background: var(--color-green-80) !important;
-        color: var(--color-light-grey-0);
+        color: var(--color-text-primary);
 
         & svg {
-          color: var(--color-light-grey-0);
+          color: var(--color-text-primary);
         }
       }
 
@@ -1942,20 +1942,20 @@
 
     margin-left: 0.5rem;
     height: 100%;
-    border: 0.1rem solid var(--color-dark-grey-280);
-    background: var(--color-dark-grey-280);
-    color: var(--color-light-grey-50);
+    border: 0.1rem solid var(--color-border-strong);
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
 
     &[disabled],
     &[disabled]:hover {
-      background: var(--color-dark-grey-200);
-      border-color: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
+      border-color: var(--color-border-default);
       color: var(--color-dark-grey-500);
       opacity: 0.8;
     }
 
     &:hover {
-      background: var(--color-dark-grey-300);
+      background: var(--color-bg-hover);
     }
 
     &__label {
@@ -2060,7 +2060,7 @@
     }
 
     & ::-webkit-scrollbar-thumb {
-      background: var(--color-dark-grey-400);
+      background: var(--color-bg-tag);
     }
   }
 
@@ -2085,7 +2085,7 @@
 
   &__icon svg {
     margin-left: 0.5rem;
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-text-muted) !important;
   }
 
   &__icon svg:hover {
@@ -2104,7 +2104,7 @@
     width: 100%;
 
     &:hover {
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
     }
 
     .decorationsOverviewRuler {
@@ -2112,12 +2112,12 @@
     }
 
     &__label {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header {
       margin: 1.5rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__btn {
@@ -2125,7 +2125,7 @@
       width: 100%;
       display: block;
       text-align: left;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
       font-family: monospace;
     }
 
@@ -2133,14 +2133,14 @@
     &--active svg,
     &--active:hover {
       background: var(--color-light-blue-450);
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
     }
   }
 }
 
 .query-builder__template--function--editor {
   &__header {
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     padding: 1rem;
     margin: 2rem;
@@ -2172,7 +2172,7 @@
 .query-builder__execution-plan-form--editor {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
+  background: var(--color-bg-app);
 
   .panel {
     height: 100%;
@@ -2180,18 +2180,18 @@
 
     &__header {
       padding-left: 0.5rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-muted);
       font-weight: bold;
-      background: var(--color-dark-grey-50);
-      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
     }
 
     &__header__title__label {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-hover);
     }
 
     &__header__action {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &__header__action[disabled] svg {
@@ -2199,7 +2199,7 @@
     }
 
     &__content {
-      background: var(--color-dark-grey-50);
+      background: var(--color-bg-app);
     }
 
     &__content > div:first-child {
@@ -2235,9 +2235,9 @@
 
     display: inline-flex;
     height: 100%;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-border-subtle);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -2260,7 +2260,7 @@
 
     border-radius: 0.2rem;
     margin-left: 1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-muted);
 
     svg {
       font-size: 1.2rem;
@@ -2299,7 +2299,7 @@
       color: var(--color-dark-grey-300);
       font-weight: 500;
       user-select: none;
-      border: 0.2rem dashed var(--color-dark-grey-200);
+      border: 0.2rem dashed var(--color-border-default);
     }
   }
 
@@ -2328,12 +2328,12 @@
       }
 
       &:hover svg {
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
     }
 
     &:hover {
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
     }
 
     &:hover &__actions {
@@ -2377,7 +2377,7 @@
 
     svg {
       font-size: 1.2rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
   }
 
@@ -2429,7 +2429,7 @@
 
   &__item {
     width: 95%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     padding: 1rem;
     margin: 1% auto 0;
@@ -2445,7 +2445,7 @@
 
   &__item2 {
     width: 95%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     margin: 1% auto 0;
 
@@ -2460,7 +2460,7 @@
 }
 
 .query-builder__lambda-editor {
-  border: 0.1rem solid var(--color-dark-grey-280);
+  border: 0.1rem solid var(--color-border-strong);
 
   &__container {
     height: 100%;
@@ -2471,7 +2471,7 @@
   .monaco-editor {
     .margin,
     .monaco-editor-background {
-      background: var(--color-dark-grey-50) !important;
+      background: var(--color-bg-app) !important;
     }
   }
 }
@@ -2493,7 +2493,7 @@
   &__item {
     width: 95%;
     margin: 1rem 5rem;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     font-size: 2rem;
     padding: 1rem;
@@ -2538,7 +2538,7 @@
 
   &__item {
     width: 50%;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.3rem;
     font-size: 2rem;
     margin: 1rem 0;
@@ -2561,7 +2561,7 @@
       color: var(--color-white);
 
       &:hover {
-        background: var(--color-dark-grey-200);
+        background: var(--color-bg-tag);
       }
     }
   }
@@ -2649,20 +2649,20 @@
 
     justify-content: space-between;
     height: 3.8rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-280);
-    border-top: 0.1rem solid var(--color-dark-grey-280);
+    border-bottom: 0.1rem solid var(--color-border-strong);
+    border-top: 0.1rem solid var(--color-border-strong);
   }
 
   &__tab {
     @include flexVCenter;
 
     padding: 0.5rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-muted);
     user-select: none;
   }
 
   &__tab + &__tab {
-    border-left: 0.1rem solid var(--color-dark-grey-280);
+    border-left: 0.1rem solid var(--color-border-strong);
   }
 
   &__tab__label {
@@ -2710,7 +2710,7 @@
 
   &__content {
     height: calc(100% - 3.8rem);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-border-default);
     position: relative;
   }
 }

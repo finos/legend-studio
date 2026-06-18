@@ -45,7 +45,7 @@
     height: 2rem;
     line-height: 2rem;
     min-width: 0;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     user-select: none;
     width: calc(100% - 2rem);
   }
@@ -64,11 +64,11 @@
 
     svg {
       font-size: 1.3rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &:hover svg {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
 
     &[disabled] svg {
@@ -95,7 +95,7 @@
   &__separator {
     height: 0.1rem;
     width: 100%;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-hover);
     margin: 0.5rem 0;
   }
 
@@ -120,11 +120,11 @@
 
       svg {
         font-size: 1.3rem;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
 
       &:hover svg {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
       }
 
       &[disabled] svg {
@@ -168,7 +168,7 @@
       height: 2rem;
       line-height: 2rem;
       min-width: 0;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       user-select: none;
     }
   }
