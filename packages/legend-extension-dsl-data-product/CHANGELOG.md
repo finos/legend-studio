@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.90
+
+### Patch Changes
+
+- [#5272](https://github.com/finos/legend-studio/pull/5272) [`e804887`](https://github.com/finos/legend-studio/commit/e804887b2cf7e107c27b0451a0e7197ce25ffe7a) ([@TharunRajeev](https://github.com/TharunRajeev)) - Disable Create button if values necessary to the data request tab are not present.
+
 ## 0.0.89
 
 ### Patch Changes
