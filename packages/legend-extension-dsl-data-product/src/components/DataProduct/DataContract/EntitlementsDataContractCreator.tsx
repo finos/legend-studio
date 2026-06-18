@@ -197,6 +197,9 @@ export const EntitlementsDataContractCreator = observer(
             onClick={onCreate}
             variant="contained"
             disabled={
+              !isValid ||
+              !consumer ||
+              !description ||
               dataAccessState.creatingContractState.isInProgress ||
               dataAccessState.creatingWorkflowRequestState.isInProgress ||
               dataAccessState.creatingPermitRequestState.isInProgress
