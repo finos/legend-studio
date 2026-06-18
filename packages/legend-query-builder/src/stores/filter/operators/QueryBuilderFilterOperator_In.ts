@@ -28,6 +28,7 @@ import {
   GenericTypeExplicitReference,
   GenericType,
   Enumeration,
+  getPrimitiveTypeInstanceFromEnum,
   PRIMITIVE_TYPE,
   Multiplicity,
 } from '@finos/legend-graph';
@@ -97,6 +98,15 @@ export class QueryBuilderFilterOperator_In
         if (!collectionType) {
           return false;
         }
+        // Compare standard primitive equivalents so columns declared with a
+        // precise primitive type (e.g. accessor relation columns: Varchar,
+        // BigInt, Timestamp) are still recognized as compatible with the
+        // standard primitives stored in the value collection.
+        const normalizedPropertyTypePath =
+          getStandardPrimitiveTypeEquivalent(propertyType) ?? propertyType.path;
+        const normalizedCollectionTypePath =
+          getStandardPrimitiveTypeEquivalent(collectionType) ??
+          collectionType.path;
         if (
           (
             [
@@ -108,10 +118,7 @@ export class QueryBuilderFilterOperator_In
               PRIMITIVE_TYPE.STRICTDATE,
               PRIMITIVE_TYPE.DATETIME,
             ] as string[]
-          ).includes(
-            getStandardPrimitiveTypeEquivalent(propertyType) ??
-              propertyType.path,
-          )
+          ).includes(normalizedPropertyTypePath)
         ) {
           return (
             [
@@ -123,12 +130,12 @@ export class QueryBuilderFilterOperator_In
               PRIMITIVE_TYPE.STRICTDATE,
               PRIMITIVE_TYPE.DATETIME,
             ] as string[]
-          ).includes(
-            getStandardPrimitiveTypeEquivalent(collectionType) ??
-              collectionType.path,
-          );
+          ).includes(normalizedCollectionTypePath);
         }
-        return collectionType === propertyType;
+        return (
+          collectionType === propertyType ||
+          normalizedPropertyTypePath === normalizedCollectionTypePath
+        );
       } else if (valueSpec instanceof VariableExpression) {
         // check if not a single value
         if (valueSpec.multiplicity.upperBound === 1) {
@@ -144,9 +151,17 @@ export class QueryBuilderFilterOperator_In
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType = filterConditionState.leftConditionType;
+    // Normalize precise primitive types (e.g. Varchar, BigInt) to their
+    // standard equivalent so the collection's generic type matches the
+    // standard primitive values that downstream editors produce.
+    const standardPrimitive = getStandardPrimitiveTypeEquivalent(propertyType);
+    const collectionType =
+      standardPrimitive !== undefined
+        ? getPrimitiveTypeInstanceFromEnum(standardPrimitive)
+        : propertyType;
     return new CollectionInstanceValue(
       Multiplicity.ONE,
-      GenericTypeExplicitReference.create(new GenericType(propertyType)),
+      GenericTypeExplicitReference.create(new GenericType(collectionType)),
     );
   }
 
