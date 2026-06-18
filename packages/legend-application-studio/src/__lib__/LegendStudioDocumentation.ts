@@ -93,8 +93,8 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   CONTEXT_MAPPING_TEST_EDITOR = 'context.mapping-editor.test',
   // application cards
   APPLICATION_PRODUCTION = 'application.production',
-  APPLICATION_SANDBOX = 'application.sandbox',
   APPLICATION_RULE_ENGAGEMENT = 'application.rule-engagement',
+  APPLICATION_FAQ = 'application.faq',
 }
 
 export const CORE_CONTEXTUAL_DOCUMENTATION_CONFIG: ContextualDocumentationConfig =
