@@ -18,8 +18,13 @@ import { test, describe, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
+  CollectionInstanceValue,
   Core_GraphManagerPreset,
   FunctionExpression,
+  PrecisePrimitiveType,
+  PrimitiveInstanceValue,
+  PrimitiveType,
+  PRIMITIVE_TYPE,
   SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import {
@@ -40,17 +45,31 @@ import {
 } from '../query-workflow/QueryBuilderWorkFlowState.js';
 import {
   FilterConditionState,
+  FilterRelationColumnConditionValueState,
   FilterRelationColumnSourceState,
   FilterPropertyExpressionSourceState,
+  FilterValueSpecConditionValueState,
   QueryBuilderFilterTreeConditionNodeData,
 } from '../filter/QueryBuilderFilterState.js';
 import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderRelationColumnProjectionColumnState } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
-import { PostFilterConditionState } from '../fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
+import {
+  PostFilterConditionState,
+  PostFilterValueSpecConditionValueState,
+} from '../fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from '../fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
+import {
+  QueryBuilderFilterOperator_In,
+  QueryBuilderFilterOperator_NotIn,
+} from '../filter/operators/QueryBuilderFilterOperator_In.js';
+import {
+  QueryBuilderPostFilterOperator_In,
+  QueryBuilderPostFilterOperator_NotIn,
+} from '../fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
+import { convertTextToPrimitiveInstanceValue } from '../shared/ValueSpecificationEditorHelper.js';
 
 describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
   test('can create filter condition from a relation column', async () => {
@@ -627,5 +646,455 @@ describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
     );
     expect(operatorLabels).toContain('is empty');
     expect(operatorLabels).toContain('is not empty');
+  });
+
+  test('relation column can be used as the right-hand value of a filter condition', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    const relationType = guaranteeNonNullable(
+      queryBuilderState.sourceRelationType,
+    );
+
+    // Find two columns of the same type so the right-hand drop is type-compatible.
+    let leftCol;
+    let rightCol;
+    for (const a of relationType.columns) {
+      for (const b of relationType.columns) {
+        if (
+          a !== b &&
+          a.genericType.value.rawType === b.genericType.value.rawType
+        ) {
+          leftCol = a;
+          rightCol = b;
+          break;
+        }
+      }
+      if (leftCol && rightCol) {
+        break;
+      }
+    }
+    leftCol = guaranteeNonNullable(leftCol);
+    rightCol = guaranteeNonNullable(rightCol);
+
+    const sourceState = new FilterRelationColumnSourceState(
+      leftCol.name,
+      leftCol.genericType.value.rawType,
+      leftCol.multiplicity,
+    );
+    const filterConditionState = new FilterConditionState(
+      queryBuilderState.filterState,
+      sourceState,
+    );
+
+    // Build the right-hand value from a relation column (the equivalent of
+    // dragging another relation column onto the filter value drop zone).
+    filterConditionState.buildRightConditionValueFromRelationColumn(
+      rightCol.name,
+      rightCol.genericType.value.rawType,
+      rightCol.multiplicity,
+    );
+
+    const rightValue = guaranteeType(
+      filterConditionState.rightConditionValue,
+      FilterRelationColumnConditionValueState,
+    );
+    expect(rightValue.columnName).toBe(rightCol.name);
+    expect(rightValue.type).toBe(rightCol.genericType.value.rawType);
+
+    // Build the operator expression and verify both LHS and RHS reference
+    // relation columns.
+    const expression = guaranteeType(
+      filterConditionState.operator.buildFilterConditionExpression(
+        filterConditionState,
+        'row',
+      ),
+      SimpleFunctionExpression,
+    );
+    expect(expression.parametersValues.length).toBe(2);
+    const lhs = guaranteeType(
+      expression.parametersValues[0],
+      FunctionExpression,
+    );
+    const rhs = guaranteeType(
+      expression.parametersValues[1],
+      FunctionExpression,
+    );
+    expect(lhs.functionName).toBe(leftCol.name);
+    expect(rhs.functionName).toBe(rightCol.name);
+  });
+
+  test('filter `is in list of` / `is not in list of` work for relation columns with a precise primitive type', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    const relationType = guaranteeNonNullable(
+      queryBuilderState.sourceRelationType,
+    );
+
+    // `country` is declared as Varchar (a precise primitive) in TEST_DATA.
+    const varcharColumn = guaranteeNonNullable(
+      relationType.columns.find((c) => c.name === 'country'),
+    );
+    expect(varcharColumn.genericType.value.rawType).toBeInstanceOf(
+      PrecisePrimitiveType,
+    );
+
+    const sourceState = new FilterRelationColumnSourceState(
+      varcharColumn.name,
+      varcharColumn.genericType.value.rawType,
+      varcharColumn.multiplicity,
+    );
+    const filterConditionState = new FilterConditionState(
+      queryBuilderState.filterState,
+      sourceState,
+    );
+
+    // `is in list of` must be offered for a Varchar (precise primitive) column.
+    const operatorLabels = filterConditionState.operators.map((op) =>
+      op.getLabel(),
+    );
+    expect(operatorLabels).toContain('is in list of');
+    expect(operatorLabels).toContain('is not in list of');
+
+    // Switching to `is in list of` must not throw — this is the regression
+    // path that previously bubbled `Cannot get placeholder for type ...`
+    // out of the editor (because the default collection was created with the
+    // precise primitive type on its generic type reference).
+    const inOp = guaranteeNonNullable(
+      filterConditionState.operators.find(
+        (op) => op instanceof QueryBuilderFilterOperator_In,
+      ),
+    );
+    filterConditionState.changeOperator(inOp);
+
+    // The default collection value should be created with the *standard*
+    // primitive equivalent (String for Varchar), so the placeholder lookup
+    // in the collection editor succeeds.
+    const rightValue = guaranteeType(
+      filterConditionState.rightConditionValue,
+      FilterValueSpecConditionValueState,
+    );
+    const collection = guaranteeType(rightValue.value, CollectionInstanceValue);
+    expect(collection.genericType?.value.rawType).toBe(PrimitiveType.STRING);
+
+    // And entries typed into the editor for that column should round-trip
+    // into standard String PrimitiveInstanceValues — keeping the operator's
+    // value compatibility check happy.
+    const entry = guaranteeNonNullable(
+      convertTextToPrimitiveInstanceValue(
+        varcharColumn.genericType.value.rawType,
+        'USA',
+        queryBuilderState.observerContext,
+      ),
+    );
+    expect(entry).toBeInstanceOf(PrimitiveInstanceValue);
+    expect(entry.genericType.value.rawType).toBe(PrimitiveType.STRING);
+    expect(entry.values[0]).toBe('USA');
+
+    collection.values = [entry];
+    expect(
+      inOp.isCompatibleWithFilterConditionValue(filterConditionState),
+    ).toBe(true);
+
+    // The same fix must hold for `is not in list of`.
+    const notInOp = guaranteeNonNullable(
+      filterConditionState.operators.find(
+        (op) => op instanceof QueryBuilderFilterOperator_NotIn,
+      ),
+    );
+    filterConditionState.changeOperator(notInOp);
+    const notInRightValue = guaranteeType(
+      filterConditionState.rightConditionValue,
+      FilterValueSpecConditionValueState,
+    );
+    const notInCollection = guaranteeType(
+      notInRightValue.value,
+      CollectionInstanceValue,
+    );
+    expect(notInCollection.genericType?.value.rawType).toBe(
+      PrimitiveType.STRING,
+    );
+  });
+
+  test('filter `is in list of` default collection uses INTEGER for a BigInt relation column', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    // `year` is declared as BigInt (a precise primitive) in TEST_DATA.
+    const bigIntColumn = guaranteeNonNullable(
+      guaranteeNonNullable(queryBuilderState.sourceRelationType).columns.find(
+        (c) => c.name === 'year',
+      ),
+    );
+    expect(bigIntColumn.genericType.value.rawType).toBeInstanceOf(
+      PrecisePrimitiveType,
+    );
+
+    const filterConditionState = new FilterConditionState(
+      queryBuilderState.filterState,
+      new FilterRelationColumnSourceState(
+        bigIntColumn.name,
+        bigIntColumn.genericType.value.rawType,
+        bigIntColumn.multiplicity,
+      ),
+    );
+    const inOp = guaranteeNonNullable(
+      filterConditionState.operators.find(
+        (op) => op instanceof QueryBuilderFilterOperator_In,
+      ),
+    );
+    filterConditionState.changeOperator(inOp);
+
+    const collection = guaranteeType(
+      guaranteeType(
+        filterConditionState.rightConditionValue,
+        FilterValueSpecConditionValueState,
+      ).value,
+      CollectionInstanceValue,
+    );
+    // BigInt → INTEGER per getCorrespondingStandardPrimitiveType.
+    expect(collection.genericType?.value.rawType).toBe(PrimitiveType.INTEGER);
+
+    // Numeric values typed in flow through as standard INTEGER primitives,
+    // and the value-compatibility check (which compares standard primitive
+    // equivalents) passes.
+    const entry = guaranteeNonNullable(
+      convertTextToPrimitiveInstanceValue(
+        bigIntColumn.genericType.value.rawType,
+        '2024',
+        queryBuilderState.observerContext,
+      ),
+    );
+    expect(entry.genericType.value.rawType).toBe(PrimitiveType.INTEGER);
+    expect(entry.values[0]).toBe(2024);
+
+    collection.values = [entry];
+    expect(
+      inOp.isCompatibleWithFilterConditionValue(filterConditionState),
+    ).toBe(true);
+  });
+
+  test('post-filter `is in list of` / `is not in list of` work for relation projection columns with a precise primitive type', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+
+    // `country` is Varchar; `year` is BigInt — both precise primitives.
+    const varcharColumn = guaranteeNonNullable(
+      guaranteeNonNullable(queryBuilderState.sourceRelationType).columns.find(
+        (c) => c.name === 'country',
+      ),
+    );
+    const bigIntColumn = guaranteeNonNullable(
+      guaranteeNonNullable(queryBuilderState.sourceRelationType).columns.find(
+        (c) => c.name === 'year',
+      ),
+    );
+
+    const varcharColState = new QueryBuilderRelationColumnProjectionColumnState(
+      tdsState,
+      varcharColumn,
+      true,
+    );
+    const bigIntColState = new QueryBuilderRelationColumnProjectionColumnState(
+      tdsState,
+      bigIntColumn,
+      true,
+    );
+
+    const inOp = new QueryBuilderPostFilterOperator_In();
+    const notInOp = new QueryBuilderPostFilterOperator_NotIn();
+
+    // Varchar column => default collection generic type is standard STRING.
+    const varcharIn = new PostFilterConditionState(
+      tdsState.postFilterState,
+      varcharColState,
+      inOp,
+    );
+    const varcharCollection = guaranteeType(
+      inOp.getDefaultFilterConditionValue(varcharIn),
+      CollectionInstanceValue,
+    );
+    expect(varcharCollection.genericType?.value.rawType).toBe(
+      PrimitiveType.STRING,
+    );
+
+    // Adding a String value to the collection passes the compatibility check.
+    const stringEntry = guaranteeNonNullable(
+      convertTextToPrimitiveInstanceValue(
+        varcharColumn.genericType.value.rawType,
+        'USA',
+        queryBuilderState.observerContext,
+      ),
+    );
+    varcharCollection.values = [stringEntry];
+    varcharIn.buildFromValueSpec(varcharCollection);
+    expect(
+      guaranteeType(
+        varcharIn.rightConditionValue,
+        PostFilterValueSpecConditionValueState,
+      ).value,
+    ).toBe(varcharCollection);
+    expect(inOp.isCompatibleWithConditionValue(varcharIn)).toBe(true);
+
+    // BigInt column => default collection generic type is standard INTEGER,
+    // and `is not in list of` uses the same default.
+    const bigIntIn = new PostFilterConditionState(
+      tdsState.postFilterState,
+      bigIntColState,
+      inOp,
+    );
+    const bigIntCollection = guaranteeType(
+      inOp.getDefaultFilterConditionValue(bigIntIn),
+      CollectionInstanceValue,
+    );
+    expect(bigIntCollection.genericType?.value.rawType).toBe(
+      PrimitiveType.INTEGER,
+    );
+
+    const bigIntNotIn = new PostFilterConditionState(
+      tdsState.postFilterState,
+      bigIntColState,
+      notInOp,
+    );
+    const bigIntNotInCollection = guaranteeType(
+      notInOp.getDefaultFilterConditionValue(bigIntNotIn),
+      CollectionInstanceValue,
+    );
+    expect(bigIntNotInCollection.genericType?.value.rawType).toBe(
+      PrimitiveType.INTEGER,
+    );
+
+    // `convertTextToPrimitiveInstanceValue` for a precise INTEGER variant
+    // produces a standard INTEGER primitive (used by the type-list editor).
+    const intEntry = guaranteeNonNullable(
+      convertTextToPrimitiveInstanceValue(
+        bigIntColumn.genericType.value.rawType,
+        '2024',
+        queryBuilderState.observerContext,
+      ),
+    );
+    expect(intEntry.genericType.value.rawType).toBe(PrimitiveType.INTEGER);
+    // Sanity-check the converted PRIMITIVE_TYPE path matches INTEGER.
+    expect(intEntry.genericType.value.rawType.path).toBe(
+      PRIMITIVE_TYPE.INTEGER,
+    );
   });
 });

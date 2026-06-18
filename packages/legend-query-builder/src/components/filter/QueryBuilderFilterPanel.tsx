@@ -66,6 +66,7 @@ import {
   type QueryBuilderFilterState,
   FilterValueSpecConditionValueState,
   FilterPropertyExpressionStateConditionValueState,
+  FilterRelationColumnConditionValueState,
   isCollectionProperty,
   type QueryBuilderFilterValueDropTarget,
   isExistsNodeChild,
@@ -109,6 +110,7 @@ import {
   SimpleFunctionExpression,
   VariableExpression,
   PrimitiveType,
+  PrecisePrimitiveType,
   Class,
   Enumeration,
 } from '@finos/legend-graph';
@@ -177,6 +179,7 @@ export const CAN_DROP_FILTER_NODE_DND_TYPES = [
 export const CAN_DROP_FILTER_VALUE_DND_TYPES = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
 ];
@@ -813,6 +816,55 @@ export const QueryBuilderFilterPropertyExpressionBadge = observer(
   },
 );
 
+export const QueryBuilderFilterRelationColumnBadge = observer(
+  (props: {
+    rightConditionValue: FilterRelationColumnConditionValueState;
+    resetNode: () => void;
+  }) => {
+    const { rightConditionValue, resetNode } = props;
+    const type = rightConditionValue.type;
+
+    return (
+      <div className="query-builder-filter-property-expression-badge">
+        <div className="query-builder-filter-property-expression-badge__content">
+          <div
+            className={clsx(
+              'query-builder-filter-property-expression-badge__type',
+              {
+                'query-builder-filter-property-expression-badge__type--class':
+                  type instanceof Class,
+                'query-builder-filter-property-expression-badge__type--enumeration':
+                  type instanceof Enumeration,
+                'query-builder-filter-property-expression-badge__type--primitive':
+                  type instanceof PrimitiveType ||
+                  type instanceof PrecisePrimitiveType,
+              },
+            )}
+          >
+            {renderPropertyTypeIcon(type)}
+          </div>
+          <div
+            className="query-builder-filter-property-expression-badge__property"
+            title={rightConditionValue.columnName}
+          >
+            <div className="query-builder__property__name__display__content">
+              {rightConditionValue.columnName}
+            </div>
+          </div>
+          <button
+            className="query-builder-filter-property-expression-badge__action"
+            name="Reset"
+            title="Reset"
+            onClick={resetNode}
+          >
+            <RefreshIcon />
+          </button>
+        </div>
+      </div>
+    );
+  },
+);
+
 const canDropTypeOntoNodeValue = (
   type: Type | undefined,
   condition: FilterConditionState,
@@ -917,6 +969,35 @@ const QueryBuilderFilterConditionEditor = observer(
               const variable = (item as QueryBuilderVariableDragSource)
                 .variable;
               node.condition.buildRightConditionValueFromValueSpec(variable);
+            } else if (
+              type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN
+            ) {
+              if (
+                !(
+                  node.condition.sourceState instanceof
+                  FilterRelationColumnSourceState
+                )
+              ) {
+                throw new UnsupportedOperationError(
+                  'Relation columns can only be used as filter condition values when the filter source is a relation column.',
+                );
+              }
+              const columnNode = (
+                item as QueryBuilderExplorerTreeRelationColumnDragSource
+              ).node;
+              if (
+                columnNode.column.multiplicity.upperBound === undefined ||
+                columnNode.column.multiplicity.upperBound > 1
+              ) {
+                throw new UnsupportedOperationError(
+                  'Collection types are not supported for filter condition values.',
+                );
+              }
+              node.condition.buildRightConditionValueFromRelationColumn(
+                columnNode.column.name,
+                columnNode.column.genericType.value.rawType,
+                columnNode.column.multiplicity,
+              );
             } else {
               applicationStore.notificationService.notifyWarning(
                 `Dragging and Dropping ${type} to filter panel is not supported.`,
@@ -1072,6 +1153,26 @@ const QueryBuilderFilterConditionEditor = observer(
               label="Change Filter Value"
             >
               <QueryBuilderFilterPropertyExpressionBadge
+                rightConditionValue={rightConditionValue}
+                resetNode={resetNode}
+              />
+            </PanelEntryDropZonePlaceholder>
+          </div>
+        );
+      } else if (
+        rightConditionValue instanceof FilterRelationColumnConditionValueState
+      ) {
+        return (
+          <div
+            ref={ref}
+            className="query-builder-filter-tree__condition-node__value"
+          >
+            <PanelEntryDropZonePlaceholder
+              isDragOver={isFilterValueDragOver}
+              isDroppable={isFilterValueDroppable}
+              label="Change Filter Value"
+            >
+              <QueryBuilderFilterRelationColumnBadge
                 rightConditionValue={rightConditionValue}
                 resetNode={resetNode}
               />

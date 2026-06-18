@@ -30,7 +30,9 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   getEnumValue,
+  getPrimitiveTypeInstanceFromEnum,
   PrimitiveInstanceValue,
+  PrecisePrimitiveType,
   PrimitiveType,
   PRIMITIVE_TYPE,
   INTERNAL__PropagatedValue,
@@ -484,11 +486,25 @@ export const convertTextToPrimitiveInstanceValue = (
   observerContext: ObserverContext,
 ): PrimitiveInstanceValue | null => {
   let result = null;
+  // Normalize precise primitive types (e.g. Varchar, BigInt, Timestamp) to
+  // their standard primitive equivalent so values entered through the editor
+  // are stored as standard PrimitiveInstanceValue regardless of whether the
+  // source column was declared with a precise type (e.g. accessor relation
+  // columns).
+  let resolvedType: PrimitiveType | undefined;
   if (expectedType instanceof PrimitiveType) {
-    switch (expectedType.path) {
+    resolvedType = expectedType;
+  } else if (expectedType instanceof PrecisePrimitiveType) {
+    const standard = getStandardPrimitiveTypeEquivalent(expectedType);
+    resolvedType = standard
+      ? getPrimitiveTypeInstanceFromEnum(standard)
+      : undefined;
+  }
+  if (resolvedType) {
+    switch (resolvedType.path) {
       case PRIMITIVE_TYPE.STRING: {
         result = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(new GenericType(expectedType)),
+          GenericTypeExplicitReference.create(new GenericType(resolvedType)),
         );
         instanceValue_setValues(result, [value.toString()], observerContext);
         break;
@@ -501,11 +517,11 @@ export const convertTextToPrimitiveInstanceValue = (
           return null;
         }
         const formattedNumber =
-          expectedType.path === PRIMITIVE_TYPE.INTEGER
+          resolvedType.path === PRIMITIVE_TYPE.INTEGER
             ? Number.parseInt(Number(value).toString(), 10)
             : Number(value);
         result = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(new GenericType(expectedType)),
+          GenericTypeExplicitReference.create(new GenericType(resolvedType)),
         );
         instanceValue_setValues(result, [formattedNumber], observerContext);
         break;
@@ -516,7 +532,7 @@ export const convertTextToPrimitiveInstanceValue = (
           return null;
         }
         result = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(new GenericType(expectedType)),
+          GenericTypeExplicitReference.create(new GenericType(resolvedType)),
         );
         instanceValue_setValues(result, [value], observerContext);
         break;
@@ -532,7 +548,7 @@ export const convertTextToPrimitiveInstanceValue = (
           return null;
         }
         result = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(new GenericType(expectedType)),
+          GenericTypeExplicitReference.create(new GenericType(resolvedType)),
         );
         instanceValue_setValues(result, [value], observerContext);
         break;
