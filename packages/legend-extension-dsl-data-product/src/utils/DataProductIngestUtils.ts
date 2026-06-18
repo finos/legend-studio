@@ -184,12 +184,6 @@ export const collectDatasetsFromArtifact = (
   return collectedDatasets;
 };
 
-/**
- * Returns true when the artifact's access point group cannot be walked
- * structurally and we must fall back to lambda walking. This is the case when
- * the target group is missing, has no implementations, or every implementation
- * has neither dependency datasets nor dependency access points.
- */
 export const isLegacyArtifact = (
   artifact: V1_DataProductArtifact,
   accessPointGroupId: string,
@@ -208,20 +202,6 @@ export const isLegacyArtifact = (
   );
 };
 
-/**
- * BFS over a data product's access point graph, resolving the lambda on each
- * `V1_LakehouseAccessPoint` to discover ingest spec paths and same-DP access
- * point references. The engine-bound part — turning a `RawLambda` into a list
- * of `V1_Accessor`s — is injected via `resolveAccessors` so this helper can be
- * unit-tested without booting a `V1_PureGraphManager`.
- *
- * - Ingest accessors contribute their path[0] to the returned set.
- * - Same-DP data product accessors enqueue the access point group containing
- *   the referenced access point.
- * - Cross-DP data product accessors are silently skipped (cross-DP
- *   verification is not yet supported).
- * - Access points are deduped by `${dpPath}::${apId}` to avoid cycles.
- */
 export const walkAccessPointGraphForIngestPaths = (
   v1DataProduct: V1_DataProduct,
   rootAccessPointGroupId: string,
@@ -292,21 +272,12 @@ export const walkAccessPointGraphForIngestPaths = (
   return ingestSpecPaths;
 };
 
-/**
- * Identity of an access point group: a `(deploymentId, dataProductName)` pair
- * uniquely identifies a data product, and `accessPointGroupId` selects the
- * group within it.
- */
 export interface APGCoordinates {
   deploymentId: number;
   dataProductName: string;
   accessPointGroupId: string;
 }
 
-/**
- * Structural port for the lakehouse clients the missing-ingest check needs.
- * `LegendMarketplaceBaseStore` satisfies this with no adapter code.
- */
 export interface MissingIngestsClientProvider {
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly depotServerClient: DepotServerClient;
@@ -314,7 +285,7 @@ export interface MissingIngestsClientProvider {
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
 }
 
-interface ResolvedMissingIngestsContext {
+export interface ResolvedMissingIngestsContext {
   accessPointGroupId: string;
   deploymentId: number;
   dataProductName: string;
@@ -323,22 +294,14 @@ interface ResolvedMissingIngestsContext {
   v1DataProduct?: V1_DataProduct | undefined;
 }
 
-interface RunMissingIngestsCheckDeps {
+export interface RunMissingIngestsCheckDeps {
   lakehouseIngestServerClient: LakehouseIngestServerClient;
   lakehousePlatformServerClient: LakehousePlatformServerClient;
   plugins: PureProtocolProcessorPlugin[];
   getGraphManager?: () => Promise<AbstractPureGraphManager>;
 }
 
-/**
- * Core of the missing-ingest check. Returns ingest definition tails
- * (`package::name`) that this APG references but that could not be verified
- * against the producer's ingest server.
- *
- * On any thrown error returns `[]` rather than propagating; the missing-
- * ingest signal is advisory UI metadata, not a blocking error path.
- */
-async function runMissingIngestsCheck(
+export async function runMissingIngestsCheckForArtifact(
   context: ResolvedMissingIngestsContext,
   deps: RunMissingIngestsCheckDeps,
   token: string | undefined,
@@ -494,11 +457,6 @@ async function runMissingIngestsCheck(
   }
 }
 
-/**
- * Resolves the `V1_DataProduct` referenced by `details` from its origin —
- * either the SDLC-deployed depot project or the in-line ad-hoc definition.
- * Returns `undefined` when the origin type is unsupported.
- */
 export async function getDataProductFromDetails(
   details: V1_EntitlementsDataProductDetails,
   graphManager: V1_PureGraphManager,
@@ -569,15 +527,6 @@ export async function getDataProductFromDetails(
   }
 }
 
-/**
- * APG-driven entry point for the missing-ingest check. Fetches the data
- * product details and depot artifact for `apg`, resolves the `V1_DataProduct`
- * only for legacy artifacts, and runs the verification.
- *
- * Returns `[]` if the data product origin is not SDLC-deployed or any step
- * throws — the missing-ingest signal is advisory UI metadata, not a blocking
- * error path.
- */
 export async function getUnverifiedIngestDefinitionsForAPG(
   apg: APGCoordinates,
   clientProvider: MissingIngestsClientProvider,
@@ -641,7 +590,7 @@ export async function getUnverifiedIngestDefinitionsForAPG(
         )
       : undefined;
 
-    return await runMissingIngestsCheck(
+    return await runMissingIngestsCheckForArtifact(
       {
         accessPointGroupId: apg.accessPointGroupId,
         deploymentId: apg.deploymentId,
@@ -664,11 +613,6 @@ export async function getUnverifiedIngestDefinitionsForAPG(
   }
 }
 
-/**
- * Resolves a data contract id to the `APGCoordinates` it targets, or
- * `undefined` if the contract does not target an access point group (or any
- * step throws).
- */
 export async function getContractAPGCoordinates(
   contractId: string,
   contractClient: LakehouseContractServerClient,

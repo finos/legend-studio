@@ -42,6 +42,7 @@ import {
   V1_liteDataContractsResponseModelSchemaToContracts,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_ResourceType,
+  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -79,7 +80,7 @@ import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '..
 import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
 import { PermitDataAccessRequestState } from './DataAccess/PermitDataAccessRequestState.js';
 import { type DataAccessRequestState } from './DataAccess/DataAccessRequestState.js';
-import { getUnverifiedIngestDefinitionsForAPG } from '../../utils/DataProductIngestUtils.js';
+import { runMissingIngestsCheckForArtifact } from '../../utils/DataProductIngestUtils.js';
 
 export enum DataAccessRequestType {
   CONTRACT = 'CONTRACT',
@@ -711,20 +712,35 @@ export class DataProductDataAccessState {
     accessPointGroupId: string,
     tokenProvider: () => string | undefined,
   ): Promise<string[]> {
-    return getUnverifiedIngestDefinitionsForAPG(
+    const origin = this.entitlementsDataProductDetails.origin;
+    if (!(origin instanceof V1_SdlcDeploymentDataProductOrigin)) {
+      return [];
+    }
+    const artifact =
+      await this.dataProductViewerState.dataProductArtifactPromise;
+    if (!artifact) {
+      return [];
+    }
+    return runMissingIngestsCheckForArtifact(
       {
+        accessPointGroupId,
         deploymentId: this.entitlementsDataProductDetails.deploymentId,
         dataProductName: this.entitlementsDataProductDetails.dataProduct.name,
-        accessPointGroupId,
+        gavCoordinates: {
+          groupId: origin.group,
+          artifactId: origin.artifact,
+          versionId: origin.version,
+        },
+        artifact,
+        v1DataProduct: this.product,
       },
       {
-        lakehouseContractServerClient: this.lakehouseContractServerClient,
-        depotServerClient: this.dataProductViewerState.depotServerClient,
         lakehouseIngestServerClient: this.lakehouseIngestServerClient,
         lakehousePlatformServerClient: this.lakehousePlatformServerClient,
+        plugins:
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+        getGraphManager: async () => this.graphManagerState.graphManager,
       },
-      this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-      async () => this.graphManagerState.graphManager,
       tokenProvider(),
     );
   }
