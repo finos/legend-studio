@@ -72,29 +72,54 @@ export const TEST_DATA__INGEST_DEFINITION = [
 ];
 
 /**
- * An ingest definition with a test suite. The data element must come FIRST in
- * the array so it is indexed into the graph before the ingest element's first-
- * pass builder runs and resolves the `elementPointer` reference.
+ * An ingest definition with a test suite covering both embedded and reference
+ * test data resolvers.
  */
 export const TEST_DATA__INGEST_DEFINITION__TEST_SUITES = [
-  {
-    path: 'model::PersonData',
-    content: {
-      _type: 'dataElement',
-      data: {
-        _type: 'externalFormat',
-        contentType: 'application/json',
-        data: '[]',
-      },
-      name: 'PersonData',
-      package: 'model',
-    },
-    classifierPath: 'meta::pure::data::DataElement',
-  },
   {
     path: 'model::PersonIngest',
     content: {
       _type: 'ingestDefinition',
+      datasets: [
+        {
+          name: 'Person',
+          primaryKey: ['id'],
+          source: {
+            _type: 'serializedSource',
+            schema: {
+              _type: 'relationType',
+              columns: [
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Integer',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [],
+                  },
+                  multiplicity: { lowerBound: 1, upperBound: 1 },
+                  name: 'id',
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'String',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [],
+                  },
+                  multiplicity: { lowerBound: 1, upperBound: 1 },
+                  name: 'name',
+                },
+              ],
+            },
+          },
+        },
+      ],
       name: 'PersonIngest',
       package: 'model',
       testSuites: [
@@ -102,9 +127,30 @@ export const TEST_DATA__INGEST_DEFINITION__TEST_SUITES = [
           id: 'suite_1',
           testData: [
             {
+              _type: 'baseDataResolver',
+              data: {
+                _type: 'relationElementsData',
+                relationElements: [
+                  {
+                    _type: 'relationElement',
+                    columns: ['id', 'name'],
+                    paths: ['Person'],
+                    rows: [
+                      {
+                        values: ['1', 'Alice'],
+                      },
+                    ],
+                  },
+                ],
+              },
+              elementPointer: {
+                path: 'model::PersonIngest',
+              },
+            },
+            {
               _type: 'referenceDataResolver',
               elementPointer: {
-                path: 'model::PersonData',
+                path: 'model::PersonIngest',
               },
             },
           ],

@@ -214,7 +214,7 @@ export const IngestDefinitionEditor = observer(() => {
   };
 
   return (
-    <div className="data-product-editor">
+    <div className="data-product-editor ingest-definition-editor">
       <div className="panel">
         <PanelHeader
           title="Ingest"
@@ -252,7 +252,7 @@ export const IngestDefinitionEditor = observer(() => {
               ))}
             </div>
           </div>
-          <div className="panel" style={{ flex: 1 }}>
+          <div className="panel ingest-definition-editor__main-panel">
             {selectedTab === INGEST_DEFINITION_TAB.DEFINITION && (
               <PanelContent>
                 <PanelHeader title="deployment" darkMode={true}>

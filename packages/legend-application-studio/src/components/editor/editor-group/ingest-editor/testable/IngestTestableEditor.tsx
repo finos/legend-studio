@@ -37,7 +37,6 @@ import {
   PanelHeader,
   PanelHeaderActionItem,
   PanelHeaderActions,
-  PanelLoadingIndicator,
   PlusIcon,
   PlayIcon,
   ResizablePanel,
@@ -794,10 +793,6 @@ export const IngestTestableEditor = observer(
 
     return (
       <Panel className="service-test-suite-editor">
-        <PanelLoadingIndicator
-          isLoading={testableState.runningAllTestsState.isInProgress}
-        />
-
         {testableState.showCreateSuiteModal && (
           <CreateSuiteModal
             testableState={testableState}

@@ -16,6 +16,12 @@
 
 @use 'mixins' as *;
 
+.ingest-definition-editor {
+  &__main-panel {
+    flex: 1;
+  }
+}
+
 .ingestion-modal {
   padding: 0;
   height: 60vh;

@@ -74,14 +74,14 @@ export interface MatViewDataSet {
 }
 
 export class IngestMatViewTest extends AtomicTest implements Hashable {
-  datasetName!: string;
+  datasetId!: string;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.INGEST_MAT_VIEW_TEST,
       this.id,
       this.doc ?? '',
-      this.datasetName,
+      this.datasetId,
       hashArray(this.assertions),
     ]);
   }
@@ -115,6 +115,7 @@ export class IngestDefinition
       CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_PACKAGEABLE_ELEMENT,
       this.path,
       hashObjectWithoutSourceInformation(this.content),
+      hashArray(this.tests),
     ]);
   }
 

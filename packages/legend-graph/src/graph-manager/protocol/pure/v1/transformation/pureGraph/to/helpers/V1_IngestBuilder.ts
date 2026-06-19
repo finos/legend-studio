@@ -20,9 +20,9 @@ import {
   IngestTestSuite,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
-import type {
+import {
   V1_IngestMatViewTest,
-  V1_IngestTestSuite,
+  type V1_IngestTestSuite,
 } from '../../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { V1_buildDataResolver } from './V1_DataResolverBuilderHelper.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
@@ -37,10 +37,7 @@ const V1_buildIngestMatViewTest = (
   test.id = element.id;
   test.__parent = parentSuite;
   test.doc = element.doc;
-  test.datasetName =
-    (element as { datasetId?: string; datasetName?: string }).datasetId ??
-    (element as { datasetId?: string; datasetName?: string }).datasetName ??
-    '';
+  test.datasetId = element.datasetId;
   test.assertions = element.assertions.map((assertion) =>
     V1_buildTestAssertion(assertion, test, context),
   );
@@ -58,12 +55,8 @@ export const V1_buildIngestTestSuite = (
     V1_buildDataResolver(dataResolver, context),
   );
   testSuite.tests = element.tests.map((test) => {
-    if ('datasetId' in test || 'datasetName' in (test as object)) {
-      return V1_buildIngestMatViewTest(
-        test as V1_IngestMatViewTest,
-        testSuite,
-        context,
-      );
+    if (test instanceof V1_IngestMatViewTest) {
+      return V1_buildIngestMatViewTest(test, testSuite, context);
     }
     throw new UnsupportedOperationError(
       'Unable to build ingest test: Unsupported ingest test type',

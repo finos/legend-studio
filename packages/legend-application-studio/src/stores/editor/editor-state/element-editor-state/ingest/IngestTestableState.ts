@@ -29,10 +29,7 @@ import {
   RelationElement,
   RelationElementsData,
   RelationRowTestData,
-  type ReferenceDataResolver,
-  TestError,
-  TestExecuted,
-  TestExecutionStatus,
+  ReferenceDataResolver,
   type TestSuite,
   getAccessorItemLabelForElement,
   observe_RelationElement,
@@ -41,9 +38,7 @@ import {
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
-  ActionState,
   addUniqueEntry,
-  assertErrorThrown,
   deleteEntry,
   noop,
   uuid,
@@ -56,15 +51,11 @@ import {
   observable,
   runInAction,
 } from 'mobx';
-import {
-  testSuite_addTest,
-  testable_setId,
-} from '../../../../graph-modifier/Testable_GraphModifierHelper.js';
+import { testSuite_addTest } from '../../../../graph-modifier/Testable_GraphModifierHelper.js';
 import {
   TestableTestEditorState,
   TestableTestSuiteEditorState,
 } from '../testable/TestableEditorState.js';
-import { TESTABLE_RESULT } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import type { IngestDefinitionEditorState } from './IngestDefinitionEditorState.js';
 import {
@@ -196,23 +187,23 @@ export class IngestTestState extends TestableTestEditorState {
       resetResult: action,
       handleTestResult: action,
       runTest: flow,
-      setDatasetName: action,
+      setDatasetId: action,
     });
 
     this.suiteState = suiteState;
     this.test = test;
-    this.backfillDatasetNameIfMissing();
+    this.backfillDatasetIdIfMissing();
     this.buildTestDataRelationState().catch(noop());
   }
 
-  setDatasetName(val: string): void {
-    this.test.datasetName = val;
+  setDatasetId(val: string): void {
+    this.test.datasetId = val;
     this.resetResult();
   }
 
   get datasetLabel(): string {
-    if (this.test.datasetName) {
-      return this.test.datasetName;
+    if (this.test.datasetId) {
+      return this.test.datasetId;
     }
     const assertion = this.test.assertions.find(
       (candidate): candidate is EqualToRelation =>
@@ -227,23 +218,23 @@ export class IngestTestState extends TestableTestEditorState {
     return availableDatasets[0] ?? 'N/A';
   }
 
-  private backfillDatasetNameIfMissing(): void {
-    if (this.test.datasetName) {
+  private backfillDatasetIdIfMissing(): void {
+    if (this.test.datasetId) {
       return;
     }
     const assertion = this.test.assertions.find(
       (candidate): candidate is EqualToRelation =>
         candidate instanceof EqualToRelation,
     );
-    const fallbackDatasetName = assertion?.expected.paths[0];
-    if (fallbackDatasetName) {
-      this.test.datasetName = fallbackDatasetName;
+    const fallbackDatasetId = assertion?.expected.paths[0];
+    if (fallbackDatasetId) {
+      this.test.datasetId = fallbackDatasetId;
       return;
     }
     const availableDatasets =
       this.suiteState.testableState.ingestDefinitionEditorState.getMatviewFuncNames();
     if (availableDatasets[0]) {
-      this.test.datasetName = availableDatasets[0];
+      this.test.datasetId = availableDatasets[0];
     }
   }
 
@@ -427,7 +418,7 @@ export class IngestTestDataState {
         .filter(
           (testData): testData is BaseDataResolver | ReferenceDataResolver =>
             testData instanceof BaseDataResolver ||
-            testData.constructor.name === 'ReferenceDataResolver',
+            testData instanceof ReferenceDataResolver,
         )
         .map((testData) => testData.element.value.path),
     );
@@ -526,7 +517,6 @@ export class IngestTestSuiteState extends TestableTestSuiteEditorState {
       deleteTest: action,
       removeTestState: action,
       addNewTest: flow,
-      runSuite: flow,
       runFailingTests: flow,
       buildTestStates: action,
     });
@@ -547,12 +537,12 @@ export class IngestTestSuiteState extends TestableTestSuiteEditorState {
   buildTestStates(): void {
     this.suite.tests.forEach((test) => {
       test.__parent = this.suite;
-      if (test instanceof IngestMatViewTest && !test.datasetName) {
+      if (test instanceof IngestMatViewTest && !test.datasetId) {
         const relationAssertion = test.assertions.find(
           (candidate): candidate is EqualToRelation =>
             candidate instanceof EqualToRelation,
         );
-        test.datasetName =
+        test.datasetId =
           relationAssertion?.expected.paths[0] ??
           this.testableState.datasetNames[0] ??
           '';
@@ -571,29 +561,6 @@ export class IngestTestSuiteState extends TestableTestSuiteEditorState {
       // Ingest requires at least one test per suite; remove emptied suites.
       this.testableState.deleteSuite(this);
     }
-  }
-
-  get suiteResult(): TESTABLE_RESULT {
-    let hasError = false;
-    let hasFailure = false;
-    for (const testState of this.testStates) {
-      const result = testState.testResultState.result;
-      if (result instanceof TestError) {
-        hasError = true;
-      } else if (
-        result instanceof TestExecuted &&
-        result.testExecutionStatus === TestExecutionStatus.FAIL
-      ) {
-        hasFailure = true;
-      }
-    }
-    if (hasError) {
-      return TESTABLE_RESULT.ERROR;
-    }
-    if (hasFailure) {
-      return TESTABLE_RESULT.FAILED;
-    }
-    return TESTABLE_RESULT.PASSED;
   }
 
   *addNewTest(
@@ -708,7 +675,7 @@ export class IngestTestSuiteState extends TestableTestSuiteEditorState {
 
     const test = new IngestMatViewTest();
     test.id = testName;
-    test.datasetName = datasetName;
+    test.datasetId = datasetName;
     test.__parent = this.suite;
 
     const assertion = new EqualToRelation();
@@ -740,7 +707,6 @@ export class IngestTestableState {
 
   suiteStates: IngestTestSuiteState[] = [];
   selectedSuiteState: IngestTestSuiteState | undefined;
-  runningAllTestsState = ActionState.create();
   showCreateSuiteModal = false;
   showCreateTestModal = false;
   suiteToRename: TestSuite | undefined;
@@ -760,7 +726,6 @@ export class IngestTestableState {
       init: action,
       createSuite: flow,
       deleteSuite: action,
-      runAllTests: flow,
     });
 
     this.editorStore = ingestDefinitionEditorState.editorStore;
@@ -837,28 +802,5 @@ export class IngestTestableState {
     if (this.selectedSuiteState === suiteState) {
       this.selectedSuiteState = this.suiteStates[0];
     }
-  }
-
-  *runAllTests(): GeneratorFn<void> {
-    try {
-      this.runningAllTestsState.inProgress();
-      for (const suiteState of this.suiteStates) {
-        if (suiteState.suite.tests.length > 0) {
-          yield flowResult(suiteState.runSuite());
-        }
-      }
-      this.runningAllTestsState.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.runningAllTestsState.fail();
-    }
-  }
-
-  renameSuite(suite: TestSuite, val: string): void {
-    testable_setId(suite, val);
-    runInAction(() => {
-      this.suiteToRename = undefined;
-    });
   }
 }

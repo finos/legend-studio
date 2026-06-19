@@ -1677,6 +1677,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) =>
+        data.INTERNAL__unknownElements.filter(
+          (element): element is V1_IngestDefinition =>
+            element instanceof V1_IngestDefinition,
+        ),
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
+    );
+
     for (const builder of this.graphBuilderExtensions
       .sortedExtraElementBuilders) {
       const getElements = (

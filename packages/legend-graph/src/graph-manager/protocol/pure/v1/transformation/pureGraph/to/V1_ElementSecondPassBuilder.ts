@@ -114,6 +114,8 @@ import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElemen
 import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 import type { V1_SnowflakeM2MUdf } from '../../../model/packageableElements/function/V1_SnowflakeM2MUdf.js';
 import type { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
+import { V1_buildIngestTestSuite } from './helpers/V1_IngestBuilder.js';
+import { IngestDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
   V1_buildHostedServiceDeploymentConfiguration,
   V1_buildSnowflakeAppDeploymentConfiguration,
@@ -182,7 +184,15 @@ export class V1_ElementSecondPassBuilder
   }
 
   visit_IngestDefinition(element: V1_IngestDefinition): void {
-    throw new UnsupportedOperationError();
+    const ingest = guaranteeNonNullable(
+      this.context.currentSubGraph.getOwnNullableElement(
+        V1_buildFullPath(element.package, element.name),
+      ),
+    );
+    const metamodel = guaranteeType(ingest, IngestDefinition);
+    metamodel.tests = element.testSuites.map((suite) =>
+      V1_buildIngestTestSuite(suite, this.context),
+    );
   }
 
   visit_INTERNAL__UnknownFunctionActivator(

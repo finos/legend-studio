@@ -67,7 +67,7 @@ export const observe_IngestMatViewTest = skipObserved(
     makeObservable(metamodel, {
       id: observable,
       doc: observable,
-      datasetName: observable,
+      datasetId: observable,
       assertions: observable,
       hashCode: computed,
     });

@@ -33,7 +33,7 @@ const V1_transformIngestMatViewTest = (
   const test = new V1_IngestMatViewTest();
   test.id = element.id;
   test.doc = element.doc;
-  test.datasetId = element.datasetName;
+  test.datasetId = element.datasetId;
   test.assertions = element.assertions.map(V1_transformTestAssertion);
   return test;
 };

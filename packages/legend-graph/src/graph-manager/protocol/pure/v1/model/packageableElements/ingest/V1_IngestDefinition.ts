@@ -19,7 +19,10 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_RelationTypeColumn } from '../type/V1_RelationType.js';
 import { V1_INTERNAL__UnknownPackageableElement } from '../V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_PackageableElementVisitor } from '../V1_PackageableElement.js';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
 import { V1_AtomicTest } from '../../test/V1_AtomicTest.js';
 import { V1_TestSuite } from '../../test/V1_TestSuite.js';
 import type { V1_DataResolver } from '../../data/V1_DataResolver.js';
@@ -28,6 +31,16 @@ export const V1_INGEST_DEFINITION_TYPE = 'ingestDefinition';
 
 export class V1_IngestDefinition extends V1_INTERNAL__UnknownPackageableElement {
   appDirDeployment: V1_AppDirNode | undefined;
+  testSuites: V1_IngestTestSuite[] = [];
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_PACKAGEABLE_ELEMENT,
+      this.path,
+      hashObjectWithoutSourceInformation(this.content),
+      hashArray(this.testSuites),
+    ]);
+  }
 
   override accept_PackageableElementVisitor<T>(
     visitor: V1_PackageableElementVisitor<T>,

@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  assertNonEmptyString,
-  isNonNullable,
-  returnUndefOnError,
-} from '@finos/legend-shared';
+import { assertNonEmptyString, isNonNullable } from '@finos/legend-shared';
 import type { PackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { Profile } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import { Enumeration } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -103,8 +99,6 @@ import {
 import type { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 import { RawLambda } from '../../../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
-import { V1_deserializeIngestDefinitionContent } from '../../pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
-import { V1_buildIngestTestSuite } from './helpers/V1_IngestBuilder.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -240,15 +234,6 @@ export class V1_ElementFirstPassBuilder
         })
         .filter(isNonNullable);
       metamodel.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS = matViewDataSets;
-    }
-
-    const parsedContent = returnUndefOnError(() =>
-      V1_deserializeIngestDefinitionContent(element.content),
-    );
-    if (parsedContent?.testSuites?.length) {
-      metamodel.tests = parsedContent.testSuites.map((suite) =>
-        V1_buildIngestTestSuite(suite, this.context),
-      );
     }
 
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
