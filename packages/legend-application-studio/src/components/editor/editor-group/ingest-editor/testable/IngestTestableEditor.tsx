@@ -17,13 +17,11 @@
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import {
-  BlankPanelContent,
   BlankPanelPlaceholder,
   clsx,
   ContextMenu,
   CustomSelectorInput,
   Dialog,
-  ErrorWarnIcon,
   MenuContent,
   MenuContentItem,
   Modal,
@@ -38,37 +36,21 @@ import {
   PanelHeaderActionItem,
   PanelHeaderActions,
   PlusIcon,
-  PlayIcon,
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizablePanelSplitter,
-  ResizablePanelSplitterLine,
-  RunAllIcon,
-  TimesIcon,
 } from '@finos/legend-art';
 import type {
-  IngestElementTestDataState,
-  IngestTestDataState,
-  IngestTestState,
-  IngestTestSuiteState,
   IngestTestableState,
+  IngestTestSuiteState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/ingest/IngestTestableState.js';
 import { forwardRef, useRef, useState } from 'react';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
 import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
-import {
-  RenameModal,
-  TestAssertionEditor,
-} from '../../testable/TestableSharedComponents.js';
-import { getTestableResultIcon } from '../../../side-bar/testable/GlobalTestRunner.js';
-import {
-  TESTABLE_RESULT,
-  getTestableResultFromTestResult,
-} from '../../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
+import { RenameModal } from '../../testable/TestableSharedComponents.js';
 import type { IngestTestSuite } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { testSuite_setId } from '../../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
-import { RelationElementsDataEditor } from '../../data-editor/RelationElementsDataEditor.js';
+import { LakehouseTestSuiteEditor } from '../../testable/LakehouseTestableEditor.js';
+
+// ─── Create Suite Modal ───────────────────────────────────────────────────────
 
 interface ItemOption {
   value: string;
@@ -193,6 +175,8 @@ const CreateSuiteModal = observer(
   },
 );
 
+// ─── Create Test Modal ────────────────────────────────────────────────────────
+
 const CreateTestModal = observer(
   (props: { suiteState: IngestTestSuiteState; onClose: () => void }) => {
     const { suiteState, onClose } = props;
@@ -299,451 +283,7 @@ const CreateTestModal = observer(
   },
 );
 
-const ElementTestDataItem = observer(
-  (props: {
-    elementState: IngestElementTestDataState;
-    testDataState: IngestTestDataState;
-    isReadOnly: boolean;
-  }) => {
-    const { elementState, testDataState, isReadOnly } = props;
-    const isActive =
-      testDataState.selectedElementTestDataState === elementState;
-
-    const select = (): void =>
-      testDataState.setSelectedElementTestDataState(elementState);
-
-    return (
-      <div
-        className={clsx('testable-test-explorer__item', {
-          'testable-test-explorer__item--active': isActive,
-        })}
-      >
-        <div
-          className="testable-test-explorer__item__label"
-          onClick={select}
-          tabIndex={-1}
-        >
-          <div className="testable-test-explorer__item__label__text">
-            <span title={elementState.element.path}>
-              {elementState.element.name}
-            </span>
-          </div>
-          {!isReadOnly && (
-            <div className="mapping-test-explorer__item__actions">
-              <button
-                className="mapping-test-explorer__item__action"
-                onClick={(event): void => {
-                  event.stopPropagation();
-                  testDataState.deleteElement(elementState);
-                }}
-                tabIndex={-1}
-                title="Delete"
-              >
-                <TimesIcon />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  },
-);
-
-const ElementTestDataEditor = observer(
-  (props: {
-    elementState: IngestElementTestDataState;
-    isReadOnly: boolean;
-  }) => {
-    const { elementState, isReadOnly } = props;
-    const dataState = elementState.relationElementsDataState;
-
-    if (!dataState) {
-      return (
-        <BlankPanelContent>No relation data for this element</BlankPanelContent>
-      );
-    }
-
-    return (
-      <RelationElementsDataEditor
-        dataState={dataState}
-        isReadOnly={isReadOnly}
-        hideColumnDefinitions={true}
-      />
-    );
-  },
-);
-
-const AddElementModal = observer(
-  (props: { testDataState: IngestTestDataState }) => {
-    const { testDataState } = props;
-    const applicationStore = testDataState.editorStore.applicationStore;
-    const options = testDataState.availableElementsToAdd.map((element) => ({
-      value: element.path,
-      label: element.path,
-    }));
-    const [selectedPath, setSelectedPath] = useState<string | undefined>(
-      options[0]?.value,
-    );
-    const close = (): void => testDataState.setShowAddElementModal(false);
-    const add = (): void => {
-      if (selectedPath) {
-        testDataState.addElement(selectedPath);
-        close();
-      }
-    };
-    const onChange = (value: { label: string; value: string } | null): void => {
-      setSelectedPath(value?.value);
-    };
-
-    return (
-      <Dialog
-        open={testDataState.showAddElementModal}
-        onClose={close}
-        classes={{ container: 'search-modal__container' }}
-        slotProps={{
-          paper: {
-            classes: { root: 'search-modal__inner-container' },
-          },
-        }}
-      >
-        <Modal
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-        >
-          <ModalHeader>
-            <ModalTitle title="Add Element" />
-          </ModalHeader>
-          <ModalBody>
-            <CustomSelectorInput
-              className="panel__content__form__section__dropdown"
-              options={options}
-              onChange={onChange}
-              value={
-                selectedPath
-                  ? { value: selectedPath, label: selectedPath }
-                  : null
-              }
-              placeholder="Select element..."
-              darkMode={
-                !applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-            />
-          </ModalBody>
-          <ModalFooter>
-            <ModalFooterButton
-              disabled={!selectedPath}
-              onClick={add}
-              text="Add"
-            />
-            <ModalFooterButton onClick={close} text="Close" type="secondary" />
-          </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
-const IngestTestDataEditor = observer(
-  (props: { testDataState: IngestTestDataState; isReadOnly: boolean }) => {
-    const { testDataState, isReadOnly } = props;
-
-    const addElement = (): void => {
-      if (testDataState.availableElementsToAdd.length === 0) {
-        testDataState.editorStore.applicationStore.notificationService.notifyWarning(
-          'No elements available to add',
-        );
-        return;
-      }
-      testDataState.setShowAddElementModal(true);
-    };
-
-    const hasTestData = testDataState.elementTestDataStates.length > 0;
-
-    return (
-      <div
-        className={clsx('service-test-data-editor panel', {
-          'service-test-data-editor--no-data': !hasTestData,
-        })}
-      >
-        <div className="service-test-data-editor__data">
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel minSize={100} size={180}>
-              <div className="binding-editor__header">
-                <div className="binding-editor__header__title">
-                  <div className="panel__header__title__content">Test Data</div>
-                </div>
-                {!isReadOnly && (
-                  <div className="panel__header__actions">
-                    <button
-                      className="panel__header__action"
-                      tabIndex={-1}
-                      onClick={addElement}
-                      title="Add Element"
-                    >
-                      <PlusIcon />
-                    </button>
-                  </div>
-                )}
-              </div>
-              {!hasTestData ? (
-                <div className="service-test-data-editor__warning">
-                  <ErrorWarnIcon />
-                  <span>Add an element to configure test data</span>
-                </div>
-              ) : (
-                <div>
-                  {testDataState.elementTestDataStates.map((elementState) => (
-                    <ElementTestDataItem
-                      key={elementState.element.path}
-                      elementState={elementState}
-                      testDataState={testDataState}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                </div>
-              )}
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={200}>
-              {testDataState.selectedElementTestDataState ? (
-                <ElementTestDataEditor
-                  elementState={testDataState.selectedElementTestDataState}
-                  isReadOnly={isReadOnly}
-                />
-              ) : (
-                <BlankPanelContent>
-                  Select an element to configure its test data
-                </BlankPanelContent>
-              )}
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
-        {testDataState.showAddElementModal && (
-          <AddElementModal testDataState={testDataState} />
-        )}
-      </div>
-    );
-  },
-);
-
-const TestItem = observer(
-  (props: {
-    testState: IngestTestState;
-    suiteState: IngestTestSuiteState;
-    isReadOnly: boolean;
-  }) => {
-    const { testState, suiteState, isReadOnly } = props;
-    const isActive = suiteState.selectTestState === testState;
-    const isRunning = testState.runningTestAction.isInProgress;
-    const _testableResult = getTestableResultFromTestResult(
-      testState.testResultState.result,
-    );
-    const testResult = isRunning
-      ? TESTABLE_RESULT.IN_PROGRESS
-      : _testableResult;
-
-    const select = (): void => suiteState.changeTest(testState.test);
-    const runTest = (): void => {
-      flowResult(testState.runTest()).catch(
-        testState.editorStore.applicationStore.alertUnhandledError,
-      );
-    };
-    const deleteTest = (): void => {
-      if (!isReadOnly) {
-        suiteState.deleteTest(testState.test);
-      }
-    };
-
-    return (
-      <div
-        className={clsx('testable-test-explorer__item', {
-          'testable-test-explorer__item--active': isActive,
-        })}
-      >
-        <div
-          className="testable-test-explorer__item__label"
-          onClick={select}
-          tabIndex={-1}
-        >
-          <div className="testable-test-explorer__item__label__icon">
-            {getTestableResultIcon(testResult)}
-          </div>
-          <div className="testable-test-explorer__item__label__text">
-            {testState.test.id}
-          </div>
-        </div>
-        <div className="mapping-test-explorer__item__actions">
-          <button
-            className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
-            onClick={runTest}
-            disabled={isRunning}
-            tabIndex={-1}
-            title={`Run test ${testState.test.id}`}
-          >
-            <PlayIcon />
-          </button>
-          {!isReadOnly && (
-            <button
-              className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
-              onClick={deleteTest}
-              tabIndex={-1}
-              title={`Delete test ${testState.test.id}`}
-            >
-              <TimesIcon />
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  },
-);
-
-const IngestTestEditor = observer(
-  (props: { testState: IngestTestState; isReadOnly: boolean }) => {
-    const { testState } = props;
-    const selectedAssertion = testState.selectedAsertionState;
-
-    return (
-      <div className="function-test-editor panel">
-        <div className="panel__header">
-          <div className="panel__header service-test-editor__header--with-tabs">
-            <div className="panel__header__title__content">Assertion</div>
-          </div>
-        </div>
-        <div className="panel">
-          {selectedAssertion && (
-            <TestAssertionEditor testAssertionState={selectedAssertion} />
-          )}
-          {!selectedAssertion && (
-            <BlankPanelPlaceholder
-              text="No assertion"
-              tooltipText="No assertion configured for this test"
-            />
-          )}
-        </div>
-      </div>
-    );
-  },
-);
-
-const IngestTestsEditor = observer(
-  (props: {
-    suiteState: IngestTestSuiteState;
-    testableState: IngestTestableState;
-    isReadOnly: boolean;
-  }) => {
-    const { suiteState, testableState, isReadOnly } = props;
-    const selectedTest = suiteState.selectTestState;
-
-    return (
-      <div className="panel service-test-editor">
-        <div className="service-test-editor__content">
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel minSize={100} size={200}>
-              <div className="binding-editor__header">
-                <div className="binding-editor__header__title">
-                  <div className="panel__header__title__content">Tests</div>
-                </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action testable-test-explorer__play__all__icon"
-                    tabIndex={-1}
-                    onClick={(): void => {
-                      flowResult(suiteState.runSuite()).catch(
-                        testableState.editorStore.applicationStore
-                          .alertUnhandledError,
-                      );
-                    }}
-                    disabled={
-                      suiteState.runningSuiteState.isInProgress ||
-                      suiteState.suite.tests.length === 0
-                    }
-                    title="Run all tests in this suite"
-                  >
-                    <RunAllIcon />
-                  </button>
-                  {!isReadOnly && (
-                    <button
-                      className="panel__header__action"
-                      tabIndex={-1}
-                      onClick={(): void =>
-                        testableState.setShowCreateTestModal(true)
-                      }
-                      title="Add test to this suite"
-                    >
-                      <PlusIcon />
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div>
-                {suiteState.testStates.map((testState) => (
-                  <TestItem
-                    key={testState.test.id}
-                    testState={testState}
-                    suiteState={suiteState}
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-              </div>
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={56}>
-              {selectedTest ? (
-                <IngestTestEditor
-                  testState={selectedTest}
-                  isReadOnly={isReadOnly}
-                />
-              ) : (
-                <BlankPanelPlaceholder
-                  text="Select a test"
-                  tooltipText="Select a test from the list above"
-                />
-              )}
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
-      </div>
-    );
-  },
-);
-
-const IngestTestSuiteEditor = observer(
-  (props: { suiteState: IngestTestSuiteState }) => {
-    const { suiteState } = props;
-    const testableState = suiteState.testableState;
-    const isReadOnly = testableState.ingestDefinitionEditorState.isReadOnly;
-
-    return (
-      <div className="service-test-suite-editor">
-        <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel size={580} minSize={28}>
-            <IngestTestDataEditor
-              testDataState={suiteState.testDataState}
-              isReadOnly={isReadOnly}
-            />
-          </ResizablePanel>
-          <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-          </ResizablePanelSplitter>
-          <ResizablePanel minSize={56}>
-            <IngestTestsEditor
-              suiteState={suiteState}
-              testableState={testableState}
-              isReadOnly={isReadOnly}
-            />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    );
-  },
-);
+// ─── Suite Tab Context Menu ───────────────────────────────────────────────────
 
 const SuiteHeaderTabContextMenu = observer(
   forwardRef<
@@ -772,6 +312,8 @@ const SuiteHeaderTabContextMenu = observer(
     );
   }),
 );
+
+// ─── Main Testing Tab ─────────────────────────────────────────────────────────
 
 export const IngestTestableEditor = observer(
   (props: { testableState: IngestTestableState }) => {
@@ -846,7 +388,11 @@ export const IngestTestableEditor = observer(
         </PanelHeader>
         <Panel className="service-test-suite-editor">
           {selectedSuiteState && (
-            <IngestTestSuiteEditor suiteState={selectedSuiteState} />
+            <LakehouseTestSuiteEditor
+              suiteState={selectedSuiteState}
+              testableState={testableState}
+              isReadOnly={isReadOnly}
+            />
           )}
           {!ingest.tests.length && (
             <BlankPanelPlaceholder

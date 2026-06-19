@@ -16,12 +16,10 @@
 
 import {
   type Accessor,
-  type AccessorOwner,
-  type AbstractPureGraphManager,
   BaseDataResolver,
   DataProduct,
   EqualToRelation,
-  IngestDefinition,
+  type IngestDefinition,
   IngestMatViewTest,
   IngestTestSuite,
   PackageableElementExplicitReference,
@@ -31,7 +29,6 @@ import {
   RelationRowTestData,
   ReferenceDataResolver,
   type TestSuite,
-  getAccessorItemLabelForElement,
   observe_RelationElement,
   observe_RelationElementsData,
   observe_RelationRowTestData,
@@ -58,10 +55,17 @@ import {
 } from '../testable/TestableEditorState.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import type { IngestDefinitionEditorState } from './IngestDefinitionEditorState.js';
+import { RelationElementState } from '../data/EmbeddedDataState.js';
 import {
-  RelationElementsDataState,
-  RelationElementState,
-} from '../data/EmbeddedDataState.js';
+  buildRelationElementsDataWithColumns,
+  createEmptyRelationElement,
+  isIngestOrDataProductAccessor,
+  LakehouseElementTestDataState,
+} from '../testable/LakehouseTestableUtils.js';
+
+export type { LakehouseElementTestDataState as IngestElementTestDataState };
+
+// ─── Ingest-specific helpers ──────────────────────────────────────────────────
 
 const createExpectedRelationElement = (
   datasetName: string,
@@ -74,67 +78,6 @@ const createExpectedRelationElement = (
   expected.columns = columns;
   expected.rows = [row];
   return observe_RelationElement(expected);
-};
-
-const createEmptyRelationElement = (
-  itemId: string,
-  columns: string[] = [],
-): RelationElement => {
-  const row = observe_RelationRowTestData(new RelationRowTestData());
-  row.values = columns.map(() => '');
-  const relationElement = new RelationElement();
-  relationElement.paths = [itemId];
-  relationElement.columns = columns;
-  relationElement.rows = [row];
-  return observe_RelationElement(relationElement);
-};
-
-const buildRelationElementsDataWithColumns = (
-  accessors: Accessor[],
-): RelationElementsData => {
-  const relationElementsData = new RelationElementsData();
-  relationElementsData.relationElements = accessors.map((accessor) => {
-    const itemId = accessor.accessor || 'UNKNOWN';
-    const columns = accessor.relationType.columns.map((column) => column.name);
-    return createEmptyRelationElement(itemId, columns);
-  });
-  return relationElementsData;
-};
-
-const isIngestOrDataProductAccessor = (
-  accessor: Accessor,
-): accessor is Accessor =>
-  accessor.parentElement instanceof DataProduct ||
-  accessor.parentElement instanceof IngestDefinition;
-
-interface ElementDataItem {
-  id: string;
-  label: string;
-}
-
-const getElementDataItems = (
-  element: PackageableElement,
-  graphManager: AbstractPureGraphManager,
-): ElementDataItem[] => {
-  if (element instanceof DataProduct) {
-    return element.accessPointGroups
-      .flatMap((group) => group.accessPoints)
-      .map((accessPoint) => ({
-        id: accessPoint.id,
-        label: accessPoint.id,
-      }));
-  }
-
-  if (element instanceof IngestDefinition) {
-    return graphManager
-      .getIngestDefinitionDatasetNames(element)
-      .map((name) => ({
-        id: name,
-        label: name,
-      }));
-  }
-
-  return [];
 };
 
 const inferIngestDatasetColumns = async (
@@ -156,6 +99,8 @@ const inferIngestDatasetColumns = async (
     );
   return relationType.columns.map((column) => column.name);
 };
+
+// ─── Per-test state ───────────────────────────────────────────────────────────
 
 export class IngestTestState extends TestableTestEditorState {
   readonly suiteState: IngestTestSuiteState;
@@ -270,123 +215,18 @@ export class IngestTestState extends TestableTestEditorState {
   }
 }
 
-export class IngestElementTestDataState {
-  readonly testDataState: IngestTestDataState;
-  readonly testData: BaseDataResolver;
-  readonly editorStore: EditorStore;
-  readonly relationElementsDataState: RelationElementsDataState | undefined;
+// ─── Per-element test data state ─────────────────────────────────────────────
+// Replaced by the shared LakehouseElementTestDataState from LakehouseTestableUtils.
+// The type alias above maintains backward compatibility for any existing imports.
 
-  constructor(testDataState: IngestTestDataState, testData: BaseDataResolver) {
-    this.testDataState = testDataState;
-    this.testData = testData;
-    this.editorStore = testDataState.editorStore;
-
-    if (testData.data instanceof RelationElementsData) {
-      this.relationElementsDataState = new RelationElementsDataState(
-        this.editorStore,
-        testData.data,
-      );
-      this.initAccessorOptions();
-    }
-  }
-
-  get element(): PackageableElement {
-    return this.testData.element.value;
-  }
-
-  get itemLabel(): string {
-    return getAccessorItemLabelForElement(this.element as AccessorOwner);
-  }
-
-  private initAccessorOptions(): void {
-    const dataState = this.relationElementsDataState;
-    if (!dataState) {
-      return;
-    }
-    this.refreshAccessorOptions(dataState).catch(() => undefined);
-    dataState.setRefreshAccessorOptions(() =>
-      this.refreshAccessorOptions(dataState),
-    );
-  }
-
-  private async refreshAccessorOptions(
-    dataState: RelationElementsDataState,
-  ): Promise<void> {
-    const element = this.element;
-    const graphManager = this.editorStore.graphManagerState.graphManager;
-    const graph = this.editorStore.graphManagerState.graph;
-    const items = getElementDataItems(element, graphManager);
-
-    if (items.length === 0) {
-      dataState.setAccessorOptions(undefined, undefined);
-      return;
-    }
-
-    const options = await Promise.all(
-      items.map(async (item) => {
-        let columns: string[] = [];
-
-        try {
-          if (element instanceof IngestDefinition) {
-            const accessor =
-              await graphManager.createAccessorFromPackageableElement(
-                element,
-                graph,
-                { schemaName: undefined, tableName: item.id },
-              );
-            if (accessor) {
-              columns = accessor.relationType.columns.map((c) => c.name);
-            }
-          } else if (element instanceof DataProduct) {
-            const accessor = await graphManager.buildDataProductAccessor(
-              element,
-              graph,
-              { tableName: item.id },
-            );
-            if (accessor) {
-              columns = accessor.relationType.columns.map((c) => c.name);
-            }
-          }
-        } catch {
-          // best-effort column resolution
-        }
-
-        return {
-          label: item.label,
-          value: item.id,
-          columns,
-        };
-      }),
-    );
-
-    runInAction(() => {
-      dataState.setAccessorOptions(options, this.itemLabel);
-      const columnsByItem = new Map(
-        options
-          .filter((option) => option.columns.length > 0)
-          .map((option) => [option.value, option.columns]),
-      );
-
-      for (const relationElementState of dataState.relationElementStates) {
-        const relationElement = relationElementState.relationElement;
-        if (relationElement.columns.length === 0) {
-          const key = relationElement.paths[relationElement.paths.length - 1];
-          const columns = key ? columnsByItem.get(key) : undefined;
-          if (columns) {
-            relationElement.columns = columns;
-          }
-        }
-      }
-    });
-  }
-}
+// ─── Test data state for a suite ─────────────────────────────────────────────
 
 export class IngestTestDataState {
   readonly editorStore: EditorStore;
   readonly suiteState: IngestTestSuiteState;
 
-  elementTestDataStates: IngestElementTestDataState[] = [];
-  selectedElementTestDataState: IngestElementTestDataState | undefined;
+  elementTestDataStates: LakehouseElementTestDataState[] = [];
+  selectedElementTestDataState: LakehouseElementTestDataState | undefined;
   showAddElementModal = false;
 
   constructor(
@@ -454,7 +294,7 @@ export class IngestTestDataState {
     this.refreshElementTestDataStates({ selectedElementPath: path });
   }
 
-  deleteElement(elementState: IngestElementTestDataState): void {
+  deleteElement(elementState: LakehouseElementTestDataState): void {
     const suite = this.suiteState.suite;
     const index = suite.testData.indexOf(elementState.testData);
     suite.testData.splice(index, 1);
@@ -474,7 +314,10 @@ export class IngestTestDataState {
         (testData): testData is BaseDataResolver =>
           testData instanceof BaseDataResolver,
       )
-      .map((testData) => new IngestElementTestDataState(this, testData));
+      .map(
+        (testData) =>
+          new LakehouseElementTestDataState(testData, this.editorStore),
+      );
 
     this.selectedElementTestDataState =
       this.elementTestDataStates.find(
@@ -483,11 +326,13 @@ export class IngestTestDataState {
   }
 
   setSelectedElementTestDataState(
-    val: IngestElementTestDataState | undefined,
+    val: LakehouseElementTestDataState | undefined,
   ): void {
     this.selectedElementTestDataState = val;
   }
 }
+
+// ─── Per-suite state ──────────────────────────────────────────────────────────
 
 export class IngestTestSuiteState extends TestableTestSuiteEditorState {
   readonly testableState: IngestTestableState;
@@ -517,6 +362,7 @@ export class IngestTestSuiteState extends TestableTestSuiteEditorState {
       deleteTest: action,
       removeTestState: action,
       addNewTest: flow,
+      runSuite: flow,
       runFailingTests: flow,
       buildTestStates: action,
     });
@@ -701,6 +547,8 @@ export class IngestTestSuiteState extends TestableTestSuiteEditorState {
   }
 }
 
+// ─── Top-level testable state ─────────────────────────────────────────────────
+
 export class IngestTestableState {
   readonly editorStore: EditorStore;
   readonly ingestDefinitionEditorState: IngestDefinitionEditorState;
@@ -732,7 +580,7 @@ export class IngestTestableState {
     this.ingestDefinitionEditorState = ingestDefinitionEditorState;
   }
 
-  get ingest() {
+  get ingest(): IngestDefinition {
     return this.ingestDefinitionEditorState.ingest;
   }
 

@@ -214,7 +214,7 @@ export const IngestDefinitionEditor = observer(() => {
   };
 
   return (
-    <div className="data-product-editor ingest-definition-editor">
+    <div className="ingest-definition-editor">
       <div className="panel">
         <PanelHeader
           title="Ingest"
@@ -222,29 +222,24 @@ export const IngestDefinitionEditor = observer(() => {
           darkMode={true}
           isReadOnly={true}
         />
-        <div className="panel data-product-editor__content-panel">
-          <div
-            className="data-space__viewer__activity-bar"
-            style={{ position: 'static', maxHeight: '100%' }}
-          >
-            <div className="data-space__viewer__activity-bar__items">
+        <div className="panel ingest-definition-editor__content-panel">
+          <div className="ingest-definition-editor__activity-bar">
+            <div className="ingest-definition-editor__activity-bar__items">
               {sidebarTabs.map((activity) => (
                 <button
                   key={activity.label}
-                  className={clsx('data-space__viewer__activity-bar__item', {
-                    'data-space__viewer__activity-bar__item--active':
-                      selectedTab === activity.label,
-                  })}
+                  className={clsx(
+                    'ingest-definition-editor__activity-bar__item',
+                    {
+                      'ingest-definition-editor__activity-bar__item--active':
+                        selectedTab === activity.label,
+                    },
+                  )}
                   onClick={() =>
                     ingestDefinitionEditorState.setSelectedTab(activity.label)
                   }
                   tabIndex={-1}
                   title={activity.label}
-                  style={{
-                    flexDirection: 'column',
-                    fontSize: '10px',
-                    margin: '0.5rem 0rem',
-                  }}
                 >
                   {activity.icon}
                   {activity.label}

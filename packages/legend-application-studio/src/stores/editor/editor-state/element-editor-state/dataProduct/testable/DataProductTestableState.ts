@@ -46,7 +46,7 @@ import {
   observe_DataProductTestSuite,
   observe_ValueSpecification,
   buildLambdaVariableExpressions,
-  IngestDefinition,
+  type IngestDefinition,
   getAccessorItemLabelForElement,
   type AbstractPureGraphManager,
 } from '@finos/legend-graph';
@@ -73,10 +73,7 @@ import {
 } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
 import type { DataProductEditorState } from '../DataProductEditorState.js';
-import {
-  RelationElementsDataState,
-  RelationElementState,
-} from '../../data/EmbeddedDataState.js';
+import { RelationElementState } from '../../data/EmbeddedDataState.js';
 import { TESTABLE_RESULT } from '../../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import { testSuite_addTest } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
 import {
@@ -84,19 +81,16 @@ import {
   TestableTestSuiteEditorState,
 } from '../../testable/TestableEditorState.js';
 import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';
+import {
+  buildRelationElementsDataWithColumns,
+  createEmptyRelationElement,
+  isIngestOrDataProductAccessor,
+  LakehouseElementTestDataState,
+} from '../../testable/LakehouseTestableUtils.js';
 
-const createEmptyRelationElement = (
-  itemId: string,
-  columns: string[] = [],
-): RelationElement => {
-  const row = observe_RelationRowTestData(new RelationRowTestData());
-  row.values = columns.map(() => '');
-  const relationElement = new RelationElement();
-  relationElement.paths = [itemId];
-  relationElement.columns = columns;
-  relationElement.rows = [row];
-  return observe_RelationElement(relationElement);
-};
+export type { LakehouseElementTestDataState as DataProductElementTestDataState };
+
+// ─── Data-product-specific helpers ───────────────────────────────────────────
 
 /**
  * Returns the lambda for an access point (handles both LakehouseAccessPoint
@@ -111,58 +105,8 @@ const getAccessPointLambda = (
       ? accessPoint.query
       : undefined;
 
-/**
- * Builds a RelationElementsData from resolved accessors using the accessor
- * relation type as the source of truth for column definitions.
- */
-const buildRelationElementsDataWithColumns = (
-  accs: Accessor[],
-): RelationElementsData => {
-  const relData = new RelationElementsData();
-  relData.relationElements = accs.map((acc) => {
-    const itemId = acc.accessor || 'UNKNOWN';
-    const columns = acc.relationType.columns.map((column) => column.name);
-    return createEmptyRelationElement(itemId, columns);
-  });
-  return relData;
-};
-
-const isIngestOrDataProductAccessor = (
-  accessor: Accessor,
-): accessor is Accessor =>
-  accessor.parentElement instanceof DataProduct ||
-  accessor.parentElement instanceof IngestDefinition;
-
 const getAccessPointDisplayLabel = (accessPoint: AccessPoint): string =>
   accessPoint.id;
-
-interface ElementDataItem {
-  id: string;
-  label: string;
-}
-
-const getElementDataItems = (
-  element: PackageableElement,
-  graphManager: AbstractPureGraphManager,
-): ElementDataItem[] => {
-  if (element instanceof DataProduct) {
-    return element.accessPointGroups
-      .flatMap((g) => g.accessPoints)
-      .map((ap) => ({
-        id: ap.id,
-        label: getAccessPointDisplayLabel(ap),
-      }));
-  }
-  if (element instanceof IngestDefinition) {
-    return graphManager
-      .getIngestDefinitionDatasetNames(element)
-      .map((name) => ({
-        id: name,
-        label: name,
-      }));
-  }
-  return [];
-};
 
 const inferDataProductItemColumns = async (
   editorStore: EditorStore,
@@ -576,119 +520,8 @@ export class DataProductTestState extends TestableTestEditorState {
 }
 
 // ─── Per-element test data state ─────────────────────────────────────────────
-
-export class DataProductElementTestDataState {
-  readonly testDataState: DataProductTestDataState;
-  readonly testData: BaseDataResolver;
-  readonly editorStore: EditorStore;
-  readonly relationElementsDataState: RelationElementsDataState | undefined;
-
-  constructor(
-    testDataState: DataProductTestDataState,
-    testData: BaseDataResolver,
-  ) {
-    this.testDataState = testDataState;
-    this.testData = testData;
-    this.editorStore = testDataState.editorStore;
-    if (testData.data instanceof RelationElementsData) {
-      this.relationElementsDataState = new RelationElementsDataState(
-        this.editorStore,
-        testData.data,
-      );
-      this.initAccessorOptions();
-    }
-  }
-
-  get element(): PackageableElement {
-    return this.testData.element.value;
-  }
-
-  get elementName(): string {
-    return this.testData.element.value.name;
-  }
-
-  get itemLabel(): string {
-    return getAccessorItemLabelForElement(this.element as AccessorOwner);
-  }
-
-  private initAccessorOptions(): void {
-    const dataState = this.relationElementsDataState;
-    if (!dataState) {
-      return;
-    }
-    this.refreshAccessorOptions(dataState).catch(noop);
-    dataState.setRefreshAccessorOptions(() =>
-      this.refreshAccessorOptions(dataState),
-    );
-  }
-
-  private async refreshAccessorOptions(
-    dataState: RelationElementsDataState,
-  ): Promise<void> {
-    const element = this.element;
-    const graphManager = this.editorStore.graphManagerState.graphManager;
-    const graph = this.editorStore.graphManagerState.graph;
-    const items = getElementDataItems(element, graphManager);
-    if (items.length === 0) {
-      dataState.setAccessorOptions(undefined, undefined);
-      return;
-    }
-    const typeLabel = this.itemLabel;
-    const options = await Promise.all(
-      items.map(async (item) => {
-        let columns: string[] = [];
-        try {
-          if (element instanceof IngestDefinition) {
-            const accessor =
-              await graphManager.createAccessorFromPackageableElement(
-                element,
-                graph,
-                { schemaName: undefined, tableName: item.id },
-              );
-            if (accessor) {
-              columns = accessor.relationType.columns.map((c) => c.name);
-            }
-          } else if (element instanceof DataProduct) {
-            const accessor = await graphManager.buildDataProductAccessor(
-              element,
-              graph,
-              { tableName: item.id },
-            );
-            if (accessor) {
-              columns = accessor.relationType.columns.map((c) => c.name);
-            }
-          }
-        } catch {
-          // best-effort column resolution
-        }
-        return {
-          label: item.label,
-          value: item.id,
-          columns,
-        };
-      }),
-    );
-    runInAction(() => {
-      dataState.setAccessorOptions(options, typeLabel);
-      // Back-fill columns on existing relation elements that have none
-      const columnsByItem = new Map(
-        options
-          .filter((o) => o.columns.length > 0)
-          .map((o) => [o.value, o.columns]),
-      );
-      for (const relState of dataState.relationElementStates) {
-        const rel = relState.relationElement;
-        if (rel.columns.length === 0) {
-          const key = rel.paths[rel.paths.length - 1];
-          const cols = key ? columnsByItem.get(key) : undefined;
-          if (cols) {
-            rel.columns = cols;
-          }
-        }
-      }
-    });
-  }
-}
+// Replaced by the shared LakehouseElementTestDataState from LakehouseTestableUtils.
+// The type alias above maintains backward compatibility for any existing imports.
 
 // ─── Test data state for a suite ─────────────────────────────────────────────
 
@@ -696,8 +529,8 @@ export class DataProductTestDataState {
   readonly editorStore: EditorStore;
   readonly suiteState: DataProductTestSuiteState;
 
-  elementTestDataStates: DataProductElementTestDataState[] = [];
-  selectedElementTestDataState: DataProductElementTestDataState | undefined;
+  elementTestDataStates: LakehouseElementTestDataState[] = [];
+  selectedElementTestDataState: LakehouseElementTestDataState | undefined;
   showAddElementModal = false;
 
   constructor(
@@ -765,7 +598,7 @@ export class DataProductTestDataState {
     this.refreshElementTestDataStates({ selectedElementPath: path });
   }
 
-  deleteElement(elementState: DataProductElementTestDataState): void {
+  deleteElement(elementState: LakehouseElementTestDataState): void {
     const suite = this.suiteState.suite;
     if (suite.testData) {
       const idx = suite.testData.indexOf(elementState.testData);
@@ -783,7 +616,7 @@ export class DataProductTestDataState {
     const suite = this.suiteState.suite;
     this.elementTestDataStates = (suite.testData ?? [])
       .filter((td): td is BaseDataResolver => td instanceof BaseDataResolver)
-      .map((td) => new DataProductElementTestDataState(this, td));
+      .map((td) => new LakehouseElementTestDataState(td, this.editorStore));
 
     this.selectedElementTestDataState =
       this.elementTestDataStates.find(
@@ -792,7 +625,7 @@ export class DataProductTestDataState {
   }
 
   setSelectedElementTestDataState(
-    val: DataProductElementTestDataState | undefined,
+    val: LakehouseElementTestDataState | undefined,
   ): void {
     this.selectedElementTestDataState = val;
   }
@@ -1069,10 +902,6 @@ export class DataProductTestableState {
     }
   }
 
-  /**
-   * Build suite states from the DataProduct.tests array.
-   * Call this on init and after grammar→form roundtrip.
-   */
   init(): void {
     const dp = this.dataProduct;
     this.suiteStates = dp.tests.map(
@@ -1081,13 +910,11 @@ export class DataProductTestableState {
     this.selectedSuiteState = this.suiteStates[0];
   }
 
-  /** Returns all graph ingest elements available in the model. */
   get availableIngestSources(): IngestDefinition[] {
     const graph = this.editorStore.graphManagerState.graph;
     return graph.ingests;
   }
 
-  /** Access points on the DataProduct being edited (used for test's accessPointId). */
   get ownAccessPoints(): AccessPoint[] {
     return this.dataProduct.accessPointGroups.flatMap((g) => g.accessPoints);
   }
@@ -1101,12 +928,6 @@ export class DataProductTestableState {
       : accessPointId;
   }
 
-  /**
-   * Create a new test suite with one initial test on the DataProduct.
-   * Test data is auto-seeded for the selected access point on the current
-   * DataProduct (no element picker required).
-   * Columns are inferred via the engine when possible.
-   */
   *createSuite(
     suiteName: string,
     testName: string,
@@ -1119,7 +940,6 @@ export class DataProductTestableState {
     const suite = new DataProductTestSuite();
     suite.id = suiteName;
 
-    // Try to infer columns from the access-point lambda
     let inferredColumns: string[] = [];
     try {
       const cols = (yield inferDataProductItemColumns(
@@ -1134,7 +954,6 @@ export class DataProductTestableState {
       // Column inference is best-effort; continue with empty columns
     }
 
-    // Resolve INPUT sources via the graph (follows function calls, avoids self-refs)
     const accessPointForSuite = dp.accessPointGroups
       .flatMap((g) => g.accessPoints)
       .find((ap) => ap.id === accessPointId);
@@ -1174,14 +993,12 @@ export class DataProductTestableState {
         suite.testData.push(resolver);
       }
     }
-    // If no external sources were resolved, notify the user and leave test data empty
     if (suite.testData.length === 0) {
       this.editorStore.applicationStore.notificationService.notifyWarning(
         'Access Point accessors cannot be resolved',
       );
     }
 
-    // Create one initial test with EqualToRelation assertion
     const test = new DataProductAccessPointTest();
     test.id = testName;
     test.__parent = suite;
