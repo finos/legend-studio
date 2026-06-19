@@ -328,10 +328,6 @@ export const V1_createIngestDef = (
     ? deserialize(V1_AppDirNodeModelSchema, appDir)
     : undefined;
   ingestDef.package = packagePath;
-  const parsedContent = deserialize(
-    V1_IngestDefinitionContentModelSchema,
-    json,
-  );
   const jsonTestSuites = (
     json as { testSuites?: PlainObject<V1_IngestTestSuite>[] }
   ).testSuites;
