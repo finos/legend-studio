@@ -117,6 +117,5 @@ export class V1_IngestTestSuite extends V1_TestSuite implements Hashable {
 
 export class V1_IngestDefinitionContent {
   datasets?: V1_IngestDataset[];
-  testSuites?: V1_IngestTestSuite[];
   writeMode?: V1_WriteMode;
 }

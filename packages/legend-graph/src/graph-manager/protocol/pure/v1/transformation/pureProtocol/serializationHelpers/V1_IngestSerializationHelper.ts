@@ -293,15 +293,6 @@ export const V1_IngestDefinitionContentModelSchema = createModelSchema(
   V1_IngestDefinitionContent,
   {
     datasets: optional(list(usingModelSchema(V1_IngestDatasetModelSchema))),
-    testSuites: optional(
-      customList(
-        (value) => serialize(V1_ingestTestSuiteModelSchema, value),
-        (value) => deserialize(V1_ingestTestSuiteModelSchema, value),
-        {
-          INTERNAL__forceReturnEmptyInTest: true,
-        },
-      ),
-    ),
     writeMode: optional(
       custom(
         (val) => (val ? V1_serializeWriteMode(val) : undefined),
@@ -341,7 +332,12 @@ export const V1_createIngestDef = (
     V1_IngestDefinitionContentModelSchema,
     json,
   );
-  ingestDef.testSuites = parsedContent.testSuites ?? [];
+  const jsonTestSuites = (
+    json as { testSuites?: PlainObject<V1_IngestTestSuite>[] }
+  ).testSuites;
+  ingestDef.testSuites = (jsonTestSuites ?? []).map((suite) =>
+    deserialize(V1_ingestTestSuiteModelSchema, suite),
+  );
   const { testSuites: _testSuites, ...contentWithoutTestSuites } = json;
   ingestDef.content = contentWithoutTestSuites;
   return ingestDef;
