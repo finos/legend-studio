@@ -27,7 +27,7 @@ import {
 } from '@finos/legend-query-builder';
 import { type ExecutionResult } from '@finos/legend-graph';
 import { prettyDuration } from '@finos/legend-shared';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   DATA_QUALITY_VALIDATION_TEST_ID,
   USER_ATTESTATION_MESSAGE,
@@ -138,6 +138,10 @@ export const DataQualityRelationTrialRuns = observer(
     const [previewLimitValue, setPreviewLimitValue] = useState(
       resultState.previewLimit,
     );
+
+    useEffect(() => {
+      setPreviewLimitValue(resultState.previewLimit);
+    }, [resultState]);
 
     const changePreviewLimit: React.ChangeEventHandler<HTMLInputElement> = (
       event,

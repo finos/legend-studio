@@ -90,6 +90,7 @@ export class V1_DQExecuteInput {
   lambdaParameterValues: V1_ParameterValue[] = [];
   packagePath!: string;
   defectsLimit: number | undefined;
+  queryLimit: number | undefined;
   allValidationsChecked: boolean | undefined;
   validationName: string | undefined;
   runQuery: boolean | undefined;
@@ -101,6 +102,7 @@ export class V1_DQExecuteInput {
       lambdaParameterValues: customListWithSchema(V1_parameterValueModelSchema),
       packagePath: primitive(),
       defectsLimit: optional(primitive()),
+      queryLimit: optional(primitive()),
       validationName: optional(primitive()),
       runQuery: optional(primitive()),
     }),
@@ -131,6 +133,7 @@ export class V1_DQReconciliationInput {
   keys: string[] = [];
   colsForHash: string[] = [];
   defectLimit: number | undefined;
+  queryLimit: number | undefined;
   aggregatedHash: boolean | undefined;
   sourceHashCol: string | undefined;
   targetHashCol: string | undefined;
@@ -149,6 +152,7 @@ export class V1_DQReconciliationInput {
       keys: list(primitive()),
       colsForHash: list(primitive()),
       defectLimit: optional(primitive()),
+      queryLimit: optional(primitive()),
       aggregatedHash: optional(primitive()),
       sourceHashCol: optional(primitive()),
       targetHashCol: optional(primitive()),
@@ -285,6 +289,9 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     dqExecuteInput.packagePath = packagePath;
     dqExecuteInput.defectsLimit = options.previewLimit;
     dqExecuteInput.runQuery = options.runQuery;
+    if (options.runQuery) {
+      dqExecuteInput.queryLimit = options.queryLimit;
+    }
     if (!options.allValidationsChecked) {
       dqExecuteInput.validationName = options.validationName;
     }
@@ -631,17 +638,23 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     input.model = graph.origin
       ? this.buildPureModelSDLCPointer(graph.origin, undefined)
       : this.graphManager.getFullGraphModelData(graph);
+    const runningSourceOrTargetQuery =
+      options.runSourceQuery ?? options.runTargetQuery;
     input.source = this.rawLambdaToV1(options.source);
     input.target = this.rawLambdaToV1(options.target);
     input.keys = options.keys;
     input.colsForHash = options.colsForHash;
-    input.defectLimit = options.limit;
     input.aggregatedHash = options.aggregatedHash;
     input.sourceHashCol = options.sourceHashCol;
     input.targetHashCol = options.targetHashCol;
     input.includeColumnValues = options.includeColumnValues;
     input.runSourceQuery = options.runSourceQuery;
     input.runTargetQuery = options.runTargetQuery;
+    if (runningSourceOrTargetQuery) {
+      input.queryLimit = options.limit;
+    } else {
+      input.defectLimit = options.limit;
+    }
     if (options.sourceLambdaParameterValues) {
       input.sourceLambdaParameterValues =
         options.sourceLambdaParameterValues.map(V1_transformParameterValue);
