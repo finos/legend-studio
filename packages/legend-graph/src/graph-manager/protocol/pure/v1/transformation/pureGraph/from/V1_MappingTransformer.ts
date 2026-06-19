@@ -159,6 +159,8 @@ import { isStubbed_RawRelationalOperationElement } from '../../../../../../../gr
 import { pruneSourceInformation } from '../../../../../../../graph/MetaModelUtils.js';
 import { FlatDataAssociationImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationImplementation.js';
 import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
+import { ModelJoinAssociationImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/modelJoin/ModelJoinAssociationImplementation.js';
+import { V1_ModelJoinAssociationMapping } from '../../../model/packageableElements/mapping/modelJoin/V1_ModelJoinAssociationMapping.js';
 import type { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
 import { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
@@ -1458,6 +1460,26 @@ const transformXStorelAssociationImplementation = (
   return xStoreMapping;
 };
 
+const transformModelJoinAssociationImplementation = (
+  element: ModelJoinAssociationImplementation,
+  context: V1_GraphTransformerContext,
+): V1_ModelJoinAssociationMapping => {
+  const modelJoinMapping = new V1_ModelJoinAssociationMapping();
+  modelJoinMapping.stores = element.stores.map(
+    (store) => store.valueForSerialization ?? '',
+  );
+  modelJoinMapping.association = new V1_PackageableElementPointer(
+    PackageableElementPointerType.ASSOCIATION,
+    element.association.valueForSerialization ?? '',
+  );
+  modelJoinMapping.joinCondition =
+    element.joinCondition.accept_RawValueSpecificationVisitor(
+      new V1_RawValueSpecificationTransformer(context),
+    ) as V1_RawLambda;
+  modelJoinMapping.id = mappingElementIdSerializer(element.id);
+  return modelJoinMapping;
+};
+
 const transformAssociationImplementation = (
   element: AssociationImplementation,
   context: V1_GraphTransformerContext,
@@ -1468,6 +1490,8 @@ const transformAssociationImplementation = (
     return transformXStorelAssociationImplementation(element, context);
   } else if (element instanceof FlatDataAssociationImplementation) {
     return transformFlatDataAssociationImplementation(element, context);
+  } else if (element instanceof ModelJoinAssociationImplementation) {
+    return transformModelJoinAssociationImplementation(element, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform association implementation`,

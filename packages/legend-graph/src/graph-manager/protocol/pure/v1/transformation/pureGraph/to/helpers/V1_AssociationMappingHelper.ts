@@ -33,10 +33,13 @@ import {
 } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { FlatDataAssociationImplementation } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationImplementation.js';
 import { V1_FlatDataAssociationMapping } from '../../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
+import { V1_ModelJoinAssociationMapping } from '../../../../model/packageableElements/mapping/modelJoin/V1_ModelJoinAssociationMapping.js';
+import { ModelJoinAssociationImplementation } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/modelJoin/ModelJoinAssociationImplementation.js';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 
 const getInferredAssociationMappingId = (
   _association: Association,
-  classMapping: V1_RelationalAssociationMapping,
+  classMapping: V1_AssociationMapping,
 ): InferableMappingElementIdImplicitValue =>
   InferableMappingElementIdImplicitValue.create(
     classMapping.id ?? fromElementPathToMappingElementId(_association.path),
@@ -155,6 +158,30 @@ const buildXStoreAssociationMapping = (
   return xStoreAssociationImplementation;
 };
 
+const buildModelJoinAssociationMapping = (
+  element: V1_ModelJoinAssociationMapping,
+  parentMapping: Mapping,
+  context: V1_GraphBuilderContext,
+): ModelJoinAssociationImplementation => {
+  const association = context.resolveAssociation(element.association.path);
+  const modelJoinAssociationImplementation =
+    new ModelJoinAssociationImplementation(
+      getInferredAssociationMappingId(association.value, element),
+      parentMapping,
+      association,
+    );
+  modelJoinAssociationImplementation.stores = element.stores.map(
+    context.resolveStore,
+  );
+  modelJoinAssociationImplementation.joinCondition =
+    V1_buildRawLambdaWithResolvedPaths(
+      element.joinCondition.parameters,
+      element.joinCondition.body,
+      context,
+    );
+  return modelJoinAssociationImplementation;
+};
+
 // TODO: consider changing to visitor pattern ?
 export const V1_buildAssociationMapping = (
   element: V1_AssociationMapping,
@@ -167,6 +194,8 @@ export const V1_buildAssociationMapping = (
     return buildXStoreAssociationMapping(element, parentMapping, context);
   } else if (element instanceof V1_FlatDataAssociationMapping) {
     return buildFlatDataAssociationMapping(element, parentMapping, context);
+  } else if (element instanceof V1_ModelJoinAssociationMapping) {
+    return buildModelJoinAssociationMapping(element, parentMapping, context);
   }
   throw new UnsupportedOperationError(
     `Can't build association mapping`,
