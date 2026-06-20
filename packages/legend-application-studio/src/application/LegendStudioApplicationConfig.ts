@@ -92,6 +92,11 @@ class LegendStudioApplicationCoreOptions {
   NonProductionFeatureFlag = false;
 
   /**
+   *  Indicates if we should enable the streaming perspective grid view.
+   */
+  enableStreamingPerspectiveGrid = true; // Temporary default to true for testing
+
+  /**
    * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
    * imports.
    *
@@ -152,6 +157,7 @@ class LegendStudioApplicationCoreOptions {
       TEMPORARY__enableCreationOfSandboxProjects: optional(primitive()),
       TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
       NonProductionFeatureFlag: optional(primitive()),
+      enableStreamingPerspectiveGrid: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),

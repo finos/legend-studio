@@ -60,6 +60,8 @@
     "@finos/legend-server-showcase": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
+    "@finos/perspective": "3.8.0",
+    "@finos/perspective-viewer-datagrid": "^3.0.0",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.2.0",
     "@types/react": "19.0.10",
