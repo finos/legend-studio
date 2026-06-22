@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.12
+
+### Patch Changes
+
+- [#5270](https://github.com/finos/legend-studio/pull/5270) [`b5cf8d5`](https://github.com/finos/legend-studio/commit/b5cf8d5f288d6376c228fc930e1341b969303396) ([@bojja-gs](https://github.com/bojja-gs)) - Add column description support for data product access points. Columns now show documentation sourced from the description field or doc tagged values, with proper fallback handling for older Engine responses.
+
 ## 32.6.11
 
 ## 32.6.10
