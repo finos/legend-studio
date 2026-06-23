@@ -73,6 +73,7 @@ import {
   TEST_DATA__RelationFunctionMappingEmptyPrimaryKey,
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip.js';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
+import { TEST_DATA__ModelJoinAssociationMapping_Simple } from './roundtripTestData/TEST_DATA__ModelJoinMappingRoundtrip.js';
 import { TEST__checkBuildingElementsRoundtrip } from '../__test-utils__/GraphManagerTestUtils.js';
 import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA__DataRoundtrip.js';
 import {
@@ -208,6 +209,10 @@ describe(unitTest('Relational import resolution roundtrip'), () => {
     ],
     ['Relational association mapping', TEST_DATA__RelationalAssociationMapping],
     ['XStore association mapping', TEST_DATA__XStoreAssociationMapping],
+    [
+      'ModelJoin association mapping',
+      TEST_DATA__ModelJoinAssociationMapping_Simple,
+    ],
     ['Local property mapping', TEST_DATA__LocalPropertyMapping],
     [
       'Relational database connection',

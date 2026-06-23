@@ -62,6 +62,7 @@ import type { SetImplementationReference } from '../../../graph/metamodel/pure/p
 import type { SubstituteStore } from '../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
 import type { INTERNAL__UnresolvedSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnresolvedSetImplementation.js';
 import type { XStorePropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/xStore/XStorePropertyMapping.js';
+import { ModelJoinAssociationImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/modelJoin/ModelJoinAssociationImplementation.js';
 import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import {
   EngineRuntime,
@@ -824,6 +825,12 @@ export const observe_AssociationImplementation = skipObservedWithContext(
       propertyMappings: observable,
       hashCode: computed,
     });
+
+    if (metamodel instanceof ModelJoinAssociationImplementation) {
+      makeObservable(metamodel, {
+        joinCondition: observable,
+      });
+    }
 
     observe_PackageableElementReference(metamodel.association);
     observe_InferableMappingElementIdValue(metamodel.id);
