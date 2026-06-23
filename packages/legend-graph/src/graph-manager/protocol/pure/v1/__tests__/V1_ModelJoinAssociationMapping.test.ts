@@ -17,7 +17,8 @@
 import { test, expect, describe } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import { V1_ModelJoinAssociationMapping } from '../model/packageableElements/mapping/modelJoin/V1_ModelJoinAssociationMapping.js';
-import { serialize, deserialize } from 'serializr';
+import { V1_PackageableElementPointer } from '../model/packageableElements/V1_PackageableElement.js';
+import { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 
 describe('V1_ModelJoinAssociationMapping', () => {
   test(unitTest('can be instantiated with correct defaults'), () => {
@@ -29,10 +30,13 @@ describe('V1_ModelJoinAssociationMapping', () => {
 
   test(unitTest('hashCode includes joinCondition'), () => {
     const mapping = new V1_ModelJoinAssociationMapping();
-    mapping.association = { path: 'test::MyAssociation' } as any;
-    mapping.joinCondition = {
-      hashCode: 'test-lambda-hash',
-    } as any;
+    mapping.association = new V1_PackageableElementPointer(
+      undefined,
+      'test::MyAssociation',
+    );
+    const lambda = new V1_RawLambda();
+    lambda.body = [{ _type: 'boolean', value: true }];
+    mapping.joinCondition = lambda;
     const hash = mapping.hashCode;
     expect(hash).toBeDefined();
     expect(hash.length).toBeGreaterThan(0);
