@@ -29,8 +29,7 @@ describe('V1_ModelJoinAssociationMapping', () => {
 
   test(unitTest('hashCode includes joinCondition'), () => {
     const mapping = new V1_ModelJoinAssociationMapping();
-    // joinCondition is uninitialized (!) so hash will throw unless we set it
-    // This test verifies the hash structure is wired correctly
+    mapping.association = { path: 'test::MyAssociation' } as any;
     mapping.joinCondition = {
       hashCode: 'test-lambda-hash',
     } as any;
