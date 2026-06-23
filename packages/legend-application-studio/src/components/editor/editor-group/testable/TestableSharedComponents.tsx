@@ -603,7 +603,7 @@ const EqualToRelationAsssertionEditor = observer(
   },
 );
 
-const DataProductEqualToRelationAssertionEditor = observer(
+const LakehouseEqualToRelationAssertionEditor = observer(
   (props: { testAssertionEditorState: TestAssertionEditorState }) => {
     const { testAssertionEditorState } = props;
     const isDataProductTest =
@@ -984,7 +984,7 @@ export const TestAssertionEditor = observer(
     const { testAssertionState } = props;
     const selectedTab = testAssertionState.selectedTab;
     const isReadOnly = testAssertionState.testState.isReadOnly;
-    const isDataProductTest =
+    const isLakehouseTest =
       testAssertionState.testState.testable instanceof DataProduct ||
       testAssertionState.testState.testable instanceof IngestDefinition;
     const isDisabled =
@@ -1009,9 +1009,9 @@ export const TestAssertionEditor = observer(
           />
         );
       } else if (state instanceof EqualToRelationAssertionState) {
-        if (isDataProductTest) {
+        if (isLakehouseTest) {
           return (
-            <DataProductEqualToRelationAssertionEditor
+            <LakehouseEqualToRelationAssertionEditor
               testAssertionEditorState={testAssertionState}
             />
           );
@@ -1053,7 +1053,7 @@ export const TestAssertionEditor = observer(
               </div>
             ))}
           </div>
-          {!isDataProductTest && (
+          {!isLakehouseTest && (
             <div className="testable-test-assertion-editor__header__actions">
               <button
                 className="panel__header__action service-execution-editor__test-data__generate-btn"

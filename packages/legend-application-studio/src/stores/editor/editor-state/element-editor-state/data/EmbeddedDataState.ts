@@ -255,8 +255,7 @@ export class RelationElementState {
   }
 
   updateColumn(index: number, name: string): void {
-    const oldName = this.relationElement.columns[index];
-    if (oldName && oldName !== name) {
+    if (index >= 0 && index < this.relationElement.columns.length) {
       this.relationElement.columns[index] = name;
     }
   }

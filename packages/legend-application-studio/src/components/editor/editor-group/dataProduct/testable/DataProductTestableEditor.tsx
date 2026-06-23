@@ -44,7 +44,7 @@ import {
   type DataProductTestableState,
   type DataProductTestSuiteState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/dataProduct/testable/DataProductTestableState.js';
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -332,10 +332,6 @@ export const DataProductTestableEditor = observer(
     const testableState = dataProductEditorState.testableState;
     const selectedSuiteState = testableState.selectedSuiteState;
     const dp = testableState.dataProduct;
-
-    useEffect(() => {
-      testableState.init();
-    }, [testableState]);
 
     const addSuite = (): void => {
       testableState.setShowCreateSuiteModal(true);

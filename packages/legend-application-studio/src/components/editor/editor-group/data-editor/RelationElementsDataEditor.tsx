@@ -248,11 +248,8 @@ export const RelationElementEditor = observer(
     };
 
     const updateColumn = (index: number, value: string): void => {
-      if (canEditColumns) {
-        const column = embeddedData.columns[index];
-        if (column) {
-          relationElementState.updateColumn(index, value);
-        }
+      if (canEditColumns && index >= 0 && index < embeddedData.columns.length) {
+        relationElementState.updateColumn(index, value);
       }
     };
 
