@@ -106,7 +106,12 @@ import type { V1_INTERNAL__UnknownPropertyMapping } from '../../../model/package
 import { INTERNAL__UnknownPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
 import { INTERNAL__PseudoMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__PseudoMapping.js';
 import type { V1_RelationFunctionPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionPropertyMapping.js';
+import type { V1_RelationFunctionEmbeddedPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionEmbeddedPropertyMapping.js';
+import type { V1_InlineEmbeddedRelationFunctionPropertyMapping } from '../../../model/packageableElements/mapping/V1_InlineEmbeddedRelationFunctionPropertyMapping.js';
 import { RelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
+import { EmbeddedRelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/EmbeddedRelationFunctionPropertyMapping.js';
+import { InlineEmbeddedRelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/InlineEmbeddedRelationFunctionPropertyMapping.js';
+import { RelationFunctionInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 import { RelationColumn } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 
 const TEMPORARY__resolveSetImplementationByID = (
@@ -1284,6 +1289,172 @@ export class V1_PropertyMappingBuilder
       bindingTransformer.binding = binding;
       propertyMapping.bindingTransformer = bindingTransformer;
     }
+    if (protocol.enumMappingId) {
+      const enumerationMapping = this.allEnumerationMappings.find(
+        (em) => em.id.value === protocol.enumMappingId,
+      );
+      if (!enumerationMapping) {
+        this.context.logService.debug(
+          LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path}' (perhaps because we haven't supported included mappings)`,
+        );
+      }
+      propertyMapping.transformer = enumerationMapping
+        ? EnumerationMappingExplicitReference.create(enumerationMapping)
+        : undefined;
+    }
     return propertyMapping;
+  }
+
+  visit_RelationFunctionEmbeddedPropertyMapping(
+    protocol: V1_RelationFunctionEmbeddedPropertyMapping,
+  ): PropertyMapping {
+    assertNonNullable(
+      protocol.property,
+      `Relation function embedded property mapping 'property' field is missing`,
+    );
+    assertNonEmptyString(
+      protocol.property.property,
+      `Relation function embedded property mapping 'property.property' field is missing or empty`,
+    );
+    let propertyOwnerClass: Class;
+    if (protocol.property.class) {
+      propertyOwnerClass = this.context.resolveClass(
+        protocol.property.class,
+      ).value;
+    } else if (
+      this.immediateParent instanceof
+        RelationFunctionInstanceSetImplementation ||
+      this.immediateParent instanceof EmbeddedRelationFunctionPropertyMapping
+    ) {
+      propertyOwnerClass = this.immediateParent.class.value;
+    } else {
+      throw new GraphBuilderError(
+        `Can't find property owner class for property '${protocol.property.property}'`,
+      );
+    }
+    const property = getClassProperty(
+      propertyOwnerClass,
+      protocol.property.property,
+    );
+    const propertyType = property.genericType.value.rawType;
+    const complexClass = guaranteeType(
+      propertyType,
+      Class,
+      'Only complex classes can be the target of an embedded property mapping',
+    );
+    const _class = PackageableElementImplicitReference.create(
+      complexClass,
+      protocol.property.class ?? '',
+    );
+    const id = `${this.immediateParent.id.value}_${property.name}`;
+    const topParent = guaranteeNonNullable(this.topParent);
+    const sourceSetImplementation =
+      this.immediateParent instanceof RelationFunctionInstanceSetImplementation
+        ? this.immediateParent
+        : topParent;
+    const embedded = new EmbeddedRelationFunctionPropertyMapping(
+      this.immediateParent,
+      PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          propertyOwnerClass,
+          protocol.property.class ?? '',
+        ),
+        property,
+      ),
+      guaranteeType(this.topParent, RelationFunctionInstanceSetImplementation),
+      SetImplementationImplicitReference.create(
+        sourceSetImplementation,
+        protocol.source,
+      ),
+      _class,
+      InferableMappingElementIdExplicitValue.create(id, ''),
+      undefined,
+    );
+    embedded.propertyMappings = protocol.propertyMappings.map(
+      (propertyMapping) =>
+        propertyMapping.accept_PropertyMappingVisitor(
+          new V1_PropertyMappingBuilder(
+            this.context,
+            embedded,
+            this.topParent,
+            this.allEnumerationMappings,
+          ),
+        ),
+    );
+    return embedded;
+  }
+
+  visit_InlineEmbeddedRelationFunctionPropertyMapping(
+    protocol: V1_InlineEmbeddedRelationFunctionPropertyMapping,
+  ): PropertyMapping {
+    assertNonNullable(
+      protocol.property,
+      `Inline embedded relation function property mapping 'property' field is missing`,
+    );
+    assertNonEmptyString(
+      protocol.property.property,
+      `Inline embedded relation function property mapping 'property.property' field is missing or empty`,
+    );
+    let propertyOwnerClass: Class;
+    if (protocol.property.class) {
+      propertyOwnerClass = this.context.resolveClass(
+        protocol.property.class,
+      ).value;
+    } else if (
+      this.immediateParent instanceof
+        RelationFunctionInstanceSetImplementation ||
+      this.immediateParent instanceof EmbeddedRelationFunctionPropertyMapping
+    ) {
+      propertyOwnerClass = this.immediateParent.class.value;
+    } else {
+      throw new GraphBuilderError(
+        `Can't find property owner class for property '${protocol.property.property}'`,
+      );
+    }
+    const property = getClassProperty(
+      propertyOwnerClass,
+      protocol.property.property,
+    );
+    const propertyType = property.genericType.value.rawType;
+    const complexClass = guaranteeType(
+      propertyType,
+      Class,
+      'Only complex classes can be the target of an inline embedded property mapping',
+    );
+    const _class = PackageableElementImplicitReference.create(
+      complexClass,
+      protocol.property.class ?? '',
+    );
+    const id = `${this.immediateParent.id.value}_${property.name}`;
+    const topParent = guaranteeNonNullable(this.topParent);
+    const sourceSetImplementation =
+      this.immediateParent instanceof RelationFunctionInstanceSetImplementation
+        ? this.immediateParent
+        : topParent;
+    const inline = new InlineEmbeddedRelationFunctionPropertyMapping(
+      this.immediateParent,
+      PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          propertyOwnerClass,
+          protocol.property.class ?? '',
+        ),
+        property,
+      ),
+      guaranteeType(this.topParent, RelationFunctionInstanceSetImplementation),
+      SetImplementationImplicitReference.create(
+        sourceSetImplementation,
+        protocol.source,
+      ),
+      _class,
+      InferableMappingElementIdExplicitValue.create(id, ''),
+      undefined,
+    );
+    inline.inlineSetImplementation = TEMPORARY__resolveSetImplementationByID(
+      topParent._PARENT,
+      protocol.setImplementationId,
+      this.context,
+    );
+    return inline;
   }
 }

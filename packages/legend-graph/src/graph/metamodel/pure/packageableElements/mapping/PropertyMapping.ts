@@ -32,6 +32,8 @@ import type { LocalMappingPropertyInfo } from './LocalMappingPropertyInfo.js';
 import type { SetImplementationReference } from './SetImplementationReference.js';
 import type { INTERNAL__UnknownPropertyMapping } from './INTERNAL__UnknownPropertyMapping.js';
 import type { RelationFunctionPropertyMapping } from './relationFunction/RelationFunctionPropertyMapping.js';
+import type { EmbeddedRelationFunctionPropertyMapping } from './relationFunction/EmbeddedRelationFunctionPropertyMapping.js';
+import type { InlineEmbeddedRelationFunctionPropertyMapping } from './relationFunction/InlineEmbeddedRelationFunctionPropertyMapping.js';
 
 export interface PropertyMappingVisitor<T> {
   visit_PropertyMapping(propertyMapping: PropertyMapping): T;
@@ -65,6 +67,12 @@ export interface PropertyMappingVisitor<T> {
   visit_XStorePropertyMapping(propertyMapping: XStorePropertyMapping): T;
   visit_RelationFunctionPropertyMapping(
     propertyMapping: RelationFunctionPropertyMapping,
+  ): T;
+  visit_RelationFunctionEmbeddedPropertyMapping(
+    propertyMapping: EmbeddedRelationFunctionPropertyMapping,
+  ): T;
+  visit_InlineEmbeddedRelationFunctionPropertyMapping(
+    propertyMapping: InlineEmbeddedRelationFunctionPropertyMapping,
   ): T;
 }
 

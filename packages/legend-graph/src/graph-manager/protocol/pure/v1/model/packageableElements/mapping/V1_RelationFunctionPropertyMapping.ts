@@ -44,6 +44,7 @@ export class V1_RelationFunctionPropertyMapping
 {
   column!: string;
   bindingTransformer?: V1_BindingTransformer | undefined;
+  enumMappingId?: string | undefined;
 
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {
     return visitor.visit_RelationFunctionPropertyMapping(this);
@@ -55,6 +56,7 @@ export class V1_RelationFunctionPropertyMapping
       super.hashCode,
       this.column,
       this.bindingTransformer ?? '',
+      this.enumMappingId ?? '',
     ]);
   }
 }
