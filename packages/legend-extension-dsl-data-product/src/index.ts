@@ -16,6 +16,7 @@
 
 export { Core_DataProductDataAccess_LegendApplicationPlugin } from './components/Core_DataProductDataAccess_LegendApplicationPlugin.js';
 export { EntitlementsDataContractCreator } from './components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
+export { LakehouseResiliencyDisclaimer } from './components/DataProduct/DataContract/LakehouseResiliencyDisclaimer.js';
 export {
   type ContractErrorLayer,
   type LakehouseContractSyncStatusResponse,

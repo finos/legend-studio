@@ -363,6 +363,7 @@ export {
   V1_IngestDefinitionInfo,
   V1_Dataset,
   V1_DependencyAccessPoint,
+  V1_DatabaseDDL,
   V1_SampleQuery,
   V1_ExecutableInfo,
   V1_TemplateExecutableInfo,
@@ -841,6 +842,7 @@ export * from './graph-manager/extensions/DSL_ExternalFormat_PureGraphManagerPlu
 // V1 protocols
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/V1_PackageableElement.js';
 export { V1_StereotypePtr } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_StereotypePtr.js';
+export { V1_TagPtr } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_TagPtr.js';
 export { V1_TaggedValue } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_TaggedValue.js';
 export { V1_PropertyPointer } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_PropertyPointer.js';
 export { V1_SectionIndex } from './graph-manager/protocol/pure/v1/model/packageableElements/section/V1_SectionIndex.js';
@@ -934,6 +936,7 @@ export { InstanceSetImplementation } from './graph/metamodel/pure/packageableEle
 export { EnumerationMapping } from './graph/metamodel/pure/packageableElements/mapping/EnumerationMapping.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/EnumValueMapping.js';
 export { AssociationImplementation } from './graph/metamodel/pure/packageableElements/mapping/AssociationImplementation.js';
+export { ModelJoinAssociationImplementation } from './graph/metamodel/pure/packageableElements/mapping/modelJoin/ModelJoinAssociationImplementation.js';
 export { SetImplementationContainer } from './graph/metamodel/pure/packageableElements/mapping/SetImplementationContainer.js';
 export { AggregationAwareSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
 export { RelationFunctionInstanceSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
@@ -991,6 +994,7 @@ export {
 } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_Connection.js';
 export { V1_ConnectionPointer } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_ConnectionPointer.js';
 export { V1_Mapping } from './graph-manager/protocol/pure/v1/model/packageableElements/mapping/V1_Mapping.js';
+export { V1_ModelJoinAssociationMapping } from './graph-manager/protocol/pure/v1/model/packageableElements/mapping/modelJoin/V1_ModelJoinAssociationMapping.js';
 export {
   V1_MappingInclude,
   V1_MappingIncludeMapping,

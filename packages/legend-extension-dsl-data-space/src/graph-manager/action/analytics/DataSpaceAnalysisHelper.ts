@@ -65,12 +65,14 @@ export const retrieveAnalyticsResultCache = async (
 export const retrieveDataspaceArtifactsCache = async (
   project: StoreProjectData,
   versionId: string,
+  dataSpacePath: string,
   depotServerClient: DepotServerClient,
 ): Promise<PlainObject<StoredFileGeneration>[]> => {
   return depotServerClient.getGenerationFilesByType(
     project,
     versionId,
     V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY,
+    dataSpacePath,
   );
 };
 

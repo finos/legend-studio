@@ -1,5 +1,37 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.91
+
+### Patch Changes
+
+- [#5270](https://github.com/finos/legend-studio/pull/5270) [`b5cf8d5`](https://github.com/finos/legend-studio/commit/b5cf8d5f288d6376c228fc930e1341b969303396) ([@bojja-gs](https://github.com/bojja-gs)) - Add column description support for data product access points. Columns now show documentation sourced from the description field or doc tagged values, with proper fallback handling for older Engine responses.
+
+## 0.0.90
+
+### Patch Changes
+
+- [#5272](https://github.com/finos/legend-studio/pull/5272) [`e804887`](https://github.com/finos/legend-studio/commit/e804887b2cf7e107c27b0451a0e7197ce25ffe7a) ([@TharunRajeev](https://github.com/TharunRajeev)) - Disable Create button if values necessary to the data request tab are not present.
+
+## 0.0.89
+
+### Patch Changes
+
+- [#5260](https://github.com/finos/legend-studio/pull/5260) [`b68dc3f`](https://github.com/finos/legend-studio/commit/b68dc3f1b9ab590f4194804b90bbde445386138c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added condition that checks for pending contracts to render the request access button
+
+- [#5256](https://github.com/finos/legend-studio/pull/5256) [`243426a`](https://github.com/finos/legend-studio/commit/243426ac6427a49c84c451737dedee1a98ac07cb) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added warning for Lakehouse not supporting multi region resiliency.
+
+## 0.0.88
+
+### Patch Changes
+
+- [#5246](https://github.com/finos/legend-studio/pull/5246) [`d386f88`](https://github.com/finos/legend-studio/commit/d386f88b6c17ab8e4de3f3ddcb25fa46dc1a08cd) ([@bojja-gs](https://github.com/bojja-gs)) - Data product viewer: add Legend AI integration panel with resize handle, keyboard accessibility, and AI chat wiring.
+
+- [#5250](https://github.com/finos/legend-studio/pull/5250) [`1c0152a`](https://github.com/finos/legend-studio/commit/1c0152a0aba54bab248b7f53f8aa6115d498ed90) ([@TharunRajeev](https://github.com/TharunRajeev)) - Made Permit and Workflow URL optional.
+
+- [#5244](https://github.com/finos/legend-studio/pull/5244) [`ed80d2d`](https://github.com/finos/legend-studio/commit/ed80d2d10e6f129a5ea295f543b48f4aaebb94f9) ([@TharunRajeev](https://github.com/TharunRajeev)) - Update DataAccessRequestViewer to use initialization state for rendering
+
+- [#5245](https://github.com/finos/legend-studio/pull/5245) [`af6a423`](https://github.com/finos/legend-studio/commit/af6a42375b32906ae6d33e71c79f2b933bc17a3a) ([@mrudula-gs](https://github.com/mrudula-gs)) - Add Service tab to access points showing a cURL command for the REST API endpoint, a copy button, and an Open in Zipkin button for trace viewing.
+
 ## 0.0.87
 
 ### Patch Changes

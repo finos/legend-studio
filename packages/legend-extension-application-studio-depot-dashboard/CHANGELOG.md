@@ -1,5 +1,17 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.73
+
+## 0.1.72
+
+## 0.1.71
+
+## 0.1.70
+
+### Patch Changes
+
+- [#5237](https://github.com/finos/legend-studio/pull/5237) [`b7e3fe9`](https://github.com/finos/legend-studio/commit/b7e3fe97b3e4c1e895302c794145aa1905241206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix the Depot Dashboard AG-Grid and element-type selector being locked to the dark theme. Both now follow the application's active color theme (matching the pattern used by `DatabaseBuilderWizard`, `QueryBuilderTDSGridResult`, etc.).
+
 ## 0.1.69
 
 ### Patch Changes

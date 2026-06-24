@@ -42,6 +42,7 @@ import {
 } from '@mui/material';
 import {
   DataProductSort,
+  SearchResultViewOption,
   SearchResultsViewMode,
   type LegendMarketplaceSearchResultsStore,
 } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
@@ -66,6 +67,7 @@ import { useSearchParams } from '@finos/legend-application/browser';
 import { isNonEmptyString } from '@finos/legend-shared';
 import { PaginationControls } from '../../../components/Pagination/PaginationControls.js';
 import { MarketplaceSearchFiltersPanel } from '../../../components/MarketplaceSearchFiltersPanel/MarketplaceSearchFiltersPanel.js';
+import { LegendMarketplaceOptionSelector } from '../../../components/OptionSelector/LegendMarketplaceOptionSelector.js';
 
 const SearchResultsContent = observer(
   (props: {
@@ -383,36 +385,24 @@ export const LegendMarketplaceSearchResults =
                   : `${searchResultsStore.totalItems} Products`}
               </Typography>
               {isNonEmptyString(searchResultsStore.searchQuery) && (
-                <div
-                  className="legend-marketplace-search-results__search-type-tabs"
-                  role="tablist"
-                  aria-label="Search result type"
-                >
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={true}
-                    tabIndex={0}
-                    className="legend-marketplace-search-results__search-type-tab legend-marketplace-search-results__search-type-tab--active"
-                  >
-                    Data Products
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={false}
-                    tabIndex={-1}
-                    className="legend-marketplace-search-results__search-type-tab"
-                    onClick={() => {
-                      applicationStore.navigationService.navigator.goToLocation(
-                        generateFieldSearchResultsRoute(
-                          searchResultsStore.searchQuery,
-                        ),
-                      );
+                <div className="legend-marketplace-search-results__search-type-tabs">
+                  <LegendMarketplaceOptionSelector
+                    options={[
+                      SearchResultViewOption.DATA_PRODUCTS,
+                      SearchResultViewOption.DATA_FIELDS,
+                    ]}
+                    selectedOption={SearchResultViewOption.DATA_PRODUCTS}
+                    onChange={(option) => {
+                      if (option === SearchResultViewOption.DATA_FIELDS) {
+                        applicationStore.navigationService.navigator.goToLocation(
+                          generateFieldSearchResultsRoute(
+                            searchResultsStore.searchQuery,
+                          ),
+                        );
+                      }
                     }}
-                  >
-                    Data Fields
-                  </button>
+                    ariaLabel="Search result type"
+                  />
                 </div>
               )}
               <div className="legend-marketplace-search-results__sort-bar__controls">

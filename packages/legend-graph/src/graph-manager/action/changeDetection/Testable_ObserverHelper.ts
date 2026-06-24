@@ -40,7 +40,10 @@ import {
   observe_ServiceTestSuite,
 } from './DSL_Service_ObserverHelper.js';
 import { FunctionTest } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
-import { observe_FunctionTest } from './DomainObserverHelper.js';
+import {
+  observe_FunctionParameterValue,
+  observe_FunctionTest,
+} from './DomainObserverHelper.js';
 
 export const observe_DataProductAccessPointTest = skipObserved(
   (metamodel: DataProductAccessPointTest): DataProductAccessPointTest => {
@@ -48,9 +51,11 @@ export const observe_DataProductAccessPointTest = skipObserved(
       id: observable,
       doc: observable,
       accessPointId: observable,
+      parameters: observable,
       assertions: observable,
       hashCode: computed,
     });
+    metamodel.parameters?.forEach(observe_FunctionParameterValue);
     metamodel.assertions.forEach(observe_TestAssertion);
     return metamodel;
   },

@@ -17,12 +17,7 @@
 import { useMemo } from 'react';
 import { LegendAIChartType } from '../LegendAI_LegendApplicationPlugin_Extension.js';
 import type { LegendAIGridData } from '../LegendAITypes.js';
-import {
-  computeKeyMetrics,
-  computeChartData,
-  inferChartType,
-  findNumericColumnName,
-} from './LegendAIAnalysisUtils.js';
+import { analyzeGridData } from './LegendAIAnalysisUtils.js';
 import { LegendAIBarChart, LegendAIDonutChart } from './LegendAICharts.js';
 
 export const LegendAIAnalysisPanel = (props: {
@@ -32,35 +27,20 @@ export const LegendAIAnalysisPanel = (props: {
 }): React.ReactNode => {
   const { gridData, summary, SummaryRenderer } = props;
 
-  const metrics = useMemo(() => computeKeyMetrics(gridData), [gridData]);
-
-  const chartType = useMemo(() => inferChartType(gridData), [gridData]);
-
-  const chartData = useMemo(
-    () =>
-      chartType === LegendAIChartType.NONE ? [] : computeChartData(gridData),
-    [gridData, chartType],
-  );
-
-  const numericColName = useMemo(
-    () => findNumericColumnName(gridData),
+  const { metrics, chartType, chartData, numericColumnName } = useMemo(
+    () => analyzeGridData(gridData),
     [gridData],
   );
 
-  const donutTitleProp = useMemo(
-    () =>
-      numericColName === undefined
-        ? {}
-        : { title: `${numericColName} Distribution` },
-    [numericColName],
-  );
-  const barTitleProp = useMemo(
-    () =>
-      numericColName === undefined
-        ? {}
-        : { title: `Top ${chartData.length} by ${numericColName}` },
-    [numericColName, chartData.length],
-  );
+  let chartTitle: string | undefined;
+  if (numericColumnName !== undefined) {
+    chartTitle =
+      chartType === LegendAIChartType.PIE
+        ? `${numericColumnName} Distribution`
+        : `Top ${chartData.length} by ${numericColumnName}`;
+  }
+
+  const chartTitleProp = chartTitle === undefined ? {} : { title: chartTitle };
 
   return (
     <div className="legend-ai-analysis">
@@ -87,9 +67,9 @@ export const LegendAIAnalysisPanel = (props: {
       {chartData.length > 0 && (
         <div className="legend-ai-analysis__chart-section">
           {chartType === LegendAIChartType.PIE ? (
-            <LegendAIDonutChart data={chartData} {...donutTitleProp} />
+            <LegendAIDonutChart data={chartData} {...chartTitleProp} />
           ) : (
-            <LegendAIBarChart data={chartData} {...barTitleProp} />
+            <LegendAIBarChart data={chartData} {...chartTitleProp} />
           )}
         </div>
       )}

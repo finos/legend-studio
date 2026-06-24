@@ -15,7 +15,7 @@
  */
 
 import { test, expect, describe } from '@jest/globals';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { unitTest } from '@finos/legend-shared/test';
 import {
   V1_buildExecutionResult,
@@ -33,6 +33,8 @@ import {
 
 const SIMPLE_CSV = 'Name,Age\nAlice,30\nBob,25';
 
+const CSV_WITH_BOOLEANS = 'Name,Active\nAlice,true\nBob,false';
+
 const SIMPLE_TDS_RESULT_JSON = {
   builder: {
     _type: 'tdsBuilder',
@@ -48,9 +50,34 @@ const SIMPLE_TDS_RESULT_JSON = {
   },
 };
 
+const TDS_RESULT_WITH_BOOLEANS_JSON = {
+  builder: {
+    _type: 'tdsBuilder',
+    columns: [
+      { name: 'Name', type: 'String' },
+      { name: 'Active', type: 'Boolean' },
+    ],
+  },
+  activities: [],
+  result: {
+    columns: ['Name', 'Active'],
+    rows: [{ values: ['Alice', true] }, { values: ['Bob', false] }],
+  },
+};
+
 const buildTDSResult = (): TDSExecutionResult => {
   const result = V1_buildExecutionResult(
     V1_deserializeExecutionResult(SIMPLE_TDS_RESULT_JSON),
+  );
+  if (!(result instanceof TDSExecutionResult)) {
+    throw new Error('Expected TDSExecutionResult');
+  }
+  return result;
+};
+
+const buildTDSResultWithBooleans = (): TDSExecutionResult => {
+  const result = V1_buildExecutionResult(
+    V1_deserializeExecutionResult(TDS_RESULT_WITH_BOOLEANS_JSON),
   );
   if (!(result instanceof TDSExecutionResult)) {
     throw new Error('Expected TDSExecutionResult');
@@ -129,6 +156,22 @@ describe(unitTest('PlayGroundSQLExecutionResultGrid'), () => {
     expect(container.querySelector('.ag-theme-balham')).not.toBeNull();
     expect(container.querySelector('.ag-theme-balham-dark')).toBeNull();
   });
+
+  test(
+    unitTest('renders boolean values from CSV in advanced server mode'),
+    async () => {
+      render(
+        <PlayGroundSQLExecutionResultGrid
+          result={CSV_WITH_BOOLEANS}
+          useAdvancedGrid={true}
+        />,
+      );
+      // booleans arrive as the strings "true"/"false" via CSV parsing — the
+      // renderer must surface them rather than blanking the cell.
+      expect(await screen.findByText('true')).not.toBeNull();
+      expect(await screen.findByText('false')).not.toBeNull();
+    },
+  );
 });
 
 // ------------------------------------
@@ -204,4 +247,47 @@ describe(unitTest('TEMPORARY_PlaygroundTDSResultGrid'), () => {
     expect(container.querySelector('.ag-theme-balham')).not.toBeNull();
     expect(container.querySelector('.ag-theme-balham-dark')).toBeNull();
   });
+
+  test(
+    unitTest('renders native boolean cell values in advanced server mode'),
+    async () => {
+      const result = buildTDSResultWithBooleans();
+      render(
+        <TEMPORARY_PlaygroundTDSResultGrid
+          result={result}
+          useAdvancedGrid={true}
+        />,
+      );
+      // Row values arrive as actual booleans; without explicit coercion in
+      // the cell renderer React would render nothing for these cells.
+      expect(await screen.findByText('true')).not.toBeNull();
+      expect(await screen.findByText('false')).not.toBeNull();
+    },
+  );
+
+  test(
+    unitTest('renders native boolean cell values in advanced local mode'),
+    async () => {
+      const result = buildTDSResultWithBooleans();
+      render(
+        <TEMPORARY_PlaygroundTDSResultGrid
+          result={result}
+          useAdvancedGrid={true}
+          useLocalMode={true}
+        />,
+      );
+      expect(await screen.findByText('true')).not.toBeNull();
+      expect(await screen.findByText('false')).not.toBeNull();
+    },
+  );
+
+  test(
+    unitTest('renders native boolean cell values in basic mode'),
+    async () => {
+      const result = buildTDSResultWithBooleans();
+      render(<TEMPORARY_PlaygroundTDSResultGrid result={result} />);
+      expect(await screen.findByText('true')).not.toBeNull();
+      expect(await screen.findByText('false')).not.toBeNull();
+    },
+  );
 });

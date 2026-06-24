@@ -110,6 +110,7 @@ import { V1_AggregationAwarePropertyMapping } from '../../../model/packageableEl
 import type { V1_AbstractFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_AbstractFlatDataPropertyMapping.js';
 import { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping.js';
 import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping.js';
+import { V1_ModelJoinAssociationMapping } from '../../../model/packageableElements/mapping/modelJoin/V1_ModelJoinAssociationMapping.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
@@ -719,6 +720,7 @@ const relationFunctionClassMappingModelSchema = createModelSchema(
     ),
     root: primitive(),
     relationFunction: usingModelSchema(V1_packageableElementPointerModelSchema),
+    primaryKey: list(primitive()),
   },
 );
 
@@ -995,6 +997,7 @@ enum V1_AssociationMappingType {
   RELATIONAL = 'relational',
   XSTORE = 'xStore',
   FLAT_DATA = 'flatData',
+  MODEL_JOIN = 'modelJoin',
 }
 
 const V1_serializeAssociationPropertyMapping = (
@@ -1094,6 +1097,24 @@ const xStoreAssociationMappingModelschema = createModelSchema(
   },
 );
 
+const modelJoinAssociationMappingModelschema = createModelSchema(
+  V1_ModelJoinAssociationMapping,
+  {
+    _type: usingConstantValueSchema(V1_AssociationMappingType.MODEL_JOIN),
+    association: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.ASSOCIATION,
+        ),
+    ),
+    id: optional(primitive()),
+    joinCondition: usingModelSchema(V1_rawLambdaModelSchema),
+    stores: list(primitive()),
+  },
+);
+
 const V1_serializeAssociationMapping = (
   protocol: V1_AssociationMapping,
 ): PlainObject<V1_AssociationMapping> => {
@@ -1103,6 +1124,8 @@ const V1_serializeAssociationMapping = (
     return serialize(xStoreAssociationMappingModelschema, protocol);
   } else if (protocol instanceof V1_FlatDataAssociationMapping) {
     return serialize(flatDataAssociationMappingModelschema, protocol);
+  } else if (protocol instanceof V1_ModelJoinAssociationMapping) {
+    return serialize(modelJoinAssociationMappingModelschema, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize association mapping`,
@@ -1120,6 +1143,8 @@ const V1_deserializeAssociationMapping = (
       return deserialize(xStoreAssociationMappingModelschema, json);
     case V1_AssociationMappingType.FLAT_DATA:
       return deserialize(flatDataAssociationMappingModelschema, json);
+    case V1_AssociationMappingType.MODEL_JOIN:
+      return deserialize(modelJoinAssociationMappingModelschema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize association mapping of type '${json._type}'`,

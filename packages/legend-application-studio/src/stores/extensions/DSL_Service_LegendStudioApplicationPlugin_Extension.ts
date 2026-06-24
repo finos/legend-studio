@@ -23,7 +23,6 @@ import type {
   ObserverContext,
   PostDeploymentProperties,
   HostedService,
-  Service,
 } from '@finos/legend-graph';
 
 export type ServiceTestRuntimeConnectionBuilder = (
@@ -50,7 +49,7 @@ export type PostDeploymentActionTypeGetter = (
 ) => string | undefined;
 
 export type ServiceDocumentationAISuggester = (
-  service: Service,
+  serviceGrammar: string,
   legendAIUrl: string,
 ) => Promise<string>;
 

@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.325
+
+## 0.1.324
+
+## 0.1.323
+
+## 0.1.322
+
 ## 0.1.321
 
 ### Patch Changes

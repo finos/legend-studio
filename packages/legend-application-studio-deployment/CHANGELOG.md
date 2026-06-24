@@ -1,5 +1,17 @@
 # @finos/legend-application-studio-deployment
 
+## 13.232.0
+
+## 13.231.0
+
+### Patch Changes
+
+- [#5255](https://github.com/finos/legend-studio/pull/5255) [`28983b0`](https://github.com/finos/legend-studio/commit/28983b07c011b922ef76aa8bbe267f2d5a5e2041) ([@AFine-gs](https://github.com/AFine-gs)) - add re auth flow for SDC server
+
+## 13.230.0
+
+## 13.229.0
+
 ## 13.228.0
 
 ## 13.227.0

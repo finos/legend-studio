@@ -93,7 +93,8 @@ export type QueryBuilderFilterNodeDropTarget =
 export type QueryBuilderFilterValueDropTarget =
   | QueryBuilderVariableDragSource
   | QueryBuilderProjectionColumnDragSource
-  | QueryBuilderExplorerTreeDragSource;
+  | QueryBuilderExplorerTreeDragSource
+  | QueryBuilderExplorerTreeRelationColumnDragSource;
 
 export type QueryBuilderFilterConditionRearrangeDropTarget =
   QueryBuilderFilterConditionDragSource;
@@ -237,6 +238,64 @@ export class FilterPropertyExpressionStateConditionValueState extends FilterCond
   }
 }
 
+// This class is used to represent the value of a filter condition when the value is
+// a relation column accessor (which comes from DND a relation column from the explorer
+// tree or from the fetch structure panel). Used when the filter source is also a
+// relation column, allowing expressions like `$x.colA == $x.colB`.
+export class FilterRelationColumnConditionValueState extends FilterConditionValueState {
+  columnName: string;
+  columnType: Type;
+  columnMultiplicity: Multiplicity;
+
+  constructor(
+    conditionState: FilterConditionState,
+    columnName: string,
+    columnType: Type,
+    columnMultiplicity: Multiplicity,
+  ) {
+    super(conditionState);
+    makeObservable(this, {
+      columnName: observable,
+      columnType: observable,
+      columnMultiplicity: observable,
+      changeColumn: action,
+    });
+    this.columnName = columnName;
+    this.columnType = columnType;
+    this.columnMultiplicity = columnMultiplicity;
+  }
+
+  override get type(): Type {
+    return this.columnType;
+  }
+
+  override get isCollection(): boolean {
+    return (
+      this.columnMultiplicity.upperBound === undefined ||
+      this.columnMultiplicity.upperBound > 1
+    );
+  }
+
+  changeColumn(
+    columnName: string,
+    columnType: Type,
+    columnMultiplicity: Multiplicity,
+  ): void {
+    this.columnName = columnName;
+    this.columnType = columnType;
+    this.columnMultiplicity = columnMultiplicity;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_RIGHT_VALUE_RELATION_COLUMN,
+      this.columnName,
+      this.columnMultiplicity.lowerBound,
+      this.columnMultiplicity.upperBound ?? '',
+    ]);
+  }
+}
+
 /**
  * Abstract base class for the left-hand side (source) of a filter condition.
  * This allows filtering on different source types (class properties, relation columns)
@@ -308,11 +367,21 @@ export class FilterPropertyExpressionSourceState extends FilterConditionSourceSt
 export class FilterRelationColumnSourceState extends FilterConditionSourceState {
   readonly columnName: string;
   readonly columnType: Type;
+  readonly columnMultiplicity: Multiplicity;
 
-  constructor(columnName: string, columnType: Type) {
+  constructor(
+    columnName: string,
+    columnType: Type,
+    columnMultiplicity: Multiplicity,
+  ) {
     super();
     this.columnName = columnName;
     this.columnType = columnType;
+    this.columnMultiplicity = columnMultiplicity;
+  }
+
+  get multiplicity(): Multiplicity {
+    return this.columnMultiplicity;
   }
 
   get type(): Type {
@@ -361,6 +430,8 @@ export class FilterRelationColumnSourceState extends FilterConditionSourceState 
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_SOURCE_RELATION_COLUMN,
       this.columnName,
+      this.columnMultiplicity.lowerBound,
+      this.columnMultiplicity.upperBound ?? '',
     ]);
   }
 }
@@ -391,6 +462,7 @@ export class FilterConditionState implements Hashable {
       addExistsLambdaParamNames: action,
       buildRightConditionValueFromValueSpec: action,
       buildRightConditionValueFromPropertyExpressionState: action,
+      buildRightConditionValueFromRelationColumn: action,
       handleTypeaheadSearch: flow,
       operators: computed,
       hashCode: computed,
@@ -565,6 +637,32 @@ export class FilterConditionState implements Hashable {
         new FilterPropertyExpressionStateConditionValueState(
           this,
           propertyExpressionState,
+        ),
+      );
+    }
+  }
+
+  buildRightConditionValueFromRelationColumn(
+    columnName: string,
+    columnType: Type,
+    columnMultiplicity: Multiplicity,
+  ): void {
+    if (
+      this.rightConditionValue instanceof
+      FilterRelationColumnConditionValueState
+    ) {
+      this.rightConditionValue.changeColumn(
+        columnName,
+        columnType,
+        columnMultiplicity,
+      );
+    } else {
+      this.setRightConditionValue(
+        new FilterRelationColumnConditionValueState(
+          this,
+          columnName,
+          columnType,
+          columnMultiplicity,
         ),
       );
     }

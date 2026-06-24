@@ -617,6 +617,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
           source: sourceExecutionLambda,
           target: targetExecutionLambda,
           keys: this.element.keys,
+          limit: this.limit,
           colsForHash: this.element.columnsToCompare,
           sourceLambdaParameterValues: sourceParamValues,
         });
@@ -625,6 +626,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
           source: sourceExecutionLambda,
           target: targetExecutionLambda,
           keys: this.element.keys,
+          limit: this.limit,
           colsForHash: this.element.columnsToCompare,
           targetLambdaParameterValues: targetParamValues,
         });

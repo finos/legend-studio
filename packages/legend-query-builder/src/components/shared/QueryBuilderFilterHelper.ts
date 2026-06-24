@@ -18,6 +18,7 @@ import type { Type } from '@finos/legend-graph';
 import {
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
   type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreeRelationColumnDragSource,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import {
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
@@ -46,6 +47,9 @@ export const getDNDItemType = (
     case QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY:
       return (item as QueryBuilderExplorerTreeDragSource).node.property
         .genericType.value.rawType;
+    case QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN:
+      return (item as QueryBuilderExplorerTreeRelationColumnDragSource).node
+        .column.genericType.value.rawType;
     case QUERY_BUILDER_VARIABLE_DND_TYPE:
       return (item as QueryBuilderVariableDragSource).variable.genericType
         ?.value.rawType;

@@ -1,5 +1,13 @@
 # @finos/legend-extension-store-service-store
 
+## 2.0.474
+
+## 2.0.473
+
+## 2.0.472
+
+## 2.0.471
+
 ## 2.0.470
 
 ### Patch Changes

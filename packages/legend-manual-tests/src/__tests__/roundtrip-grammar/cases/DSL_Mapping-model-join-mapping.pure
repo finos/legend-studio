@@ -1,0 +1,38 @@
+###Pure
+Class test::Person
+{
+  firstName: String[1];
+}
+
+Class test::Firm
+{
+  legalName: String[1];
+}
+
+Association test::FirmPerson
+{
+  firm: test::Firm[1];
+  employee: test::Person[1];
+}
+
+
+###Mapping
+Mapping test::MyMapping
+(
+  *test::Firm[firm]: Pure
+  {
+    ~src test::Firm
+    legalName: $src.legalName
+  }
+  *test::Person[person]: Pure
+  {
+    ~src test::Person
+    +firmId: Integer[1]: 1,
+    firstName: $src.firstName
+  }
+
+  test::FirmPerson: ModelJoin
+  {
+    {firm: test::Firm[1], employee: test::Person[1]|$firm.legalName == $employee.firstName}
+  }
+)

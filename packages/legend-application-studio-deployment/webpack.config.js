@@ -55,6 +55,24 @@ export default (env, arg) => {
         AG_GRID_LICENSE: null,
       }),
 
+      // Always ship the popup-callback static page used by the SDLC popup
+      // re-authentication flow (see `LegendStudioBaseStore.reAuthorizeSDLCInPopup`).
+      // The URL must be allow-listed as an OAuth `redirect_uri` on the SDLC
+      // server and pointed at via `sdlc.enablePopupReAuth` in the Studio
+      // config.
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: resolve(__dirname, './assets/popup-callback.html'),
+            // trim the leading and trailing slash
+            to:
+              appConfig.baseUrl.length === 1
+                ? undefined
+                : appConfig.baseUrl.slice(1, -1),
+          },
+        ],
+      }),
+
       // For development, we want to serve the `config.json` and `version.json` files at the `/baseUrl`
       isEnvDevelopment &&
         new CopyWebpackPlugin({

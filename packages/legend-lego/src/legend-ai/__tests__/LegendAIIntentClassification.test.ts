@@ -20,6 +20,14 @@ import {
   classifyQuestionIntentFast,
   classifyQuestionIntent,
   LegendAIQuestionIntent,
+  buildColumnDefsFromNames,
+  TDSColumnSchema,
+  TDSParameterSchema,
+  TDSServiceSchema,
+  LegendAIConfig,
+  LegendAIGridData,
+  LegendAIThinkingStep,
+  LegendAIThinkingStepStatus,
 } from '../LegendAITypes.js';
 
 describe(unitTest('classifyQuestionIntentFast — metadata questions'), () => {
@@ -84,6 +92,42 @@ describe(unitTest('classifyQuestionIntentFast — metadata questions'), () => {
     );
     expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
   });
+
+  test('capability discovery question → metadata (not ambiguous)', () => {
+    const result = classifyQuestionIntentFast(
+      'What data does LSEG Programmatic News offer and how can I use it?',
+      true,
+    );
+    expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+    expect(result.metaScore).toBeGreaterThan(0);
+    expect(result.dataScore).toBe(0);
+    expect(result.ambiguous).toBe(false);
+  });
+
+  test('how are services related → metadata', () => {
+    const result = classifyQuestionIntentFast(
+      'How are these 2 services related and is there any way we can join them?',
+      true,
+    );
+    expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+    expect(result.ambiguous).toBe(false);
+  });
+
+  test('relationship between services → metadata', () => {
+    const result = classifyQuestionIntentFast(
+      'What is the relationship between ServiceA and ServiceB?',
+      true,
+    );
+    expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+  });
+
+  test('can we combine/link these → metadata', () => {
+    const result = classifyQuestionIntentFast(
+      'Can we combine these two access points?',
+      true,
+    );
+    expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+  });
 });
 describe(unitTest('classifyQuestionIntentFast — data query questions'), () => {
   test('SQL keyword → data_query', () => {
@@ -144,6 +188,14 @@ describe(unitTest('classifyQuestionIntentFast — data query questions'), () => 
     );
     expect(result.intent).toBe(LegendAIQuestionIntent.DATA_QUERY);
   });
+
+  test('SQL JOIN keyword → data_query', () => {
+    const result = classifyQuestionIntentFast(
+      'Join on the tables between trades and instruments',
+      true,
+    );
+    expect(result.intent).toBe(LegendAIQuestionIntent.DATA_QUERY);
+  });
 });
 describe(unitTest('classifyQuestionIntentFast — tiebreakers'), () => {
   test('product reference overrides data signals → metadata', () => {
@@ -200,6 +252,56 @@ describe(unitTest('classifyQuestionIntentFast — tiebreakers'), () => {
     expect(result.ambiguous).toBe(true);
   });
 });
+describe(
+  unitTest('classifyQuestionIntentFast — explicit metadata overrides'),
+  () => {
+    test('"just answer from metadata" → metadata (not ambiguous)', () => {
+      const result = classifyQuestionIntentFast(
+        'How are these services related, just answer from metadata do not query',
+        true,
+      );
+      expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+      expect(result.ambiguous).toBe(false);
+    });
+
+    test('"don\'t query" → metadata (not ambiguous)', () => {
+      const result = classifyQuestionIntentFast(
+        "Show me the relationship between services, don't query the data",
+        true,
+      );
+      expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+      expect(result.ambiguous).toBe(false);
+    });
+
+    test('"do not execute" → metadata (not ambiguous)', () => {
+      const result = classifyQuestionIntentFast(
+        'List the columns, do not execute any sql',
+        true,
+      );
+      expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+      expect(result.ambiguous).toBe(false);
+    });
+
+    test('"without querying" → metadata (not ambiguous)', () => {
+      const result = classifyQuestionIntentFast(
+        'Compare these two services without querying',
+        true,
+      );
+      expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+      expect(result.ambiguous).toBe(false);
+    });
+
+    test('"just explain" → metadata (not ambiguous)', () => {
+      const result = classifyQuestionIntentFast(
+        'Just explain how the holdings data is structured',
+        true,
+      );
+      expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+      expect(result.ambiguous).toBe(false);
+    });
+  },
+);
+
 describe(unitTest('classifyQuestionIntentFast — fallback'), () => {
   test('unrecognized question with services → data_query (ambiguous)', () => {
     const result = classifyQuestionIntentFast('hello world', true);
@@ -235,5 +337,68 @@ describe(unitTest('classifyQuestionIntent — legacy wrapper'), () => {
     expect(classifyQuestionIntent('hello world', false)).toBe(
       LegendAIQuestionIntent.METADATA,
     );
+  });
+});
+
+describe(unitTest('buildColumnDefsFromNames'), () => {
+  test('builds column definitions from string array', () => {
+    const defs = buildColumnDefsFromNames(['region', 'amount']);
+    expect(defs).toHaveLength(2);
+    expect(defs[0]?.colId).toBe('region');
+    expect(defs[0]?.headerName).toBe('region');
+    expect(defs[0]?.field).toBe('region');
+    expect(defs[1]?.colId).toBe('amount');
+  });
+
+  test('returns empty array for empty input', () => {
+    expect(buildColumnDefsFromNames([])).toHaveLength(0);
+  });
+});
+
+describe(unitTest('LegendAITypes — class instantiation'), () => {
+  test('TDSColumnSchema has expected defaults', () => {
+    const col = new TDSColumnSchema();
+    expect(col.type).toBeUndefined();
+    expect(col.documentation).toBeUndefined();
+    expect(col.sampleValues).toBeUndefined();
+    expect(col.nullable).toBeUndefined();
+    expect(col.relationalType).toBeUndefined();
+  });
+
+  test('TDSParameterSchema has expected defaults', () => {
+    const param = new TDSParameterSchema();
+    expect(param.type).toBeUndefined();
+    expect(param.required).toBeUndefined();
+  });
+
+  test('TDSServiceSchema has expected defaults', () => {
+    const svc = new TDSServiceSchema();
+    expect(svc.sourceType).toBeUndefined();
+    expect(svc.dataProductPath).toBeUndefined();
+    expect(svc.parameterExtractionFailed).toBeUndefined();
+    expect(svc.parameterSchemas).toBeUndefined();
+    expect(svc.description).toBeUndefined();
+  });
+
+  test('LegendAIConfig has expected defaults', () => {
+    const config = new LegendAIConfig();
+    expect(config.llmModelOptions).toBeUndefined();
+    expect(config.maxJudgeAttempts).toBeUndefined();
+    expect(config.orchestratorAuthToken).toBeUndefined();
+    expect(config.lakehouseEnvironment).toBeUndefined();
+  });
+
+  test('LegendAIGridData has expected shape', () => {
+    const grid = new LegendAIGridData();
+    expect(grid.columnDefs).toBeUndefined();
+    expect(grid.rowData).toBeUndefined();
+  });
+
+  test('LegendAIThinkingStep has expected shape', () => {
+    const step = new LegendAIThinkingStep();
+    step.id = '1';
+    step.label = 'test';
+    step.status = LegendAIThinkingStepStatus.ACTIVE;
+    expect(step.id).toBe('1');
   });
 });

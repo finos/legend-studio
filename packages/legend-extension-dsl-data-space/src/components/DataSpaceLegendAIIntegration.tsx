@@ -16,16 +16,16 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  buildLambdaVariableExpressions,
-  VariableExpression,
-  type QueryExplicitExecutionContextInfo,
-} from '@finos/legend-graph';
-import { filterByType } from '@finos/legend-shared';
+import { type QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
 import {
   LegendAIChat,
   LegendAIErrorBoundary,
   findLegendAIPlugin,
+  extractParameterSchemas,
+  buildPropertyDocIndex,
+  enrichColumnsFromElementDocs,
+  inferServiceRelationshipsFromAssociations,
+  extractLambdaPreFilters,
   type TDSColumnSchema,
   type TDSServiceSchema,
   type LegendAIConfig,
@@ -64,17 +64,23 @@ export async function extractTDSServicesFromDataSpace(
       const info = exec.info;
       const tdsResult = exec.result;
 
-      let parameters: string[] = [];
+      const { parameters, parameterSchemas, parameterExtractionFailed } =
+        await extractParameterSchemas(
+          info.query,
+          graphManager,
+          viewerState.graphManagerState,
+        );
+
+      // Extract hardcoded pre-filter constraints from the lambda
+      let preFilters: TDSServiceSchema['preFilters'];
       try {
         const rawLambda = await graphManager.pureCodeToLambda(info.query);
-        parameters = buildLambdaVariableExpressions(
-          rawLambda,
-          viewerState.graphManagerState,
-        )
-          .filter(filterByType(VariableExpression))
-          .map((v) => v.name);
+        const extracted = extractLambdaPreFilters(rawLambda.body);
+        if (extracted.length > 0) {
+          preFilters = extracted;
+        }
       } catch {
-        /* empty */
+        /* pre-filter extraction is best-effort */
       }
 
       const entry: TDSServiceSchema = {
@@ -85,6 +91,9 @@ export async function extractTDSServicesFromDataSpace(
           if (col.type !== undefined) {
             column.type = col.type;
           }
+          if (col.relationalType !== undefined) {
+            column.relationalType = col.relationalType;
+          }
           if (col.documentation !== undefined) {
             column.documentation = col.documentation;
           }
@@ -94,6 +103,11 @@ export async function extractTDSServicesFromDataSpace(
           return column;
         }),
         parameters,
+        ...(parameterSchemas.length > 0 ? { parameterSchemas } : {}),
+        ...(parameterExtractionFailed
+          ? { parameterExtractionFailed: true }
+          : {}),
+        ...(preFilters ? { preFilters } : {}),
       };
       if (exec.description !== undefined) {
         entry.description = exec.description;
@@ -101,12 +115,25 @@ export async function extractTDSServicesFromDataSpace(
       return [entry];
     }),
   );
-  return nested.flat();
+  const services = nested.flat();
+
+  // Enrich columns with documentation and nullability from elementDocs
+  const propIndex = buildPropertyDocIndex(
+    viewerState.dataSpaceAnalysisResult.elementDocs,
+  );
+  if (propIndex.size > 0) {
+    for (const svc of services) {
+      enrichColumnsFromElementDocs(svc.columns, propIndex);
+    }
+  }
+
+  return services;
 }
 
 function extractMetadataFromDataSpace(
   viewerState: DataSpaceViewerState,
   coordinates: string,
+  services: TDSServiceSchema[],
 ): LegendAIProductMetadata {
   const result = viewerState.dataSpaceAnalysisResult;
 
@@ -127,6 +154,9 @@ function extractMetadataFromDataSpace(
       if (exec.description !== undefined) {
         summary.description = exec.description;
       }
+      if (exec.result instanceof DataSpaceExecutableTDSResult) {
+        summary.columnNames = exec.result.columns.map((col) => col.name);
+      }
       return summary;
     }),
     tags: result.taggedValues.map((tv) => ({
@@ -140,6 +170,15 @@ function extractMetadataFromDataSpace(
   if (supportInfoText !== undefined) {
     metadata.supportInfo = supportInfoText;
   }
+  if (services.length >= 2) {
+    const serviceRels = inferServiceRelationshipsFromAssociations(
+      services,
+      result.elementDocs,
+    );
+    if (serviceRels.length > 0) {
+      metadata.serviceRelationships = serviceRels;
+    }
+  }
   return metadata;
 }
 
@@ -147,8 +186,10 @@ const DataSpaceLegendAIIntegrationInner = observer(
   (props: {
     dataSpaceViewerState: DataSpaceViewerState;
     config: LegendAIConfig;
+    onClose?: () => void;
+    onMinimize?: () => void;
   }) => {
-    const { dataSpaceViewerState, config } = props;
+    const { dataSpaceViewerState, config, onClose, onMinimize } = props;
 
     const legendAIPlugin = useMemo(
       () =>
@@ -168,7 +209,7 @@ const DataSpaceLegendAIIntegrationInner = observer(
           }
         })
         .catch(() => {
-          /* empty */
+          /* noop — services stay empty; AI panel simply won't render */
         });
       return () => {
         cancelled = true;
@@ -205,7 +246,11 @@ const DataSpaceLegendAIIntegrationInner = observer(
 
     const metadata = useMemo(() => {
       try {
-        return extractMetadataFromDataSpace(dataSpaceViewerState, coordinates);
+        return extractMetadataFromDataSpace(
+          dataSpaceViewerState,
+          coordinates,
+          services,
+        );
       } catch {
         return {
           name: 'Unknown',
@@ -213,7 +258,7 @@ const DataSpaceLegendAIIntegrationInner = observer(
           serviceSummaries: [],
         };
       }
-    }, [dataSpaceViewerState, coordinates]);
+    }, [dataSpaceViewerState, coordinates, services]);
 
     if (!config.enabled || !legendAIPlugin) {
       return null;
@@ -233,6 +278,8 @@ const DataSpaceLegendAIIntegrationInner = observer(
         plugin={legendAIPlugin}
         dataProductCoordinates={dataProductCoordinates}
         pureExecutionContext={pureExecutionContext}
+        {...(onClose ? { onClose } : {})}
+        {...(onMinimize ? { onMinimize } : {})}
       />
     );
   },
@@ -242,6 +289,8 @@ export const DataSpaceLegendAIIntegration = observer(
   (props: {
     dataSpaceViewerState: DataSpaceViewerState;
     config: LegendAIConfig;
+    onClose?: () => void;
+    onMinimize?: () => void;
   }) => (
     <LegendAIErrorBoundary>
       <DataSpaceLegendAIIntegrationInner {...props} />

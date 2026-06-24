@@ -21,7 +21,8 @@ import {
   processQuestion,
   executeSqlAndReport,
   handleMetadataQuestion,
-} from '../LegendAIChatState.js';
+  generateAndJudgeAccessPointSql,
+} from '../LegendAIChatProcessors.js';
 import {
   type LegendAIAssistantMessage,
   type TDSServiceSchema,
@@ -248,8 +249,9 @@ describe(unitTest('processQuestion'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.textAnswer).toBe('Product info here');
-    expect(msg.isProcessing).toBe(false);
+    expect(msg.textAnswer).toContain('### Metadata context');
+    expect(msg.textAnswer).toContain('Product info here');
+    expect(msg.isProcessing).toBeTruthy();
   });
 
   test('handles no services available', async () => {
@@ -609,18 +611,15 @@ const TEST_DATA__dataProductCoordinates = {
   version: '1.0.0',
 };
 
-describe(unitTest('executeSqlAndReport — lakehouse routing'), () => {
-  test('routes access-point SQL to executeLakehouseSql', async () => {
+describe(unitTest('executeSqlAndReport — execution'), () => {
+  test('routes AP SQL through executeLakehouseSql', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const executeLakehouseSql = createMock().mockResolvedValue({
       columns: ['positionId', 'value'],
       rows: [{ positionId: 'P1', value: 100 }],
     });
-    const executeSql = createMock().mockResolvedValue({
-      columns: ['x'],
-      rows: [],
-    });
+    const executeSql = createMock();
     const plugin = TEST__createMockLegendAIPlugin({
       executeSql,
       executeLakehouseSql,
@@ -643,66 +642,35 @@ describe(unitTest('executeSqlAndReport — lakehouse routing'), () => {
     expect(msg.gridData?.columnDefs[0]?.headerName).toBe('positionId');
   });
 
-  test('falls back to executeSql when services are not access points', async () => {
+  test('executes service() SQL through executeSql', async () => {
     const { setter } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
-    const executeLakehouseSql = createMock();
     const executeSql = createMock().mockResolvedValue({
       columns: ['name'],
       rows: [{ name: 'Alice' }],
     });
     const plugin = TEST__createMockLegendAIPlugin({
       executeSql,
-      executeLakehouseSql,
     });
 
     await executeSqlAndReport(
       'SELECT name FROM service(/trades)',
-      TEST_DATA__legendAIServices, // sourceType is undefined (service)
+      TEST_DATA__legendAIServices,
       TEST_DATA__legendAIConfig,
       plugin,
       setter,
       Date.now(),
-      TEST_DATA__dataProductCoordinates,
     );
 
     expect(executeSql).toHaveBeenCalledTimes(1);
-    expect(executeLakehouseSql).not.toHaveBeenCalled();
   });
 
-  test('falls back to executeSql when dataProductCoordinates is missing', async () => {
-    const { setter } = TEST__createMockSetter();
-    TEST__seedAssistant(setter);
-    const executeLakehouseSql = createMock();
-    const executeSql = createMock().mockResolvedValue({
-      columns: ['id'],
-      rows: [],
-    });
-    const plugin = TEST__createMockLegendAIPlugin({
-      executeSql,
-      executeLakehouseSql,
-    });
-
-    await executeSqlAndReport(
-      "SELECT * FROM p('my::dp.ap')",
-      TEST_DATA__accessPointServices,
-      TEST_DATA__legendAIConfig,
-      plugin,
-      setter,
-      Date.now(),
-      // no dataProductCoordinates
-    );
-
-    expect(executeSql).toHaveBeenCalledTimes(1);
-    expect(executeLakehouseSql).not.toHaveBeenCalled();
-  });
-
-  test('reports lakehouse execution errors properly', async () => {
+  test('reports execution errors properly', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const plugin = TEST__createMockLegendAIPlugin({
       executeLakehouseSql: createMock().mockRejectedValue(
-        new Error('Lakehouse connection timeout'),
+        new Error('SQL execution timeout'),
       ),
     });
 
@@ -717,8 +685,257 @@ describe(unitTest('executeSqlAndReport — lakehouse routing'), () => {
     );
 
     const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.error).toContain('Lakehouse connection timeout');
+    expect(msg.error).toContain('SQL execution timeout');
     expect(msg.execTime).toBeDefined();
     expect(msg.isProcessing).toBe(false);
+  });
+});
+
+// ─── generateAndJudgeAccessPointSql ──────────────────────────────────────────
+
+describe(unitTest('generateAndJudgeAccessPointSql'), () => {
+  test('generates SQL using AP-specific prompts', async () => {
+    const { setter } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const buildAPGen = jest.fn<() => string>().mockReturnValue('ap prompt');
+    const buildAPJudge = jest.fn<() => string>().mockReturnValue('ap judge');
+    const plugin = TEST__createMockLegendAIPlugin({
+      buildAccessPointGeneratorPrompt: buildAPGen,
+      buildAccessPointJudgePrompt: buildAPJudge,
+      callLLM: createMock().mockResolvedValue('sql response'),
+    });
+
+    const result = await generateAndJudgeAccessPointSql(
+      'show prices',
+      TEST_DATA__accessPointServices,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      Date.now(),
+    );
+
+    expect(result).toBe('SELECT * FROM t');
+    expect(buildAPGen).toHaveBeenCalledWith(
+      'show prices',
+      TEST_DATA__accessPointServices,
+      [],
+    );
+    expect(buildAPJudge).toHaveBeenCalled();
+  });
+
+  test('returns null when extraction fails', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const plugin = TEST__createMockLegendAIPlugin({
+      callLLM: createMock().mockResolvedValue('bad response'),
+      extractSqlFromResponse: () => ({
+        sql: null,
+        failure: 'parse error',
+      }),
+    });
+
+    const result = await generateAndJudgeAccessPointSql(
+      'show prices',
+      TEST_DATA__accessPointServices,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      Date.now(),
+    );
+
+    expect(result).toBeNull();
+    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    expect(msg.error).toBeDefined();
+  });
+
+  test('applies judge corrections', async () => {
+    const { setter } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    let callCount = 0;
+    const plugin = TEST__createMockLegendAIPlugin({
+      callLLM: createMock().mockResolvedValue('response'),
+      extractJudgeResult: (): LegendAIJudgeResult => {
+        callCount++;
+        if (callCount === 1) {
+          return {
+            verdict: LegendAIJudgeVerdict.FAIL,
+            correctedSql:
+              'SELECT "ticker" FROM p(\'my::DataProduct.pricingAP\')',
+          };
+        }
+        return { verdict: LegendAIJudgeVerdict.PASS };
+      },
+    });
+
+    const result = await generateAndJudgeAccessPointSql(
+      'show tickers',
+      TEST_DATA__accessPointServices,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      Date.now(),
+    );
+
+    expect(result).toBe(
+      'SELECT "ticker" FROM p(\'my::DataProduct.pricingAP\')',
+    );
+  });
+});
+
+// ─── processQuestion — access point routing ──────────────────────────────────
+
+describe(unitTest('processQuestion — access point routing'), () => {
+  test('routes AP-only services to dedicated AP flow', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const buildAPGen = jest.fn<() => string>().mockReturnValue('ap prompt');
+    const plugin = TEST__createMockLegendAIPlugin({
+      classifyQuestionIntent: () =>
+        Promise.resolve(LegendAIQuestionIntent.DATA_QUERY),
+      buildAccessPointGeneratorPrompt: buildAPGen,
+      callLLM: createMock().mockResolvedValue('sql response'),
+      extractSqlFromResponse: () => ({
+        sql: "SELECT * FROM p('my::DataProduct.pricingAP')",
+        failure: null,
+      }),
+      executeLakehouseSql: createMock().mockResolvedValue({
+        columns: ['ticker'],
+        rows: [{ ticker: 'AAPL' }],
+      }),
+    });
+
+    await processQuestion(
+      'show prices',
+      TEST_DATA__accessPointServices,
+      'com.test:prod:1.0.0',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      {
+        data_product: 'my::DataProduct',
+        group_id: 'com.test',
+        artifact_id: 'prod',
+        version: '1.0.0',
+      },
+    );
+
+    // Should have used AP-specific prompt, not the generic one
+    expect(buildAPGen).toHaveBeenCalled();
+    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    expect(msg.gridData?.rowData).toHaveLength(1);
+  });
+
+  test('routes mixed services (TDS + AP) to generic TDS flow', async () => {
+    const { setter } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const buildGen = jest.fn<() => string>().mockReturnValue('gen prompt');
+    const buildAPGen = jest.fn<() => string>().mockReturnValue('ap prompt');
+    const plugin = TEST__createMockLegendAIPlugin({
+      classifyQuestionIntent: () =>
+        Promise.resolve(LegendAIQuestionIntent.DATA_QUERY),
+      buildGeneratorPrompt: buildGen,
+      buildAccessPointGeneratorPrompt: buildAPGen,
+      callLLM: createMock().mockResolvedValue('sql response'),
+      executeSql: createMock().mockResolvedValue({
+        columns: ['x'],
+        rows: [{ x: 1 }],
+      }),
+    });
+
+    const mixedServices: TDSServiceSchema[] = [
+      ...TEST_DATA__legendAIServices,
+      ...TEST_DATA__accessPointServices,
+    ];
+
+    await processQuestion(
+      'show data',
+      mixedServices,
+      'com.test:prod:1.0.0',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+    );
+
+    // Should have used generic prompt, NOT AP-specific
+    expect(buildGen).toHaveBeenCalled();
+    expect(buildAPGen).not.toHaveBeenCalled();
+  });
+
+  test('AP flow falls back to metadata on error', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const plugin = TEST__createMockLegendAIPlugin({
+      classifyQuestionIntent: () =>
+        Promise.resolve(LegendAIQuestionIntent.DATA_QUERY),
+      buildAccessPointGeneratorPrompt: () => {
+        throw new Error('Prompt build failed');
+      },
+      callLLM: createMock().mockResolvedValue('Metadata answer'),
+    });
+
+    await processQuestion(
+      'show prices',
+      TEST_DATA__accessPointServices,
+      'com.test:prod:1.0.0',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      {
+        data_product: 'my::DataProduct',
+        group_id: 'com.test',
+        artifact_id: 'prod',
+        version: '1.0.0',
+      },
+    );
+
+    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    expect(msg.textAnswer).toBeDefined();
+  });
+
+  test('metadata intent still works with AP-only services', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const plugin = TEST__createMockLegendAIPlugin({
+      classifyQuestionIntent: () =>
+        Promise.resolve(LegendAIQuestionIntent.METADATA),
+      callLLM: createMock().mockResolvedValue('Product info here'),
+    });
+
+    await processQuestion(
+      'what access points are available?',
+      TEST_DATA__accessPointServices,
+      'com.test:prod:1.0.0',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+    );
+
+    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    expect(msg.textAnswer).toBe('Product info here');
   });
 });

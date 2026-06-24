@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { act, fireEvent, getByText, waitFor } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared/test';
+import { integrationTest, createSpy } from '@finos/legend-shared/test';
 import { ApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import {
@@ -34,7 +34,6 @@ import type {
 } from '../../../../../stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
 import { ServiceEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
-import type { Service } from '@finos/legend-graph';
 
 // ---------------------------------------------------------------------------
 // Minimal mock plugin that returns a fixed documentation suggestion
@@ -52,8 +51,10 @@ class MockAIDocSuggesterPlugin
   }
 
   getExtraServiceDocumentationAISuggester(): ServiceDocumentationAISuggester {
-    return async (_service: Service, _legendAIUrl: string): Promise<string> =>
-      'AI Generated Documentation';
+    return async (
+      _serviceGrammar: string,
+      _legendAIUrl: string,
+    ): Promise<string> => 'AI Generated Documentation';
   }
 }
 
@@ -92,6 +93,12 @@ const setupEditorWithAI = async (withAIConfig = true) => {
   const editorGroup = await waitFor(() =>
     renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
   );
+
+  // Mock elementsToPureCode to prevent real network calls in AI suggestion flow
+  createSpy(
+    editorStore.graphManagerState.graphManager,
+    'elementsToPureCode',
+  ).mockResolvedValue('Service model::RelationalService {}');
 
   // Navigate to the General tab
   fireEvent.click(getByText(editorGroup, 'General'));

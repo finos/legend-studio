@@ -15,16 +15,38 @@
  */
 
 import {
+  CORE_PURE_PATH,
+  PURE_DOC_TAG,
   V1_AdhocTeam,
   V1_AppDirOrganizationalScope,
   V1_ProducerScope,
+  type V1_RelationTypeColumn,
   V1_RMS,
+  type V1_TaggedValue,
   V1_UnknownOrganizationalScopeType,
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import { isNonEmptyString, isNonNullable } from '@finos/legend-shared';
 import { Box, Typography } from '@mui/material';
+
+export const getDocTaggedValue = (
+  taggedValues: V1_TaggedValue[],
+): string | undefined =>
+  taggedValues
+    .find(
+      (taggedValue) =>
+        taggedValue.tag.profile === CORE_PURE_PATH.PROFILE_DOC &&
+        taggedValue.tag.value === PURE_DOC_TAG,
+    )
+    ?.value.trim();
+
+export const getRelationColumnDescription = (
+  relationColumn: V1_RelationTypeColumn,
+): string | undefined => {
+  const desc = relationColumn.description?.trim();
+  return desc ? desc : getDocTaggedValue(relationColumn.taggedValues ?? []);
+};
 
 export const getOrganizationalScopeTypeName = (
   scope: V1_OrganizationalScope,
@@ -36,6 +58,8 @@ export const getOrganizationalScopeTypeName = (
     return 'Ad-hoc Team';
   } else if (scope instanceof V1_ProducerScope) {
     return 'Producer';
+  } else if (scope instanceof V1_RMS) {
+    return 'RMS';
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return 'Unknown';
   } else {

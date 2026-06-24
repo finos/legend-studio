@@ -44,6 +44,7 @@
   // ---------------------------- Input -------------------------------
 
   input,
+  textarea,
   .value-spec-editor__toggler__btn {
     background: var(--color-white);
     color: var(--color-legacylight-dark-grey-200);
@@ -79,6 +80,44 @@
     &__indicator-separator {
       background: var(--color-red-180);
     }
+  }
+
+  // The base `legend-art` selector-input styles were migrated to semantic
+  // tokens (`--color-bg-input`, `--color-text-secondary`, `--color-accent-subtle`,
+  // `--color-bg-selected`, etc.) during the Phase 3 theming work. Under
+  // `.theme__legacy-light`, the semantic-token layer is not remapped — only
+  // selectors are repainted — so semantic tokens fall through to their
+  // `:root` (dark) defaults, leaving QB's base-mode selector inputs (which
+  // QB opts into when `TEMPORARY__isLightColorThemeEnabled` is true) with a
+  // dark dropdown indicator, dark option hover/selected states, and a dark
+  // entity-path tag. Restore the pre-theming physical palette colors here.
+  // Remove this block once QB is tokenized and `light-mode.scss` is retired
+  // (see `docs/technical/THEMING.md` Phase 4).
+  .selector-input__dropdown-indicator,
+  .selector-input .selector-input__dropdown-indicator {
+    background: var(--color-light-grey-0);
+    color: var(--color-dark-grey-300);
+  }
+
+  .selector-input__option,
+  .selector-input .selector-input__option {
+    &:hover,
+    &--is-focused:hover,
+    &--is-focused {
+      background-color: var(--color-light-blue-0) !important;
+    }
+
+    &--is-selected:hover,
+    &--is-selected {
+      background-color: var(--color-blue-100) !important;
+      color: var(--color-white);
+    }
+  }
+
+  .packageable-element-option-label__tag {
+    color: var(--color-dark-grey-500);
+    background: var(--color-light-grey-50);
+    border: 0.1rem solid var(--color-light-grey-180);
   }
 
   // ---------------------------- Menu -------------------------------

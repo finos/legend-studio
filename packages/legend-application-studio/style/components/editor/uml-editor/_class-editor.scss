@@ -25,7 +25,11 @@
 }
 
 .class-editor {
-  background: var(--color-bg-app);
+  // NOTE: must match the hardcoded `canvasColor` (`rgb(220,220,220)`) used by
+  // the diagram renderer, otherwise the area revealed when the form editor
+  // panel is resized/minimized shows a different shade than the diagram canvas
+  // sitting next to it. The canvas color isn't theme-aware today.
+  background: var(--color-light-grey-180);
 }
 
 .property-basic-editor {
@@ -82,10 +86,15 @@
     border-radius: 0.2rem;
     padding: 0 0.5rem;
     height: 2.2rem;
+    background: var(--color-bg-input);
+    color: var(--color-text-primary);
   }
 
   &__multiplicity-bound[disabled] {
     background: var(--color-bg-panel);
+    color: var(--color-text-primary);
+    -webkit-text-fill-color: var(--color-text-primary);
+    opacity: 1;
   }
 
   // Property "name" chip — historically a dark-grey chip with light text used

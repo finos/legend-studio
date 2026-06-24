@@ -53,9 +53,9 @@ import { TEST__getTestLegendQueryApplicationConfig } from '../../stores/__test-u
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { ExistingQueryEditor } from '../QueryEditor.js';
 import type {
+  StoredFileGeneration,
   EntitiesWithOrigin,
   Entity,
-  StoredFileGeneration,
 } from '@finos/legend-storage';
 import {
   ExistingQueryEditorStore,

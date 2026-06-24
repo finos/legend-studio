@@ -307,9 +307,15 @@
   height: 2.3rem;
 }
 
+.query-editor__description__textarea {
+  width: 100%;
+  min-height: 6rem;
+  resize: vertical;
+}
+
 .input--ai-suggested {
-  border-color: var(--color-purple-200) !important;
-  color: var(--color-purple-0) !important;
+  border-color: var(--color-category-ai-suggestion) !important;
+  color: var(--color-category-ai-suggestion) !important;
 }
 
 .query-editor__ai-suggestion-badge {
@@ -320,12 +326,12 @@
   margin-left: 0.8rem;
   font-size: 1rem;
   font-weight: 500;
-  color: var(--color-purple-200);
+  color: var(--color-category-ai-suggestion);
   vertical-align: middle;
 
   svg {
     font-size: 1.2rem;
-    color: var(--color-purple-200);
+    color: var(--color-category-ai-suggestion);
   }
 }
 

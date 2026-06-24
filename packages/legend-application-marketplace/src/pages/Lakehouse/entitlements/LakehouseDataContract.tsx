@@ -46,6 +46,7 @@ import {
 import {
   DataAccessRequestContent,
   DataContractViewerState,
+  LakehouseResiliencyDisclaimer,
 } from '@finos/legend-extension-dsl-data-product';
 
 export const LakehouseDataContractTask =
@@ -336,6 +337,9 @@ export const LakehouseDataContractTask =
                   </Button>
                 </Box>
               )}
+              <LakehouseResiliencyDisclaimer
+                applicationStore={marketplaceBaseStore.applicationStore}
+              />
               <DataAccessRequestContent
                 viewerState={contractViewerState}
                 getDataProductUrl={(

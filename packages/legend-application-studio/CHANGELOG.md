@@ -1,5 +1,37 @@
 # @finos/legend-application-studio
 
+## 28.21.16
+
+## 28.21.15
+
+### Patch Changes
+
+- [#5255](https://github.com/finos/legend-studio/pull/5255) [`28983b0`](https://github.com/finos/legend-studio/commit/28983b07c011b922ef76aa8bbe267f2d5a5e2041) ([@AFine-gs](https://github.com/AFine-gs)) - add re auth flow for SDC server
+
+## 28.21.14
+
+### Patch Changes
+
+- [#5247](https://github.com/finos/legend-studio/pull/5247) [`babd70f`](https://github.com/finos/legend-studio/commit/babd70f5cb1f87aa4bce5d182a369c10c1430428) ([@Rakan1837](https://github.com/Rakan1837)) - Add Data Product access point test parameter support in Studio, including form-mode editing and round-trip preservation for test parameters.
+
+## 28.21.13
+
+### Patch Changes
+
+- [#5243](https://github.com/finos/legend-studio/pull/5243) [`53360a4`](https://github.com/finos/legend-studio/commit/53360a4b20113fcd3be425e646e1f66dd8b338c3) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding ai integrations on studio and query
+
+- [#5237](https://github.com/finos/legend-studio/pull/5237) [`b7e3fe9`](https://github.com/finos/legend-studio/commit/b7e3fe97b3e4c1e895302c794145aa1905241206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a one-click dark/light color theme toggle (moon/sun icon) to the Studio activity bar so users no longer have to open the Settings menu to switch themes. The toggle is also surfaced on the workspace setup page and respects existing theme gating, so it only appears when both the default dark and default light themes are exposed in the current environment.
+
+  The redundant Color Theme list has been removed from the Settings (cog) menu — theme switching is now exclusively driven by the new toggle.
+
+  Also reworks the activity bar to use a flex-column layout, replacing the brittle `calc(100% - 13.4rem)` reservation that hid the Settings cog whenever a new bottom button was added.
+
+- [#5236](https://github.com/finos/legend-studio/pull/5236) [`27c60b9`](https://github.com/finos/legend-studio/commit/27c60b9c3253acd4cbb0dcc3cb146c9c4584aabf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - feat: add `excludeTag` parameter to `SDLCServerClient.getProjects` and exclude sandbox projects from project search
+
+  `SDLCServerClient.getProjects` now accepts an `excludeTag: string[] | undefined` parameter (positioned between `tag` and `limit`) which filters out projects carrying any of the given SDLC tags.
+
+  Workspace setup, query productionization, and update-project-service-query flows now pass `[SANDBOX_SDLC_TAG]` as `excludeTag` so that other users' sandbox projects no longer appear in the main project search/typeahead. The current user's own sandbox project is still fetched via the dedicated sandbox lookup and is now pinned to the top of the workspace setup project picker with a `(sandbox)` label suffix.
+
 ## 28.21.12
 
 ### Patch Changes

@@ -45,6 +45,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { UML_EDITOR_TAB } from '../../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   type AbstractProperty,
   type StereotypeReference,
@@ -81,6 +82,9 @@ export const PropertyEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { property, deselectProperty, isReadOnly } = props;
+    const applicationStore = useApplicationStore();
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
     // Tab
     const [selectedTab, setSelectedTab] = useState<UML_EDITOR_TAB>(
       property instanceof Property
@@ -272,6 +276,7 @@ export const PropertyEditor = observer(
                       escapeClearsValue={true}
                       isClearable={true}
                       disabled={isReadOnly}
+                      darkMode={darkMode}
                     />
                   </PanelFormSection>
                 </PanelForm>
@@ -290,6 +295,7 @@ export const PropertyEditor = observer(
                       taggedValue={taggedValue}
                       deleteValue={_deleteTaggedValue(taggedValue)}
                       isReadOnly={isReadOnly}
+                      darkTheme={darkMode}
                     />
                   ))}
                 </PanelContentLists>
@@ -309,6 +315,7 @@ export const PropertyEditor = observer(
                       stereotype={stereotype}
                       deleteStereotype={_deleteStereotype(stereotype)}
                       isReadOnly={isReadOnly}
+                      darkTheme={darkMode}
                     />
                   ))}
                 </PanelContentLists>

@@ -23,6 +23,7 @@ import {
   computeChartData,
   computeTopItems,
   findNumericColumnName,
+  analyzeGridData,
 } from '../LegendAIAnalysisUtils.js';
 import { LegendAIChartType } from '../../LegendAI_LegendApplicationPlugin_Extension.js';
 import type { LegendAIGridData } from '../../LegendAITypes.js';
@@ -405,5 +406,123 @@ describe(unitTest('profileColumns edge cases'), () => {
     const metrics = computeKeyMetrics(grid);
     const uniqueMetric = metrics.find((m) => m.label.startsWith('Unique'));
     expect(uniqueMetric?.value).toBe('2');
+  });
+});
+
+describe(unitTest('frequency chart fallback'), () => {
+  test('inferChartType returns PIE for categorical data with few unique values and no numeric columns', () => {
+    const grid = makeGridData(
+      ['region', 'status'],
+      [
+        { region: 'US', status: 'active' },
+        { region: 'EU', status: 'active' },
+        { region: 'US', status: 'inactive' },
+      ],
+    );
+    expect(inferChartType(grid)).toBe(LegendAIChartType.PIE);
+  });
+
+  test('inferChartType returns BAR for categorical data with many unique values', () => {
+    const rows = Array.from({ length: 10 }, (_, i) => ({
+      name: `item${i % 8}`,
+      note: 'x',
+    }));
+    const grid = makeGridData(['name', 'note'], rows);
+    expect(inferChartType(grid)).toBe(LegendAIChartType.BAR);
+  });
+
+  test('inferChartType returns NONE when all string values are unique', () => {
+    const grid = makeGridData(['id'], [{ id: 'a' }, { id: 'b' }, { id: 'c' }]);
+    expect(inferChartType(grid)).toBe(LegendAIChartType.NONE);
+  });
+
+  test('computeChartData returns frequency distribution for categorical data', () => {
+    const grid = makeGridData(
+      ['region', 'headline'],
+      [
+        { region: 'US', headline: 'h1' },
+        { region: 'EU', headline: 'h2' },
+        { region: 'US', headline: 'h3' },
+        { region: 'US', headline: 'h4' },
+        { region: 'EU', headline: 'h5' },
+      ],
+    );
+    const data = computeChartData(grid);
+    expect(data).toHaveLength(2);
+    const d0 = guaranteeNonNullable(data[0]);
+    expect(d0.label).toBe('US');
+    expect(d0.value).toBe(3);
+    const d1 = guaranteeNonNullable(data[1]);
+    expect(d1.label).toBe('EU');
+    expect(d1.value).toBe(2);
+  });
+
+  test('computeChartData returns empty array when no frequency column exists', () => {
+    const grid = makeGridData(['id'], [{ id: 'a' }, { id: 'b' }, { id: 'c' }]);
+    expect(computeChartData(grid)).toEqual([]);
+  });
+
+  test('frequency fallback prefers lowest-cardinality column', () => {
+    const grid = makeGridData(
+      ['guid', 'region'],
+      [
+        { guid: 'g1', region: 'US' },
+        { guid: 'g2', region: 'EU' },
+        { guid: 'g3', region: 'US' },
+        { guid: 'g4', region: 'EU' },
+        { guid: 'g5', region: 'US' },
+      ],
+    );
+    const data = computeChartData(grid);
+    expect(data).toHaveLength(2);
+    expect(guaranteeNonNullable(data[0]).label).toBe('US');
+  });
+
+  test('frequency fallback works with all-NULL numeric columns', () => {
+    const grid = makeGridData(
+      ['guid', 'headline', 'sentiment'],
+      [
+        { guid: 'g1', headline: 'h1', sentiment: null },
+        { guid: 'g2', headline: 'h2', sentiment: null },
+        { guid: 'g1', headline: 'h3', sentiment: null },
+      ],
+    );
+    expect(inferChartType(grid)).toBe(LegendAIChartType.PIE);
+    const data = computeChartData(grid);
+    expect(data).toHaveLength(2);
+    expect(guaranteeNonNullable(data[0]).label).toBe('g1');
+    expect(guaranteeNonNullable(data[0]).value).toBe(2);
+  });
+});
+
+describe(unitTest('analyzeGridData'), () => {
+  test('returns full analysis for numeric data', () => {
+    const grid = makeGridData(
+      ['region', 'amount'],
+      [
+        { region: 'US', amount: 100 },
+        { region: 'EU', amount: 200 },
+        { region: 'APAC', amount: 300 },
+      ],
+    );
+    const analysis = analyzeGridData(grid);
+    expect(analysis.metrics.length).toBeGreaterThan(0);
+    expect(analysis.chartType).not.toBe(LegendAIChartType.NONE);
+    expect(analysis.chartData.length).toBeGreaterThan(0);
+    expect(analysis.numericColumnName).toBe('amount');
+  });
+
+  test('returns NONE chart type for single row', () => {
+    const grid = makeGridData(['name'], [{ name: 'only' }]);
+    const analysis = analyzeGridData(grid);
+    expect(analysis.chartType).toBe(LegendAIChartType.NONE);
+    expect(analysis.chartData).toHaveLength(0);
+  });
+
+  test('returns metrics for empty rows', () => {
+    const grid = makeGridData(['a'], []);
+    const analysis = analyzeGridData(grid);
+    expect(analysis.metrics.length).toBeGreaterThan(0);
+    expect(analysis.chartType).toBe(LegendAIChartType.NONE);
   });
 });

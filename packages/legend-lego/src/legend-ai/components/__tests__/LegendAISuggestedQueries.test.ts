@@ -21,7 +21,7 @@ import {
   isNumericColumn,
   isDateColumn,
   buildSuggestedQueries,
-} from '../LegendAIChat.js';
+} from '../LegendAIChatHelpers.js';
 import type {
   TDSServiceSchema,
   LegendAIProductMetadata,
@@ -119,39 +119,7 @@ describe(unitTest('buildSuggestedQueries'), () => {
     expect(result[2]).toBe('Describe the data model and key entities');
   });
 
-  test('uses simple records suggestion when service has no date column', () => {
-    const services: TDSServiceSchema[] = [
-      {
-        title: 'TradeService',
-        pattern: '/trades',
-        columns: [{ name: 'tradeId', type: 'String' }],
-        parameters: [],
-      },
-    ];
-    const result = buildSuggestedQueries(services, metadata);
-    expect(result).toContain('Show 10 records from TradeService');
-    expect(result.some((s) => s.includes('most recent'))).toBe(false);
-  });
-
-  test('uses date-ordered suggestion when service has a date column', () => {
-    const services: TDSServiceSchema[] = [
-      {
-        title: 'TradeService',
-        pattern: '/trades',
-        columns: [
-          { name: 'tradeDate', type: 'Date' },
-          { name: 'region', type: 'String' },
-        ],
-        parameters: [],
-      },
-    ];
-    const result = buildSuggestedQueries(services, metadata);
-    expect(result).toContain(
-      'Show the 10 most recent records from TradeService by tradeDate',
-    );
-  });
-
-  test('generates top-by suggestion for string + numeric columns', () => {
+  test('generates distinct-values suggestion for string column', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'Svc',
@@ -165,21 +133,8 @@ describe(unitTest('buildSuggestedQueries'), () => {
     ];
     const result = buildSuggestedQueries(services, metadata);
     expect(
-      result.some((s) => s.includes('top region values by total amount')),
+      result.some((s) => s.includes('distinct region values from Svc')),
     ).toBe(true);
-  });
-
-  test('generates distinct-values suggestion for string column without numeric', () => {
-    const services: TDSServiceSchema[] = [
-      {
-        title: 'Svc',
-        pattern: '/svc',
-        columns: [{ name: 'region', type: 'String' }],
-        parameters: [],
-      },
-    ];
-    const result = buildSuggestedQueries(services, metadata);
-    expect(result.some((s) => s.includes('distinct region values'))).toBe(true);
   });
 
   test('generates total suggestion when only numeric columns', () => {
@@ -195,25 +150,7 @@ describe(unitTest('buildSuggestedQueries'), () => {
     expect(result.some((s) => s.includes('total amount'))).toBe(true);
   });
 
-  test('generates date + grouping suggestion when date and string columns exist', () => {
-    const services: TDSServiceSchema[] = [
-      {
-        title: 'Svc',
-        pattern: '/svc',
-        columns: [
-          { name: 'tradeDate', type: 'Date' },
-          { name: 'region', type: 'String' },
-        ],
-        parameters: [],
-      },
-    ];
-    const result = buildSuggestedQueries(services, metadata);
-    expect(
-      result.some((s) => s.includes('last month') && s.includes('region')),
-    ).toBe(true);
-  });
-
-  test('generates second-service and compare suggestions when multiple services share columns', () => {
+  test('generates second-service suggestion when multiple services', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'SvcA',
@@ -228,41 +165,16 @@ describe(unitTest('buildSuggestedQueries'), () => {
         title: 'SvcB',
         pattern: '/b',
         columns: [
-          { name: 'region', type: 'String' },
           { name: 'status', type: 'String' },
+          { name: 'score', type: 'Number' },
         ],
         parameters: [],
       },
     ];
     const result = buildSuggestedQueries(services, metadata);
-    expect(result.some((s) => s.includes('latest 10 records from SvcB'))).toBe(
+    expect(result.some((s) => s.includes('Show 10 records from SvcB'))).toBe(
       true,
     );
-    expect(
-      result.some((s) => s.includes('Compare SvcA and SvcB by region')),
-    ).toBe(true);
-  });
-
-  test('generates only latest-records suggestion when services have no shared columns', () => {
-    const services: TDSServiceSchema[] = [
-      {
-        title: 'SvcA',
-        pattern: '/a',
-        columns: [{ name: 'region', type: 'String' }],
-        parameters: [],
-      },
-      {
-        title: 'SvcB',
-        pattern: '/b',
-        columns: [{ name: 'status', type: 'String' }],
-        parameters: [],
-      },
-    ];
-    const result = buildSuggestedQueries(services, metadata);
-    expect(result.some((s) => s.includes('latest 10 records from SvcB'))).toBe(
-      true,
-    );
-    expect(result.some((s) => s.includes('Compare'))).toBe(false);
   });
 
   test('limits to MAX_SUGGESTED_QUERIES (8)', () => {
@@ -306,6 +218,19 @@ describe(unitTest('buildSuggestedQueries'), () => {
     );
   });
 
+  test('always includes show-records suggestion', () => {
+    const services: TDSServiceSchema[] = [
+      {
+        title: 'TradeService',
+        pattern: '/trades',
+        columns: [{ name: 'tradeId', type: 'String' }],
+        parameters: [],
+      },
+    ];
+    const result = buildSuggestedQueries(services, metadata);
+    expect(result).toContain('Show 10 records from TradeService');
+  });
+
   test('skips id columns for string column detection', () => {
     const services: TDSServiceSchema[] = [
       {
@@ -323,7 +248,7 @@ describe(unitTest('buildSuggestedQueries'), () => {
     expect(result.some((s) => s.includes('total amount'))).toBe(true);
   });
 
-  test('includes compare and insight suggestions with rich schema', () => {
+  test('includes insight and second-service suggestions with rich schema', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'Trades',
@@ -348,12 +273,9 @@ describe(unitTest('buildSuggestedQueries'), () => {
     ];
     const result = buildSuggestedQueries(services, metadata);
     expect(
-      result.some((s) => s.includes('top region values by total amount')),
+      result.some((s) => s.includes('distinct region values from Trades')),
     ).toBe(true);
-    expect(
-      result.some((s) => s.includes('Compare Trades and Risks by region')),
-    ).toBe(true);
-    expect(result.some((s) => s.includes('latest 10 records from Risks'))).toBe(
+    expect(result.some((s) => s.includes('Show 10 records from Risks'))).toBe(
       true,
     );
   });

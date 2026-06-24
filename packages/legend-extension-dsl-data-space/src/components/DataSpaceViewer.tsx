@@ -34,7 +34,7 @@ import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
 import { DataSpaceSupportPanel } from './DataSpaceSupportPanel.js';
 import { DataSpaceWiki } from './DataSpaceWiki.js';
 import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DATA_SPACE_WIKI_PAGE_SECTIONS } from '../stores/DataSpaceLayoutState.js';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
@@ -42,17 +42,14 @@ import {
 } from '../stores/DataSpaceViewerNavigation.js';
 import { DataSpacePlaceholderPanel } from './DataSpacePlaceholder.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { LEGEND_AI_ANCHOR_ID } from '@finos/legend-lego/legend-ai';
+import { DataSpaceLegendAIIntegration } from './DataSpaceLegendAIIntegration.js';
 
 const DataSpaceHeader = observer(
   (props: {
     dataSpaceViewerState: DataSpaceViewerState;
     showFullHeader: boolean;
-    showAIButton?: boolean;
-    onLegendAI?: () => void;
   }) => {
-    const { dataSpaceViewerState, showFullHeader, showAIButton, onLegendAI } =
-      props;
+    const { dataSpaceViewerState, showFullHeader } = props;
     const applicationStore = useApplicationStore();
     const headerRef = useRef<HTMLDivElement>(null);
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
@@ -92,16 +89,6 @@ const DataSpaceHeader = observer(
               </div>
             )}
           </div>
-          {showAIButton && onLegendAI && (
-            <button
-              className="legend-ai-floating-btn__trigger"
-              onClick={onLegendAI}
-              title="Ask Marketplace"
-            >
-              <SparkleStarsIcon />
-              <span>Ask Marketplace</span>
-            </button>
-          )}
           <div className="data-space__viewer__header__actions">
             <ControlledDropdownMenu
               className="data-space__viewer__header__execution-context-selector"
@@ -227,6 +214,34 @@ export const DataSpaceViewer = observer(
     const frame = useRef<HTMLDivElement>(null);
     const [showFullHeader, setShowFullHeader] = useState(false);
     const [scrollPercentage, setScrollPercentage] = useState(0);
+    const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+    const [panelWidth, setPanelWidth] = useState(500);
+    const isResizing = useRef(false);
+
+    const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
+      e.preventDefault();
+      isResizing.current = true;
+      const onMouseMove = (ev: MouseEvent): void => {
+        if (!isResizing.current) {
+          return;
+        }
+        const newWidth = window.innerWidth - ev.clientX;
+        setPanelWidth(
+          Math.max(320, Math.min(newWidth, window.innerWidth * 0.6)),
+        );
+      };
+      const onMouseUp = (): void => {
+        isResizing.current = false;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }, []);
 
     const onScroll: React.UIEventHandler<HTMLDivElement> = (event) => {
       const scrollTop = event.currentTarget.scrollTop;
@@ -253,24 +268,16 @@ export const DataSpaceViewer = observer(
       }
     };
 
-    const scrollToQueryAI = useCallback((): void => {
-      const anchor = frame.current?.querySelector(`#${LEGEND_AI_ANCHOR_ID}`);
-      if (anchor) {
-        anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else if (frame.current) {
-        frame.current.scrollTo({
-          top: frame.current.scrollHeight,
-          behavior: 'smooth',
-        });
-      }
-    }, []);
-
     const isShowingWiki = DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
       dataSpaceViewerState.currentActivity,
     );
 
-    const showAIButton =
+    const isAIEnabled =
       dataSpaceViewerState.legendAIConfig.enabled && isShowingWiki;
+
+    const dsTitle =
+      dataSpaceViewerState.dataSpaceAnalysisResult.title ??
+      dataSpaceViewerState.dataSpaceAnalysisResult.name;
 
     useEffect(() => {
       if (frame.current) {
@@ -279,7 +286,16 @@ export const DataSpaceViewer = observer(
     }, [dataSpaceViewerState]);
 
     return (
-      <div className="data-space__viewer">
+      <div
+        className={clsx('data-space__viewer', {
+          'data-space__viewer--chat-open': isAIChatOpen,
+        })}
+        style={
+          isAIChatOpen
+            ? ({ '--ai-panel-width': `${panelWidth}px` } as React.CSSProperties)
+            : undefined
+        }
+      >
         <DataSpaceViewerActivityBar
           dataSpaceViewerState={dataSpaceViewerState}
         />
@@ -291,8 +307,6 @@ export const DataSpaceViewer = observer(
           <DataSpaceHeader
             dataSpaceViewerState={dataSpaceViewerState}
             showFullHeader={showFullHeader}
-            showAIButton={showAIButton}
-            onLegendAI={scrollToQueryAI}
           />
           {dataSpaceViewerState.layoutState.isTopScrollerVisible && (
             <div className="data-space__viewer__scroller">
@@ -377,6 +391,54 @@ export const DataSpaceViewer = observer(
             </div>
           </div>
         </div>
+        {isAIEnabled && (
+          <>
+            <div
+              className="data-space__viewer__ai-panel"
+              style={{
+                width: panelWidth,
+                display: isAIChatOpen ? undefined : 'none',
+              }}
+            >
+              <button
+                type="button"
+                className="data-space__viewer__ai-panel__resize-handle"
+                aria-label="Resize AI panel"
+                onMouseDown={handleResizeMouseDown}
+                onKeyDown={(e): void => {
+                  const step = 20;
+                  if (e.key === 'ArrowLeft') {
+                    setPanelWidth((w) =>
+                      Math.min(w + step, window.innerWidth * 0.6),
+                    );
+                  } else if (e.key === 'ArrowRight') {
+                    setPanelWidth((w) => Math.max(w - step, 320));
+                  }
+                }}
+              />
+              <DataSpaceLegendAIIntegration
+                dataSpaceViewerState={dataSpaceViewerState}
+                config={dataSpaceViewerState.legendAIConfig}
+                onClose={(): void => setIsAIChatOpen(false)}
+                onMinimize={(): void => setIsAIChatOpen(false)}
+              />
+            </div>
+            {!isAIChatOpen && (
+              <button
+                className="legend-ai-chat-toggle"
+                onClick={(): void => setIsAIChatOpen(true)}
+                title={`Ask ${dsTitle}`}
+              >
+                <span className="legend-ai-chat-toggle__icon">
+                  <SparkleStarsIcon />
+                </span>
+                <span className="legend-ai-chat-toggle__label">
+                  Ask {dsTitle}
+                </span>
+              </button>
+            )}
+          </>
+        )}
       </div>
     );
   },

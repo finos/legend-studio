@@ -1100,6 +1100,16 @@ class MockLegendAIPlugin extends LegendAI_LegendApplicationPlugin_Extension {
       LegendAI_LegendApplicationPlugin_Extension['buildZeroRowCorrectionPrompt']
     >()
     .mockReturnValue('');
+  buildAccessPointGeneratorPrompt = jest
+    .fn<
+      LegendAI_LegendApplicationPlugin_Extension['buildAccessPointGeneratorPrompt']
+    >()
+    .mockReturnValue('ap generator prompt');
+  buildAccessPointJudgePrompt = jest
+    .fn<
+      LegendAI_LegendApplicationPlugin_Extension['buildAccessPointJudgePrompt']
+    >()
+    .mockReturnValue('ap judge prompt');
 }
 
 /**
@@ -1911,13 +1921,20 @@ describe(
 describe(
   unitTest('LegendMarketplaceAIChatStore — dispatchWithSql2 metadata intent'),
   () => {
-    test('handles metadata question when intent is METADATA', async () => {
+    test('shows both metadata and SQL for ambiguous questions when datasets are available', async () => {
       const { store, baseStore, plugin } = createStoreWithPlugin();
 
       const product = buildLakehouseProduct();
       store.selectDataProduct(product);
+      store.resolvedProductServices = [
+        {
+          title: 'TradeDataset',
+          pattern: '/TradeDataset',
+          columns: [{ name: 'amount', type: 'Number' }],
+          parameters: [],
+        },
+      ];
 
-      // Return lakehouse entity search results that build service schemas
       jest
         .spyOn(baseStore.marketplaceServerClient, 'entitySearch')
         .mockResolvedValue(
@@ -1936,15 +1953,230 @@ describe(
           ]),
         );
 
-      // Classify as metadata question
-      plugin.classifyQuestionIntent.mockResolvedValue(
-        LegendAIQuestionIntent.METADATA,
+      // callLLM returns metadata overview when called for metadata prompt
+      plugin.callLLM.mockResolvedValue('This product provides trade data.');
+      plugin.buildDataContextSummary.mockResolvedValue(
+        '### Metadata context\nAvailable product context',
       );
+
+      // "what data is available?" is ambiguous (metadata signals but not structural)
+      await flowResult(store.submitQuery('what data is available?'));
+
+      expect(store.isSending).toBe(false);
+      expect(store.stage).toBe(MarketplaceAIChatStage.RESULTS);
+      // Ambiguous path runs SQL as well
+      expect(
+        plugin.executeSql.mock.calls.length +
+          plugin.executeLakehouseSql.mock.calls.length,
+      ).toBeGreaterThanOrEqual(1);
+    });
+
+    test('answers with pure metadata for unambiguous metadata questions', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin();
+
+      const product = buildLakehouseProduct();
+      store.selectDataProduct(product);
+      store.resolvedProductServices = [
+        {
+          title: 'TradeDataset',
+          pattern: '/TradeDataset',
+          columns: [{ name: 'amount', type: 'Number' }],
+          parameters: [],
+        },
+      ];
+
+      jest
+        .spyOn(baseStore.marketplaceServerClient, 'entitySearch')
+        .mockResolvedValue(
+          buildEntitySearchResponseJson([
+            {
+              datasetName: 'TradeDataset',
+              dataProductDetails: {
+                _type: 'lakehouse',
+                groupId: 'com.lh',
+                artifactId: 'lh-art',
+                versionId: '2.0.0',
+                path: 'my::LhDataSpace',
+              },
+              relatedFields: [{ fieldName: 'amount', fieldType: 'Number' }],
+            },
+          ]),
+        );
+
+      plugin.callLLM.mockResolvedValue(
+        'This data product provides trade information.',
+      );
+
+      // "what services does this data product have?" is unambiguous METADATA
+      // (structural keyword "services" + product reference "this data product")
+      await flowResult(
+        store.submitQuery('what services does this data product have?'),
+      );
+
+      expect(store.isSending).toBe(false);
+      expect(store.stage).toBe(MarketplaceAIChatStage.RESULTS);
+      // Pure metadata → no SQL execution
+      expect(plugin.executeSql).not.toHaveBeenCalled();
+      expect(plugin.executeLakehouseSql).not.toHaveBeenCalled();
+      // Should have a text answer
+      const lastMsg = store.messages.findLast(
+        (m) => m.role === LegendAIMessageRole.ASSISTANT,
+      );
+      expect(lastMsg?.textAnswer).toBeDefined();
+    });
+
+    test('falls back to metadata when ambiguous SQL generation fails', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin();
+
+      const product = buildLakehouseProduct();
+      store.selectDataProduct(product);
+      store.resolvedProductServices = [
+        {
+          title: 'TradeDataset',
+          pattern: '/TradeDataset',
+          columns: [{ name: 'amount', type: 'Number' }],
+          parameters: [],
+        },
+      ];
+
+      jest
+        .spyOn(baseStore.marketplaceServerClient, 'entitySearch')
+        .mockResolvedValue(
+          buildEntitySearchResponseJson([
+            {
+              datasetName: 'TradeDataset',
+              dataProductDetails: {
+                _type: 'lakehouse',
+                groupId: 'com.lh',
+                artifactId: 'lh-art',
+                versionId: '2.0.0',
+                path: 'my::LhDataSpace',
+              },
+              relatedFields: [{ fieldName: 'amount', fieldType: 'Number' }],
+            },
+          ]),
+        );
+
+      // Make SQL generation fail
+      plugin.callLLM.mockRejectedValueOnce(new Error('LLM unavailable'));
+      // Second call for metadata fallback
+      plugin.callLLM.mockResolvedValueOnce('This product provides trade data.');
 
       await flowResult(store.submitQuery('what data is available?'));
 
       expect(store.isSending).toBe(false);
       expect(store.stage).toBe(MarketplaceAIChatStage.RESULTS);
+      // Should have produced a text answer from metadata fallback
+      const lastMsg = store.messages.findLast(
+        (m) => m.role === LegendAIMessageRole.ASSISTANT,
+      );
+      expect(lastMsg?.textAnswer).toBeDefined();
+    });
+
+    test('LLM judge returns METADATA when fast classifier is uncertain', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin();
+
+      const product = buildLakehouseProduct();
+      store.selectDataProduct(product);
+      store.resolvedProductServices = [
+        {
+          title: 'TradeDataset',
+          pattern: '/TradeDataset',
+          columns: [{ name: 'amount', type: 'Number' }],
+          parameters: [],
+        },
+      ];
+
+      jest
+        .spyOn(baseStore.marketplaceServerClient, 'entitySearch')
+        .mockResolvedValue(
+          buildEntitySearchResponseJson([
+            {
+              datasetName: 'TradeDataset',
+              dataProductDetails: {
+                _type: 'lakehouse',
+                groupId: 'com.lh',
+                artifactId: 'lh-art',
+                versionId: '2.0.0',
+                path: 'my::LhDataSpace',
+              },
+              relatedFields: [{ fieldName: 'amount', fieldType: 'Number' }],
+            },
+          ]),
+        );
+
+      // Fast classifier returns DATA_QUERY (not ambiguous, not METADATA),
+      // but LLM judge overrides to METADATA
+      plugin.classifyQuestionIntent.mockResolvedValue(
+        LegendAIQuestionIntent.METADATA,
+      );
+      plugin.callLLM.mockResolvedValue('Product overview: trade data.');
+
+      // "show me all trades" → fast classifier says DATA_QUERY, LLM says METADATA
+      await flowResult(store.submitQuery('show me all trades'));
+
+      expect(store.isSending).toBe(false);
+      expect(store.stage).toBe(MarketplaceAIChatStage.RESULTS);
+      // Should have a text answer from metadata
+      const lastMsg = store.messages.findLast(
+        (m) => m.role === LegendAIMessageRole.ASSISTANT,
+      );
+      expect(lastMsg?.textAnswer).toBeDefined();
+      // No SQL execution
+      expect(plugin.executeSql).not.toHaveBeenCalled();
+      expect(plugin.executeLakehouseSql).not.toHaveBeenCalled();
+    });
+
+    test('attaches metadata overview when ambiguous SQL succeeds', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin();
+
+      const product = buildLakehouseProduct();
+      store.selectDataProduct(product);
+      store.resolvedProductServices = [
+        {
+          title: 'TradeDataset',
+          pattern: '/TradeDataset',
+          columns: [{ name: 'amount', type: 'Number' }],
+          parameters: [],
+        },
+      ];
+
+      jest
+        .spyOn(baseStore.marketplaceServerClient, 'entitySearch')
+        .mockResolvedValue(
+          buildEntitySearchResponseJson([
+            {
+              datasetName: 'TradeDataset',
+              dataProductDetails: {
+                _type: 'lakehouse',
+                groupId: 'com.lh',
+                artifactId: 'lh-art',
+                versionId: '2.0.0',
+                path: 'my::LhDataSpace',
+              },
+              relatedFields: [{ fieldName: 'amount', fieldType: 'Number' }],
+            },
+          ]),
+        );
+
+      // metadata overview call succeeds
+      plugin.callLLM.mockResolvedValue(
+        'This product has trade data.\n```sql\nSELECT 1\n```',
+      );
+      plugin.buildDataContextSummary.mockResolvedValue(
+        '### Metadata context\nTrade data overview',
+      );
+
+      // "what data is available?" is ambiguous
+      await flowResult(store.submitQuery('what data is available?'));
+
+      expect(store.isSending).toBe(false);
+      expect(store.stage).toBe(MarketplaceAIChatStage.RESULTS);
+      // SQL should have been executed (ambiguous path runs SQL)
+      expect(
+        plugin.executeSql.mock.calls.length +
+          plugin.executeLakehouseSql.mock.calls.length,
+      ).toBeGreaterThanOrEqual(1);
     });
   },
 );
@@ -2137,6 +2369,66 @@ describe(
       expect(store.stage).toBe(MarketplaceAIChatStage.RESULTS);
       expect(store.pendingFallbackQuestion).toBe('show empty data');
     });
+
+    test('retries with corrected SQL when zero rows returned', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin();
+
+      const product = buildLakehouseProduct();
+      store.selectDataProduct(product);
+
+      store.resolvedProductServices = [
+        {
+          title: 'TradeData',
+          pattern: '/TradeData',
+          columns: [{ name: 'id', type: 'String' }],
+          parameters: [],
+        },
+      ];
+
+      jest
+        .spyOn(baseStore.marketplaceServerClient, 'entitySearch')
+        .mockResolvedValue(
+          buildEntitySearchResponseJson([
+            {
+              datasetName: 'TradeData',
+              dataProductDetails: {
+                _type: 'lakehouse',
+                groupId: 'com.lh',
+                artifactId: 'lh-art',
+                versionId: '2.0.0',
+                path: 'my::LhDataSpace',
+              },
+              relatedFields: [{ fieldName: 'id', fieldType: 'String' }],
+            },
+          ]),
+        );
+
+      // First execution returns empty rows
+      plugin.executeLakehouseSql
+        .mockResolvedValueOnce({ columns: ['id'], rows: [] })
+        // Corrected SQL returns data
+        .mockResolvedValueOnce({
+          columns: ['id'],
+          rows: [{ id: 'corrected-1' }],
+        });
+
+      // LLM returns corrected SQL for zero-row correction
+      plugin.buildZeroRowCorrectionPrompt.mockReturnValue('fix prompt');
+      plugin.callLLM
+        .mockResolvedValueOnce('```sql\nSELECT 1\n```') // SQL generation
+        .mockResolvedValueOnce('PASS') // judge
+        .mockResolvedValueOnce('SELECT id FROM t WHERE 1=1') // zero-row correction
+        .mockResolvedValueOnce('Analysis of results'); // analysis
+
+      await flowResult(store.submitQuery('show trades'));
+
+      expect(store.isSending).toBe(false);
+      expect(store.stage).toBe(MarketplaceAIChatStage.RESULTS);
+      // executeLakehouseSql called at least twice (original + retry)
+      expect(
+        plugin.executeLakehouseSql.mock.calls.length,
+      ).toBeGreaterThanOrEqual(2);
+    });
   },
 );
 
@@ -2190,6 +2482,49 @@ describe(
       expect(store.isSending).toBe(false);
       expect(store.stage).toBe(MarketplaceAIChatStage.RESULTS);
       expect(store.pendingFallbackQuestion).toBe('bad query');
+    });
+
+    test('catches LLM error during SQL generation and offers fallback', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin();
+
+      const product = buildLakehouseProduct();
+      store.selectDataProduct(product);
+
+      store.resolvedProductServices = [
+        {
+          title: 'TradeData',
+          pattern: '/TradeData',
+          columns: [{ name: 'id', type: 'String' }],
+          parameters: [],
+        },
+      ];
+
+      jest
+        .spyOn(baseStore.marketplaceServerClient, 'entitySearch')
+        .mockResolvedValue(
+          buildEntitySearchResponseJson([
+            {
+              datasetName: 'TradeData',
+              dataProductDetails: {
+                _type: 'lakehouse',
+                groupId: 'com.lh',
+                artifactId: 'lh-art',
+                versionId: '2.0.0',
+                path: 'my::LhDataSpace',
+              },
+              relatedFields: [{ fieldName: 'id', fieldType: 'String' }],
+            },
+          ]),
+        );
+
+      // callLLM throws during SQL generation
+      plugin.callLLM.mockRejectedValue(new Error('LLM service unavailable'));
+
+      await flowResult(store.submitQuery('query during outage'));
+
+      expect(store.isSending).toBe(false);
+      expect(store.stage).toBe(MarketplaceAIChatStage.RESULTS);
+      expect(store.pendingFallbackQuestion).toBe('query during outage');
     });
   },
 );

@@ -15,10 +15,16 @@
  */
 
 import type { DataGridColumnDefinition } from '../data-grid/index.js';
-import type {
-  TDSRowDataType,
-  QueryExplicitExecutionContextInfo,
+import {
+  type TDSRowDataType,
+  type QueryExplicitExecutionContextInfo,
+  type AbstractPureGraphManager,
+  type GraphManagerState,
+  buildLambdaVariableExpressions,
+  VariableExpression,
+  extractElementNameFromPath,
 } from '@finos/legend-graph';
+import { filterByType } from '@finos/legend-shared';
 import type { LegendApplicationPlugin } from '@finos/legend-application';
 import {
   LegendAI_LegendApplicationPlugin_Extension,
@@ -30,6 +36,30 @@ export class TDSColumnSchema {
   type?: string;
   documentation?: string;
   sampleValues?: string;
+  /** Whether this column is nullable (multiplicity lowerBound === 0). */
+  nullable?: boolean;
+  /** Physical relational type (e.g. 'VARCHAR(100)', 'DECIMAL(18,4)'). */
+  relationalType?: string;
+}
+
+export class TDSParameterSchema {
+  name!: string;
+  type?: string;
+  required?: boolean;
+}
+
+/**
+ * Describes a hardcoded filter constraint baked into a service lambda.
+ * These are equality checks, isEmpty/isNotEmpty checks, or isNotNull
+ * guards that are applied before the TDS result is returned.
+ */
+export interface TDSServicePreFilter {
+  /** Dot-separated property path (e.g. 'FeSecCoveragePublic.SymCoveragePublicEquities.SymSecEntityPublic.fsymId'). */
+  property: string;
+  /** The comparison operator. */
+  operator: 'equal' | 'isEmpty' | 'isNotEmpty' | 'isNotNull';
+  /** The literal value for equality comparisons. */
+  value?: string | number | boolean;
 }
 
 export enum TDSServiceSourceType {
@@ -44,6 +74,12 @@ export class TDSServiceSchema {
   columns!: TDSColumnSchema[];
   parameters!: string[];
   /**
+   * Rich parameter metadata including type and multiplicity.
+   * When populated, downstream consumers can use this for richer
+   * prompts and user-facing hints. Falls back to `parameters` names.
+   */
+  parameterSchemas?: TDSParameterSchema[];
+  /**
    * Indicates the source of this service schema.
    * - SERVICE: traditional DataSpace service executable (uses `FROM service(...)` SQL syntax)
    * - ACCESS_POINT: data product access point (uses `FROM p(...)` SQL syntax with lakehouse runtime)
@@ -51,12 +87,28 @@ export class TDSServiceSchema {
   sourceType?: TDSServiceSourceType;
   /** Full data product path (e.g. 'my::package::DataProduct'), used with `p()` syntax for access points. */
   dataProductPath?: string;
+  /**
+   * Set to true when parameter extraction from the service query failed.
+   * Downstream consumers can use this to warn users that required parameters
+   * may not be detected automatically.
+   */
+  parameterExtractionFailed?: boolean;
+  /** Access point group title this AP belongs to. */
+  accessPointGroupTitle?: string;
+  /** Raw DDL script (CREATE VIEW/TABLE) from the access point resource builder. */
+  ddlScript?: string;
+  /**
+   * Hardcoded filter constraints extracted from the service lambda.
+   * These indicate pre-applied conditions the AI must not contradict.
+   */
+  preFilters?: TDSServicePreFilter[];
 }
 
 export class LegendAIConfig {
   enabled!: boolean;
   llmServiceUrl!: string | undefined;
   llmModelName!: string | undefined;
+  llmModelOptions?: string[];
   sqlExecutionUrl!: string | undefined;
   orchestratorUrl!: string | undefined;
   marketplaceSearchUrl!: string | undefined;
@@ -87,6 +139,17 @@ export const LAKEHOUSE_ENV_PROD = 'prod';
 export const COVERAGE_NAME_PROD = 'legend-ai';
 /** EngHub coverage app name for non-production (sandbox). */
 export const COVERAGE_NAME_SANDBOX = 'Legend-AI-Sandbox';
+
+/**
+ * Delimiter used in TDS column `doc` fields to separate human-readable
+ * documentation from sample values.  Shared across DataProduct and
+ * DataSpace parsers.
+ */
+export const TDS_SAMPLE_VALUES_DELIMITER = '-- e.g.';
+
+export function getTodayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 /** Action ID used to offer the Legend AI Orchestrator as a fallback. */
 export const LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID =
@@ -162,6 +225,20 @@ export interface LegendAIFallbackAction {
   actionId: string;
 }
 
+export enum LegendAIMessageFeedbackRating {
+  THUMBS_UP = 'thumbs_up',
+  THUMBS_DOWN = 'thumbs_down',
+}
+
+export interface LegendAIMessageFeedback {
+  messageId: string;
+  rating: LegendAIMessageFeedbackRating;
+  question: string;
+  answer?: string;
+  sql?: string;
+  rowCount?: number;
+}
+
 export class LegendAIAssistantMessage {
   id!: string;
   role!: LegendAIMessageRole.ASSISTANT;
@@ -191,6 +268,10 @@ export class LegendAIConversationTurn {
    * to differentiate prior metadata answers from SQL query results.
    */
   intent?: LegendAIQuestionIntent;
+  /** Number of rows returned by the query, when available. */
+  rowCount?: number;
+  /** Brief summary of the result (e.g. column names, first few values). */
+  resultSummary?: string;
 }
 
 export interface LegendAIChatState {
@@ -198,6 +279,9 @@ export interface LegendAIChatState {
   setQuestionText: (text: string) => void;
   isSending: boolean;
   messages: LegendAIMessage[];
+  selectedModelName: string | undefined;
+  availableModelNames: string[];
+  setSelectedModelName: (modelName: string) => void;
   askQuestion: () => void;
   askQuestionWithIntent: (text: string, intent: LegendAIQuestionIntent) => void;
   runFallbackAction: (messageId: string) => void;
@@ -205,11 +289,23 @@ export interface LegendAIChatState {
   expandedThinking: Set<number>;
   toggleThinking: (index: number) => void;
   conversationRef: { readonly current: HTMLDivElement | null };
+  selectedScopes: LegendAIScopeItem[];
+  toggleScope: (scope: LegendAIScopeItem) => void;
+  removeScope: (scopeId: string) => void;
+  stopGeneration: () => void;
+}
+
+export interface LegendAIScopeItem {
+  id: string;
+  label: string;
+  description?: string;
 }
 
 export interface LegendAIServiceSummary {
   title: string;
   description?: string;
+  columnNames?: string[];
+  parameters?: string[];
 }
 
 export interface LegendAIAccessPointInfo {
@@ -228,6 +324,32 @@ export class LegendAIAccessPointGroupInfo {
   accessPoints!: LegendAIAccessPointInfo[];
 }
 
+export interface LegendAIAccessPointRelationship {
+  leftAccessPoint: string;
+  rightAccessPoint: string;
+  sharedColumns: string[];
+}
+
+/**
+ * Describes a relationship between two TDS services in a DataSpace,
+ * derived from model association documentation (elementDocs).
+ * Used to generate accurate JOIN hints in LLM prompts.
+ */
+export interface LegendAIServiceRelationship {
+  /** Title of the first service. */
+  leftService: string;
+  /** Title of the second service. */
+  rightService: string;
+  /** Column names that can serve as JOIN keys between the services. */
+  joinColumns: string[];
+  /** Name of the intermediate entity connecting both services (e.g. "Own2Ownermap"). */
+  viaEntity?: string;
+  /** Cardinality from the connecting entity to the left service (e.g. "1:*"). */
+  leftCardinality?: string;
+  /** Cardinality from the connecting entity to the right service (e.g. "1:*"). */
+  rightCardinality?: string;
+}
+
 export class LegendAIProductMetadata {
   name!: string;
   description?: string;
@@ -236,6 +358,12 @@ export class LegendAIProductMetadata {
   accessPointGroups?: LegendAIAccessPointGroupInfo[];
   tags?: LegendAITagInfo[];
   supportInfo?: string;
+  /** Inferred cross-access-point relationships based on shared column names. */
+  accessPointRelationships?: LegendAIAccessPointRelationship[];
+  /** Cross-service relationships derived from model associations (elementDocs). */
+  serviceRelationships?: LegendAIServiceRelationship[];
+  /** Per-product domain knowledge for LLM context enrichment. */
+  domainContext?: string;
 }
 
 export enum LegendAIQuestionIntent {
@@ -269,12 +397,16 @@ export const METADATA_SIGNAL_PATTERNS: readonly RegExp[] = Object.freeze([
   /\b(?:help\s+me\s+(?:understand|with))\b/,
   /\bwhat\s+(?:information|data|content|datasets?)\s+(?:is|are|does)\b/,
   /\b(?:what\s+does)\s+\S+(?:\s+\S+)*\s+(?:do|provide|offer|contain|include|cover)\b/,
+  /\b(?:how\s+are)\s+(?:these|the|those|this)\s+(?:\S+\s+)*(?:related|connected|linked|different|similar)\b/,
+  /\b(?:relationship|similarities|differences)\s+(?:between|across|among)\b/,
+  /\b(?:can\s+(?:we|i|you)\s+(?:join|combine|link|relate|connect))\s+(?:these|the|those|them)\b/,
 ]);
 
 export const DATA_QUERY_SIGNAL_PATTERNS: readonly RegExp[] = Object.freeze([
   /\b(?:select|query|sql|rows?|records?|count|sum|avg|average|min|max|total)\b/,
   /\b(?:top\s+\d+|first\s+\d+|last\s+\d+|limit\s+\d+)\b/,
-  /\b(?:filter|where|group\s+by|order\s+by|sort|join|aggregate)\b/,
+  /\b(?:filter|where|group\s+by|order\s+by|sort|aggregate)\b/,
+  /\bjoin\s+(?:on|using|between|the\s+(?:tables?|services?|data))\b/,
   /\b(?:distinct|unique)\s+(?:values?|entries?|items?)/,
   /\bfrom\s+(?:\S+\s+)*service\b/,
   /\b(?:show|give|get|fetch|retrieve|pull|find|provide|display|return)\s+(?:me\s+)?/,
@@ -298,11 +430,24 @@ export const DATA_QUERY_SIGNAL_PATTERNS: readonly RegExp[] = Object.freeze([
   /\b(?:grouped?\s+by|broken?\s+down\s+by|split\s+by|segmented?\s+by)\b/,
 ]);
 
+const EXPLICIT_METADATA_OVERRIDE_PATTERNS: readonly RegExp[] = [
+  /\b(?:from|using|based\s+on|answer\s+from|just)\s+(?:the\s+)?metadata\b/,
+  /\b(?:don'?t|do\s+not|no)\s+(?:run\s+(?:a\s+)?)?(?:query|queries|sql|execute|fetch)\b/,
+  /\bjust\s+(?:answer|explain|describe|tell\s+me)\b/,
+  /\b(?:without|skip)\s+(?:querying|executing|running|fetching)\b/,
+];
+
 const PRODUCT_REFERENCE_PATTERN =
   /\b(?:this|the)\s+(?:data\s*product|dataspace|data\s*space|product)\b/;
 
 const STRUCTURAL_KEYWORD_PATTERN =
   /\b(?:services?|endpoints?|access\s*points?|capabilities|owner|maintainer|support)\b/;
+
+const CAPABILITY_DISCOVERY_PATTERNS: readonly RegExp[] = [
+  /\bwhat\s+data\s+does\b/,
+  /\bwhat\s+does\s+\S+(?:\s+\S+)*\s+offer\b/,
+  /\bhow\s+can\s+i\s+use\b/,
+];
 
 function countPatternMatches(
   question: string,
@@ -340,17 +485,29 @@ export function classifyQuestionIntentFast(
 ): QuestionIntentClassification {
   const q = question.toLowerCase().trim();
 
+  if (EXPLICIT_METADATA_OVERRIDE_PATTERNS.some((p) => p.test(q))) {
+    return {
+      intent: LegendAIQuestionIntent.METADATA,
+      metaScore: 1,
+      dataScore: 0,
+      ambiguous: false,
+    };
+  }
+
   const metaScore = countPatternMatches(q, METADATA_SIGNAL_PATTERNS);
   const dataScore = countPatternMatches(q, DATA_QUERY_SIGNAL_PATTERNS);
 
   if (metaScore > 0 && dataScore === 0) {
     const isStructural =
       PRODUCT_REFERENCE_PATTERN.test(q) || STRUCTURAL_KEYWORD_PATTERN.test(q);
+    const isCapabilityDiscovery = CAPABILITY_DISCOVERY_PATTERNS.some((p) =>
+      p.test(q),
+    );
     return {
       intent: LegendAIQuestionIntent.METADATA,
       metaScore,
       dataScore,
-      ambiguous: hasServices && !isStructural,
+      ambiguous: hasServices && !isStructural && !isCapabilityDiscovery,
     };
   }
   if (dataScore > 0 && metaScore === 0) {
@@ -415,6 +572,45 @@ export function classifyQuestionIntent(
   return classifyQuestionIntentFast(question, hasServices).intent;
 }
 
+export async function extractParameterSchemas(
+  query: string,
+  graphManager: AbstractPureGraphManager,
+  graphManagerState: GraphManagerState,
+): Promise<{
+  parameters: string[];
+  parameterSchemas: TDSParameterSchema[];
+  parameterExtractionFailed: boolean;
+}> {
+  try {
+    const rawLambda = await graphManager.pureCodeToLambda(query);
+    const varExpressions = buildLambdaVariableExpressions(
+      rawLambda,
+      graphManagerState,
+    ).filter(filterByType(VariableExpression));
+    return {
+      parameters: varExpressions.map((v) => v.name),
+      parameterSchemas: varExpressions.map((v) => {
+        const schema: TDSParameterSchema = { name: v.name };
+        const typePath = v.genericType?.ownerReference.value.path;
+        if (typePath) {
+          schema.type = extractElementNameFromPath(typePath);
+        }
+        if (v.multiplicity.lowerBound > 0) {
+          schema.required = true;
+        }
+        return schema;
+      }),
+      parameterExtractionFailed: false,
+    };
+  } catch {
+    return {
+      parameters: [],
+      parameterSchemas: [],
+      parameterExtractionFailed: true,
+    };
+  }
+}
+
 export interface LegendAIChatProps {
   services: TDSServiceSchema[];
   coordinates: string;
@@ -433,4 +629,16 @@ export interface LegendAIChatProps {
    * returned by the orchestrator. Required for the execute-after-generate flow.
    */
   pureExecutionContext?: QueryExplicitExecutionContextInfo;
+  availableScopes?: LegendAIScopeItem[];
+  /** Called when the user clicks the close button in the chat header. */
+  onClose?: () => void;
+  /** Called when the user clicks the minimize button in the chat header. */
+  onMinimize?: () => void;
+  /**
+   * Optional callback fired when users submit thumbs-up/down feedback
+   * for an assistant response.
+   */
+  onMessageFeedback?: (
+    feedback: LegendAIMessageFeedback,
+  ) => Promise<void> | void;
 }

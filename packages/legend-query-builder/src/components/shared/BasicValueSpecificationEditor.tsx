@@ -49,6 +49,7 @@ import {
   EnumValueInstanceValue,
   GenericType,
   GenericTypeExplicitReference,
+  getCorrespondingStandardPrimitiveType,
   getMultiplicityDescription,
   getPrimitiveTypeInstanceFromEnum,
   InstanceValue,
@@ -56,6 +57,7 @@ import {
   isSubType,
   matchFunctionName,
   PRIMITIVE_TYPE,
+  PrecisePrimitiveType,
   PrimitiveInstanceValue,
   PrimitiveType,
   SimpleFunctionExpression,
@@ -781,6 +783,20 @@ const getPlaceHolder = (expectedType: Type | V1_PackageableType): string => {
       case PRIMITIVE_TYPE.STRICTDATE:
         return 'yyyy-mm-dd';
       case PRIMITIVE_TYPE.DATETIME:
+        return 'yyyy-mm-ddThh:mm:ss';
+      default:
+        return 'Add';
+    }
+  } else if (expectedType instanceof PrecisePrimitiveType) {
+    // Precise primitive types (e.g. Varchar, BigInt, Timestamp) flow in from
+    // accessor relation columns. Map them to their standard primitive
+    // equivalent so we can pick the right placeholder.
+    switch (getCorrespondingStandardPrimitiveType(expectedType.path)) {
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.STRICTDATE:
+        return 'yyyy-mm-dd';
+      case PRIMITIVE_TYPE.DATETIME:
+      case PRIMITIVE_TYPE.STRICTTIME:
         return 'yyyy-mm-ddThh:mm:ss';
       default:
         return 'Add';

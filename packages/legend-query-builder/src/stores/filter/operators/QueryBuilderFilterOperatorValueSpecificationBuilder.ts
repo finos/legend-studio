@@ -24,11 +24,14 @@ import {
   LambdaFunction,
   FunctionExpression,
   RelationColumn,
+  Multiplicity,
+  VariableExpression,
 } from '@finos/legend-graph';
 import { guaranteeType, assertTrue } from '@finos/legend-shared';
 import {
   FilterConditionState,
   FilterPropertyExpressionStateConditionValueState,
+  FilterRelationColumnConditionValueState,
   FilterRelationColumnSourceState,
   FilterValueSpecConditionValueState,
   type QueryBuilderFilterState,
@@ -76,6 +79,33 @@ export const buildFilterConditionExpression = (
       resolvedLambdaParameterName,
     );
     expression.parametersValues.push(rightConditionPropertyExpression);
+  } else if (
+    filterConditionState.rightConditionValue &&
+    filterConditionState.rightConditionValue instanceof
+      FilterRelationColumnConditionValueState
+  ) {
+    const rightValue = filterConditionState.rightConditionValue;
+    const relationType =
+      filterConditionState.filterState.queryBuilderState.sourceRelationType;
+    if (!relationType) {
+      throw new Error(
+        `Can't build expression for relation column '${rightValue.columnName}': no source relation type`,
+      );
+    }
+    const col = relationType.columns.find(
+      (c) => c.name === rightValue.columnName,
+    );
+    if (!col) {
+      throw new Error(
+        `Can't find column '${rightValue.columnName}' in relation`,
+      );
+    }
+    const colFuncExp = new FunctionExpression(col.name);
+    colFuncExp.func = col;
+    colFuncExp.parametersValues = [
+      new VariableExpression(resolvedLambdaParameterName, Multiplicity.ONE),
+    ];
+    expression.parametersValues.push(colFuncExp);
   }
   return expression;
 };
@@ -142,6 +172,7 @@ export const buildFilterConditionState = (
         new FilterRelationColumnSourceState(
           col.name,
           col.genericType.value.rawType,
+          col.multiplicity,
         ),
       );
     } else {
@@ -218,6 +249,19 @@ export const buildFilterConditionState = (
             filterState.queryBuilderState,
             value,
           ),
+        ),
+      );
+    } else if (
+      value instanceof FunctionExpression &&
+      value.func instanceof RelationColumn
+    ) {
+      const col = value.func;
+      filterConditionState.setRightConditionValue(
+        new FilterRelationColumnConditionValueState(
+          filterConditionState,
+          col.name,
+          col.genericType.value.rawType,
+          col.multiplicity,
         ),
       );
     } else {

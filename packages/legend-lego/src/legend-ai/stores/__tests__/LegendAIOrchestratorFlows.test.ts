@@ -20,7 +20,7 @@ import {
   processQuestionViaOrchestrator,
   processQuestionWithIntent,
   executePureQueryAndReport,
-} from '../LegendAIChatState.js';
+} from '../LegendAIChatProcessors.js';
 import {
   type LegendAIAssistantMessage,
   LegendAIQuestionIntent,

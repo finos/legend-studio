@@ -1,5 +1,37 @@
 # @finos/legend-query-builder
 
+## 4.18.20
+
+### Patch Changes
+
+- [#5277](https://github.com/finos/legend-studio/pull/5277) [`eefdc5b`](https://github.com/finos/legend-studio/commit/eefdc5bfda36efbbdd7695b0db73f902cf0cd206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Allow drag-and-drop of a relation column as the right-hand value of a filter condition when the filter source is also a relation column (e.g. `$x.colA == $x.colB`), and round-trip the same shape on the post-filter side so a projected relation column can be used as the right-hand value of a post-filter condition.
+
+- [#5277](https://github.com/finos/legend-studio/pull/5277) [`eefdc5b`](https://github.com/finos/legend-studio/commit/eefdc5bfda36efbbdd7695b0db73f902cf0cd206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix UI crash (`Cannot get placeholder for type [object Object]`) when selecting `is in list of` / `is not in list of` for a filter or post-filter on an accessor relation column whose type is a precise primitive (e.g. `Varchar`, `BigInt`, `Timestamp`). `PrecisePrimitiveType` is now mapped to its standard primitive equivalent in the collection value editor placeholder, in `convertTextToPrimitiveInstanceValue`, and in `QueryBuilderFilterOperator_In` / `QueryBuilderPostFilterOperator_In` (default value + condition-value compatibility check).
+
+## 4.18.19
+
+## 4.18.18
+
+### Patch Changes
+
+- [#5252](https://github.com/finos/legend-studio/pull/5252) [`530d316`](https://github.com/finos/legend-studio/commit/530d3165518d348a5754a4173c5b0779efa16696) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Follow-up fixes for `is empty` / `is not empty` on accessor relation columns and projection→filter DnD:
+
+  - `QueryBuilderPostFilterOperator_IsEmpty` now emits `isEmpty($row.<col>)` for relation-column projections (and `not(isEmpty($row.<col>))` for `IsNotEmpty`) instead of silently returning an unwrapped column accessor; matching round-trip overrides recognize both shapes. Previously these operators were offered in the UI but produced an invalid lambda for relation sources.
+  - `buildtdsPropertyExpressionFromColState` now handles `QueryBuilderRelationColumnProjectionColumnState` directly via its `RelationColumn`, so operators can build their expression without requiring a parent lambda.
+  - `QueryBuilderFilterStateBuilder` walks through wrapping `not(...)` / `isEmpty(...)` calls when extracting the lambda variable from a relation-column filter expression, so `is not empty` round-trips no longer throw `relation column filter must reference a variable`.
+  - Filter panel DnD now treats a `QueryBuilderRelationColumnProjectionColumnState` dropped from the projection panel the same as one dragged from the relation explorer, creating a `FilterRelationColumnSourceState` (carrying the column's multiplicity) instead of throwing "Dragging and Dropping derivation projection column is not supported.".
+
+## 4.18.17
+
+### Patch Changes
+
+- [#5233](https://github.com/finos/legend-studio/pull/5233) [`eeca5e8`](https://github.com/finos/legend-studio/commit/eeca5e855e6fa882171b75f973a08e6d5c8d21f1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix building lambda for queries whose source is an `Accessor` (relation source) and that use aggregations. Aggregations now route through the relation `project()->groupBy(...)` path based on `useRelation` instead of `isFetchStructureTyped`, and `buildRelationAggregation` correctly handles `QueryBuilderRelationColumnProjectionColumnState` and `QueryBuilderDerivationProjectionColumnState` map lambdas instead of assuming an `AbstractPropertyExpression`.
+
+- [#5237](https://github.com/finos/legend-studio/pull/5237) [`b7e3fe9`](https://github.com/finos/legend-studio/commit/b7e3fe97b3e4c1e895302c794145aa1905241206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix light-theme theming regressions for splitter and lambda-editor surfaces.
+
+  - restore missing vertical `react-reflex` splitter sizing/hit-area styles in `legend-art`
+  - make shared lambda-editor styles theme-aware so Function Editor lambda input follows the active theme
+
 ## 4.18.16
 
 ## 4.18.15

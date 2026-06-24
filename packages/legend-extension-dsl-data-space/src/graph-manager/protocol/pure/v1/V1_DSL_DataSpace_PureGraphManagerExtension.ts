@@ -293,14 +293,12 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     projectInfo?: ProjectGAVCoordinates,
     templateQueryId?: string,
   ): Promise<DataSpaceAnalysisResult> {
-    // reterieve data product artifacts (more than one file) from cache
+    // retrieve data product artifacts (more than one file) from cache.
+    // The depot endpoint backing `cacheRetriever` is already scoped to the
+    // dataspace element path via an `elementPath` query parameter, so no
+    // client-side path filter is needed.
     const dataspaceArtifacts = cacheRetriever
-      ? (
-          await this.fetchDataSpaceArtifactsFromCache(
-            cacheRetriever,
-            actionState,
-          )
-        ).filter((artifact) => artifact.path === dataSpacePath)
+      ? await this.fetchDataSpaceArtifactsFromCache(cacheRetriever, actionState)
       : undefined;
 
     let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
@@ -332,7 +330,6 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         (partition) => partition instanceof V1_MappingModelCoveragePartition,
       );
     }
-
     // when trying to build a minimal graph, we need to make sure that there is associated mapping model coverage
     // for every mapping in the data product analytics result otherwise we will have to build the full graph
     if (

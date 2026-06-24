@@ -27,6 +27,7 @@ import {
 } from '../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import { GenericType } from '../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
 import { GenericTypeExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
+import { Multiplicity } from '../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { IngestDefinition } from '../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { Database } from '../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { Column } from '../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Column.js';
@@ -167,7 +168,13 @@ const buildRelationTypeFromIngestDataset = (
       context.resolveGenericTypeFromProtocolWithRelationType(
         buildV1GenericType(PRIMITIVE_TYPE.STRING),
       );
-    return new RelationColumn(col.name, resolvedGenericType);
+    const relationColumn = new RelationColumn(col.name, resolvedGenericType);
+    relationColumn.multiplicity = context.graph.getMultiplicity(
+      col.multiplicity.lowerBound,
+      col.multiplicity.upperBound,
+    );
+
+    return relationColumn;
   });
   addMilestonedColumnsForWriteMode(relationType, writeMode, context);
   return relationType;
@@ -177,15 +184,20 @@ const buildRelationTypeFromTable = (table: Table): RelationType => {
   const relationType = new RelationType('__database_table__');
   relationType.columns = table.columns
     .filter((col): col is Column => col instanceof Column)
-    .map(
-      (col) =>
-        new RelationColumn(
-          col.name,
-          GenericTypeExplicitReference.create(
-            new GenericType(mapRelationalDataTypeToPrimitiveType(col.type)),
-          ),
+    .map((col) => {
+      const relationColumn = new RelationColumn(
+        col.name,
+        GenericTypeExplicitReference.create(
+          new GenericType(mapRelationalDataTypeToPrimitiveType(col.type)),
         ),
-    );
+      );
+      // Map relational column nullability to multiplicity so downstream
+      // consumers (filters / post-filters) can offer null-aware operators.
+      relationColumn.multiplicity = col.nullable
+        ? Multiplicity.ZERO_ONE
+        : Multiplicity.ONE;
+      return relationColumn;
+    });
   return relationType;
 };
 // TODO: move to pure graph
@@ -211,17 +223,23 @@ export const V1_buildRelationTypeFromAccessPointImplementation = (
     return undefined;
   }
   const relationType = new RelationType(relationTypeName ?? apImpl.id);
-  relationType.columns = v1RelationType.columns.map(
-    (col) =>
-      new RelationColumn(
-        col.name,
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            graph.getType(V1_getGenericTypeFullPath(col.genericType)),
-          ),
+  relationType.columns = v1RelationType.columns.map((col) => {
+    const relationColumn = new RelationColumn(
+      col.name,
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          graph.getType(V1_getGenericTypeFullPath(col.genericType)),
         ),
       ),
-  );
+    );
+
+    relationColumn.multiplicity = graph.getMultiplicity(
+      col.multiplicity.lowerBound,
+      col.multiplicity.upperBound,
+    );
+
+    return relationColumn;
+  });
   return relationType;
 };
 
@@ -309,7 +327,9 @@ const buildRelationTypeFromMetadata = (
       context.resolveGenericTypeFromProtocolWithRelationType(
         buildV1GenericType(PRIMITIVE_TYPE.STRING),
       );
-    return new RelationColumn(col.name, resolvedGenericType);
+    const relationColumn = new RelationColumn(col.name, resolvedGenericType);
+    relationColumn.multiplicity = col.multiplicity;
+    return relationColumn;
   });
   return relationType;
 };

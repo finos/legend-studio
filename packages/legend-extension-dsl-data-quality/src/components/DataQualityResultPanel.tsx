@@ -41,7 +41,7 @@ import {
   isNonNullable,
   prettyDuration,
 } from '@finos/legend-shared';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DATA_QUALITY_VALIDATION_TEST_ID } from './constants/DataQualityConstants.js';
 import {
   BlankPanelContent,
@@ -166,6 +166,10 @@ export const DataQualityResultPanel = observer(
     const [previewLimitValue, setPreviewLimitValue] = useState(
       resultState.previewLimit,
     );
+
+    useEffect(() => {
+      setPreviewLimitValue(resultState.previewLimit);
+    }, [resultState]);
 
     const changePreviewLimit: React.ChangeEventHandler<HTMLInputElement> = (
       event,

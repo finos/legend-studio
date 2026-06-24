@@ -22,6 +22,7 @@ import {
   matchFunctionName,
   VariableExpression,
   FunctionExpression,
+  RelationColumn,
   type SimpleFunctionExpression,
   type ValueSpecification,
 } from '@finos/legend-graph';
@@ -131,6 +132,27 @@ const buildPostFilterConditionValueState = (
   if (rightVal instanceof AbstractPropertyExpression) {
     const rightCol = returnUndefOnError(() =>
       findProjectionColumnState(rightVal, conditionState.postFilterState),
+    );
+    if (rightCol) {
+      conditionState.setRightConditionVal(
+        new PostFilterTDSColumnValueConditionValueState(
+          conditionState,
+          rightCol,
+        ),
+      );
+      return;
+    }
+  } else if (
+    rightVal instanceof FunctionExpression &&
+    rightVal.func instanceof RelationColumn
+  ) {
+    // Handle relation-column accessor on the right-hand side (e.g. when the
+    // post-filter source is an accessor / relation-based projection).
+    const rightCol = returnUndefOnError(() =>
+      getTDSColumnState(
+        conditionState.postFilterState.tdsState,
+        (rightVal.func as RelationColumn).name,
+      ),
     );
     if (rightCol) {
       conditionState.setRightConditionVal(

@@ -216,17 +216,19 @@ export class EntitlementsDashboardState {
         filteredTasks,
         filteredContractsForUser,
         filteredCreatedByUserMap,
+        filteredDataRequests,
       } = this.filterByUserEnvironment(
         pendingTasksData,
         contractsForUser,
         contractsCreatedByUserMap,
+        dataRequestsCreatedByUser,
         envMap,
       );
       this.pendingTaskContractMap = pendingTasksData.taskContractMap;
       this.pendingTasks = filteredTasks;
       this.allContractsForUser = filteredContractsForUser;
       this.allContractsCreatedByUserMap = filteredCreatedByUserMap;
-      this.dataRequestsCreatedByUser = dataRequestsCreatedByUser;
+      this.dataRequestsCreatedByUser = filteredDataRequests;
 
       this.fetchingPendingTasksState.complete();
       this.fetchingContractsForUserState.complete();
@@ -505,11 +507,13 @@ export class EntitlementsDashboardState {
     },
     contractsForUser: V1_LiteDataContractWithUserStatus[],
     contractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails>,
+    dataRequests: V1_DataRequestWithWorkflow[],
     envMap: Map<number, string>,
   ): {
     filteredTasks: V1_ContractUserEventRecord[];
     filteredContractsForUser: V1_LiteDataContractWithUserStatus[];
     filteredCreatedByUserMap: Map<string, ContractCreatedByUserDetails>;
+    filteredDataRequests: V1_DataRequestWithWorkflow[];
   } {
     const userEnv =
       this.lakehouseEntitlementsStore.marketplaceBaseStore.envState
@@ -535,10 +539,15 @@ export class EntitlementsDashboardState {
         filteredCreatedByUserMap.set(guid, details);
       }
     }
+    const filteredDataRequests = dataRequests.filter((dr) => {
+      const envType = dr.dataRequest.resourceEnvType;
+      return !envType || envType === userEnv;
+    });
     return {
       filteredTasks,
       filteredContractsForUser,
       filteredCreatedByUserMap,
+      filteredDataRequests,
     };
   }
 

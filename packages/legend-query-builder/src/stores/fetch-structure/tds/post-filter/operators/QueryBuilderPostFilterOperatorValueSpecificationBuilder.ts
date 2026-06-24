@@ -40,6 +40,7 @@ import {
 } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState.js';
 import { getTDSColumnDerivedProperyFromType } from '../../QueryBuilderTDSHelper.js';
+import { QueryBuilderRelationColumnProjectionColumnState } from '../../projection/QueryBuilderProjectionColumnState.js';
 
 export const buildtdsPropertyExpressionFromColState = (
   filterConditionState: PostFilterConditionState,
@@ -60,6 +61,18 @@ export const buildtdsPropertyExpressionFromColState = (
       relationType.columns.find((e) => colState.columnName === e.name),
       `Can't find property ${colState.columnName} in relation`,
     );
+    const _funcExp = new FunctionExpression(col.name);
+    _funcExp.func = col;
+    _funcExp.parametersValues = [variableName];
+    return _funcExp;
+  } else if (
+    colState instanceof QueryBuilderRelationColumnProjectionColumnState
+  ) {
+    // Fallback when parent lambda isn't available yet (e.g. when an operator
+    // is asked to build its expression in isolation): the projection state
+    // already carries the `RelationColumn`, so build the column accessor
+    // directly.
+    const col = colState.column;
     const _funcExp = new FunctionExpression(col.name);
     _funcExp.func = col;
     _funcExp.parametersValues = [variableName];

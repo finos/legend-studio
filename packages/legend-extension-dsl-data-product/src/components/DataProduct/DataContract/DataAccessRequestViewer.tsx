@@ -571,7 +571,7 @@ export const DataAccessRequestContent = observer(
       dataProductEnvironment,
     } = props;
     const auth = useAuth();
-    const consumer = viewerState.consumer;
+    const isInitialized = viewerState.initializationState.hasCompleted;
 
     const targetUsers = viewerState.targetUsers;
 
@@ -724,55 +724,59 @@ export const DataAccessRequestContent = observer(
             userSearchService={viewerState.userSearchService}
           />
         </div>
-        <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-for">
-          <b>
-            Ordered For
-            <Tooltip
-              className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-for__tooltip__icon"
-              title={
-                <>
-                  Request consumer type:{' '}
-                  {getOrganizationalScopeTypeName(
-                    consumer,
-                    viewerState.applicationStore.pluginManager.getApplicationPlugins(),
-                  )}
-                  {getOrganizationalScopeTypeDetails(
-                    consumer,
-                    viewerState.applicationStore.pluginManager.getApplicationPlugins(),
-                  )}
-                </>
-              }
-            >
-              <InfoCircleIcon />
-            </Tooltip>
-            :&nbsp;
-          </b>
-          {!(consumer instanceof V1_ProducerScope) &&
-          targetUsers !== undefined ? (
-            isReadOnly || targetUsers.length === 1 ? (
-              <UserRenderer
-                key={selectedTargetUser ?? targetUsers[0]}
-                userId={selectedTargetUser ?? targetUsers[0]}
-                applicationStore={viewerState.applicationStore}
-                userSearchService={viewerState.userSearchService}
-              />
-            ) : (
-              <Select
-                value={selectedTargetUser}
-                onChange={(event) => setSelectedTargetUser(event.target.value)}
-                size="small"
-                className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-for__select"
+        {isInitialized && (
+          <div className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-for">
+            <b>
+              Ordered For
+              <Tooltip
+                className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-for__tooltip__icon"
+                title={
+                  <>
+                    Request consumer type:{' '}
+                    {getOrganizationalScopeTypeName(
+                      viewerState.consumer,
+                      viewerState.applicationStore.pluginManager.getApplicationPlugins(),
+                    )}
+                    {getOrganizationalScopeTypeDetails(
+                      viewerState.consumer,
+                      viewerState.applicationStore.pluginManager.getApplicationPlugins(),
+                    )}
+                  </>
+                }
               >
-                {targetUserSelectItems}
-              </Select>
-            )
-          ) : (
-            stringifyOrganizationalScope(
-              consumer,
-              viewerState.applicationStore.pluginManager.getApplicationPlugins(),
-            )
-          )}
-        </div>
+                <InfoCircleIcon />
+              </Tooltip>
+              :&nbsp;
+            </b>
+            {!(viewerState.consumer instanceof V1_ProducerScope) &&
+            targetUsers !== undefined ? (
+              isReadOnly || targetUsers.length === 1 ? (
+                <UserRenderer
+                  key={selectedTargetUser ?? targetUsers[0]}
+                  userId={selectedTargetUser ?? targetUsers[0]}
+                  applicationStore={viewerState.applicationStore}
+                  userSearchService={viewerState.userSearchService}
+                />
+              ) : (
+                <Select
+                  value={selectedTargetUser}
+                  onChange={(event) =>
+                    setSelectedTargetUser(event.target.value)
+                  }
+                  size="small"
+                  className="marketplace-lakehouse-entitlements__data-access-request-viewer__metadata__ordered-for__select"
+                >
+                  {targetUserSelectItems}
+                </Select>
+              )
+            ) : (
+              stringifyOrganizationalScope(
+                viewerState.consumer,
+                viewerState.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            )}
+          </div>
+        )}
         <div>
           <b>Business Justification: </b>
           {viewerState.description}

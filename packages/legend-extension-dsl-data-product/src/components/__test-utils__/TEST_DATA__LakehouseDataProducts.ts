@@ -32,6 +32,7 @@ import {
   V1_GenericType,
   V1_RelationType,
   V1_RelationTypeColumn,
+  V1_TaggedValue,
   V1_PackageableType,
 } from '@finos/legend-graph';
 import { type StoredFileGeneration } from '@finos/legend-storage';
@@ -562,6 +563,19 @@ export const MOCK__TDS_COLUMN_SAMPLE_VALUES = 'id1, id2';
 
 export const buildMockDataProductArtifactWithSampleQueries =
   (): V1_DataProductArtifact => {
+    const createDocTaggedValue = (value: string): V1_TaggedValue => {
+      const taggedValue = new V1_TaggedValue();
+      taggedValue.tag = {
+        profile: 'meta::pure::profiles::doc',
+        value: 'doc',
+        get hashCode() {
+          return '';
+        },
+      };
+      taggedValue.value = value;
+      return taggedValue;
+    };
+
     // --- TDS sample query ---
     const tdsQueryInfo = new V1_TemplateExecutableInfo();
     tdsQueryInfo.id = MOCK__TDS_SAMPLE_QUERY_ID;
@@ -597,9 +611,20 @@ export const buildMockDataProductArtifactWithSampleQueries =
     const relationColumn = new V1_RelationTypeColumn();
     relationColumn.name = 'id';
     relationColumn.genericType = colGenericType;
+    relationColumn.description = 'Relation column description from field';
+    relationColumn.taggedValues = [
+      createDocTaggedValue('Relation column description from tagged value'),
+    ];
+
+    const fallbackColumn = new V1_RelationTypeColumn();
+    fallbackColumn.name = 'legacy_id';
+    fallbackColumn.genericType = colGenericType;
+    fallbackColumn.taggedValues = [
+      createDocTaggedValue('Legacy relation column description'),
+    ];
 
     const relationType = new V1_RelationType();
-    relationType.columns = [relationColumn];
+    relationType.columns = [relationColumn, fallbackColumn];
 
     const relationGenericType = new V1_GenericType();
     relationGenericType.rawType = relationType;
