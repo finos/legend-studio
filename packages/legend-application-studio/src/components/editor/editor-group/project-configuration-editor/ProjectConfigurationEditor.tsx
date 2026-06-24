@@ -67,6 +67,7 @@ import {
   DocumentationPreview,
 } from '@finos/legend-lego/application';
 import type { StoreProjectData } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 const isProjectConfigurationVersionOutdated = (
   projectConfig: ProjectConfiguration,
@@ -715,7 +716,16 @@ export const ProjectConfigurationEditor = observer(() => {
     async (): Promise<void> => {
       if (!isReadOnly) {
         if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
-          const currentProjects = Array.from(configState.projects.values());
+          const currentProjectCoordinates = generateGAVCoordinates(
+            currentProjectConfiguration.groupId,
+            currentProjectConfiguration.artifactId,
+            undefined,
+          );
+          const currentProjects = Array.from(
+            configState.projects.values(),
+          ).filter(
+            (project) => project.coordinates !== currentProjectCoordinates,
+          );
           if (currentProjects.length) {
             const projectToAdd = currentProjects[0] as StoreProjectData;
             const dependencyToAdd = new ProjectDependency(
