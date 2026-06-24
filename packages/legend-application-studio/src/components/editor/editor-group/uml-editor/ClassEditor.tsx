@@ -159,6 +159,7 @@ const PropertyBasicEditor = observer(
     const { property, _class, editorState, deleteProperty, isReadOnly } = props;
 
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const isInheritedProperty =
       property._OWNER instanceof Class && property._OWNER !== _class;
     const isPropertyFromAssociation = property._OWNER instanceof Association;
@@ -340,6 +341,10 @@ const PropertyBasicEditor = observer(
               placeholder="Choose a type..."
               filterOption={filterOption}
               formatOptionLabel={getPackageableElementOptionFormatter({})}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           )}
           {!isIndirectProperty && !isReadOnly && !isEditingType && (
@@ -713,6 +718,10 @@ const DerivedPropertyBasicEditor = observer(
                 placeholder="Choose a type..."
                 filterOption={filterOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({})}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
               />
             )}
             {!isInheritedProperty && !isReadOnly && !isEditingType && (
@@ -1044,6 +1053,7 @@ const SuperTypeEditor = observer(
 
     const { superType, _class, deleteSuperType, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     // Type
     const superTypeOptions = editorStore.graphManagerState.usableClasses
       .filter(
@@ -1136,6 +1146,10 @@ const SuperTypeEditor = observer(
             placeholder="Choose a class"
             filterOption={filterOption}
             formatOptionLabel={getPackageableElementOptionFormatter({})}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
           <button
             className="uml-element-editor__basic__detail-btn"
@@ -1472,6 +1486,7 @@ const SupertypesEditor = observer(
 const TaggedValuesEditor = observer(
   (props: { _class: Class; editorState: ClassEditorState }) => {
     const { _class, editorState } = props;
+    const applicationStore = useApplicationStore();
     const isReadOnly = editorState.isReadOnly;
 
     const deleteTaggedValue =
@@ -1519,6 +1534,10 @@ const TaggedValuesEditor = observer(
               taggedValue={taggedValue}
               deleteValue={deleteTaggedValue(taggedValue)}
               isReadOnly={isReadOnly}
+              darkTheme={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           ))}
         </PanelContentLists>
@@ -1530,6 +1549,7 @@ const TaggedValuesEditor = observer(
 const StereotypesEditor = observer(
   (props: { _class: Class; editorState: ClassEditorState }) => {
     const { _class, editorState } = props;
+    const applicationStore = useApplicationStore();
     const isReadOnly = editorState.isReadOnly;
 
     const deleteStereotype =
@@ -1579,6 +1599,10 @@ const StereotypesEditor = observer(
               stereotype={stereotype}
               deleteStereotype={deleteStereotype(stereotype)}
               isReadOnly={isReadOnly}
+              darkTheme={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           ))}
         </PanelContentLists>
