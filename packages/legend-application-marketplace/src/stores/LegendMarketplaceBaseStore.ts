@@ -268,7 +268,7 @@ export class LegendMarketplaceBaseStore {
     return vendorImageMap;
   }
 
-  private async createInitializedGraphManager(): Promise<V1_PureGraphManager> {
+  async createInitializedGraphManager(): Promise<V1_PureGraphManager> {
     const graphManager = new V1_PureGraphManager(
       this.applicationStore.pluginManager,
       this.applicationStore.logService,

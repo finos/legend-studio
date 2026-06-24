@@ -19,8 +19,12 @@ export { EntitlementsDataContractCreator } from './components/DataProduct/DataCo
 export { LakehouseResiliencyDisclaimer } from './components/DataProduct/DataContract/LakehouseResiliencyDisclaimer.js';
 export {
   type ContractErrorLayer,
+  type LakehouseContractSyncStatusResponse,
+  ContractSyncStatus,
   DataAccessRequestContent,
   DataAccessRequestViewer,
+  buildSyncErrorLayer,
+  buildContractErrorsRoot,
 } from './components/DataProduct/DataContract/DataAccessRequestViewer.js';
 export * from './components/ProductViewer.js';
 export { MultiUserRenderer } from './components/UserRenderer/MultiUserRenderer.js';
@@ -45,6 +49,7 @@ export * from './stores/TerminalProduct/TerminalProductDataAccessState.js';
 export { TabMessageScreen } from './components/DataProduct/DataProductDataAccess.js';
 
 export * from './utils/DataContractUtils.js';
+export * from './utils/DataProductIngestUtils.js';
 export * from './utils/LakehouseUtils.js';
 
 export * from './__lib__/DataProductTelemetryHelper.js';

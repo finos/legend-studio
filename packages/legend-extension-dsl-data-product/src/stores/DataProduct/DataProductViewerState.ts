@@ -87,6 +87,7 @@ import {
 import type { ViewerModelsDocumentationState } from '@finos/legend-lego/model-documentation';
 import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramViewerState.js';
 import type { RegistryServerClient } from '@finos/legend-server-marketplace';
+import type { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import { DataAccessState } from '@finos/legend-query-builder';
 import {
   DEFAULT_LEGEND_AI_CONFIG,
@@ -142,6 +143,8 @@ export class DataProductViewerState extends BaseViewerState<
       ) => void)
     | undefined;
   readonly openSampleQuery?: ((sampleQueryId: string) => void) | undefined;
+  dataProductDataAccessState: DataProductDataAccessState | undefined;
+
   readonly fetchingDataProductArtifactState = ActionState.create();
 
   constructor(
@@ -191,6 +194,8 @@ export class DataProductViewerState extends BaseViewerState<
       nativeModelAccessDiagramViewerState: observable,
       nativeModelAccessDataAccessState: observable,
       legendAIConfig: observable,
+      dataProductDataAccessState: observable,
+      setDataProductDataAccessState: action,
       init: flow,
       isAllApgsCollapsed: computed,
       toggleAllApgGroupCollapse: action,
@@ -231,6 +236,12 @@ export class DataProductViewerState extends BaseViewerState<
     this.openGovernance = actions.openGovernance;
     this.openQuery = actions.openQuery;
     this.openSampleQuery = actions.openSampleQuery;
+  }
+
+  setDataProductDataAccessState(
+    val: DataProductDataAccessState | undefined,
+  ): void {
+    this.dataProductDataAccessState = val;
   }
 
   protected getValidSections(): string[] {

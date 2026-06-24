@@ -59,10 +59,7 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
   V1_TerminalModelSchema,
 } from '@finos/legend-graph';
-import {
-  buildGraphForDataProduct,
-  getDataProductFromDetails,
-} from '../../utils/LakehouseUtils.js';
+import { buildGraphForDataProduct } from '../../utils/LakehouseUtils.js';
 import {
   type Entity,
   type StoredFileGeneration,
@@ -95,6 +92,7 @@ import {
   TerminalProductLayoutState,
   TerminalProductViewerState,
   DATAPRODUCT_TYPE,
+  getDataProductFromDetails,
 } from '@finos/legend-extension-dsl-data-product';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
@@ -281,7 +279,7 @@ export class LegendMarketplaceProductViewerStore {
         yield getDataProductFromDetails(
           entitlementsDataProductDetails,
           graphManager,
-          this.marketplaceBaseStore,
+          this.marketplaceBaseStore.depotServerClient,
         ),
         V1_DataProduct,
         `Unable to get V1_DataProduct from details for id: ${entitlementsDataProductDetails.id}`,

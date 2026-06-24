@@ -45,7 +45,7 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../__lib__/LegendMarketplaceAppEvent.js';
-import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
+import { getDataProductFromDetails } from '@finos/legend-extension-dsl-data-product';
 import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 
 export const MAX_PRODUCT_IMAGE_COUNT = 15;
@@ -281,7 +281,7 @@ export class ProductCardState {
       const v1_dataProduct = await getDataProductFromDetails(
         entitlementsDataProductDetails,
         this.graphManager,
-        this.marketplaceBaseStore,
+        this.marketplaceBaseStore.depotServerClient,
       );
 
       return v1_dataProduct;
@@ -305,7 +305,7 @@ export class ProductCardState {
       const v1_dataProduct = await getDataProductFromDetails(
         entitlementsDataProductDetails,
         this.graphManager,
-        this.marketplaceBaseStore,
+        this.marketplaceBaseStore.depotServerClient,
       );
 
       return v1_dataProduct;

@@ -42,6 +42,7 @@ import {
   V1_liteDataContractsResponseModelSchemaToContracts,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_ResourceType,
+  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -53,7 +54,14 @@ import {
   isNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { deserialize, serialize } from 'serializr';
 import {
   type LakehouseIngestServerClient,
@@ -72,6 +80,7 @@ import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '..
 import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
 import { PermitDataAccessRequestState } from './DataAccess/PermitDataAccessRequestState.js';
 import { type DataAccessRequestState } from './DataAccess/DataAccessRequestState.js';
+import { runMissingIngestsCheckForArtifact } from '../../utils/DataProductIngestUtils.js';
 
 export enum DataAccessRequestType {
   CONTRACT = 'CONTRACT',
@@ -215,6 +224,8 @@ export class DataProductDataAccessState {
     this.getContractTaskUrl = actions.getContractTaskUrl;
     this.getDataProductUrl = actions.getDataProductUrl;
     this.getTaskPageUrl = actions.getTaskPageUrl;
+
+    this.dataProductViewerState.setDataProductDataAccessState(this);
   }
 
   get product(): V1_DataProduct {
@@ -382,6 +393,9 @@ export class DataProductDataAccessState {
       this.fetchContracts(tokenProvider),
       this.fetchIngestEnvironmentDetails(tokenProvider),
       this.fetchDataProductOwners(tokenProvider),
+      ...this.dataProductViewerState.apgStates.map((apgState) =>
+        flowResult(apgState.fetchMissingIngests(tokenProvider)),
+      ),
     ]);
   }
 
@@ -692,6 +706,43 @@ export class DataProductDataAccessState {
         `Unable to find lakehouse ingest env with did: ${this.entitlementsDataProductDetails.deploymentId}, error: ${error.message}`,
       );
     }
+  }
+
+  async computeMissingIngestsForApg(
+    accessPointGroupId: string,
+    tokenProvider: () => string | undefined,
+  ): Promise<string[]> {
+    const origin = this.entitlementsDataProductDetails.origin;
+    if (!(origin instanceof V1_SdlcDeploymentDataProductOrigin)) {
+      return [];
+    }
+    const artifact =
+      await this.dataProductViewerState.dataProductArtifactPromise;
+    if (!artifact) {
+      return [];
+    }
+    return runMissingIngestsCheckForArtifact(
+      {
+        accessPointGroupId,
+        deploymentId: this.entitlementsDataProductDetails.deploymentId,
+        dataProductName: this.entitlementsDataProductDetails.dataProduct.name,
+        gavCoordinates: {
+          groupId: origin.group,
+          artifactId: origin.artifact,
+          versionId: origin.version,
+        },
+        artifact,
+        v1DataProduct: this.product,
+      },
+      {
+        lakehouseIngestServerClient: this.lakehouseIngestServerClient,
+        lakehousePlatformServerClient: this.lakehousePlatformServerClient,
+        plugins:
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+        getGraphManager: async () => this.graphManagerState.graphManager,
+      },
+      tokenProvider(),
+    );
   }
 
   async fetchLakehouseIngestEnvironmentDetails(

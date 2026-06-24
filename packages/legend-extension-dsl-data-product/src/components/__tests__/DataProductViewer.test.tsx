@@ -3973,6 +3973,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
@@ -4012,6 +4013,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
@@ -4047,6 +4049,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
@@ -4088,6 +4091,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
@@ -4126,6 +4130,7 @@ describe('DataProductViewer', () => {
       );
 
       await act(async () => {
+        await dataProductViewerState.dataProductArtifactPromise;
         dataProductViewerState.dataProductArtifact =
           buildMockDataProductArtifactWithSampleQueries();
       });
