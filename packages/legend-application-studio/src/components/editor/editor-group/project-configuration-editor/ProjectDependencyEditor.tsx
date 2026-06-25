@@ -1068,6 +1068,13 @@ const ProjectDependencyInlineExclusionsSelector = observer(
           );
 
         const visitedNodes = new Set<string>();
+        const currentProjectCoordinate = generateGAVCoordinates(
+          editorStore.projectConfigurationEditorState
+            .currentProjectConfiguration.groupId,
+          editorStore.projectConfigurationEditorState
+            .currentProjectConfiguration.artifactId,
+          undefined,
+        );
         const traverseNode = (nodeId: string) => {
           if (visitedNodes.has(nodeId)) {
             return;
@@ -1090,7 +1097,8 @@ const ProjectDependencyInlineExclusionsSelector = observer(
               if (
                 existingExclusionCoordinates.indexOf(coordinate) === -1 &&
                 coordinate !==
-                  `${projectDependency.groupId}:${projectDependency.artifactId}`
+                  `${projectDependency.groupId}:${projectDependency.artifactId}` &&
+                coordinate !== currentProjectCoordinate
               ) {
                 transitiveDeps.set(coordinate, {
                   label: generateGAVCoordinates(
@@ -1125,6 +1133,10 @@ const ProjectDependencyInlineExclusionsSelector = observer(
         projectDependency.groupId,
         projectDependency.artifactId,
         projectDependency.versionId,
+        editorStore.projectConfigurationEditorState.currentProjectConfiguration
+          .groupId,
+        editorStore.projectConfigurationEditorState.currentProjectConfiguration
+          .artifactId,
       ]);
 
     useEffect(() => {
@@ -1141,7 +1153,6 @@ const ProjectDependencyInlineExclusionsSelector = observer(
       if (!option) {
         return;
       }
-
       try {
         dependencyEditorState.addExclusionByCoordinate(
           projectDependency.projectId,
@@ -1310,7 +1321,13 @@ const ProjectVersionDependencyEditor = observer(
     const projectDisabled =
       !configState.associatedProjectsAndVersionsFetched ||
       configState.isReadOnly;
+    const currentProjectCoordinates = generateGAVCoordinates(
+      configState.currentProjectConfiguration.groupId,
+      configState.currentProjectConfiguration.artifactId,
+      undefined,
+    );
     const projectsOptions = Array.from(configState.projects.values())
+      .filter((project) => project.coordinates !== currentProjectCoordinates)
       .map(buildProjectOption)
       .sort(compareLabelFn);
     const onProjectSelectionChange = async (
