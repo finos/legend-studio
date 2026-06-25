@@ -2726,7 +2726,10 @@ export const TEST_DATA__RelationFunctionMappingWithEnum = [
       ],
       enumerationMappings: [
         {
-          enumeration: 'my::EmployeeType',
+          enumeration: {
+            path: 'my::EmployeeType',
+            type: 'ENUMERATION',
+          },
           enumValueMappings: [
             {
               enumValue: 'CONTRACT',
@@ -2867,7 +2870,6 @@ export const TEST_DATA__RelationFunctionMappingWithEmbedded = [
                 class: 'my::PersonWithAddress',
                 property: 'address',
               },
-              source: 'person',
               propertyMappings: [
                 {
                   _type: 'relationFunctionPropertyMapping',
@@ -2882,6 +2884,7 @@ export const TEST_DATA__RelationFunctionMappingWithEmbedded = [
                   source: 'person',
                 },
               ],
+              source: 'person',
             },
           ],
           relationFunction: {
@@ -2938,8 +2941,8 @@ export const TEST_DATA__RelationFunctionMappingWithInlineEmbedded = [
                 class: 'my::PersonWithAddress',
                 property: 'address',
               },
-              source: 'personWithAddr',
               setImplementationId: 'addressSet',
+              source: 'personWithAddr',
             },
           ],
           relationFunction: {

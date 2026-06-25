@@ -744,6 +744,12 @@ const relationFunctionEmbeddedPropertyMappingModelSchema = createModelSchema(
     class: optional(primitive()),
     id: optional(primitive()),
     property: usingModelSchema(V1_propertyPointerModelSchema),
+    propertyMappings: list(
+      custom(
+        V1_serializeRelationFunctionPropertyMapping,
+        V1_deserializeRelationFunctionPropertyMapping,
+      ),
+    ),
     /**
      * Omit this information during protocol transformation as it can be
      * interpreted while building the graph; and will help grammar-roundtrip
@@ -754,12 +760,6 @@ const relationFunctionEmbeddedPropertyMappingModelSchema = createModelSchema(
      */
     source: optional(primitive()),
     target: optional(primitive()),
-    propertyMappings: list(
-      custom(
-        V1_serializeRelationFunctionPropertyMapping,
-        V1_deserializeRelationFunctionPropertyMapping,
-      ),
-    ),
   },
 );
 
@@ -770,6 +770,7 @@ const inlineEmbeddedRelationFunctionPropertyMappingModelSchema =
     ),
     id: optional(primitive()),
     property: usingModelSchema(V1_propertyPointerModelSchema),
+    setImplementationId: primitive(),
     /**
      * Omit this information during protocol transformation as it can be
      * interpreted while building the graph; and will help grammar-roundtrip
@@ -779,7 +780,6 @@ const inlineEmbeddedRelationFunctionPropertyMappingModelSchema =
      * @discrepancy grammar-roundtrip
      */
     source: optional(primitive()),
-    setImplementationId: primitive(),
     target: optional(primitive()),
   });
 
