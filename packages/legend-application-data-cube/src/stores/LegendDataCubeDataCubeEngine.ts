@@ -187,6 +187,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseAdHocViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl,
 } from '../__lib__/LegendDataCubeNavigation.js';
+import { LEGEND_DATA_CUBE_DOCUMENTATION_KEY } from '../__lib__/LegendDataCubeDocumentation.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -1214,20 +1215,19 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             }
           } else if (source instanceof LakehouseProducerDataCubeSource) {
             if (this._isPermissionDeniedError(error)) {
-              error.message.concat(
-                `\n\nPlease check your access for Ingest: ${source.paths[0]}`,
-                `\nLakehouse Warehouse: ${source.warehouse}`,
-                `\nDeployment ID: ${source.deploymentId ?? 'N/A'}`,
-              );
+              const accessUrl = this.getDocumentationEntry(
+                LEGEND_DATA_CUBE_DOCUMENTATION_KEY.SNOWFLAKE_PRODUCER_UNAUTHORIZED_ACCESS,
+              )?.url;
+              error.message = `${error.message}\n\nPlease check your access for Ingest: ${source.paths[0]}\nLakehouse Warehouse: ${source.warehouse}\nDeployment ID: ${source.deploymentId ?? 'N/A'}${accessUrl ? `\nRequest access: ${accessUrl}` : ''}`;
             }
           } else if (
             source instanceof LakehouseProducerIcebergCachedDataCubeSource
           ) {
             if (this._isPermissionDeniedError(error)) {
-              error.message.concat(
-                `\n\nPlease check your access for Ingest: ${source.paths[0]}`,
-                `\nDeployment ID: ${source.deploymentId ?? 'N/A'}`,
-              );
+              const accessUrl = this.getDocumentationEntry(
+                LEGEND_DATA_CUBE_DOCUMENTATION_KEY.SNOWFLAKE_PRODUCER_UNAUTHORIZED_ACCESS,
+              )?.url;
+              error.message = `${error.message}\n\nPlease check your access for Ingest: ${source.paths[0]}\nDeployment ID: ${source.deploymentId ?? 'N/A'}${accessUrl ? `\nRequest access: ${accessUrl}` : ''}`;
             }
           }
         } catch {
@@ -2152,6 +2152,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       'invalid user id or password',
       'Incorrect username or password',
       'not authorized',
+      'insufficient privileges',
       'this session does not have a current database',
     ];
     return Boolean(

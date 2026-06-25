@@ -66,6 +66,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   datasetGroup: string | undefined;
   icebergEnabled: boolean | undefined;
   enableIceberg: boolean;
+  nonIcebergWarehouse: string | undefined;
   databaseName: string | undefined;
   catalogUrl: string | undefined;
   milestoning: boolean;
@@ -193,6 +194,11 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   setEnableIceberg(enable: boolean) {
+    if (enable) {
+      this.nonIcebergWarehouse = this.warehouse;
+    } else if (this.nonIcebergWarehouse !== undefined) {
+      this.warehouse = this.nonIcebergWarehouse;
+    }
     this.enableIceberg = enable;
   }
 
@@ -216,6 +222,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setSelectedTable(undefined);
     this.icebergEnabled = undefined;
     this.enableIceberg = false;
+    this.nonIcebergWarehouse = undefined;
     this.catalogUrl = undefined;
     this.databaseName = undefined;
     this.ingestDefinition = undefined;
