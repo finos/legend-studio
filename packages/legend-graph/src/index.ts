@@ -395,7 +395,11 @@ export {
   V1_observe_DataContract,
   V1_observe_LiteDataContract,
 } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsObserver.js';
-export { V1_transformDataContractToLiteDatacontract } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsUtils.js';
+
+export {
+  V1_transformDataContractToLiteDatacontract,
+  V1_transformDataRequestWithWorkflowToLiteDataAccessRequest,
+} from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsUtils.js';
 export {
   V1_deserializeIngestEnvironment,
   V1_deserializeProducerEnvironment,

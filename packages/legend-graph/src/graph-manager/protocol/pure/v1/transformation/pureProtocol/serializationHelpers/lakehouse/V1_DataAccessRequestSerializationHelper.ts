@@ -43,6 +43,8 @@ import {
   V1_GenericWorkflowTask,
   V1_OrgMember,
   V1_OrgMembersResponse,
+  V1_PendingDataRequestTaskEntry,
+  V1_PendingDataRequestTasksResponse,
   V1_PrivilegeManagerApprovalTask,
   V1_Workflow,
 } from '../../../../lakehouse/entitlements/V1_DataAccessRequest.js';
@@ -280,6 +282,49 @@ export const V1_deserializeDataRequestsWithWorkflowResponse = (
   );
   return response.dataRequests;
 };
+
+// -------------------------------- Pending Data Request Tasks ------------------------------------------
+
+export const V1_pendingDataRequestTaskEntryModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_PendingDataRequestTaskEntry, {
+    workflowId: primitive(),
+    dataRequestId: primitive(),
+    workflowUrl: primitive(),
+    task: custom(
+      (val: V1_WorkflowTask) => V1_serializeWorkflowTask(val, plugins),
+      (val: PlainObject<V1_WorkflowTask>) => {
+        // The pending tasks API returns 'processInstanceId' instead of 'workflowGuid'
+        const adjusted = { ...val };
+        if (
+          val.processInstanceId !== undefined &&
+          val.workflowGuid === undefined
+        ) {
+          adjusted.workflowGuid = val.processInstanceId;
+        }
+        return V1_deserializeWorkflowTask(adjusted, plugins);
+      },
+    ),
+  });
+
+export const V1_pendingDataRequestTasksResponseModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_PendingDataRequestTasksResponse, {
+    dataOwner: customListWithSchema(
+      V1_pendingDataRequestTaskEntryModelSchema(plugins),
+    ),
+    privilegeManager: customListWithSchema(
+      V1_pendingDataRequestTaskEntryModelSchema(plugins),
+    ),
+  });
+
+export const V1_deserializePendingDataRequestTasksResponse = (
+  json: PlainObject<V1_PendingDataRequestTasksResponse>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_PendingDataRequestTasksResponse =>
+  deserialize(V1_pendingDataRequestTasksResponseModelSchema(plugins), json);
 
 // ----------------------------------------- Org Members -----------------------------------------------
 

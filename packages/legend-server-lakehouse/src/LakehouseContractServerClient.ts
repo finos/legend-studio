@@ -36,6 +36,7 @@ import type {
   V1_LiteDataContractsResponse,
   V1_LiteDataContractWithUserStatus,
   V1_PaginationMetadataRecord,
+  V1_PendingDataRequestTasksResponse,
   V1_PendingTasksResponse,
   V1_TaskResponse,
   V1_TaskStatus,
@@ -342,6 +343,17 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       {},
       undefined,
       this._token(token),
+    );
+
+  getPendingDataRequestTasks = (
+    user: string | undefined,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_PendingDataRequestTasksResponse>> =>
+    this.get(
+      `${this._dataAccessRequests()}/tasks/pending`,
+      {},
+      this._token(token),
+      { user },
     );
 
   // TODO: add implementations

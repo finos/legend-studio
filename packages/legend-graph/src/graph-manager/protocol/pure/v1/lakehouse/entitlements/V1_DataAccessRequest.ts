@@ -135,6 +135,20 @@ export class V1_DataRequestTasksResponse {
   workflowTasks: V1_WorkflowTask[] = [];
 }
 
+// -------------------------------- Pending Data Request Tasks ------------------------------------------
+
+export class V1_PendingDataRequestTaskEntry {
+  workflowId!: string;
+  dataRequestId!: string;
+  workflowUrl!: string;
+  task!: V1_WorkflowTask;
+}
+
+export class V1_PendingDataRequestTasksResponse {
+  dataOwner: V1_PendingDataRequestTaskEntry[] = [];
+  privilegeManager: V1_PendingDataRequestTaskEntry[] = [];
+}
+
 // -------------------------------- Permit Workflow Server Types --------------------------------
 
 export class V1_PermitProcessInstanceTask {
