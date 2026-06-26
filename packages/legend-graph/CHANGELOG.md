@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.6.13
+
+### Patch Changes
+
+- [#5279](https://github.com/finos/legend-studio/pull/5279) [`1002602`](https://github.com/finos/legend-studio/commit/10026025a663c2f282286b2a23643a9e9dd3e7bd) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - Add ModelJoin association mapping support to the graph manager. This includes V1 protocol model (`V1_ModelJoinAssociationMapping`), graph metamodel (`ModelJoinAssociationImplementation`), serialization, builder, transformer, observer, and hash computation support.
+
+- [#5280](https://github.com/finos/legend-studio/pull/5280) [`106a8a5`](https://github.com/finos/legend-studio/commit/106a8a5f6f49644543b2bfe1ee13a52d66f4adeb) ([@jackp5150](https://github.com/jackp5150)) - Updated data product artifact model to include dependency datasets/access points as well as producer information
+
 ## 32.6.12
 
 ### Patch Changes
