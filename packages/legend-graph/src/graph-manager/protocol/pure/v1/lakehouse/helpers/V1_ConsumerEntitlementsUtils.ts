@@ -47,20 +47,19 @@ export const V1_transformDataContractToLiteDatacontract = (
       : dataContract.resource instanceof V1_DataBundle
         ? V1_ResourceType.DATA_BUNDLE
         : V1_ResourceType.UNKNOWN;
-  const liteDataContract: V1_LiteDataContract = {
-    description: dataContract.description,
-    guid: dataContract.guid,
-    version: dataContract.version,
-    state: dataContract.state,
-    members: dataContract.members,
-    consumer: dataContract.consumer,
-    createdBy: dataContract.createdBy,
-    resourceId: dataProductName,
-    createdAt: dataContract.createdAt,
-    resourceType,
-    deploymentId,
-    accessPointGroup,
-  };
+  const liteDataContract = new V1_LiteDataContract();
+  liteDataContract.description = dataContract.description;
+  liteDataContract.guid = dataContract.guid;
+  liteDataContract.version = dataContract.version;
+  liteDataContract.state = dataContract.state;
+  liteDataContract.members = dataContract.members;
+  liteDataContract.consumer = dataContract.consumer;
+  liteDataContract.createdBy = dataContract.createdBy;
+  liteDataContract.resourceId = dataProductName;
+  liteDataContract.createdAt = dataContract.createdAt;
+  liteDataContract.resourceType = resourceType;
+  liteDataContract.deploymentId = deploymentId;
+  liteDataContract.accessPointGroup = accessPointGroup;
   return liteDataContract;
 };
 

@@ -17,6 +17,7 @@
 import {
   V1_AdhocTeam,
   V1_ContractState,
+  V1_LiteDataContract,
   V1_LiteDataContractWithUserStatus,
 } from '@finos/legend-graph';
 import {
@@ -85,6 +86,7 @@ export const EntitlementsClosedContractsDashboard = observer(
       () =>
         allContractsCreatedByUser.filter(
           (contract) =>
+            contract.contractResultLite instanceof V1_LiteDataContract &&
             isContractInTerminalState(contract.contractResultLite) &&
             !myClosedContractIds.has(contract.contractResultLite.guid),
         ),
@@ -111,7 +113,10 @@ export const EntitlementsClosedContractsDashboard = observer(
 
     useEffect(() => {
       setContractErrors(undefined);
-      if (selectedRow?.kind === ROW_KIND_CONTRACT) {
+      if (
+        selectedRow?.kind === ROW_KIND_CONTRACT &&
+        selectedRow.data.contractResultLite instanceof V1_LiteDataContract
+      ) {
         const contract = selectedRow.data.contractResultLite;
         const isCompleted = contract.state === V1_ContractState.COMPLETED;
         dashboardState
@@ -163,10 +168,13 @@ export const EntitlementsClosedContractsDashboard = observer(
               return UNKNOWN;
             }
             if (params.data.kind === ROW_KIND_CONTRACT) {
-              return params.data.data instanceof
-                V1_LiteDataContractWithUserStatus
-                ? params.data.data.status
-                : params.data.data.contractResultLite.state;
+              if (
+                params.data.data instanceof V1_LiteDataContractWithUserStatus
+              ) {
+                return params.data.data.status;
+              }
+              const lite = params.data.data.contractResultLite;
+              return lite instanceof V1_LiteDataContract ? lite.state : UNKNOWN;
             }
             return startCase(params.data.data.dataRequest.state);
           },
