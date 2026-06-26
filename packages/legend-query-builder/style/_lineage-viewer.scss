@@ -40,7 +40,7 @@
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-text-disabled) !important;
     }
 
     &__content {
@@ -97,7 +97,7 @@
     width: 100%;
     position: absolute;
     bottom: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 
   &__header--with-tabs {

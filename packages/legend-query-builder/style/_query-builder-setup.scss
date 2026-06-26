@@ -71,7 +71,7 @@
       @include flexVCenter;
 
       width: 8rem;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
       margin-right: 1rem;
       justify-content: right;
       text-align: right;
@@ -131,7 +131,7 @@
     @include flexVCenter;
 
     svg {
-      color: var(--color-blue-100);
+      color: var(--color-accent);
     }
 
     &__label {

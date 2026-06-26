@@ -89,7 +89,7 @@
       color: var(--color-text-secondary);
 
       &:focus {
-        border: 0.1rem solid var(--color-blue-200);
+        border: 0.1rem solid var(--color-border-focus);
         outline: none;
       }
     }
@@ -193,7 +193,7 @@
 
     &[disabled] .query-builder__icon,
     &[disabled] svg {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -376,11 +376,11 @@
         border-radius: 0.2rem 0 0 0.2rem;
 
         &--enumeration {
-          background: var(--color-medium-green-450);
+          background: var(--color-category-enumeration);
         }
 
         &--primitive {
-          background: var(--color-blue-200);
+          background: var(--color-category-primitive);
         }
       }
     }

@@ -131,11 +131,11 @@
       cursor: pointer;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
 
       &:hover svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -241,7 +241,7 @@
       }
 
       &[disabled] svg {
-        color: var(--color-dark-grey-300);
+        color: var(--color-text-disabled);
       }
     }
 
@@ -374,7 +374,7 @@
 
   &__node__container:hover &__node__action {
     svg {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -383,7 +383,7 @@
   }
 
   &__node__container--selected {
-    background: var(--color-light-blue-450);
+    background: var(--color-bg-selected);
   }
 
   &__node__label {
@@ -475,7 +475,7 @@
     }
 
     &[disabled] svg {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -495,7 +495,7 @@
   &__node__container--unmapped &__type-icon &__icon,
   &__node__container--unmapped &__node__label__derived-property,
   &__node__container--unmapped &__node__label__multiple {
-    color: var(--color-dark-grey-350);
+    color: var(--color-text-muted);
   }
 
   &__node__container--highlighted &__node__label,

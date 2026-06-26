@@ -91,7 +91,7 @@
     }
 
     .selector-input__input {
-      color: var(--color-red-180);
+      color: var(--color-status-error);
     }
   }
 
@@ -121,13 +121,13 @@
       font-size: 1.2rem;
 
       &--error {
-        background: var(--color-red-500);
-        border-color: var(--color-red-300);
+        background: var(--color-status-error-bg);
+        border-color: var(--color-status-error);
       }
     }
 
     &__editable__display--content--error {
-      color: var(--color-red-200) !important;
+      color: var(--color-status-error) !important;
     }
 
     &__options {
@@ -285,8 +285,8 @@
       padding-right: 2.8rem;
 
       &--error {
-        background: var(--color-red-500);
-        border-color: var(--color-red-300);
+        background: var(--color-status-error-bg);
+        border-color: var(--color-status-error);
       }
     }
 
@@ -323,36 +323,36 @@
 
     svg {
       font-size: 2rem;
-      color: var(--color-dark-grey-250);
+      color: var(--color-text-secondary);
     }
 
     &:hover svg {
       font-size: 2rem;
-      color: var(--color-dark-grey-280);
+      color: var(--color-text-secondary);
     }
 
     &[disabled] svg,
     &[disabled]:hover svg {
       cursor: not-allowed;
-      color: var(--color-dark-grey-250);
+      color: var(--color-text-disabled);
     }
   }
 
   &__toggler__btn--toggled {
     svg {
       font-size: 2rem;
-      color: var(--color-blue-150);
+      color: var(--color-accent);
     }
 
     &:hover svg {
       font-size: 2rem;
-      color: var(--color-blue-100);
+      color: var(--color-accent-hover);
     }
 
     &[disabled] svg,
     &[disabled]:hover svg {
       cursor: not-allowed;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -370,8 +370,8 @@
     cursor: pointer;
 
     &--error {
-      background: var(--color-red-500);
-      border: 1px solid var(--color-red-300);
+      background: var(--color-status-error-bg);
+      border: 1px solid var(--color-status-error);
     }
   }
 
@@ -443,7 +443,7 @@
   }
 
   &__editable__display--content--error {
-    color: var(--color-red-200) !important;
+    color: var(--color-status-error) !important;
   }
 
   &:hover &__list-editor__preview,
@@ -494,7 +494,7 @@
   }
 
   &__arrow {
-    color: var(--color-dark-grey-200) !important;
+    color: var(--color-bg-elevated) !important;
     opacity: 0.9 !important;
   }
 
@@ -510,7 +510,7 @@
     font-size: 1.3rem;
     user-select: none;
     cursor: default;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-secondary);
   }
 
   &__item__value {

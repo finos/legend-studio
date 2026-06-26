@@ -41,7 +41,7 @@
       width: 3rem;
 
       svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-muted);
       }
     }
   }
@@ -67,7 +67,7 @@
         height: 2.2rem;
         padding: 0.5rem;
         border-radius: 0.2rem 0 0 0.2rem;
-        background: var(--color-blue-200);
+        background: var(--color-accent);
       }
 
       &__label__icon {
@@ -96,7 +96,7 @@
       &__label[disabled] &__label__icon,
       &__label[disabled] &__label__title,
       &__dropdown-btn[disabled] svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-disabled);
       }
     }
   }
@@ -289,16 +289,16 @@
     }
 
     &--class &__header {
-      background: var(--color-purple-400);
+      background: var(--color-category-class);
     }
 
     &--class &__content {
       padding-top: 0;
-      border-left: 0.5rem solid var(--color-purple-400);
+      border-left: 0.5rem solid var(--color-category-class);
     }
 
     &--class &__item__label {
-      border: 0.1rem solid var(--color-purple-400);
+      border: 0.1rem solid var(--color-category-class);
     }
   }
 }

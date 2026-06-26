@@ -88,6 +88,12 @@ export const TaggedValueEditor = observer(
       darkTheme,
     } = props;
     const editorStore = useEditorStore();
+    // Follow the active app theme by default; the `darkTheme` prop, when
+    // provided, still overrides (e.g. for surfaces forced to a fixed look).
+    const darkMode =
+      darkTheme ??
+      !editorStore.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
     // Name
     const changeValue: React.ChangeEventHandler<
       HTMLTextAreaElement | HTMLInputElement
@@ -204,7 +210,7 @@ export const TaggedValueEditor = observer(
               value={selectedProfile}
               placeholder="Choose a profile"
               filterOption={profileFilterOption}
-              darkMode={Boolean(darkTheme)}
+              darkMode={darkMode}
             />
             <button
               className="tagged-value-editor__profile__visit-btn"
@@ -226,12 +232,12 @@ export const TaggedValueEditor = observer(
             value={selectedTag}
             placeholder="Choose a tag"
             filterOption={tagFilterOption}
-            darkMode={Boolean(darkTheme)}
+            darkMode={darkMode}
           />
           {!isReadOnly && (
             <button
               className={clsx('uml-element-editor__remove-btn', {
-                'btn--dark btn--caution': darkTheme,
+                'btn--dark btn--caution': darkMode,
               })}
               disabled={isReadOnly}
               onClick={deleteValue}
@@ -249,7 +255,7 @@ export const TaggedValueEditor = observer(
             {isExpanded && (
               <textarea
                 className={clsx('tagged-value-editor__value__input', {
-                  'input--dark': darkTheme,
+                  'input--dark': darkMode,
                 })}
                 spellCheck={false}
                 disabled={isReadOnly}
@@ -261,7 +267,7 @@ export const TaggedValueEditor = observer(
             {!isExpanded && (
               <input
                 className={clsx('tagged-value-editor__value__input', {
-                  'input--dark': darkTheme,
+                  'input--dark': darkMode,
                 })}
                 spellCheck={false}
                 disabled={isReadOnly}

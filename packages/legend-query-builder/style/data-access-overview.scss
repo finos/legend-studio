@@ -39,13 +39,16 @@
     &__warning {
       padding: 0.5rem 1rem;
       border-radius: 0.2rem;
+      // stable saturated warning chip: dark text on yellow reads correctly in
+      // both themes, so these stay palette tokens (do NOT map to a *-on-accent
+      // or text-disabled token — that would flip the text light on the yellow)
       background: var(--color-yellow-300);
       color: var(--color-dark-grey-250);
       font-size: 1.2rem;
       font-weight: 500;
       max-width: calc(100% - 5rem);
       user-select: none;
-      box-shadow: var(--color-dark-shade-280) 0 0 0.5rem 0;
+      box-shadow: var(--color-shadow) 0 0 0.5rem 0;
     }
 
     &__refresh-btn {
@@ -109,12 +112,12 @@
       font-weight: 500;
       border-radius: 0.5rem;
       background: var(--color-bg-app);
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
     }
 
     &__empty-cell {
       font-size: 1.2rem;
-      color: var(--color-dark-grey-280);
+      color: var(--color-text-muted);
     }
 
     &__header-cell {
@@ -191,19 +194,19 @@
       margin-right: 1rem;
 
       &--access-granted svg {
-        color: var(--color-lime-150);
+        color: var(--color-status-success);
       }
 
       &--access-approved svg {
-        color: var(--color-blue-100);
+        color: var(--color-status-info);
       }
 
       &--access-requested svg {
-        color: var(--color-yellow-200);
+        color: var(--color-status-warn);
       }
 
       &--access-not-granted svg {
-        color: var(--color-red-180);
+        color: var(--color-status-error);
       }
     }
   }

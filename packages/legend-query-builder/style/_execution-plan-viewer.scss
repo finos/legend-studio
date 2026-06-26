@@ -39,8 +39,8 @@
   }
 
   &__close-btn {
-    border-color: var(--color-blue-200);
-    background: var(--color-blue-300);
+    border-color: var(--color-accent);
+    background: var(--color-accent);
   }
 
   .panel {
@@ -120,7 +120,7 @@
     width: 100%;
     position: absolute;
     bottom: 0;
-    background: var(--color-yellow-200);
+    background: var(--color-active-indicator);
   }
 
   &__panel {
@@ -240,12 +240,12 @@
         }
 
         &--generation {
-          background: var(--color-pink-300);
-          border: 0.1rem solid var(--color-pink-300);
+          background: var(--color-category-generation);
+          border: 0.1rem solid var(--color-category-generation);
         }
 
         &--generation &__name {
-          background: var(--color-pink-300);
+          background: var(--color-category-generation);
           color: var(--color-text-primary);
         }
       }
@@ -287,7 +287,7 @@
 
   &__explorer-tree__node__container--selected,
   &__explorer-tree__node__container--selected:hover {
-    background: var(--color-light-blue-450);
+    background: var(--color-bg-selected);
   }
 
   &__explorer-tree__node__icon {

@@ -111,7 +111,7 @@
 
       .query-builder-property-expression-badge__property__info {
         svg {
-          color: var(--color-dark-grey-500);
+          color: var(--color-text-muted);
         }
       }
 
@@ -168,7 +168,7 @@
     padding-left: 1rem;
 
     .lambda-editor__error-feedback {
-      background: var(--color-red-200);
+      background: var(--color-status-error);
     }
   }
 
@@ -283,7 +283,7 @@
       font-weight: 500;
       padding-right: 1rem;
       background: var(--color-bg-hover);
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-muted);
       cursor: pointer;
       position: relative;
 
@@ -388,7 +388,7 @@
 
     &[disabled] .query-builder__icon,
     &[disabled] svg {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -486,7 +486,7 @@
         border-radius: 0 0.2rem 0.2rem 0;
         white-space: nowrap;
         width: 3rem;
-        background: var(--color-blue-200);
+        background: var(--color-accent);
 
         svg {
           font-size: 1.4rem;
@@ -538,7 +538,7 @@
         width: 100%;
 
         &__icon {
-          color: var(--color-dark-grey-500);
+          color: var(--color-text-muted);
         }
 
         &__title {
@@ -558,7 +558,7 @@
       margin: 0.3rem;
       padding: 0 1rem;
       font-size: 1.2rem;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-muted);
       background: var(--color-bg-panel-header);
       border-radius: 0.2rem;
     }
@@ -621,7 +621,7 @@
 
         &__icon {
           font-size: 1.2rem;
-          color: var(--color-dark-grey-500);
+          color: var(--color-text-muted);
         }
 
         &__title {
