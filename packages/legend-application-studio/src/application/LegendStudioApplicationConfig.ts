@@ -211,7 +211,11 @@ export interface LegendStudioApplicationConfigurationData
   query?: { url: string };
   showcase?: { url: string };
   pct?: { reportUrl: string };
-  legendAI?: { url: string };
+  legendAI?: {
+    url?: string;
+    enghubDocUrl?: string;
+    enthubRequestAccessUrl?: string;
+  };
 }
 
 export class LegendStudioApplicationConfig extends LegendApplicationConfig {
@@ -228,6 +232,8 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly showcaseServerUrl?: string | undefined;
   readonly pctReportUrl?: string | undefined;
   readonly legendAIUrl?: string | undefined;
+  readonly legendAIEnghubDocUrl?: string;
+  readonly legendAIEnthubRequestAccessUrl?: string;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendStudioApplicationConfigurationData>,
@@ -306,6 +312,13 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       this.legendAIUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.legendAI.url,
       );
+    }
+    if (input.configData.legendAI?.enghubDocUrl) {
+      this.legendAIEnghubDocUrl = input.configData.legendAI.enghubDocUrl;
+    }
+    if (input.configData.legendAI?.enthubRequestAccessUrl) {
+      this.legendAIEnthubRequestAccessUrl =
+        input.configData.legendAI.enthubRequestAccessUrl;
     }
 
     // options

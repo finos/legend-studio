@@ -81,6 +81,7 @@ import {
   GearSuggestIcon,
   FlaskIcon,
   SparkleIcon,
+  ExternalLinkIcon,
 } from '@finos/legend-art';
 import {
   type ChangeEventHandler,
@@ -1747,6 +1748,7 @@ const AccessPointGroupEditor = observer(
     const [aiSuggestion, setAISuggestion] = useState<
       DataProductDocResponse | undefined
     >(undefined);
+    const [aiError, setAIError] = useState<string | undefined>(undefined);
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
       setEditingDescription(false);
@@ -1804,6 +1806,11 @@ const AccessPointGroupEditor = observer(
 
     // AI suggestion for APG
     const legendAIUrl = editorStore.applicationStore.config.legendAIUrl;
+    const enghubDocUrl =
+      editorStore.applicationStore.config.legendAIEnghubDocUrl;
+    const enthubRequestAccessUrl =
+      editorStore.applicationStore.config.legendAIEnthubRequestAccessUrl;
+    const hasAIAccessLinks = Boolean(enghubDocUrl ?? enthubRequestAccessUrl);
     const aiDocSuggester = legendAIUrl
       ? editorStore.pluginManager
           .getApplicationPlugins()
@@ -1820,6 +1827,7 @@ const AccessPointGroupEditor = observer(
       }
       setIsSuggestingWithAI(true);
       setAISuggestion(undefined);
+      setAIError(undefined);
       try {
         const definitions =
           await editorStore.graphManagerState.graphManager.graphToPureCode(
@@ -1832,6 +1840,14 @@ const AccessPointGroupEditor = observer(
         );
         runInAction(() => {
           setAISuggestion(suggestion);
+        });
+      } catch (error) {
+        runInAction(() => {
+          setAIError(
+            error instanceof Error
+              ? error.message
+              : 'An error occurred with AI.',
+          );
         });
       } finally {
         runInAction(() => {
@@ -1977,7 +1993,7 @@ const AccessPointGroupEditor = observer(
             <TimesIcon />
           </button>
         </div>
-        {aiDocSuggester && (
+        {(aiDocSuggester || hasAIAccessLinks) && (
           <div style={{ padding: '0.25rem 0.5rem' }}>
             <PanelLoadingIndicator isLoading={isSuggestingWithAI} />
             {aiSuggestion ? (
@@ -2001,21 +2017,60 @@ const AccessPointGroupEditor = observer(
                 </span>
               </div>
             ) : (
-              <button
-                className="data-product-editor__ai-suggest-btn"
-                onClick={(): void => {
-                  suggestWithAI().catch(
-                    editorStore.applicationStore.alertUnhandledError,
-                  );
-                }}
-                disabled={isSuggestingWithAI || isReadOnly}
-                title="Use AI to suggest title and descriptions for this access point group"
-              >
-                <SparkleIcon />
-                <span>
-                  {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
-                </span>
-              </button>
+              <div className="data-product-editor__ai-action">
+                <button
+                  className="data-product-editor__ai-suggest-btn"
+                  onClick={(): void => {
+                    suggestWithAI().catch(
+                      editorStore.applicationStore.alertUnhandledError,
+                    );
+                  }}
+                  disabled={!aiDocSuggester || isSuggestingWithAI || isReadOnly}
+                  title={
+                    !aiDocSuggester
+                      ? 'You are not authorized to use AI features'
+                      : 'Use AI to suggest title and descriptions for this access point group'
+                  }
+                >
+                  <SparkleIcon />
+                  <span>
+                    {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+                  </span>
+                </button>
+                {(aiError ?? !aiDocSuggester) && hasAIAccessLinks && (
+                  <div className="data-product-editor__ai-error">
+                    {aiError && (
+                      <span className="data-product-editor__ai-error__message">
+                        {aiError}
+                      </span>
+                    )}
+                    <div className="data-product-editor__ai-error__links">
+                      {enghubDocUrl && (
+                        <a
+                          className="data-product-editor__ai-error__link"
+                          href={enghubDocUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLinkIcon />
+                          <span>View Documentation</span>
+                        </a>
+                      )}
+                      {enthubRequestAccessUrl && (
+                        <a
+                          className="data-product-editor__ai-error__link data-product-editor__ai-error__link--primary"
+                          href={enthubRequestAccessUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLinkIcon />
+                          <span>Request Access</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
