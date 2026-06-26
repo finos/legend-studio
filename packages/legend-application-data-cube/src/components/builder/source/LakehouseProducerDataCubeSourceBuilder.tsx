@@ -20,7 +20,7 @@ import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 
 export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
@@ -28,12 +28,6 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
 }> = observer(({ sourceBuilder: state }) => {
   const auth = useAuth();
   const store = useLegendDataCubeBuilderStore();
-  const [isIcebergFlowSelected, setIsIcebergFlowSelected] = useState(true);
-
-  const toggleSetisIcebergEnabled = () => {
-    setIsIcebergFlowSelected(!isIcebergFlowSelected);
-    state.setEnableIceberg(!isIcebergFlowSelected);
-  };
 
   useEffect(() => {
     state.resetAll();
@@ -128,8 +122,8 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             <div className="flex h-5 w-[calc(100%_-_40px)] overflow-x-auto">
               <FormCheckbox
                 label="Use Iceberg"
-                checked={isIcebergFlowSelected}
-                onChange={toggleSetisIcebergEnabled}
+                checked={state.enableIceberg}
+                onChange={() => state.setEnableIceberg(!state.enableIceberg)}
               />
             </div>
           </div>
@@ -195,7 +189,7 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
           </div>
         )}
         {state.selectedTable &&
-          (!isIcebergFlowSelected || !state.icebergEnabled) && (
+          (!state.enableIceberg || !state.icebergEnabled) && (
             <div className="query-setup__wizard__group mt-2">
               <div className="query-setup__wizard__group__title">Warehouse</div>
               <FormTextInput
