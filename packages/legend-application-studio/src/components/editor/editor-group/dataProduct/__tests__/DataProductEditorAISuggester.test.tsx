@@ -126,9 +126,38 @@ class MockDataProductAIDocPlugin
 }
 
 // ---------------------------------------------------------------------------
+// Mock plugin that always throws (simulates a permission/network error)
+// ---------------------------------------------------------------------------
+class MockFailingDataProductAIDocPlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_DataProduct_LegendStudioApplicationPlugin_Extension
+{
+  constructor() {
+    super('mock-failing-data-product-ai-doc-suggester', '0.0.1');
+  }
+
+  override install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  getExtraDataProductDocumentationAISuggester(
+    _request: DataProductDocRequest,
+    _legendAIUrl: string,
+  ): Promise<DataProductDocResponse> {
+    return Promise.reject(
+      new Error('Permission denied: you do not have access to AI.'),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Shared setup
 // ---------------------------------------------------------------------------
-const setupEditorWithAI = async (withAIConfig = true) => {
+const setupEditorWithAI = async (
+  withAIConfig = true,
+  extraLegendAI?: { enghubDocUrl?: string; enthubRequestAccessUrl?: string },
+  failingSuggester = false,
+) => {
   const pluginManager = LegendStudioPluginManager.create();
   pluginManager
     .usePresets([
@@ -137,9 +166,14 @@ const setupEditorWithAI = async (withAIConfig = true) => {
     ])
     .install();
 
+  const legendAIConfig = withAIConfig
+    ? { url: 'http://ai.example.com', ...extraLegendAI }
+    : extraLegendAI
+      ? extraLegendAI
+      : undefined;
   const applicationStore = new ApplicationStore(
     TEST__getLegendStudioApplicationConfig(
-      withAIConfig ? { legendAI: { url: 'http://ai.example.com' } } : {},
+      legendAIConfig ? { legendAI: legendAIConfig } : {},
     ),
     pluginManager,
   );
@@ -149,7 +183,9 @@ const setupEditorWithAI = async (withAIConfig = true) => {
     applicationStore,
   });
 
-  if (withAIConfig) {
+  if (failingSuggester) {
+    new MockFailingDataProductAIDocPlugin().install(pluginManager);
+  } else if (withAIConfig) {
     new MockDataProductAIDocPlugin().install(pluginManager);
   }
 
@@ -321,5 +357,67 @@ test(
     const unchangedGroup = dataProduct.accessPointGroups[0];
     expect(unchangedGroup?.title).toBeUndefined();
     expect(unchangedGroup?.description).toBe('my first access point group');
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Unauthorized / error + doc-link tests
+// ---------------------------------------------------------------------------
+
+test(
+  integrationTest(
+    '"Suggest with AI" button is shown disabled with doc links when no legendAIUrl but doc URLs are configured',
+  ),
+  async () => {
+    const { editorGroup } = await setupEditorWithAI(false, {
+      enghubDocUrl: 'http://docs.example.com',
+      enthubRequestAccessUrl: 'http://access.example.com',
+    });
+
+    await waitFor(() => {
+      const btn = editorGroup.querySelector(
+        '.data-product-editor__ai-suggest-btn',
+      ) as HTMLButtonElement;
+      expect(btn).not.toBeNull();
+      expect(btn.disabled).toBe(true);
+
+      expect(
+        editorGroup.querySelector('.data-product-editor__ai-error__links'),
+      ).not.toBeNull();
+      expect(
+        editorGroup.querySelectorAll('.data-product-editor__ai-error__link'),
+      ).toHaveLength(2);
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Error message and doc links appear inline when AI suggestion call fails',
+  ),
+  async () => {
+    const { editorGroup } = await setupEditorWithAI(
+      true,
+      {
+        enghubDocUrl: 'http://docs.example.com',
+        enthubRequestAccessUrl: 'http://access.example.com',
+      },
+      true,
+    );
+
+    const suggestBtn = await findByText(editorGroup, 'Suggest with AI');
+
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    await waitFor(() => {
+      expect(
+        editorGroup.querySelector('.data-product-editor__ai-error__message'),
+      ).not.toBeNull();
+      expect(
+        editorGroup.querySelector('.data-product-editor__ai-error__links'),
+      ).not.toBeNull();
+    });
   },
 );

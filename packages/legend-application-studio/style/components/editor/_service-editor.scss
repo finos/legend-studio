@@ -295,6 +295,52 @@
     }
   }
 
+  &__ai-action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+
+  &__ai-error {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+    font-size: 1.1rem;
+
+    &__message {
+      color: var(--color-red-300);
+    }
+
+    &__links {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    &__link {
+      @include flexVCenter;
+
+      display: inline-flex;
+      gap: 0.3rem;
+      font-size: 1.1rem;
+      color: var(--color-blue-150);
+      text-decoration: none;
+
+      svg {
+        font-size: 1rem;
+      }
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      &--primary {
+        font-weight: 600;
+      }
+    }
+  }
+
   // Execution type labels — blue is the standard "info/query" color so we
   // route it through --color-accent. Pink (test) stays as category brand.
   &__execution {

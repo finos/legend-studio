@@ -38,6 +38,25 @@ import {
 // ---------------------------------------------------------------------------
 // Minimal mock plugin that returns a fixed suggestion instantly
 // ---------------------------------------------------------------------------
+class MockFailingAISuggesterPlugin extends LegendQueryApplicationPlugin {
+  constructor() {
+    super('mock-failing-ai-suggester', '0.0.1');
+  }
+
+  override install(pluginManager: LegendQueryPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  override getExtraQueryTitleDescriptionAISuggester() {
+    return async (
+      _request: QueryTitleDescriptionAISuggestionRequest,
+      _legendAIUrl: string,
+    ): Promise<never> => {
+      throw new Error('Permission denied: you do not have access to AI.');
+    };
+  }
+}
+
 class MockAISuggesterPlugin extends LegendQueryApplicationPlugin {
   constructor() {
     super('mock-ai-suggester', '0.0.1');
@@ -417,6 +436,144 @@ test(
       // The AI suggest button should reappear
       expect(
         dialog.querySelector('.query-editor__ai-suggest-btn'),
+      ).not.toBeNull();
+    });
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Unauthorized / error + doc-link tests
+// ---------------------------------------------------------------------------
+
+test(
+  integrationTest(
+    'Suggest with AI button is shown disabled with doc links when no legendAIUrl but doc URLs are configured',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    const applicationStore = new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig({
+        legendAI: {
+          enghubDocUrl: 'http://docs.example.com',
+          enthubRequestAccessUrl: 'http://access.example.com',
+        },
+      }),
+      pluginManager,
+    );
+
+    const mockedEditorStore = TEST__provideMockedQueryEditorStore({
+      pluginManager,
+      applicationStore,
+    });
+
+    const { renderResult } = await TEST__setUpQueryEditor(
+      mockedEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    await act(async () => {
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
+    });
+
+    const dialog = await waitFor(() => renderResult.getByRole('dialog'));
+
+    const btn = dialog.querySelector(
+      '.query-editor__ai-suggest-btn',
+    ) as HTMLButtonElement;
+    expect(btn).not.toBeNull();
+    expect(btn.disabled).toBe(true);
+
+    // Doc links should be visible in the footer on the left
+    expect(
+      dialog.querySelector('.query-editor__ai-footer-links'),
+    ).not.toBeNull();
+    expect(
+      dialog.querySelectorAll('.query-editor__ai-error__link'),
+    ).toHaveLength(2);
+  },
+);
+
+test(
+  integrationTest(
+    'Error message and doc links appear inline when AI suggestion call fails',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    const applicationStore = new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig({
+        legendAI: {
+          url: 'http://ai.example.com',
+          enghubDocUrl: 'http://docs.example.com',
+          enthubRequestAccessUrl: 'http://access.example.com',
+        },
+      }),
+      pluginManager,
+    );
+
+    const mockedEditorStore = TEST__provideMockedQueryEditorStore({
+      pluginManager,
+      applicationStore,
+      extraPlugins: [new MockFailingAISuggesterPlugin()],
+    });
+
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
+      mockedEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeSourceElement(_modelClass);
+    });
+
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'lambdaToPureCode',
+    ).mockResolvedValue('|test::query');
+
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'valueSpecificationToPureCode',
+    ).mockResolvedValue("'test'");
+
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    await act(async () => {
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
+    });
+
+    const dialog = await waitFor(() => renderResult.getByRole('dialog'));
+
+    const suggestBtn = dialog.querySelector(
+      '.query-editor__ai-suggest-btn',
+    ) as HTMLButtonElement;
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    await waitFor(() => {
+      expect(
+        dialog.querySelector('.query-editor__ai-error__message'),
+      ).not.toBeNull();
+      expect(
+        dialog.querySelector('.query-editor__ai-footer-links'),
       ).not.toBeNull();
     });
   },
