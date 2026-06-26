@@ -318,27 +318,18 @@
   color: var(--color-category-ai-suggestion) !important;
 }
 
-.query-editor__ai-action {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
+.query-editor__ai-footer-links {
+  @include flexVCenter;
+
+  margin-right: auto;
+  padding-left: 1rem;
+  gap: 0.6rem;
+  font-size: 1.1rem;
 }
 
 .query-editor__ai-error {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-top: 0.4rem;
-  font-size: 1.1rem;
-
   &__message {
     color: var(--color-red-300);
-  }
-
-  &__links {
-    display: flex;
-    gap: 0.6rem;
   }
 
   &__link {

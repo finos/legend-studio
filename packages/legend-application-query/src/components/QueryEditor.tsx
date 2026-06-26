@@ -325,6 +325,37 @@ const CreateQueryDialog = observer(() => {
           </div>
         </ModalBody>
         <ModalFooter>
+          {(aiError ?? !aiSuggester) && hasAIAccessLinks && (
+            <div className="query-editor__ai-footer-links">
+              {aiError && (
+                <span className="query-editor__ai-error__message">
+                  {aiError}
+                </span>
+              )}
+              {enghubDocUrl && (
+                <a
+                  className="query-editor__ai-error__link"
+                  href={enghubDocUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLinkIcon />
+                  <span>View Documentation</span>
+                </a>
+              )}
+              {enthubRequestAccessUrl && (
+                <a
+                  className="query-editor__ai-error__link query-editor__ai-error__link--primary"
+                  href={enthubRequestAccessUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLinkIcon />
+                  <span>Request Access</span>
+                </a>
+              )}
+            </div>
+          )}
           {aiSuggestion ? (
             <>
               <ModalFooterButton
@@ -340,62 +371,27 @@ const CreateQueryDialog = observer(() => {
             </>
           ) : (
             (aiSuggester || hasAIAccessLinks) && (
-              <div className="query-editor__ai-action">
-                <button
-                  className="btn btn--dark modal__footer__btn modal__footer__btn--primary query-editor__ai-suggest-btn"
-                  onClick={(): void => {
-                    suggestWithAI().catch(applicationStore.alertUnhandledError);
-                  }}
-                  disabled={
-                    !aiSuggester ||
-                    isSuggestingWithAI ||
-                    !editorStore.queryBuilderState
-                  }
-                  title={
-                    !aiSuggester
-                      ? 'You are not authorized to use AI features'
-                      : 'Use AI to suggest name and description based on the current query'
-                  }
-                >
-                  <SparkleIcon />
-                  <span>
-                    {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
-                  </span>
-                </button>
-                {(aiError ?? !aiSuggester) && hasAIAccessLinks && (
-                  <div className="query-editor__ai-error">
-                    {aiError && (
-                      <span className="query-editor__ai-error__message">
-                        {aiError}
-                      </span>
-                    )}
-                    <div className="query-editor__ai-error__links">
-                      {enghubDocUrl && (
-                        <a
-                          className="query-editor__ai-error__link"
-                          href={enghubDocUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ExternalLinkIcon />
-                          <span>View Documentation</span>
-                        </a>
-                      )}
-                      {enthubRequestAccessUrl && (
-                        <a
-                          className="query-editor__ai-error__link query-editor__ai-error__link--primary"
-                          href={enthubRequestAccessUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ExternalLinkIcon />
-                          <span>Request Access</span>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <button
+                className="btn btn--dark modal__footer__btn modal__footer__btn--primary query-editor__ai-suggest-btn"
+                onClick={(): void => {
+                  suggestWithAI().catch(applicationStore.alertUnhandledError);
+                }}
+                disabled={
+                  !aiSuggester ||
+                  isSuggestingWithAI ||
+                  !editorStore.queryBuilderState
+                }
+                title={
+                  !aiSuggester
+                    ? 'You are not authorized to use AI features'
+                    : 'Use AI to suggest name and description based on the current query'
+                }
+              >
+                <SparkleIcon />
+                <span>
+                  {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+                </span>
+              </button>
             )
           )}
           <ModalFooterButton
@@ -684,6 +680,37 @@ const RenameQueryDialog = observer(
             </div>
           </ModalBody>
           <ModalFooter>
+            {(aiError ?? !aiSuggester) && hasAIAccessLinks && (
+              <div className="query-editor__ai-footer-links">
+                {aiError && (
+                  <span className="query-editor__ai-error__message">
+                    {aiError}
+                  </span>
+                )}
+                {enghubDocUrl && (
+                  <a
+                    className="query-editor__ai-error__link"
+                    href={enghubDocUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLinkIcon />
+                    <span>View Documentation</span>
+                  </a>
+                )}
+                {enthubRequestAccessUrl && (
+                  <a
+                    className="query-editor__ai-error__link query-editor__ai-error__link--primary"
+                    href={enthubRequestAccessUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLinkIcon />
+                    <span>Request Access</span>
+                  </a>
+                )}
+              </div>
+            )}
             {aiSuggestion ? (
               <>
                 <ModalFooterButton
@@ -699,64 +726,27 @@ const RenameQueryDialog = observer(
               </>
             ) : (
               (aiSuggester || hasAIAccessLinks) && (
-                <div className="query-editor__ai-action">
-                  <button
-                    className="btn btn--dark modal__footer__btn modal__footer__btn--primary query-editor__ai-suggest-btn"
-                    onClick={(): void => {
-                      suggestWithAI().catch(
-                        applicationStore.alertUnhandledError,
-                      );
-                    }}
-                    disabled={
-                      !aiSuggester ||
-                      isSuggestingWithAI ||
-                      !existingEditorStore.queryBuilderState
-                    }
-                    title={
-                      !aiSuggester
-                        ? 'You are not authorized to use AI features'
-                        : 'Use AI to suggest name and description based on the current query'
-                    }
-                  >
-                    <SparkleIcon />
-                    <span style={{ marginLeft: '0.4rem' }}>
-                      {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
-                    </span>
-                  </button>
-                  {(aiError ?? !aiSuggester) && hasAIAccessLinks && (
-                    <div className="query-editor__ai-error">
-                      {aiError && (
-                        <span className="query-editor__ai-error__message">
-                          {aiError}
-                        </span>
-                      )}
-                      <div className="query-editor__ai-error__links">
-                        {enghubDocUrl && (
-                          <a
-                            className="query-editor__ai-error__link"
-                            href={enghubDocUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <ExternalLinkIcon />
-                            <span>View Documentation</span>
-                          </a>
-                        )}
-                        {enthubRequestAccessUrl && (
-                          <a
-                            className="query-editor__ai-error__link query-editor__ai-error__link--primary"
-                            href={enthubRequestAccessUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <ExternalLinkIcon />
-                            <span>Request Access</span>
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <button
+                  className="btn btn--dark modal__footer__btn modal__footer__btn--primary query-editor__ai-suggest-btn"
+                  onClick={(): void => {
+                    suggestWithAI().catch(applicationStore.alertUnhandledError);
+                  }}
+                  disabled={
+                    !aiSuggester ||
+                    isSuggestingWithAI ||
+                    !existingEditorStore.queryBuilderState
+                  }
+                  title={
+                    !aiSuggester
+                      ? 'You are not authorized to use AI features'
+                      : 'Use AI to suggest name and description based on the current query'
+                  }
+                >
+                  <SparkleIcon />
+                  <span style={{ marginLeft: '0.4rem' }}>
+                    {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+                  </span>
+                </button>
               )
             )}
             <ModalFooterButton
