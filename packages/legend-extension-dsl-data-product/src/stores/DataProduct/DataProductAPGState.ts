@@ -585,9 +585,8 @@ export class DataProductAPGState {
           currentUser,
         );
         if (matched) {
-          const access = this.mapRequestStateToAccess(request.state);
-          if (access) {
-            this.setDataRequestAccess(access, request.guid);
+          this.setAccessFromRequestState(request.state, request.guid);
+          if (this.dataRequestAccess) {
             return;
           }
         }
@@ -599,7 +598,10 @@ export class DataProductAPGState {
     }
   }
 
-  private async checkOrgMembership(
+  /**
+   * Check if a given user is a member of the specified RMS org.
+   */
+  async checkOrgMembership(
     getOrgMembers: NonNullable<
       DataProductDataAccess_LegendApplicationPlugin_Extension['getOrgMembers']
     >,
@@ -617,6 +619,53 @@ export class DataProductAPGState {
       return orgMembers.some((m) => m.kerberos.toLowerCase() === currentUser);
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * After creating an RMS data request, check if the current user is a member
+   * of the request's RMS org and update the access state accordingly.
+   */
+  async checkAndSetAccessForRmsRequest(
+    rmsNode: string,
+    requestGuid: string,
+    requestState: V1_RequestState,
+    dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
+    token: string | undefined,
+  ): Promise<void> {
+    // Skip if access already resolved or the initial fallback is still running
+    if (
+      this.dataRequestAccess ||
+      this.fetchingDataRequestAccessState.isInProgress
+    ) {
+      return;
+    }
+    const orgMembersPlugin = dataAccessPlugins.find(
+      (p) => p.getOrgMembers !== undefined,
+    );
+    if (!orgMembersPlugin?.getOrgMembers) {
+      return;
+    }
+    const currentUser =
+      this.applicationStore.identityService.currentUser.toLowerCase();
+    const matched = await this.checkOrgMembership(
+      orgMembersPlugin.getOrgMembers.bind(orgMembersPlugin),
+      rmsNode,
+      token,
+      currentUser,
+    );
+    if (matched) {
+      this.setAccessFromRequestState(requestState, requestGuid);
+    }
+  }
+
+  private setAccessFromRequestState(
+    state: V1_RequestState,
+    guid: string,
+  ): void {
+    const access = this.mapRequestStateToAccess(state);
+    if (access) {
+      this.setDataRequestAccess(access, guid);
     }
   }
 

@@ -32,7 +32,7 @@ import {
   V1_AdhocTeam,
   V1_AppDirLevel,
   V1_AppDirNode,
-  V1_RMS,
+  V1_RequestState,
   V1_createContractPayloadModelSchema,
   V1_createDataAccessRequestPayloadModelSchema,
   V1_deserializeDataContractResponse,
@@ -166,7 +166,6 @@ export class DataProductDataAccessState {
 
   readonly creatingContractState = ActionState.create();
   readonly creatingWorkflowRequestState = ActionState.create();
-  readonly creatingPermitRequestState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
   readonly fetchingDataProductOwnersState = ActionState.create();
 
@@ -202,7 +201,6 @@ export class DataProductDataAccessState {
       setLakehouseIngestEnv: action,
       createContract: flow,
       createWorkflowRequest: flow,
-      createPermitRequest: flow,
       fetchContracts: action,
       fetchIngestEnvironmentDetails: action,
       setDataProductOwners: action,
@@ -559,6 +557,29 @@ export class DataProductDataAccessState {
             },
           );
           this.setDataAccessRequestViewerState(viewerState);
+
+          // Update the APG button state if the current user belongs to the RMS org
+          const rmsNode =
+            'rmsNode' in consumer &&
+            typeof consumer.rmsNode === 'string' &&
+            consumer.rmsNode.length > 0
+              ? consumer.rmsNode
+              : undefined;
+          if (rmsNode) {
+            const apgState = this.dataProductViewerState.apgStates.find(
+              (s) => s.apg.id === group.id,
+            );
+            if (apgState) {
+              // eslint-disable-next-line no-void
+              void apgState.checkAndSetAccessForRmsRequest(
+                rmsNode,
+                guid,
+                V1_RequestState.SUBMITTED_FOR_APPROVALS,
+                this.dataAccessPlugins,
+                tokenProvider(),
+              );
+            }
+          }
         }
         this.applicationStore.telemetryService.logEvent(
           DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
@@ -590,77 +611,6 @@ export class DataProductDataAccessState {
       this.applicationStore.notificationService.notifyError(`${error.message}`);
     } finally {
       this.creatingWorkflowRequestState.complete();
-    }
-  }
-
-  *createPermitRequest(
-    rmsNode: string,
-    description: string,
-    group: V1_AccessPointGroup,
-    tokenProvider: () => string | undefined,
-  ): GeneratorFn<void> {
-    try {
-      this.creatingPermitRequestState.inProgress();
-      const consumer = new V1_RMS();
-      consumer.rmsNode = rmsNode;
-      const payload = serialize(
-        V1_createDataAccessRequestPayloadModelSchema(
-          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-        ),
-        {
-          description,
-          resourceId: this.product.name,
-          deploymentId: this.entitlementsDataProductDetails.deploymentId,
-          accessPointGroup: group.id,
-          consumer,
-        } satisfies V1_CreateDataAccessRequestPayload,
-      ) as PlainObject<V1_CreateDataAccessRequestPayload>;
-      const raw =
-        (yield this.lakehouseContractServerClient.createPermitDataRequest(
-          payload,
-          tokenProvider(),
-        )) as PlainObject;
-      this.setContractCreatorAPG(undefined);
-      const typedRequests = V1_deserializeDataRequestsWithWorkflowResponse(
-        raw,
-        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-      );
-      const guid = typedRequests[0]?.dataRequest?.guid;
-      if (guid) {
-        const initialData = typedRequests[0];
-        const authClient = this.lakehouseContractServerClient;
-        const pluginManager = this.graphManagerState.pluginManager;
-        const viewerState = new PermitDataAccessRequestState(
-          guid,
-          this.applicationStore,
-          this.permitWorkflowServerClient,
-          this.dataProductViewerState.userSearchService,
-          {
-            authServerClient: authClient,
-            ...(initialData ? { initialData } : {}),
-            fetchFresh: async (token) => {
-              const freshRaw =
-                await authClient.getDataAccessRequestWithWorkflow(guid, token);
-              return V1_deserializeDataRequestsWithWorkflowResponse(
-                freshRaw,
-                pluginManager.getPureProtocolProcessorPlugins(),
-              )[0];
-            },
-            ...(this.getTaskPageUrl
-              ? { getTaskPageUrl: this.getTaskPageUrl }
-              : {}),
-          },
-        );
-        this.setDataAccessRequestViewerState(viewerState);
-      }
-      this.applicationStore.notificationService.notifySuccess(
-        `Permit data access request created successfully`,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(`${error.message}`);
-    } finally {
-      this.creatingPermitRequestState.complete();
     }
   }
 

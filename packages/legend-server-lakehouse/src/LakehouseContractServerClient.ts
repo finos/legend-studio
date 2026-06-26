@@ -291,17 +291,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       this._token(token),
     );
 
-  createPermitDataRequest = (
-    payload: PlainObject,
-    token: string | undefined,
-  ): Promise<PlainObject> =>
-    this.post(
-      `${this._dataAccessRequests()}`,
-      payload,
-      undefined,
-      this._token(token),
-    );
-
   getDataAccessRequestsCreatedBy = (
     userId: string,
     token: string | undefined,
