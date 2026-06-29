@@ -1405,3 +1405,114 @@ test(
     }
   },
 );
+
+// Self-project circular dependency prevention tests
+
+test(unitTest('Block adding own project as exclusion'), () => {
+  const editorStore = TEST__getTestEditorStore();
+  const projectConfig = ProjectConfiguration.serialization.fromJson({
+    projectStructureVersion: { version: 6, extensionVersion: 1 },
+    projectId: 'test-project',
+    groupId: 'com.test',
+    artifactId: 'test-artifact',
+    projectDependencies: [
+      {
+        projectId: 'org.finos.legend:dep-artifact',
+        versionId: '1.0.0',
+      },
+    ],
+    metamodelDependencies: [],
+  });
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    projectConfig,
+  );
+
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  // Attempt to add own project as an exclusion (circular dependency)
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:dep-artifact',
+    'com.test:test-artifact',
+  );
+
+  const exclusions = dependencyEditorState.getExclusions(
+    'org.finos.legend:dep-artifact',
+  );
+
+  // Should be blocked - no exclusion added
+  expect(exclusions.length).toBe(0);
+});
+
+test(unitTest('Block adding own project as exclusion via object'), () => {
+  const editorStore = TEST__getTestEditorStore();
+  const projectConfig = ProjectConfiguration.serialization.fromJson({
+    projectStructureVersion: { version: 6, extensionVersion: 1 },
+    projectId: 'test-project',
+    groupId: 'com.test',
+    artifactId: 'test-artifact',
+    projectDependencies: [
+      {
+        projectId: 'org.finos.legend:dep-artifact',
+        versionId: '1.0.0',
+      },
+    ],
+    metamodelDependencies: [],
+  });
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    projectConfig,
+  );
+
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  const exclusion = new ProjectDependencyExclusion('com.test:test-artifact');
+  dependencyEditorState.addExclusion(
+    'org.finos.legend:dep-artifact',
+    exclusion,
+  );
+
+  const exclusions = dependencyEditorState.getExclusions(
+    'org.finos.legend:dep-artifact',
+  );
+
+  // Should be blocked - no exclusion added
+  expect(exclusions.length).toBe(0);
+});
+
+test(unitTest('Allow adding different project as exclusion (not self)'), () => {
+  const editorStore = TEST__getTestEditorStore();
+  const projectConfig = ProjectConfiguration.serialization.fromJson({
+    projectStructureVersion: { version: 6, extensionVersion: 1 },
+    projectId: 'test-project',
+    groupId: 'com.test',
+    artifactId: 'test-artifact',
+    projectDependencies: [
+      {
+        projectId: 'org.finos.legend:dep-artifact',
+        versionId: '1.0.0',
+      },
+    ],
+    metamodelDependencies: [],
+  });
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    projectConfig,
+  );
+
+  const dependencyEditorState =
+    editorStore.projectConfigurationEditorState.projectDependencyEditorState;
+
+  // Adding a different project as exclusion should work
+  dependencyEditorState.addExclusionByCoordinate(
+    'org.finos.legend:dep-artifact',
+    'org.other:some-lib',
+  );
+
+  const exclusions = dependencyEditorState.getExclusions(
+    'org.finos.legend:dep-artifact',
+  );
+
+  // Should succeed - different project
+  expect(exclusions.length).toBe(1);
+  expect(exclusions[0]?.projectId).toBe('org.other:some-lib');
+});

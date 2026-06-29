@@ -444,6 +444,23 @@ export class ProjectDependencyEditorState {
       return;
     }
 
+    const currentProjectCoordinate = generateGAVCoordinates(
+      this.configState.currentProjectConfiguration.groupId,
+      this.configState.currentProjectConfiguration.artifactId,
+      undefined,
+    );
+    const exclusionCoordinate = generateGAVCoordinates(
+      guaranteeNonNullable(exclusion.groupId),
+      guaranteeNonNullable(exclusion.artifactId),
+      undefined,
+    );
+    if (exclusionCoordinate === currentProjectCoordinate) {
+      this.editorStore.applicationStore.notificationService.notifyWarning(
+        'You cannot exclude your own project from a dependency',
+      );
+      return;
+    }
+
     const existingExclusion = this.findExistingExclusion(
       dependencyId,
       generateGAVCoordinates(

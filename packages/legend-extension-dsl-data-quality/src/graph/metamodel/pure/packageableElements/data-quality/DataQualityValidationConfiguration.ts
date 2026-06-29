@@ -42,6 +42,7 @@ export interface DQExecuteInputOptions {
   allValidationsChecked?: boolean | undefined;
   validationName?: string | undefined;
   previewLimit?: number | undefined;
+  queryLimit?: number | undefined;
   runQuery?: boolean | undefined;
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }

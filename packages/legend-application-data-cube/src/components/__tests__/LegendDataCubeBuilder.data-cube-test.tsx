@@ -48,6 +48,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
+  DocumentationEntry,
 } from '@finos/legend-shared';
 import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 import {
@@ -77,6 +78,8 @@ import { ENGINE_TEST_SUPPORT__JSONToGrammar_lambda } from '@finos/legend-graph/t
 import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
 import { LakehouseConsumerDataCubeSource } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
 import { LakehouseProducerDataCubeSource } from '../../stores/model/LakehouseProducerDataCubeSource.js';
+import { DataCubeExecutionError } from '@finos/legend-data-cube';
+import { LEGEND_DATA_CUBE_DOCUMENTATION_KEY } from '../../__lib__/LegendDataCubeDocumentation.js';
 
 // Mock the LegendDataCubeDuckDBEngine module because it causes
 // problems when running in the jest environment.
@@ -1563,6 +1566,99 @@ test(
     expect(runtimeElement).toBeDefined();
     expect(runtimeElement?.name).toBe('lakehouseProducer');
     expect(runtimeElement?.package).toBe('runtime');
+  },
+);
+
+test(
+  integrationTest(
+    'executeQuery augments permission-denied error with access URL for lakehouse producer source',
+  ),
+  async () => {
+    await TEST__provideMockedLegendDataCubeBaseStore();
+    const engine = await TEST__provideMockedLegendDataCubeEngine({
+      mockPMCD: DEFAULT_MOCK_PMCD,
+      mockEntitlementsAdHocDataProduct: DEFAULT_MOCK_ADHOC_DATA_PRODUCT,
+    });
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockAdHocDataProductPMCD,
+    );
+    createSpy(engine, '_getLambdaRelationType').mockResolvedValue({ columns });
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    const permissionError = new DataCubeExecutionError('not authorized');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(engine as any, '_runQuery').mockRejectedValue(permissionError);
+    createSpy(engine, 'getDocumentationEntry').mockImplementation(
+      (key: string) => {
+        if (
+          key ===
+          LEGEND_DATA_CUBE_DOCUMENTATION_KEY.SNOWFLAKE_PRODUCER_UNAUTHORIZED_ACCESS
+        ) {
+          return DocumentationEntry.create(
+            { url: 'https://test-access.example.com/snowflake' },
+            key,
+          );
+        }
+        return undefined;
+      },
+    );
+    createSpy(engine, 'getValueSpecificationCode').mockResolvedValue(
+      'test-query-code',
+    );
+
+    const thrown = await engine
+      .executeQuery({} as unknown as V1_Lambda, source)
+      .catch((e: unknown) => e);
+    expect(thrown).toBeInstanceOf(DataCubeExecutionError);
+    expect((thrown as DataCubeExecutionError).message).toContain(
+      'not authorized',
+    );
+    expect((thrown as DataCubeExecutionError).message).toContain(
+      'Request access: https://test-access.example.com/snowflake',
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'executeQuery detects insufficient privileges as a permission-denied error for lakehouse producer source',
+  ),
+  async () => {
+    await TEST__provideMockedLegendDataCubeBaseStore();
+    const engine = await TEST__provideMockedLegendDataCubeEngine({
+      mockPMCD: DEFAULT_MOCK_PMCD,
+      mockEntitlementsAdHocDataProduct: DEFAULT_MOCK_ADHOC_DATA_PRODUCT,
+    });
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockAdHocDataProductPMCD,
+    );
+    createSpy(engine, '_getLambdaRelationType').mockResolvedValue({ columns });
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    const privilegeError = new DataCubeExecutionError(
+      'Insufficient privileges to operate on warehouse LAKEHOUSE_PRODUCER_123_QUERY_WH',
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(engine as any, '_runQuery').mockRejectedValue(privilegeError);
+    createSpy(engine, 'getValueSpecificationCode').mockResolvedValue(
+      'test-query-code',
+    );
+
+    const thrown = await engine
+      .executeQuery({} as unknown as V1_Lambda, source)
+      .catch((e: unknown) => e);
+    expect(thrown).toBeInstanceOf(DataCubeExecutionError);
+    expect((thrown as DataCubeExecutionError).message).toContain(
+      'Please check your access for Ingest',
+    );
   },
 );
 

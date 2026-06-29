@@ -36,6 +36,7 @@ import {
   Dialog,
   ExpandMoreIcon,
   GitBranchIcon,
+  WarningIcon,
   RocketIcon,
   CopyIcon,
 } from '@finos/legend-art';
@@ -138,7 +139,11 @@ import {
 } from '../../__lib__/DataProductTelemetryHelper.js';
 import { flowResult } from 'mobx';
 import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/DataContractViewerState.js';
-import { DataAccessRequestViewer } from './DataContract/DataAccessRequestViewer.js';
+import {
+  type ContractErrorLayer,
+  DataAccessRequestViewer,
+  buildContractErrorsRoot,
+} from './DataContract/DataAccessRequestViewer.js';
 import { getRelationColumnDescription } from '../../utils/LakehouseUtils.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
@@ -1489,6 +1494,8 @@ export const DataProductAccessPointGroupViewer = observer(
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
+    const [isMissingIngestsCollapsed, setIsMissingIngestsCollapsed] =
+      useState(false);
     const [isEntitledButtonGroupMenuOpen, setIsEntitledButtonGroupMenuOpen] =
       useState(false);
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
@@ -1505,6 +1512,18 @@ export const DataProductAccessPointGroupViewer = observer(
       return () =>
         apgState.dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [apgState, anchor]);
+
+    const apgContractErrors = useMemo(() => {
+      const missingIngests = apgState.missingIngests ?? [];
+      const ingestLayer: ContractErrorLayer | undefined =
+        missingIngests.length === 0
+          ? undefined
+          : {
+              title: `Ingest${missingIngests.length === 1 ? '' : 's'} Not Found:`,
+              errorItems: missingIngests,
+            };
+      return buildContractErrorsRoot([ingestLayer]);
+    }, [apgState.missingIngests]);
 
     const dataContractViewerState = useMemo(() => {
       return contractViewerContractAndSubscription &&
@@ -1554,8 +1573,13 @@ export const DataProductAccessPointGroupViewer = observer(
     const renderAccess = (val: AccessPointGroupAccess): React.ReactNode => {
       let buttonLabel: string | undefined = undefined;
       let onClick: (() => void) | undefined = undefined;
-      let buttonColor: 'info' | 'primary' | 'warning' | 'success' | undefined =
-        undefined;
+      let buttonColor:
+        | 'info'
+        | 'primary'
+        | 'warning'
+        | 'success'
+        | 'error'
+        | undefined = undefined;
       switch (val) {
         case AccessPointGroupAccess.UNKNOWN:
           buttonLabel = 'UNKNOWN';
@@ -1605,7 +1629,8 @@ export const DataProductAccessPointGroupViewer = observer(
         return null;
       }
       const tooltipText =
-        val === AccessPointGroupAccess.APPROVED &&
+        (val === AccessPointGroupAccess.APPROVED ||
+          val === AccessPointGroupAccess.ENTERPRISE) &&
         apgState.isEntitlementsSyncing
           ? 'Your contract has been approved but your entitlements are still syncing. The status will refresh automatically once your entitlements have synced.'
           : dataAccessState?.dataAccessPlugins
@@ -1766,6 +1791,42 @@ export const DataProductAccessPointGroupViewer = observer(
             {renderAccess(apgState.access)}
           </Box>
         </div>
+        {apgState.hasMissingIngests &&
+          (apgState.access === AccessPointGroupAccess.APPROVED ||
+            apgState.access === AccessPointGroupAccess.ENTERPRISE) && (
+            <div className="data-product__viewer__access-group__item__missing-ingests-banner">
+              <button
+                type="button"
+                className="data-product__viewer__access-group__item__missing-ingests-banner__header"
+                onClick={() => setIsMissingIngestsCollapsed((prev) => !prev)}
+              >
+                <WarningIcon className="data-product__viewer__access-group__item__missing-ingests-banner__icon" />
+                <span>Access Point: Missing Ingests</span>
+                <ExpandMoreIcon
+                  className={clsx(
+                    'data-product__viewer__access-group__item__missing-ingests-banner__caret',
+                    {
+                      'data-product__viewer__access-group__item__missing-ingests-banner__caret--collapsed':
+                        isMissingIngestsCollapsed,
+                    },
+                  )}
+                />
+              </button>
+              <ul
+                className={clsx(
+                  'data-product__viewer__access-group__item__missing-ingests-banner__list',
+                  {
+                    'data-product__viewer__access-group__item__missing-ingests-banner__list--collapsed':
+                      isMissingIngestsCollapsed,
+                  },
+                )}
+              >
+                {(apgState.missingIngests ?? []).map((ingest) => (
+                  <li key={ingest}>{ingest}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         {!apgState.isCollapsed && (
           <div className="data-product__viewer__access-group__item__collapsible-content">
             <div className="data-product__viewer__access-group__item__description">
@@ -1814,6 +1875,7 @@ export const DataProductAccessPointGroupViewer = observer(
               }
             }}
             getDataProductUrl={dataAccessState.getDataProductUrl}
+            contractErrors={apgContractErrors}
           />
         )}
         {dataAccessRequestViewerState && (
@@ -1824,6 +1886,7 @@ export const DataProductAccessPointGroupViewer = observer(
             }
             viewerState={dataAccessRequestViewerState}
             getDataProductUrl={dataAccessState.getDataProductUrl}
+            contractErrors={apgContractErrors}
           />
         )}
         {dataAccessState && apgState.associatedUserContract !== false && (

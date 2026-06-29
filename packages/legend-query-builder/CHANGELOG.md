@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.18.20
+
+### Patch Changes
+
+- [#5277](https://github.com/finos/legend-studio/pull/5277) [`eefdc5b`](https://github.com/finos/legend-studio/commit/eefdc5bfda36efbbdd7695b0db73f902cf0cd206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Allow drag-and-drop of a relation column as the right-hand value of a filter condition when the filter source is also a relation column (e.g. `$x.colA == $x.colB`), and round-trip the same shape on the post-filter side so a projected relation column can be used as the right-hand value of a post-filter condition.
+
+- [#5277](https://github.com/finos/legend-studio/pull/5277) [`eefdc5b`](https://github.com/finos/legend-studio/commit/eefdc5bfda36efbbdd7695b0db73f902cf0cd206) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix UI crash (`Cannot get placeholder for type [object Object]`) when selecting `is in list of` / `is not in list of` for a filter or post-filter on an accessor relation column whose type is a precise primitive (e.g. `Varchar`, `BigInt`, `Timestamp`). `PrecisePrimitiveType` is now mapped to its standard primitive equivalent in the collection value editor placeholder, in `convertTextToPrimitiveInstanceValue`, and in `QueryBuilderFilterOperator_In` / `QueryBuilderPostFilterOperator_In` (default value + condition-value compatibility check).
+
 ## 4.18.19
 
 ## 4.18.18

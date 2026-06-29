@@ -1801,6 +1801,76 @@
     gap: 1rem;
   }
 
+  &__item__missing-ingests-banner {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    align-self: flex-start;
+    width: max-content;
+    max-width: 100%;
+    margin: 0 0 1rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 0.4rem;
+    background: #fff4e5;
+    border: 0.1rem solid #8a4b00;
+    color: #8a4b00;
+    font-size: 1.3rem;
+    user-select: none;
+
+    &__header {
+      @include flexVCenter;
+
+      justify-content: center;
+      gap: 0.6rem;
+      font-weight: 600;
+      font-size: 1.4rem;
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+      cursor: pointer;
+      text-align: center;
+      font-family: inherit;
+    }
+
+    &__caret {
+      font-size: 1.8rem;
+      margin-left: 0.2rem;
+      transition: transform 0.2s ease;
+      transform: rotate(-180deg);
+
+      &--collapsed {
+        transform: rotate(0deg);
+      }
+    }
+
+    &__icon {
+      font-size: 1.6rem;
+    }
+
+    &__list {
+      margin: 0;
+      padding: 0.6rem 0 0 2rem;
+      border-top: 0.1rem solid #8a4b00;
+      list-style: disc;
+      overflow: hidden;
+
+      li {
+        margin: 0.2rem 0;
+        font-family: var(--font-code), monospace;
+        font-size: 1.2rem;
+        word-break: break-all;
+      }
+
+      &--collapsed {
+        height: 0;
+        padding-top: 0;
+        border-top: none;
+        margin-top: -0.6rem; // offset parent gap when hidden
+      }
+    }
+  }
+
   &__item__header:hover &__item__header__anchor {
     display: inline-flex;
   }

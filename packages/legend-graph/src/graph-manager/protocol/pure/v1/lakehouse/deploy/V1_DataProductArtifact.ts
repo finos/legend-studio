@@ -65,6 +65,11 @@ export enum V1_ExecutableInfoType {
   MULTI_EXECUTION_SERVICE = 'multiExecutionService',
 }
 
+export enum V1_ProducerType {
+  APP_DIR = 'AppDir',
+  KERBEROS = 'Kerberos',
+}
+
 export enum V1_ExecutableResultType {
   TDS = 'tds',
   RELATION = 'relation',
@@ -204,12 +209,104 @@ export const V1_deserializeResourceBuilder = (
   }
 };
 
+export abstract class V1_Producer {}
+
+export class V1_AppDirProducer extends V1_Producer {
+  appDirId!: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_AppDirProducer, {
+      _type: usingConstantValueSchema(V1_ProducerType.APP_DIR),
+      appDirId: primitive(),
+    }),
+  );
+}
+
+export class V1_KerberosProducer extends V1_Producer {
+  kerberos!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_KerberosProducer, {
+      _type: usingConstantValueSchema(V1_ProducerType.KERBEROS),
+      kerberos: primitive(),
+    }),
+  );
+}
+
+export const V1_serializeProducer = (
+  producer: V1_Producer,
+): PlainObject<V1_Producer> => {
+  if (producer instanceof V1_AppDirProducer) {
+    return V1_AppDirProducer.serialization.toJson(producer);
+  } else if (producer instanceof V1_KerberosProducer) {
+    return V1_KerberosProducer.serialization.toJson(producer);
+  }
+  throw new UnsupportedOperationError();
+};
+
+export const V1_deserializeProducer = (
+  json: PlainObject<V1_Producer>,
+): V1_Producer => {
+  switch (json._type) {
+    case V1_ProducerType.APP_DIR:
+      return V1_AppDirProducer.serialization.fromJson(json);
+    case V1_ProducerType.KERBEROS:
+      return V1_KerberosProducer.serialization.fromJson(json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize producer of type '${json._type}'`,
+      );
+  }
+};
+
+export class V1_IngestDefinitionInfo {
+  path!: string;
+  producer!: V1_Producer;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_IngestDefinitionInfo, {
+      path: primitive(),
+      producer: custom(V1_serializeProducer, V1_deserializeProducer),
+    }),
+  );
+}
+
+export class V1_Dataset {
+  ingestDefinition!: V1_IngestDefinitionInfo;
+  dataset!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_Dataset, {
+      ingestDefinition: usingModelSchema(
+        V1_IngestDefinitionInfo.serialization.schema,
+      ),
+      dataset: primitive(),
+    }),
+  );
+}
+
+export class V1_DependencyAccessPoint {
+  dataProductId!: string;
+  accessPointId!: string;
+  production!: boolean;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DependencyAccessPoint, {
+      dataProductId: primitive(),
+      accessPointId: primitive(),
+      production: primitive(),
+    }),
+  );
+}
+
 export class V1_AccessPointImplementation {
   id!: string;
   description: string | undefined;
   resourceBuilder!: V1_ResourceBuilder;
   relationElement: V1_RelationElement | undefined;
   lambdaGenericType: V1_GenericType | undefined;
+  dependencyDatasets: V1_Dataset[] = [];
+  dependencyAccessPoints: V1_DependencyAccessPoint[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_AccessPointImplementation, {
@@ -228,6 +325,12 @@ export class V1_AccessPointImplementation {
       lambdaGenericType: custom(
         (val) => serialize(V1_genericTypeModelSchema, val),
         (val) => V1_deserializeGenericType(val),
+      ),
+      dependencyDatasets: list(
+        usingModelSchema(V1_Dataset.serialization.schema),
+      ),
+      dependencyAccessPoints: list(
+        usingModelSchema(V1_DependencyAccessPoint.serialization.schema),
       ),
     }),
   );

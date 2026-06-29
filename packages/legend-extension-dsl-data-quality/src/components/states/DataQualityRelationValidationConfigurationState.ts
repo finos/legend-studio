@@ -89,6 +89,8 @@ export enum DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB {
   TRIAL_RUN = 'Trial Run',
 }
 
+export const DEFAULT_QUERY_LIMIT = 1000;
+
 export enum EXECUTION_TYPE {
   EXECUTION = 'EXECUTION',
   PROFILING = 'PROFILING',
@@ -292,6 +294,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   isSuggestionPanelOpen = false;
   relationTypeMetadata: RelationTypeMetadata = new RelationTypeMetadata();
   lastRelationColumnsQueryHash: string | undefined = undefined;
+  queryLimit = DEFAULT_QUERY_LIMIT;
 
   constructor(
     editorStore: EditorStore,
@@ -310,6 +313,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       lastExecutionType: observable,
       isSuggestionPanelOpen: observable,
       validationStates: observable,
+      queryLimit: observable,
       setSelectedTab: action,
       setRunPromise: action,
       setExecutionResult: action,
@@ -320,6 +324,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       applySuggestion: action,
       modifyExistingSuggestion: action,
       deleteValidationState: action,
+      setQueryLimit: action,
       validationElement: computed,
       relationValidationOptions: computed,
       checkForStaleResults: computed,
@@ -470,6 +475,10 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     }
   }
 
+  setQueryLimit(queryLimit: number): void {
+    this.queryLimit = Math.max(1, queryLimit);
+  }
+
   setRunPromise = (promise: Promise<ExecutionResult> | undefined): void => {
     this.runPromise = promise;
   };
@@ -574,6 +583,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
           : extension.execute(model, packagePath, {
               ...options,
               runQuery: true,
+              queryLimit: this.queryLimit,
             });
 
       this.setRunPromise(promise);
