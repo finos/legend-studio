@@ -1240,7 +1240,13 @@ export class V1_PropertyMappingBuilder
       );
       propertyOwner = property._OWNER;
     } else {
-      if (protocol.property.class) {
+      if (
+        this.immediateParent instanceof EmbeddedRelationFunctionPropertyMapping
+      ) {
+        // When inside an embedded, use the embedded's target class as property owner.
+        // The engine may set property.class to the parent class which is incorrect.
+        propertyOwner = this.immediateParent.class.value;
+      } else if (protocol.property.class) {
         propertyOwner = this.context.resolveClass(
           protocol.property.class,
         ).value;
@@ -1347,12 +1353,45 @@ export class V1_PropertyMappingBuilder
       complexClass,
       protocol.property.class ?? '',
     );
-    const id = `${this.immediateParent.id.value}_${property.name}`;
     const topParent = guaranteeNonNullable(this.topParent);
     const sourceSetImplementation =
       this.immediateParent instanceof RelationFunctionInstanceSetImplementation
         ? this.immediateParent
         : topParent;
+
+    // Detect inline embedded: engine uses the same _type with id set and empty propertyMappings
+    if (protocol.id !== undefined && protocol.propertyMappings.length === 0) {
+      const id = protocol.id;
+      const inline = new InlineEmbeddedRelationFunctionPropertyMapping(
+        this.immediateParent,
+        PropertyImplicitReference.create(
+          PackageableElementImplicitReference.create(
+            propertyOwnerClass,
+            protocol.property.class ?? '',
+          ),
+          property,
+        ),
+        guaranteeType(
+          this.topParent,
+          RelationFunctionInstanceSetImplementation,
+        ),
+        SetImplementationImplicitReference.create(
+          sourceSetImplementation,
+          protocol.source,
+        ),
+        _class,
+        InferableMappingElementIdExplicitValue.create(id, ''),
+        undefined,
+      );
+      inline.inlineSetImplementation = TEMPORARY__resolveSetImplementationByID(
+        topParent._PARENT,
+        id,
+        this.context,
+      );
+      return inline;
+    }
+
+    const id = `${this.immediateParent.id.value}_${property.name}`;
     const embedded = new EmbeddedRelationFunctionPropertyMapping(
       this.immediateParent,
       PropertyImplicitReference.create(

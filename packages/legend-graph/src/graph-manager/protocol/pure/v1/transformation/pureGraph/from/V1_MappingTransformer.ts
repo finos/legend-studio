@@ -184,7 +184,6 @@ import type { RelationFunctionInstanceSetImplementation } from '../../../../../.
 import { RelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
 import { V1_RelationFunctionPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionPropertyMapping.js';
 import { V1_RelationFunctionEmbeddedPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionEmbeddedPropertyMapping.js';
-import { V1_InlineEmbeddedRelationFunctionPropertyMapping } from '../../../model/packageableElements/mapping/V1_InlineEmbeddedRelationFunctionPropertyMapping.js';
 import { V1_RelationFunctionClassMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
 import { EmbeddedRelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/EmbeddedRelationFunctionPropertyMapping.js';
 import { InlineEmbeddedRelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/InlineEmbeddedRelationFunctionPropertyMapping.js';
@@ -841,12 +840,13 @@ const transformRelationFunctionEmbeddedPropertyMapping = (
 
 const transformInlineEmbeddedRelationFunctionPropertyMapping = (
   element: InlineEmbeddedRelationFunctionPropertyMapping,
-): V1_InlineEmbeddedRelationFunctionPropertyMapping => {
-  const embedded = new V1_InlineEmbeddedRelationFunctionPropertyMapping();
+): V1_RelationFunctionEmbeddedPropertyMapping => {
+  const embedded = new V1_RelationFunctionEmbeddedPropertyMapping();
   embedded.property = V1_transformPropertyReference(element.property);
   embedded.source = element.sourceSetImplementation.valueForSerialization;
   embedded.target = element.targetSetImplementation?.valueForSerialization;
-  embedded.setImplementationId = element.inlineSetImplementation.id.value;
+  embedded.id = element.inlineSetImplementation.id.value;
+  embedded.propertyMappings = [];
   return embedded;
 };
 

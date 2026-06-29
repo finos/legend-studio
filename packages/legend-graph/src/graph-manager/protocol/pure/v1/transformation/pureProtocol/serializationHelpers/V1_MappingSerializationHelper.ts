@@ -143,7 +143,6 @@ import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableEl
 import { V1_RelationFunctionClassMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
 import { V1_RelationFunctionPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionPropertyMapping.js';
 import { V1_RelationFunctionEmbeddedPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionEmbeddedPropertyMapping.js';
-import { V1_InlineEmbeddedRelationFunctionPropertyMapping } from '../../../model/packageableElements/mapping/V1_InlineEmbeddedRelationFunctionPropertyMapping.js';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -169,7 +168,6 @@ enum V1_PropertyMappingType {
   XSTORE = 'xStorePropertyMapping',
   RELATION_FUNCTION = 'relationFunctionPropertyMapping',
   RELATION_FUNCTION_EMBEDDED = 'relationFunctionEmbeddedPropertyMapping',
-  INLINE_EMBEDDED_RELATION_FUNCTION = 'inlineEmbeddedRelationFunctionPropertyMapping',
 }
 
 // ------------------------------------- Shared -------------------------------------
@@ -698,13 +696,6 @@ function V1_serializeRelationFunctionPropertyMapping(
 ): PlainObject<V1_PropertyMapping> | typeof SKIP {
   if (protocol instanceof V1_RelationFunctionPropertyMapping) {
     return serialize(relationFunctionPropertyMappingModelSchema, protocol);
-  } else if (
-    protocol instanceof V1_InlineEmbeddedRelationFunctionPropertyMapping
-  ) {
-    return serialize(
-      inlineEmbeddedRelationFunctionPropertyMappingModelSchema,
-      protocol,
-    );
   } else if (protocol instanceof V1_RelationFunctionEmbeddedPropertyMapping) {
     return serialize(
       relationFunctionEmbeddedPropertyMappingModelSchema,
@@ -723,11 +714,6 @@ function V1_deserializeRelationFunctionPropertyMapping(
     case V1_PropertyMappingType.RELATION_FUNCTION_EMBEDDED:
       return deserialize(
         relationFunctionEmbeddedPropertyMappingModelSchema,
-        json,
-      );
-    case V1_PropertyMappingType.INLINE_EMBEDDED_RELATION_FUNCTION:
-      return deserialize(
-        inlineEmbeddedRelationFunctionPropertyMappingModelSchema,
         json,
       );
     default:
@@ -762,26 +748,6 @@ const relationFunctionEmbeddedPropertyMappingModelSchema = createModelSchema(
     target: optional(primitive()),
   },
 );
-
-const inlineEmbeddedRelationFunctionPropertyMappingModelSchema =
-  createModelSchema(V1_InlineEmbeddedRelationFunctionPropertyMapping, {
-    _type: usingConstantValueSchema(
-      V1_PropertyMappingType.INLINE_EMBEDDED_RELATION_FUNCTION,
-    ),
-    id: optional(primitive()),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
-    setImplementationId: primitive(),
-    /**
-     * Omit this information during protocol transformation as it can be
-     * interpreted while building the graph; and will help grammar-roundtrip
-     * tests (involving engine) to pass. Ideally, this requires grammar parser
-     * and composer in engine to be more consistent.
-     *
-     * @discrepancy grammar-roundtrip
-     */
-    source: optional(primitive()),
-    target: optional(primitive()),
-  });
 
 const relationFunctionClassMappingModelSchema = createModelSchema(
   V1_RelationFunctionClassMapping,

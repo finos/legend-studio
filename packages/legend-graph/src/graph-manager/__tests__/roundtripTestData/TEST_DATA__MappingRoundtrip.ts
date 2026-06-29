@@ -2936,12 +2936,13 @@ export const TEST_DATA__RelationFunctionMappingWithInlineEmbedded = [
               source: 'personWithAddr',
             },
             {
-              _type: 'inlineEmbeddedRelationFunctionPropertyMapping',
+              _type: 'relationFunctionEmbeddedPropertyMapping',
+              id: 'addressSet',
               property: {
                 class: 'my::PersonWithAddress',
                 property: 'address',
               },
-              setImplementationId: 'addressSet',
+              propertyMappings: [],
               source: 'personWithAddr',
             },
           ],
