@@ -823,7 +823,6 @@ describe('DataAccessRequestViewer', () => {
       task.resourceId = 'TestProduct';
       task.accessPointGroup = 'TestAPG';
       task.consumer = createPermitMockConsumer();
-      task.workflowGuid = 'wf-1';
       return task;
     };
 

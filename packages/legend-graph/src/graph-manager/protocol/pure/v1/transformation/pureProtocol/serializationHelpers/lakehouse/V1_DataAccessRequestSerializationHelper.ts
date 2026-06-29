@@ -142,7 +142,6 @@ const V1_deserializeRequest = (
 
 const V1_workflowTaskBaseProps = (plugins: PureProtocolProcessorPlugin[]) => ({
   taskId: primitive(),
-  workflowGuid: primitive(),
   status: primitive(),
   createdOn: primitive(),
   assignees: list(primitive()),
@@ -294,17 +293,8 @@ export const V1_pendingDataRequestTaskEntryModelSchema = (
     workflowUrl: primitive(),
     task: custom(
       (val: V1_WorkflowTask) => V1_serializeWorkflowTask(val, plugins),
-      (val: PlainObject<V1_WorkflowTask>) => {
-        // The pending tasks API returns 'processInstanceId' instead of 'workflowGuid'
-        const adjusted = { ...val };
-        if (
-          val.processInstanceId !== undefined &&
-          val.workflowGuid === undefined
-        ) {
-          adjusted.workflowGuid = val.processInstanceId;
-        }
-        return V1_deserializeWorkflowTask(adjusted, plugins);
-      },
+      (val: PlainObject<V1_WorkflowTask>) =>
+        V1_deserializeWorkflowTask(val, plugins),
     ),
   });
 

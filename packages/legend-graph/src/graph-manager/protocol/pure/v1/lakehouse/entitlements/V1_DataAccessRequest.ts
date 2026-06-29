@@ -74,7 +74,6 @@ export enum V1_WorkflowTaskAction {
 
 export abstract class V1_WorkflowTask {
   taskId!: string;
-  workflowGuid!: string;
   status!: V1_WorkflowTaskStatus;
   createdOn!: Date;
   assignees: string[] = [];

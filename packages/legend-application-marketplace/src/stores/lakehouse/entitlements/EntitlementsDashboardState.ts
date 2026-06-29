@@ -60,10 +60,7 @@ import {
   V1_ApprovalType,
   V1_UserApprovalStatus,
   type V1_LiteDataContract,
-  V1_LiteDataAccessRequest,
   type V1_LiteAccessRequest,
-  V1_DataOwnerApprovalTask,
-  V1_PrivilegeManagerApprovalTask,
   V1_PermitTaskAction,
   V1_AppDirOrganizationalScope,
   V1_AdhocTeam,
@@ -477,35 +474,13 @@ export class EntitlementsDashboardState {
           tasks.push(record);
 
           // Create V1_LiteDataAccessRequest for grid column lookups
-          if (!taskContractMap.has(entry.dataRequestId)) {
-            const request = new V1_LiteDataAccessRequest();
-            request.guid = entry.dataRequestId;
-            request.description =
-              detail?.dataRequest.businessJustification ??
-              task.description ??
-              '';
-            request.createdAt =
-              task.createdOn instanceof Date
-                ? task.createdOn.toISOString()
-                : String(task.createdOn);
-            request.createdBy = detail?.dataRequest.createdBy ?? '';
-            request.consumer = detail?.dataRequest.consumer ?? task.consumer;
-            request.resourceType = V1_ResourceType.ACCESS_POINT_GROUP;
-            request.state = detail?.dataRequest.state ?? '';
-            request.members = detail?.dataRequest.members ?? [];
-
-            if (task instanceof V1_DataOwnerApprovalTask) {
-              request.resourceId = task.resourceId;
-              request.accessPointGroup = task.accessPointGroup;
-              request.deploymentId =
-                EntitlementsDashboardState.parseDeploymentId(task.deploymentId);
-            } else if (task instanceof V1_PrivilegeManagerApprovalTask) {
-              request.resourceId = task.resourceId;
-              request.accessPointGroup = task.accessPointGroup;
-              request.deploymentId = 0;
-            }
-
-            taskContractMap.set(entry.dataRequestId, request);
+          if (detail && !taskContractMap.has(entry.dataRequestId)) {
+            taskContractMap.set(
+              entry.dataRequestId,
+              V1_transformDataRequestWithWorkflowToLiteDataAccessRequest(
+                detail,
+              ),
+            );
           }
         }
       };

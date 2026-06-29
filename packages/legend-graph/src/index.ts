@@ -395,7 +395,6 @@ export {
   V1_observe_DataContract,
   V1_observe_LiteDataContract,
 } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsObserver.js';
-
 export {
   V1_transformDataContractToLiteDatacontract,
   V1_transformDataRequestWithWorkflowToLiteDataAccessRequest,
