@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.92
+
+### Patch Changes
+
+- [#5280](https://github.com/finos/legend-studio/pull/5280) [`106a8a5`](https://github.com/finos/legend-studio/commit/106a8a5f6f49644543b2bfe1ee13a52d66f4adeb) ([@jackp5150](https://github.com/jackp5150)) - Add missing ingest visibility to data product and contract viewer pages
+
 ## 0.0.91
 
 ### Patch Changes

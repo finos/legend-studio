@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.83
+
+### Patch Changes
+
+- [#5285](https://github.com/finos/legend-studio/pull/5285) [`bc85fb6`](https://github.com/finos/legend-studio/commit/bc85fb6d9f623d004c8f2fa4f56a7dd0a21f6b0d) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: fix iceberg toggle state and add documentation for access on lakehouse producers
+
 ## 0.7.82
 
 ## 0.7.81

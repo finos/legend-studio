@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.21.17
+
+### Patch Changes
+
+- [#5283](https://github.com/finos/legend-studio/pull/5283) [`8c77683`](https://github.com/finos/legend-studio/commit/8c776832718440a3af85d19c30493e7a1bc2e090) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix dark-theme rendering in the Class Editor: pass `darkMode` to the supertype, profile, tagged-value, stereotype, and property-detail-panel (property aggregation / tagged values / stereotype) `CustomSelectorInput`s so they no longer render as white dropdowns; and restyle `&__multiplicity-bound` (enabled, `[disabled]`, and `*` upper-bound) to use semantic input/panel/text tokens so the lower/upper bound digits stay readable.
+
+- [#5284](https://github.com/finos/legend-studio/pull/5284) [`1032694`](https://github.com/finos/legend-studio/commit/103269463fa8be9ae03aee8232ce0c081e22071e) ([@lisaknbur](https://github.com/lisaknbur)) - blocking cyclical project selection for dependency and exclusion viewer
+
 ## 28.21.16
 
 ## 28.21.15
