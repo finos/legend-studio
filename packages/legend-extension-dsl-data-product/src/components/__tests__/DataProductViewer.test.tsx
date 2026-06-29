@@ -4387,6 +4387,10 @@ describe('DataProductViewer', () => {
           mockDataContracts,
         );
 
+      guaranteeNonNullable(
+        dataProductDataAccessState,
+      ).engineServerClient.setZipkinUrl('http://test-zipkin-url/');
+
       const mockVisitAddress = jest
         .spyOn(
           guaranteeNonNullable(dataProductDataAccessState).applicationStore
@@ -4411,7 +4415,9 @@ describe('DataProductViewer', () => {
       });
 
       expect(mockVisitAddress).toHaveBeenCalledWith(
-        expect.stringContaining('http://test-engine-server-client-url/zipkin/'),
+        expect.stringContaining(
+          'http://test-zipkin-url/?spanName=all&lookback=3600000&annotationQuery=dataProductName%3DMOCK_SDLC_DATAPRODUCT+and+accessPoint%3Dcustomer_demographics',
+        ),
       );
 
       mockVisitAddress.mockRestore();

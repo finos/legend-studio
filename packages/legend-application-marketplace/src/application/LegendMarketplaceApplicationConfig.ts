@@ -156,6 +156,9 @@ export interface LegendMarketplaceApplicationConfigurationData
   registry?: {
     url: string;
   };
+  zipkin?: {
+    url: string;
+  };
   legendServices?: {
     url: string;
   };
@@ -195,6 +198,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
   readonly registryUrl: string | undefined;
+  readonly zipkinUrl: string | undefined;
   readonly legendServicesUrl: string | undefined;
   readonly datacubeApplicationUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
@@ -431,6 +435,13 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
     if (input.configData.registry?.url) {
       this.registryUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.registry.url,
+      );
+    }
+
+    // zipkin
+    if (input.configData.zipkin?.url) {
+      this.zipkinUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.zipkin.url,
       );
     }
 
