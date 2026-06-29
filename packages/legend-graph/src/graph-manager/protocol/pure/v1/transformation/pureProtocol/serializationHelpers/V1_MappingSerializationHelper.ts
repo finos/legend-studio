@@ -697,8 +697,8 @@ function V1_serializeRelationFunctionPropertyMapping(
   if (protocol instanceof V1_RelationFunctionPropertyMapping) {
     return serialize(relationFunctionPropertyMappingModelSchema, protocol);
   } else if (protocol instanceof V1_RelationFunctionEmbeddedPropertyMapping) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return serialize(
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       relationFunctionEmbeddedPropertyMappingModelSchema,
       protocol,
     );
@@ -713,8 +713,8 @@ function V1_deserializeRelationFunctionPropertyMapping(
     case V1_PropertyMappingType.RELATION_FUNCTION:
       return deserialize(relationFunctionPropertyMappingModelSchema, json);
     case V1_PropertyMappingType.RELATION_FUNCTION_EMBEDDED:
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       return deserialize(
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         relationFunctionEmbeddedPropertyMappingModelSchema,
         json,
       );
