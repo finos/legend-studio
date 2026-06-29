@@ -346,8 +346,9 @@ export const observe_EmbeddedRelationFunctionPropertyMapping =
         hashCode: computed,
       });
 
-      metamodel.propertyMappings.forEach((pm) =>
-        observe_PropertyMapping(pm, context),
+      metamodel.propertyMappings.forEach(
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        (pm) => observe_PropertyMapping(pm, context),
       );
 
       return metamodel;
