@@ -1122,6 +1122,7 @@ export {
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_Defect.js';
 export { V1_CompilationError } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationError.js';
 export {
+  type V1_BatchLambdaRelationTypeResponse,
   type V1_BatchLambdaRelationTypeResult,
   type V1_LambdaReturnTypeResult,
   V1_LambdaReturnTypeInput,

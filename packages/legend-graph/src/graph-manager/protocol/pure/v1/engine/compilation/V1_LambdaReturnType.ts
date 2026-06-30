@@ -87,7 +87,12 @@ export interface V1_LambdaReturnTypeResult {
   returnType: string;
 }
 
-export interface V1_BatchLambdaRelationTypeResult {
+export interface V1_BatchLambdaRelationTypeResponse {
   results: Record<string, PlainObject<V1_RelationType>>;
   errors: Record<string, PlainObject<V1_EngineError>>;
 }
+
+export type V1_BatchLambdaRelationTypeResult = {
+  results: Map<string, V1_RelationType>;
+  errors?: Map<string, V1_EngineError>;
+};
