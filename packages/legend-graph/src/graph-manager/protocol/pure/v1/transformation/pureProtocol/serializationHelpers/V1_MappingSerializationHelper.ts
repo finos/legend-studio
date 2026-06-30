@@ -738,14 +738,7 @@ const relationFunctionEmbeddedPropertyMappingModelSchema = createModelSchema(
         V1_deserializeRelationFunctionPropertyMapping,
       ),
     ),
-    /**
-     * Omit this information during protocol transformation as it can be
-     * interpreted while building the graph; and will help grammar-roundtrip
-     * tests (involving engine) to pass. Ideally, this requires grammar parser
-     * and composer in engine to be more consistent.
-     *
-     * @discrepancy grammar-roundtrip
-     */
+    // @discrepancy grammar-roundtrip
     source: optional(primitive()),
     target: optional(primitive()),
   },

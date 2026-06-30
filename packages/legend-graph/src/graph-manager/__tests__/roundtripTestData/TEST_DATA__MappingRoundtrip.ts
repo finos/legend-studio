@@ -2874,13 +2874,13 @@ export const TEST_DATA__RelationFunctionMappingWithEmbedded = [
                 {
                   _type: 'relationFunctionPropertyMapping',
                   column: 'STREET',
-                  property: { class: 'my::Address', property: 'street' },
+                  property: { property: 'street' },
                   source: 'person',
                 },
                 {
                   _type: 'relationFunctionPropertyMapping',
                   column: 'CITY',
-                  property: { class: 'my::Address', property: 'city' },
+                  property: { property: 'city' },
                   source: 'person',
                 },
               ],

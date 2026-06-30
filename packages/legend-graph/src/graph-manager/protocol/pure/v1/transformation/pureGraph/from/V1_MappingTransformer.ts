@@ -789,6 +789,7 @@ const transformAggregationAwarePropertyMapping = (
 
 const transformRelationFunctionPropertyMapping = (
   element: RelationFunctionPropertyMapping,
+  isTransformingEmbeddedPropertyMapping: boolean,
 ): V1_RelationFunctionPropertyMapping => {
   const propertyMapping = new V1_RelationFunctionPropertyMapping();
   propertyMapping.column = element.column.name;
@@ -800,7 +801,11 @@ const transformRelationFunctionPropertyMapping = (
     );
     propertyMapping.bindingTransformer = bindingTransformer;
   }
-  propertyMapping.property = V1_transformPropertyReference(element.property);
+  propertyMapping.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+    isTransformingLocalPropertyMapping: Boolean(element.localMappingProperty),
+  });
   propertyMapping.source =
     element.sourceSetImplementation.valueForSerialization;
   propertyMapping.target =
@@ -816,23 +821,21 @@ const transformRelationFunctionPropertyMapping = (
 
 const transformRelationFunctionEmbeddedPropertyMapping = (
   element: EmbeddedRelationFunctionPropertyMapping,
+  isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
 ): V1_RelationFunctionEmbeddedPropertyMapping => {
   const embedded = new V1_RelationFunctionEmbeddedPropertyMapping();
-  embedded.property = V1_transformPropertyReference(element.property);
+  embedded.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+  });
   embedded.source = element.sourceSetImplementation.valueForSerialization;
   embedded.target = element.targetSetImplementation?.valueForSerialization;
-  /**
-   * Omit class information during protocol transformation as it can be
-   * interpreted while building the graph; and will help grammar-roundtrip
-   * tests (involving engine) to pass.
-   *
-   * @discrepancy grammar-roundtrip
-   */
+  // @discrepancy grammar-roundtrip
   embedded.class = undefined;
   embedded.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
-    false,
+    true,
     context,
   );
   return embedded;
@@ -840,9 +843,13 @@ const transformRelationFunctionEmbeddedPropertyMapping = (
 
 const transformInlineEmbeddedRelationFunctionPropertyMapping = (
   element: InlineEmbeddedRelationFunctionPropertyMapping,
+  isTransformingEmbeddedPropertyMapping: boolean,
 ): V1_RelationFunctionEmbeddedPropertyMapping => {
   const embedded = new V1_RelationFunctionEmbeddedPropertyMapping();
-  embedded.property = V1_transformPropertyReference(element.property);
+  embedded.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+  });
   embedded.source = element.sourceSetImplementation.valueForSerialization;
   embedded.target = element.targetSetImplementation?.valueForSerialization;
   embedded.id = element.inlineSetImplementation.id.value;
@@ -973,7 +980,10 @@ class PropertyMappingTransformer
   visit_RelationFunctionPropertyMapping(
     propertyMapping: RelationFunctionPropertyMapping,
   ): V1_PropertyMapping {
-    return transformRelationFunctionPropertyMapping(propertyMapping);
+    return transformRelationFunctionPropertyMapping(
+      propertyMapping,
+      this.isTransformingEmbeddedPropertyMapping,
+    );
   }
 
   visit_RelationFunctionEmbeddedPropertyMapping(
@@ -981,6 +991,7 @@ class PropertyMappingTransformer
   ): V1_PropertyMapping {
     return transformRelationFunctionEmbeddedPropertyMapping(
       propertyMapping,
+      this.isTransformingEmbeddedPropertyMapping,
       this.context,
     );
   }
@@ -990,6 +1001,7 @@ class PropertyMappingTransformer
   ): V1_PropertyMapping {
     return transformInlineEmbeddedRelationFunctionPropertyMapping(
       propertyMapping,
+      this.isTransformingEmbeddedPropertyMapping,
     );
   }
 }
