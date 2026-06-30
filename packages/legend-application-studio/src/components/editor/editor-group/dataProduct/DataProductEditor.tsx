@@ -1785,6 +1785,20 @@ const AccessPointGroupEditor = observer(
       return () => intersectionObserver.disconnect();
     }, [accessPointCount, renderedCount]);
 
+    useEffect(() => {
+      flowResult(
+        productEditorState.batchUpdateLambdaRelationColumns(
+          lakehouseAccessPointStates.slice(0, renderedCount),
+        ),
+      ).catch(editorStore.applicationStore.alertUnhandledError);
+    }, [
+      renderedCount,
+      accessPointCount,
+      lakehouseAccessPointStates,
+      productEditorState,
+      editorStore.applicationStore.alertUnhandledError,
+    ]);
+
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
       setEditingDescription(false);

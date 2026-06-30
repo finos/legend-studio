@@ -27,6 +27,8 @@ import {
   type V1_AccessPointGroupInfo,
   type V1_AccessPointImplementation,
   type V1_DataProductArtifact,
+  type V1_LambdaReturnTypeBatchResult,
+  type V1_RawLambda,
   type V1_RawLineageModel,
   AccessPoint,
   AccessPointGroup,
@@ -60,6 +62,7 @@ import {
   stub_Mapping,
   stub_RawLambda,
   V1_GraphTransformerContextBuilder,
+  V1_LambdaReturnTypeBatchInput,
   V1_LambdaReturnTypeInput,
   V1_PureGraphManager,
   V1_relationTypeModelSchema,
@@ -1020,6 +1023,7 @@ export class DataProductEditorState extends ElementEditorState {
       setDeployResponse: action,
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
+      batchUpdateLambdaRelationColumns: flow,
       selectedGroupState: observable,
       setSelectedGroupState: action,
       swapAccessPointGroups: action,
@@ -1132,6 +1136,78 @@ export class DataProductEditorState extends ElementEditorState {
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }
+    }
+  }
+
+  *batchUpdateLambdaRelationColumns(
+    accessPointStates: LakehouseAccessPointState[],
+  ): GeneratorFn<void> {
+    const entries = accessPointStates
+      .filter(
+        (apState) =>
+          apState.relationElementState !== undefined &&
+          !apState.lambdaState.isUpdatingRelationColumns &&
+          apState.lambdaState.lastComputedLambdaHash !==
+            apState.accessPoint.func.hashCode,
+      )
+      .map((apState) => ({
+        apState,
+        hash: apState.accessPoint.func.hashCode,
+      }));
+    if (entries.length === 0) {
+      return;
+    }
+    entries.forEach((entry) =>
+      entry.apState.lambdaState.setIsUpdatingRelationColumns(true),
+    );
+    try {
+      const graphManager = guaranteeType(
+        this.editorStore.graphManagerState.graphManager,
+        V1_PureGraphManager,
+      );
+      const model = graphManager.getFullGraphModelData(
+        this.editorStore.graphManagerState.graph,
+      );
+      const context = new V1_GraphTransformerContextBuilder(
+        this.editorStore.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build();
+      const lambdas: Record<string, V1_RawLambda> = {};
+      entries.forEach((entry) => {
+        lambdas[entry.apState.uuid] = V1_transformRawLambda(
+          entry.apState.accessPoint.func,
+          context,
+        );
+      });
+      const engineServerClient = guaranteeType(
+        graphManager.engine,
+        V1_RemoteEngine,
+      ).getEngineServerClient();
+      const response = (yield engineServerClient.lambdaRelationTypeBatch(
+        V1_LambdaReturnTypeBatchInput.serialization.toJson(
+          new V1_LambdaReturnTypeBatchInput(model, lambdas),
+        ),
+      )) as V1_LambdaReturnTypeBatchResult;
+      entries.forEach((entry) => {
+        const columns = response.result[entry.apState.uuid];
+        if (columns !== undefined) {
+          entry.apState.lambdaState.setLambdaRelationColumns(
+            deserialize(V1_relationTypeModelSchema, columns).columns.map(
+              (column) => column.name,
+            ),
+          );
+        } else {
+          entry.apState.lambdaState.setLambdaRelationColumns(undefined);
+        }
+      });
+    } catch {
+      entries.forEach((entry) =>
+        entry.apState.lambdaState.setLambdaRelationColumns(undefined),
+      );
+    } finally {
+      entries.forEach((entry) => {
+        entry.apState.lambdaState.lastComputedLambdaHash = entry.hash;
+        entry.apState.lambdaState.setIsUpdatingRelationColumns(false);
+      });
     }
   }
 
