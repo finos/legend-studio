@@ -558,21 +558,18 @@ export class DataProductDataAccessState {
           );
           this.setDataAccessRequestViewerState(viewerState);
 
-          // Update the APG button state if the current user belongs to the RMS org
-          const rmsNode =
-            'rmsNode' in consumer &&
-            typeof consumer.rmsNode === 'string' &&
-            consumer.rmsNode.length > 0
-              ? consumer.rmsNode
-              : undefined;
-          if (rmsNode) {
+          // Update the APG button state if the current user belongs to the consumer's org
+          const orgNodeCode = this.dataAccessPlugins
+            .map((p) => p.getOrganizationalNodeCode?.(consumer))
+            .find(isNonNullable);
+          if (orgNodeCode) {
             const apgState = this.dataProductViewerState.apgStates.find(
               (s) => s.apg.id === group.id,
             );
             if (apgState) {
               // eslint-disable-next-line no-void
-              void apgState.checkAndSetAccessForRmsRequest(
-                rmsNode,
+              void apgState.checkAndSetAccessForOrgRequest(
+                orgNodeCode,
                 guid,
                 V1_RequestState.SUBMITTED_FOR_APPROVALS,
                 this.dataAccessPlugins,
